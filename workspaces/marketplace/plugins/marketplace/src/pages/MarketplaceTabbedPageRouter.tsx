@@ -37,7 +37,7 @@ import { InstallationContextProvider } from '../components/InstallationContext';
 
 import { useCollections } from '../hooks/useCollections';
 
-import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
 
 const Tabs = () => {
   const showCollections = !!useCollections({}).data?.items?.length;
@@ -91,7 +91,7 @@ export const MarketplaceTabbedPageRouter = () => (
         />
         <Route
           path="/packages/:namespace/:name/install"
-          Component={MarketplacePackageInstallPage}
+          Component={MarketplacePackageEditPage}
         />
         <Route path="/*" Component={Tabs} />
       </Routes>

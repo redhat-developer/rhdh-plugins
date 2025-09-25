@@ -15,9 +15,8 @@
  */
 
 import { useState, useLayoutEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 
-import { useRouteRef } from '@backstage/core-plugin-api';
 import { ErrorBoundary } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
@@ -26,25 +25,26 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 
-import { packagesRouteRef } from '../routes';
-
 import { MarketplacePackageContentLoader } from './MarketplacePackageContent';
 
 export const MarketplacePackageDrawer = () => {
   const [open, setOpen] = useState(false);
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
   useLayoutEffect(() => {
-    setOpen(true);
-  }, []);
+    setOpen(!!searchParams.get('package'));
+  }, [searchParams]);
 
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const packagesPath = `${useRouteRef(packagesRouteRef)()}${searchParams.size > 0 ? '?' : ''}${searchParams}`;
   const theme = useTheme();
   const handleClose = () => {
-    // TODO analytics?
     setOpen(false);
+    const params = new URLSearchParams(location.search);
+    params.delete('package');
+    const qs = params.toString();
+    const target = qs ? `${location.pathname}?${qs}` : location.pathname;
     setTimeout(
-      () => navigate(packagesPath),
+      () => navigate(target),
       theme.transitions.duration.leavingScreen,
     );
   };

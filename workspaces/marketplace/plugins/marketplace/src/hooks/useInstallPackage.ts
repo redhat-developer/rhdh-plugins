@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-import { useQuery } from '@tanstack/react-query';
-
+import { useMutation } from '@tanstack/react-query';
 import { useMarketplaceApi } from './useMarketplaceApi';
 
-export const usePackage = (namespace?: string, name?: string) => {
+export const useInstallPackage = () => {
   const marketplaceApi = useMarketplaceApi();
-  return useQuery({
-    queryKey: ['marketplaceApi', 'getPackageByName', namespace, name],
-    queryFn: () => marketplaceApi.getPackageByName(namespace!, name!),
-    enabled: Boolean(namespace && name),
+
+  return useMutation({
+    mutationFn: async ({
+      namespace,
+      name,
+      configYaml,
+    }: {
+      namespace: string;
+      name: string;
+      configYaml: string;
+    }) => await marketplaceApi.installPackage?.(namespace, name, configYaml),
   });
 };
