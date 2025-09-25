@@ -224,12 +224,12 @@ describe('BulkImportBackendClient', () => {
 
   describe('getRepositories', () => {
     it('getRepositories should retrieve repositories successfully', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, '');
+      const repositories = await bulkImportApi.dataFetcher(1, 2, '', 'git');
       expect(repositories).toEqual(mockGetRepositories.repositories);
     });
 
     it('getRepositories should retrieve repositories based on search string', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, 'ap');
+      const repositories = await bulkImportApi.dataFetcher(1, 2, 'ap', 'git');
       expect(repositories).toEqual(
         mockGetRepositories.repositories.filter(r => r.repoName.includes('ap')),
       );
@@ -245,7 +245,7 @@ describe('BulkImportBackendClient', () => {
         ),
       );
 
-      await expect(bulkImportApi.dataFetcher(1, 2, '')).resolves.toEqual(
+      await expect(bulkImportApi.dataFetcher(1, 2, '', 'git')).resolves.toEqual(
         expect.objectContaining([]),
       );
     });
@@ -253,7 +253,7 @@ describe('BulkImportBackendClient', () => {
 
   describe('getRepositories from an organization', () => {
     it('getRepositories should retrieve repositories from an organization successfully', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, '', {
+      const repositories = await bulkImportApi.dataFetcher(1, 2, '', '', {
         orgName: 'org/dessert',
       });
       expect(repositories).toEqual(
@@ -262,7 +262,7 @@ describe('BulkImportBackendClient', () => {
     });
 
     it('getRepositories should retrieve repositories from an organization based on search string', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, 'des', {
+      const repositories = await bulkImportApi.dataFetcher(1, 2, 'des', '', {
         orgName: 'org/dessert',
       });
       expect(repositories).toEqual(
@@ -275,14 +275,14 @@ describe('BulkImportBackendClient', () => {
 
   describe('getOrganizations', () => {
     it('getOrganizations should retrieve organizations successfully', async () => {
-      const orgs = await bulkImportApi.dataFetcher(1, 2, '', {
+      const orgs = await bulkImportApi.dataFetcher(1, 2, '', '', {
         fetchOrganizations: true,
       });
       expect(orgs).toEqual(mockGetOrganizations.organizations);
     });
 
     it('getOrganizations should retrieve organizations based on search string', async () => {
-      const orgs = await bulkImportApi.dataFetcher(1, 2, 'des', {
+      const orgs = await bulkImportApi.dataFetcher(1, 2, 'des', '', {
         fetchOrganizations: true,
       });
       expect(orgs).toEqual(
@@ -303,7 +303,7 @@ describe('BulkImportBackendClient', () => {
       );
 
       await expect(
-        bulkImportApi.dataFetcher(1, 2, '', { fetchOrganizations: true }),
+        bulkImportApi.dataFetcher(1, 2, '', '', { fetchOrganizations: true }),
       ).resolves.toEqual(expect.objectContaining([]));
     });
   });

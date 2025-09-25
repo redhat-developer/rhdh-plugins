@@ -35,6 +35,7 @@ import {
   ImportJobs,
   ImportJobStatus,
   ImportStatus,
+  isGithubJob,
   JobErrors,
   Order,
   OrgAndRepoResponse,
@@ -43,8 +44,6 @@ import {
   RepositorySelection,
   RepositoryStatus,
 } from '../types';
-
-export const gitlabFeatureFlag = false;
 
 export const descendingComparator = (
   a: AddRepositoryData,
@@ -225,11 +224,12 @@ export const getImportStatus = (
   showIcon?: boolean,
   prUrl?: string,
   isApprovalToolGitlab: boolean = false,
+  gitlabConfigured: boolean = false,
 ) => {
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
+  const labelText = gitlabConfigured ? 'Already imported' : 'Added';
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
@@ -247,7 +247,7 @@ export const getImportStatus = (
           style={{ display: 'flex', alignItems: 'baseline' }}
         >
           <StatusOK />
-          {gitlabFeatureFlag ? 'Imported' : 'Added'}
+          {gitlabConfigured ? 'Imported' : 'Added'}
         </Typography>
       ) : (
         labelText
@@ -400,7 +400,7 @@ export const prepareDataForSubmission = (
           null,
           2,
         ),
-        github: {
+        [approvalTool.toLocaleLowerCase()]: {
           pullRequest: {
             title:
               repo.catalogInfoYaml?.prTemplate?.prTitle ||
@@ -419,15 +419,16 @@ export const getApi = (
   page: number,
   size: number,
   searchString: string,
+  approvalTool: string,
   options?: APITypes,
 ) => {
   if (options?.fetchOrganizations) {
-    return `${backendUrl}/api/bulk-import/organizations?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}`;
+    return `${backendUrl}/api/bulk-import/organizations?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
   }
   if (options?.orgName) {
-    return `${backendUrl}/api/bulk-import/organizations/${options.orgName}/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}`;
+    return `${backendUrl}/api/bulk-import/organizations/${options.orgName}/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
   }
-  return `${backendUrl}/api/bulk-import/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}`;
+  return `${backendUrl}/api/bulk-import/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
 };
 
 export const getCustomisedErrorMessage = (
@@ -510,17 +511,18 @@ export const calculateLastUpdated = (dateString: string) => {
 export const evaluatePRTemplate = (
   repositoryStatus: ImportJobStatus,
 ): { pullReqPreview: PullRequestPreview; isInvalidEntity: boolean } => {
+  const gitProvider = isGithubJob(repositoryStatus) ? 'github' : 'gitlab';
   try {
     const entity = jsyaml.loadAll(
-      repositoryStatus.github.pullRequest.catalogInfoContent,
+      repositoryStatus[gitProvider]?.pullRequest.catalogInfoContent ?? '',
     )[0] as Entity;
     const isInvalid =
       !entity?.metadata?.name || !entity?.apiVersion || !entity?.kind;
     return {
       pullReqPreview: {
-        pullRequestUrl: repositoryStatus.github.pullRequest.url,
-        prTitle: repositoryStatus.github.pullRequest.title,
-        prDescription: repositoryStatus.github.pullRequest.body,
+        pullRequestUrl: repositoryStatus[gitProvider]?.pullRequest.url,
+        prTitle: repositoryStatus[gitProvider]?.pullRequest.title,
+        prDescription: repositoryStatus[gitProvider]?.pullRequest.body,
         prAnnotations: convertKeyValuePairsToString(
           entity?.metadata?.annotations,
         ),
@@ -538,9 +540,9 @@ export const evaluatePRTemplate = (
   } catch (e) {
     return {
       pullReqPreview: {
-        pullRequestUrl: repositoryStatus.github.pullRequest.url,
-        prTitle: repositoryStatus.github.pullRequest.title,
-        prDescription: repositoryStatus.github.pullRequest.body,
+        pullRequestUrl: repositoryStatus[gitProvider]?.pullRequest.url,
+        prTitle: repositoryStatus[gitProvider]?.pullRequest.title,
+        prDescription: repositoryStatus[gitProvider]?.pullRequest.body,
         prAnnotations: undefined,
         prLabels: undefined,
         prSpec: undefined,
@@ -563,7 +565,7 @@ export const prepareDataForOrganizations = (result: OrgAndRepoResponse) => {
           [val.id]: {
             id: val.id,
             orgName: val.name,
-            organizationUrl: `https://github.com/${val?.name}`,
+            organizationUrl: `${val?.url}`,
             totalReposInOrg: val.totalRepoCount,
           },
         };
@@ -621,6 +623,7 @@ export const prepareDataForAddedRepositories = (
   const repoData: { [id: string]: AddRepositoryData } =
     importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
       const id = `${val.repository.organization}/${val.repository.name}`;
+      const gitProvider = isGithubJob(val) ? 'gitlab' : 'github';
       return {
         ...acc,
         [id]: {
@@ -646,7 +649,7 @@ export const prepareDataForAddedRepositories = (
               val.repository.url || '',
               val.repository.defaultBranch || 'main',
             ),
-            pullRequest: val?.github?.pullRequest?.url || '',
+            pullRequest: val[gitProvider]?.pullRequest?.url || '',
             lastUpdated: val.lastUpdate,
           },
         },

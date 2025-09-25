@@ -33,8 +33,8 @@ import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import { AddRepositoryData } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -80,6 +80,7 @@ const DeleteRepositoryDialog = ({
   };
 
   const isUrlMissing = !repository.repoUrl;
+  const gitlabConfigured = useGitlabConfigured();
 
   return (
     <Dialog
@@ -102,7 +103,7 @@ const DeleteRepositoryDialog = ({
         >
           <Typography component="span" style={{ fontWeight: 'bold' }}>
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
-            {`Remove ${repository.repoName} ${gitlabFeatureFlag ? '' : 'repository'}?`}
+            {`Remove ${repository.repoName} ${gitlabConfigured ? '' : 'repository'}?`}
           </Typography>
 
           <IconButton
@@ -123,7 +124,7 @@ const DeleteRepositoryDialog = ({
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          {`Removing ${gitlabFeatureFlag ? 'it will' : 'a repository'} erases all associated information from the
+          {`Removing ${gitlabConfigured ? 'it will' : 'a repository'} erases all associated information from the
           Catalog page.`}
         </Typography>
       </DialogContent>

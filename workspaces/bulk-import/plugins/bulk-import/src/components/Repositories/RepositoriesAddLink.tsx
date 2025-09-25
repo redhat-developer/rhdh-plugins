@@ -21,8 +21,8 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import { AddRepositoriesFormValues } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 export const RepositoriesAddLink = () => {
   const { status, setStatus } = useFormikContext<AddRepositoriesFormValues>();
@@ -30,6 +30,8 @@ export const RepositoriesAddLink = () => {
   const handleCloseAlert = () => {
     setStatus(null);
   };
+
+  const gitlabConfigured = useGitlabConfigured();
   return (
     <>
       {(status?.title || status?.url) && (
@@ -56,7 +58,7 @@ export const RepositoriesAddLink = () => {
           variant="contained"
           data-testid="add-repository"
         >
-          {gitlabFeatureFlag ? 'Import' : 'Add'}
+          {gitlabConfigured ? 'Import' : 'Add'}
         </LinkButton>
       </Typography>
     </>

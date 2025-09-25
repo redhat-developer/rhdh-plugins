@@ -60,6 +60,7 @@ export const RepositoriesTable = ({
   drawerOrganization?: string;
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
+  approvalTool?: string;
 }) => {
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -80,6 +81,7 @@ export const RepositoriesTable = ({
     page: (drawerOrganization ? drawerPage : localPage) + 1,
     querySize: rowsPerPage,
     searchString,
+    approvalTool: values.approvalTool,
   });
 
   useEffect(() => {

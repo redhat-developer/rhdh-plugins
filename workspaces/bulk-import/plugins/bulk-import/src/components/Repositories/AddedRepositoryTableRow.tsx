@@ -22,6 +22,7 @@ import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -45,11 +46,13 @@ const useStyles = makeStyles(() => ({
 
 const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
   const { values } = useFormikContext<AddRepositoriesFormValues>();
+  const gitlabConfigured = useGitlabConfigured();
   return getImportStatus(
     values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
     values?.approvalTool === ApprovalTool.Gitlab,
+    gitlabConfigured,
   );
 };
 
@@ -106,7 +109,14 @@ export const AddedRepositoryTableRow = ({
       <TableCell align="left" className={classes.tableCellStyle}>
         <CatalogInfoAction data={data} />
         <DeleteRepository data={data} />
-        <SyncRepository data={data} />
+        <SyncRepository
+          data={data}
+          approvalTool={
+            data.repoUrl && data.repoUrl.startsWith('https://gitlab.com')
+              ? 'GITLAB'
+              : 'GITHUB'
+          }
+        />
       </TableCell>
     </TableRow>
   );

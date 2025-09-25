@@ -31,7 +31,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
@@ -48,6 +48,8 @@ export const AddRepositoriesPage = () => {
     resourceRef: bulkImportPermission.resourceType,
   });
 
+  const gitlabConfigured = useGitlabConfigured();
+
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
       return <Progress />;
@@ -62,7 +64,7 @@ export const AddRepositoriesPage = () => {
                 id="add-repository-summary"
               >
                 <Typography variant="h5">
-                  {gitlabFeatureFlag
+                  {gitlabConfigured
                     ? 'Import to Red Hat Developer Hub'
                     : 'Add repositories to Red Hat Developer Hub in 4 steps'}
                 </Typography>
@@ -75,7 +77,7 @@ export const AddRepositoriesPage = () => {
                   overflow: 'auto',
                 }}
               >
-                {gitlabFeatureFlag && (
+                {gitlabConfigured && (
                   <Illustrations
                     iconClassname={
                       theme.palette.mode === 'dark'
@@ -92,7 +94,7 @@ export const AddRepositoriesPage = () => {
                       : 'icon-choose-repositories-black'
                   }
                   iconText={
-                    gitlabFeatureFlag
+                    gitlabConfigured
                       ? 'Choose which items you want to import'
                       : 'Choose repositories you want to add'
                   }
@@ -104,7 +106,7 @@ export const AddRepositoriesPage = () => {
                       : 'icon-generate-cataloginfo-black'
                   }
                   iconText={
-                    gitlabFeatureFlag
+                    gitlabConfigured
                       ? 'Generate a catalog-info.yaml file for each selected item'
                       : 'Generate a catalog-info.yaml file for each repository'
                   }
@@ -147,7 +149,7 @@ export const AddRepositoriesPage = () => {
   return (
     <Page themeId="tool">
       <Header
-        title={gitlabFeatureFlag ? 'Import entities' : 'Add repositories'}
+        title={gitlabConfigured ? 'Import entities' : 'Add repositories'}
         type="Bulk import"
         typeLink=".."
       />

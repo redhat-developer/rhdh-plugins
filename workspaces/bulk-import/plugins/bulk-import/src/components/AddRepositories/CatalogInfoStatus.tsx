@@ -21,6 +21,7 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -49,6 +50,7 @@ export const CatalogInfoStatus = ({
 }) => {
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
+  const gitlabConfigured = useGitlabConfigured();
 
   useEffect(() => {
     if (importStatus === RepositoryStatus.ADDED) {
@@ -94,7 +96,13 @@ export const CatalogInfoStatus = ({
   if (importStatus) {
     return (
       <Typography component="span" style={{ color: '#6A6E73' }}>
-        {getImportStatus(importStatus)}
+        {getImportStatus(
+          importStatus,
+          undefined,
+          undefined,
+          false,
+          gitlabConfigured,
+        )}
       </Typography>
     );
   }

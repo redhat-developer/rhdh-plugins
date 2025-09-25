@@ -23,12 +23,12 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import {
   AddedRepositories,
   AddRepositoriesFormValues,
   ApprovalTool,
 } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 const sPad = (repositories: AddedRepositories) =>
   Object.keys(repositories || []).length > 1 ? 's' : '';
@@ -36,6 +36,7 @@ const sPad = (repositories: AddedRepositories) =>
 export const AddRepositoriesFormFooter = () => {
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
+  const gitlabConfigured = useGitlabConfigured();
 
   const label = {
     [ApprovalTool.ServiceNow]: {
@@ -48,19 +49,17 @@ export const AddRepositoriesFormFooter = () => {
         'The Catalog-info.yaml files need to be generated for import.',
     },
     [ApprovalTool.Git]: {
-      submitTitle: gitlabFeatureFlag
+      submitTitle: gitlabConfigured
         ? 'Import'
         : `Create pull request${sPad(values.repositories)}`,
-      toolTipTitle: gitlabFeatureFlag
+      toolTipTitle: gitlabConfigured
         ? 'The Catalog-info.yaml files need to be generated for import.'
         : `Catalog-info.yaml files must be generated before creating a pull request`,
     },
   };
 
   const disableCreate =
-    values.approvalTool === ApprovalTool.Gitlab ||
-    !values.repositories ||
-    Object.values(values.repositories).length === 0;
+    !values.repositories || Object.values(values.repositories).length === 0;
 
   const submitButton = (
     <Button
