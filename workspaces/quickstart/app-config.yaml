@@ -42,8 +42,8 @@ app:
         link: /extensions
     - title: Import application
       titleKey: steps.importApplication.title
-      # roles:
-      #   - developer
+      roles:
+        - developer
       icon: Import
       description: Import your existing code and services into the catalog to organize and access them through your developer portal.
       descriptionKey: steps.importApplication.description
@@ -53,8 +53,8 @@ app:
         link: /bulk-import
     - title: Learn about the Catalog
       titleKey: steps.learnAboutCatalog.title
-      # roles:
-      #   - developer
+      roles:
+        - developer
       icon: Catalog
       description: Discover all software components, services, and APIs, and view their owners and documentation.
       descriptionKey: steps.learnAboutCatalog.description
@@ -64,8 +64,8 @@ app:
         link: /catalog
     - title: Explore Self-service templates
       titleKey: steps.exploreSelfServiceTemplates.title
-      # roles:
-      #   - developer
+      roles:
+        - developer
       icon: SelfService
       description: Use our self-service templates to quickly set up new projects, services, or documentation.
       descriptionKey: steps.exploreSelfServiceTemplates.description
@@ -75,8 +75,8 @@ app:
         link: /create
     - title: Find all Learning Paths
       titleKey: steps.findAllLearningPaths.title
-      # roles:
-      #   - developer
+      roles:
+        - developer
       icon: Learning
       description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.
       descriptionKey: steps.findAllLearningPaths.description

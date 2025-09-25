@@ -28,6 +28,7 @@ import { QuickstartCtaLink } from './QuickstartCtaLink';
 import IconButton from '@mui/material/IconButton';
 import { QuickstartItemData } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getTranslatedTextWithFallback } from '../../utils';
 
 export type QuickstartItemProps = {
   item: QuickstartItemData;
@@ -109,16 +110,7 @@ export const QuickstartItem = ({
           />
         </ListItemIcon>
         <ListItemText
-          primary={
-            item.titleKey
-              ? (() => {
-                  const translation = t(item.titleKey as keyof typeof t, {});
-                  return translation !== item.titleKey
-                    ? translation
-                    : item.title;
-                })()
-              : item.title
-          }
+          primary={getTranslatedTextWithFallback(t, item.titleKey, item.title)}
           sx={{
             '& .v5-MuiTypography-root': {
               fontWeight: theme =>
@@ -160,19 +152,11 @@ export const QuickstartItem = ({
         >
           <ListItem>
             <ListItemText
-              primary={
-                item.descriptionKey
-                  ? (() => {
-                      const translation = t(
-                        item.descriptionKey as keyof typeof t,
-                        {},
-                      );
-                      return translation !== item.descriptionKey
-                        ? translation
-                        : item.description;
-                    })()
-                  : item.description
-              }
+              primary={getTranslatedTextWithFallback(
+                t,
+                item.descriptionKey,
+                item.description,
+              )}
             />
           </ListItem>
           <ListItem>

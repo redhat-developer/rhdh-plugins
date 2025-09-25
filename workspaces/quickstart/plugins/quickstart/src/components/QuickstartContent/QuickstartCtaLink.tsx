@@ -17,6 +17,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { QuickstartItemCtaData } from '../../types';
 import { LinkButton } from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getTranslatedTextWithFallback } from '../../utils';
 
 export type QuickstartCtaLinkProps = {
   cta?: QuickstartItemCtaData;
@@ -42,6 +43,8 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
     );
   }
 
+  const finalText = getTranslatedTextWithFallback(t, cta.textKey, cta.text);
+
   const isExternalLink =
     cta.link.startsWith('http://') || cta.link.startsWith('https://');
 
@@ -55,12 +58,7 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
       to={cta.link}
       onClick={onClick}
     >
-      {cta.textKey
-        ? (() => {
-            const translation = t(cta.textKey as keyof typeof t, {});
-            return translation !== cta.textKey ? translation : cta.text;
-          })()
-        : cta.text}
+      {finalText}
       &nbsp;
       <OpenInNewIcon
         sx={{
@@ -75,12 +73,7 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
       to={cta.link}
       onClick={onClick}
     >
-      {cta.textKey
-        ? (() => {
-            const translation = t(cta.textKey as keyof typeof t, {});
-            return translation !== cta.textKey ? translation : cta.text;
-          })()
-        : cta.text}
+      {finalText}
     </LinkButton>
   );
 };
