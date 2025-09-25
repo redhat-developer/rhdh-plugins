@@ -56,7 +56,6 @@ export const Markdown = (props: MarkdownProps) => {
 
   // TODO load images from marketplace assets endpoint ???
   const transformImageUri = (href: string): string => {
-    // console.log('Markdown transformImageUri href', href);
     return href;
   };
 

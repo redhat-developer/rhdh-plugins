@@ -18,6 +18,8 @@ import type { ReactNode } from 'react';
 
 import { Content, ErrorPage, LinkButton } from '@backstage/core-components';
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
@@ -96,6 +98,16 @@ const MarketplacePackageContentSkeleton = () => {
 
 const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
   const getInstallPath = useRouteRef(packageInstallRouteRef);
+  const location = useLocation();
+  const installBase = getInstallPath({
+    namespace: pkg.metadata.namespace!,
+    name: pkg.metadata.name,
+  });
+  const preservedParams = new URLSearchParams(location.search);
+  preservedParams.delete('package');
+  const installTo = preservedParams.size
+    ? `${installBase}?${preservedParams.toString()}`
+    : installBase;
 
   return (
     <Content>
@@ -110,14 +122,7 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
 
         <Grid container spacing={2}>
           <Grid item md={3}>
-            <LinkButton
-              to={getInstallPath({
-                namespace: pkg.metadata.namespace!,
-                name: pkg.metadata.name,
-              })}
-              color="primary"
-              variant="contained"
-            >
+            <LinkButton to={installTo} color="primary" variant="contained">
               {
                 mapPackageInstallStatusToButton[
                   pkg.spec?.installStatus ??
@@ -160,7 +165,13 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
 
 export const MarketplacePackageContentLoader = () => {
   const params = useRouteRefParams(packageInstallRouteRef);
-  const pkg = usePackage(params.namespace, params.name);
+  const [searchParams] = useSearchParams();
+  const qp = searchParams.get('package');
+  const qpNs = qp?.split('/')[0];
+  const qpName = qp?.split('/')[1];
+  const namespace = qpNs || params.namespace;
+  const name = qpName || params.name;
+  const pkg = usePackage(namespace, name);
 
   if (pkg.isLoading) {
     return <MarketplacePackageContentSkeleton />;
@@ -170,8 +181,6 @@ export const MarketplacePackageContentLoader = () => {
     return <ErrorPage statusMessage={pkg.error.toString()} />;
   }
   return (
-    <ErrorPage
-      statusMessage={`Package ${params.namespace}/${params.name} not found!`}
-    />
+    <ErrorPage statusMessage={`Package ${namespace}/${name} not found!`} />
   );
 };

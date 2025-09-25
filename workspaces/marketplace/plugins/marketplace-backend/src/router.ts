@@ -22,6 +22,7 @@ import type { Config } from '@backstage/config';
 import {
   HttpAuthService,
   PermissionsService,
+  LoggerService,
 } from '@backstage/backend-plugin-api';
 import {
   AuthorizeResult,
@@ -48,11 +49,19 @@ import { matches } from './utils/permissionUtils';
 import { InstallationDataService } from './installation/InstallationDataService';
 import { ConfigFormatError } from './errors/ConfigFormatError';
 
+import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
+import {
+  BaseDynamicPlugin,
+  DynamicPluginProvider,
+} from '@backstage/backend-dynamic-feature-service';
+
 export type MarketplaceRouterOptions = {
   httpAuth: HttpAuthService;
   marketplaceApi: MarketplaceApi;
   permissions: PermissionsService;
   installationDataService: InstallationDataService;
+  pluginProvider: DynamicPluginProvider;
+  logger: LoggerService;
   config: Config;
 };
 
@@ -64,6 +73,8 @@ export async function createRouter(
     marketplaceApi,
     permissions,
     installationDataService,
+    pluginProvider,
+    logger,
     config,
   } = options;
 
@@ -456,6 +467,23 @@ export async function createRouter(
     );
     res.json(packages);
   });
+
+  const plugins = pluginProvider.plugins();
+  const dynamicPlugins = plugins.map(p => {
+    // Remove the installer details for the dynamic backend plugins
+    if (p.platform === 'node') {
+      const { installer, ...rest } = p;
+      return rest as BaseDynamicPlugin;
+    }
+    return p as BaseDynamicPlugin;
+  });
+  router.get('/loaded-plugins', async (req, response) => {
+    await httpAuth.credentials(req, { allow: ['user', 'service'] });
+    response.send(dynamicPlugins);
+  });
+  const middleware = MiddlewareFactory.create({ logger, config });
+
+  router.use(middleware.error());
 
   return router;
 }
