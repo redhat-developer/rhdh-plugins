@@ -58,10 +58,11 @@ import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import {
   DynamicCustomizableHomePage,
+  VisitListener,
   OnboardingSection,
   EntitySection,
   TemplateSection,
-  VisitListener,
+  defaultLayouts,
   HomePageCardMountPoint,
   homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
@@ -111,40 +112,19 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: OnboardingSection,
     config: {
-      layouts: {
-        xl: { w: 12, h: 6 },
-        lg: { w: 12, h: 6 },
-        md: { w: 12, h: 7 },
-        sm: { w: 12, h: 8 },
-        xs: { w: 12, h: 9 },
-        xxs: { w: 12, h: 14 },
-      },
+      layouts: defaultLayouts.onboarding,
     },
   },
   {
     Component: EntitySection,
     config: {
-      layouts: {
-        xl: { w: 12, h: 7 },
-        lg: { w: 12, h: 7 },
-        md: { w: 12, h: 8 },
-        sm: { w: 12, h: 9 },
-        xs: { w: 12, h: 11 },
-        xxs: { w: 12, h: 15 },
-      },
+      layouts: defaultLayouts.entity,
     },
   },
   {
     Component: TemplateSection,
     config: {
-      layouts: {
-        xl: { w: 12, h: 5 },
-        lg: { w: 12, h: 5 },
-        md: { w: 12, h: 5 },
-        sm: { w: 12, h: 5 },
-        xs: { w: 12, h: 7.5 },
-        xxs: { w: 12, h: 13.5 },
-      },
+      layouts: defaultLayouts.template,
     },
   },
 ];
