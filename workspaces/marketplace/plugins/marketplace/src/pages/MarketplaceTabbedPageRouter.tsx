@@ -39,7 +39,7 @@ import { InstallationContextProvider } from '../components/InstallationContext';
 
 import { useCollections } from '../hooks/useCollections';
 
-import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
+import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
 
 const Tabs = () => {
   const { t } = useTranslation();
@@ -97,7 +97,7 @@ export const MarketplaceTabbedPageRouter = () => (
         />
         <Route
           path="/packages/:namespace/:name/install"
-          Component={MarketplacePackageEditPage}
+          Component={MarketplacePackageInstallPage}
         />
         <Route path="/*" Component={Tabs} />
       </Routes>

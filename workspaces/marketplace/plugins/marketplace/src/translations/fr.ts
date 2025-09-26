@@ -30,8 +30,11 @@ const marketplaceTranslationFr = createTranslationMessages({
     'actions.install': 'Installer',
     'actions.installTitle': 'Installer {{displayName}}',
     'actions.pluginConfigurations': 'Configurations des plugins',
+    'actions.packageConfiguration': 'Configuration du paquet',
     'actions.pluginCurrentlyDisabled': 'Plugin actuellement désactivé',
     'actions.pluginCurrentlyEnabled': 'Plugin actuellement activé',
+    'actions.packageCurrentlyEnabled': 'Paquet actuellement activé',
+    'actions.packageCurrentlyDisabled': 'Paquet actuellement désactivé',
     'actions.view': 'Voir',
     'alert.backendRestartMessage':
       'Pour terminer les modifications du package, redémarrez votre système backend.',
@@ -179,6 +182,12 @@ const marketplaceTranslationFr = createTranslationMessages({
     'installedPackages.table.title': 'Paquets installés ({{count}})',
     'installedPackages.table.tooltips.enableActions':
       'Pour activer les actions, ajoutez une entité de catalogue pour ce package',
+    'installedPackages.table.tooltips.noDownloadPermissions':
+      "Vous n'avez pas la permission de télécharger le YAML de configuration de ce package",
+    'installedPackages.table.tooltips.noEditPermissions':
+      "Vous n'avez pas la permission de modifier la configuration de ce package",
+    'installedPackages.table.tooltips.noTogglePermissions':
+      "Vous n'avez pas la permission d'activer ou de désactiver ce package",
     loading: 'Chargement en cours...',
     'metadata.about': 'À propos',
     'metadata.by': ' par ',
@@ -186,6 +195,10 @@ const marketplaceTranslationFr = createTranslationMessages({
     'metadata.pluginNotFound': 'Plugin {{name}} non trouvé !',
     'metadata.publisher': 'Éditeur',
     'metadata.supportProvider': 'Fournisseur de support',
+    'metadata.entryName': "Nom d'entrée",
+    'metadata.bySomeone': "par quelqu'un",
+    'metadata.category': 'Catégorie',
+    'metadata.versions': 'Versions',
     'package.about': 'À propos',
     'package.author': 'Auteur:',
     'package.backstageRole': 'Rôle backstage:',
@@ -198,6 +211,7 @@ const marketplaceTranslationFr = createTranslationMessages({
     'package.supportedVersions': 'Versions prises en charge :',
     'package.version': 'Version:',
     'plugin.author': 'Auteur',
+    'plugin.authors': 'Auteurs',
     'plugin.configuration': 'Configuration',
     'plugin.dependencies': 'Dépendances',
     'plugin.description': 'Description',

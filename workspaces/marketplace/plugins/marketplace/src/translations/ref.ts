@@ -134,6 +134,7 @@ export const marketplaceMessages = {
     license: 'License',
     version: 'Version',
     author: 'Author',
+    authors: 'Authors',
     tags: 'Tags',
     dependencies: 'Dependencies',
     configuration: 'Configuration',
@@ -188,6 +189,12 @@ export const marketplaceMessages = {
       tooltips: {
         enableActions:
           'To enable actions, add a catalog entity for this package',
+        noDownloadPermissions:
+          "You don't have permission to download the configuration. Contact your administrator to request access or assistance.",
+        noEditPermissions:
+          "You don't have permission to edit the configuration. Contact your administrator to request access or assistance.",
+        noTogglePermissions:
+          "You don't have permission to enable or disable packages. Contact your administrator to request access or assistance.",
       },
       emptyMessages: {
         noResults: 'No results found. Try a different search term.',
@@ -206,8 +213,11 @@ export const marketplaceMessages = {
     actions: 'Actions',
     editConfiguration: 'Edit',
     pluginConfigurations: 'Plugin configurations',
+    packageConfiguration: 'Package configuration',
     pluginCurrentlyEnabled: 'Plugin currently enabled',
     pluginCurrentlyDisabled: 'Plugin currently disabled',
+    packageCurrentlyEnabled: 'Package currently enabled',
+    packageCurrentlyDisabled: 'Package currently disabled',
     installTitle: 'Install {{displayName}}',
     editTitle: 'Edit {{displayName}} configurations',
   },
@@ -220,6 +230,10 @@ export const marketplaceMessages = {
     about: 'About',
     publisher: 'Publisher',
     supportProvider: 'Support Provider',
+    entryName: 'Entry name',
+    bySomeone: 'by someone',
+    category: 'Category',
+    versions: 'Versions',
   },
 
   // Support type filters

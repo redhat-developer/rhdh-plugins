@@ -118,6 +118,7 @@ const marketplaceTranslationEs = createTranslationMessages({
     'plugin.license': 'Licencia',
     'plugin.version': 'Versión',
     'plugin.author': 'Autor',
+    'plugin.authors': 'Autores',
     'plugin.tags': 'Etiquetas',
     'plugin.dependencies': 'Dependencias',
     'plugin.configuration': 'Configuración',
@@ -162,6 +163,12 @@ const marketplaceTranslationEs = createTranslationMessages({
     'installedPackages.table.columns.actions': 'Acciones',
     'installedPackages.table.tooltips.enableActions':
       'Para habilitar acciones, agregue una entidad de catálogo para este paquete',
+    'installedPackages.table.tooltips.noDownloadPermissions':
+      'No tienes permiso para descargar el YAML de configuración de este paquete',
+    'installedPackages.table.tooltips.noEditPermissions':
+      'No tienes permiso para editar la configuración de este paquete',
+    'installedPackages.table.tooltips.noTogglePermissions':
+      'No tienes permiso para habilitar o deshabilitar este paquete',
     'installedPackages.table.emptyMessages.noResults':
       'No se encontraron resultados. Intente con un término de búsqueda diferente.',
     'installedPackages.table.emptyMessages.noRecords':
@@ -176,8 +183,11 @@ const marketplaceTranslationEs = createTranslationMessages({
     'actions.actions': 'Acciones',
     'actions.editConfiguration': 'Editar',
     'actions.pluginConfigurations': 'Configuraciones del plugin',
+    'actions.packageConfiguration': 'Configuración del paquete',
     'actions.pluginCurrentlyEnabled': 'Plugin actualmente habilitado',
     'actions.pluginCurrentlyDisabled': 'Plugin actualmente deshabilitado',
+    'actions.packageCurrentlyEnabled': 'Paquete actualmente habilitado',
+    'actions.packageCurrentlyDisabled': 'Paquete actualmente deshabilitado',
     'actions.installTitle': 'Instalar {{displayName}}',
     'actions.editTitle': 'Editar configuraciones de {{displayName}}',
 
@@ -188,6 +198,10 @@ const marketplaceTranslationEs = createTranslationMessages({
     'metadata.about': 'Acerca de',
     'metadata.publisher': 'Editor',
     'metadata.supportProvider': 'Proveedor de soporte',
+    'metadata.entryName': 'Nombre de entrada',
+    'metadata.bySomeone': 'por alguien',
+    'metadata.category': 'Categoría',
+    'metadata.versions': 'Versiones',
 
     // Support type filters
     'supportTypes.certifiedBy': 'Certificado por {{value}} ({{count}})',

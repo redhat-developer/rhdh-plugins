@@ -42,9 +42,11 @@ import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
 import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
 import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
-import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
-import { InstallationContextProvider } from '../components/InstallationContext';
-import { useInstallationContext } from '../components/InstallationContext';
+import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+import {
+  InstallationContextProvider,
+  useInstallationContext,
+} from '../components/InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
 
 // Constants for consistent styling
@@ -77,22 +79,25 @@ const PackageDeepLinkRedirect = () => {
   const { namespace, name } = useParams();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  if (namespace && name) {
-    params.set('package', `${namespace}/${name}`);
-  }
-  return <Navigate to={`../installed-packages?${params.toString()}`} replace />;
+  return (
+    <Navigate
+      to={`../installed-packages/${namespace}/${name}?${params.toString()}`}
+      replace
+    />
+  );
 };
 
 const MarketplacePage = () => {
   const { t } = useTranslation();
-  const { count: installedPluginsCount, loading } = useInstalledPackagesCount();
+
+  const installedPackages = useInstalledPackagesCount();
   const { installedPlugins } = useInstallationContext();
   const restartCount = Object.entries(installedPlugins)?.length ?? 0;
 
-  const installedPluginsTitle = loading
+  const installedPluginsTitle = installedPackages?.isLoading
     ? t('header.installedPackages')
     : t('header.installedPackagesWithCount' as any, {
-        count: installedPluginsCount.toString(),
+        count: (installedPackages?.data ?? 0).toString(),
       });
 
   return (
@@ -135,7 +140,6 @@ const MarketplacePage = () => {
                 </Alert>
               )}
               <InstalledPackagesTable />
-              <MarketplacePackageDrawer />
             </ErrorBoundary>
           </TabbedLayout.Route>
         </TabbedLayout>
@@ -147,8 +151,8 @@ const MarketplacePage = () => {
           Component={MarketplacePluginDrawer}
         />
         <Route
-          path="/packages/:namespace/:name"
-          Component={PackageDeepLinkRedirect}
+          path="/installed-packages/:namespace/:name"
+          Component={MarketplacePackageDrawer}
         />
       </Routes>
     </>
@@ -170,7 +174,12 @@ export const DynamicMarketplacePluginRouter = () => (
         {/* Use existing install route as the edit page */}
         <Route
           path="/packages/:namespace/:name/install"
-          Component={MarketplacePackageEditPage}
+          Component={MarketplacePackageInstallPage}
+        />
+        {/* Redirect package routes to show installed-packages tab */}
+        <Route
+          path="/packages/:namespace/:name"
+          Component={PackageDeepLinkRedirect}
         />
         <Route path="/*" Component={MarketplacePage} />
       </Routes>
