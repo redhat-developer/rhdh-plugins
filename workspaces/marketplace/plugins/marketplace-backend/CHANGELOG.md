@@ -1,5 +1,27 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.9.0
+
+### Minor Changes
+
+- fdda9a1: Add internationalization (i18n) support with German, French and Spanish translations in marketplace.
+- dad9806: Integrate plugins-info plugin and add `Installed packages` tab with enhanced UI.
+
+  BREAKING: The deprecated `InstallationContextProvider` export behavior changed.
+
+  - We now export a null component `InstallationContextProvider` from `plugin.ts` solely for backward compatibility. It no longer provides context and will be removed in a future release.
+  - Migration: There is no replacement API; this was internal-only. Please upgrade to the latest RHDH where features no longer rely on this provider.
+
+  Also:
+
+  - New `Installed packages` tab with dual-source mapping and client-side filtering/pagination.
+
+### Patch Changes
+
+- Updated dependencies [fdda9a1]
+- Updated dependencies [cbe1174]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.9.0
+
 ## 0.8.0
 
 ### Minor Changes
