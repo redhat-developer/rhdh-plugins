@@ -60,7 +60,6 @@
     "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^",
     "@tanstack/react-query": "^4.29.21",
-    "event-source-polyfill": "^1.0.31",
     "formik": "^2.4.5",
     "js-yaml": "^4.1.0",
     "lodash": "^4.17.21",
