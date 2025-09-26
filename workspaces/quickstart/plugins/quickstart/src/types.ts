@@ -16,14 +16,17 @@
 
 export interface QuickstartItemCtaData {
   text: string;
+  textKey?: string;
   link: string;
 }
 
 export interface QuickstartItemData {
   title: string;
+  titleKey?: string;
   roles?: string[];
   icon?: string;
   description: string;
+  descriptionKey?: string;
   cta?: QuickstartItemCtaData;
 }
 

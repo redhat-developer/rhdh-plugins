@@ -61,7 +61,7 @@ export class ScorecardPage {
       'Scorecards help you monitor component health at a glance. To begin, explore our documentation for setup guidelines.',
     );
     await expect(
-      this.page.getByRole('button', { name: 'View documentation' }),
+      this.page.getByRole('link', { name: 'View documentation' }),
     ).toBeVisible();
   }
 

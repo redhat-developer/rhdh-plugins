@@ -31,6 +31,15 @@ export const scorecardMessages = {
     altText: 'No scorecards',
   },
 
+  // Permission required state
+  permissionRequired: {
+    title: 'Missing permission',
+    description:
+      'To view Scorecard plugin, contact your administrator to give the {{permission}} permission.',
+    button: 'Read more',
+    altText: 'Permission required',
+  },
+
   // Error messages
   errors: {
     entityMissingProperties:
