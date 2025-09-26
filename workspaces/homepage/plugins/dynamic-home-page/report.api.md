@@ -35,6 +35,88 @@ export enum Breakpoint {
 export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps>;
 
 // @public
+export const defaultLayouts: {
+    onboarding: {
+        xl: {
+            w: number;
+            h: number;
+        };
+        lg: {
+            w: number;
+            h: number;
+        };
+        md: {
+            w: number;
+            h: number;
+        };
+        sm: {
+            w: number;
+            h: number;
+        };
+        xs: {
+            w: number;
+            h: number;
+        };
+        xxs: {
+            w: number;
+            h: number;
+        };
+    };
+    entity: {
+        xl: {
+            w: number;
+            h: number;
+        };
+        lg: {
+            w: number;
+            h: number;
+        };
+        md: {
+            w: number;
+            h: number;
+        };
+        sm: {
+            w: number;
+            h: number;
+        };
+        xs: {
+            w: number;
+            h: number;
+        };
+        xxs: {
+            w: number;
+            h: number;
+        };
+    };
+    template: {
+        xl: {
+            w: number;
+            h: number;
+        };
+        lg: {
+            w: number;
+            h: number;
+        };
+        md: {
+            w: number;
+            h: number;
+        };
+        sm: {
+            w: number;
+            h: number;
+        };
+        xs: {
+            w: number;
+            h: number;
+        };
+        xxs: {
+            w: number;
+            h: number;
+        };
+    };
+};
+
+// @public
 export const DynamicCustomizableHomePage: ComponentType<DynamicCustomizableHomePageProps>;
 
 // @public
