@@ -19,6 +19,7 @@ exports.up = function up(knex) {
     .createTable('repositories', function repositories(table) {
       table.increments('id').primary();
       table.string('url').notNullable().unique();
+      table.string('approvalTool').notNullable();
     })
     .createTable('scaffolder_tasks', function scaffolder_tasks(table) {
       table.string('taskId').primary();

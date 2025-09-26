@@ -33,6 +33,7 @@ import {
 import {
   RepositoryDao,
   ScaffolderTaskDao,
+  TaskLocationsDao,
 } from '../../../database/repositoryDao';
 import type { Components, Paths } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
@@ -858,9 +859,11 @@ export async function findTaskImportStatusByRepo(
     logger: LoggerService;
     config: Config;
     githubApiService: GithubApiService;
+    gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
     repositoryDao: RepositoryDao;
     taskDao: ScaffolderTaskDao;
+    taskLocationsDao: TaskLocationsDao;
     discovery: DiscoveryService;
     auth: AuthService;
   },
@@ -904,9 +907,20 @@ export async function findTaskImportStatusByRepo(
         },
       });
       if (!skipTasks) {
-        result.tasks = await deps.taskDao.findTasksByRepositoryId(
-          repository.id,
+        const tasks = await deps.taskDao.findTasksByRepositoryId(repository.id);
+        const tasksWithLocations = await Promise.all(
+          tasks.map(async taskItem => {
+            const locations = await deps.taskLocationsDao.findLocationsByTaskId(
+              taskItem.taskId,
+            );
+            const taskLocations = locations.map(location => location.location);
+            return {
+              ...taskItem,
+              locations: taskLocations,
+            };
+          }),
         );
+        result.tasks = tasksWithLocations;
       }
 
       result.task = { taskId: task.taskId };
@@ -914,51 +928,31 @@ export async function findTaskImportStatusByRepo(
       if (response.ok) {
         data = await response.json();
         result.lastUpdate = data.lastHeartbeatAt;
-        if (data.state?.checkpoints) {
-          for (const key in data.state.checkpoints) {
-            // todo gitlab: create.mr
-            if (key.startsWith('v1.task.checkpoint.publish.create.pr')) {
-              const url = data.state.checkpoints[key]?.value?.html_url; // todo gitlab: .mrWebUrl
-              if (url) {
-                const prNumber = parseInt(url.split('/').pop()!, 10);
-                const prDetails = await deps.githubApiService.getPullRequest(
-                  repoUrl,
-                  prNumber,
-                );
 
-                let catalogInfoContent: string | undefined;
-                if (prDetails.prSha) {
-                  catalogInfoContent =
-                    await deps.githubApiService.getCatalogInfoFile(
-                      deps.logger,
-                      { repoUrl, prHeadSha: prDetails.prSha, prNumber },
-                    );
-                }
-
-                result.github = {
-                  pullRequest: {
-                    // todo handle few pull requests... use try catch for this purpose...
-                    url,
-                    number: prNumber,
-                    title: prDetails.title,
-                    body: prDetails.body,
-                    status: prDetails.merged ? 'PR_MERGED' : 'WAIT_PR_APPROVAL',
-                    catalogInfoContent,
-                  },
-                };
-              }
-            }
-          }
+        const approvalTool =
+          repository.approvalTool as unknown as Components.Schemas.ApprovalTool;
+        const pullRequest = await parsePullOrMergeRequestInfo(
+          data.state?.checkpoints,
+          deps.gitlabApiService,
+          deps.githubApiService,
+          approvalTool,
+          deps.logger,
+          repoUrl,
+        );
+        if (pullRequest && approvalTool === 'GITLAB') {
+          result.gitlab = { pullRequest };
         }
+        if (pullRequest && approvalTool === 'GIT') {
+          result.github = { pullRequest };
+        }
+
         result.status =
           `TASK_${(data.status as string)?.toLocaleUpperCase()}` as Components.Schemas.TaskImportStatus;
       } else {
-        result.status = 'TASK_FETCH_FAILED';
-        const errorMsg =
+        const errMsg =
           (await response.text()) ??
           `Failed to fetch task ${task.taskId}. Response status: ${response.status}`;
-        errors.push(errorMsg);
-        result.errors = errors;
+        throw new Error(errMsg);
       }
     }
   } catch (error: any) {
@@ -977,6 +971,65 @@ export async function findTaskImportStatusByRepo(
     statusCode: 200,
     responseBody: result,
   };
+}
+
+async function parsePullOrMergeRequestInfo(
+  checkpoints: Record<string, any>,
+  githubApiService: GitlabApiService,
+  gitlabApiService: GithubApiService,
+  approvalTool: Components.Schemas.ApprovalTool,
+  logger: LoggerService,
+  repoUrl: string,
+): Promise<Components.Schemas.PullRequest | undefined> {
+  // return errors ?
+  if (approvalTool !== 'GITLAB' && approvalTool !== 'GIT') {
+    return undefined;
+  }
+  const gitApiService =
+    approvalTool === 'GITLAB' ? gitlabApiService : githubApiService;
+
+  for (const key in checkpoints) {
+    if (!checkpoints.hasOwnProperty(key)) {
+      continue;
+    }
+    try {
+      if (
+        key.startsWith('v1.task.checkpoint.publish.create.pr') ||
+        key.startsWith('v1.task.checkpoint.publish.create.mr')
+      ) {
+        const url =
+          checkpoints[key]?.value?.html_url ??
+          checkpoints[key]?.value?.mrWebUrl;
+        if (!url) {
+          continue;
+        }
+        const prNumber = parseInt(url.split('/').pop()!, 10);
+        const prDetails = await gitApiService.getPullRequest(repoUrl, prNumber);
+
+        let catalogInfoContent: string | undefined;
+        if (prDetails.prSha) {
+          catalogInfoContent = await gitApiService.getCatalogInfoFile(logger, {
+            repoUrl,
+            prHeadSha: prDetails.prSha,
+            prNumber,
+          });
+        }
+        return {
+          url,
+          number: prNumber,
+          title: prDetails.title,
+          body: prDetails.body,
+          status: prDetails.merged ? 'PR_MERGED' : 'WAIT_PR_APPROVAL',
+          catalogInfoContent,
+        };
+      }
+    } catch (err) {
+      logger.warn(`Error while processing checkpoint ${key}: ${err}`);
+      continue;
+    }
+  }
+
+  return undefined;
 }
 
 export async function deleteImportByRepo(

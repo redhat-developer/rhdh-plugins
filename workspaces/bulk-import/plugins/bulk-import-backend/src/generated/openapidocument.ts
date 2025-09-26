@@ -1133,29 +1133,7 @@ const OPENAPI = `
             "description": "GitLab details. Applicable if approvalTool is gitlab.",
             "properties": {
               "pullRequest": {
-                "type": "object",
-                "properties": {
-                  "url": {
-                    "type": "string",
-                    "description": "URL of the Pull Request"
-                  },
-                  "number": {
-                    "type": "number",
-                    "description": "Pull Request number"
-                  },
-                  "title": {
-                    "type": "string",
-                    "description": "title of the Pull Request"
-                  },
-                  "body": {
-                    "type": "string",
-                    "description": "body of the Pull Request"
-                  },
-                  "catalogInfoContent": {
-                    "type": "string",
-                    "description": "content of the catalog-info.yaml as fetched from the Pull Request"
-                  }
-                }
+                "$ref": "#/components/schemas/PullRequest"
               }
             }
           },
@@ -1164,39 +1142,42 @@ const OPENAPI = `
             "description": "GitHub details. Applicable if approvalTool is git.",
             "properties": {
               "pullRequest": {
-                "type": "object",
-                "properties": {
-                  "url": {
-                    "type": "string",
-                    "description": "URL of the Pull Request"
-                  },
-                  "number": {
-                    "type": "number",
-                    "description": "Pull Request number"
-                  },
-                  "title": {
-                    "type": "string",
-                    "description": "title of the Pull Request"
-                  },
-                  "body": {
-                    "type": "string",
-                    "description": "body of the Pull Request"
-                  },
-                  "catalogInfoContent": {
-                    "type": "string",
-                    "description": "content of the catalog-info.yaml as fetched from the Pull Request."
-                  },
-                  "status": {
-                    "type": "string",
-                    "enum": [
-                      "WAIT_PR_APPROVAL",
-                      "PR_MERGED",
-                      "PR_ERROR"
-                    ]
-                  }
-                }
+                "$ref": "#/components/schemas/PullRequest"
               }
             }
+          }
+        }
+      },
+      "PullRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL of the Pull Request"
+          },
+          "number": {
+            "type": "number",
+            "description": "Pull Request number"
+          },
+          "title": {
+            "type": "string",
+            "description": "title of the Pull Request"
+          },
+          "body": {
+            "type": "string",
+            "description": "body of the Pull Request"
+          },
+          "catalogInfoContent": {
+            "type": "string",
+            "description": "content of the catalog-info.yaml as fetched from the Pull Request."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "WAIT_PR_APPROVAL",
+              "PR_MERGED",
+              "PR_ERROR"
+            ]
           }
         }
       },
@@ -1278,18 +1259,7 @@ const OPENAPI = `
             "description": "GitLab details. Applicable if approvalTool is gitlab.",
             "properties": {
               "pullRequest": {
-                "type": "object",
-                "description": "Pull Request details. Applicable if approvalTool is gitlab.",
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "description": "title of the Pull Request"
-                  },
-                  "body": {
-                    "type": "string",
-                    "description": "body of the Pull Request"
-                  }
-                }
+                "$ref": "#/components/schemas/PullRequest"
               }
             }
           },
@@ -1298,26 +1268,7 @@ const OPENAPI = `
             "description": "GitHub details. Applicable if approvalTool is git.",
             "properties": {
               "pullRequest": {
-                "type": "object",
-                "description": "Pull Request details. Applicable if approvalTool is git.",
-                "properties": {
-                  "title": {
-                    "type": "string",
-                    "description": "title of the Pull Request"
-                  },
-                  "body": {
-                    "type": "string",
-                    "description": "body of the Pull Request"
-                  },
-                  "url": {
-                    "type": "string",
-                    "description": "URL to update an existing pull request"
-                  },
-                  "number": {
-                    "type": "number",
-                    "description": "number of the existing pull request"
-                  }
-                }
+                "$ref": "#/components/schemas/PullRequest"
               }
             }
           }
@@ -1332,6 +1283,12 @@ const OPENAPI = `
           },
           "repositoryId": {
             "type": "number"
+          },
+          "locations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }

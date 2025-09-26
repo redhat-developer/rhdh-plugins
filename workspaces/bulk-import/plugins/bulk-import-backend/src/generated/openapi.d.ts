@@ -65,56 +65,13 @@ declare namespace Components {
        * GitLab details. Applicable if approvalTool is gitlab.
        */
       gitlab?: {
-        pullRequest?: {
-          /**
-           * URL of the Pull Request
-           */
-          url?: string;
-          /**
-           * Pull Request number
-           */
-          number?: number;
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-          /**
-           * content of the catalog-info.yaml as fetched from the Pull Request
-           */
-          catalogInfoContent?: string;
-        };
+        pullRequest?: PullRequest;
       };
       /**
        * GitHub details. Applicable if approvalTool is git.
        */
       github?: {
-        pullRequest?: {
-          /**
-           * URL of the Pull Request
-           */
-          url?: string;
-          /**
-           * Pull Request number
-           */
-          number?: number;
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-          /**
-           * content of the catalog-info.yaml as fetched from the Pull Request.
-           */
-          catalogInfoContent?: string;
-          status?: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
-        };
+        pullRequest?: PullRequest;
       };
     }
     /**
@@ -166,45 +123,13 @@ declare namespace Components {
        * GitLab details. Applicable if approvalTool is gitlab.
        */
       gitlab?: {
-        /**
-         * Pull Request details. Applicable if approvalTool is gitlab.
-         */
-        pullRequest?: {
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-        };
+        pullRequest?: PullRequest;
       };
       /**
        * GitHub details. Applicable if approvalTool is git.
        */
       github?: {
-        /**
-         * Pull Request details. Applicable if approvalTool is git.
-         */
-        pullRequest?: {
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-          /**
-           * URL to update an existing pull request
-           */
-          url?: string;
-          /**
-           * number of the existing pull request
-           */
-          number?: number;
-        };
+        pullRequest?: PullRequest;
       };
     }
     /**
@@ -246,6 +171,29 @@ declare namespace Components {
       totalCount?: number;
       pagePerIntegration?: number;
       sizePerIntegration?: number;
+    }
+    export interface PullRequest {
+      /**
+       * URL of the Pull Request
+       */
+      url?: string;
+      /**
+       * Pull Request number
+       */
+      number?: number;
+      /**
+       * title of the Pull Request
+       */
+      title?: string;
+      /**
+       * body of the Pull Request
+       */
+      body?: string;
+      /**
+       * content of the catalog-info.yaml as fetched from the Pull Request.
+       */
+      catalogInfoContent?: string;
+      status?: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
     }
     /**
      * Repository
@@ -292,6 +240,7 @@ declare namespace Components {
     export interface ScaffolderTask {
       taskId?: string;
       repositoryId?: number;
+      locations?: string[];
     }
     /**
      * Import Source:
@@ -327,56 +276,13 @@ declare namespace Components {
        * GitLab details. Applicable if approvalTool is gitlab.
        */
       gitlab?: {
-        pullRequest?: {
-          /**
-           * URL of the Pull Request
-           */
-          url?: string;
-          /**
-           * Pull Request number
-           */
-          number?: number;
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-          /**
-           * content of the catalog-info.yaml as fetched from the Pull Request
-           */
-          catalogInfoContent?: string;
-        };
+        pullRequest?: PullRequest;
       };
       /**
        * GitHub details. Applicable if approvalTool is git.
        */
       github?: {
-        pullRequest?: {
-          /**
-           * URL of the Pull Request
-           */
-          url?: string;
-          /**
-           * Pull Request number
-           */
-          number?: number;
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-          /**
-           * content of the catalog-info.yaml as fetched from the Pull Request.
-           */
-          catalogInfoContent?: string;
-          status?: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
-        };
+        pullRequest?: PullRequest;
       };
       source?: /**
        * Import Source:
@@ -876,6 +782,7 @@ export type ImportRequest = Components.Schemas.ImportRequest;
 export type ImportStatus = Components.Schemas.ImportStatus;
 export type Organization = Components.Schemas.Organization;
 export type OrganizationList = Components.Schemas.OrganizationList;
+export type PullRequest = Components.Schemas.PullRequest;
 export type Repository = Components.Schemas.Repository;
 export type RepositoryList = Components.Schemas.RepositoryList;
 export type ScaffolderTask = Components.Schemas.ScaffolderTask;

@@ -18,9 +18,12 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 
 import { Knex } from 'knex';
 
+import { Components } from '../generated/openapi';
+
 export interface Repository {
   id: number;
   url: string;
+  approvalTool: Components.Schemas.ApprovalTool;
 }
 
 export interface ScaffolderTask {
@@ -88,12 +91,16 @@ export class RepositoryDao {
     this.logger.debug(
       `Fetching repositories page=${page}, size=${size}, search=${search}`,
     );
-    const query = this.knex('repositories').select('id', 'url');
+    const query = this.knex('repositories').select('id', 'url', 'approvalTool');
     const searchParam = { column: 'url', term: search };
     return paginateQuery<Repository>(query, page, size, searchParam);
   }
 
-  async insertRepository(repoUrl: string, taskId: string): Promise<number> {
+  async insertRepository(
+    repoUrl: string,
+    taskId: string,
+    approvalTool: string,
+  ): Promise<number> {
     this.logger.debug(
       `Saving task ${taskId} for repo ${repoUrl} to database..`,
     );
@@ -106,7 +113,7 @@ export class RepositoryDao {
       repositoryId = repository.id;
     } else {
       const [newRepository] = await this.knex('repositories')
-        .insert({ url: repoUrl })
+        .insert({ url: repoUrl, approvalTool: approvalTool })
         .returning('id');
       repositoryId = newRepository.id;
     }

@@ -302,7 +302,11 @@ export const createTaskImportJobs = async (
         const { taskId, status, createdAt } =
           await executeTask(scaffolderOptions);
 
-        const repositoryId = await repositoryDao.insertRepository(url, taskId);
+        const repositoryId = await repositoryDao.insertRepository(
+          url,
+          taskId,
+          importReq.approvalTool ?? 'GIT',
+        );
         await taskDao.insertTask({
           repositoryId,
           scaffolderOptions,
