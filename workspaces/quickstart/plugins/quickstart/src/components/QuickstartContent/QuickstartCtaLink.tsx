@@ -16,6 +16,8 @@
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { QuickstartItemCtaData } from '../../types';
 import { LinkButton } from '@backstage/core-components';
+import { useTranslation } from '../../hooks/useTranslation';
+import { getTranslatedTextWithFallback } from '../../utils';
 
 export type QuickstartCtaLinkProps = {
   cta?: QuickstartItemCtaData;
@@ -23,6 +25,7 @@ export type QuickstartCtaLinkProps = {
 };
 
 export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
+  const { t } = useTranslation();
   // If no CTA is provided, show a default "Got it!" button
   if (!cta) {
     return (
@@ -35,10 +38,12 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
           onClick();
         }}
       >
-        Got it!
+        {t('button.gotIt')}
       </LinkButton>
     );
   }
+
+  const finalText = getTranslatedTextWithFallback(t, cta.textKey, cta.text);
 
   const isExternalLink =
     cta.link.startsWith('http://') || cta.link.startsWith('https://');
@@ -53,7 +58,8 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
       to={cta.link}
       onClick={onClick}
     >
-      {cta.text}&nbsp;
+      {finalText}
+      &nbsp;
       <OpenInNewIcon
         sx={{
           fontSize: '15px',
@@ -67,7 +73,7 @@ export const QuickstartCtaLink = ({ cta, onClick }: QuickstartCtaLinkProps) => {
       to={cta.link}
       onClick={onClick}
     >
-      {cta.text}
+      {finalText}
     </LinkButton>
   );
 };
