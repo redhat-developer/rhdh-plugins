@@ -19,28 +19,26 @@ import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
 const backend = createBackend();
 
-backend.add(mockServices.auth.factory());
-backend.add(mockServices.httpAuth.factory());
-
-// TEMPLATE NOTE:
-// Rather than using a real catalog you can use a mock with a fixed set of entities.
 backend.add(
   catalogServiceMock.factory({
     entities: [
       {
         apiVersion: 'backstage.io/v1alpha1',
-        kind: 'Component',
+        kind: 'API',
         metadata: {
           name: 'sample',
-          title: 'Sample Component',
+          title: 'Sample Api',
         },
         spec: {
-          type: 'website',
+          type: 'API',
         },
       },
     ],
   }),
 );
+
+backend.add(mockServices.auth.factory());
+backend.add(mockServices.httpAuth.factory());
 
 backend.add(import('../src'));
 

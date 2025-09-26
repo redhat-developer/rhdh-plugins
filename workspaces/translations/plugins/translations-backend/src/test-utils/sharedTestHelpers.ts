@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import express from 'express';
+import { createRouter } from '../service/router';
 
 /**
  * Creates a mock implementation for existsSync that excludes src/translations directories
- * This is commonly used in tests to simulate scenarios where internal directories are not found
  */
 export const createExcludeSrcTranslationsMock = () => {
   return (path: string) => {
@@ -51,7 +52,37 @@ export const createIncludeSrcTranslationsMock = () => {
     ) {
       return true;
     }
-    // Mock JSON files
     return path.endsWith('.json');
   };
+};
+
+/**
+ * Creates a router and sets up the express app for testing
+ */
+export const setupTestRouter = async (mockConfig: any, mockServices: any) => {
+  const router = await createRouter({
+    logger: mockServices.logger.mock(),
+    config: mockConfig,
+  });
+
+  const app = express();
+  app.use('/', router);
+  return app;
+};
+
+/**
+ * Creates a router with a custom logger and sets up the express app for testing
+ */
+export const setupTestRouterWithLogger = async (
+  mockConfig: any,
+  mockLogger: any,
+) => {
+  const router = await createRouter({
+    logger: mockLogger,
+    config: mockConfig,
+  });
+
+  const app = express();
+  app.use('/', router);
+  return app;
 };

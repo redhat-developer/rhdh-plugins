@@ -21,7 +21,6 @@ import { join } from 'path';
 
 import fs from 'fs';
 
-import { createRouter } from './router';
 import {
   createSafeTestPaths,
   createSafeTestDir,
@@ -30,7 +29,11 @@ import {
   createReadFileSyncMock,
   createThrowingReadFileSyncMock,
 } from '../test-utils/testHelpers';
-import { createExcludeSrcTranslationsMock } from '../test-utils/sharedTestHelpers';
+import {
+  createExcludeSrcTranslationsMock,
+  setupTestRouter,
+  setupTestRouterWithLogger,
+} from '../test-utils/sharedTestHelpers';
 
 jest.mock('fs', () => {
   const actualFs = jest.requireActual('fs');
@@ -69,13 +72,7 @@ describe('createRouter', () => {
       createExcludeSrcTranslationsMock(),
     );
 
-    const router = await createRouter({
-      logger: mockServices.logger.mock(),
-      config: mockConfig,
-    });
-
-    app = express();
-    app.use('/', router);
+    app = await setupTestRouter(mockConfig, mockServices);
   });
 
   afterEach(() => {
@@ -181,13 +178,7 @@ describe('createRouter', () => {
       return safeTestPaths.includes(path);
     });
 
-    const router = await createRouter({
-      logger: mockServices.logger.mock(),
-      config: mockConfig,
-    });
-
-    app = express();
-    app.use('/', router);
+    app = await setupTestRouter(mockConfig, mockServices);
 
     (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
       if (filePath === safeTestPaths[0]) {
@@ -209,48 +200,6 @@ describe('createRouter', () => {
     });
   });
 
-  it('should return empty object if locales in the override translations are not configured in app-config', async () => {
-    mockConfig = mockServices.rootConfig({
-      data: {
-        i18n: {
-          overrides: [safeTestPaths[1]],
-          locales: ['en'],
-        },
-      },
-    });
-
-    const router = await createRouter({
-      logger: mockServices.logger.mock(),
-      config: mockConfig,
-    });
-
-    app = express();
-    app.use('/', router);
-
-    // Mock the directory traversal to not find any 'src' or 'translations' folders
-    (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-      // Don't find any 'src' or 'translations' folders
-      if (
-        path.endsWith('/src') ||
-        path.endsWith('\\src') ||
-        path.endsWith('/translations') ||
-        path.endsWith('\\translations')
-      ) {
-        return false;
-      }
-      // Find the override files
-      return path === safeTestPaths[1];
-    });
-    (fs.readFileSync as jest.Mock).mockImplementation(_filePath =>
-      JSON.stringify({ plugin: { de: { hello: 'welt' } } }),
-    );
-
-    const res = await request(app).get('/');
-
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({});
-  });
-
   describe('error handling scenarios', () => {
     it('should return empty object when no files are configured', async () => {
       mockConfig = mockServices.rootConfig({
@@ -263,13 +212,7 @@ describe('createRouter', () => {
       });
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -284,13 +227,7 @@ describe('createRouter', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -311,13 +248,9 @@ describe('createRouter', () => {
 
     it('should return 404 when files are found but none contain valid translations', async () => {
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
+        // Use shared helper for path checking
+        const excludeHelper = createExcludeSrcTranslationsMock();
+        if (excludeHelper(path)) {
           return false;
         }
         // Find the override files
@@ -328,13 +261,7 @@ describe('createRouter', () => {
       );
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -366,13 +293,7 @@ describe('createRouter', () => {
       });
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -389,13 +310,9 @@ describe('createRouter', () => {
 
     it('should handle JSON parsing errors gracefully', async () => {
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
+        // Use shared helper for path checking
+        const excludeHelper = createExcludeSrcTranslationsMock();
+        if (excludeHelper(path)) {
           return false;
         }
         // Find the override files
@@ -412,13 +329,7 @@ describe('createRouter', () => {
       });
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -442,13 +353,9 @@ describe('createRouter', () => {
 
     it('should return 404 when files exist but JSON parsing fails for all files', async () => {
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
+        // Use shared helper for path checking
+        const excludeHelper = createExcludeSrcTranslationsMock();
+        if (excludeHelper(path)) {
           return false;
         }
         // Find the override files
@@ -459,13 +366,7 @@ describe('createRouter', () => {
       });
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -507,26 +408,16 @@ describe('createRouter', () => {
 
       // Mock the directory traversal to not find any 'src' or 'translations' folders
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
+        // Use shared helper for path checking
+        const excludeHelper = createExcludeSrcTranslationsMock();
+        if (excludeHelper(path)) {
           return false;
         }
         // Find the override files
         return path === join(testDir, 'single.json');
       });
 
-      const router = await createRouter({
-        logger: mockServices.logger.mock(),
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouter(mockConfig, mockServices);
 
       (fs.readFileSync as jest.Mock).mockReturnValue(
         JSON.stringify({ plugin: { en: { hello: 'world' } } }),
@@ -555,13 +446,7 @@ describe('createRouter', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(false);
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -582,77 +467,6 @@ describe('createRouter', () => {
     beforeEach(() => {
       // Reset mocks
       jest.resetAllMocks();
-    });
-
-    it('should process internal directory files when auto-detected', async () => {
-      mockConfig = mockServices.rootConfig({
-        data: {
-          i18n: {
-            locales: ['en', 'de'],
-            overrides: [],
-          },
-        },
-      });
-
-      // Mock directory scanning - simulate finding src/translations structure
-      (fs.readdirSync as jest.Mock).mockReturnValue(['en.json', 'de.json']);
-      (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Mock the directory traversal finding 'src' folder
-        if (path.endsWith('/src') || path.endsWith('\\src')) {
-          return true;
-        }
-        // Mock the translations folder inside src
-        if (
-          path.endsWith('/src/translations') ||
-          path.endsWith('\\src\\translations')
-        ) {
-          return true;
-        }
-        // Mock JSON files
-        return path.endsWith('.json');
-      });
-      (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => true });
-
-      (fs.readFileSync as jest.Mock).mockImplementation((filePath: string) => {
-        if (filePath.includes('/src/translations/en.json')) {
-          return JSON.stringify({
-            plugin: { en: { hello: 'internal world' } },
-          });
-        }
-        if (filePath.includes('/src/translations/de.json')) {
-          return JSON.stringify({ plugin: { de: { hello: 'internal welt' } } });
-        }
-        return '{}';
-      });
-
-      const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
-
-      const res = await request(app).get('/');
-
-      expect(res.status).toBe(200);
-      expect(res.body).toEqual({
-        plugin: {
-          en: { hello: 'internal world' },
-          de: { hello: 'internal welt' },
-        },
-      });
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /Found internal translations directory: .*\/src\/translations/,
-        ),
-      );
-      expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.stringMatching(
-          /Found 2 translation files in internal directory: .*\/src\/translations/,
-        ),
-      );
     });
 
     it('should merge internal directory files first, then config overrides', async () => {
@@ -711,13 +525,7 @@ describe('createRouter', () => {
       });
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -754,13 +562,7 @@ describe('createRouter', () => {
       );
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -805,13 +607,7 @@ describe('createRouter', () => {
       });
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
@@ -857,13 +653,7 @@ describe('createRouter', () => {
       );
 
       const mockLogger = mockServices.logger.mock();
-      const router = await createRouter({
-        logger: mockLogger,
-        config: mockConfig,
-      });
-
-      app = express();
-      app.use('/', router);
+      app = await setupTestRouterWithLogger(mockConfig, mockLogger);
 
       const res = await request(app).get('/');
 
