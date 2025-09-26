@@ -33,7 +33,7 @@ import {
 } from './permissions/rules';
 import { migrate } from './database/migration';
 import { DatabaseMetricValuesStore } from './database/DatabaseMetricValuesStore';
-import { connectMetricProviders } from './providers/Connection';
+import { MetricProvidersScheduler } from './providers/MetricProvidersScheduler';
 
 /**
  * scorecardPlugin backend plugin
@@ -57,22 +57,26 @@ export const scorecardPlugin = createBackendPlugin({
       deps: {
         auth: coreServices.auth,
         catalog: catalogServiceRef,
+        config: coreServices.rootConfig,
+        database: coreServices.database,
         httpRouter: coreServices.httpRouter,
         httpAuth: coreServices.httpAuth,
         logger: coreServices.logger,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
-        database: coreServices.database,
+        scheduler: coreServices.scheduler,
       },
       async init({
         auth,
         catalog,
+        config,
+        database,
         httpRouter,
         httpAuth,
         logger,
         permissions,
         permissionsRegistry,
-        database,
+        scheduler,
       }) {
         permissionsRegistry.addResourceType({
           resourceRef: scorecardMetricPermissionResourceRef,
@@ -96,10 +100,17 @@ export const scorecardPlugin = createBackendPlugin({
           thresholdEvaluator: new ThresholdEvaluator(),
           metricValuesStore,
         });
-        await connectMetricProviders(
-          metricProvidersRegistry.listProviders(),
+
+        const metricScheduler = new MetricProvidersScheduler(
+          auth,
+          catalog,
+          config,
+          logger,
+          scheduler,
           metricValuesStore,
+          metricProvidersRegistry,
         );
+        metricScheduler.schedule();
 
         httpRouter.use(
           await createRouter({

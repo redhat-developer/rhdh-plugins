@@ -25,30 +25,11 @@ import {
 /**
  * @public
  */
-export type MetricProviderInsertion = {
-  catalog_entity_ref: string;
-  metric_id: string;
-  value?: MetricValue;
-  timestamp: Date;
-  error_message?: string;
-};
-
-/**
- * @public
- */
-export interface MetricProviderConnection {
-  insertMetrics(metrics: MetricProviderInsertion[]): Promise<void>;
-}
-
-/**
- * @public
- */
 export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderDatasourceId(): string;
   getProviderId(): string;
   getMetric(): Metric<T>;
   getMetricThresholds(): ThresholdConfig;
-  supportsEntity(entity: Entity): boolean;
   calculateMetric(entity: Entity): Promise<MetricValue<T>>;
-  connect(connection: MetricProviderConnection): Promise<void>;
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
 }

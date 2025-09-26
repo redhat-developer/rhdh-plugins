@@ -16,8 +16,6 @@
 
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { mockServices } from '@backstage/backend-test-utils';
-import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { GithubOpenPRsProvider } from './GithubOpenPRsProvider';
 import { GithubClient } from '../github/GithubClient';
 import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -32,58 +30,9 @@ jest.mock('@backstage/catalog-model', () => ({
 jest.mock('../github/GithubClient');
 
 describe('GithubOpenPRsProvider', () => {
-  const mockOptions = {
-    auth: mockServices.auth(),
-    logger: mockServices.logger.mock(),
-    scheduler: mockServices.scheduler.mock(),
-    catalog: catalogServiceMock(),
-  };
-
-  describe('supportsEntity', () => {
-    let provider: GithubOpenPRsProvider;
-
-    beforeEach(() => {
-      provider = GithubOpenPRsProvider.fromConfig(
-        new ConfigReader({}),
-        mockOptions,
-      );
-    });
-
-    it.each([
-      [
-        'should return true for entity with github.com/project-slug annotation',
-        {
-          'github.com/project-slug': 'org/repo',
-        },
-        true,
-      ],
-      [
-        'should return false for entity without github.com/project-slug annotation',
-        {
-          'some.other/annotation': 'value',
-        },
-        false,
-      ],
-      ['should return false for entity with no annotations', undefined, false],
-    ])('%s', (_, annotations, expected) => {
-      const entity: Entity = {
-        apiVersion: 'backstage.io/v1alpha1',
-        kind: 'Component',
-        metadata: {
-          name: 'test-component',
-          annotations,
-        },
-      };
-      expect(provider.supportsEntity(entity)).toBe(expected);
-    });
-  });
-
   describe('fromConfig', () => {
     it('should create provider with default thresholds when no thresholds are configured', () => {
-      const provider = GithubOpenPRsProvider.fromConfig(
-        new ConfigReader({}),
-        mockOptions,
-      );
+      const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
 
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
@@ -108,10 +57,7 @@ describe('GithubOpenPRsProvider', () => {
           },
         },
       });
-      const provider = GithubOpenPRsProvider.fromConfig(
-        configWithThresholds,
-        mockOptions,
-      );
+      const provider = GithubOpenPRsProvider.fromConfig(configWithThresholds);
 
       expect(provider.getMetricThresholds()).toEqual(customThresholds);
     });
@@ -131,9 +77,9 @@ describe('GithubOpenPRsProvider', () => {
         },
       });
 
-      expect(() =>
-        GithubOpenPRsProvider.fromConfig(invalidConfig, mockOptions),
-      ).toThrow('Cannot parse "!100" as number from expression: ">!100"');
+      expect(() => GithubOpenPRsProvider.fromConfig(invalidConfig)).toThrow(
+        'Cannot parse "!100" as number from expression: ">!100"',
+      );
     });
   });
 
@@ -149,10 +95,7 @@ describe('GithubOpenPRsProvider', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      provider = GithubOpenPRsProvider.fromConfig(
-        new ConfigReader({}),
-        mockOptions,
-      );
+      provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
     });
 
     it('should calculate metric', async () => {

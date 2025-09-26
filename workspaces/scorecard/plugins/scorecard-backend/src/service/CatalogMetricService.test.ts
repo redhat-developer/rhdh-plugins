@@ -46,10 +46,6 @@ class AnnotationProvider extends MockNumberProvider {
       10,
     );
   }
-
-  supportsEntity(entity: Entity): boolean {
-    return entity.metadata.annotations?.['custom.annotation'] !== undefined;
-  }
 }
 
 describe('CatalogMetricService', () => {

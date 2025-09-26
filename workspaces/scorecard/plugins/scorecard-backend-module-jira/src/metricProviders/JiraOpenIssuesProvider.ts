@@ -16,32 +16,22 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
-import { JIRA_CONFIG_PATH, THRESHOLDS_CONFIG_PATH } from '../constants';
-import {
-  AuthService,
-  LoggerService,
-  SchedulerService,
-  SchedulerServiceTaskRunner,
-} from '@backstage/backend-plugin-api';
-import { CatalogService } from '@backstage/plugin-catalog-node';
+import { JIRA_CONFIG_PATH, OPEN_ISSUES_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { BaseMetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  getThresholdsFromConfig,
+  MetricProvider,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { ScorecardJiraAnnotations } from '../annotations';
 import {
-  AuthService,
-  DiscoveryService,
-  LoggerService,
-  readSchedulerServiceTaskScheduleDefinitionFromConfig,
-  SchedulerService,
-  SchedulerServiceTaskRunner,
-  SchedulerServiceTaskScheduleDefinition,
+  type AuthService,
+  type DiscoveryService,
 } from '@backstage/backend-plugin-api';
 import {
   ConnectionStrategy,
@@ -49,32 +39,31 @@ import {
   ProxyConnectionStrategy,
 } from '../strategies/ConnectionStrategy';
 import { Product } from '../clients/types';
-import { CatalogService } from '@backstage/plugin-catalog-node';
-import { v4 as uuid } from 'uuid';
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
-export class JiraOpenIssuesProvider extends BaseMetricProvider<'number'> {
+export class JiraOpenIssuesProvider implements MetricProvider {
+  private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
 
   private constructor(
     config: Config,
     connectionStrategy: ConnectionStrategy,
-    auth: AuthService,
-    logger: LoggerService,
-    catalog: CatalogService,
-    taskRunner: SchedulerServiceTaskRunner,
-    thresholds?: ThresholdConfig,
+    thresholds: ThresholdConfig,
   ) {
-    super(
-      auth,
-      logger,
-      catalog,
-      taskRunner,
-      { 'metadata.annotations.jira/project-key': CATALOG_FILTER_EXISTS },
-      thresholds ?? DEFAULT_NUMBER_THRESHOLDS,
-    );
     this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
+    this.thresholds = thresholds;
+  }
+
+  getMetricThresholds(): ThresholdConfig {
+    return this.thresholds;
+  }
+
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.jira/project-key': CATALOG_FILTER_EXISTS,
+    };
   }
 
   getProviderDatasourceId(): string {
@@ -105,9 +94,6 @@ export class JiraOpenIssuesProvider extends BaseMetricProvider<'number'> {
     options: {
       auth: AuthService;
       discovery: DiscoveryService;
-      logger: LoggerService;
-      scheduler: SchedulerService;
-      catalog: CatalogService;
     },
   ): JiraOpenIssuesProvider {
     let connectionStrategy: ConnectionStrategy;
@@ -129,25 +115,14 @@ export class JiraOpenIssuesProvider extends BaseMetricProvider<'number'> {
       );
     }
 
-    const thresholds = this.getThresholdsFromConfig(
-      config,
-      `${OPEN_ISSUES_CONFIG_PATH}.thresholds`,
-    );
-    const schedule = BaseMetricProvider.getScheduleFromConfig(
-      config,
-      `${OPEN_ISSUES_CONFIG_PATH}.schedule`,
-    );
-    const taskRunner = options.scheduler.createScheduledTaskRunner(schedule);
+    const thresholds =
+      getThresholdsFromConfig(
+        config,
+        `${OPEN_ISSUES_CONFIG_PATH}.thresholds`,
+        'number',
+      ) ?? DEFAULT_NUMBER_THRESHOLDS;
 
-    return new JiraOpenIssuesProvider(
-      config,
-      connectionStrategy,
-      options.auth,
-      options.logger,
-      options.catalog,
-      taskRunner,
-      thresholds,
-    );
+    return new JiraOpenIssuesProvider(config, connectionStrategy, thresholds);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
