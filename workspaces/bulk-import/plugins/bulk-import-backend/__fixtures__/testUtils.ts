@@ -135,6 +135,9 @@ const BASE_CONFIG = {
       },
     ],
   },
+  bulkImport: {
+    importTemplate: `some-template`,
+  },
 };
 
 export function addHandlersForGHTokenAppErrors(server: SetupServer) {
@@ -183,6 +186,7 @@ export async function startBackendServer(
       deps: {},
       factory: () => mockCatalogClient,
     }),
+    mockServices.database.factory(),
   ];
   if (authorizeResult) {
     features.push(

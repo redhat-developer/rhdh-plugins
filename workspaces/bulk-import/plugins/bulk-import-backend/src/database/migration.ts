@@ -14,16 +14,25 @@
  * limitations under the License.
  */
 
-import { resolvePackagePath } from '@backstage/backend-plugin-api';
+import {
+  DatabaseService,
+  resolvePackagePath,
+} from '@backstage/backend-plugin-api';
 
 import { Knex } from 'knex';
 
-export async function migrate(knex: Knex) {
-  const migrationsDir = resolvePackagePath(
-    '@red-hat-developer-hub/backstage-plugin-bulk-import-backend',
-    'migrations',
-  );
-  await knex.migrate.latest({
-    directory: migrationsDir,
-  });
+const migrationsDir = resolvePackagePath(
+  '@red-hat-developer-hub/backstage-plugin-bulk-import-backend',
+  'migrations',
+);
+
+export async function migrate(databaseManager: DatabaseService): Promise<Knex> {
+  const knex = await databaseManager.getClient();
+
+  if (!databaseManager.migrations?.skip) {
+    await knex.migrate.latest({
+      directory: migrationsDir,
+    });
+  }
+  return knex;
 }

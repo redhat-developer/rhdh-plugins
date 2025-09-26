@@ -62,9 +62,7 @@ export const bulkImportPlugin = createBackendPlugin({
         auditor,
         database,
       }) {
-        const knex = await database.getClient();
-
-        migrate(knex);
+        const knex = await migrate(database);
         const repositoryDao = new RepositoryDao(knex, logger);
         const taskDao = new ScaffolderTaskDao(knex);
         const taskLocationsDao = new TaskLocationsDao(knex);
