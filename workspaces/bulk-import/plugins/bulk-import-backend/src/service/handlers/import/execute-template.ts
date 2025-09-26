@@ -297,7 +297,11 @@ export const createTaskImportJobs = async (
         const normalizedUrl = `${new URL(importReq.repository.url).hostname}?owner=${owner}&repo=${repoName}`;
 
         const scaffolderOptions = {
+          name: repoName,
+          organization: owner,
           repoUrl: normalizedUrl,
+          branchName: `bulk-import-catalog-entity`,
+          targetBranchName: importReq.repository.defaultBranch,
         };
         const { taskId, status, createdAt } =
           await executeTask(scaffolderOptions);

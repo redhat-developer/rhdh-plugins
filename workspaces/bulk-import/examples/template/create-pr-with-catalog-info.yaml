@@ -18,49 +18,36 @@ spec:
           type: string
           title: Repository URL (Backstage format)
           description: 'e.g. github.com?owner=Org&repo=repoName'
+        organization:
+          type: string
+          title: Owner of the Repository
+        branchName:
+          type: string
+          title: The branch to target for the PR
+        targetBranchName:
+          type: string
+          title: The branch to add the Catalog Entity to
+        name:
+          type: string
+          title: Name of the repository
 
   steps:
-    - id: parse-query
-      name: Parse GitHub Query
-      action: roadiehq:utils:jsonata
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
       input:
-        data: ${{ parameters.repoUrl }}
-        expression: |
-          {
-            "owner": $substringAfter($substringBefore($, "&repo="), "?owner="),
-            "repo": $substringAfter($, "&repo=")
-          }
-
-    - id: get-default-branch
-      name: Get Default Branch
-      action: git:get-default-repository-branch
-      input:
-        repoUrl: ${{ parameters.repoUrl }}
-
-    - id: createCatalogInfo
-      name: Prepare catalog-info.yaml
-      action: roadiehq:utils:fs:write
-      input:
-        path: ./catalog-info.yaml
-        content: |
-          apiVersion: backstage.io/v1alpha1
-          kind: Component
-          metadata:
-            name: ${{ steps['parse-query'].output.result.repo }}
-            annotations:
-              github.com/project-slug: ${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}
-          spec:
-            type: other
-            lifecycle: unknown
-            owner: user:default/test-user
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          organization: ${{ parameters.organization }}
 
     - id: publish
       name: Create PR to add catalog-info.yaml
       action: publish:github:pull-request
       input:
         repoUrl: ${{ parameters.repoUrl }}
-        branchName: add-catalog-info-${{ steps['parse-query'].output.result.repo }}
-        targetBranchName: ${{ steps['get-default-branch'].output.defaultBranch }}
+        branchName: ${{ parameters.branchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}
         title: 'Add catalog-info.yaml'
         description: 'This PR adds a default catalog-info.yaml for Backstage.'
 
@@ -69,4 +56,4 @@ spec:
       action: catalog:register
       input:
         optional: true
-        repoContentsUrl: https://github.com/${{ steps['parse-query'].output.result.owner }}/${{ steps['parse-query'].output.result.repo }}/blob/${{ steps['get-default-branch'].output.defaultBranch }}/catalog-info.yaml
+        repoContentsUrl: https://github.com/${{ parameters.organization }}/${{ parameters.name }}/blob/${{ parameters.branchName }}/catalog-info.yaml

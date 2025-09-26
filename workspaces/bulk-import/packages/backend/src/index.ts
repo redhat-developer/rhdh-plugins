@@ -64,14 +64,4 @@ backend.add(
 );
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 backend.add(import('@roadiehq/scaffolder-backend-module-utils'));
-backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-bulk-get-git-default-branch'
-  ),
-);
-backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-catalog-register-with-events'
-  ),
-);
 backend.start();
