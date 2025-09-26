@@ -37,7 +37,7 @@ import {
 } from '../types';
 import { prepareDataForSubmission } from '../utils/repository-utils';
 import { BulkImportAPI } from './BackendClient';
-import { ScaffolderBulkImportBackendClient } from './ScaffolderBulkImportBackendClientImpl';
+import { PRBulkImportBackendClient } from './PRBulkImportBackendClientImpl';
 
 const server = setupServer(...FRONTEND_TEST_HANDLERS);
 
@@ -45,7 +45,7 @@ beforeAll(() => server.listen());
 afterEach(() => server.restoreHandlers());
 afterAll(() => server.close());
 
-describe('ScaffolderBulkImportBackendClient', () => {
+describe('PRBulkImportBackendClient', () => {
   let bulkImportApi: BulkImportAPI;
   const getConfigApi = (getOptionalStringFn: any) => ({
     has: jest.fn(),
@@ -80,7 +80,7 @@ describe('ScaffolderBulkImportBackendClient', () => {
   } as IdentityApi;
 
   beforeEach(() => {
-    bulkImportApi = new ScaffolderBulkImportBackendClient({
+    bulkImportApi = new PRBulkImportBackendClient({
       configApi: getConfigApi(() => {
         return '/api';
       }),
@@ -243,8 +243,9 @@ describe('ScaffolderBulkImportBackendClient', () => {
     it('createImportJobs should be able to dry run and check for errors', async () => {
       let response = await bulkImportApi.createImportJobs(
         prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
-        false,
+        true,
       );
+
       expect(response.length).toBe(4);
 
       response = await bulkImportApi.createImportJobs(
@@ -260,7 +261,11 @@ describe('ScaffolderBulkImportBackendClient', () => {
         true,
       );
 
-      expect(response).toEqual({});
+      expect(response).toEqual({
+        message: 'Dry run for creating import jobs failed',
+        ok: false,
+        status: 404,
+      });
     });
   });
 });
