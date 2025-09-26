@@ -23,10 +23,10 @@ spec:
           title: Owner of the Repository
         branchName:
           type: string
-          title: The branch to target for the PR
+          title: The branch to add the catalog entity to
         targetBranchName:
           type: string
-          title: The branch to add the Catalog Entity to
+          title: The branch to target the PR to
         name:
           type: string
           title: Name of the repository
