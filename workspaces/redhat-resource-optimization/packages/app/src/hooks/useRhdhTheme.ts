@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import LogoFull from '../components/rhdh-logo/RhdhLogoFull';
 import RhdhLogoIcon from '../components/rhdh-logo/RhdhLogoIcon';
 
