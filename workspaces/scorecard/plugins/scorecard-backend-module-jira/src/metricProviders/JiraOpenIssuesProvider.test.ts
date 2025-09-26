@@ -32,6 +32,10 @@ import {
   newMockRootConfig,
 } from '../../__fixtures__/testUtils';
 import { ScorecardJiraAnnotations } from '../annotations';
+import {
+  DirectConnectionStrategy,
+  ProxyConnectionStrategy,
+} from '../strategies/ConnectionStrategy';
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
@@ -39,14 +43,23 @@ jest.mock('../clients/JiraClientFactory');
 jest.mock('@red-hat-developer-hub/backstage-plugin-scorecard-node', () => ({
   validateThresholds: jest.fn(),
 }));
+jest.mock('../strategies/ConnectionStrategy');
 
 const mockJiraClient = {
   getCountOpenIssues: jest.fn(),
 } as unknown as jest.Mocked<JiraClient>;
 
-const MockedJiraClientFactory = JiraClientFactory as jest.Mocked<
+const mockedJiraClientFactory = JiraClientFactory as jest.Mocked<
   typeof JiraClientFactory
 >;
+const mockedProxyConnectionStrategy =
+  ProxyConnectionStrategy as unknown as jest.Mocked<
+    typeof ProxyConnectionStrategy
+  >;
+const mockedDirectConnectionStrategy =
+  DirectConnectionStrategy as unknown as jest.Mocked<
+    typeof DirectConnectionStrategy
+  >;
 const mockedValidateThresholds = validateThresholds as jest.MockedFunction<
   typeof validateThresholds
 >;
@@ -67,8 +80,8 @@ describe('JiraOpenIssuesProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    MockedJiraClientFactory.create.mockReturnValue(mockJiraClient);
-    mockConfig = mockServices.rootConfig({ data: {} });
+    mockedJiraClientFactory.create.mockReturnValue(mockJiraClient);
+    mockConfig = newMockRootConfig();
   });
 
   describe('getProviderDatasourceId', () => {
@@ -167,10 +180,6 @@ describe('JiraOpenIssuesProvider', () => {
         mockAuthOptions,
       );
 
-      expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(
-        mockConfig,
-        mockAuthOptions,
-      );
       expect(mockedValidateThresholds).not.toHaveBeenCalled();
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
@@ -183,10 +192,6 @@ describe('JiraOpenIssuesProvider', () => {
         mockAuthOptions,
       );
 
-      expect(MockedJiraClientFactory.create).toHaveBeenCalledWith(
-        config,
-        mockAuthOptions,
-      );
       expect(mockedValidateThresholds).toHaveBeenCalledWith(
         customThresholds,
         'number',
@@ -209,6 +214,31 @@ describe('JiraOpenIssuesProvider', () => {
       expect(mockedValidateThresholds).toHaveBeenCalledWith(
         invalidThresholds,
         'number',
+      );
+    });
+
+    it('should create provider with proxy connection strategy when proxy path is configured', () => {
+      JiraOpenIssuesProvider.fromConfig(mockConfig, mockAuthOptions);
+      expect(mockedProxyConnectionStrategy).toHaveBeenCalledWith(
+        '/jira/api',
+        mockAuthOptions.auth,
+        mockAuthOptions.discovery,
+      );
+      expect(mockedJiraClientFactory.create).toHaveBeenCalledWith(
+        mockConfig,
+        expect.any(ProxyConnectionStrategy),
+      );
+    });
+
+    it('should create provider with direct connection strategy when proxy path is not configured', () => {
+      const config = newMockRootConfig({
+        jiraConfig: { proxyPath: undefined },
+      });
+      JiraOpenIssuesProvider.fromConfig(config, mockAuthOptions);
+      expect(mockedDirectConnectionStrategy).toHaveBeenCalledWith(
+        'https://example.com/api',
+        'Fds31dsF32',
+        'cloud',
       );
     });
   });

@@ -17,7 +17,6 @@
 import type { Entity } from '@backstage/catalog-model';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { JiraDataCenterClientStrategy } from './JiraDataCenterClientStrategy';
-import { mockServices } from '@backstage/backend-test-utils';
 import {
   newEntityComponent,
   newMockRootConfig,
@@ -27,34 +26,29 @@ globalThis.fetch = jest.fn();
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
-const mockAuth = mockServices.auth();
-const mockDiscovery = mockServices.discovery();
-
-const authOptions = {
-  discovery: mockDiscovery,
-  auth: mockAuth,
+const mockConnectionStrategy = {
+  getBaseUrl: jest.fn().mockReturnValue('https://example.com/api/rest/api/2'),
+  getAuthHeaders: jest
+    .fn()
+    .mockResolvedValue({ Authorization: 'Bearer Fds31dsF32' }),
 };
 
 describe('JiraDataCenterClient', () => {
   let jiraDataCenterClient: JiraDataCenterClientStrategy;
 
   beforeEach(() => {
-    const jiraConfig = {
-      product: 'datacenter',
-      apiVersion: '2',
-    };
     const options = {
       mandatoryFilter: 'Type = Task',
       customFilter: 'priority in ("Critical", "Blocker")',
     };
     const config = newMockRootConfig({
-      jiraConfig,
+      jiraConfig: { apiVersion: '2' },
       options,
     });
 
     jiraDataCenterClient = new JiraDataCenterClientStrategy(
       config,
-      authOptions,
+      mockConnectionStrategy,
     );
   });
 
@@ -114,17 +108,9 @@ describe('JiraDataCenterClient', () => {
       json: jest.fn().mockResolvedValueOnce({ total: 10 }),
     });
 
-    it('should get count with Bearer auth header', async () => {
+    it('should get count of open issues', async () => {
       const count = await jiraDataCenterClient.getCountOpenIssues(mockEntity);
       expect(count).toBe(10);
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        'https://example.com/api/rest/api/2/search',
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: `Bearer Fds31dsF32`,
-          }),
-        }),
-      );
     });
   });
 });

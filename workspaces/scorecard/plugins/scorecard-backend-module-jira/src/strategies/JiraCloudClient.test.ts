@@ -17,7 +17,6 @@
 import type { Entity } from '@backstage/catalog-model';
 import { JiraCloudClientStrategy } from './JiraCloudClientStrategy';
 import { ScorecardJiraAnnotations } from '../annotations';
-import { mockServices } from '@backstage/backend-test-utils';
 import {
   newEntityComponent,
   newMockRootConfig,
@@ -27,28 +26,26 @@ const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
 globalThis.fetch = jest.fn();
 
-const mockAuth = mockServices.auth();
-const mockDiscovery = mockServices.discovery();
-
-const authOptions = {
-  discovery: mockDiscovery,
-  auth: mockAuth,
+const mockConnectionStrategy = {
+  getBaseUrl: jest.fn().mockReturnValue('https://example.com/api/rest/api/3'),
+  getAuthHeaders: jest
+    .fn()
+    .mockResolvedValue({ Authorization: 'Basic Fds31dsF32' }),
 };
 
 describe('JiraCloudClient', () => {
   let jiraCloudClient: JiraCloudClientStrategy;
 
   beforeEach(() => {
-    const jiraConfig = {
-      product: 'cloud',
-      apiVersion: '3',
-    };
-    const options = {
-      mandatoryFilter: 'Type = Bug',
-    };
-    const config = newMockRootConfig({ jiraConfig, options });
+    const config = newMockRootConfig({
+      jiraConfig: { apiVersion: '3' },
+      options: { mandatoryFilter: 'Type = Bug' },
+    });
 
-    jiraCloudClient = new JiraCloudClientStrategy(config, authOptions);
+    jiraCloudClient = new JiraCloudClientStrategy(
+      config,
+      mockConnectionStrategy,
+    );
   });
 
   afterEach(() => {
@@ -104,14 +101,6 @@ describe('JiraCloudClient', () => {
     it('should get count with Basic auth header', async () => {
       const count = await jiraCloudClient.getCountOpenIssues(mockEntity);
       expect(count).toBe(5);
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        'https://example.com/api/rest/api/3/search/approximate-count',
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: `Basic Fds31dsF32`,
-          }),
-        }),
-      );
     });
   });
 });

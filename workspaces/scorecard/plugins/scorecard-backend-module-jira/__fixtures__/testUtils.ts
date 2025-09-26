@@ -69,6 +69,7 @@ export function newMockRootConfig({
     baseUrl: 'https://example.com/api',
     token: 'Fds31dsF32',
     product: 'cloud',
+    proxyPath: '/jira/api',
     ...jiraConfig,
   };
 

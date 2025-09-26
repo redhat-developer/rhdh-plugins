@@ -16,11 +16,6 @@
 
 export type Product = 'datacenter' | 'cloud';
 
-export interface JiraConfig {
-  product: Product;
-  apiVersion: string;
-}
-
 export interface JiraOptions {
   mandatoryFilter?: string;
   customFilter?: string;

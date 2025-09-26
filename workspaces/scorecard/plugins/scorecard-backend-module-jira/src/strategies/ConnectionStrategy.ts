@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { AuthOptions } from '../types';
 import { Product } from '../clients/types';
+import { DiscoveryService, AuthService } from '@backstage/backend-plugin-api';
 
 export interface ConnectionStrategy {
   getBaseUrl(apiVersion: string): Promise<string>;
@@ -47,15 +47,21 @@ export class DirectConnectionStrategy implements ConnectionStrategy {
 
 export class ProxyConnectionStrategy implements ConnectionStrategy {
   private readonly proxyPath: string;
-  private readonly authOptions: AuthOptions;
+  private readonly auth: AuthService;
+  private readonly discovery: DiscoveryService;
 
-  constructor(proxyPath: string, authOptions: AuthOptions) {
+  constructor(
+    proxyPath: string,
+    auth: AuthService,
+    discovery: DiscoveryService,
+  ) {
     this.proxyPath = proxyPath;
-    this.authOptions = authOptions;
+    this.auth = auth;
+    this.discovery = discovery;
   }
 
   async getBaseUrl(apiVersion: string): Promise<string> {
-    const backendUrl = await this.authOptions.discovery.getBaseUrl('proxy');
+    const backendUrl = await this.discovery.getBaseUrl('proxy');
     return `${backendUrl}${this.proxyPath}/rest/api/${apiVersion}`;
   }
 
@@ -69,9 +75,8 @@ export class ProxyConnectionStrategy implements ConnectionStrategy {
   }
 
   private async getServiceToken(): Promise<string | null> {
-    const ownCredentials =
-      await this.authOptions.auth.getOwnServiceCredentials();
-    const { token } = await this.authOptions.auth.getPluginRequestToken({
+    const ownCredentials = await this.auth.getOwnServiceCredentials();
+    const { token } = await this.auth.getPluginRequestToken({
       onBehalfOf: ownCredentials,
       targetPluginId: 'proxy',
     });

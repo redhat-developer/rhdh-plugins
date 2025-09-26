@@ -16,14 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { AuthOptions } from '../types';
-import {
-  JiraConfig,
-  JiraEntityFilters,
-  JiraOptions,
-  Product,
-  RequestOptions,
-} from './types';
+import { JiraEntityFilters, JiraOptions, RequestOptions } from './types';
 import {
   API_VERSION_DEFAULT,
   JIRA_CONFIG_PATH,
@@ -32,44 +25,22 @@ import {
 } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
-import {
-  ConnectionStrategy,
-  DirectConnectionStrategy,
-  ProxyConnectionStrategy,
-} from '../strategies/ConnectionStrategy';
+import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
 
 const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
   ScorecardJiraAnnotations;
 
 export abstract class JiraClient {
-  protected readonly config: JiraConfig;
+  protected readonly apiVersion: string;
   protected readonly options?: JiraOptions;
   protected readonly connectionStrategy: ConnectionStrategy;
 
-  constructor(rootConfig: Config, authOptions: AuthOptions) {
+  constructor(rootConfig: Config, connectionStrategy: ConnectionStrategy) {
     const jiraConfig = rootConfig.getConfig(JIRA_CONFIG_PATH);
 
-    this.config = {
-      product: jiraConfig.getString('product') as Product,
-      apiVersion:
-        jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT,
-    };
-
-    if (jiraConfig.getOptionalString('proxyPath')) {
-      const proxyPath = jiraConfig.getString('proxyPath');
-      this.connectionStrategy = new ProxyConnectionStrategy(
-        proxyPath,
-        authOptions,
-      );
-    } else {
-      const baseUrl = jiraConfig.getString('baseUrl');
-      const token = jiraConfig.getString('token');
-      this.connectionStrategy = new DirectConnectionStrategy(
-        baseUrl,
-        token,
-        this.config.product,
-      );
-    }
+    this.connectionStrategy = connectionStrategy;
+    this.apiVersion =
+      jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT;
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
@@ -190,7 +161,7 @@ export abstract class JiraClient {
   }
 
   protected async getBaseUrl(): Promise<string> {
-    return this.connectionStrategy.getBaseUrl(this.config.apiVersion);
+    return this.connectionStrategy.getBaseUrl(this.apiVersion);
   }
 
   protected async getAuthHeaders(): Promise<Record<string, string>> {

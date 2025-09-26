@@ -15,22 +15,23 @@
  */
 
 import type { Config } from '@backstage/config';
-import { mockServices } from '@backstage/backend-test-utils';
 import { JiraDataCenterClientStrategy } from '../strategies/JiraDataCenterClientStrategy';
 import { JiraClientFactory } from './JiraClientFactory';
 import { JiraCloudClientStrategy } from '../strategies/JiraCloudClientStrategy';
 import { newMockRootConfig } from '../../__fixtures__/testUtils';
+import {
+  ConnectionStrategy,
+  DirectConnectionStrategy,
+} from '../strategies/ConnectionStrategy';
 
 jest.mock('../strategies/JiraDataCenterClientStrategy');
 jest.mock('../strategies/JiraCloudClientStrategy');
 
+const mockedConnectionStrategy =
+  DirectConnectionStrategy as unknown as jest.Mocked<ConnectionStrategy>;
+
 describe('JiraClientFactory', () => {
   let config: Config;
-
-  const mockAuthOptions = {
-    discovery: mockServices.discovery(),
-    auth: mockServices.auth(),
-  };
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -39,31 +40,33 @@ describe('JiraClientFactory', () => {
   it('should create a JiraDataCenterClient when product is datacenter', () => {
     config = newMockRootConfig({ jiraConfig: { product: 'datacenter' } });
 
-    expect(JiraClientFactory.create(config, mockAuthOptions)).toBeInstanceOf(
-      JiraDataCenterClientStrategy,
-    );
+    expect(
+      JiraClientFactory.create(config, mockedConnectionStrategy),
+    ).toBeInstanceOf(JiraDataCenterClientStrategy);
     expect(JiraDataCenterClientStrategy).toHaveBeenCalledWith(
       config,
-      mockAuthOptions,
+      mockedConnectionStrategy,
     );
   });
 
   it('should create a JiraCloudClient when product is cloud', () => {
     config = newMockRootConfig({ jiraConfig: { product: 'cloud' } });
 
-    expect(JiraClientFactory.create(config, mockAuthOptions)).toBeInstanceOf(
-      JiraCloudClientStrategy,
-    );
+    expect(
+      JiraClientFactory.create(config, mockedConnectionStrategy),
+    ).toBeInstanceOf(JiraCloudClientStrategy);
     expect(JiraCloudClientStrategy).toHaveBeenCalledWith(
       config,
-      mockAuthOptions,
+      mockedConnectionStrategy,
     );
   });
 
   it('should throw an error when product is invalid', () => {
     config = newMockRootConfig({ jiraConfig: { product: 'foo' } });
 
-    expect(() => JiraClientFactory.create(config, mockAuthOptions)).toThrow(
+    expect(() =>
+      JiraClientFactory.create(config, mockedConnectionStrategy),
+    ).toThrow(
       "Invalid Jira product: foo. Valid products for 'jira.product' are: datacenter, cloud",
     );
   });

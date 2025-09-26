@@ -16,7 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { THRESHOLDS_CONFIG_PATH } from '../constants';
+import { JIRA_CONFIG_PATH, THRESHOLDS_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
@@ -29,7 +29,13 @@ import {
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { ScorecardJiraAnnotations } from '../annotations';
-import { AuthOptions } from '../types';
+import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
+import {
+  ConnectionStrategy,
+  DirectConnectionStrategy,
+  ProxyConnectionStrategy,
+} from '../strategies/ConnectionStrategy';
+import { Product } from '../clients/types';
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
@@ -39,10 +45,10 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
 
   private constructor(
     config: Config,
-    authOptions: AuthOptions,
+    connectionStrategy: ConnectionStrategy,
     thresholds?: ThresholdConfig,
   ) {
-    this.jiraClient = JiraClientFactory.create(config, authOptions);
+    this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
@@ -75,16 +81,38 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
 
   static fromConfig(
     config: Config,
-    authOptions: AuthOptions,
+    options: {
+      auth: AuthService;
+      discovery: DiscoveryService;
+    },
   ): JiraOpenIssuesProvider {
     const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
     if (configuredThresholds !== undefined) {
       validateThresholds(configuredThresholds, 'number');
     }
 
+    let connectionStrategy: ConnectionStrategy;
+
+    const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
+    const proxyPath = jiraConfig.getOptionalString('proxyPath');
+
+    if (proxyPath) {
+      connectionStrategy = new ProxyConnectionStrategy(
+        proxyPath,
+        options.auth,
+        options.discovery,
+      );
+    } else {
+      connectionStrategy = new DirectConnectionStrategy(
+        jiraConfig.getString('baseUrl'),
+        jiraConfig.getString('token'),
+        jiraConfig.getString('product') as Product,
+      );
+    }
+
     return new JiraOpenIssuesProvider(
       config,
-      authOptions,
+      connectionStrategy,
       configuredThresholds,
     );
   }
