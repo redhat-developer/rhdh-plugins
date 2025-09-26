@@ -130,11 +130,6 @@ export async function createRouter(
     taskDao: taskDao,
     taskLocationsDao: taskLocationsDao,
   } = options;
-
-  // todo: we should allow to work old backend methods without this option...
-  if (!config.has('bulkImport.importTemplate')) {
-    throw new Error('Missing required config value: bulkImport.importTemplate');
-  }
   // This should probably be sometype of object that holds all the scm API service objects
   const githubApiService = new GithubApiService(logger, config, cache);
   const gitlabApiService = new GitlabApiService(logger, config, cache);
@@ -425,6 +420,11 @@ export async function createRouter(
       _req: Request,
       res: Response,
     ) => {
+      if (!config.has('bulkImport.importTemplate')) {
+        throw new Error(
+          'Missing required config value: bulkImport.importTemplate',
+        );
+      }
       const response = await createTaskImportJobs(
         discovery,
         logger,
@@ -585,7 +585,6 @@ export async function createRouter(
   return router;
 }
 
-// todo: complete audit log for newer methods...
 async function createAuditorEventByOperationId(
   operationId: string | undefined,
   req: Request,
@@ -647,7 +646,21 @@ async function createAuditorEventByOperationId(
         { queryType: 'by-query', repo: req.query.repo },
       );
       break;
+    case Operations.FIND_TASK_IMPORT_STATUS_BY_REPO:
+      auditorEvent = await auditCreateEvent(
+        auditor,
+        'import-status-read',
+        req,
+        { queryType: 'by-query', repo: req.query.repo },
+      );
+      break;
     case Operations.DELETE_IMPORT_BY_REPO:
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
+        actionType: 'delete',
+        repository: req.query.repo,
+      });
+      break;
+    case Operations.DELETE_TASK_IMPORT_BY_REPO:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'delete',
         repository: req.query.repo,

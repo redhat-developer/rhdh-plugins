@@ -302,7 +302,7 @@ async function resolveReposDefaultBranches(
   );
 }
 
-export function repoUrlFromLocation(loc: string) {
+function repoUrlFromLocation(loc: string) {
   const split = loc.split('/blob/');
   if (split.length < 2) {
     return undefined;
@@ -888,7 +888,7 @@ export async function findTaskImportStatusByRepo(
       const task = await deps.taskDao.lastExecutedTaskByRepoId(repository?.id);
       if (!task) {
         throw new Error(
-          `Unable to find task for repository: ${repository?.id}`,
+          `Unable to find scaffolder task for repository: ${repository?.id}`,
         );
       }
 
@@ -1057,7 +1057,7 @@ export async function deleteTaskImportByRepo(
     };
   } catch (error: any) {
     deps.logger.error(
-      `Failed to delete repository from database by name ${repoUrl}`,
+      `Failed to delete repository from database by url ${repoUrl}`,
       error,
     );
     return {

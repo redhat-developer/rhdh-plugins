@@ -155,7 +155,6 @@ async function formatResponse(
         return undefined;
       });
     }
-
     const repoUpdatedAt = repo.updated_at ?? undefined;
     repoList.push({
       id: `${gitUrl.organization}/${repo.name}`,

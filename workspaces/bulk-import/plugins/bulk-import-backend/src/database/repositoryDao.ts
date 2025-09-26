@@ -18,7 +18,6 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 
 import { Knex } from 'knex';
 
-// todo rename to importEntity ?
 export interface Repository {
   id: number;
   url: string;
@@ -160,7 +159,9 @@ export class ScaffolderTaskDao {
   ): Promise<ScaffolderTask[]> {
     return await this.knex('scaffolder_tasks')
       .where({ repositoryId })
-      .select<ScaffolderTask[]>('taskId', 'repositoryId', 'scaffolderOptions');
+      .select<
+        ScaffolderTask[]
+      >('taskId', 'repositoryId', 'scaffolderOptions', 'executedAt');
   }
 
   async lastExecutedTaskByRepoId(

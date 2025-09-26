@@ -797,6 +797,7 @@ const OPENAPI = `
         "in": "query",
         "name": "pagePerIntegration",
         "description": "the page number for each Integration. **Deprecated**. Use the 'page' query parameter instead.",
+        "deprecated": true,
         "schema": {
           "type": "integer",
           "default": 1
@@ -836,6 +837,7 @@ const OPENAPI = `
         "in": "query",
         "name": "sizePerIntegration",
         "description": "the number of items per Integration to return per page. **Deprecated**. Use the 'size' query parameter instead.",
+        "deprecated": true,
         "schema": {
           "type": "integer",
           "default": 20
