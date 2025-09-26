@@ -32,6 +32,23 @@ export class MetricProvidersRegistry {
   register(metricProvider: MetricProvider): void {
     const providerId = metricProvider.getProviderId();
     const providerDatasource = metricProvider.getProviderDatasourceId();
+    const metricId = metricProvider.getMetric().id;
+
+    if (providerId !== metricId) {
+      throw new Error(
+        `Invalid metric provider with ID ${providerId}, provider ID must match metric ID '${metricId}'`,
+      );
+    }
+
+    const expectedPrefix = `${providerDatasource}.`;
+    if (
+      !providerId.startsWith(expectedPrefix) ||
+      providerId === expectedPrefix
+    ) {
+      throw new Error(
+        `Invalid metric provider with ID ${providerId}, must have format '${providerDatasource}.<metric_name>' where metric name is not empty`,
+      );
+    }
 
     if (this.metricProviders.has(providerId)) {
       throw new ConflictError(

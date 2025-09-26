@@ -60,6 +60,62 @@ describe('MetricProvidersRegistry', () => {
         ),
       );
     });
+
+    it('should throw error when provider ID does not match metric ID', () => {
+      class InvalidProvider extends MockNumberProvider {
+        getMetric() {
+          const metric = super.getMetric();
+          return { ...metric, id: 'different.id' };
+        }
+      }
+
+      const invalidProvider = new InvalidProvider(
+        'github.test_metric',
+        'github',
+      );
+
+      expect(() => registry.register(invalidProvider)).toThrow(
+        new Error(
+          "Invalid metric provider with ID github.test_metric, provider ID must match metric ID 'different.id'",
+        ),
+      );
+    });
+
+    it('should throw error when provider ID does not start with datasource ID', () => {
+      const invalidProvider = new MockNumberProvider(
+        'invalid_format',
+        'github',
+      );
+
+      expect(() => registry.register(invalidProvider)).toThrow(
+        new Error(
+          "Invalid metric provider with ID invalid_format, must have format 'github.<metric_name>' where metric name is not empty",
+        ),
+      );
+    });
+
+    it('should throw error when provider ID has no metric name after datasource', () => {
+      const invalidProvider = new MockNumberProvider('github.', 'github');
+
+      expect(() => registry.register(invalidProvider)).toThrow(
+        new Error(
+          "Invalid metric provider with ID github., must have format 'github.<metric_name>' where metric name is not empty",
+        ),
+      );
+    });
+
+    it('should throw error for provider ID missing dot separator', () => {
+      const invalidProvider = new MockNumberProvider(
+        'githubopen_prs',
+        'github',
+      );
+
+      expect(() => registry.register(invalidProvider)).toThrow(
+        new Error(
+          "Invalid metric provider with ID githubopen_prs, must have format 'github.<metric_name>' where metric name is not empty",
+        ),
+      );
+    });
   });
 
   describe('getMetric', () => {
