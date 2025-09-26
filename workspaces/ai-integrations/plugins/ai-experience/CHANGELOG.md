@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience
 
+## 0.3.1
+
+### Patch Changes
+
+- b887a58: French translation updated
+
 ## 0.3.0
 
 ### Minor Changes
