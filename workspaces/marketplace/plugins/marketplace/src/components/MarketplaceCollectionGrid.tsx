@@ -18,6 +18,7 @@ import { useRouteRefParams } from '@backstage/core-plugin-api';
 import { useCollection } from '../hooks/useCollection';
 import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
 import { useTranslation } from '../hooks/useTranslation';
+import { getTranslatedText } from '../translations/utils';
 
 import { collectionRouteRef } from '../routes';
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
@@ -29,25 +30,10 @@ export const MarketplaceCollectionGridLoader = () => {
   const collection = useCollection(params.namespace, params.name);
   const plugins = useCollectionPlugins(params.namespace, params.name);
 
-  // Helper function to get translated or fallback text
-  const getTranslatedText = (
-    fallbackText?: string,
-    translationKey?: string,
-  ): string => {
-    if (translationKey && translationKey.startsWith('collection.')) {
-      try {
-        return t(translationKey as any, {});
-      } catch (error) {
-        // Fall back to original text if translation fails
-        return fallbackText || '';
-      }
-    }
-    return fallbackText || '';
-  };
-
   const description = getTranslatedText(
     collection.data?.metadata?.description,
     (collection.data?.metadata as any)?.descriptionKey,
+    t,
   );
 
   return (

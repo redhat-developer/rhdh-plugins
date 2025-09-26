@@ -27,6 +27,7 @@ import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
 import { PluginCard, PluginCardSkeleton } from './PluginCard';
 import { collectionRouteRef } from '../routes';
 import { useTranslation } from '../hooks/useTranslation';
+import { getTranslatedText } from '../translations/utils';
 
 export const CollectionHorizontalScrollRowSkeleton = () => {
   return (
@@ -64,25 +65,10 @@ export const CollectionHorizontalScrollRow = ({
 }) => {
   const { t } = useTranslation();
 
-  // Helper function to get translated or fallback text
-  const getTranslatedText = (
-    fallbackText?: string,
-    translationKey?: string,
-  ): string => {
-    if (translationKey && translationKey.startsWith('collection.')) {
-      try {
-        return t(translationKey as any, {});
-      } catch (error) {
-        // Fall back to original text if translation fails
-        return fallbackText || '';
-      }
-    }
-    return fallbackText || '';
-  };
-
   const title = getTranslatedText(
     collection.metadata.title ?? collection.metadata.name,
     (collection.metadata as any).titleKey,
+    t,
   );
   const plugins = useCollectionPlugins(
     collection.metadata.namespace!,

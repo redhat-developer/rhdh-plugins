@@ -27,6 +27,7 @@ import { collectionRouteRef, collectionsRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { useCollection } from '../hooks/useCollection';
 import { useTranslation } from '../hooks/useTranslation';
+import { getTranslatedText } from '../translations/utils';
 import { MarketplaceCollectionGridLoader } from '../components/MarketplaceCollectionGrid';
 
 const CollectionHeader = () => {
@@ -34,25 +35,10 @@ const CollectionHeader = () => {
   const params = useRouteRefParams(collectionRouteRef);
   const collection = useCollection(params.namespace, params.name);
 
-  // Helper function to get translated or fallback text
-  const getTranslatedText = (
-    fallbackText?: string,
-    translationKey?: string,
-  ): string => {
-    if (translationKey && translationKey.startsWith('collection.')) {
-      try {
-        return t(translationKey as any, {});
-      } catch (error) {
-        // Fall back to original text if translation fails
-        return fallbackText || '';
-      }
-    }
-    return fallbackText || '';
-  };
-
   const displayName = getTranslatedText(
     collection.data?.metadata.title ?? params.name,
     (collection.data?.metadata as any)?.titleKey,
+    t,
   );
   const collectionsLink = useRouteRef(collectionsRouteRef)();
 
