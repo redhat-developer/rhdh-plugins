@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.0
+
+### Minor Changes
+
+- 1e6b861: Add customizable homepage functionality with drag, drop, resize, and widget management capabilities
+
 ## 1.8.0
 
 ### Minor Changes
