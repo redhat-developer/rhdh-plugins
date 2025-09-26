@@ -71,30 +71,5 @@ export const translationsPlugin: BackstagePlugin<
   {}
 >;
 
-// @public (undocumented)
-export const translationsPluginTranslationRef: TranslationRef<
-  'plugin.translations',
-  {
-    readonly 'table.title': string;
-    readonly 'table.headers.refId': string;
-    readonly 'table.headers.key': string;
-    readonly 'table.options.pageSize': string;
-    readonly 'table.options.pageSizeOptions': string;
-    readonly 'language.displayFormat': string;
-    readonly 'page.title': string;
-    readonly 'page.subtitle': string;
-    readonly 'export.title': string;
-    readonly 'export.downloadButton': string;
-    readonly 'export.filename': string;
-    readonly 'common.loading': string;
-    readonly 'common.error': string;
-    readonly 'common.noData': string;
-    readonly 'common.refresh': string;
-  }
->;
-
-// @public (undocumented)
-export const translationsPluginTranslations: TranslationResource<'plugin.translations'>;
-
 // (No @packageDocumentation comment for this package)
 ```

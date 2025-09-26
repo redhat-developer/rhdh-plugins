@@ -15,4 +15,3 @@
  */
 export * from './apis';
 export * from './plugin';
-export * from './translations';

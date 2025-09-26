@@ -16,7 +16,7 @@
 import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 
 /**
- * @public
+ * @alpha
  */
 export const translationsMessages = {
   page: {
@@ -50,7 +50,7 @@ export const translationsMessages = {
   },
 };
 /**
- * @public
+ * @alpha
  */
 export const translationsPluginTranslationRef = createTranslationRef({
   id: 'plugin.translations',
