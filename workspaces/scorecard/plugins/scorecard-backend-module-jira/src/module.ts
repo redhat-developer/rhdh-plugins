@@ -17,7 +17,6 @@ import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
-import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraOpenIssuesProvider } from './metricProviders/JiraOpenIssuesProvider';
 
@@ -30,20 +29,11 @@ export const scorecardModuleJira = createBackendModule({
         auth: coreServices.auth,
         config: coreServices.rootConfig,
         discovery: coreServices.discovery,
-        logger: coreServices.logger,
-        scheduler: coreServices.scheduler,
         metrics: scorecardMetricsExtensionPoint,
-        catalog: catalogServiceRef,
       },
-      async init({ auth, config, discovery, logger, scheduler, metrics, catalog }) {
+      async init({ auth, config, discovery, metrics }) {
         metrics.addMetricProvider(
-          JiraOpenIssuesProvider.fromConfig(config, {
-            auth,
-            discovery,
-            logger,
-            scheduler,
-            catalog,
-          }),
+          JiraOpenIssuesProvider.fromConfig(config, { auth, discovery }),
         );
       },
     });

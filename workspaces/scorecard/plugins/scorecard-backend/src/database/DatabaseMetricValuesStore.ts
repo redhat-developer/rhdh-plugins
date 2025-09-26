@@ -17,11 +17,8 @@
 import { Knex } from 'knex';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { DbMetricValue, MetricValuesStore } from './MetricValuesStore';
-import { ProviderStore } from './ProviderStore';
 
-export class DatabaseMetricValuesStore
-  implements MetricValuesStore, ProviderStore
-{
+export class DatabaseMetricValuesStore implements MetricValuesStore {
   private readonly knex: Knex;
   private readonly logger: LoggerService;
   private readonly tableName = 'metric_values';
