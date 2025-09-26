@@ -24,6 +24,7 @@
       "@red-hat-developer-hub/backstage-plugin-scorecard-node"
     ]
   },
+  "configSchema": "config.d.ts",
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
