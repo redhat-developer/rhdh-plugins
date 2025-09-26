@@ -11656,19 +11656,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.1":
-  version: 0.9.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
   dependencies:
     "@mui/icons-material": "npm:^5.17.1"
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/theme": ^0.6.6
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/theme": ^0.6.8
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10/f6001ebec411e275cc6ed9226430aaa75c46794510f67d85cb599be03ee873d785bc179e0e74ccf122cef570d7a932528b74b6c275a8794386cb73a22c1ed28d
+  checksum: 10/b4492c53c076daceea3b8e49b4eea839d6152567801071d79065e93dcdc1a23594ac1c3ba28daffa70bbac4ea3c011dc62ff2bb5ea26d93721beccd604163c29
   languageName: node
   linkType: hard
 
@@ -16031,7 +16031,7 @@ __metadata:
     "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:^1.54.1"
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.9.1"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.10.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"
