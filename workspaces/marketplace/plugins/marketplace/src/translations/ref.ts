@@ -19,7 +19,7 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 /**
  * Messages object containing all English translations.
  * This is our single source of truth for translations.
- * @public
+ * @alpha
  */
 export const marketplaceMessages = {
   // Page headers and titles
@@ -346,7 +346,7 @@ export const marketplaceMessages = {
 
 /**
  * Translation reference for marketplace plugin
- * @public
+ * @alpha
  */
 export const marketplaceTranslationRef = createTranslationRef({
   id: 'plugin.marketplace',

@@ -19,7 +19,7 @@ import { marketplaceTranslationRef } from './ref';
 
 /**
  * Translation Resource for marketplace
- * @public
+ * @alpha
  */
 export const marketplaceTranslations = createTranslationResource({
   ref: marketplaceTranslationRef,

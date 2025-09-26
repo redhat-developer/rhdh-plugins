@@ -7,7 +7,7 @@
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
-// @public
+// @alpha
 export const marketplaceTranslationRef: TranslationRef<"plugin.marketplace", {
 readonly "search.filter": string;
 readonly "search.clear": string;
@@ -213,7 +213,7 @@ readonly "badges.earlyStageExperimental": string;
 readonly "badges.addedByAdmin": string;
 }>;
 
-// @public
+// @alpha
 export const marketplaceTranslations: TranslationResource<"plugin.marketplace">;
 
 // (No @packageDocumentation comment for this package)
