@@ -15,6 +15,18 @@ import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 import { TranslationSnapshot } from '@backstage/core-plugin-api/alpha';
 
+// @public
+export const ExportTranslationKeys: ({
+  resources,
+}: {
+  resources: TranslationRef<
+    string,
+    {
+      [x: string]: string;
+    }
+  >[];
+}) => JSX_2.Element;
+
 // @public (undocumented)
 export class I18nextTranslationApi implements TranslationApi {
   // (undocumented)

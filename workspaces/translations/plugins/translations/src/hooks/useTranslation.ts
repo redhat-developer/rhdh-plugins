@@ -13,24 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Page, Header, Content } from '@backstage/core-components';
-
-import { LoadedTranslationsTable } from './LoadedTranslationsTable';
-import { useTranslation } from '../hooks/useTranslation';
-import { ExportTranslationKeys } from './ExportTranslationKeys';
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
 import { translationsPluginTranslationRef } from '../translations';
 
-export const TranslationsPage = () => {
-  const { t } = useTranslation();
-
-  return (
-    <Page themeId="tool">
-      <Header title={t('page.title')} />
-      <Content>
-        <ExportTranslationKeys resources={[translationsPluginTranslationRef]} />
-        <br />
-        <LoadedTranslationsTable />
-      </Content>
-    </Page>
-  );
-};
+export const useTranslation = (): {
+  t: TranslationFunction<typeof translationsPluginTranslationRef.T>;
+} => useTranslationRef(translationsPluginTranslationRef);

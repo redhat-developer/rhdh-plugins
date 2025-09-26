@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Page, Header, Content } from '@backstage/core-components';
-
-import { LoadedTranslationsTable } from './LoadedTranslationsTable';
 import { useTranslation } from '../hooks/useTranslation';
-import { ExportTranslationKeys } from './ExportTranslationKeys';
 import { translationsPluginTranslationRef } from '../translations';
 
-export const TranslationsPage = () => {
-  const { t } = useTranslation();
+type Messages = typeof translationsPluginTranslationRef.T;
 
-  return (
-    <Page themeId="tool">
-      <Header title={t('page.title')} />
-      <Content>
-        <ExportTranslationKeys resources={[translationsPluginTranslationRef]} />
-        <br />
-        <LoadedTranslationsTable />
-      </Content>
-    </Page>
-  );
+interface TransProps<TMessages extends { [key in string]: string }> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message, params);
 };
