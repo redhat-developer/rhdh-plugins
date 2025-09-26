@@ -28,6 +28,13 @@ const scorecardTranslationDe = createTranslationMessages({
     'emptyState.button': 'Dokumentation anzeigen',
     'emptyState.altText': 'Keine Scorecards',
 
+    // Permission required state
+    'permissionRequired.title': 'Berechtigung fehlt',
+    'permissionRequired.description':
+      'Um das Scorecard-Plugin anzuzeigen, wenden Sie sich an Ihren Administrator, um die {{permission}} Berechtigung zu erteilen.',
+    'permissionRequired.button': 'Mehr lesen',
+    'permissionRequired.altText': 'Berechtigung erforderlich',
+
     // Error messages
     'errors.entityMissingProperties':
       'Entität fehlt erforderliche Eigenschaften für Scorecard-Suche',

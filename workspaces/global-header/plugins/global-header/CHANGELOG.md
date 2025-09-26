@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.17.3
+
+### Patch Changes
+
+- b887a58: French translation updated
+
 ## 1.17.2
 
 ### Patch Changes

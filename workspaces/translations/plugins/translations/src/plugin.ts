@@ -16,6 +16,7 @@
 import {
   createPlugin,
   createRoutableExtension,
+  createComponentExtension,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
@@ -39,5 +40,21 @@ export const TranslationsPage = translationsPlugin.provide(
     component: () =>
       import('./components/TranslationsPage').then(m => m.TranslationsPage),
     mountPoint: rootRouteRef,
+  }),
+);
+
+/**
+ * Export Translation Keys
+ * @public
+ */
+export const ExportTranslationKeys = translationsPlugin.provide(
+  createComponentExtension({
+    name: 'ExportTranslationKeys',
+    component: {
+      lazy: () =>
+        import('./components/ExportTranslationKeys').then(
+          m => m.ExportTranslationKeys,
+        ),
+    },
   }),
 );

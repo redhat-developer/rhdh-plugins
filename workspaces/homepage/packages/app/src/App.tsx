@@ -57,11 +57,12 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import {
-  DynamicHomePage,
+  DynamicCustomizableHomePage,
+  VisitListener,
   OnboardingSection,
   EntitySection,
   TemplateSection,
-  VisitListener,
+  defaultLayouts,
   HomePageCardMountPoint,
   homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
@@ -111,40 +112,19 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: OnboardingSection,
     config: {
-      layouts: {
-        xl: { w: 12, h: 5 },
-        lg: { w: 12, h: 5 },
-        md: { w: 12, h: 5 },
-        sm: { w: 12, h: 5 },
-        xs: { w: 12, h: 7 },
-        xxs: { w: 12, h: 13 },
-      },
+      layouts: defaultLayouts.onboarding,
     },
   },
   {
     Component: EntitySection,
     config: {
-      layouts: {
-        xl: { w: 12, h: 6 },
-        lg: { w: 12, h: 6 },
-        md: { w: 12, h: 6 },
-        sm: { w: 12, h: 6 },
-        xs: { w: 12, h: 10 },
-        xxs: { w: 12, h: 14.5 },
-      },
+      layouts: defaultLayouts.entity,
     },
   },
   {
     Component: TemplateSection,
     config: {
-      layouts: {
-        xl: { w: 12, h: 5 },
-        lg: { w: 12, h: 5 },
-        md: { w: 12, h: 5 },
-        sm: { w: 12, h: 5 },
-        xs: { w: 12, h: 7.5 },
-        xxs: { w: 12, h: 13.5 },
-      },
+      layouts: defaultLayouts.template,
     },
   },
 ];
@@ -170,7 +150,7 @@ const routes = (
       path="/"
       element={
         <ScalprumContext.Provider value={scalprumState}>
-          <DynamicHomePage />
+          <DynamicCustomizableHomePage />
         </ScalprumContext.Provider>
       }
     />

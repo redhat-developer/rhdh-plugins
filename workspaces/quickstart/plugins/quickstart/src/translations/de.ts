@@ -22,9 +22,42 @@ const quickstartTranslationDe = createTranslationMessages({
   messages: {
     'header.title': 'Erste Schritte mit dem Developer Hub',
     'header.subtitle': 'Wir führen Sie durch einige schnelle Schritte',
+    'steps.setupAuthentication.title': 'Authentifizierung einrichten',
+    'steps.setupAuthentication.description':
+      'Richten Sie sichere Anmeldedaten ein, um Ihr Konto vor unbefugtem Zugriff zu schützen.',
+    'steps.setupAuthentication.ctaTitle': 'Mehr erfahren',
+    'steps.configureRbac.title': 'RBAC konfigurieren',
+    'steps.configureRbac.description':
+      'Weisen Sie Rollen und Berechtigungen zu, um zu kontrollieren, wer Ressourcen anzeigen, erstellen oder bearbeiten kann.',
+    'steps.configureRbac.ctaTitle': 'Zugriff verwalten',
+    'steps.configureGit.title': 'Git konfigurieren',
+    'steps.configureGit.description':
+      'Verbinden Sie Ihre Git-Anbieter wie GitHub, um Code zu verwalten, Workflows zu automatisieren und mit Plattformfunktionen zu integrieren.',
+    'steps.configureGit.ctaTitle': 'Mehr erfahren',
+    'steps.managePlugins.title': 'Plugins verwalten',
+    'steps.managePlugins.description':
+      'Durchsuchen und installieren Sie Erweiterungen, um Funktionen hinzuzufügen, externe Tools zu verbinden und Ihre Erfahrung anzupassen.',
+    'steps.managePlugins.ctaTitle': 'Plugins erkunden',
+    'steps.importApplication.title': 'Anwendung importieren',
+    'steps.importApplication.description':
+      'Importieren Sie Ihren vorhandenen Code und Ihre Dienste in den Katalog, um sie über Ihr Entwicklerportal zu organisieren und darauf zuzugreifen.',
+    'steps.importApplication.ctaTitle': 'Importieren',
+    'steps.learnAboutCatalog.title': 'Über den Katalog lernen',
+    'steps.learnAboutCatalog.description':
+      'Entdecken Sie alle Softwarekomponenten, Dienste und APIs und sehen Sie deren Eigentümer und Dokumentation.',
+    'steps.learnAboutCatalog.ctaTitle': 'Katalog anzeigen',
+    'steps.exploreSelfServiceTemplates.title': 'Self-Service-Vorlagen erkunden',
+    'steps.exploreSelfServiceTemplates.description':
+      'Verwenden Sie unsere Self-Service-Vorlagen, um schnell neue Projekte, Dienste oder Dokumentationen einzurichten.',
+    'steps.exploreSelfServiceTemplates.ctaTitle': 'Vorlagen erkunden',
+    'steps.findAllLearningPaths.title': 'Alle Lernpfade finden',
+    'steps.findAllLearningPaths.description':
+      'Integrieren Sie maßgeschneidertes E-Learning in Ihre Workflows mit Lernpfaden, um das Onboarding zu beschleunigen, Qualifikationslücken zu schließen und bewährte Praktiken zu fördern.',
+    'steps.findAllLearningPaths.ctaTitle': 'Lernpfade anzeigen',
     'button.quickstart': 'Schnellstart',
     'button.openQuickstartGuide': 'Schnellstart-Leitfaden öffnen',
     'button.closeDrawer': 'Drawer schließen',
+    'button.gotIt': 'Verstanden!',
     'footer.progress': '{{progress}}% Fortschritt',
     'footer.notStarted': 'Nicht begonnen',
     'footer.hide': 'Ausblenden',

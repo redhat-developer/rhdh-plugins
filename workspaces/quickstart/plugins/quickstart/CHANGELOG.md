@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.6.0
+
+### Minor Changes
+
+- dcda8f3: Adding localization support for quickstart steps.
+
+### Patch Changes
+
+- b887a58: French translation updated
+
 ## 1.5.1
 
 ### Patch Changes
