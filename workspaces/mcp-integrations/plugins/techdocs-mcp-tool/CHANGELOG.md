@@ -1,4 +1,4 @@
-# @redhat-developer-hub/backstage-plugin-techdocs-mcp-tool
+# @red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool
 
 ## 0.1.1
 
