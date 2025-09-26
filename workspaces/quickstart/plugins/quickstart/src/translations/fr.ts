@@ -20,8 +20,40 @@ import { quickstartTranslationRef } from './ref';
 const quickstartTranslationFr = createTranslationMessages({
   ref: quickstartTranslationRef,
   messages: {
-    'header.title': 'Commençons avec le Hub Développeur',
+    'button.closeDrawer': 'Fermer le tiroir',
+    'button.openQuickstartGuide': 'Ouvrir le guide de démarrage rapide',
+    'button.quickstart': 'Démarrage rapide',
+    'content.emptyState.title':
+      "Le contenu de démarrage rapide n'est pas disponible pour votre rôle.",
+    'dev.currentState': 'État actuel du tiroir : {{state}}',
+    'dev.drawerControls': 'Commandes des tiroirs',
+    'dev.instructions': 'Instructions',
+    'dev.pageDescription':
+      'Ceci est une page de test pour le plugin Quickstart. Utilisez les boutons ci-dessous pour interagir avec le tiroir de démarrage rapide.',
+    'dev.pageTitle': 'Page de test du plugin de démarrage rapide',
+    'dev.stateClosed': 'Fermé',
+    'dev.stateOpen': 'Ouvrir',
+    'dev.step1':
+      '1. Cliquez sur « Ouvrir le guide de démarrage rapide » pour ouvrir le tiroir',
+    'dev.step2': '2. Parcourez les étapes de démarrage rapide',
+    'dev.step3':
+      '3. Testez le suivi de la progression en complétant les étapes',
+    'dev.step4':
+      "4. Le tiroir peut être fermé à l'aide du bouton de fermeture ou des commandes du tiroir",
+    'dev.step5':
+      '5. La progression est automatiquement enregistrée dans le stockage local',
+    'footer.hide': 'Cacher',
+    'footer.notStarted': 'Non démarré',
+    'footer.progress': '{{progress}}% de progrès',
     'header.subtitle': 'Nous vous guiderons à travers quelques étapes rapides',
+    'header.title': 'Commençons par vous familiariser avec Developer Hub',
+    'item.collapseAriaLabel': 'Réduire les détails de {{title}}',
+    'item.collapseButtonAriaLabel': "Réduire l'élément",
+    'item.expandAriaLabel': 'Développer les détails de {{title}}',
+    'item.expandButtonAriaLabel': "Développer l'élément",
+
+    // New keys https://github.com/redhat-developer/rhdh-plugins/pull/1514
+    'button.gotIt': 'Compris !',
     'steps.setupAuthentication.title': "Configurer l'authentification",
     'steps.setupAuthentication.description':
       "Configurez des identifiants de connexion sécurisés pour protéger votre compte contre l'accès non autorisé.",
@@ -56,35 +88,6 @@ const quickstartTranslationFr = createTranslationMessages({
     'steps.findAllLearningPaths.description':
       "Intégrez l'e-learning sur mesure dans vos flux de travail avec des parcours d'apprentissage pour accélérer l'intégration, combler les lacunes de compétences et promouvoir les meilleures pratiques.",
     'steps.findAllLearningPaths.ctaTitle': "Voir les parcours d'apprentissage",
-    'button.quickstart': 'Démarrage rapide',
-    'button.gotIt': 'Compris !',
-    'footer.progress': '{{progress}}% de progression',
-    'footer.notStarted': 'Pas encore commencé',
-    'footer.hide': 'Masquer',
-    'content.emptyState.title':
-      "Le contenu de démarrage rapide n'est pas disponible pour votre rôle.",
-    'item.expandAriaLabel': 'Développer les détails de {{title}}',
-    'item.collapseAriaLabel': 'Réduire les détails de {{title}}',
-    'item.expandButtonAriaLabel': "Développer l'élément",
-    'item.collapseButtonAriaLabel': "Réduire l'élément",
-    'button.openQuickstartGuide': 'Ouvrir le guide de démarrage rapide',
-    'button.closeDrawer': 'Fermer le tiroir',
-    'dev.pageTitle': 'Page de test du plugin Quickstart',
-    'dev.pageDescription':
-      'Ceci est une page de test pour le plugin Quickstart. Utilisez les boutons ci-dessous pour interagir avec le tiroir de démarrage rapide.',
-    'dev.drawerControls': 'Contrôles du tiroir',
-    'dev.currentState': 'État actuel du tiroir : {{state}}',
-    'dev.stateOpen': 'Ouvert',
-    'dev.stateClosed': 'Fermé',
-    'dev.instructions': 'Instructions',
-    'dev.step1':
-      '1. Cliquez sur "Ouvrir le guide de démarrage rapide" pour ouvrir le tiroir',
-    'dev.step2': '2. Naviguez à travers les étapes de démarrage rapide',
-    'dev.step3': '3. Testez le suivi de progression en complétant les étapes',
-    'dev.step4':
-      '4. Le tiroir peut être fermé en utilisant le bouton de fermeture ou les contrôles propres du tiroir',
-    'dev.step5':
-      '5. La progression est automatiquement sauvegardée dans localStorage',
   },
 });
 
