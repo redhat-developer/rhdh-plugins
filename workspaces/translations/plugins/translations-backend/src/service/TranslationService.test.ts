@@ -26,6 +26,7 @@ import {
   createReadFileSyncMock,
   createThrowingReadFileSyncMock,
 } from '../test-utils/testHelpers';
+import { createExcludeSrcTranslationsMock } from '../test-utils/sharedTestHelpers';
 
 jest.mock('fs', () => {
   const actualFs = jest.requireActual('fs');
@@ -91,19 +92,9 @@ describe('TranslationService', () => {
     });
 
     it('should throw error if no valid files exist', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
-          return false;
-        }
-        // Don't find any files
-        return false;
-      });
+      (fs.existsSync as jest.Mock).mockImplementation(
+        createExcludeSrcTranslationsMock(),
+      );
 
       await expect(service.getTranslations()).rejects.toThrow(
         'All configured translation files were not found',
@@ -148,13 +139,9 @@ describe('TranslationService', () => {
       service = new TranslationService(mockConfig, mockLogger);
 
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
+        // Use shared helper for path checking
+        const excludeHelper = createExcludeSrcTranslationsMock();
+        if (excludeHelper(path)) {
           return false;
         }
         // Find the override files
@@ -192,13 +179,9 @@ describe('TranslationService', () => {
       service = new TranslationService(mockConfig, mockLogger);
 
       (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-        // Don't find any 'src' or 'translations' folders
-        if (
-          path.endsWith('/src') ||
-          path.endsWith('\\src') ||
-          path.endsWith('/translations') ||
-          path.endsWith('\\translations')
-        ) {
+        // Use shared helper for path checking
+        const excludeHelper = createExcludeSrcTranslationsMock();
+        if (excludeHelper(path)) {
           return false;
         }
         // Find the override files

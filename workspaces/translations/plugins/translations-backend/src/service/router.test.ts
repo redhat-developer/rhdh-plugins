@@ -30,6 +30,7 @@ import {
   createReadFileSyncMock,
   createThrowingReadFileSyncMock,
 } from '../test-utils/testHelpers';
+import { createExcludeSrcTranslationsMock } from '../test-utils/sharedTestHelpers';
 
 jest.mock('fs', () => {
   const actualFs = jest.requireActual('fs');
@@ -64,19 +65,9 @@ describe('createRouter', () => {
 
     // Mock the directory traversal to not find any 'src' or 'translations' folders
     // This ensures existing tests work as before
-    (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-      // Don't find any 'src' or 'translations' folders by default
-      if (
-        path.endsWith('/src') ||
-        path.endsWith('\\src') ||
-        path.endsWith('/translations') ||
-        path.endsWith('\\translations')
-      ) {
-        return false;
-      }
-      // Allow other paths to be mocked per test
-      return false;
-    });
+    (fs.existsSync as jest.Mock).mockImplementation(
+      createExcludeSrcTranslationsMock(),
+    );
 
     const router = await createRouter({
       logger: mockServices.logger.mock(),
@@ -113,19 +104,9 @@ describe('createRouter', () => {
   });
 
   it('should return 404 if no valid files exist', async () => {
-    (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-      // Don't find any 'src' or 'translations' folders
-      if (
-        path.endsWith('/src') ||
-        path.endsWith('\\src') ||
-        path.endsWith('/translations') ||
-        path.endsWith('\\translations')
-      ) {
-        return false;
-      }
-      // Don't find any files
-      return false;
-    });
+    (fs.existsSync as jest.Mock).mockImplementation(
+      createExcludeSrcTranslationsMock(),
+    );
 
     const res = await request(app).get('/');
 
@@ -191,13 +172,9 @@ describe('createRouter', () => {
 
     // Mock the directory traversal to not find any 'src' or 'translations' folders
     (fs.existsSync as jest.Mock).mockImplementation((path: string) => {
-      // Don't find any 'src' or 'translations' folders
-      if (
-        path.endsWith('/src') ||
-        path.endsWith('\\src') ||
-        path.endsWith('/translations') ||
-        path.endsWith('\\translations')
-      ) {
+      // Use shared helper for path checking
+      const excludeHelper = createExcludeSrcTranslationsMock();
+      if (excludeHelper(path)) {
         return false;
       }
       // Find the override files using safe test paths
