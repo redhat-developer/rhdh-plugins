@@ -14,9 +14,4 @@
  * limitations under the License.
  */
 
-export type {
-  MetricProvider,
-  MetricProviderConnection,
-  MetricProviderInsertion,
-} from './MetricProvider';
-export { BaseMetricProvider } from './BaseMetricProvider';
+export type { MetricProvider } from './MetricProvider';

@@ -17,7 +17,6 @@ import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
-import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
 
@@ -27,22 +26,11 @@ export const scorecardModuleGithub = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
-        auth: coreServices.auth,
         config: coreServices.rootConfig,
-        logger: coreServices.logger,
-        scheduler: coreServices.scheduler,
         metrics: scorecardMetricsExtensionPoint,
-        catalog: catalogServiceRef,
       },
-      async init({ auth, config, logger, scheduler, metrics, catalog }) {
-        metrics.addMetricProvider(
-          GithubOpenPRsProvider.fromConfig(config, {
-            auth,
-            logger,
-            scheduler,
-            catalog,
-          }),
-        );
+      async init({ config, metrics }) {
+        metrics.addMetricProvider(GithubOpenPRsProvider.fromConfig(config));
       },
     });
   },
