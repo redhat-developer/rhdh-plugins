@@ -24,6 +24,7 @@ import Typography from '@mui/material/Typography';
 import { useCodeEditor } from './CodeEditor';
 import { Markdown } from './Markdown';
 import { applyContent, getExampleAsMarkdown } from '../utils';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface TabPanelProps {
   markdownContent: string | ExtensionsPackageAppConfigExamples[];
@@ -40,6 +41,7 @@ export const TabPanel = ({
   others,
   title,
 }: TabPanelProps) => {
+  const { t } = useTranslation();
   const alertApi = useApi(alertApiRef);
   const codeEditor = useCodeEditor();
   if (value !== index) return null;
@@ -68,7 +70,7 @@ export const TabPanel = ({
       alertApi.post({
         display: 'transient',
         severity: 'warning',
-        message: `Could not apply YAML: ${error}`,
+        message: t('common.couldNotApplyYaml' as any, { error }),
       });
     }
   };
@@ -97,7 +99,7 @@ export const TabPanel = ({
                           handleApplyContent(ex.content, Object.keys(item)[0])
                         }
                       >
-                        Apply
+                        {t('common.apply')}
                       </Button>
                     )}
                   </Typography>

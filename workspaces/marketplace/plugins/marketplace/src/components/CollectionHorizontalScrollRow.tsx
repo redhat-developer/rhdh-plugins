@@ -26,6 +26,8 @@ import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-m
 import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
 import { PluginCard, PluginCardSkeleton } from './PluginCard';
 import { collectionRouteRef } from '../routes';
+import { useTranslation } from '../hooks/useTranslation';
+import { getTranslatedText } from '../translations/utils';
 
 export const CollectionHorizontalScrollRowSkeleton = () => {
   return (
@@ -61,7 +63,13 @@ export const CollectionHorizontalScrollRow = ({
 }: {
   collection: MarketplaceCollection;
 }) => {
-  const title = collection.metadata.title ?? collection.metadata.name;
+  const { t } = useTranslation();
+
+  const title = getTranslatedText(
+    collection.metadata.title ?? collection.metadata.name,
+    (collection.metadata as any).titleKey,
+    t,
+  );
   const plugins = useCollectionPlugins(
     collection.metadata.namespace!,
     collection.metadata.name,

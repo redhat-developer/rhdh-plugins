@@ -53,6 +53,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { DynamicMarketplacePluginRouter as Marketplace } from '@red-hat-developer-hub/backstage-plugin-marketplace';
+import { marketplaceTranslations } from '@red-hat-developer-hub/backstage-plugin-marketplace/alpha';
 
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
@@ -61,6 +62,10 @@ import { Root } from './components/Root';
 
 const app = createApp({
   apis,
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [marketplaceTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,

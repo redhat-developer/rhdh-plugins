@@ -25,6 +25,10 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { colors } from '../consts';
 
+import { useTranslation } from '../hooks/useTranslation';
+import { marketplaceTranslationRef } from '../translations/ref';
+import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+
 interface BadgeOptions {
   isBadge?: boolean;
   color?: string;
@@ -35,6 +39,7 @@ interface BadgeOptions {
 
 const getBadgeOptions = (
   entity: MarketplacePlugin | MarketplacePackage,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
 ): BadgeOptions | null => {
   const supportLevel = entity.spec?.support?.level;
   const supportProvider = entity.spec?.support?.provider;
@@ -43,43 +48,49 @@ const getBadgeOptions = (
     return {
       isBadge: true,
       color: colors.certified,
-      label: 'Certified',
-      tooltip: `Certified by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
-      statusTooltip: `Stable and secured by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
+      label: t('badges.certified'),
+      tooltip: t('badges.certifiedBy' as any, {
+        provider:
+          entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY],
+      }),
+      statusTooltip: t('badges.stableAndSecured' as any, {
+        provider:
+          entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY],
+      }),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.GENERALLY_AVAILABLE) {
     return {
       isBadge: true,
       color: colors.generallyAvailable,
-      label: 'Generally available (GA)',
+      label: t('badges.generallyAvailable'),
       tooltip: supportProvider
-        ? `Generally available (GA) and supported by ${supportProvider}`
-        : 'Generally available (GA) and supported',
+        ? t('badges.gaAndSupportedBy' as any, { provider: supportProvider })
+        : t('badges.gaAndSupported'),
       statusTooltip: supportProvider
-        ? `Production-ready and supported by ${supportProvider}`
-        : 'Production-ready and supported',
+        ? t('badges.productionReadyBy' as any, { provider: supportProvider })
+        : t('badges.productionReady'),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.COMMUNITY) {
     return {
       isBadge: false,
-      label: 'Community plugin',
-      statusTooltip: 'Open-source plugins, no official support',
+      label: t('badges.communityPlugin'),
+      statusTooltip: t('badges.openSourceNoSupport'),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.TECH_PREVIEW) {
     return {
       isBadge: false,
-      label: 'Tech preview (TP)',
-      statusTooltip: 'Plugin still in development',
+      label: t('badges.techPreview'),
+      statusTooltip: t('badges.pluginInDevelopment'),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.DEV_PREVIEW) {
     return {
       isBadge: false,
-      label: 'Dev preview (DP)',
-      statusTooltip: 'An early-stage, experimental plugin',
+      label: t('badges.devPreview'),
+      statusTooltip: t('badges.earlyStageExperimental'),
     };
   }
 
@@ -90,9 +101,9 @@ const getBadgeOptions = (
     return {
       isBadge: true,
       color: colors.custom,
-      label: 'Custom plugin',
-      tooltip: 'Custom plugin',
-      statusTooltip: 'Plugins added by the administrator',
+      label: t('badges.customPlugin'),
+      tooltip: t('badges.customPlugin'),
+      statusTooltip: t('badges.addedByAdmin'),
     };
   }
 
@@ -100,10 +111,12 @@ const getBadgeOptions = (
 };
 
 export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
+
   if (!plugin) {
     return null;
   }
-  const options = getBadgeOptions(plugin);
+  const options = getBadgeOptions(plugin, t);
   if (!options) {
     return null;
   }
@@ -128,10 +141,12 @@ export const BadgeChip = ({ plugin }: { plugin: MarketplacePlugin }) => {
 };
 
 export const BadgeTriange = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
+
   if (!plugin) {
     return null;
   }
-  const options = getBadgeOptions(plugin);
+  const options = getBadgeOptions(plugin, t);
   if (!options || !options.isBadge) {
     return null;
   }
