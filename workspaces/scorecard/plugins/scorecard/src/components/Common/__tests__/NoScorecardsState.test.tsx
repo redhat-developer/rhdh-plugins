@@ -25,22 +25,6 @@ jest.mock(
   () => 'mocked-no-scorecards.svg',
 );
 
-// Mock the useTranslation hook
-jest.mock('../../../hooks/useTranslation', () => ({
-  useTranslation: () => ({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        'emptyState.title': 'No scorecards added yet',
-        'emptyState.description':
-          'Scorecards help you monitor component health at a glance. To begin, explore our documentation for setup guidelines.',
-        'emptyState.button': 'View documentation',
-        'emptyState.altText': 'No scorecards',
-      };
-      return translations[key] || key;
-    },
-  }),
-}));
-
 // Mock the useApi hook
 jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),

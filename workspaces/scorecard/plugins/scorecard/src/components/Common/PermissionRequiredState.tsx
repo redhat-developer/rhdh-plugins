@@ -55,17 +55,19 @@ const PermissionRequiredState = () => {
               lineHeight: 1.5,
             })}
           >
-            {t('permissionRequired.description')}{' '}
-            <Typography
-              component="span"
-              sx={theme => ({
-                fontWeight: 'bold',
-                color: theme.palette.text.primary,
-              })}
-            >
-              {t('permissionRequired.permission')}
-            </Typography>{' '}
-            {t('permissionRequired.descriptionSuffix')}
+            {t('permissionRequired.description' as any, {
+              permission: (
+                <Typography
+                  component="span"
+                  sx={theme => ({
+                    fontWeight: 'bold',
+                    color: theme.palette.text.primary,
+                  })}
+                >
+                  scorecard.metric.read
+                </Typography>
+              ),
+            })}
           </Typography>
 
           <Button

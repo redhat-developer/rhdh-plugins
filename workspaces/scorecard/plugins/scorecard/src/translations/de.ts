@@ -31,9 +31,7 @@ const scorecardTranslationDe = createTranslationMessages({
     // Permission required state
     'permissionRequired.title': 'Berechtigung fehlt',
     'permissionRequired.description':
-      'Um das Scorecard-Plugin anzuzeigen, wenden Sie sich an Ihren Administrator, um die',
-    'permissionRequired.permission': 'scorecard.metric.read',
-    'permissionRequired.descriptionSuffix': 'Berechtigung zu erteilen.',
+      'Um das Scorecard-Plugin anzuzeigen, wenden Sie sich an Ihren Administrator, um die {{permission}} Berechtigung zu erteilen.',
     'permissionRequired.button': 'Mehr lesen',
     'permissionRequired.altText': 'Berechtigung erforderlich',
 

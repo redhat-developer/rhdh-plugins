@@ -35,9 +35,7 @@ export const scorecardMessages = {
   permissionRequired: {
     title: 'Missing permission',
     description:
-      'To view Scorecard plugin, contact your administrator to give the',
-    permission: 'scorecard.metric.read',
-    descriptionSuffix: 'permission.',
+      'To view Scorecard plugin, contact your administrator to give the {{permission}} permission.',
     button: 'Read more',
     altText: 'Permission required',
   },

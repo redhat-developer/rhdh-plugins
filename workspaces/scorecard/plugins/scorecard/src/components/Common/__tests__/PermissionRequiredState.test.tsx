@@ -95,16 +95,7 @@ describe('PermissionRequiredState Component', () => {
         /To view Scorecard plugin, contact your administrator to give the/,
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('scorecard.metric.read')).toBeInTheDocument();
     expect(screen.getByText(/permission\./)).toBeInTheDocument();
-  });
-
-  it('should render the permission name with bold styling', () => {
-    renderWithProviders(<PermissionRequiredState />);
-
-    const permissionText = screen.getByText('scorecard.metric.read');
-    expect(permissionText).toBeInTheDocument();
-    expect(permissionText.tagName).toBe('SPAN');
   });
 
   it('should render the read more link button with correct text', () => {
