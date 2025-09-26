@@ -17,7 +17,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useMarketplaceApi } from './useMarketplaceApi';
 
-export const useEnablePlugin = () => {
+export const useEnablePlugin = (isPackage: boolean) => {
   const marketplaceApi = useMarketplaceApi();
 
   return useMutation({
@@ -29,6 +29,9 @@ export const useEnablePlugin = () => {
       namespace: string;
       name: string;
       disabled: boolean;
-    }) => await marketplaceApi.disablePlugin?.(namespace, name, disabled),
+    }) =>
+      isPackage
+        ? await marketplaceApi.disablePackage?.(namespace, name, disabled)
+        : await marketplaceApi.disablePlugin?.(namespace, name, disabled),
   });
 };

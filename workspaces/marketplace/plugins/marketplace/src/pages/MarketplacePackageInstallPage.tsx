@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { useRouteRefParams } from '@backstage/core-plugin-api';
 import { useLocation } from 'react-router-dom';
 import {
   Page,
@@ -24,7 +24,7 @@ import {
 } from '@backstage/core-components';
 
 import { themeId } from '../consts';
-import { packageInstallRouteRef, packageRouteRef } from '../routes';
+import { packageInstallRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
 import { MarketplacePackageEditContentLoader } from '../components/MarketplacePackageEditContent';
@@ -37,18 +37,14 @@ const PackageEditHeader = () => {
 
   const displayName = pkg.data?.metadata.title ?? params.name;
   const title = `Edit ${displayName}`;
-  const baseLink = useRouteRef(packageRouteRef)({
-    namespace: params.namespace,
-    name: params.name,
-  });
+  const baseLink = '/extensions/installed-packages';
   const preserved = new URLSearchParams(location.search);
   const packageLink = preserved.size ? `${baseLink}?${preserved}` : baseLink;
 
   return <Header title={title} type="Packages" typeLink={packageLink} />;
 };
 
-export const MarketplacePackageEditPage = () => {
-  const location = useLocation();
+export const MarketplacePackageInstallPage = () => {
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
@@ -56,9 +52,7 @@ export const MarketplacePackageEditPage = () => {
         <Content>
           <ErrorBoundary>
             {/* Force remount on navigation within same route to reseed editor */}
-            <MarketplacePackageEditContentLoader
-              key={`${location.key}-${location.search}`}
-            />
+            <MarketplacePackageEditContentLoader />
           </ErrorBoundary>
         </Content>
       </Page>

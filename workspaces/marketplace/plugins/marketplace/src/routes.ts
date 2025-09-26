@@ -76,7 +76,7 @@ export const catalogTabRouteRef = createSubRouteRef({
 
 export const installedTabRouteRef = createSubRouteRef({
   id: 'extensions/installed',
-  path: '/installed',
+  path: '/installed-packages',
   parent: rootRouteRef,
 });
 

@@ -164,16 +164,20 @@ export const MarketplacePackageEditContent = ({
   const packageDynamicArtifacts = {
     [`${pkg.metadata.name}`]: pkg.spec?.dynamicArtifact,
   };
-  const availableTabs = [
-    !!Object.values(examples[0])[0] && {
-      label: t('install.examples'),
-      content: examples,
-      key: 'examples',
-      others: { packageNames: packageDynamicArtifacts },
-    },
-  ].filter(tab => tab) as TabItem[];
 
-  const showRightCard = examples;
+  const packageExamples = Object.values(examples[0])[0];
+
+  const availableTabs = [
+    Array.isArray(packageExamples) &&
+      packageExamples.length > 0 && {
+        label: 'Examples',
+        content: examples,
+        key: 'examples',
+        others: { packageNames: packageDynamicArtifacts },
+      },
+  ].filter(Boolean) as TabItem[];
+
+  const showRightCard = packageExamples?.length && packageExamples.length > 0;
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (_: any, newValue: SetStateAction<number>) => {
@@ -246,11 +250,8 @@ export const MarketplacePackageEditContent = ({
             pkg.metadata.name,
           ],
         });
-        const ns = pkg.metadata.namespace ?? params.namespace;
-        const name = pkg.metadata.name;
         const preserved = new URLSearchParams(location.search);
-        preserved.set('package', `${ns}/${name}`);
-        navigate(`/extensions/installed-packages?${preserved.toString()}`);
+        navigate(`/extensions/installed-packages??${preserved.toString()}`);
       } else {
         setSaveError(
           (res as any)?.error?.message ?? t('install.errors.failedToSave'),
@@ -406,8 +407,9 @@ export const MarketplacePackageEditContent = ({
             const ns = pkg.metadata.namespace ?? params.namespace;
             const name = pkg.metadata.name;
             const preserved = new URLSearchParams(location.search);
-            preserved.set('package', `${ns}/${name}`);
-            navigate(`/extensions/installed-packages?${preserved.toString()}`);
+            navigate(
+              `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
+            );
           }}
         >
           {t('install.cancel')}

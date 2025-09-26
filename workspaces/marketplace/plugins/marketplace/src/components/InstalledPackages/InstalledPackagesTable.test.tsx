@@ -26,6 +26,12 @@ import { InstalledPackagesTable } from './InstalledPackagesTable';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useRouteRef: () => (params: any) =>
+    `/packages/${params.namespace}/${params.name}`,
+}));
+
 describe('InstalledPackagesTable', () => {
   const renderWithProviders = (apis: any) =>
     render(

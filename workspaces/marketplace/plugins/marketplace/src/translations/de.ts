@@ -118,6 +118,7 @@ const marketplaceTranslationDe = createTranslationMessages({
     'plugin.license': 'Lizenz',
     'plugin.version': 'Version',
     'plugin.author': 'Autor',
+    'plugin.authors': 'Autoren',
     'plugin.tags': 'Tags',
     'plugin.dependencies': 'Abhängigkeiten',
     'plugin.configuration': 'Konfiguration',
@@ -162,6 +163,12 @@ const marketplaceTranslationDe = createTranslationMessages({
     'installedPackages.table.columns.actions': 'Aktionen',
     'installedPackages.table.tooltips.enableActions':
       'Um Aktionen zu aktivieren, fügen Sie eine Katalogeintrag für dieses Paket hinzu',
+    'installedPackages.table.tooltips.noDownloadPermissions':
+      'Sie haben keine Berechtigung, die YAML-Konfiguration dieses Pakets herunterzuladen',
+    'installedPackages.table.tooltips.noEditPermissions':
+      'Sie haben keine Berechtigung, die Konfiguration dieses Pakets zu bearbeiten',
+    'installedPackages.table.tooltips.noTogglePermissions':
+      'Sie haben keine Berechtigung, dieses Paket zu aktivieren oder zu deaktivieren',
     'installedPackages.table.emptyMessages.noResults':
       'Keine Ergebnisse gefunden. Versuchen Sie einen anderen Suchbegriff.',
     'installedPackages.table.emptyMessages.noRecords':
@@ -176,8 +183,11 @@ const marketplaceTranslationDe = createTranslationMessages({
     'actions.actions': 'Aktionen',
     'actions.editConfiguration': 'Bearbeiten',
     'actions.pluginConfigurations': 'Plugin-Konfigurationen',
+    'actions.packageConfiguration': 'Paket-Konfiguration',
     'actions.pluginCurrentlyEnabled': 'Plugin ist derzeit aktiviert',
     'actions.pluginCurrentlyDisabled': 'Plugin ist derzeit deaktiviert',
+    'actions.packageCurrentlyEnabled': 'Paket ist derzeit aktiviert',
+    'actions.packageCurrentlyDisabled': 'Paket ist derzeit deaktiviert',
     'actions.installTitle': '{{displayName}} installieren',
     'actions.editTitle': '{{displayName}} Konfigurationen bearbeiten',
 
@@ -188,6 +198,10 @@ const marketplaceTranslationDe = createTranslationMessages({
     'metadata.about': 'Über',
     'metadata.publisher': 'Herausgeber',
     'metadata.supportProvider': 'Support-Anbieter',
+    'metadata.entryName': 'Eintragsname',
+    'metadata.bySomeone': 'von jemandem',
+    'metadata.category': 'Kategorie',
+    'metadata.versions': 'Versionen',
 
     // Support type filters
     'supportTypes.certifiedBy': 'Zertifiziert von {{value}} ({{count}})',
