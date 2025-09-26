@@ -14,6 +14,10 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
     readonly 'emptyState.altText': string;
+    readonly 'permissionRequired.button': string;
+    readonly 'permissionRequired.title': string;
+    readonly 'permissionRequired.description': string;
+    readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
     readonly 'errors.fetchError': string;

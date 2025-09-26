@@ -25,6 +25,15 @@ jest.mock(
   () => 'mocked-no-scorecards.svg',
 );
 
+// Mock the useApi hook
+jest.mock('@backstage/core-plugin-api', () => ({
+  useApi: jest.fn(),
+  configApiRef: 'configApiRef',
+}));
+
+const mockUseApi = require('@backstage/core-plugin-api')
+  .useApi as jest.MockedFunction<any>;
+
 const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const theme = createTheme();
   return (
@@ -39,6 +48,22 @@ const renderWithProviders = (component: React.ReactElement) => {
 };
 
 describe('NoScorecardsState Component', () => {
+  beforeEach(() => {
+    // Mock the config API to return a default support URL
+    mockUseApi.mockImplementation((apiRef: string) => {
+      if (apiRef === 'configApiRef') {
+        return {
+          getOptionalString: jest.fn().mockReturnValue(undefined),
+        };
+      }
+      return {};
+    });
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should render the main heading', () => {
     renderWithProviders(<NoScorecardsState />);
 
@@ -58,19 +83,17 @@ describe('NoScorecardsState Component', () => {
   it('should render the documentation button with correct text', () => {
     renderWithProviders(<NoScorecardsState />);
 
-    const button = screen.getByRole('button', { name: /view documentation/i });
-    expect(button).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /view documentation/i });
+    expect(link).toBeInTheDocument();
   });
 
   it('should render the OpenInNewOutlined icon', () => {
     renderWithProviders(<NoScorecardsState />);
 
-    const button = screen.getByRole('button', { name: /view documentation/i });
-    expect(button).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /view documentation/i });
+    expect(link).toBeInTheDocument();
 
-    const icon = button.querySelector(
-      'svg[data-testid="OpenInNewOutlinedIcon"]',
-    );
+    const icon = link.querySelector('svg[data-testid="OpenInNewOutlinedIcon"]');
     expect(icon).toBeInTheDocument();
   });
 
