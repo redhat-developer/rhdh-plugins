@@ -6,7 +6,7 @@ metadata:
   name: featured
   title: Featured Plugins
   titleKey: collection.featured.title
-  description: A curated collection of featured plugins recommended for most users
+  description: A set of great plugins! :)
   descriptionKey: collection.featured.description
 spec:
   type: curated

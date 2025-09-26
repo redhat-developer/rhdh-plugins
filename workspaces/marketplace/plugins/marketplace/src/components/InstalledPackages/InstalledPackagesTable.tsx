@@ -40,6 +40,7 @@ import { useMarketplaceApi } from '../../hooks/useMarketplaceApi';
 import { getReadableName } from '../../utils/pluginProcessing';
 import { useQueryFullTextSearch } from '../../hooks/useQueryFullTextSearch';
 import { SearchTextField } from '../../shared-components/SearchTextField';
+import { useTranslation } from '../../hooks/useTranslation';
 
 type InstalledPackageRow = {
   displayName: string;
@@ -52,6 +53,7 @@ type InstalledPackageRow = {
 };
 
 export const InstalledPackagesTable = () => {
+  const { t } = useTranslation();
   const [error, setError] = useState<Error | undefined>(undefined);
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
@@ -76,7 +78,7 @@ export const InstalledPackagesTable = () => {
   const columns: TableColumn<InstalledPackageRow>[] = useMemo(
     () => [
       {
-        title: 'Name',
+        title: t('installedPackages.table.columns.name'),
         field: 'displayName',
         align: 'left',
         width: '30ch',
@@ -102,7 +104,7 @@ export const InstalledPackagesTable = () => {
         },
       },
       {
-        title: 'npm package name',
+        title: t('installedPackages.table.columns.packageName'),
         field: 'packageName',
         width: '54ch',
         align: 'left',
@@ -114,7 +116,7 @@ export const InstalledPackagesTable = () => {
         },
       },
       {
-        title: 'Role',
+        title: t('installedPackages.table.columns.role'),
         field: 'role',
         width: '24ch',
         align: 'left',
@@ -126,7 +128,7 @@ export const InstalledPackagesTable = () => {
         },
       },
       {
-        title: 'Version',
+        title: t('installedPackages.table.columns.version'),
         field: 'version',
         width: '24ch',
         align: 'left',
@@ -138,7 +140,7 @@ export const InstalledPackagesTable = () => {
         },
       },
       {
-        title: 'Actions',
+        title: t('installedPackages.table.columns.actions'),
         align: 'right',
         width: '78px',
         headerStyle: {
@@ -149,8 +151,9 @@ export const InstalledPackagesTable = () => {
         },
         render: (row: InstalledPackageRow) => {
           const disabled = !row.hasEntity;
-          const tooltipTitle =
-            'To enable actions, add a catalog entity for this package';
+          const tooltipTitle = t(
+            'installedPackages.table.tooltips.enableActions',
+          );
           return (
             <Box display="flex" gap={1}>
               {disabled ? (
@@ -228,7 +231,7 @@ export const InstalledPackagesTable = () => {
         sorting: false,
       },
     ],
-    [location.pathname, location.search],
+    [location.pathname, location.search, t],
   );
   const fetchData = async (
     query: Query<InstalledPackageRow>,
@@ -324,8 +327,8 @@ export const InstalledPackagesTable = () => {
 
   // Conditional empty message based on search state
   const emptyMessage = (fullTextSearch.current || '').trim()
-    ? 'No results found. Try a different search term.'
-    : 'No records to display';
+    ? t('installedPackages.table.emptyMessages.noResults')
+    : t('installedPackages.table.emptyMessages.noRecords');
 
   return (
     <>
@@ -336,7 +339,9 @@ export const InstalledPackagesTable = () => {
       </div>
       <Table
         key={`${installedQuery.data?.length ?? 0}-${packagesQuery.data?.items?.length ?? 0}-${fullTextSearch.current || ''}`}
-        title={`Installed packages (${filteredCount})`}
+        title={t('installedPackages.table.title' as any, {
+          count: filteredCount.toString(),
+        })}
         options={{
           search: false,
           draggable: false,
@@ -356,7 +361,7 @@ export const InstalledPackagesTable = () => {
             emptyDataSourceMessage: emptyMessage,
           },
           toolbar: {
-            searchPlaceholder: 'Search',
+            searchPlaceholder: t('installedPackages.table.searchPlaceholder'),
           },
         }}
       />

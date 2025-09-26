@@ -19,9 +19,14 @@ import { marketplaceTranslationRef } from './ref';
 
 const marketplaceTranslationFr = createTranslationMessages({
   ref: marketplaceTranslationRef,
+  full: true,
   messages: {
     // Page headers and titles
     'header.title': 'Extensions',
+    'header.extensions': 'Extensions',
+    'header.catalog': 'Catalogue',
+    'header.installedPackages': 'Paquets installés',
+    'header.installedPackagesWithCount': 'Paquets installés ({{count}})',
     'header.pluginsPage': 'Plugins',
     'header.packagesPage': 'Packages',
     'header.collectionsPage': 'Collections',
@@ -71,6 +76,8 @@ const marketplaceTranslationFr = createTranslationMessages({
       "Vous avez **{{count}}** plugins qui nécessitent un redémarrage de votre système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
     'alert.restartRequired': '{{count}} plugins installés',
     'alert.backendRestartRequired': 'Redémarrage du backend requis',
+    'alert.backendRestartMessage':
+      'Pour terminer les modifications du paquet, redémarrez votre système backend.',
     'alert.viewPlugins': 'Voir les plugins',
 
     // Search and filtering
@@ -144,6 +151,21 @@ const marketplaceTranslationFr = createTranslationMessages({
     'table.packagesCount': 'Packages ({{count}})',
     'table.pluginsTable': 'Tableau des plugins',
 
+    // Installed packages table
+    'installedPackages.table.title': 'Packages installés ({{count}})',
+    'installedPackages.table.searchPlaceholder': 'Rechercher',
+    'installedPackages.table.columns.name': 'Nom',
+    'installedPackages.table.columns.packageName': 'Nom du package npm',
+    'installedPackages.table.columns.role': 'Rôle',
+    'installedPackages.table.columns.version': 'Version',
+    'installedPackages.table.columns.actions': 'Actions',
+    'installedPackages.table.tooltips.enableActions':
+      'Pour activer les actions, ajoutez une entité de catalogue pour ce package',
+    'installedPackages.table.emptyMessages.noResults':
+      'Aucun résultat trouvé. Essayez un terme de recherche différent.',
+    'installedPackages.table.emptyMessages.noRecords':
+      'Aucun enregistrement à afficher',
+
     // Plugin actions and states
     'actions.install': 'Installer',
     'actions.view': 'Voir',
@@ -163,6 +185,8 @@ const marketplaceTranslationFr = createTranslationMessages({
     'metadata.pluginNotFound': 'Plugin {{name}} introuvable !',
     'metadata.highlights': 'Points forts',
     'metadata.about': 'À propos',
+    'metadata.publisher': 'Éditeur',
+    'metadata.supportProvider': 'Fournisseur de support',
 
     // Support type filters
     'supportTypes.certifiedBy': 'Certifié par {{value}} ({{count}})',
@@ -206,6 +230,14 @@ const marketplaceTranslationFr = createTranslationMessages({
     'install.instructions': 'Instructions',
     'install.editInstructions': 'Modifier les instructions',
     'install.back': 'Retour',
+    'install.packageUpdated': 'Package mis à jour',
+    'install.errors.missingPluginsList':
+      "Contenu de l'éditeur invalide : liste 'plugins' manquante",
+    'install.errors.missingPackageItem':
+      "Contenu de l'éditeur invalide : élément de package manquant",
+    'install.errors.missingPackageField':
+      "Contenu de l'éditeur invalide : champ 'package' manquant dans l'élément",
+    'install.errors.failedToSave': 'Échec de la sauvegarde',
 
     // Loading and error states
     loading: 'Chargement...',
@@ -246,6 +278,22 @@ const marketplaceTranslationFr = createTranslationMessages({
     'badges.verified': 'Vérifié',
     'badges.verifiedBy': 'Vérifié par {{provider}}',
     'badges.customPlugin': 'Plugin personnalisé',
+    'badges.stableAndSecured': 'Stable et sécurisé par {{provider}}',
+    'badges.generallyAvailable': 'Généralement disponible (GA)',
+    'badges.gaAndSupportedBy':
+      'Généralement disponible (GA) et supporté par {{provider}}',
+    'badges.gaAndSupported': 'Généralement disponible (GA) et supporté',
+    'badges.productionReadyBy':
+      'Prêt pour la production et supporté par {{provider}}',
+    'badges.productionReady': 'Prêt pour la production et supporté',
+    'badges.communityPlugin': 'Plugin communautaire',
+    'badges.openSourceNoSupport':
+      'Plugins open-source, pas de support officiel',
+    'badges.techPreview': 'Aperçu technique (TP)',
+    'badges.pluginInDevelopment': 'Plugin encore en développement',
+    'badges.devPreview': 'Aperçu développeur (DP)',
+    'badges.earlyStageExperimental': 'Un plugin expérimental en phase précoce',
+    'badges.addedByAdmin': "Plugins ajoutés par l'administrateur",
   },
 });
 

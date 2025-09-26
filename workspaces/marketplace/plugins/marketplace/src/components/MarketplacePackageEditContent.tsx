@@ -51,6 +51,7 @@ import { usePackageConfig } from '../hooks/usePackageConfig';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
 import { useInstallationContext } from './InstallationContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface TabItem {
   label: string;
@@ -64,6 +65,7 @@ export const MarketplacePackageEditContent = ({
 }: {
   pkg: MarketplacePackage;
 }) => {
+  const { t } = useTranslation();
   const { mutateAsync: installPackage } = useInstallPackage();
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -164,7 +166,7 @@ export const MarketplacePackageEditContent = ({
   };
   const availableTabs = [
     !!Object.values(examples[0])[0] && {
-      label: 'Examples',
+      label: t('install.examples'),
       content: examples,
       key: 'examples',
       others: { packageNames: packageDynamicArtifacts },
@@ -188,14 +190,13 @@ export const MarketplacePackageEditContent = ({
       const lines = raw.split('\n');
       const pluginsIdx = lines.findIndex(l => /^\s*plugins\s*:/i.test(l));
       if (pluginsIdx === -1)
-        throw new Error("Invalid editor content: missing 'plugins' list");
+        throw new Error(t('install.errors.missingPluginsList'));
       let i = pluginsIdx + 1;
       // Skip blank lines
       while (i < lines.length && lines[i].trim() === '') i += 1;
       const startLine = lines[i] || '';
       const startMatch = startLine.match(/^(\s*)-\s+/);
-      if (!startMatch)
-        throw new Error('Invalid editor content: missing package item');
+      if (!startMatch) throw new Error(t('install.errors.missingPackageItem'));
       const itemIndent = startMatch[1].length; // indent before '- '
       const firstLine = startLine.replace(/^(\s*)-\s+/, '');
       const pkgLines: string[] = [firstLine];
@@ -219,7 +220,7 @@ export const MarketplacePackageEditContent = ({
       // Validate minimal shape before POST
       if (!/^package\s*:/m.test(packageYamlString)) {
         setIsSubmitting(false);
-        setSaveError("Invalid editor content: 'package' field missing in item");
+        setSaveError(t('install.errors.missingPackageField'));
         return;
       }
 
@@ -232,7 +233,9 @@ export const MarketplacePackageEditContent = ({
       if ((res as any)?.status === 'OK') {
         const updated = {
           ...installedPlugins,
-          [pkg.metadata.title ?? pkg.metadata.name]: 'Package updated',
+          [pkg.metadata.title ?? pkg.metadata.name]: t(
+            'install.packageUpdated',
+          ),
         };
         setInstalledPlugins(updated);
         queryClient.invalidateQueries({
@@ -249,11 +252,13 @@ export const MarketplacePackageEditContent = ({
         preserved.set('package', `${ns}/${name}`);
         navigate(`/extensions/installed-packages?${preserved.toString()}`);
       } else {
-        setSaveError((res as any)?.error?.message ?? 'Failed to save');
+        setSaveError(
+          (res as any)?.error?.message ?? t('install.errors.failedToSave'),
+        );
         setIsSubmitting(false);
       }
     } catch (e: any) {
-      setSaveError(e?.error?.message ?? 'Failed to save');
+      setSaveError(e?.error?.message ?? t('install.errors.failedToSave'));
       setIsSubmitting(false);
     }
   };
@@ -291,7 +296,11 @@ export const MarketplacePackageEditContent = ({
               }}
             >
               <CardHeader
-                title={<Typography variant="h3">Edit instructions</Typography>}
+                title={
+                  <Typography variant="h3">
+                    {t('install.editInstructions')}
+                  </Typography>
+                }
                 action={
                   <Typography
                     component="a"
@@ -308,7 +317,7 @@ export const MarketplacePackageEditContent = ({
                     }}
                   >
                     <FileDownloadOutlinedIcon fontSize="small" />
-                    Download
+                    {t('install.download')}
                   </Typography>
                 }
                 sx={{ pb: 0 }}
@@ -325,7 +334,7 @@ export const MarketplacePackageEditContent = ({
                   <Tabs
                     value={tabIndex}
                     onChange={handleTabChange}
-                    aria-label="Plugin tabs"
+                    aria-label={t('install.pluginTabs')}
                   >
                     {availableTabs.map((tab, index) => (
                       <Tab
@@ -387,7 +396,7 @@ export const MarketplacePackageEditContent = ({
             ) : undefined
           }
         >
-          Save
+          {t('button.save')}
         </Button>
         <Button
           variant="outlined"
@@ -401,7 +410,7 @@ export const MarketplacePackageEditContent = ({
             navigate(`/extensions/installed-packages?${preserved.toString()}`);
           }}
         >
-          Cancel
+          {t('install.cancel')}
         </Button>
         <Button
           variant="text"
@@ -409,7 +418,7 @@ export const MarketplacePackageEditContent = ({
           onClick={onLoaded}
           sx={{ ml: 3 }}
         >
-          Reset
+          {t('install.reset')}
         </Button>
       </Box>
     </Box>
@@ -417,6 +426,7 @@ export const MarketplacePackageEditContent = ({
 };
 
 export const MarketplacePackageEditContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(packageInstallRouteRef);
 
   const pkg = usePackage(params.namespace, params.name);
@@ -434,7 +444,10 @@ export const MarketplacePackageEditContentLoader = () => {
   }
   return (
     <ErrorPage
-      statusMessage={`Package ${params.namespace}/${params.name} not found!`}
+      statusMessage={t('package.notFound', {
+        namespace: params.namespace,
+        name: params.name,
+      } as any)}
     />
   );
 };

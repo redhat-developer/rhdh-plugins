@@ -134,26 +134,35 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
           </Grid>
           <Grid item md={9}>
             <Stack gap={2}>
-              <KeyValue label="Package name:" value={pkg.spec?.packageName} />
-              <KeyValue label="Version:" value={pkg.spec?.version} />
               <KeyValue
-                label="Dynamic plugin path:"
+                label={t('package.name')}
+                value={pkg.spec?.packageName}
+              />
+              <KeyValue
+                label={t('package.version')}
+                value={pkg.spec?.version}
+              />
+              <KeyValue
+                label={t('package.dynamicPluginPath')}
                 value={pkg.spec?.dynamicArtifact}
               />
               <KeyValue
-                label="Backstage role:"
+                label={t('package.backstageRole')}
                 value={pkg.spec?.backstage?.role}
               />
               <KeyValue
-                label="Supported versions:"
+                label={t('package.supportedVersions')}
                 value={pkg.spec?.backstage?.supportedVersions}
               />
-              <KeyValue label="Author:" value={pkg.spec?.author} />
+              <KeyValue label={t('package.author')} value={pkg.spec?.author} />
               <KeyValue
-                label="Support Provider"
+                label={t('package.support')}
                 value={pkg.spec?.support?.provider}
               />
-              <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
+              <KeyValue
+                label={t('package.lifecycle')}
+                value={pkg.spec?.lifecycle}
+              />
 
               <Links entity={pkg} />
             </Stack>
@@ -165,6 +174,7 @@ const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
 };
 
 export const MarketplacePackageContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(packageInstallRouteRef);
   const [searchParams] = useSearchParams();
   const qp = searchParams.get('package');
@@ -182,6 +192,11 @@ export const MarketplacePackageContentLoader = () => {
     return <ErrorPage statusMessage={pkg.error.toString()} />;
   }
   return (
-    <ErrorPage statusMessage={`Package ${namespace}/${name} not found!`} />
+    <ErrorPage
+      statusMessage={t('package.notFound', {
+        namespace,
+        name,
+      } as any)}
+    />
   );
 };

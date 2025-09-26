@@ -25,6 +25,10 @@ export const marketplaceMessages = {
   // Page headers and titles
   header: {
     title: 'Extensions',
+    extensions: 'Extensions',
+    catalog: 'Catalog',
+    installedPackages: 'Installed packages',
+    installedPackagesWithCount: 'Installed packages ({{count}})',
     pluginsPage: 'Plugins',
     packagesPage: 'Packages',
     collectionsPage: 'Collections',
@@ -83,6 +87,8 @@ export const marketplaceMessages = {
       'You have **{{count}}** plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.',
     restartRequired: '{{count}} plugins installed',
     backendRestartRequired: 'Backend restart required',
+    backendRestartMessage:
+      'To finish the package modifications, restart your backend system.',
     viewPlugins: 'View plugins',
   },
 
@@ -167,6 +173,29 @@ export const marketplaceMessages = {
     pluginsTable: 'Plugins table',
   },
 
+  // Installed packages table
+  installedPackages: {
+    table: {
+      title: 'Installed packages ({{count}})',
+      searchPlaceholder: 'Search',
+      columns: {
+        name: 'Name',
+        packageName: 'npm package name',
+        role: 'Role',
+        version: 'Version',
+        actions: 'Actions',
+      },
+      tooltips: {
+        enableActions:
+          'To enable actions, add a catalog entity for this package',
+      },
+      emptyMessages: {
+        noResults: 'No results found. Try a different search term.',
+        noRecords: 'No records to display',
+      },
+    },
+  },
+
   // Plugin actions and states
   actions: {
     install: 'Install',
@@ -189,6 +218,8 @@ export const marketplaceMessages = {
     pluginNotFound: 'Plugin {{name}} not found!',
     highlights: 'Highlights',
     about: 'About',
+    publisher: 'Publisher',
+    supportProvider: 'Support Provider',
   },
 
   // Support type filters
@@ -240,6 +271,14 @@ export const marketplaceMessages = {
     instructions: 'Instructions',
     editInstructions: 'Edit instructions',
     back: 'Back',
+    packageUpdated: 'Package updated',
+    errors: {
+      missingPluginsList: "Invalid editor content: missing 'plugins' list",
+      missingPackageItem: 'Invalid editor content: missing package item',
+      missingPackageField:
+        "Invalid editor content: 'package' field missing in item",
+      failedToSave: 'Failed to save',
+    },
   },
 
   // Loading and error states
@@ -289,6 +328,19 @@ export const marketplaceMessages = {
     verified: 'Verified',
     verifiedBy: 'Verified by {{provider}}',
     customPlugin: 'Custom plugin',
+    stableAndSecured: 'Stable and secured by {{provider}}',
+    generallyAvailable: 'Generally available (GA)',
+    gaAndSupportedBy: 'Generally available (GA) and supported by {{provider}}',
+    gaAndSupported: 'Generally available (GA) and supported',
+    productionReadyBy: 'Production-ready and supported by {{provider}}',
+    productionReady: 'Production-ready and supported',
+    communityPlugin: 'Community plugin',
+    openSourceNoSupport: 'Open-source plugins, no official support',
+    techPreview: 'Tech preview (TP)',
+    pluginInDevelopment: 'Plugin still in development',
+    devPreview: 'Dev preview (DP)',
+    earlyStageExperimental: 'An early-stage, experimental plugin',
+    addedByAdmin: 'Plugins added by the administrator',
   },
 };
 

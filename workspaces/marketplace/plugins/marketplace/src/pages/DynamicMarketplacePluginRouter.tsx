@@ -45,6 +45,7 @@ import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer
 import { MarketplacePackageEditPage } from './MarketplacePackageEditPage';
 import { InstallationContextProvider } from '../components/InstallationContext';
 import { useInstallationContext } from '../components/InstallationContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 // Constants for consistent styling
 const TAB_ICON_STYLE = {
@@ -83,18 +84,21 @@ const PackageDeepLinkRedirect = () => {
 };
 
 const MarketplacePage = () => {
+  const { t } = useTranslation();
   const { count: installedPluginsCount, loading } = useInstalledPackagesCount();
   const { installedPlugins } = useInstallationContext();
   const restartCount = Object.entries(installedPlugins)?.length ?? 0;
 
   const installedPluginsTitle = loading
-    ? 'Installed packages'
-    : `Installed packages (${installedPluginsCount})`;
+    ? t('header.installedPackages')
+    : t('header.installedPackagesWithCount' as any, {
+        count: installedPluginsCount.toString(),
+      });
 
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Extensions" />
+        <Header title={t('header.extensions')} />
         <TabbedLayout>
           <TabbedLayout.Route
             path="/catalog"
@@ -102,7 +106,7 @@ const MarketplacePage = () => {
             tabProps={{
               icon: (
                 <TabLabel icon={<CategoryOutlinedIcon {...ICON_PROPS} />}>
-                  Catalog
+                  {t('header.catalog')}
                 </TabLabel>
               ),
             }}
@@ -126,9 +130,8 @@ const MarketplacePage = () => {
             <ErrorBoundary>
               {restartCount > 0 && (
                 <Alert severity="info" sx={{ mb: '1rem' }}>
-                  <AlertTitle>Backend restart required</AlertTitle>
-                  To finish the package modifications, restart your backend
-                  system.
+                  <AlertTitle>{t('alert.backendRestartRequired')}</AlertTitle>
+                  {t('alert.backendRestartMessage')}
                 </Alert>
               )}
               <InstalledPackagesTable />

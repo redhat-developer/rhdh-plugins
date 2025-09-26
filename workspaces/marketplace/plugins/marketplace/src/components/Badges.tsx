@@ -53,41 +53,44 @@ const getBadgeOptions = (
         provider:
           entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY],
       }),
-      statusTooltip: `Stable and secured by ${entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY]}`,
+      statusTooltip: t('badges.stableAndSecured' as any, {
+        provider:
+          entity.metadata.annotations[MarketplaceAnnotation.CERTIFIED_BY],
+      }),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.GENERALLY_AVAILABLE) {
     return {
       isBadge: true,
       color: colors.generallyAvailable,
-      label: 'Generally available (GA)',
+      label: t('badges.generallyAvailable'),
       tooltip: supportProvider
-        ? `Generally available (GA) and supported by ${supportProvider}`
-        : 'Generally available (GA) and supported',
+        ? t('badges.gaAndSupportedBy' as any, { provider: supportProvider })
+        : t('badges.gaAndSupported'),
       statusTooltip: supportProvider
-        ? `Production-ready and supported by ${supportProvider}`
-        : 'Production-ready and supported',
+        ? t('badges.productionReadyBy' as any, { provider: supportProvider })
+        : t('badges.productionReady'),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.COMMUNITY) {
     return {
       isBadge: false,
-      label: 'Community plugin',
-      statusTooltip: 'Open-source plugins, no official support',
+      label: t('badges.communityPlugin'),
+      statusTooltip: t('badges.openSourceNoSupport'),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.TECH_PREVIEW) {
     return {
       isBadge: false,
-      label: 'Tech preview (TP)',
-      statusTooltip: 'Plugin still in development',
+      label: t('badges.techPreview'),
+      statusTooltip: t('badges.pluginInDevelopment'),
     };
   }
   if (supportLevel === MarketplaceSupportLevel.DEV_PREVIEW) {
     return {
       isBadge: false,
-      label: 'Dev preview (DP)',
-      statusTooltip: 'An early-stage, experimental plugin',
+      label: t('badges.devPreview'),
+      statusTooltip: t('badges.earlyStageExperimental'),
     };
   }
 
@@ -100,7 +103,7 @@ const getBadgeOptions = (
       color: colors.custom,
       label: t('badges.customPlugin'),
       tooltip: t('badges.customPlugin'),
-      statusTooltip: 'Plugins added by the administrator',
+      statusTooltip: t('badges.addedByAdmin'),
     };
   }
 

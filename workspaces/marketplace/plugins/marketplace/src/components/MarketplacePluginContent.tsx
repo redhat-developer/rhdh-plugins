@@ -527,34 +527,40 @@ export const MarketplacePluginContent = ({
 
         <Grid container spacing={2}>
           <Grid item md={3}>
-            <PluginMetadataSection title="Highlights" value={highlights} />
+            <PluginMetadataSection
+              title={t('metadata.highlights')}
+              value={highlights}
+            />
 
             <PluginMetadataSection
-              title={`Author${plugin.spec?.authors && plugin.spec.authors.length > 1 ? 's' : ''}`}
+              title={`${t('plugin.author')}${plugin.spec?.authors && plugin.spec.authors.length > 1 ? 's' : ''}`}
               value={plugin.spec?.authors?.map(author => author.name)}
             />
 
-            <PluginMetadataSection title="Tags" value={plugin.metadata?.tags} />
+            <PluginMetadataSection
+              title={t('plugin.tags')}
+              value={plugin.metadata?.tags}
+            />
 
             <PluginMetadataSection
-              title="Category"
+              title={t('search.category')}
               value={plugin.spec?.categories}
             />
 
             <PluginMetadataSection
-              title="Publisher"
+              title={t('metadata.publisher')}
               value={plugin.spec?.publisher}
             />
 
             <PluginMetadataSection
-              title="Support Provider"
+              title={t('metadata.supportProvider')}
               value={plugin.spec?.support?.provider}
             />
 
             {pluginActionButton()}
           </Grid>
           <Grid item md={9}>
-            <Markdown title="About" content={about} />
+            <Markdown title={t('metadata.about')} content={about} />
 
             <Links entity={plugin} />
 
