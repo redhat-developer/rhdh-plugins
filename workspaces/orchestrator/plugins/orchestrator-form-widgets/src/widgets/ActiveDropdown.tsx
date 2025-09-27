@@ -141,6 +141,9 @@ export const ActiveDropdown: Widget<
         value={value}
         label={label}
         onChange={event => handleChange(event.target.value as string)}
+        MenuProps={{
+          PaperProps: { sx: { maxHeight: '20rem' } },
+        }}
       >
         {labels.map((itemLabel, idx) => (
           <MenuItem
