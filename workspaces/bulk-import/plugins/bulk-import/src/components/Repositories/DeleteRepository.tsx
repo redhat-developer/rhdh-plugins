@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
-
 import Delete from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { useDeleteDialog } from '../DeleteDialogContext';
@@ -34,9 +33,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
     setOpenDialog(true);
   };
 
-  const configApi = useApi(configApiRef);
-  const importFlow =
-    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
+  const importFlow = useImportFlow();
   let tooltipMessage;
   let delDisabled;
   if (importFlow === 'scaffolder') {

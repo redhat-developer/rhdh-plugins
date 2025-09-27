@@ -213,6 +213,7 @@ const handlePullRequestUpdate = async (
 };
 
 export const createTaskImportJobs = async (
+  templateRef: string,
   discovery: DiscoveryService,
   logger: LoggerService,
   auth: AuthService,
@@ -240,7 +241,6 @@ export const createTaskImportJobs = async (
     onBehalfOf: await auth.getOwnServiceCredentials(),
     targetPluginId: 'scaffolder',
   });
-  const finalTemplateName = config.getString('bulkImport.importTemplate');
 
   const executeTask = async (
     values: Record<string, any>,
@@ -252,7 +252,7 @@ export const createTaskImportJobs = async (
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        templateRef: `template:default/${finalTemplateName}`,
+        templateRef: `${templateRef}`,
         values: {
           repoUrl: values.repoUrl,
           owner: values.owner,

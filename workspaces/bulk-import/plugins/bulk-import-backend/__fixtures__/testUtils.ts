@@ -136,7 +136,7 @@ const BASE_CONFIG = {
     ],
   },
   bulkImport: {
-    importTemplate: `some-template`,
+    importTemplate: `template:default/some-template`,
   },
 };
 

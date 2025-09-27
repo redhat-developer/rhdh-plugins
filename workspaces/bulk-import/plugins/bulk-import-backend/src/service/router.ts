@@ -50,7 +50,11 @@ import type { Components, Paths, SourceImport } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { GitlabApiService } from '../gitlab';
-import { parseGitURLForApprovalTool, permissionCheck } from '../helpers';
+import {
+  getImportTemplateRef,
+  parseGitURLForApprovalTool,
+  permissionCheck,
+} from '../helpers';
 import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
@@ -164,6 +168,12 @@ export async function createRouter(
           .json({ err: `'${req.method} ${req.path}' not implemented` }),
     },
   });
+
+  const templateRef = config.getOptionalString('bulkImport.importTemplate');
+  let finalTemplateRef: string | undefined;
+  if (templateRef) {
+    finalTemplateRef = getImportTemplateRef(templateRef);
+  }
 
   await api.init();
 
@@ -422,12 +432,13 @@ export async function createRouter(
       _req: Request,
       res: Response,
     ) => {
-      if (!config.has('bulkImport.importTemplate')) {
+      if (!finalTemplateRef) {
         throw new Error(
-          'Missing required config value: bulkImport.importTemplate',
+          `Missing required config value: 'bulkImport.importTemplate'`,
         );
       }
       const response = await createTaskImportJobs(
+        finalTemplateRef,
         discovery,
         logger,
         auth,

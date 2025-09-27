@@ -15,7 +15,6 @@
  */
 
 import { Link } from '@backstage/core-components';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -24,6 +23,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
@@ -32,9 +32,7 @@ export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
-  const configApi = useApi(configApiRef);
-  const importFlow =
-    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
+  const importFlow = useImportFlow();
 
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
