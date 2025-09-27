@@ -109,6 +109,7 @@ export const orchestratorMessages = {
   },
   run: {
     title: 'Run workflow',
+    pageTitle: '{{processName}} run',
     variables: 'Run Variables',
     inputs: 'Inputs',
     results: 'Results',

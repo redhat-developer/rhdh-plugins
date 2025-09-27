@@ -80,6 +80,7 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.buttons.fromFailurePoint': 'Dal punto di fallimento',
     'workflow.buttons.runFailedAgain': 'Riattivazione fallita',
     'run.title': 'Esegui workflow',
+    'run.pageTitle': '{{processName}} esecuzione',
     'run.variables': 'Variabili di esecuzione',
     'run.inputs': 'Input',
     'run.results': 'Risultati',

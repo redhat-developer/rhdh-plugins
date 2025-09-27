@@ -82,6 +82,7 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.buttons.fromFailurePoint': 'Von Fehlerpunkt',
     'workflow.buttons.runFailedAgain': 'Erneut ausführen fehlgeschlagen',
     'run.title': 'Workflow ausführen',
+    'run.pageTitle': '{{processName}} Ausführung',
     'run.variables': 'Ausführungsvariablen',
     'run.inputs': 'Eingaben',
     'run.results': 'Ergebnisse',
