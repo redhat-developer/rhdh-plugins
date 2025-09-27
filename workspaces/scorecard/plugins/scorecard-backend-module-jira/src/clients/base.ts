@@ -16,13 +16,7 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import {
-  JiraConfig,
-  JiraEntityFilters,
-  JiraOptions,
-  Product,
-  RequestOptions,
-} from './types';
+import { JiraEntityFilters, JiraOptions, RequestOptions } from './types';
 import {
   API_VERSION_DEFAULT,
   JIRA_CONFIG_PATH,
@@ -31,23 +25,22 @@ import {
 } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
+import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
 
 const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
   ScorecardJiraAnnotations;
 
 export abstract class JiraClient {
-  protected readonly config: JiraConfig;
+  protected readonly apiVersion: string;
   protected readonly options?: JiraOptions;
+  protected readonly connectionStrategy: ConnectionStrategy;
 
-  constructor(rootConfig: Config) {
+  constructor(rootConfig: Config, connectionStrategy: ConnectionStrategy) {
     const jiraConfig = rootConfig.getConfig(JIRA_CONFIG_PATH);
-    this.config = {
-      baseUrl: jiraConfig.getString('baseUrl'),
-      token: jiraConfig.getString('token'),
-      product: jiraConfig.getString('product') as Product,
-      apiVersion:
-        jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT,
-    };
+
+    this.connectionStrategy = connectionStrategy;
+    this.apiVersion =
+      jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT;
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
@@ -57,8 +50,6 @@ export abstract class JiraClient {
       };
     }
   }
-
-  protected abstract getAuthHeaders(): Record<string, string>;
 
   protected abstract getSearchEndpoint(): string;
 
@@ -169,19 +160,29 @@ export abstract class JiraClient {
       .join(' AND ');
   }
 
+  protected async getBaseUrl(): Promise<string> {
+    return this.connectionStrategy.getBaseUrl(this.apiVersion);
+  }
+
+  protected async getAuthHeaders(): Promise<Record<string, string>> {
+    return this.connectionStrategy.getAuthHeaders();
+  }
+
   public async getCountOpenIssues(entity: Entity): Promise<number> {
-    const url = `${this.config.baseUrl}/rest/api/${
-      this.config.apiVersion
-    }${this.getSearchEndpoint()}`;
-    const method = 'POST';
-    const headers = this.getAuthHeaders();
+    const baseUrl = await this.getBaseUrl();
+    const countOpenIssuesUrl = `${baseUrl}${this.getSearchEndpoint()}`;
 
     const filters = this.getFiltersFromEntity(entity);
     const jql = this.buildJqlFilters(filters);
+    const headers = await this.getAuthHeaders();
 
-    const body = this.buildSearchBody(jql);
+    const data = await this.sendRequest({
+      method: 'POST',
+      url: countOpenIssuesUrl,
+      headers,
+      body: this.buildSearchBody(jql),
+    });
 
-    const data = await this.sendRequest({ url, method, headers, body });
     return this.extractIssueCountFromResponse(data);
   }
 }
