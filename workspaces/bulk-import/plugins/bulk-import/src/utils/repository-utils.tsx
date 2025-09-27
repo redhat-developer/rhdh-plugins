@@ -15,14 +15,7 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import {
-  Link,
-  StatusAborted,
-  StatusError,
-  StatusOK,
-  StatusPending,
-  StatusRunning,
-} from '@backstage/core-components';
+import { Link, StatusOK } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
@@ -51,6 +44,12 @@ import {
   RepositorySelection,
   RepositoryStatus,
 } from '../types';
+import {
+  createStatusMap,
+  getTaskStatusInfo,
+  statusIconMap,
+  StatusMapKey,
+} from './task-status';
 
 export const gitlabFeatureFlag = false;
 
@@ -255,15 +254,6 @@ export const urlHelper = (url: string) => {
   return url.split('https://')[1] || url;
 };
 
-const statusIconMap: Record<string, JSX.Element> = {
-  TASK_CANCELLED: <StatusAborted />,
-  TASK_COMPLETED: <StatusOK />,
-  TASK_FAILED: <StatusError />,
-  TASK_OPEN: <StatusPending />,
-  TASK_PROCESSING: <StatusRunning />,
-  TASK_SKIPPED: <StatusAborted />,
-};
-
 export const getImportStatus = (
   status: string,
   t: (key: string) => string,
@@ -305,12 +295,7 @@ export const getImportStatus = (
   }
 
   if (taskId && status.startsWith('TASK')) {
-    const upperCaseStatus = status.replace('_', ' ');
-    // todo: Use localization here.
-    const taskLabelText =
-      upperCaseStatus.charAt(0).toUpperCase() +
-      upperCaseStatus.slice(1).toLowerCase();
-    const taskIcon = statusIconMap[status];
+    const { taskLabelText, taskIcon } = getTaskStatusInfo(status, t);
     return showIcon ? (
       <Typography
         component="span"

@@ -22,18 +22,20 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { ScaffolderTask } from '../../types';
 
 export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
   const configApi = useApi(configApiRef);
   const appBaseUrl = configApi.getString('app.baseUrl');
+  const { t } = useTranslation();
 
   return (
     <Table>
       <TableHead>
         <TableRow>
-          <TableCell>Task ID</TableCell>
-          <TableCell>Task Link</TableCell>
+          <TableCell>{t('tasks.taskId')}</TableCell>
+          <TableCell>{t('tasks.taskLink')}</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -42,7 +44,7 @@ export const TasksTable = ({ tasks }: { tasks: ScaffolderTask[] }) => {
             <TableCell>{task.taskId}</TableCell>
             <TableCell>
               <Link to={`${appBaseUrl}/create/tasks/${task.taskId}`}>
-                View Task
+                {t('tasks.viewTask')}
               </Link>
             </TableCell>
           </TableRow>

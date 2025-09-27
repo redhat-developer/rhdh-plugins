@@ -253,6 +253,18 @@ const bulkImportTranslationEs = createTranslationMessages({
     'table.pagination.rows20': '20 filas',
     'table.pagination.rows50': '50 filas',
     'table.pagination.rows100': '100 filas',
+    'tasks.tasksFor': 'Tareas para {{importJobStatusId}}',
+    'tasks.taskId': 'ID de tarea',
+    'tasks.taskLink': 'Enlace de tarea',
+    'tasks.viewTask': 'Ver tarea',
+    'tasks.loading': 'Cargando...',
+    'tasks.errorFetchingData': 'Error al obtener los datos',
+    'tasks.taskCancelled': 'Tarea cancelada',
+    'tasks.taskCompleted': 'Tarea completada',
+    'tasks.taskFailed': 'Tarea fallida',
+    'tasks.taskOpen': 'Tarea abierta',
+    'tasks.taskProcessing': 'Tarea en proceso',
+    'tasks.taskSkipped': 'Tarea omitida',
   },
 });
 

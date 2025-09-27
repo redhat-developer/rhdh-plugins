@@ -255,6 +255,18 @@ const bulkImportTranslationDe = createTranslationMessages({
     'table.pagination.rows20': '20 Zeilen',
     'table.pagination.rows50': '50 Zeilen',
     'table.pagination.rows100': '100 Zeilen',
+    'tasks.tasksFor': 'Aufgaben für {{importJobStatusId}}',
+    'tasks.taskId': 'Aufgaben-ID',
+    'tasks.taskLink': 'Aufgabenlink',
+    'tasks.viewTask': 'Aufgabe anzeigen',
+    'tasks.loading': 'Wird geladen...',
+    'tasks.errorFetchingData': 'Fehler beim Abrufen der Daten',
+    'tasks.taskCancelled': 'Task cancelled',
+    'tasks.taskCompleted': 'Task completed',
+    'tasks.taskFailed': 'Task failed',
+    'tasks.taskOpen': 'Task open',
+    'tasks.taskProcessing': 'Task processing',
+    'tasks.taskSkipped': 'Task skipped',
   },
 });
 

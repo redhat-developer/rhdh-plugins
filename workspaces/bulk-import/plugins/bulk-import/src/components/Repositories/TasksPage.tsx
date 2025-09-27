@@ -21,6 +21,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import { ImportJobStatus } from '../../types';
 import { TasksTable } from './TasksTable';
 
@@ -31,20 +32,23 @@ export const TasksPage = () => {
   const { data, isLoading, isError } = useQuery(['repository', repoUrl], () =>
     bulkImportApi.getImportAction(decodeURIComponent(repoUrl!), ''),
   );
+  const { t } = useTranslation();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>{t('tasks.loading')}</div>;
   }
 
   if (isError) {
-    return <div>Error fetching data</div>;
+    return <div>{t('tasks.errorFetchingData')}</div>;
   }
 
   const importJobStatus = data as ImportJobStatus;
 
   return (
     <Page themeId="tool">
-      <Header title={`Tasks for ${importJobStatus?.id}`} />
+      <Header
+        title={`${t('tasks.tasksFor' as any, { importJobStatusId: importJobStatus?.id ?? '' })}`}
+      />
       <Content>
         <TasksTable tasks={importJobStatus?.tasks || []} />
       </Content>

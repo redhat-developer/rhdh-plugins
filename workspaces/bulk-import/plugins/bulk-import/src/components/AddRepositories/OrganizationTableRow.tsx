@@ -67,7 +67,6 @@ export const OrganizationTableRow = ({
         />
       </TableCell>
       <TableCell align="left" sx={tableCellStyle}>
-        {/* todo: handle status */}
         <CatalogInfoStatus data={data} alreadyAdded={alreadyAdded} />
       </TableCell>
     </TableRow>

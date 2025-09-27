@@ -248,6 +248,20 @@ export const bulkImportMessages = {
         'Catalog-info.yaml files must be generated before creating a pull request',
     },
   },
+  tasks: {
+    tasksFor: 'Tasks for {{importJobStatusId}}',
+    taskId: 'Task ID',
+    taskLink: 'Task Link',
+    viewTask: 'View Task',
+    loading: 'Loading...',
+    errorFetchingData: 'Error fetching data',
+    taskCancelled: 'Task cancelled',
+    taskCompleted: 'Task completed',
+    taskFailed: 'Task failed',
+    taskOpen: 'Task open',
+    taskProcessing: 'Task processing',
+    taskSkipped: 'Task skipped',
+  },
 };
 
 /**
