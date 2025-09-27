@@ -55,6 +55,8 @@ const bulkImportTranslationFr = createTranslationMessages({
     'repositories.removeRepositoryQuestion':
       'Supprimer {{repoName}} {{repositoryText}} ?',
     'repositories.repositoryText': 'dépôt',
+    'repositories.removeRepositoryWarningScaffolder':
+      'La suppression d’un dépôt supprimera également toutes les informations de tâche Scaffolder associées.',
     'repositories.removeRepositoryWarning':
       "La suppression d'un dépôt efface toutes les informations associées de la page Catalogue.",
     'repositories.removeRepositoryWarningGitlab':
@@ -63,6 +65,8 @@ const bulkImportTranslationFr = createTranslationMessages({
       "Impossible de supprimer le dépôt car l'URL du dépôt est manquante.",
     'repositories.unableToRemoveRepository':
       'Impossible de supprimer le dépôt. {{error}}',
+    'repositories.removeTooltipRepositoryScaffolder':
+      'Supprimer le dépôt et les informations de tâche Scaffolder associées',
     'repositories.removeTooltipDisabled':
       'Ce dépôt a été ajouté au fichier app-config. Pour le supprimer, modifiez directement le fichier.',
     'repositories.errorOccuredWhileFetching':

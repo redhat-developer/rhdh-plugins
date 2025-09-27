@@ -20,6 +20,10 @@ import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 
 import {
+  FRONTEND_TEST_HANDLERS,
+  LOCAL_ADDR,
+} from '../../__fixtures__/handlers';
+import {
   mockGetImportJobs,
   mockGetOrganizations,
   mockGetRepositories,
@@ -32,154 +36,16 @@ import {
   SortingOrderEnum,
 } from '../types';
 import { prepareDataForSubmission } from '../utils/repository-utils';
-import {
-  BulkImportAPI,
-  BulkImportBackendClient,
-} from './BulkImportBackendClient';
+import { BulkImportAPI } from './BackendClient';
+import { PRBulkImportBackendClient } from './PRBulkImportBackendClientImpl';
 
-const LOCAL_ADDR = 'https://localhost:7007';
-const handlers = [
-  rest.get(`${LOCAL_ADDR}/api/bulk-import/repositories`, (req, res, ctx) => {
-    const searchParam = req.url.searchParams.get('search');
-    const test = req.headers.get('Content-Type');
-    if (searchParam) {
-      return res(
-        ctx.status(200),
-        ctx.json(
-          mockGetRepositories.repositories.filter(r =>
-            r.repoName?.includes(searchParam),
-          ),
-        ),
-      );
-    }
-    if (test === 'application/json') {
-      return res(ctx.status(200), ctx.json(mockGetRepositories.repositories));
-    }
-    return res(ctx.status(404));
-  }),
-  rest.get(
-    `${LOCAL_ADDR}/api/bulk-import/organizations/org/dessert/repositories`,
-    (req, res, ctx) => {
-      const test = req.headers.get('Content-Type');
-      const searchParam = req.url.searchParams.get('search');
-      if (searchParam) {
-        return res(
-          ctx.status(200),
-          ctx.json(
-            mockGetRepositories.repositories.filter(
-              r =>
-                r.orgName === 'org/dessert' &&
-                r.repoName?.includes(searchParam),
-            ),
-          ),
-        );
-      }
-      if (test === 'application/json') {
-        return res(
-          ctx.status(200),
-          ctx.json(
-            mockGetRepositories.repositories.filter(
-              r => r.orgName === 'org/dessert',
-            ),
-          ),
-        );
-      }
-      return res(ctx.status(404));
-    },
-  ),
-  rest.get(`${LOCAL_ADDR}/api/bulk-import/organizations`, (req, res, ctx) => {
-    const test = req.headers.get('Content-Type');
-    const searchParam = req.url.searchParams.get('search');
-
-    if (searchParam) {
-      return res(
-        ctx.status(200),
-        ctx.json(
-          mockGetOrganizations.organizations.filter(r =>
-            r.orgName?.includes(searchParam),
-          ),
-        ),
-      );
-    }
-    if (test === 'application/json') {
-      return res(ctx.status(200), ctx.json(mockGetOrganizations.organizations));
-    }
-    return res(ctx.status(404));
-  }),
-  rest.get(
-    `${LOCAL_ADDR}/api/bulk-import/import/by-repo?repo=org/dessert/donut&defaultBranch=master`,
-    (req, res, ctx) => {
-      const test = req.headers.get('Content-Type');
-      if (test === 'application/json') {
-        return res(
-          ctx.status(200),
-          ctx.json(
-            mockGetImportJobs.imports.find(i => i.id === 'org/dessert/donut'),
-          ),
-        );
-      }
-      return res(ctx.status(404));
-    },
-  ),
-  rest.get(`${LOCAL_ADDR}/api/bulk-import/imports`, (req, res, ctx) => {
-    const test = req.headers.get('Content-Type');
-    const searchParam = req.url.searchParams.get('search');
-
-    if (searchParam) {
-      return res(
-        ctx.status(200),
-        ctx.json(
-          mockGetImportJobs.imports.filter(r =>
-            r.repository.name?.includes(searchParam),
-          ),
-        ),
-      );
-    }
-    if (test === 'application/json') {
-      return res(ctx.status(200), ctx.json(mockGetImportJobs));
-    }
-    return res(ctx.status(404));
-  }),
-  rest.post(
-    `${LOCAL_ADDR}/api/bulk-import/imports?dryRun=true`,
-    async (req, res, ctx) => {
-      const jobs = await req.json();
-      if (
-        !jobs ||
-        jobs.length === 0 ||
-        jobs.some(
-          (job: { repository: { name: string } }) => job.repository.name === '',
-        )
-      ) {
-        return res(
-          ctx.json({
-            message: 'Dry run for creating import jobs failed',
-            ok: false,
-            status: 404,
-          }),
-        );
-      }
-      return res(ctx.json(jobs));
-    },
-  ),
-  rest.delete(
-    `${LOCAL_ADDR}/api/bulk-import/import/by-repo?repo=org/dessert/donut&defaultBranch=master`,
-    (req, res, ctx) => {
-      const test = req.headers.get('Content-Type');
-      if (test === 'application/json') {
-        return res(ctx.json({ status: 200, ok: true }));
-      }
-      return res(ctx.json({ status: 404, ok: false }));
-    },
-  ),
-];
-const server = setupServer(...handlers);
+const server = setupServer(...FRONTEND_TEST_HANDLERS);
 
 beforeAll(() => server.listen());
 afterEach(() => server.restoreHandlers());
 afterAll(() => server.close());
 
-describe('BulkImportBackendClient', () => {
+describe('PRBulkImportBackendClient', () => {
   let bulkImportApi: BulkImportAPI;
   const getConfigApi = (getOptionalStringFn: any) => ({
     has: jest.fn(),
@@ -214,7 +80,7 @@ describe('BulkImportBackendClient', () => {
   } as IdentityApi;
 
   beforeEach(() => {
-    bulkImportApi = new BulkImportBackendClient({
+    bulkImportApi = new PRBulkImportBackendClient({
       configApi: getConfigApi(() => {
         return '/api';
       }),
@@ -379,6 +245,7 @@ describe('BulkImportBackendClient', () => {
         prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
         true,
       );
+
       expect(response.length).toBe(4);
 
       response = await bulkImportApi.createImportJobs(

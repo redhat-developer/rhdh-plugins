@@ -30,7 +30,7 @@ import { useFormikContext } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { bulkImportApiRef } from '../../api/BackendClient';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
@@ -97,7 +97,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   };
 
   useEffect(() => {
-    if (!loading && repoUrl && defaultBranch) {
+    if (!loading && repoUrl && defaultBranch && value) {
       const shouldOpenPanel =
         value?.status === RepositoryStatus.WAIT_PR_APPROVAL &&
         values.repositories[(value as ImportJobStatus)?.repository?.id];

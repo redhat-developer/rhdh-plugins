@@ -23,11 +23,10 @@ import {
   identityApiRef,
 } from '@backstage/core-plugin-api';
 
-import {
-  bulkImportApiRef,
-  BulkImportBackendClient,
-} from './api/BulkImportBackendClient';
-import { addRepositoriesRouteRef, rootRouteRef } from './routes';
+import { bulkImportApiRef } from './api/BackendClient';
+import { PRBulkImportBackendClient } from './api/PRBulkImportBackendClientImpl';
+import { ScaffolderBulkImportBackendClient } from './api/ScaffolderBulkImportBackendClientImpl';
+import { addRepositoriesRouteRef, rootRouteRef, tasksRouteRef } from './routes';
 
 /**
  * @public
@@ -38,6 +37,7 @@ export const bulkImportPlugin = createPlugin({
   routes: {
     root: rootRouteRef,
     addRepositories: addRepositoriesRouteRef,
+    tasks: tasksRouteRef,
   },
   apis: [
     createApiFactory({
@@ -46,8 +46,22 @@ export const bulkImportPlugin = createPlugin({
         configApi: configApiRef,
         identityApi: identityApiRef,
       },
-      factory: ({ configApi, identityApi }) =>
-        new BulkImportBackendClient({ configApi, identityApi }),
+      factory: ({ configApi, identityApi }) => {
+        const importAPI =
+          configApi.getOptionalString('bulkImport.importAPI') ??
+          'open-pull-requests';
+        switch (importAPI) {
+          case 'scaffolder':
+            return new ScaffolderBulkImportBackendClient({
+              configApi,
+              identityApi,
+            });
+          case 'open-pull-requests':
+            return new PRBulkImportBackendClient({ configApi, identityApi });
+          default:
+            throw new Error(`Unsupported API type ${importAPI}`);
+        }
+      },
     }),
   ],
 });

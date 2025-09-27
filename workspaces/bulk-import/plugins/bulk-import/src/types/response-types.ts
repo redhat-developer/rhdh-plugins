@@ -27,6 +27,11 @@ export type Repository = {
   totalRepoCount?: number;
 };
 
+export interface ScaffolderTask {
+  taskId: string;
+  repositoryId: number;
+}
+
 export type ImportJobResponse = {
   errors: RepositoryStatus[];
   status: RepositoryStatus;
@@ -36,6 +41,10 @@ export type ImportJobResponse = {
 
 export type ImportJobStatus = {
   approvalTool: string;
+  task?: {
+    taskId: string;
+  };
+  tasks?: ScaffolderTask[];
   github: {
     pullRequest: {
       number: number;

@@ -14,64 +14,18 @@
  * limitations under the License.
  */
 
-import {
-  ConfigApi,
-  createApiRef,
-  IdentityApi,
-} from '@backstage/core-plugin-api';
+import { ConfigApi, IdentityApi } from '@backstage/core-plugin-api';
 
 import {
   AddedRepositoryColumnNameEnum,
   APITypes,
   CreateImportJobRepository,
-  ImportJobResponse,
-  ImportJobs,
-  ImportJobStatus,
-  OrgAndRepoResponse,
   SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
+import { BulkImportAPI, Options } from './BackendClient';
 
-// @public
-export type BulkImportAPI = {
-  dataFetcher: (
-    page: number,
-    size: number,
-    searchString: string,
-    options?: APITypes,
-  ) => Promise<OrgAndRepoResponse>;
-  getImportJobs: (
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
-  ) => Promise<ImportJobs | Response>;
-  createImportJobs: (
-    importRepositories: CreateImportJobRepository[],
-    dryRun?: boolean,
-  ) => Promise<ImportJobResponse[]>;
-  deleteImportAction: (
-    repo: string,
-    defaultBranch: string,
-  ) => Promise<ImportJobStatus | Response>;
-  getImportAction: (
-    repo: string,
-    defaultBranch: string,
-  ) => Promise<ImportJobStatus | Response>;
-};
-
-export type Options = {
-  configApi: ConfigApi;
-  identityApi: IdentityApi;
-};
-
-// @public
-export const bulkImportApiRef = createApiRef<BulkImportAPI>({
-  id: 'plugin.bulk-import.service',
-});
-
-export class BulkImportBackendClient implements BulkImportAPI {
+export class PRBulkImportBackendClient implements BulkImportAPI {
   // @ts-ignore
   private readonly configApi: ConfigApi;
   private readonly identityApi: IdentityApi;

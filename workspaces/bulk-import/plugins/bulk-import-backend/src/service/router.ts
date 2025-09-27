@@ -41,18 +41,31 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
-import type { Components, Paths } from '../generated/openapi.d';
+import {
+  RepositoryDao,
+  ScaffolderTaskDao,
+  TaskLocationsDao,
+} from '../database/repositoryDao';
+import type { Components, Paths, SourceImport } from '../generated/openapi.d';
 import { openApiDocument } from '../generated/openapidocument';
 import { GithubApiService } from '../github';
 import { GitlabApiService } from '../gitlab';
-import { parseGitURLForApprovalTool, permissionCheck } from '../helpers';
+import {
+  getImportTemplateRef,
+  parseGitURLForApprovalTool,
+  permissionCheck,
+} from '../helpers';
 import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
+  deleteTaskImportByRepo,
   findAllImports,
   findImportStatusByRepo,
+  findTaskImportStatusByRepo,
+  sortImports,
 } from './handlers/import';
+import { createTaskImportJobs } from './handlers/import/execute-template';
 import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
 import {
@@ -74,18 +87,30 @@ export interface RouterOptions {
   auth: AuthService;
   catalogApi: CatalogApi;
   auditor: AuditorService;
+  repositoryDao: RepositoryDao;
+  taskDao: ScaffolderTaskDao;
+  taskLocationsDao: TaskLocationsDao;
 }
 
 namespace Operations {
   export const PING = 'ping';
   export const FIND_ALL_ORGANIZATIONS = 'findAllOrganizations';
   export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
+
   export const FIND_REPOSITORIES_BY_ORGANIZATION =
     'findRepositoriesByOrganization';
+
   export const FIND_ALL_IMPORTS = 'findAllImports';
+  export const FIND_ALL_TASK_IMPORTS = 'findAllTaskImports';
+
   export const CREATE_IMPORT_JOBS = 'createImportJobs';
+  export const CREATE_TASK_IMPORT_JOBS = 'createTaskImportJobs';
+
   export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
+  export const FIND_TASK_IMPORT_STATUS_BY_REPO = 'findTaskImportStatusByRepo';
+
   export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo';
+  export const DELETE_TASK_IMPORT_BY_REPO = 'deleteTaskImportByRepo';
 }
 
 /**
@@ -105,6 +130,9 @@ export async function createRouter(
     discovery,
     catalogApi,
     auditor: auditor,
+    repositoryDao: repositoryDao,
+    taskDao: taskDao,
+    taskLocationsDao: taskLocationsDao,
   } = options;
   // This should probably be sometype of object that holds all the scm API service objects
   const githubApiService = new GithubApiService(logger, config, cache);
@@ -140,6 +168,12 @@ export async function createRouter(
           .json({ err: `'${req.method} ${req.path}' not implemented` }),
     },
   });
+
+  const templateRef = config.getOptionalString('bulkImport.importTemplate');
+  let finalTemplateRef: string | undefined;
+  if (templateRef) {
+    finalTemplateRef = getImportTemplateRef(templateRef);
+  }
 
   await api.init();
 
@@ -296,6 +330,69 @@ export async function createRouter(
       return res.status(response.statusCode).json(response.responseBody);
     },
   );
+  api.register(
+    Operations.FIND_ALL_TASK_IMPORTS,
+    async (c: Context, _req: Request, res: Response) => {
+      const h: Paths.FindAllImports.HeaderParameters = {
+        ...c.request.headers,
+      };
+      const apiVersion = h['api-version'];
+      const q: Paths.FindAllImports.QueryParameters = {
+        ...c.request.query,
+      };
+      // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
+      let page: number | undefined;
+      let size: number | undefined;
+      if (apiVersion === undefined || apiVersion === 'v1') {
+        // pagePerIntegration and sizePerIntegration deprecated in v1. 'page' and 'size' take precedence.
+        page = stringToNumber(q.page || q.pagePerIntegration);
+        size = stringToNumber(q.size || q.sizePerIntegration);
+      } else {
+        // pagePerIntegration and sizePerIntegration removed in v2+ and replaced by 'page' and 'size'.
+        page = stringToNumber(q.page);
+        size = stringToNumber(q.size);
+      }
+      const imports: SourceImport[] = [];
+      const repositories = await repositoryDao.findRepositories(
+        page,
+        size,
+        q.search,
+      );
+
+      for (const repo of repositories.data) {
+        const response = await findTaskImportStatusByRepo(
+          {
+            logger,
+            config,
+            githubApiService,
+            gitlabApiService,
+            catalogHttpClient,
+            repositoryDao,
+            taskDao,
+            taskLocationsDao,
+            discovery,
+            auth,
+          },
+          repo.url!,
+          true,
+        );
+        if (response.responseBody) {
+          imports.push(response.responseBody);
+        }
+      }
+
+      sortImports(imports, q.sortColumn, q.sortOrder);
+
+      const responseBody: Components.Schemas.ImportJobListV2 = {
+        imports,
+        totalCount: repositories.total,
+        page: page || 1,
+        size: size || 10,
+      };
+
+      return res.status(200).json(responseBody);
+    },
+  );
 
   api.register(
     Operations.CREATE_IMPORT_JOBS,
@@ -329,6 +426,63 @@ export async function createRouter(
   );
 
   api.register(
+    Operations.CREATE_TASK_IMPORT_JOBS,
+    async (
+      c: Context<Paths.CreateImportJobs.RequestBody>,
+      _req: Request,
+      res: Response,
+    ) => {
+      if (!finalTemplateRef) {
+        throw new Error(
+          `Missing required config value: 'bulkImport.importTemplate'`,
+        );
+      }
+      const response = await createTaskImportJobs(
+        finalTemplateRef,
+        discovery,
+        logger,
+        auth,
+        config,
+        repositoryDao,
+        taskDao,
+        taskLocationsDao,
+        c.request.requestBody,
+        githubApiService,
+      );
+
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.FIND_TASK_IMPORT_STATUS_BY_REPO,
+    async (c: Context, _req: Request, res: Response) => {
+      const q: Paths.FindImportStatusByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank parameter');
+      }
+      const response = await findTaskImportStatusByRepo(
+        {
+          logger,
+          config,
+          githubApiService,
+          gitlabApiService,
+          catalogHttpClient,
+          repositoryDao,
+          taskDao,
+          taskLocationsDao,
+          discovery,
+          auth,
+        },
+        q.repo,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
     Operations.FIND_IMPORT_STATUS_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindImportStatusByRepo.QueryParameters = {
@@ -349,6 +503,26 @@ export async function createRouter(
         q.repo,
         q.defaultBranch,
         true,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.DELETE_TASK_IMPORT_BY_REPO,
+    async (c: Context, _req: Request, res: Response) => {
+      const q: Paths.DeleteImportByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank "repo" parameter');
+      }
+      const response = await deleteTaskImportByRepo(
+        {
+          logger,
+          dao: repositoryDao,
+        },
+        q.repo,
       );
       return res.status(response.statusCode).json(response.responseBody);
     },
@@ -462,10 +636,21 @@ async function createAuditorEventByOperationId(
         search: req.query.search,
       });
       break;
+    case Operations.FIND_ALL_TASK_IMPORTS:
+      auditorEvent = await auditCreateEvent(auditor, 'import-read', req, {
+        queryType: req.query.search ? 'by-query' : 'all',
+        search: req.query.search,
+      });
+      break;
     case Operations.CREATE_IMPORT_JOBS:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
         dryRun: req.query.dryRun,
+      });
+      break;
+    case Operations.CREATE_TASK_IMPORT_JOBS:
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
+        actionType: 'create',
       });
       break;
     case Operations.FIND_IMPORT_STATUS_BY_REPO:
@@ -476,7 +661,21 @@ async function createAuditorEventByOperationId(
         { queryType: 'by-query', repo: req.query.repo },
       );
       break;
+    case Operations.FIND_TASK_IMPORT_STATUS_BY_REPO:
+      auditorEvent = await auditCreateEvent(
+        auditor,
+        'import-status-read',
+        req,
+        { queryType: 'by-query', repo: req.query.repo },
+      );
+      break;
     case Operations.DELETE_IMPORT_BY_REPO:
+      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
+        actionType: 'delete',
+        repository: req.query.repo,
+      });
+      break;
+    case Operations.DELETE_TASK_IMPORT_BY_REPO:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'delete',
         repository: req.query.repo,

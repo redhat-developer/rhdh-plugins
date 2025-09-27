@@ -2,9 +2,37 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                          | HTTP request          | Description                                                                 |
-| --------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------- |
-| [**findAllRepositories**](RepositoryApi.md#findAllRepositories) | **GET** /repositories | Fetch Organization Repositories accessible by Backstage Github Integrations |
+| Method                                                                | HTTP request                    | Description                                                                 |
+| --------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| [**deleteTaskImportByRepo**](RepositoryApi.md#deleteTaskImportByRepo) | **DELETE** /task-import/by-repo | Delete task import by repository name                                       |
+| [**findAllRepositories**](RepositoryApi.md#findAllRepositories)       | **GET** /repositories           | Fetch Organization Repositories accessible by Backstage Github Integrations |
+
+<a name="deleteTaskImportByRepo"></a>
+
+# **deleteTaskImportByRepo**
+
+> deleteTaskImportByRepo(repo)
+
+Delete task import by repository name
+
+### Parameters
+
+| Name     | Type       | Description              | Notes                        |
+| -------- | ---------- | ------------------------ | ---------------------------- |
+| **repo** | **String** | the full URL to the repo | [optional] [default to null] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
 
 <a name="findAllRepositories"></a>
 

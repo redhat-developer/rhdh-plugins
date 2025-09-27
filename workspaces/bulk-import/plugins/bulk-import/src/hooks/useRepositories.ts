@@ -25,7 +25,7 @@ import {
 
 import { useQuery } from '@tanstack/react-query';
 
-import { bulkImportApiRef } from '../api/BulkImportBackendClient';
+import { bulkImportApiRef } from '../api/BackendClient';
 import {
   AddRepositoryData,
   DataFetcherQueryParams,

@@ -15,7 +15,15 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import { StatusOK } from '@backstage/core-components';
+import {
+  Link,
+  StatusAborted,
+  StatusError,
+  StatusOK,
+  StatusPending,
+  StatusRunning,
+} from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
@@ -45,6 +53,33 @@ import {
 } from '../types';
 
 export const gitlabFeatureFlag = false;
+
+const TaskLink = ({
+  labelText,
+  taskId,
+}: {
+  labelText: string;
+  taskId?: string;
+}) => {
+  const configApi = useApi(configApiRef);
+  const appBaseUrl = configApi.getString('app.baseUrl');
+
+  if (!taskId) return <>{labelText}</>;
+
+  return (
+    <Link
+      to={`${appBaseUrl}/create/tasks/${taskId}`}
+      data-testid="pull request url"
+      style={{
+        paddingLeft: '5px',
+        display: 'inline-flex',
+        alignItems: 'center',
+      }}
+    >
+      {labelText}
+    </Link>
+  );
+};
 
 export const descendingComparator = (
   a: AddRepositoryData,
@@ -220,11 +255,21 @@ export const urlHelper = (url: string) => {
   return url.split('https://')[1] || url;
 };
 
+const statusIconMap: Record<string, JSX.Element> = {
+  TASK_CANCELLED: <StatusAborted />,
+  TASK_COMPLETED: <StatusOK />,
+  TASK_FAILED: <StatusError />,
+  TASK_OPEN: <StatusPending />,
+  TASK_PROCESSING: <StatusRunning />,
+  TASK_SKIPPED: <StatusAborted />,
+};
+
 export const getImportStatus = (
   status: string,
   t: (key: string) => string,
   showIcon?: boolean,
   prUrl?: string,
+  taskId?: string,
   isApprovalToolGitlab: boolean = false,
 ) => {
   if (!status) {
@@ -233,31 +278,53 @@ export const getImportStatus = (
   const labelText = gitlabFeatureFlag
     ? t('status.alreadyImported')
     : t('status.added');
-  switch (status) {
-    case 'WAIT_PR_APPROVAL':
-      return showIcon ? (
-        <WaitingForPR
-          url={prUrl as string}
-          isApprovalToolGitlab={isApprovalToolGitlab}
-        />
-      ) : (
-        t('status.waitingForApproval')
-      );
-    case 'ADDED':
-      return showIcon ? (
-        <Typography
-          component="span"
-          style={{ display: 'flex', alignItems: 'baseline' }}
-        >
-          <StatusOK />
-          {gitlabFeatureFlag ? t('status.imported') : t('status.added')}
-        </Typography>
-      ) : (
-        labelText
-      );
-    default:
-      return '';
+
+  if (status === 'WAIT_PR_APPROVAL') {
+    return showIcon ? (
+      <WaitingForPR
+        url={prUrl as string}
+        isApprovalToolGitlab={isApprovalToolGitlab}
+      />
+    ) : (
+      t('status.waitingForApproval')
+    );
   }
+
+  if (status === 'ADDED') {
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        <StatusOK />
+        {gitlabFeatureFlag ? t('status.imported') : t('status.added')}
+      </Typography>
+    ) : (
+      labelText
+    );
+  }
+
+  if (taskId && status.startsWith('TASK')) {
+    const upperCaseStatus = status.replace('_', ' ');
+    // todo: Use localization here.
+    const taskLabelText =
+      upperCaseStatus.charAt(0).toUpperCase() +
+      upperCaseStatus.slice(1).toLowerCase();
+    const taskIcon = statusIconMap[status];
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {taskIcon}
+        <TaskLink labelText={taskLabelText} taskId={taskId} />
+      </Typography>
+    ) : (
+      <TaskLink labelText={taskLabelText} taskId={taskId} />
+    );
+  }
+
+  return '';
 };
 
 export const evaluateRowForRepo = (
@@ -618,6 +685,10 @@ export const prepareDataForAddedRepositories = (
         [id]: {
           id,
           source: val.source,
+          task: {
+            id: val.task?.taskId,
+            status: val.status,
+          },
           repoName: val.repository.name,
           defaultBranch: val.repository.defaultBranch,
           orgName: val.repository.organization,

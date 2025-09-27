@@ -26,7 +26,7 @@ import Drawer from '@mui/material/Drawer';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
-import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { bulkImportApiRef } from '../../api/BackendClient';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,

@@ -56,6 +56,8 @@ const bulkImportTranslationDe = createTranslationMessages({
     'repositories.removeRepositoryQuestion':
       '{{repoName}} {{repositoryText}} entfernen?',
     'repositories.repositoryText': 'Repository',
+    'repositories.removeRepositoryWarningScaffolder':
+      'Das Entfernen eines Repositorys entfernt auch alle zugehörigen Scaffolder-Task-Informationen.',
     'repositories.removeRepositoryWarning':
       'Das Entfernen eines Repositorys löscht alle zugehörigen Informationen von der Katalogseite.',
     'repositories.removeRepositoryWarningGitlab':
@@ -66,6 +68,8 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Repository kann nicht entfernt werden. {{error}}',
     'repositories.removeTooltipDisabled':
       'Dieses Repository wurde zur app-config-Datei hinzugefügt. Um es zu entfernen, ändern Sie die Datei direkt.',
+    'repositories.removeTooltipRepositoryScaffolder':
+      'Repository und zugehörige Scaffolder-Task-Informationen löschen',
     'repositories.errorOccuredWhileFetching':
       'Fehler beim Abrufen der Pull-Request aufgetreten',
     'repositories.failedToCreatePullRequest':
