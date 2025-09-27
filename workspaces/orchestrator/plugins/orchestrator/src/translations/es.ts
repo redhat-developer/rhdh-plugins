@@ -83,6 +83,7 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.title': 'Ejecutar flujo de trabajo',
     'run.variables': 'Variables de ejecución',
     'run.inputs': 'Entradas',
+    'run.pageTitle': '{{processName}} ejecución',
     'run.results': 'Resultados',
     'run.abort.title': '¿Abortar la ejecución del flujo de trabajo?',
     'run.abort.button': 'Abortar',
