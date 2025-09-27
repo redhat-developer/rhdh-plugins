@@ -17,11 +17,11 @@
 import { useEffect } from 'react';
 
 import { StatusRunning } from '@backstage/core-components';
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
@@ -75,9 +75,7 @@ export const CatalogInfoStatus = ({
     data?.selectedRepositories || {},
   );
 
-  const configApi = useApi(configApiRef);
-  const importFlow =
-    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
+  const importFlow = useImportFlow();
   if (
     importFlow !== 'scaffolder' &&
     !isDrawer &&

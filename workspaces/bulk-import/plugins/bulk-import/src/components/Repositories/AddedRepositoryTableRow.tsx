@@ -22,6 +22,7 @@ import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
@@ -77,17 +78,21 @@ export const AddedRepositoryTableRow = ({
   data: AddRepositoryData;
 }) => {
   const classes = useStyles();
-
+  const importFlow = useImportFlow();
   return (
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
-        <Link
-          to={`/bulk-import/repositories/tasks/${encodeURIComponent(
-            data.repoUrl || '',
-          )}`}
-        >
-          {data.repoName}
-        </Link>
+        {importFlow === 'scaffolder' ? (
+          <Link
+            to={`/bulk-import/repositories/tasks/${encodeURIComponent(
+              data.repoUrl || '',
+            )}`}
+          >
+            {data.repoName}
+          </Link>
+        ) : (
+          data.repoName
+        )}
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         {data?.repoUrl ? (

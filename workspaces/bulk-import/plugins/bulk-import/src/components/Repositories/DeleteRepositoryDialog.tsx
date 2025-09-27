@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { useApi } from '@backstage/core-plugin-api';
 
 import CloseIcon from '@mui/icons-material/Close';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -33,6 +33,7 @@ import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BackendClient';
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
@@ -83,9 +84,7 @@ const DeleteRepositoryDialog = ({
 
   const isUrlMissing = !repository.repoUrl;
 
-  const configApi = useApi(configApiRef);
-  const importFlow =
-    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests';
+  const importFlow = useImportFlow();
   let deleteMsg;
   if (importFlow === 'scaffolder') {
     deleteMsg = t('repositories.removeRepositoryWarningScaffolder');
