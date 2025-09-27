@@ -44,12 +44,7 @@ import {
   RepositorySelection,
   RepositoryStatus,
 } from '../types';
-import {
-  createStatusMap,
-  getTaskStatusInfo,
-  statusIconMap,
-  StatusMapKey,
-} from './task-status';
+import { getTaskStatusInfo } from './task-status';
 
 export const gitlabFeatureFlag = false;
 
