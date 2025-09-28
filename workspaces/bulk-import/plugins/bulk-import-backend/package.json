@@ -14,8 +14,7 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-bulk-import",
       "@red-hat-developer-hub/backstage-plugin-bulk-import-backend",
-      "@red-hat-developer-hub/backstage-plugin-bulk-import-common",
-      "@red-hat-developer-hub/backstage-plugin-bulk-import-node"
+      "@red-hat-developer-hub/backstage-plugin-bulk-import-common"
     ]
   },
   "exports": {
