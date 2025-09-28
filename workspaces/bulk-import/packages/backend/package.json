@@ -47,7 +47,7 @@
     "@red-hat-developer-hub/backstage-plugin-bulk-import-backend": "workspace:^",
     "@roadiehq/scaffolder-backend-module-utils": "^3.6.0",
     "app": "link:../app",
-    "better-sqlite3": "^9.0.0",
+    "better-sqlite3": "^12.4.1",
     "node-gyp": "^10.0.0",
     "pg": "^8.11.3",
     "winston": "^3.2.1"
