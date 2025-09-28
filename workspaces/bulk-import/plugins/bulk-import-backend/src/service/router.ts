@@ -20,6 +20,7 @@ import type {
   AuditorServiceEvent,
   AuthService,
   CacheService,
+  DatabaseService,
   DiscoveryService,
   HttpAuthService,
   LoggerService,
@@ -41,6 +42,7 @@ import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bu
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
+import { migrate } from '../database/migration';
 import {
   RepositoryDao,
   ScaffolderTaskDao,
@@ -87,9 +89,7 @@ export interface RouterOptions {
   auth: AuthService;
   catalogApi: CatalogApi;
   auditor: AuditorService;
-  repositoryDao: RepositoryDao;
-  taskDao: ScaffolderTaskDao;
-  taskLocationsDao: TaskLocationsDao;
+  database: DatabaseService;
 }
 
 namespace Operations {
@@ -130,10 +130,13 @@ export async function createRouter(
     discovery,
     catalogApi,
     auditor: auditor,
-    repositoryDao: repositoryDao,
-    taskDao: taskDao,
-    taskLocationsDao: taskLocationsDao,
+    database,
   } = options;
+
+  const knex = await migrate(database);
+  const repositoryDao = new RepositoryDao(knex, logger);
+  const taskDao = new ScaffolderTaskDao(knex);
+  const taskLocationsDao = new TaskLocationsDao(knex);
   // This should probably be sometype of object that holds all the scm API service objects
   const githubApiService = new GithubApiService(logger, config, cache);
   const gitlabApiService = new GitlabApiService(logger, config, cache);

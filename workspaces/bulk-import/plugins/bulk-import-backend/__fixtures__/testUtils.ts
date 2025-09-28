@@ -173,6 +173,7 @@ export async function startBackendServer(
   mockCatalogClient: CatalogClient,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
   config?: any,
+  db?: any,
 ): Promise<any> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     bulkImportPlugin,
@@ -186,7 +187,7 @@ export async function startBackendServer(
       deps: {},
       factory: () => mockCatalogClient,
     }),
-    mockServices.database.factory(),
+    db ? db : mockServices.database.factory(),
   ];
   if (authorizeResult) {
     features.push(

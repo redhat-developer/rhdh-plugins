@@ -77,6 +77,7 @@ export async function paginateQuery<T>(
   };
 }
 
+// @internal
 export class RepositoryDao {
   constructor(
     private readonly knex: Knex<any, any[]>,
@@ -137,6 +138,7 @@ export class RepositoryDao {
   }
 }
 
+// @internal
 export class ScaffolderTaskDao {
   constructor(private readonly knex: Knex<any, any[]>) {}
 
@@ -188,6 +190,7 @@ export interface TaskLocation {
   type: string;
 }
 
+// @internal
 export class TaskLocationsDao {
   constructor(private readonly knex: Knex<any, any[]>) {}
 

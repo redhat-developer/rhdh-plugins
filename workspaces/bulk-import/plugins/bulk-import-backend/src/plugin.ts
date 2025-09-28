@@ -21,11 +21,6 @@ import {
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
 import { migrate } from './database/migration';
-import {
-  RepositoryDao,
-  ScaffolderTaskDao,
-  TaskLocationsDao,
-} from './database/repositoryDao';
 import { createRouter } from './service/router';
 
 /**
@@ -62,10 +57,7 @@ export const bulkImportPlugin = createBackendPlugin({
         auditor,
         database,
       }) {
-        const knex = await migrate(database);
-        const repositoryDao = new RepositoryDao(knex, logger);
-        const taskDao = new ScaffolderTaskDao(knex);
-        const taskLocationsDao = new TaskLocationsDao(knex);
+        await migrate(database);
 
         const router = await createRouter({
           config,
@@ -77,9 +69,7 @@ export const bulkImportPlugin = createBackendPlugin({
           auth,
           catalogApi,
           auditor,
-          repositoryDao,
-          taskDao,
-          taskLocationsDao,
+          database,
         });
         http.use(router);
         http.addAuthPolicy({
