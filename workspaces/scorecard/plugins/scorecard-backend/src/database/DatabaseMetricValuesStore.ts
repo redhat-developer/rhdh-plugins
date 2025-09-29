@@ -15,18 +15,12 @@
  */
 
 import { Knex } from 'knex';
-import { LoggerService } from '@backstage/backend-plugin-api';
 import { DbMetricValue, MetricValuesStore } from './MetricValuesStore';
 
 export class DatabaseMetricValuesStore implements MetricValuesStore {
-  private readonly knex: Knex;
-  private readonly logger: LoggerService;
   private readonly tableName = 'metric_values';
 
-  constructor(options: { knex: Knex; logger: LoggerService }) {
-    this.knex = options.knex;
-    this.logger = options.logger;
-  }
+  constructor(private readonly knex: Knex<any, any[]>) {}
 
   /**
    * Insert multiple metric values
@@ -34,12 +28,7 @@ export class DatabaseMetricValuesStore implements MetricValuesStore {
   async createMetricValues(
     metricValues: Omit<DbMetricValue, 'id'>[],
   ): Promise<void> {
-    try {
-      await this.knex(this.tableName).insert(metricValues);
-    } catch (error) {
-      this.logger.error(`Failed to insert metric values batch: ${error}`);
-      throw error;
-    }
+    await this.knex(this.tableName).insert(metricValues);
   }
 
   /**
@@ -49,22 +38,15 @@ export class DatabaseMetricValuesStore implements MetricValuesStore {
     catalog_entity_ref: string,
     metric_ids: string[],
   ): Promise<DbMetricValue[]> {
-    try {
-      const result = await this.knex(this.tableName)
-        .select('*')
-        .whereIn(
-          'id',
-          this.knex(this.tableName)
-            .max('id')
-            .whereIn('metric_id', metric_ids)
-            .where('catalog_entity_ref', catalog_entity_ref)
-            .groupBy('metric_id'),
-        );
-
-      return result;
-    } catch (error) {
-      this.logger.error(`Failed to get latest metric values: ${error}`);
-      throw error;
-    }
+    return await this.knex(this.tableName)
+      .select('*')
+      .whereIn(
+        'id',
+        this.knex(this.tableName)
+          .max('id')
+          .whereIn('metric_id', metric_ids)
+          .where('catalog_entity_ref', catalog_entity_ref)
+          .groupBy('metric_id'),
+      );
   }
 }
