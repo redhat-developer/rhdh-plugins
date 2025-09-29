@@ -63,7 +63,7 @@
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
     "@scalprum/react-core": "0.9.5",
     "@tanstack/react-query": "^5.60.5",
-    "monaco-editor": "^0.52.2",
+    "monaco-editor": "^0.53.0",
     "react-use": "^17.6.0",
     "yaml": "^2.7.0"
   },
