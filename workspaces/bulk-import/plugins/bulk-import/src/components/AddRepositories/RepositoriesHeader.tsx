@@ -22,8 +22,8 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import { Order } from '../../types';
 import { getRepositoriesListColumns } from '../Repositories/RepositoriesListColumns';
 import { getOrganizationsColumnHeader } from './OrganizationsColumnHeader';

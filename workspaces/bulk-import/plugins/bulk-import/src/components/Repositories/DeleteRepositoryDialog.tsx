@@ -34,7 +34,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useImportFlow } from '../../hooks/useImportFlow';
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 

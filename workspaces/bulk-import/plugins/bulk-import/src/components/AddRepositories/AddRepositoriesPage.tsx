@@ -28,9 +28,8 @@ import Typography from '@mui/material/Typography';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
-
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 

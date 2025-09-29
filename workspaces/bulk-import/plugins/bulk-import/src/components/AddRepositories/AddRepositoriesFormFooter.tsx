@@ -24,10 +24,9 @@ import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
-
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
