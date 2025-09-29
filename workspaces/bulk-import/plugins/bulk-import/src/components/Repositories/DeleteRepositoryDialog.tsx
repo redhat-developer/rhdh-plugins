@@ -34,8 +34,8 @@ import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useImportFlow } from '../../hooks/useImportFlow';
-import { useTranslation } from '../../hooks/useTranslation';
 import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 
 const useStyles = makeStyles(() =>
@@ -71,6 +71,7 @@ const DeleteRepositoryDialog = ({
     return bulkImportApi.deleteImportAction(
       deleteRepo.repoUrl || '',
       deleteRepo.defaultBranch || 'main',
+      deleteRepo.approvalTool,
     );
   };
   const mutationDelete = useMutation(deleteRepository, {

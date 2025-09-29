@@ -84,6 +84,7 @@ export type AddRepositoryData = {
     id: string;
     status: TaskStatus;
   };
+  approvalTool?: ApprovalTool;
 };
 
 export type Order = 'asc' | 'desc';
@@ -137,7 +138,7 @@ export enum ApprovalTool {
 }
 
 export type CreateImportJobRepository = {
-  approvalTool: string;
+  approvalTool: ApprovalTool;
   catalogEntityName: string;
   codeOwnersFileAsEntityOwner: boolean;
   catalogInfoContent: string;

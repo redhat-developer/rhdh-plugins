@@ -43,7 +43,7 @@ export interface DataFetcherQueryParams {
   page?: number;
   querySize?: number;
   searchString?: string;
-  approvalTool?: ApprovalTool;
+  approvalTool: ApprovalTool;
 }
 
 export const useRepositories = (
@@ -79,7 +79,7 @@ export const useRepositories = (
         queryOptions?.page ?? 0,
         queryOptions?.querySize ?? 0,
         queryOptions?.searchString || '',
-        queryOptions?.approvalTool as string,
+        queryOptions?.approvalTool,
         {
           fetchOrganizations: true,
         },
@@ -90,7 +90,7 @@ export const useRepositories = (
         queryOptions?.page ?? 0,
         queryOptions?.querySize ?? 0,
         queryOptions?.searchString || '',
-        queryOptions?.approvalTool as string,
+        queryOptions?.approvalTool,
         {
           orgName: queryOptions?.orgName,
         },
@@ -100,7 +100,7 @@ export const useRepositories = (
       queryOptions?.page ?? 0,
       queryOptions?.querySize ?? 0,
       queryOptions?.searchString || '',
-      queryOptions?.approvalTool as string,
+      queryOptions?.approvalTool,
     );
   };
 

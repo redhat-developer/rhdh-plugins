@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { RepositoryStatus } from './types';
+import { ApprovalTool, RepositoryStatus } from './types';
 
 export type Repository = {
   id: string;
@@ -57,7 +57,7 @@ export type PullRequest = {
 export type ImportJobStatus<
   Provider extends 'github' | 'gitlab' = 'github' | 'gitlab',
 > = {
-  approvalTool: string;
+  approvalTool: ApprovalTool;
   task?: {
     taskId: string;
   };
@@ -82,4 +82,5 @@ export type OrgAndRepoResponse = {
   totalCount: number;
   pagePerIntegration: number;
   sizePerIntegration: number;
+  approvalTool?: ApprovalTool;
 };

@@ -61,7 +61,7 @@ export const RepositoryTableRow = ({
       const result = await bulkImportApi.getImportAction(
         data.repoUrl,
         data?.defaultBranch || 'main',
-        data.repoUrl.startsWith('https://gitlab.com') ? 'GITLAB' : 'GIT',
+        data && (data as ImportJobStatus).approvalTool,
       );
       return result;
     }

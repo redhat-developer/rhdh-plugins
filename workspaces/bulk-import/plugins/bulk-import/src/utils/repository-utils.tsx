@@ -125,15 +125,20 @@ export const defaultCatalogInfoYaml = (
   repoName: string,
   orgName: string,
   owner: string,
-) => ({
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: {
-    name: componentName,
-    annotations: { 'github.com/project-slug': `${orgName}/${repoName}` },
-  },
-  spec: { type: 'other', lifecycle: 'unknown', owner },
-});
+  gitProvider: 'github' | 'gitlab',
+) => {
+  return {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'Component',
+    metadata: {
+      name: componentName,
+      annotations: {
+        [`${gitProvider}.com/project-slug`]: `${orgName}/${repoName}`,
+      },
+    },
+    spec: { type: 'other', lifecycle: 'unknown', owner },
+  };
+};
 
 export const componentNameRegex =
   /^([a-zA-Z0-9]+[-_.])*[a-zA-Z0-9]+$|^[a-zA-Z0-9]{1,63}$/;
@@ -158,6 +163,7 @@ export const getPRTemplate = (
   baseUrl: string,
   repositoryUrl: string,
   defaultBranch: string,
+  gitProvider: 'github' | 'gitlab',
 ): PullRequestPreview => {
   const importJobUrl = repositoryUrl
     ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}&defaultBranch=${defaultBranch}`
@@ -169,7 +175,13 @@ export const getPRTemplate = (
     prTitle: 'Add catalog-info.yaml config file',
     prDescription: `This pull request adds a **Backstage entity metadata file**\nto this repository so that the component can\nbe added to the [software catalog](${baseUrl}/catalog).\nAfter this pull request is merged, the component will become available.\nFor more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).\nView the import job in your app [here](${importJobUrl}).`,
     useCodeOwnersFile: false,
-    yaml: defaultCatalogInfoYaml(name, componentName, orgName, entityOwner),
+    yaml: defaultCatalogInfoYaml(
+      name,
+      componentName,
+      orgName,
+      entityOwner,
+      gitProvider,
+    ),
   };
 };
 
@@ -430,7 +442,7 @@ export const prepareDataForSubmission = (
   Object.values(repositories).reduce(
     (acc: CreateImportJobRepository[], repo) => {
       acc.push({
-        approvalTool: approvalTool?.toLocaleUpperCase(),
+        approvalTool: approvalTool,
         codeOwnersFileAsEntityOwner:
           repo.catalogInfoYaml?.prTemplate?.useCodeOwnersFile || false,
         catalogEntityName:
@@ -605,6 +617,7 @@ export const prepareDataForOrganizations = (result: OrgAndRepoResponse) => {
             orgName: val.name,
             organizationUrl: `${val?.url}`,
             totalReposInOrg: val.totalRepoCount,
+            approvalTool: result.approvalTool,
           },
         };
       },
@@ -618,6 +631,8 @@ export const prepareDataForRepositories = (
   user: string,
   baseUrl: string,
 ) => {
+  const gitProvider =
+    result?.approvalTool === ApprovalTool.Gitlab ? 'gitlab' : 'github';
   const repoData: { [id: string]: AddRepositoryData } =
     result?.repositories?.reduce((acc, val: Repository) => {
       const id = val.id;
@@ -626,6 +641,7 @@ export const prepareDataForRepositories = (
         [id]: {
           id,
           repoName: val.name,
+          approvalTool: result?.approvalTool ?? ApprovalTool.Git,
           defaultBranch: val.defaultBranch || 'main',
           orgName: val.organization,
           repoUrl: val.url,
@@ -641,6 +657,7 @@ export const prepareDataForRepositories = (
               baseUrl || '',
               val.url || '',
               val.defaultBranch || 'main',
+              gitProvider,
             ),
           },
         },
@@ -671,6 +688,7 @@ export const prepareDataForAddedRepositories = (
             id: val.task?.taskId,
             status: val.status,
           },
+          approvalTool: val.approvalTool,
           repoName: val.repository.name,
           defaultBranch: val.repository.defaultBranch,
           orgName: val.repository.organization,
@@ -690,6 +708,7 @@ export const prepareDataForAddedRepositories = (
               baseUrl,
               val.repository.url || '',
               val.repository.defaultBranch || 'main',
+              gitProvider,
             ),
             pullRequest: val[gitProvider]?.pullRequest?.url || '',
             lastUpdated: val.lastUpdate,

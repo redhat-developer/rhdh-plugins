@@ -23,6 +23,7 @@ import {
 import {
   AddedRepositoryColumnNameEnum,
   APITypes,
+  ApprovalTool,
   CreateImportJobRepository,
   ImportJobResponse,
   ImportJobs,
@@ -40,7 +41,7 @@ export type BulkImportAPI = {
     page: number,
     size: number,
     searchString: string,
-    approvalTool: string,
+    approvalTool: ApprovalTool,
     options?: APITypes,
   ) => Promise<OrgAndRepoResponse>;
   getImportJobs: (
@@ -57,12 +58,12 @@ export type BulkImportAPI = {
   deleteImportAction: (
     repo: string,
     defaultBranch: string,
-    approvalTool?: string,
+    approvalTool?: ApprovalTool,
   ) => Promise<ImportJobStatus | Response>;
   getImportAction: (
     repo: string,
     defaultBranch: string,
-    approvalTool?: string,
+    approvalTool?: ApprovalTool,
   ) => Promise<ImportJobStatus | Response>;
 };
 
@@ -125,7 +126,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
     page: number,
     size: number,
     searchString: string,
-    approvalTool: string,
+    approvalTool: ApprovalTool,
     options?: APITypes,
   ) {
     const { token: idToken } = await this.identityApi.getCredentials();
@@ -204,7 +205,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
   async deleteImportAction(
     repo: string,
     defaultBranch: string,
-    approvalTool?: string,
+    approvalTool?: ApprovalTool,
   ) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
@@ -228,7 +229,7 @@ export class BulkImportBackendClient implements BulkImportAPI {
   async getImportAction(
     repo: string,
     defaultBranch: string,
-    approvalTool?: string,
+    approvalTool?: ApprovalTool,
   ) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
