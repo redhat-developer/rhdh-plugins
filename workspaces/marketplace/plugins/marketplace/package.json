@@ -1,13 +1,11 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-marketplace",
-  "version": "0.9.3",
+  "version": "0.10.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.esm.js",
-    "types": "dist/index.d.ts"
+    "access": "public"
   },
   "repository": {
     "type": "git",
@@ -24,6 +22,21 @@
     ]
   },
   "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -41,6 +54,7 @@
     "@backstage/plugin-permission-react": "^0.4.36",
     "@backstage/theme": "^0.6.7",
     "@backstage/types": "^1.2.1",
+    "@material-table/core": "^6.4.4",
     "@material-ui/core": "^4.12.2",
     "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^5.16.7",

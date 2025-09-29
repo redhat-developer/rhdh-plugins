@@ -222,6 +222,7 @@ export const urlHelper = (url: string) => {
 
 export const getImportStatus = (
   status: string,
+  t: (key: string) => string,
   showIcon?: boolean,
   prUrl?: string,
   isApprovalToolGitlab: boolean = false,
@@ -229,7 +230,9 @@ export const getImportStatus = (
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
+  const labelText = gitlabFeatureFlag
+    ? t('status.alreadyImported')
+    : t('status.added');
   switch (status) {
     case 'WAIT_PR_APPROVAL':
       return showIcon ? (
@@ -238,7 +241,7 @@ export const getImportStatus = (
           isApprovalToolGitlab={isApprovalToolGitlab}
         />
       ) : (
-        'Waiting for Approval'
+        t('status.waitingForApproval')
       );
     case 'ADDED':
       return showIcon ? (
@@ -247,7 +250,7 @@ export const getImportStatus = (
           style={{ display: 'flex', alignItems: 'baseline' }}
         >
           <StatusOK />
-          {gitlabFeatureFlag ? 'Imported' : 'Added'}
+          {gitlabFeatureFlag ? t('status.imported') : t('status.added')}
         </Typography>
       ) : (
         labelText
@@ -432,44 +435,30 @@ export const getApi = (
 
 export const getCustomisedErrorMessage = (
   status: (RepositoryStatus | string)[] | undefined,
+  t: (key: string) => string,
 ) => {
   let message = '';
   let showRepositoryLink = false;
   status?.forEach(s => {
     if (s === RepositoryStatus.PR_ERROR) {
-      message = message.concat(
-        "Couldn't create a new PR due to insufficient permissions. Contact your administrator.",
-        '\n',
-      );
+      message = message.concat(t('errors.prErrorPermissions'), '\n');
       showRepositoryLink = true;
     }
 
     if (s === RepositoryStatus.CATALOG_INFO_FILE_EXISTS_IN_REPO) {
-      message = message.concat(
-        'Since catalog-info.yaml already exists in the repository, no new PR will be created. However, the entity will still be registered in the catalog page.',
-        '\n',
-      );
+      message = message.concat(t('errors.catalogInfoExists'), '\n');
     }
 
     if (s === RepositoryStatus.CATALOG_ENTITY_CONFLICT) {
-      message = message.concat(
-        "Couldn't create a new PR because of catalog entity conflict.",
-        '\n',
-      );
+      message = message.concat(t('errors.catalogEntityConflict'), '\n');
     }
 
     if (s === RepositoryStatus.REPO_EMPTY) {
-      message = message.concat(
-        "Couldn't create a new PR because the repository is empty. Push an initial commit to the repository.",
-        '\n',
-      );
+      message = message.concat(t('errors.repoEmpty'), '\n');
     }
 
     if (s === RepositoryStatus.CODEOWNERS_FILE_NOT_FOUND_IN_REPO) {
-      message = message.concat(
-        'CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR.',
-        '\n',
-      );
+      message = message.concat(t('errors.codeOwnersNotFound'), '\n');
     }
   });
   if (!message) {
@@ -478,7 +467,10 @@ export const getCustomisedErrorMessage = (
   return { message, showRepositoryLink };
 };
 
-export const calculateLastUpdated = (dateString: string) => {
+export const calculateLastUpdated = (
+  dateString: string,
+  t: (key: string, params?: any) => string,
+) => {
   if (!dateString) {
     return '';
   }
@@ -496,15 +488,15 @@ export const calculateLastUpdated = (dateString: string) => {
   const diffInDays = Math.floor(diffInHours / 24);
 
   if (diffInDays > 0) {
-    return `${diffInDays} ${diffInDays > 1 ? 'days' : 'day'} ago`;
+    return t('time.daysAgo', { count: diffInDays });
   }
   if (diffInHours > 0) {
-    return `${diffInHours} ${diffInHours > 1 ? 'hours' : 'hour'} ago`;
+    return t('time.hoursAgo', { count: diffInHours });
   }
   if (diffInMinutes > 0) {
-    return `${diffInMinutes} ${diffInMinutes > 1 ? 'minutes' : 'minute'} ago`;
+    return t('time.minutesAgo', { count: diffInMinutes });
   }
-  return `${diffInSeconds} ${diffInSeconds > 1 ? 'seconds' : 'second'} ago`;
+  return t('time.secondsAgo', { count: diffInSeconds });
 };
 
 export const evaluatePRTemplate = (
@@ -658,13 +650,11 @@ export const prepareDataForAddedRepositories = (
   };
 };
 
-const validateKeyValuePair = yup
-  .string()
-  .nullable()
-  .test(
-    'is-key-value-pair',
-    'Each entry must have a key and a value separated by a colon.',
-    value => {
+const validateKeyValuePair = (t: (key: string) => string) =>
+  yup
+    .string()
+    .nullable()
+    .test('is-key-value-pair', t('validation.keyValuePairFormat'), value => {
       if (!value) return true;
       const keyValuePairs = value.split(';').map(pair => pair.trim());
       for (const pair of keyValuePairs) {
@@ -676,29 +666,33 @@ const validateKeyValuePair = yup
         }
       }
       return true;
-    },
-  );
+    });
 
-export const getValidationSchema = (approvalTool: string) =>
+export const getValidationSchema = (
+  approvalTool: string,
+  t: (key: string, params?: any) => string,
+) =>
   yup.object().shape({
-    prTitle: yup.string().required(`${approvalTool} title is required`),
+    prTitle: yup
+      .string()
+      .required(t('validation.titleRequired', { approvalTool })),
     prDescription: yup
       .string()
-      .required(`${approvalTool} description is required`),
+      .required(t('validation.descriptionRequired', { approvalTool })),
     componentName: yup
       .string()
       .matches(
         componentNameRegex,
-        `"${yup.string()}" is not valid; expected a string that is sequences of [a-zA-Z0-9] separated by any of [-_.], at most 63 characters in total. To learn more about catalog file format, visit: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md`,
+        t('validation.componentNameInvalid', { value: yup.string() }),
       )
-      .required('Component name is required'),
+      .required(t('validation.componentNameRequired')),
     useCodeOwnersFile: yup.boolean(),
     entityOwner: yup.string().when('useCodeOwnersFile', {
       is: false,
-      then: schema => schema.required('Entity Owner is required'),
+      then: schema => schema.required(t('validation.entityOwnerRequired')),
       otherwise: schema => schema.notRequired(),
     }),
-    prLabels: validateKeyValuePair,
-    prAnnotations: validateKeyValuePair,
-    prSpec: validateKeyValuePair,
+    prLabels: validateKeyValuePair(t),
+    prAnnotations: validateKeyValuePair(t),
+    prSpec: validateKeyValuePair(t),
   });

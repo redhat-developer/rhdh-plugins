@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-application-listener-test
 
+## 0.4.1
+
+### Patch Changes
+
+- 08ebed6: Fix the test package build and rebuild all packages to have a consistant commit for them.
+
 ## 0.4.0
 
 ### Minor Changes

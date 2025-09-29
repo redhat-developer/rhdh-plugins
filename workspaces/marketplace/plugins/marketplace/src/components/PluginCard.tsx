@@ -37,6 +37,7 @@ import { rootRouteRef, pluginRouteRef } from '../routes';
 import { BadgeTriange } from './Badges';
 import { CategoryLinkButton } from './CategoryLinkButton';
 import { PluginIcon } from './PluginIcon';
+import { useTranslation } from '../hooks/useTranslation';
 
 export interface PluginCardSkeletonProps {
   animation?: 'pulse' | 'wave' | false;
@@ -121,6 +122,7 @@ export const PluginCardSkeleton = ({ animation }: PluginCardSkeletonProps) => (
 
 // TODO: add link around card
 export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const getIndexPath = useRouteRef(rootRouteRef);
@@ -168,7 +170,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                 >
                   {plugin.spec.authors.map((author, index) => (
                     <Fragment key={author.name}>
-                      {index > 0 ? ', ' : ' by '}
+                      {index > 0 ? t('common.comma') : t('common.by')}
                       <Link
                         key={author.name}
                         to={withFilter('spec.authors.name', author.name)}
@@ -207,7 +209,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
               fontStyle: plugin.metadata.description ? undefined : 'italic',
             }}
           >
-            {plugin.metadata.description ?? 'no description available'}
+            {plugin.metadata.description ?? t('common.noDescriptionAvailable')}
           </Typography>
         </Stack>
       </CardContent>
@@ -221,7 +223,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
         }}
       >
         <Link to={pluginPath} onClick={e => e.stopPropagation()}>
-          Read more
+          {t('common.readMore')}
         </Link>
         {renderInstallStatus(plugin.spec?.installStatus)}
       </CardActions>

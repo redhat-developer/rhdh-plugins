@@ -27,6 +27,7 @@ import { Formik } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
+import { useTranslation } from '../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
@@ -39,6 +40,7 @@ import { RepositoriesList } from './Repositories/RepositoriesList';
 export const BulkImportPage = () => {
   // to store the queryClient instance
   const queryClientRef = useRef<QueryClient>();
+  const { t } = useTranslation();
   const initialValues: AddRepositoriesFormValues = {
     repositoryType: RepositorySelection.Repository,
     repositories: {},
@@ -76,16 +78,15 @@ export const BulkImportPage = () => {
     }
     return (
       <Alert severity="warning" data-testid="no-permission-alert">
-        <AlertTitle>Permission required</AlertTitle>
-        To view the added repositories, contact your administrator to give you
-        the `bulk.import` permission.
+        <AlertTitle>{t('permissions.title')}</AlertTitle>
+        {t('permissions.viewRepositoriesMessage')}
       </Alert>
     );
   };
 
   return (
     <Page themeId="tool">
-      <Header title="Bulk import" />
+      <Header title={t('page.title')} />
       <DrawerContextProvider>
         <DeleteDialogContextProvider>
           <Content>{showContent()}</Content>

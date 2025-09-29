@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.6.0
+
+### Minor Changes
+
+- dcda8f3: Adding localization support for quickstart steps.
+
+### Patch Changes
+
+- b887a58: French translation updated
+
+## 1.5.1
+
+### Patch Changes
+
+- 9057587: Fix Quickstart drawer re-opening on close by scoping drawer flags per user, caching resolved role per session, and filtering items only when the drawer is open; preserves first-time auto-open and respects manual close.
+
 ## 1.5.0
 
 ### Minor Changes

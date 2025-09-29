@@ -19,6 +19,7 @@ import { useEffect } from 'react';
 import { useAsync } from 'react-use';
 
 import { Entity, EntityMeta } from '@backstage/catalog-model';
+import { MarkdownContent } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import {
   PreviewCatalogInfoComponent,
@@ -40,6 +41,7 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import { FormikErrors, useFormik, useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
@@ -78,14 +80,15 @@ export const PreviewPullRequestForm = ({
   setPullRequest: (pullRequest: PullRequestPreviewData) => void;
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
+  const { t } = useTranslation();
   const contentClasses = useDrawerContentStyles();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   const catalogApi = useApi(catalogApiRef);
 
   const approvalToolLabel = {
-    [ApprovalTool.Gitlab]: 'Merge request',
-    [ApprovalTool.Git]: 'Pull request',
-    [ApprovalTool.ServiceNow]: 'ServiceNow ticket',
+    [ApprovalTool.Gitlab]: t('previewFile.pullRequest.mergeRequest'),
+    [ApprovalTool.Git]: t('previewFile.pullRequest.title'),
+    [ApprovalTool.ServiceNow]: t('previewFile.pullRequest.serviceNowTicket'),
   };
 
   const formik = useFormik<PullRequestPreview>({
@@ -96,6 +99,7 @@ export const PreviewPullRequestForm = ({
     ] as any as FormikErrors<PullRequestPreview>,
     validationSchema: getValidationSchema(
       approvalToolLabel[values.approvalTool],
+      t,
     ),
     onSubmit: () => {},
   });
@@ -227,7 +231,7 @@ export const PreviewPullRequestForm = ({
 
   const keyValueTextFields = [
     {
-      label: 'Annotations',
+      label: t('previewFile.pullRequest.annotations'),
       name: 'prAnnotations',
       value:
         formik.values?.prAnnotations ??
@@ -236,14 +240,14 @@ export const PreviewPullRequestForm = ({
         ),
     },
     {
-      label: 'Labels',
+      label: t('previewFile.pullRequest.labels'),
       name: 'prLabels',
       value:
         formik.values?.prLabels ??
         convertKeyValuePairsToString(formik.values?.yaml?.metadata?.labels),
     },
     {
-      label: 'Spec',
+      label: t('previewFile.pullRequest.spec'),
       name: 'prSpec',
       value:
         formik.values?.prSpec ??
@@ -271,11 +275,17 @@ export const PreviewPullRequestForm = ({
   return (
     <>
       <Box marginTop={2}>
-        <Typography variant="h6">{`${approvalToolLabel[values.approvalTool]} details`}</Typography>
+        <Typography variant="h6">
+          {t('previewFile.pullRequest.details' as any, {
+            tool: approvalToolLabel[values.approvalTool],
+          })}
+        </Typography>
       </Box>
       <TextField
-        label={`${approvalToolLabel[values.approvalTool]} title`}
-        placeholder="Add Backstage catalog entity descriptor files"
+        label={t('previewFile.pullRequest.titleLabel' as any, {
+          tool: approvalToolLabel[values.approvalTool],
+        })}
+        placeholder={t('previewFile.pullRequest.titlePlaceholder')}
         variant="outlined"
         margin="normal"
         sx={{ width: '99%' }}
@@ -287,8 +297,10 @@ export const PreviewPullRequestForm = ({
         required
       />
       <TextField
-        label={`${approvalToolLabel[values.approvalTool]} body`}
-        placeholder="A describing text with Markdown support"
+        label={t('previewFile.pullRequest.bodyLabel' as any, {
+          tool: approvalToolLabel[values.approvalTool],
+        })}
+        placeholder={t('previewFile.pullRequest.bodyPlaceholder')}
         margin="normal"
         variant="outlined"
         sx={{ width: '99%' }}
@@ -301,11 +313,13 @@ export const PreviewPullRequestForm = ({
         required
       />
       <Box marginTop={2}>
-        <Typography variant="h6">Entity configuration</Typography>
+        <Typography variant="h6">
+          {t('previewFile.pullRequest.entityConfiguration')}
+        </Typography>
       </Box>
       <TextField
-        label="Name of the created component"
-        placeholder="Component Name"
+        label={t('previewFile.pullRequest.componentNameLabel')}
+        placeholder={t('previewFile.pullRequest.componentNamePlaceholder')}
         margin="normal"
         variant="outlined"
         onChange={handleChange}
@@ -323,7 +337,7 @@ export const PreviewPullRequestForm = ({
           options={entities || []}
           value={formik.values?.entityOwner}
           loading={entitiesLoading}
-          loadingText="Loading groups and users"
+          loadingText={t('previewFile.pullRequest.loadingText')}
           onChange={(_event, value) =>
             handleChange({
               target: { name: 'entityOwner', value },
@@ -340,11 +354,11 @@ export const PreviewPullRequestForm = ({
               name="entityOwner"
               variant="outlined"
               error={!!formik.errors?.entityOwner}
-              label="Entity owner"
-              placeholder="groups and users"
+              label={t('previewFile.pullRequest.entityOwnerLabel')}
+              placeholder={t('previewFile.pullRequest.entityOwnerPlaceholder')}
               helperText={
                 formik.errors?.entityOwner ||
-                'Select an owner from the list or enter a reference to a Group or a User'
+                t('previewFile.pullRequest.entityOwnerHelper')
               }
               InputProps={{
                 ...params.InputProps,
@@ -378,14 +392,13 @@ export const PreviewPullRequestForm = ({
           />
         }
         label={
-          <>
-            Use <em>CODEOWNERS</em> file as Entity Owner
-          </>
+          <MarkdownContent
+            content={t('previewFile.pullRequest.useCodeOwnersFile')}
+          />
         }
       />
       <FormHelperText>
-        WARNING: This may fail if no CODEOWNERS file is found at the target
-        location.
+        {t('previewFile.pullRequest.codeOwnersWarning')}
       </FormHelperText>
       {keyValueTextFields.map(field => {
         return (
@@ -403,8 +416,8 @@ export const PreviewPullRequestForm = ({
       })}
       <Box marginTop={2}>
         <Typography variant="h6">
-          Preview
-          {` ${approvalToolLabel[values.approvalTool].toLocaleLowerCase('en-US')}`}
+          {t('previewFile.preview')}{' '}
+          {approvalToolLabel[values.approvalTool].toLowerCase()}
         </Typography>
       </Box>
       <PreviewPullRequestComponent
@@ -416,7 +429,9 @@ export const PreviewPullRequestForm = ({
         }}
       />
       <Box marginTop={2} marginBottom={1}>
-        <Typography variant="h6">Preview entities</Typography>
+        <Typography variant="h6">
+          {t('previewFile.pullRequest.previewEntities')}
+        </Typography>
       </Box>
       <PreviewCatalogInfoComponent
         entities={[formik.values?.yaml]}

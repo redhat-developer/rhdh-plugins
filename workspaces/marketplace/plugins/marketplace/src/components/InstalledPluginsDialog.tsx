@@ -30,15 +30,17 @@ import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useInstallationContext } from './InstallationContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 const PluginsTable = () => {
+  const { t } = useTranslation();
   const { installedPlugins } = useInstallationContext();
   return (
-    <Table aria-label="simple table">
+    <Table aria-label={t('table.pluginsTable')}>
       <TableHead>
         <TableRow>
-          <TableCell>Name</TableCell>
-          <TableCell align="left">Action</TableCell>
+          <TableCell>{t('table.name')}</TableCell>
+          <TableCell align="left">{t('table.action')}</TableCell>
         </TableRow>
       </TableHead>
       <TableBody>
@@ -62,6 +64,7 @@ export const InstalledPluginsDialog = ({
   open: boolean;
   onClose: (close: boolean) => void;
 }) => {
+  const { t } = useTranslation();
   const handleClose = () => {
     onClose(false);
   };
@@ -81,13 +84,13 @@ export const InstalledPluginsDialog = ({
             }}
           >
             <Typography component="span" sx={{ fontWeight: 'bold' }}>
-              Backend restart required
+              {t('dialog.backendRestartRequired')}
             </Typography>
 
             <IconButton
               aria-label="close"
               onClick={handleClose}
-              title="Close"
+              title={t('common.close')}
               size="large"
               sx={{
                 position: 'absolute',
@@ -103,9 +106,7 @@ export const InstalledPluginsDialog = ({
         <DialogContent>
           <PluginsTable />
           <br />
-          <Typography variant="body1">
-            To finish the plugin modifications, restart your backend system.
-          </Typography>
+          <Typography variant="body1">{t('dialog.restartMessage')}</Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'left', p: '20px' }}>
           <Button
@@ -115,7 +116,7 @@ export const InstalledPluginsDialog = ({
             }}
             onClick={handleClose}
           >
-            Close
+            {t('common.close')}
           </Button>
         </DialogActions>
       </Dialog>

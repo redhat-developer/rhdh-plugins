@@ -72,8 +72,22 @@ export const useQuickstartRole = (): {
     }
   }, [identityApi]);
 
-  // If still loading authorization or permissions, return loading state
-  if (authLoading || loading) return { isLoading: true, userRole: null };
+  // When auth is still resolving, return loading
+  if (authLoading) return { isLoading: true, userRole: null };
+
+  // After auth resolves, attempt to serve cached role (session scoped)
+  const userEntityRef = authResult?.identity?.userEntityRef || 'guest';
+  const cacheKey = `quickstart-role:${userEntityRef}:rbac:${
+    isRBACEnabled ? '1' : '0'
+  }`;
+  const cachedRole =
+    typeof window !== 'undefined' ? sessionStorage.getItem(cacheKey) : null;
+  if (cachedRole === 'admin' || cachedRole === 'developer') {
+    return { isLoading: false, userRole: cachedRole as UserRole };
+  }
+
+  // If permission is still loading and there's no cache, report loading
+  if (loading) return { isLoading: true, userRole: null };
 
   // Check if user is authorized (authenticated, not a guest)
   const isUserAuthorized = authResult?.isAuthenticated ?? false;
@@ -84,12 +98,22 @@ export const useQuickstartRole = (): {
   }
 
   // Authorized user + NO RBAC enabled: show admin items
-  if (!isRBACEnabled) return { isLoading: false, userRole: 'admin' };
+  if (!isRBACEnabled) {
+    if (typeof window !== 'undefined')
+      sessionStorage.setItem(cacheKey, 'admin');
+    return { isLoading: false, userRole: 'admin' };
+  }
 
   // Authorized user + RBAC enabled: check permissions
   // If user has admin permission => show configured admin items
-  if (allowed) return { isLoading: false, userRole: 'admin' };
+  if (allowed) {
+    if (typeof window !== 'undefined')
+      sessionStorage.setItem(cacheKey, 'admin');
+    return { isLoading: false, userRole: 'admin' };
+  }
 
   // If user doesn't have admin permission => show configured developer items
+  if (typeof window !== 'undefined')
+    sessionStorage.setItem(cacheKey, 'developer');
   return { isLoading: false, userRole: 'developer' };
 };

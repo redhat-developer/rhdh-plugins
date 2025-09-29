@@ -77,11 +77,12 @@ import { useInstallPlugin } from '../hooks/useInstallPlugin';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { mapMarketplacePluginInstallStatusToInstallPageButton } from '../labels';
+import { useTranslation } from '../hooks/useTranslation';
 import { useTheme } from '@mui/material/styles';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
 
-const generateCheckboxList = (packages: MarketplacePackage[]) => {
+const generateCheckboxList = (packages: MarketplacePackage[], t: any) => {
   const hasFrontend = packages.some(
     pkg => pkg.spec?.backstage?.role === 'frontend-plugin',
   );
@@ -90,16 +91,17 @@ const generateCheckboxList = (packages: MarketplacePackage[]) => {
   );
 
   const checkboxes = [
-    { label: 'Install front-end plugin', show: hasFrontend },
-    { label: 'Install back-end plugin', show: hasBackend },
-    { label: 'Install software templates', show: true }, // TODO, now always show
+    { label: t('install.installFrontend'), show: hasFrontend },
+    { label: t('install.installBackend'), show: hasBackend },
+    { label: t('install.installTemplates'), show: true }, // TODO, now always show
   ];
 
   return checkboxes.filter(cb => cb.show);
 };
 
 const CheckboxList = ({ packages }: { packages: MarketplacePackage[] }) => {
-  const checkboxes = generateCheckboxList(packages);
+  const { t } = useTranslation();
+  const checkboxes = generateCheckboxList(packages, t);
   const [checked, setChecked] = useState<{ [key: string]: boolean }>({});
 
   const handleChange = (label: string) => {
@@ -138,6 +140,7 @@ export const MarketplacePluginInstallContent = ({
   plugin: MarketplacePlugin;
   packages: MarketplacePackage[];
 }) => {
+  const { t } = useTranslation();
   const { mutateAsync: installPlugin } = useInstallPlugin();
   const { installedPlugins, setInstalledPlugins } = useInstallationContext();
   const params = useRouteRefParams(pluginInstallRouteRef);
@@ -236,18 +239,18 @@ export const MarketplacePluginInstallContent = ({
   const aboutMarkdown = plugin.spec?.description;
   const availableTabs = [
     examples.length > 0 && {
-      label: 'Examples',
+      label: t('install.examples'),
       content: examples,
       key: 'examples',
       others: { packageNames: packageDynamicArtifacts },
     },
     installationInstructions && {
-      label: 'Setting up the plugin',
+      label: t('install.settingUpPlugin'),
       content: installationInstructions,
       key: 'installation',
     },
     aboutMarkdown && {
-      label: 'About the plugin',
+      label: t('install.aboutPlugin'),
       content: aboutMarkdown,
       key: 'about',
     },
@@ -280,8 +283,8 @@ export const MarketplacePluginInstallContent = ({
           [plugin.metadata.title ?? plugin.metadata.name]: isPluginInstalled(
             plugin?.spec?.installStatus,
           )
-            ? 'Plugin updated'
-            : 'Plugin installed',
+            ? t('install.pluginUpdated')
+            : t('install.pluginInstalled'),
         };
         setInstalledPlugins(updatedPlugins);
         navigate('/extensions');
@@ -310,6 +313,7 @@ export const MarketplacePluginInstallContent = ({
       read: pluginConfigPermissions.data?.read ?? 'DENY',
       write: pluginConfigPermissions.data?.write ?? 'DENY',
     },
+    t,
     !extensionsConfig?.data?.enabled,
   );
 
@@ -332,18 +336,19 @@ export const MarketplacePluginInstallContent = ({
 
   const getCardHeaderTitle = () => {
     if (isProductionEnvironment) {
-      return 'Instructions';
+      return t('install.instructions');
     }
     if (isPluginInstalled(plugin.spec?.installStatus)) {
-      return 'Edit instructions';
+      return t('install.editInstructions');
     }
-    return 'Installation instructions';
+    return t('install.installationInstructions');
   };
 
   const installationWarning = () => {
     const errorMessage = getErrorMessage(
       (pluginConfig.data as any)?.error?.reason,
       (pluginConfig.data as any)?.error?.message,
+      t,
     );
 
     return (
@@ -542,12 +547,11 @@ export const MarketplacePluginInstallContent = ({
                   )
                 }
               >
-                {
-                  mapMarketplacePluginInstallStatusToInstallPageButton[
-                    plugin.spec?.installStatus ??
-                      MarketplacePluginInstallStatus.NotInstalled
-                  ]
-                }
+                {mapMarketplacePluginInstallStatusToInstallPageButton(
+                  plugin.spec?.installStatus ??
+                    MarketplacePluginInstallStatus.NotInstalled,
+                  t,
+                )}
               </Button>
             </Typography>
           </Tooltip>
@@ -558,7 +562,7 @@ export const MarketplacePluginInstallContent = ({
             onClick={() => navigate(pluginLink)}
             data-testId={isInstallDisabled ? 'back-button' : 'cancel-button'}
           >
-            {isInstallDisabled ? 'Back' : 'Cancel'}
+            {isInstallDisabled ? t('install.back') : t('install.cancel')}
           </Button>
           {(pluginConfigPermissions.data?.write === 'ALLOW' ||
             pluginConfigPermissions.data?.read === 'ALLOW') && (
@@ -568,7 +572,7 @@ export const MarketplacePluginInstallContent = ({
               onClick={onReset}
               sx={{ ml: 3 }}
             >
-              Reset
+              {t('install.reset')}
             </Button>
           )}
         </Box>

@@ -15,3 +15,4 @@
  */
 
 export { filterQuickstartItemsByRole } from './filterQuickstartItems';
+export { getTranslatedTextWithFallback } from './translationUtils';

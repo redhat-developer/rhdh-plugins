@@ -60,7 +60,7 @@ spec:
 
 ## Available Metrics
 
-### GitHub Open Pull Requests (`github.open-prs`)
+### GitHub open PRs (`github.open-prs`)
 
 This metric counts all pull requests that are currently in an "open" state for the repository specified in the entity's `github.com/project-slug` annotation.
 
