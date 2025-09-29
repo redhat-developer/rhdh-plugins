@@ -62,6 +62,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
       return await bulkImportApi.getImportAction(
         repoUrl,
         defaultBranch || 'main',
+        repoUrl.startsWith('https://gitlab.com') ? 'GITLAB' : 'GIT',
       );
     }
     return null;

@@ -32,9 +32,10 @@ import {
 
 type SyncRepositoryProps = {
   data: AddRepositoryData;
+  approvalTool: string;
 };
 
-const SyncRepository = ({ data }: SyncRepositoryProps) => {
+const SyncRepository = ({ data, approvalTool }: SyncRepositoryProps) => {
   const { t } = useTranslation();
   const bulkImportApi = useApi(bulkImportApiRef);
   const { setFieldValue } = useFormikContext<AddRepositoriesFormValues>();
@@ -43,6 +44,7 @@ const SyncRepository = ({ data }: SyncRepositoryProps) => {
     const value = await bulkImportApi.getImportAction(
       data.repoUrl || '',
       data?.defaultBranch || 'main',
+      approvalTool,
     );
     setFieldValue(
       `repositories.[${data.id}].catalogInfoYaml.status`,
