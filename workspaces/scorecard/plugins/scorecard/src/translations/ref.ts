@@ -52,12 +52,12 @@ export const scorecardMessages = {
 
   // Metric translations
   metric: {
-    'github.open-prs': {
+    'github.open_prs': {
       title: 'GitHub open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
     },
-    'jira.open-issues': {
+    'jira.open_issues': {
       title: 'Jira open blocking tickets',
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
