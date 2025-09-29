@@ -20,24 +20,18 @@ import { useSearchParams } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 
-import {
-  MarketplaceAnnotation,
-  MarketplaceSupportLevel,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-
-import { usePluginFacet } from '../hooks/usePluginFacet';
-import { usePluginFacets } from '../hooks/usePluginFacets';
+import { useFilteredPluginFacet } from '../hooks/useFilteredPluginFacet';
+import { useFilteredSupportTypes } from '../hooks/useFilteredSupportTypes';
 import {
   CustomSelectFilter,
   CustomSelectItem,
 } from '../shared-components/CustomSelectFilter';
 import { useQueryArrayFilter } from '../hooks/useQueryArrayFilter';
-import { colors } from '../consts';
 import { useTranslation } from '../hooks/useTranslation';
 
 const CategoryFilter = () => {
   const { t } = useTranslation();
-  const categoriesFacet = usePluginFacet('spec.categories');
+  const categoriesFacet = useFilteredPluginFacet('spec.categories', 'category');
   const filter = useQueryArrayFilter('category');
   const categories = categoriesFacet.data;
 
@@ -70,7 +64,7 @@ const CategoryFilter = () => {
 
 const AuthorFilter = () => {
   const { t } = useTranslation();
-  const authorsFacet = usePluginFacet('spec.authors.name');
+  const authorsFacet = useFilteredPluginFacet('spec.authors.name', 'author');
   const authors = authorsFacet.data;
   const filter = useQueryArrayFilter('author');
 
@@ -101,12 +95,6 @@ const AuthorFilter = () => {
   );
 };
 
-const facetsKeys = [
-  `metadata.annotations.${MarketplaceAnnotation.CERTIFIED_BY}`,
-  `metadata.annotations.${MarketplaceAnnotation.PRE_INSTALLED}`,
-  'spec.support.level',
-];
-
 const evaluateParams = (
   newSelection: (string | number)[],
   newParams: URLSearchParams,
@@ -121,100 +109,9 @@ const evaluateParams = (
 const SupportTypeFilter = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const pluginFacets = usePluginFacets({ facets: facetsKeys });
+  const filteredSupportTypes = useFilteredSupportTypes();
 
-  const facets = pluginFacets.data;
-
-  const items = useMemo(() => {
-    if (!facets) return [];
-    const allSupportTypeItems: CustomSelectItem[] = [];
-
-    // Certified plugins
-    const certified = facets[facetsKeys[0]];
-    const certifiedCount =
-      certified?.reduce((acc, curr) => acc + curr.count, 0) || 0;
-    // const certifiedFilter = certified?.map(c => c.value).join(', ') || '';
-    const certifiedProviders = certified?.map(c => c.value).join(', ') || '';
-
-    allSupportTypeItems.push({
-      label: t('badges.certified'),
-      value: 'certified',
-      count: certifiedCount,
-      isBadge: true,
-      badgeColor: colors.certified,
-      helperText: t('badges.stableAndSecured' as any, {
-        provider: certifiedProviders,
-      }),
-      displayOrder: 2,
-    });
-
-    // Custom plugins
-    const preinstalled = facets[facetsKeys[1]];
-    const customCount =
-      preinstalled?.find(p => p.value === 'false')?.count ?? 0;
-    if (customCount > 0) {
-      allSupportTypeItems.push({
-        label: t('badges.customPlugin'),
-        value: 'custom',
-        count: customCount,
-        isBadge: true,
-        badgeColor: colors.custom,
-        helperText: t('badges.addedByAdmin'),
-        displayOrder: 3,
-      });
-    }
-
-    const supportLevelFilters = facets[facetsKeys[2]];
-    supportLevelFilters?.forEach(supportLevelFilter => {
-      if (
-        supportLevelFilter.value === MarketplaceSupportLevel.GENERALLY_AVAILABLE
-      ) {
-        allSupportTypeItems.push({
-          label: t('badges.generallyAvailable'),
-          value: `support-level=${supportLevelFilter.value}`,
-          count: supportLevelFilter.count,
-          isBadge: true,
-          badgeColor: colors.generallyAvailable,
-          helperText: t('badges.productionReady'),
-          displayOrder: 1,
-        });
-      } else if (
-        supportLevelFilter.value === MarketplaceSupportLevel.TECH_PREVIEW
-      ) {
-        allSupportTypeItems.push({
-          label: t('badges.techPreview'),
-          value: `support-level=${supportLevelFilter.value}`,
-          count: supportLevelFilter.count,
-          helperText: t('badges.pluginInDevelopment'),
-          displayOrder: 4,
-        });
-      } else if (
-        supportLevelFilter.value === MarketplaceSupportLevel.DEV_PREVIEW
-      ) {
-        allSupportTypeItems.push({
-          label: t('badges.devPreview'),
-          value: `support-level=${supportLevelFilter.value}`,
-          count: supportLevelFilter.count,
-          helperText: t('badges.earlyStageExperimental'),
-          displayOrder: 5,
-        });
-      } else if (
-        supportLevelFilter.value === MarketplaceSupportLevel.COMMUNITY
-      ) {
-        allSupportTypeItems.push({
-          label: t('badges.communityPlugin'),
-          value: `support-level=${supportLevelFilter.value}`,
-          count: supportLevelFilter.count,
-          helperText: t('badges.openSourceNoSupport'),
-          displayOrder: 6,
-        });
-      }
-    });
-
-    return allSupportTypeItems.sort(
-      (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0),
-    );
-  }, [facets, t]);
+  const items = filteredSupportTypes.data;
 
   const selected = useMemo(() => {
     const selectedFilters = searchParams.getAll('filter');
