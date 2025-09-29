@@ -1,0 +1,286 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { Page } from '@playwright/test';
+import {
+  optimizationBaseUrl,
+  mockClusters,
+  mockOptimizations,
+  mockOptimizationsEmpty,
+  mockOptimizationsError,
+  mockWorkflowExecution,
+  mockWorkflowExecutionError,
+} from '../fixtures/optimizationResponses';
+
+/**
+ * Mock clusters API endpoint
+ */
+export async function mockClustersResponse(
+  page: Page,
+  clusters = mockClusters,
+) {
+  await page.route(`${optimizationBaseUrl}/clusters`, async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ clusters }),
+    });
+  });
+}
+
+/**
+ * Mock optimizations API endpoint
+ */
+export async function mockOptimizationsResponse(
+  page: Page,
+  optimizations = mockOptimizations,
+  status = 200,
+) {
+  // Mock the actual API endpoint that's being called
+  await page.route(
+    '**/api/proxy/cost-management/v1/recommendations/openshift*',
+    async route => {
+      if (status === 200) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            data: optimizations,
+            meta: {
+              count: optimizations.length,
+              limit: 10,
+              offset: 0,
+            },
+          }),
+        });
+      } else {
+        await route.fulfill({
+          status,
+          contentType: 'application/json',
+          body: JSON.stringify(mockOptimizationsError),
+        });
+      }
+    },
+  );
+
+  // Also mock the old endpoint for backward compatibility
+  await page.route(`${optimizationBaseUrl}/optimizations*`, async route => {
+    if (status === 200) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ optimizations }),
+      });
+    } else {
+      await route.fulfill({
+        status,
+        contentType: 'application/json',
+        body: JSON.stringify(mockOptimizationsError),
+      });
+    }
+  });
+}
+
+/**
+ * Mock empty optimizations response
+ */
+export async function mockEmptyOptimizationsResponse(page: Page) {
+  await mockOptimizationsResponse(page, mockOptimizationsEmpty);
+}
+
+/**
+ * Mock workflow execution API endpoint
+ */
+export async function mockWorkflowExecutionResponse(
+  page: Page,
+  execution = mockWorkflowExecution,
+  status = 200,
+) {
+  await page.route(`${optimizationBaseUrl}/workflow/execute`, async route => {
+    if (status === 200) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(execution),
+      });
+    } else {
+      await route.fulfill({
+        status,
+        contentType: 'application/json',
+        body: JSON.stringify(mockWorkflowExecutionError),
+      });
+    }
+  });
+}
+
+/**
+ * Mock workflow execution error response
+ */
+export async function mockWorkflowExecutionErrorResponse(page: Page) {
+  await mockWorkflowExecutionResponse(page, mockWorkflowExecutionError, 500);
+}
+
+/**
+ * Mock authentication token endpoint
+ */
+export async function mockAuthTokenResponse(
+  page: Page,
+  token = 'mock-access-token',
+) {
+  await page.route(`${optimizationBaseUrl}/token`, async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ access_token: token }),
+    });
+  });
+}
+
+/**
+ * Mock access check endpoint
+ */
+export async function mockAccessCheckResponse(page: Page, hasAccess = true) {
+  await page.route(`${optimizationBaseUrl}/access`, async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ hasAccess }),
+    });
+  });
+}
+
+/**
+ * Mock authentication guest refresh endpoint
+ */
+export async function mockAuthGuestRefreshResponse(page: Page) {
+  await page.route('**/api/auth/guest/refresh', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        token: 'mock-guest-token',
+        expires_in: 3600,
+      }),
+    });
+  });
+}
+
+/**
+ * Mock permission check endpoint
+ */
+export async function mockPermissionResponse(page: Page, hasPermission = true) {
+  await page.route('**/api/permission/**', async route => {
+    if (hasPermission) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          result: 'ALLOW',
+          conditions: [],
+        }),
+      });
+    } else {
+      await route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          result: 'DENY',
+          message: 'Insufficient permissions',
+        }),
+      });
+    }
+  });
+}
+
+/**
+ * Mock cost management API endpoints
+ */
+export async function mockCostManagementResponse(
+  page: Page,
+  data = mockOptimizations,
+) {
+  // Mock the main recommendations endpoint
+  await page.route(
+    '**/api/proxy/cost-management/v1/recommendations/openshift*',
+    async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: data,
+          meta: {
+            count: data.length,
+            limit: 10,
+            offset: 0,
+            total: data.length,
+          },
+        }),
+      });
+    },
+  );
+
+  // Mock other cost management endpoints
+  await page.route('**/api/proxy/cost-management/v1/**', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [],
+        meta: { count: 0 },
+      }),
+    });
+  });
+}
+
+/**
+ * Mock empty cost management response
+ */
+export async function mockEmptyCostManagementResponse(page: Page) {
+  await mockCostManagementResponse(page, []);
+}
+
+/**
+ * Mock cost management error response
+ */
+export async function mockCostManagementErrorResponse(
+  page: Page,
+  status = 500,
+) {
+  await page.route('**/api/proxy/cost-management/v1/**', async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: 'Cost management service unavailable',
+        message: 'Service temporarily unavailable',
+        code: 'SERVICE_UNAVAILABLE',
+      }),
+    });
+  });
+}
+
+/**
+ * Setup all mocks for development mode
+ */
+export async function setupOptimizationMocks(page: Page) {
+  await mockAuthGuestRefreshResponse(page);
+  await mockPermissionResponse(page);
+  await mockClustersResponse(page);
+  await mockAuthTokenResponse(page);
+  await mockAccessCheckResponse(page);
+  await mockWorkflowExecutionResponse(page);
+  await mockCostManagementResponse(page); // This includes the optimizations data
+}

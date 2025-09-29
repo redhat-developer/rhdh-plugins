@@ -23,5 +23,6 @@ test('App should render the welcome page', async ({ page }) => {
   await expect(enterButton).toBeVisible();
   await enterButton.click();
 
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
+  // The app redirects to /catalog and shows the Red Hat organization
+  await expect(page.getByText('Red Hat')).toBeVisible();
 });
