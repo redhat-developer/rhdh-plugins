@@ -64,7 +64,7 @@ describe('JiraClient', () => {
           baseUrl: mockURL,
           token: 'token',
           product: 'cloud',
-          apiVersion: '3',
+          apiVersion: 3,
         },
         scorecard: {
           plugins: {
@@ -102,7 +102,7 @@ describe('JiraClient', () => {
         baseUrl: 'https://example.com/api',
         token: 'token',
         product: 'cloud',
-        apiVersion: '3',
+        apiVersion: 3,
       });
     });
 

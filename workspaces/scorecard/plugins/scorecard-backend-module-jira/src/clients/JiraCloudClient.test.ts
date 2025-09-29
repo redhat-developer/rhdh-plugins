@@ -33,7 +33,7 @@ describe('JiraCloudClient', () => {
           baseUrl: 'https://jira.example.com',
           token: 'Fds31dsF32',
           product: 'cloud',
-          apiVersion: '3',
+          apiVersion: 3,
         },
         scorecard: {
           plugins: {

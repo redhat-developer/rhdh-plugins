@@ -20,7 +20,7 @@ export interface Config {
     baseUrl: string;
     token: string;
     product: string;
-    apiVersion?: string;
+    apiVersion?: number | string;
   };
   /** Configuration for scorecard plugin */
   scorecard?: {

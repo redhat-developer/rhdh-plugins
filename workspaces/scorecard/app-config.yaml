@@ -51,16 +51,17 @@ proxy:
       Accept: 'application/json'
       Content-Type: 'application/json'
       X-Atlassian-Token: 'nocheck'
-      # User-Agent: "MY-UA-STRING"
+      User-Agent: 'MY-UA-STRING'
 
 # Jira plugin and scorecard configuration
 jira:
-  proxyPath: /jira/api
+  # optional: Use the proxy configuration above
+  # proxyPath: /jira/api
 
   # Required
-  baseUrl: https://issues.redhat.com
+  baseUrl: ${JIRA_URL}
   # Required
-  token: dummy_token
+  token: ${JIRA_TOKEN}
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
   # By default, the latest version is used. You can omit this prop when using the latest version.

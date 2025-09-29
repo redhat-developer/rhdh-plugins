@@ -33,7 +33,7 @@ describe('JiraDataCenterClient', () => {
           baseUrl: 'https://datacenter.example.com',
           token: 'XMdw2f432dsV',
           product: 'datacenter',
-          apiVersion: '2',
+          apiVersion: 2,
         },
         scorecard: {
           plugins: {

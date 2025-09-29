@@ -45,9 +45,16 @@ export abstract class JiraClient {
       baseUrl: jiraConfig.getString('baseUrl'),
       token: jiraConfig.getString('token'),
       product: jiraConfig.getString('product') as Product,
-      apiVersion:
-        jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT,
+      apiVersion: jiraConfig.getOptional('apiVersion') ?? API_VERSION_DEFAULT,
     };
+    if (
+      typeof this.config.apiVersion !== 'number' &&
+      typeof this.config.apiVersion !== 'string'
+    ) {
+      throw new Error(
+        `Invalid 'apiVersion' in configuration, must be a number or string`,
+      );
+    }
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
