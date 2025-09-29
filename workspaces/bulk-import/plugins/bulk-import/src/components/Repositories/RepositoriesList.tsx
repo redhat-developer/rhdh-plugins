@@ -23,9 +23,9 @@ import { Table } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import {
   AddedRepositoryColumnNameEnum,
   AddRepositoryData,

@@ -21,8 +21,8 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,

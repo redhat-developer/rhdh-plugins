@@ -23,10 +23,9 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
-
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
@@ -37,8 +36,8 @@ export const AddRepositoriesFormFooter = () => {
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
 
-  const getGitSubmitTitle = (gitlabConfigured: boolean) => {
-    if (gitlabConfigured) {
+  const getGitSubmitTitle = (isGitlabConfigured: boolean) => {
+    if (isGitlabConfigured) {
       return t('common.import');
     }
     return isPluralRepositories

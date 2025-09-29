@@ -21,8 +21,8 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
 import { AddRepositoryData } from '../../types';
 import { AddedRepositoryTableRow } from './AddedRepositoryTableRow';
 import { getRepositoriesListColumns } from './RepositoriesListColumns';
@@ -40,7 +40,10 @@ export const AddedRepositoriesTableBody = ({
 }) => {
   const gitlabConfigured = useGitlabConfigured();
   const { t } = useTranslation();
-  const repositoriesListColumns = getRepositoriesListColumns(t, gitlabConfigured);
+  const repositoriesListColumns = getRepositoriesListColumns(
+    t,
+    gitlabConfigured,
+  );
 
   if (loading) {
     return (
