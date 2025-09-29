@@ -88,10 +88,7 @@ export const scorecardPlugin = createBackendPlugin({
         await migrate(database);
 
         const knex = await database.getClient();
-        const metricValuesStore = new DatabaseMetricValuesStore({
-          knex,
-          logger,
-        });
+        const metricValuesStore = new DatabaseMetricValuesStore(knex);
 
         const catalogMetricService = new CatalogMetricService({
           catalog,
