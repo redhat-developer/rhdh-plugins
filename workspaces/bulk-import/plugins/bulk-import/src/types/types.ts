@@ -70,6 +70,7 @@ export type AddRepositoryData = {
     lastUpdated?: string;
   };
   lastUpdated?: string;
+  approvalTool?: ApprovalTool;
 };
 
 export type Order = 'asc' | 'desc';
@@ -123,7 +124,7 @@ export enum ApprovalTool {
 }
 
 export type CreateImportJobRepository = {
-  approvalTool: string;
+  approvalTool: ApprovalTool;
   catalogEntityName: string;
   codeOwnersFileAsEntityOwner: boolean;
   catalogInfoContent: string;

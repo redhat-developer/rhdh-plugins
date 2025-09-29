@@ -73,6 +73,7 @@ const EditCatalogInfo = ({
   const previewData: AddRepositoryData = {
     id: importStatus?.repository?.id,
     repoUrl: importStatus?.repository?.url,
+    approvalTool: importStatus?.approvalTool,
     repoName: importStatus?.repository?.name,
     orgName: importStatus?.repository?.organization,
     catalogInfoYaml: {
@@ -98,6 +99,7 @@ const EditCatalogInfo = ({
           catalogInfoYaml: {
             prTemplate: pullRequest[`${importStatus.repository.id}`],
           },
+          approvalTool: importStatus.approvalTool,
           defaultBranch: importStatus.repository?.defaultBranch,
           organizationUrl: importStatus.repository.url
             ?.substring(

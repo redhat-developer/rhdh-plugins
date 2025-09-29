@@ -33,8 +33,8 @@ import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
-import { useTranslation } from '../../hooks/useTranslation';
 import { useGitlabConfigured } from '../../hooks/useNumberOfApprovalTools';
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 
 const useStyles = makeStyles(() =>
@@ -70,6 +70,7 @@ const DeleteRepositoryDialog = ({
     return bulkImportApi.deleteImportAction(
       deleteRepo.repoUrl || '',
       deleteRepo.defaultBranch || 'main',
+      deleteRepo.approvalTool,
     );
   };
   const mutationDelete = useMutation(deleteRepository, {
