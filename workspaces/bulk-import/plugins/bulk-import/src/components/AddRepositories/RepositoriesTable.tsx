@@ -61,7 +61,6 @@ export const RepositoriesTable = ({
   drawerOrganization?: string;
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
-  approvalTool?: string;
 }) => {
   const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
