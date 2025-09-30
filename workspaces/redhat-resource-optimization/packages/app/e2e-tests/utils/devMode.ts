@@ -198,9 +198,29 @@ export async function mockCostManagementResponse(
   page: Page,
   data = mockOptimizations,
 ) {
-  // Mock the main recommendations endpoint
+  // IMPORTANT: Register the catch-all route FIRST so it's checked LAST (Playwright checks in reverse order)
+  // Mock other cost management endpoints (but not recommendations)
+  await page.route('**/api/proxy/cost-management/v1/**', async route => {
+    const url = route.request().url();
+    // Skip if this is the recommendations endpoint - let the specific handler below handle it
+    if (url.includes('/recommendations/openshift')) {
+      await route.fallback();
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [],
+        meta: { count: 0 },
+      }),
+    });
+  });
+
+  // Mock the main recommendations endpoint (registered SECOND so it's checked FIRST)
   await page.route(
-    '**/api/proxy/cost-management/v1/recommendations/openshift*',
+    /\/api\/proxy\/cost-management\/v1\/recommendations\/openshift/,
     async route => {
       await route.fulfill({
         status: 200,
@@ -217,18 +237,6 @@ export async function mockCostManagementResponse(
       });
     },
   );
-
-  // Mock other cost management endpoints
-  await page.route('**/api/proxy/cost-management/v1/**', async route => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        data: [],
-        meta: { count: 0 },
-      }),
-    });
-  });
 }
 
 /**
@@ -273,7 +281,7 @@ export async function setupOptimizationMocks(page: Page) {
   // await mockAccessCheckResponse(page);
 
   // API mocks for the resource optimization plugin data
-  // await mockClustersResponse(page);
+  await mockClustersResponse(page);
   await mockAuthTokenResponse(page);
   await mockWorkflowExecutionResponse(page);
   await mockCostManagementResponse(page); // This includes the optimizations data

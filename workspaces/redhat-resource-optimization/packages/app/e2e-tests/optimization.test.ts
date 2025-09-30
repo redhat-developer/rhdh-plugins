@@ -202,8 +202,27 @@ test.describe('Resource Optimization Plugin', () => {
     await clusterTextbox.click();
     await expect(clusterTextbox).toBeFocused();
 
-    // Note: We don't test actual cluster selection because there may be no data
-    // Just verify the filter UI is functional
+    // Wait for dropdown to populate (either from mock or real data)
+    await page.waitForTimeout(1000);
+
+    // Check if any cluster options are available (from either mock or real data)
+    const allOptions = page.getByRole('option');
+    const optionCount = await allOptions.count();
+
+    // If options are available, verify the dropdown works
+    if (optionCount > 0) {
+      // Verify at least one option is visible
+      await expect(allOptions.first()).toBeVisible({ timeout: 5000 });
+
+      // eslint-disable-next-line no-console
+      console.log(`Found ${optionCount} cluster options in dropdown`);
+    } else {
+      // No cluster options found - this is acceptable if there's no data
+      // eslint-disable-next-line no-console
+      console.log(
+        'No cluster options found - this is expected if there are no optimizations with cluster data',
+      );
+    }
 
     // Verify we can view the optimizations table
     await optimizationPage.viewOptimizations();
