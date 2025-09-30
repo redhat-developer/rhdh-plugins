@@ -22,3 +22,4 @@
 
 export * from './plugin';
 export * from './translations';
+export { defaultLayouts } from './defaults';

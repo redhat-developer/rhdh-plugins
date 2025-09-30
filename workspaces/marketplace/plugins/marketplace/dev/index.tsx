@@ -23,9 +23,13 @@ import {
   MarketplaceFullPageRouter,
   MarketplaceTabbedPageRouter,
 } from '../src/plugin';
+import { marketplaceTranslations } from '../src/translations';
 
 createDevApp()
   .registerPlugin(marketplacePlugin)
+  .addTranslationResource(marketplaceTranslations)
+  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({
     element: <MarketplaceFullPageRouter />,

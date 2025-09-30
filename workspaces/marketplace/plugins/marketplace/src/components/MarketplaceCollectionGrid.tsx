@@ -17,21 +17,28 @@ import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { useCollection } from '../hooks/useCollection';
 import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
+import { useTranslation } from '../hooks/useTranslation';
+import { getTranslatedText } from '../translations/utils';
 
 import { collectionRouteRef } from '../routes';
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';
 import { Markdown } from './Markdown';
 
 export const MarketplaceCollectionGridLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(collectionRouteRef);
   const collection = useCollection(params.namespace, params.name);
   const plugins = useCollectionPlugins(params.namespace, params.name);
 
+  const description = getTranslatedText(
+    collection.data?.metadata?.description,
+    (collection.data?.metadata as any)?.descriptionKey,
+    t,
+  );
+
   return (
     <div>
-      {collection.data?.metadata?.description ? (
-        <Markdown content={collection.data.metadata.description} />
-      ) : null}
+      {description ? <Markdown content={description} /> : null}
 
       <PluginCardGrid>
         {plugins.isLoading ? (

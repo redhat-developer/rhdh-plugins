@@ -22,11 +22,12 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { Order } from '../../types';
-import { RepositoriesListColumns } from '../Repositories/RepositoriesListColumns';
+import { getRepositoriesListColumns } from '../Repositories/RepositoriesListColumns';
 import { getOrganizationsColumnHeader } from './OrganizationsColumnHeader';
 import { getRepositoriesColumnHeader } from './RepositoriesColumnHeader';
-import { ReposSelectDrawerColumnHeader } from './ReposSelectDrawerColumnHeader';
+import { getReposSelectDrawerColumnHeader } from './ReposSelectDrawerColumnHeader';
 
 export const RepositoriesHeader = ({
   onSelectAllClick,
@@ -53,21 +54,22 @@ export const RepositoriesHeader = ({
   isApprovalToolGitlab?: boolean;
   onSelectAllClick?: (event: ChangeEvent<HTMLInputElement>) => void;
 }) => {
+  const { t } = useTranslation();
   const createSortHandler = (property: any) => (event: MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
 
   const getColumnHeader = () => {
     if (showOrganizations) {
-      return getOrganizationsColumnHeader(isApprovalToolGitlab);
+      return getOrganizationsColumnHeader(isApprovalToolGitlab, t);
     }
     if (showImportJobs) {
-      return RepositoriesListColumns;
+      return getRepositoriesListColumns(t);
     }
     if (isRepoSelectDrawer) {
-      return ReposSelectDrawerColumnHeader;
+      return getReposSelectDrawerColumnHeader(t);
     }
-    return getRepositoriesColumnHeader(isApprovalToolGitlab);
+    return getRepositoriesColumnHeader(isApprovalToolGitlab, t);
   };
 
   const tableCellStyle = () => {

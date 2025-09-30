@@ -47,6 +47,7 @@ import {
   dynamicHomePagePlugin,
   CatalogStarredEntitiesCard,
   DynamicHomePage,
+  DynamicCustomizableHomePage,
   DynamicHomePageProps,
   FeaturedDocsCard,
   Headline,
@@ -66,48 +67,25 @@ import {
 import { homepageTranslations } from '../src/translations';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';
+import { defaultLayouts } from '../src/defaults';
 
 const defaultMountPoints: HomePageCardMountPoint[] = [
   {
     Component: OnboardingSection,
     config: {
-      // prettier-ignore
-      layouts: {
-        xl: { w: 12, h: 5 },
-        lg: { w: 12, h: 5 },
-        md: { w: 12, h: 5 },
-        sm: { w: 12, h: 5 },
-        xs: { w: 12, h: 7 },
-        xxs: { w: 12, h: 13 },
-      },
+      layouts: defaultLayouts.onboarding,
     },
   },
   {
     Component: EntitySection,
     config: {
-      // prettier-ignore
-      layouts: {
-        xl: { w: 12, h: 6 },
-        lg: { w: 12, h: 6 },
-        md: { w: 12, h: 6 },
-        sm: { w: 12, h: 6 },
-        xs: { w: 12, h: 10 },
-        xxs: { w: 12, h: 14.5 },
-      },
+      layouts: defaultLayouts.entity,
     },
   },
   {
     Component: TemplateSection,
     config: {
-      // prettier-ignore
-      layouts: {
-        xl:  { w: 12, h: 5 },
-        lg:  { w: 12, h: 5 },
-        md:  { w: 12, h: 5 },
-        sm:  { w: 12, h: 5 },
-        xs:  { w: 12, h: 7.5 },
-        xxs: { w: 12, h: 13.5 },
-      },
+      layouts: defaultLayouts.template,
     },
   },
 ];
@@ -228,12 +206,14 @@ const createPage = ({
   props,
   pageWidth,
   mountPoints,
+  customizable,
 }: {
   navTitle: string;
   pageTitle?: string;
   props?: DynamicHomePageProps;
   pageWidth?: number;
   mountPoints?: HomePageCardMountPoint[];
+  customizable?: boolean;
 }): DevAppPageOptions => {
   const backstageApis = [
     [searchApiRef, new MockSearchApi()],
@@ -262,7 +242,11 @@ const createPage = ({
     <TestApiProvider apis={backstageApis}>
       <ScalprumContext.Provider value={scalprumState}>
         <div style={{ width: pageWidth }}>
-          <DynamicHomePage title={pageTitle} {...props} />
+          {customizable ? (
+            <DynamicCustomizableHomePage title={pageTitle} {...props} />
+          ) : (
+            <DynamicHomePage title={pageTitle} {...props} />
+          )}
         </div>
       </ScalprumContext.Provider>
     </TestApiProvider>
@@ -306,6 +290,14 @@ createDevApp()
       navTitle: 'Default large',
       pageWidth: 1600,
       mountPoints: defaultMountPoints,
+    }),
+  )
+  .addPage(
+    createPage({
+      navTitle: 'Customizable',
+      pageTitle: 'Customizable Homepage',
+      mountPoints: defaultMountPoints,
+      customizable: true,
     }),
   )
   .addPage(

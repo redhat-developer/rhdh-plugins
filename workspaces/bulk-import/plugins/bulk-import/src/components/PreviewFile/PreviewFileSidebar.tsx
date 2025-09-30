@@ -27,6 +27,7 @@ import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -64,6 +65,7 @@ export const PreviewFileSidebar = ({
   handleSave: (pullRequest: PullRequestPreviewData, _event: any) => void;
   isSubmitting?: boolean;
 }) => {
+  const { t } = useTranslation();
   const { setStatus, status, setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
   const classes = useDrawerStyles();
@@ -97,9 +99,7 @@ export const PreviewFileSidebar = ({
           [id]: {
             error: {
               title: (result as Response)?.statusText,
-              message: [
-                `Failed to fetch the pull request. A new YAML has been generated below.`,
-              ],
+              message: [t('previewFile.failedToFetchPR')],
             },
           },
         },
@@ -132,9 +132,7 @@ export const PreviewFileSidebar = ({
             ...(status?.infos || {}),
             [id]: {
               error: {
-                message: [
-                  'The entity YAML in your pull request is invalid (empty file or missing apiVersion, kind, or metadata.name). A new YAML has been generated below.',
-                ],
+                message: [t('previewFile.invalidEntityYaml')],
               },
             },
           },

@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Link } from '@backstage/core-components';
+
+import { useApi, configApiRef } from '@backstage/core-plugin-api';
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -22,8 +23,16 @@ import Grid from '@mui/material/Grid';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 
 import noScorecardsSvg from '../../images/no-scorecards.svg';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const NoScorecardsState: React.FC = () => {
+  const { t } = useTranslation();
+
+  const configApi = useApi(configApiRef);
+  const supportUrl =
+    configApi.getOptionalString('app.support.url') ??
+    'https://access.redhat.com/documentation/red_hat_developer_hub';
+
   return (
     <Box sx={{ p: 4, height: '100%', maxWidth: '1592px', margin: 'auto' }}>
       <Grid
@@ -42,7 +51,7 @@ const NoScorecardsState: React.FC = () => {
               mb: 2,
             })}
           >
-            No scorecards added yet
+            {t('emptyState.title')}
           </Typography>
 
           <Typography
@@ -53,37 +62,30 @@ const NoScorecardsState: React.FC = () => {
               lineHeight: 1.5,
             })}
           >
-            Scorecards help you monitor component health at a glance. To begin,
-            explore our documentation for setup guidelines.
+            {t('emptyState.description')}
           </Typography>
 
-          <Link to="/docs">
-            <Button
-              sx={{
-                backgroundColor: '#1976d2',
-                color: 'white',
-                px: 3,
-                py: 1.5,
-                fontSize: '1rem',
-                fontWeight: 400,
-                textTransform: 'none',
-                borderRadius: '28px',
-                '&:hover': {
-                  backgroundColor: '#1565c0',
-                },
-              }}
-            >
-              View documentation{' '}
+          <Button
+            color="primary"
+            variant="contained"
+            size="large"
+            component="a"
+            href={supportUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            endIcon={
               <OpenInNewOutlinedIcon sx={{ width: 16, height: 16, ml: 1 }} />
-            </Button>
-          </Link>
+            }
+          >
+            {t('emptyState.button')}
+          </Button>
         </Grid>
 
         <Grid item xs={12} md={6} sx={{ textAlign: 'right' }}>
           <Box
             component="img"
             src={noScorecardsSvg}
-            alt="No scorecards"
+            alt={t('emptyState.altText')}
             sx={{
               width: '100%',
               maxWidth: '600px',

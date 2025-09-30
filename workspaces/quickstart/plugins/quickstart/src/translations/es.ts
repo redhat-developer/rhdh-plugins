@@ -22,7 +22,42 @@ const quickstartTranslationEs = createTranslationMessages({
   messages: {
     'header.title': 'Comencemos con el Hub del Desarrollador',
     'header.subtitle': 'Te guiaremos a través de algunos pasos rápidos',
+    'steps.setupAuthentication.title': 'Configurar autenticación',
+    'steps.setupAuthentication.description':
+      'Configure credenciales de inicio de sesión seguras para proteger su cuenta del acceso no autorizado.',
+    'steps.setupAuthentication.ctaTitle': 'Aprender más',
+    'steps.configureRbac.title': 'Configurar RBAC',
+    'steps.configureRbac.description':
+      'Asigne roles y permisos para controlar quién puede ver, crear o editar recursos, asegurando una colaboración segura y eficiente.',
+    'steps.configureRbac.ctaTitle': 'Gestionar acceso',
+    'steps.configureGit.title': 'Configurar Git',
+    'steps.configureGit.description':
+      'Conecte sus proveedores de Git, como GitHub, para gestionar código, automatizar flujos de trabajo e integrar con características de la plataforma.',
+    'steps.configureGit.ctaTitle': 'Aprender más',
+    'steps.managePlugins.title': 'Gestionar plugins',
+    'steps.managePlugins.description':
+      'Explore e instale extensiones para agregar características, conectar con herramientas externas y personalizar su experiencia.',
+    'steps.managePlugins.ctaTitle': 'Explorar plugins',
+    'steps.importApplication.title': 'Importar aplicación',
+    'steps.importApplication.description':
+      'Importe su código y servicios existentes al catálogo para organizarlos y acceder a ellos a través de su portal de desarrollador.',
+    'steps.importApplication.ctaTitle': 'Importar',
+    'steps.learnAboutCatalog.title': 'Aprender sobre el Catálogo',
+    'steps.learnAboutCatalog.description':
+      'Descubra todos los componentes de software, servicios y APIs, y vea sus propietarios y documentación.',
+    'steps.learnAboutCatalog.ctaTitle': 'Ver catálogo',
+    'steps.exploreSelfServiceTemplates.title':
+      'Explorar plantillas de autoservicio',
+    'steps.exploreSelfServiceTemplates.description':
+      'Use nuestras plantillas de autoservicio para configurar rápidamente nuevos proyectos, servicios o documentación.',
+    'steps.exploreSelfServiceTemplates.ctaTitle': 'Explorar plantillas',
+    'steps.findAllLearningPaths.title':
+      'Encontrar todas las rutas de aprendizaje',
+    'steps.findAllLearningPaths.description':
+      'Integre e-learning personalizado en sus flujos de trabajo con rutas de aprendizaje para acelerar la incorporación, cerrar brechas de habilidades y promover mejores prácticas.',
+    'steps.findAllLearningPaths.ctaTitle': 'Ver rutas de aprendizaje',
     'button.quickstart': 'Inicio rápido',
+    'button.gotIt': '¡Entendido!',
     'footer.progress': '{{progress}}% de progreso',
     'footer.notStarted': 'No iniciado',
     'footer.hide': 'Ocultar',

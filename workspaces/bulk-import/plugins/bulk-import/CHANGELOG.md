@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.16.0
+
+### Minor Changes
+
+- fcc3bcc: Add internationalization (i18n) support with German, French and Spanish translations in bulk import.
+
 ## 1.15.0
 
 ### Minor Changes

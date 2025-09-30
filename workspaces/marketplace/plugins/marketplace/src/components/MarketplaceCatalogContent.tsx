@@ -19,6 +19,7 @@ import {
   CodeSnippet,
   Content,
   LinkButton,
+  MarkdownContent,
   WarningPanel,
 } from '@backstage/core-components';
 import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
@@ -48,60 +49,66 @@ import {
   EXTENSIONS_CONFIG_YAML,
   generateExtensionsEnableLineNumbers,
 } from '../utils';
+import { useTranslation } from '../hooks/useTranslation';
 
-const EmptyState = ({ isError }: { isError?: boolean }) => (
-  <Content>
-    <Grid
-      container
-      alignItems="center"
-      style={{ maxWidth: 1000, margin: 'auto' }}
-    >
-      <Grid item xs={6}>
-        <Stack gap={3} justifyContent="center">
-          <Typography variant="h1">
-            {isError
-              ? 'Must enable the Extensions backend plugin'
-              : 'No plugins found'}
-          </Typography>
-          <Typography variant="body1">
-            {isError
-              ? "Configure the '@red-hat-developer-hub/backstage-plugin-marketplace-backend' plugin."
-              : 'There was an error with loading plugins. Check your configuration or review plugin documentation to resolve. You can also explore other available plugins.'}
-          </Typography>
-          <Grid container spacing={2}>
-            {!isError && (
+const EmptyState = ({ isError }: { isError?: boolean }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Content>
+      <Grid
+        container
+        alignItems="center"
+        style={{ maxWidth: 1000, margin: 'auto' }}
+      >
+        <Grid item xs={6}>
+          <Stack gap={3} justifyContent="center">
+            <Typography variant="h1">
+              {isError
+                ? t('emptyState.mustEnableBackend')
+                : t('emptyState.noPluginsFound')}
+            </Typography>
+            <Typography variant="body1">
+              {isError
+                ? t('emptyState.configureBackend')
+                : t('emptyState.noPluginsDescription')}
+            </Typography>
+            <Grid container spacing={2}>
+              {!isError && (
+                <Grid item>
+                  <LinkButton
+                    variant="contained"
+                    color="primary"
+                    to="https://developers.redhat.com/products/rhdh/plugins#communitypreinstalled"
+                    endIcon={<Launch />}
+                  >
+                    {t('button.viewAll')}
+                  </LinkButton>
+                </Grid>
+              )}
               <Grid item>
                 <LinkButton
-                  variant="contained"
+                  variant="outlined"
                   color="primary"
-                  to="https://developers.redhat.com/products/rhdh/plugins#communitypreinstalled"
+                  to="https://docs.redhat.com/en/documentation/red_hat_developer_hub/"
                   endIcon={<Launch />}
                 >
-                  View all plugins
+                  {t('button.viewDocumentation')}
                 </LinkButton>
               </Grid>
-            )}
-            <Grid item>
-              <LinkButton
-                variant="outlined"
-                color="primary"
-                to="https://docs.redhat.com/en/documentation/red_hat_developer_hub/"
-                endIcon={<Launch />}
-              >
-                View documentation
-              </LinkButton>
             </Grid>
-          </Grid>
-        </Stack>
+          </Stack>
+        </Grid>
+        <Grid item xs={6}>
+          <img src={notFoundImag} alt="" style={{ width: '100%' }} />
+        </Grid>
       </Grid>
-      <Grid item xs={6}>
-        <img src={notFoundImag} alt="" style={{ width: '100%' }} />
-      </Grid>
-    </Grid>
-  </Content>
-);
+    </Content>
+  );
+};
 
 export const MarketplaceCatalogContent = () => {
+  const { t } = useTranslation();
   const [openInstalledPluginsDialog, setOpenInstalledPluginsDialog] =
     useState(false);
   const extensionsConfig = useExtensionsConfiguration();
@@ -114,7 +121,7 @@ export const MarketplaceCatalogContent = () => {
   });
   const filteredPlugins = useFilteredPlugins();
 
-  let title = 'Plugins';
+  let title = t('header.pluginsPage');
   if (filteredPlugins.data && filteredPlugins.data.totalItems > 0) {
     // const { filteredItems, totalItems } = filteredPlugins.data;
     // if (filteredItems !== totalItems) {
@@ -143,16 +150,21 @@ export const MarketplaceCatalogContent = () => {
 
   const getPluginAlertMessage = (count: number, pluginName?: string) => {
     if (count > 1) {
-      return `You have ${count} plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.`;
-      // Later: t('alert.multiple', { count })
+      return (
+        <MarkdownContent
+          content={t('alert.multiplePluginRestart' as any, {
+            count: count.toString(),
+          })}
+        />
+      );
     }
 
     return (
-      <>
-        The <b>{pluginName}</b> plugin requires a restart of the backend system
-        to finish installing, updating, enabling or disabling.
-        {/* Later: t('alert.single', { name: pluginName, bold: (...text) => <b>{text}</b> }) */}
-      </>
+      <MarkdownContent
+        content={t('alert.singlePluginRestart' as any, {
+          pluginName: pluginName || '',
+        })}
+      />
     );
   };
 
@@ -167,19 +179,17 @@ export const MarketplaceCatalogContent = () => {
         <>
           {isProductionEnvironment && (
             <Alert severity="info" sx={{ mb: '1rem' }}>
-              <AlertTitle>
-                Plugin installation is disabled in the production environment.
-              </AlertTitle>
+              <AlertTitle>{t('alert.productionDisabled')}</AlertTitle>
             </Alert>
           )}
           {showExtensionsConfigurationAlert && (
             <>
               <WarningPanel
-                title="Plugin installation is disabled."
+                title={t('alert.installationDisabled')}
                 severity="info"
                 message={
                   <>
-                    Example how to enable extensions plugin installation
+                    {t('alert.extensionsExample')}
                     <CodeSnippet
                       language="yaml"
                       showLineNumbers
@@ -196,7 +206,7 @@ export const MarketplaceCatalogContent = () => {
       )}
       {installedPluginsCount > 0 && (
         <Alert severity="info" sx={{ mb: '1rem' }}>
-          <AlertTitle>Backend restart required</AlertTitle>
+          <AlertTitle>{t('alert.backendRestartRequired')}</AlertTitle>
           {pluginInfo()}
           {installedPluginsCount > 1 && (
             <Typography component="div" sx={{ pt: '8px' }}>
@@ -207,7 +217,7 @@ export const MarketplaceCatalogContent = () => {
                   setOpenInstalledPluginsDialog(true);
                 }}
               >
-                View plugins
+                {t('alert.viewPlugins')}
               </Link>
             </Typography>
           )}

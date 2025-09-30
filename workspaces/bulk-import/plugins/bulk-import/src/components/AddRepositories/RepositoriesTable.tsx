@@ -25,6 +25,7 @@ import TablePagination from '@mui/material/TablePagination';
 import { useFormikContext } from 'formik';
 
 import { useRepositories } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddedRepositories,
   AddRepositoriesFormValues,
@@ -61,6 +62,7 @@ export const RepositoriesTable = ({
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
 }) => {
+  const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
   const [order, setOrder] = useState<Order>('asc');
@@ -326,11 +328,11 @@ export const RepositoriesTable = ({
           <TablePagination
             style={{ height: '30%' }}
             rowsPerPageOptions={[
-              { value: 5, label: '5 rows' },
-              { value: 10, label: '10 rows' },
-              { value: 20, label: '20 rows' },
-              { value: 50, label: '50 rows' },
-              { value: 100, label: '100 rows' },
+              { value: 5, label: t('table.pagination.rows5') },
+              { value: 10, label: t('table.pagination.rows10') },
+              { value: 20, label: t('table.pagination.rows20') },
+              { value: 50, label: t('table.pagination.rows50') },
+              { value: 100, label: t('table.pagination.rows100') },
             ]}
             component="div"
             count={
@@ -348,9 +350,7 @@ export const RepositoriesTable = ({
       </TableContainer>
       {showOrganizations && activeOrganization && (
         <AddRepositoriesDrawer
-          title={
-            isApprovalToolGitlab ? 'Selected projects' : 'Selected repositories'
-          }
+          title={`${t('addRepositories.selectedLabel')} ${isApprovalToolGitlab ? t('addRepositories.selectedProjects') : t('addRepositories.selectedRepositories')}`}
           orgData={activeOrganization}
           onSelect={handleUpdatesFromDrawer}
           open={isOpen}

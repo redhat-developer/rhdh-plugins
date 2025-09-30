@@ -4,11 +4,11 @@ This plugin backend was templated using the Backstage CLI. You should replace th
 
 ## Installation
 
-This plugin is installed via the `@redhat-developer-hub/backstage-plugin-techdocs-mcp-tool` package. To install it to your backend package, run the following command:
+This plugin is installed via the `@red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool` package. To install it to your backend package, run the following command:
 
 ```bash
 # From your root directory
-yarn --cwd packages/backend add @redhat-developer-hub/backstage-plugin-techdocs-mcp-tool
+yarn --cwd packages/backend add @red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool
 ```
 
 Then add the plugin to your backend in `packages/backend/src/index.ts`:
@@ -16,7 +16,9 @@ Then add the plugin to your backend in `packages/backend/src/index.ts`:
 ```ts
 const backend = createBackend();
 // ...
-backend.add(import('@redhat-developer-hub/backstage-plugin-techdocs-mcp-tool'));
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool'),
+);
 ```
 
 ## Development

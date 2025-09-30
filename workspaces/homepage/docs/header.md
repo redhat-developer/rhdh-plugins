@@ -45,7 +45,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage for customizable homepage
           config:
             props:
               title: 'Howdy {{firstName}} or {{dispayName}}'
@@ -72,7 +72,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               title: Our custom RHDH instance
@@ -93,7 +93,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               title: Welcome to your RHDH instance!
@@ -118,7 +118,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               title: Welcome back!
@@ -150,7 +150,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               localClock:
@@ -167,7 +167,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               localClock:
@@ -186,7 +186,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               localClock:
@@ -204,7 +204,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               localClock:
@@ -246,7 +246,7 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
       dynamicRoutes:
         - path: /
-          importName: DynamicHomePage
+          importName: DynamicHomePage # or DynamicCustomizableHomePage
           config:
             props:
               worldClocks:

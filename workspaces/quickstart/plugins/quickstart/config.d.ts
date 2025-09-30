@@ -33,6 +33,11 @@ export interface Config {
        * The roles associated with the quickstart.
        * @visibility frontend
        */
+      titleKey?: string;
+      /**
+       * The roles associated with the quickstart.
+       * @visibility frontend
+       */
       roles?: Array<string>;
       /**
        * Optional icon for quickstart.
@@ -48,12 +53,22 @@ export interface Config {
        * Optional action item for quickstart.
        * @visibility frontend
        */
+      descriptionKey?: string;
+      /**
+       * Optional action item for quickstart.
+       * @visibility frontend
+       */
       cta?: {
         /**
          * Action item text.
          * @visibility frontend
          */
         text: string;
+        /**
+         * Action item link.
+         * @visibility frontend
+         */
+        textKey?: string;
         /**
          * Action item link.
          * @visibility frontend

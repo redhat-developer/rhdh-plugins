@@ -23,6 +23,7 @@ import {
 
 import { rootRouteRef } from './routes';
 import { scorecardApiRef, ScorecardApiClient } from './api';
+import { scorecardTranslationRef } from './translations';
 
 /**
  * Plugin for the Scorecard Frontend.
@@ -32,6 +33,10 @@ export const scorecardPlugin = createPlugin({
   id: 'scorecard',
   routes: {
     root: rootRouteRef,
+  },
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [scorecardTranslationRef],
   },
   apis: [
     createApiFactory({
@@ -44,7 +49,7 @@ export const scorecardPlugin = createPlugin({
         new ScorecardApiClient({ fetchApi, discoveryApi }),
     }),
   ],
-});
+} as any);
 
 /**
  * Frontend page for the Scorecard.

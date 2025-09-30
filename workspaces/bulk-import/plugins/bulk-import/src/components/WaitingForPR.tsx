@@ -21,6 +21,7 @@ import Typography from '@mui/material/Typography';
 
 import GitAltIcon from '../components/GitAltIcon';
 import GitLabIcon from '../components/GitLabIcon';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const WaitingForPR = ({
   url,
@@ -29,6 +30,8 @@ export const WaitingForPR = ({
   url: string;
   isApprovalToolGitlab: boolean;
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Typography
       component="span"
@@ -56,7 +59,7 @@ export const WaitingForPR = ({
         />
       )}
       <Typography component="span" style={{ color: '#757575' }}>
-        Waiting for approval
+        {t('status.waitingForApproval')}
       </Typography>
       {url && (
         <Link
@@ -67,7 +70,7 @@ export const WaitingForPR = ({
             display: 'inline-flex',
           }}
         >
-          PR
+          {t('repositories.pr')}
           <OpenInNewIcon sx={{ paddingBottom: '5px', paddingTop: '3px' }} />
         </Link>
       )}
