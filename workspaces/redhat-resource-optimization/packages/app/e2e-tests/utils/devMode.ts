@@ -198,11 +198,12 @@ export async function mockCostManagementResponse(
   page: Page,
   data = mockOptimizations,
 ) {
-  // IMPORTANT: Register the catch-all route FIRST so it's checked LAST (Playwright checks in reverse order)
-  // Mock other cost management endpoints (but not recommendations)
+  // IMPORTANT: Register routes in specific order (Playwright checks in reverse)
+
+  // 1. Catch-all route (checked LAST)
   await page.route('**/api/proxy/cost-management/v1/**', async route => {
     const url = route.request().url();
-    // Skip if this is the recommendations endpoint - let the specific handler below handle it
+    // Skip if this is the recommendations endpoint - let specific handlers handle it
     if (url.includes('/recommendations/openshift')) {
       await route.fallback();
       return;
@@ -218,9 +219,38 @@ export async function mockCostManagementResponse(
     });
   });
 
-  // Mock the main recommendations endpoint (registered SECOND so it's checked FIRST)
+  // 2. Mock individual recommendation details endpoint (e.g., /recommendations/openshift/rec-001)
   await page.route(
-    /\/api\/proxy\/cost-management\/v1\/recommendations\/openshift/,
+    /\/api\/proxy\/cost-management\/v1\/recommendations\/openshift\/rec-\d+/,
+    async route => {
+      const url = route.request().url();
+      // Extract the recommendation ID from the URL
+      const match = url.match(/\/rec-(\d+)/);
+      const recId = match ? `rec-${match[1]}` : 'rec-001';
+
+      // Find the matching recommendation from our mock data
+      const recommendation = data.find((item: any) => item.id === recId);
+
+      if (recommendation) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(recommendation),
+        });
+      } else {
+        // Return first item as fallback
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(data[0] || {}),
+        });
+      }
+    },
+  );
+
+  // 3. Mock the main recommendations list endpoint (checked FIRST after individual)
+  await page.route(
+    /\/api\/proxy\/cost-management\/v1\/recommendations\/openshift$/,
     async route => {
       await route.fulfill({
         status: 200,

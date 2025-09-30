@@ -232,4 +232,114 @@ test.describe('Resource Optimization Plugin', () => {
       page.getByRole('columnheader', { name: 'Container' }),
     ).toBeVisible();
   });
+
+  test('should click container link and view details page', async ({
+    page,
+  }) => {
+    if (devMode) {
+      await mockOptimizationsResponse(page, mockOptimizations);
+    }
+
+    await optimizationPage.navigateToOptimization();
+
+    // Verify the page loads correctly
+    await expect(page.getByText('Resource Optimization')).toBeVisible();
+
+    // Wait for the table to load
+    await optimizationPage.viewOptimizations();
+
+    // Find a table row (excluding the header row)
+    const tableRows = page.getByRole('row');
+    const rowCount = await tableRows.count();
+
+    // If we have data rows (more than just the header), click on one
+    if (rowCount > 1) {
+      // Get the first data row (index 1, since 0 is the header)
+      const firstDataRow = tableRows.nth(1);
+      await expect(firstDataRow).toBeVisible();
+
+      // Look for a clickable link in the first row (usually the container name)
+      const containerLink = firstDataRow.getByRole('link').first();
+      await expect(containerLink).toBeVisible();
+
+      // Click on the container link to navigate to details page
+      await containerLink.click();
+
+      // Wait for navigation to complete
+      await page.waitForLoadState('domcontentloaded');
+
+      // Verify we navigated to the details page
+      await expect(page).toHaveURL(/\/redhat-resource-optimization\/rec-/);
+
+      // Wait for details page to load
+      await page.waitForTimeout(1000);
+
+      // Verify the Details section is visible
+      await expect(page.getByText('Details')).toBeVisible();
+
+      // Verify the tabs are present
+      await expect(page.getByText('Cost optimizations')).toBeVisible();
+      await expect(page.getByText('Performance optimizations')).toBeVisible();
+
+      // Verify Current configuration section is visible
+      await expect(page.getByText('Current configuration')).toBeVisible();
+
+      // Verify Recommended configuration section is visible
+      await expect(page.getByText('Recommended configuration')).toBeVisible();
+
+      // Verify the configuration structure has the expected fields
+      // Use .first() since these appear in both Current and Recommended sections
+      await expect(page.getByText('limits:').first()).toBeVisible();
+      await expect(page.getByText('requests:').first()).toBeVisible();
+      await expect(page.getByText('cpu:').first()).toBeVisible();
+      await expect(page.getByText('memory:').first()).toBeVisible();
+
+      // Verify utilization charts sections are present
+      await expect(page.getByText('CPU utilization')).toBeVisible();
+      await expect(page.getByText('Memory utilization')).toBeVisible();
+
+      // Verify the "Apply recommendation" button is present
+      await expect(
+        page.getByRole('button', { name: 'Apply recommendation' }),
+      ).toBeVisible();
+
+      // In dev mode, validate the mock data values are displayed
+      if (devMode) {
+        // Validate container name from mock data (appears in heading)
+        await expect(
+          page.getByRole('heading', { name: 'frontend-app' }),
+        ).toBeVisible();
+
+        // Validate project name from mock data
+        await expect(page.getByText('ecommerce')).toBeVisible();
+
+        // Validate workload from mock data
+        await expect(page.getByText('frontend-deployment')).toBeVisible();
+
+        // Validate cluster from mock data
+        await expect(page.getByText('production-cluster')).toBeVisible();
+
+        // Validate workload type from mock data (use exact match)
+        await expect(
+          page.getByText('Deployment', { exact: true }),
+        ).toBeVisible();
+
+        // Validate current configuration values from mock data
+        // Current limits: cpu: 2cores, memory: 4GiB
+        // Current requests: cpu: 1cores, memory: 2GiB
+        await expect(page.getByText('2cores')).toBeVisible();
+        await expect(page.getByText('4GiB')).toBeVisible();
+        await expect(page.getByText('1cores')).toBeVisible();
+        await expect(page.getByText('2GiB')).toBeVisible();
+
+        // Validate recommended configuration values from mock data
+        // Recommended limits: cpu: 1.5cores, memory: 3GiB
+        // Recommended requests: cpu: 0.75cores, memory: 1.5GiB
+        await expect(page.getByText('1.5cores')).toBeVisible();
+        await expect(page.getByText('3GiB')).toBeVisible();
+        await expect(page.getByText('0.75cores')).toBeVisible();
+        await expect(page.getByText('1.5GiB')).toBeVisible();
+      }
+    }
+  });
 });
