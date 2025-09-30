@@ -441,6 +441,8 @@ export const prepareDataForSubmission = (
 ) =>
   Object.values(repositories).reduce(
     (acc: CreateImportJobRepository[], repo) => {
+      const gitProvider =
+        approvalTool === ApprovalTool.Gitlab ? 'gitlab' : 'github';
       acc.push({
         approvalTool: approvalTool,
         codeOwnersFileAsEntityOwner:
@@ -461,7 +463,7 @@ export const prepareDataForSubmission = (
           null,
           2,
         ),
-        [approvalTool.toLocaleLowerCase()]: {
+        [gitProvider]: {
           pullRequest: {
             title:
               repo.catalogInfoYaml?.prTemplate?.prTitle ||
