@@ -678,7 +678,7 @@ export const prepareDataForAddedRepositories = (
   const repoData: { [id: string]: AddRepositoryData } =
     importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
       const id = `${val.repository.organization}/${val.repository.name}`;
-      const gitProvider = isGithubJob(val) ? 'gitlab' : 'github';
+      const gitProvider = isGithubJob(val) ? 'github' : 'gitlab';
       return {
         ...acc,
         [id]: {
