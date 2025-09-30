@@ -209,19 +209,13 @@ test.describe('Resource Optimization Plugin', () => {
     const allOptions = page.getByRole('option');
     const optionCount = await allOptions.count();
 
-    // If options are available, verify the dropdown works
-    if (optionCount > 0) {
-      // Verify at least one option is visible
+    // In dev mode with mocked data, we should always have cluster options
+    if (devMode) {
+      expect(optionCount).toBeGreaterThan(0);
       await expect(allOptions.first()).toBeVisible({ timeout: 5000 });
-
-      // eslint-disable-next-line no-console
-      console.log(`Found ${optionCount} cluster options in dropdown`);
-    } else {
-      // No cluster options found - this is acceptable if there's no data
-      // eslint-disable-next-line no-console
-      console.log(
-        'No cluster options found - this is expected if there are no optimizations with cluster data',
-      );
+    } else if (optionCount > 0) {
+      // In non-dev mode, verify dropdown works if options exist
+      await expect(allOptions.first()).toBeVisible({ timeout: 5000 });
     }
 
     // Verify we can view the optimizations table
