@@ -35,46 +35,124 @@ export const mockClusters = [
 
 export const mockOptimizations = [
   {
-    id: 'opt-1',
-    clusterId: 'cluster-1',
-    clusterName: 'production-cluster',
-    namespace: 'default',
-    workloadName: 'frontend-deployment',
+    id: 'rec-001',
+    clusterAlias: 'production-cluster',
+    clusterUuid: 'cluster-uuid-001',
+    container: 'frontend-app',
+    project: 'ecommerce',
+    workload: 'frontend-deployment',
     workloadType: 'Deployment',
-    resourceType: 'CPU',
-    currentValue: '2000m',
-    recommendedValue: '1000m',
-    savings: {
-      cpu: '1000m',
-      memory: '0Mi',
-      cost: 45.5,
+    lastReported: '2024-01-15T10:30:00Z',
+    sourceId: 'source-001',
+    recommendations: {
+      current: {
+        limits: {
+          cpu: { amount: 2.0, format: 'cores' },
+          memory: { amount: 4.0, format: 'GiB' },
+        },
+        requests: {
+          cpu: { amount: 1.0, format: 'cores' },
+          memory: { amount: 2.0, format: 'GiB' },
+        },
+      },
+      recommendationTerms: {
+        short_term: {
+          monitoring_end_time: '2024-01-15T10:30:00Z',
+          duration_in_hours: 24.0,
+          notifications: {
+            '112101': {
+              type: 'notice',
+              message: 'Cost Optimization Available',
+              code: 112101,
+            },
+          },
+          recommendation_engines: {
+            cost: {
+              config: {
+                limits: {
+                  cpu: { amount: 1.5, format: 'cores' },
+                  memory: { amount: 3.0, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: 0.75, format: 'cores' },
+                  memory: { amount: 1.5, format: 'GiB' },
+                },
+              },
+              variation: {
+                limits: {
+                  cpu: { amount: -0.5, format: 'cores' },
+                  memory: { amount: -1.0, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: -0.25, format: 'cores' },
+                  memory: { amount: -0.5, format: 'GiB' },
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    status: 'pending',
-    severity: 'medium',
-    description: 'CPU requests are higher than actual usage',
-    recommendation: 'Reduce CPU requests to match actual usage patterns',
-    lastAnalyzed: '2024-01-15T10:30:00Z',
   },
   {
-    id: 'opt-2',
-    clusterId: 'cluster-1',
-    clusterName: 'production-cluster',
-    namespace: 'backend',
-    workloadName: 'api-server',
+    id: 'rec-002',
+    clusterAlias: 'production-cluster',
+    clusterUuid: 'cluster-uuid-001',
+    container: 'api-server',
+    project: 'backend-services',
+    workload: 'api-deployment',
     workloadType: 'Deployment',
-    resourceType: 'Memory',
-    currentValue: '2Gi',
-    recommendedValue: '1.5Gi',
-    savings: {
-      cpu: '0m',
-      memory: '500Mi',
-      cost: 23.75,
+    lastReported: '2024-01-15T10:25:00Z',
+    sourceId: 'source-002',
+    recommendations: {
+      current: {
+        limits: {
+          cpu: { amount: 1.0, format: 'cores' },
+          memory: { amount: 2.0, format: 'GiB' },
+        },
+        requests: {
+          cpu: { amount: 0.5, format: 'cores' },
+          memory: { amount: 1.0, format: 'GiB' },
+        },
+      },
+      recommendationTerms: {
+        short_term: {
+          monitoring_end_time: '2024-01-15T10:25:00Z',
+          duration_in_hours: 24.0,
+          notifications: {
+            '112101': {
+              type: 'notice',
+              message: 'Cost Optimization Available',
+              code: 112101,
+            },
+          },
+          recommendation_engines: {
+            cost: {
+              config: {
+                limits: {
+                  cpu: { amount: 0.75, format: 'cores' },
+                  memory: { amount: 1.5, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: 0.375, format: 'cores' },
+                  memory: { amount: 0.75, format: 'GiB' },
+                },
+              },
+              variation: {
+                limits: {
+                  cpu: { amount: -0.25, format: 'cores' },
+                  memory: { amount: -0.5, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: -0.125, format: 'cores' },
+                  memory: { amount: -0.25, format: 'GiB' },
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    status: 'pending',
-    severity: 'low',
-    description: 'Memory requests can be optimized',
-    recommendation: 'Adjust memory requests based on peak usage',
-    lastAnalyzed: '2024-01-15T10:25:00Z',
   },
 ];
 
@@ -106,46 +184,184 @@ export const mockWorkflowExecutionError = {
 export const mockOptimizationsWithMoreData = [
   ...mockOptimizations,
   {
-    id: 'opt-3',
-    clusterId: 'cluster-2',
-    clusterName: 'staging-cluster',
-    namespace: 'test',
-    workloadName: 'database-pod',
-    workloadType: 'Pod',
-    resourceType: 'CPU',
-    currentValue: '500m',
-    recommendedValue: '300m',
-    savings: {
-      cpu: '200m',
-      memory: '0Mi',
-      cost: 12.25,
+    id: 'rec-003',
+    clusterAlias: 'staging-cluster',
+    clusterUuid: 'cluster-uuid-002',
+    container: 'database',
+    project: 'data-platform',
+    workload: 'postgres-statefulset',
+    workloadType: 'StatefulSet',
+    lastReported: '2024-01-15T09:15:00Z',
+    sourceId: 'source-003',
+    recommendations: {
+      current: {
+        limits: {
+          cpu: { amount: 4.0, format: 'cores' },
+          memory: { amount: 8.0, format: 'GiB' },
+        },
+        requests: {
+          cpu: { amount: 2.0, format: 'cores' },
+          memory: { amount: 4.0, format: 'GiB' },
+        },
+      },
+      recommendationTerms: {
+        short_term: {
+          monitoring_end_time: '2024-01-15T09:15:00Z',
+          duration_in_hours: 24.0,
+          notifications: {
+            '112101': {
+              type: 'notice',
+              message: 'Cost Optimization Available',
+              code: 112101,
+            },
+          },
+          recommendation_engines: {
+            cost: {
+              config: {
+                limits: {
+                  cpu: { amount: 3.0, format: 'cores' },
+                  memory: { amount: 6.0, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: 1.5, format: 'cores' },
+                  memory: { amount: 3.0, format: 'GiB' },
+                },
+              },
+              variation: {
+                limits: {
+                  cpu: { amount: -1.0, format: 'cores' },
+                  memory: { amount: -2.0, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: -0.5, format: 'cores' },
+                  memory: { amount: -1.0, format: 'GiB' },
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    status: 'pending',
-    severity: 'high',
-    description: 'High CPU requests for database workload',
-    recommendation: 'Optimize CPU requests based on actual usage',
-    lastAnalyzed: '2024-01-15T09:15:00Z',
   },
   {
-    id: 'opt-4',
-    clusterId: 'cluster-1',
-    clusterName: 'production-cluster',
-    namespace: 'monitoring',
-    workloadName: 'prometheus-server',
-    workloadType: 'StatefulSet',
-    resourceType: 'Memory',
-    currentValue: '4Gi',
-    recommendedValue: '3Gi',
-    savings: {
-      cpu: '0m',
-      memory: '1Gi',
-      cost: 67.8,
+    id: 'rec-004',
+    clusterAlias: 'production-cluster',
+    clusterUuid: 'cluster-uuid-001',
+    container: 'nginx',
+    project: 'web-services',
+    workload: 'nginx-deployment',
+    workloadType: 'Deployment',
+    lastReported: '2024-01-14T16:45:00Z',
+    sourceId: 'source-004',
+    recommendations: {
+      current: {
+        limits: {
+          cpu: { amount: 0.5, format: 'cores' },
+          memory: { amount: 512.0, format: 'MiB' },
+        },
+        requests: {
+          cpu: { amount: 0.25, format: 'cores' },
+          memory: { amount: 256.0, format: 'MiB' },
+        },
+      },
+      recommendationTerms: {
+        short_term: {
+          monitoring_end_time: '2024-01-14T16:45:00Z',
+          duration_in_hours: 24.0,
+          notifications: {
+            '112101': {
+              type: 'notice',
+              message: 'Cost Optimization Available',
+              code: 112101,
+            },
+          },
+          recommendation_engines: {
+            cost: {
+              config: {
+                limits: {
+                  cpu: { amount: 0.3, format: 'cores' },
+                  memory: { amount: 384.0, format: 'MiB' },
+                },
+                requests: {
+                  cpu: { amount: 0.15, format: 'cores' },
+                  memory: { amount: 192.0, format: 'MiB' },
+                },
+              },
+              variation: {
+                limits: {
+                  cpu: { amount: -0.2, format: 'cores' },
+                  memory: { amount: -128.0, format: 'MiB' },
+                },
+                requests: {
+                  cpu: { amount: -0.1, format: 'cores' },
+                  memory: { amount: -64.0, format: 'MiB' },
+                },
+              },
+            },
+          },
+        },
+      },
     },
-    status: 'applied',
-    severity: 'medium',
-    description: 'Memory optimization for monitoring stack',
-    recommendation: 'Reduce memory allocation for Prometheus',
-    lastAnalyzed: '2024-01-14T16:45:00Z',
+  },
+  {
+    id: 'rec-005',
+    clusterAlias: 'staging-cluster',
+    clusterUuid: 'cluster-uuid-002',
+    container: 'redis',
+    project: 'cache-services',
+    workload: 'redis-statefulset',
+    workloadType: 'StatefulSet',
+    lastReported: '2024-01-15T11:00:00Z',
+    sourceId: 'source-005',
+    recommendations: {
+      current: {
+        limits: {
+          cpu: { amount: 1.0, format: 'cores' },
+          memory: { amount: 2.0, format: 'GiB' },
+        },
+        requests: {
+          cpu: { amount: 0.5, format: 'cores' },
+          memory: { amount: 1.0, format: 'GiB' },
+        },
+      },
+      recommendationTerms: {
+        short_term: {
+          monitoring_end_time: '2024-01-15T11:00:00Z',
+          duration_in_hours: 24.0,
+          notifications: {
+            '112101': {
+              type: 'notice',
+              message: 'Cost Optimization Available',
+              code: 112101,
+            },
+          },
+          recommendation_engines: {
+            cost: {
+              config: {
+                limits: {
+                  cpu: { amount: 0.6, format: 'cores' },
+                  memory: { amount: 1.5, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: 0.3, format: 'cores' },
+                  memory: { amount: 0.75, format: 'GiB' },
+                },
+              },
+              variation: {
+                limits: {
+                  cpu: { amount: -0.4, format: 'cores' },
+                  memory: { amount: -0.5, format: 'GiB' },
+                },
+                requests: {
+                  cpu: { amount: -0.2, format: 'cores' },
+                  memory: { amount: -0.25, format: 'GiB' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
 ];
 
