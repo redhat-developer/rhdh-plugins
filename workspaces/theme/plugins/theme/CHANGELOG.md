@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.10.1
+
+### Patch Changes
+
+- fe339e6: Release all themes and test packages together to resolve build issues
+
 ## 0.10.0
 
 ### Minor Changes
