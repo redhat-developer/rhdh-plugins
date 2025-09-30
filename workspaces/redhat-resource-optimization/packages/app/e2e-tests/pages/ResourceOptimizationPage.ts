@@ -15,6 +15,7 @@
  */
 
 import { Page, expect } from '@playwright/test';
+import { ensureAuthenticated } from '../fixtures/auth';
 
 export class ResourceOptimizationPage {
   readonly page: Page;
@@ -24,23 +25,19 @@ export class ResourceOptimizationPage {
   }
 
   /**
-   * Navigate to the Resource Optimization page
+   * Navigate to the Resource Optimization page.
+   * Handles authentication if needed and verifies page loads successfully.
    */
   async navigateToOptimization() {
-    await this.page.goto('/redhat-resource-optimization');
+    // Navigate to the page
+    await this.page.goto('/redhat-resource-optimization', {
+      waitUntil: 'domcontentloaded',
+    });
 
-    // Handle guest login if it appears
-    const guestButton = this.page.getByRole('button', { name: 'Enter' });
-    const isGuestButtonVisible = await guestButton
-      .isVisible()
-      .catch(() => false);
+    // Handle authentication if the login screen appears
+    await ensureAuthenticated(this.page);
 
-    if (isGuestButtonVisible) {
-      await guestButton.click();
-      // Wait a moment for the page to load after guest login
-      await this.page.waitForTimeout(2000);
-    }
-
+    // Wait for the page to fully load
     await this.waitForPageLoad();
   }
 
@@ -60,12 +57,15 @@ export class ResourceOptimizationPage {
 
     // Check if the filters button exists (for smaller screens)
     const filtersButton = this.page.getByRole('button', { name: 'Filters' });
-    const isButtonVisible = await filtersButton.isVisible();
 
-    if (isButtonVisible) {
+    try {
+      // Try to click the button if it exists and is visible
+      await expect(filtersButton).toBeVisible({ timeout: 2000 });
       await filtersButton.click();
+    } catch {
+      // If the button is not visible, the filters are already open (larger screens)
+      // This is normal behavior and not an error
     }
-    // If the button is not visible, the filters are already open (larger screens)
   }
 
   /**
@@ -75,25 +75,31 @@ export class ResourceOptimizationPage {
     // First open the filters sidebar (if needed)
     await this.openFilters();
 
-    // Try to find the cluster dropdown
-    const clusterDropdown = this.page.getByRole('combobox', {
-      name: 'CLUSTERS',
+    // Wait for filters to be visible
+    await expect(this.page.getByText('Filters')).toBeVisible();
+
+    // Find the CLUSTERS label and the associated textbox input
+    // Looking at the screenshot, CLUSTERS is a label with a textbox below it
+    const clustersLabel = this.page.getByText('CLUSTERS', { exact: true });
+    await expect(clustersLabel).toBeVisible({ timeout: 10000 });
+
+    // The textbox should be a sibling or nearby element
+    // Let's find it by looking for a textbox near the CLUSTERS label
+    const clustersContainer = this.page.locator('div', { has: clustersLabel });
+    const clusterTextbox = clustersContainer
+      .locator('input[type="text"]')
+      .first();
+
+    await expect(clusterTextbox).toBeVisible();
+    await clusterTextbox.click();
+    await clusterTextbox.fill(clusterName);
+
+    // Select the option from dropdown
+    const clusterOption = this.page.getByRole('option', {
+      name: clusterName,
     });
-    const isDropdownVisible = await clusterDropdown.isVisible();
-
-    if (isDropdownVisible) {
-      await clusterDropdown.click();
-
-      const clusterOption = this.page.getByRole('option', {
-        name: clusterName,
-      });
-      const isOptionVisible = await clusterOption.isVisible();
-
-      if (isOptionVisible) {
-        await clusterOption.click();
-      }
-    }
-    // If the dropdown is not visible, the filters might not be properly loaded
+    await expect(clusterOption).toBeVisible({ timeout: 5000 });
+    await clusterOption.click();
   }
 
   /**
@@ -101,45 +107,22 @@ export class ResourceOptimizationPage {
    */
   async viewOptimizations() {
     // The optimizations are displayed directly in the table
-    // Try to find the main data table, but be flexible about the selector
+    // Verify the table with container column is visible
     const table = this.page.getByRole('table').filter({ hasText: 'Container' });
-    const isTableVisible = await table.isVisible();
+    await expect(table).toBeVisible({ timeout: 10000 });
 
-    if (!isTableVisible) {
-      // Fallback: try to find any table
-      const anyTable = this.page.getByRole('table').first();
-      const isAnyTableVisible = await anyTable.isVisible();
-
-      if (!isAnyTableVisible) {
-        // If no table is visible, that's acceptable since the API endpoints might not be mocked properly
-        // eslint-disable-next-line no-console
-        console.log(
-          'No table visible - optimizations may not be loaded due to API issues',
-        );
-        return;
-      }
-    }
-
-    // If we get here, a table is visible
-    // eslint-disable-next-line no-console
-    console.log('✅ Table is visible - optimizations are loaded');
+    // Verify we can see table rows (not just headers)
+    const tableRows = this.page.getByRole('row');
+    await expect(tableRows.first()).toBeVisible();
   }
 
   /**
    * Apply a specific optimization recommendation
-   * Note: This method may need to be updated based on the actual UI implementation
    */
   async applyRecommendation(optimizationId: string) {
-    // For now, this is a placeholder since the actual apply functionality
-    // may not be implemented in the current UI
     const applyButton = this.page.getByTestId(`apply-${optimizationId}`);
-    if (await applyButton.isVisible()) {
-      await applyButton.click();
-    } else {
-      // If no apply button is found, we'll skip this action
-      // eslint-disable-next-line no-console
-      console.log(`Apply button for ${optimizationId} not found, skipping...`);
-    }
+    await expect(applyButton).toBeVisible({ timeout: 5000 });
+    await applyButton.click();
   }
 
   /**

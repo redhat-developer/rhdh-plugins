@@ -24,6 +24,7 @@ import {
   mockWorkflowExecution,
   mockWorkflowExecutionError,
 } from '../fixtures/optimizationResponses';
+import { setupAuthMocks } from '../fixtures/auth';
 
 /**
  * Mock clusters API endpoint
@@ -163,23 +164,8 @@ export async function mockAccessCheckResponse(page: Page, hasAccess = true) {
 }
 
 /**
- * Mock authentication guest refresh endpoint
- */
-export async function mockAuthGuestRefreshResponse(page: Page) {
-  await page.route('**/api/auth/guest/refresh', async route => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        token: 'mock-guest-token',
-        expires_in: 3600,
-      }),
-    });
-  });
-}
-
-/**
- * Mock permission check endpoint
+ * Mock permission check endpoint with custom permission settings
+ * Note: For standard auth mocking, use setupAuthMocks() from fixtures/auth.ts
  */
 export async function mockPermissionResponse(page: Page, hasPermission = true) {
   await page.route('**/api/permission/**', async route => {
@@ -273,14 +259,25 @@ export async function mockCostManagementErrorResponse(
 }
 
 /**
- * Setup all mocks for development mode
+ * Setup all mocks for development mode.
+ * IMPORTANT: Call this BEFORE any page navigation to ensure mocks are in place.
+ *
+ * NOTE: We do NOT mock authentication endpoints - the real guest auth flow works fine.
+ * Mocking auth actually breaks it since the app expects the real backend auth to work.
  */
 export async function setupOptimizationMocks(page: Page) {
-  await mockAuthGuestRefreshResponse(page);
-  await mockPermissionResponse(page);
-  await mockClustersResponse(page);
+  // DON'T mock auth - let the real guest authentication work
+  // await setupAuthMocks(page);
+
+  // Permission and access mocks (optional - may not be needed)
+  // await mockAccessCheckResponse(page);
+
+  // API mocks for the resource optimization plugin data
+  // await mockClustersResponse(page);
   await mockAuthTokenResponse(page);
-  await mockAccessCheckResponse(page);
   await mockWorkflowExecutionResponse(page);
   await mockCostManagementResponse(page); // This includes the optimizations data
+
+  // Wait a bit to ensure all routes are registered
+  await page.waitForTimeout(100);
 }

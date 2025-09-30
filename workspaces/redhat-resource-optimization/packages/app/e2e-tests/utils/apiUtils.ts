@@ -151,3 +151,103 @@ export async function getApiResponseData(
 
   return await response.json();
 }
+
+/**
+ * Track if a route mock was called
+ */
+interface MockCallTracker {
+  called: boolean;
+  count: number;
+  requests: Array<{ url: string; method: string; body?: any }>;
+}
+
+/**
+ * Create a tracked mock route that records when it's called.
+ * Returns a tracker object that can be verified later.
+ */
+export async function createTrackedMock(
+  page: Page,
+  urlPattern: string,
+  responseData: any,
+  status = 200,
+): Promise<MockCallTracker> {
+  const tracker: MockCallTracker = {
+    called: false,
+    count: 0,
+    requests: [],
+  };
+
+  await page.route(urlPattern, async route => {
+    tracker.called = true;
+    tracker.count++;
+    tracker.requests.push({
+      url: route.request().url(),
+      method: route.request().method(),
+      body: route.request().postDataJSON(),
+    });
+
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(responseData),
+    });
+  });
+
+  return tracker;
+}
+
+/**
+ * Verify that a mock was actually called during the test.
+ * Throws an error if the mock was never called.
+ */
+export function verifyMockWasCalled(
+  tracker: MockCallTracker,
+  mockName: string,
+) {
+  if (!tracker.called) {
+    throw new Error(
+      `Expected ${mockName} mock to be called, but it was never invoked`,
+    );
+  }
+  if (tracker.count === 0) {
+    throw new Error(`Expected ${mockName} to be called at least once`);
+  }
+  expect(tracker.called).toBe(true);
+  expect(tracker.count).toBeGreaterThan(0);
+}
+
+/**
+ * Wait for a specific request to be made and verify it was mocked.
+ */
+export async function waitForMockedRequest(
+  page: Page,
+  urlPattern: string,
+  timeout = 10000,
+): Promise<void> {
+  await page.waitForRequest(
+    request => {
+      const url = request.url();
+      return url.includes(urlPattern);
+    },
+    { timeout },
+  );
+}
+
+/**
+ * Verify that a response matches expected mock data.
+ */
+export async function verifyMockedResponse(
+  page: Page,
+  urlPattern: string,
+  expectedData: any,
+  timeout = 10000,
+): Promise<void> {
+  const response = await page.waitForResponse(
+    res => res.url().includes(urlPattern),
+    { timeout },
+  );
+
+  expect(response.status()).toBe(200);
+  const data = await response.json();
+  expect(data).toMatchObject(expectedData);
+}

@@ -15,14 +15,16 @@
  */
 
 import { test, expect } from '@playwright/test';
+import { performGuestLogin } from './fixtures/auth';
 
 test('App should render the welcome page', async ({ page }) => {
   await page.goto('/');
 
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
+  // Perform guest login - no mocks needed, real auth works fine
+  await performGuestLogin(page);
 
-  // The app redirects to /catalog and shows the Red Hat organization
-  await expect(page.getByText('Red Hat')).toBeVisible();
+  // The app redirects to /catalog and shows the Red Hat Catalog heading
+  await expect(
+    page.getByRole('heading', { name: 'Red Hat Catalog' }),
+  ).toBeVisible({ timeout: 10000 });
 });
