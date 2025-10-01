@@ -66,6 +66,9 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.fields.description': 'Description',
     'workflow.fields.started': 'Démarré',
     'workflow.errors.retriggerFailed': 'Redéclenchement échoué: {{reason}}',
+    'workflow.fields.workflowId': "ID d'exécution",
+    'workflow.fields.workflowIdCopied':
+      "ID d'exécution copié dans le presse-papiers",
     'workflow.errors.abortFailed':
       "Interruption échouée: L'exécution a déjà été terminée.",
     'workflow.errors.abortFailedWithReason': 'Interruption échouée: {{reason}}',

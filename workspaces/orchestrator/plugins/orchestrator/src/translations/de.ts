@@ -65,6 +65,9 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.fields.duration': 'Dauer',
     'workflow.fields.description': 'Beschreibung',
     'workflow.fields.started': 'Gestartet',
+    'workflow.fields.workflowId': 'Ausführungs-ID',
+    'workflow.fields.workflowIdCopied':
+      'Ausführungs-ID in Zwischenablage kopiert',
     'workflow.errors.retriggerFailed':
       'Erneut auslösen fehlgeschlagen: {{reason}}',
     'workflow.errors.abortFailed':

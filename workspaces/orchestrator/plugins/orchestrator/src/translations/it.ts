@@ -65,6 +65,8 @@ const orchestratorTranslationIt = createTranslationMessages({
     'workflow.fields.duration': 'Durata',
     'workflow.fields.description': 'Descrizione',
     'workflow.fields.started': 'Avviato',
+    'workflow.fields.workflowId': 'ID esecuzione',
+    'workflow.fields.workflowIdCopied': 'ID esecuzione copiato nella clipboard',
     'workflow.errors.retriggerFailed': 'Riattivazione fallita: {{reason}}',
     'workflow.errors.abortFailed':
       "Interruzione fallita: L'esecuzione è già stata completata.",

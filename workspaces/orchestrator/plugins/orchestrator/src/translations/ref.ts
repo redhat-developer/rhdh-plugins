@@ -84,6 +84,8 @@ export const orchestratorMessages = {
       duration: 'Duration',
       description: 'Description',
       started: 'Started',
+      workflowId: 'Run ID',
+      workflowIdCopied: 'Run ID copied to clipboard',
     },
     errors: {
       retriggerFailed: 'Retrigger failed: {{reason}}',

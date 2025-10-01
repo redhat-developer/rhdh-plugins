@@ -68,7 +68,6 @@ import usePolling from '../../hooks/usePolling';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
-  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
