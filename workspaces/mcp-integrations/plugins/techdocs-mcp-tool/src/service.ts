@@ -16,14 +16,22 @@
 
 import { LoggerService, DiscoveryService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import {
-  Publisher,
-  PublisherBase,
-  TechDocsMetadata,
-} from '@backstage/plugin-techdocs-node';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import TurndownService from 'turndown';
+
+/**
+ * TechDocsMetadata
+ *
+ * @public
+ */
+export interface TechDocsMetadata {
+  site_name?: string;
+  site_description?: string;
+  etag?: string;
+  build_timestamp?: number;
+  files?: string[];
+}
 
 /**
  * TechDocsEntity
@@ -122,7 +130,6 @@ export interface TechDocsCoverageResult {
  * @public
  */
 export class TechDocsService {
-  private publisher?: PublisherBase;
   private turndownService: TurndownService;
 
   constructor(
@@ -157,20 +164,6 @@ export class TechDocsService {
     }
   }
 
-  async initialize() {
-    this.publisher = await Publisher.fromConfig(this.config, {
-      logger: this.logger,
-      discovery: this.discovery,
-    });
-  }
-
-  async getPublisher(): Promise<PublisherBase> {
-    if (!this.publisher) {
-      await this.initialize();
-    }
-    return this.publisher!;
-  }
-
   // generateTechDocsUrls:: creates the techdoc urls
   async generateTechDocsUrls(
     entity: Entity,
@@ -192,18 +185,31 @@ export class TechDocsService {
     entity: Entity,
   ): Promise<TechDocsMetadata | null> {
     try {
-      const publisher = await this.getPublisher();
       const { namespace = 'default', name } = entity.metadata;
       const kind = entity.kind.toLowerCase();
 
-      const entityName = {
-        kind,
-        namespace,
-        name,
-      };
+      const techdocsBaseUrl = await this.discovery.getBaseUrl('techdocs');
+      const metadataUrl = `${techdocsBaseUrl}/static/docs/${namespace}/${kind}/${name}/techdocs_metadata.json`;
 
-      const metadata = await publisher.fetchTechDocsMetadata(entityName);
-      return metadata;
+      this.logger.debug(`Fetching metadata from URL: ${metadataUrl}`);
+      const fetch = this.fetchFunction || (await import('node-fetch')).default;
+
+      const response = await fetch(metadataUrl);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          this.logger.debug(
+            `TechDocs metadata not found for ${entity.kind}:${entity.metadata.namespace}/${entity.metadata.name}`,
+          );
+          return null;
+        }
+        throw new Error(
+          `Failed to fetch TechDocs metadata: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      const metadata = await response.json();
+      return metadata as TechDocsMetadata;
     } catch (error) {
       this.logger.warn(
         `Failed to fetch TechDocs metadata for ${entity.kind}:${entity.metadata.namespace}/${entity.metadata.name}`,
@@ -276,15 +282,54 @@ export class TechDocsService {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(contentUrl, { headers });
+      let response = await fetch(contentUrl, { headers });
 
-      // check 404 and err_status cases
-      if (!response.ok) {
-        if (response.status === 404) {
+      // check 404 and err_status cases - trigger build if not found
+      if (!response.ok && response.status === 404) {
+        this.logger.info(
+          `TechDocs content not found, triggering build for ${entityRef}`,
+        );
+
+        // Trigger TechDocs generation via sync endpoint
+        const syncUrl = `${techdocsBaseUrl}/sync/${namespace}/${kind.toLowerCase()}/${name}`;
+        this.logger.debug(`Triggering TechDocs build at: ${syncUrl}`);
+
+        try {
+          const syncResponse = await fetch(syncUrl, { headers });
+
+          if (syncResponse.ok) {
+            // Wait for sync to complete by consuming the event stream
+            const syncBody = await syncResponse.text();
+
+            // Check if build was successful
+            if (syncBody.includes('event: finish')) {
+              this.logger.info(
+                `TechDocs build completed for ${entityRef}, retrying content fetch`,
+              );
+
+              // Retry fetching the content after build
+              response = await fetch(contentUrl, { headers });
+
+              if (!response.ok) {
+                throw new Error(
+                  `TechDocs content still not found after build for ${entityRef} at path: ${targetPath}`,
+                );
+              }
+            } else {
+              throw new Error('TechDocs build did not complete successfully');
+            }
+          } else {
+            throw new Error(
+              `Failed to trigger TechDocs build: ${syncResponse.status} ${syncResponse.statusText}`,
+            );
+          }
+        } catch (buildError) {
+          this.logger.error(`Failed to build TechDocs: ${buildError}`);
           throw new Error(
-            `TechDocs content not found for ${entityRef} at path: ${targetPath}`,
+            `TechDocs content not found for ${entityRef} at path: ${targetPath}. Attempted to build but failed: ${buildError}`,
           );
         }
+      } else if (!response.ok) {
         throw new Error(
           `Failed to fetch TechDocs content: ${response.status} ${response.statusText}`,
         );

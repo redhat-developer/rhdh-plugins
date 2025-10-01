@@ -15,11 +15,10 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { TechDocsService } from './service';
+import { TechDocsService, TechDocsMetadata } from './service';
 import { Entity } from '@backstage/catalog-model';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { LoggerService, DiscoveryService } from '@backstage/backend-plugin-api';
-import { TechDocsMetadata } from '@backstage/plugin-techdocs-node';
 
 describe('TechDocsService', () => {
   const mockLogger = {
@@ -87,10 +86,6 @@ describe('TechDocsService', () => {
     },
   });
 
-  const mockPublisher = {
-    fetchTechDocsMetadata: jest.fn(),
-  };
-
   const mockFetch = jest.fn();
 
   let service: TechDocsService;
@@ -102,7 +97,6 @@ describe('TechDocsService', () => {
       mockDiscovery,
       mockFetch,
     );
-    jest.spyOn(service, 'getPublisher').mockResolvedValue(mockPublisher as any);
     jest.clearAllMocks();
   });
 
@@ -156,23 +150,22 @@ describe('TechDocsService', () => {
         files: ['index.html', 'api.html'],
       };
 
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(mockMetadata);
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockMetadata),
+      });
 
       const result = await service.fetchTechDocsMetadata(entity);
 
       expect(result).toEqual(mockMetadata);
-      expect(mockPublisher.fetchTechDocsMetadata).toHaveBeenCalledWith({
-        kind: 'component',
-        namespace: 'default',
-        name: 'test-service',
-      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/static/docs/default/component/test-service/techdocs_metadata.json',
+      );
     });
 
     it('should handle errors gracefully and return null', async () => {
       const entity = createMockEntity('test-service');
-      mockPublisher.fetchTechDocsMetadata.mockRejectedValue(
-        new Error('Metadata not found'),
-      );
+      mockFetch.mockRejectedValue(new Error('Metadata not found'));
 
       const result = await service.fetchTechDocsMetadata(entity);
 
@@ -194,16 +187,33 @@ describe('TechDocsService', () => {
         build_timestamp: 1609459200,
       };
 
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(mockMetadata);
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockMetadata),
+      });
 
       const result = await service.fetchTechDocsMetadata(entity);
 
       expect(result).toEqual(mockMetadata);
-      expect(mockPublisher.fetchTechDocsMetadata).toHaveBeenCalledWith({
-        kind: 'api',
-        namespace: 'production',
-        name: 'test-api',
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/static/docs/production/api/test-api/techdocs_metadata.json',
+      );
+    });
+
+    it('should handle 404 response and return null', async () => {
+      const entity = createMockEntity('test-service');
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
       });
+
+      const result = await service.fetchTechDocsMetadata(entity);
+
+      expect(result).toBeNull();
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        'TechDocs metadata not found for Component:default/test-service',
+      );
     });
   });
 
@@ -222,7 +232,10 @@ describe('TechDocsService', () => {
       });
 
       // Mock metadata responses
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+      });
 
       const result = await service.listTechDocs({}, mockAuth, mockCatalog);
 
@@ -250,7 +263,10 @@ describe('TechDocsService', () => {
         entities: [entityWithDocs],
       });
 
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(mockMetadata);
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockMetadata),
+      });
 
       const result = await service.listTechDocs({}, mockAuth, mockCatalog);
 
@@ -289,7 +305,7 @@ describe('TechDocsService', () => {
         entities: [entityWithDocs],
       });
 
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       const result = await service.listTechDocs({}, mockAuth, mockCatalog);
 
@@ -313,7 +329,7 @@ describe('TechDocsService', () => {
 
     it('should handle empty catalog', async () => {
       const mockCatalog = catalogServiceMock({ entities: [] });
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       const result = await service.listTechDocs({}, mockAuth, mockCatalog);
 
@@ -329,7 +345,7 @@ describe('TechDocsService', () => {
 
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs(
         { entityType: 'Component' },
@@ -357,7 +373,7 @@ describe('TechDocsService', () => {
 
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs(
         { namespace: 'production' },
@@ -385,7 +401,7 @@ describe('TechDocsService', () => {
 
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs({ owner: 'team-a' }, mockAuth, mockCatalog);
 
@@ -409,7 +425,7 @@ describe('TechDocsService', () => {
 
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs(
         { lifecycle: 'production' },
@@ -437,7 +453,7 @@ describe('TechDocsService', () => {
 
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs({ tags: ['frontend'] }, mockAuth, mockCatalog);
 
@@ -459,7 +475,7 @@ describe('TechDocsService', () => {
 
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs(
         {
@@ -489,7 +505,7 @@ describe('TechDocsService', () => {
       const entities = [createMockEntity('service-1', 'Component', true)];
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs({ limit: 100 }, mockAuth, mockCatalog);
 
@@ -505,7 +521,7 @@ describe('TechDocsService', () => {
       const entities = [createMockEntity('service-1', 'Component', true)];
       const mockCatalog = catalogServiceMock({ entities });
       jest.spyOn(mockCatalog, 'getEntities');
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
       await service.listTechDocs({}, mockAuth, mockCatalog);
 
@@ -699,16 +715,19 @@ describe('TechDocsService', () => {
       const mockHtmlContent =
         '<html><head><title>Test Service Docs</title></head><body><h1>Welcome</h1></body></html>';
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        text: jest.fn().mockResolvedValue(mockHtmlContent),
-      });
-
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue({
-        site_name: 'Test Service Docs',
-        site_description: 'Documentation for test service',
-        build_timestamp: 1705313400,
-      });
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          text: jest.fn().mockResolvedValue(mockHtmlContent),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            site_name: 'Test Service Docs',
+            site_description: 'Documentation for test service',
+            build_timestamp: 1705313400,
+          }),
+        });
 
       const result = await service.retrieveTechDocsContent(
         'component:default/test-service',
@@ -754,12 +773,15 @@ describe('TechDocsService', () => {
 
       const mockMarkdownContent =
         '# Test Service\n\nThis is the documentation.';
-      mockFetch.mockResolvedValue({
-        ok: true,
-        text: jest.fn().mockResolvedValue(mockMarkdownContent),
-      });
-
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          text: jest.fn().mockResolvedValue(mockMarkdownContent),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
       const result = await service.retrieveTechDocsContent(
         'component:default/test-service',
@@ -779,12 +801,15 @@ describe('TechDocsService', () => {
         getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
       };
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        text: jest.fn().mockResolvedValue('<html></html>'),
-      });
-
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          text: jest.fn().mockResolvedValue('<html></html>'),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
       await service.retrieveTechDocsContent(
         'component:default/test-service',
@@ -867,17 +892,70 @@ describe('TechDocsService', () => {
       );
     });
 
-    it('should handle 404 response', async () => {
+    it('should handle 404 response and trigger build', async () => {
       const mockEntity = createMockEntity('test-service', 'Component', true);
       const mockCatalog = {
         getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
       };
 
-      mockFetch.mockResolvedValue({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found',
-      });
+      // First call returns 404, sync endpoint succeeds, retry succeeds
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: jest
+            .fn()
+            .mockResolvedValue('event: finish\ndata: {"updated":true}'),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          text: jest
+            .fn()
+            .mockResolvedValue(
+              '<html><title>Test</title><body>Content</body></html>',
+            ),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            site_name: 'Test Docs',
+            build_timestamp: 1234567890,
+          }),
+        });
+
+      const result = await service.retrieveTechDocsContent(
+        'component:default/test-service',
+        'index.html',
+        mockAuth,
+        mockCatalog as any,
+      );
+
+      expect(result).toBeDefined();
+      expect(mockFetch).toHaveBeenCalledTimes(4); // content (404) + sync + retry content + metadata
+    });
+
+    it('should handle 404 response when build fails', async () => {
+      const mockEntity = createMockEntity('test-service', 'Component', true);
+      const mockCatalog = {
+        getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
+      };
+
+      // First call returns 404, sync fails
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+          statusText: 'Not Found',
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: 'Build failed',
+        });
 
       await expect(
         service.retrieveTechDocsContent(
@@ -912,12 +990,15 @@ describe('TechDocsService', () => {
         getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
       };
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        text: jest.fn().mockResolvedValue('<html></html>'),
-      });
-
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          text: jest.fn().mockResolvedValue('<html></html>'),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
       await service.retrieveTechDocsContent(
         'component:production/test-service',
@@ -937,12 +1018,15 @@ describe('TechDocsService', () => {
     });
 
     it('should work without auth service provided', async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-        text: jest.fn().mockResolvedValue('<html></html>'),
-      });
-
-      mockPublisher.fetchTechDocsMetadata.mockResolvedValue(null);
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          text: jest.fn().mockResolvedValue('<html></html>'),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404,
+        });
 
       const result = await service.retrieveTechDocsContent(
         'component:default/test-service',
