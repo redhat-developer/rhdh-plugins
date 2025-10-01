@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.0.7
+
+### Patch Changes
+
+- f370925: Fix ActiveDropdown for long lists.
+
 ## 1.0.6
 
 ### Patch Changes
