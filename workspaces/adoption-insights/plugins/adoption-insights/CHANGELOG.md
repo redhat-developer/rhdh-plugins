@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.3.1
+
+### Patch Changes
+
+- fb54d82: safely parse the date so it works in different Node.js/browser environments
+
 ## 0.3.0
 
 ### Minor Changes
