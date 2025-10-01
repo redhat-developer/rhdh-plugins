@@ -21,7 +21,7 @@ import { useFormikContext } from 'formik';
 import yaml from 'js-yaml';
 import { get } from 'lodash';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,

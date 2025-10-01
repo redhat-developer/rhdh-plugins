@@ -19,7 +19,7 @@ import { ApiRef, configApiRef } from '@backstage/core-plugin-api';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { mockGetRepositories } from '../../mocks/mockData';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 

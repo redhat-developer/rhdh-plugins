@@ -26,7 +26,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useFormikContext } from 'formik';
 
-import { bulkImportApiRef } from '../api/BackendClient';
+import { bulkImportApiRef } from '../api/BulkImportBackendClient';
 import {
   AddedRepositoryColumnNameEnum,
   AddRepositoriesFormValues,

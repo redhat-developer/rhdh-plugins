@@ -29,7 +29,7 @@ import {
 import { render } from '@testing-library/react';
 import { useFormikContext } from 'formik';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { mockGetImportJobs, mockGetRepositories } from '../../mocks/mockData';
 import { mockEntities } from '../../mocks/mockEntities';
 import { ApprovalTool, ImportJobStatus, RepositoryStatus } from '../../types';

@@ -431,7 +431,7 @@ export const prepareDataForSubmission = (
   Object.values(repositories).reduce(
     (acc: CreateImportJobRepository[], repo) => {
       acc.push({
-        approvalTool: approvalTool.toLocaleUpperCase(),
+        approvalTool: approvalTool?.toLocaleUpperCase(),
         codeOwnersFileAsEntityOwner:
           repo.catalogInfoYaml?.prTemplate?.useCodeOwnersFile || false,
         catalogEntityName:

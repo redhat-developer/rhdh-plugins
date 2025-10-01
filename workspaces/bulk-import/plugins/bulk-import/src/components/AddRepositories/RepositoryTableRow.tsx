@@ -26,7 +26,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import {
   AddRepositoryData,
   ImportJobStatus,

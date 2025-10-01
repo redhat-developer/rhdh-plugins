@@ -24,7 +24,10 @@ import {
 import { screen } from '@testing-library/react';
 import { useFormikContext } from 'formik';
 
-import { BulkImportAPI, bulkImportApiRef } from '../../api/BackendClient';
+import {
+  BulkImportAPI,
+  bulkImportApiRef,
+} from '../../api/BulkImportBackendClient';
 import { useAddedRepositories } from '../../hooks';
 import { mockGetImportJobs, mockGetRepositories } from '../../mocks/mockData';
 import { TaskStatus } from '../../types';

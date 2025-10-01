@@ -30,7 +30,7 @@ import { useFormikContext } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,

@@ -26,7 +26,10 @@ import {
 
 import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
 
-import { BulkImportAPI, bulkImportApiRef } from '../src/api/BackendClient';
+import {
+  BulkImportAPI,
+  bulkImportApiRef,
+} from '../src/api/BulkImportBackendClient';
 import { BulkImportIcon } from '../src/components/BulkImportSidebarItem';
 import {
   mockGetImportJobs,

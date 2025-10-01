@@ -22,7 +22,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,

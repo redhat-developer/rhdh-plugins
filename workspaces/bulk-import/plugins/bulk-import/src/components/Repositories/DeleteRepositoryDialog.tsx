@@ -32,7 +32,7 @@ import { makeStyles } from '@mui/styles';
 import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';

@@ -20,7 +20,7 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import { useQuery } from '@tanstack/react-query';
 
-import { bulkImportApiRef } from '../../api/BackendClient';
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ImportJobStatus } from '../../types';
 import { TasksTable } from './TasksTable';
