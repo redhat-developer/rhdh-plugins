@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 5.0.8
+
+### Patch Changes
+
+- 23bb527: Simplify Workflow Instance page header based on customer feedback.
+
 ## 5.0.7
 
 ### Patch Changes
