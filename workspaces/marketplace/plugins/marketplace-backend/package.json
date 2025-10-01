@@ -45,6 +45,7 @@
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
+    "yaml": "^2.7.1",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -56,8 +57,7 @@
     "@types/express": "*",
     "@types/supertest": "^2.0.12",
     "msw": "^1.0.0",
-    "supertest": "^6.2.4",
-    "yaml": "^2.7.1"
+    "supertest": "^6.2.4"
   },
   "files": [
     "dist"
