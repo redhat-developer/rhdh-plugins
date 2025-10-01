@@ -66,6 +66,9 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.fields.description': 'Description',
     'workflow.fields.started': 'Démarré',
     'workflow.errors.retriggerFailed': 'Redéclenchement échoué: {{reason}}',
+    'workflow.fields.workflowId': "ID d'exécution",
+    'workflow.fields.workflowIdCopied':
+      "ID d'exécution copié dans le presse-papiers",
     'workflow.errors.abortFailed':
       "Interruption échouée: L'exécution a déjà été terminée.",
     'workflow.errors.abortFailedWithReason': 'Interruption échouée: {{reason}}',
@@ -80,6 +83,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.buttons.fromFailurePoint': 'À partir du point de défaillance',
     'workflow.buttons.runFailedAgain': 'Redéclenchement échoué',
     'run.title': 'Exécuter le workflow',
+    'run.pageTitle': '{{processName}} exécution',
     'run.variables': "Variables d'exécution",
     'run.inputs': 'Entrées',
     'run.results': 'Résultats',

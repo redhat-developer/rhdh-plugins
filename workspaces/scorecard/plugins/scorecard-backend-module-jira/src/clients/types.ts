@@ -20,7 +20,7 @@ export interface JiraConfig {
   baseUrl: string;
   token: string;
   product: Product;
-  apiVersion?: string;
+  apiVersion?: number | string;
 }
 
 export interface JiraOptions {

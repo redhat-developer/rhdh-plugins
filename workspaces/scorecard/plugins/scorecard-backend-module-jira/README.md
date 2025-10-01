@@ -41,7 +41,7 @@ jira:
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
   # By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: '3'
+  apiVersion: 3
 ```
 
 ## Installation

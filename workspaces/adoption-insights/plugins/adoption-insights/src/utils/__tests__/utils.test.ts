@@ -30,8 +30,35 @@ import {
   formatWeeklyBucket,
   formatTooltipHeaderLabel,
   getGroupingLabel,
+  safeDate,
 } from '../utils';
 import { format, subDays } from 'date-fns';
+
+describe('safeDate', () => {
+  it('should normalize +00 timezone format to Z', () => {
+    const result = safeDate('2025-09-29T00:00:00+00');
+    expect(result).toBeInstanceOf(Date);
+    expect(result.toISOString()).toBe('2025-09-29T00:00:00.000Z');
+  });
+
+  it('should handle Z timezone format without changes', () => {
+    const result = safeDate('2025-10-01T03:43:36.535Z');
+    expect(result).toBeInstanceOf(Date);
+    expect(result.toISOString()).toBe('2025-10-01T03:43:36.535Z');
+  });
+
+  it('should handle dates without timezone', () => {
+    const result = safeDate('2025-09-29T00:00:00');
+    expect(result).toBeInstanceOf(Date);
+    expect(result.toISOString()).toBe('2025-09-29T00:00:00.000Z');
+  });
+
+  it('should handle invalid dates gracefully', () => {
+    const result = safeDate('invalid-date');
+    expect(result).toBeInstanceOf(Date);
+    expect(isNaN(result.getTime())).toBe(true);
+  });
+});
 
 describe('getDateRange', () => {
   it('should return correct range for today', () => {
@@ -129,6 +156,21 @@ describe('getXAxisTickValues', () => {
   it.each(testCases)('$description', ({ data, grouping, expected }) => {
     expect(getXAxisTickValues(data, grouping)).toEqual(expected);
   });
+
+  // Test case for the +00 timezone format fix
+  it('should handle +00 timezone format correctly in tick values', () => {
+    const data = [
+      { date: '2025-09-29T00:00:00+00' },
+      { date: '2025-09-30T00:00:00+00' },
+      { date: '2025-10-01T00:00:00+00' },
+    ];
+    const result = getXAxisTickValues(data, 'daily');
+    expect(result).toEqual([
+      '2025-09-29T00:00:00+00',
+      '2025-09-30T00:00:00+00',
+      '2025-10-01T00:00:00+00',
+    ]);
+  });
 });
 
 describe('getXAxisformat', () => {
@@ -153,6 +195,32 @@ describe('getXAxisformat', () => {
   it('should return the same value for unknown grouping', () => {
     expect(getXAxisformat('2025-03-01', 'unknown')).toBe('2025-03-01');
   });
+
+  // Test cases for the +00 timezone format fix
+  it('should handle +00 timezone format correctly for daily grouping', () => {
+    const result = getXAxisformat('2025-09-29T00:00:00+00', 'daily');
+    expect(result).toMatch(/Sep \d{1,2}, \d{2}/);
+  });
+
+  it('should handle +00 timezone format correctly for weekly grouping', () => {
+    const result = getXAxisformat('2025-09-29T00:00:00+00', 'weekly');
+    expect(result).toMatch(/Sep \d{1,2}, \d{2}/);
+  });
+
+  it('should handle +00 timezone format correctly for monthly grouping', () => {
+    const result = getXAxisformat('2025-09-29T00:00:00+00', 'monthly');
+    expect(result).toMatch(/Sep 2025/);
+  });
+
+  it('should handle +00 timezone format correctly for hourly grouping', () => {
+    const result = getXAxisformat('2025-09-29T14:30:00+00', 'hourly');
+    expect(result).toMatch(/\d{1,2}:\d{2} [APM]{2}/);
+  });
+
+  it('should handle Z timezone format (should still work)', () => {
+    const result = getXAxisformat('2025-10-01T03:43:36.535Z', 'daily');
+    expect(result).toMatch(/Oct \d{1,2}, \d{2}/);
+  });
 });
 
 describe('getLastUsedDay', () => {
@@ -170,6 +238,28 @@ describe('getLastUsedDay', () => {
     expect(getLastUsedDay('2025-02-15T00:00:00Z')).toMatch(
       /Feb \d{1,2}, \d{2}/,
     );
+  });
+
+  // Test cases for the +00 timezone format fix
+  it('should handle +00 timezone format correctly for older dates', () => {
+    const result = getLastUsedDay('2025-02-15T00:00:00+00');
+    expect(result).toMatch(/Feb \d{1,2}, \d{2}/);
+  });
+
+  it('should handle +00 timezone format correctly for recent dates', () => {
+    // Create a date that's definitely in the past but not yesterday
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - 3);
+    const pastDateString = pastDate.toISOString().replace('Z', '+00');
+
+    const result = getLastUsedDay(pastDateString);
+    expect(result).toMatch(/\w{3} \d{1,2}, \d{2}/);
+  });
+
+  it('should handle Z timezone format (should still work)', () => {
+    // Use a date that's definitely in the past to avoid "Today" logic
+    const result = getLastUsedDay('2025-02-15T03:43:36.535Z');
+    expect(result).toMatch(/Feb \d{1,2}, \d{2}/);
   });
 });
 

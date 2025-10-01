@@ -24,6 +24,7 @@ import {
   formatTooltipHeaderLabel,
   formatWeeklyBucket,
   formatLongDate,
+  safeDate,
 } from '../../utils/utils';
 import { useDateRange } from '../Header/DateRangeContext';
 
@@ -83,7 +84,7 @@ const ChartTooltip = ({
   }
 
   // Parse date from chart label - chart data typically provides ISO strings or timestamps
-  const date = label ? new Date(label) : new Date();
+  const date = label ? safeDate(label) : new Date();
 
   return (
     <Paper
@@ -103,14 +104,19 @@ const ChartTooltip = ({
       >
         {formatBucketLabel(date)
           .split('\n')
-          .map((line, i) => (
-            <div key={i}>{line}</div>
+          .map((line, index) => (
+            <div key={`tooltip-line-${line.substring(0, 10)}-${index}`}>
+              {line}
+            </div>
           ))}
       </Typography>
 
       <Box display="flex" justifyContent="space-between" alignItems="center">
         {payload.map(({ dataKey, value }, index) => (
-          <Box mr={index === payload.length - 1 ? 0 : 3}>
+          <Box
+            key={`tooltip-value-${dataKey}-${value}-${index}`}
+            mr={index === payload.length - 1 ? 0 : 3}
+          >
             <Typography
               sx={{
                 fontSize: '0.875rem',
