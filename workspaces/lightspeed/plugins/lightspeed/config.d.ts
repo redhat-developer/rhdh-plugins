@@ -19,7 +19,7 @@ export interface Config {
    * Configuration required for using lightspeed
    * @visibility frontend
    */
-  lightspeed: {
+  lightspeed?: {
     prompts?: Array</**
      * @visibility frontend
      */

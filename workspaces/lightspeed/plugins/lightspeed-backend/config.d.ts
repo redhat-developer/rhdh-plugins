@@ -19,7 +19,7 @@ export interface Config {
    * Configuration required for using lightspeed
    * @visibility frontend
    */
-  lightspeed: {
+  lightspeed?: {
     /**
      * configure the port number for the lightspeed service.
      * @visibility backend
