@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useCallback, useEffect, useRef, useState } from 'react';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -25,25 +26,45 @@ import FilterIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 
 import { useQueryFullTextSearch } from '../hooks/useQueryFullTextSearch';
+import { useTranslation } from '../hooks/useTranslation';
 
 export interface SearchTextFieldProps {
   variant: 'search' | 'filter';
 }
 
 export const SearchTextField = (props: SearchTextFieldProps) => {
+  const { t } = useTranslation();
   const fullTextSearch = useQueryFullTextSearch();
+  const timerRef = useRef<number | undefined>(undefined);
+  const [inputValue, setInputValue] = useState<string>(
+    fullTextSearch.current || '',
+  );
+
+  // Keep local input in sync if URL param changes externally (e.g., back/forward)
+  useEffect(() => {
+    setInputValue(fullTextSearch.current || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fullTextSearch]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const options =
     props.variant === 'search'
       ? {
-          placeholder: 'Search',
+          placeholder: t('search.placeholder'),
           Icon: SearchIcon,
-          clear: 'Clear Search',
+          clear: t('search.clear'),
         }
       : {
-          placeholder: 'Filter',
+          placeholder: t('search.filter'),
           Icon: FilterIcon,
-          clear: 'Clear Filter',
+          clear: t('search.clearFilter'),
         };
 
   return (
@@ -52,8 +73,20 @@ export const SearchTextField = (props: SearchTextFieldProps) => {
         variant="standard"
         hiddenLabel
         placeholder={options.placeholder}
-        value={fullTextSearch.current}
-        onChange={fullTextSearch.onChange}
+        value={inputValue}
+        onChange={useCallback(
+          (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            setInputValue(value);
+            if (timerRef.current) {
+              window.clearTimeout(timerRef.current);
+            }
+            timerRef.current = window.setTimeout(() => {
+              fullTextSearch.onChange({ target: { value } } as any);
+            }, 300) as unknown as number;
+          },
+          [fullTextSearch],
+        )}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -66,7 +99,13 @@ export const SearchTextField = (props: SearchTextFieldProps) => {
             <InputAdornment position="end">
               <IconButton
                 disabled={!fullTextSearch.current}
-                onClick={fullTextSearch.clear}
+                onClick={() => {
+                  if (timerRef.current) {
+                    window.clearTimeout(timerRef.current);
+                  }
+                  setInputValue('');
+                  fullTextSearch.clear();
+                }}
                 aria-label={options.clear}
               >
                 <ClearIcon fontSize="small" />

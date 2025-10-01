@@ -8,10 +8,10 @@ import { JsonObject } from '@backstage/types';
 import type { JSONSchema7 } from 'json-schema';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
-import { default as React_2 } from 'react';
+import { ReactNode } from 'react';
 
 // @public
-export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, setAuthTokenDescriptors, }: OrchestratorFormProps) => JSX_2.Element;
+export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, setAuthTokenDescriptors, t, }: OrchestratorFormProps) => JSX_2.Element;
 
 // @public
 export type OrchestratorFormProps = {
@@ -21,14 +21,32 @@ export type OrchestratorFormProps = {
     isExecuting: boolean;
     handleExecute: (parameters: JsonObject) => Promise<void>;
     initialFormData: JsonObject;
+    t: TranslationFunction;
 };
 
 // @public
 export const SubmitButton: ({ submitting, handleClick, children, focusOnMount, }: {
     submitting: boolean;
     handleClick?: () => void;
-    children: React_2.ReactNode;
+    children: ReactNode;
     focusOnMount?: boolean;
 }) => JSX_2.Element;
+
+// Warning: (ae-missing-release-tag) "TranslationFunction" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export type TranslationFunction = (key: string) => string;
+
+// Warning: (ae-missing-release-tag) "useTranslation" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export const useTranslation: () => {
+    t: TranslationFunction;
+};
+
+// Warnings were encountered during analysis:
+//
+// src/hooks/useTranslation.d.ts:1:1 - (ae-undocumented) Missing documentation for "TranslationFunction".
+// src/hooks/useTranslation.d.ts:2:22 - (ae-undocumented) Missing documentation for "useTranslation".
 
 ```

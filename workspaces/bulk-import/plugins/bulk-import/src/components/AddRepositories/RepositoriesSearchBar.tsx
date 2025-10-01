@@ -21,6 +21,8 @@ import IconButton from '@mui/material/IconButton';
 import Input from '@mui/material/Input';
 import InputAdornment from '@mui/material/InputAdornment';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 export const RepositoriesSearchBar = ({
   value,
   onChange,
@@ -30,6 +32,7 @@ export const RepositoriesSearchBar = ({
   onChange: (filter: string) => void;
   activeOrganization?: boolean;
 }) => {
+  const { t } = useTranslation();
   const ariaLabel = activeOrganization ? 'search-in-organization' : 'search';
 
   return (
@@ -42,7 +45,7 @@ export const RepositoriesSearchBar = ({
     >
       <Input
         data-testid={ariaLabel}
-        placeholder="Search"
+        placeholder={t('addRepositories.searchPlaceholder')}
         inputProps={{ 'aria-label': ariaLabel }}
         autoComplete="off"
         onChange={event => onChange(event.target.value)}
@@ -55,7 +58,7 @@ export const RepositoriesSearchBar = ({
         endAdornment={
           <InputAdornment position="end">
             <IconButton
-              aria-label="clear search"
+              aria-label={t('addRepositories.clearSearch')}
               onClick={() => onChange('')}
               edge="end"
               disabled={!value}

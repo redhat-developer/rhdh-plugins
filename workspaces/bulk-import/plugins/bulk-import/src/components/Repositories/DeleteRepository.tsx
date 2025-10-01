@@ -19,10 +19,12 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { useDeleteDialog } from '../DeleteDialogContext';
 
 const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { setDeleteComponent, setOpenDialog } = useDeleteDialog();
 
   const openDialog = (dialogData: AddRepositoryData) => {
@@ -32,8 +34,8 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
 
   const tooltipMessage =
     data.source === 'location'
-      ? 'Remove'
-      : 'This repository added to the app-config file. To remove it modify the file directly';
+      ? t('common.remove')
+      : t('repositories.removeTooltipDisabled');
 
   return (
     <Tooltip title={tooltipMessage}>
@@ -41,7 +43,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
         <IconButton
           color="inherit"
           onClick={() => openDialog(data)}
-          aria-label="Delete"
+          aria-label={t('common.delete')}
           size="large"
           disabled={data.source !== 'location'}
         >

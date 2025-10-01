@@ -11,7 +11,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 
 # **findAllOrganizations**
 
-> OrganizationList findAllOrganizations(pagePerIntegration, sizePerIntegration, search)
+> OrganizationList findAllOrganizations(pagePerIntegration, sizePerIntegration, search, approvalTool)
 
 Fetch Organizations accessible by Backstage Github Integrations
 
@@ -22,6 +22,7 @@ Fetch Organizations accessible by Backstage Github Integrations
 | **pagePerIntegration** | **Integer** | the page number for each Integration                   | [optional] [default to 1]    |
 | **sizePerIntegration** | **Integer** | the number of items per Integration to return per page | [optional] [default to 20]   |
 | **search**             | **String**  | returns only the items that match the search string    | [optional] [default to null] |
+| **approvalTool**       | **String**  | the approvalTool to use                                | [optional] [default to GIT]  |
 
 ### Return type
 
@@ -40,7 +41,7 @@ Fetch Organizations accessible by Backstage Github Integrations
 
 # **findRepositoriesByOrganization**
 
-> RepositoryList findRepositoriesByOrganization(organizationName, checkImportStatus, pagePerIntegration, sizePerIntegration, search)
+> RepositoryList findRepositoriesByOrganization(organizationName, checkImportStatus, pagePerIntegration, sizePerIntegration, search, approvalTool)
 
 Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations.
 
@@ -53,6 +54,7 @@ Fetch Repositories in the specified GitHub organization, provided it is accessib
 | **pagePerIntegration** | **Integer** | the page number for each Integration                                                                                                         | [optional] [default to 1]     |
 | **sizePerIntegration** | **Integer** | the number of items per Integration to return per page                                                                                       | [optional] [default to 20]    |
 | **search**             | **String**  | returns only the items that match the search string                                                                                          | [optional] [default to null]  |
+| **approvalTool**       | **String**  | the approvalTool to use                                                                                                                      | [optional] [default to GIT]   |
 
 ### Return type
 

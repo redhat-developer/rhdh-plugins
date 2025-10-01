@@ -24,12 +24,15 @@ import {
 import { themeId } from '../consts';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { MarketplaceCollectionsGrid } from '../components/MarketplaceCollectionsGrid';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const MarketplaceCollectionsPage = () => {
+  const { t } = useTranslation();
+
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title="Collections" />
+        <Header title={t('header.collectionsPage')} />
         <Content>
           <ErrorBoundary>
             <MarketplaceCollectionsGrid />

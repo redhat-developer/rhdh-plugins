@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import { createContext, ReactNode, useContext, useMemo, useState } from 'react';
+
+import { TranslationFunction } from '../hooks/useTranslation';
 
 export type StepperContext = {
   activeStep: number;
   handleNext: () => void;
   handleBack: () => void;
-  reviewStep: React.ReactNode;
+  reviewStep: ReactNode;
   isValidating: boolean;
   handleValidateStarted: () => void;
   handleValidateEnded: () => void;
+  t: TranslationFunction;
 };
 
-const context = React.createContext<StepperContext | null>(null);
+const context = createContext<StepperContext | null>(null);
 
 export const useStepperContext = (): StepperContext => {
-  const multiStepFormContext = React.useContext(context);
+  const multiStepFormContext = useContext(context);
   if (!multiStepFormContext) {
     throw new Error('Context StepperContext is not defined');
   }
@@ -38,13 +42,15 @@ export const useStepperContext = (): StepperContext => {
 export const StepperContextProvider = ({
   children,
   reviewStep,
+  t,
 }: {
-  children: React.ReactNode;
-  reviewStep: React.ReactNode;
+  children: ReactNode;
+  reviewStep: ReactNode;
+  t: TranslationFunction;
 }) => {
-  const [activeStep, setActiveStep] = React.useState<number>(0);
-  const [isValidating, setIsValidating] = React.useState<boolean>(false);
-  const contextData = React.useMemo(() => {
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const [isValidating, setIsValidating] = useState<boolean>(false);
+  const contextData = useMemo(() => {
     return {
       activeStep,
       handleNext: () => {
@@ -55,7 +61,8 @@ export const StepperContextProvider = ({
       isValidating,
       handleValidateStarted: () => setIsValidating(true),
       handleValidateEnded: () => setIsValidating(false),
+      t,
     };
-  }, [setActiveStep, activeStep, reviewStep, isValidating, setIsValidating]);
+  }, [t, setActiveStep, activeStep, reviewStep, isValidating, setIsValidating]);
   return <context.Provider value={contextData}>{children}</context.Provider>;
 };

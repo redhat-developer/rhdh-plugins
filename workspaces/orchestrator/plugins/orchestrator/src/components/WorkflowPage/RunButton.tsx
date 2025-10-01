@@ -29,6 +29,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
+import { useTranslation } from '../../hooks/useTranslation';
 import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
 
 export const RunButton = ({
@@ -38,6 +39,7 @@ export const RunButton = ({
   isAvailable?: boolean;
   entityRef?: string;
 }) => {
+  const { t } = useTranslation();
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
@@ -57,10 +59,9 @@ export const RunButton = ({
 
   let tooltipText = '';
   if (!canRun) {
-    tooltipText = 'User not authorized to execute workflow.';
+    tooltipText = t('workflow.messages.userNotAuthorizedExecute');
   } else if (!isAvailable) {
-    tooltipText =
-      'The workflow is currently down or in an error state. Running it now may fail or produce unexpected results.';
+    tooltipText = t('workflow.messages.workflowDown');
   }
 
   return (
@@ -79,7 +80,7 @@ export const RunButton = ({
               onClick={handleExecute}
               disabled={!canRun}
             >
-              Run
+              {t('workflow.buttons.run')}
             </Button>
           </Tooltip>
         )}

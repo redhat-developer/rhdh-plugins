@@ -15,7 +15,7 @@
  */
 
 import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
+import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
@@ -26,10 +26,8 @@ import {
   validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
-import {
-  getHostnameFromEntity,
-  getRepositoryInformationFromEntity,
-} from '../github/utils';
+import { getRepositoryInformationFromEntity } from '../github/utils';
+import { GITHUB_PROJECT_ANNOTATION } from '../github/constants';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
@@ -51,7 +49,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   getMetric(): Metric<'number'> {
     return {
       id: this.getProviderId(),
-      title: 'Github open PRs',
+      title: 'GitHub open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
@@ -61,6 +59,12 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
 
   getMetricThresholds(): ThresholdConfig {
     return this.thresholds;
+  }
+
+  supportsEntity(entity: Entity): boolean {
+    return (
+      entity.metadata.annotations?.[GITHUB_PROJECT_ANNOTATION] !== undefined
+    );
   }
 
   static fromConfig(config: Config): GithubOpenPRsProvider {
@@ -75,11 +79,11 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
 
   async calculateMetric(entity: Entity): Promise<number> {
     const repository = getRepositoryInformationFromEntity(entity);
-    const hostname = getHostnameFromEntity(entity);
+    const { target } = getEntitySourceLocation(entity);
 
     const result = await this.githubClient.getOpenPullRequestsCount(
+      target,
       repository,
-      hostname,
     );
 
     return result;

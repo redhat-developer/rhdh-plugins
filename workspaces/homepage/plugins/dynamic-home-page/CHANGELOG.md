@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.0
+
+### Minor Changes
+
+- 1e6b861: Add customizable homepage functionality with drag, drop, resize, and widget management capabilities
+
+## 1.8.0
+
+### Minor Changes
+
+- 8b64e16: Add internationalization (i18n) support with German, French, Italian, and Spanish translations.
+
+### Patch Changes
+
+- a994094: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+
 ## 1.7.0
 
 ### Minor Changes

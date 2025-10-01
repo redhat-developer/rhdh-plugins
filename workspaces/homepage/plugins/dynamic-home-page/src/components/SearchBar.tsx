@@ -21,6 +21,8 @@ import { SearchBarBase } from '@backstage/plugin-search-react';
 
 import { makeStyles } from 'tss-react/mui';
 
+import { useTranslation } from '../hooks/useTranslation';
+
 const useStyles = makeStyles()(theme => ({
   searchBar: {
     '&&': {
@@ -53,6 +55,7 @@ export interface SearchBarProps {
  */
 export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
   const { classes } = useStyles();
+  const { t } = useTranslation();
   const [value, setValue] = useState('');
   const ref = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
@@ -71,7 +74,7 @@ export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
 
   return (
     <SearchBarBase
-      placeholder="Search"
+      placeholder={t('search.placeholder')}
       value={value}
       onChange={setValue}
       onSubmit={handleSubmit}

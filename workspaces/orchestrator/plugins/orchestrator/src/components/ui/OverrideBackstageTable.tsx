@@ -19,7 +19,6 @@ import {
   TableProps,
 } from '@backstage/core-components';
 
-import type { Localization } from '@material-table/core';
 import { makeStyles } from 'tss-react/mui';
 
 // Workaround by issue created from overriding the tab theme in the backstage-showcase to add a gray background to disabled tabs.
@@ -41,7 +40,7 @@ const useStyles = makeStyles()(() => ({
     },
   },
 }));
-
+/*
 // source: https://github.com/backstage/backstage/blob/master/packages/core-components/report-alpha.api.md
 const tableLocalization: Localization = {
   body: {
@@ -67,7 +66,7 @@ const tableLocalization: Localization = {
     labelRowsSelect: 'rows2',
   },
 };
-
+*/
 const OverrideBackstageTable = <T extends object>(
   props: TableProps<T> & { removeOutline?: boolean },
 ) => {
@@ -83,7 +82,7 @@ const OverrideBackstageTable = <T extends object>(
     >
       <BackstageTable
         {...props}
-        localization={tableLocalization}
+        // localization={tableLocalization}
         options={{ ...props.options, thirdSortClick: false }}
       />
     </div>

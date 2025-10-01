@@ -10,7 +10,6 @@ metadata:
     extensions.backstage.io/pre-installed: 'true'
     extensions.backstage.io/support-type: Core plugin
 spec:
-  icon: https://janus-idp.io/images/plugins/3scale.svg
   authors:
     - Spotify
     - Backstage Community

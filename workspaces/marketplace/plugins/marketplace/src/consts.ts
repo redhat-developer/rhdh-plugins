@@ -15,3 +15,9 @@
  */
 
 export const themeId = 'extensions';
+
+export const colors = {
+  certified: '#A18FFF',
+  generallyAvailable: '#6EC664',
+  custom: '#EC7A08',
+} as const;

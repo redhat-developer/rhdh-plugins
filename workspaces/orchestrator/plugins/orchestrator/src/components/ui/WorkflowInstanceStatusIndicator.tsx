@@ -28,6 +28,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { VALUE_UNAVAILABLE } from '../../constants';
+import { useTranslation } from '../../hooks/useTranslation';
 import { useWorkflowInstanceStateColors } from '../../hooks/useWorkflowInstanceStatusColors';
 
 export const WorkflowInstanceStatusIndicator = ({
@@ -37,6 +38,7 @@ export const WorkflowInstanceStatusIndicator = ({
   status?: ProcessInstanceStatusDTO;
   instanceLink?: string;
 }) => {
+  const { t } = useTranslation();
   const iconColor = useWorkflowInstanceStateColors(status);
 
   if (!status) {
@@ -48,27 +50,27 @@ export const WorkflowInstanceStatusIndicator = ({
   switch (status) {
     case ProcessInstanceStatusDTO.Active:
       icon = <CircularProgress size="1.15rem" className={iconColor} />;
-      title = 'Running';
+      title = t('table.status.running');
       break;
     case ProcessInstanceStatusDTO.Completed:
       icon = <CheckCircleOutlined className={iconColor} />;
-      title = 'Completed';
+      title = t('table.status.completed');
       break;
     case ProcessInstanceStatusDTO.Suspended:
       icon = <b className={iconColor}>--</b>;
-      title = 'Suspended';
+      title = t('tooltips.suspended');
       break;
     case ProcessInstanceStatusDTO.Aborted:
       icon = <b className={iconColor}>--</b>;
-      title = 'Aborted';
+      title = t('table.status.aborted');
       break;
     case ProcessInstanceStatusDTO.Error:
       icon = <ErrorOutlineOutlined className={iconColor} />;
-      title = 'Failed';
+      title = t('table.status.failed');
       break;
     case ProcessInstanceStatusDTO.Pending:
       icon = <HourglassEmptyOutlined className={iconColor} />;
-      title = 'Pending';
+      title = t('table.status.pending');
       break;
     default:
       icon = VALUE_UNAVAILABLE;

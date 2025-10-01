@@ -18,62 +18,92 @@ import {
   MarketplacePluginInstallStatus,
   MarketplacePackageInstallStatus,
 } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+import { marketplaceTranslationRef } from './translations';
 
-export const mapBackstageRoleToLabel: Record<string, string> = {
-  'backend-plugin': 'Backend',
-  'backend-plugin-module': 'Backend module',
-  'frontend-plugin': 'Frontend',
+// Translation-aware label mapping functions that replace the static mappings
+export const mapBackstageRoleToLabel = (
+  role: string,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
+): string => {
+  const roleMap: Record<string, string> = {
+    'backend-plugin': t('role.backend'),
+    'backend-plugin-module': t('role.backendModule'),
+    'frontend-plugin': t('role.frontend'),
+  };
+  return roleMap[role] || role;
 };
 
-export const mapMarketplacePluginInstallStatusToLabel: Record<
-  MarketplacePluginInstallStatus,
-  string
-> = {
-  [MarketplacePluginInstallStatus.NotInstalled]: 'Not installed',
-  [MarketplacePluginInstallStatus.Installed]: 'Installed',
-  [MarketplacePluginInstallStatus.Disabled]: 'Disabled',
-  [MarketplacePluginInstallStatus.PartiallyInstalled]: 'Partially installed',
-  [MarketplacePluginInstallStatus.UpdateAvailable]: 'Update available',
+export const mapMarketplacePluginInstallStatusToLabel = (
+  status: MarketplacePluginInstallStatus,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
+): string => {
+  const statusMap: Record<MarketplacePluginInstallStatus, string> = {
+    [MarketplacePluginInstallStatus.NotInstalled]: t('status.notInstalled'),
+    [MarketplacePluginInstallStatus.Installed]: t('status.installed'),
+    [MarketplacePluginInstallStatus.Disabled]: t('status.disabled'),
+    [MarketplacePluginInstallStatus.PartiallyInstalled]: t(
+      'status.partiallyInstalled',
+    ),
+    [MarketplacePluginInstallStatus.UpdateAvailable]: t(
+      'status.updateAvailable',
+    ),
+  };
+  return statusMap[status];
 };
 
-export const mapMarketplacePluginInstallStatusToButton: Record<
-  MarketplacePluginInstallStatus,
-  string
-> = {
-  [MarketplacePluginInstallStatus.NotInstalled]: 'Install',
-  [MarketplacePluginInstallStatus.Installed]: 'Uninstall',
-  [MarketplacePluginInstallStatus.Disabled]: 'Enable',
-  [MarketplacePluginInstallStatus.PartiallyInstalled]: 'Uninstall',
-  [MarketplacePluginInstallStatus.UpdateAvailable]: 'Update',
+export const mapMarketplacePluginInstallStatusToButton = (
+  status: MarketplacePluginInstallStatus,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
+): string => {
+  const buttonMap: Record<MarketplacePluginInstallStatus, string> = {
+    [MarketplacePluginInstallStatus.NotInstalled]: t('button.install'),
+    [MarketplacePluginInstallStatus.Installed]: t('button.uninstall'),
+    [MarketplacePluginInstallStatus.Disabled]: t('button.enable'),
+    [MarketplacePluginInstallStatus.PartiallyInstalled]: t('button.uninstall'),
+    [MarketplacePluginInstallStatus.UpdateAvailable]: t('button.update'),
+  };
+  return buttonMap[status];
 };
 
-export const mapMarketplacePluginInstallStatusToInstallPageButton: Record<
-  MarketplacePluginInstallStatus,
-  string
-> = {
-  [MarketplacePluginInstallStatus.NotInstalled]: 'Install',
-  [MarketplacePluginInstallStatus.Installed]: 'Save',
-  [MarketplacePluginInstallStatus.Disabled]: 'Save',
-  [MarketplacePluginInstallStatus.PartiallyInstalled]: 'Save',
-  [MarketplacePluginInstallStatus.UpdateAvailable]: 'Save',
+export const mapMarketplacePluginInstallStatusToInstallPageButton = (
+  status: MarketplacePluginInstallStatus,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
+): string => {
+  const buttonMap: Record<MarketplacePluginInstallStatus, string> = {
+    [MarketplacePluginInstallStatus.NotInstalled]: t('button.install'),
+    [MarketplacePluginInstallStatus.Installed]: t('button.save'),
+    [MarketplacePluginInstallStatus.Disabled]: t('button.save'),
+    [MarketplacePluginInstallStatus.PartiallyInstalled]: t('button.save'),
+    [MarketplacePluginInstallStatus.UpdateAvailable]: t('button.save'),
+  };
+  return buttonMap[status];
 };
 
-export const mapPackageInstallStatusToLabel: Record<
-  MarketplacePackageInstallStatus,
-  string
-> = {
-  [MarketplacePackageInstallStatus.NotInstalled]: 'Not installed',
-  [MarketplacePackageInstallStatus.Installed]: 'Installed',
-  [MarketplacePackageInstallStatus.Disabled]: 'Disabled',
-  [MarketplacePackageInstallStatus.UpdateAvailable]: 'Update available',
+export const mapPackageInstallStatusToLabel = (
+  status: MarketplacePackageInstallStatus,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
+): string => {
+  const statusMap: Record<MarketplacePackageInstallStatus, string> = {
+    [MarketplacePackageInstallStatus.NotInstalled]: t('status.notInstalled'),
+    [MarketplacePackageInstallStatus.Installed]: t('status.installed'),
+    [MarketplacePackageInstallStatus.Disabled]: t('status.disabled'),
+    [MarketplacePackageInstallStatus.UpdateAvailable]: t(
+      'status.updateAvailable',
+    ),
+  };
+  return statusMap[status];
 };
 
-export const mapPackageInstallStatusToButton: Record<
-  MarketplacePackageInstallStatus,
-  string
-> = {
-  [MarketplacePackageInstallStatus.NotInstalled]: 'Install',
-  [MarketplacePackageInstallStatus.Installed]: 'Uninstall',
-  [MarketplacePackageInstallStatus.Disabled]: 'Enable',
-  [MarketplacePackageInstallStatus.UpdateAvailable]: 'Update',
+export const mapPackageInstallStatusToButton = (
+  status: MarketplacePackageInstallStatus,
+  t: TranslationFunction<typeof marketplaceTranslationRef.T>,
+): string => {
+  const buttonMap: Record<MarketplacePackageInstallStatus, string> = {
+    [MarketplacePackageInstallStatus.NotInstalled]: t('button.install'),
+    [MarketplacePackageInstallStatus.Installed]: t('button.uninstall'),
+    [MarketplacePackageInstallStatus.Disabled]: t('button.enable'),
+    [MarketplacePackageInstallStatus.UpdateAvailable]: t('button.update'),
+  };
+  return buttonMap[status];
 };

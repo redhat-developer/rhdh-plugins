@@ -1,0 +1,14 @@
+# @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool
+
+## 0.2.1
+
+### Patch Changes
+
+- 5df06ee: Minor updates to workspace config to fix typos
+- 5df06ee: Copy over techdocs MCP tool from redhat-ai-dev fork
+
+## 0.2.0
+
+### Minor Changes
+
+- 8680f61: Port over MCP plugins from redhat-ai-dev fork of plugins repo

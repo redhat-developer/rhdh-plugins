@@ -20,15 +20,24 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import NoScorecardsState from './NoScorecardsState';
+import NoScorecardsState from '../Common/NoScorecardsState';
 import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig } from '../../utils/utils';
+import { useScorecardMetricsReadPermission } from '../../hooks/useScorecardMetricsReadPermission';
+import PermissionRequiredState from '../Common/PermissionRequiredState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const EntityScorecardContent = () => {
   const { scorecards, loadingData, error } = useScorecards();
+  const { t } = useTranslation();
 
-  if (loadingData) {
+  const {
+    allowed: hasReadScorecardMetricsPermission,
+    loading: loadingPermission,
+  } = useScorecardMetricsReadPermission();
+
+  if (loadingData || loadingPermission) {
     return (
       <Box
         display="flex"
@@ -39,6 +48,10 @@ export const EntityScorecardContent = () => {
         <CircularProgress />
       </Box>
     );
+  }
+
+  if (!hasReadScorecardMetricsPermission) {
+    return <PermissionRequiredState />;
   }
 
   if (error) {
@@ -57,24 +70,48 @@ export const EntityScorecardContent = () => {
       sx={{ alignItems: 'flex-start' }}
     >
       {scorecards?.map((metric: MetricResult) => {
-        if (metric.status === 'error') {
-          return null;
-        }
+        // Check if metric data unavailable
+        const isMetricDataError =
+          metric.status === 'error' || metric.result?.value === undefined;
 
-        const statusConfig = getStatusConfig(
-          metric.result?.thresholdResult?.evaluation,
-        );
+        // Check if threshold has an error
+        const isThresholdError =
+          metric.result?.thresholdResult?.status === 'error';
+
+        const statusConfig = getStatusConfig({
+          evaluation: metric.result?.thresholdResult?.evaluation,
+          thresholdStatus: metric.result?.thresholdResult?.status,
+          metricStatus: metric.status,
+        });
+
+        // Use metric ID to construct translation keys, fallback to original title/description
+        const titleKey = `metric.${metric.id}.title`;
+        const descriptionKey = `metric.${metric.id}.description`;
+
+        const title = t(titleKey as any, {});
+        const description = t(descriptionKey as any, {});
+
+        // If translation returns the key itself, fallback to original title/description
+        const finalTitle = title === titleKey ? metric.metadata.title : title;
+        const finalDescription =
+          description === descriptionKey
+            ? metric.metadata.description
+            : description;
 
         return (
           <Scorecard
             key={metric.id}
-            cardTitle={metric.metadata.title}
-            description={metric.metadata.description}
+            cardTitle={finalTitle}
+            description={finalDescription}
             loading={false}
             statusColor={statusConfig.color}
-            StatusIcon={statusConfig.icon}
+            StatusIcon={statusConfig.icon ?? (() => null)}
             value={metric.result?.value}
             thresholds={metric.result?.thresholdResult}
+            isMetricDataError={isMetricDataError}
+            metricDataError={metric?.error}
+            isThresholdError={isThresholdError}
+            thresholdError={metric.result?.thresholdResult?.error}
           />
         );
       })}

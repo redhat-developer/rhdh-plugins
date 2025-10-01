@@ -18,10 +18,11 @@ import { useQuery } from '@tanstack/react-query';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 
-export const usePackage = (namespace: string, name: string) => {
+export const usePackage = (namespace?: string, name?: string) => {
   const marketplaceApi = useMarketplaceApi();
   return useQuery({
     queryKey: ['marketplaceApi', 'getPackageByName', namespace, name],
-    queryFn: () => marketplaceApi.getPackageByName(namespace, name),
+    queryFn: () => marketplaceApi.getPackageByName(namespace!, name!),
+    enabled: Boolean(namespace && name),
   });
 };

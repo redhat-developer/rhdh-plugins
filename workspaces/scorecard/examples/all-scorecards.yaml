@@ -7,7 +7,7 @@ metadata:
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
     backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
-    jira/project-key: RHDHBUGS
+    jira/project-key: RSPT
 spec:
   type: service
   owner: janus-authors

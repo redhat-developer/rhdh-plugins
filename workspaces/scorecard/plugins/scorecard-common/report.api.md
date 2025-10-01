@@ -27,8 +27,8 @@ export type MetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result?: {
-    value: MetricValue;
+  result: {
+    value?: MetricValue;
     timestamp: string;
     thresholdResult: ThresholdResult;
   };
@@ -67,7 +67,7 @@ export type ThresholdConfig = {
 // @public (undocumented)
 export type ThresholdResult = {
   status: 'success' | 'error';
-  definition: ThresholdConfig;
+  definition: ThresholdConfig | undefined;
   evaluation: string | undefined;
   error?: string;
 };

@@ -19,5 +19,6 @@ export * from './MarketplaceCollection';
 export * from './MarketplaceKind';
 export * from './MarketplacePackage';
 export * from './MarketplacePlugin';
+export * from './MarketplaceSupport';
 export * from './ConfigurationResponse';
 export * from './NodeEnvironmentType';

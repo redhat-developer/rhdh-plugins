@@ -21,6 +21,7 @@ import { EXTENSIONS_API_VERSION } from '../consts';
 
 import { MarketplaceKind } from './MarketplaceKind';
 import { MarketplaceAuthor } from './MarketplaceAuthor';
+import { MarketplaceSupport } from './MarketplaceSupport';
 
 /**
  * @public
@@ -90,6 +91,7 @@ export interface MarketplacePluginSpec extends JsonObject {
   developer?: string;
   author?: string;
   authors?: MarketplaceAuthor[];
+  support?: MarketplaceSupport;
 
   packages?: string[];
   categories?: string[];
