@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 0.2.0
+
+### Minor Changes
+
+- 0478b79: Unify provider IDs
+
 ## 0.1.0
 
 ### Minor Changes

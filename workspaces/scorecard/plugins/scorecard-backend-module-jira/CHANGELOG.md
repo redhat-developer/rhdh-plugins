@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira
 
+## 0.2.0
+
+### Minor Changes
+
+- 0478b79: Unify provider IDs
+- 169b951: Support proxy for Jira integration
+
 ## 0.1.1
 
 ### Patch Changes
