@@ -31,7 +31,7 @@ const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
   ScorecardJiraAnnotations;
 
 export abstract class JiraClient {
-  protected readonly apiVersion: string;
+  protected readonly apiVersion: number | string;
   protected readonly options?: JiraOptions;
   protected readonly connectionStrategy: ConnectionStrategy;
 
@@ -40,7 +40,7 @@ export abstract class JiraClient {
 
     this.connectionStrategy = connectionStrategy;
     this.apiVersion =
-      jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT;
+      jiraConfig.getOptional('apiVersion') ?? API_VERSION_DEFAULT;
     if (
       typeof this.apiVersion !== 'number' &&
       typeof this.apiVersion !== 'string'

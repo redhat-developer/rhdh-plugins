@@ -38,7 +38,7 @@ describe('JiraCloudClient', () => {
 
   beforeEach(() => {
     const config = newMockRootConfig({
-      jiraConfig: { apiVersion: '3' },
+      jiraConfig: { apiVersion: 3 },
       options: { mandatoryFilter: 'Type = Bug' },
     });
 

@@ -42,7 +42,7 @@ describe('JiraDataCenterClient', () => {
       customFilter: 'priority in ("Critical", "Blocker")',
     };
     const config = newMockRootConfig({
-      jiraConfig: { apiVersion: '2' },
+      jiraConfig: { apiVersion: 2 },
       options,
     });
 
