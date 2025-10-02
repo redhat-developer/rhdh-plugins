@@ -183,6 +183,7 @@ export class TechDocsService {
   // fetchTechDocsMetadata:: fetches all metadata for given entity
   async fetchTechDocsMetadata(
     entity: Entity,
+    auth?: any,
   ): Promise<TechDocsMetadata | null> {
     try {
       const { namespace = 'default', name } = entity.metadata;
@@ -194,7 +195,17 @@ export class TechDocsService {
       this.logger.debug(`Fetching metadata from URL: ${metadataUrl}`);
       const fetch = this.fetchFunction || (await import('node-fetch')).default;
 
-      const response = await fetch(metadataUrl);
+      const headers: Record<string, string> = {};
+
+      if (auth) {
+        const { token } = await auth.getPluginRequestToken({
+          onBehalfOf: await auth.getOwnServiceCredentials(),
+          targetPluginId: 'techdocs',
+        });
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(metadataUrl, { headers });
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -344,6 +355,7 @@ export class TechDocsService {
             kind,
             metadata: { name, namespace },
           } as Entity),
+        auth,
       );
 
       // try to convert any type to raw text
@@ -534,7 +546,7 @@ export class TechDocsService {
     const entities = await Promise.all(
       entitiesWithTechDocs.map(async entity => {
         const urls = await this.generateTechDocsUrls(entity);
-        const techDocsMetadata = await this.fetchTechDocsMetadata(entity);
+        const techDocsMetadata = await this.fetchTechDocsMetadata(entity, auth);
 
         const metadata = techDocsMetadata
           ? {
