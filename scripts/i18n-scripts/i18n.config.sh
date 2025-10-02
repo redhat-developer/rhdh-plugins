@@ -7,7 +7,7 @@ REPO_ROOT="$RHDH_PLUGINS_DIR"
 RHDH_RELEASE="${RHDH_RELEASE:-1.8}"
 
 # Sprint number (used for memsource-upload -s parameter)
-SPRINT_NUMBER="${SPRINT_NUMBER:-3280}"
+SPRINT_NUMBER="${SPRINT_NUMBER:-3281}"
 
 # TMS project id - Red Hat Developer Hub 1.8
 TMS_PROJECT_ID="${TMS_PROJECT_ID:-33299484}"
