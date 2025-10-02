@@ -42,7 +42,7 @@ proxy:
       Accept: 'application/json'
       Content-Type: 'application/json'
       X-Atlassian-Token: 'nocheck'
-      User-Agent: 'MY-UA-STRING'
+      User-Agent: RHDH-SCORECARD-PLUGIN
 
 integrations:
   github:
@@ -54,7 +54,6 @@ jira:
   product: cloud
   baseUrl: ${JIRA_URL}
   token: ${JIRA_TOKEN}
-  #apiVersion: 3
 
 scorecard:
   plugins:

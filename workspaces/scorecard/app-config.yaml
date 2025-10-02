@@ -51,7 +51,7 @@ proxy:
       Accept: 'application/json'
       Content-Type: 'application/json'
       X-Atlassian-Token: 'nocheck'
-      User-Agent: 'MY-UA-STRING'
+      User-Agent: RHDH-SCORECARD-PLUGIN
 
 # Jira plugin and scorecard configuration
 jira:
@@ -64,8 +64,12 @@ jira:
   token: ${JIRA_TOKEN}
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: 2
+  # By default, the scorecard jira module is using a stable/tested version of the Jira API.
+  # See `API_VERSION_DEFAULT` in `plugins/scorecard-backend-module-jira/src/constants/jiraOpenIssues.ts`.
+  # Admins, customers, or we can override this api version to test other api versions.
+  # Using "latest" works for our scorecard jira module but not the Roadie Jira plugin.
+  # To use "latest" you might need to disable that plugin temporarily.
+  # apiVersion: latest
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs

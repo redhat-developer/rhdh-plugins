@@ -46,7 +46,11 @@ jira:
   token: ${JIRA_TOKEN}
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # Optional: By default, the latest version is used. You can omit this prop when using the latest version.
+
+  # Optional and not recommended
+  # The scorecard jira module is using a stable and tested api version by default.
+  # You can override this and use another api version (or latest) of the Jira API if you notice issues with the default.
+  # This is not recommended in production environments.
   apiVersion: 3
 ```
 
@@ -60,7 +64,11 @@ jira:
   proxyPath: /jira/api
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # Optional: By default, the latest version is used. You can omit this prop when using the latest version.
+
+  # Optional and not recommended
+  # The scorecard jira module is using a stable and tested api version by default.
+  # You can override this and use another api version (or latest) of the Jira API if you notice issues with the default.
+  # This is not recommended in production environments.
   apiVersion: 3
 
 # This proxy configuration presented only as an example

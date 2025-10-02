@@ -17,6 +17,7 @@
 import type { Config } from '@backstage/config';
 import { JiraClient } from './base';
 import { ScorecardJiraAnnotations } from '../annotations';
+import { API_VERSION_DEFAULT } from '../constants';
 import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
 import {
   newEntityComponent,
@@ -67,7 +68,9 @@ describe('JiraClient', () => {
     mockConnectionStrategy = {
       getBaseUrl: jest
         .fn()
-        .mockReturnValue('https://example.com/api/rest/api/latest'),
+        .mockReturnValue(
+          `https://example.com/api/rest/api/${API_VERSION_DEFAULT}`,
+        ),
       getAuthHeaders: jest
         .fn()
         .mockResolvedValue({ Authorization: 'Basic Fds31dsF32' }),
@@ -82,7 +85,7 @@ describe('JiraClient', () => {
 
   describe('constructor', () => {
     it('should create api version', () => {
-      expect((testJiraClient as any).apiVersion).toEqual('latest');
+      expect((testJiraClient as any).apiVersion).toEqual(3);
     });
 
     it('should create correct options', () => {
@@ -350,7 +353,7 @@ describe('JiraClient', () => {
   describe('getBaseUrl', () => {
     it('should return URL', async () => {
       const baseUrl = await (testJiraClient as any).getBaseUrl();
-      expect(baseUrl).toEqual('https://example.com/api/rest/api/latest');
+      expect(baseUrl).toEqual('https://example.com/api/rest/api/3');
     });
   });
 
