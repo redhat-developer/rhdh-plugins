@@ -9,6 +9,7 @@ import type { Config } from '@backstage/config';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { LoggerService } from '@backstage/backend-plugin-api';
+
 // @public
 export interface ListTechDocsOptions {
   // (undocumented)
@@ -24,9 +25,11 @@ export interface ListTechDocsOptions {
   // (undocumented)
   tags?: string[];
 }
+
 // @public
 const mcpTechdocsRetrievalPlugin: BackendFeature;
 export default mcpTechdocsRetrievalPlugin;
+
 // @public
 export interface TechDocsContentResult {
   // (undocumented)
@@ -59,6 +62,7 @@ export interface TechDocsContentResult {
   // (undocumented)
   title: string;
 }
+
 // @public
 export interface TechDocsCoverageResult {
   // (undocumented)
@@ -68,6 +72,7 @@ export interface TechDocsCoverageResult {
   // (undocumented)
   totalEntities: number;
 }
+
 // @public
 export interface TechDocsEntity {
   // (undocumented)
@@ -87,6 +92,7 @@ export interface TechDocsEntity {
   // (undocumented)
   title: string;
 }
+
 // @public
 export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
   // (undocumented)
@@ -99,6 +105,7 @@ export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
     files?: string[];
   };
 }
+
 // @public
 export interface TechDocsEntityWithUrls extends TechDocsEntity {
   // (undocumented)
@@ -106,6 +113,7 @@ export interface TechDocsEntityWithUrls extends TechDocsEntity {
   // (undocumented)
   techDocsUrl: string;
 }
+
 // @public
 export class TechDocsService {
   constructor(
@@ -145,5 +153,6 @@ export class TechDocsService {
     catalog?: CatalogService,
   ): Promise<TechDocsContentResult>;
 }
+
 // (No @packageDocumentation comment for this package)
 ```
