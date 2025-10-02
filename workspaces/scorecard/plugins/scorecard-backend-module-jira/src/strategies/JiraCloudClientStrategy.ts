@@ -14,33 +14,27 @@
  * limitations under the License.
  */
 
-import { JiraClient } from './base';
+import { JiraClient } from '../clients/base';
 
-export class JiraDataCenterClient extends JiraClient {
-  protected getAuthHeaders(): Record<string, string> {
-    return {
-      Authorization: `Bearer ${this.config.token}`,
-    };
-  }
-
+export class JiraCloudClientStrategy extends JiraClient {
   protected getSearchEndpoint(): string {
-    return '/search';
+    return '/search/approximate-count';
   }
 
   protected buildSearchBody(jql: string): string {
-    return JSON.stringify({ jql, fields: [], maxResults: 0 });
+    return JSON.stringify({ jql });
   }
 
   protected extractIssueCountFromResponse(data: unknown): number {
     if (
       data &&
       typeof data === 'object' &&
-      'total' in data &&
-      typeof data.total === 'number'
+      'count' in data &&
+      typeof data.count === 'number'
     ) {
-      return data.total;
+      return data.count;
     }
 
-    throw new Error('Incorrect response data for Jira Data Center client');
+    throw new Error('Incorrect response data for Jira Cloud client');
   }
 }
