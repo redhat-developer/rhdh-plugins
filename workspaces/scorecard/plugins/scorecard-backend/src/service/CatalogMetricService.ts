@@ -169,7 +169,7 @@ export class CatalogMetricService {
    *   scorecard.io/{providerId}.thresholds.rules.{thresholdName}: "{expression}"
    *
    * @param entity - The catalog entity
-   * @param providerId - The metric provider ID (e.g., 'jira.open-issues')
+   * @param providerId - The metric provider ID (e.g., 'jira.open_issues')
    * @param metricType - The metric type
    * @returns Threshold rules from entity annotations, or empty rules if none found or invalid
    */

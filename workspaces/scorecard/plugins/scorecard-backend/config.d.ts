@@ -15,33 +15,17 @@
  */
 
 export interface Config {
-  /** Configuration for jira plugin */
-  jira: (
-    | {
-        /** Required only when using direct connection. */
-        baseUrl: string;
-        /** Required only when using direct connection. */
-        token: string;
-      }
-    | {
-        /** Required only when using proxy connection. */
-        proxyPath: string;
-      }
-  ) & {
-    product: string;
-    apiVersion?: number | string;
-  };
   /** Configuration for scorecard plugin */
   scorecard?: {
-    /** Configuration for scorecard plugins/datasources */
+    /** Configuration for scorecard metric providers */
     plugins?: {
-      /** JIRA datasource configuration */
-      jira?: {
-        open_issues?: {
-          options?: {
-            mandatoryFilter?: string;
-            customFilter?: string;
-          };
+      /** Configuration for datasource */
+      [datasource: string]: {
+        /** Configuration for metric providers within the datasource.
+         * Each key corresponds to the metric name part of the provider ID (datasource.metricName).
+         */
+        [metricName: string]: {
+          /** Threshold configuration for the metric */
           thresholds?: {
             rules?: Array<{
               key: 'error' | 'warning' | 'success';
