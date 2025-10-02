@@ -160,20 +160,21 @@ describe('TechDocsService', () => {
       expect(result).toEqual(mockMetadata);
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:7007/api/static/docs/default/component/test-service/techdocs_metadata.json',
+        { headers: {} },
       );
     });
 
-    it('should handle errors gracefully and return null', async () => {
+    it('should handle errors gracefully and return error object', async () => {
       const entity = createMockEntity('test-service');
       mockFetch.mockRejectedValue(new Error('Metadata not found'));
 
       const result = await service.fetchTechDocsMetadata(entity);
 
-      expect(result).toBeNull();
-      expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain(
         'Failed to fetch TechDocs metadata for Component:default/test-service',
-        expect.any(Error),
       );
+      expect(mockLogger.warn).toHaveBeenCalled();
     });
 
     it('should handle different entity kinds and namespaces', async () => {
@@ -197,10 +198,11 @@ describe('TechDocsService', () => {
       expect(result).toEqual(mockMetadata);
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:7007/api/static/docs/production/api/test-api/techdocs_metadata.json',
+        { headers: {} },
       );
     });
 
-    it('should handle 404 response and return null', async () => {
+    it('should handle 404 response and return empty object', async () => {
       const entity = createMockEntity('test-service');
       mockFetch.mockResolvedValue({
         ok: false,
@@ -210,10 +212,27 @@ describe('TechDocsService', () => {
 
       const result = await service.fetchTechDocsMetadata(entity);
 
-      expect(result).toBeNull();
+      expect(result).toEqual({});
       expect(mockLogger.debug).toHaveBeenCalledWith(
         'TechDocs metadata not found for Component:default/test-service',
       );
+    });
+
+    it('should handle non-404 errors and return error in response', async () => {
+      const entity = createMockEntity('test-service');
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      const result = await service.fetchTechDocsMetadata(entity);
+
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain(
+        'Failed to fetch TechDocs metadata: 500 Internal Server Error',
+      );
+      expect(mockLogger.warn).toHaveBeenCalled();
     });
   });
 
@@ -834,16 +853,15 @@ describe('TechDocsService', () => {
         getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
       };
 
-      await expect(
-        service.retrieveTechDocsContent(
-          'component:default/test-service',
-          'index.html',
-          mockAuth,
-          mockCatalog as any,
-        ),
-      ).rejects.toThrow(
-        'Entity component:default/test-service does not have TechDocs configured',
+      const result = await service.retrieveTechDocsContent(
+        'component:default/test-service',
+        'index.html',
+        mockAuth,
+        mockCatalog as any,
       );
+
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain('does not have TechDocs configured');
     });
 
     it('should handle 401 unauthorized error', async () => {
@@ -858,14 +876,17 @@ describe('TechDocsService', () => {
         statusText: 'Unauthorized',
       });
 
-      await expect(
-        service.retrieveTechDocsContent(
-          'component:default/test-service',
-          'index.html',
-          mockAuth,
-          mockCatalog as any,
-        ),
-      ).rejects.toThrow('Failed to fetch TechDocs content: 401 Unauthorized');
+      const result = await service.retrieveTechDocsContent(
+        'component:default/test-service',
+        'index.html',
+        mockAuth,
+        mockCatalog as any,
+      );
+
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain(
+        'Failed to fetch TechDocs content: 401 Unauthorized',
+      );
     });
 
     it('should handle 500 server error', async () => {
@@ -880,14 +901,15 @@ describe('TechDocsService', () => {
         statusText: 'Internal Server Error',
       });
 
-      await expect(
-        service.retrieveTechDocsContent(
-          'component:default/test-service',
-          'index.html',
-          mockAuth,
-          mockCatalog as any,
-        ),
-      ).rejects.toThrow(
+      const result = await service.retrieveTechDocsContent(
+        'component:default/test-service',
+        'index.html',
+        mockAuth,
+        mockCatalog as any,
+      );
+
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain(
         'Failed to fetch TechDocs content: 500 Internal Server Error',
       );
     });
@@ -957,27 +979,29 @@ describe('TechDocsService', () => {
           statusText: 'Build failed',
         });
 
-      await expect(
-        service.retrieveTechDocsContent(
-          'component:default/test-service',
-          'missing.html',
-          mockAuth,
-          mockCatalog as any,
-        ),
-      ).rejects.toThrow(
-        'TechDocs content not found for component:default/test-service at path: missing.html',
+      const result = await service.retrieveTechDocsContent(
+        'component:default/test-service',
+        'missing.html',
+        mockAuth,
+        mockCatalog as any,
+      );
+
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain(
+        'Failed to trigger TechDocs build: 500 Build failed',
       );
     });
 
     it('should handle invalid entity reference format', async () => {
-      await expect(
-        service.retrieveTechDocsContent(
-          'invalid-ref-format',
-          'index.html',
-          mockAuth,
-          {} as any,
-        ),
-      ).rejects.toThrow(
+      const result = await service.retrieveTechDocsContent(
+        'invalid-ref-format',
+        'index.html',
+        mockAuth,
+        {} as any,
+      );
+
+      expect(result.error).toBeDefined();
+      expect(result.error).toBe(
         'Invalid entity reference format: invalid-ref-format. Expected format: kind:namespace/name',
       );
     });
