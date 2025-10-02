@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.1
+
+### Patch Changes
+
+- dd5350f: French translation updated
+
 ## 1.9.0
 
 ### Minor Changes
