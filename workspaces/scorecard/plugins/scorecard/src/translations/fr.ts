@@ -46,11 +46,11 @@ const scorecardTranslationFr = createTranslationMessages({
     'errors.invalidThresholds': 'Seuils invalides',
 
     // Metric translations
-    'metric.github.open-prs.title': 'GitHub PRs ouvertes',
-    'metric.github.open-prs.description':
+    'metric.github.open_prs.title': 'GitHub PRs ouvertes',
+    'metric.github.open_prs.description':
       'Nombre actuel de Pull Requests ouvertes pour un dépôt GitHub donné.',
-    'metric.jira.open-issues.title': 'Jira tickets bloquants ouverts',
-    'metric.jira.open-issues.description':
+    'metric.jira.open_issues.title': 'Jira tickets bloquants ouverts',
+    'metric.jira.open_issues.description':
       'Met en évidence le nombre de problèmes critiques et bloquants actuellement ouverts dans Jira.',
 
     // Threshold translations

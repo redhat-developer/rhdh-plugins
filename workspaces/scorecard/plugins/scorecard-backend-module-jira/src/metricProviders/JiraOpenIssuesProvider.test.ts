@@ -95,12 +95,12 @@ describe('JiraOpenIssuesProvider', () => {
   });
 
   describe('getProviderId', () => {
-    it('should return "jira.open-issues"', () => {
+    it('should return "jira.open_issues"', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
         mockAuthOptions,
       );
-      expect(provider.getProviderId()).toEqual('jira.open-issues');
+      expect(provider.getProviderId()).toEqual('jira.open_issues');
     });
   });
 
@@ -119,7 +119,7 @@ describe('JiraOpenIssuesProvider', () => {
 
     it('should return correct metric metadata', () => {
       expect(getMetricResult).toEqual({
-        id: 'jira.open-issues',
+        id: 'jira.open_issues',
         title: 'Jira open blocking tickets',
         description:
           'Highlights the number of issues that are currently open in Jira.',

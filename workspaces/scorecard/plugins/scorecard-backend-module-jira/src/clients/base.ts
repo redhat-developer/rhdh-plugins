@@ -41,6 +41,14 @@ export abstract class JiraClient {
     this.connectionStrategy = connectionStrategy;
     this.apiVersion =
       jiraConfig.getOptionalString('apiVersion') ?? API_VERSION_DEFAULT;
+    if (
+      typeof this.apiVersion !== 'number' &&
+      typeof this.apiVersion !== 'string'
+    ) {
+      throw new Error(
+        `Invalid 'apiVersion' in configuration, must be a number or string`,
+      );
+    }
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {

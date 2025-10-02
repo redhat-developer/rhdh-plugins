@@ -65,6 +65,9 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.fields.duration': 'Dauer',
     'workflow.fields.description': 'Beschreibung',
     'workflow.fields.started': 'Gestartet',
+    'workflow.fields.workflowId': 'Ausführungs-ID',
+    'workflow.fields.workflowIdCopied':
+      'Ausführungs-ID in Zwischenablage kopiert',
     'workflow.errors.retriggerFailed':
       'Erneut auslösen fehlgeschlagen: {{reason}}',
     'workflow.errors.abortFailed':
@@ -82,6 +85,7 @@ const orchestratorTranslationDe = createTranslationMessages({
     'workflow.buttons.fromFailurePoint': 'Von Fehlerpunkt',
     'workflow.buttons.runFailedAgain': 'Erneut ausführen fehlgeschlagen',
     'run.title': 'Workflow ausführen',
+    'run.pageTitle': '{{processName}} Ausführung',
     'run.variables': 'Ausführungsvariablen',
     'run.inputs': 'Eingaben',
     'run.results': 'Ergebnisse',
