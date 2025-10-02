@@ -98,7 +98,6 @@ export async function createRouter(
     }
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
-      // target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
       target: `http://0.0.0.0:${port}`,
       changeOrigin: true,
       pathRewrite: (path, _) => {
