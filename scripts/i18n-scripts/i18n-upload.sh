@@ -145,9 +145,28 @@ fi
 
 log "Found $json_count JSON files to upload"
 
-# Show files that would be uploaded
+# Show files that would be uploaded (with cache checking)
 echo "Files to upload:"
-find "$STAGING_DIR" -name "*.json" -exec basename {} \; | sed 's/^/  - /'
+for json_file in "$STAGING_DIR"/*.json; do
+  if [[ -f "$json_file" ]]; then
+    filename=$(basename "$json_file")
+    cache_file="$REPO_ROOT/.ui-i18n-cache/$RHDH_RELEASE/${filename}.uploaded"
+    
+    if [[ -f "$cache_file" ]]; then
+      # Check if content has changed
+      current_hash=$(md5sum "$json_file" | cut -d' ' -f1)
+      cached_hash=$(cat "$cache_file" 2>/dev/null || echo "")
+      
+      if [[ "$current_hash" == "$cached_hash" ]]; then
+        echo "  ⏭️  $filename (skipped - content unchanged)"
+      else
+        echo "  🔄 $filename (re-upload - content changed)"
+      fi
+    else
+      echo "  📤 $filename (new file)"
+    fi
+  fi
+done
 
 if [[ "$DRY_RUN" == true ]]; then
   log "Dry run mode - no files were actually uploaded"
