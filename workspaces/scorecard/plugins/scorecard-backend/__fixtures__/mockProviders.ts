@@ -106,7 +106,7 @@ export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
 }
 
 export const githubNumberProvider = new MockNumberProvider(
-  'github.number-metric',
+  'github.number_metric',
   'github',
   'Github Number Metric',
 );
@@ -119,7 +119,7 @@ export const githubNumberMetricMetadata = {
 };
 
 export const jiraBooleanProvider = new MockBooleanProvider(
-  'jira.boolean-metric',
+  'jira.boolean_metric',
   'jira',
 );
 

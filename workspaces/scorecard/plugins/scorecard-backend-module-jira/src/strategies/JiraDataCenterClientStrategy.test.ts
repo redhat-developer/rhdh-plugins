@@ -16,41 +16,40 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import { ScorecardJiraAnnotations } from '../annotations';
-import { JiraDataCenterClient } from './JiraDataCenterClient';
-import { mockServices } from '@backstage/backend-test-utils';
+import { JiraDataCenterClientStrategy } from './JiraDataCenterClientStrategy';
+import {
+  newEntityComponent,
+  newMockRootConfig,
+} from '../../__fixtures__/testUtils';
 
-global.fetch = jest.fn();
+globalThis.fetch = jest.fn();
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
+const mockConnectionStrategy = {
+  getBaseUrl: jest.fn().mockReturnValue('https://example.com/api/rest/api/2'),
+  getAuthHeaders: jest
+    .fn()
+    .mockResolvedValue({ Authorization: 'Bearer Fds31dsF32' }),
+};
+
 describe('JiraDataCenterClient', () => {
-  let jiraDataCenterClient: JiraDataCenterClient;
+  let jiraDataCenterClient: JiraDataCenterClientStrategy;
 
   beforeEach(() => {
-    const config = mockServices.rootConfig({
-      data: {
-        jira: {
-          baseUrl: 'https://datacenter.example.com',
-          token: 'XMdw2f432dsV',
-          product: 'datacenter',
-          apiVersion: 2,
-        },
-        scorecard: {
-          plugins: {
-            jira: {
-              open_issues: {
-                options: {
-                  mandatoryFilter: 'Type = Task',
-                  customFilter: 'priority in ("Critical", "Blocker")',
-                },
-              },
-            },
-          },
-        },
-      },
+    const options = {
+      mandatoryFilter: 'Type = Task',
+      customFilter: 'priority in ("Critical", "Blocker")',
+    };
+    const config = newMockRootConfig({
+      jiraConfig: { apiVersion: 2 },
+      options,
     });
 
-    jiraDataCenterClient = new JiraDataCenterClient(config);
+    jiraDataCenterClient = new JiraDataCenterClientStrategy(
+      config,
+      mockConnectionStrategy,
+    );
   });
 
   afterEach(() => {
@@ -59,17 +58,7 @@ describe('JiraDataCenterClient', () => {
 
   describe('constructor', () => {
     it('should create JiraDataCenterClient successfully', () => {
-      expect(jiraDataCenterClient).toBeInstanceOf(JiraDataCenterClient);
-    });
-  });
-
-  describe('getAuthHeaders', () => {
-    it('should return correct Bearer authentication headers', () => {
-      const authHeaders = (jiraDataCenterClient as any).getAuthHeaders();
-
-      expect(authHeaders).toEqual({
-        Authorization: `Bearer XMdw2f432dsV`,
-      });
+      expect(jiraDataCenterClient).toBeInstanceOf(JiraDataCenterClientStrategy);
     });
   });
 
@@ -110,33 +99,18 @@ describe('JiraDataCenterClient', () => {
   });
 
   describe('getCountOpenIssues', () => {
-    const mockEntity: Entity = {
-      apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Component',
-      metadata: {
-        name: 'datacenter-component',
-        annotations: {
-          [PROJECT_KEY]: 'DATACENTER',
-        },
-      },
-    };
+    const mockEntity: Entity = newEntityComponent({
+      [PROJECT_KEY]: 'DATACENTER',
+    });
 
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
+    (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: jest.fn().mockResolvedValueOnce({ total: 10 }),
     });
 
-    it('should get count with Bearer auth header', async () => {
+    it('should get count of open issues', async () => {
       const count = await jiraDataCenterClient.getCountOpenIssues(mockEntity);
       expect(count).toBe(10);
-      expect(global.fetch).toHaveBeenCalledWith(
-        'https://datacenter.example.com/rest/api/2/search',
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: `Bearer XMdw2f432dsV`,
-          }),
-        }),
-      );
     });
   });
 });
