@@ -74,6 +74,12 @@ source "$SCRIPT_DIR/i18n.config.sh"
 
 STAGING_DIR="$REPO_ROOT/ui-i18n/$RHDH_RELEASE"
 
+# Setup memsource environment
+source "$SCRIPT_DIR/memsource-setup.sh"
+if ! setup_memsource_with_project "$TMS_PROJECT_ID"; then
+  exit 1
+fi
+
 # Helper functions
 log() { echo "🔍 $1"; }
 success() { echo "✅ $1"; }
