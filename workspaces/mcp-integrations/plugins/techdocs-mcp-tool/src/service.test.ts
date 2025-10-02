@@ -914,40 +914,17 @@ describe('TechDocsService', () => {
       );
     });
 
-    it('should handle 404 response and trigger build', async () => {
+    it('should handle 404 response and return error', async () => {
       const mockEntity = createMockEntity('test-service', 'Component', true);
       const mockCatalog = {
         getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
       };
 
-      // First call returns 404, sync endpoint succeeds, retry succeeds
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-          statusText: 'Not Found',
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          text: jest
-            .fn()
-            .mockResolvedValue('event: finish\ndata: {"updated":true}'),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          text: jest
-            .fn()
-            .mockResolvedValue(
-              '<html><title>Test</title><body>Content</body></html>',
-            ),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: jest.fn().mockResolvedValue({
-            site_name: 'Test Docs',
-            build_timestamp: 1234567890,
-          }),
-        });
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
 
       const result = await service.retrieveTechDocsContent(
         'component:default/test-service',
@@ -956,39 +933,12 @@ describe('TechDocsService', () => {
         mockCatalog as any,
       );
 
-      expect(result).toBeDefined();
-      expect(mockFetch).toHaveBeenCalledTimes(4); // content (404) + sync + retry content + metadata
-    });
-
-    it('should handle 404 response when build fails', async () => {
-      const mockEntity = createMockEntity('test-service', 'Component', true);
-      const mockCatalog = {
-        getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
-      };
-
-      // First call returns 404, sync fails
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 404,
-          statusText: 'Not Found',
-        })
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 500,
-          statusText: 'Build failed',
-        });
-
-      const result = await service.retrieveTechDocsContent(
-        'component:default/test-service',
-        'missing.html',
-        mockAuth,
-        mockCatalog as any,
-      );
-
       expect(result.error).toBeDefined();
       expect(result.error).toContain(
-        'Failed to trigger TechDocs build: 500 Build failed',
+        'TechDocs content not found for component:default/test-service at path: index.html',
+      );
+      expect(result.error).toContain(
+        'The documentation may not have been built yet',
       );
     });
 

@@ -314,53 +314,18 @@ export class TechDocsService {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      let response = await fetch(contentUrl, { headers });
+      const response = await fetch(contentUrl, { headers });
 
-      // check 404 and err_status cases - trigger build if not found
-      let errorMsg: string | undefined;
+      // check response status and return error if not ok
+      if (!response.ok) {
+        let errorMsg: string;
 
-      if (!response.ok && response.status === 404) {
-        this.logger.info(
-          `TechDocs content not found, triggering build for ${entityRef}`,
-        );
-
-        // trigger TechDocs generation via sync endpoint
-        const syncUrl = `${techdocsBaseUrl}/sync/${namespace}/${kind.toLowerCase()}/${name}`;
-        this.logger.debug(`Triggering TechDocs build at: ${syncUrl}`);
-
-        try {
-          const syncResponse = await fetch(syncUrl, { headers });
-
-          if (syncResponse.ok) {
-            // Wait for sync to complete by consuming the event stream
-            const syncBody = await syncResponse.text();
-
-            // Check if build was successful
-            if (syncBody.includes('event: finish')) {
-              this.logger.info(
-                `TechDocs build completed for ${entityRef}, retrying content fetch`,
-              );
-
-              // Retry fetching the content after build
-              response = await fetch(contentUrl, { headers });
-
-              if (!response.ok) {
-                errorMsg = `TechDocs content still not found after build for ${entityRef} at path: ${targetPath}`;
-              }
-            } else {
-              errorMsg = 'TechDocs build did not complete successfully';
-            }
-          } else {
-            errorMsg = `Failed to trigger TechDocs build: ${syncResponse.status} ${syncResponse.statusText}`;
-          }
-        } catch (buildError) {
-          errorMsg = `TechDocs content not found for ${entityRef} at path: ${targetPath}. Attempted to build but failed: ${buildError}`;
+        if (response.status === 404) {
+          errorMsg = `TechDocs content not found for ${entityRef} at path: ${targetPath}. The documentation may not have been built yet. Please visit the TechDocs page in RHDH to trigger a build.`;
+        } else {
+          errorMsg = `Failed to fetch TechDocs content: ${response.status} ${response.statusText}`;
         }
-      } else if (!response.ok) {
-        errorMsg = `Failed to fetch TechDocs content: ${response.status} ${response.statusText}`;
-      }
 
-      if (errorMsg) {
         this.logger.error(errorMsg);
         return {
           entityRef,
