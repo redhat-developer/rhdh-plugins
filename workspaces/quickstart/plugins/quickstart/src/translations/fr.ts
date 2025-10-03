@@ -51,43 +51,6 @@ const quickstartTranslationFr = createTranslationMessages({
     'item.collapseButtonAriaLabel': "Réduire l'élément",
     'item.expandAriaLabel': 'Développer les détails de {{title}}',
     'item.expandButtonAriaLabel': "Développer l'élément",
-
-    // New keys https://github.com/redhat-developer/rhdh-plugins/pull/1514
-    'button.gotIt': 'Compris !',
-    'steps.setupAuthentication.title': "Configurer l'authentification",
-    'steps.setupAuthentication.description':
-      "Configurez des identifiants de connexion sécurisés pour protéger votre compte contre l'accès non autorisé.",
-    'steps.setupAuthentication.ctaTitle': 'En savoir plus',
-    'steps.configureRbac.title': 'Configurer RBAC',
-    'steps.configureRbac.description':
-      'Attribuez des rôles et des permissions pour contrôler qui peut voir, créer ou modifier des ressources, assurant une collaboration sécurisée et efficace.',
-    'steps.configureRbac.ctaTitle': "Gérer l'accès",
-    'steps.configureGit.title': 'Configurer Git',
-    'steps.configureGit.description':
-      'Connectez vos fournisseurs Git, comme GitHub, pour gérer le code, automatiser les flux de travail et intégrer avec les fonctionnalités de la plateforme.',
-    'steps.configureGit.ctaTitle': 'En savoir plus',
-    'steps.managePlugins.title': 'Gérer les plugins',
-    'steps.managePlugins.description':
-      'Parcourez et installez des extensions pour ajouter des fonctionnalités, connecter avec des outils externes et personnaliser votre expérience.',
-    'steps.managePlugins.ctaTitle': 'Explorer les plugins',
-    'steps.importApplication.title': 'Importer une application',
-    'steps.importApplication.description':
-      'Importez votre code et vos services existants dans le catalogue pour les organiser et y accéder via votre portail développeur.',
-    'steps.importApplication.ctaTitle': 'Importer',
-    'steps.learnAboutCatalog.title': 'Apprendre le Catalogue',
-    'steps.learnAboutCatalog.description':
-      'Découvrez tous les composants logiciels, services et API, et consultez leurs propriétaires et leur documentation.',
-    'steps.learnAboutCatalog.ctaTitle': 'Voir le catalogue',
-    'steps.exploreSelfServiceTemplates.title':
-      'Explorer les modèles en libre-service',
-    'steps.exploreSelfServiceTemplates.description':
-      'Utilisez nos modèles en libre-service pour configurer rapidement de nouveaux projets, services ou documentation.',
-    'steps.exploreSelfServiceTemplates.ctaTitle': 'Explorer les modèles',
-    'steps.findAllLearningPaths.title':
-      "Trouver tous les parcours d'apprentissage",
-    'steps.findAllLearningPaths.description':
-      "Intégrez l'e-learning sur mesure dans vos flux de travail avec des parcours d'apprentissage pour accélérer l'intégration, combler les lacunes de compétences et promouvoir les meilleures pratiques.",
-    'steps.findAllLearningPaths.ctaTitle': "Voir les parcours d'apprentissage",
   },
 });
 
