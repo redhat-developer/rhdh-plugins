@@ -51,16 +51,14 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import {
-  LightspeedPage,
-  lightspeedTranslationResource,
-} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+import { lightspeedTranslations } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
+import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
 const app = createApp({
   apis,
   __experimentalTranslations: {
     availableLanguages: ['en', 'fr', 'es', 'de'],
-    resources: [lightspeedTranslationResource],
+    resources: [lightspeedTranslations],
   },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {

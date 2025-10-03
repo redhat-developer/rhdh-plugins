@@ -16,13 +16,13 @@
 
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-import { lightspeedTranslationRef } from './translationRef';
+import { lightspeedTranslationRef } from './ref';
 
 /**
- * Translastion Resource for Developer lightspeed
- * @public
+ * Translation Resource for Developer lightspeed
+ * @alpha
  **/
-export const lightspeedTranslationResource = createTranslationResource({
+export const lightspeedTranslations = createTranslationResource({
   ref: lightspeedTranslationRef,
   translations: {
     es: () => import('./es'),
@@ -30,3 +30,6 @@ export const lightspeedTranslationResource = createTranslationResource({
     de: () => import('./de'),
   },
 });
+
+// @alpha
+export { lightspeedTranslationRef };
