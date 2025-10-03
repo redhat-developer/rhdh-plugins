@@ -15,7 +15,7 @@ This module also requires a Jira integration to be configured in your `app-confi
 
 ## Configuration
 
-### Authentification `token`
+### Authentication `token`
 
 - For the `cloud` product:
 
@@ -97,6 +97,26 @@ scorecard:
           # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
           customFilter: priority in ("Critical", "Blocker")
 ```
+
+## Schedule Configuration
+
+The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers.
+
+```yaml
+scorecard:
+  plugins:
+    jira:
+      open_issues:
+        schedule:
+          frequency:
+            cron: '0 6 * * *'
+          timeout:
+            minutes: 5
+          initialDelay:
+            seconds: 5
+```
+
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
 
 ## Installation
 
