@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 1.16.1
+
+### Patch Changes
+
+- dd5350f: French translation updated
+- b338a66: Updated dependency `@playwright/test` to `1.55.1`.
+
 ## 1.16.0
 
 ### Minor Changes

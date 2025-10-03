@@ -45,11 +45,11 @@ const scorecardTranslationEs = createTranslationMessages({
     'errors.invalidThresholds': 'Umbrales inválidos',
 
     // Metric translations
-    'metric.github.open-prs.title': 'GitHub PRs abiertas',
-    'metric.github.open-prs.description':
+    'metric.github.open_prs.title': 'GitHub PRs abiertas',
+    'metric.github.open_prs.description':
       'Recuento actual de Pull Requests abiertas para un repositorio de GitHub dado.',
-    'metric.jira.open-issues.title': 'Jira tickets bloqueantes abiertos',
-    'metric.jira.open-issues.description':
+    'metric.jira.open_issues.title': 'Jira tickets bloqueantes abiertos',
+    'metric.jira.open_issues.description':
       'Destaca el número de problemas críticos y bloqueantes que están actualmente abiertos en Jira.',
 
     // Threshold translations

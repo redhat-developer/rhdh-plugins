@@ -65,7 +65,7 @@ jira:
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
   # By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: '2'
+  apiVersion: 2
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs

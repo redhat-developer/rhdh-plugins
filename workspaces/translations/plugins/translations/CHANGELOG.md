@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations
 
+## 0.0.3
+
+### Patch Changes
+
+- dd5350f: French translation updated
+
 ## 0.0.2
 
 ### Patch Changes

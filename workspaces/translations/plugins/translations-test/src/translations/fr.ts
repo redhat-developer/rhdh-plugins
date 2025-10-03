@@ -21,9 +21,36 @@ const quickstartTranslationDe = createTranslationMessages({
   ref: translationsTestTranslationRef,
   full: false,
   messages: {
-    'page.title': 'Plugin de test de traductions',
+    'context.friend': 'Un ami',
+    'context.friend_female': 'Une petite amie',
+    'context.friend_male': 'Un petit ami',
+    'essentials.key': 'valeur de la clé',
+    'essentials.look.deep': 'valeur look deep',
+    'formatting.intlDateTime': 'Le {{val, datetime}}',
+    'formatting.intlNumber': 'Certains {{val, number}}',
+    'formatting.intlNumberWithOptions':
+      'Certains {{val, number(minimumFractionDigits: 2)}}',
+    'formatting.intlRelativeTime': 'Lorem {{val, relativetime}}',
+    'formatting.intlRelativeTimeWithOptions':
+      'Lorem {{val, relativetime(quarter)}}',
+    'formatting.intlRelativeTimeWithOptionsExplicit':
+      'Lorem {{val, relativetime(range: quarter; style: narrow;)}}',
+    'interpolation.complex.linkText': 'lien',
+    'interpolation.complex.message': 'Voici un {{link}}.',
+    'interpolation.key': '{{what}} est {{how}}',
+    'interpolation.nested.key': '{{what}} est {{how.value}}',
+    'objects.tree.res': 'a ajouté {{something}}',
     'page.subtitle':
-      'Un plugin pour tester la fonctionnalité de traduction et les fonctionnalités i18next',
+      "Un plugin pour tester les fonctionnalités de traduction et les fonctionnalités d'i18next",
+    'page.title': 'Plugin de test de traductions',
+    'plurals.keyWithCount_one': '{{count}} article',
+    'plurals.keyWithCount_other': '{{count}} articles',
+    'plurals.key_few': 'peu',
+    'plurals.key_many': 'plusieurs',
+    'plurals.key_one': 'un',
+    'plurals.key_other': 'autre',
+    'plurals.key_two': 'deux',
+    'plurals.key_zero': 'zéro',
   },
 });
 
