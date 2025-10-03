@@ -37,7 +37,9 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [userKey, setUserKey] = useState<string>('guest');
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
-  const { isLoading, userRole } = useQuickstartRole();
+
+  // Determine role once at provider level to avoid re-fetching on drawer open/close
+  const { isLoading: roleLoading, userRole } = useQuickstartRole();
 
   // Single useEffect - sets class on document.body
   useEffect(() => {
@@ -110,12 +112,12 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       : [];
 
     const eligibleItems =
-      !isLoading && userRole
+      !roleLoading && userRole
         ? filterQuickstartItemsByRole(quickstartItems, userRole)
         : [];
 
     // If user has no eligible items, close the drawer and don't mark as visited
-    if (!isLoading && eligibleItems.length === 0) {
+    if (!roleLoading && eligibleItems.length === 0) {
       setIsDrawerOpen(false);
       localStorage.setItem(openKey, 'false');
       return;
@@ -137,7 +139,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
     }
 
     setHasShownNotification(notificationShown === 'true');
-  }, [userKey, configApi, isLoading, userRole]);
+  }, [userKey, configApi, roleLoading, userRole]);
 
   const openDrawer = () => {
     // Check if user has eligible items before opening
@@ -148,12 +150,12 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       : [];
 
     const eligibleItems =
-      !isLoading && userRole
+      !roleLoading && userRole
         ? filterQuickstartItemsByRole(quickstartItems, userRole)
         : [];
 
     // Only open if user has eligible items
-    if (!isLoading && eligibleItems.length > 0) {
+    if (!roleLoading && eligibleItems.length > 0) {
       setIsDrawerOpen(true);
       const openKey = `quickstart-open:${userKey}`;
       localStorage.setItem(openKey, 'true');
@@ -190,6 +192,8 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
         toggleDrawer,
         setDrawerWidth,
         drawerWidth,
+        userRole,
+        roleLoading,
       }}
     >
       {children}
