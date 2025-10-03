@@ -8498,7 +8498,7 @@ __metadata:
     "@mui/icons-material": ^6.1.6
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
     "@spotify/prettier-config": ^15.0.0
-    "@testing-library/jest-dom": 6.8.0
+    "@testing-library/jest-dom": 6.9.0
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
     cross-fetch: 4.1.0
@@ -10802,9 +10802,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/jest-dom@npm:6.8.0, @testing-library/jest-dom@npm:^6.0.0":
-  version: 6.8.0
-  resolution: "@testing-library/jest-dom@npm:6.8.0"
+"@testing-library/jest-dom@npm:6.9.0, @testing-library/jest-dom@npm:^6.0.0":
+  version: 6.9.0
+  resolution: "@testing-library/jest-dom@npm:6.9.0"
   dependencies:
     "@adobe/css-tools": ^4.4.0
     aria-query: ^5.0.0
@@ -10812,7 +10812,7 @@ __metadata:
     dom-accessibility-api: ^0.6.3
     picocolors: ^1.1.1
     redent: ^3.0.0
-  checksum: a3cfb162b6ec6e98277187d9488234ba3e3ee25f24a86facdae092dbe54a015c845bcb81daa6de7afadcac5a5fe25becd7c7e9b67bb01ee4ccf7d67ee907adc9
+  checksum: 27d0a3bd026719a02ba47fa9aeb7d58547b493aff216d57acc4e0f5eadfc1280a5a40b11ff0bd2fb2aabd4a77c822f9fa212715ce3321b95d09b887d607abccc
   languageName: node
   linkType: hard
 
