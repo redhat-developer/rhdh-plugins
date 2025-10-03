@@ -300,7 +300,7 @@ export async function createRouter(
     });
   });
 
-  router.post(
+  router.patch(
     '/package/:namespace/:name/configuration/disable',
     requireInitializedInstallationDataService,
     async (req, res) => {
@@ -319,7 +319,7 @@ export async function createRouter(
       if (typeof disabled !== 'boolean') {
         throw new InputError("'disabled' must be present boolean");
       }
-      installationDataService.addPackageDisabled(
+      installationDataService.setPackageDisabled(
         marketplacePackage.spec.dynamicArtifact,
         disabled,
       );
