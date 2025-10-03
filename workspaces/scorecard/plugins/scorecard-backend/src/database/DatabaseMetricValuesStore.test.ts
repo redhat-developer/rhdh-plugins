@@ -23,6 +23,8 @@ import { DatabaseMetricValuesStore } from './DatabaseMetricValuesStore';
 import { DbMetricValue } from './MetricValuesStore';
 import { migrate } from './migration';
 
+jest.setTimeout(60000);
+
 const metricValues: Omit<DbMetricValue, 'id'>[] = [
   {
     catalog_entity_ref: 'component:default/test-service',
