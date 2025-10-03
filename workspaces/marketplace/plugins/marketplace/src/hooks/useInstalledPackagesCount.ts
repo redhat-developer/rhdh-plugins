@@ -14,34 +14,19 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@backstage/core-plugin-api';
 import { dynamicPluginsInfoApiRef } from '../api';
 // Count should reflect all records from dynamic-plugins-info
 
 export const useInstalledPackagesCount = () => {
-  const [count, setCount] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | undefined>(undefined);
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
 
-  useEffect(() => {
-    const fetchCount = async () => {
-      try {
-        setLoading(true);
-        setError(undefined);
-        const plugins = await dynamicPluginInfo.listLoadedPlugins();
-        setCount(plugins.length);
-      } catch (err) {
-        setError(err as Error);
-        setCount(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCount();
-  }, [dynamicPluginInfo]);
-
-  return { count, loading, error };
+  return useQuery({
+    queryKey: ['installedPackagesCount'],
+    queryFn: async () => {
+      const plugins = await dynamicPluginInfo.listLoadedPlugins();
+      return plugins.length;
+    },
+  });
 };

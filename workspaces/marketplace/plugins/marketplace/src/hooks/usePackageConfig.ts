@@ -22,8 +22,6 @@ export const usePackageConfig = (namespace: string, name: string) => {
   return useQuery({
     queryKey: ['marketplaceApi', 'getPackageConfigByName', namespace, name],
     queryFn: () => marketplaceApi.getPackageConfigByName?.(namespace, name),
-    staleTime: 0,
-    refetchOnMount: 'always',
     refetchOnWindowFocus: false,
   });
 };
