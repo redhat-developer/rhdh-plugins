@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
 
 export interface Config {
   /** Configuration for scorecard plugin */
@@ -29,6 +30,7 @@ export interface Config {
               expression: string;
             }>;
           };
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
       };
     };

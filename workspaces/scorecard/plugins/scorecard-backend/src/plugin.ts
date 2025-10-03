@@ -25,13 +25,15 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
 import { CatalogMetricService } from './service/CatalogMetricService';
-import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from './threshold/ThresholdEvaluator';
 import { scorecardPermissions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   scorecardMetricPermissionResourceRef,
   rules as scorecardRules,
 } from './permissions/rules';
+import { migrate } from './database/migration';
+import { DatabaseMetricValuesStore } from './database/DatabaseMetricValuesStore';
+import { MetricProvidersScheduler } from './providers/MetricProvidersScheduler';
 
 /**
  * scorecardPlugin backend plugin
@@ -53,21 +55,28 @@ export const scorecardPlugin = createBackendPlugin({
 
     env.registerInit({
       deps: {
-        discovery: coreServices.discovery,
         auth: coreServices.auth,
-        httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
+        config: coreServices.rootConfig,
+        database: coreServices.database,
+        httpRouter: coreServices.httpRouter,
         httpAuth: coreServices.httpAuth,
+        logger: coreServices.logger,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
+        scheduler: coreServices.scheduler,
       },
       async init({
-        discovery,
         auth,
+        catalog,
+        config,
+        database,
         httpRouter,
         httpAuth,
+        logger,
         permissions,
         permissionsRegistry,
+        scheduler,
       }) {
         permissionsRegistry.addResourceType({
           resourceRef: scorecardMetricPermissionResourceRef,
@@ -75,13 +84,30 @@ export const scorecardPlugin = createBackendPlugin({
           rules: Object.values(scorecardRules),
         });
 
-        const catalogClient = new CatalogClient({ discoveryApi: discovery });
+        // Run database migrations
+        await migrate(database);
+
+        const knex = await database.getClient();
+        const metricValuesStore = new DatabaseMetricValuesStore(knex);
+
         const catalogMetricService = new CatalogMetricService({
-          catalogApi: catalogClient,
+          catalog,
+          auth,
           registry: metricProvidersRegistry,
           thresholdEvaluator: new ThresholdEvaluator(),
-          auth,
+          metricValuesStore,
         });
+
+        const metricScheduler = new MetricProvidersScheduler(
+          auth,
+          catalog,
+          config,
+          logger,
+          scheduler,
+          metricValuesStore,
+          metricProvidersRegistry,
+        );
+        metricScheduler.schedule();
 
         httpRouter.use(
           await createRouter({

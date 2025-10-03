@@ -31,6 +31,7 @@ import {
 } from '@backstage/plugin-permission-common';
 import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
@@ -129,12 +130,12 @@ export async function createRouter({
       throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
     }
 
-    const entityRef = `${kind}:${namespace}/${name}`;
+    const entityRef = stringifyEntityRef({ kind, namespace, name });
     const metricIdArray = metricIds
       ? (metricIds as string).split(',').map(id => id.trim())
       : undefined;
 
-    const results = await catalogMetricService.calculateEntityMetrics(
+    const results = await catalogMetricService.getLatestEntityMetrics(
       entityRef,
       metricIdArray,
       conditions,
