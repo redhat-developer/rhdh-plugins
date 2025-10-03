@@ -19,7 +19,7 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 /**
  * Messages object containing all English translations.
  * This is our single source of truth for translations.
- * @public
+ * @alpha
  */
 export const lightspeedMessages = {
   // Page titles and headers
@@ -189,7 +189,7 @@ export const lightspeedMessages = {
 
 /**
  * Translation Reference for Developer Lightspeed
- * @public
+ * @alpha
  **/
 export const lightspeedTranslationRef = createTranslationRef({
   id: 'plugin.lightspeed',

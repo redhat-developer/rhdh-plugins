@@ -19,7 +19,7 @@ import {
   useTranslationRef,
 } from '@backstage/core-plugin-api/alpha';
 
-import { lightspeedTranslationRef } from '../translations/translationRef';
+import { lightspeedTranslationRef } from '../translations/ref';
 
 export const useTranslation = (): {
   t: TranslationFunction<typeof lightspeedTranslationRef.T>;

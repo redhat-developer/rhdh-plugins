@@ -16,7 +16,7 @@
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
-import { lightspeedTranslationRef } from './translationRef';
+import { lightspeedTranslationRef } from './ref';
 
 /**
  * Deutsch translation for Developer Lightspeed.

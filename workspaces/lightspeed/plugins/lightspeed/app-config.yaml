@@ -1,6 +1,10 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-lightspeed:
+      translationResources:
+        - importName: lightspeedTranslations
+          module: Alpha
+          ref: lightspeedTranslationRef
       appIcons:
         - name: LightspeedIcon
           module: LightspeedPlugin
