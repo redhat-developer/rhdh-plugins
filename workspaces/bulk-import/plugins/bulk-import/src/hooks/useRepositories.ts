@@ -28,7 +28,7 @@ import { useQuery } from '@tanstack/react-query';
 import { bulkImportApiRef } from '../api/BulkImportBackendClient';
 import {
   AddRepositoryData,
-  DataFetcherQueryParams,
+  ApprovalTool,
   OrgAndRepoResponse,
   RepositoriesError,
 } from '../types';
@@ -36,6 +36,15 @@ import {
   prepareDataForOrganizations,
   prepareDataForRepositories,
 } from '../utils/repository-utils';
+
+export interface DataFetcherQueryParams {
+  showOrganizations?: boolean;
+  orgName?: string;
+  page?: number;
+  querySize?: number;
+  searchString?: string;
+  approvalTool: ApprovalTool;
+}
 
 export const useRepositories = (
   options: DataFetcherQueryParams,
@@ -67,9 +76,10 @@ export const useRepositories = (
   const fetchRepositories = async (queryOptions: DataFetcherQueryParams) => {
     if (queryOptions?.showOrganizations) {
       return await bulkImportApi.dataFetcher(
-        queryOptions?.page,
-        queryOptions?.querySize,
+        queryOptions?.page ?? 0,
+        queryOptions?.querySize ?? 0,
         queryOptions?.searchString || '',
+        queryOptions?.approvalTool,
         {
           fetchOrganizations: true,
         },
@@ -77,18 +87,20 @@ export const useRepositories = (
     }
     if (queryOptions?.orgName) {
       return await bulkImportApi.dataFetcher(
-        queryOptions?.page,
-        queryOptions?.querySize,
+        queryOptions?.page ?? 0,
+        queryOptions?.querySize ?? 0,
         queryOptions?.searchString || '',
+        queryOptions?.approvalTool,
         {
           orgName: queryOptions?.orgName,
         },
       );
     }
     return await bulkImportApi.dataFetcher(
-      queryOptions?.page,
-      queryOptions?.querySize,
+      queryOptions?.page ?? 0,
+      queryOptions?.querySize ?? 0,
       queryOptions?.searchString || '',
+      queryOptions?.approvalTool,
     );
   };
 

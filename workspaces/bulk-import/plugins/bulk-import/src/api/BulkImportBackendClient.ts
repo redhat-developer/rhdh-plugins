@@ -23,6 +23,7 @@ import {
 import {
   AddedRepositoryColumnNameEnum,
   APITypes,
+  ApprovalTool,
   CreateImportJobRepository,
   ImportJobResponse,
   ImportJobs,
@@ -38,6 +39,7 @@ export type BulkImportAPI = {
     page: number,
     size: number,
     searchString: string,
+    approvalTool: ApprovalTool,
     options?: APITypes,
   ) => Promise<OrgAndRepoResponse>;
   getImportJobs: (
@@ -54,10 +56,12 @@ export type BulkImportAPI = {
   deleteImportAction: (
     repo: string,
     defaultBranch: string,
+    approvalTool?: ApprovalTool,
   ) => Promise<ImportJobStatus | Response>;
   getImportAction: (
     repo: string,
     defaultBranch: string,
+    approvalTool?: ApprovalTool,
   ) => Promise<ImportJobStatus | Response>;
 };
 
@@ -85,12 +89,13 @@ export class BulkImportBackendClient implements BulkImportAPI {
     page: number,
     size: number,
     searchString: string,
+    approvalTool: ApprovalTool,
     options?: APITypes,
   ) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      getApi(backendUrl, page, size, searchString, options),
+      getApi(backendUrl, page, size, searchString, approvalTool, options),
       {
         headers: {
           'Content-Type': 'application/json',
@@ -155,11 +160,15 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
-  async deleteImportAction(repo: string, defaultBranch: string) {
+  async deleteImportAction(
+    repo: string,
+    defaultBranch: string,
+    approvalTool?: ApprovalTool,
+  ) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`,
+      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`,
       {
         method: 'DELETE',
         headers: {
@@ -175,11 +184,15 @@ export class BulkImportBackendClient implements BulkImportAPI {
     return jsonResponse.status === 204 ? null : await jsonResponse.json();
   }
 
-  async getImportAction(repo: string, defaultBranch: string) {
+  async getImportAction(
+    repo: string,
+    defaultBranch: string,
+    approvalTool?: ApprovalTool,
+  ) {
     const { token: idToken } = await this.identityApi.getCredentials();
     const backendUrl = this.configApi.getString('backend.baseUrl');
     const jsonResponse = await fetch(
-      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`,
+      `${backendUrl}/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`,
       {
         method: 'GET',
         headers: {

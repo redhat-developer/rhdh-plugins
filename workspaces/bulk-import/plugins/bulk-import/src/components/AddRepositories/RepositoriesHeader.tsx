@@ -22,6 +22,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Order } from '../../types';
 import { getRepositoriesListColumns } from '../Repositories/RepositoriesListColumns';
@@ -59,12 +60,14 @@ export const RepositoriesHeader = ({
     onRequestSort(event, property);
   };
 
+  const gitlabConfigured = useGitlabConfigured();
+
   const getColumnHeader = () => {
     if (showOrganizations) {
       return getOrganizationsColumnHeader(isApprovalToolGitlab, t);
     }
     if (showImportJobs) {
-      return getRepositoriesListColumns(t);
+      return getRepositoriesListColumns(t, gitlabConfigured);
     }
     if (isRepoSelectDrawer) {
       return getReposSelectDrawerColumnHeader(t);

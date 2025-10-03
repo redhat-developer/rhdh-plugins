@@ -17,11 +17,11 @@
 import { TableColumn } from '@backstage/core-components';
 
 import { AddRepositoryData } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 // Translation keys for table headers
 export const getRepositoriesListColumns = (
   t: (key: string, ...args: any[]) => string,
+  gitlabConfigured: boolean,
 ): TableColumn<AddRepositoryData>[] => [
   {
     id: 'name',
@@ -31,7 +31,7 @@ export const getRepositoriesListColumns = (
   },
   {
     id: 'repo-url',
-    title: gitlabFeatureFlag
+    title: gitlabConfigured
       ? t('table.headers.url')
       : t('table.headers.repoUrl'),
     field: 'repoUrl',
@@ -39,7 +39,7 @@ export const getRepositoriesListColumns = (
   },
   {
     id: 'organization',
-    title: gitlabFeatureFlag
+    title: gitlabConfigured
       ? t('table.headers.organizationGroup')
       : t('table.headers.organization'),
     field: 'organizationUrl',

@@ -22,6 +22,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { mockGetRepositories } from '../../mocks/mockData';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 
+jest.mock('../../hooks', () => ({
+  useGitlabConfigured: jest.fn(() => false),
+}));
+
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
   useApi: jest.fn(),

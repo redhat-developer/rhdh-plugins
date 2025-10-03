@@ -33,9 +33,9 @@ import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -70,6 +70,7 @@ const DeleteRepositoryDialog = ({
     return bulkImportApi.deleteImportAction(
       deleteRepo.repoUrl || '',
       deleteRepo.defaultBranch || 'main',
+      deleteRepo.approvalTool,
     );
   };
   const mutationDelete = useMutation(deleteRepository, {
@@ -82,6 +83,7 @@ const DeleteRepositoryDialog = ({
   };
 
   const isUrlMissing = !repository.repoUrl;
+  const gitlabConfigured = useGitlabConfigured();
 
   return (
     <Dialog
@@ -106,7 +108,7 @@ const DeleteRepositoryDialog = ({
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
             {t('repositories.removeRepositoryQuestion' as any, {
               repoName: repository.repoName || '',
-              repositoryText: gitlabFeatureFlag
+              repositoryText: gitlabConfigured
                 ? ''
                 : t('repositories.repositoryText'),
             })}
@@ -130,7 +132,7 @@ const DeleteRepositoryDialog = ({
       </DialogTitle>
       <DialogContent>
         <Typography variant="body1">
-          {gitlabFeatureFlag
+          {gitlabConfigured
             ? t('repositories.removeRepositoryWarningGitlab')
             : t('repositories.removeRepositoryWarning')}
         </Typography>

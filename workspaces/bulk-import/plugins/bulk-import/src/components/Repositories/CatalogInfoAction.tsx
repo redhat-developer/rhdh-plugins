@@ -62,6 +62,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
       return await bulkImportApi.getImportAction(
         repoUrl,
         defaultBranch || 'main',
+        data.approvalTool,
       );
     }
     return null;

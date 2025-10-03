@@ -23,6 +23,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
@@ -31,10 +32,7 @@ import {
   RepositorySelection,
   RepositoryStatus,
 } from '../../types';
-import {
-  getCustomisedErrorMessage,
-  gitlabFeatureFlag,
-} from '../../utils/repository-utils';
+import { getCustomisedErrorMessage } from '../../utils/repository-utils';
 import { useDrawer } from '../DrawerContext';
 
 export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
@@ -53,6 +51,8 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
     setDrawerData(dd);
     setOpenDrawer(true);
   };
+
+  const gitlabConfigured = useGitlabConfigured();
 
   return (
     <>
@@ -105,7 +105,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             color="success"
             style={{ verticalAlign: 'sub', paddingTop: '7px' }}
           />
-          {gitlabFeatureFlag
+          {gitlabConfigured
             ? t('previewFile.readyToImport')
             : RepositoryStatus.Ready}{' '}
           <Link
