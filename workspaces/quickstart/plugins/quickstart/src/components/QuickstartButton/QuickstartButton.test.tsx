@@ -23,15 +23,10 @@ import {
 import { configApiRef } from '@backstage/core-plugin-api';
 import { QuickstartButton } from './QuickstartButton';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
-import { useQuickstartRole } from '../../hooks/useQuickstartRole';
 
 // Mock the hooks
 jest.mock('../../hooks/useQuickstartDrawerContext', () => ({
   useQuickstartDrawerContext: jest.fn(),
-}));
-
-jest.mock('../../hooks/useQuickstartRole', () => ({
-  useQuickstartRole: jest.fn(),
 }));
 
 describe('QuickstartButton', () => {
@@ -56,10 +51,8 @@ describe('QuickstartButton', () => {
     jest.clearAllMocks();
     (useQuickstartDrawerContext as jest.Mock).mockReturnValue({
       toggleDrawer: mockToggleDrawer,
-    });
-    (useQuickstartRole as jest.Mock).mockReturnValue({
-      isLoading: false,
       userRole: 'admin',
+      roleLoading: false,
     });
   });
 
@@ -95,9 +88,10 @@ describe('QuickstartButton', () => {
   });
 
   it('does not render when user role does not match any items', async () => {
-    (useQuickstartRole as jest.Mock).mockReturnValue({
-      isLoading: false,
+    (useQuickstartDrawerContext as jest.Mock).mockReturnValue({
+      toggleDrawer: mockToggleDrawer,
       userRole: 'developer', // No items for developer in our mock config
+      roleLoading: false,
     });
 
     await renderWithApi();

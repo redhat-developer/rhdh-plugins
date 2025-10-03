@@ -53,6 +53,7 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { quickstartTranslations } from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { RbacPage } from '@backstage-community/plugin-rbac';
 
 const app = createApp({
   apis,
@@ -118,6 +119,7 @@ const routes = (
       </TechDocsAddons>
     </Route>
     <Route path="/create" element={<ScaffolderPage />} />
+    <Route path="/rbac" element={<RbacPage />} />;
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
       path="/catalog-import"

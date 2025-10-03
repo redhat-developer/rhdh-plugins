@@ -15,6 +15,7 @@
  */
 
 import { createContext } from 'react';
+import { UserRole } from '../types';
 
 /**
  * Type for QuickstartDrawerContext
@@ -46,6 +47,14 @@ export interface QuickstartDrawerContextType {
    * The function for setting the drawer width
    */
   setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
+  /**
+   * The user's role for quickstart functionality
+   */
+  userRole: UserRole | null;
+  /**
+   * Whether the role is still loading
+   */
+  roleLoading: boolean;
 }
 
 /**
