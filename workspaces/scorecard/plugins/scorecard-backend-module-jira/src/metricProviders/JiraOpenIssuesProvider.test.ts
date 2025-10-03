@@ -21,7 +21,6 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { validateThresholds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraOpenIssuesProvider } from './JiraOpenIssuesProvider';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { JiraClient } from '../clients/base';
