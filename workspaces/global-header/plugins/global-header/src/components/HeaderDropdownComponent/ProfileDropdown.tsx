@@ -32,6 +32,7 @@ import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
 import { useDropdownManager } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
+import { translateWithFallback } from '../../utils/translationUtils';
 
 /**
  * @public
@@ -120,6 +121,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
       .map(mp => {
         const {
           title = '',
+          titleKey = '',
           icon = '',
           link: staticLink = '',
           type = '',
@@ -137,10 +139,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
           return null;
         }
 
-        // Check if title looks like a translation key (contains dots)
-        const translatedTitle = title?.includes('.')
-          ? t(title as any, {}) || title // Fallback to original title if translation fails
-          : title;
+        const translatedTitle = translateWithFallback(t, titleKey, title);
 
         return {
           Component: mp.Component,

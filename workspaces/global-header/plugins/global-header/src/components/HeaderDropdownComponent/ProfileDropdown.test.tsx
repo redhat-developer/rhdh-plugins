@@ -47,7 +47,8 @@ jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
         config: {
           props: {
             icon: 'manageAccounts',
-            title: 'profile.settings',
+            title: 'Settings',
+            titleKey: 'profile.settings',
             link: '/settings',
           },
           priority: 200,
@@ -58,7 +59,8 @@ jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
         config: {
           props: {
             icon: 'account',
-            title: 'profile.myProfile',
+            title: 'My profile',
+            titleKey: 'profile.myProfile',
             type: 'myProfile',
           },
           priority: 150,
