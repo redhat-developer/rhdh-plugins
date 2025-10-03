@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.11.0
+
+### Minor Changes
+
+- 36a7d6a: **BREAKING** Replace POST with PATCH `/package/:namespace/:name/configuration/disable` endpoint to update packages disabled status
+
 ## 0.10.0
 
 ### Minor Changes
