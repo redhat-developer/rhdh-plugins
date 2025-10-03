@@ -107,7 +107,6 @@ dynamicPlugins:
               titleKey: profile.myProfile
               type: myProfile
               icon: account
-              link: /catalog
         - mountPoint: global.header/profile
           importName: LogoutButton
           config:

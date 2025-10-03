@@ -139,7 +139,6 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
           return null;
         }
 
-        // Check if title looks like a translation key (contains dots)
         const translatedTitle = translateWithFallback(t, titleKey, title);
 
         return {
