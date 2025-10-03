@@ -90,3 +90,23 @@ This metric counts all pull requests that are currently in an "open" state for t
 ### Threshold Configuration
 
 Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the GitHub metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
+
+## Schedule Configuration
+
+The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers.
+
+```yaml
+scorecard:
+  plugins:
+    jira:
+      open_prs:
+        schedule:
+          frequency:
+            cron: '0 6 * * *'
+          timeout:
+            minutes: 5
+          initialDelay:
+            seconds: 5
+```
+
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
