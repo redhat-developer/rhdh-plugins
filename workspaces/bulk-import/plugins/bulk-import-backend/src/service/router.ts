@@ -33,6 +33,7 @@ import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-
 import { fullFormats } from 'ajv-formats/dist/formats';
 import express, { Router, type Request, type Response } from 'express';
 import {
+  Document,
   OpenAPIBackend,
   type Context,
   type Request as OpenAPIRequest,
@@ -292,25 +293,14 @@ export async function createRouter(
   api.register(
     Operations.FIND_ALL_IMPORTS,
     async (c: Context, _req: Request, res: Response) => {
-      const h: Paths.FindAllImports.HeaderParameters = {
-        ...c.request.headers,
-      };
-      const apiVersion = h['api-version'];
-      const q: Paths.FindAllImports.QueryParameters = {
-        ...c.request.query,
-      };
-      // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
-      let page: number | undefined;
-      let size: number | undefined;
-      if (apiVersion === undefined || apiVersion === 'v1') {
-        // pagePerIntegration and sizePerIntegration deprecated in v1. 'page' and 'size' take precedence.
-        page = stringToNumber(q.page || q.pagePerIntegration);
-        size = stringToNumber(q.size || q.sizePerIntegration);
-      } else {
-        // pagePerIntegration and sizePerIntegration removed in v2+ and replaced by 'page' and 'size'.
-        page = stringToNumber(q.page);
-        size = stringToNumber(q.size);
-      }
+      const {
+        pageNumber,
+        pageSize,
+        apiVersion,
+        search,
+        sortColumn,
+        sortOrder,
+      } = getFindImportsParams(c);
       const response = await findAllImports(
         {
           logger,
@@ -323,11 +313,11 @@ export async function createRouter(
           apiVersion,
         },
         {
-          search: q.search,
-          pageNumber: page,
-          pageSize: size,
-          sortColumn: q.sortColumn,
-          sortOrder: q.sortOrder,
+          search,
+          pageNumber,
+          pageSize,
+          sortColumn,
+          sortOrder,
         },
       );
       return res.status(response.statusCode).json(response.responseBody);
@@ -336,30 +326,13 @@ export async function createRouter(
   api.register(
     Operations.FIND_ALL_TASK_IMPORTS,
     async (c: Context, _req: Request, res: Response) => {
-      const h: Paths.FindAllImports.HeaderParameters = {
-        ...c.request.headers,
-      };
-      const apiVersion = h['api-version'];
-      const q: Paths.FindAllImports.QueryParameters = {
-        ...c.request.query,
-      };
-      // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
-      let page: number | undefined;
-      let size: number | undefined;
-      if (apiVersion === undefined || apiVersion === 'v1') {
-        // pagePerIntegration and sizePerIntegration deprecated in v1. 'page' and 'size' take precedence.
-        page = stringToNumber(q.page || q.pagePerIntegration);
-        size = stringToNumber(q.size || q.sizePerIntegration);
-      } else {
-        // pagePerIntegration and sizePerIntegration removed in v2+ and replaced by 'page' and 'size'.
-        page = stringToNumber(q.page);
-        size = stringToNumber(q.size);
-      }
+      const { pageNumber, pageSize, search, sortColumn, sortOrder } =
+        getFindImportsParams(c);
       const imports: SourceImport[] = [];
       const repositories = await repositoryDao.findRepositories(
-        page,
-        size,
-        q.search,
+        pageNumber,
+        pageSize,
+        search,
       );
 
       for (const repo of repositories.data) {
@@ -384,13 +357,13 @@ export async function createRouter(
         }
       }
 
-      sortImports(imports, q.sortColumn, q.sortOrder);
+      sortImports(imports, sortColumn, sortOrder);
 
       const responseBody: Components.Schemas.ImportJobListV2 = {
         imports,
         totalCount: repositories.total,
-        page: page || 1,
-        size: size || 10,
+        page: pageNumber || 1,
+        size: pageSize || 5,
       };
 
       return res.status(200).json(responseBody);
@@ -703,4 +676,40 @@ function stringToBoolean(s: boolean | undefined): boolean | undefined {
     return undefined;
   }
   return s.toString() === 'true';
+}
+function getFindImportsParams(c: Context<any, any, any, any, any, Document>): {
+  pageNumber?: number;
+  pageSize?: number;
+  apiVersion?: Paths.FindAllImports.Parameters.ApiVersion;
+  search?: string;
+  sortColumn?: Components.Parameters.SortColumnQueryParam;
+  sortOrder?: Components.Parameters.SortOrderQueryParam;
+} {
+  const h: Paths.FindAllImports.HeaderParameters = {
+    ...c.request.headers,
+  };
+  const apiVersion = h['api-version'];
+  const q: Paths.FindAllImports.QueryParameters = {
+    ...c.request.query,
+  };
+  // we need to convert strings to real types due to open PR https://github.com/openapistack/openapi-backend/pull/571
+  let pageNumber: number | undefined;
+  let pageSize: number | undefined;
+  if (apiVersion === undefined || apiVersion === 'v1') {
+    // pagePerIntegration and sizePerIntegration deprecated in v1. 'page' and 'size' take precedence.
+    pageNumber = stringToNumber(q.page || q.pagePerIntegration);
+    pageSize = stringToNumber(q.size || q.sizePerIntegration);
+  } else {
+    // pagePerIntegration and sizePerIntegration removed in v2+ and replaced by 'page' and 'size'.
+    pageNumber = stringToNumber(q.page);
+    pageSize = stringToNumber(q.size);
+  }
+  return {
+    pageNumber,
+    pageSize,
+    apiVersion: apiVersion,
+    search: q.search,
+    sortColumn: q.sortColumn,
+    sortOrder: q.sortOrder,
+  };
 }

@@ -820,7 +820,6 @@ export class GitlabApiService {
           `Error fetching pull request ${pullRequestNumber} from ${repoUrl}`,
           error,
         );
-        return {};
       }
     }
 
