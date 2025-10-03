@@ -187,7 +187,7 @@ export async function startBackendServer(
       deps: {},
       factory: () => mockCatalogClient,
     }),
-    db ? db : mockServices.database.factory(),
+    db ?? mockServices.database.factory(),
   ];
   if (authorizeResult) {
     features.push(

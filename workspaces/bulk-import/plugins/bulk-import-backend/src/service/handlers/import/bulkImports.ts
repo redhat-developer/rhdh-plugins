@@ -1003,7 +1003,7 @@ async function parsePullOrMergeRequestInfo(
         if (!url) {
           continue;
         }
-        const prNumber = parseInt(url.split('/').pop()!, 10);
+        const prNumber = Number.parseInt(url.split('/').pop()!, 10);
         const prDetails = await gitApiService.getPullRequest(repoUrl, prNumber);
 
         let catalogInfoContent: string | undefined;

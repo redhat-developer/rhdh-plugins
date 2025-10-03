@@ -349,7 +349,7 @@ export async function createRouter(
             discovery,
             auth,
           },
-          repo.url!,
+          repo.url,
           true,
         );
         if (response.responseBody) {
@@ -607,11 +607,6 @@ async function createAuditorEventByOperationId(
       break;
     }
     case Operations.FIND_ALL_IMPORTS:
-      auditorEvent = await auditCreateEvent(auditor, 'import-read', req, {
-        queryType: req.query.search ? 'by-query' : 'all',
-        search: req.query.search,
-      });
-      break;
     case Operations.FIND_ALL_TASK_IMPORTS:
       auditorEvent = await auditCreateEvent(auditor, 'import-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',
@@ -619,11 +614,6 @@ async function createAuditorEventByOperationId(
       });
       break;
     case Operations.CREATE_IMPORT_JOBS:
-      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
-        actionType: 'create',
-        dryRun: req.query.dryRun,
-      });
-      break;
     case Operations.CREATE_TASK_IMPORT_JOBS:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
@@ -646,11 +636,6 @@ async function createAuditorEventByOperationId(
       );
       break;
     case Operations.DELETE_IMPORT_BY_REPO:
-      auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
-        actionType: 'delete',
-        repository: req.query.repo,
-      });
-      break;
     case Operations.DELETE_TASK_IMPORT_BY_REPO:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'delete',

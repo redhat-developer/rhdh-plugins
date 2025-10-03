@@ -51,7 +51,7 @@ export async function paginateQuery<T>(
 
   let baseQuery = queryBuilder.clone();
 
-  if (search && search.term) {
+  if (search?.term) {
     baseQuery = baseQuery.whereILike(search.column, `%${search.term}%`);
   }
 
