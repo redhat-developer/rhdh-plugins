@@ -24,7 +24,6 @@ import {
   mockPackages,
 } from '../../__fixtures__/mockData';
 import { FileInstallationStorage } from './FileInstallationStorage';
-import { ConflictError } from '@backstage/errors';
 
 describe('FileInstallationStorage', () => {
   const newPackageName = './dynamic-plugins/dist/package3-backend-dynamic';
@@ -353,7 +352,7 @@ describe('FileInstallationStorage', () => {
     });
   });
 
-  describe('addPackageDisabled', () => {
+  describe('setPackageDisabled', () => {
     afterEach(() => {
       fs.writeFileSync(
         resolve(__dirname, '../../__fixtures__/data/validPluginsConfig.yaml'),
@@ -367,7 +366,7 @@ describe('FileInstallationStorage', () => {
       );
     });
 
-    it('should add package with disabled', () => {
+    it('should add new package with disabled status', () => {
       const configFileName = resolve(
         __dirname,
         '../../__fixtures__/data/validPluginsConfig.yaml',
@@ -377,7 +376,7 @@ describe('FileInstallationStorage', () => {
       );
       fileInstallationStorage.initialize();
 
-      fileInstallationStorage.addPackageDisabled(newPackageName, false);
+      fileInstallationStorage.setPackageDisabled(newPackageName, false);
 
       const updatedCatalogInfoYaml = fs.readFileSync(configFileName, 'utf8');
       const configYaml = parse(updatedCatalogInfoYaml);
@@ -389,7 +388,7 @@ describe('FileInstallationStorage', () => {
       ]);
     });
 
-    it('should raise ConflictError for package already in the config', () => {
+    it('should update existing package with disabled status', () => {
       const configFileName = resolve(
         __dirname,
         '../../__fixtures__/data/validPluginsConfig.yaml',
@@ -399,16 +398,18 @@ describe('FileInstallationStorage', () => {
       );
       fileInstallationStorage.initialize();
 
-      expect(() => {
-        fileInstallationStorage.addPackageDisabled(
-          mockDynamicPackage11.package,
-          false,
-        );
-      }).toThrow(
-        new ConflictError(
-          `Package '${mockDynamicPackage11.package}' already exists in the configuration`,
-        ),
+      fileInstallationStorage.setPackageDisabled(
+        mockDynamicPackage12.package,
+        false,
       );
+
+      const updatedCatalogInfoYaml = fs.readFileSync(configFileName, 'utf8');
+      const configYaml = parse(updatedCatalogInfoYaml);
+      expect(configYaml.plugins).toEqual([
+        mockDynamicPackage11,
+        { ...mockDynamicPackage12, disabled: false },
+        mockDynamicPackage21,
+      ]);
     });
   });
 
