@@ -68,7 +68,7 @@ import {
 import {
   executeFunctionOnFirstSuccessfulIntegration,
   fetchFromAllIntegrations,
-  getCredentialsForConfig,
+  fetchFromMatchedIntegration,
 } from './utils/utils';
 
 export class GithubApiService {
@@ -96,55 +96,37 @@ export class GithubApiService {
     repository?: GithubRepository;
     errors?: GithubFetchError[];
   }> {
-    const gitUrl = gitUrlParse(repoUrl);
-
-    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
-    if (!ghConfig) {
-      throw new Error(
-        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
-      );
-    }
-
-    const credentials = await getCredentialsForConfig(
-      this.githubCredentialsProvider,
-      ghConfig,
+    const { data, errors } = await fetchFromMatchedIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        githubCredentialsProvider: this.githubCredentialsProvider,
+      },
+      this.integrations,
+      repoUrl,
+      async (octokit, gitUrl) => {
+        const resp = await octokit.rest.repos.get({
+          owner: gitUrl.owner,
+          repo: gitUrl.name,
+        });
+        const repo = resp?.data;
+        if (!repo) {
+          return undefined;
+        }
+        return {
+          name: repo.name,
+          full_name: repo.full_name,
+          url: repo.url,
+          html_url: repo.html_url,
+          default_branch: repo.default_branch,
+          updated_at: repo.updated_at,
+        };
+      },
     );
-    const errors = new Map<number, GithubFetchError>();
-    let repository: GithubRepository | undefined = undefined;
-    for (const credential of credentials) {
-      const octokit = buildOcto(
-        {
-          logger: this.logger,
-          cache: this.cache,
-        },
-        { credential, errors, owner: gitUrl.owner },
-        ghConfig.apiBaseUrl,
-      );
-      if (!octokit) {
-        continue;
-      }
-      const resp = await octokit.rest.repos.get({
-        owner: gitUrl.owner,
-        repo: gitUrl.name,
-      });
-      const repo = resp?.data;
-      if (!repo) {
-        continue;
-      }
-      repository = {
-        name: repo.name,
-        full_name: repo.full_name,
-        url: repo.url,
-        html_url: repo.html_url,
-        default_branch: repo.default_branch,
-        updated_at: repo.updated_at,
-      };
-      break;
-    }
 
     return {
-      repository,
-      errors: Array.from(errors.values()),
+      repository: data,
+      errors,
     };
   }
 
@@ -445,54 +427,37 @@ export class GithubApiService {
     prSha?: string;
     prBranch?: string;
   }> {
-    const gitUrl = gitUrlParse(repoUrl);
-
-    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
-    if (!ghConfig) {
-      throw new Error(
-        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
-      );
-    }
-
-    const credentials = await getCredentialsForConfig(
-      this.githubCredentialsProvider,
-      ghConfig,
+    const { data } = await fetchFromMatchedIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        githubCredentialsProvider: this.githubCredentialsProvider,
+      },
+      this.integrations,
+      repoUrl,
+      async (octokit, gitUrl) => {
+        try {
+          const resp = await octokit.rest.pulls.get({
+            owner: gitUrl.owner,
+            repo: gitUrl.name,
+            pull_number: pullRequestNumber,
+          });
+          const pr = resp.data;
+          return {
+            title: pr.title,
+            body: pr.body ?? undefined,
+            merged: pr.merged,
+            lastUpdated: pr.updated_at,
+            prSha: pr.head.sha,
+            prBranch: pr.head.ref,
+          };
+        } catch (error: any) {
+          logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
+          return undefined;
+        }
+      },
     );
-    if (credentials.length === 0) {
-      throw new Error(`No credentials for GH integration`);
-    }
-    for (const credential of credentials) {
-      const octokit = buildOcto(
-        {
-          logger: this.logger,
-          cache: this.cache,
-        },
-        { credential, owner: gitUrl.owner },
-        ghConfig.apiBaseUrl,
-      );
-      if (!octokit) {
-        continue;
-      }
-      try {
-        const resp = await octokit.rest.pulls.get({
-          owner: gitUrl.owner,
-          repo: gitUrl.name,
-          pull_number: pullRequestNumber,
-        });
-        const pr = resp.data;
-        return {
-          title: pr.title,
-          body: pr.body ?? undefined,
-          merged: pr.merged,
-          lastUpdated: pr.updated_at,
-          prSha: pr.head.sha,
-          prBranch: pr.head.ref,
-        };
-      } catch (error: any) {
-        logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
-      }
-    }
-    return {};
+    return data ?? {};
   }
 
   async updatePullRequest(
@@ -501,48 +466,30 @@ export class GithubApiService {
     title?: string,
     body?: string,
   ): Promise<void> {
-    const gitUrl = gitUrlParse(repoUrl);
-
-    const ghConfig = this.integrations.github.byUrl(repoUrl)?.config;
-    if (!ghConfig) {
-      throw new Error(
-        `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github`,
-      );
-    }
-
-    const credentials = await getCredentialsForConfig(
-      this.githubCredentialsProvider,
-      ghConfig,
+    await fetchFromMatchedIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        githubCredentialsProvider: this.githubCredentialsProvider,
+      },
+      this.integrations,
+      repoUrl,
+      async (octokit, gitUrl) => {
+        try {
+          await octokit.rest.pulls.update({
+            owner: gitUrl.owner,
+            repo: gitUrl.name,
+            pull_number: pullRequestNumber,
+            title: title,
+            body: body,
+          });
+          return;
+        } catch (error: any) {
+          logErrorIfNeeded(this.logger, 'Error updating pull requests', error);
+          throw error;
+        }
+      },
     );
-    if (credentials.length === 0) {
-      throw new Error(`No credentials for GH integration`);
-    }
-    for (const credential of credentials) {
-      const octokit = buildOcto(
-        {
-          logger: this.logger,
-          cache: this.cache,
-        },
-        { credential, owner: gitUrl.owner },
-        ghConfig.apiBaseUrl,
-      );
-      if (!octokit) {
-        continue;
-      }
-      try {
-        await octokit.rest.pulls.update({
-          owner: gitUrl.owner,
-          repo: gitUrl.name,
-          pull_number: pullRequestNumber,
-          title: title,
-          body: body,
-        });
-        return;
-      } catch (error: any) {
-        logErrorIfNeeded(this.logger, 'Error updating pull requests', error);
-        throw error;
-      }
-    }
   }
 
   async createOrUpdateFileInBranch(
@@ -646,50 +593,33 @@ export class GithubApiService {
     prCatalogInfoContent?: string;
     lastUpdate?: string;
   }> {
-    const ghConfig = this.integrations.github.byUrl(input.repoUrl)?.config;
-    if (!ghConfig) {
-      throw new Error(`Could not find GH integration from ${input.repoUrl}`);
-    }
-
-    const gitUrl = gitUrlParse(input.repoUrl);
-    const owner = gitUrl.organization;
-    const repo = gitUrl.name;
-
-    const credentials = await this.githubCredentialsProvider.getAllCredentials({
-      host: ghConfig.host,
-    });
-    if (credentials.length === 0) {
-      throw new Error(`No credentials for GH integration`);
-    }
-
     const branchName = getBranchName(this.config);
-    for (const credential of credentials) {
-      const octo = buildOcto(
-        {
-          logger: this.logger,
-          cache: this.cache,
-        },
-        { credential, owner },
-        ghConfig.apiBaseUrl,
-      );
-      if (!octo) {
-        continue;
-      }
-      try {
-        return await findOpenPRForBranch(
-          logger,
-          this.config,
-          octo,
-          owner,
-          repo,
-          branchName,
-          input.includeCatalogInfoContent,
-        );
-      } catch (error: any) {
-        logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
-      }
-    }
-    return {};
+    const { data } = await fetchFromMatchedIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        githubCredentialsProvider: this.githubCredentialsProvider,
+      },
+      this.integrations,
+      input.repoUrl,
+      async (octokit, gitUrl) => {
+        try {
+          return await findOpenPRForBranch(
+            logger,
+            this.config,
+            octokit,
+            gitUrl.organization,
+            gitUrl.name,
+            branchName,
+            input.includeCatalogInfoContent,
+          );
+        } catch (error: any) {
+          logErrorIfNeeded(this.logger, 'Error fetching pull requests', error);
+          return undefined;
+        }
+      },
+    );
+    return data ?? {};
   }
 
   async getCatalogInfoFile(
@@ -700,53 +630,36 @@ export class GithubApiService {
       prHeadSha: string;
     },
   ): Promise<string | undefined> {
-    const ghConfig = this.integrations.github.byUrl(input.repoUrl)?.config;
-    if (!ghConfig) {
-      throw new Error(`Could not find GH integration from ${input.repoUrl}`);
-    }
-
-    const gitUrl = gitUrlParse(input.repoUrl);
-    const owner = gitUrl.organization;
-    const repo = gitUrl.name;
-
-    const credentials = await this.githubCredentialsProvider.getAllCredentials({
-      host: ghConfig.host,
-    });
-    if (credentials.length === 0) {
-      throw new Error(`No credentials for GH integration`);
-    }
-
-    for (const credential of credentials) {
-      const octo = buildOcto(
-        {
-          logger: this.logger,
-          cache: this.cache,
-        },
-        { credential, owner },
-        ghConfig.apiBaseUrl,
-      );
-      if (!octo) {
-        continue;
-      }
-      try {
-        return await getCatalogInfoContentFromPR(
-          logger,
-          this.config,
-          octo,
-          owner,
-          repo,
-          input.prNumber,
-          input.prHeadSha,
-        );
-      } catch (error: any) {
-        logErrorIfNeeded(
-          this.logger,
-          'Error fetching catalog info file content requests',
-          error,
-        );
-      }
-    }
-    return undefined;
+    const { data } = await fetchFromMatchedIntegration(
+      {
+        logger: this.logger,
+        cache: this.cache,
+        githubCredentialsProvider: this.githubCredentialsProvider,
+      },
+      this.integrations,
+      input.repoUrl,
+      async (octokit, gitUrl) => {
+        try {
+          return await getCatalogInfoContentFromPR(
+            logger,
+            this.config,
+            octokit,
+            gitUrl.organization,
+            gitUrl.name,
+            input.prNumber,
+            input.prHeadSha,
+          );
+        } catch (error: any) {
+          logErrorIfNeeded(
+            this.logger,
+            'Error fetching catalog info file content requests',
+            error,
+          );
+          return undefined;
+        }
+      },
+    );
+    return data;
   }
 
   async submitPrToRepo(

@@ -787,7 +787,7 @@ export async function findImportStatusByRepo(
       },
     );
 
-    if (!openImportPr.prUrl) {
+    if (!openImportPr?.prUrl) {
       const catalogLocations = (
         await deps.catalogHttpClient.listCatalogUrlLocations()
       ).uniqueCatalogUrlLocations.keys();
@@ -1050,7 +1050,7 @@ export async function deleteImportByRepo(
   });
 
   const gitUrl = gitUrlParse(repoUrl);
-  if (openImportPr.prUrl) {
+  if (openImportPr?.prUrl) {
     // Close PR
     const appTitle =
       deps.config.getOptionalString('app.title') ?? 'Red Hat Developer Hub';
