@@ -9,8 +9,6 @@ import type { Config } from '@backstage/config';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { PublisherBase } from '@backstage/plugin-techdocs-node';
-import { TechDocsMetadata } from '@backstage/plugin-techdocs-node';
 
 // @public
 export interface ListTechDocsOptions {
@@ -40,6 +38,8 @@ export interface TechDocsContentResult {
   contentType: 'markdown' | 'html' | 'text';
   // (undocumented)
   entityRef: string;
+  // (undocumented)
+  error?: string;
   // (undocumented)
   kind: string;
   // (undocumented)
@@ -128,17 +128,15 @@ export class TechDocsService {
     auth: any,
     catalog: CatalogService,
   ): Promise<TechDocsCoverageResult>;
+  // Warning: (ae-forgotten-export) The symbol "TechDocsMetadata" needs to be exported by the entry point index.d.ts
+  //
   // (undocumented)
-  fetchTechDocsMetadata(entity: Entity): Promise<TechDocsMetadata | null>;
+  fetchTechDocsMetadata(entity: Entity, auth?: any): Promise<TechDocsMetadata>;
   // (undocumented)
   generateTechDocsUrls(entity: Entity): Promise<{
     techDocsUrl: string;
     metadataUrl: string;
   }>;
-  // (undocumented)
-  getPublisher(): Promise<PublisherBase>;
-  // (undocumented)
-  initialize(): Promise<void>;
   // (undocumented)
   listTechDocs(
     options: ListTechDocsOptions | undefined,
@@ -153,7 +151,7 @@ export class TechDocsService {
     pagePath?: string,
     auth?: any,
     catalog?: CatalogService,
-  ): Promise<TechDocsContentResult | null>;
+  ): Promise<TechDocsContentResult>;
 }
 
 // (No @packageDocumentation comment for this package)

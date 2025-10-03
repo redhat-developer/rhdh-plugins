@@ -202,6 +202,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                     }),
                   )
                   .describe('List of entities with TechDocs'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if the operation failed'),
               }),
           },
           action: async ({ input }) => {
@@ -229,6 +233,7 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
               return {
                 output: {
                   entities: [],
+                  error: error.message,
                 },
               };
             }
@@ -299,6 +304,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                 coveragePercentage: z
                   .number()
                   .describe('Percentage of entities with TechDocs (0-100)'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if the operation failed'),
               }),
           },
           action: async ({ input }) => {
@@ -326,6 +335,7 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                   totalEntities: 0,
                   entitiesWithDocs: 0,
                   coveragePercentage: 0,
+                  error: error.message,
                 },
               };
             }
@@ -440,6 +450,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                   })
                   .optional()
                   .describe('TechDocs metadata information'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if the operation failed'),
               }),
           },
           action: async ({ input }) => {
@@ -456,12 +470,6 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                 catalog,
               );
 
-              if (!result) {
-                throw new Error(
-                  `retrieve-techdocs-content: Failed to retrieve content for entity: ${input.entityRef}`,
-                );
-              }
-
               return {
                 output: result,
               };
@@ -470,7 +478,18 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                 'retrieve-techdocs-content: Error retrieving TechDocs content:',
                 error,
               );
-              throw error;
+              return {
+                output: {
+                  entityRef: input.entityRef,
+                  name: '',
+                  title: '',
+                  kind: '',
+                  namespace: '',
+                  content: '',
+                  contentType: 'text' as const,
+                  error: error.message,
+                },
+              };
             }
           },
         });
