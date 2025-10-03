@@ -26,7 +26,6 @@ import {
   githubNumberProvider,
   jiraBooleanMetricMetadata,
   jiraBooleanProvider,
-  MockNumberProvider,
 } from '../../__fixtures__/mockProviders';
 import { mockEntity } from '../../__fixtures__/mockEntities';
 import {
@@ -36,23 +35,31 @@ import {
 } from '@backstage/plugin-permission-common';
 import { mockMetricValuesStore } from '../../__fixtures__/mockDatabase';
 
-class AnnotationProvider extends MockNumberProvider {
-  constructor() {
-    super(
-      'annotation.metric',
-      'annotation',
-      'Annotation Metric',
-      "A metric that only works with entities having a 'custom.annotation' annotation",
-      10,
-    );
-  }
-}
+const timestamp = '2024-01-15T10:30:00.000Z';
+const timestampDate = new Date(timestamp);
+const storedMetricValues = [
+  {
+    id: 1,
+    catalog_entity_ref: 'component:default/test-component',
+    metric_id: 'github.number_metric',
+    value: 42,
+    timestamp: timestampDate,
+    error_message: undefined,
+  },
+  {
+    id: 2,
+    catalog_entity_ref: 'component:default/test-component',
+    metric_id: 'jira.boolean_metric',
+    value: false,
+    timestamp: timestampDate,
+    error_message: undefined,
+  },
+];
 
 describe('CatalogMetricService', () => {
   let catalogMetricService: CatalogMetricService;
   let registry: MetricProvidersRegistry;
   const mockCatalogService = catalogServiceMock.mock();
-  const timestamp = '2024-01-15T10:30:00.000Z';
 
   const githubMetricResult = {
     id: 'github.number_metric',
@@ -107,6 +114,10 @@ describe('CatalogMetricService', () => {
     registry.register(githubNumberProvider);
     registry.register(jiraBooleanProvider);
 
+    mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue(
+      storedMetricValues,
+    );
+
     catalogMetricService = new CatalogMetricService({
       catalog: mockCatalogService,
       auth: mockServices.auth(),
@@ -116,19 +127,32 @@ describe('CatalogMetricService', () => {
     });
   });
 
-  describe('calculateEntityMetrics', () => {
-    it('should calculate metrics successfully with default thresholds', async () => {
+  describe('getLatestEntityMetrics', () => {
+    it('should get metrics with default thresholds', async () => {
       mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
       );
 
+      expect(mockCatalogService.getEntityByRef).toHaveBeenCalledWith(
+        'component:default/test-component',
+        expect.objectContaining({
+          credentials: expect.any(Object),
+        }),
+      );
+      expect(
+        mockMetricValuesStore.readLatestEntityMetricValues,
+      ).toHaveBeenCalledWith('component:default/test-component', [
+        'github.number_metric',
+        'jira.boolean_metric',
+      ]);
+
       expect(result).toHaveLength(2);
       expect(result).toEqual([githubMetricResult, jiraMetricResult]);
     });
 
-    it('should calculate metrics successfully with entity thresholds', async () => {
+    it('should get metrics with entity thresholds', async () => {
       const annotatedEntity = {
         ...mockEntity,
         metadata: {
@@ -168,22 +192,40 @@ describe('CatalogMetricService', () => {
       expect(result).toEqual([expectedGithubResult, jiraMetricResult]);
     });
 
-    it('should calculate metrics for specific provider IDs', async () => {
+    it('should retrieve metrics for specific provider IDs', async () => {
       mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
+      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue([
+        storedMetricValues[1],
+      ]);
 
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
         ['jira.boolean_metric'],
       );
 
+      expect(
+        mockMetricValuesStore.readLatestEntityMetricValues,
+      ).toHaveBeenCalledWith('component:default/test-component', [
+        'jira.boolean_metric',
+      ]);
       expect(result).toHaveLength(1);
       expect(result).toEqual([jiraMetricResult]);
     });
 
-    it('should handle metric calculation error', async () => {
-      jest
-        .spyOn(jiraBooleanProvider, 'calculateMetric')
-        .mockRejectedValue(new Error('Jira API failure'));
+    it("should return 'error' status when metric calculation error", async () => {
+      mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
+      const metricsWithError = [
+        storedMetricValues[0], // github metric - success
+        {
+          ...storedMetricValues[1], // jira metric - error
+          value: undefined,
+          error_message: 'Error: Jira API failure',
+        },
+      ];
+      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue(
+        metricsWithError,
+      );
+
       const jiraMetricErrorResult = {
         ...jiraMetricResult,
         status: 'error' as const,
@@ -236,6 +278,10 @@ describe('CatalogMetricService', () => {
         entityWithInvalidThresholds,
       );
 
+      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue([
+        storedMetricValues[0],
+      ]);
+
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
         ['github.number_metric'],
@@ -283,56 +329,24 @@ describe('CatalogMetricService', () => {
         ],
       };
 
+      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue([
+        storedMetricValues[0],
+      ]);
+
       const result = await catalogMetricService.getLatestEntityMetrics(
         'component:default/test-component',
         undefined,
         filter,
       );
 
+      expect(
+        mockMetricValuesStore.readLatestEntityMetricValues,
+      ).toHaveBeenCalledWith('component:default/test-component', [
+        'github.number_metric',
+      ]);
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('github.number_metric');
       expect(result).toEqual([githubMetricResult]);
-    });
-
-    it('should filter out metrics that provider does not support for certain entity', async () => {
-      registry.register(new AnnotationProvider());
-      mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
-
-      const result = await catalogMetricService.getLatestEntityMetrics(
-        'component:default/test-component',
-      );
-
-      expect(result).toHaveLength(2);
-      expect(result.map(r => r.id)).toEqual([
-        'github.number_metric',
-        'jira.boolean_metric',
-      ]);
-    });
-
-    it('should include metrics that provider supports for certain entity', async () => {
-      registry.register(new AnnotationProvider());
-      const entityWithAnnotation: Entity = {
-        ...mockEntity,
-        metadata: {
-          ...mockEntity.metadata,
-          annotations: {
-            'custom.annotation': 'A123',
-          },
-        },
-      };
-
-      mockCatalogService.getEntityByRef.mockResolvedValue(entityWithAnnotation);
-
-      const result = await catalogMetricService.getLatestEntityMetrics(
-        'component:default/test-component',
-      );
-
-      expect(result).toHaveLength(3);
-      expect(result.map(r => r.id)).toEqual([
-        'github.number_metric',
-        'jira.boolean_metric',
-        'annotation.metric',
-      ]);
     });
   });
 });
