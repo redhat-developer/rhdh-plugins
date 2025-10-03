@@ -23,18 +23,15 @@ import { globalHeaderTranslationRef } from '../translations';
  * @param title - Fallback title text (e.g., "Settings")
  * @returns Translated text or fallback
  */
+
 export const translateWithFallback = (
   t: TranslationFunction<typeof globalHeaderTranslationRef.T>,
-  titleKey?: string,
-  title?: string,
+  translationKey?: string,
+  fallbackText?: string,
 ): string => {
-  if (titleKey) {
-    return t(titleKey as any, { defaultValue: title || '' });
+  if (!translationKey) {
+    return fallbackText || '';
   }
-
-  if (title?.includes('.')) {
-    return t(title as any, {});
-  }
-
-  return title || '';
+  const translation = t(translationKey as keyof typeof t, {});
+  return translation !== translationKey ? translation : fallbackText || '';
 };

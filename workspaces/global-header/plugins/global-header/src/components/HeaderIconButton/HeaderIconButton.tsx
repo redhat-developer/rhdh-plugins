@@ -23,6 +23,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import { HeaderIcon } from '../HeaderIcon/HeaderIcon';
 import { useTranslation } from '../../hooks/useTranslation';
+import { translateWithFallback } from '../../utils/translationUtils';
 
 /**
  * @public
@@ -56,7 +57,7 @@ export const HeaderIconButton = ({
   layout,
 }: HeaderIconButtonProps) => {
   const { t } = useTranslation();
-  const displayTitle = t(titleKey as any, { defaultValue: title });
+  const displayTitle = translateWithFallback(t, titleKey, title);
   if (!displayTitle) {
     // eslint-disable-next-line no-console
     console.warn('HeaderIconButton has no title:', { icon, to });
