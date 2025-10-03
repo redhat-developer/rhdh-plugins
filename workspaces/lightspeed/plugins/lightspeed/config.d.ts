@@ -38,6 +38,11 @@ export interface Config {
        */
       url: string;
     }>;
+    /**
+     * query restriction validation (Enabled by default).
+     * @visibility frontend
+     */
+    questionValidation?: boolean;
     prompts?: Array</**
      * @visibility frontend
      */
