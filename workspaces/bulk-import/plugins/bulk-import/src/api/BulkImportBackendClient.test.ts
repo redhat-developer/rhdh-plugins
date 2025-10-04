@@ -173,51 +173,56 @@ const handlers = [
     },
   ),
 ];
+
 const server = setupServer(...handlers);
 
 beforeAll(() => server.listen());
 afterEach(() => server.restoreHandlers());
 afterAll(() => server.close());
 
-describe('BulkImportBackendClient', () => {
+const getConfigApi = (importAPI: 'open-pull-requests' | 'scaffolder') => ({
+  has: jest.fn(),
+  keys: jest.fn(),
+  get: jest.fn(),
+  getBoolean: jest.fn(),
+  getConfig: jest.fn(),
+  getConfigArray: jest.fn(),
+  getNumber: jest.fn(),
+  getString: jest.fn(key => {
+    if (key === 'backend.baseUrl') {
+      return LOCAL_ADDR;
+    }
+    return '';
+  }),
+  getStringArray: jest.fn(),
+  getOptional: jest.fn(),
+  getOptionalStringArray: jest.fn(),
+  getOptionalBoolean: jest.fn(),
+  getOptionalConfig: jest.fn(),
+  getOptionalConfigArray: jest.fn(),
+  getOptionalNumber: jest.fn(),
+  getOptionalString: jest.fn(key => {
+    if (key === 'bulkImport.importAPI') {
+      return importAPI;
+    }
+    return undefined;
+  }),
+});
+
+const bearerToken = 'test-token';
+
+const identityApi = {
+  async getCredentials() {
+    return { token: bearerToken };
+  },
+} as IdentityApi;
+
+describe('BulkImportBackendClient with open-pull-requests', () => {
   let bulkImportApi: BulkImportAPI;
-  const getConfigApi = (getOptionalStringFn: any) => ({
-    has: jest.fn(),
-    keys: jest.fn(),
-    get: jest.fn(),
-    getBoolean: jest.fn(),
-    getConfig: jest.fn(),
-    getConfigArray: jest.fn(),
-    getNumber: jest.fn(),
-    getString: jest.fn(key => {
-      if (key === 'backend.baseUrl') {
-        return LOCAL_ADDR;
-      }
-      return '';
-    }),
-    getStringArray: jest.fn(),
-    getOptional: jest.fn(),
-    getOptionalStringArray: jest.fn(),
-    getOptionalBoolean: jest.fn(),
-    getOptionalConfig: jest.fn(),
-    getOptionalConfigArray: jest.fn(),
-    getOptionalNumber: jest.fn(),
-    getOptionalString: getOptionalStringFn,
-  });
-
-  const bearerToken = 'test-token';
-
-  const identityApi = {
-    async getCredentials() {
-      return { token: bearerToken };
-    },
-  } as IdentityApi;
 
   beforeEach(() => {
     bulkImportApi = new BulkImportBackendClient({
-      configApi: getConfigApi(() => {
-        return '/api';
-      }),
+      configApi: getConfigApi('open-pull-requests'),
       identityApi: identityApi,
     });
   });
@@ -257,7 +262,9 @@ describe('BulkImportBackendClient', () => {
         orgName: 'org/dessert',
       });
       expect(repositories).toEqual(
-        mockGetRepositories.repositories.slice(0, 7),
+        mockGetRepositories.repositories.filter(
+          r => r.orgName === 'org/dessert',
+        ),
       );
     });
 
@@ -266,9 +273,9 @@ describe('BulkImportBackendClient', () => {
         orgName: 'org/dessert',
       });
       expect(repositories).toEqual(
-        mockGetRepositories.repositories
-          .slice(0, 7)
-          .filter(r => r.repoName.includes('des')),
+        mockGetRepositories.repositories.filter(
+          r => r.orgName === 'org/dessert' && r.repoName.includes('des'),
+        ),
       );
     });
   });
@@ -379,6 +386,7 @@ describe('BulkImportBackendClient', () => {
         prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
         true,
       );
+
       expect(response.length).toBe(4);
 
       response = await bulkImportApi.createImportJobs(
@@ -399,6 +407,27 @@ describe('BulkImportBackendClient', () => {
         ok: false,
         status: 404,
       });
+    });
+  });
+});
+
+describe('BulkImportBackendClient with scaffolder', () => {
+  let bulkImportApi: BulkImportAPI;
+
+  beforeEach(() => {
+    bulkImportApi = new BulkImportBackendClient({
+      configApi: getConfigApi('scaffolder'),
+      identityApi: identityApi,
+    });
+  });
+
+  describe('createImportJobs', () => {
+    it('should be able to dry run and return an empty object', async () => {
+      const response = await bulkImportApi.createImportJobs(
+        prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
+        true,
+      );
+      expect(response).toEqual({});
     });
   });
 });

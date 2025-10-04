@@ -34,6 +34,7 @@ export type PullRequestPreview = {
   prLabels?: string;
   prSpec?: string;
   pullRequestUrl?: string;
+  number?: number;
   componentName?: string;
   entityOwner?: string;
   useCodeOwnersFile: boolean;
@@ -51,6 +52,14 @@ export type ImportStatus =
   | 'CATALOG_ENTITY_CONFLICT'
   | 'REPO_EMPTY'
   | 'CODEOWNERS_FILE_NOT_FOUND_IN_REPO';
+
+export type TaskStatus =
+  | 'TASK_CANCELLED'
+  | 'TASK_COMPLETED'
+  | 'TASK_FAILED'
+  | 'TASK_OPEN'
+  | 'TASK_PROCESSING'
+  | 'TASK_SKIPPED';
 
 export type AddRepositoryData = {
   id: string;
@@ -70,6 +79,11 @@ export type AddRepositoryData = {
     lastUpdated?: string;
   };
   lastUpdated?: string;
+  // last executed task
+  task?: {
+    id: string;
+    status: TaskStatus;
+  };
 };
 
 export type Order = 'asc' | 'desc';

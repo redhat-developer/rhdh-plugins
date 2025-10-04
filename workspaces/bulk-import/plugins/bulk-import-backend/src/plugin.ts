@@ -20,6 +20,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
+import { migrate } from './database/migration';
 import { createRouter } from './service/router';
 
 /**
@@ -41,6 +42,7 @@ export const bulkImportPlugin = createBackendPlugin({
         auth: coreServices.auth,
         catalogApi: catalogServiceRef,
         auditor: coreServices.auditor,
+        database: coreServices.database,
       },
       async init({
         config,
@@ -53,7 +55,10 @@ export const bulkImportPlugin = createBackendPlugin({
         auth,
         catalogApi,
         auditor,
+        database,
       }) {
+        await migrate(database);
+
         const router = await createRouter({
           config,
           cache,
@@ -64,6 +69,7 @@ export const bulkImportPlugin = createBackendPlugin({
           auth,
           catalogApi,
           auditor,
+          database,
         });
         http.use(router);
         http.addAuthPolicy({

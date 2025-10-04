@@ -1,0 +1,59 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: create-pr-with-catalog-info
+  title: Propose catalog-info.yaml in the pull request
+  description: Creates a catalog-info.yaml in the given GitHub repo.
+
+spec:
+  owner: user:default/guest
+  type: service
+
+  parameters:
+    - title: Provide repository details
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          type: string
+          title: Repository URL (Backstage format)
+          description: 'e.g. github.com?owner=Org&repo=repoName'
+        organization:
+          type: string
+          title: Owner of the Repository
+        branchName:
+          type: string
+          title: The branch to add the catalog entity to
+        targetBranchName:
+          type: string
+          title: The branch to target the PR to
+        name:
+          type: string
+          title: Name of the repository
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          organization: ${{ parameters.organization }}
+
+    - id: publish
+      name: Create PR to add catalog-info.yaml
+      action: publish:github:pull-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: ${{ parameters.branchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}
+        title: 'Add catalog-info.yaml'
+        description: 'This PR adds a default catalog-info.yaml for Backstage.'
+
+    - id: register
+      name: Register catalog-info.yaml
+      action: catalog:register
+      input:
+        optional: true
+        repoContentsUrl: https://github.com/${{ parameters.organization }}/${{ parameters.name }}/blob/${{ parameters.branchName }}/catalog-info.yaml

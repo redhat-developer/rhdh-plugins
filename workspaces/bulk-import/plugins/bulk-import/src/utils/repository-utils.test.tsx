@@ -236,6 +236,9 @@ describe('Repository utils', () => {
   it('should load catalog info content and evaluate PR template', () => {
     const importJobStatus = {
       approvalTool: 'GIT',
+      task: {
+        taskId: 'bb624cb5-64fb-41a7-be8f-c17e60d24a12',
+      },
       github: {
         pullRequest: {
           number: 105,

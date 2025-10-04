@@ -23,6 +23,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
@@ -31,12 +32,13 @@ export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
+  const importFlow = useImportFlow();
 
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
 
   const getGitSubmitTitle = () => {
-    if (gitlabFeatureFlag) {
+    if (gitlabFeatureFlag || importFlow === 'scaffolder') {
       return t('common.import');
     }
     return isPluralRepositories
@@ -57,9 +59,10 @@ export const AddRepositoriesFormFooter = () => {
     },
     [ApprovalTool.Git]: {
       submitTitle: getGitSubmitTitle(),
-      toolTipTitle: gitlabFeatureFlag
-        ? t('forms.footer.importTooltip')
-        : t('forms.footer.pullRequestTooltip'),
+      toolTipTitle:
+        gitlabFeatureFlag || importFlow === 'scaffolder'
+          ? t('forms.footer.importTooltip')
+          : t('forms.footer.pullRequestTooltip'),
     },
   };
 

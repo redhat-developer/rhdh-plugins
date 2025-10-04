@@ -135,6 +135,9 @@ const BASE_CONFIG = {
       },
     ],
   },
+  bulkImport: {
+    importTemplate: `template:default/some-template`,
+  },
 };
 
 export function addHandlersForGHTokenAppErrors(server: SetupServer) {
@@ -170,6 +173,7 @@ export async function startBackendServer(
   mockCatalogClient: CatalogClient,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
   config?: any,
+  db?: any,
 ): Promise<any> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     bulkImportPlugin,
@@ -183,6 +187,7 @@ export async function startBackendServer(
       deps: {},
       factory: () => mockCatalogClient,
     }),
+    db ?? mockServices.database.factory(),
   ];
   if (authorizeResult) {
     features.push(

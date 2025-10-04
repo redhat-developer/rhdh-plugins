@@ -19,6 +19,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { useDeleteDialog } from '../DeleteDialogContext';
@@ -32,10 +33,19 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
     setOpenDialog(true);
   };
 
-  const tooltipMessage =
-    data.source === 'location'
-      ? t('common.remove')
-      : t('repositories.removeTooltipDisabled');
+  const importFlow = useImportFlow();
+  let tooltipMessage;
+  let delDisabled;
+  if (importFlow === 'scaffolder') {
+    tooltipMessage = t('repositories.removeTooltipRepositoryScaffolder');
+    delDisabled = false;
+  } else {
+    tooltipMessage =
+      data.source === 'location'
+        ? t('common.remove')
+        : t('repositories.removeTooltipDisabled');
+    delDisabled = data.source !== 'location';
+  }
 
   return (
     <Tooltip title={tooltipMessage}>
@@ -45,7 +55,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
           onClick={() => openDialog(data)}
           aria-label={t('common.delete')}
           size="large"
-          disabled={data.source !== 'location'}
+          disabled={delDisabled}
         >
           <Delete />
         </IconButton>

@@ -95,19 +95,19 @@ const bulkImportTranslationFr = createTranslationMessages({
     'page.title': 'Importation en masse',
     'page.typeLink': 'Importation en masse',
     'permissions.addRepositoriesMessage':
-      "Pour ajouter des référentiels, contactez votre administrateur pour qu'il vous donne l'autorisation « bulk.import ».",
+      "Pour ajouter des référentiels, contactez votre administrateur pour qu'il vous donne l'autorisation « bulk.import ».",
     'permissions.title': 'Autorisation requise',
     'permissions.viewRepositoriesMessage':
-      "Pour afficher les référentiels ajoutés, contactez votre administrateur pour qu'il vous donne l'autorisation « bulk.import ».",
+      "Pour afficher les référentiels ajoutés, contactez votre administrateur pour qu'il vous donne l'autorisation « bulk.import ».",
     'previewFile.closeDrawer': 'Fermez le tiroir',
     'previewFile.failedToCreatePR': 'Échec de la création du PR',
     'previewFile.failedToFetchPR':
       "Échec de la récupération de la demande d'extraction. Un nouveau YAML a été généré ci-dessous.",
     'previewFile.invalidEntityYaml':
       "L'entité YAML dans votre demande d'extraction n'est pas valide (fichier vide ou apiVersion, kind ou metadata.name manquant). Un nouveau YAML a été généré ci-dessous.",
-    'previewFile.keyValuePlaceholder': 'clé1 : valeur2 ; clé2 : valeur2',
+    'previewFile.keyValuePlaceholder': 'clé1 : valeur2 ; clé2 : valeur2',
     'previewFile.prCreationUnsuccessful':
-      'La création de PR a échoué pour certains référentiels. Cliquez sur « Modifier » pour voir la raison.',
+      'La création de PR a échoué pour certains référentiels. Cliquez sur « Modifier » pour voir la raison.',
     'previewFile.preview': 'Aperçu',
     'previewFile.previewFile': "Fichier d'aperçu",
     'previewFile.previewFiles': 'Aperçu des fichiers',
@@ -116,7 +116,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'previewFile.pullRequest.bodyPlaceholder':
       'Un texte descriptif avec prise en charge Markdown',
     'previewFile.pullRequest.codeOwnersWarning':
-      "AVERTISSEMENT : cette opération peut échouer si aucun fichier CODEOWNERS n'est trouvé à l'emplacement cible.",
+      "AVERTISSEMENT : cette opération peut échouer si aucun fichier CODEOWNERS n'est trouvé à l'emplacement cible.",
     'previewFile.pullRequest.componentNameLabel': 'Nom du composant créé',
     'previewFile.pullRequest.componentNamePlaceholder': 'Nom du composant',
     'previewFile.pullRequest.details': '{{tool}} détails',
@@ -164,7 +164,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'repositories.pr': 'PR',
     'repositories.refresh': 'Rafraîchir',
     'repositories.removeRepositoryQuestion':
-      'Supprimer {{repoName}} {{repositoryText}} ?',
+      'Supprimer {{repoName}} {{repositoryText}} ?',
     'repositories.removeRepositoryWarning':
       'La suppression d’un référentiel efface toutes les informations associées de la page Catalogue.',
     'repositories.removeRepositoryWarningGitlab':
@@ -173,8 +173,12 @@ const bulkImportTranslationFr = createTranslationMessages({
       'Ce référentiel a été ajouté au fichier app-config. Pour le supprimer, modifiez directement le fichier',
     'repositories.removing': 'Suppression...',
     'repositories.repositoryText': 'Dépôt',
+    'repositories.removeRepositoryWarningScaffolder':
+      'La suppression d’un dépôt supprimera également toutes les informations de tâche Scaffolder associées.',
     'repositories.unableToRemoveRepository':
       'Impossible de supprimer le dépôt. {{error}}',
+    'repositories.removeTooltipRepositoryScaffolder':
+      'Supprimer le dépôt et les informations de tâche Scaffolder associées',
     'repositories.viewCatalogInfoTooltip':
       'Afficher le fichier catalog-info.yaml',
     'sidebar.bulkImport': 'Importation en masse',
@@ -222,6 +226,18 @@ const bulkImportTranslationFr = createTranslationMessages({
     'validation.keyValuePairFormat':
       'Chaque entrée doit avoir une clé et une valeur séparées par deux points.',
     'validation.titleRequired': 'Le titre {{approvalTool}} est obligatoire',
+    'tasks.tasksFor': 'Tâches pour {{importJobStatusId}}',
+    'tasks.taskId': 'ID de la tâche',
+    'tasks.taskLink': 'Lien de la tâche',
+    'tasks.viewTask': 'Voir la tâche',
+    'tasks.loading': 'Chargement...',
+    'tasks.errorFetchingData': 'Erreur lors de la récupération des données',
+    'tasks.taskCancelled': 'Tâche annulée',
+    'tasks.taskCompleted': 'Tâche terminée',
+    'tasks.taskFailed': 'Tâche échouée',
+    'tasks.taskOpen': 'Tâche ouverte',
+    'tasks.taskProcessing': 'Tâche en cours',
+    'tasks.taskSkipped': 'Tâche ignorée',
   },
 });
 
