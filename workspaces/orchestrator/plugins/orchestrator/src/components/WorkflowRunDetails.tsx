@@ -17,12 +17,14 @@
 import React from 'react';
 import { useAsync } from 'react-use';
 
-import { Link } from '@backstage/core-components';
+import { CopyTextButton, Link } from '@backstage/core-components';
 import { useApi, useRouteRef } from '@backstage/core-plugin-api';
 import { AboutField } from '@backstage/plugin-catalog';
 
+import { Box } from '@material-ui/core';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from 'tss-react/mui';
 
 import {
   capitalize,
@@ -41,10 +43,22 @@ type WorkflowDetailsCardProps = {
   details: WorkflowRunDetail;
 };
 
+const useStyles = makeStyles()(_ => ({
+  workflowId: {
+    '& > div': {
+      width: '80%',
+    },
+    '& > button': {
+      maxHeight: '20px',
+    },
+  },
+}));
+
 export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
   details,
 }) => {
   const orchestratorApi = useApi(orchestratorApiRef);
+  const { classes } = useStyles();
   const { value, loading, error } =
     useAsync(async (): Promise<WorkflowOverviewDTO> => {
       const res = await orchestratorApi.getWorkflowOverview(details.workflowId);
@@ -89,17 +103,33 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
           </Typography>
         </AboutField>
       </Grid>
-      <Grid item md={5} key="Duration">
+      <Grid item md={5} key="Run ID">
+        <AboutField label="Run ID">
+          <Box
+            display="flex"
+            alignItems="center"
+            className={classes.workflowId}
+          >
+            <Typography
+              variant="subtitle2"
+              component="div"
+              overflow="hidden"
+              noWrap
+            >
+              {details.id}
+            </Typography>
+            <CopyTextButton
+              text={details.id}
+              tooltipText="Run ID copied to clipboard"
+              tooltipDelay={2000}
+            />
+          </Box>
+        </AboutField>
+      </Grid>
+      <Grid item md={7} key="Duration">
         <AboutField label="Duration">
           <Typography variant="subtitle2" component="div">
             <b>{details.duration}</b>
-          </Typography>
-        </AboutField>
-      </Grid>
-      <Grid item md={7} key="Description">
-        <AboutField label="Description">
-          <Typography variant="subtitle2" component="div">
-            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
           </Typography>
         </AboutField>
       </Grid>
@@ -107,6 +137,13 @@ export const WorkflowRunDetails: React.FC<WorkflowDetailsCardProps> = ({
         <AboutField label="Started">
           <Typography variant="subtitle2" component="div">
             <b>{details.start}</b>
+          </Typography>
+        </AboutField>
+      </Grid>
+      <Grid item md={12} key="Description">
+        <AboutField label="Description">
+          <Typography variant="subtitle2" component="div">
+            <b>{details.description ?? VALUE_UNAVAILABLE}</b>
           </Typography>
         </AboutField>
       </Grid>
