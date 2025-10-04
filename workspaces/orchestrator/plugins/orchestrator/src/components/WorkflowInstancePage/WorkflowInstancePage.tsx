@@ -66,7 +66,6 @@ import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import usePolling from '../../hooks/usePolling';
 import {
   entityInstanceRouteRef,
-  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
@@ -206,7 +205,6 @@ export const WorkflowInstancePage = () => {
   const { authenticate } = useOrchestratorAuth();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
-  const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
   const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
@@ -380,21 +378,10 @@ export const WorkflowInstancePage = () => {
 
   const combinedError: Error | undefined = error || inputSchemaError;
 
+  const title = `${value?.processName} run`;
+
   return (
-    <BaseOrchestratorPage
-      title={value?.id}
-      type={value?.processName}
-      typeLink={
-        entityRef
-          ? entityWorkflowLink({
-              namespace,
-              kind,
-              name,
-              workflowId: value?.processId ?? '',
-            })
-          : `/orchestrator/workflows/${workflowId}`
-      }
-    >
+    <BaseOrchestratorPage title={title}>
       {loading ? <Progress /> : null}
       {combinedError ? <ResponseErrorPanel error={combinedError} /> : null}
       {!loading && isNonNullable(value) ? (
