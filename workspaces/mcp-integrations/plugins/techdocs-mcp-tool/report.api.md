@@ -115,6 +115,22 @@ export interface TechDocsEntityWithUrls extends TechDocsEntity {
 }
 
 // @public
+export interface TechDocsMetadata {
+  // (undocumented)
+  build_timestamp?: number;
+  // (undocumented)
+  error?: string;
+  // (undocumented)
+  etag?: string;
+  // (undocumented)
+  files?: string[];
+  // (undocumented)
+  site_description?: string;
+  // (undocumented)
+  site_name?: string;
+}
+
+// @public
 export class TechDocsService {
   constructor(
     config: Config,
@@ -128,8 +144,6 @@ export class TechDocsService {
     auth: any,
     catalog: CatalogService,
   ): Promise<TechDocsCoverageResult>;
-  // Warning: (ae-forgotten-export) The symbol "TechDocsMetadata" needs to be exported by the entry point index.d.ts
-  //
   // (undocumented)
   fetchTechDocsMetadata(entity: Entity, auth?: any): Promise<TechDocsMetadata>;
   // (undocumented)
