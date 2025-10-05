@@ -237,7 +237,7 @@ describe('InstallationDataService', () => {
     });
   });
 
-  describe('addPackageDisabled', () => {
+  describe('setPackageDisabled', () => {
     beforeEach(() => {
       installationDataService = InstallationDataService.fromConfig({
         config: validConfig,
@@ -246,14 +246,14 @@ describe('InstallationDataService', () => {
       });
     });
 
-    it('should add package with disabled', async () => {
-      installationDataService.addPackageDisabled(
+    it('should set package with disabled', async () => {
+      installationDataService.setPackageDisabled(
         mockDynamicPackage11.package,
         false,
       );
 
       expect(
-        mockFileInstallationStorage.addPackageDisabled,
+        mockFileInstallationStorage.setPackageDisabled,
       ).toHaveBeenCalledWith(mockDynamicPackage11.package, false);
     });
   });

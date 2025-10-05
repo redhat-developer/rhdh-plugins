@@ -10024,9 +10024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.16.1":
-  version: 5.17.1
-  resolution: "@mui/icons-material@npm:5.17.1"
+"@mui/icons-material@npm:^5.16.1, @mui/icons-material@npm:^5.17.1":
+  version: 5.18.0
+  resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
   peerDependencies:
@@ -10036,7 +10036,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
+  checksum: 1ee4ee2817278c72095860c81e742270ee01fd320e48f865d371abfeacf83e43a7c6edbfd060ee66ef2a4f02c6cf79de0aca1e73a4d5f6320112bbfcac8176c3
   languageName: node
   linkType: hard
 
@@ -12196,6 +12196,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/theme": ^0.6.8
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: a5626d864def2e255d026d1620d370ada033f11ee357b145a9f5bd95185cbb9392cae1c83d2dbdcafde8747feb95d79f7067f645d5c6086628d5910a216cf34e
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:^, @red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:plugins/redhat-resource-optimization-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:plugins/redhat-resource-optimization-backend"
@@ -12299,21 +12315,6 @@ __metadata:
     react-router-dom: 6.0.0-beta.0 || ^6.3.0
   languageName: unknown
   linkType: soft
-
-"@redhat-developer/red-hat-developer-hub-theme@npm:^0.5.0":
-  version: 0.5.1
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1"
-  peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 4de9e62b9de390c7de82fcf123a03135366952ab39d423be51c3afb242c316e3deb78ecaa3e038d6bcc12695f8f03223b9efb45a689a40ea2c11139f4e3fc06d
-  languageName: node
-  linkType: hard
 
 "@redis/client@npm:^1.6.0":
   version: 1.6.1
@@ -17350,8 +17351,8 @@ __metadata:
     "@patternfly/patternfly": ^6.3.0
     "@playwright/test": ^1.32.3
     "@red-hat-developer-hub/backstage-plugin-orchestrator": ^2.5.1
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
     "@red-hat-developer-hub/plugin-redhat-resource-optimization": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^15.0.0
