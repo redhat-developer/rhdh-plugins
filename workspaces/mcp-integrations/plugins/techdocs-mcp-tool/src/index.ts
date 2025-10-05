@@ -23,4 +23,5 @@ export type {
   ListTechDocsOptions,
   TechDocsContentResult,
   TechDocsEntityWithMetadata,
+  TechDocsMetadata,
 } from './service';
