@@ -40,6 +40,8 @@ jest.mock('@backstage/core-plugin-api', () => ({
   })),
 }));
 
+const mockTranslationFunction = (key: string) => key as any;
+
 describe('Floating Action Button', () => {
   it('should render the floating action button with icon and label', () => {
     render(
@@ -52,6 +54,7 @@ describe('Floating Action Button', () => {
           to: 'https://github.com/xyz',
           toolTip: 'Git',
         }}
+        t={mockTranslationFunction}
       />,
     );
     expect(screen.getByTestId('git-repo')).toBeInTheDocument();
@@ -70,6 +73,7 @@ describe('Floating Action Button', () => {
           to: 'https://github.com/xyz',
           toolTip: 'Git',
         }}
+        t={mockTranslationFunction}
       />,
     );
     expect(screen.getByTestId('git-repo')).toBeInTheDocument();

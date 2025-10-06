@@ -38,6 +38,7 @@ export enum Slot {
 export type FloatingActionButton = {
   slot?: Slot;
   label: string;
+  labelKey?: string;
   showLabel?: boolean;
   icon?: string | React.ReactElement;
   size?: 'small' | 'medium' | 'large';
@@ -54,6 +55,7 @@ export type FloatingActionButton = {
   onClick?: React.MouseEventHandler;
   to?: string;
   toolTip?: string;
+  toolTipKey?: string;
   priority?: number;
   visibleOnPaths?: string[];
   excludeOnPaths?: string[];
