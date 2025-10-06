@@ -137,8 +137,9 @@ test('verify default prompts are visible', async ({ page }) => {
 
   expect(nonEmptyTexts.length).toBe(3);
 });
-
-test.describe('File Attachment Validation', () => {
+// TODO: Enable the tests when attachment preview issues is fixed in PF chatbot
+// https://github.com/patternfly/chatbot/issues/692
+test.skip('File Attachment Validation', () => {
   const testFiles = [
     { path: '../../package.json', name: 'package.json' },
     { path: __filename, name: 'fileAttachment.spec.ts' },
