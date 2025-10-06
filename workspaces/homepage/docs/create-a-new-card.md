@@ -38,16 +38,29 @@ Cards commonly uses the [InfoCard](https://backstage.io/storybook/?path=/story/l
    );
    ```
 
-3. And finally, users can add them to their `app-config` to expose the component as mount point `home.page/cards`:
+3. And finally, users can add them to their `app-config` to expose the component as mount point `home.page/cards` (for default cards) or `home.page/add-card` (for additional plugin cards):
 
    ```yaml
    dynamicPlugins:
      frontend:
        your-plugin-id:
          mountPoints:
+           # For default cards that appear by default
            - mountPoint: home.page/cards
              importName: YourHomePageCard
              config:
                layout: ...
                props: ...
+           # For additional cards contributed by plugins
+           - mountPoint: home.page/add-card
+             importName: YourAdditionalCard
+             config:
+               priority: 10 # Optional: higher priority appears first
+               layout: ...
+               props: ...
    ```
+
+## Mount Points
+
+- **`home.page/cards`** - Default homepage cards that appear by default
+- **`home.page/add-card`** - Additional cards contributed by other plugins that appear alongside default cards

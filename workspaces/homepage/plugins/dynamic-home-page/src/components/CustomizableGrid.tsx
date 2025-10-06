@@ -62,6 +62,7 @@ const useStyles = makeStyles()({
  */
 export interface CustomizableGridProps {
   mountPoints: HomePageCardMountPoint[];
+  defaultMountPoints?: HomePageCardMountPoint[]; // For config prop - only default cards
   breakpoints?: Record<string, number>;
   cols?: Record<string, number>;
 }
@@ -74,6 +75,10 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
   const theme = useTheme();
 
   const cards = useMemo<Card[]>(() => {
+    if (!props.mountPoints || !Array.isArray(props.mountPoints)) {
+      return [];
+    }
+
     return props.mountPoints.map<Card>((mountPoint, index) => {
       const id = (index + 1).toString();
       const layouts: Record<string, Layout> = {};
@@ -132,13 +137,16 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
     ));
   }, [cards, classes.cardWrapper]);
 
-  // Create default layout configuration for initial display AND restore defaults functionality
+  // Create default layout configuration for "restore defaults" functionality
+  // Use only default mount points for restore defaults, but all mount points for "Add widget" dialog
   const defaultConfig = useMemo(() => {
-    if (!props.mountPoints || props.mountPoints.length === 0) {
+    const configMountPoints = props.defaultMountPoints || []; // Use only default cards for restore
+
+    if (!configMountPoints || configMountPoints.length === 0) {
       return [];
     }
 
-    return props.mountPoints.map((mountPoint, index) => {
+    return configMountPoints.map((mountPoint, index) => {
       const layout = mountPoint.config?.layouts?.xl || {};
 
       return {
@@ -155,7 +163,7 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
         deletable: true,
       };
     });
-  }, [props.mountPoints]);
+  }, [props.defaultMountPoints]);
 
   return (
     <>
