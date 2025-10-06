@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 0.6.1
+
+### Patch Changes
+
+- 51c5897: Export i18n resources from alpha module
+
 ## 0.6.0
 
 ### Minor Changes
