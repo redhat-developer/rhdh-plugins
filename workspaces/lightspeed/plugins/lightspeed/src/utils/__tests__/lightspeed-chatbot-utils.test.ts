@@ -261,11 +261,8 @@ describe('getMessageData', () => {
   it('should return content and timestamp from message.kwargs', () => {
     const message = {
       content: 'This is the message content',
-      response_metadata: {
-        created_at: 1744695548.101305,
-        model: 'granite3-dense:8b',
-      },
-      additional_kwargs: {},
+      model: 'granite3-dense:8b',
+      timestamp: '2025-04-15T05:39:08Z',
       id: 1,
       type: 'human',
       name: '',
@@ -274,17 +271,17 @@ describe('getMessageData', () => {
     expect(result).toEqual({
       content: 'This is the message content',
       model: 'granite3-dense:8b',
-      timestamp: '15/04/2025, 05:39:08',
+      timestamp: expect.stringMatching(/15\/04\/2025, \d{2}:\d{2}:\d{2}/), // Flexible timezone
       referencedDocuments: [],
     });
   });
 
   it('should handle missing kwargs properties gracefully', () => {
-    const message = {};
+    const message = { timestamp: '2025-10-06T15:59:54Z' };
     const result = getMessageData(message as any);
     expect(result).toEqual({
       content: '',
-      timestamp: '',
+      timestamp: expect.stringMatching(/06\/10\/2025, \d{2}:\d{2}:\d{2}/), // Flexible timezone
       model: undefined,
       referencedDocuments: [],
     });
@@ -295,13 +292,14 @@ describe('getMessageData', () => {
       additional_kwargs: {
         referenced_documents,
       },
+      timestamp: '2025-10-06T15:59:54Z',
     };
     const result = getMessageData(message as any);
     expect(result).toEqual({
       content: '',
-      timestamp: '',
+      timestamp: expect.stringMatching(/06\/10\/2025, \d{2}:\d{2}:\d{2}/), // Flexible timezone
       model: undefined,
-      referencedDocuments: referenced_documents,
+      referencedDocuments: [],
     });
   });
 });

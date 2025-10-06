@@ -20,6 +20,7 @@ import {
   BaseMessage,
   ConversationList,
   ConversationSummary,
+  LCSConversation,
   ReferencedDocument,
   ReferencedDocuments,
 } from '../types';
@@ -146,12 +147,42 @@ export const createBotMessage = (props: MessageProps) =>
     role: 'bot',
   });
 
+export const getConversationsData = (
+  conversation: LCSConversation,
+): [BaseMessage, BaseMessage] => {
+  const [userMessage, botMessage] = conversation.messages || [];
+  return [
+    {
+      ...userMessage,
+      timestamp: getTimestamp(
+        conversation.started_at
+          ? new Date(conversation.started_at).getTime()
+          : Date.now(),
+      ),
+    },
+    {
+      ...botMessage,
+      timestamp: getTimestamp(
+        conversation.completed_at
+          ? new Date(conversation.completed_at).getTime()
+          : Date.now(),
+      ),
+      referencedDocuments: botMessage?.referencedDocuments ?? [],
+    },
+  ];
+};
+
 export const getMessageData = (message: BaseMessage) => {
+  // Convert ISO timestamp string to Unix timestamp
+  const timestamp = message?.timestamp
+    ? new Date(message.timestamp).getTime()
+    : Date.now();
+
   return {
-    model: message?.response_metadata?.model,
+    model: message?.model,
     content: message?.content || '',
-    timestamp: getTimestamp(message?.response_metadata?.created_at * 1000),
-    referencedDocuments: message?.additional_kwargs?.referenced_documents ?? [],
+    timestamp: getTimestamp(timestamp),
+    referencedDocuments: message?.referencedDocuments ?? [],
   };
 };
 

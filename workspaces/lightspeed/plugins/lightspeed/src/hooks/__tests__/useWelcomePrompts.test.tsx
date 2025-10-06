@@ -15,6 +15,7 @@
  */
 import { ConfigApi, useApi } from '@backstage/core-plugin-api';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
@@ -29,14 +30,36 @@ jest.mock('@backstage/core-plugin-api', () => ({
   createApiRef: jest.fn(() => ({})),
 }));
 
+jest.mock('../../api/api', () => ({
+  lightspeedApiRef: { id: 'plugin.lightspeed.service' },
+}));
+
 describe('useWelcomePrompts', () => {
+  let queryClient: QueryClient;
+
   beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: {
+        queries: {
+          retry: false,
+        },
+      },
+    });
     jest.clearAllMocks();
     (useApi as jest.Mock).mockReturnValue({
       getOptionalConfigArray: jest.fn(),
       getOptionalBoolean: jest.fn().mockReturnValue(false),
+      isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
     });
   });
+
+  afterEach(() => {
+    queryClient.clear();
+  });
+
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 
   it('should return welcome prompts from user prompts', async () => {
     const getMockString = (prompt: { title: string; message: string }) =>
@@ -58,7 +81,7 @@ describe('useWelcomePrompts', () => {
         .fn()
         .mockReturnValue(userPrompts.map(getMockString)),
     });
-    const { result } = renderHook(() => useWelcomePrompts());
+    const { result } = renderHook(() => useWelcomePrompts(), { wrapper });
     await waitFor(() => {
       expect(result.current).toBeDefined();
       expect(result.current.length).toBe(3);
@@ -75,7 +98,7 @@ describe('useWelcomePrompts', () => {
   });
 
   it('should return welcome prompts from default prompts', async () => {
-    const { result } = renderHook(() => useWelcomePrompts());
+    const { result } = renderHook(() => useWelcomePrompts(), { wrapper });
     await waitFor(() => {
       expect(result.current).toBeDefined();
       expect(result.current.length).toBe(3);
