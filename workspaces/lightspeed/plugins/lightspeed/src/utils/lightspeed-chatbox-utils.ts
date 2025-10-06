@@ -172,20 +172,6 @@ export const getConversationsData = (
   ];
 };
 
-export const getMessageData = (message: BaseMessage) => {
-  // Convert ISO timestamp string to Unix timestamp
-  const timestamp = message?.timestamp
-    ? new Date(message.timestamp).getTime()
-    : Date.now();
-
-  return {
-    model: message?.model,
-    content: message?.content || '',
-    timestamp: getTimestamp(timestamp),
-    referencedDocuments: message?.referencedDocuments ?? [],
-  };
-};
-
 export const transformDocumentsToSources = (
   referenced_documents: ReferencedDocuments,
 ): SourcesCardProps | undefined => {

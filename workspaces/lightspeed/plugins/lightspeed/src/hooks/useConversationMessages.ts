@@ -31,7 +31,6 @@ import {
   createBotMessage,
   createUserMessage,
   getConversationsData,
-  getMessageData,
   getTimestamp,
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
