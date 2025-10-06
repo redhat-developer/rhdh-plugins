@@ -29,6 +29,10 @@ import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
 
+/**
+ * Provider component for the Quickstart Drawer functionality
+ * @public
+ */
 export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [showNotification, setShowNotification] = useState(false);

@@ -48,6 +48,7 @@ export interface QuickstartButtonProps {
 }
 
 /**
+ * Quickstart button component for the global header help dropdown
  * @public
  */
 export const QuickstartButton = ({

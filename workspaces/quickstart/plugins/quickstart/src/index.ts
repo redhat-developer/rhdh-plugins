@@ -26,6 +26,16 @@ export * from './plugin';
 
 export { useQuickstartDrawerContext } from './hooks/useQuickstartDrawerContext';
 export type { QuickstartDrawerContextType } from './components/QuickstartDrawerContext';
+/**
+ * @public
+ */
+export type { UserRole } from './types';
+export { QuickstartButton } from './components/QuickstartButton/QuickstartButton';
+export type { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
+/**
+ * @public
+ */
+export { QuickstartDrawerProvider } from './components/QuickstartDrawerProvider';
 
 export {
   quickstartTranslations,
