@@ -29,6 +29,7 @@ import { useTheme } from '@mui/material/styles';
 
 import { ErrorBoundary } from '@backstage/core-components';
 import { CustomHomepageGrid } from '@backstage/plugin-home';
+import { attachComponentData } from '@backstage/core-plugin-api';
 
 import { makeStyles } from 'tss-react/mui';
 
@@ -82,6 +83,30 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
     return props.mountPoints.map<Card>((mountPoint, index) => {
       const id = (index + 1).toString();
       const layouts: Record<string, Layout> = {};
+
+      // Apply config-based metadata to component if provided (skip if already exists)
+      if (mountPoint.config?.title) {
+        try {
+          attachComponentData(
+            mountPoint.Component,
+            'title',
+            mountPoint.config.title,
+          );
+        } catch (error) {
+          // Ignore duplicate metadata errors - component already has title
+        }
+      }
+      if (mountPoint.config?.description) {
+        try {
+          attachComponentData(
+            mountPoint.Component,
+            'description',
+            mountPoint.config.description,
+          );
+        } catch (error) {
+          // Ignore duplicate metadata errors - component already has description
+        }
+      }
 
       if (mountPoint.config?.layouts) {
         for (const [breakpoint, layout] of Object.entries(

@@ -191,9 +191,13 @@ export interface HomePageCardMountPoint {
 // @public (undocumented)
 export interface HomePageCardMountPointConfig {
     // (undocumented)
+    description?: string;
+    // (undocumented)
     layouts?: Record<Breakpoint, Layout>;
     // (undocumented)
     priority?: number;
+    // (undocumented)
+    title?: string;
 }
 
 // @public
