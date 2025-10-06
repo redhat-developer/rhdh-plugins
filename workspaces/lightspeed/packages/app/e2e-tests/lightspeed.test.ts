@@ -95,9 +95,9 @@ test('Lightspeed is available', async ({ page }) => {
 });
 
 test('Models are available', async ({ page }) => {
-  const model = models[1].id;
+  const model = models[1].provider_resource_id;
   const dropdown = page.locator('button[aria-label="Chatbot selector"]');
-  await expect(dropdown).toHaveText(models[0].id);
+  await expect(dropdown).toHaveText(models[0].provider_resource_id);
 
   await dropdown.click();
   await page.getByText(model).click();
@@ -138,7 +138,9 @@ test('verify default prompts are visible', async ({ page }) => {
   expect(nonEmptyTexts.length).toBe(3);
 });
 
-test.describe('File Attachment Validation', () => {
+// TODO: Re-enable this test once file attachment issue is fixed
+// https://github.com/patternfly/chatbot/issues/692
+test.skip('File Attachment Validation', () => {
   const testFiles = [
     { path: '../../package.json', name: 'package.json' },
     { path: __filename, name: 'fileAttachment.spec.ts' },
@@ -227,7 +229,7 @@ describeFn('Conversation', () => {
       await mockChatHistory(page, demoChatContent);
     }
 
-    let message = demoChatContent[0].content;
+    let message = demoChatContent[0].messages[0].content;
     if (!devMode) {
       message =
         (await page
@@ -236,8 +238,10 @@ describeFn('Conversation', () => {
     }
     await sendMessage(message, page, false);
 
-    const jumpTopButton = page.getByRole('button', { name: 'Jump top' });
-    const jumpBottomButton = page.getByRole('button', { name: 'Jump bottom' });
+    const jumpTopButton = page.getByRole('button', { name: 'Back to top' });
+    const jumpBottomButton = page.getByRole('button', {
+      name: 'Back to bottom',
+    });
 
     await expect(jumpTopButton).toBeVisible();
     await jumpTopButton.click();
@@ -262,7 +266,7 @@ describeFn('Conversation', () => {
       await mockConversations(page, moreConversations);
     }
     await sendMessage('test', page);
-    const sidePanel = page.locator('.pf-v6-c-drawer__panel');
+    const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
 
     const currentChat = sidePanel.locator('li.pf-chatbot__menu-item--active');
     await expect(currentChat).toHaveText(
@@ -293,10 +297,10 @@ describeFn('Conversation', () => {
     const botMessage = page.locator('.pf-chatbot__message--bot');
 
     await expect(userMessage).toContainText(
-      devMode ? contents[0].content : 'tell me about Backstage',
+      devMode ? contents[0].messages[0].content : 'tell me about Backstage',
     );
     await expect(botMessage).toContainText(
-      devMode ? contents[1].content : 'Backstage',
+      devMode ? contents[0].messages[1].content : 'Backstage',
     );
   });
 });
