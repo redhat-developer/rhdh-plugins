@@ -246,7 +246,7 @@ export const useConversationMessages = (
                 }
               }
 
-              if (event === 'token') {
+              if (event === 'token' && data?.role === 'inference') {
                 const content = data?.token || '';
 
                 finalMessages.push(content);

@@ -129,7 +129,7 @@ export const generateQueryResponse = (conversationId: string) => {
   tokens.forEach((token, index) => {
     events.push({
       event: 'token',
-      data: { id: index, token },
+      data: { id: index, token, role: 'inference' },
     });
   });
 

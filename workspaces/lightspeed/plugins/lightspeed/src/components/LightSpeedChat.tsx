@@ -110,7 +110,7 @@ type LightspeedChatProps = {
   avatar?: string;
   profileLoading: boolean;
   handleSelectedModel: (item: string) => void;
-  models: { label: string; value: string }[];
+  models: { label: string; value: string; provider: string }[];
 };
 
 export const LightspeedChat = ({

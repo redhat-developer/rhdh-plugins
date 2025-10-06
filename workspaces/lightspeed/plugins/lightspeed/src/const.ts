@@ -69,5 +69,5 @@ export const RHDH_SAMPLE_PROMPTS: SamplePrompts = [
 
 // Topic restriction valid provider IDs
 export const VALID_TOPIC_RESTRICTION_PROVIDER_IDS = [
-  'lightspeed_question_validity',
+  'lightspeed_question_validity-shield',
 ];
