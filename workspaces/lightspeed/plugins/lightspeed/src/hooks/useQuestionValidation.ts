@@ -14,27 +14,19 @@
  * limitations under the License.
  */
 
-export interface Config {
-  /**
-   * Configuration required for using lightspeed
-   * @visibility frontend
-   */
-  lightspeed?: {
-    prompts?: Array</**
-     * @visibility frontend
-     */
-    {
-      /**
-       * The title of the prompt.
-       * Displayed as the heading of the prompt.
-       * @visibility frontend
-       */
-      title: string;
-      /**
-       * The main question or message shown in the prompt.
-       * @visibility frontend
-       */
-      message: string;
-    }>;
-  };
-}
+import { useApi } from '@backstage/core-plugin-api';
+
+import { useQuery } from '@tanstack/react-query';
+
+import { lightspeedApiRef } from '../api/api';
+
+export const useTopicRestrictionStatus = () => {
+  const lightspeedApi = useApi(lightspeedApiRef);
+  return useQuery({
+    queryKey: ['topicRestrictionStatus'],
+    queryFn: async () => {
+      const response = await lightspeedApi.isTopicRestrictionEnabled();
+      return response;
+    },
+  });
+};
