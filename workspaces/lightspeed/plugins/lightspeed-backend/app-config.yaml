@@ -1,5 +1,4 @@
-lightspeed:
-  servers:
-    - id: ${SERVER_ID}
-      url: ${SERVER_URL}
-      token: ${SERVER_TOKEN}
+# OPTIONAL: Backend-only configurations
+#lightspeed:
+#  servicePort: 8080 # OPTIONAL: Port for lightspeed service (default: 8080)
+#  systemPrompt: <custom_system_prompt>   # OPTIONAL: Override default RHDH system prompt
