@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.2
+
+### Patch Changes
+
+- 52f82ec: update quickaccess card's icon rendering logic
+- b8fb354: Updated dependency `@testing-library/jest-dom` to `6.9.1`.
+
 ## 1.9.1
 
 ### Patch Changes
