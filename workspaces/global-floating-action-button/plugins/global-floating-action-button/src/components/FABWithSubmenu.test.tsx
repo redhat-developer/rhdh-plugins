@@ -53,9 +53,7 @@ jest.mock('@backstage/core-plugin-api', () => ({
 }));
 
 jest.mock('@backstage/core-plugin-api/alpha', () => ({
-  useTranslationRef: jest.fn(() =>
-    jest.fn((key: string, options?: any) => key),
-  ),
+  useTranslationRef: jest.fn(() => jest.fn((key: string) => key)),
   createTranslationRef: jest.fn(() => ({ id: 'test-translation-ref' })),
   createTranslationResource: jest.fn(() => ({
     id: 'test-translation-resource',
@@ -64,7 +62,7 @@ jest.mock('@backstage/core-plugin-api/alpha', () => ({
 
 jest.mock('../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => ({
-    t: jest.fn((key: string, options?: any) => key),
+    t: jest.fn((key: string) => key),
   })),
 }));
 
