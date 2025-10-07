@@ -46,7 +46,6 @@ describe('JiraClientFactory', () => {
     expect(JiraDataCenterClientStrategy).toHaveBeenCalledWith(
       config,
       mockedConnectionStrategy,
-      2,
     );
   });
 
@@ -59,7 +58,6 @@ describe('JiraClientFactory', () => {
     expect(JiraCloudClientStrategy).toHaveBeenCalledWith(
       config,
       mockedConnectionStrategy,
-      3,
     );
   });
 

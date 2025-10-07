@@ -15,6 +15,7 @@
  */
 
 import { JiraClient } from '../clients/base';
+import { DATA_CENTER_API_VERSION } from '../constants';
 
 export class JiraDataCenterClientStrategy extends JiraClient {
   protected getSearchEndpoint(): string {
@@ -36,5 +37,9 @@ export class JiraDataCenterClientStrategy extends JiraClient {
     }
 
     throw new Error('Incorrect response data for Jira Data Center client');
+  }
+
+  protected getApiVersion(): number {
+    return DATA_CENTER_API_VERSION;
   }
 }

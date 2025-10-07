@@ -26,17 +26,11 @@ const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
   ScorecardJiraAnnotations;
 
 export abstract class JiraClient {
-  protected readonly apiVersion: number;
   protected readonly options?: JiraOptions;
   protected readonly connectionStrategy: ConnectionStrategy;
 
-  constructor(
-    rootConfig: Config,
-    connectionStrategy: ConnectionStrategy,
-    apiVersion: number,
-  ) {
+  constructor(rootConfig: Config, connectionStrategy: ConnectionStrategy) {
     this.connectionStrategy = connectionStrategy;
-    this.apiVersion = apiVersion;
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
@@ -52,6 +46,8 @@ export abstract class JiraClient {
   protected abstract buildSearchBody(jql: string): string;
 
   protected abstract extractIssueCountFromResponse(data: unknown): number;
+
+  protected abstract getApiVersion(): number;
 
   protected async sendRequest({
     url,
@@ -157,7 +153,8 @@ export abstract class JiraClient {
   }
 
   protected async getBaseUrl(): Promise<string> {
-    return this.connectionStrategy.getBaseUrl(this.apiVersion);
+    const apiVersion = this.getApiVersion();
+    return this.connectionStrategy.getBaseUrl(apiVersion);
   }
 
   protected async getAuthHeaders(): Promise<Record<string, string>> {

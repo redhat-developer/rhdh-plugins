@@ -49,7 +49,6 @@ describe('JiraDataCenterClient', () => {
     jiraDataCenterClient = new JiraDataCenterClientStrategy(
       config,
       mockConnectionStrategy,
-      2,
     );
   });
 
@@ -112,6 +111,13 @@ describe('JiraDataCenterClient', () => {
     it('should get count of open issues', async () => {
       const count = await jiraDataCenterClient.getCountOpenIssues(mockEntity);
       expect(count).toBe(10);
+    });
+  });
+
+  describe('getApiVersion', () => {
+    it('should return Jira Data Center api version', () => {
+      const apiVersion = (jiraDataCenterClient as any).getApiVersion();
+      expect(apiVersion).toEqual(2);
     });
   });
 });
