@@ -20,16 +20,15 @@ import { ConfigApi, configApiRef, useApi } from '@backstage/core-plugin-api';
 import { DEFAULT_SAMPLE_PROMPTS, RHDH_SAMPLE_PROMPTS } from '../const';
 import { SamplePrompt, SamplePrompts } from '../types';
 import { getRandomSamplePrompts } from '../utils/prompt-utils';
+import { useTopicRestrictionStatus } from './useQuestionValidation';
 import { useTranslation } from './useTranslation';
 
 export const useWelcomePrompts = (): SamplePrompts => {
   const configApi: ConfigApi = useApi(configApiRef);
   const { t } = useTranslation();
+  const { data: questionValidationEnabled } = useTopicRestrictionStatus();
 
   return React.useMemo(() => {
-    const questionValidationEnabled =
-      configApi.getOptionalBoolean('lightspeed.questionValidation') ?? true;
-
     // Transform translation keys to actual prompts
     const translatePrompts = (prompts: SamplePrompts): SamplePrompts => {
       return prompts.map((prompt: SamplePrompt) => {
@@ -56,5 +55,5 @@ export const useWelcomePrompts = (): SamplePrompts => {
       message: config.getString('message') ?? '',
     }));
     return getRandomSamplePrompts(userConfiguredPrompts, DEFAULT_PROMPTS);
-  }, [configApi, t]);
+  }, [configApi, t, questionValidationEnabled]);
 };

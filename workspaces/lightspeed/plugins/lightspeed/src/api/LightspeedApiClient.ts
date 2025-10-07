@@ -16,7 +16,10 @@
 
 import { ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 
-import { TEMP_CONVERSATION_ID } from '../const';
+import {
+  TEMP_CONVERSATION_ID,
+  VALID_TOPIC_RESTRICTION_PROVIDER_IDS,
+} from '../const';
 import { Attachment, CaptureFeedback } from '../types';
 import { LightspeedAPI } from './api';
 
@@ -38,16 +41,10 @@ export class LightspeedApiClient implements LightspeedAPI {
     return `${this.configApi.getString('backend.baseUrl')}/api/lightspeed`;
   }
 
-  getServerUrl() {
-    // Currently supports a single llm server
-    return `${this.configApi
-      .getConfigArray('lightspeed.servers')[0]
-      .getOptionalString('url')}`;
-  }
-
   async createMessage(
     prompt: string,
     selectedModel: string,
+    selectedProvider: string,
     conversation_id: string,
     attachments: Attachment[],
   ) {
@@ -64,9 +61,7 @@ export class LightspeedApiClient implements LightspeedAPI {
             ? undefined
             : conversation_id,
         model: selectedModel,
-        provider: this.configApi
-          .getConfigArray('lightspeed.servers')[0]
-          .getOptionalString('id'), // Currently supports a single llm server
+        provider: selectedProvider,
         query: prompt,
         attachments,
       }),
@@ -108,6 +103,30 @@ export class LightspeedApiClient implements LightspeedAPI {
     return response;
   }
 
+  async isTopicRestrictionEnabled() {
+    const baseUrl = await this.getBaseUrl();
+    const result = await this.fetcher(`${baseUrl}/v1/shields`);
+
+    if (!result.ok) {
+      throw new Error(
+        `failed to get shields, status ${result.status}: ${result.statusText}`,
+      );
+    }
+
+    const response = await result.json();
+    if (!response?.shields || !Array.isArray(response.shields)) {
+      return false;
+    }
+
+    return response.shields.some((shield: any) => {
+      const providerId = shield.provider_resource_id;
+
+      return VALID_TOPIC_RESTRICTION_PROVIDER_IDS.some(
+        validId => providerId.toLowerCase() === validId.toLowerCase(),
+      );
+    });
+  }
+
   async getAllModels() {
     const baseUrl = await this.getBaseUrl();
     const result = await this.fetcher(`${baseUrl}/v1/models`);
@@ -119,7 +138,8 @@ export class LightspeedApiClient implements LightspeedAPI {
     }
 
     const response = await result.json();
-    return response?.data ? response.data : [];
+
+    return response?.models ? response?.models : [];
   }
 
   async getConversationMessages(conversation_id: string) {
@@ -128,7 +148,7 @@ export class LightspeedApiClient implements LightspeedAPI {
     }
     const baseUrl = await this.getBaseUrl();
     const result = await this.fetcher(
-      `${baseUrl}/conversations/${encodeURIComponent(conversation_id)}`,
+      `${baseUrl}/v2/conversations/${encodeURIComponent(conversation_id)}`,
     );
     if (!result.ok) {
       throw new Error(
@@ -141,7 +161,7 @@ export class LightspeedApiClient implements LightspeedAPI {
 
   async getConversations() {
     const baseUrl = await this.getBaseUrl();
-    const result = await this.fetcher(`${baseUrl}/conversations`);
+    const result = await this.fetcher(`${baseUrl}/v2/conversations`);
 
     if (!result.ok) {
       throw new Error(
@@ -157,7 +177,7 @@ export class LightspeedApiClient implements LightspeedAPI {
     const baseUrl = await this.getBaseUrl();
 
     const response = await this.fetchApi.fetch(
-      `${baseUrl}/conversations/${encodeURIComponent(conversation_id)}`,
+      `${baseUrl}/v2/conversations/${encodeURIComponent(conversation_id)}`,
       {
         method: 'DELETE',
         headers: {},

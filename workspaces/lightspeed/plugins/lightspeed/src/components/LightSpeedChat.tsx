@@ -37,6 +37,7 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
+import { SearchIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
@@ -103,15 +104,19 @@ const useStyles = makeStyles(theme => ({
 
 type LightspeedChatProps = {
   selectedModel: string;
+  topicRestrictionEnabled: boolean;
+  selectedProvider: string;
   userName?: string;
   avatar?: string;
   profileLoading: boolean;
   handleSelectedModel: (item: string) => void;
-  models: { label: string; value: string }[];
+  models: { label: string; value: string; provider: string }[];
 };
 
 export const LightspeedChat = ({
   selectedModel,
+  topicRestrictionEnabled,
+  selectedProvider,
   userName,
   avatar,
   profileLoading,
@@ -209,6 +214,7 @@ export const LightspeedChat = ({
       conversationId,
       userName,
       selectedModel,
+      selectedProvider,
       avatar,
       onComplete,
       onStart,
@@ -438,6 +444,23 @@ export const LightspeedChat = ({
           newChatButtonText={t('button.newChat')}
           handleTextInputChange={handleFilter}
           searchInputPlaceholder={t('chatbox.search.placeholder')}
+          searchInputProps={{
+            value: filterValue,
+            onClear: () => {
+              setFilterValue('');
+            },
+          }}
+          noResultsState={
+            filterValue &&
+            Object.keys(filterConversations(filterValue)).length === 0
+              ? {
+                  bodyText:
+                    'Adjust your search query and try again. Check your spelling or try a more general term.',
+                  titleText: 'No results found',
+                  icon: SearchIcon,
+                }
+              : undefined
+          }
           drawerContent={
             <FileDropZone
               onFileDrop={(e, data) => handleAttach(data, e)}
@@ -470,6 +493,7 @@ export const LightspeedChat = ({
                   welcomePrompts={welcomePrompts}
                   conversationId={conversationId}
                   isStreaming={isSendButtonDisabled}
+                  topicRestrictionEnabled={topicRestrictionEnabled}
                 />
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
