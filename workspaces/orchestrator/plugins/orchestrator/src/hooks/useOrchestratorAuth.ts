@@ -47,6 +47,22 @@ export const useOrchestratorAuth = () => {
   const gitlabAuthApi = useApi(gitlabAuthApiRef);
   const microsoftAuthApi = useApi(microsoftAuthApiRef);
 
+  // TODO: Remove this console.log
+  // eslint-disable-next-line no-console
+  console.log(
+    'findCustomProvider, allPlugins: ',
+    JSON.stringify(app.getPlugins()),
+  );
+  // eslint-disable-next-line no-console
+  console.log('findCustomProvider, apiHolder direct: ', apiHolder);
+  // @ts-ignore
+  const apis = Object.fromEntries(apiHolder.apis);
+  // eslint-disable-next-line no-console
+  console.log(
+    'findCustomProvider, apiHolder.apis JSON : ',
+    JSON.stringify(apis),
+  );
+
   const getProviderToken = useCallback(
     async (
       api: unknown,
