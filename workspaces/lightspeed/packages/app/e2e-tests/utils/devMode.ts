@@ -38,6 +38,13 @@ export async function mockConversations(
   });
 }
 
+export async function mockShields(page: Page, shields: any[] = []) {
+  await page.route(`${modelBaseUrl}/v1/shields`, async route => {
+    const json = { shields };
+    await route.fulfill({ json });
+  });
+}
+
 export async function mockChatHistory(page: Page, contents?: any[]) {
   await page.route(`${modelBaseUrl}/v2/conversations/user*`, async route => {
     const json = contents ? { chat_history: contents } : [];

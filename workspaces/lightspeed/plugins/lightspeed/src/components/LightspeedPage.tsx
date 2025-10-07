@@ -62,10 +62,7 @@ const LightspeedPageInner = () => {
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
 
-  const {
-    data: topicRestrictionEnabled,
-    isLoading: questionValidationLoading,
-  } = useTopicRestrictionStatus();
+  const { data: topicRestrictionEnabled } = useTopicRestrictionStatus();
 
   const modelsItems = useMemo(
     () =>
@@ -96,7 +93,7 @@ const LightspeedPageInner = () => {
     }
   }, [modelsItems]);
 
-  if (loading || questionValidationLoading) {
+  if (loading) {
     return null;
   }
 

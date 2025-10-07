@@ -51,6 +51,7 @@ import {
   mockFeedbackStatus,
   mockModels,
   mockQuery,
+  mockShields,
 } from './utils/devMode';
 
 const botQuery = 'Please respond';
@@ -74,6 +75,7 @@ test.beforeEach(async ({ page }) => {
     await mockConversations(page);
     await mockChatHistory(page);
     await mockQuery(page, botQuery, conversations);
+    await mockShields(page, mockShields);
   }
 
   await page.goto('/');
@@ -137,9 +139,7 @@ test('verify default prompts are visible', async ({ page }) => {
 
   expect(nonEmptyTexts.length).toBe(3);
 });
-// TODO: Enable the tests when attachment preview issues is fixed in PF chatbot
-// https://github.com/patternfly/chatbot/issues/692
-test.skip('File Attachment Validation', () => {
+test.describe('File Attachment Validation', () => {
   const testFiles = [
     { path: '../../package.json', name: 'package.json' },
     { path: __filename, name: 'fileAttachment.spec.ts' },

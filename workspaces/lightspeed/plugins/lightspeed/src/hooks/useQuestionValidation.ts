@@ -25,8 +25,7 @@ export const useTopicRestrictionStatus = () => {
   return useQuery({
     queryKey: ['topicRestrictionStatus'],
     queryFn: async () => {
-      const response = await lightspeedApi.isTopicRestrictionEnabled();
-      return response;
+      return await lightspeedApi.isTopicRestrictionEnabled();
     },
   });
 };

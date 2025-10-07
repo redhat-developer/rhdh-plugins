@@ -87,6 +87,15 @@ export const contents = [
   },
 ];
 
+export const mockShields = [
+  {
+    identifier: 'test-shield-id',
+    provider_id: 'test-shield-id',
+    type: 'shield',
+    params: {},
+    provider_resource_id: 'test-shield-id',
+  },
+];
 const repeatedSentence =
   'OpenShift deployment is a way to manage applications on the OpenShift platform.';
 const openshiftLongParagraph = `${repeatedSentence} `.repeat(30);
