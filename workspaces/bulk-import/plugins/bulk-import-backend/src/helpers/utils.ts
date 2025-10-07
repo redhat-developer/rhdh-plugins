@@ -69,7 +69,10 @@ export function parseGitURLForApprovalTool(repoUrl: string) {
 
 export function getImportTemplateRef(templateRef: string): string {
   try {
-    const { name, namespace, kind } = parseEntityRef(templateRef);
+    const { name, namespace, kind } = parseEntityRef(templateRef, {
+      defaultKind: 'template',
+      defaultNamespace: 'default',
+    });
 
     if (kind !== 'template') {
       throw new InputError(
