@@ -31,6 +31,7 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { lightspeedApiRef } from '../../api/api';
 import { useConversations } from '../../hooks';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
@@ -102,11 +103,23 @@ const mockUsePermission = usePermission as jest.MockedFunction<
 
 const configAPi = mockApis.config({});
 
+const mockLightspeedApi = {
+  getAllModels: jest.fn().mockResolvedValue([]),
+  getConversationMessages: jest.fn().mockResolvedValue([]),
+  createMessage: jest.fn().mockResolvedValue(new Response().body),
+  deleteConversation: jest.fn().mockResolvedValue({ success: true }),
+  getConversations: jest.fn().mockResolvedValue([]),
+  getFeedbackStatus: jest.fn().mockResolvedValue(false),
+  captureFeedback: jest.fn().mockResolvedValue({ response: 'success' }),
+  isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
+};
+
 const setupLightspeedChat = () => (
   <TestApiProvider
     apis={[
       [identityApiRef, identityApi],
       [configApiRef, configAPi],
+      [lightspeedApiRef, mockLightspeedApi],
     ]}
   >
     <FileAttachmentContextProvider>
@@ -115,6 +128,8 @@ const setupLightspeedChat = () => (
           selectedModel="granite"
           profileLoading={false}
           handleSelectedModel={() => {}}
+          topicRestrictionEnabled={false}
+          selectedProvider="openai"
           models={[]}
           avatar="test"
           userName="user:test"

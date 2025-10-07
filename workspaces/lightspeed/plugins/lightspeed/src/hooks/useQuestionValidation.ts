@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-export interface Config {
-  /**
-   * Configuration required for using lightspeed
-   * @visibility frontend
-   */
-  lightspeed?: {
-    /**
-     * configure the port number for the lightspeed service.
-     * @visibility backend
-     */
-    servicePort?: number;
-    /**
-     * customize system prompt for the lightspeed service.
-     * @visibility backend
-     */
-    systemPrompt?: string;
-  };
-}
+import { useApi } from '@backstage/core-plugin-api';
+
+import { useQuery } from '@tanstack/react-query';
+
+import { lightspeedApiRef } from '../api/api';
+
+export const useTopicRestrictionStatus = () => {
+  const lightspeedApi = useApi(lightspeedApiRef);
+  return useQuery({
+    queryKey: ['topicRestrictionStatus'],
+    queryFn: async () => {
+      return await lightspeedApi.isTopicRestrictionEnabled();
+    },
+  });
+};
