@@ -419,6 +419,8 @@ export interface SupportButtonProps {
   // (undocumented)
   title?: string;
   // (undocumented)
+  titleKey?: string;
+  // (undocumented)
   to?: string;
   // (undocumented)
   tooltip?: string;
