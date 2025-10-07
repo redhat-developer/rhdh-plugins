@@ -54,7 +54,6 @@ jira:
   product: cloud
   baseUrl: ${JIRA_URL}
   token: ${JIRA_TOKEN}
-  #apiVersion: 3
 
 scorecard:
   plugins:

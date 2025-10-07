@@ -18,7 +18,7 @@ import { Product } from '../clients/types';
 import { DiscoveryService, AuthService } from '@backstage/backend-plugin-api';
 
 export interface ConnectionStrategy {
-  getBaseUrl(apiVersion: number | string): Promise<string>;
+  getBaseUrl(apiVersion: number): Promise<string>;
   getAuthHeaders(): Promise<Record<string, string>>;
 }
 
@@ -33,7 +33,7 @@ export class DirectConnectionStrategy implements ConnectionStrategy {
     this.product = product;
   }
 
-  async getBaseUrl(apiVersion: number | string): Promise<string> {
+  async getBaseUrl(apiVersion: number): Promise<string> {
     return `${this.baseUrl}/rest/api/${apiVersion}`;
   }
 
@@ -60,7 +60,7 @@ export class ProxyConnectionStrategy implements ConnectionStrategy {
     this.discovery = discovery;
   }
 
-  async getBaseUrl(apiVersion: string): Promise<string> {
+  async getBaseUrl(apiVersion: number): Promise<string> {
     const backendUrl = await this.discovery.getBaseUrl('proxy');
     return `${backendUrl}${this.proxyPath}/rest/api/${apiVersion}`;
   }

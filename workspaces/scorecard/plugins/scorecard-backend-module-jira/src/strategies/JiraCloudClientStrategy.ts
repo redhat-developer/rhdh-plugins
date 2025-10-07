@@ -15,6 +15,7 @@
  */
 
 import { JiraClient } from '../clients/base';
+import { CLOUD_API_VERSION } from '../constants';
 
 export class JiraCloudClientStrategy extends JiraClient {
   protected getSearchEndpoint(): string {
@@ -36,5 +37,9 @@ export class JiraCloudClientStrategy extends JiraClient {
     }
 
     throw new Error('Incorrect response data for Jira Cloud client');
+  }
+
+  protected getApiVersion(): number {
+    return CLOUD_API_VERSION;
   }
 }

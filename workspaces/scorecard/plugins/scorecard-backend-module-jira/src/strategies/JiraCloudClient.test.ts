@@ -38,7 +38,6 @@ describe('JiraCloudClient', () => {
 
   beforeEach(() => {
     const config = newMockRootConfig({
-      jiraConfig: { apiVersion: 3 },
       options: { mandatoryFilter: 'Type = Bug' },
     });
 
@@ -101,6 +100,13 @@ describe('JiraCloudClient', () => {
     it('should get count with Basic auth header', async () => {
       const count = await jiraCloudClient.getCountOpenIssues(mockEntity);
       expect(count).toBe(5);
+    });
+  });
+
+  describe('getApiVersion', () => {
+    it('should return Jira Cloud api version', () => {
+      const apiVersion = (jiraCloudClient as any).getApiVersion();
+      expect(apiVersion).toEqual(3);
     });
   });
 });

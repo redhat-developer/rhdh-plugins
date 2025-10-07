@@ -42,8 +42,8 @@ describe('JiraDataCenterClient', () => {
       customFilter: 'priority in ("Critical", "Blocker")',
     };
     const config = newMockRootConfig({
-      jiraConfig: { apiVersion: 2 },
       options,
+      jiraConfig: { product: 'datacenter' },
     });
 
     jiraDataCenterClient = new JiraDataCenterClientStrategy(
@@ -111,6 +111,13 @@ describe('JiraDataCenterClient', () => {
     it('should get count of open issues', async () => {
       const count = await jiraDataCenterClient.getCountOpenIssues(mockEntity);
       expect(count).toBe(10);
+    });
+  });
+
+  describe('getApiVersion', () => {
+    it('should return Jira Data Center api version', () => {
+      const apiVersion = (jiraDataCenterClient as any).getApiVersion();
+      expect(apiVersion).toEqual(2);
     });
   });
 });
