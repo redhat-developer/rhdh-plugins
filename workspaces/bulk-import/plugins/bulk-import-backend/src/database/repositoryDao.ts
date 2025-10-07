@@ -52,7 +52,11 @@ export async function paginateQuery<T>(
   let baseQuery = queryBuilder.clone();
 
   if (search?.term) {
-    baseQuery = baseQuery.whereILike(search.column, `%${search.term}%`);
+    if (queryBuilder.client.dialect === 'postgres') {
+      baseQuery = baseQuery.whereILike(search.column, `%${search.term}%`);
+    } else {
+      baseQuery = baseQuery.whereLike(search.column, `%${search.term}%`);
+    }
   }
 
   const countQuery = baseQuery
