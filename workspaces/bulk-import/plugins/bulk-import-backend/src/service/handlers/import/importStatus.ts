@@ -73,7 +73,7 @@ async function getImportStatusWithCheckerFn(
   const openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
     repoUrl,
   });
-  if (!openImportPr.prUrl) {
+  if (!openImportPr?.prUrl) {
     const existsInCatalog = await catalogExistenceCheckFn(
       getCatalogUrl(deps.config, repoUrl, defaultBranch),
     );

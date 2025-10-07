@@ -50,6 +50,8 @@ export const bulkImportMessages = {
     deleteRepository: 'Delete Repository',
     removeRepositoryQuestion: 'Remove {{repoName}} {{repositoryText}}?',
     repositoryText: 'repository',
+    removeRepositoryWarningScaffolder:
+      'Removing a repository will also remove all associated scaffolder task info.',
     removeRepositoryWarning:
       'Removing a repository erases all associated information from the Catalog page.',
     removeRepositoryWarningGitlab:
@@ -59,6 +61,8 @@ export const bulkImportMessages = {
     unableToRemoveRepository: 'Unable to remove repository. {{error}}',
     removeTooltipDisabled:
       'This repository added to the app-config file. To remove it modify the file directly',
+    removeTooltipRepositoryScaffolder:
+      'Delete repository and associated scaffolder task info',
     errorOccuredWhileFetching: 'Error occured while fetching the pull request',
     failedToCreatePullRequest: 'Failed to create pull request',
     errorOccured: 'Error occured',
@@ -243,6 +247,20 @@ export const bulkImportMessages = {
       pullRequestTooltip:
         'Catalog-info.yaml files must be generated before creating a pull request',
     },
+  },
+  tasks: {
+    tasksFor: 'Tasks for {{importJobStatusId}}',
+    taskId: 'Task ID',
+    taskLink: 'Task Link',
+    viewTask: 'View Task',
+    loading: 'Loading...',
+    errorFetchingData: 'Error fetching data',
+    taskCancelled: 'Task cancelled',
+    taskCompleted: 'Task completed',
+    taskFailed: 'Task failed',
+    taskOpen: 'Task open',
+    taskProcessing: 'Task processing',
+    taskSkipped: 'Task skipped',
   },
 };
 

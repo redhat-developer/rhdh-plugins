@@ -33,6 +33,7 @@ import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
@@ -83,6 +84,16 @@ const DeleteRepositoryDialog = ({
 
   const isUrlMissing = !repository.repoUrl;
 
+  const importFlow = useImportFlow();
+  let deleteMsg;
+  if (importFlow === 'scaffolder') {
+    deleteMsg = t('repositories.removeRepositoryWarningScaffolder');
+  } else {
+    deleteMsg = gitlabFeatureFlag
+      ? t('repositories.removeRepositoryWarningGitlab')
+      : t('repositories.removeRepositoryWarning');
+  }
+
   return (
     <Dialog
       maxWidth="md"
@@ -129,11 +140,7 @@ const DeleteRepositoryDialog = ({
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body1">
-          {gitlabFeatureFlag
-            ? t('repositories.removeRepositoryWarningGitlab')
-            : t('repositories.removeRepositoryWarning')}
-        </Typography>
+        <Typography variant="body1">{`${deleteMsg}`}</Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (
         <Box maxWidth="650px" marginLeft="20px">

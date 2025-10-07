@@ -15,7 +15,8 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import { StatusOK } from '@backstage/core-components';
+import { Link, StatusOK } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
@@ -43,8 +44,36 @@ import {
   RepositorySelection,
   RepositoryStatus,
 } from '../types';
+import { getTaskStatusInfo } from './task-status';
 
 export const gitlabFeatureFlag = false;
+
+const TaskLink = ({
+  labelText,
+  taskId,
+}: {
+  labelText: string;
+  taskId?: string;
+}) => {
+  const configApi = useApi(configApiRef);
+  const appBaseUrl = configApi.getString('app.baseUrl');
+
+  if (!taskId) return <>{labelText}</>;
+
+  return (
+    <Link
+      to={`${appBaseUrl}/create/tasks/${taskId}`}
+      data-testid="pull request url"
+      style={{
+        paddingLeft: '5px',
+        display: 'inline-flex',
+        alignItems: 'center',
+      }}
+    >
+      {labelText}
+    </Link>
+  );
+};
 
 export const descendingComparator = (
   a: AddRepositoryData,
@@ -225,6 +254,7 @@ export const getImportStatus = (
   t: (key: string) => string,
   showIcon?: boolean,
   prUrl?: string,
+  taskId?: string,
   isApprovalToolGitlab: boolean = false,
 ) => {
   if (!status) {
@@ -233,31 +263,48 @@ export const getImportStatus = (
   const labelText = gitlabFeatureFlag
     ? t('status.alreadyImported')
     : t('status.added');
-  switch (status) {
-    case 'WAIT_PR_APPROVAL':
-      return showIcon ? (
-        <WaitingForPR
-          url={prUrl as string}
-          isApprovalToolGitlab={isApprovalToolGitlab}
-        />
-      ) : (
-        t('status.waitingForApproval')
-      );
-    case 'ADDED':
-      return showIcon ? (
-        <Typography
-          component="span"
-          style={{ display: 'flex', alignItems: 'baseline' }}
-        >
-          <StatusOK />
-          {gitlabFeatureFlag ? t('status.imported') : t('status.added')}
-        </Typography>
-      ) : (
-        labelText
-      );
-    default:
-      return '';
+
+  if (status === 'WAIT_PR_APPROVAL') {
+    return showIcon ? (
+      <WaitingForPR
+        url={prUrl as string}
+        isApprovalToolGitlab={isApprovalToolGitlab}
+      />
+    ) : (
+      t('status.waitingForApproval')
+    );
   }
+
+  if (status === 'ADDED') {
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        <StatusOK />
+        {gitlabFeatureFlag ? t('status.imported') : t('status.added')}
+      </Typography>
+    ) : (
+      labelText
+    );
+  }
+
+  if (taskId && status.startsWith('TASK')) {
+    const { taskLabelText, taskIcon } = getTaskStatusInfo(status, t);
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {taskIcon}
+        <TaskLink labelText={taskLabelText} taskId={taskId} />
+      </Typography>
+    ) : (
+      <TaskLink labelText={taskLabelText} taskId={taskId} />
+    );
+  }
+
+  return '';
 };
 
 export const evaluateRowForRepo = (
@@ -384,7 +431,7 @@ export const prepareDataForSubmission = (
   Object.values(repositories).reduce(
     (acc: CreateImportJobRepository[], repo) => {
       acc.push({
-        approvalTool: approvalTool.toLocaleUpperCase(),
+        approvalTool: approvalTool?.toLocaleUpperCase(),
         codeOwnersFileAsEntityOwner:
           repo.catalogInfoYaml?.prTemplate?.useCodeOwnersFile || false,
         catalogEntityName:
@@ -618,6 +665,10 @@ export const prepareDataForAddedRepositories = (
         [id]: {
           id,
           source: val.source,
+          task: {
+            id: val.task?.taskId,
+            status: val.status,
+          },
           repoName: val.repository.name,
           defaultBranch: val.repository.defaultBranch,
           orgName: val.repository.organization,
