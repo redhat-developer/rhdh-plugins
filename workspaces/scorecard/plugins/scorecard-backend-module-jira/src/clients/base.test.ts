@@ -73,7 +73,11 @@ describe('JiraClient', () => {
         .mockResolvedValue({ Authorization: 'Basic Fds31dsF32' }),
     };
 
-    testJiraClient = new TestJiraClient(mockRootConfig, mockConnectionStrategy);
+    testJiraClient = new TestJiraClient(
+      mockRootConfig,
+      mockConnectionStrategy,
+      3,
+    );
   });
 
   afterEach(() => {
@@ -82,7 +86,7 @@ describe('JiraClient', () => {
 
   describe('constructor', () => {
     it('should create api version', () => {
-      expect((testJiraClient as any).apiVersion).toEqual('latest');
+      expect((testJiraClient as any).apiVersion).toEqual(3);
     });
 
     it('should create correct options', () => {
@@ -93,7 +97,11 @@ describe('JiraClient', () => {
     });
 
     it('should create connection strategy', () => {
-      const client = new TestJiraClient(mockRootConfig, mockConnectionStrategy);
+      const client = new TestJiraClient(
+        mockRootConfig,
+        mockConnectionStrategy,
+        3,
+      );
 
       expect((client as any).connectionStrategy).toBe(mockConnectionStrategy);
     });
@@ -298,7 +306,7 @@ describe('JiraClient', () => {
         },
       });
 
-      testJiraClient = new TestJiraClient(config, mockConnectionStrategy);
+      testJiraClient = new TestJiraClient(config, mockConnectionStrategy, 3);
 
       const jql = (testJiraClient as any).buildJqlFilters({});
       expect(jql).toBe('(team = 4316)');
@@ -320,7 +328,7 @@ describe('JiraClient', () => {
           mandatoryFilter: 'resolution = Unresolved',
         },
       });
-      testJiraClient = new TestJiraClient(config, mockConnectionStrategy);
+      testJiraClient = new TestJiraClient(config, mockConnectionStrategy, 3);
 
       const jql = (testJiraClient as any).buildJqlFilters({
         customFilter: 'assignee = Robot',
@@ -339,7 +347,7 @@ describe('JiraClient', () => {
     it('should not use any custom filters when custom filter is not provided in annotation and options', () => {
       const config = newMockRootConfig();
 
-      const client = new TestJiraClient(config, mockConnectionStrategy);
+      const client = new TestJiraClient(config, mockConnectionStrategy, 3);
 
       const jql = (client as any).buildJqlFilters({});
 

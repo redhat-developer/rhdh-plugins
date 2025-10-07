@@ -38,13 +38,13 @@ describe('JiraCloudClient', () => {
 
   beforeEach(() => {
     const config = newMockRootConfig({
-      jiraConfig: { apiVersion: 3 },
       options: { mandatoryFilter: 'Type = Bug' },
     });
 
     jiraCloudClient = new JiraCloudClientStrategy(
       config,
       mockConnectionStrategy,
+      3,
     );
   });
 

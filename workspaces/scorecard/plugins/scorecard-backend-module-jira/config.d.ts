@@ -29,7 +29,6 @@ export interface Config {
       }
   ) & {
     product: string;
-    apiVersion?: number | string;
   };
   /** Configuration for scorecard plugin */
   scorecard?: {

@@ -2,6 +2,11 @@
 
 This is an extension module to the `backstage-plugin-scorecard-backend` plugin. It provides Jira-specific metrics for software components registered in the Backstage catalog.
 
+## Supported versions
+
+- Supported API version for Jira Cloud is **3**.
+- Supported API version for Jira Data Center is **2**.
+
 ## Prerequisites
 
 Before installing this module, ensure that the Scorecard backend plugin is integrated into your Backstage instance. Follow the [Scorecard backend plugin README](../scorecard-backend/README.md) for setup instructions.
@@ -46,8 +51,6 @@ jira:
   token: ${JIRA_TOKEN}
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # Optional: By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: 3
 ```
 
 ### Configuration **Proxy** jira integration
@@ -60,8 +63,6 @@ jira:
   proxyPath: /jira/api
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # Optional: By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: 3
 
 # This proxy configuration presented only as an example
 proxy:

@@ -15,7 +15,11 @@
  */
 
 import type { Config } from '@backstage/config';
-import { JIRA_CONFIG_PATH } from '../constants';
+import {
+  CLOUD_API_VERSION,
+  DATA_CENTER_API_VERSION,
+  JIRA_CONFIG_PATH,
+} from '../constants';
 import { JiraClient } from '../clients/base';
 import { JiraDataCenterClientStrategy } from '../strategies/JiraDataCenterClientStrategy';
 import { JiraCloudClientStrategy } from '../strategies/JiraCloudClientStrategy';
@@ -31,9 +35,17 @@ export class JiraClientFactory {
 
     switch (product) {
       case 'datacenter':
-        return new JiraDataCenterClientStrategy(config, connectionStrategy);
+        return new JiraDataCenterClientStrategy(
+          config,
+          connectionStrategy,
+          DATA_CENTER_API_VERSION,
+        );
       case 'cloud':
-        return new JiraCloudClientStrategy(config, connectionStrategy);
+        return new JiraCloudClientStrategy(
+          config,
+          connectionStrategy,
+          CLOUD_API_VERSION,
+        );
       default:
         throw new Error(
           `Invalid Jira product: ${product}. Valid products for 'jira.product' are: datacenter, cloud`,

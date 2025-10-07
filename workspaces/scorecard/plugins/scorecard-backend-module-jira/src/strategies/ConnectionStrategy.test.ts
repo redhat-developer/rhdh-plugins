@@ -43,7 +43,7 @@ describe('ConnectionStrategy', () => {
 
     describe('getBaseUrl', () => {
       it('should return correct base URL', async () => {
-        const baseUrl = await connectionStrategy.getBaseUrl('2');
+        const baseUrl = await connectionStrategy.getBaseUrl(2);
         expect(baseUrl).toEqual('https://example.com/api/rest/api/2');
       });
     });
@@ -81,7 +81,7 @@ describe('ConnectionStrategy', () => {
 
     describe('getBaseUrl', () => {
       it('should return correct base URL', async () => {
-        const baseUrl = await connectionStrategy.getBaseUrl('2');
+        const baseUrl = await connectionStrategy.getBaseUrl(2);
         expect(baseUrl).toEqual(
           'http://localhost:0/api/proxy/jira/api/rest/api/2',
         );

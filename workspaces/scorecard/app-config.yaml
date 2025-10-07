@@ -55,17 +55,16 @@ proxy:
 
 # Jira plugin and scorecard configuration
 jira:
-  # optional: Use the proxy configuration above
+  # Proxy Jira configuration
+  # Supported products: `cloud` or `datacenter`
+  # product: cloud
   # proxyPath: /jira/api
 
-  # Required
-  baseUrl: ${JIRA_URL}
-  # Required
-  token: ${JIRA_TOKEN}
-  # Required: Supported products: `cloud` or `datacenter`
+  # Direct Jira configuration
+  # Supported products: `cloud` or `datacenter`
   product: cloud
-  # By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: 2
+  baseUrl: ${JIRA_URL}
+  token: ${JIRA_TOKEN}
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs

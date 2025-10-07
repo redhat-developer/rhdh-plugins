@@ -17,12 +17,7 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { JiraEntityFilters, JiraOptions, RequestOptions } from './types';
-import {
-  API_VERSION_DEFAULT,
-  JIRA_CONFIG_PATH,
-  JIRA_OPTIONS_PATH,
-  JIRA_MANDATORY_FILTER,
-} from '../constants';
+import { JIRA_OPTIONS_PATH, JIRA_MANDATORY_FILTER } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
 import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
@@ -31,24 +26,17 @@ const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
   ScorecardJiraAnnotations;
 
 export abstract class JiraClient {
-  protected readonly apiVersion: number | string;
+  protected readonly apiVersion: number;
   protected readonly options?: JiraOptions;
   protected readonly connectionStrategy: ConnectionStrategy;
 
-  constructor(rootConfig: Config, connectionStrategy: ConnectionStrategy) {
-    const jiraConfig = rootConfig.getConfig(JIRA_CONFIG_PATH);
-
+  constructor(
+    rootConfig: Config,
+    connectionStrategy: ConnectionStrategy,
+    apiVersion: number,
+  ) {
     this.connectionStrategy = connectionStrategy;
-    this.apiVersion =
-      jiraConfig.getOptional('apiVersion') ?? API_VERSION_DEFAULT;
-    if (
-      typeof this.apiVersion !== 'number' &&
-      typeof this.apiVersion !== 'string'
-    ) {
-      throw new Error(
-        `Invalid 'apiVersion' in configuration, must be a number or string`,
-      );
-    }
+    this.apiVersion = apiVersion;
 
     const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
     if (jiraOptions) {
