@@ -23,6 +23,7 @@ import { FABWithSubmenu } from './FABWithSubmenu';
 import { CustomFab } from './CustomFab';
 import { FloatingActionButton, Slot } from '../types';
 import { filterAndSortButtons } from '../utils';
+import { useTranslation } from '../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
   'page-end': {
@@ -54,6 +55,7 @@ export const FloatingButton = ({
   const { pathname } = useLocation();
   const fabButton = useStyles();
   const [targetElement, setTargetElement] = useState<Element | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkTargetElement = () => {
@@ -100,6 +102,7 @@ export const FloatingButton = ({
       >
         <CustomFab
           actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
+          t={t}
         />
       </div>
     );

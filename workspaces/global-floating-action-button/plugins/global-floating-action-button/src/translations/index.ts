@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
+import { globalFloatingActionButtonTranslationRef } from './ref';
 
-export * from './plugin';
-export * from './types';
-export * from './translations';
+/**
+ * Translation Resource for Global Floating Action Button
+ * @public
+ */
+export const globalFloatingActionButtonTranslations = createTranslationResource(
+  {
+    ref: globalFloatingActionButtonTranslationRef,
+    translations: {
+      de: () => import('./de'),
+      fr: () => import('./fr'),
+      es: () => import('./es'),
+    },
+  },
+);
+
+export { globalFloatingActionButtonTranslationRef };

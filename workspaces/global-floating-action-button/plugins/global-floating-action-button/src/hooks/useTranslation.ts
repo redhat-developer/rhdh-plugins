@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
+import { globalFloatingActionButtonTranslationRef } from '../translations';
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
-
-export * from './plugin';
-export * from './types';
-export * from './translations';
+export const useTranslation = (): {
+  t: TranslationFunction<typeof globalFloatingActionButtonTranslationRef.T>;
+} => useTranslationRef(globalFloatingActionButtonTranslationRef);

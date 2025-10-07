@@ -251,6 +251,7 @@ The sections below are relevant for static plugins. If the plugin is expected to
 | ------------------ | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | **slot**           | `enum`                                                                                                            | The position where the fab will be placed. Valid values: `PAGE_END`, `BOTTOM_LEFT`.                                                                                                                               | [optional] default to `PAGE_END`.              |
 | **label**          | `String`                                                                                                          | A name for your action button.                                                                                                                                                                                    | required                                       |
+| **labelKey**       | `String`                                                                                                          | Translation key for the label. If provided, will be used instead of label when translations are available.                                                                                                        | optional                                       |
 | **icon**           | `String`<br>`React.ReactElement`<br>`SVG image icon`<br>`HTML image icon`                                         | An icon for your floating button. Recommended to use **filled** icons from the [Material Design library](https://fonts.google.com/icons)                                                                          | optional                                       |
 | **showLabel**      | `Boolean`                                                                                                         | To display the label next to your icon.                                                                                                                                                                           | optional                                       |
 | **size**           | `'small'`<br>`'medium'`<br>`'large'`                                                                              | A name for your action button.                                                                                                                                                                                    | [optional] default to `'medium'`               |
@@ -258,9 +259,138 @@ The sections below are relevant for static plugins. If the plugin is expected to
 | **onClick**        | `React.MouseEventHandler`                                                                                         | the action to be performed on `onClick`.                                                                                                                                                                          | optional                                       |
 | **to**             | `String`                                                                                                          | Specify an href if the action button should open a internal/external link.                                                                                                                                        | optional                                       |
 | **toolTip**        | `String`                                                                                                          | The text to appear on hover.                                                                                                                                                                                      | optional                                       |
+| **toolTipKey**     | `String`                                                                                                          | Translation key for the tooltip. If provided, will be used instead of toolTip when translations are available.                                                                                                    | optional                                       |
 | **priority**       | `number`                                                                                                          | When multiple sub-menu actions are displayed, the button can be prioritized to position either at the top or the bottom.                                                                                          | optional                                       |
 | **visibleOnPaths** | `string[]`                                                                                                        | The action button will appear only on the specified paths and will remain hidden on all other paths.                                                                                                              | [optional] default to displaying on all paths. |
 | **excludeOnPaths** | `string[]`                                                                                                        | The action button will be hidden only on the specified paths and will appear on all other paths.                                                                                                                  | [optional] default to displaying on all paths. |
+
+### Translation Support
+
+The Global Floating Action Button plugin supports internationalization (i18n) through translation keys. You can use `labelKey` and `toolTipKey` properties to provide translation keys instead of static text.
+
+#### Using Translation Keys in Dynamic Configuration
+
+```yaml title="dynamic-plugins.yaml"
+- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-global-floating-action-button
+  disabled: false
+  pluginConfig:
+    dynamicPlugins:
+      frontend:
+        red-hat-developer-hub.backstage-plugin-global-floating-action-button:
+          mountPoints:
+            - mountPoint: application/listener
+              importName: DynamicGlobalFloatingActionButton
+            - mountPoint: global.floatingactionbutton/config
+              importName: NullComponent
+              config:
+                icon: github
+                label: 'GitHub' # Fallback text
+                labelKey: 'fab.github.label' # Translation key
+                toolTip: 'GitHub Repository' # Fallback text
+                toolTipKey: 'fab.github.tooltip' # Translation key
+                to: https://github.com/redhat-developer/rhdh-plugins
+            - mountPoint: global.floatingactionbutton/config
+              importName: NullComponent
+              config:
+                color: 'success'
+                icon: search
+                label: 'Create' # Fallback text
+                labelKey: 'fab.create.label' # Translation key
+                toolTip: 'Create entity' # Fallback text
+                toolTipKey: 'fab.create.tooltip' # Translation key
+                to: '/create'
+                showLabel: true
+```
+
+#### Using Translation Keys in Static Configuration
+
+```tsx title="packages/app/src/components/Root/Root.tsx"
+import {
+  GlobalFloatingActionButton,
+  Slot,
+} from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
+
+export const Root = ({ children }: PropsWithChildren<{}>) => (
+  <SidebarPage>
+    {/* ... */}
+    <GlobalFloatingActionButton
+      floatingButtons={[
+        {
+          color: 'success',
+          icon: <CreateComponentIcon />,
+          label: 'Create', // Fallback text
+          labelKey: 'fab.create.label', // Translation key
+          toolTip: 'Create entity', // Fallback text
+          toolTipKey: 'fab.create.tooltip', // Translation key
+          to: '/create',
+        },
+        {
+          slot: Slot.BOTTOM_LEFT,
+          icon: <LibraryBooks />,
+          label: 'Docs', // Fallback text
+          labelKey: 'fab.docs.label', // Translation key
+          toolTip: 'Documentation', // Fallback text
+          toolTipKey: 'fab.docs.tooltip', // Translation key
+          to: '/docs',
+        },
+      ]}
+    />
+    {/* ... */}
+  </SidebarPage>
+);
+```
+
+#### Translation Setup
+
+The plugin automatically registers its translations when loaded. The translation system is built into the plugin configuration and will be available when the plugin is installed.
+
+For dynamic plugins, translations are automatically loaded with the plugin. For static installations, the translations are registered through the plugin's `__experimentalTranslations` configuration.
+
+#### Built-in Translation Keys
+
+The plugin provides built-in translation keys organized under the `fab` namespace:
+
+- `fab.create.label` - "Create"
+- `fab.create.tooltip` - "Create entity"
+- `fab.docs.label` - "Docs"
+- `fab.docs.tooltip` - "Documentation"
+- `fab.apis.label` - "APIs"
+- `fab.apis.tooltip` - "API Documentation"
+- `fab.github.label` - "GitHub"
+- `fab.github.tooltip` - "GitHub Repository"
+- `fab.bulkImport.label` - "Bulk Import"
+- `fab.bulkImport.tooltip` - "Register multiple repositories in bulk"
+- `fab.quay.label` - "Quay"
+- `fab.quay.tooltip` - "Quay Container Registry"
+
+#### Supported Languages
+
+The plugin includes translations for:
+
+- **English** (default)
+- **German** (de)
+- **French** (fr)
+- **Spanish** (es)
+
+#### How Translation Resolution Works
+
+1. If `labelKey` is provided, the plugin will attempt to resolve the translation key
+2. If the translation key is found, it will be used as the label
+3. If the translation key is not found, the plugin will fall back to the `label` property
+4. The same logic applies to `toolTipKey` and `toolTip`
+
+This ensures backward compatibility while providing translation support when available.
+
+#### Internal Translation Implementation
+
+The plugin uses a centralized translation system where:
+
+- The `useTranslation()` hook is called in components that render floating action buttons to ensure proper translation context initialization
+- The translation function (`t`) is passed down to child components that need to resolve translation keys
+- This internal architecture prevents infinite re-render loops and ensures stable component rendering
+- All components that use `CustomFab` must provide the translation function as a prop
+
+**Note for Developers**: When extending or modifying the plugin components, ensure that the `useTranslation()` hook is called in parent components and the `t` prop is passed to `CustomFab` instances to maintain proper translation functionality and prevent rendering issues.
 
 **NOTE**
 
