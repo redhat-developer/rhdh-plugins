@@ -65,4 +65,12 @@ export const defaultLayouts = {
     xs: { w: 12, h: 7.5 },
     xxs: { w: 12, h: 13.5 },
   },
+  quickAccessCard: {
+    xl: { w: 6, h: 8, x: 6 },
+    lg: { w: 6, h: 8, x: 6 },
+    md: { w: 6, h: 8, x: 6 },
+    sm: { w: 12, h: 8, x: 6 },
+    xs: { w: 12, h: 8, x: 6 },
+    xxs: { w: 12, h: 8, x: 6 },
+  },
 };
