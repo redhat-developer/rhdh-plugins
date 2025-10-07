@@ -20,8 +20,8 @@ import { JiraEntityFilters, JiraOptions, RequestOptions } from './types';
 import {
   API_VERSION_DEFAULT,
   JIRA_CONFIG_PATH,
-  JIRA_OPTIONS_PATH,
   JIRA_MANDATORY_FILTER,
+  OPEN_ISSUES_CONFIG_PATH,
 } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
@@ -50,7 +50,9 @@ export abstract class JiraClient {
       );
     }
 
-    const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
+    const jiraOptions = rootConfig.getOptionalConfig(
+      `${OPEN_ISSUES_CONFIG_PATH}.options`,
+    );
     if (jiraOptions) {
       this.options = {
         mandatoryFilter: jiraOptions.getOptionalString('mandatoryFilter'),
