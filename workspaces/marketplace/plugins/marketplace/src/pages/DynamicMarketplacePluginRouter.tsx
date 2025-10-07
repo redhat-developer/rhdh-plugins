@@ -27,8 +27,6 @@ import {
   ErrorBoundary,
   TabbedLayout,
 } from '@backstage/core-components';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import Typography from '@mui/material/Typography';
@@ -43,10 +41,7 @@ import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
 import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
-import {
-  InstallationContextProvider,
-  useInstallationContext,
-} from '../components/InstallationContext';
+import { InstallationContextProvider } from '../components/InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
 
 // Constants for consistent styling
@@ -91,9 +86,6 @@ const MarketplacePage = () => {
   const { t } = useTranslation();
 
   const installedPackages = useInstalledPackagesCount();
-  const { installedPlugins } = useInstallationContext();
-  const restartCount = Object.entries(installedPlugins)?.length ?? 0;
-
   const installedPluginsTitle = installedPackages?.isLoading
     ? t('header.installedPackages')
     : t('header.installedPackagesWithCount' as any, {
@@ -133,12 +125,6 @@ const MarketplacePage = () => {
             }}
           >
             <ErrorBoundary>
-              {restartCount > 0 && (
-                <Alert severity="info" sx={{ mb: '1rem' }}>
-                  <AlertTitle>{t('alert.backendRestartRequired')}</AlertTitle>
-                  {t('alert.backendRestartMessage')}
-                </Alert>
-              )}
               <InstalledPackagesTable />
             </ErrorBoundary>
           </TabbedLayout.Route>

@@ -116,7 +116,7 @@ export const MarketplacePackageEditContent = ({
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { installedPlugins, setInstalledPlugins } = useInstallationContext();
+  const { installedPackages, setInstalledPackages } = useInstallationContext();
   const queryClient = useQueryClient();
 
   // Populate editor from backend config when available; otherwise set default template once
@@ -236,12 +236,12 @@ export const MarketplacePackageEditContent = ({
 
       if ((res as any)?.status === 'OK') {
         const updated = {
-          ...installedPlugins,
+          ...installedPackages,
           [pkg.metadata.title ?? pkg.metadata.name]: t(
             'install.packageUpdated',
           ),
         };
-        setInstalledPlugins(updated);
+        setInstalledPackages(updated);
         queryClient.invalidateQueries({
           queryKey: [
             'marketplaceApi',
@@ -407,9 +407,15 @@ export const MarketplacePackageEditContent = ({
             const ns = pkg.metadata.namespace ?? params.namespace;
             const name = pkg.metadata.name;
             const preserved = new URLSearchParams(location.search);
-            navigate(
-              `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
-            );
+            if (location?.state?.editAction) {
+              navigate(
+                `/extensions/installed-packages?${preserved.toString()}`,
+              );
+            } else {
+              navigate(
+                `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
+              );
+            }
           }}
         >
           {t('install.cancel')}

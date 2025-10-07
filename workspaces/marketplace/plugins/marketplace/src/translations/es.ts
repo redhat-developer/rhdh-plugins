@@ -76,11 +76,14 @@ const marketplaceTranslationEs = createTranslationMessages({
       'El plugin **{{pluginName}}** requiere un reinicio del sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
     'alert.multiplePluginRestart':
       'Tiene **{{count}}** plugins que requieren un reinicio de su sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.singlePackageRestart':
+      'El paquete **{{packageName}}** requiere un reinicio del sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.multiplePackageRestart':
+      'Tiene **{{count}}** paquetes que requieren un reinicio de su sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
     'alert.restartRequired': '{{count}} plugins instalados',
     'alert.backendRestartRequired': 'Reinicio del backend requerido',
-    'alert.backendRestartMessage':
-      'Para finalizar las modificaciones del paquete, reinicie su sistema backend.',
     'alert.viewPlugins': 'Ver plugins',
+    'alert.viewPackages': 'Ver paquetes',
 
     // Search and filtering
     'search.placeholder': 'Buscar plugins...',
@@ -108,7 +111,9 @@ const marketplaceTranslationEs = createTranslationMessages({
 
     // Dialogs
     'dialog.backendRestartRequired': 'Requiere reinicio del backend',
-    'dialog.restartMessage':
+    'dialog.packageRestartMessage':
+      'Para finalizar las modificaciones del paquete, reinicia tu sistema backend.',
+    'dialog.pluginRestartMessage':
       'Para finalizar las modificaciones del plugin, reinicia tu sistema backend.',
 
     // Plugin details
@@ -164,11 +169,17 @@ const marketplaceTranslationEs = createTranslationMessages({
     'installedPackages.table.tooltips.enableActions':
       'Para habilitar acciones, agregue una entidad de catálogo para este paquete',
     'installedPackages.table.tooltips.noDownloadPermissions':
-      'No tienes permiso para descargar el YAML de configuración de este paquete',
+      'No tienes permiso para descargar la configuración. Contacta a tu administrador para solicitar acceso o asistencia.',
     'installedPackages.table.tooltips.noEditPermissions':
-      'No tienes permiso para editar la configuración de este paquete',
+      'No tienes permiso para editar la configuración. Contacta a tu administrador para solicitar acceso o asistencia.',
     'installedPackages.table.tooltips.noTogglePermissions':
-      'No tienes permiso para habilitar o deshabilitar este paquete',
+      'No tienes permiso para habilitar o deshabilitar paquetes. Contacta a tu administrador para solicitar acceso o asistencia.',
+    'installedPackages.table.tooltips.editPackage':
+      'Editar configuración del paquete',
+    'installedPackages.table.tooltips.downloadPackage':
+      'Descargar configuración del paquete',
+    'installedPackages.table.tooltips.enablePackage': 'Habilitar paquete',
+    'installedPackages.table.tooltips.disablePackage': 'Deshabilitar paquete',
     'installedPackages.table.emptyMessages.noResults':
       'No se encontraron resultados. Intente con un término de búsqueda diferente.',
     'installedPackages.table.emptyMessages.noRecords':
@@ -246,6 +257,8 @@ const marketplaceTranslationEs = createTranslationMessages({
     'install.editInstructions': 'Editar instrucciones',
     'install.back': 'Atrás',
     'install.packageUpdated': 'Paquete actualizado',
+    'install.packageEnabled': 'Paquete habilitado',
+    'install.packageDisabled': 'Paquete deshabilitado',
     'install.errors.missingPluginsList':
       "Contenido del editor inválido: falta la lista 'plugins'",
     'install.errors.missingPackageItem':

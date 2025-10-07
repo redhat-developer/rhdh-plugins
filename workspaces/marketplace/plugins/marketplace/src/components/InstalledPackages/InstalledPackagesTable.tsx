@@ -19,6 +19,7 @@ import {
   ResponseErrorPanel,
   Table,
   TableColumn,
+  MarkdownContent,
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
@@ -26,7 +27,10 @@ import { Query, QueryResult } from '@material-table/core';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
-
+import Typography from '@mui/material/Typography';
+import AlertTitle from '@mui/material/AlertTitle';
+import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
 import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { useMarketplaceApi } from '../../hooks/useMarketplaceApi';
@@ -43,16 +47,51 @@ import {
   TogglePackage,
   UninstallPackage,
 } from './RowActions';
+import { useInstallationContext } from '../InstallationContext';
+import { useNodeEnvironment } from '../../hooks/useNodeEnvironment';
+import { InstalledPluginsDialog } from '../InstalledPluginsDialog';
 
 export const InstalledPackagesTable = () => {
   const { t } = useTranslation();
+  const { installedPackages } = useInstallationContext();
+  const nodeEnvironment = useNodeEnvironment();
   const [error, setError] = useState<Error | undefined>(undefined);
+  const [openInstalledPackagesDialog, setOpenInstalledPackagesDialog] =
+    useState(false);
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
   const marketplaceApi = useMarketplaceApi();
   const fullTextSearch = useQueryFullTextSearch();
 
   const showUninstall = false;
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
+  const installedPackagesCount = Object.entries(installedPackages)?.length ?? 0;
+
+  const getPackageAlertMessage = (count: number, packageName?: string) => {
+    if (count > 1) {
+      return (
+        <MarkdownContent
+          content={t('alert.multiplePackageRestart' as any, {
+            count: count.toString(),
+          })}
+        />
+      );
+    }
+
+    return (
+      <MarkdownContent
+        content={t('alert.singlePackageRestart' as any, {
+          packageName: packageName || '',
+        })}
+      />
+    );
+  };
+
+  const packageInfo = () => {
+    const packageName = Object.keys(installedPackages)[0];
+    return <>{getPackageAlertMessage(installedPackagesCount, packageName)}</>;
+  };
 
   // Fetch once and cache
   const installedQuery = useQuery({
@@ -248,6 +287,31 @@ export const InstalledPackagesTable = () => {
 
   return (
     <>
+      {isProductionEnvironment && (
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>{t('alert.productionDisabled')}</AlertTitle>
+        </Alert>
+      )}
+      {installedPackagesCount > 0 && (
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>{t('alert.backendRestartRequired')}</AlertTitle>
+          {packageInfo()}
+          {installedPackagesCount > 1 && (
+            <Typography component="div" sx={{ pt: '8px' }}>
+              <Link
+                component="button"
+                underline="none"
+                onClick={() => {
+                  setOpenInstalledPackagesDialog(true);
+                }}
+              >
+                {t('alert.viewPackages')}
+              </Link>
+            </Typography>
+          )}
+        </Alert>
+      )}
+
       <div
         style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}
       >
@@ -280,6 +344,11 @@ export const InstalledPackagesTable = () => {
             searchPlaceholder: t('installedPackages.table.searchPlaceholder'),
           },
         }}
+      />
+      <InstalledPluginsDialog
+        open={openInstalledPackagesDialog}
+        onClose={setOpenInstalledPackagesDialog}
+        showPackages
       />
     </>
   );

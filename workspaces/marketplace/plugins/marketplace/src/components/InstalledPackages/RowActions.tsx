@@ -22,10 +22,10 @@ import { Link } from '@backstage/core-components';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Switch from '@mui/material/Switch';
+import Box from '@mui/material/Box';
 
 import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
@@ -35,6 +35,7 @@ import { usePackageConfig } from '../../hooks/usePackageConfig';
 import { downloadPackageYAML } from '../../utils/downloadPackageYaml';
 import { usePluginConfigurationPermissions } from '../../hooks/usePluginConfigurationPermissions';
 import { useEnablePlugin } from '../../hooks/useEnablePlugin';
+import { useInstallationContext } from '../InstallationContext';
 
 export type InstalledPackageRow = {
   displayName: string;
@@ -81,15 +82,20 @@ export const DownloadPackageYaml = ({ pkg }: { pkg: InstalledPackageRow }) => {
   }
 
   return (
-    <IconButton
-      size="small"
-      sx={{ color: theme => theme.palette.text.primary }}
-      onClick={async () => {
-        await downloadPackageYAML(pkgConfig.data?.configYaml ?? '', pkg.name!);
-      }}
-    >
-      <FileDownloadOutlinedIcon />
-    </IconButton>
+    <Tooltip title={t('installedPackages.table.tooltips.downloadPackage')}>
+      <IconButton
+        size="small"
+        sx={{ color: theme => theme.palette.text.primary }}
+        onClick={async () => {
+          await downloadPackageYAML(
+            pkgConfig.data?.configYaml ?? '',
+            pkg.name!,
+          );
+        }}
+      >
+        <FileDownloadOutlinedIcon />
+      </IconButton>
+    </Tooltip>
   );
 };
 
@@ -138,18 +144,23 @@ export const EditPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   }
 
   return (
-    <IconButton
-      size="small"
-      sx={{ color: theme => theme.palette.text.primary }}
-      onClick={() => navigate(packagePathWithSearchParams)}
-    >
-      <EditIcon />
-    </IconButton>
+    <Tooltip title={t('installedPackages.table.tooltips.editPackage')}>
+      <IconButton
+        size="small"
+        sx={{ color: theme => theme.palette.text.primary }}
+        onClick={() =>
+          navigate(packagePathWithSearchParams, { state: { editAction: true } })
+        }
+      >
+        <EditIcon />
+      </IconButton>
+    </Tooltip>
   );
 };
 
 export const TogglePackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   const { t } = useTranslation();
+  const { installedPackages, setInstalledPackages } = useInstallationContext();
   const { mutateAsync: enablePlugin } = useEnablePlugin(true);
   const packageConfigPermission = usePluginConfigurationPermissions(
     pkg.namespace!,
@@ -194,6 +205,13 @@ export const TogglePackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
 
       if (res?.status === 'OK') {
         setIsPackageEnabled(newValue);
+        const updated = {
+          ...installedPackages,
+          [pkg.packageName ?? pkg.name]: isPackageEnabled
+            ? t('install.packageDisabled')
+            : t('install.packageEnabled'),
+        };
+        setInstalledPackages(updated);
       } else {
         // eslint-disable-next-line no-console
         console.warn(
@@ -211,13 +229,21 @@ export const TogglePackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   };
 
   return (
-    <IconButton
-      size="small"
-      sx={{ color: theme => theme.palette.text.primary }}
-      onClick={handleToggle}
+    <Tooltip
+      title={
+        isPackageEnabled
+          ? t('installedPackages.table.tooltips.disablePackage')
+          : t('installedPackages.table.tooltips.enablePackage')
+      }
     >
-      {isPackageEnabled ? <Switch checked /> : <Switch />}
-    </IconButton>
+      <IconButton
+        size="small"
+        sx={{ color: theme => theme.palette.text.primary }}
+        onClick={handleToggle}
+      >
+        {isPackageEnabled ? <Switch checked /> : <Switch />}
+      </IconButton>
+    </Tooltip>
   );
 };
 
@@ -227,15 +253,13 @@ export const UninstallPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   if (disabled) {
     return (
       <Tooltip title={t('installedPackages.table.tooltips.enableActions')}>
-        <Box component="span" display="inline-flex">
-          <IconButton
-            size="small"
-            disabled
-            sx={{ color: theme => theme.palette.action.disabled }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Box>
+        <IconButton
+          size="small"
+          disabled
+          sx={{ color: theme => theme.palette.action.disabled }}
+        >
+          <DeleteIcon />
+        </IconButton>
       </Tooltip>
     );
   }

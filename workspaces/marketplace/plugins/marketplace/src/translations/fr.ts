@@ -36,8 +36,6 @@ const marketplaceTranslationFr = createTranslationMessages({
     'actions.packageCurrentlyEnabled': 'Paquet actuellement activé',
     'actions.packageCurrentlyDisabled': 'Paquet actuellement désactivé',
     'actions.view': 'Voir',
-    'alert.backendRestartMessage':
-      'Pour terminer les modifications du package, redémarrez votre système backend.',
     'alert.backendRestartRequired': 'Redémarrage du backend requis',
     'alert.extensionsExample':
       "Exemple de comment activer l'installation de plugins d'extensions",
@@ -49,7 +47,12 @@ const marketplaceTranslationFr = createTranslationMessages({
     'alert.restartRequired': '{{count}} plugins installés',
     'alert.singlePluginRestart':
       "Le plugin **{{pluginName}}** nécessite un redémarrage du système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
+    'alert.singlePackageRestart':
+      "Le paquet **{{packageName}}** nécessite un redémarrage du système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
+    'alert.multiplePackageRestart':
+      "Vous avez **{{count}}** paquets qui nécessitent un redémarrage de votre système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
     'alert.viewPlugins': 'Afficher les plugins',
+    'alert.viewPackages': 'Afficher les paquets',
     'aria.closeDialog': 'Fermer la boîte de dialogue',
     'aria.collapseSection': 'Réduire la section',
     'aria.expandSection': 'Développer la section',
@@ -106,7 +109,9 @@ const marketplaceTranslationFr = createTranslationMessages({
     'common.noDescriptionAvailable': 'aucune description disponible',
     'common.readMore': 'En savoir plus',
     'dialog.backendRestartRequired': 'Redémarrage du backend requis',
-    'dialog.restartMessage':
+    'dialog.packageRestartMessage':
+      'Pour terminer les modifications du paquet, redémarrez votre système backend.',
+    'dialog.pluginRestartMessage':
       'Pour terminer les modifications du plugin, redémarrez votre système backend.',
     'emptyState.configureBackend':
       "Configurez le plugin '@red-hat-developer-hub/backstage-plugin-marketplace-backend'.",
@@ -160,6 +165,8 @@ const marketplaceTranslationFr = createTranslationMessages({
     'install.instructions': 'Instructions',
     'install.optional': 'Facultatif',
     'install.packageUpdated': 'Paquet mis à jour',
+    'install.packageEnabled': 'Paquet activé',
+    'install.packageDisabled': 'Paquet désactivé',
     'install.pluginInstalled': 'Plugin installé',
     'install.pluginTabs': 'Onglets de plugins',
     'install.pluginUpdated': 'Plugin mis à jour',
@@ -183,11 +190,17 @@ const marketplaceTranslationFr = createTranslationMessages({
     'installedPackages.table.tooltips.enableActions':
       'Pour activer les actions, ajoutez une entité de catalogue pour ce package',
     'installedPackages.table.tooltips.noDownloadPermissions':
-      "Vous n'avez pas la permission de télécharger le YAML de configuration de ce package",
+      "Vous n'avez pas la permission de télécharger la configuration. Contactez votre administrateur pour demander un accès ou une assistance.",
     'installedPackages.table.tooltips.noEditPermissions':
-      "Vous n'avez pas la permission de modifier la configuration de ce package",
+      "Vous n'avez pas la permission de modifier la configuration. Contactez votre administrateur pour demander un accès ou une assistance.",
     'installedPackages.table.tooltips.noTogglePermissions':
-      "Vous n'avez pas la permission d'activer ou de désactiver ce package",
+      "Vous n'avez pas la permission d'activer ou de désactiver les paquets. Contactez votre administrateur pour demander un accès ou une assistance.",
+    'installedPackages.table.tooltips.editPackage':
+      'Modifier la configuration du paquet',
+    'installedPackages.table.tooltips.downloadPackage':
+      'Télécharger la configuration du paquet',
+    'installedPackages.table.tooltips.enablePackage': 'Activer le paquet',
+    'installedPackages.table.tooltips.disablePackage': 'Désactiver le paquet',
     loading: 'Chargement en cours...',
     'metadata.about': 'À propos',
     'metadata.by': ' par ',

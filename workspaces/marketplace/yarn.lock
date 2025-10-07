@@ -9638,7 +9638,6 @@ __metadata:
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
-    js-yaml: ^4.1.0
     monaco-editor: ^0.53.0
     react: ^17.0.0 || ^18.0.0
     react-router-dom: ^6.3.0
