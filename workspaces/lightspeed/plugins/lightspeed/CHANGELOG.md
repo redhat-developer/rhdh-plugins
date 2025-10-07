@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.0.0
+
+### Major Changes
+
+- 2204143: Align lightspeed UI with LCS
+
 ## 0.6.1
 
 ### Patch Changes
