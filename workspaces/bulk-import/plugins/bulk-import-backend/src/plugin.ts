@@ -57,8 +57,6 @@ export const bulkImportPlugin = createBackendPlugin({
         auditor,
         database,
       }) {
-        await migrate(database);
-
         const router = await createRouter({
           config,
           cache,
