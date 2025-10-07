@@ -60,6 +60,7 @@ import {
   DynamicCustomizableHomePage,
   VisitListener,
   OnboardingSection,
+  QuickAccessCard,
   EntitySection,
   TemplateSection,
   defaultLayouts,
@@ -113,6 +114,12 @@ const mountPoints: HomePageCardMountPoint[] = [
     Component: OnboardingSection,
     config: {
       layouts: defaultLayouts.onboarding,
+    },
+  },
+  {
+    Component: QuickAccessCard,
+    config: {
+      layouts: defaultLayouts.quickAccessCard,
     },
   },
   {
