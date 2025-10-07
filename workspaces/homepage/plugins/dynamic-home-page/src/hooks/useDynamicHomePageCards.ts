@@ -23,7 +23,7 @@ interface ScalprumState {
     dynamicRootConfig?: {
       mountPoints?: {
         'home.page/cards': HomePageCardMountPoint[]; // Default cards
-        'home.page/add-card': HomePageCardMountPoint[]; // Additional cards from plugins
+        'home.page/widgets': HomePageCardMountPoint[]; // Additional cards from plugins
       };
     };
   };
@@ -43,7 +43,7 @@ export const useDynamicHomePageCards = (): {
     scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/cards'] || [];
 
   const additionalCards =
-    scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/add-card'] || [];
+    scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/widgets'] || [];
 
   // Combine all cards - ensure they're arrays
   const allCards = [

@@ -136,7 +136,7 @@ const scalprumState: ScalprumState = {
       mountPoints: {
         'home.page/cards': mountPoints,
         // Additional cards from other plugins will be loaded at runtime
-        'home.page/add-card': [],
+        'home.page/widgets': [],
       },
     },
   },

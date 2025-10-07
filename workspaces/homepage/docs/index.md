@@ -16,7 +16,7 @@ It allows primarily **admins** to customize the homepage in the `app-config`, an
 The plugin supports two mount points:
 
 - **`home.page/cards`** - Default homepage cards that appear by default
-- **`home.page/add-card`** - Additional cards contributed by other plugins that appear in the "Add widget" dialog
+- **`home.page/widgets`** - Additional cards contributed by other plugins that appear in the "Add widget" dialog
 
 ## Configuration-Based Metadata
 
@@ -27,7 +27,7 @@ dynamicPlugins:
   frontend:
     your-plugin:
       mountPoints:
-        - mountPoint: home.page/add-card
+        - mountPoint: home.page/widgets
           importName: YourCard
           config:
             title: 'Your Card Title'

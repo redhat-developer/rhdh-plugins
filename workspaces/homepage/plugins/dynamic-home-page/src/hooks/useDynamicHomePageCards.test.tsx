@@ -130,7 +130,7 @@ describe('useDynamicHomePageCards', () => {
         dynamicRootConfig: {
           mountPoints: {
             'home.page/cards': defaultCards,
-            'home.page/add-card': additionalCards,
+            'home.page/widgets': additionalCards,
           },
         },
       },
@@ -162,7 +162,7 @@ describe('useDynamicHomePageCards', () => {
         dynamicRootConfig: {
           mountPoints: {
             'home.page/cards': null as any,
-            'home.page/add-card': undefined as any,
+            'home.page/widgets': undefined as any,
           },
         },
       },

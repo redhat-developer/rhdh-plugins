@@ -16,7 +16,7 @@ The plugin provides two main components:
 The plugin supports two mount points for extensibility:
 
 - **`home.page/cards`** - Default homepage cards that appear by default and are used for "restore defaults" functionality
-- **`home.page/add-card`** - Additional cards contributed by other plugins that appear alongside default cards
+- **`home.page/widgets`** - Additional cards contributed by other plugins that appear alongside default cards
 
 Cards from both mount points are displayed together, with optional priority-based ordering.
 

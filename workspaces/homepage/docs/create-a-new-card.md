@@ -38,7 +38,7 @@ Cards commonly uses the [InfoCard](https://backstage.io/storybook/?path=/story/l
    );
    ```
 
-3. And finally, users can add them to their `app-config` to expose the component as mount point `home.page/cards` (for default cards) or `home.page/add-card` (for additional plugin cards):
+3. And finally, users can add them to their `app-config` to expose the component as mount point `home.page/cards` (for default cards) or `home.page/widgets` (for additional plugin cards):
 
    ```yaml
    dynamicPlugins:
@@ -54,7 +54,7 @@ Cards commonly uses the [InfoCard](https://backstage.io/storybook/?path=/story/l
                layout: ...
                props: ...
            # For additional cards contributed by plugins
-           - mountPoint: home.page/add-card
+           - mountPoint: home.page/widgets
              importName: YourAdditionalCard
              config:
                title: 'Plugin Card' # Title for "Add widget" dialog
@@ -82,4 +82,4 @@ If `title` and `description` are not provided in config, the component will appe
 ## Mount Points
 
 - **`home.page/cards`** - Default homepage cards that appear by default
-- **`home.page/add-card`** - Additional cards contributed by other plugins that appear alongside default cards
+- **`home.page/widgets`** - Additional cards contributed by other plugins that appear alongside default cards
