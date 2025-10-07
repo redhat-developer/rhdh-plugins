@@ -20,7 +20,6 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
-import { migrate } from './database/migration';
 import { createRouter } from './service/router';
 
 /**
