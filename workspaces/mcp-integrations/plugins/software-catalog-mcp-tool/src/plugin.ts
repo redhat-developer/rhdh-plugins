@@ -136,6 +136,7 @@ Example invocations and the output from those invocations:
                           ),
                         tags: z
                           .array(z.string())
+                          .optional()
                           .describe(
                             'The tags associated with the Backstage entity',
                           ),
