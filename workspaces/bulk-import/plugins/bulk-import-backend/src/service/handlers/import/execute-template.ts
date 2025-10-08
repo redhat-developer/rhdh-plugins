@@ -21,7 +21,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 
-import { fetchEventSource } from '@ai-zen/node-fetch-event-source';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 import gitUrlParse from 'git-url-parse';
 
 import { getCatalogFilename } from '../../../catalog/catalogUtils';
