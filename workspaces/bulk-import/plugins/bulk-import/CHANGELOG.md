@@ -1,5 +1,18 @@
 ### Dependencies
 
+## 1.17.0
+
+### Minor Changes
+
+- 2a31b02: Implement scaffolder template execution for the bulk-import plugin.
+
+### Patch Changes
+
+- 316e356: Migrate from rhdh-theme to the theme within rhdh-plugins repo.
+- cc7083f: Use a single react-query QueryClient instance for all pages and remove the need to have one in the app.
+- Updated dependencies [2a31b02]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.10.0
+
 ## 1.16.1
 
 ### Patch Changes
