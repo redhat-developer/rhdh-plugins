@@ -46,11 +46,11 @@ declare module '../PhoneNumberStep' {
 }
 
 describe('PhoneNumberStep', () => {
+  const mockTrackAnalytics = jest.fn();
   const mockSetPhoneNumber = jest.fn();
   const mockHandleClose = jest.fn();
   const mockHandlePhoneNumberSubmit = jest.fn();
   const mockSetCountry = jest.fn();
-  const mockTrackAnalytics = jest.fn();
   const phoneNumber = parsePhoneNumber(' 8 (800) 555-35-35 ', 'RU');
 
   beforeEach(() => {
@@ -190,43 +190,43 @@ describe('PhoneNumberStep', () => {
     expect(inputValue).toBe('+1 737 307 2270');
   });
 
-  describe('EDDL data attributes', () => {
-    test('should have correct EDDL data attributes on Send Code button', () => {
+  describe('Analytics tracking', () => {
+    test('calls trackAnalytics with correct parameters when Send Code is clicked', async () => {
       renderComponent(phoneNumber);
-
       const sendCodeButton = screen.getByRole('button', { name: /Send code/i });
 
-      expect(sendCodeButton).toHaveAttribute(
-        'data-analytics-category',
-        'Developer Sandbox|Verification',
-      );
-      expect(sendCodeButton).toHaveAttribute(
-        'data-analytics-text',
-        'Send Code',
-      );
-      expect(sendCodeButton).toHaveAttribute(
-        'data-analytics-region',
-        'sandbox-verification',
-      );
+      const clickEvent = fireEvent.click(sendCodeButton);
+
+      await waitFor(() => {
+        expect(mockTrackAnalytics).toHaveBeenCalledWith(
+          'Send Code',
+          'Verification',
+          window.location.href,
+          undefined,
+          'cta',
+        );
+      });
+      expect(mockHandlePhoneNumberSubmit).toHaveBeenCalled();
+      expect(clickEvent).toBe(false); // Event was prevented
     });
 
-    test('should have correct EDDL data attributes on Cancel button', () => {
+    test('calls trackAnalytics with correct parameters when Cancel is clicked', async () => {
       renderComponent(phoneNumber);
-
       const cancelButton = screen.getByRole('button', { name: /Cancel/i });
 
-      expect(cancelButton).toHaveAttribute(
-        'data-analytics-category',
-        'Developer Sandbox|Verification',
-      );
-      expect(cancelButton).toHaveAttribute(
-        'data-analytics-text',
-        'Cancel Verification',
-      );
-      expect(cancelButton).toHaveAttribute(
-        'data-analytics-region',
-        'sandbox-verification',
-      );
+      const clickEvent = fireEvent.click(cancelButton);
+
+      await waitFor(() => {
+        expect(mockTrackAnalytics).toHaveBeenCalledWith(
+          'Cancel Verification',
+          'Verification',
+          window.location.href,
+          undefined,
+          'cta',
+        );
+      });
+      expect(mockHandleClose).toHaveBeenCalled();
+      expect(clickEvent).toBe(false); // Event was prevented
     });
   });
 });

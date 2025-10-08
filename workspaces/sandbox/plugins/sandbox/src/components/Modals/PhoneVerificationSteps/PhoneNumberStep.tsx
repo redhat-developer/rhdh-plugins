@@ -32,10 +32,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 import CircularProgress from '@mui/material/CircularProgress';
-import {
-  getEddlDataAttributes,
-  useTrackAnalytics,
-} from '../../../utils/eddl-utils';
+import { useTrackAnalytics } from '../../../utils/eddl-utils';
 
 const FLAG_FETCH_URL =
   'https://catamphetamine.github.io/country-flag-icons/3x2';
@@ -69,27 +66,37 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
 }) => {
   const theme = useTheme();
   const trackAnalytics = useTrackAnalytics();
-  const sendCodeEddlAttributes = getEddlDataAttributes(
-    'Send Code',
-    'Verification',
-  );
-  const cancelEddlAttributes = getEddlDataAttributes(
-    'Cancel Verification',
-    'Verification',
-  );
 
   // Handle Send Code click for analytics tracking
-  const handleSendCodeClick = async () => {
-    await trackAnalytics('Send Code', 'Verification', window.location.href);
+  const handleSendCodeClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await trackAnalytics(
+      'Send Code',
+      'Verification',
+      window.location.href,
+      undefined,
+      'cta',
+    );
     handlePhoneNumberSubmit();
   };
 
   // Handle Cancel click for analytics tracking
-  const handleCancelClick = async () => {
+  const handleCancelClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     await trackAnalytics(
       'Cancel Verification',
       'Verification',
       window.location.href,
+      undefined,
+      'cta',
     );
     handleClose();
   };
@@ -239,7 +246,6 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
           }
-          {...sendCodeEddlAttributes}
         >
           Send code
         </Button>
@@ -254,7 +260,6 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
               borderColor: '#1976d2',
             },
           }}
-          {...cancelEddlAttributes}
         >
           Cancel
         </Button>

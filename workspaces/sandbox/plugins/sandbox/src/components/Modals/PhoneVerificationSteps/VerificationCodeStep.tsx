@@ -39,10 +39,7 @@ import { useSandboxContext } from '../../../hooks/useSandboxContext';
 import { Country, getCountryCallingCode } from 'react-phone-number-input';
 import { useApi } from '@backstage/core-plugin-api';
 import { registerApiRef } from '../../../api';
-import {
-  getEddlDataAttributes,
-  useTrackAnalytics,
-} from '../../../utils/eddl-utils';
+import { useTrackAnalytics } from '../../../utils/eddl-utils';
 
 type VerificationCodeProps = {
   id: Product;
@@ -73,18 +70,6 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
 }) => {
   const theme = useTheme();
   const trackAnalytics = useTrackAnalytics();
-  const startTrialEddlAttributes = getEddlDataAttributes(
-    'Start Trial',
-    'Verification',
-  );
-  const resendCodeEddlAttributes = getEddlDataAttributes(
-    'Resend Code',
-    'Verification',
-  );
-  const cancelVerificationEddlAttributes = getEddlDataAttributes(
-    'Cancel Verification',
-    'Verification',
-  );
 
   const inputRefs = useRef<any>([]);
   const { refetchUserData, handleAAPInstance } = useSandboxContext();
@@ -221,23 +206,53 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
   };
 
   // Handle Start Trial click for analytics tracking
-  const handleStartTrialClickWithTracking = async (pdt: Product) => {
-    await trackAnalytics('Start Trial', 'Verification', window.location.href);
+  const handleStartTrialClickWithTracking = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    pdt: Product,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await trackAnalytics(
+      'Start Trial',
+      'Verification',
+      window.location.href,
+      undefined,
+      'cta',
+    );
     handleStartTrialClick(pdt);
   };
 
   // Handle Resend Code click for analytics tracking
-  const handleResendCodeClickWithTracking = async () => {
-    await trackAnalytics('Resend Code', 'Verification', window.location.href);
+  const handleResendCodeClickWithTracking = async (
+    event: React.MouseEvent<HTMLElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await trackAnalytics(
+      'Resend Code',
+      'Verification',
+      window.location.href,
+      undefined,
+      'cta',
+    );
     handleResendCode();
   };
 
   // Handle Cancel click for analytics tracking
-  const handleCancelVerificationClick = async () => {
+  const handleCancelVerificationClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     await trackAnalytics(
       'Cancel Verification',
       'Verification',
       window.location.href,
+      undefined,
+      'cta',
     );
     handleClose();
   };
@@ -322,11 +337,10 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
             fontWeight: 400,
             backgroundColor: 'transparent !important',
           }}
-          onClick={() => {
-            handleResendCodeClickWithTracking();
+          onClick={event => {
+            handleResendCodeClickWithTracking(event);
             inputRefs.current[0]?.focus();
           }}
-          {...resendCodeEddlAttributes}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             {codeResent ? (
@@ -357,12 +371,11 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
           data-testid="submit-opt-button"
           variant="contained"
           type="submit"
-          onClick={() => handleStartTrialClickWithTracking(id)}
+          onClick={event => handleStartTrialClickWithTracking(event, id)}
           disabled={otp.some(digit => !digit) || loading}
           endIcon={
             loading && <CircularProgress size={20} sx={{ color: '#AFAFAF' }} />
           }
-          {...startTrialEddlAttributes}
         >
           Start trial
         </Button>
@@ -377,7 +390,6 @@ export const VerificationCodeStep: React.FC<VerificationCodeProps> = ({
               borderColor: '#1976d2',
             },
           }}
-          {...cancelVerificationEddlAttributes}
         >
           Cancel
         </Button>
