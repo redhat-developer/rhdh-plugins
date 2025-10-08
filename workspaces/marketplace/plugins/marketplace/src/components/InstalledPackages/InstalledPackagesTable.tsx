@@ -109,7 +109,7 @@ export const InstalledPackagesTable = () => {
   });
   const columns: TableColumn<InstalledPackageRow>[] = [
     {
-      title: 'Name',
+      title: t('installedPackages.table.columns.name'),
       field: 'displayName',
       align: 'left',
       width: '30ch',
@@ -123,7 +123,7 @@ export const InstalledPackagesTable = () => {
       render: (row: InstalledPackageRow) => <PackageName pkg={row} />,
     },
     {
-      title: 'npm package name',
+      title: t('installedPackages.table.columns.packageName'),
       field: 'packageName',
       width: '54ch',
       align: 'left',
@@ -135,7 +135,7 @@ export const InstalledPackagesTable = () => {
       },
     },
     {
-      title: 'Role',
+      title: t('installedPackages.table.columns.role'),
       field: 'role',
       width: '24ch',
       align: 'left',
@@ -147,7 +147,7 @@ export const InstalledPackagesTable = () => {
       },
     },
     {
-      title: 'Version',
+      title: t('installedPackages.table.columns.version'),
       field: 'version',
       width: '24ch',
       align: 'left',
@@ -159,7 +159,7 @@ export const InstalledPackagesTable = () => {
       },
     },
     {
-      title: 'Actions',
+      title: t('installedPackages.table.columns.actions'),
       align: 'right',
       width: '78px',
       headerStyle: {
