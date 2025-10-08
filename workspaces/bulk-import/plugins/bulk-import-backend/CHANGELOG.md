@@ -1,5 +1,19 @@
 ### Dependencies
 
+## 6.4.0
+
+### Minor Changes
+
+- 2a31b02: Implement scaffolder template execution for the bulk-import plugin.
+
+### Patch Changes
+
+- bd09be8: Automatically select templates from default namespace for bulkImport.importTemplate configuration.
+- b5ce9fc: Fix dependencies: Replace @ai-zen/node-fetch-event-source with @microsoft/fetch-event-source and remove unused dependency @roadiehq/scaffolder-backend-module-utils
+- e11b586: Fix an sql issue when filtering added repositories on SQlite
+- Updated dependencies [2a31b02]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.10.0
+
 ## 6.3.0
 
 ### Minor Changes
