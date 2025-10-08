@@ -29,7 +29,11 @@ export type { QuickstartDrawerContextType } from './components/QuickstartDrawerC
 /**
  * @public
  */
-export type { UserRole, QuickstartItemData } from './types';
+export type {
+  UserRole,
+  QuickstartItemData,
+  QuickstartItemCtaData,
+} from './types';
 export { QuickstartButton } from './components/QuickstartButton/QuickstartButton';
 export type { QuickstartButtonProps } from './components/QuickstartButton/QuickstartButton';
 /**

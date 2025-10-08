@@ -13,6 +13,12 @@ import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
+export const filterQuickstartItemsByRole: (
+  items: QuickstartItemData[],
+  userRole: string,
+) => QuickstartItemData[];
+
+// @public
 export const QuickstartButton: ({
   title,
   style,
@@ -42,6 +48,24 @@ export interface QuickstartDrawerContextType {
 export const QuickstartDrawerProvider: ({
   children,
 }: PropsWithChildren) => JSX_2.Element;
+
+// @public
+export interface QuickstartItemCtaData {
+  link: string;
+  text: string;
+  textKey?: string;
+}
+
+// @public
+export interface QuickstartItemData {
+  cta?: QuickstartItemCtaData;
+  description: string;
+  descriptionKey?: string;
+  icon?: string;
+  roles?: string[];
+  title: string;
+  titleKey?: string;
+}
 
 // @public
 export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
