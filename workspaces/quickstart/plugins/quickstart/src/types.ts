@@ -30,4 +30,8 @@ export interface QuickstartItemData {
   cta?: QuickstartItemCtaData;
 }
 
+/**
+ * User role type for quickstart functionality
+ * @public
+ */
 export type UserRole = 'admin' | 'developer';

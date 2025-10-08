@@ -21,11 +21,11 @@ import { Quickstart } from './Quickstart';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
-import { useQuickstartRole } from '../hooks/useQuickstartRole';
+// Role is now provided through context to avoid re-fetching on drawer open/close
 import { useMemo } from 'react';
 
 export const QuickstartDrawer = () => {
-  const { isDrawerOpen, closeDrawer, drawerWidth } =
+  const { isDrawerOpen, closeDrawer, drawerWidth, userRole, roleLoading } =
     useQuickstartDrawerContext();
 
   const apiHolder = useApiHolder();
@@ -36,14 +36,12 @@ export const QuickstartDrawer = () => {
       : [];
   }, [config]);
 
-  const { isLoading, userRole } = useQuickstartRole();
-
-  // Items available to the user based on cached/derived role
+  // Items available to the user based on role from context
   const eligibleItems = useMemo(() => {
-    return !isLoading && userRole
+    return !roleLoading && userRole
       ? filterQuickstartItemsByRole(quickstartItems, userRole)
       : [];
-  }, [isLoading, userRole, quickstartItems]);
+  }, [roleLoading, userRole, quickstartItems]);
 
   // Only expose items to the body when drawer is open to avoid re-renders during close
   const filteredItems = useMemo(() => {
@@ -58,7 +56,7 @@ export const QuickstartDrawer = () => {
   }
 
   // If there are no items for the user, hide the drawer entirely
-  if (!isLoading && eligibleItems.length === 0) {
+  if (!roleLoading && eligibleItems.length === 0) {
     return null;
   }
 
@@ -92,7 +90,7 @@ export const QuickstartDrawer = () => {
       <Quickstart
         quickstartItems={filteredItems}
         handleDrawerClose={closeDrawer}
-        isLoading={isLoading}
+        isLoading={roleLoading}
       />
     </Drawer>
   );

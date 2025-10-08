@@ -18,20 +18,36 @@ import { SidebarItem } from '@backstage/core-components';
 import WavingHandOutlinedIcon from '@mui/icons-material/WavingHandOutlined';
 import { useQuickstartDrawerContext } from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { useMemo } from 'react';
+import {
+  filterQuickstartItemsByRole,
+  QuickstartItemData,
+} from '@red-hat-developer-hub/backstage-plugin-quickstart';
 
 export const QuickstartSidebarItem = () => {
   const configApi = useApi(configApiRef);
-  const { toggleDrawer } = useQuickstartDrawerContext();
+  const { toggleDrawer, userRole, roleLoading } = useQuickstartDrawerContext();
 
-  // Hide nav item if no quickstart items are configured
-  try {
-    const items = configApi?.has('app.quickstart')
-      ? (configApi.get('app.quickstart') as unknown)
-      : undefined;
-    if (!Array.isArray(items) || items.length === 0) {
-      return null;
+  // Get all quickstart items from config
+  const quickstartItems: QuickstartItemData[] = useMemo(() => {
+    try {
+      return configApi?.has('app.quickstart')
+        ? (configApi.get('app.quickstart') as QuickstartItemData[])
+        : [];
+    } catch {
+      return [];
     }
-  } catch {
+  }, [configApi]);
+
+  // Filter items based on user role
+  const eligibleItems = useMemo(() => {
+    return !roleLoading && userRole
+      ? filterQuickstartItemsByRole(quickstartItems, userRole)
+      : [];
+  }, [roleLoading, userRole, quickstartItems]);
+
+  // Hide nav item if no quickstart items are available to the current user
+  if (roleLoading || eligibleItems.length === 0) {
     return null;
   }
   return (

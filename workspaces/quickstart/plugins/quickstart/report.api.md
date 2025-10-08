@@ -7,12 +7,17 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { CSSProperties } from 'react';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { PropsWithChildren } from 'react';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
-export const QuickstartButton: React.ComponentType<QuickstartButtonProps>;
+export const QuickstartButton: ({
+  title,
+  style,
+  onClick,
+}: QuickstartButtonProps) => JSX_2.Element | null;
 
 // @public
 export interface QuickstartButtonProps {
@@ -27,12 +32,16 @@ export interface QuickstartDrawerContextType {
   drawerWidth: number;
   isDrawerOpen: boolean;
   openDrawer: () => void;
+  roleLoading: boolean;
   setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
   toggleDrawer: () => void;
+  userRole: UserRole | null;
 }
 
 // @public
-export const QuickstartDrawerProvider: React.ComponentType<PropsWithChildren>;
+export const QuickstartDrawerProvider: ({
+  children,
+}: PropsWithChildren) => JSX_2.Element;
 
 // @public
 export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
@@ -99,6 +108,9 @@ export const quickstartTranslations: TranslationResource<'plugin.quickstart'>;
 
 // @public
 export const useQuickstartDrawerContext: () => QuickstartDrawerContextType;
+
+// @public
+export type UserRole = 'admin' | 'developer';
 
 // (No @packageDocumentation comment for this package)
 ```
