@@ -624,7 +624,7 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.FindTaskImportStatusByRepo.Responses.$200>;
   /**
-   * deleteTaskImportByRepo - Delete task import by repository name
+   * deleteTaskImportByRepo - Delete stored scaffolder task records for a specific repository
    */
   'deleteTaskImportByRepo'(
     parameters?: Parameters<Paths.DeleteTaskImportByRepo.QueryParameters> | null,
@@ -745,7 +745,7 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.FindTaskImportStatusByRepo.Responses.$200>;
     /**
-     * deleteTaskImportByRepo - Delete task import by repository name
+     * deleteTaskImportByRepo - Delete stored scaffolder task records for a specific repository
      */
     'delete'(
       parameters?: Parameters<Paths.DeleteTaskImportByRepo.QueryParameters> | null,

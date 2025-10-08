@@ -632,14 +632,14 @@ const OPENAPI = `
       },
       "delete": {
         "operationId": "deleteTaskImportByRepo",
-        "summary": "Delete task import by repository name",
+        "summary": "Delete stored scaffolder task records for a specific repository",
         "security": [
           {
             "BearerAuth": []
           }
         ],
         "tags": [
-          "Repository"
+          "Import"
         ],
         "parameters": [
           {
