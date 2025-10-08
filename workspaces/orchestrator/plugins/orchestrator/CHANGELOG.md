@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 5.0.8
+
+### Patch Changes
+
+- a24d93c: The AuthRequester widget can reference statically added non-core auth apis.
+- 126f478: export orchestrator translation ref
+- 23bb527: Simplify Workflow Instance page header based on customer feedback.
+
 ## 5.0.7
 
 ### Patch Changes
