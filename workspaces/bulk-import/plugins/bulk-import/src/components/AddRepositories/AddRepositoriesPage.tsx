@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { useRef } from 'react';
-
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
@@ -27,7 +25,6 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
@@ -37,13 +34,8 @@ import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
 export const AddRepositoriesPage = () => {
-  const queryClientRef = useRef<QueryClient>();
   const theme = useTheme();
   const { t } = useTranslation();
-
-  if (!queryClientRef.current) {
-    queryClientRef.current = new QueryClient();
-  }
 
   const bulkImportViewPermissionResult = usePermission({
     permission: bulkImportPermission,
@@ -130,9 +122,7 @@ export const AddRepositoriesPage = () => {
               </AccordionDetails>
             </Accordion>
           </div>
-          <QueryClientProvider client={queryClientRef.current as QueryClient}>
-            <AddRepositoriesForm />
-          </QueryClientProvider>
+          <AddRepositoriesForm />
         </>
       );
     }
