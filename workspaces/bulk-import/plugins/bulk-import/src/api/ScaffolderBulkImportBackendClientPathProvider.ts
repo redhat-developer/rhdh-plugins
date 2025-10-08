@@ -24,12 +24,20 @@ export class ScaffolderBulkImportBackendClientPathProvider
     return dryRun === true ? undefined : `/api/bulk-import/task-imports`;
   }
 
-  getDeleteImportActionPath(repo: string, _defaultBranch: string): string {
-    return `/api/bulk-import/task-import/by-repo?repo=${repo}`;
+  getDeleteImportActionPath(
+    repo: string,
+    _defaultBranch: string,
+    approvalTool: string,
+  ): string {
+    return `/api/bulk-import/task-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
   }
 
-  getGetImportActionPath(repo: string, _defaultBranch: string): string {
-    return `/api/bulk-import/task-import/by-repo?repo=${repo}`;
+  getGetImportActionPath(
+    repo: string,
+    _defaultBranch: string,
+    approvalTool: string,
+  ): string {
+    return `/api/bulk-import/task-import/by-repo?repo=${repo}&approvalTool=${approvalTool}`;
   }
 
   getGetImportJobsPath(

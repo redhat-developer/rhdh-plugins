@@ -58,6 +58,7 @@ class MockBulkImportApi implements BulkImportAPI {
     page: number,
     size: number,
     searchString: string,
+    _approvalTool: string,
     options?: APITypes,
   ): Promise<OrgAndRepoResponse> {
     if (options?.orgName) {

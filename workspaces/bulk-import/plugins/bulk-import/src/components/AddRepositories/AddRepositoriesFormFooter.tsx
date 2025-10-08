@@ -67,9 +67,7 @@ export const AddRepositoriesFormFooter = () => {
   };
 
   const disableCreate =
-    values.approvalTool === ApprovalTool.Gitlab ||
-    !values.repositories ||
-    Object.values(values.repositories).length === 0;
+    !values.repositories || Object.values(values.repositories).length === 0;
 
   const submitButton = (
     <Button

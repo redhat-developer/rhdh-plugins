@@ -128,7 +128,14 @@ export const AddedRepositoryTableRow = ({
       <TableCell align="left" className={classes.tableCellStyle}>
         <CatalogInfoAction data={data} />
         <DeleteRepository data={data} />
-        <SyncRepository data={data} />
+        <SyncRepository
+          data={data}
+          approvalTool={
+            data.repoUrl && data.repoUrl.startsWith('https://gitlab.com')
+              ? 'GITLAB'
+              : 'GITHUB'
+          }
+        />
       </TableCell>
     </TableRow>
   );

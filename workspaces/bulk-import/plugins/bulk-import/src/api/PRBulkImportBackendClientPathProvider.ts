@@ -26,12 +26,20 @@ export class PRBulkImportBackendClientPathProvider
       : `/api/bulk-import/imports`;
   }
 
-  getDeleteImportActionPath(repo: string, defaultBranch: string): string {
-    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`;
+  getDeleteImportActionPath(
+    repo: string,
+    defaultBranch: string,
+    approvalTool: string,
+  ): string {
+    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`;
   }
 
-  getGetImportActionPath(repo: string, defaultBranch: string): string {
-    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}`;
+  getGetImportActionPath(
+    repo: string,
+    defaultBranch: string,
+    approvalTool: string,
+  ): string {
+    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`;
   }
 
   getGetImportJobsPath(

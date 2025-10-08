@@ -87,9 +87,14 @@ export const PreviewFileSidebar = ({
       return values.repositories[id].catalogInfoYaml
         ?.prTemplate as PullRequestPreview;
     }
+
+    const approvalTool = url.startsWith(`https://gitlab.com`)
+      ? 'GITLAB'
+      : 'GIT';
     const result = await bulkImportApi.getImportAction(
       url || '',
       branch || 'main',
+      approvalTool,
     );
     if ((result as Response)?.statusText) {
       setStatus({

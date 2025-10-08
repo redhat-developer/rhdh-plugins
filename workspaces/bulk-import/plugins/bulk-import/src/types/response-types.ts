@@ -39,34 +39,41 @@ export type ImportJobResponse = {
   repository: Repository;
 };
 
-export type ImportJobStatus = {
-  approvalTool: string;
-  task?: {
-    taskId: string;
-  };
-  tasks?: ScaffolderTask[];
-  github: {
-    pullRequest: {
-      number: number;
-      url: string;
-      title: string;
-      body: string;
-      catalogInfoContent: string;
-    };
-  };
-  status: string;
-  id: string;
-  source?: 'location' | 'config' | 'integration';
-  lastUpdate: string;
-  repository: Repository;
-};
-
 export type ImportJobs = {
   imports: ImportJobStatus[];
   page: number;
   size: number;
   totalCount: number;
 };
+
+export type PullRequest = {
+  number: number;
+  url: string;
+  title: string;
+  body: string;
+  catalogInfoContent: string;
+};
+
+export type ImportJobStatus<
+  Provider extends 'github' | 'gitlab' = 'github' | 'gitlab',
+> = {
+  approvalTool: string;
+  task?: {
+    taskId: string;
+  };
+  tasks?: ScaffolderTask[];
+  status: string;
+  id: string;
+  source?: 'location' | 'config' | 'integration';
+  lastUpdate: string;
+  repository: Repository;
+} & Partial<Record<Provider, { pullRequest: PullRequest }>>;
+
+export function isGithubJob(
+  job: ImportJobStatus<'github'> | ImportJobStatus<'gitlab'>,
+): job is ImportJobStatus<'github'> {
+  return 'github' in job;
+}
 
 export type OrgAndRepoResponse = {
   errors?: string[];

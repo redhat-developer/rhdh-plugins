@@ -30,7 +30,11 @@ import {
   PullRequestPreviewData,
   RepositorySelection,
 } from '../../types';
-import { ImportJobResponse, ImportJobStatus } from '../../types/response-types';
+import {
+  ImportJobResponse,
+  ImportJobStatus,
+  isGithubJob,
+} from '../../types/response-types';
 import {
   getJobErrors,
   prepareDataForSubmission,
@@ -52,9 +56,12 @@ const EditCatalogInfo = ({
     useFormikContext<AddRepositoriesFormValues>();
   let yamlContent = {} as Entity;
   try {
-    yamlContent = yaml.loadAll(
-      importStatus?.github?.pullRequest?.catalogInfoContent,
-    )[0] as Entity;
+    if (importStatus) {
+      const gitProvider = isGithubJob(importStatus) ? 'github' : 'gitlab';
+      yamlContent = yaml.loadAll(
+        importStatus[gitProvider]?.pullRequest?.catalogInfoContent ?? '',
+      )[0] as Entity;
+    }
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn(e);
