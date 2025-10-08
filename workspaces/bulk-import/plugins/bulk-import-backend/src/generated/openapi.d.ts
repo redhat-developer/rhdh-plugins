@@ -346,10 +346,12 @@ declare namespace Paths {
   }
   namespace DeleteTaskImportByRepo {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type Repo = string;
     }
     export interface QueryParameters {
       repo?: Parameters.Repo;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export interface $204 {}
@@ -520,12 +522,14 @@ declare namespace Paths {
   }
   namespace FindTaskImportStatusByRepo {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type DefaultBranch = string;
       export type Repo = string;
     }
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 = /* Import Job */ Components.Schemas.Import;
