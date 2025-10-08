@@ -171,14 +171,14 @@ export class TechDocsService {
     entity: Entity,
   ): Promise<{ techDocsUrl: string; metadataUrl: string }> {
     const appBaseUrl = this.config.getString('app.baseUrl');
-    const backendBaseUrl = await this.discovery.getBaseUrl('catalog');
+    const backendBaseUrl = this.config.getString('backend.baseUrl');
 
     const { namespace = 'default', name } = entity.metadata;
     const kind = entity.kind.toLowerCase();
 
     return {
       techDocsUrl: `${appBaseUrl}/docs/${namespace}/${kind}/${name}`,
-      metadataUrl: `${backendBaseUrl}/entities/by-name/${kind}/${namespace}/${name}`,
+      metadataUrl: `${backendBaseUrl}/api/catalog/entities/by-name/${kind}/${namespace}/${name}`,
     };
   }
 
