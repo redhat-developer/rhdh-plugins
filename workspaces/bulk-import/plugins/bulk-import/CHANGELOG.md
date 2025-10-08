@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.17.1
+
+### Patch Changes
+
+- 433fde0: Include config.d.ts in the bulk-import plugin release bundle.
+
 ## 1.17.0
 
 ### Minor Changes
