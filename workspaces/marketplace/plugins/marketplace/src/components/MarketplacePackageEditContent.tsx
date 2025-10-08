@@ -165,19 +165,26 @@ export const MarketplacePackageEditContent = ({
     [`${pkg.metadata.name}`]: pkg.spec?.dynamicArtifact,
   };
 
-  const packageExamples = Object.values(examples[0])[0];
+  const packageExamples =
+    Array.isArray(examples) && examples.length > 0
+      ? Object.values(examples[0])?.[0]
+      : [];
 
-  const availableTabs = [
-    Array.isArray(packageExamples) &&
-      packageExamples.length > 0 && {
-        label: 'Examples',
-        content: examples,
-        key: 'examples',
-        others: { packageNames: packageDynamicArtifacts },
-      },
-  ].filter(Boolean) as TabItem[];
+  const hasPackageExamples =
+    Array.isArray(packageExamples) && packageExamples.length > 0;
 
-  const showRightCard = packageExamples?.length && packageExamples.length > 0;
+  const availableTabs = hasPackageExamples
+    ? ([
+        {
+          label: 'Examples',
+          content: examples,
+          key: 'examples',
+          others: { packageNames: packageDynamicArtifacts },
+        },
+      ] as TabItem[])
+    : [];
+
+  const showRightCard = hasPackageExamples;
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (_: any, newValue: SetStateAction<number>) => {
