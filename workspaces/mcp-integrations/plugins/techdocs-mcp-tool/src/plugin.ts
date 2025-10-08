@@ -138,6 +138,7 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                         ),
                       tags: z
                         .array(z.string())
+                        .optional()
                         .describe('The tags related with the techdoc entity'),
                       description: z
                         .string()
