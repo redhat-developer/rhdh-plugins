@@ -89,6 +89,34 @@ backend.add(BulkImportPermissionBackendModule);
 backend.add(import('@backstage/plugin-permission-backend/alpha'));
 ```
 
+#### Scaffolder Template Execution
+
+The Bulk Import plugin allows for the execution of a scaffolder template on multiple selected repositories. An administrator can create a scaffolder template specifically for the Bulk Import plugin and provide it within the application's configuration.
+
+##### Plugin Configuration
+
+The Bulk Import plugin has a specific configuration for the scaffolder template:
+
+```
+bulkImport:
+  importTemplate: your-template-entity-reference-or-template-name
+  importAPI: 'scaffolder'
+```
+
+importAPI: This field defines the import workflow. It currently supports two options:
+
+- open-pull-requests: This is the default import workflow, which includes the logic for creating pull requests for every selected repository.
+- scaffolder: This workflow uses an import scenario defined in the scaffolder template. The import steps depend on the template's content, allowing for various scenarios. These can include importing existing catalog entities from a repository, creating pull requests, calling webhooks, and more. This method offers greater flexibility.
+
+> Important Note
+> The scaffolder template must be generic and not specific to a single repository to be successfully executed for every repository in the bulk list.
+
+For the RHDH instance to use the scaffolder functionality, it must be run with the following environment variable enabled:
+
+```
+export NODE_OPTIONS=--no-node-snapshot
+```
+
 ### Audit Logging
 
 Audit logging is backed by the [`@backstage/backend-plugin-api`](https://www.npmjs.com/package/@backstage/backend-plugin-api) package.
