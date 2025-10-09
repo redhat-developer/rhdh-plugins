@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.6.2
+
+### Patch Changes
+
+- f1b0f1a: Add package.json exports configuration for alpha module support.
+
+  - Add exports field to support importing from alpha module
+  - Add typesVersions configuration for TypeScript support
+
 ## 1.6.1
 
 ### Patch Changes
