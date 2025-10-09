@@ -133,7 +133,7 @@ describe('permissionUtils', () => {
   describe('checkEntityAccess', () => {
     let mockPermissionsService: jest.Mocked<PermissionsService>;
     let mockHttpAuthService: jest.Mocked<HttpAuthService>;
-    let mockRequest: Partial<Request>;
+    let mockRequest: Request;
 
     beforeEach(() => {
       mockPermissionsService = {
@@ -156,7 +156,7 @@ describe('permissionUtils', () => {
       await expect(
         checkEntityAccess(
           'component:default/my-service',
-          mockRequest as Request,
+          mockRequest,
           mockPermissionsService,
           mockHttpAuthService,
         ),
@@ -182,7 +182,7 @@ describe('permissionUtils', () => {
       await expect(
         checkEntityAccess(
           'component:default/my-service',
-          mockRequest as Request,
+          mockRequest,
           mockPermissionsService,
           mockHttpAuthService,
         ),
@@ -207,7 +207,7 @@ describe('permissionUtils', () => {
 
       await checkEntityAccess(
         'api:production/payment-service',
-        mockRequest as Request,
+        mockRequest,
         mockPermissionsService,
         mockHttpAuthService,
       );
