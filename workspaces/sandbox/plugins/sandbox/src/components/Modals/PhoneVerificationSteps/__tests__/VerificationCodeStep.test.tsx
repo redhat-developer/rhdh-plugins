@@ -23,6 +23,7 @@ import { Product } from '../../../SandboxCatalog/productData';
 import { Country } from 'react-phone-number-input';
 import { useSandboxContext } from '../../../../hooks/useSandboxContext';
 import { act } from 'react-dom/test-utils';
+import * as eddlUtils from '../../../../utils/eddl-utils';
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
@@ -34,6 +35,10 @@ jest.mock('@backstage/core-plugin-api', () => ({
 jest.useFakeTimers(); // control timers
 // mock hooks
 jest.mock('../../../../hooks/useSandboxContext');
+jest.mock('../../../../utils/eddl-utils', () => ({
+  ...jest.requireActual('../../../../utils/eddl-utils'),
+  useTrackAnalytics: jest.fn(),
+}));
 
 // Mock the props interface if it's not exported from the component file
 declare module '../VerificationCodeStep' {
@@ -52,6 +57,7 @@ declare module '../VerificationCodeStep' {
 }
 
 describe('VerificationCodeStep', () => {
+  const mockTrackAnalytics = jest.fn();
   const mockSetOpt = jest.fn();
   const mockHandleClose = jest.fn();
   const mockHandleEditPhoneNumber = jest.fn();
@@ -95,6 +101,14 @@ describe('VerificationCodeStep', () => {
     loading: false,
     country: mockCountry,
   };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTrackAnalytics.mockResolvedValue(undefined);
+    (eddlUtils.useTrackAnalytics as jest.Mock).mockReturnValue(
+      mockTrackAnalytics,
+    );
+  });
 
   function renderComponent(props = {}) {
     render(<VerificationCodeStep {...defaultProps} {...props} />);
@@ -191,7 +205,7 @@ describe('VerificationCodeStep', () => {
     expect(mockHandleClose).toHaveBeenCalled(); // it closes the modal after
   });
 
-  test('closes the modal when the close button is clicked', () => {
+  test('closes the modal when the close button is clicked', async () => {
     const mockRefetchUserData = jest.fn();
     const mockHandleAAPInstance = jest.fn();
     const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
@@ -206,7 +220,10 @@ describe('VerificationCodeStep', () => {
     renderComponent();
     const closeButton = screen.getByRole('button', { name: /Cancel/i });
     fireEvent.click(closeButton);
-    expect(mockHandleClose).toHaveBeenCalled();
+
+    await waitFor(() => {
+      expect(mockHandleClose).toHaveBeenCalled();
+    });
   });
 
   test('does not open URL when defaultUserNamespace is undefined', async () => {
@@ -361,10 +378,13 @@ describe('VerificationCodeStep', () => {
     expect(mockHandleAAPInstance).not.toHaveBeenCalled(); // verify handleAAP is not called
   });
 
-  describe('EDDL data attributes', () => {
+  describe('Analytics tracking', () => {
+    let mockRefetchUserData: jest.Mock;
+    let mockHandleAAPInstance: jest.Mock;
+
     beforeEach(() => {
-      const mockRefetchUserData = jest.fn();
-      const mockHandleAAPInstance = jest.fn();
+      mockRefetchUserData = jest.fn();
+      mockHandleAAPInstance = jest.fn();
       const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
         typeof useSandboxContext
       >;
@@ -375,63 +395,61 @@ describe('VerificationCodeStep', () => {
       } as any);
     });
 
-    test('should have correct EDDL data attributes on Start trial button', () => {
+    test('calls trackAnalytics with correct parameters when Start Trial is clicked', async () => {
       renderComponent();
 
       const startTrialButton = screen.getByRole('button', {
         name: /Start trial/i,
       });
+      const clickEvent = fireEvent.click(startTrialButton);
 
-      expect(startTrialButton).toHaveAttribute(
-        'data-analytics-category',
-        'Developer Sandbox|Verification',
-      );
-      expect(startTrialButton).toHaveAttribute(
-        'data-analytics-text',
-        'Start Trial',
-      );
-      expect(startTrialButton).toHaveAttribute(
-        'data-analytics-region',
-        'sandbox-verification',
-      );
+      await waitFor(() => {
+        expect(mockTrackAnalytics).toHaveBeenCalledWith(
+          'Start Trial',
+          'Verification',
+          window.location.href,
+          undefined,
+          'cta',
+        );
+      });
+      expect(clickEvent).toBe(false); // Event was prevented
     });
 
-    test('should have correct EDDL data attributes on Cancel button', () => {
-      renderComponent();
-
-      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
-
-      expect(cancelButton).toHaveAttribute(
-        'data-analytics-category',
-        'Developer Sandbox|Verification',
-      );
-      expect(cancelButton).toHaveAttribute(
-        'data-analytics-text',
-        'Cancel Verification',
-      );
-      expect(cancelButton).toHaveAttribute(
-        'data-analytics-region',
-        'sandbox-verification',
-      );
-    });
-
-    test('should have correct EDDL data attributes on Resend code link', () => {
+    test('calls trackAnalytics with correct parameters when Resend Code is clicked', async () => {
       renderComponent();
 
       const resendCodeLink = screen.getByTestId('resend-code-link');
+      const clickEvent = fireEvent.click(resendCodeLink);
 
-      expect(resendCodeLink).toHaveAttribute(
-        'data-analytics-category',
-        'Developer Sandbox|Verification',
-      );
-      expect(resendCodeLink).toHaveAttribute(
-        'data-analytics-text',
-        'Resend Code',
-      );
-      expect(resendCodeLink).toHaveAttribute(
-        'data-analytics-region',
-        'sandbox-verification',
-      );
+      await waitFor(() => {
+        expect(mockTrackAnalytics).toHaveBeenCalledWith(
+          'Resend Code',
+          'Verification',
+          window.location.href,
+          undefined,
+          'cta',
+        );
+      });
+      expect(clickEvent).toBe(false); // Event was prevented
+    });
+
+    test('calls trackAnalytics with correct parameters when Cancel is clicked', async () => {
+      renderComponent();
+
+      const cancelButton = screen.getByRole('button', { name: /Cancel/i });
+      const clickEvent = fireEvent.click(cancelButton);
+
+      await waitFor(() => {
+        expect(mockTrackAnalytics).toHaveBeenCalledWith(
+          'Cancel Verification',
+          'Verification',
+          window.location.href,
+          undefined,
+          'cta',
+        );
+      });
+      expect(mockHandleClose).toHaveBeenCalled();
+      expect(clickEvent).toBe(false); // Event was prevented
     });
   });
 });
