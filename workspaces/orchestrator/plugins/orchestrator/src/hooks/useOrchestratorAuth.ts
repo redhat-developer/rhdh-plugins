@@ -102,7 +102,7 @@ export const useOrchestratorAuth = () => {
       // Hint: If this approach proves to be working, we could use it for the other apis as well.
       // @ts-ignore
       const allApis = apiHolder.apis as Map<string, object>;
-      const api = allApis.get('core.auth.github');
+      const api = allApis.get(providerApiId);
       if (!api) {
         throw new Error(
           `API with id "${providerApiId}" was not found in the API holder.`,
