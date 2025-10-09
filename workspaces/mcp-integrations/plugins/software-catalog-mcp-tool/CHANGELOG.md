@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool
 
+## 0.2.2
+
+### Patch Changes
+
+- 0ba2481: Make tag optional parameter in the output schema of the MCP tools
+
 ## 0.2.1
 
 ### Patch Changes
