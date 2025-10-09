@@ -21,7 +21,7 @@ import { useTheme } from '@mui/material/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { Header, Link } from '@backstage/core-components';
-import { getEddlDataAttributes, useTrackAnalytics } from '../utils/eddl-utils';
+import { useTrackAnalytics } from '../utils/eddl-utils';
 
 interface SandboxHeaderProps {
   pageTitle: string;
@@ -52,18 +52,24 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
   }, []);
 
   const theme = useTheme();
-  const contactSalesEddlAttributes = getEddlDataAttributes(
-    'Contact Red Hat Sales',
-    'Support',
-  );
 
   // Handle Contact Sales click for analytics tracking
-  const handleContactSalesClick = async () => {
+  const handleContactSalesClick = async (
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
     await trackAnalytics(
       'Contact Red Hat Sales',
       'Support',
       'https://www.redhat.com/en/contact',
+      undefined,
+      'cta',
     );
+
+    // Navigate after tracking completes
+    window.open('https://www.redhat.com/en/contact', '_blank');
   };
 
   return (
@@ -112,7 +118,6 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
           underline="none"
           target="_blank"
           onClick={handleContactSalesClick}
-          {...contactSalesEddlAttributes}
         >
           <Button
             variant="outlined"

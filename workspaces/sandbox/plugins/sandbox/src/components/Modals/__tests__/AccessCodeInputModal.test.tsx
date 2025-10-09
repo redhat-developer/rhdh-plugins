@@ -202,12 +202,12 @@ describe('AccessCodeInputModal', () => {
 
     // Fill all inputs by typing once in the first input - auto-focus will handle the rest
     await user.click(inputs[0]);
-    await user.type(inputs[0], 'ABCDEF'); // Type enough characters to fill all inputs
+    await user.type(inputs[0], 'ABCDE'); // Type 5 characters to fill all 5 inputs
 
     // Wait for all inputs to be filled
     await waitFor(() => {
       inputs.forEach((input, index) => {
-        expect(input).toHaveValue(String.fromCharCode(65 + index)); // A, B, C, D, E, F
+        expect(input).toHaveValue(String.fromCharCode(65 + index)); // A, B, C, D, E
       });
     });
 

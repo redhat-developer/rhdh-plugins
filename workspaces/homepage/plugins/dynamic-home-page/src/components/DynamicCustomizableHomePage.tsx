@@ -40,7 +40,13 @@ export interface DynamicCustomizableHomePageProps {
 export const DynamicCustomizableHomePage = (
   props: DynamicCustomizableHomePageProps,
 ) => {
-  const cards = useDynamicHomePageCards();
+  const { allCards, defaultCards } = useDynamicHomePageCards();
 
-  return <CustomizableHomePage {...props} cards={cards} />;
+  return (
+    <CustomizableHomePage
+      {...props}
+      cards={allCards}
+      defaultCards={defaultCards}
+    />
+  );
 };

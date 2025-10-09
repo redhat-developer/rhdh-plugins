@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.11.2
+
+### Patch Changes
+
+- 4d79286: added row actions to the installed packages
+  updated disablePackage Client API to make PATCH call instead of POST
+- Updated dependencies [4d79286]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.10.1
+
 ## 0.11.1
 
 ### Patch Changes

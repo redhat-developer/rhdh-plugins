@@ -20,10 +20,10 @@ import { VisitListener as VisitListenerComponent } from '@backstage/plugin-home'
 import { useDynamicHomePageCards } from '../hooks/useDynamicHomePageCards';
 
 export const VisitListener = () => {
-  const cards = useDynamicHomePageCards();
+  const { allCards } = useDynamicHomePageCards();
 
   const shouldLoadVisitListener = useMemo<boolean>(() => {
-    if (!cards) {
+    if (!allCards || !Array.isArray(allCards)) {
       return false;
     }
 
@@ -32,10 +32,10 @@ export const VisitListener = () => {
       'Extension(TopVisitedCard)',
     ];
 
-    return cards.some(card =>
+    return allCards.some(card =>
       requiresVisitListener.includes(card.Component.displayName!),
     );
-  }, [cards]);
+  }, [allCards]);
 
   return shouldLoadVisitListener ? <VisitListenerComponent /> : null;
 };

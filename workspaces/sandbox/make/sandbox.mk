@@ -16,8 +16,9 @@ RHDH_LOCAL_DIR := "$(TMPDIR)rhdh-local"
 .PHONY: clone-rhdh-local
 clone-rhdh-local:
 	rm -rf ${RHDH_LOCAL_DIR}; \
-	git clone https://github.com/redhat-developer/rhdh-local $(RHDH_LOCAL_DIR) && \
+	git clone --depth 1 https://github.com/redhat-developer/rhdh-local $(RHDH_LOCAL_DIR) && \
 	cd $(RHDH_LOCAL_DIR) && \
+	git fetch --unshallow && \
 	git checkout 37be302480b1458c3dfd3270c25726d65f0ffe75 && \
 	echo "cloned to $(RHDH_LOCAL_DIR)"
 
