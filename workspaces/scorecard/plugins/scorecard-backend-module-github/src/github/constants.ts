@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export const DEFAULT_GITHUB_HOSTNAME = 'github.com';
 export const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';

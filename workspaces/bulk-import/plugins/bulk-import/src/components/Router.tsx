@@ -16,20 +16,28 @@
 
 import { Route, Routes } from 'react-router-dom';
 
-import { addRepositoriesRouteRef } from '../routes';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+import { addRepositoriesRouteRef, tasksRouteRef } from '../routes';
 import { AddRepositoriesPage } from './AddRepositories/AddRepositoriesPage';
 import { BulkImportPage } from './BulkImportPage';
+import { TasksPage } from './Repositories/TasksPage';
+
+const queryClient = new QueryClient();
 
 /**
  *
  * @public
  */
 export const Router = () => (
-  <Routes>
-    <Route path="*" element={<BulkImportPage />} />
-    <Route
-      path={addRepositoriesRouteRef.path}
-      element={<AddRepositoriesPage />}
-    />
-  </Routes>
+  <QueryClientProvider client={queryClient}>
+    <Routes>
+      <Route path="*" element={<BulkImportPage />} />
+      <Route
+        path={addRepositoriesRouteRef.path}
+        element={<AddRepositoriesPage />}
+      />
+      <Route path={tasksRouteRef.path} element={<TasksPage />} />
+    </Routes>
+  </QueryClientProvider>
 );

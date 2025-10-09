@@ -27,6 +27,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles } from 'tss-react/mui';
 
 import { useQuickAccessLinks } from '../hooks/useQuickAccessLinks';
+import { useTranslation } from '../hooks/useTranslation';
+import { QuickAccessIcon } from './QuickAccessIcon';
 
 const useStyles = makeStyles()({
   center: {
@@ -34,10 +36,6 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  img: {
-    height: '40px',
-    width: 'auto',
   },
   title: {
     '& div > div > div > div > p': {
@@ -59,6 +57,7 @@ export interface QuickAccessCardProps {
  */
 export const QuickAccessCard = (props: QuickAccessCardProps) => {
   const { classes } = useStyles();
+  const { t } = useTranslation();
   const { data, error, isLoading } = useQuickAccessLinks(props.path);
 
   let content: ReactNode;
@@ -71,10 +70,10 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
     );
   } else if (!data) {
     content = (
-      <WarningPanel severity="error" title="Could not fetch data.">
+      <WarningPanel severity="error" title={t('quickAccess.fetchError')}>
         <CodeSnippet
           language="text"
-          text={error?.toString() ?? 'Unknown error'}
+          text={error?.toString() ?? t('quickAccess.error')}
         />
       </WarningPanel>
     );
@@ -87,13 +86,7 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
             title={item.title}
             tools={item.links.map(link => ({
               ...link,
-              icon: (
-                <img
-                  className={classes.img}
-                  src={link.iconUrl}
-                  alt={link.label}
-                />
-              ),
+              icon: <QuickAccessIcon icon={link.iconUrl} alt={link.label} />,
             }))}
             // Component creation is allowed inside component props only
             // if prop name starts with `render`.
@@ -111,7 +104,7 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
 
   return (
     <InfoCard
-      title={props.title ?? 'Quick Access'}
+      title={props.title ?? t('quickAccess.title')}
       noPadding
       className={classes.title}
     >

@@ -4,27 +4,18 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import { JSXElementConstructor } from 'react';
-import { PathParams } from '@backstage/core-plugin-api';
-import { ReactElement } from 'react';
-import { RouteRef } from '@backstage/core-plugin-api';
-import { SubRouteRef } from '@backstage/core-plugin-api';
 
 // @public (undocumented)
 export const DynamicMarketplacePluginContent: () => JSX_2.Element;
 
-// @public (undocumented)
+// @public
 export const DynamicMarketplacePluginRouter: () => JSX_2.Element;
 
-// @public (undocumented)
-export const InstallationContextProvider: ({ children, }: {
-    children: ReactElement<any, string | JSXElementConstructor<any>>;
-}) => JSX_2.Element;
+// @public @deprecated (undocumented)
+export const InstallationContextProvider: () => null;
 
 // @public
 export const MarketplaceFullPageRouter: () => JSX_2.Element;
@@ -33,20 +24,13 @@ export const MarketplaceFullPageRouter: () => JSX_2.Element;
 export const MarketplaceIcon: IconComponent;
 
 // @public
-export const marketplacePlugin: BackstagePlugin<    {
-rootRouteRef: RouteRef<undefined>;
-pluginsRouteRef: SubRouteRef<undefined>;
-pluginRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name">>;
-pluginInstallRouteRef: SubRouteRef<PathParams<"/plugins/:namespace/:name/install">>;
-packagesRouteRef: SubRouteRef<undefined>;
-packageRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name">>;
-packageInstallRouteRef: SubRouteRef<PathParams<"/packages/:namespace/:name/install">>;
-collectionsRouteRef: SubRouteRef<undefined>;
-collectionRouteRef: SubRouteRef<PathParams<"/collections/:namespace/:name">>;
-}, {}, {}>;
+export const marketplacePlugin: BackstagePlugin<    {}, {}, {}>;
 
 // @public
 export const MarketplaceTabbedPageRouter: () => JSX_2.Element;
+
+// @public (undocumented)
+export const PluginsIcon: IconComponent;
 
 // (No @packageDocumentation comment for this package)
 

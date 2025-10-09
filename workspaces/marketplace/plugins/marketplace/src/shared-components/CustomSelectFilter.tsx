@@ -24,15 +24,26 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import InputLabel from '@mui/material/InputLabel';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import Typography from '@mui/material/Typography';
 
-export interface BackstageSelectFilterProps {
-  label: string;
-  items: SelectItem[];
-  selectedItems: SelectItem[];
-  onChange: (event: SyntheticEvent, value: SelectItem[]) => void;
+export interface CustomSelectItem extends SelectItem {
+  helperText?: string;
+  isBadge?: boolean;
+  badgeColor?: string;
+  count?: number;
+  displayOrder?: number;
 }
 
-export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
+export interface CustomSelectFilterProps {
+  label: string;
+  helper?: string;
+  items: CustomSelectItem[];
+  selectedItems: CustomSelectItem[];
+  onChange: (event: SyntheticEvent, value: CustomSelectItem[]) => void;
+}
+
+export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
   return (
     <Box
       sx={{
@@ -79,7 +90,33 @@ export const CustomSelectFilter = (props: BackstageSelectFilterProps) => {
                     : selectedOption.selected
                 }
               />
-              {option.label}
+              {option.isBadge && (
+                <TaskAltIcon
+                  style={{ color: option.badgeColor }}
+                  sx={{ marginRight: 1 }}
+                />
+              )}
+
+              {option.helperText ? (
+                <div>
+                  <Typography variant="body1">{option.label}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {option.helperText}
+                  </Typography>
+                </div>
+              ) : (
+                <div style={{ flexGrow: 1 }}>{option.label}</div>
+              )}
+
+              {option.count ? (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ pl: 1 }}
+                >
+                  {option.count}
+                </Typography>
+              ) : null}
             </li>
           );
         }}

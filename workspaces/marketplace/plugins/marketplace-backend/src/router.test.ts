@@ -20,8 +20,16 @@ import request from 'supertest';
 import { stringify } from 'yaml';
 
 import { ExtendedHttpServer } from '@backstage/backend-defaults/rootHttpRouter';
-import { BackendFeature } from '@backstage/backend-plugin-api';
+import {
+  BackendFeature,
+  createServiceFactory,
+} from '@backstage/backend-plugin-api';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import {
+  DynamicPluginProvider,
+  BaseDynamicPlugin,
+  dynamicPluginsServiceRef,
+} from '@backstage/backend-dynamic-feature-service';
 import type { JsonObject } from '@backstage/types';
 import {
   AuthorizeResult,
@@ -67,6 +75,43 @@ const BASE_CONFIG = {
   },
 };
 
+// Mock dynamic plugins data for testing
+const mockDynamicPluginsData: BaseDynamicPlugin[] = [
+  {
+    name: '@backstage/plugin-catalog-backend',
+    version: '1.0.0',
+    role: 'backend',
+    platform: 'node',
+  },
+  {
+    name: '@backstage/plugin-catalog',
+    version: '1.0.0',
+    role: 'frontend',
+    platform: 'web',
+  },
+  {
+    name: '@red-hat-developer-hub/backstage-plugin-marketplace',
+    version: '1.0.0',
+    role: 'frontend',
+    platform: 'web',
+  },
+];
+
+// Mock DynamicPluginProvider
+const mockDynamicPluginProvider: DynamicPluginProvider = {
+  plugins: () => mockDynamicPluginsData as any,
+  getScannedPackage: () => ({}) as any,
+  frontendPlugins: () => [],
+  backendPlugins: () => [],
+};
+
+// Create mock service factory for dynamicPluginsServiceRef
+const mockDynamicPluginsServiceFactory = createServiceFactory({
+  service: dynamicPluginsServiceRef,
+  deps: {},
+  factory: () => mockDynamicPluginProvider,
+});
+
 const FILE_INSTALL_CONFIG = {
   extensions: {
     installation: {
@@ -104,9 +149,9 @@ const configurationEndpointsTestCases = [
     body: { configYaml: stringify(mockDynamicPackage11) },
   },
   {
-    description: 'POST /package/:namespace/:name/configuration/disable',
+    description: 'PATCH /package/:namespace/:name/configuration/disable',
     reqBuilder: (req: request.SuperTest<request.Test>) =>
-      req.post(
+      req.patch(
         '/api/extensions/package/default/package11/configuration/disable',
       ),
     body: { disabled: true },
@@ -141,6 +186,7 @@ async function startBackendServer(
     mockServices.rootConfig.factory({
       data: { ...BASE_CONFIG, ...(config ?? {}) },
     }),
+    mockDynamicPluginsServiceFactory,
   ];
 
   if (authorizeResult) {
@@ -727,11 +773,11 @@ describe('createRouter', () => {
     });
   });
 
-  describe('POST /package/:namespace/:name/configuration/disable', () => {
+  describe('PATCH /package/:namespace/:name/configuration/disable', () => {
     it('should fail when disabled missing with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
-      const response = await request(backendServer).post(
+      const response = await request(backendServer).patch(
         '/api/extensions/package/default/package11/configuration/disable',
       );
       expectInputError(response, "'disabled' must be present boolean");
@@ -741,7 +787,9 @@ describe('createRouter', () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer)
-        .post('/api/extensions/package/default/package11/configuration/disable')
+        .patch(
+          '/api/extensions/package/default/package11/configuration/disable',
+        )
         .send({ disabled: 'invalid' });
       expectInputError(response, "'disabled' must be present boolean");
     });
@@ -755,7 +803,9 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer)
-        .post('/api/extensions/package/default/not-found/configuration/disable')
+        .patch(
+          '/api/extensions/package/default/not-found/configuration/disable',
+        )
         .send({ disabled: true });
       expectNotFoundError(response, MarketplaceKind.Package);
     });
@@ -767,10 +817,12 @@ describe('createRouter', () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer)
-        .post('/api/extensions/package/default/package11/configuration/disable')
+        .patch(
+          '/api/extensions/package/default/package11/configuration/disable',
+        )
         .send({ disabled });
       expect(
-        mockInstallationDataService.addPackageDisabled,
+        mockInstallationDataService.setPackageDisabled,
       ).toHaveBeenCalledWith(mockDynamicPackage11.package, disabled);
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({ status: 'OK' });
@@ -880,5 +932,32 @@ describe('createRouter', () => {
         });
       },
     );
+  });
+
+  describe('GET /loaded-plugins', () => {
+    it('should return the list of loaded dynamic plugins', async () => {
+      const { backendServer } = await setupTestWithMockCatalog({
+        mockData: {},
+      });
+
+      const response = await request(backendServer).get(
+        '/api/extensions/loaded-plugins',
+      );
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      // The response should be an array of dynamic plugin info objects
+      // Each plugin should have the expected structure
+      response.body.forEach((plugin: any) => {
+        expect(plugin).toEqual(
+          expect.objectContaining({
+            name: expect.any(String),
+            version: expect.any(String),
+            role: expect.any(String),
+            platform: expect.any(String),
+          }),
+        );
+      });
+    });
   });
 });

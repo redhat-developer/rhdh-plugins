@@ -17,7 +17,6 @@
 import { useState, useLayoutEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
-import { useRouteRef } from '@backstage/core-plugin-api';
 import { ErrorBoundary } from '@backstage/core-components';
 
 import Box from '@mui/material/Box';
@@ -26,25 +25,26 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 
-import { packagesRouteRef } from '../routes';
-
-import { MarketplacePackageContentLoader } from './MarketplacePackageContent';
+import { MarketplacePackageContent } from './MarketplacePackageContent';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import { installedTabRouteRef } from '../routes';
 
 export const MarketplacePackageDrawer = () => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
+  const [searchParams] = useSearchParams();
   useLayoutEffect(() => {
     setOpen(true);
   }, []);
 
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const packagesPath = `${useRouteRef(packagesRouteRef)()}${searchParams.size > 0 ? '?' : ''}${searchParams}`;
+  const installedPackagesPath = `${useRouteRef(installedTabRouteRef)()}${searchParams.size > 0 ? '?' : ''}${searchParams}`;
+
   const theme = useTheme();
+
   const handleClose = () => {
-    // TODO analytics?
     setOpen(false);
     setTimeout(
-      () => navigate(packagesPath),
+      () => navigate(installedPackagesPath),
       theme.transitions.duration.leavingScreen,
     );
   };
@@ -70,7 +70,7 @@ export const MarketplacePackageDrawer = () => {
       </IconButton>
       <ErrorBoundary>
         <Box sx={{ '> article': { backgroundColor: 'transparent' } }}>
-          <MarketplacePackageContentLoader />
+          <MarketplacePackageContent />
         </Box>
       </ErrorBoundary>
     </Drawer>

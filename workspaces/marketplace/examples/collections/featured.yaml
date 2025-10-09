@@ -5,7 +5,9 @@ metadata:
   namespace: marketplace-plugin-demo
   name: featured
   title: Featured Plugins
+  titleKey: collection.featured.title
   description: A set of great plugins! :)
+  descriptionKey: collection.featured.description
 spec:
   type: curated
   plugins:

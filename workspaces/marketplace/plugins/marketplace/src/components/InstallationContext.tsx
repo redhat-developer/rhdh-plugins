@@ -19,11 +19,15 @@ export type InstallationType = { [pluginName: string]: string };
 
 type InstallationContextType = {
   installedPlugins: InstallationType;
+  installedPackages: InstallationType;
+  setInstalledPackages: (plugins: InstallationType) => void;
   setInstalledPlugins: (plugins: InstallationType) => void;
 };
 
 export const InstallationContext = createContext<InstallationContextType>({
   installedPlugins: {},
+  installedPackages: {},
+  setInstalledPackages: () => {},
   setInstalledPlugins: () => {},
 });
 
@@ -37,13 +41,23 @@ export const InstallationContextProvider = ({
   const [installedPlugins, setInstalledPlugins] = useState<InstallationType>(
     {},
   );
+  const [installedPackages, setInstalledPackages] = useState<InstallationType>(
+    {},
+  );
 
   const installationContexttProviderValue = useMemo(
     () => ({
       installedPlugins,
+      installedPackages,
+      setInstalledPackages,
       setInstalledPlugins,
     }),
-    [installedPlugins, setInstalledPlugins],
+    [
+      installedPlugins,
+      installedPackages,
+      setInstalledPlugins,
+      setInstalledPackages,
+    ],
   );
   return (
     <InstallationContext.Provider value={installationContexttProviderValue}>

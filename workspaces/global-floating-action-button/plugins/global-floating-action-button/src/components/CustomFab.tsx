@@ -24,6 +24,9 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { FabIcon } from './FabIcon';
 import { FloatingActionButton, Slot } from '../types';
 import { getSlotOptions } from '../utils';
+import { getTranslatedTextWithFallback } from '../utils/translationUtils';
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+import { globalFloatingActionButtonTranslationRef } from '../translations';
 
 const useStyles = makeStyles(() => ({
   openInNew: { paddingBottom: '5px', paddingTop: '3px' },
@@ -77,10 +80,12 @@ export const CustomFab = ({
   actionButton,
   size,
   className,
+  t,
 }: {
   actionButton: FloatingActionButton;
   size?: 'small' | 'medium' | 'large';
   className?: string;
+  t: TranslationFunction<typeof globalFloatingActionButtonTranslationRef.T>;
 }) => {
   const navigate = useNavigate();
   const isExternalUri = (uri: string) => /^([a-z+.-]+):/.test(uri);
@@ -89,7 +94,20 @@ export const CustomFab = ({
   const navigateTo = () =>
     actionButton.to && !isExternal ? navigate(actionButton.to) : '';
 
-  if (!actionButton.label) {
+  const resolvedLabel = getTranslatedTextWithFallback(
+    t,
+    actionButton.labelKey,
+    actionButton.label,
+  );
+  const resolvedTooltip = actionButton.toolTip
+    ? getTranslatedTextWithFallback(
+        t,
+        actionButton.toolTipKey,
+        actionButton.toolTip,
+      )
+    : undefined;
+
+  if (!resolvedLabel) {
     // eslint-disable-next-line no-console
     console.warn(
       'Label is missing from your FAB component. A label is required for the aria-label attribute.',
@@ -99,9 +117,9 @@ export const CustomFab = ({
   }
 
   const labelText =
-    (actionButton.label || '').length > 20
-      ? `${actionButton.label.slice(0, actionButton.label.length)}...`
-      : actionButton.label;
+    (resolvedLabel || '').length > 20
+      ? `${resolvedLabel.slice(0, resolvedLabel.length)}...`
+      : resolvedLabel;
 
   const getColor = () => {
     if (actionButton.color) {
@@ -115,7 +133,7 @@ export const CustomFab = ({
 
   return (
     <Tooltip
-      title={actionButton.toolTip}
+      title={resolvedTooltip}
       placement={getSlotOptions(actionButton.slot).tooltipDirection}
     >
       <Fab
@@ -132,8 +150,8 @@ export const CustomFab = ({
         }
         size={size || actionButton.size || 'medium'}
         color={getColor()}
-        aria-label={actionButton.label}
-        data-testid={(actionButton.label || '')
+        aria-label={resolvedLabel}
+        data-testid={(resolvedLabel || '')
           .replace(' ', '-')
           .toLocaleLowerCase('en-US')}
         onClick={actionButton.onClick || navigateTo}

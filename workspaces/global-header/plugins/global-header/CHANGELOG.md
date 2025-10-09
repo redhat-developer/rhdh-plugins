@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.18.0
+
+### Minor Changes
+
+- 97011bd: Adding translation support for the string coming through configuration
+
+## 1.17.3
+
+### Patch Changes
+
+- b887a58: French translation updated
+
+## 1.17.2
+
+### Patch Changes
+
+- 4e2f33e: Fix the test package build and rebuild both packages to have a consistant commit for them.
+- 2c4b3c0: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+
 ## 1.17.1
 
 ### Patch Changes

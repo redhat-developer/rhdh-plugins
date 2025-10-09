@@ -23,37 +23,46 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import {
-  AddedRepositories,
-  AddRepositoriesFormValues,
-  ApprovalTool,
-} from '../../types';
+import { useImportFlow } from '../../hooks/useImportFlow';
+import { useTranslation } from '../../hooks/useTranslation';
+import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
 import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
-const sPad = (repositories: AddedRepositories) =>
-  Object.keys(repositories || []).length > 1 ? 's' : '';
-
 export const AddRepositoriesFormFooter = () => {
+  const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
+  const importFlow = useImportFlow();
+
+  const isPluralRepositories =
+    Object.keys(values.repositories || []).length > 1;
+
+  const getGitSubmitTitle = () => {
+    if (gitlabFeatureFlag || importFlow === 'scaffolder') {
+      return t('common.import');
+    }
+    return isPluralRepositories
+      ? t('forms.footer.createPullRequests')
+      : t('forms.footer.createPullRequest');
+  };
 
   const label = {
     [ApprovalTool.ServiceNow]: {
-      submitTitle: `Create ServiceNow ticket${sPad(values.repositories)}`,
-      toolTipTitle: `Catalog-info.yaml files must be generated before creating a ServiceNow ticket`,
+      submitTitle: isPluralRepositories
+        ? t('forms.footer.createServiceNowTickets')
+        : t('forms.footer.createServiceNowTicket'),
+      toolTipTitle: t('forms.footer.serviceNowTooltip'),
     },
     [ApprovalTool.Gitlab]: {
-      submitTitle: `Import`,
-      toolTipTitle:
-        'The Catalog-info.yaml files need to be generated for import.',
+      submitTitle: t('common.import'),
+      toolTipTitle: t('forms.footer.importTooltip'),
     },
     [ApprovalTool.Git]: {
-      submitTitle: gitlabFeatureFlag
-        ? 'Import'
-        : `Create pull request${sPad(values.repositories)}`,
-      toolTipTitle: gitlabFeatureFlag
-        ? 'The Catalog-info.yaml files need to be generated for import.'
-        : `Catalog-info.yaml files must be generated before creating a pull request`,
+      submitTitle: getGitSubmitTitle(),
+      toolTipTitle:
+        gitlabFeatureFlag || importFlow === 'scaffolder'
+          ? t('forms.footer.importTooltip')
+          : t('forms.footer.pullRequestTooltip'),
     },
   };
 
@@ -112,7 +121,7 @@ export const AddRepositoriesFormFooter = () => {
         submitButton
       )}
       <Link to="/bulk-import/repositories">
-        <Button variant="outlined">Cancel</Button>
+        <Button variant="outlined">{t('common.cancel')}</Button>
       </Link>
     </Box>
   );

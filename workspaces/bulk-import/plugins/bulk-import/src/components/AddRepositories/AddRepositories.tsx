@@ -19,15 +19,15 @@ import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
 import { useDrawer } from '../DrawerContext';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
-// import { useFormikContext } from 'formik';
-// import { AddRepositoriesFormValues } from '../../types';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
 export const AddRepositories = ({ error }: { error: any }) => {
+  const { t } = useTranslation();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -62,11 +62,11 @@ export const AddRepositories = ({ error }: { error: any }) => {
                 <AlertTitle>
                   {errorMessage?.error?.name ??
                     error?.error?.name ??
-                    'Error occured'}
+                    t('errors.errorOccurred')}
                 </AlertTitle>
                 {errorMessage?.error?.message ??
                   error?.err ??
-                  'Failed to create pull request'}
+                  t('errors.failedToCreatePullRequest')}
               </Alert>
             </div>
           )}

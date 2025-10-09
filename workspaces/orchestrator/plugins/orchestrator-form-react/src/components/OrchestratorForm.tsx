@@ -25,6 +25,7 @@ import get from 'lodash/get';
 
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
+import { TranslationFunction } from '../hooks/useTranslation';
 import generateUiSchema from '../utils/generateUiSchema';
 import { StepperContextProvider } from '../utils/StepperContext';
 import OrchestratorFormWrapper from './OrchestratorFormWrapper';
@@ -50,6 +51,7 @@ export type OrchestratorFormProps = {
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
+  t: TranslationFunction;
 };
 
 /**
@@ -105,6 +107,7 @@ const OrchestratorForm = ({
   isExecuting,
   initialFormData,
   setAuthTokenDescriptors,
+  t,
 }: OrchestratorFormProps) => {
   // make the form a controlled component so the state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
   const [formData, setFormData] = useState<JsonObject>(
@@ -148,7 +151,7 @@ const OrchestratorForm = ({
   );
 
   return (
-    <StepperContextProvider reviewStep={reviewStep}>
+    <StepperContextProvider reviewStep={reviewStep} t={t}>
       {isMultiStep ? (
         <OrchestratorFormWrapper
           schema={schema}

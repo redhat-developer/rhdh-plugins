@@ -1,5 +1,31 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.0.0
+
+### Major Changes
+
+- 2204143: Align lightspeed UI with LCS
+
+## 0.6.1
+
+### Patch Changes
+
+- 51c5897: Export i18n resources from alpha module
+
+## 0.6.0
+
+### Minor Changes
+
+- 693c3df: Add internationalization (i18n) support with German, French and Spanish translations in lightspeed.
+- d922b04: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- cfa3434: Updated dependency `@patternfly/chatbot` to `6.3.2`.
+  Updated dependency `@patternfly/react-core` to `6.3.1`.
+- Updated dependencies [d922b04]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.4.0
+
 ## 0.5.7
 
 ### Patch Changes

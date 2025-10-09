@@ -14,117 +14,130 @@
  * limitations under the License.
  */
 
-import type { ComponentType } from 'react';
-import { Routes, Route } from 'react-router-dom';
-
+import {
+  Routes,
+  Route,
+  useParams,
+  useLocation,
+  Navigate,
+} from 'react-router-dom';
 import {
   Page,
   Header,
-  TabbedLayout,
   ErrorBoundary,
+  TabbedLayout,
 } from '@backstage/core-components';
-
-import { useScalprum } from '@scalprum/react-core';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import Typography from '@mui/material/Typography';
 
 import { themeId } from '../consts';
-
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
-
 import { MarketplaceCatalogContent } from '../components/MarketplaceCatalogContent';
-
-// import { MarketplaceCollectionsGrid } from '../components/MarketplaceCollectionsGrid';
+import { InstalledPackagesTable } from '../components/InstalledPackages/InstalledPackagesTable';
+import { useInstalledPackagesCount } from '../hooks/useInstalledPackagesCount';
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
-
-// import { MarketplacePluginsTable } from '../components/MarketplacePluginsTable';
 import { MarketplacePluginDrawer } from '../components/MarketplacePluginDrawer';
 import { MarketplacePluginInstallPage } from './MarketplacePluginInstallPage';
-
-// import { MarketplacePackagesTable } from '../components/MarketplacePackagesTable';
 import { MarketplacePackageDrawer } from '../components/MarketplacePackageDrawer';
 import { MarketplacePackageInstallPage } from './MarketplacePackageInstallPage';
+import { InstallationContextProvider } from '../components/InstallationContext';
+import { useTranslation } from '../hooks/useTranslation';
 
-export interface PluginTab {
-  Component: ComponentType;
-  config: {
-    path: string;
-    title: string;
-  };
-}
+// Constants for consistent styling
+const TAB_ICON_STYLE = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  fontSize: '14px',
+} as const;
 
-export interface ScalprumState {
-  api?: {
-    dynamicRootConfig?: {
-      mountPoints?: {
-        'internal.plugins/tab': PluginTab[];
-      };
-    };
-  };
-}
+const ICON_PROPS = {
+  fontSize: 'small' as const,
+  sx: { pr: '2px' },
+};
 
-const Tabs = () => {
-  const scalprum = useScalprum<ScalprumState>();
+// Helper component for tab labels with icons
+const TabLabel = ({
+  icon,
+  children,
+}: {
+  icon: React.ReactElement;
+  children: React.ReactNode;
+}) => (
+  <Typography component="span" style={TAB_ICON_STYLE}>
+    {icon} {children}
+  </Typography>
+);
 
-  const tabs = scalprum.api?.dynamicRootConfig?.mountPoints?.[
-    'internal.plugins/tab'
-  ] ?? [
-    {
-      Component: MarketplaceCatalogContent,
-      config: {
-        path: '',
-        title: 'Catalog',
-      },
-    },
-  ];
+const PackageDeepLinkRedirect = () => {
+  const { namespace, name } = useParams();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  return (
+    <Navigate
+      to={`../installed-packages/${namespace}/${name}?${params.toString()}`}
+      replace
+    />
+  );
+};
+
+const MarketplacePage = () => {
+  const { t } = useTranslation();
+
+  const installedPackages = useInstalledPackagesCount();
+  const installedPluginsTitle = installedPackages?.isLoading
+    ? t('header.installedPackages')
+    : t('header.installedPackagesWithCount' as any, {
+        count: (installedPackages?.data ?? 0).toString(),
+      });
 
   return (
     <>
       <Page themeId={themeId}>
-        <Header title="Extensions" />
+        <Header title={t('header.extensions')} />
         <TabbedLayout>
-          {/* <TabbedLayout.Route path="/catalog" title="Marketplace">
+          <TabbedLayout.Route
+            path="/catalog"
+            title=""
+            tabProps={{
+              icon: (
+                <TabLabel icon={<CategoryOutlinedIcon {...ICON_PROPS} />}>
+                  {t('header.catalog')}
+                </TabLabel>
+              ),
+            }}
+          >
             <ErrorBoundary>
               <MarketplaceCatalogContent />
             </ErrorBoundary>
-          </TabbedLayout.Route> */}
+          </TabbedLayout.Route>
 
-          {tabs.map(({ Component, config }) => (
-            <TabbedLayout.Route
-              key={config.path}
-              path={config.path}
-              title={config.title}
-            >
-              <ErrorBoundary>
-                <Component />
-              </ErrorBoundary>
-            </TabbedLayout.Route>
-          ))}
-
-          {/*       
-          <TabbedLayout.Route path="/collections" title="Collections">
+          <TabbedLayout.Route
+            path="/installed-packages"
+            title=""
+            tabProps={{
+              icon: (
+                <TabLabel icon={<FactCheckOutlinedIcon {...ICON_PROPS} />}>
+                  {installedPluginsTitle}
+                </TabLabel>
+              ),
+            }}
+          >
             <ErrorBoundary>
-              <MarketplaceCollectionsGrid />
+              <InstalledPackagesTable />
             </ErrorBoundary>
           </TabbedLayout.Route>
-          <TabbedLayout.Route path="/plugins" title="Plugins">
-            <ErrorBoundary>
-              <MarketplacePluginsTable />
-            </ErrorBoundary>
-          </TabbedLayout.Route>
-          <TabbedLayout.Route path="/packages" title="Packages">
-            <ErrorBoundary>
-              <MarketplacePackagesTable />
-            </ErrorBoundary>
-          </TabbedLayout.Route>
-          */}
         </TabbedLayout>
       </Page>
+
       <Routes>
         <Route
           path="/plugins/:namespace/:name"
           Component={MarketplacePluginDrawer}
         />
         <Route
-          path="/packages/:namespace/:name"
+          path="/installed-packages/:namespace/:name"
           Component={MarketplacePackageDrawer}
         />
       </Routes>
@@ -133,23 +146,31 @@ const Tabs = () => {
 };
 
 export const DynamicMarketplacePluginRouter = () => (
-  <ReactQueryProvider>
-    <Routes>
-      <Route
-        path="/collections/:namespace/:name"
-        Component={MarketplaceCollectionPage}
-      />
-      <Route
-        path="/plugins/:namespace/:name/install"
-        Component={MarketplacePluginInstallPage}
-      />
-      <Route
-        path="/packages/:namespace/:name/install"
-        Component={MarketplacePackageInstallPage}
-      />
-      <Route path="/*" Component={Tabs} />
-    </Routes>
-  </ReactQueryProvider>
+  <InstallationContextProvider>
+    <ReactQueryProvider>
+      <Routes>
+        <Route
+          path="/collections/:namespace/:name"
+          Component={MarketplaceCollectionPage}
+        />
+        <Route
+          path="/plugins/:namespace/:name/install"
+          Component={MarketplacePluginInstallPage}
+        />
+        {/* Use existing install route as the edit page */}
+        <Route
+          path="/packages/:namespace/:name/install"
+          Component={MarketplacePackageInstallPage}
+        />
+        {/* Redirect package routes to show installed-packages tab */}
+        <Route
+          path="/packages/:namespace/:name"
+          Component={PackageDeepLinkRedirect}
+        />
+        <Route path="/*" Component={MarketplacePage} />
+      </Routes>
+    </ReactQueryProvider>
+  </InstallationContextProvider>
 );
 
 export const DynamicMarketplacePluginContent = () => (

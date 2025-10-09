@@ -30,6 +30,7 @@ import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -44,6 +45,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 
 import {
+  isMarketplacePackage,
   MarketplacePackage,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
@@ -54,7 +56,13 @@ import {
   mapMarketplacePluginInstallStatusToButton,
   mapPackageInstallStatusToLabel,
 } from '../labels';
-import { rootRouteRef, pluginInstallRouteRef, pluginRouteRef } from '../routes';
+import {
+  rootRouteRef,
+  pluginInstallRouteRef,
+  pluginRouteRef,
+  packageRouteRef,
+  packageInstallRouteRef,
+} from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
@@ -73,8 +81,62 @@ import {
   InstallationType,
   useInstallationContext,
 } from './InstallationContext';
+import { useTranslation } from '../hooks/useTranslation';
+
+const PluginMetadataSection = ({
+  value,
+  title,
+}: {
+  value: any;
+  title: string;
+}) => {
+  if (!value) return null;
+  if (Array.isArray(value)) {
+    if (value.length === 0 || typeof value[0] !== 'string') return null;
+    return (
+      <Box sx={{ mb: 3 }}>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+        >
+          {title}
+        </Typography>
+        {value.length === 1 ? (
+          <Typography variant="body2">{value[0]}</Typography>
+        ) : (
+          <ul style={{ paddingLeft: '20px', marginBottom: '24px' }}>
+            {value.map((item, index) => (
+              <li key={item || index} style={{ marginBottom: '8px' }}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Box>
+    );
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    return (
+      <Box sx={{ mt: 3, mb: 3 }}>
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
+        >
+          {title}
+        </Typography>
+        <Typography variant="body2">{String(value)}</Typography>
+      </Box>
+    );
+  }
+
+  return null;
+};
 
 export const MarketplacePluginContentSkeleton = () => {
+  const { t } = useTranslation();
+
   return (
     <Content>
       <Stack direction="row" spacing={2}>
@@ -84,13 +146,19 @@ export const MarketplacePluginContentSkeleton = () => {
         />
         <Stack spacing={0.5}>
           <Skeleton>
-            <Typography variant="subtitle1">Entry name</Typography>
+            <Typography variant="subtitle1">
+              {t('metadata.entryName')}
+            </Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">by someone</Typography>
+            <Typography variant="subtitle2">
+              {t('metadata.bySomeone')}
+            </Typography>
           </Skeleton>
           <Skeleton>
-            <Typography variant="subtitle2">Category</Typography>
+            <Typography variant="subtitle2">
+              {t('metadata.category')}
+            </Typography>
           </Skeleton>
         </Stack>
       </Stack>
@@ -99,7 +167,7 @@ export const MarketplacePluginContentSkeleton = () => {
       <Grid container spacing={2}>
         <Grid item md={2}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            Highlights
+            {t('metadata.highlights')}
           </Typography>
 
           <Skeleton sx={{ width: '60%' }} />
@@ -107,7 +175,7 @@ export const MarketplacePluginContentSkeleton = () => {
         </Grid>
         <Grid item md={10}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            About
+            {t('metadata.about')}
           </Typography>
 
           <Skeleton sx={{ width: '30%' }} />
@@ -121,7 +189,7 @@ export const MarketplacePluginContentSkeleton = () => {
   );
 };
 
-const columns: TableColumn<MarketplacePackage>[] = [
+const getColumns = (t: any): TableColumn<MarketplacePackage>[] => [
   {
     title: 'Package name',
     field: 'spec.packageName',
@@ -140,7 +208,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     render(data) {
       return (
         (data.spec?.backstage?.role
-          ? mapBackstageRoleToLabel[data.spec.backstage.role]
+          ? mapBackstageRoleToLabel(data.spec.backstage.role, t)
           : undefined) ??
         data.spec?.backstage?.role ??
         '-'
@@ -148,7 +216,7 @@ const columns: TableColumn<MarketplacePackage>[] = [
     },
   },
   {
-    title: 'Supported version',
+    title: 'Backstage compatibility version',
     field: 'spec.backstage.supportedVersions',
     type: 'string',
   },
@@ -158,13 +226,19 @@ const columns: TableColumn<MarketplacePackage>[] = [
     type: 'string',
     render(data) {
       return data.spec?.installStatus
-        ? mapPackageInstallStatusToLabel[data.spec.installStatus]
+        ? mapPackageInstallStatusToLabel(data.spec.installStatus, t)
         : '-';
     },
   },
 ];
 
-const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
+const PluginPackageTable = ({
+  plugin,
+}: {
+  plugin: MarketplacePlugin | MarketplacePackage;
+}) => {
+  const { t } = useTranslation();
+
   const packages = usePluginPackages(
     plugin.metadata.namespace!,
     plugin.metadata.name,
@@ -181,10 +255,10 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
         component="h3"
         sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5, pt: 2 }}
       >
-        Versions
+        {t('metadata.versions')}
       </Typography>
       <Table
-        columns={columns}
+        columns={getColumns(t)}
         data={packages.data}
         options={{
           toolbar: false,
@@ -201,14 +275,17 @@ const PluginPackageTable = ({ plugin }: { plugin: MarketplacePlugin }) => {
 export const MarketplacePluginContent = ({
   plugin,
 }: {
-  plugin: MarketplacePlugin;
+  plugin: MarketplacePlugin | MarketplacePackage;
 }) => {
+  const { t } = useTranslation();
   const extensionsConfig = useExtensionsConfiguration();
   const nodeEnvironment = useNodeEnvironment();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isPluginEnabled, setIsPluginEnabled] = useState<boolean>(false);
   const open = Boolean(anchorEl);
   const { installedPlugins, setInstalledPlugins } = useInstallationContext();
+
+  const isPackage = isMarketplacePackage(plugin);
 
   useEffect(() => {
     if (!plugin.spec) {
@@ -229,15 +306,19 @@ export const MarketplacePluginContent = ({
   };
   const navigate = useNavigate();
 
-  const params = useRouteRefParams(pluginRouteRef);
+  const params = useRouteRefParams(
+    isPackage ? packageRouteRef : pluginRouteRef,
+  );
   const getIndexPath = useRouteRef(rootRouteRef);
-  const getInstallPath = useRouteRef(pluginInstallRouteRef);
+  const getInstallPath = useRouteRef(
+    isPackage ? packageInstallRouteRef : pluginInstallRouteRef,
+  );
   const pluginConfigPerm = usePluginConfigurationPermissions(
     params.namespace,
-    params.name,
+    isPackage ? (plugin.spec?.partOf?.[0] ?? '') : params.name,
   );
 
-  const { mutateAsync: enablePlugin } = useEnablePlugin();
+  const { mutateAsync: enablePlugin } = useEnablePlugin(isPackage);
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -255,6 +336,7 @@ export const MarketplacePluginContent = ({
   const handleToggle = async () => {
     const newValue = !isPluginEnabled;
     setIsPluginEnabled(newValue);
+    const subString: string = isPackage ? 'Package' : 'Plugin';
 
     try {
       const res = await enablePlugin({
@@ -262,26 +344,27 @@ export const MarketplacePluginContent = ({
         name: plugin.metadata.name,
         disabled: !newValue,
       });
+
       if (res?.status !== 'OK') {
         // eslint-disable-next-line no-console
         console.warn(
-          `[Plugin Toggle] Plugin toggle responded with non-OK status:`,
+          `[${subString} Toggle] ${subString} toggle responded with non-OK status:`,
           (res as any)?.error?.message ?? res,
         );
       } else {
         const updatedPlugins: InstallationType = {
           ...installedPlugins,
           [plugin.metadata.title ?? plugin.metadata.name]:
-            `Plugin ${isPluginEnabled ? 'disabled' : 'enabled'}`,
+            `${subString} ${isPluginEnabled ? 'disabled' : 'enabled'}`,
         };
         setInstalledPlugins(updatedPlugins);
         handleClose();
-        navigate('/extensions');
+        navigate(isPackage ? '/extensions' : '/extensions/installed-plugins');
       }
     } catch (err: any) {
       // eslint-disable-next-line no-console
       console.error(
-        `[Plugin Toggle] Failed to toggle plugin:`,
+        `[${subString} Toggle] Failed to toggle ${subString.toLowerCase()}:`,
         err?.error?.message ?? err,
       );
     }
@@ -293,9 +376,11 @@ export const MarketplacePluginContent = ({
     )}`;
 
   const displayName = plugin.metadata.title ?? plugin.metadata.name;
-  const about = plugin.spec?.description ?? plugin.metadata.description ?? '';
+  const about = isPackage
+    ? ''
+    : (plugin.spec?.description ?? plugin.metadata.description ?? '');
 
-  const highlights = plugin.spec?.highlights ?? [];
+  const highlights = isPackage ? [] : (plugin.spec?.highlights ?? []);
   const isProductionEnvironment =
     nodeEnvironment?.data?.nodeEnv === 'production';
 
@@ -314,20 +399,37 @@ export const MarketplacePluginContent = ({
       <ToggleOffOutlinedIcon />
     );
 
-    const primaryText = isPluginEnabled ? 'Disable' : 'Enable';
-    const secondaryText = isPluginEnabled
-      ? 'Plugin currently enabled'
-      : 'Plugin currently disabled';
+    const primaryText = isPluginEnabled
+      ? t('actions.disable')
+      : t('actions.enable');
+    let secondaryText = '';
+    if (isPluginEnabled) {
+      if (isPackage) {
+        secondaryText = t('actions.packageCurrentlyEnabled');
+      } else {
+        secondaryText = t('actions.pluginCurrentlyEnabled');
+      }
+    } else {
+      if (isPackage) {
+        secondaryText = t('actions.packageCurrentlyDisabled');
+      } else {
+        secondaryText = t('actions.pluginCurrentlyDisabled');
+      }
+    }
 
     const testId = isPluginEnabled ? 'disable-plugin' : 'enable-plugin';
 
     if (disablePluginActions) {
       return (
         <Tooltip
-          title={getPluginActionTooltipMessage(isProductionEnvironment, {
-            read: pluginConfigPerm.data?.read ?? 'DENY',
-            write: pluginConfigPerm.data?.write ?? 'DENY',
-          })}
+          title={getPluginActionTooltipMessage(
+            isProductionEnvironment,
+            {
+              read: pluginConfigPerm.data?.read ?? 'DENY',
+              write: pluginConfigPerm.data?.write ?? 'DENY',
+            },
+            t,
+          )}
         >
           <div>
             <Button
@@ -336,7 +438,7 @@ export const MarketplacePluginContent = ({
               disabled={disablePluginActions}
               data-testId="install-disabled"
             >
-              Install
+              {t('actions.install')}
             </Button>
           </div>
         </Tooltip>
@@ -354,7 +456,7 @@ export const MarketplacePluginContent = ({
           variant="contained"
           data-testId="view"
         >
-          View
+          {t('actions.view')}
         </LinkButton>
       );
     }
@@ -375,7 +477,7 @@ export const MarketplacePluginContent = ({
             color="primary"
             data-testId="plugin-actions"
           >
-            Actions
+            {t('actions.actions')}
           </Button>
           <ActionsMenu
             id="actions-button"
@@ -395,7 +497,14 @@ export const MarketplacePluginContent = ({
               <ListItemIcon>
                 <EditIcon />
               </ListItemIcon>
-              <ListItemText primary="Edit" secondary="Plugin configurations" />
+              <ListItemText
+                primary={t('actions.edit')}
+                secondary={
+                  isMarketplacePackage(plugin)
+                    ? t('actions.packageConfiguration')
+                    : t('actions.pluginConfigurations')
+                }
+              />
             </MenuItem>
             <MenuItem
               data-testId={testId}
@@ -421,12 +530,11 @@ export const MarketplacePluginContent = ({
         variant="contained"
         data-testId="install"
       >
-        {
-          mapMarketplacePluginInstallStatusToButton[
-            plugin.spec?.installStatus ??
-              MarketplacePluginInstallStatus.NotInstalled
-          ]
-        }
+        {mapMarketplacePluginInstallStatusToButton(
+          (plugin.spec?.installStatus as MarketplacePluginInstallStatus) ??
+            MarketplacePluginInstallStatus.NotInstalled,
+          t,
+        )}
       </LinkButton>
     );
   };
@@ -435,13 +543,13 @@ export const MarketplacePluginContent = ({
     <Content>
       <Stack direction="column" gap={4}>
         <Stack direction="row" spacing={2} alignItems="center">
-          <PluginIcon plugin={plugin} size={80} />
+          {!isPackage && <PluginIcon plugin={plugin} size={80} />}
           <Stack spacing={1}>
             <Typography variant="h3" style={{ fontWeight: '500' }}>
               {displayName}
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
-              {plugin.spec?.authors ? (
+              {!isPackage && plugin.spec?.authors ? (
                 <Typography
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
@@ -461,37 +569,74 @@ export const MarketplacePluginContent = ({
                   ))}
                 </Typography>
               ) : null}
-
-              <BadgeChip plugin={plugin} />
+              {plugin.spec?.author ? (
+                <Typography
+                  variant="subtitle2"
+                  style={{ fontWeight: 'normal' }}
+                >
+                  by{' '}
+                  <Link
+                    key={plugin.spec?.author}
+                    to={withFilter('spec.author', plugin.spec?.author)}
+                    color="primary"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {plugin.spec?.author}
+                  </Link>
+                </Typography>
+              ) : null}
+              {!isPackage && <BadgeChip plugin={plugin} />}
             </Stack>
           </Stack>
         </Stack>
 
         <Grid container spacing={2}>
           <Grid item md={3}>
-            {highlights.length > 0 ? (
-              <>
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  sx={{ fontWeight: 500, fontSize: '1rem', mb: 0.5 }}
-                >
-                  Highlights
-                </Typography>
-                <ul style={{ paddingLeft: '20px', marginBottom: '24px' }}>
-                  {highlights.map(highlight => (
-                    <li key={highlight} style={{ marginBottom: '8px' }}>
-                      {highlight}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
+            <PluginMetadataSection
+              title={t('metadata.highlights')}
+              value={highlights}
+            />
+
+            {isPackage ? (
+              <PluginMetadataSection
+                title={t('plugin.author')}
+                value={plugin.spec?.author}
+              />
+            ) : (
+              <PluginMetadataSection
+                title={
+                  plugin.spec?.authors && plugin.spec.authors?.length > 1
+                    ? t('plugin.authors')
+                    : t('plugin.author')
+                }
+                value={plugin.spec?.authors?.map(author => author.name)}
+              />
+            )}
+
+            <PluginMetadataSection
+              title={t('plugin.tags')}
+              value={plugin.metadata?.tags}
+            />
+
+            <PluginMetadataSection
+              title={t('search.category')}
+              value={plugin.spec?.categories}
+            />
+
+            <PluginMetadataSection
+              title={t('metadata.publisher')}
+              value={plugin.spec?.publisher}
+            />
+
+            <PluginMetadataSection
+              title={t('metadata.supportProvider')}
+              value={plugin.spec?.support?.provider}
+            />
 
             {pluginActionButton()}
           </Grid>
           <Grid item md={9}>
-            <Markdown title="About" content={about} />
+            <Markdown title={t('metadata.about')} content={about} />
 
             <Links entity={plugin} />
 

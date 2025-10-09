@@ -1,0 +1,63 @@
+permission:
+  enabled: false
+
+auth:
+  environment: production
+  providers:
+    github:
+      production:
+        clientId: TODO
+        clientSecret: TODO
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+
+catalog:
+  locations:
+    - type: file
+      target: ../../examples/entities.yaml
+    - type: file
+      target: ../../examples/github-scorecard-only.yaml
+      rules:
+        - allow: [Component]
+    - type: file
+      target: ../../examples/jira-scorecard-only.yaml
+      rules:
+        - allow: [Component]
+    - type: file
+      target: ../../examples/all-scorecards.yaml
+      rules:
+        - allow: [Component]
+    - type: file
+      target: ../../examples/no-scorecards.yaml
+      rules:
+        - allow: [Component]
+    # TODO: Additional catalog entities for your user
+
+proxy:
+  '/jira/api':
+    target: ${JIRA_URL}
+    headers:
+      Authorization: ${JIRA_TOKEN}
+      Accept: 'application/json'
+      Content-Type: 'application/json'
+      X-Atlassian-Token: 'nocheck'
+      User-Agent: 'MY-UA-STRING'
+
+integrations:
+  github:
+    - host: github.com
+      token: TODO
+
+jira:
+  proxyPath: /jira/api
+  product: cloud
+  baseUrl: ${JIRA_URL}
+  token: ${JIRA_TOKEN}
+
+scorecard:
+  plugins:
+    jira:
+      open_issues:
+        options:
+          mandatoryFilter: Resolution = Unresolved

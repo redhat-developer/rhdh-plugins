@@ -1,5 +1,60 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.6.2
+
+### Patch Changes
+
+- f1b0f1a: Add package.json exports configuration for alpha module support.
+
+  - Add exports field to support importing from alpha module
+  - Add typesVersions configuration for TypeScript support
+
+## 1.6.1
+
+### Patch Changes
+
+- def4673: Fixes the issue where the quickstart drawer was reserving space for users with no eligible items
+
+  - Centralize role determination at provider level to avoid re-fetching on drawer open/close
+  - Add multi-layer protection to prevent empty drawer space when user has no eligible quickstart items
+  - Remove complex caching logic from useQuickstartRole hook for cleaner implementation
+  - Update components to use role from context instead of calling hook directly
+  - Fix test mocks to work with new context-based architecture
+
+  This resolves the issue where the quickstart drawer would open an empty space when the current user has no quickstart items configured for their role.
+
+## 1.6.0
+
+### Minor Changes
+
+- dcda8f3: Adding localization support for quickstart steps.
+
+### Patch Changes
+
+- b887a58: French translation updated
+
+## 1.5.1
+
+### Patch Changes
+
+- 9057587: Fix Quickstart drawer re-opening on close by scoping drawer flags per user, caching resolved role per session, and filtering items only when the drawer is open; preserves first-time auto-open and respects manual close.
+
+## 1.5.0
+
+### Minor Changes
+
+- d49b252: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- e8cc528: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0` and move it from plugin dependencies to devDependencies.
+
+## 1.4.0
+
+### Minor Changes
+
+- 47fd25f: Enabled Quickstart items for developer role.
+
 ## 1.3.0
 
 ### Minor Changes

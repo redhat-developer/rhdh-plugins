@@ -432,4 +432,88 @@ describe('Model Catalog Generator', () => {
     expectedEntities.push(expectedModelServerAPIEntity);
     expect(modelCatalogEntities).toEqual(expectedModelEntities);
   });
+
+  it('should copy API annotations to model server component metadata when present', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'annotated-model-service',
+        owner: 'example-user',
+        description: 'Model service with API annotations',
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+          annotations: {
+            'custom.io/annotation1': 'value1',
+            'custom.io/annotation2': 'value2',
+            'backstage.io/custom-tag': 'custom-value',
+          },
+        },
+        lifecycle: 'production',
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+
+    // Find the model server component entity
+    const modelServerComponent = modelCatalogEntities.find(
+      entity =>
+        entity.kind === 'Component' &&
+        entity.metadata.name === 'annotated-model-service',
+    ) as ComponentEntity;
+
+    expect(modelServerComponent).toBeDefined();
+    expect(modelServerComponent.metadata.annotations).toBeDefined();
+    expect(modelServerComponent.metadata.annotations).toEqual({
+      'custom.io/annotation1': 'value1',
+      'custom.io/annotation2': 'value2',
+      'backstage.io/custom-tag': 'custom-value',
+    });
+  });
+
+  it('should handle model server with API but no annotations gracefully', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'no-annotations-service',
+        owner: 'example-user',
+        description: 'Model service without API annotations',
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+          // No annotations property
+        },
+        lifecycle: 'production',
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+
+    // Find the model server component entity
+    const modelServerComponent = modelCatalogEntities.find(
+      entity =>
+        entity.kind === 'Component' &&
+        entity.metadata.name === 'no-annotations-service',
+    ) as ComponentEntity;
+
+    expect(modelServerComponent).toBeDefined();
+    // Should not have annotations if none were provided in API
+    expect(modelServerComponent.metadata.annotations).toBeUndefined();
+  });
 });

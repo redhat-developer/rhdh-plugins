@@ -23,6 +23,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddedRepositories,
   AddRepositoriesFormValues,
@@ -45,6 +46,7 @@ export const AddRepositoriesTableToolbar = ({
   selectedReposFromDrawer?: AddedRepositories;
   isApprovalToolGitlab?: boolean;
 }) => {
+  const { t } = useTranslation();
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
   const [selection, setSelection] = useState<string>(
@@ -107,14 +109,18 @@ export const AddRepositoriesTableToolbar = ({
             data-testid="repository-view"
             sx={{ minWidth: '120px' }}
           >
-            {isApprovalToolGitlab ? 'Project' : 'Repository'}
+            {isApprovalToolGitlab
+              ? t('addRepositories.repositoryType.project')
+              : t('addRepositories.repositoryType.repository')}
           </ToggleButton>
           <ToggleButton
             value={RepositorySelection.Organization}
             data-testid="organization-view"
             sx={{ minWidth: '120px' }}
           >
-            {isApprovalToolGitlab ? 'Group' : 'Organization'}
+            {isApprovalToolGitlab
+              ? t('addRepositories.repositoryType.group')
+              : t('addRepositories.repositoryType.organization')}
           </ToggleButton>
         </ToggleButtonGroup>
       )}

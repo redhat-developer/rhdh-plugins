@@ -19,6 +19,7 @@ import { TabbedLayout } from '@backstage/core-components';
 import { Box } from '@material-ui/core';
 import { makeStyles } from 'tss-react/mui';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { workflowInstancesRouteRef } from '../../routes';
 import { useIsDarkMode } from '../../utils/isDarkMode';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
@@ -36,19 +37,20 @@ const useStyles = makeStyles<{ isDarkMode: boolean }>()(
 );
 
 export const OrchestratorPage = () => {
+  const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
   const { classes } = useStyles({ isDarkMode });
 
   return (
-    <BaseOrchestratorPage title="Workflow Orchestrator" noPadding>
+    <BaseOrchestratorPage title={t('page.title')} noPadding>
       <Box className={classes.tabbedLayout}>
         <TabbedLayout>
-          <TabbedLayout.Route path="/" title="Workflows">
+          <TabbedLayout.Route path="/" title={t('page.tabs.workflows')}>
             <WorkflowsTabContent />
           </TabbedLayout.Route>
           <TabbedLayout.Route
             path={workflowInstancesRouteRef.path}
-            title="All runs"
+            title={t('page.tabs.allRuns')}
           >
             <WorkflowRunsTabContent />
           </TabbedLayout.Route>

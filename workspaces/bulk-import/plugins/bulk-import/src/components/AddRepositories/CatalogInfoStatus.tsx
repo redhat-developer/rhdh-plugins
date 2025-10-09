@@ -21,6 +21,8 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -39,6 +41,7 @@ export const CatalogInfoStatus = ({
   isLoading,
   isDrawer,
   importStatus,
+  taskId,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -46,7 +49,9 @@ export const CatalogInfoStatus = ({
   isItemSelected?: boolean;
   isDrawer?: boolean;
   importStatus?: string;
+  taskId?: string;
 }) => {
+  const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
 
@@ -70,7 +75,9 @@ export const CatalogInfoStatus = ({
     data?.selectedRepositories || {},
   );
 
+  const importFlow = useImportFlow();
   if (
+    importFlow !== 'scaffolder' &&
     !isDrawer &&
     (isSelected ||
       (data?.totalReposInOrg && data.totalReposInOrg > 0 && allSelected))
@@ -85,7 +92,7 @@ export const CatalogInfoStatus = ({
           component="span"
           style={{ fontWeight: '400', fontSize: '0.875rem', color: '#181818' }}
         >
-          Generating
+          {t('catalogInfo.status.generating')}
         </Typography>
       </StatusRunning>
     );
@@ -94,7 +101,13 @@ export const CatalogInfoStatus = ({
   if (importStatus) {
     return (
       <Typography component="span" style={{ color: '#6A6E73' }}>
-        {getImportStatus(importStatus)}
+        {getImportStatus(
+          importStatus,
+          (key: string) => t(key as any, {}),
+          false,
+          undefined,
+          taskId,
+        )}
       </Typography>
     );
   }
@@ -103,5 +116,9 @@ export const CatalogInfoStatus = ({
     return null;
   }
 
-  return <Typography component="span">Not Generated</Typography>;
+  return (
+    <Typography component="span">
+      {t('catalogInfo.status.notGenerated')}
+    </Typography>
+  );
 };

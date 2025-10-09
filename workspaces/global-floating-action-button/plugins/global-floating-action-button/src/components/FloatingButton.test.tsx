@@ -31,6 +31,21 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useApp: jest.fn(() => ({
     getSystemIcon: jest.fn(),
   })),
+  createApiRef: jest.fn(() => ({ id: 'test-api-ref' })),
+}));
+
+jest.mock('@backstage/core-plugin-api/alpha', () => ({
+  useTranslationRef: jest.fn(() => jest.fn((key: string) => key)),
+  createTranslationRef: jest.fn(() => ({ id: 'test-translation-ref' })),
+  createTranslationResource: jest.fn(() => ({
+    id: 'test-translation-resource',
+  })),
+}));
+
+jest.mock('../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => ({
+    t: jest.fn((key: string) => key),
+  })),
 }));
 
 jest.mock('@mui/styles', () => ({

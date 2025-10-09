@@ -47,7 +47,8 @@ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
-import { getThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
@@ -56,6 +57,10 @@ import { searchPage } from './components/search/SearchPage';
 
 const app = createApp({
   apis,
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [bulkImportTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,

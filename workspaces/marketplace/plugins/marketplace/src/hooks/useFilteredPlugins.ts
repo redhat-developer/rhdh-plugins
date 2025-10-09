@@ -18,7 +18,10 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useQuery } from '@tanstack/react-query';
 
-import { GetEntitiesRequest } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  GetEntitiesRequest,
+  MarketplaceAnnotation,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 
@@ -50,8 +53,8 @@ export const useFilteredPlugins = () => {
 
       if (filters) {
         const categories = filters
-          .filter(filter => filter.startsWith('spec.categories='))
-          .map(filter => filter.substring('spec.categories='.length));
+          .filter(filter => filter.startsWith('category='))
+          .map(filter => filter.substring('category='.length));
         if (categories.length > 0) {
           plugins = plugins.filter(plugin =>
             plugin.spec?.categories?.some(category =>
@@ -61,8 +64,8 @@ export const useFilteredPlugins = () => {
         }
 
         const authors = filters
-          .filter(filter => filter.startsWith('spec.authors.name='))
-          .map(filter => filter.substring('spec.authors.name='.length));
+          .filter(filter => filter.startsWith('author='))
+          .map(filter => filter.substring('author='.length));
         if (authors.length > 0) {
           plugins = plugins.filter(plugin =>
             plugin.spec?.authors?.some(author =>
@@ -73,18 +76,32 @@ export const useFilteredPlugins = () => {
           );
         }
 
-        const supportTypeAnnotationsFilters = filters
-          .filter(filter =>
-            filter.startsWith('metadata.annotations.extensions.backstage.io/'),
-          )
-          .map(filter => filter.substring('metadata.annotations.'.length));
-        if (supportTypeAnnotationsFilters.length > 0) {
-          plugins = plugins.filter(plugin =>
-            supportTypeAnnotationsFilters.some(filter => {
-              const [key, value] = filter.split('=');
-              return plugin.metadata?.annotations?.[key] === value;
-            }),
-          );
+        const showCertified = filters.includes('certified');
+        const showCustom = filters.includes('custom');
+        const supportLevels = filters
+          .filter(filter => filter.startsWith('support-level='))
+          .map(filter => filter.substring('support-level='.length));
+        if (showCertified || showCustom || supportLevels.length > 0) {
+          plugins = plugins.filter(plugin => {
+            if (
+              showCertified &&
+              plugin.metadata?.annotations?.[MarketplaceAnnotation.CERTIFIED_BY]
+            ) {
+              return true;
+            }
+            if (
+              showCustom &&
+              plugin.metadata?.annotations?.[
+                MarketplaceAnnotation.PRE_INSTALLED
+              ] !== 'true'
+            ) {
+              return true;
+            }
+            if (supportLevels.length > 0 && plugin.spec?.support?.level) {
+              return supportLevels.includes(plugin.spec.support.level);
+            }
+            return false;
+          });
         }
       }
 

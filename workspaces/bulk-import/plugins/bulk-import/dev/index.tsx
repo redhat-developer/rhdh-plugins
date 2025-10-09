@@ -24,7 +24,7 @@ import {
   TestApiProvider,
 } from '@backstage/test-utils';
 
-import { getAllThemes } from '@redhat-developer/red-hat-developer-hub-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import {
   BulkImportAPI,
@@ -38,8 +38,10 @@ import {
 } from '../src/mocks/mockData';
 import { mockEntities } from '../src/mocks/mockEntities';
 import { BulkImportPage, bulkImportPlugin } from '../src/plugin';
+import { bulkImportTranslations } from '../src/translations';
 import {
   APITypes,
+  CreateImportJobRepository,
   ImportJobResponse,
   ImportJobs,
   ImportJobStatus,
@@ -106,7 +108,7 @@ class MockBulkImportApi implements BulkImportAPI {
   }
 
   async createImportJobs(
-    _importRepositories: any[],
+    _importRepositories: CreateImportJobRepository[],
     _dryRun?: boolean,
   ): Promise<ImportJobResponse[]> {
     return [
@@ -155,6 +157,9 @@ const mockConfigApi = new MockConfigApi({
 
 createDevApp()
   .registerPlugin(bulkImportPlugin)
+  .addTranslationResource(bulkImportTranslations)
+  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({
     element: (

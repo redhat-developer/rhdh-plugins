@@ -1,5 +1,48 @@
 ### Dependencies
 
+## 1.17.1
+
+### Patch Changes
+
+- 433fde0: Include config.d.ts in the bulk-import plugin release bundle.
+
+## 1.17.0
+
+### Minor Changes
+
+- 2a31b02: Implement scaffolder template execution for the bulk-import plugin.
+
+### Patch Changes
+
+- 316e356: Migrate from rhdh-theme to the theme within rhdh-plugins repo.
+- cc7083f: Use a single react-query QueryClient instance for all pages and remove the need to have one in the app.
+- Updated dependencies [2a31b02]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.10.0
+
+## 1.16.1
+
+### Patch Changes
+
+- dd5350f: French translation updated
+- b338a66: Updated dependency `@playwright/test` to `1.55.1`.
+
+## 1.16.0
+
+### Minor Changes
+
+- fcc3bcc: Add internationalization (i18n) support with German, French and Spanish translations in bulk import.
+
+## 1.15.0
+
+### Minor Changes
+
+- 81cfcfe: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [81cfcfe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.9.0
+
 ## 1.14.0
 
 ### Minor Changes

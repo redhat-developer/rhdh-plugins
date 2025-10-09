@@ -67,6 +67,11 @@ export class MyMetricProvider implements MetricProvider<'number'> {
     };
   }
 
+  // Determines whether this metric can be calculated for a specific entity (e.g., based on annotations)
+  supportsEntity(_: Entity): boolean {
+    return true;
+  }
+
   // Calculates and returns the metric value
   async calculateMetric(): Promise<number> {
     // TODO: Implement your metric calculation logic here
@@ -75,6 +80,14 @@ export class MyMetricProvider implements MetricProvider<'number'> {
   }
 }
 ```
+
+**Important:** Metric providers must follow certain conventions:
+
+- The provider ID (from `getProviderId()`) and metric ID (from `getMetric().id`) must be identical
+- Both IDs must follow the format `<datasourceId>.<metricName>` where:
+  - `datasourceId` matches the value returned by `getProviderDatasourceId()`
+  - `metricName` is a non-empty identifier for the specific metric
+- Configuration for metric provider must follow the schema defined in [`config.d.ts`](../config.d.ts).
 
 ## Updating the Module
 

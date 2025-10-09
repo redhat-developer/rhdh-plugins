@@ -6,6 +6,7 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { PathParams } from '@backstage/core-plugin-api';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 
@@ -19,6 +20,7 @@ export const BulkImportPage: () => JSX_2.Element;
 export const bulkImportPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 addRepositories: SubRouteRef<undefined>;
+tasks: SubRouteRef<PathParams<"/tasks/:repoUrl">>;
 }, {}, {}>;
 
 // @public

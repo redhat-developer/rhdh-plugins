@@ -1,8 +1,12 @@
 {
+  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization",
+  "version": "2.0.1",
   "backstage": {
     "pluginId": "redhat-resource-optimization",
     "pluginPackages": [
-      "@red-hat-developer-hub/plugin-redhat-resource-optimization"
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-common"
     ],
     "role": "frontend-plugin"
   },
@@ -64,7 +68,6 @@
   ],
   "license": "Apache-2.0",
   "main": "src/index.ts",
-  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization",
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.13.1 || ^17.0.0 || ^18.0.0",
@@ -95,6 +98,5 @@
         "package.json"
       ]
     }
-  },
-  "version": "2.0.0"
+  }
 }

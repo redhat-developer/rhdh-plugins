@@ -72,8 +72,11 @@ export const useQuickstartRole = (): {
     }
   }, [identityApi]);
 
-  // If still loading authorization or permissions, return loading state
-  if (authLoading || loading) return { isLoading: true, userRole: null };
+  // When auth is still resolving, return loading
+  if (authLoading) return { isLoading: true, userRole: null };
+
+  // If permission is still loading, report loading
+  if (loading) return { isLoading: true, userRole: null };
 
   // Check if user is authorized (authenticated, not a guest)
   const isUserAuthorized = authResult?.isAuthenticated ?? false;
@@ -84,11 +87,15 @@ export const useQuickstartRole = (): {
   }
 
   // Authorized user + NO RBAC enabled: show admin items
-  if (!isRBACEnabled) return { isLoading: false, userRole: 'admin' };
+  if (!isRBACEnabled) {
+    return { isLoading: false, userRole: 'admin' };
+  }
 
   // Authorized user + RBAC enabled: check permissions
   // If user has admin permission => show configured admin items
-  if (allowed) return { isLoading: false, userRole: 'admin' };
+  if (allowed) {
+    return { isLoading: false, userRole: 'admin' };
+  }
 
   // If user doesn't have admin permission => show configured developer items
   return { isLoading: false, userRole: 'developer' };

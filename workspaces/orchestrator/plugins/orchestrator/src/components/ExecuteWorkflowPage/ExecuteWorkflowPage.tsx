@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -39,10 +39,14 @@ import {
   InputSchemaResponseDTO,
   QUERY_PARAM_INSTANCE_ID,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-import { OrchestratorForm } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
+import {
+  OrchestratorForm,
+  TranslationFunction,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
   executeWorkflowRouteRef,
@@ -54,13 +58,14 @@ import MissingSchemaNotice from './MissingSchemaNotice';
 import { getSchemaUpdater } from './schemaUpdater';
 
 export const ExecuteWorkflowPage = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const targetEntity = searchParams.get('targetEntity');
   const orchestratorApi = useApi(orchestratorApiRef);
   const { authenticate } = useOrchestratorAuth();
   const { workflowId } = useRouteRefParams(executeWorkflowRouteRef);
   const [isExecuting, setIsExecuting] = useState(false);
-  const [updateError, setUpdateError] = React.useState<Error>();
+  const [updateError, setUpdateError] = useState<Error>();
   const [instanceId] = useQueryParamState<string>(QUERY_PARAM_INSTANCE_ID);
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
@@ -166,7 +171,7 @@ export const ExecuteWorkflowPage = () => {
           </Grid>
         )}
         <Grid item>
-          <InfoCard title="Run workflow">
+          <InfoCard title={t('run.title')}>
             {!!schema ? (
               <OrchestratorForm
                 schema={schema}
@@ -175,6 +180,7 @@ export const ExecuteWorkflowPage = () => {
                 isExecuting={isExecuting}
                 initialFormData={initialFormData}
                 setAuthTokenDescriptors={setAuthTokenDescriptors}
+                t={t as unknown as TranslationFunction}
               />
             ) : (
               <MissingSchemaNotice

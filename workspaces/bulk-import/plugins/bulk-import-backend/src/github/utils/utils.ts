@@ -311,29 +311,51 @@ export async function fetchFromAllIntegrations<T>(
   return { data, errors: aggregatedErrors };
 }
 
-export function computeTotalCount<T>(
-  data: T[],
-  countList: number[],
-  pageSize: number,
-) {
-  let totalCount = countList.reduce(
-    (accumulator, currentValue) => accumulator + currentValue,
-    0,
-  );
-  if (totalCount < pageSize) {
-    totalCount = data.length;
-  }
-  return totalCount;
-}
+export async function fetchFromMatchedIntegration<T>(
+  deps: {
+    logger: LoggerService;
+    cache: CacheService;
+    githubCredentialsProvider: CustomGithubCredentialsProvider;
+  },
+  integrations: ScmIntegrations,
+  repoUrl: string,
+  fetcher: (
+    octokit: Octokit,
+    gitUrl: gitUrlParse.GitUrl,
+  ) => Promise<T | undefined>,
+): Promise<{ data?: T; errors: GithubFetchError[] }> {
+  const gitUrl = gitUrlParse(repoUrl);
+  const errors = new Map<number, GithubFetchError>();
 
-export function extractLocationOwnerMap(locationUrls: string[]) {
-  const locationGitOwnerMap = new Map<string, string>();
-  for (const locationUrl of locationUrls) {
-    const split = locationUrl.split('/blob/');
-    if (split.length < 2) {
+  const ghConfig = integrations.github.byUrl(repoUrl)?.config;
+  if (!ghConfig) {
+    throw new Error(
+      `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github'`,
+    );
+  }
+
+  const credentials = await getCredentialsForConfig(
+    deps.githubCredentialsProvider,
+    ghConfig,
+  );
+
+  for (const credential of credentials) {
+    const octokit = buildOcto(
+      {
+        logger: deps.logger,
+        cache: deps.cache,
+      },
+      { credential, errors, owner: gitUrl.owner },
+      ghConfig.apiBaseUrl,
+    );
+    if (!octokit) {
       continue;
     }
-    locationGitOwnerMap.set(locationUrl, gitUrlParse(split[0]).owner);
+    const data = await fetcher(octokit, gitUrl);
+    if (data) {
+      return { data, errors: Array.from(errors.values()) };
+    }
   }
-  return locationGitOwnerMap;
+
+  return { errors: Array.from(errors.values()) };
 }

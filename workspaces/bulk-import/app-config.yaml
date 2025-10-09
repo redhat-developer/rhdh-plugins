@@ -32,8 +32,14 @@ backend:
     client: better-sqlite3
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+  reading:
+    allow:
+      - host: raw.githubusercontent.com
 
 integrations:
+  gitlab:
+    - host: gitlab.com
+      token: ${GITLAB_TOKEN}
   github:
     - host: github.com
       # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
@@ -89,9 +95,24 @@ catalog:
     - type: file
       target: ../../examples/entities.yaml
 
-    # Local example template
+    # Local example templates
     - type: file
-      target: ../../examples/template/template.yaml
+      target: ../../examples/template/get-default-branch.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ../../examples/template/create-repo-with-catalog-info.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ../../examples/template/create-pr-with-catalog-info.yaml
+      rules:
+        - allow: [Template]
+
+    - type: file
+      target: ../../examples/template/import-components-from-existing-repo.yaml
       rules:
         - allow: [Template]
 

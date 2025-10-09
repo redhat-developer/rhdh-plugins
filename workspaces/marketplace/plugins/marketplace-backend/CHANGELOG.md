@@ -1,5 +1,51 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.11.0
+
+### Minor Changes
+
+- 36a7d6a: **BREAKING** Replace POST with PATCH `/package/:namespace/:name/configuration/disable` endpoint to update packages disabled status
+
+### Patch Changes
+
+- 4d79286: added row actions to the installed packages
+  updated disablePackage Client API to make PATCH call instead of POST
+- Updated dependencies [4d79286]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.10.1
+
+## 0.10.0
+
+### Minor Changes
+
+- b33db25: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [b33db25]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.10.0
+
+## 0.9.0
+
+### Minor Changes
+
+- fdda9a1: Add internationalization (i18n) support with German, French and Spanish translations in marketplace.
+- dad9806: Integrate plugins-info plugin and add `Installed packages` tab with enhanced UI.
+
+  BREAKING: The deprecated `InstallationContextProvider` export behavior changed.
+
+  - We now export a null component `InstallationContextProvider` from `plugin.ts` solely for backward compatibility. It no longer provides context and will be removed in a future release.
+  - Migration: There is no replacement API; this was internal-only. Please upgrade to the latest RHDH where features no longer rely on this provider.
+
+  Also:
+
+  - New `Installed packages` tab with dual-source mapping and client-side filtering/pagination.
+
+### Patch Changes
+
+- Updated dependencies [fdda9a1]
+- Updated dependencies [cbe1174]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.9.0
+
 ## 0.8.0
 
 ### Minor Changes

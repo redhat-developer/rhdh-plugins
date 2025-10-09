@@ -14,161 +14,43 @@
  * limitations under the License.
  */
 
-import type { ReactNode } from 'react';
+import { ErrorPage } from '@backstage/core-components';
+import { useRouteRefParams } from '@backstage/core-plugin-api';
+import { useSearchParams } from 'react-router-dom';
 
-import { Content, ErrorPage, LinkButton } from '@backstage/core-components';
-import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
-
-import Skeleton from '@mui/material/Skeleton';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-
-import {
-  MarketplacePackage,
-  MarketplacePackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
-
-import { mapPackageInstallStatusToButton } from '../labels';
-import { packageInstallRouteRef } from '../routes';
+import { packageRouteRef } from '../routes';
 import { usePackage } from '../hooks/usePackage';
-import { Links } from './Links';
+import {
+  MarketplacePluginContent,
+  MarketplacePluginContentSkeleton,
+} from './MarketplacePluginContent';
+import { useTranslation } from '../hooks/useTranslation';
 
-const KeyValue = ({ label, value }: { label: string; value: ReactNode }) => {
-  if (!value) {
-    return null;
-  }
-  return (
-    <div>
-      <strong>{label}</strong>
-      <br />
-      {value}
-    </div>
-  );
-};
+export const MarketplacePackageContent = () => {
+  const { t } = useTranslation();
 
-const MarketplacePackageContentSkeleton = () => {
-  return (
-    <Content>
-      <Stack direction="row" spacing={2}>
-        <Skeleton
-          variant="rectangular"
-          sx={{ width: '80px', height: '80px' }}
-        />
-        <Stack spacing={0.5}>
-          <Skeleton>
-            <Typography variant="subtitle1">Entry name</Typography>
-          </Skeleton>
-          <Skeleton>
-            <Typography variant="subtitle2">by someone</Typography>
-          </Skeleton>
-          <Skeleton>
-            <Typography variant="subtitle2">Category</Typography>
-          </Skeleton>
-        </Stack>
-      </Stack>
-      <br />
-      <br />
-      <Grid container spacing={2}>
-        <Grid item md={2}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            Highlights
-          </Typography>
-
-          <Skeleton sx={{ width: '60%' }} />
-          <Skeleton sx={{ width: '40%' }} />
-        </Grid>
-        <Grid item md={10}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            About
-          </Typography>
-
-          <Skeleton sx={{ width: '30%' }} />
-          <Skeleton sx={{ width: '80%' }} />
-          <Skeleton sx={{ width: '85%' }} />
-          <Skeleton sx={{ width: '90%' }} />
-          <Skeleton sx={{ width: '50%' }} />
-        </Grid>
-      </Grid>
-    </Content>
-  );
-};
-
-const MarketplacePackageContent = ({ pkg }: { pkg: MarketplacePackage }) => {
-  const getInstallPath = useRouteRef(packageInstallRouteRef);
-
-  return (
-    <Content>
-      <Stack direction="column" gap={4}>
-        <Stack direction="row" spacing={2}>
-          <Stack spacing={0.5}>
-            <Typography variant="subtitle1" style={{ fontWeight: '500' }}>
-              {pkg.metadata.title ?? pkg.metadata.name}
-            </Typography>
-          </Stack>
-        </Stack>
-
-        <Grid container spacing={2}>
-          <Grid item md={3}>
-            <LinkButton
-              to={getInstallPath({
-                namespace: pkg.metadata.namespace!,
-                name: pkg.metadata.name,
-              })}
-              color="primary"
-              variant="contained"
-            >
-              {
-                mapPackageInstallStatusToButton[
-                  pkg.spec?.installStatus ??
-                    MarketplacePackageInstallStatus.NotInstalled
-                ]
-              }
-            </LinkButton>
-          </Grid>
-          <Grid item md={9}>
-            <Stack gap={2}>
-              <KeyValue label="Package name:" value={pkg.spec?.packageName} />
-              <KeyValue label="Version:" value={pkg.spec?.version} />
-              <KeyValue
-                label="Dynamic plugin path:"
-                value={pkg.spec?.dynamicArtifact}
-              />
-              <KeyValue
-                label="Backstage role:"
-                value={pkg.spec?.backstage?.role}
-              />
-              <KeyValue
-                label="Supported versions:"
-                value={pkg.spec?.backstage?.supportedVersions}
-              />
-              <KeyValue label="Author:" value={pkg.spec?.author} />
-              <KeyValue label="Support:" value={pkg.spec?.support} />
-              <KeyValue label="Lifecycle:" value={pkg.spec?.lifecycle} />
-
-              <Links entity={pkg} />
-            </Stack>
-          </Grid>
-        </Grid>
-      </Stack>
-    </Content>
-  );
-};
-
-export const MarketplacePackageContentLoader = () => {
-  const params = useRouteRefParams(packageInstallRouteRef);
-  const pkg = usePackage(params.namespace, params.name);
+  const params = useRouteRefParams(packageRouteRef);
+  const [searchParams] = useSearchParams();
+  const qp = searchParams.get('package');
+  const qpNs = qp?.split('/')[0];
+  const qpName = qp?.split('/')[1];
+  const namespace = qpNs || params.namespace;
+  const name = qpName || params.name;
+  const pkg = usePackage(namespace, name);
 
   if (pkg.isLoading) {
-    return <MarketplacePackageContentSkeleton />;
+    return <MarketplacePluginContentSkeleton />;
   } else if (pkg.data) {
-    return <MarketplacePackageContent pkg={pkg.data} />;
+    return <MarketplacePluginContent plugin={pkg.data} />;
   } else if (pkg.error) {
     return <ErrorPage statusMessage={pkg.error.toString()} />;
   }
   return (
     <ErrorPage
-      statusMessage={`Package ${params.namespace}/${params.name} not found!`}
+      statusMessage={t('package.notFound', {
+        namespace,
+        name,
+      } as any)}
     />
   );
 };

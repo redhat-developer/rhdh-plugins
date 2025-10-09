@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import { type Entity, getEntitySourceLocation } from '@backstage/catalog-model';
-import {
-  getHostnameFromEntity,
-  getRepositoryInformationFromEntity,
-} from './utils';
+import { type Entity } from '@backstage/catalog-model';
+import { getRepositoryInformationFromEntity } from './utils';
 
 jest.mock('@backstage/catalog-model', () => ({
   ...jest.requireActual('@backstage/catalog-model'),
@@ -33,27 +30,6 @@ describe('utils', () => {
       name: 'test-component',
     },
   };
-
-  describe('getHostnameFromEntity', () => {
-    it('should extract hostname', () => {
-      (getEntitySourceLocation as jest.Mock).mockReturnValue({
-        type: 'url',
-        target: 'https://github.com/org/test/tree/main/',
-      });
-
-      const result = getHostnameFromEntity(mockEntity);
-      expect(result).toBe('github.com');
-    });
-
-    it('should throw error for invalid URL', () => {
-      (getEntitySourceLocation as jest.Mock).mockReturnValue({
-        type: 'file',
-        target: 'file-path',
-      });
-
-      expect(() => getHostnameFromEntity(mockEntity)).toThrow();
-    });
-  });
 
   describe('getRepositoryInformationFromEntity', () => {
     it('should extract owner and repo from github.com/project-slug annotation', () => {

@@ -24,6 +24,8 @@ import type { ComponentType } from 'react';
 
 import { useMemo } from 'react';
 import { Layout } from 'react-grid-layout';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import { useTheme } from '@mui/material/styles';
 
 import { ErrorBoundary } from '@backstage/core-components';
 import { CustomHomepageGrid } from '@backstage/plugin-home';
@@ -69,6 +71,7 @@ export interface CustomizableGridProps {
  */
 export const CustomizableGrid = (props: CustomizableGridProps) => {
   const { classes } = useStyles();
+  const theme = useTheme();
 
   const cards = useMemo<Card[]>(() => {
     return props.mountPoints.map<Card>((mountPoint, index) => {
@@ -85,8 +88,8 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
             y: layout.y ?? 0,
             w: layout.w ?? 12,
             h: layout.h ?? 4,
-            isDraggable: false,
-            isResizable: false,
+            isDraggable: true,
+            isResizable: true,
           };
         }
       } else {
@@ -98,8 +101,8 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
             y: 0,
             w: 12,
             h: 4,
-            isDraggable: false,
-            isResizable: false,
+            isDraggable: true,
+            isResizable: true,
           };
         });
       }
@@ -129,5 +132,50 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
     ));
   }, [cards, classes.cardWrapper]);
 
-  return <CustomHomepageGrid>{children}</CustomHomepageGrid>;
+  // Create default layout configuration for initial display AND restore defaults functionality
+  const defaultConfig = useMemo(() => {
+    if (!props.mountPoints || props.mountPoints.length === 0) {
+      return [];
+    }
+
+    return props.mountPoints.map((mountPoint, index) => {
+      const layout = mountPoint.config?.layouts?.xl || {};
+
+      return {
+        component: (
+          <mountPoint.Component {...(mountPoint.config?.props || {})} />
+        ),
+        x: layout.x ?? 0,
+        y: layout.y ?? index * 5,
+        width: layout.w ?? 12,
+        height: layout.h ?? 4,
+        movable: true,
+        resizable: true,
+        draggable: true,
+        deletable: true,
+      };
+    });
+  }, [props.mountPoints]);
+
+  return (
+    <>
+      <GlobalStyles
+        styles={{
+          '[class*="makeStyles-settingsOverlay"]': {
+            backgroundColor:
+              theme.palette.mode === 'dark'
+                ? 'rgba(20, 20, 20, 0.95) !important'
+                : 'rgba(40, 40, 40, 0.93) !important',
+          },
+        }}
+      />
+      <CustomHomepageGrid
+        config={defaultConfig}
+        preventCollision={false}
+        compactType="vertical"
+      >
+        {children}
+      </CustomHomepageGrid>
+    </>
+  );
 };

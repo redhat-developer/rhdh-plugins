@@ -218,7 +218,7 @@ describe('CustomSingleInstanceGithubCredentialsProvider tests', () => {
     );
 
     const { token, headers } = await github.getCredentials({
-      url: 'https://github.com/RoadiehHQ',
+      url: 'https://github.com/redhat-developer',
     });
 
     expect(headers).toEqual(undefined);

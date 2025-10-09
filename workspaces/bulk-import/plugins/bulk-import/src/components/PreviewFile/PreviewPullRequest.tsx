@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Link } from '@backstage/core-components';
+import { Link, MarkdownContent } from '@backstage/core-components';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Alert from '@mui/material/Alert';
@@ -22,6 +22,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   PullRequestPreviewData,
@@ -50,6 +51,7 @@ export const PreviewPullRequest = ({
   setPullRequest: (pullRequest: PullRequestPreviewData) => void;
   setFormErrors: (pullRequest: PullRequestPreviewData) => void;
 }) => {
+  const { t } = useTranslation();
   const { status } = useFormikContext<AddRepositoriesFormValues>();
 
   const error = status?.errors?.[repoId];
@@ -64,7 +66,11 @@ export const PreviewPullRequest = ({
     return (
       <Box marginTop={others?.addPaddingTop ? 2 : 0}>
         <Alert severity="info">
-          {getCustomisedErrorMessage(info.error.message).message}
+          {
+            getCustomisedErrorMessage(info.error.message, (key: string) =>
+              t(key as any, {}),
+            ).message
+          }
         </Alert>
       </Box>
     );
@@ -76,14 +82,20 @@ export const PreviewPullRequest = ({
         <Box marginTop={others?.addPaddingTop ? 2 : 0}>
           <Alert severity="error">
             <AlertTitle>
-              {error.error?.title ? error.error?.title : 'Failed to create PR'}
+              {error.error?.title
+                ? error.error?.title
+                : t('previewFile.failedToCreatePR')}
             </AlertTitle>
-            {getCustomisedErrorMessage(error.error.message).message}{' '}
+            {
+              getCustomisedErrorMessage(error.error.message, (key: string) =>
+                t(key as any, {}),
+              ).message
+            }{' '}
             {error?.repository?.organization && error?.repository?.name && (
               <Link
                 to={`https://github.com/${error.repository.organization}/${error.repository.name}`}
               >
-                View repository
+                {t('previewFile.viewRepository')}
                 <OpenInNewIcon
                   style={{ verticalAlign: 'sub', paddingTop: '7px' }}
                 />
@@ -96,7 +108,11 @@ export const PreviewPullRequest = ({
       {info && (
         <Box marginTop={others?.addPaddingTop ? 2 : 0}>
           <Alert severity="info" data-testid="other-info">
-            {getCustomisedErrorMessage(info.error.message).message}{' '}
+            {
+              getCustomisedErrorMessage(info.error.message, (key: string) =>
+                t(key as any, {}),
+              ).message
+            }{' '}
           </Alert>
           {!others?.addPaddingTop && <br />}
         </Box>
@@ -104,11 +120,28 @@ export const PreviewPullRequest = ({
       {pullRequest[repoId]?.pullRequestUrl && (
         <Box marginTop={others?.addPaddingTop ? 2 : 0}>
           <Alert severity="info" data-testid="pull-request-info">
-            The{' '}
-            <Link to={pullRequest[repoId].pullRequestUrl || ''}>
-              pull request
-            </Link>{' '}
-            is pending approval
+            <Box
+              sx={{
+                margin: 0,
+                padding: 0,
+                '& p': {
+                  margin: 0,
+                  padding: 0,
+                },
+              }}
+            >
+              <MarkdownContent
+                content={t('previewFile.pullRequestPendingApproval')
+                  .replace(
+                    '{{pullRequestUrl}}',
+                    pullRequest[repoId].pullRequestUrl || '',
+                  )
+                  .replace(
+                    '{{pullRequestText}}',
+                    t('previewFile.pullRequestText'),
+                  )}
+              />
+            </Box>
           </Alert>
         </Box>
       )}

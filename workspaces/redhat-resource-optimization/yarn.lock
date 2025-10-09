@@ -10024,9 +10024,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mui/icons-material@npm:^5.16.1":
-  version: 5.17.1
-  resolution: "@mui/icons-material@npm:5.17.1"
+"@mui/icons-material@npm:^5.16.1, @mui/icons-material@npm:^5.17.1":
+  version: 5.18.0
+  resolution: "@mui/icons-material@npm:5.18.0"
   dependencies:
     "@babel/runtime": ^7.23.9
   peerDependencies:
@@ -10036,7 +10036,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 015149e65add85ab0c669829fabf2cfb9c0a95e33a527716f05f8bdc48247a1f0db5e4c83406d70e22600f7c8e54c339a7237e5d8223b73caa724d7b87ce2b0a
+  checksum: 1ee4ee2817278c72095860c81e742270ee01fd320e48f865d371abfeacf83e43a7c6edbfd060ee66ef2a4f02c6cf79de0aca1e73a4d5f6320112bbfcac8176c3
   languageName: node
   linkType: hard
 
@@ -12196,6 +12196,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.9
+    "@backstage/theme": ^0.6.8
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: a5626d864def2e255d026d1620d370ada033f11ee357b145a9f5bd95185cbb9392cae1c83d2dbdcafde8747feb95d79f7067f645d5c6086628d5910a216cf34e
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:^, @red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:plugins/redhat-resource-optimization-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:plugins/redhat-resource-optimization-backend"
@@ -12300,21 +12316,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@redhat-developer/red-hat-developer-hub-theme@npm:^0.5.0":
-  version: 0.5.1
-  resolution: "@redhat-developer/red-hat-developer-hub-theme@npm:0.5.1"
-  peerDependencies:
-    "@backstage/theme": ^0.5.2
-    "@emotion/react": ^11.11.1
-    "@emotion/styled": ^11.11.0
-    "@material-ui/core": ^4.12.4
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.14.19
-    "@mui/material": ^5.14.20
-  checksum: 4de9e62b9de390c7de82fcf123a03135366952ab39d423be51c3afb242c316e3deb78ecaa3e038d6bcc12695f8f03223b9efb45a689a40ea2c11139f4e3fc06d
-  languageName: node
-  linkType: hard
-
 "@redis/client@npm:^1.6.0":
   version: 1.6.1
   resolution: "@redis/client@npm:1.6.1"
@@ -12340,19 +12341,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.24.12":
-  version: 5.24.12
-  resolution: "@rjsf/core@npm:5.24.12"
+"@rjsf/core@npm:5.24.13":
+  version: 5.24.13
+  resolution: "@rjsf/core@npm:5.24.13"
   dependencies:
     lodash: ^4.17.21
     lodash-es: ^4.17.21
     markdown-to-jsx: ^7.4.1
-    nanoid: ^3.3.7
     prop-types: ^15.8.1
   peerDependencies:
     "@rjsf/utils": ^5.24.x
     react: ^16.14.0 || >=17
-  checksum: 115bcb3e692494623b09df5808375d6b92be3ed5f72019df6673ff450851ba61de3658b494b8cdb67fad28e2a8c22d243316a15bb5a1fe7470ddd7eb891ce685
+  checksum: ca48357014bad1e2e64bcce3f1c4a473745c933463db3749f4038143634ca7192a65b1d3194c9f6b999319c4d7ecd6e8244cf5a3f1e23d0500b40f48a0a39c72
   languageName: node
   linkType: hard
 
@@ -12397,9 +12397,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.24.12":
-  version: 5.24.12
-  resolution: "@rjsf/utils@npm:5.24.12"
+"@rjsf/utils@npm:5.24.13":
+  version: 5.24.13
+  resolution: "@rjsf/utils@npm:5.24.13"
   dependencies:
     json-schema-merge-allof: ^0.8.1
     jsonpointer: ^5.0.1
@@ -12408,7 +12408,7 @@ __metadata:
     react-is: ^18.2.0
   peerDependencies:
     react: ^16.14.0 || >=17
-  checksum: 8ada729aaa4d79122d6bccce7d6f6bbdc37399d0e67dc8fe60ccd375833d262968e1033bba946bc674897df86cf6303dc7434a94daed9cbf6a0d24ac0e93c701
+  checksum: 40bb315a6e0b2e635dd6998a1ce82ce9fda2c8f57206f952006abc80e48d54790fa4298b167c0fdbc28a5a278573dbdb5bc68ec1da99c49a6b6c45fc7b61cdf5
   languageName: node
   linkType: hard
 
@@ -17351,8 +17351,8 @@ __metadata:
     "@patternfly/patternfly": ^6.3.0
     "@playwright/test": ^1.32.3
     "@red-hat-developer-hub/backstage-plugin-orchestrator": ^2.5.1
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
     "@red-hat-developer-hub/plugin-redhat-resource-optimization": "workspace:^"
-    "@redhat-developer/red-hat-developer-hub-theme": ^0.5.0
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^15.0.0
@@ -30279,7 +30279,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.3.7, nanoid@npm:^3.3.8":
+"nanoid@npm:^3.3.8":
   version: 3.3.11
   resolution: "nanoid@npm:3.3.11"
   bin:

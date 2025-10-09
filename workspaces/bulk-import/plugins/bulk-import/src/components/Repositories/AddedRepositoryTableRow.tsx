@@ -22,6 +22,8 @@ import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -43,20 +45,30 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const ImportStatus = ({ data }: { data: AddRepositoryData }) => {
+const ImportStatusComponent = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
+  const status =
+    (values.repositories?.[data.id]?.catalogInfoYaml?.status as string) ??
+    (values.repositories?.[data.id]?.task?.status as string);
   return getImportStatus(
-    values.repositories?.[data.id]?.catalogInfoYaml?.status as string,
+    status,
+    (key: string) => t(key as any, {}),
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
+    values.repositories?.[data.id]?.task?.id,
     values?.approvalTool === ApprovalTool.Gitlab,
   );
 };
 
 const LastUpdated = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
   return calculateLastUpdated(
-    values.repositories?.[data.id]?.catalogInfoYaml?.lastUpdated || '',
+    values.repositories?.[data.id]?.catalogInfoYaml?.lastUpdated ||
+      values.repositories?.[data.id]?.lastUpdated ||
+      '',
+    (key: string, params?: any) => t(key as any, params),
   );
 };
 
@@ -66,16 +78,26 @@ export const AddedRepositoryTableRow = ({
   data: AddRepositoryData;
 }) => {
   const classes = useStyles();
-
+  const importFlow = useImportFlow();
   return (
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
-        {data.repoName}
+        {importFlow === 'scaffolder' ? (
+          <Link
+            to={`/bulk-import/repositories/tasks/${encodeURIComponent(
+              data.repoUrl || '',
+            )}`}
+          >
+            {data.repoName}
+          </Link>
+        ) : (
+          data.repoName
+        )}
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         {data?.repoUrl ? (
-          <Link to={data.repoUrl}>
-            {urlHelper(data.repoUrl)}
+          <Link to={data.repoUrl || ''}>
+            {urlHelper(data.repoUrl || '')}
             <OpenInNewIcon
               style={{ verticalAlign: 'sub', paddingTop: '7px' }}
             />
@@ -86,7 +108,7 @@ export const AddedRepositoryTableRow = ({
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
         {data?.organizationUrl ? (
-          <Link to={data.organizationUrl}>
+          <Link to={data.organizationUrl || ''}>
             {data.orgName}
             <OpenInNewIcon
               style={{ verticalAlign: 'sub', paddingTop: '7px' }}
@@ -97,7 +119,7 @@ export const AddedRepositoryTableRow = ({
         )}
       </TableCell>
       <TableCell align="left" className={classes.tableCellStyle}>
-        <ImportStatus data={data} />
+        <ImportStatusComponent data={data} />
       </TableCell>
 
       <TableCell align="left" className={classes.tableCellStyle}>

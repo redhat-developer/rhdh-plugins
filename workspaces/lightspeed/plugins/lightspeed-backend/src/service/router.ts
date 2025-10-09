@@ -22,8 +22,6 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import fetch from 'node-fetch';
 
-// const fetch = (await import('node-fetch')).default;
-
 import {
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
@@ -65,41 +63,6 @@ export async function createRouter(
 
   const authorizer = userPermissionAuthorization(permissions);
 
-  // Middleware proxy to exclude passthroughPaths
-  router.use('/v1', async (req, res, next) => {
-    const passthroughPaths = ['/query', '/feedback'];
-
-    if (passthroughPaths.some(path => req.path.startsWith(path))) {
-      return next(); // This will skip proxying and go to rcs endpoint handlers.
-    }
-    // TODO: parse server_id from req.body and get URL and token when multi-server is supported
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    const userEntity = user.userEntityRef;
-
-    logger.info(`receives call from user: ${userEntity}`);
-    try {
-      await authorizer.authorizeUser(lightspeedChatReadPermission, credentials);
-    } catch (error) {
-      if (error instanceof NotAllowedError) {
-        logger.error(error.message);
-        return res.status(403).json({ error: error.message });
-      }
-    }
-
-    // For all other /v1/* requests, use the proxy to llm server
-    const apiToken = config
-      .getConfigArray('lightspeed.servers')[0]
-      .getOptionalString('token'); // currently only single llm server is supported
-    req.headers.authorization = `Bearer ${apiToken}`;
-    // Proxy middleware configuration
-    const apiProxy = createProxyMiddleware({
-      target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
-      changeOrigin: true,
-    });
-    return apiProxy(req, res, next);
-  });
-
   // Middleware proxy to exclude rcs POST endpoints
   router.use('/', async (req, res, next) => {
     const passthroughPaths = ['/v1/query', '/v1/feedback'];
@@ -133,7 +96,6 @@ export async function createRouter(
     }
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
-      // target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
       target: `http://0.0.0.0:${port}`,
       changeOrigin: true,
       pathRewrite: (path, _) => {

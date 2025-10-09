@@ -15,6 +15,21 @@
  */
 
 export interface Config {
+  /** Configuration for jira plugin */
+  jira: (
+    | {
+        /** Required only when using direct connection. */
+        baseUrl: string;
+        /** Required only when using direct connection. */
+        token: string;
+      }
+    | {
+        /** Required only when using proxy connection. */
+        proxyPath: string;
+      }
+  ) & {
+    product: string;
+  };
   /** Configuration for scorecard plugin */
   scorecard?: {
     /** Configuration for scorecard plugins/datasources */
@@ -22,6 +37,10 @@ export interface Config {
       /** JIRA datasource configuration */
       jira?: {
         open_issues?: {
+          options?: {
+            mandatoryFilter?: string;
+            customFilter?: string;
+          };
           thresholds?: {
             rules?: Array<{
               key: 'error' | 'warning' | 'success';

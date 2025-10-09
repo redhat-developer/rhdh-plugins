@@ -45,6 +45,10 @@ abstract class MockMetricProvider<T extends MetricType>
     return this.providerId;
   }
 
+  supportsEntity(_: Entity): boolean {
+    return true;
+  }
+
   getMetric(): Metric<T> {
     const metric: Metric<T> = {
       id: this.providerId,
@@ -102,7 +106,7 @@ export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
 }
 
 export const githubNumberProvider = new MockNumberProvider(
-  'github.number-metric',
+  'github.number_metric',
   'github',
   'Github Number Metric',
 );
@@ -115,7 +119,7 @@ export const githubNumberMetricMetadata = {
 };
 
 export const jiraBooleanProvider = new MockBooleanProvider(
-  'jira.boolean-metric',
+  'jira.boolean_metric',
   'jira',
 );
 

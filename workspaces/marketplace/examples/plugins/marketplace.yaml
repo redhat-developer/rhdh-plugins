@@ -15,7 +15,9 @@ spec:
   author: Backstage Community
   categories:
     - Catalog
-  support: asd
+  support:
+    provider: Red Hat
+    level: dev-preview
   lifecycle: production
   description: todo
   installation: todo

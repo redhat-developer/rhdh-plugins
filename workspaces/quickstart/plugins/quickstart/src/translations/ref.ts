@@ -26,10 +26,61 @@ export const quickstartMessages = {
     title: "Let's get you started with Developer Hub",
     subtitle: "We'll guide you through a few quick steps",
   },
+  steps: {
+    setupAuthentication: {
+      title: 'Set up authentication',
+      description:
+        'Set up secure login credentials to protect your account from unauthorized access.',
+      ctaTitle: 'Learn more',
+    },
+    configureRbac: {
+      title: 'Configure RBAC',
+      description:
+        'Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.',
+      ctaTitle: 'Manage access',
+    },
+    configureGit: {
+      title: 'Configure Git',
+      description:
+        'Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.',
+      ctaTitle: 'Learn more',
+    },
+    managePlugins: {
+      title: 'Manage plugins',
+      description:
+        'Browse and install extensions to add features, connect with external tools, and customize your experience.',
+      ctaTitle: 'Explore plugins',
+    },
+    importApplication: {
+      title: 'Import application',
+      description:
+        'Import your existing code and services into the catalog to organize and access them through your developer portal.',
+      ctaTitle: 'Import',
+    },
+    learnAboutCatalog: {
+      title: 'Learn about the Catalog',
+      description:
+        'Discover all software components, services, and APIs, and view their owners and documentation.',
+      ctaTitle: 'View Catalog',
+    },
+    exploreSelfServiceTemplates: {
+      title: 'Explore Self-service templates',
+      description:
+        'Use our self-service templates to quickly set up new projects, services, or documentation.',
+      ctaTitle: 'Explore templates',
+    },
+    findAllLearningPaths: {
+      title: 'Find all Learning Paths',
+      description:
+        'Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.',
+      ctaTitle: 'View Learning Paths',
+    },
+  },
   button: {
     quickstart: 'Quick start',
     openQuickstartGuide: 'Open Quickstart Guide',
     closeDrawer: 'Close Drawer',
+    gotIt: 'Got it!',
   },
   footer: {
     progress: '{{progress}}% progress',

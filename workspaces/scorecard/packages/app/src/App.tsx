@@ -51,12 +51,17 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 const app = createApp({
   apis,
   themes: getThemes(),
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [scorecardTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,

@@ -21,6 +21,7 @@ import ObjectField from '@rjsf/core/lib/components/fields/ObjectField';
 import { ErrorSchema, FieldProps, IdSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { getSortedStepEntries } from '../utils/getSortedStepEntries';
 import OrchestratorFormStepper, {
   OrchestratorFormStep,
@@ -37,14 +38,14 @@ const StepperObjectField = ({
   errorSchema,
   ...props
 }: FieldProps<JsonObject, JSONSchema7>) => {
+  const { t } = useTranslation();
+
   const sortedStepEntries = useMemo(
     () => getSortedStepEntries(schema),
     [schema],
   );
   if (sortedStepEntries === undefined) {
-    throw new Error(
-      "Stepper object field is not supported for schema that doesn't contain properties",
-    );
+    throw new Error(t('stepperObjectField.error'));
   }
 
   const steps = sortedStepEntries.reduce<OrchestratorFormStep[]>(

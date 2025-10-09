@@ -1,5 +1,3 @@
-import { SamplePrompts } from './types';
-
 /*
  * Copyright Red Hat, Inc.
  *
@@ -15,6 +13,9 @@ import { SamplePrompts } from './types';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { SamplePrompts } from './types';
+
 export const TEMP_CONVERSATION_ID = 'temp-conversation-id';
 
 // Translation keys for disclaimers
@@ -64,4 +65,9 @@ export const RHDH_SAMPLE_PROMPTS: SamplePrompts = [
   createPrompt('prompts.tekton.title', 'prompts.tekton.message'),
   createPrompt('prompts.openshift.title', 'prompts.openshift.message'),
   createPrompt('prompts.rhdh.title', 'prompts.rhdh.message'),
+];
+
+// Topic restriction valid provider IDs
+export const VALID_TOPIC_RESTRICTION_PROVIDER_IDS = [
+  'lightspeed_question_validity-shield',
 ];

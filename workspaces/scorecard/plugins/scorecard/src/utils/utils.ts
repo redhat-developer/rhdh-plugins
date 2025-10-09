@@ -20,7 +20,7 @@ import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 
 export type StatusConfig = {
   color: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
 };
 
 /**
@@ -28,9 +28,20 @@ export type StatusConfig = {
  * colors are mapped to MUI palette strings (e.g., 'error.main', 'warning.main', 'success.main').
  * @returns StatusConfig
  */
-export const getStatusConfig = (
-  evaluation: string | undefined,
-): StatusConfig => {
+export const getStatusConfig = ({
+  evaluation,
+  thresholdStatus,
+  metricStatus,
+}: {
+  evaluation: string | undefined;
+  thresholdStatus?: 'success' | 'error';
+  metricStatus?: 'success' | 'error';
+}): StatusConfig => {
+  // If threshold or metric has an error, return grey.400 color
+  if (thresholdStatus === 'error' || metricStatus === 'error') {
+    return { color: 'rhdh.general.disabled' };
+  }
+
   switch (evaluation) {
     case 'error':
       return { color: 'error.main', icon: DangerousOutlinedIcon };
