@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.0
+
+### Minor Changes
+
+- 8f47cd6: Add dual mount point system for extensible homepage functionality
+
+  - Add support for two mount points: `home.page/cards` for default cards and `home.page/widgets` for additional plugin widgets
+  - Include configuration-based metadata support (title and description) for better "Add widget" dialog experience
+
 ## 1.9.2
 
 ### Patch Changes
