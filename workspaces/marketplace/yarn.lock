@@ -6143,7 +6143,6 @@ __metadata:
     node-gyp: ^9.0.0
     prettier: ^3.4.2
     typescript: ~5.3.0
-    yaml: ^2.8.1
   languageName: unknown
   linkType: soft
 
@@ -33141,7 +33140,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.7.0, yaml@npm:^2.7.1, yaml@npm:^2.8.1":
+"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.7.0, yaml@npm:^2.7.1":
   version: 2.8.1
   resolution: "yaml@npm:2.8.1"
   bin:

@@ -126,7 +126,12 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
           link: staticLink = '',
           type = '',
         } = mp.config?.props ?? {};
-        const isMyProfile = type === 'myProfile';
+        // The title fallbacks are to be backward compatibility with older versions
+        // of the global-header configuration if a customer has customized it.
+        const isMyProfile =
+          type === 'myProfile' ||
+          title === 'profile.myProfile' ||
+          title === 'My profile';
         const link = isMyProfile ? profileLink ?? '' : staticLink;
 
         // Hide "My Profile" for guest users or when user doesn't exist in catalog

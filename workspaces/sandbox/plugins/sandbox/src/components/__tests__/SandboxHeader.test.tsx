@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { SandboxHeader } from '../SandboxHeader';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -93,19 +93,29 @@ describe('SandboxHeader', () => {
     expect(subtitle?.querySelector('svg')).toBeInTheDocument();
   });
 
-  test('has correct EDDL data attributes on Contact Red Hat Sales link', () => {
+  test('calls trackAnalytics with correct parameters when Contact Sales is clicked', async () => {
+    const windowOpenSpy = jest.spyOn(window, 'open').mockImplementation();
+
     renderComponent();
     const button = screen.getByText('Contact Red Hat Sales');
     const link = button.closest('a');
 
-    expect(link).toHaveAttribute(
-      'data-analytics-category',
-      'Developer Sandbox|Support',
-    );
-    expect(link).toHaveAttribute(
-      'data-analytics-text',
-      'Contact Red Hat Sales',
-    );
-    expect(link).toHaveAttribute('data-analytics-region', 'sandbox-support');
+    fireEvent.click(link!);
+
+    await waitFor(() => {
+      expect(mockTrackAnalytics).toHaveBeenCalledWith(
+        'Contact Red Hat Sales',
+        'Support',
+        'https://www.redhat.com/en/contact',
+        undefined,
+        'cta',
+      );
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://www.redhat.com/en/contact',
+        '_blank',
+      );
+    });
+
+    windowOpenSpy.mockRestore();
   });
 });
