@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.4.1
+
+### Patch Changes
+
+- 4c5967e: Make bulkImport configuration optional again to be backward compatible
+
 ## 6.4.0
 
 ### Minor Changes

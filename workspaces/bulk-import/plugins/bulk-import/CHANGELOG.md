@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.17.2
+
+### Patch Changes
+
+- 4c5967e: Make bulkImport configuration optional again to be backward compatible
+
 ## 1.17.1
 
 ### Patch Changes
