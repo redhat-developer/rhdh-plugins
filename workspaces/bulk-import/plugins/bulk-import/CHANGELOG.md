@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.18.1
+
+### Patch Changes
+
+- 0c89f33: Updated dependency `@playwright/test` to `1.56.0`.
+
 ## 1.18.0
 
 ### Minor Changes
