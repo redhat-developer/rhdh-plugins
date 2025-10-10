@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-orchestrator-backend': major
+'@red-hat-developer-hub/backstage-plugin-orchestrator-backend': minor
 ---
 
 removal of @backstage/backend-common
