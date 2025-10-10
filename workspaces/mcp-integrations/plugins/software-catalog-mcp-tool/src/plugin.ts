@@ -105,8 +105,18 @@ Example invocations and the output from those invocations:
                   .describe(
                     'Filter entities by lifecycle (e.g., production, staging, development)',
                   ),
-                tags: z // need to see how the MCP backend will handle this
-                  .array(z.string())
+                tags: z
+                  .custom<string[]>(
+                    val => {
+                      return (
+                        Array.isArray(val) &&
+                        val.every(item => typeof item === 'string')
+                      );
+                    },
+                    {
+                      message: 'Must be an array of strings',
+                    },
+                  )
                   .optional()
                   .describe(
                     'Filter entities by tags (e.g., ["genai", "ibm", "llm", "granite", "conversational", "task-text-generation"])',
@@ -135,7 +145,17 @@ Example invocations and the output from those invocations:
                             'The kind/type of the Backstage entity (e.g., Component, API, System)',
                           ),
                         tags: z
-                          .array(z.string())
+                          .custom<string[]>(
+                            val => {
+                              return (
+                                Array.isArray(val) &&
+                                val.every(item => typeof item === 'string')
+                              );
+                            },
+                            {
+                              message: 'Must be an array of strings',
+                            },
+                          )
                           .optional()
                           .describe(
                             'The tags associated with the Backstage entity',
@@ -163,7 +183,17 @@ Example invocations and the output from those invocations:
                             'The lifecycle of the Backstage entity (e.g., production, staging, development)',
                           ),
                         dependsOn: z
-                          .array(z.string())
+                          .custom<string[]>(
+                            val => {
+                              return (
+                                Array.isArray(val) &&
+                                val.every(item => typeof item === 'string')
+                              );
+                            },
+                            {
+                              message: 'Must be an array of strings',
+                            },
+                          )
                           .optional()
                           .describe(
                             'List of entities this entity depends on (e.g., component:default/database)',

@@ -115,7 +115,17 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                     'Filter by lifecycle (e.g., production, staging, development)',
                   ),
                 tags: z
-                  .array(z.string())
+                  .custom<string[]>(
+                    val => {
+                      return (
+                        Array.isArray(val) &&
+                        val.every(item => typeof item === 'string')
+                      );
+                    },
+                    {
+                      message: 'Must be an array of strings',
+                    },
+                  )
                   .optional()
                   .describe(
                     'Filter by tags (e.g., ["genai", "frontend", "api"])',
@@ -137,7 +147,17 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                           'The title field for each techdoc in the backstage server',
                         ),
                       tags: z
-                        .array(z.string())
+                        .custom<string[]>(
+                          val => {
+                            return (
+                              Array.isArray(val) &&
+                              val.every(item => typeof item === 'string')
+                            );
+                          },
+                          {
+                            message: 'Must be an array of strings',
+                          },
+                        )
                         .optional()
                         .describe('The tags related with the techdoc entity'),
                       description: z
@@ -194,7 +214,17 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                             .optional()
                             .describe('ETag for caching purposes'),
                           files: z
-                            .array(z.string())
+                            .custom<string[]>(
+                              val => {
+                                return (
+                                  Array.isArray(val) &&
+                                  val.every(item => typeof item === 'string')
+                                );
+                              },
+                              {
+                                message: 'Must be an array of strings',
+                              },
+                            )
                             .optional()
                             .describe('List of files in the TechDocs site'),
                         })
@@ -288,7 +318,17 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                     'Filter by lifecycle (e.g., production, staging, development)',
                   ),
                 tags: z
-                  .array(z.string())
+                  .custom<string[]>(
+                    val => {
+                      return (
+                        Array.isArray(val) &&
+                        val.every(item => typeof item === 'string')
+                      );
+                    },
+                    {
+                      message: 'Must be an array of strings',
+                    },
+                  )
                   .optional()
                   .describe(
                     'Filter by tags (e.g., ["genai", "frontend", "api"])',
