@@ -61,6 +61,7 @@ export const RepositoryTableRow = ({
       const result = await bulkImportApi.getImportAction(
         data.repoUrl,
         data?.defaultBranch || 'main',
+        data && (data as ImportJobStatus).approvalTool,
       );
       return result;
     }

@@ -30,7 +30,11 @@ import {
   PullRequestPreviewData,
   RepositorySelection,
 } from '../../types';
-import { ImportJobResponse, ImportJobStatus } from '../../types/response-types';
+import {
+  ImportJobResponse,
+  ImportJobStatus,
+  isGithubJob,
+} from '../../types/response-types';
 import {
   getJobErrors,
   prepareDataForSubmission,
@@ -52,9 +56,12 @@ const EditCatalogInfo = ({
     useFormikContext<AddRepositoriesFormValues>();
   let yamlContent = {} as Entity;
   try {
-    yamlContent = yaml.loadAll(
-      importStatus?.github?.pullRequest?.catalogInfoContent,
-    )[0] as Entity;
+    if (importStatus) {
+      const gitProvider = isGithubJob(importStatus) ? 'github' : 'gitlab';
+      yamlContent = yaml.loadAll(
+        importStatus[gitProvider]?.pullRequest?.catalogInfoContent ?? '',
+      )[0] as Entity;
+    }
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn(e);
@@ -66,6 +73,7 @@ const EditCatalogInfo = ({
   const previewData: AddRepositoryData = {
     id: importStatus?.repository?.id,
     repoUrl: importStatus?.repository?.url,
+    approvalTool: importStatus?.approvalTool,
     repoName: importStatus?.repository?.name,
     orgName: importStatus?.repository?.organization,
     catalogInfoYaml: {
@@ -91,6 +99,7 @@ const EditCatalogInfo = ({
           catalogInfoYaml: {
             prTemplate: pullRequest[`${importStatus.repository.id}`],
           },
+          approvalTool: importStatus.approvalTool,
           defaultBranch: importStatus.repository?.defaultBranch,
           organizationUrl: importStatus.repository.url
             ?.substring(

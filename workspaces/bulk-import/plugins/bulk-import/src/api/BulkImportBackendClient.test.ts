@@ -229,12 +229,22 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
 
   describe('getRepositories', () => {
     it('getRepositories should retrieve repositories successfully', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, '');
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        '',
+        ApprovalTool.Git,
+      );
       expect(repositories).toEqual(mockGetRepositories.repositories);
     });
 
     it('getRepositories should retrieve repositories based on search string', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, 'ap');
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        'ap',
+        ApprovalTool.Git,
+      );
       expect(repositories).toEqual(
         mockGetRepositories.repositories.filter(r => r.repoName.includes('ap')),
       );
@@ -250,17 +260,23 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
         ),
       );
 
-      await expect(bulkImportApi.dataFetcher(1, 2, '')).resolves.toEqual(
-        expect.objectContaining([]),
-      );
+      await expect(
+        bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git),
+      ).resolves.toEqual(expect.objectContaining([]));
     });
   });
 
   describe('getRepositories from an organization', () => {
     it('getRepositories should retrieve repositories from an organization successfully', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, '', {
-        orgName: 'org/dessert',
-      });
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        '',
+        ApprovalTool.Git,
+        {
+          orgName: 'org/dessert',
+        },
+      );
       expect(repositories).toEqual(
         mockGetRepositories.repositories.filter(
           r => r.orgName === 'org/dessert',
@@ -269,9 +285,15 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
     });
 
     it('getRepositories should retrieve repositories from an organization based on search string', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, 'des', {
-        orgName: 'org/dessert',
-      });
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        'des',
+        ApprovalTool.Git,
+        {
+          orgName: 'org/dessert',
+        },
+      );
       expect(repositories).toEqual(
         mockGetRepositories.repositories.filter(
           r => r.orgName === 'org/dessert' && r.repoName.includes('des'),
@@ -282,16 +304,22 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
 
   describe('getOrganizations', () => {
     it('getOrganizations should retrieve organizations successfully', async () => {
-      const orgs = await bulkImportApi.dataFetcher(1, 2, '', {
+      const orgs = await bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {
         fetchOrganizations: true,
       });
       expect(orgs).toEqual(mockGetOrganizations.organizations);
     });
 
     it('getOrganizations should retrieve organizations based on search string', async () => {
-      const orgs = await bulkImportApi.dataFetcher(1, 2, 'des', {
-        fetchOrganizations: true,
-      });
+      const orgs = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        'des',
+        ApprovalTool.Git,
+        {
+          fetchOrganizations: true,
+        },
+      );
       expect(orgs).toEqual(
         mockGetOrganizations.organizations.filter(r =>
           r.orgName.includes('des'),
@@ -310,7 +338,9 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
       );
 
       await expect(
-        bulkImportApi.dataFetcher(1, 2, '', { fetchOrganizations: true }),
+        bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {
+          fetchOrganizations: true,
+        }),
       ).resolves.toEqual(expect.objectContaining([]));
     });
   });

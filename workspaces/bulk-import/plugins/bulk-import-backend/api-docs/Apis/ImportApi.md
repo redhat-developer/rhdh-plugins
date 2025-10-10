@@ -101,15 +101,16 @@ null (empty response body)
 
 # **deleteTaskImportByRepo**
 
-> deleteTaskImportByRepo(repo)
+> deleteTaskImportByRepo(repo, approvalTool)
 
 Delete stored scaffolder task records for a specific repository
 
 ### Parameters
 
-| Name     | Type       | Description              | Notes                        |
-| -------- | ---------- | ------------------------ | ---------------------------- |
-| **repo** | **String** | the full URL to the repo | [optional] [default to null] |
+| Name             | Type       | Description              | Notes                        |
+| ---------------- | ---------- | ------------------------ | ---------------------------- |
+| **repo**         | **String** | the full URL to the repo | [optional] [default to null] |
+| **approvalTool** | **String** | the approvalTool to use  | [optional] [default to GIT]  |
 
 ### Return type
 
@@ -226,7 +227,7 @@ Get Import Status by repository
 
 # **findTaskImportStatusByRepo**
 
-> Import findTaskImportStatusByRepo(repo, defaultBranch)
+> Import findTaskImportStatusByRepo(repo, defaultBranch, approvalTool)
 
 Get Import Status by repository
 
@@ -236,6 +237,7 @@ Get Import Status by repository
 | ----------------- | ---------- | ------------------------------ | ---------------------------- |
 | **repo**          | **String** | the full URL to the repo       | [optional] [default to null] |
 | **defaultBranch** | **String** | the name of the default branch | [optional] [default to main] |
+| **approvalTool**  | **String** | the approvalTool to use        | [optional] [default to GIT]  |
 
 ### Return type
 

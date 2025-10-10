@@ -84,6 +84,7 @@ export type AddRepositoryData = {
     id: string;
     status: TaskStatus;
   };
+  approvalTool?: ApprovalTool;
 };
 
 export type Order = 'asc' | 'desc';
@@ -131,17 +132,23 @@ export enum RepositorySelection {
 }
 
 export enum ApprovalTool {
-  Git = 'git',
+  Git = 'GIT',
   ServiceNow = 'servicenow',
-  Gitlab = 'gitlab',
+  Gitlab = 'GITLAB',
 }
 
 export type CreateImportJobRepository = {
-  approvalTool: string;
+  approvalTool: ApprovalTool;
   catalogEntityName: string;
   codeOwnersFileAsEntityOwner: boolean;
   catalogInfoContent: string;
-  github: {
+  github?: {
+    pullRequest: {
+      title: string;
+      body: string;
+    };
+  };
+  gitlab?: {
     pullRequest: {
       title: string;
       body: string;

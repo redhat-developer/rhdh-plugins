@@ -122,6 +122,7 @@ describe('Preview Pull Request', () => {
             'https://localhost:3001',
             'https://github.com/org/dessert/cupcake',
             'main',
+            'github',
           ),
         }}
         setFormErrors={() => jest.fn()}
@@ -175,6 +176,7 @@ describe('Preview Pull Request', () => {
             'https://localhost:3001',
             'https://github.com/org/dessert/cupcake',
             'main',
+            'github',
           ),
         }}
         setFormErrors={() => jest.fn()}
@@ -215,6 +217,7 @@ describe('Preview Pull Request', () => {
               'https://localhost:3001',
               'https://github.com/org/dessert/cupcake',
               'main',
+              'github',
             ),
             pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
           },
@@ -259,6 +262,7 @@ describe('Preview Pull Request', () => {
               'https://localhost:3001',
               'https://github.com/org/dessert/cupcake',
               'main',
+              'github',
             ),
             pullRequestUrl: 'https://github.com/org/dessert/cupcake/pulls/9',
           },

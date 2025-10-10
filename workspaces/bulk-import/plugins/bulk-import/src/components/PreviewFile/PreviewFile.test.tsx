@@ -32,6 +32,10 @@ import { ImportJobStatus, RepositorySelection } from '../../types';
 import { useDrawer } from '../DrawerContext';
 import { PreviewFile } from './PreviewFile';
 
+jest.mock('../../hooks', () => ({
+  useGitlabConfigured: jest.fn(() => false),
+}));
+
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
   useState: jest.fn(),

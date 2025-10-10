@@ -31,6 +31,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
+  ApprovalTool,
   ImportJobStatus,
   PullRequestPreview,
   PullRequestPreviewData,
@@ -82,14 +83,17 @@ export const PreviewFileSidebar = ({
     url: string,
     branch: string,
     repoPrTemplate: PullRequestPreview,
+    approvalTool?: ApprovalTool,
   ) => {
     if (values?.repositories?.[id]?.catalogInfoYaml?.isInitialized) {
       return values.repositories[id].catalogInfoYaml
         ?.prTemplate as PullRequestPreview;
     }
+
     const result = await bulkImportApi.getImportAction(
       url || '',
       branch || 'main',
+      approvalTool,
     );
     if ((result as Response)?.statusText) {
       setStatus({
@@ -122,6 +126,7 @@ export const PreviewFileSidebar = ({
           baseUrl as string,
           url,
           branch,
+          approvalTool === ApprovalTool.Gitlab ? 'gitlab' : 'github',
         );
         delete prTemp.prDescription;
         delete prTemp.prTitle;
@@ -160,6 +165,7 @@ export const PreviewFileSidebar = ({
           repo.repoUrl || '',
           repo.defaultBranch || 'main',
           repo.catalogInfoYaml?.prTemplate as PullRequestPreview,
+          data?.approvalTool,
         );
         setFieldValue(
           `repositories.${repo.id}.catalogInfoYaml.isInitialized`,
@@ -174,6 +180,7 @@ export const PreviewFileSidebar = ({
         data.repoUrl || '',
         data.defaultBranch || 'main',
         data.catalogInfoYaml?.prTemplate as PullRequestPreview,
+        data?.approvalTool,
       );
       setFieldValue(
         `repositories.${data.id}.catalogInfoYaml.isInitialized`,

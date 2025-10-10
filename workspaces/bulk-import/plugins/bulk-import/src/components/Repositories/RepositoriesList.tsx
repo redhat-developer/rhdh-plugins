@@ -23,6 +23,7 @@ import { Table } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -30,7 +31,6 @@ import {
   AddRepositoryData,
   SortingOrderEnum,
 } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { RepositoriesHeader } from '../AddRepositories/RepositoriesHeader';
 import { useDeleteDialog } from '../DeleteDialogContext';
 import { useDrawer } from '../DrawerContext';
@@ -52,6 +52,7 @@ export const RepositoriesList = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const gitlabConfigured = useGitlabConfigured();
 
   const orderByColumn = useMemo(() => {
     return orderBy?.replace(/\.([a-zA-Z])/g, (_, char) =>
@@ -100,12 +101,12 @@ export const RepositoriesList = () => {
     setDebouncedSearch(str);
     setPageNumber(0);
   };
-  const baseTitle = gitlabFeatureFlag
+  const baseTitle = gitlabConfigured
     ? t('repositories.importedEntities')
     : t('repositories.addedRepositories');
 
   const getTitleWithCount = () => {
-    if (gitlabFeatureFlag) {
+    if (gitlabConfigured) {
       return t('repositories.importedEntitiesCount' as any, {
         count: importJobs.totalJobs.toString(),
       });
@@ -122,7 +123,7 @@ export const RepositoriesList = () => {
       <RepositoriesAddLink />
       <Table
         data={importJobs.addedRepositories ?? []}
-        columns={getRepositoriesListColumns(t)}
+        columns={getRepositoriesListColumns(t, gitlabConfigured)}
         onSearchChange={handleSearch}
         title={finalTitle}
         options={{

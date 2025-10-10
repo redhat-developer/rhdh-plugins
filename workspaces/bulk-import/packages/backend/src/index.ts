@@ -63,5 +63,6 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-bulk-import-backend'),
 );
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
+backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
 
 backend.start();

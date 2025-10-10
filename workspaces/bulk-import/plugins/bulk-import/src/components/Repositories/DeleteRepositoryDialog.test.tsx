@@ -26,6 +26,10 @@ import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 const mockGetOptionalString = jest.fn(() => undefined);
 const mockdeleteImportAction = jest.fn();
 
+jest.mock('../../hooks', () => ({
+  useGitlabConfigured: jest.fn(() => false),
+}));
+
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
   useApi: jest.fn((apiRef: ApiRef<any>) => {

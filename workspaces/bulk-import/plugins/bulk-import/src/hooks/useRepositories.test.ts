@@ -18,6 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { mockGetOrganizations, mockGetRepositories } from '../mocks/mockData';
+import { ApprovalTool } from '../types';
 import { useRepositories } from './useRepositories';
 
 jest.mock('@backstage/core-plugin-api', () => ({
@@ -42,6 +43,7 @@ describe('useRepositories', () => {
       useRepositories({
         page: 1,
         querySize: 10,
+        approvalTool: ApprovalTool.Git,
       }),
     );
     await waitFor(() => {
@@ -60,7 +62,12 @@ describe('useRepositories', () => {
       refetch: jest.fn(),
     });
     const { result } = renderHook(() =>
-      useRepositories({ page: 1, querySize: 10, showOrganizations: true }),
+      useRepositories({
+        page: 1,
+        querySize: 10,
+        showOrganizations: true,
+        approvalTool: ApprovalTool.Git,
+      }),
     );
     await waitFor(() => {
       expect(result.current.loading).toBeFalsy();
@@ -83,7 +90,12 @@ describe('useRepositories', () => {
       refetch: jest.fn(),
     });
     const { result } = renderHook(() =>
-      useRepositories({ page: 1, querySize: 10, orgName: 'org/dessert' }),
+      useRepositories({
+        page: 1,
+        querySize: 10,
+        orgName: 'org/dessert',
+        approvalTool: ApprovalTool.Git,
+      }),
     );
     await waitFor(() => {
       expect(result.current.loading).toBeFalsy();

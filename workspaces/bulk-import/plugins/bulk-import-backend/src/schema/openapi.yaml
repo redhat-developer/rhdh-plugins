@@ -348,6 +348,7 @@ paths:
           schema:
             type: string
             default: 'main'
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         200:
           description: Import Job status was determined successfully with no errors
@@ -373,6 +374,7 @@ paths:
           description: the full URL to the repo
           schema:
             type: string
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         204:
           description: Repository was deleted successfully with no errors

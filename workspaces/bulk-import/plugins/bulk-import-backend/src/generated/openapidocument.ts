@@ -607,6 +607,9 @@ const OPENAPI = `
               "type": "string",
               "default": "main"
             }
+          },
+          {
+            "$ref": "#/components/parameters/approvalToolParam"
           }
         ],
         "responses": {
@@ -649,6 +652,9 @@ const OPENAPI = `
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "$ref": "#/components/parameters/approvalToolParam"
           }
         ],
         "responses": {
