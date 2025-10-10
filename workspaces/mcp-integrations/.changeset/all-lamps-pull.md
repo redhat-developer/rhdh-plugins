@@ -3,4 +3,4 @@
 '@red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool': patch
 ---
 
-Make tag optional parameter in the output schema of the MCP tools
+Bump Backstage version to 1.42.5

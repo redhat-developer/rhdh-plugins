@@ -37,6 +37,7 @@ describe('TechDocsService', () => {
       baseUrl: 'http://localhost:3000',
     },
     backend: {
+      baseUrl: 'http://localhost:7007',
       auth: {
         externalAccess: [
           {
@@ -109,7 +110,7 @@ describe('TechDocsService', () => {
         techDocsUrl:
           'http://localhost:3000/docs/default/component/test-service',
         metadataUrl:
-          'http://localhost:7007/api/entities/by-name/component/default/test-service',
+          'http://localhost:7007/api/catalog/entities/by-name/component/default/test-service',
       });
     });
 
@@ -120,7 +121,7 @@ describe('TechDocsService', () => {
       expect(urls).toEqual({
         techDocsUrl: 'http://localhost:3000/docs/default/api/test-api',
         metadataUrl:
-          'http://localhost:7007/api/entities/by-name/api/default/test-api',
+          'http://localhost:7007/api/catalog/entities/by-name/api/default/test-api',
       });
     });
 
@@ -134,7 +135,7 @@ describe('TechDocsService', () => {
         techDocsUrl:
           'http://localhost:3000/docs/production/component/test-service',
         metadataUrl:
-          'http://localhost:7007/api/entities/by-name/component/production/test-service',
+          'http://localhost:7007/api/catalog/entities/by-name/component/production/test-service',
       });
     });
   });
@@ -302,7 +303,7 @@ describe('TechDocsService', () => {
         techDocsUrl:
           'http://localhost:3000/docs/default/component/service-with-docs',
         metadataUrl:
-          'http://localhost:7007/api/entities/by-name/component/default/service-with-docs',
+          'http://localhost:7007/api/catalog/entities/by-name/component/default/service-with-docs',
         metadata: {
           lastUpdated: '2021-01-01T00:00:00.000Z',
           buildTimestamp: 1609459200,
@@ -341,7 +342,7 @@ describe('TechDocsService', () => {
         techDocsUrl:
           'http://localhost:3000/docs/default/component/service-without-metadata',
         metadataUrl:
-          'http://localhost:7007/api/entities/by-name/component/default/service-without-metadata',
+          'http://localhost:7007/api/catalog/entities/by-name/component/default/service-without-metadata',
         metadata: undefined,
       });
     });
