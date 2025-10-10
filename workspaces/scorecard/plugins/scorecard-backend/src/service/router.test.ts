@@ -70,6 +70,7 @@ describe('createRouter', () => {
   const permissionsMock: ServiceMock<PermissionsService> =
     mockServices.permissions.mock({
       authorizeConditional: jest.fn(),
+      authorize: jest.fn(),
     });
 
   beforeEach(async () => {
@@ -82,6 +83,10 @@ describe('createRouter', () => {
     });
 
     permissionsMock.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+
+    permissionsMock.authorize.mockResolvedValue([
       { result: AuthorizeResult.ALLOW },
     ]);
 

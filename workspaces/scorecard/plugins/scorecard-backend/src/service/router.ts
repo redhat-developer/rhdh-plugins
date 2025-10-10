@@ -30,7 +30,10 @@ import {
   ResourcePermission,
 } from '@backstage/plugin-permission-common';
 import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
+import {
+  filterAuthorizedMetrics,
+  checkEntityAccess,
+} from '../permissions/permissionUtils';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
@@ -130,6 +133,10 @@ export async function createRouter({
     }
 
     const entityRef = `${kind}:${namespace}/${name}`;
+
+    // Check if user has permission to read this specific catalog entity
+    await checkEntityAccess(entityRef, req, permissions, httpAuth);
+
     const metricIdArray = metricIds
       ? (metricIds as string).split(',').map(id => id.trim())
       : undefined;
