@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 1.18.0
+
+### Minor Changes
+
+- 8c33ce4: Enable GitLab frontend support. Restore previously removed approval tool parameters in the backend.
+
 ## 1.17.2
 
 ### Patch Changes
