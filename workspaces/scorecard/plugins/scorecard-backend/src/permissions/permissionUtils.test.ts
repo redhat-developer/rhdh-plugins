@@ -33,6 +33,7 @@ import {
   matches,
   checkEntityAccess,
 } from './permissionUtils';
+import { mockServices } from '@backstage/backend-test-utils';
 
 const createMockMetric = (
   id: string,
@@ -136,13 +137,13 @@ describe('permissionUtils', () => {
     let mockRequest: Request;
 
     beforeEach(() => {
-      mockPermissionsService = {
+      mockPermissionsService = mockServices.permissions.mock({
         authorize: jest.fn(),
-      } as any;
+      });
 
-      mockHttpAuthService = {
+      mockHttpAuthService = mockServices.httpAuth.mock({
         credentials: jest.fn(),
-      } as any;
+      });
 
       mockRequest = {} as Request;
     });
