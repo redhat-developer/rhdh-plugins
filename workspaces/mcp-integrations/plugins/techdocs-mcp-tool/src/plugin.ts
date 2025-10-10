@@ -115,20 +115,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                     'Filter by lifecycle (e.g., production, staging, development)',
                   ),
                 tags: z
-                  .custom<string[]>(
-                    val => {
-                      return (
-                        Array.isArray(val) &&
-                        val.every(item => typeof item === 'string')
-                      );
-                    },
-                    {
-                      message: 'Must be an array of strings',
-                    },
-                  )
+                  .string()
                   .optional()
                   .describe(
-                    'Filter by tags (e.g., ["genai", "frontend", "api"])',
+                    'Filter by tags as comma-separated values (e.g., "genai,frontend,api")',
                   ),
               }),
             output: z =>
@@ -147,19 +137,11 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                           'The title field for each techdoc in the backstage server',
                         ),
                       tags: z
-                        .custom<string[]>(
-                          val => {
-                            return (
-                              Array.isArray(val) &&
-                              val.every(item => typeof item === 'string')
-                            );
-                          },
-                          {
-                            message: 'Must be an array of strings',
-                          },
-                        )
+                        .string()
                         .optional()
-                        .describe('The tags related with the techdoc entity'),
+                        .describe(
+                          'The tags related with the techdoc entity as comma-separated values',
+                        ),
                       description: z
                         .string()
                         .describe('The description of the techdoc entity'),
@@ -214,19 +196,11 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                             .optional()
                             .describe('ETag for caching purposes'),
                           files: z
-                            .custom<string[]>(
-                              val => {
-                                return (
-                                  Array.isArray(val) &&
-                                  val.every(item => typeof item === 'string')
-                                );
-                              },
-                              {
-                                message: 'Must be an array of strings',
-                              },
-                            )
+                            .string()
                             .optional()
-                            .describe('List of files in the TechDocs site'),
+                            .describe(
+                              'List of files in the TechDocs site as comma-separated values',
+                            ),
                         })
                         .optional()
                         .describe('TechDocs metadata information'),
@@ -318,20 +292,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                     'Filter by lifecycle (e.g., production, staging, development)',
                   ),
                 tags: z
-                  .custom<string[]>(
-                    val => {
-                      return (
-                        Array.isArray(val) &&
-                        val.every(item => typeof item === 'string')
-                      );
-                    },
-                    {
-                      message: 'Must be an array of strings',
-                    },
-                  )
+                  .string()
                   .optional()
                   .describe(
-                    'Filter by tags (e.g., ["genai", "frontend", "api"])',
+                    'Filter by tags as comma-separated values (e.g., "genai,frontend,api")',
                   ),
               }),
             output: z =>
