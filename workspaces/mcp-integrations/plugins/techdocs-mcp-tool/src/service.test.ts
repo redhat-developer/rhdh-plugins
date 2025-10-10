@@ -294,7 +294,7 @@ describe('TechDocsService', () => {
       expect(result.entities[0]).toEqual({
         name: 'service-with-docs',
         title: 'service-with-docs title',
-        tags: ['test', 'mock'],
+        tags: 'test,mock',
         description: 'service-with-docs description',
         owner: 'team-test',
         lifecycle: 'production',
@@ -310,7 +310,7 @@ describe('TechDocsService', () => {
           siteName: 'Service with Docs',
           siteDescription: 'Documentation for service with docs',
           etag: 'abc123',
-          files: ['index.html'],
+          files: 'index.html',
         },
       });
     });
@@ -333,7 +333,7 @@ describe('TechDocsService', () => {
       expect(result.entities[0]).toEqual({
         name: 'service-without-metadata',
         title: 'service-without-metadata title',
-        tags: ['test', 'mock'],
+        tags: 'test,mock',
         description: 'service-without-metadata description',
         owner: 'team-test',
         lifecycle: 'production',
@@ -475,7 +475,7 @@ describe('TechDocsService', () => {
       jest.spyOn(mockCatalog, 'getEntities');
       mockFetch.mockResolvedValue({ ok: false, status: 404 });
 
-      await service.listTechDocs({ tags: ['frontend'] }, mockAuth, mockCatalog);
+      await service.listTechDocs({ tags: 'frontend' }, mockAuth, mockCatalog);
 
       expect(mockCatalog.getEntities).toHaveBeenCalledWith(
         expect.objectContaining({

@@ -127,32 +127,32 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'my-service',
             kind: 'Component',
-            tags: ['java', 'spring'],
+            tags: 'java,spring',
             description: 'A Spring-based microservice',
             lifecycle: 'production',
             type: 'service',
             owner: 'test-team',
-            dependsOn: [],
+            dependsOn: '',
           },
           {
             name: 'my-api',
             kind: 'API',
-            tags: ['rest', 'openapi'],
+            tags: 'rest,openapi',
             description: 'REST API for data access',
             lifecycle: 'production',
             type: 'openapi',
             owner: 'user:jane.doe',
-            dependsOn: [],
+            dependsOn: '',
           },
           {
             name: 'my-system',
             kind: 'System',
-            tags: [],
+            tags: '',
             description: 'Core business system',
             lifecycle: 'production',
             type: 'system',
             owner: 'team-architecture',
-            dependsOn: [],
+            dependsOn: '',
           },
         ],
       });
@@ -195,12 +195,12 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'service-no-tags',
             kind: 'Component',
-            tags: [],
+            tags: '',
             description: 'Service without tags',
             lifecycle: 'staging',
             type: 'service',
             owner: 'user:john.doe',
-            dependsOn: [],
+            dependsOn: '',
           },
         ],
       });
@@ -404,12 +404,12 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'specific-service',
             kind: 'Component',
-            tags: ['javascript'],
+            tags: 'javascript',
             description: 'A specific web service',
             lifecycle: 'production',
             type: 'service',
             owner: 'team-frontend',
-            dependsOn: [],
+            dependsOn: '',
           },
         ],
       });
@@ -476,12 +476,12 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'my-service',
             kind: 'Component',
-            tags: ['java', 'spring'],
+            tags: 'java,spring',
             description: 'A Spring-based microservice',
             lifecycle: 'production',
             type: 'service',
             owner: 'team-backend',
-            dependsOn: [],
+            dependsOn: '',
           },
         ],
       });
@@ -548,12 +548,12 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'platform-service',
             kind: 'Component',
-            tags: ['platform', 'core'],
+            tags: 'platform,core',
             description: 'A platform service',
             lifecycle: 'production',
             type: 'service',
             owner: 'team-platform',
-            dependsOn: [],
+            dependsOn: '',
           },
         ],
       });
@@ -597,12 +597,12 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'minimal-service',
             kind: 'Component',
-            tags: ['minimal'],
+            tags: 'minimal',
             description: 'A minimal service',
             lifecycle: 'development',
             type: 'service',
             owner: 'user:minimal.owner',
-            dependsOn: [],
+            dependsOn: '',
           },
         ],
       });
@@ -736,12 +736,12 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'abridged-service',
             kind: 'Component',
-            tags: ['java'],
+            tags: 'java',
             description: 'An abridged service entity',
             lifecycle: 'production',
             type: 'service',
             owner: 'team-a',
-            dependsOn: ['component:default/database'],
+            dependsOn: 'component:default/database',
           },
         ],
       });
@@ -807,12 +807,12 @@ describe('backstageMcpPlugin', () => {
           {
             name: 'default-service',
             kind: 'Component',
-            tags: ['default'],
+            tags: 'default',
             description: 'A default service entity',
             lifecycle: undefined,
             type: 'service',
             owner: 'team-default',
-            dependsOn: [],
+            dependsOn: '',
           },
         ],
       });
@@ -845,7 +845,7 @@ describe('backstageMcpPlugin', () => {
           name?: string;
           owner?: string;
           lifecycle?: string;
-          tags?: string[];
+          tags?: string;
           verbose?: boolean;
         };
       }) => {
@@ -919,7 +919,7 @@ describe('backstageMcpPlugin', () => {
           name?: string;
           owner?: string;
           lifecycle?: string;
-          tags?: string[];
+          tags?: string;
           verbose?: boolean;
         };
       }) => {
@@ -955,12 +955,12 @@ describe('backstageMcpPlugin', () => {
         {
           name: 'test-service',
           kind: 'Component',
-          tags: ['test'],
+          tags: 'test',
           description: 'A test service',
           lifecycle: 'production',
           type: 'service',
           owner: 'test-team',
-          dependsOn: [],
+          dependsOn: '',
         },
       ]);
     });
@@ -1002,7 +1002,7 @@ describe('backstageMcpPlugin', () => {
           name?: string;
           owner?: string;
           lifecycle?: string;
-          tags?: string[];
+          tags?: string;
           verbose?: boolean;
         };
       }) => {
@@ -1038,12 +1038,12 @@ describe('backstageMcpPlugin', () => {
         {
           name: 'test-component',
           kind: 'Component',
-          tags: ['test'],
+          tags: 'test',
           description: 'A test component',
           lifecycle: 'production',
           type: 'library',
           owner: 'test-team',
-          dependsOn: [],
+          dependsOn: '',
         },
       ]);
     });
@@ -1130,141 +1130,15 @@ describe('backstageMcpPlugin', () => {
         expect(result.output.entities[0]).toEqual({
           name: 'test-component',
           kind: 'Component',
-          tags: ['test'],
+          tags: 'test',
           description: 'A test component',
           lifecycle: undefined,
           type: 'library',
           owner: 'test-team',
-          dependsOn: [],
+          dependsOn: '',
         });
         expect(result.output.error).toBeUndefined();
       });
-    });
-  });
-
-  describe('Action schemas and metadata', () => {
-    it('should have correct greet-user action structure', () => {
-      const greetUserActionDefinition = {
-        name: 'greet-user',
-        title: 'Greet User',
-        description: 'Generate a personalized greeting',
-        schema: {
-          input: (z: any) =>
-            z.object({
-              name: z.string().describe('The name of the person to greet'),
-            }),
-          output: (z: any) =>
-            z.object({
-              greeting: z.string().describe('The generated greeting'),
-            }),
-        },
-      };
-
-      expect(greetUserActionDefinition.name).toBe('greet-user');
-      expect(greetUserActionDefinition.title).toBe('Greet User');
-      expect(greetUserActionDefinition.description).toBe(
-        'Generate a personalized greeting',
-      );
-      expect(greetUserActionDefinition.schema.input).toBeDefined();
-      expect(greetUserActionDefinition.schema.output).toBeDefined();
-    });
-
-    it('should have correct fetch-catalog-entities action structure', () => {
-      const fetchCatalogEntitiesActionDefinition = {
-        name: 'fetch-catalog-entities',
-        title: 'Fetch Catalog Entities',
-        description:
-          'Search and retrieve catalog entities from the Backstage server.',
-        schema: {
-          input: (z: any) =>
-            z.object({
-              kind: z
-                .string()
-                .optional()
-                .describe(
-                  'Filter entities by kind (e.g., Component, API, System)',
-                ),
-              type: z
-                .string()
-                .optional()
-                .describe(
-                  'Filter entities by type (e.g., service, library, website). Can only be used when kind is also specified.',
-                ),
-              name: z
-                .string()
-                .optional()
-                .describe('Filter entities by name (exact match)'),
-              owner: z
-                .string()
-                .optional()
-                .describe(
-                  'Filter entities by owner (e.g., team-platform, user:john.doe)',
-                ),
-            }),
-          output: (z: any) =>
-            z.object({
-              entities: z
-                .array(
-                  z.object({
-                    name: z
-                      .string()
-                      .describe(
-                        'The name field for each Backstage entity in the catalog',
-                      ),
-                    kind: z
-                      .string()
-                      .describe(
-                        'The kind/type of the Backstage entity (e.g., Component, API, System)',
-                      ),
-                    tags: z
-                      .array(z.string())
-                      .describe(
-                        'The tags associated with the Backstage entity',
-                      ),
-                    description: z
-                      .string()
-                      .optional()
-                      .describe('The description of the Backstage entity'),
-                    type: z
-                      .string()
-                      .optional()
-                      .describe(
-                        'The type of the Backstage entity (e.g., service, library, website)',
-                      ),
-                    owner: z
-                      .string()
-                      .optional()
-                      .describe(
-                        'The owner of the Backstage entity (e.g., team-platform, user:john.doe)',
-                      ),
-                    dependsOn: z
-                      .array(z.string())
-                      .optional()
-                      .describe(
-                        'List of entities this entity depends on (e.g., component:default/database)',
-                      ),
-                  }),
-                )
-                .describe('An array of entities'),
-              error: z
-                .string()
-                .optional()
-                .describe('Error message if validation fails'),
-            }),
-        },
-      };
-
-      expect(fetchCatalogEntitiesActionDefinition.name).toBe(
-        'fetch-catalog-entities',
-      );
-      expect(fetchCatalogEntitiesActionDefinition.title).toBe(
-        'Fetch Catalog Entities',
-      );
-      expect(fetchCatalogEntitiesActionDefinition.description).toBe(
-        'Search and retrieve catalog entities from the Backstage server.',
-      );
-      expect(fetchCatalogEntitiesActionDefinition.schema.input).toBeDefined();
-      expect(fetchCatalogEntitiesActionDefinition.schema.output).toBeDefined();
     });
   });
 });
