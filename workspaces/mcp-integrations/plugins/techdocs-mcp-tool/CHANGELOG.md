@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool
 
+## 0.3.0
+
+### Minor Changes
+
+- da66754: fixed metadataUrl field generation process
+
+### Patch Changes
+
+- 55dab16: Bump Backstage version to 1.42.5
+
 ## 0.2.1
 
 ### Patch Changes
