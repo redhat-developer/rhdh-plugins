@@ -61,6 +61,7 @@ export const ActiveTextInput: Widget<
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
+  const isReadOnly = !!props.readonly;
 
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const autocompleteSelector =
@@ -138,6 +139,7 @@ export const ActiveTextInput: Widget<
         data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value)}
         label={label}
+        disabled={isReadOnly}
       />
     );
 
@@ -148,6 +150,7 @@ export const ActiveTextInput: Widget<
           data-testid={`${id}-autocomplete`}
           value={value}
           onChange={(_, v) => handleChange(v)}
+          disabled={isReadOnly}
           renderInput={renderInput}
           renderOption={(liProps, item, state) => {
             return (
