@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from 'tss-react/mui';
 import { Theme } from '@mui/material/styles';
@@ -68,14 +68,18 @@ export const ActiveMultiSelect: Widget<
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
   const mandatorySelector = uiProps['fetch:response:mandatory']?.toString();
+  const defaultValueSelector = uiProps['fetch:response:value']?.toString();
 
   const [localError] = useState<string | undefined>(
     autocompleteSelector
       ? undefined
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
+  const [isTouched, setIsTouched] = useState(false);
+
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
+  const [defaultValues, setDefaultValues] = useState<string[]>();
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -102,16 +106,31 @@ export const ActiveMultiSelect: Widget<
         setAutocompleteOptions(autocompleteValues);
       }
 
-      if (mandatorySelector) {
-        const mandatory = await applySelectorArray(
-          data,
-          mandatorySelector,
-          true,
-        );
-        setMandatoryValues(mandatory);
-        if (!mandatory.every(item => value.includes(item))) {
-          onChange([...new Set([...mandatory, ...value])]);
+      let defaults: string[] = [];
+      if (!isTouched) {
+        // set this just once, when the user has not touched the field
+        if (defaultValueSelector) {
+          defaults = await applySelectorArray(
+            data,
+            defaultValueSelector,
+            true,
+            true,
+          );
+          setDefaultValues(defaults);
         }
+      }
+
+      let mandatory: string[] = [];
+      if (mandatorySelector) {
+        mandatory = await applySelectorArray(data, mandatorySelector, true);
+        setMandatoryValues(mandatory);
+      }
+
+      if (
+        !mandatory.every(item => value.includes(item)) ||
+        !defaults.every(item => value.includes(item))
+      ) {
+        onChange([...new Set([...mandatory, ...value, ...defaults])]);
       }
     };
 
@@ -119,6 +138,8 @@ export const ActiveMultiSelect: Widget<
   }, [
     autocompleteSelector,
     mandatorySelector,
+    defaultValueSelector,
+    isTouched,
     data,
     props.id,
     value,
@@ -126,9 +147,10 @@ export const ActiveMultiSelect: Widget<
   ]);
 
   const handleChange = (
-    _: React.SyntheticEvent,
+    _: SyntheticEvent,
     changed: AutocompleteValue<string[], false, false, false>,
   ) => {
+    setIsTouched(true);
     onChange(changed);
   };
 
@@ -176,7 +198,12 @@ export const ActiveMultiSelect: Widget<
             renderTags={(values, getTagProps) =>
               values.map((item, index) => {
                 const tagProps = getTagProps({ index });
-                const { className, onDelete, ...restTagProps } = tagProps;
+                const {
+                  className,
+                  onDelete,
+                  key: _,
+                  ...restTagProps
+                } = tagProps;
 
                 return (
                   <Box key={item} title={item}>
