@@ -390,6 +390,7 @@ The widget supports following `ui:props`:
 - validate:headers
 - validate:body
 - validate:retrigger
+- ui:allowNewItems
 
 [Check more details](#content-of-uiprops)
 
@@ -487,6 +488,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |      validate:headers       |                                                                                                                                                                                                                    Similar to validate:headers                                                                                                                                                                                                                     |                                                                                                 |
 |         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                                                                 |
 |           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                                                                 |
+|      ui:allowNewItems       |                                                                                                                                                             Allows users to add new items that are not present in the fetched autocomplete options. Only supported by widgets like ActiveMultiSelect.                                                                                                                                                              |                               `true`, `false` (default: `false`)                                |
 
 #### Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers
 
