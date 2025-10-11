@@ -355,6 +355,10 @@ The selected items are represented as chips, the value of the field is an array 
 
 Users can only enter values that are provided in the list returned by `fetch:url` and `fetch:response:autocomplete`.
 
+Optionally, the `fetch:response:value` selector can be used to pre-select values which the user can unselect later. The selector must result in an array of strings.
+
+Optionally, the `fetch:response:mandatory` selector can be used to hardcode preselection of certain values which the user can not unselect. The selector must result in an array of strings.
+
 ![example](./widgets/ActiveMultiSelect_01.png)
 
 ![example](./widgets/ActiveMultiSelect_02.png)
@@ -379,6 +383,8 @@ The widget supports following `ui:props`:
 - fetch:body
 - fetch:retrigger
 - fetch:response:autocomplete
+- fetch:response:mandatory
+- fetch:response:value
 - validate:url
 - validate:method
 - validate:headers
