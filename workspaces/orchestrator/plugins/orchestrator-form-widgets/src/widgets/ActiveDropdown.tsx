@@ -66,6 +66,7 @@ export const ActiveDropdown: Widget<
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
+  const isReadOnly = !!props.readonly;
 
   const labelSelector = uiProps['fetch:response:label']?.toString();
   const valueSelector = uiProps['fetch:response:value']?.toString();
@@ -140,6 +141,7 @@ export const ActiveDropdown: Widget<
         data-testid={id}
         value={value}
         label={label}
+        disabled={isReadOnly}
         onChange={event => handleChange(event.target.value as string)}
         MenuProps={{
           PaperProps: { sx: { maxHeight: '20rem' } },

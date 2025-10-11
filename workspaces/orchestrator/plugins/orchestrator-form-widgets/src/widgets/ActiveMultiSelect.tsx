@@ -63,6 +63,7 @@ export const ActiveMultiSelect: Widget<
     () => (props.options.props ?? {}) as UiProps,
     [props.options.props],
   );
+  const isReadOnly = !!props.readonly;
 
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
@@ -178,6 +179,7 @@ export const ActiveMultiSelect: Widget<
             multiple
             data-testid={`${id}-autocomplete`}
             options={allOptions}
+            disabled={isReadOnly}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}
             filterSelectedOptions
