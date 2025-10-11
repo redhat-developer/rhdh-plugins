@@ -69,6 +69,7 @@ export const ActiveMultiSelect: Widget<
     uiProps['fetch:response:autocomplete']?.toString();
   const mandatorySelector = uiProps['fetch:response:mandatory']?.toString();
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
+  const allowNewItems = uiProps['ui:allowNewItems'] === 'true';
 
   const [localError] = useState<string | undefined>(
     autocompleteSelector
@@ -76,10 +77,17 @@ export const ActiveMultiSelect: Widget<
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
   const [isTouched, setIsTouched] = useState(false);
+  const [inProgressItem, setInProgressItem] = useState<string | undefined>();
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
-  const [defaultValues, setDefaultValues] = useState<string[]>();
+
+  const allOptions: string[] = useMemo(() => {
+    if (allowNewItems && inProgressItem) {
+      return [...new Set([inProgressItem, ...(autocompleteOptions ?? [])])];
+    }
+    return autocompleteOptions || [];
+  }, [inProgressItem, autocompleteOptions, allowNewItems]);
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -116,7 +124,7 @@ export const ActiveMultiSelect: Widget<
             true,
             true,
           );
-          setDefaultValues(defaults);
+          // no need to persist the defaults, they are used only once
         }
       }
 
@@ -151,6 +159,7 @@ export const ActiveMultiSelect: Widget<
     changed: AutocompleteValue<string[], false, false, false>,
   ) => {
     setIsTouched(true);
+    setInProgressItem(undefined);
     onChange(changed);
   };
 
@@ -169,8 +178,8 @@ export const ActiveMultiSelect: Widget<
           <Autocomplete
             multiple
             data-testid={`${id}-autocomplete`}
-            options={autocompleteOptions}
             disabled={isReadOnly}
+            options={allOptions}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}
             filterSelectedOptions
@@ -193,6 +202,9 @@ export const ActiveMultiSelect: Widget<
                 name={name}
                 variant="outlined"
                 label={label}
+                onChange={event => {
+                  setInProgressItem(event.target.value);
+                }}
               />
             )}
             renderTags={(values, getTagProps) =>
