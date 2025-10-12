@@ -101,7 +101,10 @@ export const ActiveTextInput: Widget<
           data,
           defaultValueSelector,
         );
-        handleChange(defaultValue);
+
+        if (defaultValue && defaultValue !== null && defaultValue !== 'null') {
+          handleChange(defaultValue);
+        }
       }
 
       if (autocompleteSelector) {
