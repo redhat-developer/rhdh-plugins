@@ -8,6 +8,7 @@
   "scripts": {
     "tsc": "tsc",
     "dev": "yarn workspaces foreach -A --include backend --include app --parallel --jobs unlimited -v -i run start",
+    "start": "backstage-cli repo start",
     "dev:debug": "LOG_LEVEL=debug yarn dev",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
