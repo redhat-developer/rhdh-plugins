@@ -328,7 +328,6 @@ export class GitlabApiService {
               'failed to fetch gitlab current user',
               err,
             );
-            return {};
           }
 
           // ... along with orgs accessible from the token auth
@@ -343,7 +342,6 @@ export class GitlabApiService {
               );
           } catch (err) {
             logErrorIfNeeded(this.logger, 'failed to fetch gitlab groups', err);
-            return {};
           }
 
           return {};
