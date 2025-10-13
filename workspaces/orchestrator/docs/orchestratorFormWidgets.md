@@ -355,6 +355,10 @@ The selected items are represented as chips, the value of the field is an array 
 
 Users can only enter values that are provided in the list returned by `fetch:url` and `fetch:response:autocomplete`.
 
+Optionally, the `fetch:response:value` selector can be used to pre-select values which the user can unselect later. The selector must result in an array of strings.
+
+Optionally, the `fetch:response:mandatory` selector can be used to hardcode preselection of certain values which the user can not unselect. The selector must result in an array of strings.
+
 ![example](./widgets/ActiveMultiSelect_01.png)
 
 ![example](./widgets/ActiveMultiSelect_02.png)
@@ -379,11 +383,14 @@ The widget supports following `ui:props`:
 - fetch:body
 - fetch:retrigger
 - fetch:response:autocomplete
+- fetch:response:mandatory
+- fetch:response:value
 - validate:url
 - validate:method
 - validate:headers
 - validate:body
 - validate:retrigger
+- ui:allowNewItems
 
 [Check more details](#content-of-uiprops)
 
@@ -481,6 +488,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |      validate:headers       |                                                                                                                                                                                                                    Similar to validate:headers                                                                                                                                                                                                                     |                                                                                                 |
 |         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                                                                 |
 |           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                                                                 |
+|      ui:allowNewItems       |                                                                                                                                                             Allows users to add new items that are not present in the fetched autocomplete options. Only supported by widgets like ActiveMultiSelect.                                                                                                                                                              |                               `true`, `false` (default: `false`)                                |
 
 #### Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers
 
