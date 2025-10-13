@@ -317,18 +317,35 @@ export class GitlabApiService {
       {
         dataFetcher: async (gitlab: InstanceType<typeof Gitlab<false>>) => {
           // find authenticated gitlab owner...
-          const username = (await gitlab.Users.showCurrentUser()).username;
-          if (username) {
-            allAccessibleUsernames.add(username);
+          try {
+            const username = (await gitlab.Users.showCurrentUser()).username;
+            if (username) {
+              allAccessibleUsernames.add(username);
+            }
+          } catch (err) {
+            logErrorIfNeeded(
+              this.logger,
+              'failed to fetch gitlab current user',
+              err,
+            );
+            return {};
           }
-          // ... along with orgs accessible from the token auth
 
-          const allGroups = await gitlab.Groups.all<false, 'offset'>({
-            allAvailable: false,
-          });
-          allGroups
-            .map(org => org.path)
-            ?.forEach((orgName: string) => allAccessibleTokenOrgs.add(orgName));
+          // ... along with orgs accessible from the token auth
+          try {
+            const allGroups = await gitlab.Groups.all<false, 'offset'>({
+              allAvailable: false,
+            });
+            allGroups
+              .map(org => org.path)
+              ?.forEach((orgName: string) =>
+                allAccessibleTokenOrgs.add(orgName),
+              );
+          } catch (err) {
+            logErrorIfNeeded(this.logger, 'failed to fetch gitlab groups', err);
+            return {};
+          }
+
           return {};
         },
       },
