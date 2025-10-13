@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 1.0.0
+
+### Major Changes
+
+- 6709132: Release the major version of Scorecard plugin
+
+### Patch Changes
+
+- 26ffba9: Fixed a bug which caused users without entity read access to still be able to view the scorecard metrics for this entity.
+- Updated dependencies [6709132]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@1.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@1.0.0
+
 ## 0.2.0
 
 ### Minor Changes
