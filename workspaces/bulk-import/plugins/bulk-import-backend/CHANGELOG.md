@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.5.1
+
+### Patch Changes
+
+- ace9761: Fix failing repo list table when GitLab token is bad.
+
 ## 6.5.0
 
 ### Minor Changes
