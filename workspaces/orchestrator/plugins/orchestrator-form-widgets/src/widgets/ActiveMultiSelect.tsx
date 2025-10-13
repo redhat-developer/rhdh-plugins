@@ -58,6 +58,8 @@ export const ActiveMultiSelect: Widget<
   const { id, name, label, value: rawValue, onChange, formContext } = props;
   const value = rawValue as string[];
   const formData = formContext?.formData;
+  const isChangedByUser = !!formContext?.getIsChangedByUser(id);
+  const setIsChangedByUser = formContext?.setIsChangedByUser;
 
   const uiProps = useMemo(
     () => (props.options.props ?? {}) as UiProps,
@@ -76,7 +78,6 @@ export const ActiveMultiSelect: Widget<
       ? undefined
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
-  const [isTouched, setIsTouched] = useState(false);
   const [inProgressItem, setInProgressItem] = useState<string | undefined>();
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
@@ -115,7 +116,7 @@ export const ActiveMultiSelect: Widget<
       }
 
       let defaults: string[] = [];
-      if (!isTouched) {
+      if (!isChangedByUser) {
         // set this just once, when the user has not touched the field
         if (defaultValueSelector) {
           defaults = await applySelectorArray(
@@ -147,7 +148,7 @@ export const ActiveMultiSelect: Widget<
     autocompleteSelector,
     mandatorySelector,
     defaultValueSelector,
-    isTouched,
+    isChangedByUser,
     data,
     props.id,
     value,
@@ -158,7 +159,9 @@ export const ActiveMultiSelect: Widget<
     _: SyntheticEvent,
     changed: AutocompleteValue<string[], false, false, false>,
   ) => {
-    setIsTouched(true);
+    if (setIsChangedByUser) {
+      setIsChangedByUser(id, true);
+    }
     setInProgressItem(undefined);
     onChange(changed);
   };

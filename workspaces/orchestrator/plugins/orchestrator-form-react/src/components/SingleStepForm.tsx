@@ -32,6 +32,8 @@ type SingleStepFormProps = Pick<
   | 'formData'
   | 'setFormData'
   | 'setAuthTokenDescriptors'
+  | 'getIsChangedByUser'
+  | 'setIsChangedByUser'
 >;
 
 const SingleStepForm = (props: SingleStepFormProps) => {

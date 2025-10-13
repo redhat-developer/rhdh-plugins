@@ -42,6 +42,8 @@ export type OrchestratorFormContextProps = {
   setAuthTokenDescriptors: (
     authTokenDescriptors: AuthTokenDescriptor[],
   ) => void;
+  getIsChangedByUser: (id: string) => boolean;
+  setIsChangedByUser: (id: string, isChangedByUser: boolean) => void;
 };
 
 /**
