@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.0.8
+
+### Patch Changes
+
+- e50b2b6: feat(orchestrator): The ActiveMultiSelect widget supports fetch:response:value selector for defaults
+- fad61b7: ActiveTextInput ignores default value if it is null
+- c2a1160: Add readonly option to the active widgets
+
 ## 1.0.7
 
 ### Patch Changes

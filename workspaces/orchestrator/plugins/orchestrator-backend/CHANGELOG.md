@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 8.1.0
+
+### Minor Changes
+
+- 1a519f8: removal of @backstage/backend-common
+
 ## 8.0.6
 
 ### Patch Changes
