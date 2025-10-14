@@ -33,19 +33,21 @@ import { MarketplacePluginInstallContentLoader } from '../components/Marketplace
 import { useTranslation } from '../hooks/useTranslation';
 
 import { isPluginInstalled } from '../utils';
+import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 
 const PluginInstallHeader = () => {
   const { t } = useTranslation();
   const nodeEnvironment = useNodeEnvironment();
+  const extensionsConfig = useExtensionsConfiguration();
   const params = useRouteRefParams(pluginInstallRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
-
+  const isInstallationEnabled = extensionsConfig.data?.enabled ?? false;
   const isProductionEnvironment =
     nodeEnvironment?.data?.nodeEnv === 'production';
 
   const displayName = plugin.data?.metadata?.title ?? params.name;
   const getTitle = () => {
-    if (isProductionEnvironment) {
+    if (isProductionEnvironment || !isInstallationEnabled) {
       return displayName;
     }
     if (isPluginInstalled(plugin.data?.spec?.installStatus)) {

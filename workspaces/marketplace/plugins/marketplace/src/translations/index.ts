@@ -27,6 +27,7 @@ export const marketplaceTranslations = createTranslationResource({
     de: () => import('./de'),
     fr: () => import('./fr'),
     es: () => import('./es'),
+    it: () => import('./it'),
   },
 });
 

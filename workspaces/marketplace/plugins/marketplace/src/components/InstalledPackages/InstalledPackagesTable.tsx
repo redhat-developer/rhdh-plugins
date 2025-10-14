@@ -20,6 +20,8 @@ import {
   Table,
   TableColumn,
   MarkdownContent,
+  WarningPanel,
+  CodeSnippet,
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
@@ -50,9 +52,15 @@ import {
 import { useInstallationContext } from '../InstallationContext';
 import { useNodeEnvironment } from '../../hooks/useNodeEnvironment';
 import { InstalledPluginsDialog } from '../InstalledPluginsDialog';
+import { useExtensionsConfiguration } from '../../hooks/useExtensionsConfiguration';
+import {
+  EXTENSIONS_CONFIG_YAML,
+  generateExtensionsEnableLineNumbers,
+} from '../../utils';
 
 export const InstalledPackagesTable = () => {
   const { t } = useTranslation();
+  const extensionsConfig = useExtensionsConfiguration();
   const { installedPackages } = useInstallationContext();
   const nodeEnvironment = useNodeEnvironment();
   const [error, setError] = useState<Error | undefined>(undefined);
@@ -171,7 +179,11 @@ export const InstalledPackagesTable = () => {
       render: (row: InstalledPackageRow) => {
         return (
           <Box display="flex" gap={1}>
-            <EditPackage pkg={row} isProductionEnv={isProductionEnvironment} />
+            <EditPackage
+              pkg={row}
+              isProductionEnv={isProductionEnvironment}
+              isInstallationEnabled={extensionsConfig.data?.enabled ?? false}
+            />
             {/* Show it when uninstall functionality is implemented */}
             {showUninstall && <UninstallPackage pkg={row} />}
             <DownloadPackageYaml
@@ -181,6 +193,7 @@ export const InstalledPackagesTable = () => {
             <TogglePackage
               pkg={row}
               isProductionEnv={isProductionEnvironment}
+              isInstallationEnabled={extensionsConfig.data?.enabled ?? false}
             />
           </Box>
         );
@@ -240,6 +253,7 @@ export const InstalledPackagesTable = () => {
               (entity?.spec?.version as string | undefined) ??
               undefined,
             hasEntity: !!entity,
+            missingDynamicArtifact: !entity?.spec?.dynamicArtifact,
             namespace: entity?.metadata?.namespace ?? 'default',
             name: entity?.metadata?.name,
           } as InstalledPackageRow;
@@ -291,12 +305,35 @@ export const InstalledPackagesTable = () => {
     ? t('installedPackages.table.emptyMessages.noResults')
     : t('installedPackages.table.emptyMessages.noRecords');
 
+  const showExtensionsConfigurationAlert =
+    !isProductionEnvironment && !extensionsConfig.data?.enabled;
+
   return (
     <>
       {isProductionEnvironment && (
         <Alert severity="info" sx={{ mb: '1rem' }}>
           <AlertTitle>{t('alert.productionDisabled')}</AlertTitle>
         </Alert>
+      )}
+      {showExtensionsConfigurationAlert && (
+        <>
+          <WarningPanel
+            title={t('alert.installationDisabled')}
+            severity="info"
+            message={
+              <>
+                <MarkdownContent content={t('alert.extensionsExample')} />
+                <CodeSnippet
+                  language="yaml"
+                  showLineNumbers
+                  highlightedNumbers={generateExtensionsEnableLineNumbers()}
+                  text={EXTENSIONS_CONFIG_YAML}
+                />
+              </>
+            }
+          />
+          <br />
+        </>
       )}
       {installedPackagesCount > 0 && (
         <Alert severity="info" sx={{ mb: '1rem' }}>

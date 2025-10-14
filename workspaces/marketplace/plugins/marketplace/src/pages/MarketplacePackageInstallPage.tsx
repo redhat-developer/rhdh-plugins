@@ -36,7 +36,10 @@ const PackageEditHeader = () => {
   const pkg = usePackage(params.namespace, params.name);
 
   const displayName = pkg.data?.metadata.title ?? params.name;
-  const title = `Edit ${displayName}`;
+  const title =
+    location?.state?.viewOnly || !pkg.data?.spec?.dynamicArtifact
+      ? displayName
+      : `Edit ${displayName}`;
   const baseLink = '/extensions/installed-packages';
   const preserved = new URLSearchParams(location.search);
   const packageLink = preserved.size ? `${baseLink}?${preserved}` : baseLink;
