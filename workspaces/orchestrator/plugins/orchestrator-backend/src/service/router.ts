@@ -25,7 +25,6 @@ import {
   UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import {
   AuthorizePermissionRequest,
   AuthorizePermissionResponse,
@@ -33,7 +32,7 @@ import {
   BasicPermission,
 } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
-import type { JsonObject, JsonValue } from '@backstage/types';
+import type { JsonObject } from '@backstage/types';
 
 import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
 import { fullFormats } from 'ajv-formats/dist/formats';
@@ -61,7 +60,6 @@ import { V2 } from './api/v2';
 import { DataIndexService } from './DataIndexService';
 import { DataInputSchemaService } from './DataInputSchemaService';
 import { OrchestratorService } from './OrchestratorService';
-import { ScaffolderService } from './ScaffolderService';
 import { SonataFlowService } from './SonataFlowService';
 import { WorkflowCacheService } from './WorkflowCacheService';
 
@@ -182,9 +180,6 @@ export async function createBackendRouter(
     config,
     logger,
     auditor,
-    discovery,
-    catalogApi,
-    urlReader,
     scheduler,
     permissions,
     httpAuth,
@@ -206,13 +201,6 @@ export async function createBackendRouter(
     response.json({ status: 'ok' });
   });
 
-  const scaffolderService: ScaffolderService = new ScaffolderService(
-    logger,
-    config,
-    catalogApi,
-    urlReader,
-  );
-
   setupInternalRoutes(
     publicServices,
     routerApi,
@@ -221,7 +209,6 @@ export async function createBackendRouter(
     auditor,
     userInfo,
   );
-  setupExternalRoutes(router, discovery, scaffolderService, auditor);
 
   router.use((req, res, next) => {
     if (!next) {
@@ -998,57 +985,6 @@ function setupInternalRoutes(
       }
     },
   );
-}
-
-// ======================================================
-// External SonataFlow API calls to delegate to Backstage
-// ======================================================
-function setupExternalRoutes(
-  router: express.Router,
-  discovery: DiscoveryApi,
-  scaffolderService: ScaffolderService,
-  auditor: AuditorService,
-) {
-  router.get('/actions', async (req, res) => {
-    const auditEvent = await auditor.createEvent({
-      eventId: 'actions',
-      request: req,
-    });
-    const scaffolderUrl = await discovery.getBaseUrl('scaffolder');
-    const response = await fetch(`${scaffolderUrl}/v2/actions`);
-    const json = await response.json();
-    auditEvent.success();
-    res.status(response.status).json(json);
-  });
-
-  router.post('/actions/:actionId', async (req, res) => {
-    const { actionId } = req.params;
-    const instanceId: string | undefined = req.header('kogitoprocinstanceid');
-    const body: JsonObject = (await req.body) as JsonObject;
-
-    const auditEvent = await auditor.createEvent({
-      eventId: 'actions',
-      request: req,
-      meta: {
-        actionType: 'by-id',
-        instanceId,
-      },
-    });
-
-    const filteredBody = Object.fromEntries(
-      Object.entries(body).filter(
-        ([, value]) => value !== undefined && value !== null,
-      ),
-    );
-
-    const result: JsonValue = await scaffolderService.executeAction({
-      actionId,
-      instanceId,
-      input: filteredBody,
-    });
-    auditEvent.success();
-    res.status(200).json(result);
-  });
 }
 
 function getRequestFilters(req: HttpRequest): Filter | undefined {
