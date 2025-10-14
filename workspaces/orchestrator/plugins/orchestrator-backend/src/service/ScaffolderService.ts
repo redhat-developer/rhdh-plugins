@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { loggerToWinstonLogger } from '@backstage/backend-common';
 import type {
   LoggerService,
   UrlReaderService,
@@ -36,7 +35,6 @@ import fs from 'fs-extra';
 
 import { randomUUID } from 'crypto';
 import path from 'path';
-import { PassThrough } from 'stream';
 
 import { getWorkingDirectory } from './Helper';
 
@@ -48,7 +46,6 @@ export interface ActionExecutionContext {
 
 export class ScaffolderService {
   private actionRegistry: TemplateActionRegistry;
-  private streamLogger = new PassThrough();
 
   constructor(
     private readonly logger: LoggerService,
@@ -107,10 +104,7 @@ export class ScaffolderService {
     const actionContext: ActionContext<JsonObject> = {
       input: actionExecutionContext.input,
       workspacePath: workspacePath,
-      // TODO: Move this to LoggerService after scaffolder-node moves to LoggerService
-      // https://github.com/backstage/backstage/issues/26933
-      logger: loggerToWinstonLogger(this.logger),
-      logStream: this.streamLogger,
+      logger: this.logger,
       createTemporaryDirectory: async () =>
         await fs.mkdtemp(`${workspacePath}_step-${0}-`),
       output(name: string, value: JsonValue) {
