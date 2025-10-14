@@ -114,7 +114,7 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                   .describe(
                     'Filter by lifecycle (e.g., production, staging, development)',
                   ),
-                tags: z
+                tags: z // Don't define using arrays - some mcp clients (notably llama stack) have issues decoding them (more investigation needed)
                   .string()
                   .optional()
                   .describe(
