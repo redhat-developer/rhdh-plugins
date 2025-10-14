@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 5.0.9
+
+### Patch Changes
+
+- d3e9c60: Fix typo in useOrchestratorAuth when searching custom apis
+
 ## 5.0.8
 
 ### Patch Changes
