@@ -38,8 +38,15 @@ const marketplaceTranslationFr = createTranslationMessages({
     'actions.view': 'Voir',
     'alert.backendRestartRequired': 'Redémarrage du backend requis',
     'alert.extensionsExample':
-      "Exemple de comment activer l'installation de plugins d'extensions",
+      "Pour l'activer, ajoutez ou modifiez la configuration des extensions dans votre fichier de configuration des plugins dynamiques.",
     'alert.installationDisabled': "L'installation du plugin est désactivée.",
+    'alert.missingDynamicArtifact':
+      'Ce paquet ne peut pas être géré. Pour activer les actions, une entité de catalogue avec le **spec.dynamicArtifact** requis doit être ajoutée.',
+    'alert.missingDynamicArtifactTitle': 'Le paquet ne peut pas être modifié',
+    'alert.missingDynamicArtifactForPlugin':
+      'Ce plugin ne peut pas être géré. Pour activer les actions, une entité de catalogue avec le **spec.dynamicArtifact** requis doit être ajoutée à tous les paquets associés.',
+    'alert.missingDynamicArtifactTitlePlugin':
+      'Le plugin ne peut pas être modifié',
     'alert.multiplePluginRestart':
       "Vous avez **{{count}}** plugins qui nécessitent un redémarrage de votre système backend pour terminer l'installation, la mise à jour, l'activation ou la désactivation.",
     'alert.productionDisabled':
@@ -151,7 +158,7 @@ const marketplaceTranslationFr = createTranslationMessages({
     'install.error': "Échec de l'installation du plugin",
     'install.errors.failedToSave': 'Échec de la sauvegarde',
     'install.errors.missingPackageField':
-      "Contenu de l'éditeur non valide : champ « package » manquant dans l'élément",
+      "Contenu de l'éditeur non valide : champ « package » manquant dans l'élément",
     'install.errors.missingPackageItem':
       "Contenu de l'éditeur non valide : élément de package manquant",
     'install.errors.missingPluginsList':
@@ -167,6 +174,8 @@ const marketplaceTranslationFr = createTranslationMessages({
     'install.packageUpdated': 'Paquet mis à jour',
     'install.packageEnabled': 'Paquet activé',
     'install.packageDisabled': 'Paquet désactivé',
+    'install.pluginEnabled': 'Plugin activé',
+    'install.pluginDisabled': 'Plugin désactivé',
     'install.pluginInstalled': 'Plugin installé',
     'install.pluginTabs': 'Onglets de plugins',
     'install.pluginUpdated': 'Plugin mis à jour',
@@ -189,6 +198,8 @@ const marketplaceTranslationFr = createTranslationMessages({
     'installedPackages.table.title': 'Paquets installés ({{count}})',
     'installedPackages.table.tooltips.packageProductionDisabled':
       "Le paquet ne peut pas être géré dans l'environnement de production.",
+    'installedPackages.table.tooltips.installationDisabled':
+      "Le paquet ne peut pas être géré car l'installation de plugins est désactivée. Pour l'activer, ajoutez ou modifiez la configuration des extensions dans votre fichier de configuration des plugins dynamiques.",
     'installedPackages.table.tooltips.enableActions':
       'Pour activer les actions, ajoutez une entité de catalogue pour ce package',
     'installedPackages.table.tooltips.noDownloadPermissions':
@@ -206,22 +217,30 @@ const marketplaceTranslationFr = createTranslationMessages({
     loading: 'Chargement en cours...',
     'metadata.about': 'À propos',
     'metadata.by': ' par ',
+    'metadata.comma': ', ',
     'metadata.highlights': 'Points forts',
-    'metadata.pluginNotFound': 'Plugin {{name}} non trouvé !',
+    'metadata.pluginNotFound': 'Plugin {{name}} non trouvé !',
+    'metadata.pluginNotAvailable': "Le plugin {{name}} n'est pas disponible",
+    'metadata.ensureCatalogEntityPlugin':
+      "Assurez-vous qu'une entité de catalogue existe pour ce plugin.",
     'metadata.publisher': 'Éditeur',
     'metadata.supportProvider': 'Fournisseur de support',
     'metadata.entryName': "Nom d'entrée",
     'metadata.bySomeone': "par quelqu'un",
     'metadata.category': 'Catégorie',
     'metadata.versions': 'Versions',
+    'metadata.backstageCompatibility': 'Version de compatibilité Backstage',
     'package.about': 'À propos',
     'package.author': 'Auteur:',
     'package.backstageRole': 'Rôle backstage:',
     'package.dynamicPluginPath': 'Chemin du plugin dynamique :',
     'package.highlights': 'Points forts',
     'package.lifecycle': 'Cycle de vie:',
-    'package.name': 'Nom du package :',
+    'package.name': 'Nom du package :',
     'package.notFound': 'Paquet {{namespace}}/{{name}} introuvable !',
+    'package.notAvailable': "Le paquet {{name}} n'est pas disponible",
+    'package.ensureCatalogEntity':
+      "Assurez-vous qu'une entité de catalogue existe pour ce paquet.",
     'package.support': 'Support:',
     'package.supportedVersions': 'Versions prises en charge :',
     'package.version': 'Version:',
@@ -276,11 +295,13 @@ const marketplaceTranslationFr = createTranslationMessages({
     'table.version': 'Version',
     'table.versions': 'Versions',
     'tooltips.extensionsDisabled':
-      "L'installation du plugin est désactivée. Pour l'activer, mettez à jour la configuration de vos extensions dans votre fichier app-config.yaml.",
+      "L'installation du plugin est désactivée. Pour l'activer, ajoutez ou modifiez la configuration des extensions dans votre fichier de configuration des plugins dynamiques.",
     'tooltips.noPermissions':
       "Vous n'avez pas l'autorisation d'installer des plugins ou d'afficher leurs configurations. Contactez votre administrateur pour demander un accès ou une assistance.",
     'tooltips.productionDisabled':
       "L'installation du plugin est désactivée dans l'environnement de production.",
+    'tooltips.missingDynamicArtifact':
+      'Ce {{type}} ne peut pas être géré. Pour activer les actions, une entité de catalogue avec le spec.dynamicArtifact requis doit être ajoutée.',
   },
 });
 

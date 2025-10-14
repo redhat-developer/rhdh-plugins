@@ -80,7 +80,14 @@ export const marketplaceMessages = {
     productionDisabled:
       'Plugin installation is disabled in the production environment.',
     installationDisabled: 'Plugin installation is disabled.',
-    extensionsExample: 'Example how to enable extensions plugin installation',
+    missingDynamicArtifact:
+      'Cannot manage this package. To enable actions, a Catalog entity with the required **spec.dynamicArtifact** must be added.',
+    missingDynamicArtifactTitle: 'Package cannot be modified',
+    missingDynamicArtifactForPlugin:
+      'Cannot manage this plugin. To enable actions, a Catalog entity with the required **spec.dynamicArtifact** must be added to all associated packages.',
+    missingDynamicArtifactTitlePlugin: 'Plugin cannot be modified',
+    extensionsExample:
+      'To enable it, add or modify the extensions configuration in your dynamic-plugins configuration file.',
     singlePluginRestart:
       'The **{{pluginName}}** plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.',
     multiplePluginRestart:
@@ -159,6 +166,8 @@ export const marketplaceMessages = {
     highlights: 'Highlights',
     about: 'About',
     notFound: 'Package {{namespace}}/{{name}} not found!',
+    notAvailable: 'Package {{name}} is not available',
+    ensureCatalogEntity: 'Ensure a catalog entity exists for this package.',
   },
 
   // Tables and lists
@@ -194,6 +203,8 @@ export const marketplaceMessages = {
       tooltips: {
         packageProductionDisabled:
           'Package cannot be managed in the production environment.',
+        installationDisabled:
+          'Package cannot be managed because plugin installation is disabled. To enable it, add or modify the extensions configuration in your dynamic-plugins configuration file.',
         enableActions:
           'To enable actions, add a catalog entity for this package',
         noDownloadPermissions:
@@ -236,7 +247,11 @@ export const marketplaceMessages = {
   // Plugin metadata
   metadata: {
     by: ' by ',
+    comma: ', ',
     pluginNotFound: 'Plugin {{name}} not found!',
+    pluginNotAvailable: 'Plugin {{name}} is not available',
+    ensureCatalogEntityPlugin:
+      'Ensure a catalog entity exists for this plugin.',
     highlights: 'Highlights',
     about: 'About',
     publisher: 'Publisher',
@@ -245,6 +260,7 @@ export const marketplaceMessages = {
     bySomeone: 'by someone',
     category: 'Category',
     versions: 'Versions',
+    backstageCompatibility: 'Backstage compatibility version',
   },
 
   // Support type filters
@@ -299,6 +315,8 @@ export const marketplaceMessages = {
     packageUpdated: 'Package updated',
     packageEnabled: 'Package enabled',
     packageDisabled: 'Package disabled',
+    pluginEnabled: 'Plugin enabled',
+    pluginDisabled: 'Plugin disabled',
     errors: {
       missingPluginsList: "Invalid editor content: missing 'plugins' list",
       missingPackageItem: 'Invalid editor content: missing package item',
@@ -333,9 +351,11 @@ export const marketplaceMessages = {
     productionDisabled:
       'Plugin installation is disabled in the production environment.',
     extensionsDisabled:
-      'Plugin installation is disabled. To enable it, update your extensions configuration in your app-config.yaml file.',
+      'Plugin installation is disabled. To enable it, add or modify the extensions configuration in your dynamic-plugins configuration file.',
     noPermissions:
       "You don't have permission to install plugins or view their configurations. Contact your administrator to request access or assistance.",
+    missingDynamicArtifact:
+      'Cannot manage this {{type}}. To enable actions, a Catalog entity with the required spec.dynamicArtifact must be added.',
   },
 
   // Accessibility

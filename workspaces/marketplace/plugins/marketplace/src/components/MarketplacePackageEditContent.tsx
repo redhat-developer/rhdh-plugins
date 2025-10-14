@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-import type { SetStateAction } from 'react';
-
 import { useCallback, useEffect, useState } from 'react';
 
-import { ErrorPage, Progress } from '@backstage/core-components';
+import {
+  ErrorPage,
+  MarkdownContent,
+  Progress,
+} from '@backstage/core-components';
 import { useRouteRefParams } from '@backstage/core-plugin-api';
 
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -34,13 +36,13 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useQueryClient } from '@tanstack/react-query';
+import AlertTitle from '@mui/material/AlertTitle';
+import Tooltip from '@mui/material/Tooltip';
 
 import { packageInstallRouteRef } from '../routes';
 
@@ -52,6 +54,7 @@ import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
 import { useInstallationContext } from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { ExtensionsStatus, getPluginActionTooltipMessage } from '../utils';
 
 interface TabItem {
   label: string;
@@ -70,6 +73,7 @@ export const MarketplacePackageEditContent = ({
   const [hasGlobalHeader, setHasGlobalHeader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [configError, setConfigError] = useState<string | null>(null);
 
   useEffect(() => {
     const header = document.querySelector('nav#global-header');
@@ -118,11 +122,18 @@ export const MarketplacePackageEditContent = ({
   const location = useLocation();
   const { installedPackages, setInstalledPackages } = useInstallationContext();
   const queryClient = useQueryClient();
+  const disableSave =
+    !pkg.spec?.dynamicArtifact ||
+    location?.state?.viewOnly ||
+    Boolean(configError);
 
   // Populate editor from backend config when available; otherwise set default template once
   useEffect(() => {
     const existing = pkgConfig.data?.configYaml;
     const isLoadingConfig = (pkgConfig as any)?.isLoading;
+    if (!isLoadingConfig && (pkgConfig.data as any)?.error) {
+      setConfigError((pkgConfig.data as any)?.error.reason);
+    }
     if (!existing && !isLoadingConfig) {
       // Seed default only if editor is empty to avoid overwriting existing content
       const current = codeEditor.getValue();
@@ -176,7 +187,7 @@ export const MarketplacePackageEditContent = ({
   const availableTabs = hasPackageExamples
     ? ([
         {
-          label: 'Examples',
+          label: t('install.examples'),
           content: examples,
           key: 'examples',
           others: { packageNames: packageDynamicArtifacts },
@@ -185,11 +196,6 @@ export const MarketplacePackageEditContent = ({
     : [];
 
   const showRightCard = hasPackageExamples;
-  const [tabIndex, setTabIndex] = useState(0);
-
-  const handleTabChange = (_: any, newValue: SetStateAction<number>) => {
-    setTabIndex(newValue);
-  };
 
   const handleSave = async () => {
     try {
@@ -258,7 +264,7 @@ export const MarketplacePackageEditContent = ({
           ],
         });
         const preserved = new URLSearchParams(location.search);
-        navigate(`/extensions/installed-packages??${preserved.toString()}`);
+        navigate(`/extensions/installed-packages?${preserved.toString()}`);
       } else {
         setSaveError(
           (res as any)?.error?.message ?? t('install.errors.failedToSave'),
@@ -272,171 +278,176 @@ export const MarketplacePackageEditContent = ({
   };
 
   return (
-    <Box
-      sx={{
-        height: dynamicHeight,
-        width: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <Grid
-        container
-        spacing={3}
-        sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
-      >
-        <CodeEditorCard onLoad={onLoaded} />
-
-        {showRightCard && (
-          <Grid
-            item
-            xs={12}
-            md={5.5}
-            sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
-          >
-            <Card
-              sx={{
-                flex: 1,
-                display: 'flex',
-                flexDirection: 'column',
-                borderRadius: 0,
-                width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
-              }}
-            >
-              <CardHeader
-                title={
-                  <Typography variant="h3">
-                    {t('install.editInstructions')}
-                  </Typography>
-                }
-                action={
-                  <Typography
-                    component="a"
-                    href="/path-to-file.zip" // update this
-                    download
-                    sx={{
-                      fontSize: 16,
-                      display: 'none', // change to 'flex' when ready
-                      alignItems: 'center',
-                      gap: 0.5,
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      m: 1,
-                    }}
-                  >
-                    <FileDownloadOutlinedIcon fontSize="small" />
-                    {t('install.download')}
-                  </Typography>
-                }
-                sx={{ pb: 0 }}
-              />
-              <CardContent
-                sx={{
-                  flex: 1,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflow: 'hidden',
-                }}
-              >
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <Tabs
-                    value={tabIndex}
-                    onChange={handleTabChange}
-                    aria-label={t('install.pluginTabs')}
-                  >
-                    {availableTabs.map((tab, index) => (
-                      <Tab
-                        key={tab.key}
-                        value={index}
-                        label={tab.label ?? ''}
-                      />
-                    ))}
-                  </Tabs>
-                </Box>
-                <Box
-                  sx={{
-                    flex: 1,
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  {availableTabs.map(
-                    (tab, index) =>
-                      tabIndex === index && (
-                        <TabPanel
-                          key={tab.key}
-                          value={tabIndex}
-                          index={index}
-                          markdownContent={tab.content ?? ''}
-                          others={tab.others}
-                        />
-                      ),
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-      </Grid>
-
+    <>
+      {!pkg.spec?.dynamicArtifact && (
+        <Alert severity="error" sx={{ mb: '1rem' }}>
+          <AlertTitle>{t('alert.missingDynamicArtifactTitle')}</AlertTitle>
+          <MarkdownContent content={t('alert.missingDynamicArtifact')} />
+        </Alert>
+      )}
       {saveError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: '1rem' }}>
           {saveError}
         </Alert>
       )}
 
       <Box
         sx={{
-          mt: 4,
-          flexShrink: 0,
-          backgroundColor: 'inherit',
+          height: dynamicHeight,
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSave}
-          disabled={isSubmitting}
-          startIcon={
-            isSubmitting ? (
-              <CircularProgress size="20px" color="inherit" />
-            ) : undefined
-          }
+        <Grid
+          container
+          spacing={3}
+          sx={{ flex: 1, overflow: 'hidden', height: '100%', pb: 1 }}
         >
-          {t('button.save')}
-        </Button>
-        <Button
-          variant="outlined"
-          color="primary"
-          sx={{ ml: 2 }}
-          onClick={() => {
-            const ns = pkg.metadata.namespace ?? params.namespace;
-            const name = pkg.metadata.name;
-            const preserved = new URLSearchParams(location.search);
-            if (location?.state?.editAction) {
-              navigate(
-                `/extensions/installed-packages?${preserved.toString()}`,
-              );
-            } else {
-              navigate(
-                `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
-              );
-            }
+          <CodeEditorCard onLoad={onLoaded} />
+
+          {showRightCard && (
+            <Grid
+              item
+              xs={12}
+              md={5.5}
+              sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+            >
+              <Card
+                sx={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: 0,
+                  width: '99.8%', // workaround for 'overflow: hidden' causing card to be missing a border
+                }}
+              >
+                <CardHeader
+                  title={
+                    <Typography variant="h3">
+                      {disableSave
+                        ? t('install.instructions')
+                        : t('install.editInstructions')}
+                    </Typography>
+                  }
+                  action={
+                    <Typography
+                      component="a"
+                      href="/path-to-file.zip" // update this
+                      download
+                      sx={{
+                        fontSize: 16,
+                        display: 'none', // change to 'flex' when ready
+                        alignItems: 'center',
+                        gap: 0.5,
+                        color: 'primary.main',
+                        textDecoration: 'none',
+                        m: 1,
+                      }}
+                    >
+                      <FileDownloadOutlinedIcon fontSize="small" />
+                      {t('install.download')}
+                    </Typography>
+                  }
+                  sx={{ pb: 0 }}
+                />
+                <CardContent
+                  sx={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <Box
+                    sx={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {availableTabs.map((tab, index) => (
+                      <TabPanel
+                        key={tab.key}
+                        value={0}
+                        index={index}
+                        markdownContent={tab.content ?? ''}
+                        others={tab.others}
+                      />
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+        </Grid>
+        <Box
+          sx={{
+            mt: 4,
+            flexShrink: 0,
+            backgroundColor: 'inherit',
           }}
         >
-          {t('install.cancel')}
-        </Button>
-        <Button
-          variant="text"
-          color="primary"
-          onClick={onLoaded}
-          sx={{ ml: 3 }}
-        >
-          {t('install.reset')}
-        </Button>
+          <Tooltip
+            title={getPluginActionTooltipMessage(
+              configError ===
+                ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION,
+              null,
+              t,
+              configError === ExtensionsStatus.INSTALLATION_DISABLED,
+              !pkg.spec?.dynamicArtifact,
+              false,
+            )}
+          >
+            <Typography component="span">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSave}
+                disabled={isSubmitting || disableSave}
+                startIcon={
+                  isSubmitting ? (
+                    <CircularProgress size="20px" color="inherit" />
+                  ) : undefined
+                }
+              >
+                {t('button.save')}
+              </Button>
+            </Typography>
+          </Tooltip>
+          <Button
+            variant="outlined"
+            color="primary"
+            sx={{ ml: 2 }}
+            onClick={() => {
+              const ns = pkg.metadata.namespace ?? params.namespace;
+              const name = pkg.metadata.name;
+              const preserved = new URLSearchParams(location.search);
+              if (location?.state?.editAction) {
+                navigate(
+                  `/extensions/installed-packages?${preserved.toString()}`,
+                );
+              } else {
+                navigate(
+                  `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
+                );
+              }
+            }}
+          >
+            {t('install.cancel')}
+          </Button>
+          <Button
+            variant="text"
+            color="primary"
+            onClick={onLoaded}
+            sx={{ ml: 3 }}
+          >
+            {t('install.reset')}
+          </Button>
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 };
 

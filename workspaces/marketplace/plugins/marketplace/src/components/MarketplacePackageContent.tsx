@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { ErrorPage } from '@backstage/core-components';
 import { useRouteRefParams } from '@backstage/core-plugin-api';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import { useSearchParams } from 'react-router-dom';
 
 import { packageRouteRef } from '../routes';
@@ -40,17 +41,20 @@ export const MarketplacePackageContent = () => {
 
   if (pkg.isLoading) {
     return <MarketplacePluginContentSkeleton />;
+  } else if (pkg.error || (pkg.data as any)?.error) {
+    return (
+      <Alert severity="warning">
+        <AlertTitle>{t('package.notAvailable', { name } as any)}</AlertTitle>
+        {t('package.ensureCatalogEntity')}
+      </Alert>
+    );
   } else if (pkg.data) {
     return <MarketplacePluginContent plugin={pkg.data} />;
-  } else if (pkg.error) {
-    return <ErrorPage statusMessage={pkg.error.toString()} />;
   }
   return (
-    <ErrorPage
-      statusMessage={t('package.notFound', {
-        namespace,
-        name,
-      } as any)}
-    />
+    <Alert severity="warning">
+      <AlertTitle>{t('package.notAvailable', { name } as any)}</AlertTitle>
+      {t('package.ensureCatalogEntity')}
+    </Alert>
   );
 };
