@@ -1,5 +1,18 @@
 ### Dependencies
 
+## 5.1.0
+
+### Minor Changes
+
+- de5ced6: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [de5ced6]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.1.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.1.0
+
 ## 5.0.9
 
 ### Patch Changes
