@@ -126,8 +126,8 @@ export const MarketplacePackageEditContent = ({
     if (!existing && !isLoadingConfig) {
       // Seed default only if editor is empty to avoid overwriting existing content
       const current = codeEditor.getValue();
-      if (!current || current.trim() === '') {
-        const path = pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....';
+      if ((!current || current.trim() === '') && pkg.spec?.dynamicArtifact) {
+        const path = pkg.spec?.dynamicArtifact;
         const yamlContent = `plugins:\n  - package: ${JSON.stringify(path)}\n    disabled: false\n`;
         codeEditor.setValue(yamlContent);
       }
@@ -176,7 +176,7 @@ export const MarketplacePackageEditContent = ({
   const availableTabs = hasPackageExamples
     ? ([
         {
-          label: 'Examples',
+          label: t('install.examples'),
           content: examples,
           key: 'examples',
           others: { packageNames: packageDynamicArtifacts },

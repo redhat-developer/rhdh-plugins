@@ -71,7 +71,7 @@ const marketplaceTranslationEs = createTranslationMessages({
     'alert.installationDisabled':
       'La instalación de plugins está deshabilitada.',
     'alert.extensionsExample':
-      'Ejemplo de cómo habilitar la instalación de plugins de extensiones',
+      'Para habilitarlo, agregue o modifique la configuración de extensiones en su archivo **app-config.yaml**.',
     'alert.singlePluginRestart':
       'El plugin **{{pluginName}}** requiere un reinicio del sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
     'alert.multiplePluginRestart':
@@ -141,6 +141,9 @@ const marketplaceTranslationEs = createTranslationMessages({
     'package.highlights': 'Aspectos destacados',
     'package.about': 'Acerca de',
     'package.notFound': '¡Paquete {{namespace}}/{{name}} no encontrado!',
+    'package.notAvailable': 'El paquete {{name}} no está disponible',
+    'package.ensureCatalogEntity':
+      'Asegúrese de que existe una entidad de catálogo para este paquete.',
 
     // Tables and lists
     'table.packageName': 'Nombre del paquete',
@@ -204,7 +207,11 @@ const marketplaceTranslationEs = createTranslationMessages({
 
     // Plugin metadata
     'metadata.by': ' por ',
+    'metadata.comma': ', ',
     'metadata.pluginNotFound': '¡Plugin {{name}} no encontrado!',
+    'metadata.pluginNotAvailable': 'El plugin {{name}} no está disponible',
+    'metadata.ensureCatalogEntityPlugin':
+      'Asegúrese de que existe una entidad de catálogo para este plugin.',
     'metadata.highlights': 'Aspectos destacados',
     'metadata.about': 'Acerca de',
     'metadata.publisher': 'Editor',
@@ -213,6 +220,7 @@ const marketplaceTranslationEs = createTranslationMessages({
     'metadata.bySomeone': 'por alguien',
     'metadata.category': 'Categoría',
     'metadata.versions': 'Versiones',
+    'metadata.backstageCompatibility': 'Versión de compatibilidad de Backstage',
 
     // Support type filters
     'supportTypes.certifiedBy': 'Certificado por {{value}} ({{count}})',
@@ -259,6 +267,8 @@ const marketplaceTranslationEs = createTranslationMessages({
     'install.packageUpdated': 'Paquete actualizado',
     'install.packageEnabled': 'Paquete habilitado',
     'install.packageDisabled': 'Paquete deshabilitado',
+    'install.pluginEnabled': 'Plugin habilitado',
+    'install.pluginDisabled': 'Plugin deshabilitado',
     'install.errors.missingPluginsList':
       "Contenido del editor inválido: falta la lista 'plugins'",
     'install.errors.missingPackageItem':
