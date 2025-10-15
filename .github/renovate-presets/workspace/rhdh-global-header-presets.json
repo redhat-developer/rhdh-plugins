@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Global Header minor updates",
+      "matchFileNames": ["workspaces/global-header/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Global Header)"
+      ],
+      "addLabels": ["team/rhdh", "global-header"]
+    },
+    {
+      "description": "all Global Header patch updates",
+      "matchFileNames": ["workspaces/global-header/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Global Header)"
+      ],
+      "addLabels": ["team/rhdh", "global-header"]
+    },
+    {
+      "description": "all Global Header dev dependency updates",
+      "matchFileNames": ["workspaces/global-header/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Global Header)"
+      ],
+      "addLabels": ["team/rhdh", "global-header"]
+    }
+  ]
+}

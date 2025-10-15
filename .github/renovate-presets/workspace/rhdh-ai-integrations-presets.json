@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Ai Integrations minor updates",
+      "matchFileNames": ["workspaces/ai-integrations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Ai Integrations)"
+      ],
+      "addLabels": ["team/rhdh", "ai-integrations"]
+    },
+    {
+      "description": "all Ai Integrations patch updates",
+      "matchFileNames": ["workspaces/ai-integrations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Ai Integrations)"
+      ],
+      "addLabels": ["team/rhdh", "ai-integrations"]
+    },
+    {
+      "description": "all Ai Integrations dev dependency updates",
+      "matchFileNames": ["workspaces/ai-integrations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Ai Integrations)"
+      ],
+      "addLabels": ["team/rhdh", "ai-integrations"]
+    }
+  ]
+}
