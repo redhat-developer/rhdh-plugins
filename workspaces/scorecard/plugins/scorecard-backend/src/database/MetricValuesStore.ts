@@ -41,4 +41,9 @@ export interface MetricValuesStore {
     catalog_entity_ref: string,
     metric_ids: string[],
   ): Promise<DbMetricValue[]>;
+
+  /**
+   * Delete metric values that are older than the given date
+   */
+  cleanupExpiredMetrics(olderThan: Date): Promise<number>;
 }

@@ -49,4 +49,13 @@ export class DatabaseMetricValuesStore implements MetricValuesStore {
           .groupBy('metric_id'),
       );
   }
+
+  /**
+   * Delete metric values that are older than the given date
+   */
+  async cleanupExpiredMetrics(olderThan: Date): Promise<number> {
+    return await this.knex(this.tableName)
+      .where('timestamp', '<', olderThan)
+      .del();
+  }
 }

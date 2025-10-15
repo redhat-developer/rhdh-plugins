@@ -19,6 +19,8 @@ import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend
 export interface Config {
   /** Configuration for scorecard plugin */
   scorecard?: {
+    /** Number of days to retain metric data in the database. Older data will be automatically cleaned up. Default: 365 days */
+    dataRetentionDays?: number;
     /** Configuration for scorecard metric providers */
     plugins?: {
       /** Configuration for datasource */
