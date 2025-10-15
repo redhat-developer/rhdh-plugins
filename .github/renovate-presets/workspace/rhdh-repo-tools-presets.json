@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Repo Tools minor updates",
+      "matchFileNames": ["workspaces/repo-tools/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Repo Tools)"
+      ],
+      "addLabels": ["team/rhdh", "repo-tools"]
+    },
+    {
+      "description": "all Repo Tools patch updates",
+      "matchFileNames": ["workspaces/repo-tools/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Repo Tools)"
+      ],
+      "addLabels": ["team/rhdh", "repo-tools"]
+    },
+    {
+      "description": "all Repo Tools dev dependency updates",
+      "matchFileNames": ["workspaces/repo-tools/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Repo Tools)"
+      ],
+      "addLabels": ["team/rhdh", "repo-tools"]
+    }
+  ]
+}
