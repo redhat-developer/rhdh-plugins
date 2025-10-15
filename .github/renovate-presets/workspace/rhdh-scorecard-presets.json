@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Scorecard minor updates",
+      "matchFileNames": ["workspaces/scorecard/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Scorecard)"
+      ],
+      "addLabels": ["team/rhdh", "scorecard"]
+    },
+    {
+      "description": "all Scorecard patch updates",
+      "matchFileNames": ["workspaces/scorecard/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Scorecard)"
+      ],
+      "addLabels": ["team/rhdh", "scorecard"]
+    },
+    {
+      "description": "all Scorecard dev dependency updates",
+      "matchFileNames": ["workspaces/scorecard/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Scorecard)"
+      ],
+      "addLabels": ["team/rhdh", "scorecard"]
+    }
+  ]
+}

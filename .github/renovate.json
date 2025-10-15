@@ -56,6 +56,7 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-openshift-image-registry-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-redhat-resource-optimization-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-quickstart-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-scorecard-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-ai-integrations-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-translations-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-header-presets",
