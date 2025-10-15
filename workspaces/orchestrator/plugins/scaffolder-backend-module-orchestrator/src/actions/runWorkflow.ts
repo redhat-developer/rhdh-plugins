@@ -16,18 +16,10 @@
 import { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import { JsonObject } from '@backstage/types';
 
 import { isAxiosError } from 'axios';
 
 import { getOrchestratorApi, getRequestConfigOption } from './utils';
-
-type RunWorkflowTemplateActionInput = {
-  workflow_id: string;
-  target_entity: any;
-  parameters: JsonObject;
-};
-type RunWorkflowTemplateActionOutput = { instanceUrl: string };
 
 const getError = (err: unknown): Error => {
   if (
@@ -41,39 +33,27 @@ const getError = (err: unknown): Error => {
   return err as Error;
 };
 
-export const createRunWorkflowAction = (
+export function createRunWorkflowAction(
   discoveryService: DiscoveryApi,
   authService: AuthService,
-) =>
-  createTemplateAction<
-    RunWorkflowTemplateActionInput,
-    RunWorkflowTemplateActionOutput
-  >({
+) {
+  return createTemplateAction({
     id: 'orchestrator:workflow:run',
     description: 'Run a SonataFlow workflow.',
     supportsDryRun: true,
     schema: {
       input: {
-        required: ['workflow_id', 'parameters'],
-        type: 'object',
-        properties: {
-          workflow_id: {
-            type: 'string',
-            title: 'Workflow ID',
-            description:
-              'The workflow identifier from the workflow definition.',
-          },
-          target_entity: {
-            type: 'string',
-            title: 'Target Entity',
-            description: 'The target entity to run the workflow on.',
-          },
-          parameters: {
-            type: 'object',
-            title: 'Workflow Inputs',
-            description: 'The workflow inputs.',
-          },
-        },
+        workflow_id: z =>
+          z
+            .string()
+            .describe('The workflow identifier from the workflow definition.'),
+        target_entity: z =>
+          z
+            .string()
+            .optional()
+            .describe('The target entity to run the workflow on.'),
+        parameters: z =>
+          z.record(z.string(), z.any()).describe('The workflow inputs.'),
       },
     },
     async handler(ctx) {
@@ -120,3 +100,4 @@ export const createRunWorkflowAction = (
       }
     },
   });
+}

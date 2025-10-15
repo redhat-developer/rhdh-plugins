@@ -165,7 +165,6 @@ Example complex HTTP response:
         "title": "Send certificates via",
         "ui:widget": "ActiveText",
         "ui:props": {
-          "ui:variant": "caption",
           "ui:text": "This course does not provide certificate"
         }
       }
@@ -398,7 +397,17 @@ The widget supports following `ui:props`:
 
 Referenced as: `"ui:widget": "ActiveText"`.
 
-A smart component based on the [@mui/material/Typography](https://mui.com/material-ui/react-typography/) that displays text with dynamically changing content using `${{...}}` templates (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+A smart component that displays **markdown-formatted text** with dynamically changing content using `$${{...}}` templates (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+
+The widget automatically renders the content as **Markdown**, supporting features like:
+
+- Headers (`#`, `##`, `###`)
+- **Bold** and _italic_ text
+- Lists (bullet and numbered)
+- Links
+- Blockquotes
+- Code blocks
+- And all standard Markdown syntax
 
 The content of the text can be derived from various sources, including:
 
@@ -416,9 +425,39 @@ The response from the fetch operation is expected to be a JSON object. You can t
 
 The data will be refetched if the value of any of the keys listed in the `fetch:retrigger` array changes.
 
+### Markdown Rendering
+
+The `ui:text` property in the `ui:props` defines the markdown content to be displayed. Both static markdown and dynamic content with templates are supported.
+
+**Example with static markdown:**
+
+```json
+"welcomeMessage": {
+  "type": "string",
+  "ui:widget": "ActiveText",
+  "ui:props": {
+    "ui:text": "# Welcome!\n\nThis is **bold** and this is *italic*.\n\n- Item 1\n- Item 2\n\n[Link to docs](https://backstage.io)"
+  }
+}
+```
+
+**Example with dynamic content and markdown:**
+
+```json
+"dynamicMessage": {
+  "type": "string",
+  "ui:widget": "ActiveText",
+  "ui:props": {
+    "ui:text": "Hello **$${{current.name}}**, you selected: **$${{current.state}}**"
+  }
+}
+```
+
 ### Dynamic Text Templating
 
-The `ui:text` property in the `ui:props` defines the text to be displayed. This text can contain template literals in the format `${{...}}`. These templates are evaluated at runtime and replaced with dynamic values from various sources (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+The `ui:text` property can contain template literals in the format `$${{...}}`. These templates are evaluated at runtime and replaced with dynamic values from various sources (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+
+The resulting text is then rendered as Markdown, so you can combine dynamic values with markdown formatting.
 
 For example, if your API response is:
 
@@ -443,7 +482,7 @@ You can configure your ActiveText widget like this:
       "fetch:url": "/api/mydata",
       "fetch:response:name": "data.name",
       "fetch:response:value": "data.value",
-      "ui:text": "The name is: $${{fetch:response:name}}, and the value is: $${{fetch:response:value}}"
+      "ui:text": "**Name:** $${{fetch:response:name}}\n\n**Value:** $${{fetch:response:value}}"
     }
   },
 ```
@@ -452,14 +491,13 @@ You can configure your ActiveText widget like this:
 
 The widget supports the following `ui:props` (for detailed information on each, see [Content of `ui:props`](#content-of-uiprops)):
 
-- `ui:variant`: Corresponds to the `variant` property of the `@mui/material/Typography` component, allowing you to control the visual style of the text (e.g., `h1`, `body1`, `caption`).
-- `ui:text`: The text to display, which can include `${{...}}` templates for dynamic values.
-- `fetch:response:[YOUR_KEY]`: Selectors to extract data from the fetch response. The `[YOUR_KEY]` can be any name you choose.
-- `fetch:url`
-- `fetch:method`
-- `fetch:headers`
-- `fetch:body`
-- `fetch:retrigger`
+- `ui:text`: The markdown text to display, which can include `$${{...}}` templates for dynamic values. The content is rendered as Markdown, supporting all standard Markdown features.
+- `fetch:response:[YOUR_KEY]`: Selectors to extract data from the fetch response. The `[YOUR_KEY]` can be any name you choose. These values can be used in the `ui:text` templates.
+- `fetch:url`: URL to fetch dynamic data from
+- `fetch:method`: HTTP method for the fetch request
+- `fetch:headers`: HTTP headers for the fetch request
+- `fetch:body`: HTTP body for the fetch request
+- `fetch:retrigger`: Array of field paths that trigger a refetch when their values change
 
 ## Content of `ui:props`
 
@@ -486,8 +524,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |     validate:retrigger      | An array similar to fetch:retrigger. Force revalidation of the field if a dependency is changed. In the most simple case when just the value of the particular field is listed (sort of \[“current.myField”\], the validation is triggered “on input”, i.e. when the user types a character in ActiveInputBox. The network calls are throttled. No matter if validate:retrigger is used, the validation happens at least on submit or transition to the next page. |                                                                                                 |
 |        validate:body        |                                                                                                                                                                                                                       Similar to fetch:body                                                                                                                                                                                                                        |                                                                                                 |
 |      validate:headers       |                                                                                                                                                                                                                    Similar to validate:headers                                                                                                                                                                                                                     |                                                                                                 |
-|         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                                                                 |
-|           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                                                                 |
+|           ui:text           |                                                                                                                                                    Specific for ActiveText widget. The markdown content to display, which can include `$${{...}}` templates. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                    |                                                                                                 |
 |      ui:allowNewItems       |                                                                                                                                                             Allows users to add new items that are not present in the fetched autocomplete options. Only supported by widgets like ActiveMultiSelect.                                                                                                                                                              |                               `true`, `false` (default: `false`)                                |
 
 #### Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers
