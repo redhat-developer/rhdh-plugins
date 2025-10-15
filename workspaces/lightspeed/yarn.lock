@@ -8497,9 +8497,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.4.0-prerelease.25":
-  version: 6.4.0-prerelease.25
-  resolution: "@patternfly/chatbot@npm:6.4.0-prerelease.25"
+"@patternfly/chatbot@npm:6.4.0-prerelease.26":
+  version: 6.4.0-prerelease.26
+  resolution: "@patternfly/chatbot@npm:6.4.0-prerelease.26"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -8518,7 +8518,7 @@ __metadata:
   peerDependencies:
     react: ^18 || ^19
     react-dom: ^18 || ^19
-  checksum: e48f86a61713c75b350e926fd177bebf4fb629c56917a04fc7cd2e1b916863c0918de5b322f51f15a6c152bea722875e46796542c3d57ec1e5e76de5efd14412
+  checksum: 418eb91fe2352d6956f37096f6db1460510157c3384c87c01cd51d23f80ee17154c577a49d32b1ee3f45b90ba915cbebbc09d8a0cb97adc235249f47f26992ad
   languageName: node
   linkType: hard
 
@@ -9354,7 +9354,7 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.4.0-prerelease.25
+    "@patternfly/chatbot": 6.4.0-prerelease.26
     "@patternfly/react-core": 6.4.0-prerelease.2
     "@patternfly/react-icons": ^6.3.1
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
