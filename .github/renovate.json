@@ -49,16 +49,17 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-bulk-import-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-homepage-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-theme-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-ui-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-marketplace-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-adoption-insights-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-ai-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-orchestrator-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-sandbox-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-openshift-image-registry-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-redhat-resource-optimization-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-quickstart-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-translations-presets"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-translations-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-header-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-lightspeed-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-floating-action-button-presets"
       ]
     },
     {
