@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Lightspeed minor updates",
+      "matchFileNames": ["workspaces/lightspeed/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Lightspeed)"
+      ],
+      "addLabels": ["team/rhdh", "lightspeed"]
+    },
+    {
+      "description": "all Lightspeed patch updates",
+      "matchFileNames": ["workspaces/lightspeed/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Lightspeed)"
+      ],
+      "addLabels": ["team/rhdh", "lightspeed"]
+    },
+    {
+      "description": "all Lightspeed dev dependency updates",
+      "matchFileNames": ["workspaces/lightspeed/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Lightspeed)"
+      ],
+      "addLabels": ["team/rhdh", "lightspeed"]
+    }
+  ]
+}
