@@ -57,7 +57,8 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-sandbox-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-openshift-image-registry-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-redhat-resource-optimization-presets",
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-quickstart-presets"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-quickstart-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-scorecard-presets"
       ]
     },
     {
