@@ -31,6 +31,8 @@ import {
   MetricValuesStore,
 } from '../database/MetricValuesStore';
 import { MetricProvidersRegistry } from './MetricProvidersRegistry';
+import { DEFAULT_DATA_RETENTION_DAYS } from '../constants/metricSchedules';
+import { daysToMilliseconds } from '../utils/daysToMilliseconds';
 
 export class MetricProvidersScheduler {
   private static readonly CATALOG_BATCH_SIZE = 50;
@@ -46,14 +48,19 @@ export class MetricProvidersScheduler {
   ) {}
 
   async schedule() {
+    this.scheduleCleanupExpiredMetrics();
+    this.scheduleLoadProviderMetrics();
+  }
+
+  private async scheduleLoadProviderMetrics() {
+    let countScheduledProviders = 0;
     const providers = this.metricProvidersRegistry.listProviders();
-    const scheduledProviders: string[] = [];
 
     await Promise.all(
       providers.map(async provider => {
         try {
           await this.scheduleProvider(provider);
-          scheduledProviders.push(provider.getProviderId());
+          countScheduledProviders++;
         } catch (e) {
           this.logger.warn(
             `Failed to schedule provider ${provider.getProviderId()}, ${e}`,
@@ -63,7 +70,7 @@ export class MetricProvidersScheduler {
     );
 
     this.logger.info(
-      `Scheduled ${scheduledProviders.length}/${providers.length} metric providers`,
+      `Scheduled ${countScheduledProviders}/${providers.length} metric providers`,
     );
   }
 
@@ -173,9 +180,40 @@ export class MetricProvidersScheduler {
           this.config.getConfig(schedulePath),
         )
       : ({
-          frequency: { hours: 2 },
+          frequency: { hours: 1 },
           timeout: { minutes: 15 },
           initialDelay: { seconds: 3 },
         } as SchedulerServiceTaskScheduleDefinition);
+  }
+
+  private async cleanupExpiredMetric(logger: LoggerService): Promise<void> {
+    const dataRetentionDays =
+      this.config.getOptionalNumber('scorecard.dataRetentionDays') ??
+      DEFAULT_DATA_RETENTION_DAYS;
+    const olderThan = new Date(
+      Date.now() - daysToMilliseconds(dataRetentionDays),
+    );
+
+    const deletedMetrics = await this.metricValuesStore.cleanupExpiredMetrics(
+      olderThan,
+    );
+    logger.info(
+      `Deleted ${deletedMetrics} abandoned metrics older than ${dataRetentionDays} days`,
+    );
+  }
+
+  /**
+   * Schedule a task to delete abandoned metrics
+   */
+  private async scheduleCleanupExpiredMetrics() {
+    await this.scheduler.scheduleTask({
+      id: 'cleanup-expired-metrics',
+      frequency: { days: 1 },
+      timeout: { minutes: 2 },
+      initialDelay: { seconds: 3 },
+      fn: async () => {
+        await this.cleanupExpiredMetric(this.logger);
+      },
+    });
   }
 }
