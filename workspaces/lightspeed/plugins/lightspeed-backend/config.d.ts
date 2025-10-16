@@ -30,5 +30,10 @@ export interface Config {
      * @visibility backend
      */
     systemPrompt?: string;
+    /**
+     * configure the MCP token for the lightspeed service.
+     * @visibility backend
+     */
+    mcpToken?: string;
   };
 }

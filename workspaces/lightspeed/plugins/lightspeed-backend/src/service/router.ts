@@ -51,6 +51,7 @@ export async function createRouter(
 
   const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+  const mcpToken = config.getOptionalString('lightspeed.mcpToken');
 
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });
@@ -66,6 +67,8 @@ export async function createRouter(
   // Middleware proxy to exclude rcs POST endpoints
   router.use('/', async (req, res, next) => {
     const passthroughPaths = ['/v1/query', '/v1/feedback'];
+
+    console.log('*************auth header token', req.headers.authorization);
 
     if (passthroughPaths.includes(req.path)) {
       return next(); // This will skip proxying and go to POST endpoints
@@ -187,7 +190,6 @@ export async function createRouter(
         );
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
-
         // if system_prompt is defined in lightspeed config
         // set system_prompt to override the default rhdh system prompt
         if (system_prompt && system_prompt.trim().length > 0) {
@@ -195,12 +197,16 @@ export async function createRouter(
         }
 
         const requestBody = JSON.stringify(request.body);
+        const mcpHeaders = mcpToken
+          ? `{"mcp::backend": {"Authorization": "Bearer ${mcpToken}"}}`
+          : '';
         const fetchResponse = await fetch(
           `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'MCP-HEADERS': mcpHeaders,
             },
             body: requestBody,
           },
