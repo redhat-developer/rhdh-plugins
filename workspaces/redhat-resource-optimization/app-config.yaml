@@ -63,6 +63,26 @@ integrations:
   #     target: 'https://example.com'
   #     changeOrigin: true
 
+proxy:
+  endpoints:
+    '/cost-management/v1':
+      target: https://console.redhat.com/api/cost-management/v1
+      allowedHeaders: ['Authorization']
+      # See: https://backstage.io/docs/releases/v1.28.0/#breaking-proxy-backend-plugin-protected-by-default
+      credentials: dangerously-allow-unauthenticated
+
+# Resource Optimization plugin configuration
+# Replace `${RHHCC_SA_CLIENT_ID}` and `${RHHCC_SA_CLIENT_SECRET}` with the service account credentials.
+resourceOptimization:
+  clientId: ${RHHCC_SA_CLIENT_ID}
+  clientSecret: ${RHHCC_SA_CLIENT_SECRET}
+  optimizationWorkflowId: 'patch-k8s-resource'
+
+# Orchestrator plugin configuration
+orchestrator:
+  dataIndexService:
+    url: http://localhost:8080
+
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs
 # and an external cloud storage when deploying TechDocs for production use-case.
@@ -78,7 +98,9 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      # Enable guest authentication for testing
+      allowGuestAccess: true
 
 scaffolder:
   {}
