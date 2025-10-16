@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool
 
+## 0.3.1
+
+### Patch Changes
+
+- 5d78911: Remove string arrays in zod object schemas
+
 ## 0.3.0
 
 ### Minor Changes
