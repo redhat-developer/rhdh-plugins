@@ -68,8 +68,6 @@ export async function createRouter(
   router.use('/', async (req, res, next) => {
     const passthroughPaths = ['/v1/query', '/v1/feedback'];
 
-    console.log('*************auth header token', req.headers.authorization);
-
     if (passthroughPaths.includes(req.path)) {
       return next(); // This will skip proxying and go to POST endpoints
     }
