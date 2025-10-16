@@ -131,6 +131,7 @@ export async function findAllImports(
   // It can be 'main' or something more convoluted like 'our/awesome/main'.
   const defaultBranchByRepoUrl = await resolveReposDefaultBranches(
     deps.logger,
+    deps.config,
     deps.gitlabApiService,
     deps.githubApiService,
     allLocations.keys(),
@@ -149,14 +150,14 @@ export async function findAllImports(
   const importsReachableFromGHIntegrations =
     await deps.githubApiService.filterLocationsAccessibleFromIntegrations(
       importCandidates.filter(val => {
-        return parseGitURLForApprovalTool(val) === 'GIT';
+        return parseGitURLForApprovalTool(val, deps.config) === 'GIT';
       }),
     );
 
   const importsReachableFromGLIntegrations =
     await deps.gitlabApiService.filterLocationsAccessibleFromIntegrations(
       importCandidates.filter(val => {
-        return parseGitURLForApprovalTool(val) === 'GITLAB';
+        return parseGitURLForApprovalTool(val, deps.config) === 'GITLAB';
       }),
     );
 
@@ -245,6 +246,7 @@ export async function findAllImports(
 
 async function resolveReposDefaultBranches(
   logger: LoggerService,
+  config: Config,
   gitlabApiService: GitlabApiService,
   githubApiService: GithubApiService,
   allLocations: Iterable<string>,
@@ -271,7 +273,7 @@ async function resolveReposDefaultBranches(
     // Have to do this for Both the gitlab/github, possibly a better way?
     // Should probably parse the URL to figure out which to use?
     defaultBranchByRepoUrlPromises.push(
-      (parseGitURLForApprovalTool(repoUrl) === 'GITLAB'
+      (parseGitURLForApprovalTool(repoUrl, config) === 'GITLAB'
         ? gitlabApiService
         : githubApiService
       )

@@ -518,7 +518,7 @@ export async function createRouter(
           logger,
           config,
           gitApiService:
-            parseGitURLForApprovalTool(q.repo) === 'GITLAB'
+            parseGitURLForApprovalTool(q.repo, config) === 'GITLAB'
               ? gitlabApiService
               : githubApiService,
           catalogHttpClient,
