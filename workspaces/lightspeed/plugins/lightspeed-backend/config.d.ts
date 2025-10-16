@@ -31,9 +31,20 @@ export interface Config {
      */
     systemPrompt?: string;
     /**
-     * configure the MCP token for the lightspeed service.
+     * configure the MCP server for the lightspeed service.
      * @visibility backend
      */
-    mcpToken?: string;
+    mcpServers?: Array<{
+      /**
+       * The name of the mcp server.
+       * @visibility backend
+       */
+      name: string;
+      /**
+       * The access token for authenticating MCP server.
+       * @visibility secret
+       */
+      token: string;
+    }>;
   };
 }

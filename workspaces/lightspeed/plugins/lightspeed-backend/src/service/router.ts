@@ -51,7 +51,13 @@ export async function createRouter(
 
   const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
-  const mcpToken = config.getOptionalString('lightspeed.mcpToken');
+  // Only support one MCP server for now
+  const mcpServerName = config
+    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
+    ?.getString('name');
+  const mcpToken = config
+    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
+    ?.getString('token');
 
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });
@@ -196,7 +202,7 @@ export async function createRouter(
 
         const requestBody = JSON.stringify(request.body);
         const mcpHeaders = mcpToken
-          ? `{"mcp::backend": {"Authorization": "Bearer ${mcpToken}"}}`
+          ? `{"${mcpServerName}": {"Authorization": "Bearer ${mcpToken}"}}`
           : '';
         const fetchResponse = await fetch(
           `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,

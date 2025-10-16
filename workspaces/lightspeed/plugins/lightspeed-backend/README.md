@@ -33,7 +33,9 @@ Add the following lightspeed configurations into your `app-config.yaml` file:
 lightspeed:
   servicePort: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
-  mcpToken: ${MCP_TOKEN} # Optional - mcp server token, recommand to use an ENV to avoid token exposure
+  mcpServers: # Optional - only one mcp server is currently supported
+    name: <mcp server name> # must match the name configured in LCS
+    token: ${MCP_TOKEN}
 ```
 
 #### Permission Framework Support
