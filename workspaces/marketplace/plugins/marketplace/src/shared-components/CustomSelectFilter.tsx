@@ -98,7 +98,7 @@ export const CustomSelectFilter = (props: CustomSelectFilterProps) => {
               )}
 
               {option.helperText ? (
-                <div>
+                <div style={{ flexGrow: 1 }}>
                   <Typography variant="body1">{option.label}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {option.helperText}
