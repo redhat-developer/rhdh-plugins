@@ -109,6 +109,7 @@ readonly "installedPackages.table.columns.version": string;
 readonly "installedPackages.table.columns.role": string;
 readonly "installedPackages.table.columns.name": string;
 readonly "installedPackages.table.columns.actions": string;
+readonly "installedPackages.table.tooltips.packageProductionDisabled": string;
 readonly "installedPackages.table.tooltips.enableActions": string;
 readonly "installedPackages.table.tooltips.noDownloadPermissions": string;
 readonly "installedPackages.table.tooltips.noEditPermissions": string;
