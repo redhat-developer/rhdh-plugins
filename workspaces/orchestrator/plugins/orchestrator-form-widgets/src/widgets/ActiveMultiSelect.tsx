@@ -82,6 +82,7 @@ export const ActiveMultiSelect: Widget<
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const allOptions: string[] = useMemo(() => {
     if (allowNewItems && inProgressItem) {
@@ -89,6 +90,9 @@ export const ActiveMultiSelect: Widget<
     }
     return autocompleteOptions || [];
   }, [inProgressItem, autocompleteOptions, allowNewItems]);
+
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -99,47 +103,66 @@ export const ActiveMultiSelect: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const completeLoading = loading || isProcessing;
+  useEffect(() => {
+    if (completeLoading && handleFetchStarted) {
+      handleFetchStarted();
+      return () => {
+        if (handleFetchEnded) {
+          handleFetchEnded();
+        }
+      };
+    }
+    return undefined;
+  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
+
   useEffect(() => {
     if (!data) {
       return;
     }
 
     const doItAsync = async () => {
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-          true,
-          true,
-        );
-        setAutocompleteOptions(autocompleteValues);
-      }
-
-      let defaults: string[] = [];
-      if (!isChangedByUser) {
-        // set this just once, when the user has not touched the field
-        if (defaultValueSelector) {
-          defaults = await applySelectorArray(
+      setIsProcessing(true);
+      try {
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
             data,
-            defaultValueSelector,
+            autocompleteSelector,
             true,
             true,
           );
-          // no need to persist the defaults, they are used only once
+          setAutocompleteOptions(autocompleteValues);
         }
-      }
 
-      let mandatory: string[] = [];
-      if (mandatorySelector) {
-        mandatory = await applySelectorArray(data, mandatorySelector, true);
-        setMandatoryValues(mandatory);
-      }
+        let defaults: string[] = [];
+        if (!isChangedByUser) {
+          // set this just once, when the user has not touched the field
+          if (defaultValueSelector) {
+            defaults = await applySelectorArray(
+              data,
+              defaultValueSelector,
+              true,
+              true,
+            );
+            // no need to persist the defaults, they are used only once
+          }
+        }
 
-      if (
-        !mandatory.every(item => value.includes(item)) ||
-        !defaults.every(item => value.includes(item))
-      ) {
-        onChange([...new Set([...mandatory, ...value, ...defaults])]);
+        let mandatory: string[] = [];
+        if (mandatorySelector) {
+          mandatory = await applySelectorArray(data, mandatorySelector, true);
+          setMandatoryValues(mandatory);
+        }
+
+        if (
+          !mandatory.every(item => value.includes(item)) ||
+          !defaults.every(item => value.includes(item))
+        ) {
+          onChange([...new Set([...mandatory, ...value, ...defaults])]);
+        }
+      } finally {
+        setIsProcessing(false);
       }
     };
 

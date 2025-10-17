@@ -147,13 +147,23 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
 
 const OrchestratorFormWrapper = (props: OrchestratorFormContextProps) => {
   const formApi = useOrchestratorFormApiOrDefault();
+  const { handleFetchStarted, handleFetchEnded } = useStepperContext();
 
   const NewComponent = useMemo(() => {
     const formDecorator = formApi.getFormDecorator();
     return formDecorator(FormComponent);
   }, [formApi]);
 
-  return <NewComponent {...props} />;
+  const propsWithFetchHandlers = useMemo(
+    () => ({
+      ...props,
+      handleFetchStarted,
+      handleFetchEnded,
+    }),
+    [props, handleFetchStarted, handleFetchEnded],
+  );
+
+  return <NewComponent {...propsWithFetchHandlers} />;
 };
 
 export default OrchestratorFormWrapper;

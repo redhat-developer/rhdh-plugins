@@ -81,6 +81,10 @@ export const ActiveDropdown: Widget<
   );
   const [labels, setLabels] = useState<string[]>();
   const [values, setValues] = useState<string[]>();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -91,24 +95,43 @@ export const ActiveDropdown: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const completeLoading = loading || isProcessing;
+  useEffect(() => {
+    if (completeLoading && handleFetchStarted) {
+      handleFetchStarted();
+      return () => {
+        if (handleFetchEnded) {
+          handleFetchEnded();
+        }
+      };
+    }
+    return undefined;
+  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
+
   useEffect(() => {
     if (!data || !labelSelector || !valueSelector) {
       return;
     }
 
     const doItAsync = async () => {
-      const selectedLabels = await applySelectorArray(data, labelSelector);
-      const selectedValues = await applySelectorArray(data, valueSelector);
+      setIsProcessing(true);
+      try {
+        const selectedLabels = await applySelectorArray(data, labelSelector);
+        const selectedValues = await applySelectorArray(data, valueSelector);
 
-      if (selectedLabels.length !== selectedValues.length) {
-        setLocalError(
-          `Selected labels and values have different count (${selectedLabels.length} and ${selectedValues.length}) for ${props.id}`,
-        );
-        return;
+        if (selectedLabels.length !== selectedValues.length) {
+          setLocalError(
+            `Selected labels and values have different count (${selectedLabels.length} and ${selectedValues.length}) for ${props.id}`,
+          );
+          return;
+        }
+
+        setLabels(selectedLabels);
+        setValues(selectedValues);
+      } finally {
+        setIsProcessing(false);
       }
-
-      setLabels(selectedLabels);
-      setValues(selectedValues);
     };
 
     doItAsync();

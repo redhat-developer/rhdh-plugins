@@ -75,6 +75,10 @@ export const ActiveTextInput: Widget<
       : undefined,
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -84,6 +88,20 @@ export const ActiveTextInput: Widget<
   );
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
+
+  // Track the complete loading state (fetch + processing)
+  const completeLoading = loading || isProcessing;
+  useEffect(() => {
+    if (completeLoading && handleFetchStarted) {
+      handleFetchStarted();
+      return () => {
+        if (handleFetchEnded) {
+          handleFetchEnded();
+        }
+      };
+    }
+    return undefined;
+  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
 
   const handleChange = useCallback(
     (changed: string, isByUser: boolean) => {
@@ -102,29 +120,34 @@ export const ActiveTextInput: Widget<
     }
 
     const doItAsync = async () => {
-      if (!isChangedByUser) {
-        // loading default so replace the value unless the user touched the field
-        const defaultValue = await applySelectorString(
-          data,
-          defaultValueSelector,
-        );
+      setIsProcessing(true);
+      try {
+        if (!isChangedByUser) {
+          // loading default so replace the value unless the user touched the field
+          const defaultValue = await applySelectorString(
+            data,
+            defaultValueSelector,
+          );
 
-        if (
-          value !== defaultValue &&
-          defaultValue &&
-          defaultValue !== null &&
-          defaultValue !== 'null'
-        ) {
-          handleChange(defaultValue, false);
+          if (
+            value !== defaultValue &&
+            defaultValue &&
+            defaultValue !== null &&
+            defaultValue !== 'null'
+          ) {
+            handleChange(defaultValue, false);
+          }
         }
-      }
 
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-        );
-        setAutocompleteOptions(autocompleteValues);
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
+            data,
+            autocompleteSelector,
+          );
+          setAutocompleteOptions(autocompleteValues);
+        }
+      } finally {
+        setIsProcessing(false);
       }
     };
 
