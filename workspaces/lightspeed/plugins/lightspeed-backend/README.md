@@ -34,8 +34,8 @@ lightspeed:
   servicePort: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
   mcpServers: # Optional - only one mcp server is currently supported
-    name: <mcp server name> # must match the name configured in LCS
-    token: ${MCP_TOKEN}
+    - name: <mcp server name> # must match the name configured in LCS
+      token: ${MCP_TOKEN}
 ```
 
 #### Permission Framework Support
