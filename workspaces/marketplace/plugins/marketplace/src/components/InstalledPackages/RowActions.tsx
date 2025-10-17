@@ -49,13 +49,41 @@ export type InstalledPackageRow = {
   name?: string;
 };
 
-export const DownloadPackageYaml = ({ pkg }: { pkg: InstalledPackageRow }) => {
+export const DownloadPackageYaml = ({
+  pkg,
+  isProductionEnv,
+}: {
+  pkg: InstalledPackageRow;
+  isProductionEnv: boolean;
+}) => {
   const { t } = useTranslation();
   const pkgConfig = usePackageConfig(pkg.namespace!, pkg.name!);
   const packageConfigPermission = usePluginConfigurationPermissions(
     pkg.namespace!,
     pkg.parentPlugin ?? '',
   );
+
+  const disabledIcon = (
+    <Box component="span" display="inline-flex">
+      <IconButton
+        size="small"
+        disabled
+        sx={{ color: theme => theme.palette.action.disabled }}
+      >
+        <FileDownloadOutlinedIcon />
+      </IconButton>
+    </Box>
+  );
+
+  if (isProductionEnv) {
+    return (
+      <Tooltip
+        title={t('installedPackages.table.tooltips.packageProductionDisabled')}
+      >
+        {disabledIcon}
+      </Tooltip>
+    );
+  }
   const disabled =
     !pkg.hasEntity || packageConfigPermission.data?.read !== 'ALLOW';
 
@@ -68,15 +96,7 @@ export const DownloadPackageYaml = ({ pkg }: { pkg: InstalledPackageRow }) => {
             : t('installedPackages.table.tooltips.enableActions')
         }
       >
-        <Box component="span" display="inline-flex">
-          <IconButton
-            size="small"
-            disabled
-            sx={{ color: theme => theme.palette.action.disabled }}
-          >
-            <FileDownloadOutlinedIcon />
-          </IconButton>
-        </Box>
+        {disabledIcon}
       </Tooltip>
     );
   }
@@ -99,7 +119,13 @@ export const DownloadPackageYaml = ({ pkg }: { pkg: InstalledPackageRow }) => {
   );
 };
 
-export const EditPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
+export const EditPackage = ({
+  pkg,
+  isProductionEnv,
+}: {
+  pkg: InstalledPackageRow;
+  isProductionEnv: boolean;
+}) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const getPackagePath = useRouteRef(packageInstallRouteRef);
@@ -120,6 +146,16 @@ export const EditPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
       </IconButton>
     </Box>
   );
+
+  if (isProductionEnv) {
+    return (
+      <Tooltip
+        title={t('installedPackages.table.tooltips.packageProductionDisabled')}
+      >
+        {disabledEditIcon}
+      </Tooltip>
+    );
+  }
 
   if (!pkg.hasEntity) {
     return (
@@ -158,7 +194,13 @@ export const EditPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   );
 };
 
-export const TogglePackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
+export const TogglePackage = ({
+  pkg,
+  isProductionEnv,
+}: {
+  pkg: InstalledPackageRow;
+  isProductionEnv: boolean;
+}) => {
   const { t } = useTranslation();
   const { installedPackages, setInstalledPackages } = useInstallationContext();
   const { mutateAsync: enablePlugin } = useEnablePlugin(true);
@@ -170,6 +212,23 @@ export const TogglePackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
     pkg.installStatus === MarketplacePackageInstallStatus.Installed ||
       pkg.installStatus === MarketplacePackageInstallStatus.UpdateAvailable,
   );
+  const disabledIcon = (
+    <Box component="span" display="inline-flex">
+      <IconButton size="small" disabled>
+        {isPackageEnabled ? <Switch checked disabled /> : <Switch disabled />}
+      </IconButton>
+    </Box>
+  );
+
+  if (isProductionEnv) {
+    return (
+      <Tooltip
+        title={t('installedPackages.table.tooltips.packageProductionDisabled')}
+      >
+        {disabledIcon}
+      </Tooltip>
+    );
+  }
 
   if (!pkg.hasEntity || packageConfigPermission.data?.write !== 'ALLOW') {
     return (
@@ -180,15 +239,7 @@ export const TogglePackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
             : t('installedPackages.table.tooltips.enableActions')
         }
       >
-        <Box component="span" display="inline-flex">
-          <IconButton size="small" disabled>
-            {isPackageEnabled ? (
-              <Switch checked disabled />
-            ) : (
-              <Switch disabled />
-            )}
-          </IconButton>
-        </Box>
+        {disabledIcon}
       </Tooltip>
     );
   }

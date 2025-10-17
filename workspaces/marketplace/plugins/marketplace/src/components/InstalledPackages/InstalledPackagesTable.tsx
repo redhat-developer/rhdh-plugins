@@ -171,11 +171,17 @@ export const InstalledPackagesTable = () => {
       render: (row: InstalledPackageRow) => {
         return (
           <Box display="flex" gap={1}>
-            <EditPackage pkg={row} />
+            <EditPackage pkg={row} isProductionEnv={isProductionEnvironment} />
             {/* Show it when uninstall functionality is implemented */}
             {showUninstall && <UninstallPackage pkg={row} />}
-            <DownloadPackageYaml pkg={row} />
-            <TogglePackage pkg={row} />
+            <DownloadPackageYaml
+              pkg={row}
+              isProductionEnv={isProductionEnvironment}
+            />
+            <TogglePackage
+              pkg={row}
+              isProductionEnv={isProductionEnvironment}
+            />
           </Box>
         );
       },

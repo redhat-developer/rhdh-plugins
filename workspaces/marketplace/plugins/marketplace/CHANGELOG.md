@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.11.4
+
+### Patch Changes
+
+- b6c9d5c: Disabled row actions in the "Installed packages" tab for the production environment
+
+## 0.11.3
+
+### Patch Changes
+
+- ee0989f: Fixing alignment of Support type filter on plugin list page
+
 ## 0.11.2
 
 ### Patch Changes

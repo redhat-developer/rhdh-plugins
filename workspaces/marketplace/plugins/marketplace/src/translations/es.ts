@@ -166,6 +166,8 @@ const marketplaceTranslationEs = createTranslationMessages({
     'installedPackages.table.columns.role': 'Rol',
     'installedPackages.table.columns.version': 'Versión',
     'installedPackages.table.columns.actions': 'Acciones',
+    'installedPackages.table.tooltips.packageProductionDisabled':
+      'El paquete no puede ser gestionado en el entorno de producción.',
     'installedPackages.table.tooltips.enableActions':
       'Para habilitar acciones, agregue una entidad de catálogo para este paquete',
     'installedPackages.table.tooltips.noDownloadPermissions':

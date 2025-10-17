@@ -187,6 +187,8 @@ const marketplaceTranslationFr = createTranslationMessages({
       'Aucun résultat trouvé. Essayez un autre terme de recherche.',
     'installedPackages.table.searchPlaceholder': 'Rechercher',
     'installedPackages.table.title': 'Paquets installés ({{count}})',
+    'installedPackages.table.tooltips.packageProductionDisabled':
+      "Le paquet ne peut pas être géré dans l'environnement de production.",
     'installedPackages.table.tooltips.enableActions':
       'Pour activer les actions, ajoutez une entité de catalogue pour ce package',
     'installedPackages.table.tooltips.noDownloadPermissions':

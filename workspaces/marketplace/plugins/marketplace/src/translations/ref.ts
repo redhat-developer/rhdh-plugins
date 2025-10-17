@@ -192,6 +192,8 @@ export const marketplaceMessages = {
         actions: 'Actions',
       },
       tooltips: {
+        packageProductionDisabled:
+          'Package cannot be managed in the production environment.',
         enableActions:
           'To enable actions, add a catalog entity for this package',
         noDownloadPermissions:
