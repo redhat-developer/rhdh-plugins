@@ -73,6 +73,10 @@ export const ActiveTextInput: Widget<
       : undefined,
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -82,6 +86,20 @@ export const ActiveTextInput: Widget<
   );
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
+
+  // Track the complete loading state (fetch + processing)
+  const completeLoading = loading || isProcessing;
+  useEffect(() => {
+    if (completeLoading && handleFetchStarted) {
+      handleFetchStarted();
+      return () => {
+        if (handleFetchEnded) {
+          handleFetchEnded();
+        }
+      };
+    }
+    return undefined;
+  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
 
   const handleChange = useCallback(
     (changed: string) => {
@@ -96,24 +114,33 @@ export const ActiveTextInput: Widget<
     }
 
     const doItAsync = async () => {
-      if (value === undefined) {
-        // loading default so do it only once
-        const defaultValue = await applySelectorString(
-          data,
-          defaultValueSelector,
-        );
+      setIsProcessing(true);
+      try {
+        if (value === undefined) {
+          // loading default so do it only once
+          const defaultValue = await applySelectorString(
+            data,
+            defaultValueSelector,
+          );
 
-        if (defaultValue && defaultValue !== null && defaultValue !== 'null') {
-          handleChange(defaultValue);
+          if (
+            defaultValue &&
+            defaultValue !== null &&
+            defaultValue !== 'null'
+          ) {
+            handleChange(defaultValue);
+          }
         }
-      }
 
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-        );
-        setAutocompleteOptions(autocompleteValues);
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
+            data,
+            autocompleteSelector,
+          );
+          setAutocompleteOptions(autocompleteValues);
+        }
+      } finally {
+        setIsProcessing(false);
       }
     };
 
