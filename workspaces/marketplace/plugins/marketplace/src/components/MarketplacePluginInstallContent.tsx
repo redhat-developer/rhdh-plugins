@@ -196,16 +196,21 @@ export const MarketplacePluginInstallContent = ({
       codeEditor.setValue(configYaml);
     } else {
       const dynamicPluginYaml = {
-        plugins: (packages ?? []).map(pkg => {
-          const pkgEntry: MarketplacePackageSpec = {
-            package: pkg.spec?.dynamicArtifact ?? './dynamic-plugins/dist/....',
-            disabled: false,
-          };
-          if (pkg.spec?.integrity) {
-            pkgEntry.integrity = pkg.spec.integrity;
-          }
-          return pkgEntry;
-        }),
+        plugins: (packages ?? [])
+          .map(pkg => {
+            if (!pkg.spec?.dynamicArtifact) {
+              return null;
+            }
+            const pkgEntry: MarketplacePackageSpec = {
+              package: pkg.spec.dynamicArtifact,
+              disabled: false,
+            };
+            if (pkg.spec?.integrity) {
+              pkgEntry.integrity = pkg.spec.integrity;
+            }
+            return pkgEntry;
+          })
+          .filter(Boolean),
       };
       codeEditor.setValue(yaml.stringify(dynamicPluginYaml));
     }
@@ -437,7 +442,7 @@ export const MarketplacePluginInstallContent = ({
                       }}
                     >
                       <FileDownloadOutlinedIcon fontSize="small" />
-                      Download
+                      {t('install.download')}
                     </Typography>
                   }
                   sx={{ pb: 0 }}
@@ -456,7 +461,7 @@ export const MarketplacePluginInstallContent = ({
                       <Tabs
                         value={tabIndex}
                         onChange={handleTabChange}
-                        aria-label="Plugin tabs"
+                        aria-label={t('install.pluginTabs')}
                         sx={{ px: 0 }}
                       >
                         {availableTabs.map((tab, index) => (
@@ -582,6 +587,7 @@ export const MarketplacePluginInstallContent = ({
 };
 
 export const MarketplacePluginInstallContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(pluginInstallRouteRef);
 
   const plugin = usePlugin(params.namespace, params.name);
@@ -605,7 +611,9 @@ export const MarketplacePluginInstallContentLoader = () => {
   }
   return (
     <ErrorPage
-      statusMessage={`Plugin ${params.namespace}/${params.name} not found!`}
+      statusMessage={t('metadata.pluginNotFound', {
+        name: `${params.namespace}/${params.name}`,
+      } as any)}
     />
   );
 };
