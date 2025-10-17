@@ -28,6 +28,7 @@ import {
   useTemplateUnitEvaluator,
   useFetch,
   applySelectorObject,
+  useProcessingState,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -53,7 +54,6 @@ export const SchemaUpdater: Widget<
   const valueSelector = uiProps['fetch:response:value']?.toString();
 
   const [localError, setLocalError] = useState<string>();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -65,18 +65,11 @@ export const SchemaUpdater: Widget<
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
   // Track the complete loading state (fetch + processing)
-  const completeLoading = loading || isProcessing;
-  useEffect(() => {
-    if (completeLoading && handleFetchStarted) {
-      handleFetchStarted();
-      return () => {
-        if (handleFetchEnded) {
-          handleFetchEnded();
-        }
-      };
-    }
-    return undefined;
-  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
 
   useEffect(() => {
     if (!data) {
@@ -89,8 +82,7 @@ export const SchemaUpdater: Widget<
     }
 
     const doItAsync = async () => {
-      setIsProcessing(true);
-      try {
+      await wrapProcessing(async () => {
         let typedData: SchemaChunksResponse =
           data as unknown as SchemaChunksResponse;
         if (valueSelector) {
@@ -120,12 +112,10 @@ export const SchemaUpdater: Widget<
             `Failed to update schema update by the ${props.id} SchemaUpdater`,
           );
         }
-      } finally {
-        setIsProcessing(false);
-      }
+      });
     };
     doItAsync();
-  }, [data, props.id, updateSchema, valueSelector]);
+  }, [data, props.id, updateSchema, valueSelector, wrapProcessing]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;

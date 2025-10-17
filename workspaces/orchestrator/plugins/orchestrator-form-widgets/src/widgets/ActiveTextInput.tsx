@@ -36,6 +36,7 @@ import {
   useFetch,
   applySelectorArray,
   applySelectorString,
+  useProcessingState,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -73,7 +74,6 @@ export const ActiveTextInput: Widget<
       : undefined,
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFetchStarted = formContext?.handleFetchStarted;
   const handleFetchEnded = formContext?.handleFetchEnded;
@@ -88,18 +88,11 @@ export const ActiveTextInput: Widget<
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
   // Track the complete loading state (fetch + processing)
-  const completeLoading = loading || isProcessing;
-  useEffect(() => {
-    if (completeLoading && handleFetchStarted) {
-      handleFetchStarted();
-      return () => {
-        if (handleFetchEnded) {
-          handleFetchEnded();
-        }
-      };
-    }
-    return undefined;
-  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
 
   const handleChange = useCallback(
     (changed: string) => {
@@ -114,8 +107,7 @@ export const ActiveTextInput: Widget<
     }
 
     const doItAsync = async () => {
-      setIsProcessing(true);
-      try {
+      await wrapProcessing(async () => {
         if (value === undefined) {
           // loading default so do it only once
           const defaultValue = await applySelectorString(
@@ -139,9 +131,7 @@ export const ActiveTextInput: Widget<
           );
           setAutocompleteOptions(autocompleteValues);
         }
-      } finally {
-        setIsProcessing(false);
-      }
+      });
     };
 
     doItAsync();
@@ -152,13 +142,14 @@ export const ActiveTextInput: Widget<
     props.id,
     value,
     handleChange,
+    wrapProcessing,
   ]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  if (completeLoading) {
     return <CircularProgress size={20} />;
   }
 
