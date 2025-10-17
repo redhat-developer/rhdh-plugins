@@ -16,22 +16,22 @@
 
 import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
+  getThresholdsFromConfig,
   MetricProvider,
-  validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
-import { GITHUB_PROJECT_ANNOTATION } from '../github/constants';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
-  private readonly thresholds: ThresholdConfig;
   private readonly githubClient: GithubClient;
+  private readonly thresholds: ThresholdConfig;
 
   private constructor(config: Config, thresholds?: ThresholdConfig) {
     this.githubClient = new GithubClient(config);
@@ -61,20 +61,20 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     return this.thresholds;
   }
 
-  supportsEntity(entity: Entity): boolean {
-    return (
-      entity.metadata.annotations?.[GITHUB_PROJECT_ANNOTATION] !== undefined
-    );
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.github.com/project-slug': CATALOG_FILTER_EXISTS,
+    };
   }
 
   static fromConfig(config: Config): GithubOpenPRsProvider {
-    const configPath = 'scorecard.plugins.github.open_prs.thresholds';
-    const configuredThresholds = config.getOptional(configPath);
-    if (configuredThresholds !== undefined) {
-      validateThresholds(configuredThresholds, 'number');
-    }
+    const thresholds = getThresholdsFromConfig(
+      config,
+      'scorecard.plugins.github.open_prs.thresholds',
+      'number',
+    );
 
-    return new GithubOpenPRsProvider(config, configuredThresholds);
+    return new GithubOpenPRsProvider(config, thresholds);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {

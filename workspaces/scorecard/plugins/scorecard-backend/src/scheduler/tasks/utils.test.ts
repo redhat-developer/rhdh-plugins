@@ -14,22 +14,10 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
-import {
-  Metric,
-  MetricType,
-  MetricValue,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { daysToMilliseconds } from './utils';
 
-/**
- * @public
- */
-export interface MetricProvider<T extends MetricType = MetricType> {
-  getProviderDatasourceId(): string;
-  getProviderId(): string;
-  getMetric(): Metric<T>;
-  getMetricThresholds(): ThresholdConfig;
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
-}
+describe('daysToMilliseconds', () => {
+  it('should convert days to milliseconds', () => {
+    expect(daysToMilliseconds(1)).toBe(86400000);
+  });
+});

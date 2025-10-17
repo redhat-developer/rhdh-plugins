@@ -30,42 +30,6 @@ jest.mock('@backstage/catalog-model', () => ({
 jest.mock('../github/GithubClient');
 
 describe('GithubOpenPRsProvider', () => {
-  describe('supportsEntity', () => {
-    let provider: GithubOpenPRsProvider;
-
-    beforeEach(() => {
-      provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
-    });
-
-    it.each([
-      [
-        'should return true for entity with github.com/project-slug annotation',
-        {
-          'github.com/project-slug': 'org/repo',
-        },
-        true,
-      ],
-      [
-        'should return false for entity without github.com/project-slug annotation',
-        {
-          'some.other/annotation': 'value',
-        },
-        false,
-      ],
-      ['should return false for entity with no annotations', undefined, false],
-    ])('%s', (_, annotations, expected) => {
-      const entity: Entity = {
-        apiVersion: 'backstage.io/v1alpha1',
-        kind: 'Component',
-        metadata: {
-          name: 'test-component',
-          annotations,
-        },
-      };
-      expect(provider.supportsEntity(entity)).toBe(expected);
-    });
-  });
-
   describe('fromConfig', () => {
     it('should create provider with default thresholds when no thresholds are configured', () => {
       const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
