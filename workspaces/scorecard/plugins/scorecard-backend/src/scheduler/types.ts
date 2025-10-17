@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import { MetricValuesStore } from '../src/database/MetricValuesStore';
-
-export const mockMetricValuesStore = {
-  createMetricValues: jest.fn(),
-  readMetricValues: jest.fn(),
-  readLatestEntityMetricValues: jest.fn(),
-} as unknown as jest.Mocked<MetricValuesStore>;
+export interface SchedulerTask {
+  start(): Promise<void>;
+}

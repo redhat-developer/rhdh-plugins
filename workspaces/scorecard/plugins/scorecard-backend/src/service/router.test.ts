@@ -41,7 +41,7 @@ import {
   PolicyDecision,
 } from '@backstage/plugin-permission-common';
 import { PermissionsService } from '@backstage/backend-plugin-api';
-import { mockMetricValuesStore } from '../../__fixtures__/mockDatabase';
+import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
 
 const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
   result: AuthorizeResult.CONDITIONAL,
@@ -77,7 +77,7 @@ describe('createRouter', () => {
       registry: metricProvidersRegistry,
       thresholdEvaluator: new ThresholdEvaluator(),
       auth: mockServices.auth(),
-      metricValuesStore: mockMetricValuesStore,
+      database: mockDatabaseMetricValues,
     });
 
     permissionsMock.authorizeConditional.mockResolvedValue([

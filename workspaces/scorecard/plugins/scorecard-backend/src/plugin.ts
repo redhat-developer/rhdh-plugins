@@ -32,8 +32,8 @@ import {
   rules as scorecardRules,
 } from './permissions/rules';
 import { migrate } from './database/migration';
-import { DatabaseMetricValuesStore } from './database/DatabaseMetricValuesStore';
-import { MetricProvidersScheduler } from './providers/MetricProvidersScheduler';
+import { DatabaseMetricValues } from './database/DatabaseMetricValues';
+import { Scheduler } from './scheduler';
 
 /**
  * scorecardPlugin backend plugin
@@ -87,27 +87,26 @@ export const scorecardPlugin = createBackendPlugin({
         // Run database migrations
         await migrate(database);
 
-        const knex = await database.getClient();
-        const metricValuesStore = new DatabaseMetricValuesStore(knex);
+        const client = await database.getClient();
+        const dbMetricValues = new DatabaseMetricValues(client);
 
         const catalogMetricService = new CatalogMetricService({
           catalog,
           auth,
           registry: metricProvidersRegistry,
           thresholdEvaluator: new ThresholdEvaluator(),
-          metricValuesStore,
+          database: dbMetricValues,
         });
 
-        const metricScheduler = new MetricProvidersScheduler(
+        Scheduler.create({
           auth,
           catalog,
           config,
           logger,
           scheduler,
-          metricValuesStore,
+          database: dbMetricValues,
           metricProvidersRegistry,
-        );
-        metricScheduler.schedule();
+        }).start();
 
         httpRouter.use(
           await createRouter({

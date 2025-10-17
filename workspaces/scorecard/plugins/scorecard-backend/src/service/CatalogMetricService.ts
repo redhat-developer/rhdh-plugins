@@ -36,15 +36,15 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
-import { MetricValuesStore } from '../database/MetricValuesStore';
 import { CatalogService } from '@backstage/plugin-catalog-node';
+import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 
 export type CatalogMetricServiceOptions = {
   catalog: CatalogService;
   auth: AuthService;
   registry: MetricProvidersRegistry;
   thresholdEvaluator: ThresholdEvaluator;
-  metricValuesStore: MetricValuesStore;
+  database: DatabaseMetricValues;
 };
 
 export class CatalogMetricService {
@@ -52,14 +52,14 @@ export class CatalogMetricService {
   private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
   private readonly thresholdEvaluator: ThresholdEvaluator;
-  private readonly metricValuesStore: MetricValuesStore;
+  private readonly database: DatabaseMetricValues;
 
   constructor(options: CatalogMetricServiceOptions) {
     this.catalog = options.catalog;
     this.auth = options.auth;
     this.registry = options.registry;
     this.thresholdEvaluator = options.thresholdEvaluator;
-    this.metricValuesStore = options.metricValuesStore;
+    this.database = options.database;
   }
 
   /**
@@ -93,11 +93,10 @@ export class CatalogMetricService {
       metricsToFetch,
       filter,
     );
-    const rawResults =
-      await this.metricValuesStore.readLatestEntityMetricValues(
-        entityRef,
-        authorizedMetricsToFetch.map(m => m.id),
-      );
+    const rawResults = await this.database.readLatestEntityMetricValues(
+      entityRef,
+      authorizedMetricsToFetch.map(m => m.id),
+    );
 
     return rawResults.map(({ metric_id, value, error_message, timestamp }) => {
       const provider = this.registry.getProvider(metric_id);
