@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.11.0
+
+### Minor Changes
+
+- 36a7d6a: **BREAKING** Replace POST with PATCH `/package/:namespace/:name/configuration/disable` endpoint to update packages disabled status
+
+### Patch Changes
+
+- 4d79286: added row actions to the installed packages
+  updated disablePackage Client API to make PATCH call instead of POST
+- Updated dependencies [4d79286]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.10.1
+
+## 0.10.0
+
+### Minor Changes
+
+- b33db25: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [b33db25]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.10.0
+
 ## 0.9.0
 
 ### Minor Changes

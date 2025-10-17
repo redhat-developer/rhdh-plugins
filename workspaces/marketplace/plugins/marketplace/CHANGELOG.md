@@ -1,5 +1,44 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.11.4
+
+### Patch Changes
+
+- b6c9d5c: Disabled row actions in the "Installed packages" tab for the production environment
+
+## 0.11.3
+
+### Patch Changes
+
+- ee0989f: Fixing alignment of Support type filter on plugin list page
+
+## 0.11.2
+
+### Patch Changes
+
+- 4d79286: added row actions to the installed packages
+  updated disablePackage Client API to make PATCH call instead of POST
+- Updated dependencies [4d79286]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.10.1
+
+## 0.11.1
+
+### Patch Changes
+
+- dd5350f: French translation updated
+
+## 0.11.0
+
+### Minor Changes
+
+- b33db25: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- b33db25: Update monaco editor from v0.52.2 to v0.53.0
+- Updated dependencies [b33db25]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.10.0
+
 ## 0.10.0
 
 ### Minor Changes

@@ -1,5 +1,32 @@
 ### Dependencies
 
+## 5.1.0
+
+### Minor Changes
+
+- de5ced6: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [de5ced6]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.1.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.1.0
+
+## 5.0.9
+
+### Patch Changes
+
+- d3e9c60: Fix typo in useOrchestratorAuth when searching custom apis
+
+## 5.0.8
+
+### Patch Changes
+
+- a24d93c: The AuthRequester widget can reference statically added non-core auth apis.
+- 126f478: export orchestrator translation ref
+- 23bb527: Simplify Workflow Instance page header based on customer feedback.
+
 ## 5.0.7
 
 ### Patch Changes

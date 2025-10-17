@@ -18,11 +18,35 @@ import {
   PermissionCondition,
   PermissionCriteria,
   PermissionRuleParams,
+  AuthorizeResult,
 } from '@backstage/plugin-permission-common';
+import { Request } from 'express';
+import { NotAllowedError } from '@backstage/errors';
+import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
+import type {
+  HttpAuthService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
 
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { rules as scorecardRules } from './rules';
+
+export const checkEntityAccess = async (
+  entityRef: string,
+  req: Request,
+  permissions: PermissionsService,
+  httpAuth: HttpAuthService,
+): Promise<void> => {
+  const entityAccessDecision = await permissions.authorize(
+    [{ permission: catalogEntityReadPermission, resourceRef: entityRef }],
+    { credentials: await httpAuth.credentials(req) },
+  );
+
+  if (entityAccessDecision[0].result !== AuthorizeResult.ALLOW) {
+    throw new NotAllowedError('Access to entity metrics denied');
+  }
+};
 
 export const matches = (
   metric: Metric,

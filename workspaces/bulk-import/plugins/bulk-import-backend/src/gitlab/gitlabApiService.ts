@@ -317,18 +317,33 @@ export class GitlabApiService {
       {
         dataFetcher: async (gitlab: InstanceType<typeof Gitlab<false>>) => {
           // find authenticated gitlab owner...
-          const username = (await gitlab.Users.showCurrentUser()).username;
-          if (username) {
-            allAccessibleUsernames.add(username);
+          try {
+            const username = (await gitlab.Users.showCurrentUser()).username;
+            if (username) {
+              allAccessibleUsernames.add(username);
+            }
+          } catch (err) {
+            logErrorIfNeeded(
+              this.logger,
+              'failed to fetch gitlab current user',
+              err,
+            );
           }
-          // ... along with orgs accessible from the token auth
 
-          const allGroups = await gitlab.Groups.all<false, 'offset'>({
-            allAvailable: false,
-          });
-          allGroups
-            .map(org => org.path)
-            ?.forEach((orgName: string) => allAccessibleTokenOrgs.add(orgName));
+          // ... along with orgs accessible from the token auth
+          try {
+            const allGroups = await gitlab.Groups.all<false, 'offset'>({
+              allAvailable: false,
+            });
+            allGroups
+              .map(org => org.path)
+              ?.forEach((orgName: string) =>
+                allAccessibleTokenOrgs.add(orgName),
+              );
+          } catch (err) {
+            logErrorIfNeeded(this.logger, 'failed to fetch gitlab groups', err);
+          }
+
           return {};
         },
       },
@@ -757,5 +772,140 @@ export class GitlabApiService {
         },
       },
     );
+  }
+
+  async getPullRequest(
+    repoUrl: string,
+    pullRequestNumber: number,
+  ): Promise<{
+    title?: string;
+    body?: string;
+    merged?: boolean;
+    lastUpdated?: string;
+    prSha?: string;
+    prBranch?: string;
+  }> {
+    const glConfig = this.integrations.gitlab.byUrl(repoUrl)?.config;
+    if (!glConfig) {
+      this.logger.error(
+        `No Gitlab integration config found for repo ${repoUrl}`,
+      );
+      return {};
+    }
+
+    const gitUrl = gitUrlParse(repoUrl);
+    const owner = gitUrl.owner;
+    const repo = gitUrl.name;
+
+    const credentials = await this.gitlabCredentialsProvider.getAllCredentials({
+      host: glConfig.host,
+    });
+
+    if (credentials.length === 0) {
+      this.logger.error(`No credentials for GL integration`);
+      return {};
+    }
+
+    for (const credential of credentials) {
+      const glKit = buildGitlab(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner },
+        glConfig.baseUrl,
+      );
+
+      try {
+        const pr = await glKit.MergeRequests.show(
+          `${owner}/${repo}`,
+          pullRequestNumber,
+        );
+
+        return {
+          title: pr.title,
+          body: pr.description || undefined,
+          merged: pr.state === 'merged',
+          lastUpdated: pr.updated_at,
+          prSha: pr.sha,
+          prBranch: pr.source_branch,
+        };
+      } catch (error: any) {
+        this.logger.error(
+          `Error fetching pull request ${pullRequestNumber} from ${repoUrl}`,
+          error,
+        );
+      }
+    }
+
+    return {};
+  }
+
+  async getCatalogInfoFile(
+    logger: LoggerService,
+    input: {
+      repoUrl: string;
+      prNumber: number;
+      prHeadSha: string;
+    },
+  ): Promise<string | undefined> {
+    const glConfig = this.integrations.gitlab.byUrl(input.repoUrl)?.config;
+    if (!glConfig) {
+      logger.error(
+        `No Gitlab integration config found for repo ${input.repoUrl}`,
+      );
+      return undefined;
+    }
+
+    const gitUrl = gitUrlParse(input.repoUrl);
+    const owner = gitUrl.owner;
+    const repo = gitUrl.name;
+
+    const credentials = await this.gitlabCredentialsProvider.getAllCredentials({
+      host: glConfig.host,
+    });
+
+    if (credentials.length === 0) {
+      logger.error(`No credentials for GL integration`);
+      return undefined;
+    }
+
+    for (const credential of credentials) {
+      const glKit = buildGitlab(
+        {
+          logger: this.logger,
+          cache: this.cache,
+        },
+        { credential, owner },
+        glConfig.baseUrl,
+      );
+
+      try {
+        const file = await glKit.RepositoryFiles.show(
+          `${owner}/${repo}`,
+          getCatalogFilename(this.config),
+          input.prHeadSha,
+        );
+
+        if (file) {
+          const content = Buffer.from(file.content, 'base64').toString('utf-8');
+          return content;
+        }
+      } catch (error: any) {
+        if (error.cause?.response?.status === 404) {
+          logger.warn(
+            `catalog-info.yaml not found in PR ${input.prNumber} of ${input.repoUrl}`,
+          );
+          return undefined;
+        }
+        logger.error(
+          `Error fetching catalog-info.yaml from PR ${input.prNumber} of ${input.repoUrl}`,
+          error,
+        );
+        return undefined;
+      }
+    }
+
+    return undefined;
   }
 }

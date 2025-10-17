@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.5.0
+
+### Minor Changes
+
+- c9b7aa5: Adding localization support for `label` and `tooltip`
+
 ## 1.4.1
 
 ### Patch Changes

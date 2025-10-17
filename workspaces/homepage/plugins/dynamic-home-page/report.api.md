@@ -114,6 +114,38 @@ export const defaultLayouts: {
             h: number;
         };
     };
+    quickAccessCard: {
+        xl: {
+            w: number;
+            h: number;
+            x: number;
+        };
+        lg: {
+            w: number;
+            h: number;
+            x: number;
+        };
+        md: {
+            w: number;
+            h: number;
+            x: number;
+        };
+        sm: {
+            w: number;
+            h: number;
+            x: number;
+        };
+        xs: {
+            w: number;
+            h: number;
+            x: number;
+        };
+        xxs: {
+            w: number;
+            h: number;
+            x: number;
+        };
+    };
 };
 
 // @public
@@ -191,9 +223,13 @@ export interface HomePageCardMountPoint {
 // @public (undocumented)
 export interface HomePageCardMountPointConfig {
     // (undocumented)
+    description?: string;
+    // (undocumented)
     layouts?: Record<Breakpoint, Layout>;
     // (undocumented)
     priority?: number;
+    // (undocumented)
+    title?: string;
 }
 
 // @public

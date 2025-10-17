@@ -76,11 +76,14 @@ const marketplaceTranslationEs = createTranslationMessages({
       'El plugin **{{pluginName}}** requiere un reinicio del sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
     'alert.multiplePluginRestart':
       'Tiene **{{count}}** plugins que requieren un reinicio de su sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.singlePackageRestart':
+      'El paquete **{{packageName}}** requiere un reinicio del sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
+    'alert.multiplePackageRestart':
+      'Tiene **{{count}}** paquetes que requieren un reinicio de su sistema backend para terminar de instalar, actualizar, habilitar o deshabilitar.',
     'alert.restartRequired': '{{count}} plugins instalados',
     'alert.backendRestartRequired': 'Reinicio del backend requerido',
-    'alert.backendRestartMessage':
-      'Para finalizar las modificaciones del paquete, reinicie su sistema backend.',
     'alert.viewPlugins': 'Ver plugins',
+    'alert.viewPackages': 'Ver paquetes',
 
     // Search and filtering
     'search.placeholder': 'Buscar plugins...',
@@ -108,7 +111,9 @@ const marketplaceTranslationEs = createTranslationMessages({
 
     // Dialogs
     'dialog.backendRestartRequired': 'Requiere reinicio del backend',
-    'dialog.restartMessage':
+    'dialog.packageRestartMessage':
+      'Para finalizar las modificaciones del paquete, reinicia tu sistema backend.',
+    'dialog.pluginRestartMessage':
       'Para finalizar las modificaciones del plugin, reinicia tu sistema backend.',
 
     // Plugin details
@@ -118,6 +123,7 @@ const marketplaceTranslationEs = createTranslationMessages({
     'plugin.license': 'Licencia',
     'plugin.version': 'Versión',
     'plugin.author': 'Autor',
+    'plugin.authors': 'Autores',
     'plugin.tags': 'Etiquetas',
     'plugin.dependencies': 'Dependencias',
     'plugin.configuration': 'Configuración',
@@ -160,8 +166,22 @@ const marketplaceTranslationEs = createTranslationMessages({
     'installedPackages.table.columns.role': 'Rol',
     'installedPackages.table.columns.version': 'Versión',
     'installedPackages.table.columns.actions': 'Acciones',
+    'installedPackages.table.tooltips.packageProductionDisabled':
+      'El paquete no puede ser gestionado en el entorno de producción.',
     'installedPackages.table.tooltips.enableActions':
       'Para habilitar acciones, agregue una entidad de catálogo para este paquete',
+    'installedPackages.table.tooltips.noDownloadPermissions':
+      'No tienes permiso para descargar la configuración. Contacta a tu administrador para solicitar acceso o asistencia.',
+    'installedPackages.table.tooltips.noEditPermissions':
+      'No tienes permiso para editar la configuración. Contacta a tu administrador para solicitar acceso o asistencia.',
+    'installedPackages.table.tooltips.noTogglePermissions':
+      'No tienes permiso para habilitar o deshabilitar paquetes. Contacta a tu administrador para solicitar acceso o asistencia.',
+    'installedPackages.table.tooltips.editPackage':
+      'Editar configuración del paquete',
+    'installedPackages.table.tooltips.downloadPackage':
+      'Descargar configuración del paquete',
+    'installedPackages.table.tooltips.enablePackage': 'Habilitar paquete',
+    'installedPackages.table.tooltips.disablePackage': 'Deshabilitar paquete',
     'installedPackages.table.emptyMessages.noResults':
       'No se encontraron resultados. Intente con un término de búsqueda diferente.',
     'installedPackages.table.emptyMessages.noRecords':
@@ -176,8 +196,11 @@ const marketplaceTranslationEs = createTranslationMessages({
     'actions.actions': 'Acciones',
     'actions.editConfiguration': 'Editar',
     'actions.pluginConfigurations': 'Configuraciones del plugin',
+    'actions.packageConfiguration': 'Configuración del paquete',
     'actions.pluginCurrentlyEnabled': 'Plugin actualmente habilitado',
     'actions.pluginCurrentlyDisabled': 'Plugin actualmente deshabilitado',
+    'actions.packageCurrentlyEnabled': 'Paquete actualmente habilitado',
+    'actions.packageCurrentlyDisabled': 'Paquete actualmente deshabilitado',
     'actions.installTitle': 'Instalar {{displayName}}',
     'actions.editTitle': 'Editar configuraciones de {{displayName}}',
 
@@ -188,6 +211,10 @@ const marketplaceTranslationEs = createTranslationMessages({
     'metadata.about': 'Acerca de',
     'metadata.publisher': 'Editor',
     'metadata.supportProvider': 'Proveedor de soporte',
+    'metadata.entryName': 'Nombre de entrada',
+    'metadata.bySomeone': 'por alguien',
+    'metadata.category': 'Categoría',
+    'metadata.versions': 'Versiones',
 
     // Support type filters
     'supportTypes.certifiedBy': 'Certificado por {{value}} ({{count}})',
@@ -232,6 +259,8 @@ const marketplaceTranslationEs = createTranslationMessages({
     'install.editInstructions': 'Editar instrucciones',
     'install.back': 'Atrás',
     'install.packageUpdated': 'Paquete actualizado',
+    'install.packageEnabled': 'Paquete habilitado',
+    'install.packageDisabled': 'Paquete deshabilitado',
     'install.errors.missingPluginsList':
       "Contenido del editor inválido: falta la lista 'plugins'",
     'install.errors.missingPackageItem':

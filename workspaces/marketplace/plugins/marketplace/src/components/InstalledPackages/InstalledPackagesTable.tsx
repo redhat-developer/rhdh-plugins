@@ -14,52 +14,84 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
-
+import { useState } from 'react';
 import {
   ResponseErrorPanel,
   Table,
   TableColumn,
+  MarkdownContent,
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Link } from '@backstage/core-components';
-import { useLocation } from 'react-router-dom';
 
 import { Query, QueryResult } from '@material-table/core';
 import { useQuery } from '@tanstack/react-query';
 
-import { dynamicPluginsInfoApiRef } from '../../api';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import AlertTitle from '@mui/material/AlertTitle';
+import Link from '@mui/material/Link';
+import Alert from '@mui/material/Alert';
+import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { useMarketplaceApi } from '../../hooks/useMarketplaceApi';
 import { getReadableName } from '../../utils/pluginProcessing';
 import { useQueryFullTextSearch } from '../../hooks/useQueryFullTextSearch';
 import { SearchTextField } from '../../shared-components/SearchTextField';
 import { useTranslation } from '../../hooks/useTranslation';
-
-type InstalledPackageRow = {
-  displayName: string;
-  packageName: string;
-  role?: string;
-  version?: string;
-  hasEntity: boolean;
-  namespace?: string;
-  name?: string;
-};
+import { DynamicPluginInfo, dynamicPluginsInfoApiRef } from '../../api';
+import {
+  DownloadPackageYaml,
+  EditPackage,
+  InstalledPackageRow,
+  PackageName,
+  TogglePackage,
+  UninstallPackage,
+} from './RowActions';
+import { useInstallationContext } from '../InstallationContext';
+import { useNodeEnvironment } from '../../hooks/useNodeEnvironment';
+import { InstalledPluginsDialog } from '../InstalledPluginsDialog';
 
 export const InstalledPackagesTable = () => {
   const { t } = useTranslation();
+  const { installedPackages } = useInstallationContext();
+  const nodeEnvironment = useNodeEnvironment();
   const [error, setError] = useState<Error | undefined>(undefined);
+  const [openInstalledPackagesDialog, setOpenInstalledPackagesDialog] =
+    useState(false);
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const dynamicPluginInfo = useApi(dynamicPluginsInfoApiRef);
   const marketplaceApi = useMarketplaceApi();
   const fullTextSearch = useQueryFullTextSearch();
-  const location = useLocation();
+
+  const showUninstall = false;
+  const isProductionEnvironment =
+    nodeEnvironment?.data?.nodeEnv === 'production';
+  const installedPackagesCount = Object.entries(installedPackages)?.length ?? 0;
+
+  const getPackageAlertMessage = (count: number, packageName?: string) => {
+    if (count > 1) {
+      return (
+        <MarkdownContent
+          content={t('alert.multiplePackageRestart' as any, {
+            count: count.toString(),
+          })}
+        />
+      );
+    }
+
+    return (
+      <MarkdownContent
+        content={t('alert.singlePackageRestart' as any, {
+          packageName: packageName || '',
+        })}
+      />
+    );
+  };
+
+  const packageInfo = () => {
+    const packageName = Object.keys(installedPackages)[0];
+    return <>{getPackageAlertMessage(installedPackagesCount, packageName)}</>;
+  };
 
   // Fetch once and cache
   const installedQuery = useQuery({
@@ -75,164 +107,87 @@ export const InstalledPackagesTable = () => {
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
-  const columns: TableColumn<InstalledPackageRow>[] = useMemo(
-    () => [
-      {
-        title: t('installedPackages.table.columns.name'),
-        field: 'displayName',
-        align: 'left',
-        width: '30ch',
-        defaultSort: 'asc',
-        headerStyle: {
-          textAlign: 'left',
-        },
-        cellStyle: {
-          textAlign: 'left',
-        },
-        render: (row: InstalledPackageRow) => {
-          if (row.hasEntity && row.namespace && row.name) {
-            const params = new URLSearchParams(location.search);
-            params.set('package', `${row.namespace}/${row.name}`);
-            const to = `${location.pathname}?${params.toString()}`;
-            return (
-              <Link to={to} onClick={e => e.stopPropagation()}>
-                {row.displayName}
-              </Link>
-            );
-          }
-          return row.displayName;
-        },
+  const columns: TableColumn<InstalledPackageRow>[] = [
+    {
+      title: t('installedPackages.table.columns.name'),
+      field: 'displayName',
+      align: 'left',
+      width: '30ch',
+      defaultSort: 'asc',
+      headerStyle: {
+        textAlign: 'left',
       },
-      {
-        title: t('installedPackages.table.columns.packageName'),
-        field: 'packageName',
-        width: '54ch',
-        align: 'left',
-        headerStyle: {
-          textAlign: 'left',
-        },
-        cellStyle: {
-          textAlign: 'left',
-        },
+      cellStyle: {
+        textAlign: 'left',
       },
-      {
-        title: t('installedPackages.table.columns.role'),
-        field: 'role',
-        width: '24ch',
-        align: 'left',
-        headerStyle: {
-          textAlign: 'left',
-        },
-        cellStyle: {
-          textAlign: 'left',
-        },
+      render: (row: InstalledPackageRow) => <PackageName pkg={row} />,
+    },
+    {
+      title: t('installedPackages.table.columns.packageName'),
+      field: 'packageName',
+      width: '54ch',
+      align: 'left',
+      headerStyle: {
+        textAlign: 'left',
       },
-      {
-        title: t('installedPackages.table.columns.version'),
-        field: 'version',
-        width: '24ch',
-        align: 'left',
-        headerStyle: {
-          textAlign: 'left',
-        },
-        cellStyle: {
-          textAlign: 'left',
-        },
+      cellStyle: {
+        textAlign: 'left',
       },
-      {
-        title: t('installedPackages.table.columns.actions'),
-        align: 'right',
-        width: '78px',
-        headerStyle: {
-          textAlign: 'left',
-        },
-        cellStyle: {
-          textAlign: 'left',
-        },
-        render: (row: InstalledPackageRow) => {
-          const disabled = !row.hasEntity;
-          const tooltipTitle = t(
-            'installedPackages.table.tooltips.enableActions',
-          );
-          return (
-            <Box display="flex" gap={1}>
-              {disabled ? (
-                <Tooltip title={tooltipTitle}>
-                  <Box component="span" display="inline-flex">
-                    <IconButton
-                      size="small"
-                      disabled
-                      sx={{ color: theme => theme.palette.action.disabled }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  </Box>
-                </Tooltip>
-              ) : (
-                <IconButton
-                  size="small"
-                  sx={{ color: theme => theme.palette.text.primary }}
-                  onClick={() => {
-                    // TODO: Implement edit functionality
-                  }}
-                >
-                  <EditIcon />
-                </IconButton>
-              )}
-              {disabled ? (
-                <Tooltip title={tooltipTitle}>
-                  <Box component="span" display="inline-flex">
-                    <IconButton
-                      size="small"
-                      disabled
-                      sx={{ color: theme => theme.palette.action.disabled }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                </Tooltip>
-              ) : (
-                <IconButton
-                  size="small"
-                  sx={{ color: theme => theme.palette.text.primary }}
-                  onClick={() => {
-                    // TODO: Implement delete functionality
-                  }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              )}
-              {disabled ? (
-                <Tooltip title={tooltipTitle}>
-                  <Box component="span" display="inline-flex">
-                    <IconButton
-                      size="small"
-                      disabled
-                      sx={{ color: theme => theme.palette.action.disabled }}
-                    >
-                      <FileDownloadOutlinedIcon />
-                    </IconButton>
-                  </Box>
-                </Tooltip>
-              ) : (
-                <IconButton
-                  size="small"
-                  sx={{ color: theme => theme.palette.text.primary }}
-                  onClick={() => {
-                    // TODO: Implement download functionality
-                  }}
-                >
-                  <FileDownloadOutlinedIcon />
-                </IconButton>
-              )}
-            </Box>
-          );
-        },
-        sorting: false,
+    },
+    {
+      title: t('installedPackages.table.columns.role'),
+      field: 'role',
+      width: '24ch',
+      align: 'left',
+      headerStyle: {
+        textAlign: 'left',
       },
-    ],
-    [location.pathname, location.search, t],
-  );
+      cellStyle: {
+        textAlign: 'left',
+      },
+    },
+    {
+      title: t('installedPackages.table.columns.version'),
+      field: 'version',
+      width: '24ch',
+      align: 'left',
+      headerStyle: {
+        textAlign: 'left',
+      },
+      cellStyle: {
+        textAlign: 'left',
+      },
+    },
+    {
+      title: t('installedPackages.table.columns.actions'),
+      align: 'right',
+      width: '78px',
+      headerStyle: {
+        textAlign: 'left',
+      },
+      cellStyle: {
+        textAlign: 'left',
+      },
+      render: (row: InstalledPackageRow) => {
+        return (
+          <Box display="flex" gap={1}>
+            <EditPackage pkg={row} isProductionEnv={isProductionEnvironment} />
+            {/* Show it when uninstall functionality is implemented */}
+            {showUninstall && <UninstallPackage pkg={row} />}
+            <DownloadPackageYaml
+              pkg={row}
+              isProductionEnv={isProductionEnvironment}
+            />
+            <TogglePackage
+              pkg={row}
+              isProductionEnv={isProductionEnvironment}
+            />
+          </Box>
+        );
+      },
+      sorting: false,
+    },
+  ];
   const fetchData = async (
     query: Query<InstalledPackageRow>,
   ): Promise<QueryResult<InstalledPackageRow>> => {
@@ -244,46 +199,52 @@ export const InstalledPackagesTable = () => {
       const packagesResponse = packagesQuery.data ?? { items: [] as any[] };
 
       const entitiesByName = new Map(
-        (packagesResponse.items ?? []).map(entity => [
+        (packagesResponse.items ?? []).map((entity: MarketplacePackage) => [
           (entity.metadata?.name ?? '').toLowerCase(),
           entity,
         ]),
       );
 
       // Build rows for ALL installed items; if no matching entity, mark missing
-      const rows: InstalledPackageRow[] = installed.map(p => {
-        const normalized = p.name
-          .replace(/[@/]/g, '-')
-          .replace(/-dynamic$/, '')
-          .replace(/^-+/, '')
-          .toLowerCase();
-        const entity = entitiesByName.get(normalized) as any | undefined;
-        const rawName = entity
-          ? (entity.metadata?.title as string) ||
-            (entity.metadata?.name as string)
-          : getReadableName(p.name);
-        const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, '');
-        return {
-          displayName: cleanedName,
-          // Show the npm package name directly from dynamic-plugins-info record
-          packageName: p.name,
-          // Humanized role from dynamic-plugins-info
-          role: (p as any).role
-            ? (() => {
-                const raw = ((p as any).role as string).replace(/-/g, ' ');
-                return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
-              })()
-            : undefined,
-          // Prefer dynamic-plugins-info version, then fallback to entity spec.version
-          version:
-            (p.version as string | undefined) ??
-            (entity?.spec?.version as string | undefined) ??
-            undefined,
-          hasEntity: !!entity,
-          namespace: entity?.metadata?.namespace ?? 'default',
-          name: entity?.metadata?.name,
-        } as InstalledPackageRow;
-      });
+      const rows: InstalledPackageRow[] = installed.map(
+        (p: DynamicPluginInfo) => {
+          const normalized = p.name
+            .replace(/[@/]/g, '-')
+            .replace(/-dynamic$/, '')
+            .replace(/^-+/, '')
+            .toLowerCase();
+          const entity = entitiesByName.get(normalized) as any | undefined;
+          const rawName = entity
+            ? (entity.metadata?.title as string) ||
+              (entity.metadata?.name as string)
+            : getReadableName(p.name);
+          const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, '');
+          return {
+            displayName: cleanedName,
+            // Show the npm package name directly from dynamic-plugins-info record
+            packageName: p.name,
+            parentPlugin: entity?.spec?.partOf?.[0] ?? '',
+            installStatus: entity?.spec?.installStatus,
+            // Humanized role from dynamic-plugins-info
+            role: (p as any).role
+              ? (() => {
+                  const raw = ((p as any).role as string).replace(/-/g, ' ');
+                  return (
+                    raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase()
+                  );
+                })()
+              : undefined,
+            // Prefer dynamic-plugins-info version, then fallback to entity spec.version
+            version:
+              (p.version as string | undefined) ??
+              (entity?.spec?.version as string | undefined) ??
+              undefined,
+            hasEntity: !!entity,
+            namespace: entity?.metadata?.namespace ?? 'default',
+            name: entity?.metadata?.name,
+          } as InstalledPackageRow;
+        },
+      );
 
       const sortField =
         ((query as any)?.orderBy?.field as string) || 'displayName';
@@ -332,6 +293,31 @@ export const InstalledPackagesTable = () => {
 
   return (
     <>
+      {isProductionEnvironment && (
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>{t('alert.productionDisabled')}</AlertTitle>
+        </Alert>
+      )}
+      {installedPackagesCount > 0 && (
+        <Alert severity="info" sx={{ mb: '1rem' }}>
+          <AlertTitle>{t('alert.backendRestartRequired')}</AlertTitle>
+          {packageInfo()}
+          {installedPackagesCount > 1 && (
+            <Typography component="div" sx={{ pt: '8px' }}>
+              <Link
+                component="button"
+                underline="none"
+                onClick={() => {
+                  setOpenInstalledPackagesDialog(true);
+                }}
+              >
+                {t('alert.viewPackages')}
+              </Link>
+            </Typography>
+          )}
+        </Alert>
+      )}
+
       <div
         style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}
       >
@@ -364,6 +350,11 @@ export const InstalledPackagesTable = () => {
             searchPlaceholder: t('installedPackages.table.searchPlaceholder'),
           },
         }}
+      />
+      <InstalledPluginsDialog
+        open={openInstalledPackagesDialog}
+        onClose={setOpenInstalledPackagesDialog}
+        showPackages
       />
     </>
   );

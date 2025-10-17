@@ -32,10 +32,7 @@ const CardWrapper: FC<CardWrapperProps> = ({
   filter,
 }: CardWrapperProps) => {
   return (
-    <Box
-      component={Paper}
-      sx={{ border: theme => `1px solid ${theme.palette.grey[300]}` }}
-    >
+    <Paper elevation={1}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <Typography
           variant="h5"
@@ -51,11 +48,9 @@ const CardWrapper: FC<CardWrapperProps> = ({
 
         {filter && <Box>{filter}</Box>}
       </Box>
-      <Divider
-        sx={{ border: theme => `1px solid ${theme.palette.grey[300]}` }}
-      />
+      <Divider />
       <Box>{children}</Box>
-    </Box>
+    </Paper>
   );
 };
 

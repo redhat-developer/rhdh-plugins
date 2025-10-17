@@ -20,6 +20,7 @@ import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
 import { renderHook, screen, waitFor } from '@testing-library/react';
 
+import { lightspeedApiRef } from '../../api/api';
 import { useTranslation } from '../../hooks/useTranslation';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { LightspeedPage } from '../LightspeedPage';
@@ -38,6 +39,17 @@ const identityApi = {
     return { token: 'test-token' };
   },
 } as IdentityApi;
+
+const mockLightspeedApi = {
+  getAllModels: jest.fn().mockResolvedValue([]),
+  getConversationMessages: jest.fn().mockResolvedValue([]),
+  createMessage: jest.fn().mockResolvedValue(new Response().body),
+  deleteConversation: jest.fn().mockResolvedValue({ success: true }),
+  getConversations: jest.fn().mockResolvedValue([]),
+  getFeedbackStatus: jest.fn().mockResolvedValue(false),
+  captureFeedback: jest.fn().mockResolvedValue({ response: 'success' }),
+  isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
+};
 
 jest.mock('@mui/material', () => ({
   ...jest.requireActual('@mui/material'),
@@ -67,7 +79,12 @@ describe('LightspeedPage', () => {
     mockUsePermission.mockReturnValue({ loading: true, allowed: true });
 
     await renderInTestApp(
-      <TestApiProvider apis={[[identityApiRef, identityApi]]}>
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [lightspeedApiRef, mockLightspeedApi],
+        ]}
+      >
         <LightspeedPage />
       </TestApiProvider>,
     );
@@ -81,7 +98,12 @@ describe('LightspeedPage', () => {
     mockUsePermission.mockReturnValue({ loading: false, allowed: false });
 
     await renderInTestApp(
-      <TestApiProvider apis={[[identityApiRef, identityApi]]}>
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [lightspeedApiRef, mockLightspeedApi],
+        ]}
+      >
         <LightspeedPage />
       </TestApiProvider>,
     );
@@ -95,7 +117,12 @@ describe('LightspeedPage', () => {
     mockUsePermission.mockReturnValue({ loading: false, allowed: true });
 
     await renderInTestApp(
-      <TestApiProvider apis={[[identityApiRef, identityApi]]}>
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [lightspeedApiRef, mockLightspeedApi],
+        ]}
+      >
         <LightspeedPage />
       </TestApiProvider>,
     );

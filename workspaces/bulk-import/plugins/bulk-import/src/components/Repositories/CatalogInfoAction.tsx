@@ -62,6 +62,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
       return await bulkImportApi.getImportAction(
         repoUrl,
         defaultBranch || 'main',
+        data.approvalTool,
       );
     }
     return null;
@@ -97,7 +98,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   };
 
   useEffect(() => {
-    if (!loading && repoUrl && defaultBranch) {
+    if (!loading && repoUrl && defaultBranch && value) {
       const shouldOpenPanel =
         value?.status === RepositoryStatus.WAIT_PR_APPROVAL &&
         values.repositories[(value as ImportJobStatus)?.repository?.id];

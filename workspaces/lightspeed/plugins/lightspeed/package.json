@@ -1,13 +1,26 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-lightspeed",
-  "version": "0.5.7",
+  "version": "1.0.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.esm.js",
-    "types": "dist/index.d.ts"
+    "access": "public"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
   },
   "backstage": {
     "role": "frontend-plugin",
@@ -44,11 +57,11 @@
     "@material-ui/core": "^4.9.13",
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "^6.1.8",
-    "@patternfly/chatbot": "6.3.2",
-    "@patternfly/react-core": "6.3.1",
+    "@patternfly/chatbot": "6.4.0-prerelease.25",
+    "@patternfly/react-core": "6.4.0-prerelease.2",
+    "@patternfly/react-icons": "^6.3.1",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "@tanstack/react-query": "^5.59.15",
-    "openai": "^4.52.6",
     "react-markdown": "^9.0.1",
     "react-use": "^17.2.4"
   },
@@ -83,6 +96,8 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-lightspeed",
     "exposedModules": {
+      "Alpha": "./src/alpha.ts",
+      "PluginRoot": "./src/index.ts",
       "LightspeedPlugin": "./src/index.ts"
     }
   },

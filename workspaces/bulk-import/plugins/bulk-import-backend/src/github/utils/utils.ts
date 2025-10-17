@@ -310,3 +310,52 @@ export async function fetchFromAllIntegrations<T>(
 
   return { data, errors: aggregatedErrors };
 }
+
+export async function fetchFromMatchedIntegration<T>(
+  deps: {
+    logger: LoggerService;
+    cache: CacheService;
+    githubCredentialsProvider: CustomGithubCredentialsProvider;
+  },
+  integrations: ScmIntegrations,
+  repoUrl: string,
+  fetcher: (
+    octokit: Octokit,
+    gitUrl: gitUrlParse.GitUrl,
+  ) => Promise<T | undefined>,
+): Promise<{ data?: T; errors: GithubFetchError[] }> {
+  const gitUrl = gitUrlParse(repoUrl);
+  const errors = new Map<number, GithubFetchError>();
+
+  const ghConfig = integrations.github.byUrl(repoUrl)?.config;
+  if (!ghConfig) {
+    throw new Error(
+      `No GitHub integration config found for repo ${repoUrl}. Please add a configuration entry under 'integrations.github'`,
+    );
+  }
+
+  const credentials = await getCredentialsForConfig(
+    deps.githubCredentialsProvider,
+    ghConfig,
+  );
+
+  for (const credential of credentials) {
+    const octokit = buildOcto(
+      {
+        logger: deps.logger,
+        cache: deps.cache,
+      },
+      { credential, errors, owner: gitUrl.owner },
+      ghConfig.apiBaseUrl,
+    );
+    if (!octokit) {
+      continue;
+    }
+    const data = await fetcher(octokit, gitUrl);
+    if (data) {
+      return { data, errors: Array.from(errors.values()) };
+    }
+  }
+
+  return { errors: Array.from(errors.values()) };
+}

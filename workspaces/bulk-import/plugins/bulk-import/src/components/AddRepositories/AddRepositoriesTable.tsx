@@ -28,7 +28,6 @@ import {
   ApprovalTool as ApprovalToolEnum,
   RepositorySelection,
 } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
@@ -55,12 +54,13 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
     [searchInput],
   );
 
-  const { numberOfApprovalTools } = useNumberOfApprovalTools();
+  const { numberOfApprovalTools, githubConfigured } =
+    useNumberOfApprovalTools();
 
   return (
     <Box sx={{ width: '100%' }}>
       <Paper style={{ width: '100%' }}>
-        {numberOfApprovalTools > 1 && gitlabFeatureFlag && (
+        {numberOfApprovalTools > 1 && githubConfigured && (
           <ApprovalTool
             approvalTool={values.approvalTool}
             setFieldValue={setFieldValue}

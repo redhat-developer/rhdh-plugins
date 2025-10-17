@@ -208,7 +208,7 @@ export class MarketplaceBackendClient implements MarketplaceApi {
   ): Promise<{ status: string }> {
     return this.request(
       `/package/${encodeURIComponent(namespace)}/${encodeURIComponent(name)}/configuration/disable`,
-      'POST',
+      'PATCH',
       undefined,
       { disabled },
     );

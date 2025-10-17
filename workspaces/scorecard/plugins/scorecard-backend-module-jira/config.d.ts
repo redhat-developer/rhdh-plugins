@@ -16,11 +16,19 @@
 
 export interface Config {
   /** Configuration for jira plugin */
-  jira: {
-    baseUrl: string;
-    token: string;
+  jira: (
+    | {
+        /** Required only when using direct connection. */
+        baseUrl: string;
+        /** Required only when using direct connection. */
+        token: string;
+      }
+    | {
+        /** Required only when using proxy connection. */
+        proxyPath: string;
+      }
+  ) & {
     product: string;
-    apiVersion?: string;
   };
   /** Configuration for scorecard plugin */
   scorecard?: {

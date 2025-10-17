@@ -114,11 +114,11 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                   .describe(
                     'Filter by lifecycle (e.g., production, staging, development)',
                   ),
-                tags: z
-                  .array(z.string())
+                tags: z // Don't define using arrays - some mcp clients (notably llama stack) have issues decoding them (more investigation needed)
+                  .string()
                   .optional()
                   .describe(
-                    'Filter by tags (e.g., ["genai", "frontend", "api"])',
+                    'Filter by tags as comma-separated values (e.g., "genai,frontend,api")',
                   ),
               }),
             output: z =>
@@ -137,8 +137,11 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                           'The title field for each techdoc in the backstage server',
                         ),
                       tags: z
-                        .array(z.string())
-                        .describe('The tags related with the techdoc entity'),
+                        .string()
+                        .optional()
+                        .describe(
+                          'The tags related with the techdoc entity as comma-separated values',
+                        ),
                       description: z
                         .string()
                         .describe('The description of the techdoc entity'),
@@ -193,15 +196,21 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                             .optional()
                             .describe('ETag for caching purposes'),
                           files: z
-                            .array(z.string())
+                            .string()
                             .optional()
-                            .describe('List of files in the TechDocs site'),
+                            .describe(
+                              'List of files in the TechDocs site as comma-separated values',
+                            ),
                         })
                         .optional()
                         .describe('TechDocs metadata information'),
                     }),
                   )
                   .describe('List of entities with TechDocs'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if the operation failed'),
               }),
           },
           action: async ({ input }) => {
@@ -229,6 +238,7 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
               return {
                 output: {
                   entities: [],
+                  error: error.message,
                 },
               };
             }
@@ -282,10 +292,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                     'Filter by lifecycle (e.g., production, staging, development)',
                   ),
                 tags: z
-                  .array(z.string())
+                  .string()
                   .optional()
                   .describe(
-                    'Filter by tags (e.g., ["genai", "frontend", "api"])',
+                    'Filter by tags as comma-separated values (e.g., "genai,frontend,api")',
                   ),
               }),
             output: z =>
@@ -299,6 +309,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                 coveragePercentage: z
                   .number()
                   .describe('Percentage of entities with TechDocs (0-100)'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if the operation failed'),
               }),
           },
           action: async ({ input }) => {
@@ -326,6 +340,7 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                   totalEntities: 0,
                   entitiesWithDocs: 0,
                   coveragePercentage: 0,
+                  error: error.message,
                 },
               };
             }
@@ -440,6 +455,10 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                   })
                   .optional()
                   .describe('TechDocs metadata information'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if the operation failed'),
               }),
           },
           action: async ({ input }) => {
@@ -456,12 +475,6 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                 catalog,
               );
 
-              if (!result) {
-                throw new Error(
-                  `retrieve-techdocs-content: Failed to retrieve content for entity: ${input.entityRef}`,
-                );
-              }
-
               return {
                 output: result,
               };
@@ -470,7 +483,18 @@ export const mcpTechdocsRetrievalPlugin = createBackendPlugin({
                 'retrieve-techdocs-content: Error retrieving TechDocs content:',
                 error,
               );
-              throw error;
+              return {
+                output: {
+                  entityRef: input.entityRef,
+                  name: '',
+                  title: '',
+                  kind: '',
+                  namespace: '',
+                  content: '',
+                  contentType: 'text' as const,
+                  error: error.message,
+                },
+              };
             }
           },
         });

@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.3.2
+
+### Patch Changes
+
+- f86957a: Improve card styling consistency with Backstage design system
+
+  - Remove explicit borders from CardWrapper component to match standard Backstage card styling
+  - Replace custom border styling with Material-UI Paper elevation system for consistent visual appearance
+  - Update Divider component to use default styling without custom borders
+
+## 0.3.1
+
+### Patch Changes
+
+- fb54d82: safely parse the date so it works in different Node.js/browser environments
+
 ## 0.3.0
 
 ### Minor Changes

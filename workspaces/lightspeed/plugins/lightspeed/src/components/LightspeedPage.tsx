@@ -25,6 +25,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
+import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
 import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
@@ -59,9 +60,19 @@ const LightspeedPageInner = () => {
   );
 
   const [selectedModel, setSelectedModel] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState('');
+
+  const { data: topicRestrictionEnabled } = useTopicRestrictionStatus();
 
   const modelsItems = useMemo(
-    () => (models ? models.map(m => ({ label: m.id, value: m.id })) : []),
+    () =>
+      models
+        ? models.map(m => ({
+            label: m.provider_resource_id,
+            value: m.provider_resource_id,
+            provider: m.provider_id,
+          }))
+        : [],
     [models],
   );
 
@@ -76,7 +87,10 @@ const LightspeedPageInner = () => {
   }, [type]);
 
   useEffect(() => {
-    if (modelsItems.length > 0) setSelectedModel(modelsItems[0].value);
+    if (modelsItems.length > 0) {
+      setSelectedModel(modelsItems[0].value);
+      setSelectedProvider(modelsItems[0].provider);
+    }
   }, [modelsItems]);
 
   if (loading) {
@@ -97,8 +111,14 @@ const LightspeedPageInner = () => {
           <FileAttachmentContextProvider>
             <LightspeedChat
               selectedModel={selectedModel}
+              selectedProvider={selectedProvider}
+              topicRestrictionEnabled={topicRestrictionEnabled ?? false}
               handleSelectedModel={item => {
                 setSelectedModel(item);
+                setSelectedProvider(
+                  modelsItems.find((m: any) => m.value === item)?.provider ||
+                    '',
+                );
               }}
               models={modelsItems}
               userName={profile?.displayName}

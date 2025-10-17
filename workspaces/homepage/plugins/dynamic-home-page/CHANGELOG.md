@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.2
+
+### Patch Changes
+
+- 52f82ec: update quickaccess card's icon rendering logic
+- b8fb354: Updated dependency `@testing-library/jest-dom` to `6.9.1`.
+
+## 1.9.1
+
+### Patch Changes
+
+- dd5350f: French translation updated
+
+## 1.9.0
+
+### Minor Changes
+
+- 1e6b861: Add customizable homepage functionality with drag, drop, resize, and widget management capabilities
+
 ## 1.8.0
 
 ### Minor Changes

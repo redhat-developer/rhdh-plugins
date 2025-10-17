@@ -15,7 +15,7 @@
  */
 export const customScorecardResponse = [
   {
-    id: 'github.open-prs',
+    id: 'github.open_prs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -41,7 +41,7 @@ export const customScorecardResponse = [
     },
   },
   {
-    id: 'jira.open-issues',
+    id: 'jira.open_issues',
     status: 'success',
     metadata: {
       title: 'Jira open blocking tickets',
@@ -71,7 +71,7 @@ export const customScorecardResponse = [
 export const emptyScorecardResponse = [];
 
 const jiraOpenIssues = {
-  id: 'jira.open-issues',
+  id: 'jira.open_issues',
   status: 'success',
   metadata: {
     title: 'Jira open blocking tickets',
@@ -109,7 +109,7 @@ const jiraOpenIssues = {
 export const unavailableMetricResponse = [
   jiraOpenIssues,
   {
-    id: 'github.open-prs',
+    id: 'github.open_prs',
     status: 'error',
     metadata: {
       title: 'GitHub open PRs',
@@ -149,7 +149,7 @@ export const unavailableMetricResponse = [
 export const invalidThresholdResponse = [
   jiraOpenIssues,
   {
-    id: 'github.open-prs',
+    id: 'github.open_prs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -164,7 +164,7 @@ export const invalidThresholdResponse = [
       thresholdResult: {
         status: 'error',
         error:
-          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.open-prs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
+          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.open_prs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
       },
     },
   },

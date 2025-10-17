@@ -180,6 +180,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/dessert/cupcake',
       status: 'WAIT_PR_APPROVAL',
+      task: { taskId: '123' },
     },
     {
       approvalTool: ApprovalTool.Git,
@@ -203,6 +204,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/dessert/donut',
       status: 'WAIT_PR_APPROVAL',
+      task: { taskId: '124' },
     },
     {
       approvalTool: ApprovalTool.Git,
@@ -226,6 +228,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/food/food-app',
       status: 'WAIT_PR_APPROVAL',
+      task: { taskId: '125' },
     },
     {
       approvalTool: ApprovalTool.Git,
@@ -249,6 +252,7 @@ export const mockGetImportJobs: ImportJobs = {
       },
       id: 'org/pet-store-boston/pet-app',
       status: 'ADDED',
+      task: { taskId: '126' },
     },
   ],
   page: 1,
@@ -257,8 +261,12 @@ export const mockGetImportJobs: ImportJobs = {
 };
 
 export const mockSelectedRepositories: AddedRepositories = {
-  ['org/dessert/cupcake']: mockGetRepositories.repositories[0],
-  ['org/dessert/donut']: mockGetRepositories.repositories[1],
-  ['org/dessert/eclair']: mockGetRepositories.repositories[2],
-  ['org/dessert/frozenyogurt']: mockGetRepositories.repositories[3],
+  ['org/dessert/cupcake']: {
+    ...mockGetRepositories.repositories[0],
+  },
+  ['org/dessert/donut']: { ...mockGetRepositories.repositories[1] },
+  ['org/dessert/eclair']: { ...mockGetRepositories.repositories[2] },
+  ['org/dessert/frozenyogurt']: {
+    ...mockGetRepositories.repositories[3],
+  },
 };

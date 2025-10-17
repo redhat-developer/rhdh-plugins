@@ -2,17 +2,24 @@
 
 This is an extension module to the `backstage-plugin-scorecard-backend` plugin. It provides Jira-specific metrics for software components registered in the Backstage catalog.
 
+## Supported versions
+
+- Supported API version for Jira Cloud is **3**.
+- Supported API version for Jira Data Center is **2**.
+
 ## Prerequisites
 
 Before installing this module, ensure that the Scorecard backend plugin is integrated into your Backstage instance. Follow the [Scorecard backend plugin README](../scorecard-backend/README.md) for setup instructions.
 
-This module also requires a Jira integration to be configured in your `app-config.yaml`. The following example of configuration can help:
+This module also requires a Jira integration to be configured in your `app-config.yaml`. This module supports **Direct** OR **Proxy** jira integration. The following example of configuration can help:
 
-**Configuration `token`:**
+## Configuration
+
+### Authentification `token`
 
 - For the `cloud` product:
 
-  - Obtain your personal token from Jira
+  - Obtain your personal token from Jira. Please use the following link to create token: [link](https://id.atlassian.com/manage-profile/security/api-tokens).
   - Create a Base64-encoded string from the following plain text format: `your-atlassian-email:your-jira-api-token`:
 
   ```bash
@@ -29,8 +36,12 @@ This module also requires a Jira integration to be configured in your `app-confi
   ```
 
 - For the `datacenter` product:
-  - Obtain your personal token from Jira
+  - Obtain your personal token from Jira. Please use the following link to the Jira documentation for information on how to generate a token: [link](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
   - Use the Jira token without changing
+
+### Configuration **Direct** Jira integration
+
+Provide the following config to `app-config.yaml` file:
 
 ```yaml
 jira:
@@ -40,8 +51,51 @@ jira:
   token: ${JIRA_TOKEN}
   # Required: Supported products: `cloud` or `datacenter`
   product: cloud
-  # By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: '3'
+```
+
+### Configuration **Proxy** jira integration
+
+Provide the following config to `app-config.yaml` file:
+
+```yaml
+jira:
+  # Required
+  proxyPath: /jira/api
+  # Required: Supported products: `cloud` or `datacenter`
+  product: cloud
+
+# This proxy configuration presented only as an example
+proxy:
+  endpoints:
+    '/jira/api':
+      target: https://example.atlassian.net
+      headers:
+        Accept: 'application/json'
+        Content-Type: 'application/json'
+        X-Atlassian-Token: 'no-check'
+        # Required: (For cloud use 'Basic YourCreatedAboveToken', for datacenter use 'Bearer YourJiraToken')
+        Authorization: Basic SomeTokenHere
+```
+
+### Threshold Configuration
+
+Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the Jira metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
+
+### Options Configuration
+
+Options define configuration that affect fetch jira issues global configuration, but all options are optional. This settings are closely related with annotation settings and whole jira issues loading process.
+
+```yaml
+# app-config.yaml
+scorecard:
+  plugins:
+    jira:
+      open_issues:
+        options:
+          # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
+          mandatoryFilter: Type = Task AND Resolution = Resolved
+          # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
+          customFilter: priority in ("Critical", "Blocker")
 ```
 
 ## Installation
@@ -118,38 +172,15 @@ This metric counts all jira issues that match the filter condition specified in 
 ```yaml
 # app-config.yaml
 scorecard:
-plugins:
-  jira:
-    open_issues:
-      thresholds:
-        rules:
-          - key: success
-            expression: '<=50'
-          - key: warning
-            expression: '>50'
-          - key: error
-            expression: '>100'
-```
-
-## Configuration
-
-### Threshold Configuration
-
-Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the Jira metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
-
-### Options Configuration
-
-Options define configuration that affect fetch jira issues global configuration, but all options are optional. This settings are closely related with annotation settings and whole jira issues loading process.
-
-```yaml
-# app-config.yaml
-scorecard:
-plugins:
-  jira:
-    open_issues:
-      options:
-        # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
-        mandatoryFilter: Type = Task AND Resolution = Resolved
-        # Optional: use to specify global customFilter, however the annotation `jira/custom-filter` will replaces them
-        customFilter: priority in ("Critical", "Blocker")
+  plugins:
+    jira:
+      open_issues:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<=50'
+            - key: warning
+              expression: '>50'
+            - key: error
+              expression: '>100'
 ```

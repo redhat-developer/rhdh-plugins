@@ -26,7 +26,7 @@ import { themeId } from '../consts';
 import { packageRouteRef, packagesRouteRef } from '../routes';
 import { ReactQueryProvider } from '../components/ReactQueryProvider';
 import { usePackage } from '../hooks/usePackage';
-import { MarketplacePackageContentLoader } from '../components/MarketplacePackageContent';
+import { MarketplacePackageContent } from '../components/MarketplacePackageContent';
 
 const PackageHeader = () => {
   const params = useRouteRefParams(packageRouteRef);
@@ -44,7 +44,7 @@ export const MarketplacePackagePage = () => (
       <PackageHeader />
       <Content>
         <ErrorBoundary>
-          <MarketplacePackageContentLoader />
+          <MarketplacePackageContent />
         </ErrorBoundary>
       </Content>
     </Page>

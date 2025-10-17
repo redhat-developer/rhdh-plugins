@@ -19,7 +19,9 @@ export async function assertChatDialogInitialState(page: Page) {
   await expect(page.getByLabel('Chatbot', { exact: true })).toContainText(
     'Developer Lightspeed',
   );
-  await expect(page.getByRole('button', { name: 'Toggle menu' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Chat history menu' }),
+  ).toBeVisible();
   await assertDrawerState(page, 'open');
 }
 
@@ -29,7 +31,7 @@ export async function closeChatDrawer(page: Page) {
 }
 
 export async function openChatDrawer(page: Page) {
-  const toggleButton = page.getByRole('button', { name: 'Toggle menu' });
+  const toggleButton = page.getByRole('button', { name: 'Chat history menu' });
   await toggleButton.click();
 }
 
@@ -41,7 +43,7 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
 
   const checks = [
     page.getByRole('button', { name: 'Close drawer panel' }),
-    page.getByRole('textbox', { name: 'Filter menu items' }),
+    page.getByRole('textbox', { name: 'Search previous conversations' }),
     page.getByRole('separator', { name: 'Resize' }),
   ];
 
@@ -51,7 +53,7 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
 }
 
 export async function verifySidePanelConversation(page: Page) {
-  const sidePanel = page.locator('.pf-v6-c-drawer__panel');
+  const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
   await expect(sidePanel).toBeVisible();
 
   const newButton = sidePanel.getByRole('button', { name: 'new chat' });

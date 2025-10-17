@@ -5989,7 +5989,7 @@ __metadata:
     "@backstage/repo-tools": ^0.15.1
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
-    "@playwright/test": 1.55.1
+    "@playwright/test": 1.56.0
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -8497,9 +8497,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.3.2":
-  version: 6.3.2
-  resolution: "@patternfly/chatbot@npm:6.3.2"
+"@patternfly/chatbot@npm:6.4.0-prerelease.25":
+  version: 6.4.0-prerelease.25
+  resolution: "@patternfly/chatbot@npm:6.4.0-prerelease.25"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -8507,7 +8507,6 @@ __metadata:
     "@patternfly/react-table": ^6.1.0
     "@segment/analytics-next": ^1.76.0
     clsx: ^2.1.0
-    framer-motion: ^11.3.28
     path-browserify: ^1.0.1
     posthog-js: ^1.194.4
     react-markdown: ^9.0.1
@@ -8517,9 +8516,9 @@ __metadata:
     remark-gfm: ^4.0.0
     unist-util-visit: ^5.0.0
   peerDependencies:
-    react: ^17 || ^18 || ^19
-    react-dom: ^17 || ^18 || ^19
-  checksum: 7ce6a12f84631e982a607304a829cbf8ca3477febaf016b0682170260880b4b5ff334c970b053e79e2e058d5c17f90517e353b98a033b5a37a6a1a9c6dcc452b
+    react: ^18 || ^19
+    react-dom: ^18 || ^19
+  checksum: e48f86a61713c75b350e926fd177bebf4fb629c56917a04fc7cd2e1b916863c0918de5b322f51f15a6c152bea722875e46796542c3d57ec1e5e76de5efd14412
   languageName: node
   linkType: hard
 
@@ -8540,7 +8539,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/react-core@npm:6.3.1, @patternfly/react-core@npm:^6.1.0":
+"@patternfly/react-core@npm:6.4.0-prerelease.2":
+  version: 6.4.0-prerelease.2
+  resolution: "@patternfly/react-core@npm:6.4.0-prerelease.2"
+  dependencies:
+    "@patternfly/react-icons": ^6.4.0-prerelease.2
+    "@patternfly/react-styles": ^6.4.0-prerelease.2
+    "@patternfly/react-tokens": ^6.4.0-prerelease.2
+    focus-trap: 7.6.4
+    react-dropzone: ^14.3.5
+    tslib: ^2.8.1
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+    react-dom: ^17 || ^18 || ^19
+  checksum: ac5da6fb423d28d58e151784c0f8f2e0152fccbb0c7dcdf1da819af4446cff8a3a871517122238f3007fea65fb5cb17bf7b87026cf97cea4ad327add18b2d386
+  languageName: node
+  linkType: hard
+
+"@patternfly/react-core@npm:^6.1.0":
   version: 6.3.1
   resolution: "@patternfly/react-core@npm:6.3.1"
   dependencies:
@@ -8567,10 +8583,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@patternfly/react-icons@npm:^6.4.0-prerelease.2":
+  version: 6.4.0-prerelease.2
+  resolution: "@patternfly/react-icons@npm:6.4.0-prerelease.2"
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+    react-dom: ^17 || ^18 || ^19
+  checksum: b2f9c3caf87a48ad595425b2e48a4ef8ca6cb0f270a85757c72fba6148be7a99e515081a18c31b1f689c80f189bfb5200a81b51d8e59fe31ea6145759e7cb753
+  languageName: node
+  linkType: hard
+
 "@patternfly/react-styles@npm:^6.1.0, @patternfly/react-styles@npm:^6.3.1":
   version: 6.3.1
   resolution: "@patternfly/react-styles@npm:6.3.1"
   checksum: f8b8e8af84af6a68234685557d063be0bdfae41ce3db515ce86191f6a1749cdf295ea610d63c69797c859e31fa94763844a890fb5105d5149134fcb0ab165258
+  languageName: node
+  linkType: hard
+
+"@patternfly/react-styles@npm:^6.4.0-prerelease.2":
+  version: 6.4.0-prerelease.2
+  resolution: "@patternfly/react-styles@npm:6.4.0-prerelease.2"
+  checksum: d9c3e139053891aa93eab698ae9502343945163e933d35d47f622ba0eb15a3aa99519c3cd2214c02fcec5877f12d155dc5e6f147c0ca0e38ebe983fa6d41cb92
   languageName: node
   linkType: hard
 
@@ -8598,6 +8631,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@patternfly/react-tokens@npm:^6.4.0-prerelease.2":
+  version: 6.4.0-prerelease.2
+  resolution: "@patternfly/react-tokens@npm:6.4.0-prerelease.2"
+  checksum: 6f46c83e64609ff7d3bf9514b37d36a94c4c9d799429e427b9896a7c21f52f25b1e6627158f289577ac775ae719bb03736d271a883bfc8e591ed70a5c4451677
+  languageName: node
+  linkType: hard
+
 "@pkgjs/parseargs@npm:^0.11.0":
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
@@ -8605,14 +8645,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.55.1":
-  version: 1.55.1
-  resolution: "@playwright/test@npm:1.55.1"
+"@playwright/test@npm:1.56.0":
+  version: 1.56.0
+  resolution: "@playwright/test@npm:1.56.0"
   dependencies:
-    playwright: 1.55.1
+    playwright: 1.56.0
   bin:
     playwright: cli.js
-  checksum: 8df3bd1dde94c94c172e0f727ebbeee8ba7c35d7438e3b487ab598dbef221a8bc0685546c5e10624ffd5d0caec52c79ef6f4d13187dee353d47f14e70a408bee
+  checksum: 66e7470d1e015a778e7fa3e88d027f095f07fc57fe00ef5ce3a1c17b7f99a5c85aa13dd3a62734b57849d0558a33103828bfcf5a110e092cff6100d086e35aa0
   languageName: node
   linkType: hard
 
@@ -9314,8 +9354,9 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.3.2
-    "@patternfly/react-core": 6.3.1
+    "@patternfly/chatbot": 6.4.0-prerelease.25
+    "@patternfly/react-core": 6.4.0-prerelease.2
+    "@patternfly/react-icons": ^6.3.1
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@tanstack/react-query": ^5.59.15
@@ -9324,7 +9365,6 @@ __metadata:
     "@testing-library/react": ^15.0.0
     "@testing-library/user-event": 14.6.1
     msw: 1.3.5
-    openai: ^4.52.6
     prettier: 3.6.2
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: 16.13.1 || ^17.0.0 || ^18.0.0
@@ -12395,7 +12435,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node-fetch@npm:^2.6.4, @types/node-fetch@npm:^2.6.9":
+"@types/node-fetch@npm:^2.6.9":
   version: 2.6.12
   resolution: "@types/node-fetch@npm:2.6.12"
   dependencies:
@@ -13607,7 +13647,7 @@ __metadata:
     "@backstage/theme": ^0.6.8
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@playwright/test": 1.55.1
+    "@playwright/test": 1.56.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "*"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
@@ -19032,13 +19072,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data-encoder@npm:1.7.2":
-  version: 1.7.2
-  resolution: "form-data-encoder@npm:1.7.2"
-  checksum: aeebd87a1cb009e13cbb5e4e4008e6202ed5f6551eb6d9582ba8a062005178907b90f4887899d3c993de879159b6c0c940af8196725b428b4248cec5af3acf5f
-  languageName: node
-  linkType: hard
-
 "form-data-encoder@npm:^1.7.2":
   version: 1.9.0
   resolution: "form-data-encoder@npm:1.9.0"
@@ -19087,7 +19120,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"formdata-node@npm:^4.3.2, formdata-node@npm:^4.3.3":
+"formdata-node@npm:^4.3.3":
   version: 4.4.1
   resolution: "formdata-node@npm:4.4.1"
   dependencies:
@@ -19125,28 +19158,6 @@ __metadata:
   version: 0.2.0
   resolution: "forwarded@npm:0.2.0"
   checksum: fd27e2394d8887ebd16a66ffc889dc983fbbd797d5d3f01087c020283c0f019a7d05ee85669383d8e0d216b116d720fc0cef2f6e9b7eb9f4c90c6e0bc7fd28e6
-  languageName: node
-  linkType: hard
-
-"framer-motion@npm:^11.3.28":
-  version: 11.18.2
-  resolution: "framer-motion@npm:11.18.2"
-  dependencies:
-    motion-dom: ^11.18.1
-    motion-utils: ^11.18.1
-    tslib: ^2.4.0
-  peerDependencies:
-    "@emotion/is-prop-valid": "*"
-    react: ^18.0.0 || ^19.0.0
-    react-dom: ^18.0.0 || ^19.0.0
-  peerDependenciesMeta:
-    "@emotion/is-prop-valid":
-      optional: true
-    react:
-      optional: true
-    react-dom:
-      optional: true
-  checksum: 99ce30d07398b97f4c98829b0679f7603c820f796113045683cfdd44323ff744a7be530d65077db42e044d3323c8503a18c876a8a88f3ded2b40889ce2acb6ac
   languageName: node
   linkType: hard
 
@@ -25489,22 +25500,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^11.18.1":
-  version: 11.18.1
-  resolution: "motion-dom@npm:11.18.1"
-  dependencies:
-    motion-utils: ^11.18.1
-  checksum: c801aad3a9268221a0c346d71aae68cc2ddf3f5063ce02bbb6d9f4b7c509de16aa2eae3a8e5f0423087d38110bd17a8a75886f646bf9225ba4bad97a50e3ab76
-  languageName: node
-  linkType: hard
-
-"motion-utils@npm:^11.18.1":
-  version: 11.18.1
-  resolution: "motion-utils@npm:11.18.1"
-  checksum: e8789e50dce6e952226608e8f7eb8e03779332849f38c70cc9e1fbd5e34f2e6d0efb2d565091de999135ec3a3d4a0df1a796833cccd8f6a2313f81445c6e5b83
-  languageName: node
-  linkType: hard
-
 "mri@npm:1.1.4":
   version: 1.1.4
   resolution: "mri@npm:1.1.4"
@@ -26470,31 +26465,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^4.52.6":
-  version: 4.93.0
-  resolution: "openai@npm:4.93.0"
-  dependencies:
-    "@types/node": ^18.11.18
-    "@types/node-fetch": ^2.6.4
-    abort-controller: ^3.0.0
-    agentkeepalive: ^4.2.1
-    form-data-encoder: 1.7.2
-    formdata-node: ^4.3.2
-    node-fetch: ^2.6.7
-  peerDependencies:
-    ws: ^8.18.0
-    zod: ^3.23.8
-  peerDependenciesMeta:
-    ws:
-      optional: true
-    zod:
-      optional: true
-  bin:
-    openai: bin/cli
-  checksum: 39fa6635475590c05c5fcb1fd07708c8f23d430dad36037c49fe25020ada0a4a36801e5c443669acd8f947d52005e3b7cf0215ca4b76262007f9b1ea3c916a68
-  languageName: node
-  linkType: hard
-
 "openapi-merge@npm:^1.3.2":
   version: 1.3.3
   resolution: "openapi-merge@npm:1.3.3"
@@ -27410,27 +27380,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.55.1":
-  version: 1.55.1
-  resolution: "playwright-core@npm:1.55.1"
+"playwright-core@npm:1.56.0":
+  version: 1.56.0
+  resolution: "playwright-core@npm:1.56.0"
   bin:
     playwright-core: cli.js
-  checksum: a2b981223fd8f5c50a4e0b6cc36a3ce40b41919d418b564561f085bcd6c8ce9df2354e687fbc76e662fddb9f2b28d0bc1f0124c085958406fcab6c6cf3b8228f
+  checksum: 29240317dc8ddcfa389899ac9dbce8a6f451e85b50c9ee105282c72d7a4cc37dad274b18037c8021d88e1317ebd5a779d56e3dc15aa358a5a8a9de87762918ef
   languageName: node
   linkType: hard
 
-"playwright@npm:1.55.1":
-  version: 1.55.1
-  resolution: "playwright@npm:1.55.1"
+"playwright@npm:1.56.0":
+  version: 1.56.0
+  resolution: "playwright@npm:1.56.0"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.55.1
+    playwright-core: 1.56.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 4935122ed687cd14861d64e6fdc79613d36d45f1363e911213a338da9993525d3872d7379300471f70209e1ad68ec91c0d65f0136e6c09c0775477943aaf7fb3
+  checksum: 1756504fb60338dc18d8887866b3ef079b24e150c54052ba6a94099c6fc8fa018ebbe9aa93e618b703cfa357fd55193f990d080dbb173529c93a0e3df49f1d01
   languageName: node
   linkType: hard
 

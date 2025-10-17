@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
+import { InputError } from '@backstage/errors';
+
 import gitUrlParse from 'git-url-parse';
 
 export function getNestedValue<T>(obj: T, path: string): any {
@@ -62,4 +65,26 @@ export function parseGitURLForApprovalTool(repoUrl: string) {
   }
 
   return 'GIT';
+}
+
+export function getImportTemplateRef(templateRef: string): string {
+  try {
+    const { name, namespace, kind } = parseEntityRef(templateRef, {
+      defaultKind: 'template',
+      defaultNamespace: 'default',
+    });
+
+    if (kind !== 'template') {
+      throw new InputError(
+        `Invalid 'kind' in bulkImport.importTemplate: expected 'template' but got '${kind}'.`,
+      );
+    }
+
+    return stringifyEntityRef({ kind, namespace, name });
+  } catch (err) {
+    throw new InputError(
+      `Invalid scaffolder template entity reference in the configuration 'bulkImport.importTemplate': '${templateRef}'. ` +
+        `Error: ${(err as Error).message}`,
+    );
+  }
 }

@@ -32,6 +32,7 @@ import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
 import { useDropdownManager } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
+import { translateWithFallback } from '../../utils/translationUtils';
 
 /**
  * @public
@@ -120,11 +121,17 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
       .map(mp => {
         const {
           title = '',
+          titleKey = '',
           icon = '',
           link: staticLink = '',
           type = '',
         } = mp.config?.props ?? {};
-        const isMyProfile = type === 'myProfile';
+        // The title fallbacks are to be backward compatibility with older versions
+        // of the global-header configuration if a customer has customized it.
+        const isMyProfile =
+          type === 'myProfile' ||
+          title === 'profile.myProfile' ||
+          title === 'My profile';
         const link = isMyProfile ? profileLink ?? '' : staticLink;
 
         // Hide "My Profile" for guest users or when user doesn't exist in catalog
@@ -137,10 +144,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
           return null;
         }
 
-        // Check if title looks like a translation key (contains dots)
-        const translatedTitle = title?.includes('.')
-          ? t(title as any, {}) || title // Fallback to original title if translation fails
-          : title;
+        const translatedTitle = translateWithFallback(t, titleKey, title);
 
         return {
           Component: mp.Component,

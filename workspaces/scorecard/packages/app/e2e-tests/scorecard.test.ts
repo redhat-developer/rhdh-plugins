@@ -131,7 +131,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
     await errorLocator.hover();
     const errorMetric = unavailableMetricResponse.find(
-      metric => metric.id === 'github.open-prs',
+      metric => metric.id === 'github.open_prs',
     );
 
     if (errorMetric && 'error' in errorMetric) {
@@ -173,7 +173,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
     await errorLocator.hover();
     const errorTooltip = invalidThresholdResponse.find(
-      metric => metric.id === 'github.open-prs',
+      metric => metric.id === 'github.open_prs',
     )?.result?.thresholdResult;
 
     if (errorTooltip && 'error' in errorTooltip) {

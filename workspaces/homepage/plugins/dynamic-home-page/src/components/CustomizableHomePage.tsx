@@ -26,6 +26,7 @@ import { CustomizableGrid } from './CustomizableGrid';
 
 export interface HomePageProps extends HeaderProps {
   cards?: HomePageCardMountPoint[];
+  defaultCards?: HomePageCardMountPoint[];
 }
 
 export const CustomizableHomePage = (props: HomePageProps) => {
@@ -55,7 +56,10 @@ export const CustomizableHomePage = (props: HomePageProps) => {
         {filteredAndSortedHomePageCards.length === 0 ? (
           <EmptyState title={t('homePage.empty')} missing="content" />
         ) : (
-          <CustomizableGrid mountPoints={filteredAndSortedHomePageCards} />
+          <CustomizableGrid
+            mountPoints={filteredAndSortedHomePageCards}
+            defaultMountPoints={props.defaultCards}
+          />
         )}
       </Content>
     </Page>

@@ -61,6 +61,7 @@ export const pushCtaEvent = (
         text: itemName,
         href: href,
         linkType: 'cta',
+        linkTypeName: 'cross property link',
         ...(internalCampaign && { internalCampaign }),
       },
     };

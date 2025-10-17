@@ -116,7 +116,7 @@ export const MarketplacePackageEditContent = ({
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { installedPlugins, setInstalledPlugins } = useInstallationContext();
+  const { installedPackages, setInstalledPackages } = useInstallationContext();
   const queryClient = useQueryClient();
 
   // Populate editor from backend config when available; otherwise set default template once
@@ -164,16 +164,27 @@ export const MarketplacePackageEditContent = ({
   const packageDynamicArtifacts = {
     [`${pkg.metadata.name}`]: pkg.spec?.dynamicArtifact,
   };
-  const availableTabs = [
-    !!Object.values(examples[0])[0] && {
-      label: t('install.examples'),
-      content: examples,
-      key: 'examples',
-      others: { packageNames: packageDynamicArtifacts },
-    },
-  ].filter(tab => tab) as TabItem[];
 
-  const showRightCard = examples;
+  const packageExamples =
+    Array.isArray(examples) && examples.length > 0
+      ? Object.values(examples[0])?.[0]
+      : [];
+
+  const hasPackageExamples =
+    Array.isArray(packageExamples) && packageExamples.length > 0;
+
+  const availableTabs = hasPackageExamples
+    ? ([
+        {
+          label: 'Examples',
+          content: examples,
+          key: 'examples',
+          others: { packageNames: packageDynamicArtifacts },
+        },
+      ] as TabItem[])
+    : [];
+
+  const showRightCard = hasPackageExamples;
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (_: any, newValue: SetStateAction<number>) => {
@@ -232,12 +243,12 @@ export const MarketplacePackageEditContent = ({
 
       if ((res as any)?.status === 'OK') {
         const updated = {
-          ...installedPlugins,
+          ...installedPackages,
           [pkg.metadata.title ?? pkg.metadata.name]: t(
             'install.packageUpdated',
           ),
         };
-        setInstalledPlugins(updated);
+        setInstalledPackages(updated);
         queryClient.invalidateQueries({
           queryKey: [
             'marketplaceApi',
@@ -246,11 +257,8 @@ export const MarketplacePackageEditContent = ({
             pkg.metadata.name,
           ],
         });
-        const ns = pkg.metadata.namespace ?? params.namespace;
-        const name = pkg.metadata.name;
         const preserved = new URLSearchParams(location.search);
-        preserved.set('package', `${ns}/${name}`);
-        navigate(`/extensions/installed-packages?${preserved.toString()}`);
+        navigate(`/extensions/installed-packages??${preserved.toString()}`);
       } else {
         setSaveError(
           (res as any)?.error?.message ?? t('install.errors.failedToSave'),
@@ -406,8 +414,15 @@ export const MarketplacePackageEditContent = ({
             const ns = pkg.metadata.namespace ?? params.namespace;
             const name = pkg.metadata.name;
             const preserved = new URLSearchParams(location.search);
-            preserved.set('package', `${ns}/${name}`);
-            navigate(`/extensions/installed-packages?${preserved.toString()}`);
+            if (location?.state?.editAction) {
+              navigate(
+                `/extensions/installed-packages?${preserved.toString()}`,
+              );
+            } else {
+              navigate(
+                `/extensions/installed-packages/${ns}/${name}?${preserved.toString()}`,
+              );
+            }
           }}
         >
           {t('install.cancel')}

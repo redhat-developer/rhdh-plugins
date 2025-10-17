@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { RepositoryStatus } from './types';
+import { ApprovalTool, RepositoryStatus } from './types';
 
 export type Repository = {
   id: string;
@@ -27,28 +27,15 @@ export type Repository = {
   totalRepoCount?: number;
 };
 
+export interface ScaffolderTask {
+  taskId: string;
+  repositoryId: number;
+}
+
 export type ImportJobResponse = {
   errors: RepositoryStatus[];
   status: RepositoryStatus;
   catalogEntityName?: string;
-  repository: Repository;
-};
-
-export type ImportJobStatus = {
-  approvalTool: string;
-  github: {
-    pullRequest: {
-      number: number;
-      url: string;
-      title: string;
-      body: string;
-      catalogInfoContent: string;
-    };
-  };
-  status: string;
-  id: string;
-  source?: 'location' | 'config' | 'integration';
-  lastUpdate: string;
   repository: Repository;
 };
 
@@ -59,6 +46,35 @@ export type ImportJobs = {
   totalCount: number;
 };
 
+export type PullRequest = {
+  number: number;
+  url: string;
+  title: string;
+  body: string;
+  catalogInfoContent: string;
+};
+
+export type ImportJobStatus<
+  Provider extends 'github' | 'gitlab' = 'github' | 'gitlab',
+> = {
+  approvalTool: ApprovalTool;
+  task?: {
+    taskId: string;
+  };
+  tasks?: ScaffolderTask[];
+  status: string;
+  id: string;
+  source?: 'location' | 'config' | 'integration';
+  lastUpdate: string;
+  repository: Repository;
+} & Partial<Record<Provider, { pullRequest: PullRequest }>>;
+
+export function isGithubJob(
+  job: ImportJobStatus<'github'> | ImportJobStatus<'gitlab'>,
+): job is ImportJobStatus<'github'> {
+  return 'github' in job;
+}
+
 export type OrgAndRepoResponse = {
   errors?: string[];
   repositories?: Repository[];
@@ -66,4 +82,5 @@ export type OrgAndRepoResponse = {
   totalCount: number;
   pagePerIntegration: number;
   sizePerIntegration: number;
+  approvalTool?: ApprovalTool;
 };

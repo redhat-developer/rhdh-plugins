@@ -161,7 +161,7 @@ export const mockFileInstallationStorage = {
   }),
   updatePackage: jest.fn(),
   updatePackages: jest.fn(),
-  addPackageDisabled: jest.fn(),
+  setPackageDisabled: jest.fn(),
   setPackagesDisabled: jest.fn(),
 } as unknown as jest.Mocked<FileInstallationStorage>;
 
@@ -171,7 +171,7 @@ export const mockInstallationDataService = {
   getInitializationError: jest.fn().mockReturnValue(undefined),
   updatePackageConfig: jest.fn(),
   updatePluginConfig: jest.fn(),
-  addPackageDisabled: jest.fn(),
+  setPackageDisabled: jest.fn(),
   setPluginDisabled: jest.fn(),
 } as unknown as jest.Mocked<InstallationDataService>;
 

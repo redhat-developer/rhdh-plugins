@@ -5,7 +5,7 @@ kind: Component
 metadata:
   name: jira-scorecard-only-service
   annotations:
-    jira/project-key: RHDHBUGS
+    jira/project-key: RSPT
 spec:
   type: service
   owner: janus-authors

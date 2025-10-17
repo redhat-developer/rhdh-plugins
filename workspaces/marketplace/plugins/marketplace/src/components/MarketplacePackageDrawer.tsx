@@ -15,7 +15,7 @@
  */
 
 import { useState, useLayoutEffect } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { ErrorBoundary } from '@backstage/core-components';
 
@@ -25,26 +25,26 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import { useTheme } from '@mui/material/styles';
 
-import { MarketplacePackageContentLoader } from './MarketplacePackageContent';
+import { MarketplacePackageContent } from './MarketplacePackageContent';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import { installedTabRouteRef } from '../routes';
 
 export const MarketplacePackageDrawer = () => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [searchParams] = useSearchParams();
-  const location = useLocation();
   useLayoutEffect(() => {
-    setOpen(!!searchParams.get('package'));
-  }, [searchParams]);
+    setOpen(true);
+  }, []);
 
   const navigate = useNavigate();
+  const installedPackagesPath = `${useRouteRef(installedTabRouteRef)()}${searchParams.size > 0 ? '?' : ''}${searchParams}`;
+
   const theme = useTheme();
+
   const handleClose = () => {
     setOpen(false);
-    const params = new URLSearchParams(location.search);
-    params.delete('package');
-    const qs = params.toString();
-    const target = qs ? `${location.pathname}?${qs}` : location.pathname;
     setTimeout(
-      () => navigate(target),
+      () => navigate(installedPackagesPath),
       theme.transitions.duration.leavingScreen,
     );
   };
@@ -70,7 +70,7 @@ export const MarketplacePackageDrawer = () => {
       </IconButton>
       <ErrorBoundary>
         <Box sx={{ '> article': { backgroundColor: 'transparent' } }}>
-          <MarketplacePackageContentLoader />
+          <MarketplacePackageContent />
         </Box>
       </ErrorBoundary>
     </Drawer>

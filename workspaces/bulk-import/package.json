@@ -6,7 +6,7 @@
     "node": "18 || 20"
   },
   "scripts": {
-    "start": "backstage-cli repo start",
+    "start": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
@@ -20,6 +20,7 @@
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },

@@ -37,7 +37,7 @@ describe('useScorecards', () => {
   };
 
   const mockEntity = {
-    apiVersion: 'v1',
+    apiVersion: 'backstage.io/v1alpha1',
     kind: 'Component',
     metadata: {
       namespace: 'default',
@@ -206,7 +206,7 @@ describe('useScorecards', () => {
   describe('error handling', () => {
     it('should handle missing entity kind', () => {
       const entityWithoutKind = {
-        apiVersion: 'v1',
+        apiVersion: 'backstage.io/v1alpha1',
         metadata: {
           namespace: 'default',
           name: 'test-component',
@@ -235,7 +235,7 @@ describe('useScorecards', () => {
 
     it('should handle missing entity namespace', () => {
       const entityWithoutNamespace = {
-        apiVersion: 'v1',
+        apiVersion: 'backstage.io/v1alpha1',
         kind: 'Component',
         metadata: {
           name: 'test-component',
@@ -263,7 +263,7 @@ describe('useScorecards', () => {
 
     it('should handle missing entity name', () => {
       const entityWithoutName = {
-        apiVersion: 'v1',
+        apiVersion: 'backstage.io/v1alpha1',
         kind: 'Component',
         metadata: {
           namespace: 'default',

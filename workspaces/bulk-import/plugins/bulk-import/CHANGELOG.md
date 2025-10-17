@@ -1,5 +1,49 @@
 ### Dependencies
 
+## 1.18.1
+
+### Patch Changes
+
+- 0c89f33: Updated dependency `@playwright/test` to `1.56.0`.
+
+## 1.18.0
+
+### Minor Changes
+
+- 8c33ce4: Enable GitLab frontend support. Restore previously removed approval tool parameters in the backend.
+
+## 1.17.2
+
+### Patch Changes
+
+- 4c5967e: Make bulkImport configuration optional again to be backward compatible
+
+## 1.17.1
+
+### Patch Changes
+
+- 433fde0: Include config.d.ts in the bulk-import plugin release bundle.
+
+## 1.17.0
+
+### Minor Changes
+
+- 2a31b02: Implement scaffolder template execution for the bulk-import plugin.
+
+### Patch Changes
+
+- 316e356: Migrate from rhdh-theme to the theme within rhdh-plugins repo.
+- cc7083f: Use a single react-query QueryClient instance for all pages and remove the need to have one in the app.
+- Updated dependencies [2a31b02]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.10.0
+
+## 1.16.1
+
+### Patch Changes
+
+- dd5350f: French translation updated
+- b338a66: Updated dependency `@playwright/test` to `1.55.1`.
+
 ## 1.16.0
 
 ### Minor Changes

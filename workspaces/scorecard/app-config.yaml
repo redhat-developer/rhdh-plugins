@@ -1,12 +1,3 @@
-jira:
-  # Required
-  baseUrl: https://issues.redhat.com
-  # Required
-  token: dummy_token
-  # Required: Supported products: `cloud` or `datacenter`
-  product: cloud
-  # By default, the latest version is used. You can omit this prop when using the latest version.
-  apiVersion: '2'
 app:
   title: Scaffolded Backstage App
   baseUrl: http://localhost:3000
@@ -53,12 +44,27 @@ integrations:
     #   token: ${GHE_TOKEN}
 
 proxy:
-  ### Example for how to add a proxy endpoint for the frontend.
-  ### A typical reason to do this is to handle HTTPS and CORS for internal services.
-  # endpoints:
-  #   '/test':
-  #     target: 'https://example.com'
-  #     changeOrigin: true
+  '/jira/api':
+    target: ${JIRA_URL}
+    headers:
+      Authorization: ${JIRA_TOKEN}
+      Accept: 'application/json'
+      Content-Type: 'application/json'
+      X-Atlassian-Token: 'nocheck'
+      User-Agent: 'MY-UA-STRING'
+
+# Jira plugin and scorecard configuration
+jira:
+  # Proxy Jira configuration
+  # Supported products: `cloud` or `datacenter`
+  # product: cloud
+  # proxyPath: /jira/api
+
+  # Direct Jira configuration
+  # Supported products: `cloud` or `datacenter`
+  product: cloud
+  baseUrl: ${JIRA_URL}
+  token: ${JIRA_TOKEN}
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs

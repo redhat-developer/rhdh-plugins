@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool
 
+## 0.2.4
+
+### Patch Changes
+
+- 5d78911: Remove string arrays in zod object schemas
+
+## 0.2.3
+
+### Patch Changes
+
+- 55dab16: Bump Backstage version to 1.42.5
+
+## 0.2.2
+
+### Patch Changes
+
+- 0ba2481: Make tag optional parameter in the output schema of the MCP tools
+
 ## 0.2.1
 
 ### Patch Changes

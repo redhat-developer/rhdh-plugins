@@ -74,9 +74,31 @@ import {
 } from '@backstage/plugin-kubernetes';
 import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
+import { GithubIssuesCard } from '@backstage-community/plugin-github-issues';
+import { EntityGithubPullRequestsContent } from '@roadiehq/backstage-plugin-github-pull-requests';
+import { EntityJiraOverviewCard } from '@roadiehq/backstage-plugin-jira';
+
 const scorecardRoute = (
   <EntityLayout.Route path="/scorecard" title="Scorecard">
     <EntityScorecardContent />
+  </EntityLayout.Route>
+);
+
+const githubIssuesRoute = (
+  <EntityLayout.Route path="/github-issues" title="GitHub Issues">
+    <GithubIssuesCard />
+  </EntityLayout.Route>
+);
+
+const githubPullRequestsRoute = (
+  <EntityLayout.Route path="/pull-requests" title="Pull Requests">
+    <EntityGithubPullRequestsContent />
+  </EntityLayout.Route>
+);
+
+const jiraOpenIssuesRoute = (
+  <EntityLayout.Route path="/jira" title="Jira">
+    <EntityJiraOverviewCard />
   </EntityLayout.Route>
 );
 
@@ -210,6 +232,9 @@ const serviceEntityPage = (
     </EntityLayout.Route>
 
     {scorecardRoute}
+    {githubIssuesRoute}
+    {githubPullRequestsRoute}
+    {jiraOpenIssuesRoute}
   </EntityLayout>
 );
 
@@ -247,6 +272,9 @@ const websiteEntityPage = (
     </EntityLayout.Route>
 
     {scorecardRoute}
+    {githubIssuesRoute}
+    {githubPullRequestsRoute}
+    {jiraOpenIssuesRoute}
   </EntityLayout>
 );
 
@@ -268,6 +296,9 @@ const defaultEntityPage = (
     </EntityLayout.Route>
 
     {scorecardRoute}
+    {githubIssuesRoute}
+    {githubPullRequestsRoute}
+    {jiraOpenIssuesRoute}
   </EntityLayout>
 );
 

@@ -49,6 +49,7 @@ import {
 import Box from '@mui/material/Box';
 import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
+import { Administration } from '@backstage-community/plugin-rbac';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -118,6 +119,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               />
               {/* End global nav */}
               <SidebarDivider />
+              <Administration />
               <SidebarScrollWrapper>
                 {/* Items in this group will be scrollable if they run out of space */}
               </SidebarScrollWrapper>

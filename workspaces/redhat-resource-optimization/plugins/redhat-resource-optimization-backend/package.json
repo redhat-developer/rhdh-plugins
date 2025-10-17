@@ -1,8 +1,12 @@
 {
+  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
+  "version": "2.0.2",
   "backstage": {
-    "pluginId": "redhat-resource-optimization-backend",
+    "pluginId": "redhat-resource-optimization",
     "pluginPackages": [
-      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend"
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-common"
     ],
     "role": "backend-plugin"
   },
@@ -45,7 +49,6 @@
   ],
   "license": "Apache-2.0",
   "main": "src/index.ts",
-  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
   "publishConfig": {
     "access": "public"
   },
@@ -70,6 +73,5 @@
         "package.json"
       ]
     }
-  },
-  "version": "2.0.1"
+  }
 }

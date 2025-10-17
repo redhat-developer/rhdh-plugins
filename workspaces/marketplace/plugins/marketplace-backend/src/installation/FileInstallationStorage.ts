@@ -27,7 +27,6 @@ import {
   InstallationInitErrorReason,
 } from '../errors/InstallationInitError';
 import type { JsonValue } from '@backstage/types';
-import { ConflictError } from '@backstage/errors';
 
 export interface InstallationStorage {
   initialize?(): void;
@@ -35,7 +34,7 @@ export interface InstallationStorage {
   updatePackage(packageName: string, newConfig: string): void;
   getPackages(packageNames: Set<string>): string | undefined;
   updatePackages(packageNames: Set<string>, newConfig: string): void;
-  addPackageDisabled(packageName: string, disabled: boolean): void;
+  setPackageDisabled(packageName: string, disabled: boolean): void;
   setPackagesDisabled(packageNames: Set<string>, disabled: boolean): void;
 }
 
@@ -134,17 +133,14 @@ export class FileInstallationStorage implements InstallationStorage {
     this.save();
   }
 
-  addPackageDisabled(packageName: string, disabled: boolean) {
-    const existingPackage = this.getPackageYamlMap(packageName);
-    if (existingPackage) {
-      throw new ConflictError(
-        `Package '${packageName}' already exists in the configuration`,
-      );
+  setPackageDisabled(packageName: string, disabled: boolean) {
+    let pkg = this.getPackageYamlMap(packageName);
+    if (!pkg) {
+      pkg = new YAMLMap<string, JsonValue>();
+      pkg.set('package', packageName);
+      this.packages.add(pkg);
     }
-    const newPackage = new YAMLMap<string, JsonValue>();
-    newPackage.set('package', packageName);
-    newPackage.set('disabled', disabled);
-    this.packages.add(newPackage);
+    pkg.set('disabled', disabled);
     this.save();
   }
 

@@ -52,6 +52,7 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
+import { globalFloatingActionButtonTranslations } from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
 
 const app = createApp({
   apis,
@@ -90,6 +91,10 @@ const app = createApp({
     ),
   },
   themes: getThemes(),
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [globalFloatingActionButtonTranslations],
+  },
 });
 
 const routes = (

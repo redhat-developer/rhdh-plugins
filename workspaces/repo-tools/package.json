@@ -41,7 +41,7 @@
     "@backstage/cli": "^0.26.11",
     "@backstage/repo-tools": "^0.9.4",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.55.0",
+    "@playwright/test": "1.56.0",
     "@spotify/prettier-config": "^15.0.0",
     "knip": "^5.27.4",
     "prettier": "^3.4.2",

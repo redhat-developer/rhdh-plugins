@@ -76,9 +76,3 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
-
-lightspeed:
-  servers:
-    - id: ollama
-      url: http://localhost:11434/v1
-      token: dummy-token

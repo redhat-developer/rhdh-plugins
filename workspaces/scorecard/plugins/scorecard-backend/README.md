@@ -62,7 +62,7 @@ conditions:
   rule: HAS_METRIC_ID
   resourceType: scorecard-metric
   params:
-    metricIds: ['github.open-prs']
+    metricIds: ['github.open_prs']
 ```
 
 This policy would allow users to read only the GitHub Open PRs metric, while restricting access to other available metrics.
@@ -77,8 +77,8 @@ The following metric providers are available:
 
 | Provider   | Metric ID          | Title            | Description                           | Type   |
 | ---------- | ------------------ | ---------------- | ------------------------------------- | ------ |
-| **GitHub** | `github.open-prs`  | GitHub open PRs  | Count of open Pull Requests in GitHub | number |
-| **Jira**   | `jira.open-issues` | Jira open issues | The number of opened issues in Jira   | number |
+| **GitHub** | `github.open_prs`  | GitHub open PRs  | Count of open Pull Requests in GitHub | number |
+| **Jira**   | `jira.open_issues` | Jira open issues | The number of opened issues in Jira   | number |
 
 To use these providers, install the corresponding backend modules:
 

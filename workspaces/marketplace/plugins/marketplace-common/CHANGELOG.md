@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.10.1
+
+### Patch Changes
+
+- 4d79286: added row actions to the installed packages
+  updated disablePackage Client API to make PATCH call instead of POST
+
+## 0.10.0
+
+### Minor Changes
+
+- b33db25: Backstage version bump to v1.42.5
+
 ## 0.9.0
 
 ### Minor Changes

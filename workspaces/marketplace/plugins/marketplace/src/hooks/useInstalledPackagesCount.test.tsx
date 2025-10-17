@@ -15,21 +15,24 @@
  */
 
 import { renderHook, waitFor } from '@testing-library/react';
-import { TestApiProvider } from '@backstage/test-utils';
+import { useQuery } from '@tanstack/react-query';
 
-import { dynamicPluginsInfoApiRef } from '../api';
 import { useInstalledPackagesCount } from './useInstalledPackagesCount';
 
-describe('useInstalledPackagesCount', () => {
-  const createWrapper =
-    (apis: any) =>
-    ({ children }: { children?: React.ReactNode }) => (
-      <TestApiProvider apis={apis}>{children}</TestApiProvider>
-    );
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useApi: jest.fn(),
+}));
 
+jest.mock('@tanstack/react-query', () => ({
+  ...jest.requireActual('@tanstack/react-query'),
+  useQuery: jest.fn(),
+}));
+
+describe('useInstalledPackagesCount', () => {
   it('returns count from dynamic-plugins-info', async () => {
-    const mockApi = {
-      listLoadedPlugins: jest.fn().mockResolvedValue([
+    (useQuery as jest.Mock).mockReturnValue({
+      data: [
         {
           name: 'a',
           version: '1.0.0',
@@ -37,31 +40,28 @@ describe('useInstalledPackagesCount', () => {
           platform: 'fe',
         },
         { name: 'b', version: '1.0.0', role: 'backend-plugin', platform: 'be' },
-      ]),
-    };
-
-    const { result } = renderHook(() => useInstalledPackagesCount(), {
-      wrapper: createWrapper([[dynamicPluginsInfoApiRef, mockApi]]),
+      ].length,
+      isLoading: false,
+      refetch: jest.fn(),
     });
+    const { result } = renderHook(() => useInstalledPackagesCount());
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(mockApi.listLoadedPlugins).toHaveBeenCalledTimes(1);
-    expect(result.current.count).toBe(2);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.data).toBe(2);
     expect(result.current.error).toBeUndefined();
   });
 
   it('returns 0 and sets error on failure', async () => {
-    const mockApi = {
-      listLoadedPlugins: jest.fn().mockRejectedValue(new Error('boom')),
-    };
-
-    const { result } = renderHook(() => useInstalledPackagesCount(), {
-      wrapper: createWrapper([[dynamicPluginsInfoApiRef, mockApi]]),
+    (useQuery as jest.Mock).mockReturnValue({
+      data: [].length,
+      isLoading: false,
+      error: new Error('Failed to fetch'),
+      refetch: jest.fn(),
     });
+    const { result } = renderHook(() => useInstalledPackagesCount());
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(mockApi.listLoadedPlugins).toHaveBeenCalledTimes(1);
-    expect(result.current.count).toBe(0);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.data).toBe(0);
     expect(result.current.error).toBeInstanceOf(Error);
   });
 });

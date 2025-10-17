@@ -21,6 +21,8 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks';
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
@@ -40,6 +42,7 @@ export const CatalogInfoStatus = ({
   isLoading,
   isDrawer,
   importStatus,
+  taskId,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -47,10 +50,12 @@ export const CatalogInfoStatus = ({
   isItemSelected?: boolean;
   isDrawer?: boolean;
   importStatus?: string;
+  taskId?: string;
 }) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
+  const gitlabConfigured = useGitlabConfigured();
 
   useEffect(() => {
     if (importStatus === RepositoryStatus.ADDED) {
@@ -72,7 +77,9 @@ export const CatalogInfoStatus = ({
     data?.selectedRepositories || {},
   );
 
+  const importFlow = useImportFlow();
   if (
+    importFlow !== 'scaffolder' &&
     !isDrawer &&
     (isSelected ||
       (data?.totalReposInOrg && data.totalReposInOrg > 0 && allSelected))
@@ -101,7 +108,8 @@ export const CatalogInfoStatus = ({
           (key: string) => t(key as any, {}),
           false,
           undefined,
-          false,
+          taskId,
+          gitlabConfigured,
         )}
       </Typography>
     );

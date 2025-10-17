@@ -68,7 +68,6 @@ import usePolling from '../../hooks/usePolling';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
-  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
@@ -76,6 +75,7 @@ import { orchestratorTranslationRef } from '../../translations';
 import { deepSearchObject } from '../../utils/deepSearchObject';
 import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
+import { Trans } from '../Trans';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { InfoDialog } from '../ui/InfoDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
@@ -212,8 +212,8 @@ export const WorkflowInstancePage = () => {
   const { authenticate } = useOrchestratorAuth();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
-  const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
   const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
+
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
     entityRef = `${kind}:${namespace}/${name}`;
@@ -391,21 +391,15 @@ export const WorkflowInstancePage = () => {
 
   const combinedError: Error | undefined = error || inputSchemaError;
 
+  const title = (
+    <Trans
+      message="run.pageTitle"
+      params={{ processName: value?.processName }}
+    />
+  ) as unknown as string;
+
   return (
-    <BaseOrchestratorPage
-      title={value?.id}
-      type={value?.processName}
-      typeLink={
-        entityRef
-          ? entityWorkflowLink({
-              namespace,
-              kind,
-              name,
-              workflowId: value?.processId ?? '',
-            })
-          : `/orchestrator/workflows/${workflowId}`
-      }
-    >
+    <BaseOrchestratorPage title={title}>
       {loading ? <Progress /> : null}
       {combinedError ? <ResponseErrorPanel error={combinedError} /> : null}
       {!loading && isNonNullable(value) ? (

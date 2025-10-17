@@ -60,11 +60,11 @@ spec:
 
 ## Available Metrics
 
-### GitHub open PRs (`github.open-prs`)
+### GitHub open PRs (`github.open_prs`)
 
 This metric counts all pull requests that are currently in an "open" state for the repository specified in the entity's `github.com/project-slug` annotation.
 
-- **Metric ID**: `github.open-prs`
+- **Metric ID**: `github.open_prs`
 - **Type**: Number
 - **Datasource**: `github`
 - **Default thresholds**:

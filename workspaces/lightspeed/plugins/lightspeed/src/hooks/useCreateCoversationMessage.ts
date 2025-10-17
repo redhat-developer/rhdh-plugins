@@ -28,11 +28,13 @@ export const useCreateConversationMessage = () => {
     mutationFn: async ({
       prompt,
       selectedModel,
+      selectedProvider,
       currentConversation,
       attachments,
     }: {
       prompt: string;
       selectedModel: string;
+      selectedProvider: string;
       currentConversation: string;
       attachments: Attachment[];
     }) => {
@@ -43,6 +45,7 @@ export const useCreateConversationMessage = () => {
       return await lightspeedApi.createMessage(
         `${prompt}`,
         selectedModel,
+        selectedProvider,
         currentConversation,
         attachments,
       );

@@ -33,9 +33,10 @@ import createStyles from '@mui/styles/createStyles';
 import { useMutation } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useGitlabConfigured } from '../../hooks';
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -70,6 +71,7 @@ const DeleteRepositoryDialog = ({
     return bulkImportApi.deleteImportAction(
       deleteRepo.repoUrl || '',
       deleteRepo.defaultBranch || 'main',
+      deleteRepo.approvalTool,
     );
   };
   const mutationDelete = useMutation(deleteRepository, {
@@ -82,6 +84,17 @@ const DeleteRepositoryDialog = ({
   };
 
   const isUrlMissing = !repository.repoUrl;
+  const gitlabConfigured = useGitlabConfigured();
+
+  const importFlow = useImportFlow();
+  let deleteMsg;
+  if (importFlow === 'scaffolder') {
+    deleteMsg = t('repositories.removeRepositoryWarningScaffolder');
+  } else {
+    deleteMsg = gitlabConfigured
+      ? t('repositories.removeRepositoryWarningGitlab')
+      : t('repositories.removeRepositoryWarning');
+  }
 
   return (
     <Dialog
@@ -106,7 +119,7 @@ const DeleteRepositoryDialog = ({
             <WarningIcon className={classes.warningIcon} color="warning" />{' '}
             {t('repositories.removeRepositoryQuestion' as any, {
               repoName: repository.repoName || '',
-              repositoryText: gitlabFeatureFlag
+              repositoryText: gitlabConfigured
                 ? ''
                 : t('repositories.repositoryText'),
             })}
@@ -129,11 +142,7 @@ const DeleteRepositoryDialog = ({
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body1">
-          {gitlabFeatureFlag
-            ? t('repositories.removeRepositoryWarningGitlab')
-            : t('repositories.removeRepositoryWarning')}
-        </Typography>
+        <Typography variant="body1">{`${deleteMsg}`}</Typography>
       </DialogContent>
       {(isUrlMissing || mutationDelete.isError) && (
         <Box maxWidth="650px" marginLeft="20px">

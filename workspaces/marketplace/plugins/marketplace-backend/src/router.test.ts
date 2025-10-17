@@ -149,9 +149,9 @@ const configurationEndpointsTestCases = [
     body: { configYaml: stringify(mockDynamicPackage11) },
   },
   {
-    description: 'POST /package/:namespace/:name/configuration/disable',
+    description: 'PATCH /package/:namespace/:name/configuration/disable',
     reqBuilder: (req: request.SuperTest<request.Test>) =>
-      req.post(
+      req.patch(
         '/api/extensions/package/default/package11/configuration/disable',
       ),
     body: { disabled: true },
@@ -773,11 +773,11 @@ describe('createRouter', () => {
     });
   });
 
-  describe('POST /package/:namespace/:name/configuration/disable', () => {
+  describe('PATCH /package/:namespace/:name/configuration/disable', () => {
     it('should fail when disabled missing with InputError 400', async () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
-      const response = await request(backendServer).post(
+      const response = await request(backendServer).patch(
         '/api/extensions/package/default/package11/configuration/disable',
       );
       expectInputError(response, "'disabled' must be present boolean");
@@ -787,7 +787,9 @@ describe('createRouter', () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer)
-        .post('/api/extensions/package/default/package11/configuration/disable')
+        .patch(
+          '/api/extensions/package/default/package11/configuration/disable',
+        )
         .send({ disabled: 'invalid' });
       expectInputError(response, "'disabled' must be present boolean");
     });
@@ -801,7 +803,9 @@ describe('createRouter', () => {
       });
 
       const response = await request(backendServer)
-        .post('/api/extensions/package/default/not-found/configuration/disable')
+        .patch(
+          '/api/extensions/package/default/not-found/configuration/disable',
+        )
         .send({ disabled: true });
       expectNotFoundError(response, MarketplaceKind.Package);
     });
@@ -813,10 +817,12 @@ describe('createRouter', () => {
       const { backendServer } = await setupTestWithMockCatalog(PACKAGE_SETUP);
 
       const response = await request(backendServer)
-        .post('/api/extensions/package/default/package11/configuration/disable')
+        .patch(
+          '/api/extensions/package/default/package11/configuration/disable',
+        )
         .send({ disabled });
       expect(
-        mockInstallationDataService.addPackageDisabled,
+        mockInstallationDataService.setPackageDisabled,
       ).toHaveBeenCalledWith(mockDynamicPackage11.package, disabled);
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({ status: 'OK' });

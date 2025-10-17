@@ -16,6 +16,15 @@
 
 import { QuickstartItemData } from '../types';
 
+/**
+ * Filters quickstart items based on user role.
+ *
+ * @param items - Array of quickstart items to filter
+ * @param userRole - The user's role ('admin' or 'developer')
+ * @returns Filtered array of quickstart items available to the user
+ *
+ * @public
+ */
 export const filterQuickstartItemsByRole = (
   items: QuickstartItemData[],
   userRole: string,

@@ -85,11 +85,14 @@ export const marketplaceMessages = {
       'The **{{pluginName}}** plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.',
     multiplePluginRestart:
       'You have **{{count}}** plugins that require a restart of your backend system to either finish installing, updating, enabling or disabling.',
+    singlePackageRestart:
+      'The **{{packageName}}** package requires a restart of the backend system to finish installing, updating, enabling or disabling.',
+    multiplePackageRestart:
+      'You have **{{count}}** packages that require a restart of your backend system to either finish installing, updating, enabling or disabling.',
     restartRequired: '{{count}} plugins installed',
     backendRestartRequired: 'Backend restart required',
-    backendRestartMessage:
-      'To finish the package modifications, restart your backend system.',
     viewPlugins: 'View plugins',
+    viewPackages: 'View packages',
   },
 
   // Search and filtering
@@ -122,7 +125,9 @@ export const marketplaceMessages = {
   // Dialogs
   dialog: {
     backendRestartRequired: 'Backend restart required',
-    restartMessage:
+    packageRestartMessage:
+      'To finish the package modifications, restart your backend system.',
+    pluginRestartMessage:
       'To finish the plugin modifications, restart your backend system.',
   },
 
@@ -134,6 +139,7 @@ export const marketplaceMessages = {
     license: 'License',
     version: 'Version',
     author: 'Author',
+    authors: 'Authors',
     tags: 'Tags',
     dependencies: 'Dependencies',
     configuration: 'Configuration',
@@ -186,8 +192,20 @@ export const marketplaceMessages = {
         actions: 'Actions',
       },
       tooltips: {
+        packageProductionDisabled:
+          'Package cannot be managed in the production environment.',
         enableActions:
           'To enable actions, add a catalog entity for this package',
+        noDownloadPermissions:
+          "You don't have permission to download the configuration. Contact your administrator to request access or assistance.",
+        noEditPermissions:
+          "You don't have permission to edit the configuration. Contact your administrator to request access or assistance.",
+        noTogglePermissions:
+          "You don't have permission to enable or disable packages. Contact your administrator to request access or assistance.",
+        editPackage: 'Edit package configuration',
+        downloadPackage: 'Download package configuration',
+        enablePackage: 'Enable package',
+        disablePackage: 'Disable package',
       },
       emptyMessages: {
         noResults: 'No results found. Try a different search term.',
@@ -206,8 +224,11 @@ export const marketplaceMessages = {
     actions: 'Actions',
     editConfiguration: 'Edit',
     pluginConfigurations: 'Plugin configurations',
+    packageConfiguration: 'Package configuration',
     pluginCurrentlyEnabled: 'Plugin currently enabled',
     pluginCurrentlyDisabled: 'Plugin currently disabled',
+    packageCurrentlyEnabled: 'Package currently enabled',
+    packageCurrentlyDisabled: 'Package currently disabled',
     installTitle: 'Install {{displayName}}',
     editTitle: 'Edit {{displayName}} configurations',
   },
@@ -220,6 +241,10 @@ export const marketplaceMessages = {
     about: 'About',
     publisher: 'Publisher',
     supportProvider: 'Support Provider',
+    entryName: 'Entry name',
+    bySomeone: 'by someone',
+    category: 'Category',
+    versions: 'Versions',
   },
 
   // Support type filters
@@ -272,6 +297,8 @@ export const marketplaceMessages = {
     editInstructions: 'Edit instructions',
     back: 'Back',
     packageUpdated: 'Package updated',
+    packageEnabled: 'Package enabled',
+    packageDisabled: 'Package disabled',
     errors: {
       missingPluginsList: "Invalid editor content: missing 'plugins' list",
       missingPackageItem: 'Invalid editor content: missing package item',

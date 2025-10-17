@@ -75,11 +75,14 @@ const marketplaceTranslationDe = createTranslationMessages({
       'Das **{{pluginName}}** Plugin erfordert einen Neustart des Backend-Systems, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
     'alert.multiplePluginRestart':
       'Sie haben **{{count}}** Plugins, die einen Neustart Ihres Backend-Systems erfordern, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+    'alert.singlePackageRestart':
+      'Das **{{packageName}}** Paket erfordert einen Neustart des Backend-Systems, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
+    'alert.multiplePackageRestart':
+      'Sie haben **{{count}}** Pakete, die einen Neustart Ihres Backend-Systems erfordern, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
     'alert.restartRequired': '{{count}} Plugins installiert',
     'alert.backendRestartRequired': 'Backend-Neustart erforderlich',
-    'alert.backendRestartMessage':
-      'Um die Paketänderungen abzuschließen, starten Sie Ihr Backend-System neu.',
     'alert.viewPlugins': 'Plugins anzeigen',
+    'alert.viewPackages': 'Pakete anzeigen',
 
     // Search and filtering
     'search.placeholder': 'Plugins suchen...',
@@ -108,7 +111,9 @@ const marketplaceTranslationDe = createTranslationMessages({
 
     // Dialogs
     'dialog.backendRestartRequired': 'Backend-Neustart erforderlich',
-    'dialog.restartMessage':
+    'dialog.packageRestartMessage':
+      'Um die Paketänderungen abzuschließen, starten Sie Ihr Backend-System neu.',
+    'dialog.pluginRestartMessage':
       'Um die Plugin-Änderungen abzuschließen, starten Sie Ihr Backend-System neu.',
 
     // Plugin details
@@ -118,6 +123,7 @@ const marketplaceTranslationDe = createTranslationMessages({
     'plugin.license': 'Lizenz',
     'plugin.version': 'Version',
     'plugin.author': 'Autor',
+    'plugin.authors': 'Autoren',
     'plugin.tags': 'Tags',
     'plugin.dependencies': 'Abhängigkeiten',
     'plugin.configuration': 'Konfiguration',
@@ -160,8 +166,22 @@ const marketplaceTranslationDe = createTranslationMessages({
     'installedPackages.table.columns.role': 'Rolle',
     'installedPackages.table.columns.version': 'Version',
     'installedPackages.table.columns.actions': 'Aktionen',
+    'installedPackages.table.tooltips.packageProductionDisabled':
+      'Das Paket kann in der Produktionsumgebung nicht verwaltet werden.',
     'installedPackages.table.tooltips.enableActions':
       'Um Aktionen zu aktivieren, fügen Sie eine Katalogeintrag für dieses Paket hinzu',
+    'installedPackages.table.tooltips.noDownloadPermissions':
+      'Sie haben keine Berechtigung, die Konfiguration herunterzuladen. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
+    'installedPackages.table.tooltips.noEditPermissions':
+      'Sie haben keine Berechtigung, die Konfiguration zu bearbeiten. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
+    'installedPackages.table.tooltips.noTogglePermissions':
+      'Sie haben keine Berechtigung, Pakete zu aktivieren oder zu deaktivieren. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
+    'installedPackages.table.tooltips.editPackage':
+      'Paket-Konfiguration bearbeiten',
+    'installedPackages.table.tooltips.downloadPackage':
+      'Paket-Konfiguration herunterladen',
+    'installedPackages.table.tooltips.enablePackage': 'Paket aktivieren',
+    'installedPackages.table.tooltips.disablePackage': 'Paket deaktivieren',
     'installedPackages.table.emptyMessages.noResults':
       'Keine Ergebnisse gefunden. Versuchen Sie einen anderen Suchbegriff.',
     'installedPackages.table.emptyMessages.noRecords':
@@ -176,8 +196,11 @@ const marketplaceTranslationDe = createTranslationMessages({
     'actions.actions': 'Aktionen',
     'actions.editConfiguration': 'Bearbeiten',
     'actions.pluginConfigurations': 'Plugin-Konfigurationen',
+    'actions.packageConfiguration': 'Paket-Konfiguration',
     'actions.pluginCurrentlyEnabled': 'Plugin ist derzeit aktiviert',
     'actions.pluginCurrentlyDisabled': 'Plugin ist derzeit deaktiviert',
+    'actions.packageCurrentlyEnabled': 'Paket ist derzeit aktiviert',
+    'actions.packageCurrentlyDisabled': 'Paket ist derzeit deaktiviert',
     'actions.installTitle': '{{displayName}} installieren',
     'actions.editTitle': '{{displayName}} Konfigurationen bearbeiten',
 
@@ -188,6 +211,10 @@ const marketplaceTranslationDe = createTranslationMessages({
     'metadata.about': 'Über',
     'metadata.publisher': 'Herausgeber',
     'metadata.supportProvider': 'Support-Anbieter',
+    'metadata.entryName': 'Eintragsname',
+    'metadata.bySomeone': 'von jemandem',
+    'metadata.category': 'Kategorie',
+    'metadata.versions': 'Versionen',
 
     // Support type filters
     'supportTypes.certifiedBy': 'Zertifiziert von {{value}} ({{count}})',
@@ -232,6 +259,8 @@ const marketplaceTranslationDe = createTranslationMessages({
     'install.editInstructions': 'Anweisungen bearbeiten',
     'install.back': 'Zurück',
     'install.packageUpdated': 'Paket aktualisiert',
+    'install.packageEnabled': 'Paket aktiviert',
+    'install.packageDisabled': 'Paket deaktiviert',
     'install.errors.missingPluginsList':
       "Ungültiger Editor-Inhalt: 'plugins'-Liste fehlt",
     'install.errors.missingPackageItem':

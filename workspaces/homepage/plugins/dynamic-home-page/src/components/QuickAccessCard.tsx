@@ -28,6 +28,7 @@ import { makeStyles } from 'tss-react/mui';
 
 import { useQuickAccessLinks } from '../hooks/useQuickAccessLinks';
 import { useTranslation } from '../hooks/useTranslation';
+import { QuickAccessIcon } from './QuickAccessIcon';
 
 const useStyles = makeStyles()({
   center: {
@@ -35,10 +36,6 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  img: {
-    height: '40px',
-    width: 'auto',
   },
   title: {
     '& div > div > div > div > p': {
@@ -89,13 +86,7 @@ export const QuickAccessCard = (props: QuickAccessCardProps) => {
             title={item.title}
             tools={item.links.map(link => ({
               ...link,
-              icon: (
-                <img
-                  className={classes.img}
-                  src={link.iconUrl}
-                  alt={link.label}
-                />
-              ),
+              icon: <QuickAccessIcon icon={link.iconUrl} alt={link.label} />,
             }))}
             // Component creation is allowed inside component props only
             // if prop name starts with `render`.

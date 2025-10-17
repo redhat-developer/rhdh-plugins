@@ -14,17 +14,35 @@
  * limitations under the License.
  */
 
-import { useApi } from '@backstage/core-plugin-api';
+import { ApiRef, configApiRef } from '@backstage/core-plugin-api';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
+import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { mockGetRepositories } from '../../mocks/mockData';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 
+const mockGetOptionalString = jest.fn(() => undefined);
+const mockdeleteImportAction = jest.fn();
+
+jest.mock('../../hooks', () => ({
+  useGitlabConfigured: jest.fn(() => false),
+}));
+
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: jest.fn(),
+  useApi: jest.fn((apiRef: ApiRef<any>) => {
+    if (apiRef === bulkImportApiRef) {
+      return {
+        deleteImportAction: mockdeleteImportAction,
+      };
+    }
+    if (apiRef === configApiRef) {
+      return { getOptionalString: mockGetOptionalString };
+    }
+    return undefined;
+  }),
 }));
 
 const createTestQueryClient = () =>
@@ -36,11 +54,14 @@ const createTestQueryClient = () =>
     },
   });
 let queryClient: QueryClient;
-beforeEach(() => {
-  queryClient = createTestQueryClient();
-});
 
 describe('DeleteRepositoryDialog', () => {
+  beforeEach(() => {
+    queryClient = createTestQueryClient();
+    mockGetOptionalString.mockClear();
+    mockdeleteImportAction.mockClear();
+  });
+
   it('renders delete repository dialog correctly', () => {
     render(
       <QueryClientProvider client={queryClient}>
@@ -104,11 +125,7 @@ describe('DeleteRepositoryDialog', () => {
   });
 
   it('shows an error when the deletion fails', async () => {
-    const mockDeleteRepository = jest.fn().mockRejectedValue('Error occured');
-    const useApiMock = useApi as jest.Mock;
-    useApiMock.mockReturnValue({
-      deleteImportAction: mockDeleteRepository,
-    });
+    mockdeleteImportAction.mockRejectedValue('Error occured');
     render(
       <QueryClientProvider client={queryClient}>
         <DeleteRepositoryDialog

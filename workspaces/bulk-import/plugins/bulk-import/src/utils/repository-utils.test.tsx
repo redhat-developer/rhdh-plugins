@@ -18,7 +18,7 @@ import {
   mockGetRepositories,
   mockSelectedRepositories,
 } from '../mocks/mockData';
-import { ImportJobResponse, RepositoryStatus } from '../types';
+import { ApprovalTool, ImportJobResponse, RepositoryStatus } from '../types';
 import {
   cleanComponentName,
   componentNameRegex,
@@ -235,7 +235,10 @@ describe('Repository utils', () => {
 
   it('should load catalog info content and evaluate PR template', () => {
     const importJobStatus = {
-      approvalTool: 'GIT',
+      approvalTool: ApprovalTool.Git,
+      task: {
+        taskId: 'bb624cb5-64fb-41a7-be8f-c17e60d24a12',
+      },
       github: {
         pullRequest: {
           number: 105,

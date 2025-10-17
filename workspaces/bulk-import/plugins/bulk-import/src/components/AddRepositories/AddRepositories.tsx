@@ -23,8 +23,6 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
 import { useDrawer } from '../DrawerContext';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
-// import { useFormikContext } from 'formik';
-// import { AddRepositoriesFormValues } from '../../types';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 

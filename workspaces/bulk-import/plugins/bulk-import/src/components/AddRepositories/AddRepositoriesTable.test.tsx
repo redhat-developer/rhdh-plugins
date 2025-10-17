@@ -17,7 +17,11 @@
 import { BrowserRouter } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
-import { identityApiRef } from '@backstage/core-plugin-api';
+import {
+  ApiRef,
+  configApiRef,
+  identityApiRef,
+} from '@backstage/core-plugin-api';
 import { TestApiProvider } from '@backstage/test-utils';
 
 import { render } from '@testing-library/react';
@@ -38,10 +42,22 @@ jest.mock('formik', () => ({
   useFormikContext: jest.fn(),
 }));
 
+const configMock = {
+  getOptionalString: jest.fn(() => undefined),
+};
+
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: jest.fn().mockReturnValue({
-    getImportAction: jest.fn(),
+  useApi: jest.fn((apiRef: ApiRef<any>) => {
+    if (apiRef === bulkImportApiRef) {
+      return {
+        getImportAction: jest.fn(),
+      };
+    }
+    if (apiRef === configApiRef) {
+      return configMock;
+    }
+    return undefined;
   }),
 }));
 
@@ -52,7 +68,12 @@ jest.mock('react-use', () => ({
 
 jest.mock('../../hooks', () => ({
   useRepositories: jest.fn(),
-  useNumberOfApprovalTools: jest.fn(() => ({ numberOfApprovalTools: 1 })),
+  useNumberOfApprovalTools: jest.fn(() => ({
+    numberOfApprovalTools: 1,
+    isGitHubConfigured: true,
+    isGitLabConfigured: false,
+  })),
+  useGitlabConfigured: jest.fn(() => false),
 }));
 
 class MockBulkImportApi {

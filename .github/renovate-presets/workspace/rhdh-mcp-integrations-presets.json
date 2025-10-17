@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Mcp Integrations minor updates",
+      "matchFileNames": ["workspaces/mcp-integrations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Mcp Integrations)"
+      ],
+      "addLabels": ["team/rhdh", "mcp-integrations"]
+    },
+    {
+      "description": "all Mcp Integrations patch updates",
+      "matchFileNames": ["workspaces/mcp-integrations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Mcp Integrations)"
+      ],
+      "addLabels": ["team/rhdh", "mcp-integrations"]
+    },
+    {
+      "description": "all Mcp Integrations dev dependency updates",
+      "matchFileNames": ["workspaces/mcp-integrations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Mcp Integrations)"
+      ],
+      "addLabels": ["team/rhdh", "mcp-integrations"]
+    }
+  ]
+}

@@ -56,7 +56,7 @@ const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
         rule: 'HAS_METRIC_ID',
         resourceType: 'scorecard-metric',
         params: {
-          metricIds: ['github.open-prs', 'github.open-issues'],
+          metricIds: ['github.open_prs', 'github.open_issues'],
         },
       },
     ],
@@ -70,6 +70,7 @@ describe('createRouter', () => {
   const permissionsMock: ServiceMock<PermissionsService> =
     mockServices.permissions.mock({
       authorizeConditional: jest.fn(),
+      authorize: jest.fn(),
     });
 
   beforeEach(async () => {
@@ -82,6 +83,10 @@ describe('createRouter', () => {
     });
 
     permissionsMock.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+
+    permissionsMock.authorize.mockResolvedValue([
       { result: AuthorizeResult.ALLOW },
     ]);
 
@@ -99,12 +104,12 @@ describe('createRouter', () => {
   describe('GET /metrics', () => {
     beforeEach(() => {
       const githubProvider1 = new MockNumberProvider(
-        'github.open-prs',
+        'github.open_prs',
         'github',
         'GitHub Open PRs',
       );
       const githubProvider2 = new MockNumberProvider(
-        'github.open-issues',
+        'github.open_issues',
         'github',
         'GitHub Open Issues',
       );
@@ -137,8 +142,8 @@ describe('createRouter', () => {
       expect(response.body.metrics).toHaveLength(3);
 
       const metricIds = response.body.metrics.map((m: Metric) => m.id);
-      expect(metricIds).toContain('github.open-prs');
-      expect(metricIds).toContain('github.open-issues');
+      expect(metricIds).toContain('github.open_prs');
+      expect(metricIds).toContain('github.open_issues');
       expect(metricIds).toContain('sonar.quality');
     });
 
@@ -150,8 +155,8 @@ describe('createRouter', () => {
       expect(response.body.metrics).toHaveLength(2);
 
       const metricIds = response.body.metrics.map((m: Metric) => m.id);
-      expect(metricIds).toContain('github.open-prs');
-      expect(metricIds).toContain('github.open-issues');
+      expect(metricIds).toContain('github.open_prs');
+      expect(metricIds).toContain('github.open_issues');
     });
 
     it('should filter authorized metrics when CONDITIONAL permission', async () => {
@@ -162,8 +167,8 @@ describe('createRouter', () => {
 
       expect(response.statusCode).toBe(200);
       const metricIds = response.body.metrics.map((m: Metric) => m.id);
-      expect(metricIds).toContain('github.open-prs');
-      expect(metricIds).toContain('github.open-issues');
+      expect(metricIds).toContain('github.open_prs');
+      expect(metricIds).toContain('github.open_issues');
     });
 
     it('should return 400 InputError when invalid datasource parameter - empty string', async () => {
@@ -178,7 +183,7 @@ describe('createRouter', () => {
   describe('GET /metrics/catalog/:kind/:namespace/:name', () => {
     const mockMetricResults: MetricResult[] = [
       {
-        id: 'github.open-prs',
+        id: 'github.open_prs',
         status: 'success',
         metadata: githubNumberMetricMetadata,
         result: {
@@ -198,7 +203,7 @@ describe('createRouter', () => {
         },
       },
       {
-        id: 'github.open-issues',
+        id: 'github.open_issues',
         status: 'success',
         metadata: githubNumberMetricMetadata,
         result: {
@@ -252,13 +257,13 @@ describe('createRouter', () => {
 
     it('should handle multiple metricIds parameter', async () => {
       const response = await request(app).get(
-        '/metrics/catalog/component/default/my-service?metricIds=github.open-prs,github.open-issues',
+        '/metrics/catalog/component/default/my-service?metricIds=github.open_prs,github.open_issues',
       );
 
       expect(response.status).toBe(200);
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
-        ['github.open-prs', 'github.open-issues'],
+        ['github.open_prs', 'github.open_issues'],
         undefined,
       );
       expect(response.body).toEqual(mockMetricResults);
@@ -266,13 +271,13 @@ describe('createRouter', () => {
 
     it('should handle single metricIds parameter', async () => {
       const response = await request(app).get(
-        '/metrics/catalog/component/default/my-service?metricIds=github.open-prs',
+        '/metrics/catalog/component/default/my-service?metricIds=github.open_prs',
       );
 
       expect(response.status).toBe(200);
       expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
-        ['github.open-prs'],
+        ['github.open_prs'],
         undefined,
       );
     });
@@ -294,7 +299,7 @@ describe('createRouter', () => {
             {
               rule: 'HAS_METRIC_ID',
               resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.open-prs', 'github.open-issues'] },
+              params: { metricIds: ['github.open_prs', 'github.open_issues'] },
             },
           ],
         },

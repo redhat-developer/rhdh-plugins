@@ -30,6 +30,10 @@ export default defineConfig({
         command: 'yarn start',
         port: 3000,
         reuseExistingServer: false,
+        env: {
+          JIRA_URL: 'https://issues.redhat.com',
+          JIRA_TOKEN: 'my-jira-token',
+        },
       },
 
   retries: process.env.CI ? 2 : 0,

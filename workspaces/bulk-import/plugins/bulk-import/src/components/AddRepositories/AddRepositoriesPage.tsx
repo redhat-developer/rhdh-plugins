@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { useRef } from 'react';
-
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
@@ -27,28 +25,24 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import { useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
 export const AddRepositoriesPage = () => {
-  const queryClientRef = useRef<QueryClient>();
   const theme = useTheme();
   const { t } = useTranslation();
-
-  if (!queryClientRef.current) {
-    queryClientRef.current = new QueryClient();
-  }
 
   const bulkImportViewPermissionResult = usePermission({
     permission: bulkImportPermission,
     resourceRef: bulkImportPermission.resourceType,
   });
+
+  const gitlabConfigured = useGitlabConfigured();
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
@@ -64,7 +58,7 @@ export const AddRepositoriesPage = () => {
                 id="add-repository-summary"
               >
                 <Typography variant="h5">
-                  {gitlabFeatureFlag
+                  {gitlabConfigured
                     ? t('page.importEntitiesSubtitle')
                     : t('page.addRepositoriesSubtitle')}
                 </Typography>
@@ -77,7 +71,7 @@ export const AddRepositoriesPage = () => {
                   overflow: 'auto',
                 }}
               >
-                {gitlabFeatureFlag && (
+                {gitlabConfigured && (
                   <Illustrations
                     iconClassname={
                       theme.palette.mode === 'dark'
@@ -94,7 +88,7 @@ export const AddRepositoriesPage = () => {
                       : 'icon-choose-repositories-black'
                   }
                   iconText={
-                    gitlabFeatureFlag
+                    gitlabConfigured
                       ? t('steps.chooseItems')
                       : t('steps.chooseRepositories')
                   }
@@ -106,7 +100,7 @@ export const AddRepositoriesPage = () => {
                       : 'icon-generate-cataloginfo-black'
                   }
                   iconText={
-                    gitlabFeatureFlag
+                    gitlabConfigured
                       ? t('steps.generateCatalogInfoItems')
                       : t('steps.generateCatalogInfo')
                   }
@@ -130,9 +124,7 @@ export const AddRepositoriesPage = () => {
               </AccordionDetails>
             </Accordion>
           </div>
-          <QueryClientProvider client={queryClientRef.current as QueryClient}>
-            <AddRepositoriesForm />
-          </QueryClientProvider>
+          <AddRepositoriesForm />
         </>
       );
     }
@@ -149,7 +141,7 @@ export const AddRepositoriesPage = () => {
     <Page themeId="tool">
       <Header
         title={
-          gitlabFeatureFlag
+          gitlabConfigured
             ? t('page.importEntitiesTitle')
             : t('page.addRepositoriesTitle')
         }

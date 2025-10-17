@@ -24,7 +24,6 @@ import {
   createMessage,
   createUserMessage,
   getCategorizeMessages,
-  getMessageData,
   getTimestamp,
   getTimestampVariablesString,
   splitJsonStrings,
@@ -254,55 +253,6 @@ describe('createBotMessage', () => {
         },
       }),
     );
-  });
-});
-
-describe('getMessageData', () => {
-  it('should return content and timestamp from message.kwargs', () => {
-    const message = {
-      content: 'This is the message content',
-      response_metadata: {
-        created_at: 1744695548.101305,
-        model: 'granite3-dense:8b',
-      },
-      additional_kwargs: {},
-      id: 1,
-      type: 'human',
-      name: '',
-    };
-    const result = getMessageData(message);
-    expect(result).toEqual({
-      content: 'This is the message content',
-      model: 'granite3-dense:8b',
-      timestamp: '15/04/2025, 05:39:08',
-      referencedDocuments: [],
-    });
-  });
-
-  it('should handle missing kwargs properties gracefully', () => {
-    const message = {};
-    const result = getMessageData(message as any);
-    expect(result).toEqual({
-      content: '',
-      timestamp: '',
-      model: undefined,
-      referencedDocuments: [],
-    });
-  });
-
-  it('should return referenced_documents as sources from additional_kwargs', () => {
-    const message = {
-      additional_kwargs: {
-        referenced_documents,
-      },
-    };
-    const result = getMessageData(message as any);
-    expect(result).toEqual({
-      content: '',
-      timestamp: '',
-      model: undefined,
-      referencedDocuments: referenced_documents,
-    });
   });
 });
 

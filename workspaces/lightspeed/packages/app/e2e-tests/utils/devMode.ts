@@ -18,7 +18,7 @@ import { generateQueryResponse, modelBaseUrl } from '../fixtures/responses';
 
 export async function mockModels(page: Page, models: any[]) {
   await page.route(`${modelBaseUrl}/v1/models`, async route => {
-    const json = { object: 'list', data: models };
+    const json = { models };
     await route.fulfill({ json });
   });
 }
@@ -28,7 +28,7 @@ export async function mockConversations(
   conversations?: any[],
   allowPost = false,
 ) {
-  await page.route(`${modelBaseUrl}/conversations`, async route => {
+  await page.route(`${modelBaseUrl}/v2/conversations`, async route => {
     if (route.request().method() === 'GET') {
       const json = conversations ? { conversations: conversations } : [];
       await route.fulfill({ json });
@@ -38,8 +38,15 @@ export async function mockConversations(
   });
 }
 
+export async function mockShields(page: Page, shields: any[] = []) {
+  await page.route(`${modelBaseUrl}/v1/shields`, async route => {
+    const json = { shields };
+    await route.fulfill({ json });
+  });
+}
+
 export async function mockChatHistory(page: Page, contents?: any[]) {
-  await page.route(`${modelBaseUrl}/conversations/user*`, async route => {
+  await page.route(`${modelBaseUrl}/v2/conversations/user*`, async route => {
     const json = contents ? { chat_history: contents } : [];
     await route.fulfill({ json });
   });

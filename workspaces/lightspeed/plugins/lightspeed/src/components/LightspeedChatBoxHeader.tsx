@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { Ref, useState } from 'react';
+import { Ref, useMemo, useState } from 'react';
 
 import { createStyles, makeStyles } from '@material-ui/core';
 import { ChatbotHeaderActions } from '@patternfly/chatbot';
 import {
   Dropdown,
+  DropdownGroup,
   DropdownItem,
   DropdownList,
   MenuToggle,
@@ -31,7 +32,7 @@ import { useTranslation } from '../hooks/useTranslation';
 type LightspeedChatBoxHeaderProps = {
   selectedModel: string;
   handleSelectedModel: (item: string) => void;
-  models: { label: string; value: string }[];
+  models: { label: string; value: string; provider: string }[];
 };
 
 const useStyles = makeStyles(() =>
@@ -54,6 +55,23 @@ export const LightspeedChatBoxHeader = ({
   const { t } = useTranslation();
 
   const styles = useStyles();
+
+  // Group models by provider
+  const groupedModels = useMemo(() => {
+    const groups: {
+      [key: string]: { label: string; value: string; provider: string }[];
+    } = {};
+
+    models.forEach(model => {
+      const provider = model.provider || 'Other';
+      if (!groups[provider]) {
+        groups[provider] = [];
+      }
+      groups[provider].push(model);
+    });
+
+    return groups;
+  }, [models]);
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <MenuToggle
@@ -83,10 +101,14 @@ export const LightspeedChatBoxHeader = ({
         toggle={toggle}
       >
         <DropdownList>
-          {models.map(m => (
-            <DropdownItem value={m.value} key={m.value}>
-              {m.label}
-            </DropdownItem>
+          {Object.entries(groupedModels).map(([provider, providerModels]) => (
+            <DropdownGroup key={provider} label={provider}>
+              {providerModels.map(model => (
+                <DropdownItem value={model.value} key={model.value}>
+                  {model.label}
+                </DropdownItem>
+              ))}
+            </DropdownGroup>
           ))}
         </DropdownList>
       </Dropdown>

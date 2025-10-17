@@ -9,8 +9,6 @@ import type { Config } from '@backstage/config';
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { PublisherBase } from '@backstage/plugin-techdocs-node';
-import { TechDocsMetadata } from '@backstage/plugin-techdocs-node';
 
 // @public
 export interface ListTechDocsOptions {
@@ -25,7 +23,7 @@ export interface ListTechDocsOptions {
   // (undocumented)
   owner?: string;
   // (undocumented)
-  tags?: string[];
+  tags?: string;
 }
 
 // @public
@@ -40,6 +38,8 @@ export interface TechDocsContentResult {
   contentType: 'markdown' | 'html' | 'text';
   // (undocumented)
   entityRef: string;
+  // (undocumented)
+  error?: string;
   // (undocumented)
   kind: string;
   // (undocumented)
@@ -88,7 +88,7 @@ export interface TechDocsEntity {
   // (undocumented)
   owner: string;
   // (undocumented)
-  tags: Array<string>;
+  tags: string;
   // (undocumented)
   title: string;
 }
@@ -102,7 +102,7 @@ export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
     siteName?: string;
     siteDescription?: string;
     etag?: string;
-    files?: string[];
+    files?: string;
   };
 }
 
@@ -112,6 +112,22 @@ export interface TechDocsEntityWithUrls extends TechDocsEntity {
   metadataUrl: string;
   // (undocumented)
   techDocsUrl: string;
+}
+
+// @public
+export interface TechDocsMetadata {
+  // (undocumented)
+  build_timestamp?: number;
+  // (undocumented)
+  error?: string;
+  // (undocumented)
+  etag?: string;
+  // (undocumented)
+  files?: string[];
+  // (undocumented)
+  site_description?: string;
+  // (undocumented)
+  site_name?: string;
 }
 
 // @public
@@ -129,16 +145,12 @@ export class TechDocsService {
     catalog: CatalogService,
   ): Promise<TechDocsCoverageResult>;
   // (undocumented)
-  fetchTechDocsMetadata(entity: Entity): Promise<TechDocsMetadata | null>;
+  fetchTechDocsMetadata(entity: Entity, auth?: any): Promise<TechDocsMetadata>;
   // (undocumented)
   generateTechDocsUrls(entity: Entity): Promise<{
     techDocsUrl: string;
     metadataUrl: string;
   }>;
-  // (undocumented)
-  getPublisher(): Promise<PublisherBase>;
-  // (undocumented)
-  initialize(): Promise<void>;
   // (undocumented)
   listTechDocs(
     options: ListTechDocsOptions | undefined,
@@ -153,7 +165,7 @@ export class TechDocsService {
     pagePath?: string,
     auth?: any,
     catalog?: CatalogService,
-  ): Promise<TechDocsContentResult | null>;
+  ): Promise<TechDocsContentResult>;
 }
 
 // (No @packageDocumentation comment for this package)

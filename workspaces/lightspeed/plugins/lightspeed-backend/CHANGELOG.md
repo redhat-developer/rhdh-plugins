@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.0.0
+
+### Major Changes
+
+- c6e4f39: migrate from road-core to lightspeed-core
+
+### Patch Changes
+
+- 2204143: Align lightspeed UI with LCS
+
+## 0.6.0
+
+### Minor Changes
+
+- d922b04: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- 4786755: Updated dependency `msw` to `2.11.3`.
+- 1bbd3c2: Updated dependency `@langchain/openai` to `^0.6.0`.
+  Updated dependency `msw` to `2.11.1`.
+- Updated dependencies [d922b04]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.4.0
+
 ## 0.5.7
 
 ### Patch Changes

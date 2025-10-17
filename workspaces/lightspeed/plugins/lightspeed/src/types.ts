@@ -36,21 +36,46 @@ export type ReferencedDocument = {
 };
 
 export type ReferencedDocuments = ReferencedDocument[];
+
+export type LCSModelType = 'embedding' | 'llm';
+export type LCSModelApiModelType = 'embedding' | 'llm';
+
+export interface LCSModel {
+  identifier: string;
+  metadata: {
+    embedding_dimension: number;
+  };
+  api_model_type: LCSModelApiModelType;
+  provider_id: string;
+  type: 'model';
+  provider_resource_id: string;
+  model_type: LCSModelType;
+}
+export interface LCSConversation {
+  provider: string;
+  model: string;
+  messages: BaseMessage[];
+  started_at: string;
+  completed_at: string;
+  referencedDocuments?: ReferencedDocuments;
+}
+
+export interface LCSShield {
+  identifier: string;
+  provider_id: string;
+  type: 'shield';
+  params: {};
+  provider_resource_id: string;
+}
 export interface BaseMessage {
   name: string;
   type: string;
   id: number;
   content: string;
-  response_metadata: {
-    model?: string;
-    created_at: number;
-    role?: string;
-  };
+  model: string;
+  timestamp: string;
   sources?: SourcesCardProps;
-  additional_kwargs: {
-    referenced_documents?: ReferencedDocuments;
-    [_key: string]: any;
-  };
+  referencedDocuments?: ReferencedDocuments;
   error?: AlertProps;
 }
 export type ConversationSummary = {

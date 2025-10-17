@@ -23,8 +23,6 @@ import {
   useRef,
 } from 'react';
 
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
-
 import { makeStyles } from '@material-ui/core';
 import {
   ChatbotWelcomePrompt,
@@ -67,6 +65,7 @@ type LightspeedChatBoxProps = {
   messages: MessageProps[];
   profileLoading: boolean;
   announcement: string | undefined;
+  topicRestrictionEnabled: boolean;
   welcomePrompts: WelcomePrompt[];
   conversationId: string;
   isStreaming: boolean;
@@ -86,6 +85,7 @@ export const LightspeedChatBox = forwardRef(
       profileLoading,
       welcomePrompts,
       isStreaming,
+      topicRestrictionEnabled,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle>,
   ) => {
@@ -94,9 +94,6 @@ export const LightspeedChatBox = forwardRef(
     const containerRef = useRef<MessageBoxHandle>(null);
     const { t } = useTranslation();
 
-    const configApi = useApi(configApiRef);
-    const questionValidationEnabled =
-      configApi.getOptionalBoolean('lightspeed.questionValidation') ?? true;
     const cmessages = useBufferedMessages(messages, 30);
     const { autoScroll, scrollToBottom, scrollToTop } =
       useAutoScroll(containerRef);
@@ -166,7 +163,7 @@ export const LightspeedChatBox = forwardRef(
             isInline
             className={classes.alert}
           >
-            {questionValidationEnabled
+            {topicRestrictionEnabled
               ? t('disclaimer.withValidation')
               : t('disclaimer.withoutValidation')}
           </Alert>

@@ -7,7 +7,6 @@
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const LightspeedIcon: () => JSX_2.Element;
@@ -19,9 +18,6 @@ export const LightspeedPage: () => JSX_2.Element;
 export const lightspeedPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
-
-// @public
-export const lightspeedTranslationResource: TranslationResource<"plugin.lightspeed">;
 
 // (No @packageDocumentation comment for this package)
 

@@ -23,10 +23,10 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.fetchError': string;
     readonly 'errors.metricDataUnavailable': string;
     readonly 'errors.invalidThresholds': string;
-    readonly 'metric.github.open-prs.title': string;
-    readonly 'metric.github.open-prs.description': string;
-    readonly 'metric.jira.open-issues.title': string;
-    readonly 'metric.jira.open-issues.description': string;
+    readonly 'metric.github.open_prs.title': string;
+    readonly 'metric.github.open_prs.description': string;
+    readonly 'metric.jira.open_issues.title': string;
+    readonly 'metric.jira.open_issues.description': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.error': string;
     readonly 'thresholds.warning': string;

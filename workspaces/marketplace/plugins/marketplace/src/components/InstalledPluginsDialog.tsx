@@ -32,9 +32,9 @@ import TableRow from '@mui/material/TableRow';
 import { useInstallationContext } from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
 
-const PluginsTable = () => {
+const PluginsTable = ({ showPackages }: { showPackages?: boolean }) => {
   const { t } = useTranslation();
-  const { installedPlugins } = useInstallationContext();
+  const { installedPlugins, installedPackages } = useInstallationContext();
   return (
     <Table aria-label={t('table.pluginsTable')}>
       <TableHead>
@@ -44,7 +44,9 @@ const PluginsTable = () => {
         </TableRow>
       </TableHead>
       <TableBody>
-        {Object.entries(installedPlugins).map(row => (
+        {Object.entries(
+          showPackages ? installedPackages : installedPlugins,
+        ).map(row => (
           <TableRow key={row[0]}>
             <TableCell component="th" scope="row">
               {row[0]}
@@ -60,8 +62,10 @@ const PluginsTable = () => {
 export const InstalledPluginsDialog = ({
   open,
   onClose,
+  showPackages,
 }: {
   open: boolean;
+  showPackages?: boolean;
   onClose: (close: boolean) => void;
 }) => {
   const { t } = useTranslation();
@@ -104,9 +108,13 @@ export const InstalledPluginsDialog = ({
           </Box>
         </DialogTitle>
         <DialogContent>
-          <PluginsTable />
+          <PluginsTable showPackages={showPackages} />
           <br />
-          <Typography variant="body1">{t('dialog.restartMessage')}</Typography>
+          <Typography variant="body1">
+            {showPackages
+              ? t('dialog.packageRestartMessage')
+              : t('dialog.pluginRestartMessage')}
+          </Typography>
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'left', p: '20px' }}>
           <Button

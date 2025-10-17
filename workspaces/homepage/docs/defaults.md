@@ -11,6 +11,15 @@ The plugin provides two main components:
 - **`DynamicHomePage`** - A read-only homepage that displays configured cards without user customization
 - **`DynamicCustomizableHomePage`** - An interactive homepage that allows users to add, remove, move, and resize cards
 
+## Mount Points
+
+The plugin supports two mount points for extensibility:
+
+- **`home.page/cards`** - Default homepage cards that appear by default and are used for "restore defaults" functionality
+- **`home.page/widgets`** - Additional cards contributed by other plugins that appear alongside default cards
+
+Cards from both mount points are displayed together, with optional priority-based ordering.
+
 ## Default home page
 
 The default home page shows a "Onboarding Section" card, a "Entity Section" card, and a "Template Section" card by default.

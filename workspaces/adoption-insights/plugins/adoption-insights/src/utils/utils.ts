@@ -29,6 +29,15 @@ import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { APIsViewOptions } from '../types';
 import { adoptionInsightsTranslationRef } from '../translations';
 
+/**
+ * Parse date string and normalize timezone format.
+ * Converts +00 timezone format to Z for better browser compatibility.
+ */
+export const safeDate = (dateString: string): Date => {
+  const normalizedDate = dateString.replace(/\+00$/, 'Z');
+  return new Date(normalizedDate);
+};
+
 // =============================================================================
 // LOCALIZATION UTILITIES
 // =============================================================================
@@ -239,11 +248,11 @@ export const getXAxisTickValues = (data: any, grouping: string): string[] => {
 
   // Apply grouping-specific logic
   if (grouping === 'hourly') {
-    processGrouping(date => new Date(date).getHours());
+    processGrouping(date => safeDate(date).getHours());
   } else if (grouping === 'daily' || grouping === 'weekly') {
-    processGrouping(date => new Date(date).getDate());
+    processGrouping(date => safeDate(date).getDate());
   } else if (grouping === 'monthly') {
-    processGrouping(date => new Date(date).getMonth());
+    processGrouping(date => safeDate(date).getMonth());
   }
 
   // Always include first and last dates, plus selected middle dates
@@ -264,11 +273,11 @@ export const getXAxisformat = (
   grouping: string,
   locale?: string,
 ) => {
-  const dateObj = new Date(date);
+  const dateObj = safeDate(date);
 
   // Handle invalid dates gracefully
   if (isNaN(dateObj.getTime())) {
-    return formatShortDate(new Date(date), locale);
+    return formatShortDate(safeDate(date), locale);
   }
 
   // Format according to grouping level
@@ -299,7 +308,7 @@ export const getLastUsedDay = (
   t?: TranslationFunction<typeof adoptionInsightsTranslationRef.T>,
   locale?: string,
 ) => {
-  const date = new Date(timestamp);
+  const date = safeDate(timestamp);
 
   if (isToday(date)) {
     return t ? t('common.today') : 'Today';

@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.18.1
+
+### Patch Changes
+
+- 927b031: Make the myProfile check backward compatible for customers with a custom header configuration
+
+## 1.18.0
+
+### Minor Changes
+
+- 97011bd: Adding translation support for the string coming through configuration
+
 ## 1.17.3
 
 ### Patch Changes

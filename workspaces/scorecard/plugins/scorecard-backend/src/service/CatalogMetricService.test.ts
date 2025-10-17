@@ -61,7 +61,7 @@ describe('CatalogMetricService', () => {
   const timestamp = '2024-01-15T10:30:00.000Z';
 
   const githubMetricResult = {
-    id: 'github.number-metric',
+    id: 'github.number_metric',
     metadata: {
       ...githubNumberMetricMetadata,
     },
@@ -84,7 +84,7 @@ describe('CatalogMetricService', () => {
   };
 
   const jiraMetricResult = {
-    id: 'jira.boolean-metric',
+    id: 'jira.boolean_metric',
     metadata: {
       ...jiraBooleanMetricMetadata,
     },
@@ -140,8 +140,8 @@ describe('CatalogMetricService', () => {
           ...mockEntity.metadata,
           annotations: {
             'custom.annotation': 'custom',
-            'scorecard.io/github.number-metric.thresholds.rules.error': '>45', // default error: '>40'
-            'scorecard.io/github.number-metric.thresholds.rules.warning': '>25', // default warning: '>20'
+            'scorecard.io/github.number_metric.thresholds.rules.error': '>45', // default error: '>40'
+            'scorecard.io/github.number_metric.thresholds.rules.warning': '>25', // default warning: '>20'
             // default success: '<=20'
           },
         },
@@ -178,7 +178,7 @@ describe('CatalogMetricService', () => {
 
       const result = await catalogMetricService.calculateEntityMetrics(
         'component:default/test-component',
-        ['jira.boolean-metric'],
+        ['jira.boolean_metric'],
       );
 
       expect(result).toHaveLength(1);
@@ -231,7 +231,7 @@ describe('CatalogMetricService', () => {
         metadata: {
           ...mockEntity.metadata,
           annotations: {
-            'scorecard.io/github.number-metric.thresholds.rules.error':
+            'scorecard.io/github.number_metric.thresholds.rules.error':
               'invalid_expression',
           },
         },
@@ -243,7 +243,7 @@ describe('CatalogMetricService', () => {
 
       const result = await catalogMetricService.calculateEntityMetrics(
         'component:default/test-component',
-        ['github.number-metric'],
+        ['github.number_metric'],
       );
 
       expect(result).toHaveLength(1);
@@ -283,7 +283,7 @@ describe('CatalogMetricService', () => {
           {
             rule: 'HAS_METRIC_ID',
             resourceType: 'scorecard-metric',
-            params: { metricIds: ['github.number-metric'] },
+            params: { metricIds: ['github.number_metric'] },
           },
         ],
       };
@@ -295,7 +295,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('github.number-metric');
+      expect(result[0].id).toBe('github.number_metric');
       expect(result).toEqual([githubMetricResult]);
     });
 
@@ -309,8 +309,8 @@ describe('CatalogMetricService', () => {
 
       expect(result).toHaveLength(2);
       expect(result.map(r => r.id)).toEqual([
-        'github.number-metric',
-        'jira.boolean-metric',
+        'github.number_metric',
+        'jira.boolean_metric',
       ]);
     });
 
@@ -334,8 +334,8 @@ describe('CatalogMetricService', () => {
 
       expect(result).toHaveLength(3);
       expect(result.map(r => r.id)).toEqual([
-        'github.number-metric',
-        'jira.boolean-metric',
+        'github.number_metric',
+        'jira.boolean_metric',
         'annotation.metric',
       ]);
     });

@@ -169,8 +169,8 @@ export class InstallationDataService {
     this.installationStorage.updatePackages(dynamicArtifacts, newConfig);
   }
 
-  addPackageDisabled(packageDynamicArtifact: string, disabled: boolean) {
-    this.installationStorage.addPackageDisabled(
+  setPackageDisabled(packageDynamicArtifact: string, disabled: boolean) {
+    this.installationStorage.setPackageDisabled(
       packageDynamicArtifact,
       disabled,
     );

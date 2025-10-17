@@ -6,6 +6,7 @@ dynamicPlugins:
         - path: /
           importName: DynamicHomePage
       mountPoints:
+        # Default homepage cards - appear by default
         - mountPoint: home.page/cards
           importName: OnboardingSection
           config:
@@ -36,3 +37,31 @@ dynamicPlugins:
               sm: { w: 12, h: 5 }
               xs: { w: 12, h: 7.5 }
               xxs: { w: 12, h: 13.5 }
+
+        # Additional plugin widgets - available in "Add widget" dialog
+        - mountPoint: home.page/widgets
+          importName: RecentlyVisitedCard
+          config:
+            title: 'Recently Visited'
+            description: 'Quick access to recently viewed entities and pages'
+            priority: 2
+            layouts:
+              xl: { w: 4, h: 3 }
+              lg: { w: 4, h: 3 }
+              md: { w: 6, h: 3 }
+              sm: { w: 12, h: 3 }
+              xs: { w: 12, h: 3 }
+              xxs: { w: 12, h: 3 }
+        - mountPoint: home.page/widgets
+          importName: TopVisitedCard
+          config:
+            title: 'Most Visited'
+            description: 'Your most frequently accessed entities and services'
+            priority: 1
+            layouts:
+              xl: { w: 4, h: 3 }
+              lg: { w: 4, h: 3 }
+              md: { w: 6, h: 3 }
+              sm: { w: 12, h: 3 }
+              xs: { w: 12, h: 3 }
+              xxs: { w: 12, h: 3 }

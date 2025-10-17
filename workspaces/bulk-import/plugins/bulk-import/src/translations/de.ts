@@ -56,6 +56,8 @@ const bulkImportTranslationDe = createTranslationMessages({
     'repositories.removeRepositoryQuestion':
       '{{repoName}} {{repositoryText}} entfernen?',
     'repositories.repositoryText': 'Repository',
+    'repositories.removeRepositoryWarningScaffolder':
+      'Das Entfernen eines Repositorys entfernt auch alle zugehörigen Scaffolder-Task-Informationen.',
     'repositories.removeRepositoryWarning':
       'Das Entfernen eines Repositorys löscht alle zugehörigen Informationen von der Katalogseite.',
     'repositories.removeRepositoryWarningGitlab':
@@ -66,6 +68,8 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Repository kann nicht entfernt werden. {{error}}',
     'repositories.removeTooltipDisabled':
       'Dieses Repository wurde zur app-config-Datei hinzugefügt. Um es zu entfernen, ändern Sie die Datei direkt.',
+    'repositories.removeTooltipRepositoryScaffolder':
+      'Repository und zugehörige Scaffolder-Task-Informationen löschen',
     'repositories.errorOccuredWhileFetching':
       'Fehler beim Abrufen der Pull-Request aufgetreten',
     'repositories.failedToCreatePullRequest':
@@ -251,6 +255,18 @@ const bulkImportTranslationDe = createTranslationMessages({
     'table.pagination.rows20': '20 Zeilen',
     'table.pagination.rows50': '50 Zeilen',
     'table.pagination.rows100': '100 Zeilen',
+    'tasks.tasksFor': 'Aufgaben für {{importJobStatusId}}',
+    'tasks.taskId': 'Aufgaben-ID',
+    'tasks.taskLink': 'Aufgabenlink',
+    'tasks.viewTask': 'Aufgabe anzeigen',
+    'tasks.loading': 'Wird geladen...',
+    'tasks.errorFetchingData': 'Fehler beim Abrufen der Daten',
+    'tasks.taskCancelled': 'Task cancelled',
+    'tasks.taskCompleted': 'Task completed',
+    'tasks.taskFailed': 'Task failed',
+    'tasks.taskOpen': 'Task open',
+    'tasks.taskProcessing': 'Task processing',
+    'tasks.taskSkipped': 'Task skipped',
   },
 });
 

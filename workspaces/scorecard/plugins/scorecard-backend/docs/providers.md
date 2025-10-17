@@ -81,6 +81,14 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 }
 ```
 
+**Important:** Metric providers must follow certain conventions:
+
+- The provider ID (from `getProviderId()`) and metric ID (from `getMetric().id`) must be identical
+- Both IDs must follow the format `<datasourceId>.<metricName>` where:
+  - `datasourceId` matches the value returned by `getProviderDatasourceId()`
+  - `metricName` is a non-empty identifier for the specific metric
+- Configuration for metric provider must follow the schema defined in [`config.d.ts`](../config.d.ts).
+
 ## Updating the Module
 
 Update the module registration in `module.ts` to register your metric provider:

@@ -43,6 +43,7 @@ const SyncRepository = ({ data }: SyncRepositoryProps) => {
     const value = await bulkImportApi.getImportAction(
       data.repoUrl || '',
       data?.defaultBranch || 'main',
+      data.approvalTool,
     );
     setFieldValue(
       `repositories.[${data.id}].catalogInfoYaml.status`,

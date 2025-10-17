@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { lightspeedMessages } from '../translations/translationRef';
+import { lightspeedMessages } from '../translations/ref';
 
 function flattenMessages(obj: any, prefix = ''): Record<string, string> {
   const flattened: Record<string, string> = {};

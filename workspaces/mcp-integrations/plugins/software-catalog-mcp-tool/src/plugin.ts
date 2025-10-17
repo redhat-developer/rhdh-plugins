@@ -105,11 +105,11 @@ Example invocations and the output from those invocations:
                   .describe(
                     'Filter entities by lifecycle (e.g., production, staging, development)',
                   ),
-                tags: z // need to see how the MCP backend will handle this
-                  .array(z.string())
+                tags: z // Don't define using arrays - some mcp clients (notably llama stack) have issues decoding them (more investigation needed)
+                  .string()
                   .optional()
                   .describe(
-                    'Filter entities by tags (e.g., ["genai", "ibm", "llm", "granite", "conversational", "task-text-generation"])',
+                    'Filter entities by tags as comma-separated values (e.g., "genai,ibm,llm,granite,conversational,task-text-generation")',
                   ),
                 verbose: z
                   .boolean()
@@ -135,9 +135,10 @@ Example invocations and the output from those invocations:
                             'The kind/type of the Backstage entity (e.g., Component, API, System)',
                           ),
                         tags: z
-                          .array(z.string())
+                          .string()
+                          .optional()
                           .describe(
-                            'The tags associated with the Backstage entity',
+                            'The tags associated with the Backstage entity as comma-separated values',
                           ),
                         description: z
                           .string()
@@ -162,10 +163,10 @@ Example invocations and the output from those invocations:
                             'The lifecycle of the Backstage entity (e.g., production, staging, development)',
                           ),
                         dependsOn: z
-                          .array(z.string())
+                          .string()
                           .optional()
                           .describe(
-                            'List of entities this entity depends on (e.g., component:default/database)',
+                            'List of entities this entity depends on as comma-separated values (e.g., "component:default/database,api:default/external-service")',
                           ),
                       }),
                       z.custom<Entity>(),
@@ -235,7 +236,7 @@ export async function fetchCatalogEntities(
     type?: string;
     name?: string;
     owner?: string;
-    tags?: string[];
+    tags?: string;
     lifecycle?: string;
     verbose?: boolean;
   },
@@ -260,7 +261,7 @@ export async function fetchCatalogEntities(
     filter['spec.lifecycle'] = input.lifecycle;
   }
   if (input?.tags) {
-    filter['metadata.tags'] = input.tags;
+    filter['metadata.tags'] = input.tags.split(',').map(tag => tag.trim());
   }
 
   const getEntitiesOptions: any = {
@@ -311,7 +312,7 @@ export async function fetchCatalogEntities(
       : items.map(entity => ({
           name: entity.metadata.name,
           kind: entity.kind,
-          tags: entity.metadata.tags || [],
+          tags: entity.metadata.tags?.join(',') || '',
           description: entity.metadata.description,
           lifecycle:
             typeof entity.spec?.lifecycle === 'string'
@@ -328,7 +329,8 @@ export async function fetchCatalogEntities(
           dependsOn:
             entity.relations
               ?.filter(relation => relation.type === 'dependsOn')
-              .map(relation => relation.targetRef) || [],
+              .map(relation => relation.targetRef)
+              .join(',') || '',
         })),
   };
 }

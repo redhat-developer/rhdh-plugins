@@ -31,34 +31,8 @@ Add the following lightspeed configurations into your `app-config.yaml` file:
 
 ```yaml
 lightspeed:
-  servers:
-    - id: <server id>
-      url: <serverURL>
-      token: <api key>
-  questionValidation: true # Optional - To disable question (prompt) validation set it to false.
   servicePort: <portNumber> # Optional - Change the LS service port nubmer. Defaults to 8080.
   systemPrompt: <system prompt> # Optional - Override the default system prompt.
-```
-
-Example local development configuration:
-
-```yaml
-lightspeed:
-  servers:
-    - id: 'my-llm-server'
-      url: 'https://localhost:443/v1'
-      token: 'js92n-ssj28dbdk902' # dummy token
-```
-
-`questionValidation` is default to be enabled with topic restriction on RHDH related topics.
-If you want to disable the validation, set the value to be `false`.
-
-Example configuration to disable `questionValidation`:
-
-```yaml
-lightspeed:
-  questionValidation: false
-  servers: ... ...
 ```
 
 #### Permission Framework Support

@@ -18,9 +18,22 @@ import {
   PermissionCriteria,
   PermissionCondition,
   PermissionRuleParams,
+  AuthorizeResult,
 } from '@backstage/plugin-permission-common';
+import { Request } from 'express';
+import { NotAllowedError } from '@backstage/errors';
+import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
+import type {
+  HttpAuthService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { filterAuthorizedMetrics, matches } from './permissionUtils';
+import {
+  filterAuthorizedMetrics,
+  matches,
+  checkEntityAccess,
+} from './permissionUtils';
+import { mockServices } from '@backstage/backend-test-utils';
 
 const createMockMetric = (
   id: string,
@@ -37,7 +50,7 @@ describe('permissionUtils', () => {
   const mockMetricIdPermissionCondition = {
     rule: 'HAS_METRIC_ID',
     resourceType: 'scorecard-metric',
-    params: { metricIds: ['github.open-prs'] },
+    params: { metricIds: ['github.open_prs'] },
   };
 
   describe('matches', () => {
@@ -60,11 +73,11 @@ describe('permissionUtils', () => {
     };
 
     const matchedMetric = createMockMetric(
-      'github.open-prs',
+      'github.open_prs',
       'GitHub Open PRs',
     );
     const nonMatchedMetric = createMockMetric(
-      'jira.open-issues',
+      'jira.open_issues',
       'Jira Open Issues',
     );
 
@@ -99,8 +112,8 @@ describe('permissionUtils', () => {
 
   describe('filterAuthorizedMetrics', () => {
     const metrics = [
-      createMockMetric('github.open-prs', 'GitHub Open PRs'),
-      createMockMetric('jira.open-issues', 'Jira Open Issues'),
+      createMockMetric('github.open_prs', 'GitHub Open PRs'),
+      createMockMetric('jira.open_issues', 'Jira Open Issues'),
     ];
 
     it('should return all metrics when no filter is provided', () => {
@@ -114,7 +127,101 @@ describe('permissionUtils', () => {
         anyOf: [mockMetricIdPermissionCondition],
       });
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe('github.open-prs');
+      expect(result[0].id).toBe('github.open_prs');
+    });
+  });
+
+  describe('checkEntityAccess', () => {
+    let mockPermissionsService: jest.Mocked<PermissionsService>;
+    let mockHttpAuthService: jest.Mocked<HttpAuthService>;
+    let mockRequest: Request;
+
+    beforeEach(() => {
+      mockPermissionsService = mockServices.permissions.mock({
+        authorize: jest.fn(),
+      });
+
+      mockHttpAuthService = mockServices.httpAuth.mock({
+        credentials: jest.fn(),
+      });
+
+      mockRequest = {} as Request;
+    });
+
+    it('should succeed when user has catalog entity read permission', async () => {
+      mockHttpAuthService.credentials.mockResolvedValue(undefined as any);
+      mockPermissionsService.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+
+      await expect(
+        checkEntityAccess(
+          'component:default/my-service',
+          mockRequest,
+          mockPermissionsService,
+          mockHttpAuthService,
+        ),
+      ).resolves.toBeUndefined();
+
+      expect(mockPermissionsService.authorize).toHaveBeenCalledWith(
+        [
+          {
+            permission: catalogEntityReadPermission,
+            resourceRef: 'component:default/my-service',
+          },
+        ],
+        { credentials: undefined },
+      );
+    });
+
+    it('should throw NotAllowedError when user does not have catalog entity read permission', async () => {
+      mockHttpAuthService.credentials.mockResolvedValue(undefined as any);
+      mockPermissionsService.authorize.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      await expect(
+        checkEntityAccess(
+          'component:default/my-service',
+          mockRequest,
+          mockPermissionsService,
+          mockHttpAuthService,
+        ),
+      ).rejects.toThrow(new NotAllowedError('Access to entity metrics denied'));
+
+      expect(mockPermissionsService.authorize).toHaveBeenCalledWith(
+        [
+          {
+            permission: catalogEntityReadPermission,
+            resourceRef: 'component:default/my-service',
+          },
+        ],
+        { credentials: undefined },
+      );
+    });
+
+    it('should format entity reference correctly for different entity types', async () => {
+      mockHttpAuthService.credentials.mockResolvedValue(undefined as any);
+      mockPermissionsService.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+
+      await checkEntityAccess(
+        'api:production/payment-service',
+        mockRequest,
+        mockPermissionsService,
+        mockHttpAuthService,
+      );
+
+      expect(mockPermissionsService.authorize).toHaveBeenCalledWith(
+        [
+          {
+            permission: catalogEntityReadPermission,
+            resourceRef: 'api:production/payment-service',
+          },
+        ],
+        { credentials: undefined },
+      );
     });
   });
 });

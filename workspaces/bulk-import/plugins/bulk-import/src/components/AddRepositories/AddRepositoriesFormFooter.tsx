@@ -23,20 +23,24 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useGitlabConfigured } from '../../hooks';
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
 
+  const importFlow = useImportFlow();
+  const gitlabConfigured = useGitlabConfigured();
+
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
 
-  const getGitSubmitTitle = () => {
-    if (gitlabFeatureFlag) {
+  const getGitSubmitTitle = (isGitlabConfigured: boolean) => {
+    if (isGitlabConfigured || importFlow === 'scaffolder') {
       return t('common.import');
     }
     return isPluralRepositories
@@ -56,17 +60,16 @@ export const AddRepositoriesFormFooter = () => {
       toolTipTitle: t('forms.footer.importTooltip'),
     },
     [ApprovalTool.Git]: {
-      submitTitle: getGitSubmitTitle(),
-      toolTipTitle: gitlabFeatureFlag
-        ? t('forms.footer.importTooltip')
-        : t('forms.footer.pullRequestTooltip'),
+      submitTitle: getGitSubmitTitle(gitlabConfigured),
+      toolTipTitle:
+        gitlabConfigured || importFlow === 'scaffolder'
+          ? t('forms.footer.importTooltip')
+          : t('forms.footer.pullRequestTooltip'),
     },
   };
 
   const disableCreate =
-    values.approvalTool === ApprovalTool.Gitlab ||
-    !values.repositories ||
-    Object.values(values.repositories).length === 0;
+    !values.repositories || Object.values(values.repositories).length === 0;
 
   const submitButton = (
     <Button

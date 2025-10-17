@@ -16,14 +16,23 @@
 
 import { LoggerService, DiscoveryService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import {
-  Publisher,
-  PublisherBase,
-  TechDocsMetadata,
-} from '@backstage/plugin-techdocs-node';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import TurndownService from 'turndown';
+
+/**
+ * TechDocsMetadata
+ *
+ * @public
+ */
+export interface TechDocsMetadata {
+  site_name?: string;
+  site_description?: string;
+  etag?: string;
+  build_timestamp?: number;
+  files?: string[];
+  error?: string;
+}
 
 /**
  * TechDocsEntity
@@ -32,7 +41,7 @@ import TurndownService from 'turndown';
  */
 export interface TechDocsEntity {
   name: string;
-  tags: Array<string>;
+  tags: string;
   description: string;
   owner: string;
   lifecycle: string;
@@ -63,7 +72,7 @@ export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
     siteName?: string;
     siteDescription?: string;
     etag?: string;
-    files?: string[];
+    files?: string;
   };
 }
 
@@ -89,6 +98,7 @@ export interface TechDocsContentResult {
     siteName?: string;
     siteDescription?: string;
   };
+  error?: string;
 }
 
 /**
@@ -101,7 +111,7 @@ export interface ListTechDocsOptions {
   namespace?: string;
   owner?: string;
   lifecycle?: string;
-  tags?: string[];
+  tags?: string;
   limit?: number;
 }
 
@@ -122,7 +132,6 @@ export interface TechDocsCoverageResult {
  * @public
  */
 export class TechDocsService {
-  private publisher?: PublisherBase;
   private turndownService: TurndownService;
 
   constructor(
@@ -147,7 +156,7 @@ export class TechDocsService {
         'Failed to convert HTML with turndown, falling back to plain text',
         error,
       );
-      // Fallback to simple text extraction if turndown fails
+      // we fallback to simple text extraction if turndown fails
       return html
         .replace(/<(script|style)[^>]*>.*?<\/\1>/gims, '')
         .replace(/<!--.*?-->/gims, '')
@@ -157,59 +166,69 @@ export class TechDocsService {
     }
   }
 
-  async initialize() {
-    this.publisher = await Publisher.fromConfig(this.config, {
-      logger: this.logger,
-      discovery: this.discovery,
-    });
-  }
-
-  async getPublisher(): Promise<PublisherBase> {
-    if (!this.publisher) {
-      await this.initialize();
-    }
-    return this.publisher!;
-  }
-
   // generateTechDocsUrls:: creates the techdoc urls
   async generateTechDocsUrls(
     entity: Entity,
   ): Promise<{ techDocsUrl: string; metadataUrl: string }> {
     const appBaseUrl = this.config.getString('app.baseUrl');
-    const backendBaseUrl = await this.discovery.getBaseUrl('catalog');
+    const backendBaseUrl = this.config.getString('backend.baseUrl');
 
     const { namespace = 'default', name } = entity.metadata;
     const kind = entity.kind.toLowerCase();
 
     return {
       techDocsUrl: `${appBaseUrl}/docs/${namespace}/${kind}/${name}`,
-      metadataUrl: `${backendBaseUrl}/entities/by-name/${kind}/${namespace}/${name}`,
+      metadataUrl: `${backendBaseUrl}/api/catalog/entities/by-name/${kind}/${namespace}/${name}`,
     };
   }
 
   // fetchTechDocsMetadata:: fetches all metadata for given entity
   async fetchTechDocsMetadata(
     entity: Entity,
-  ): Promise<TechDocsMetadata | null> {
+    auth?: any,
+  ): Promise<TechDocsMetadata> {
     try {
-      const publisher = await this.getPublisher();
       const { namespace = 'default', name } = entity.metadata;
       const kind = entity.kind.toLowerCase();
 
-      const entityName = {
-        kind,
-        namespace,
-        name,
-      };
+      const techdocsBaseUrl = await this.discovery.getBaseUrl('techdocs');
+      const metadataUrl = `${techdocsBaseUrl}/static/docs/${namespace}/${kind}/${name}/techdocs_metadata.json`;
 
-      const metadata = await publisher.fetchTechDocsMetadata(entityName);
-      return metadata;
+      this.logger.debug(`Fetching metadata from URL: ${metadataUrl}`);
+      const fetch = this.fetchFunction || (await import('node-fetch')).default;
+
+      const headers: Record<string, string> = {};
+
+      if (auth) {
+        const { token } = await auth.getPluginRequestToken({
+          onBehalfOf: await auth.getOwnServiceCredentials(),
+          targetPluginId: 'techdocs',
+        });
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(metadataUrl, { headers });
+
+      if (!response.ok) {
+        // in case of 404 we return an empty metadata object
+        if (response.status === 404) {
+          this.logger.debug(
+            `TechDocs metadata not found for ${entity.kind}:${entity.metadata.namespace}/${entity.metadata.name}`,
+          );
+          return {};
+        }
+        // in case of general error (non-404) we return error message
+        const errorMsg = `Failed to fetch TechDocs metadata: ${response.status} ${response.statusText}`;
+        this.logger.warn(errorMsg);
+        return { error: errorMsg };
+      }
+
+      const metadata = await response.json();
+      return metadata as TechDocsMetadata;
     } catch (error) {
-      this.logger.warn(
-        `Failed to fetch TechDocs metadata for ${entity.kind}:${entity.metadata.namespace}/${entity.metadata.name}`,
-        error,
-      );
-      return null;
+      const errorMsg = `Failed to fetch TechDocs metadata for ${entity.kind}:${entity.metadata.namespace}/${entity.metadata.name}: ${error}`;
+      this.logger.warn(errorMsg);
+      return { error: errorMsg };
     }
   }
 
@@ -220,17 +239,27 @@ export class TechDocsService {
     pagePath?: string,
     auth?: any,
     catalog?: CatalogService,
-  ): Promise<TechDocsContentResult | null> {
+  ): Promise<TechDocsContentResult> {
+    const [kind, namespaceAndName] = entityRef.split(':');
+    const [namespace = 'default', name] = namespaceAndName?.split('/') || [];
+
+    // early return if name or kind are missing
+    if (!kind || !name) {
+      const errorMsg = `Invalid entity reference format: ${entityRef}. Expected format: kind:namespace/name`;
+      this.logger.error(errorMsg);
+      return {
+        entityRef,
+        name: '',
+        title: '',
+        kind: '',
+        namespace: '',
+        content: '',
+        contentType: 'text',
+        error: errorMsg,
+      };
+    }
+
     try {
-      const [kind, namespaceAndName] = entityRef.split(':');
-      const [namespace = 'default', name] = namespaceAndName?.split('/') || [];
-
-      if (!kind || !name) {
-        throw new Error(
-          `Invalid entity reference format: ${entityRef}. Expected format: kind:namespace/name`,
-        );
-      }
-
       let entity: Entity | undefined;
 
       // get entity
@@ -244,14 +273,23 @@ export class TechDocsService {
         entity = entityResponse || undefined;
       }
 
-      // raise error if there's no techdoc for entity
+      // return error message if entity is not found or does not have techdocs-ref annotation
       if (
         entity &&
         !entity.metadata?.annotations?.['backstage.io/techdocs-ref']
       ) {
-        throw new Error(
-          `Entity ${entityRef} does not have TechDocs configured`,
-        );
+        const errorMsg = `Entity ${entityRef} does not have TechDocs configured`;
+        this.logger.error(errorMsg);
+        return {
+          entityRef,
+          name,
+          title: entity.metadata?.title || name,
+          kind,
+          namespace,
+          content: '',
+          contentType: 'text',
+          error: errorMsg,
+        };
       }
 
       // set target path to default if not specified
@@ -278,16 +316,27 @@ export class TechDocsService {
 
       const response = await fetch(contentUrl, { headers });
 
-      // check 404 and err_status cases
+      // check response status and return error if not ok
       if (!response.ok) {
+        let errorMsg: string;
+
         if (response.status === 404) {
-          throw new Error(
-            `TechDocs content not found for ${entityRef} at path: ${targetPath}`,
-          );
+          errorMsg = `TechDocs content not found for ${entityRef} at path: ${targetPath}. The documentation may not have been built yet. Please visit the TechDocs page in RHDH to trigger a build.`;
+        } else {
+          errorMsg = `Failed to fetch TechDocs content: ${response.status} ${response.statusText}`;
         }
-        throw new Error(
-          `Failed to fetch TechDocs content: ${response.status} ${response.statusText}`,
-        );
+
+        this.logger.error(errorMsg);
+        return {
+          entityRef,
+          name,
+          title: entity?.metadata?.title || name,
+          kind,
+          namespace,
+          content: '',
+          contentType: 'text',
+          error: errorMsg,
+        };
       }
 
       let content = await response.text();
@@ -299,6 +348,7 @@ export class TechDocsService {
             kind,
             metadata: { name, namespace },
           } as Entity),
+        auth,
       );
 
       // try to convert any type to raw text
@@ -345,15 +395,22 @@ export class TechDocsService {
           : undefined,
       };
     } catch (error) {
-      this.logger.error(
-        `Failed to retrieve TechDocs content for ${entityRef}: ${error}`,
-      );
-      throw error;
+      const errorMsg = `Failed to retrieve TechDocs content for ${entityRef}: ${error}`;
+      this.logger.error(errorMsg);
+      return {
+        entityRef,
+        name: '',
+        title: '',
+        kind: '',
+        namespace: '',
+        content: '',
+        contentType: 'text',
+        error: errorMsg,
+      };
     }
   }
 
-  // analyzeCoverage:: analyzes the coverage of techdocs
-  // in the catalog
+  // analyzeCoverage:: analyzes the coverage of techdoc in the catalog
   // @public
   async analyzeCoverage(
     options: ListTechDocsOptions = {},
@@ -386,7 +443,7 @@ export class TechDocsService {
       filters['spec.lifecycle'] = lifecycle;
     }
     if (tags) {
-      filters['metadata.tags'] = tags;
+      filters['metadata.tags'] = tags.split(',').map(tag => tag.trim());
     }
 
     const getEntitiesOptions: any = {
@@ -454,7 +511,7 @@ export class TechDocsService {
       filters['spec.lifecycle'] = lifecycle;
     }
     if (tags) {
-      filters['metadata.tags'] = tags;
+      filters['metadata.tags'] = tags.split(',').map(tag => tag.trim());
     }
 
     const getEntitiesOptions: any = {
@@ -489,27 +546,28 @@ export class TechDocsService {
     const entities = await Promise.all(
       entitiesWithTechDocs.map(async entity => {
         const urls = await this.generateTechDocsUrls(entity);
-        const techDocsMetadata = await this.fetchTechDocsMetadata(entity);
+        const techDocsMetadata = await this.fetchTechDocsMetadata(entity, auth);
 
-        const metadata = techDocsMetadata
-          ? {
-              lastUpdated: techDocsMetadata.build_timestamp
-                ? new Date(
-                    techDocsMetadata.build_timestamp * 1000,
-                  ).toISOString()
-                : undefined,
-              buildTimestamp: techDocsMetadata.build_timestamp,
-              siteName: techDocsMetadata.site_name,
-              siteDescription: techDocsMetadata.site_description,
-              etag: techDocsMetadata.etag,
-              files: techDocsMetadata.files,
-            }
-          : undefined;
+        const metadata =
+          techDocsMetadata.error || !techDocsMetadata.build_timestamp
+            ? undefined
+            : {
+                lastUpdated: techDocsMetadata.build_timestamp
+                  ? new Date(
+                      techDocsMetadata.build_timestamp * 1000,
+                    ).toISOString()
+                  : undefined,
+                buildTimestamp: techDocsMetadata.build_timestamp,
+                siteName: techDocsMetadata.site_name,
+                siteDescription: techDocsMetadata.site_description,
+                etag: techDocsMetadata.etag,
+                files: techDocsMetadata.files?.join(',') || '',
+              };
 
         return {
           name: entity.metadata.name,
           title: entity.metadata.title || '',
-          tags: entity.metadata.tags || [],
+          tags: entity.metadata.tags?.join(',') || '',
           description: entity.metadata.description || '',
           owner: String(entity.metadata.owner || entity.spec?.owner || ''),
           lifecycle: String(
