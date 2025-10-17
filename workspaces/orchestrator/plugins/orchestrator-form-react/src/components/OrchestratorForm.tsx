@@ -114,6 +114,20 @@ const OrchestratorForm = ({
     initialFormData ? () => structuredClone(initialFormData) : {},
   );
 
+  const [changedByUserMap, setChangedByUserMap] = useState<
+    Record<string, boolean>
+  >({});
+  const getIsChangedByUser = useCallback(
+    (id: string) => !!changedByUserMap[id],
+    [changedByUserMap],
+  );
+  const setIsChangedByUser = useCallback(
+    (id: string, isChangedByUser: boolean) => {
+      setChangedByUserMap(prev => ({ ...prev, [id]: isChangedByUser }));
+    },
+    [],
+  );
+
   const schema = useMemo(() => removeHiddenSteps(rawSchema), [rawSchema]);
 
   const numStepsInMultiStepSchema = useMemo(
@@ -162,6 +176,8 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          getIsChangedByUser={getIsChangedByUser}
+          setIsChangedByUser={setIsChangedByUser}
         >
           <Fragment />
         </OrchestratorFormWrapper> // it is required to pass the fragment so rjsf won't generate a Submit button
@@ -174,6 +190,8 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          getIsChangedByUser={getIsChangedByUser}
+          setIsChangedByUser={setIsChangedByUser}
         />
       )}
     </StepperContextProvider>
