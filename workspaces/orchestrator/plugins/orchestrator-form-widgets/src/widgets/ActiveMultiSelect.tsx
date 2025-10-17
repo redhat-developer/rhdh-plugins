@@ -34,6 +34,7 @@ import {
   applySelectorArray,
   useFetch,
   useRetriggerEvaluate,
+  useProcessingState,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -82,7 +83,6 @@ export const ActiveMultiSelect: Widget<
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const allOptions: string[] = useMemo(() => {
     if (allowNewItems && inProgressItem) {
@@ -104,18 +104,11 @@ export const ActiveMultiSelect: Widget<
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
   // Track the complete loading state (fetch + processing)
-  const completeLoading = loading || isProcessing;
-  useEffect(() => {
-    if (completeLoading && handleFetchStarted) {
-      handleFetchStarted();
-      return () => {
-        if (handleFetchEnded) {
-          handleFetchEnded();
-        }
-      };
-    }
-    return undefined;
-  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
 
   useEffect(() => {
     if (!data) {
@@ -123,8 +116,7 @@ export const ActiveMultiSelect: Widget<
     }
 
     const doItAsync = async () => {
-      setIsProcessing(true);
-      try {
+      await wrapProcessing(async () => {
         if (autocompleteSelector) {
           const autocompleteValues = await applySelectorArray(
             data,
@@ -161,9 +153,7 @@ export const ActiveMultiSelect: Widget<
         ) {
           onChange([...new Set([...mandatory, ...value, ...defaults])]);
         }
-      } finally {
-        setIsProcessing(false);
-      }
+      });
     };
 
     doItAsync();
@@ -176,6 +166,7 @@ export const ActiveMultiSelect: Widget<
     props.id,
     value,
     onChange,
+    wrapProcessing,
   ]);
 
   const handleChange = (
@@ -193,7 +184,7 @@ export const ActiveMultiSelect: Widget<
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  if (completeLoading) {
     return <CircularProgress size={20} />;
   }
 

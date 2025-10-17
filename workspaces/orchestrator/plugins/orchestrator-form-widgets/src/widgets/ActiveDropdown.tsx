@@ -32,6 +32,7 @@ import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
   applySelectorArray,
+  useProcessingState,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -81,7 +82,6 @@ export const ActiveDropdown: Widget<
   );
   const [labels, setLabels] = useState<string[]>();
   const [values, setValues] = useState<string[]>();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFetchStarted = formContext?.handleFetchStarted;
   const handleFetchEnded = formContext?.handleFetchEnded;
@@ -96,18 +96,11 @@ export const ActiveDropdown: Widget<
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
   // Track the complete loading state (fetch + processing)
-  const completeLoading = loading || isProcessing;
-  useEffect(() => {
-    if (completeLoading && handleFetchStarted) {
-      handleFetchStarted();
-      return () => {
-        if (handleFetchEnded) {
-          handleFetchEnded();
-        }
-      };
-    }
-    return undefined;
-  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
 
   useEffect(() => {
     if (!data || !labelSelector || !valueSelector) {
@@ -115,8 +108,7 @@ export const ActiveDropdown: Widget<
     }
 
     const doItAsync = async () => {
-      setIsProcessing(true);
-      try {
+      await wrapProcessing(async () => {
         const selectedLabels = await applySelectorArray(data, labelSelector);
         const selectedValues = await applySelectorArray(data, valueSelector);
 
@@ -129,13 +121,11 @@ export const ActiveDropdown: Widget<
 
         setLabels(selectedLabels);
         setValues(selectedValues);
-      } finally {
-        setIsProcessing(false);
-      }
+      });
     };
 
     doItAsync();
-  }, [labelSelector, valueSelector, data, props.id]);
+  }, [labelSelector, valueSelector, data, props.id, wrapProcessing]);
 
   const handleChange = useCallback(
     (changed: string, isByUser: boolean) => {
@@ -159,7 +149,7 @@ export const ActiveDropdown: Widget<
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading || !labels || !values) {
+  if (completeLoading || !labels || !values) {
     return <CircularProgress size={20} />;
   }
 
