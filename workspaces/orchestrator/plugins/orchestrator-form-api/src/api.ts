@@ -42,6 +42,8 @@ export type OrchestratorFormContextProps = {
   setAuthTokenDescriptors: (
     authTokenDescriptors: AuthTokenDescriptor[],
   ) => void;
+  handleFetchStarted?: () => void;
+  handleFetchEnded?: () => void;
 };
 
 /**

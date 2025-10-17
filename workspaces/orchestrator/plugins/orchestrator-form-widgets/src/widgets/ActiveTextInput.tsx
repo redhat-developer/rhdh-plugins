@@ -36,6 +36,7 @@ import {
   useFetch,
   applySelectorArray,
   applySelectorString,
+  useProcessingState,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -74,6 +75,9 @@ export const ActiveTextInput: Widget<
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
 
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
+
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
     formData,
@@ -82,6 +86,13 @@ export const ActiveTextInput: Widget<
   );
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
+
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
 
   const handleChange = useCallback(
     (changed: string) => {
@@ -96,25 +107,31 @@ export const ActiveTextInput: Widget<
     }
 
     const doItAsync = async () => {
-      if (value === undefined) {
-        // loading default so do it only once
-        const defaultValue = await applySelectorString(
-          data,
-          defaultValueSelector,
-        );
+      await wrapProcessing(async () => {
+        if (value === undefined) {
+          // loading default so do it only once
+          const defaultValue = await applySelectorString(
+            data,
+            defaultValueSelector,
+          );
 
-        if (defaultValue && defaultValue !== null && defaultValue !== 'null') {
-          handleChange(defaultValue);
+          if (
+            defaultValue &&
+            defaultValue !== null &&
+            defaultValue !== 'null'
+          ) {
+            handleChange(defaultValue);
+          }
         }
-      }
 
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-        );
-        setAutocompleteOptions(autocompleteValues);
-      }
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
+            data,
+            autocompleteSelector,
+          );
+          setAutocompleteOptions(autocompleteValues);
+        }
+      });
     };
 
     doItAsync();
@@ -125,13 +142,14 @@ export const ActiveTextInput: Widget<
     props.id,
     value,
     handleChange,
+    wrapProcessing,
   ]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  if (completeLoading) {
     return <CircularProgress size={20} />;
   }
 
