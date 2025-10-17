@@ -516,4 +516,168 @@ describe('Model Catalog Generator', () => {
     // Should not have annotations if none were provided in API
     expect(modelServerComponent.metadata.annotations).toBeUndefined();
   });
+
+  it('should copy modelServer annotations to component metadata when present', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'annotated-server',
+        owner: 'example-user',
+        description: 'Model server with annotations',
+        lifecycle: 'production',
+        annotations: {
+          'custom.io/annotation1': 'server-value1',
+          'custom.io/annotation2': 'server-value2',
+          'backstage.io/custom-tag': 'server-custom',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+
+    const modelServerComponent = modelCatalogEntities.find(
+      entity =>
+        entity.kind === 'Component' &&
+        entity.metadata.name === 'annotated-server',
+    ) as ComponentEntity;
+
+    expect(modelServerComponent).toBeDefined();
+    expect(modelServerComponent.metadata.annotations).toBeDefined();
+    expect(modelServerComponent.metadata.annotations).toEqual({
+      'custom.io/annotation1': 'server-value1',
+      'custom.io/annotation2': 'server-value2',
+      'backstage.io/custom-tag': 'server-custom',
+    });
+  });
+
+  it('should merge modelServer annotations with API annotations when both are present', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'fully-annotated-service',
+        owner: 'example-user',
+        description: 'Model service with both server and API annotations',
+        lifecycle: 'production',
+        annotations: {
+          'server.io/annotation1': 'from-server',
+          'server.io/annotation2': 'also-from-server',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+          annotations: {
+            'api.io/annotation1': 'from-api',
+            'api.io/annotation2': 'also-from-api',
+          },
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+
+    // Find the model server component entity
+    const modelServerComponent = modelCatalogEntities.find(
+      entity =>
+        entity.kind === 'Component' &&
+        entity.metadata.name === 'fully-annotated-service',
+    ) as ComponentEntity;
+
+    expect(modelServerComponent).toBeDefined();
+    expect(modelServerComponent.metadata.annotations).toBeDefined();
+    // Should contain annotations from both API and modelServer
+    expect(modelServerComponent.metadata.annotations).toEqual({
+      'api.io/annotation1': 'from-api',
+      'api.io/annotation2': 'also-from-api',
+      'server.io/annotation1': 'from-server',
+      'server.io/annotation2': 'also-from-server',
+    });
+  });
+
+  it('should copy model annotations to resource metadata when present', () => {
+    const modelCatalog: ModelCatalog = {
+      models: [
+        {
+          name: 'annotated-model',
+          description: 'Model with annotations',
+          lifecycle: 'production',
+          owner: 'example-user',
+          annotations: {
+            'custom.io/model-annotation1': 'model-value1',
+            'custom.io/model-annotation2': 'model-value2',
+            'backstage.io/custom-model-tag': 'model-custom',
+          },
+        },
+      ],
+    };
+
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+
+    // Find the model resource entity
+    const modelResource = modelCatalogEntities.find(
+      entity =>
+        entity.kind === 'Resource' &&
+        entity.metadata.name === 'annotated-model',
+    );
+
+    expect(modelResource).toBeDefined();
+    expect(modelResource!.metadata.annotations).toBeDefined();
+    expect(modelResource!.metadata.annotations).toEqual({
+      'custom.io/model-annotation1': 'model-value1',
+      'custom.io/model-annotation2': 'model-value2',
+      'backstage.io/custom-model-tag': 'model-custom',
+    });
+  });
+
+  it('should copy model annotations and preserve TechDocs special case handling', () => {
+    const modelCatalog: ModelCatalog = {
+      models: [
+        {
+          name: 'fully-annotated-model',
+          description: 'Model with multiple annotations including TechDocs',
+          lifecycle: 'production',
+          owner: 'example-user',
+          annotations: {
+            TechDocs:
+              'https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main',
+            'custom.io/model-annotation1': 'model-value1',
+            'custom.io/model-annotation2': 'model-value2',
+          },
+        },
+      ],
+    };
+
+    const modelCatalogEntities = GenerateCatalogEntities(modelCatalog);
+
+    // Find the model resource entity
+    const modelResource = modelCatalogEntities.find(
+      entity =>
+        entity.kind === 'Resource' &&
+        entity.metadata.name === 'fully-annotated-model',
+    );
+
+    expect(modelResource).toBeDefined();
+    expect(modelResource!.metadata.annotations).toBeDefined();
+    // Should have TechDocs converted to backstage.io/techdocs-ref and other annotations copied
+    expect(modelResource!.metadata.annotations).toEqual({
+      'backstage.io/techdocs-ref':
+        'url:https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main',
+      'custom.io/model-annotation1': 'model-value1',
+      'custom.io/model-annotation2': 'model-value2',
+    });
+  });
 });

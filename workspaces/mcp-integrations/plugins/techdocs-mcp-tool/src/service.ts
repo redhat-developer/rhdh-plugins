@@ -41,7 +41,7 @@ export interface TechDocsMetadata {
  */
 export interface TechDocsEntity {
   name: string;
-  tags: Array<string>;
+  tags: string;
   description: string;
   owner: string;
   lifecycle: string;
@@ -72,7 +72,7 @@ export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
     siteName?: string;
     siteDescription?: string;
     etag?: string;
-    files?: string[];
+    files?: string;
   };
 }
 
@@ -111,7 +111,7 @@ export interface ListTechDocsOptions {
   namespace?: string;
   owner?: string;
   lifecycle?: string;
-  tags?: string[];
+  tags?: string;
   limit?: number;
 }
 
@@ -443,7 +443,7 @@ export class TechDocsService {
       filters['spec.lifecycle'] = lifecycle;
     }
     if (tags) {
-      filters['metadata.tags'] = tags;
+      filters['metadata.tags'] = tags.split(',').map(tag => tag.trim());
     }
 
     const getEntitiesOptions: any = {
@@ -511,7 +511,7 @@ export class TechDocsService {
       filters['spec.lifecycle'] = lifecycle;
     }
     if (tags) {
-      filters['metadata.tags'] = tags;
+      filters['metadata.tags'] = tags.split(',').map(tag => tag.trim());
     }
 
     const getEntitiesOptions: any = {
@@ -561,13 +561,13 @@ export class TechDocsService {
                 siteName: techDocsMetadata.site_name,
                 siteDescription: techDocsMetadata.site_description,
                 etag: techDocsMetadata.etag,
-                files: techDocsMetadata.files,
+                files: techDocsMetadata.files?.join(',') || '',
               };
 
         return {
           name: entity.metadata.name,
           title: entity.metadata.title || '',
-          tags: entity.metadata.tags || [],
+          tags: entity.metadata.tags?.join(',') || '',
           description: entity.metadata.description || '',
           owner: String(entity.metadata.owner || entity.spec?.owner || ''),
           lifecycle: String(

@@ -23,7 +23,7 @@ export interface ListTechDocsOptions {
   // (undocumented)
   owner?: string;
   // (undocumented)
-  tags?: string[];
+  tags?: string;
 }
 
 // @public
@@ -88,7 +88,7 @@ export interface TechDocsEntity {
   // (undocumented)
   owner: string;
   // (undocumented)
-  tags: Array<string>;
+  tags: string;
   // (undocumented)
   title: string;
 }
@@ -102,7 +102,7 @@ export interface TechDocsEntityWithMetadata extends TechDocsEntityWithUrls {
     siteName?: string;
     siteDescription?: string;
     etag?: string;
-    files?: string[];
+    files?: string;
   };
 }
 

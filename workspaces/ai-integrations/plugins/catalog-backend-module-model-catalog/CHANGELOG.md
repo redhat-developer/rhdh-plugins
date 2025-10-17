@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.7.0
+
+### Minor Changes
+
+- 7b81c3d: copy model/modelServer annotations to resource/component annotations
+
 ## 0.6.0
 
 ### Minor Changes
