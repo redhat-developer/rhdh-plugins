@@ -9082,7 +9082,7 @@ __metadata:
     "@types/node-fetch": ^2.5.12
     "@types/supertest": 2.0.16
     ajv-formats: ^3.0.1
-    eventsource: ^4.0.0
+    eventsource-client: ^1.2.0
     express: ^4.17.1
     git-url-parse: ^14.0.0
     js-yaml: ^4.1.0
@@ -18320,19 +18320,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eventsource-parser@npm:^3.0.1":
-  version: 3.0.6
-  resolution: "eventsource-parser@npm:3.0.6"
-  checksum: b90ec27f8d992afa7df171db202faaedb1782214f64e50690cbf78bc2629f7751575aa27a72d8ae447e5a7094938406b1a3ea1d89e5f0f2d6916cc8a694b6587
+"eventsource-client@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "eventsource-client@npm:1.2.0"
+  dependencies:
+    eventsource-parser: ^3.0.0
+  checksum: 744b772176d09feab761244575cbf74b57d6fb6746e0863ece3549bfe606d38fc86d7d704e5ffa69bfb7b586929c29e29ce0059f194de20c2630b148c346d9bc
   languageName: node
   linkType: hard
 
-"eventsource@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "eventsource@npm:4.0.0"
-  dependencies:
-    eventsource-parser: ^3.0.1
-  checksum: 63c430bad32717aea91ff527211233885beb9399758b5c9176b75dd76c4ccf0b6edcd5635db902e927d1d899c39d4aa98ac01cf9b81369f216fb04e4c3044f35
+"eventsource-parser@npm:^3.0.0":
+  version: 3.0.6
+  resolution: "eventsource-parser@npm:3.0.6"
+  checksum: b90ec27f8d992afa7df171db202faaedb1782214f64e50690cbf78bc2629f7751575aa27a72d8ae447e5a7094938406b1a3ea1d89e5f0f2d6916cc8a694b6587
   languageName: node
   linkType: hard
 

@@ -21,7 +21,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 
-import { EventSource, EventSourceInit } from 'eventsource';
+import { createEventSource } from 'eventsource-client';
 import gitUrlParse from 'git-url-parse';
 
 import { getCatalogFilename } from '../../../catalog/catalogUtils';
@@ -48,6 +48,7 @@ interface ScaffolderEvent {
   createdAt: string;
   error?: any;
 }
+
 async function* getEvents(
   taskId: string,
   scaffolderUrl: string,
@@ -56,64 +57,28 @@ async function* getEvents(
 ): AsyncGenerator<ScaffolderEvent> {
   const url = `${scaffolderUrl}/v2/tasks/${taskId}/eventstream`;
 
-  const queue: ScaffolderEvent[] = [];
-  let resolver: ((event: ScaffolderEvent) => void) | undefined;
-
-  const handleEvent = (data: ScaffolderEvent) => {
-    if (resolver) {
-      resolver(data);
-      resolver = undefined;
-    } else {
-      queue.push(data);
-    }
-  };
-
-  const eventSourceInitDict: EventSourceInit = {
+  const eventSource = createEventSource({
+    url,
     headers: {
       Authorization: `Bearer ${token}`,
     },
-  } as EventSourceInit;
-
-  const eventSource = new EventSource(url, eventSourceInitDict);
-
-  eventSource.onopen = () => {
-    logger.info('SSE connection opened');
-  };
-
-  eventSource.onerror = (err: any) => {
-    if (err.message === undefined) {
-      return;
+  });
+  try {
+    for await (const event of eventSource) {
+      try {
+        const data: ScaffolderEvent = JSON.parse(event.data);
+        yield data;
+        if (data.type === 'completion' || data.type === 'error') {
+          break;
+        }
+      } catch (err) {
+        logger.error('Failed to parse SSE event', err);
+      }
     }
+  } catch (err) {
     logger.error('SSE error', err);
-  };
-
-  const messageHandler = (event: MessageEvent) => {
-    try {
-      const data: ScaffolderEvent = JSON.parse(event.data);
-      handleEvent(data);
-    } catch (err) {
-      logger.error('Failed to parse SSE event', err);
-    }
-  };
-
-  eventSource.addEventListener('log', messageHandler);
-  eventSource.addEventListener('completion', messageHandler);
-
-  const nextEvent = (): Promise<ScaffolderEvent> =>
-    new Promise(resolve => {
-      resolver = resolve;
-    });
-
-  while (true) {
-    const event: ScaffolderEvent =
-      queue.length > 0 ? queue.shift()! : await nextEvent();
-
-    yield event;
-
-    if (event.type === 'completion' || event.type === 'error') {
-      eventSource.close();
-      break;
-    }
+  } finally {
+    eventSource.close();
   }
 }
 
@@ -138,6 +103,7 @@ export async function processTaskEvents(
     logger.error(`==== Failed to process events for task ${taskId}`, e);
   }
 }
+
 const handlePullRequestUpdate = async (
   importReq: Components.Schemas.ImportRequest,
   logger: LoggerService,
