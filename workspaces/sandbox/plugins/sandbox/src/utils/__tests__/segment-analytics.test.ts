@@ -240,6 +240,90 @@ describe('useSegmentAnalytics Hook', () => {
     expect(identify).toHaveBeenCalledTimes(1);
   });
 
+  it('should call identify with email_domain when email is provided', async () => {
+    const identify = jest.fn();
+    const group = jest.fn();
+    const track = jest.fn();
+    (AnalyticsBrowser.load as jest.Mock).mockReturnValue({
+      identify,
+      group,
+      track,
+    });
+
+    const user = {
+      name: 'Test User',
+      compliantUsername: 'testuser',
+      username: 'testuser',
+      givenName: 'Test',
+      familyName: 'User',
+      company: 'Test Co',
+      email: 'testuser@example.com',
+      userID: 'uid-1',
+    } as any;
+
+    const { rerender } = renderHook(
+      ({ u }) => useSegmentAnalytics('key', u as any),
+      { initialProps: { u: undefined as any } },
+    );
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    rerender({ u: user });
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    expect(identify).toHaveBeenCalledTimes(1);
+    expect(identify).toHaveBeenCalledWith('uid-1', {
+      company: 'Test Co',
+      email_domain: 'example.com',
+    });
+  });
+
+  it('should not include email_domain when email is not provided', async () => {
+    const identify = jest.fn();
+    const group = jest.fn();
+    const track = jest.fn();
+    (AnalyticsBrowser.load as jest.Mock).mockReturnValue({
+      identify,
+      group,
+      track,
+    });
+
+    const user = {
+      name: 'Test User',
+      compliantUsername: 'testuser',
+      username: 'testuser',
+      givenName: 'Test',
+      familyName: 'User',
+      company: 'Test Co',
+      userID: 'uid-1',
+    } as any;
+
+    const { rerender } = renderHook(
+      ({ u }) => useSegmentAnalytics('key', u as any),
+      { initialProps: { u: undefined as any } },
+    );
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    rerender({ u: user });
+
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
+
+    expect(identify).toHaveBeenCalledTimes(1);
+    expect(identify).toHaveBeenCalledWith('uid-1', {
+      company: 'Test Co',
+    });
+  });
+
   it('should call group once with accountID and accountNumber trait when present', async () => {
     const identify = jest.fn();
     const group = jest.fn();
