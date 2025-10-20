@@ -52,7 +52,7 @@ import {
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
   WorkflowOverviewListResultDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { RouterOptions } from '../routerWrapper';
 import { buildPagination } from '../types/pagination';

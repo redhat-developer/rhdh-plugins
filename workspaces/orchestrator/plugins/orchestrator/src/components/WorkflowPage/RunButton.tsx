@@ -26,7 +26,7 @@ import Tooltip from '@mui/material/Tooltip';
 import {
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { useTranslation } from '../../hooks/useTranslation';

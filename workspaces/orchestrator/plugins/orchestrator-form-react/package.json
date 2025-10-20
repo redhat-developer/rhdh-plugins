@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react",
+  "name": "@redhat/backstage-plugin-orchestrator-form-react",
   "description": "Web library for the orchestrator-form plugin",
   "version": "2.1.0",
   "main": "src/index.ts",
@@ -14,7 +14,7 @@
     "role": "web-library",
     "pluginId": "orchestrator-form",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react"
+      "@redhat/backstage-plugin-orchestrator-form-react"
     ],
     "supported-versions": "1.39.1"
   },
@@ -37,8 +37,8 @@
     "@backstage/core-plugin-api": "^1.10.9",
     "@backstage/types": "^1.2.1",
     "@mui/material": "^5.17.1",
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^",
+    "@redhat/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@rjsf/core": "^5.21.2",
     "@rjsf/material-ui": "^5.21.2",
     "@rjsf/utils": "^5.21.2",

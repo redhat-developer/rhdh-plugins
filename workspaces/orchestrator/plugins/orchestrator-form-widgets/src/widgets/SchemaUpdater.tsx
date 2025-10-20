@@ -20,7 +20,7 @@ import { JsonObject } from '@backstage/types';
 import {
   SchemaChunksResponse,
   OrchestratorFormContextProps,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+} from '@redhat/backstage-plugin-orchestrator-form-api';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import {

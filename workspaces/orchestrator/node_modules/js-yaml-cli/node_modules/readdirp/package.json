@@ -1,0 +1,42 @@
+{
+  "author": "Thorsten Lorenz <thlorenz@gmx.de> (thlorenz.com)",
+  "name": "readdirp",
+  "description": "Recursive version of fs.readdir with streaming api.",
+  "version": "0.3.3",
+  "homepage": "https://github.com/thlorenz/readdirp",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thlorenz/readdirp.git"
+  },
+  "engines": {
+    "node": ">=0.8"
+  },
+  "keywords": [
+    "recursive",
+    "fs",
+    "stream",
+    "streams",
+    "readdir",
+    "filesystem",
+    "find",
+    "filter"
+  ],
+  "main": "readdirp.js",
+  "scripts": {
+    "test-main": "tap test/*.js",
+    "test-0.8": "nave use 0.8 npm run test-main",
+    "test-0.10": "nave use 0.10 npm run test-main",
+    "test-all": "npm run test-main && npm run test-0.8 && npm run test-0.10",
+    "test": "if [ -e $TRAVIS ]; then npm run test-all; else npm run test-main; fi"
+  },
+  "dependencies": {
+    "graceful-fs": "~2.0.0",
+    "minimatch": "~0.2.12"
+  },
+  "devDependencies": {
+    "through": "~2.3.4",
+    "tap": "~0.4.3"
+  },
+  "optionalDependencies": {},
+  "license": "MIT"
+}

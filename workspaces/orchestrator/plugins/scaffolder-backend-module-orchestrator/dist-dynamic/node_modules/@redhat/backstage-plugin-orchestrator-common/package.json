@@ -1,0 +1,86 @@
+{
+  "name": "@redhat/backstage-plugin-orchestrator-common",
+  "version": "3.1.0+embedded",
+  "license": "Apache-2.0",
+  "main": "dist/index.cjs.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "common-library",
+    "supported-versions": "1.39.1",
+    "pluginId": "orchestrator",
+    "pluginPackages": [
+      "@redhat/backstage-plugin-orchestrator",
+      "@redhat/backstage-plugin-orchestrator-backend",
+      "@redhat/backstage-plugin-orchestrator-common"
+    ]
+  },
+  "homepage": "https://red.ht/rhdh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/orchestrator/plugins/orchestrator-common"
+  },
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "keywords": [
+    "support:tech-preview",
+    "lifecycle:active",
+    "backstage",
+    "plugin",
+    "orchestrator",
+    "workflows"
+  ],
+  "files": [
+    "config.d.ts",
+    "dist",
+    "src/generated/docs/html"
+  ],
+  "configSchema": "config.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build",
+    "tsc": "tsc",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write .",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack",
+    "openapi:generate": "./scripts/openapi.sh generate",
+    "openapi:check": "./scripts/openapi.sh check"
+  },
+  "dependencies": {
+    "@severlessworkflow/sdk-typescript": "^3.0.3",
+    "axios": "^1.11.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {},
+  "maintainers": [
+    "@mlibra",
+    "@batzionb",
+    "@gciavarrini"
+  ],
+  "author": "The Backstage Community",
+  "module": "dist/index.esm.js",
+  "private": true,
+  "peerDependencies": {
+    "@backstage/core-plugin-api": "^1.10.9",
+    "@backstage/plugin-permission-common": "^0.9.1",
+    "@backstage/types": "^1.2.1"
+  },
+  "overrides": {
+    "@aws-sdk/util-utf8-browser": {
+      "@smithy/util-utf8": "^2.0.0"
+    }
+  },
+  "resolutions": {
+    "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2"
+  }
+}

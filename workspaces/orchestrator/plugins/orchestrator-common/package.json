@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
+  "name": "@redhat/backstage-plugin-orchestrator-common",
   "version": "3.1.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
@@ -15,9 +15,9 @@
     "supported-versions": "1.39.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-orchestrator",
-      "@red-hat-developer-hub/backstage-plugin-orchestrator-backend",
-      "@red-hat-developer-hub/backstage-plugin-orchestrator-common"
+      "@redhat/backstage-plugin-orchestrator",
+      "@redhat/backstage-plugin-orchestrator-backend",
+      "@redhat/backstage-plugin-orchestrator-common"
     ]
   },
   "homepage": "https://red.ht/rhdh",

@@ -71,7 +71,7 @@ import Grid from '@mui/material/Grid';
 import {
   OrchestratorCatalogTab,
   IsOrchestratorCatalogTabAvailable,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+} from '@redhat/backstage-plugin-orchestrator';
 
 const techdocsContent = (
   <EntityTechdocsContent>

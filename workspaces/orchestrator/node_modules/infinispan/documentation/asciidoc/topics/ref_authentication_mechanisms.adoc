@@ -1,0 +1,68 @@
+[id='authentication-mechanisms_{context}']
+= SASL authentication mechanisms
+
+{hr_js} clients can use the following SASL authentication mechanisms to connect to {brandname} Server.
+
+[discrete]
+== PLAIN
+
+Sends credentials in plain text (unencrypted) over the wire in a way that is similar to HTTP `BASIC` authentication.
+
+[IMPORTANT]
+====
+To secure {brandname} credentials, you should use `PLAIN` authentication only in combination with TLS encryption.
+====
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/authentication-plain.js[]
+----
+
+[discrete]
+== DIGEST-MD5
+
+Uses the MD5 hashing algorithm in addition to nonces to encrypt credentials.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/authentication-digest.js[]
+----
+
+[discrete]
+== SCRAM
+
+Uses salt values in addition to hashing algorithms and nonce values to encrypt credentials.
+Hot Rod endpoints support `SCRAM-SHA-1`, `SCRAM-SHA-256`, `SCRAM-SHA-384`, `SCRAM-SHA-512` hashing algorithms, in order of strength.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/authentication-scram.js[]
+----
+
+//Community content
+ifdef::community[]
+[discrete]
+== EXTERNAL
+
+Uses client certificates to provide valid identities to {brandname} Server and enable encryption.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/authentication-external.js[]
+----
+
+
+[discrete]
+== OAUTHBEARER
+
+Uses tokens obtained via an OAuth 2.0 provider to securely connect to {brandname} Server.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/authentication-oauthbearer.js[]
+----
+endif::community[]
+
+[role="_additional-resources"]
+.Additional resources
+* link:{server_docs}#endpoint-authentication[Configuring Endpoint Authentication Mechanisms]

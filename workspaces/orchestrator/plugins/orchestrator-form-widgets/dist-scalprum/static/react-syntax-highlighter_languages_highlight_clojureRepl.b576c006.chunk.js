@@ -1,0 +1,2 @@
+(self.webpackChunkred_hat_developer_hub_backstage_plugin_orchestrator_form_widgets=self.webpackChunkred_hat_developer_hub_backstage_plugin_orchestrator_form_widgets||[]).push([[5253],{41105:e=>{e.exports=function(e){return{name:"Clojure REPL",contains:[{className:"meta",begin:/^([\w.-]+|\s*#_)?=>/,starts:{end:/$/,subLanguage:"clojure"}}]}}}}]);
+//# sourceMappingURL=react-syntax-highlighter_languages_highlight_clojureRepl.b576c006.chunk.js.map

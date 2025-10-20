@@ -39,7 +39,7 @@ import {
   PaginationInfoDTO,
   PaginationInfoDTOOrderDirectionEnum,
   ProcessInstanceStatusDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
 import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';

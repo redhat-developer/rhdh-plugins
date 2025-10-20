@@ -18,7 +18,7 @@ import {
   NodeInstanceDTO,
   ProcessInstanceErrorDTO,
   ProcessInstanceStatusDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { isNonNullable } from '../../utils/TypeGuards';
 

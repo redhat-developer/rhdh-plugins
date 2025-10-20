@@ -1,0 +1,80 @@
+{
+  "name": "bath-es5",
+  "description": "A simple path template engine",
+  "version": "3.0.3",
+  "author": {
+    "name": "bouzuya",
+    "email": "m@bouzuya.net",
+    "url": "http://bouzuya.net/"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "8"
+          }
+        }
+      ],
+      "power-assert"
+    ]
+  },
+  "bugs": {
+    "url": "https://github.com/bouzuya/bath/issues"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.5.0",
+    "@babel/core": "^7.5.4",
+    "@babel/preset-env": "^7.5.4",
+    "@types/node": "^10.14.12",
+    "@types/power-assert": "^1.5.0",
+    "babel-preset-power-assert": "^3.0.0",
+    "beater": "^6.0.1",
+    "coveralls": "^3.0.5",
+    "npm-run-all": "^4.1.5",
+    "nyc": "^15.0.0",
+    "power-assert": "^1.6.1",
+    "proxyquire": "^2.1.0",
+    "rimraf": "^2.6.3",
+    "sinon": "^7.3.2",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3",
+    "watch": "^1.0.2"
+  },
+  "files": [
+    "_",
+    "index.d.ts",
+    "index.js",
+    "names.d.ts",
+    "names.js",
+    "params.d.ts",
+    "params.js",
+    "path.d.ts",
+    "path.js"
+  ],
+  "homepage": "https://github.com/anttiviljami/bath-es5#readme",
+  "keywords": [],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anttiviljami/bath-es5.git"
+  },
+  "scripts": {
+    "build": "npm-run-all -s build:lint build:es2015 build:es5 build:libes5",
+    "build:es2015": "tsc",
+    "build:es5": "babel --copy-files --out-dir .tmp/es5/ --source-maps inline .tmp/es2015/",
+    "build:lib": "babel --copy-files --no-comments --out-dir ./ .tmp/es2015/src/",
+    "build:libes5": "babel --copy-files --no-comments --out-dir ./ .tmp/es5/src/",
+    "build:lint": "tslint --project tsconfig.json",
+    "clean": "rimraf '*.d.ts' '*.js' .nyc_output .tmp coverage lib",
+    "coveralls": "nyc report --reporter text-lcov | coveralls",
+    "prepare": "npm-run-all -s 'clean' 'build'",
+    "test": "nyc --reporter lcov node .tmp/es5/test/index.js && nyc report",
+    "watch": "npm-run-all -p 'watch:*'",
+    "watch:es2015": "npm run build:es2015 -- --watch",
+    "watch:es5": "npm run build:es5 -- --watch",
+    "watch:test": "watch 'npm run test' .tmp/es5/ --wait 2"
+  }
+}

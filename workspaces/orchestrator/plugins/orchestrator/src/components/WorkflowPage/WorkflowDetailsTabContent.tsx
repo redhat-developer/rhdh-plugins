@@ -25,7 +25,7 @@ import Grid from '@mui/material/Grid';
 import {
   orchestratorAdminViewPermission,
   WorkflowOverviewDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
 import { useTranslation } from '../../hooks/useTranslation';

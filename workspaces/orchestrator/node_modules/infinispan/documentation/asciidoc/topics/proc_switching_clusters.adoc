@@ -1,0 +1,17 @@
+[id='switching-clusters_{context}']
+= Manually switching {brandname} clusters
+Change the {brandname} cluster to which the {hr_js} client is connectioned.
+
+.Prerequisites
+
+* Define {brandname} clusters in the {hr_js} client configuration.
+
+.Procedure
+
+. Call the `switchToCluster(clusterName)` method to force the client to switch to a {brandname} cluster that is defined in the client configuration.
+. Call the `switchToDefaultCluster()` method to start using the initial {brandname} cluster.
++
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/connection-xsite-cluster-switch.js[]
+----

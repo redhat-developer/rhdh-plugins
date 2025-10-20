@@ -16,7 +16,7 @@
 
 import { FC } from 'react';
 
-import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { ProcessInstanceDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { compareNodes } from '../../utils/NodeInstanceUtils';

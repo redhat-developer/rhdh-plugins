@@ -1,0 +1,15 @@
+[id='configuring-encryption_{context}']
+= Configuring encryption
+
+{brandname} Server can enforce different types of SSL/TLS encryption to secure {hr_js} client connections.
+
+.Prerequisites
+
+* Create a trust store that {hr_js} clients can use to verify {brandname} Server identities.
+* If you configure {brandname} Server to validate or authenticate client certificates, create a keystore as appropriate.
+
+.Procedure
+
+. Open the {hr_js} client configuration for editing.
+. Add an `ssl` method that sets the `enabled: true` flag.
+. Provide any other configuration specific to the type of encryption you use.

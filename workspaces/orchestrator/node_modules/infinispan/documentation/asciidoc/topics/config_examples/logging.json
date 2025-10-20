@@ -1,0 +1,14 @@
+{
+  "appenders": {
+    "test": {
+      "type": "fileSync",
+      "filename": "my-log-file.log"
+    }
+  },
+  "categories": {
+    "default": {
+      "appenders": ["test"],
+      "level": "trace"
+    }
+  }
+}

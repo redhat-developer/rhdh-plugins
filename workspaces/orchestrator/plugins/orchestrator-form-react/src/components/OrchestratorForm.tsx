@@ -23,7 +23,7 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import cloneDeep from 'lodash/cloneDeep';
 import get from 'lodash/get';
 
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@redhat/backstage-plugin-orchestrator-form-api';
 
 import { TranslationFunction } from '../hooks/useTranslation';
 import generateUiSchema from '../utils/generateUiSchema';

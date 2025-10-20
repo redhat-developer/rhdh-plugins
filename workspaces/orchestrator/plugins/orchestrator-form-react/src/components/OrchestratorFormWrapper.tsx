@@ -30,7 +30,7 @@ import {
   FormDecoratorProps,
   OrchestratorFormContextProps,
   useOrchestratorFormApiOrDefault,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+} from '@redhat/backstage-plugin-orchestrator-form-api';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { getActiveStepKey } from '../utils/getSortedStepEntries';

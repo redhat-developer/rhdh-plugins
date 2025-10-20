@@ -16,7 +16,7 @@
 
 import { JsonObject } from '@backstage/types/index';
 
-import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { isJsonObject } from '@redhat/backstage-plugin-orchestrator-common';
 
 /*
  * Recursively searches through a JSON object and its nested objects,

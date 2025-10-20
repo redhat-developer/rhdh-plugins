@@ -23,7 +23,7 @@ import Grid from '@mui/material/Grid';
 import Skeleton from '@mui/material/Skeleton';
 import { makeStyles } from 'tss-react/mui';
 
-import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowOverviewDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import WorkflowOverviewFormatter from '../../dataFormatters/WorkflowOverviewFormatter';
 import { useTranslation } from '../../hooks/useTranslation';

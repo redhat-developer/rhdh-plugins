@@ -1,0 +1,30 @@
+[id='configuring-data-formats_{context}']
+= Configuring data formats
+{hr_js} clients can handle keys and values as native JavaScript Object Notation (JSON) objects or as String objects.
+By default, clients handle entries as String objects.
+If you want to transmit data to {brandname} Server in JSON format, then you must configure the {hr_js} client.
+
+//Community content
+ifdef::community[]
+Starting at version 0.6, {hr_js} clients support native JSON objects as keys and values.
+Earlier versions of the client support keys and values as String only.
+endif::community[]
+
+[NOTE]
+====
+Script operations support String key/value pairs and String parameters only.
+====
+
+.Procedure
+
+. Add a `dataFormat` configuration to your client.
+. Set the data format for keys and values as appropriate with the `keyType` and `valueType` parameters.
+
+Keys and values can have different media types.
+For JSON objects, specify `application/json`.
+For String objects, specify `text/plain` or omit the parameter to use the default.
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/data-types.js[]
+----

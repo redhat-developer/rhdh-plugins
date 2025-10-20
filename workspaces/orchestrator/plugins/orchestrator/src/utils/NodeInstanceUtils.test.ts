@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { NodeInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { NodeInstanceDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { compareNodes } from './NodeInstanceUtils';
 

@@ -19,7 +19,7 @@ import { makeStyles } from 'tss-react/mui';
 import { Widget } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@redhat/backstage-plugin-orchestrator-form-api';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';

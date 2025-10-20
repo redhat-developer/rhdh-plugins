@@ -1,0 +1,32 @@
+import { toProductionEntry } from '../../util/input.js';
+import { hasDependency } from '../../util/plugin.js';
+const title = 'tsup';
+const enablers = ['tsup'];
+const isEnabled = ({ dependencies }) => hasDependency(dependencies, enablers);
+const config = ['tsup.config.{js,ts,cjs,mjs,json}', 'package.json'];
+const resolveConfig = async (config) => {
+    if (typeof config === 'function')
+        config = await config({});
+    const entryPatterns = [config]
+        .flat()
+        .flatMap(config => {
+        if (!config.entry)
+            return [];
+        if (Array.isArray(config.entry))
+            return config.entry;
+        return Object.values(config.entry);
+    })
+        .map(id => toProductionEntry(id));
+    return entryPatterns;
+};
+const args = {
+    config: true,
+};
+export default {
+    title,
+    enablers,
+    isEnabled,
+    config,
+    resolveConfig,
+    args,
+};

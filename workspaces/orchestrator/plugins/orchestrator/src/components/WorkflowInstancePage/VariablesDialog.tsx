@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 import {
   capitalize,
   WorkflowDataDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { useIsDarkMode } from '../../utils/isDarkMode';

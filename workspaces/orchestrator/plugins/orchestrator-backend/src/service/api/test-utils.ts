@@ -26,7 +26,7 @@ import {
   WorkflowInfo,
   WorkflowOverview,
   WorkflowOverviewListResult,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 const BASE_DATE = '2023-02-19T11:45:21.123Z';
 

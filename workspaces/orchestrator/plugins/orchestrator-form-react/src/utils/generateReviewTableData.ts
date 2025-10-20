@@ -19,7 +19,7 @@ import { JsonObject, JsonValue } from '@backstage/types';
 import type { JSONSchema7 } from 'json-schema';
 import { JsonSchema, Draft07 as JSONSchema } from 'json-schema-library';
 
-import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { isJsonObject } from '@redhat/backstage-plugin-orchestrator-common';
 
 export function processSchema(
   key: string,

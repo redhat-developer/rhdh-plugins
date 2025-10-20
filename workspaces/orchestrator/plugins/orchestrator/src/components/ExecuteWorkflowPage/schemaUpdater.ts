@@ -18,7 +18,7 @@ import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
 import isEqual from 'lodash/isEqual';
 
-import { OrchestratorFormSchemaUpdater } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormSchemaUpdater } from '@redhat/backstage-plugin-orchestrator-form-api';
 
 // Stops searching and replacing after first hit
 const deepSearchAndFirstReplace = (

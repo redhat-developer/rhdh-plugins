@@ -1,0 +1,19 @@
+{
+  "name": "array-buffer-to-hex",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": "LinusU/array-buffer-to-hex",
+  "keywords": [
+    "ArrayBuffer",
+    "conversion",
+    "hex",
+    "hexadecimal",
+    "string"
+  ],
+  "scripts": {
+    "test": "standard && node test"
+  },
+  "devDependencies": {
+    "standard": "^10.0.3"
+  }
+}

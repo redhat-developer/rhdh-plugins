@@ -1,0 +1,18 @@
+[id='configuring-connections-cross-site_{context}']
+= Defining {brandname} clusters in client configuration
+When you set up {brandname} clusters in separate data centers to perform cross-site replication, you can add connection details for the different sites to the client configuration.
+
+.Prerequisites
+
+* Install the {hr_js} client.
+* Configure {brandname} for cross-site replication.
+
+.Procedure
+
+. Add a `clusters` definition to your configuration.
+. Add `name` and `servers` definitions for each {brandname} cluster.
++
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/connection-xsite.js[]
+----

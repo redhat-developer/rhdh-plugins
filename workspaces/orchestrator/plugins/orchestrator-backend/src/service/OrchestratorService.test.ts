@@ -20,7 +20,7 @@ import {
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { DataIndexService } from './DataIndexService';
 import { OrchestratorService } from './OrchestratorService';

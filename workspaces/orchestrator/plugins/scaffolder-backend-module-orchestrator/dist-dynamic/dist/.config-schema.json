@@ -1,0 +1,92 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "orchestrator": {
+      "description": "Configuration for the Orchestrator plugin.",
+      "type": "object",
+      "required": [
+        "dataIndexService",
+        "sonataFlowService"
+      ],
+      "properties": {
+        "sonataFlowService": {
+          "type": "object",
+          "properties": {
+            "baseUrl": {
+              "description": "Base URL of the Sonata Flow service.\nDefault: http://localhost",
+              "type": "string"
+            },
+            "port": {
+              "description": "Port of the Sonata Flow service.\nDefault: no port",
+              "type": "string"
+            },
+            "autoStart": {
+              "description": "Whether to start the Sonata Flow service automatically.\nIf set to `false`, the plugin assumes that the SonataFlow service is already running on `baseUrl`:`port` (or just `baseUrl` if `port` is not set).\nDefault: false",
+              "type": "boolean"
+            },
+            "workflowsSource": {
+              "description": "Workflows definitions source configurations",
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "gitRepositoryUrl": {
+                      "description": "Remote git repository where workflows definitions are stored",
+                      "type": "string"
+                    },
+                    "localPath": {
+                      "description": "Path to map workflow resources to SonataFlow service.\nExample: /home/orchestrator/workflows",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "gitRepositoryUrl",
+                    "localPath"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "localPath": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "localPath"
+                  ]
+                }
+              ]
+            },
+            "container": {
+              "description": "Container image name of the Sonata Flow service.\nDefault: quay.io/kiegroup/kogito-swf-devmode-nightly:main-2024-02-19",
+              "type": "string"
+            },
+            "persistance": {
+              "description": "Persistance configuration of the Sonata Flow service.",
+              "type": "object",
+              "properties": {
+                "path": {
+                  "description": "Path in the container image to store persistance data.\nDefault: /home/kogito/persistence",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "dataIndexService": {
+          "type": "object",
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "url": {
+              "description": "URL of the Data Index service.\nExample: http://localhost:8099",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "@snyk/github-codeowners",
+  "description": "Handy tool for working with file ownership using Githubs CODEOWNERS file",
+  "main": "dist/cli.js",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsc",
+    "cli": "ts-node --transpile-only src/cli.ts",
+    "cli:dist": "tsc && node dist/cli.js",
+    "test": "jest",
+    "pretest:int": "rm -rf tests/scratch",
+    "test:int": "env JEST_JUNIT_OUTPUT_DIR=./tests/reports/int jest --testMatch  **/*.test.int.ts --ci"
+  },
+  "author": "snyk.io",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/snyk/github-codeowners"
+  },
+  "dependencies": {
+    "commander": "^4.1.1",
+    "ignore": "^5.1.8",
+    "p-map": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.0",
+    "@types/node": "^13.7.6",
+    "@types/uuid": "^8.0.0",
+    "jest": "^27.4.7",
+    "jest-junit": "^11.0.1",
+    "ts-jest": "^27.1.3",
+    "ts-node": "^8.6.2",
+    "typescript": "~3.8.3",
+    "uuid": "^8.2.0"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
+  },
+  "bin": "dist/cli.js",
+  "engines": {
+    "node": ">=8.10"
+  },
+  "version": "1.1.0"
+}

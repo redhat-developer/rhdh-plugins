@@ -1,0 +1,71 @@
+[id='encryption_{context}']
+= Encryption types
+
+{hr_js} clients can use different types of encryption to negotiate secure connections with {brandname} Server.
+
+[discrete]
+== {brandname} Server identities
+
+For basic encryption, you can add the signing certificate, or CA bundle, for {brandname} Server certificates to your configuration as follows:
+
+[NOTE]
+====
+To verify certificates issued to {brandname} Server, {hr_js} clients require either the full certificate chain or a partial chain that starts with the Root CA.
+====
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/encryption-trust-certs.js[]
+----
+
+[discrete]
+== Trust stores
+
+You can add trust stores in `PKCS12` or `PFX` format as follows:
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/encryption-crypto-store.js[]
+----
+
+[discrete]
+== Client certificate authentication
+
+If you enable client certificate authentication in {brandname} Server configuration, add a keystore as in the following example:
+
+[NOTE]
+====
+You must configure the {hr_js} client with the `EXTERNAL` authentication mechanism when using client certificate authentication.
+====
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/encryption-private-key.js[]
+----
+
+[discrete]
+== Server Name Indication (SNI)
+
+If you use SNI to allow {hr_js} clients to request {brandname} Server hostnames, set a value for the `sniHostName` parameter that matches a hostname in the {brandname} Server configuration.
+
+[NOTE]
+====
+The `sniHostName` parameter defaults to `localhost`.
+====
+
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/encryption-sni-hostname.js[]
+----
+
+[TIP]
+====
+{hr_js} clients do not allow self-signed certificates by default, which can cause issues in development or test environments where no public certificate authority (CA) key is available.
+
+Check out the link:{code_tutorials}[{brandname} code tutorials] for an example on creating signed certificates with the Java keytool.
+====
+
+[role="_additional-resources"]
+.Additional resources
+* link:{server_docs}#interfaces-endpoints[Network interfaces and endpoints]
+* link:{server_docs}#endpoint-encryption[Encrypting {brandname} Server connections]

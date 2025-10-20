@@ -25,7 +25,7 @@ import PauseCircle from '@mui/icons-material/PauseCircle';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { ProcessInstanceStatusDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';

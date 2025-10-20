@@ -15,7 +15,7 @@
  */
 import { Request } from 'express-serve-static-core';
 
-import { PaginationInfoDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { PaginationInfoDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 export interface Pagination {
   offset?: number;

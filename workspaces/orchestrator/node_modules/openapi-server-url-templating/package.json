@@ -1,0 +1,75 @@
+{
+  "name": "openapi-server-url-templating",
+  "version": "1.1.0",
+  "description": "OpenAPI Server URL templating parser, validator and substitution mechanism.",
+  "main": "./cjs/index.cjs",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./es/index.mjs",
+      "require": "./cjs/index.cjs"
+    },
+    "./package.json": "./package.json",
+    "./server-variables.bnf": "./src/server-url-templating.bnf"
+  },
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "grammar:compile": "./node_modules/apg-js/bin/apg.sh --lite --in=./src/server-url-templating.bnf --out=./src/server-url-templating.js && cd ./src",
+    "build": "npm run grammar:compile && npm run build:es && npm run build:cjs && npm run build:cjs:apg-lite",
+    "build:es": "cross-env BABEL_ENV=es babel src --out-dir es --extensions '.js' --out-file-extension '.mjs'",
+    "build:cjs": "cross-env BABEL_ENV=cjs babel src --out-dir cjs --extensions '.js' --out-file-extension '.cjs'",
+    "build:cjs:apg-lite": "cross-env BABEL_ENV=cjs babel node_modules/apg-lite/lib/parser.js --out-file ./cjs/apg-lite.cjs",
+    "test": "mocha"
+  },
+  "engines": {
+    "node": ">=12.20.0"
+  },
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swaggerexpert/openapi-server-url-templating.git"
+  },
+  "keywords": [
+    "openapi",
+    "server",
+    "url",
+    "templating",
+    "parser",
+    "validator",
+    "substitution"
+  ],
+  "author": "Vladimír Gorej <vladimir.gorej@gmail.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/swaggerexpert/openapi-server-url-templating/issues"
+  },
+  "homepage": "https://github.com/swaggerexpert/openapi-server-url-templating#readme",
+  "files": [
+    "es/",
+    "cjs/",
+    "types/",
+    "LICENSE",
+    "NOTICE",
+    "package.json",
+    "README.md",
+    "SECURITY.md"
+  ],
+  "dependencies": {
+    "apg-lite": "^1.0.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "=7.24.7",
+    "@babel/core": "=7.24.7",
+    "@babel/preset-env": "=7.24.7",
+    "@commitlint/cli": "=19.3.0",
+    "@commitlint/config-conventional": "=19.2.2",
+    "apg-js": "^4.4.0",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "chai": "=5.1.1",
+    "cross-env": "^7.0.3",
+    "husky": "=9.0.11",
+    "mocha": "=10.4.0",
+    "prettier": "^3.3.1"
+  }
+}

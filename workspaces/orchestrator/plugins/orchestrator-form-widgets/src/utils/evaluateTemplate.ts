@@ -16,7 +16,7 @@
 
 import { useEffect, useState } from 'react';
 import { JsonObject, JsonPrimitive, JsonValue } from '@backstage/types';
-import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { isJsonObject } from '@redhat/backstage-plugin-orchestrator-common';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { UiProps } from '../uiPropTypes';
 import { UNDEFINED_VALUE } from './constants';

@@ -20,8 +20,8 @@ import { JsonObject } from '@backstage/types/index';
 import { Widget } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
-import { AuthTokenDescriptor } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { AuthTokenDescriptor } from '@redhat/backstage-plugin-orchestrator-common';
+import { OrchestratorFormContextProps } from '@redhat/backstage-plugin-orchestrator-form-api';
 
 type UiProps = {
   authTokenDescriptors?: AuthTokenDescriptor[];

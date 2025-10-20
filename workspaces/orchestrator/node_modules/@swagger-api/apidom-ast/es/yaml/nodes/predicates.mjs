@@ -1,0 +1,12 @@
+import { isNodeType } from "../../predicates.mjs";
+export const isStream = node => isNodeType('stream', node);
+export const isDocument = node => isNodeType('document', node);
+export const isMapping = node => isNodeType('mapping', node);
+export const isSequence = node => isNodeType('sequence', node);
+export const isKeyValuePair = node => isNodeType('keyValuePair', node);
+export const isTag = node => isNodeType('tag', node);
+export const isAnchor = node => isNodeType('anchor', node);
+export const isScalar = node => isNodeType('scalar', node);
+export const isAlias = node => isNodeType('alias', node);
+export const isDirective = node => isNodeType('directive', node);
+export const isComment = node => isNodeType('comment', node);

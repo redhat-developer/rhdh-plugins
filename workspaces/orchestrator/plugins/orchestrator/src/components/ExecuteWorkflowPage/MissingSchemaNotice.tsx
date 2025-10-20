@@ -20,7 +20,7 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Grid from '@mui/material/Grid';
 
-import { SubmitButton } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
+import { SubmitButton } from '@redhat/backstage-plugin-orchestrator-form-react';
 
 import { useTranslation } from '../../hooks/useTranslation';
 

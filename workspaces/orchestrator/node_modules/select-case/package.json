@@ -1,0 +1,30 @@
+{
+  "name": "select-case",
+  "version": "1.0.0",
+  "description": "A better switch case",
+  "module": "module.js",
+  "main": "main.js",
+  "scripts": {
+    "build": "rollup module.js --file main.js --format cjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wmhilton/select-case.git"
+  },
+  "keywords": [
+    "select",
+    "case",
+    "switch"
+  ],
+  "author": "William Hilton <wmhilton@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wmhilton/select-case/issues"
+  },
+  "homepage": "https://github.com/wmhilton/select-case#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "rollup": "^0.67.3"
+  }
+}

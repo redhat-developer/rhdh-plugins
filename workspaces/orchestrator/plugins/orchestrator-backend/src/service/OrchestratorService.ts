@@ -23,7 +23,7 @@ import {
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';

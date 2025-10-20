@@ -27,7 +27,7 @@ import {
   ProcessInstance,
   WorkflowDefinition,
   WorkflowInfo,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { ErrorBuilder } from '../helpers/errorBuilder';
 import { buildFilterCondition } from '../helpers/filterBuilder';

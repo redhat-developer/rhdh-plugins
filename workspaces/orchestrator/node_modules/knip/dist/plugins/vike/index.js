@@ -1,0 +1,12 @@
+import { hasDependency } from '../../util/plugin.js';
+const title = 'Vike';
+const enablers = ['vike'];
+const isEnabled = ({ dependencies }) => hasDependency(dependencies, enablers);
+const patterns = ['{pages,renderer}/**/+*.{js,jsx,ts,tsx,vue,react,solid}'];
+const production = [...patterns, ...patterns.map(pattern => `*/${pattern}`)];
+export default {
+    title,
+    enablers,
+    isEnabled,
+    production,
+};

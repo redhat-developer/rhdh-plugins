@@ -11153,9 +11153,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-backend@workspace:plugins/orchestrator-backend":
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.0"
+  dependencies:
+    "@mui/icons-material": ^5.17.1
+  peerDependencies:
+    "@backstage/core-plugin-api": ^1.10.7
+    "@backstage/theme": ^0.6.6
+    "@material-ui/icons": ^4.11.3
+    "@mui/icons-material": ^5.17.1
+    "@mui/material": ^5.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 365e81ba8af0fe38587e21bd842ede6eb6ee2d1590dbad26c3e5e6ca42c885b4e19de3cfc9435f43113f67960cf57c4614011596d4332def1bac93b9a6199860
+  languageName: node
+  linkType: hard
+
+"@redhat/backstage-plugin-orchestrator-backend@workspace:^, @redhat/backstage-plugin-orchestrator-backend@workspace:plugins/orchestrator-backend":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-backend@workspace:plugins/orchestrator-backend"
+  resolution: "@redhat/backstage-plugin-orchestrator-backend@workspace:plugins/orchestrator-backend"
   dependencies:
     "@backstage-community/plugin-rbac-common": ^1.12.1
     "@backstage/backend-defaults": ^0.12.0
@@ -11174,7 +11190,7 @@ __metadata:
     "@backstage/plugin-scaffolder-node": ^0.11.0
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^"
     "@types/express": 4.17.23
     "@types/fs-extra": 11.0.4
     "@types/json-schema": 7.0.15
@@ -11196,9 +11212,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-common@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-common@workspace:plugins/orchestrator-common":
+"@redhat/backstage-plugin-orchestrator-common@workspace:^, @redhat/backstage-plugin-orchestrator-common@workspace:plugins/orchestrator-common":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-common@workspace:plugins/orchestrator-common"
+  resolution: "@redhat/backstage-plugin-orchestrator-common@workspace:plugins/orchestrator-common"
   dependencies:
     "@backstage/cli": ^0.34.1
     "@backstage/core-plugin-api": ^1.10.9
@@ -11213,14 +11229,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-form-api@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@workspace:plugins/orchestrator-form-api":
+"@redhat/backstage-plugin-orchestrator-form-api@workspace:^, @redhat/backstage-plugin-orchestrator-form-api@workspace:plugins/orchestrator-form-api":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api@workspace:plugins/orchestrator-form-api"
+  resolution: "@redhat/backstage-plugin-orchestrator-form-api@workspace:plugins/orchestrator-form-api"
   dependencies:
     "@backstage/cli": ^0.34.1
     "@backstage/core-plugin-api": ^1.10.9
     "@backstage/types": ^1.2.1
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^"
     "@rjsf/core": ^5.21.2
     "@rjsf/utils": ^5.21.2
     "@types/json-schema": 7.0.15
@@ -11235,17 +11251,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@workspace:plugins/orchestrator-form-react":
+"@redhat/backstage-plugin-orchestrator-form-react@workspace:^, @redhat/backstage-plugin-orchestrator-form-react@workspace:plugins/orchestrator-form-react":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@workspace:plugins/orchestrator-form-react"
+  resolution: "@redhat/backstage-plugin-orchestrator-form-react@workspace:plugins/orchestrator-form-react"
   dependencies:
     "@backstage/cli": ^0.34.1
     "@backstage/core-components": ^0.17.5
     "@backstage/core-plugin-api": ^1.10.9
     "@backstage/types": ^1.2.1
     "@mui/material": ^5.17.1
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@rjsf/core": ^5.21.2
     "@rjsf/material-ui": ^5.21.2
     "@rjsf/utils": ^5.21.2
@@ -11265,9 +11281,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets@workspace:plugins/orchestrator-form-widgets":
+"@redhat/backstage-plugin-orchestrator-form-widgets@workspace:^, @redhat/backstage-plugin-orchestrator-form-widgets@workspace:plugins/orchestrator-form-widgets":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets@workspace:plugins/orchestrator-form-widgets"
+  resolution: "@redhat/backstage-plugin-orchestrator-form-widgets@workspace:plugins/orchestrator-form-widgets"
   dependencies:
     "@backstage/cli": ^0.34.1
     "@backstage/core-app-api": ^1.18.0
@@ -11281,8 +11297,8 @@ __metadata:
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.17.1
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@rjsf/material-ui": ^5.21.2
     "@rjsf/utils": ^5.21.2
     "@testing-library/jest-dom": ^6.0.0
@@ -11302,9 +11318,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-orchestrator@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator@workspace:plugins/orchestrator":
+"@redhat/backstage-plugin-orchestrator@workspace:^, @redhat/backstage-plugin-orchestrator@workspace:plugins/orchestrator":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator@workspace:plugins/orchestrator"
+  resolution: "@redhat/backstage-plugin-orchestrator@workspace:plugins/orchestrator"
   dependencies:
     "@backstage/cli": ^0.34.1
     "@backstage/core-components": ^0.17.5
@@ -11321,10 +11337,10 @@ __metadata:
     "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.17.1
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-form-api": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-form-react": "workspace:^"
     "@testing-library/dom": ^10.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^15.0.0
@@ -11353,9 +11369,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:^, @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator":
+"@redhat/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:^, @redhat/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator"
+  resolution: "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator@workspace:plugins/scaffolder-backend-module-orchestrator"
   dependencies:
     "@backstage/backend-plugin-api": ^1.4.2
     "@backstage/catalog-model": ^1.7.5
@@ -11365,28 +11381,12 @@ __metadata:
     "@backstage/plugin-scaffolder-node-test-utils": ^0.3.2
     "@backstage/types": ^1.2.1
     "@janus-idp/cli": 3.6.1
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     axios: ^1.11.0
     js-yaml: ^4.1.0
   languageName: unknown
   linkType: soft
-
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.0"
-  dependencies:
-    "@mui/icons-material": ^5.17.1
-  peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/theme": ^0.6.6
-    "@material-ui/icons": ^4.11.3
-    "@mui/icons-material": ^5.17.1
-    "@mui/material": ^5.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 365e81ba8af0fe38587e21bd842ede6eb6ee2d1590dbad26c3e5e6ca42c885b4e19de3cfc9435f43113f67960cf57c4614011596d4332def1bac93b9a6199860
-  languageName: node
-  linkType: hard
 
 "@redis/bloom@npm:1.2.0":
   version: 1.2.0
@@ -15886,9 +15886,9 @@ __metadata:
     "@mui/material": 5.18.0
     "@mui/styles": 5.18.0
     "@playwright/test": 1.54.2
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
+    "@redhat/backstage-plugin-orchestrator": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-form-widgets": "workspace:^"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
@@ -16652,8 +16652,8 @@ __metadata:
     "@backstage/plugin-search-backend-node": ^1.3.14
     "@backstage/plugin-signals-backend": ^0.3.7
     "@backstage/plugin-techdocs-backend": ^2.0.5
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-backend": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator": "workspace:^"
+    "@redhat/backstage-plugin-orchestrator-backend": "workspace:^"
+    "@redhat/backstage-plugin-scaffolder-backend-module-orchestrator": "workspace:^"
     "@types/express": ^4.17.6
     "@types/express-serve-static-core": ^4.17.5
     "@types/luxon": ^2.0.4

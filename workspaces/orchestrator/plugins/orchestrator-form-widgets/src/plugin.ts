@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { createApiFactory, createPlugin } from '@backstage/core-plugin-api';
-import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { orchestratorFormApiRef } from '@redhat/backstage-plugin-orchestrator-form-api';
 import { FormWidgetsApi } from './FormWidgetsApi';
 
 /**

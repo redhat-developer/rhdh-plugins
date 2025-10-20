@@ -1,0 +1,98 @@
+{
+	"name": "eslint-plugin-testing-library",
+	"version": "6.3.0",
+	"description": "ESLint plugin to follow best practices and anticipate common mistakes when writing tests with Testing Library",
+	"keywords": [
+		"eslint",
+		"eslintplugin",
+		"eslint-plugin",
+		"lint",
+		"testing-library",
+		"testing"
+	],
+	"homepage": "https://github.com/testing-library/eslint-plugin-testing-library",
+	"bugs": {
+		"url": "https://github.com/testing-library/eslint-plugin-testing-library/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/testing-library/eslint-plugin-testing-library"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Mario Beltrán Alarcón",
+		"email": "me@mario.dev",
+		"url": "https://mario.dev/"
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
+	"main": "./dist/index.js",
+	"scripts": {
+		"prebuild": "del-cli dist",
+		"build": "tsc",
+		"generate-all": "run-p \"generate:*\"",
+		"generate-all:check": "npm run generate-all && git diff --exit-code",
+		"generate:configs": "ts-node tools/generate-configs",
+		"generate:rules-doc": "npm run build && npm run rule-doc-generator",
+		"format": "npm run prettier-base -- --write",
+		"format:check": "npm run prettier-base -- --check",
+		"lint": "eslint . --max-warnings 0 --ext .js,.ts",
+		"lint:fix": "npm run lint -- --fix",
+		"prepare": "is-ci || husky install",
+		"prettier-base": "prettier . --ignore-unknown --cache --loglevel warn",
+		"rule-doc-generator": "eslint-doc-generator",
+		"semantic-release": "semantic-release",
+		"test": "jest",
+		"test:ci": "jest --ci --coverage",
+		"test:watch": "npm run test -- --watch",
+		"type-check": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@typescript-eslint/utils": "^5.58.0"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.21.4",
+		"@babel/eslint-parser": "^7.21.3",
+		"@babel/eslint-plugin": "^7.19.1",
+		"@commitlint/cli": "^17.5.1",
+		"@commitlint/config-conventional": "^17.4.4",
+		"@swc/core": "^1.3.75",
+		"@swc/jest": "^0.2.28",
+		"@types/jest": "^27.5.2",
+		"@types/node": "^16.18.23",
+		"@typescript-eslint/eslint-plugin": "^5.58.0",
+		"@typescript-eslint/parser": "^5.58.0",
+		"del-cli": "^5.0.0",
+		"eslint": "^8.38.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-doc-generator": "^1.4.3",
+		"eslint-import-resolver-typescript": "^3.6.1",
+		"eslint-plugin-import": "^2.29.0",
+		"eslint-plugin-jest": "^27.2.1",
+		"eslint-plugin-jest-formatting": "^3.1.0",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-promise": "^6.1.1",
+		"eslint-remote-tester": "^3.0.0",
+		"eslint-remote-tester-repositories": "^1.0.1",
+		"husky": "^8.0.3",
+		"is-ci": "^3.0.1",
+		"jest": "^28.1.3",
+		"lint-staged": "^13.2.1",
+		"npm-run-all": "^4.1.5",
+		"prettier": "2.8.7",
+		"semantic-release": "^19.0.5",
+		"ts-node": "^10.9.1",
+		"typescript": "^5.0.4"
+	},
+	"peerDependencies": {
+		"eslint": "^7.5.0 || ^8.0.0"
+	},
+	"engines": {
+		"node": "^12.22.0 || ^14.17.0 || >=16.0.0",
+		"npm": ">=6"
+	}
+}

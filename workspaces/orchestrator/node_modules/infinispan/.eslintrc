@@ -1,0 +1,25 @@
+{
+  "root":true,
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "standard/no-callback-literal": "off",
+    "arrow-spacing": "error",
+    "arrow-parens": ["error", "as-needed"],
+    "arrow-body-style": ["error", "as-needed"],
+    "prefer-template": "error",
+    "no-unused-vars": ["warn", {
+      "argsIgnorePattern": "^_$|^e$|^reject$|^resolve$"
+    }],
+    "valid-jsdoc": "error",
+    "require-jsdoc": "warn",
+    "semi": ["error", "always"],
+    "quotes": ["error", "single", { "allowTemplateLiterals": true }]
+  }
+}

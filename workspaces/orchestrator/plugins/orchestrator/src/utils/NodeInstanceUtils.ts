@@ -16,7 +16,7 @@
 
 import moment from 'moment';
 
-import { NodeInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { NodeInstanceDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { isNonNullable } from './TypeGuards';
 

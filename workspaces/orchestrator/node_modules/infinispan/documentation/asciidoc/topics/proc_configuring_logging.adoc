@@ -1,0 +1,28 @@
+[id='configuring-logging_{context}']
+= Configuring logging
+
+{hr_js} clients use `log4js`, which you can modify by providing configuration in JSON format.
+
+.Procedure
+
+. Create a logging configuration in JSON format.
++
+For example, the following JSON configures an appender that writes TRACE level log events to file:
++
+[source,json,options="nowrap",subs=attributes+]
+----
+include::config_examples/logging.json[]
+----
++
+. Add the `var log4js = require('log4js')` statement to the {hr_js} client configuration.
+. Specify the path to your JSON logging configuration with the `log4js.configure()` method, as in the following example:
++
+[source,javascript,options="nowrap",subs=attributes+]
+----
+include::code_examples/logging-configuration.js[]
+----
+
+[role="_additional-resources"]
+.Additional resources
+* link:https://www.npmjs.com/package/log4js[log4js]
+* link:https://github.com/log4js-node/log4js-node/tree/master/examples[log4js-node examples]

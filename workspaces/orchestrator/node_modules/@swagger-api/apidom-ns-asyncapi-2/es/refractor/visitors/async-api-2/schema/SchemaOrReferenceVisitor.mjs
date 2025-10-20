@@ -1,0 +1,15 @@
+import { specificationObj as JSONSchemaDraft7Specification } from '@swagger-api/apidom-ns-json-schema-draft-7';
+import { isReferenceElement } from "../../../../predicates.mjs";
+const {
+  JSONSchemaOrJSONReferenceVisitor
+} = JSONSchemaDraft7Specification.visitors;
+class SchemaOrReferenceVisitor extends JSONSchemaOrJSONReferenceVisitor {
+  enter(element) {
+    const result = JSONSchemaOrJSONReferenceVisitor.prototype.enter.call(this, element);
+    if (isReferenceElement(this.element)) {
+      this.element.setMetaProperty('referenced-element', 'schema');
+    }
+    return result;
+  }
+}
+export default SchemaOrReferenceVisitor;

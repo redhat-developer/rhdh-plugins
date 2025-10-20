@@ -15,7 +15,7 @@
  */
 import jsonata from 'jsonata';
 import { JsonArray, JsonObject } from '@backstage/types';
-import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { isJsonObject } from '@redhat/backstage-plugin-orchestrator-common';
 
 export const applySelectorArray = async (
   data: JsonObject | JsonArray,

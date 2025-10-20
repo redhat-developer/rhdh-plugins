@@ -27,7 +27,7 @@ import {
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
   WorkflowRunStatusDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { buildPagination, buildPaginationTmp } from '../../types/pagination';
 import { OrchestratorService } from '../OrchestratorService';

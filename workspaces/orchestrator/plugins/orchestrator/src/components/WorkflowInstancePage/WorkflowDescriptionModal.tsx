@@ -30,7 +30,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
-import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowOverviewDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { orchestratorTranslationRef } from '../../translations';

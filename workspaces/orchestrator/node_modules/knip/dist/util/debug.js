@@ -1,0 +1,31 @@
+import util from 'node:util';
+import picocolors from 'picocolors';
+import parsedArgValues from './cli-arguments.js';
+const { debug } = parsedArgValues;
+const IS_DEBUG_ENABLED = debug ?? false;
+const IS_COLORS = !process.env.NO_COLOR;
+const noop = () => { };
+const inspectOptions = { maxArrayLength: null, depth: null, colors: IS_COLORS };
+export const inspect = (obj) => console.log(util.inspect(obj, inspectOptions));
+const ctx = (text) => typeof text === 'string'
+    ? picocolors.yellow(`[${text}]`)
+    : `${picocolors.yellow(`[${text[0]}]`)} ${picocolors.cyan(text[1])}`;
+const logArray = (collection) => {
+    console.log(util.inspect(collection.sort(), inspectOptions));
+};
+export const debugLog = IS_DEBUG_ENABLED
+    ? (context, message) => console.log(`${ctx(context)} ${message}`)
+    : noop;
+export const debugLogObject = IS_DEBUG_ENABLED
+    ? (context, name, obj) => {
+        console.log(`${ctx(context)} ${name}`);
+        console.log(util.inspect(typeof obj === 'function' ? obj() : obj, inspectOptions));
+    }
+    : noop;
+export const debugLogArray = IS_DEBUG_ENABLED
+    ? (context, message, elements) => {
+        const collection = Array.from(typeof elements === 'function' ? elements() : elements);
+        console.debug(`${ctx(context)} ${message} (${collection.length})`);
+        logArray(collection);
+    }
+    : noop;

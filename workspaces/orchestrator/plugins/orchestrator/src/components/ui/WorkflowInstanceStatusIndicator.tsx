@@ -25,7 +25,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import {
   capitalize,
   ProcessInstanceStatusDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';

@@ -1,0 +1,2 @@
+(self.webpackChunkred_hat_developer_hub_backstage_plugin_orchestrator_form_widgets=self.webpackChunkred_hat_developer_hub_backstage_plugin_orchestrator_form_widgets||[]).push([[1895],{59611:e=>{e.exports=function(e){return{aliases:["pycon"],contains:[{className:"meta",starts:{end:/ |$/,starts:{end:"$",subLanguage:"python"}},variants:[{begin:/^>>>(?=[ ]|$)/},{begin:/^\.\.\.(?=[ ]|$)/}]}]}}}}]);
+//# sourceMappingURL=react-syntax-highlighter_languages_highlight_pythonRepl.89612bfa.chunk.js.map

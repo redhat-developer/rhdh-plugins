@@ -19,7 +19,7 @@ import moment from 'moment';
 import {
   WorkflowFormatDTO,
   WorkflowOverviewDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../constants';
 import DataFormatter from './DataFormatter';

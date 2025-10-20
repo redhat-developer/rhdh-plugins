@@ -21,7 +21,7 @@ import { FormProps } from '@rjsf/core';
 import { ErrorSchema, UiSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 
-import { AuthTokenDescriptor } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { AuthTokenDescriptor } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { defaultFormExtensionsApi } from './DefaultFormApi';
 

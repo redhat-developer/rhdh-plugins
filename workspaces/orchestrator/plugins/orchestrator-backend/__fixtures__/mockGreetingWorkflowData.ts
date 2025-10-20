@@ -17,7 +17,7 @@ import type { JsonObject } from '@backstage/types';
 
 import type { JSONSchema7 } from 'json-schema';
 
-import { WorkflowDefinition } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowDefinition } from '@redhat/backstage-plugin-orchestrator-common';
 
 const schema = {
   $id: 'classpath:/schemas/yamlgreet__main-schema.json',

@@ -1,0 +1,11 @@
+{
+  "name": "red-hat-developer-hub.backstage-plugin-orchestrator",
+  "version": "5.1.0",
+  "extensions": [],
+  "registrationMethod": "callback",
+  "baseURL": "auto",
+  "loadScripts": [
+    "red-hat-developer-hub.backstage-plugin-orchestrator.a40d4e27cee57608db12.js"
+  ],
+  "buildHash": "a40d4e27cee57608db12959cfcff72dc"
+}

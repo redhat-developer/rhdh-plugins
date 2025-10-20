@@ -1,0 +1,87 @@
+{
+  "name": "@redhat/backstage-plugin-orchestrator-backend-dynamic",
+  "version": "1.8.0-rc.2",
+  "license": "Apache-2.0",
+  "main": "./dist/index.cjs.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "backstage": {
+    "role": "backend-plugin",
+    "supported-versions": "1.42.5",
+    "pluginId": "orchestrator",
+    "pluginPackages": [
+      "@redhat/backstage-plugin-orchestrator",
+      "@redhat/backstage-plugin-orchestrator-backend",
+      "@redhat/backstage-plugin-orchestrator-common"
+    ]
+  },
+  "homepage": "https://red.ht/rhdh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/orchestrator/plugins/orchestrator-backend"
+  },
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "keywords": [
+    "support:tech-preview",
+    "lifecycle:active",
+    "backstage",
+    "plugin",
+    "orchestrator",
+    "workflows"
+  ],
+  "files": [
+    "app-config.yaml",
+    "dist",
+    "static"
+  ],
+  "dependencies": {
+    "@redhat/backstage-plugin-orchestrator-common": "3.1.0",
+    "@urql/core": "^4.1.4",
+    "ajv-formats": "^2.1.1",
+    "cloudevents": "^8.0.0",
+    "express": "^4.21.2",
+    "express-promise-router": "^4.1.1",
+    "fs-extra": "^10.1.0",
+    "isomorphic-git": "^1.23.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "openapi-backend": "^5.10.5",
+    "yn": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@backstage-community/plugin-rbac-common": "^1.12.1",
+    "@backstage/backend-defaults": "^0.12.0",
+    "@backstage/backend-plugin-api": "^1.4.2",
+    "@backstage/backend-tasks": "^0.6.1",
+    "@backstage/catalog-client": "^1.11.0",
+    "@backstage/core-plugin-api": "^1.10.9",
+    "@backstage/errors": "^1.2.7",
+    "@backstage/integration": "^1.17.1",
+    "@backstage/plugin-catalog-node": "^1.18.0",
+    "@backstage/plugin-permission-common": "^0.9.1",
+    "@backstage/plugin-permission-node": "^0.10.3",
+    "@backstage/plugin-scaffolder-backend": "^2.2.0",
+    "@backstage/plugin-scaffolder-node": "^0.11.0",
+    "@backstage/types": "^1.2.1",
+    "@janus-idp/backstage-plugin-audit-log-node": "^1.7.1"
+  },
+  "maintainers": [
+    "@mlibra",
+    "@batzionb",
+    "@gciavarrini"
+  ],
+  "author": "The Backstage Community",
+  "bundleDependencies": true,
+  "overrides": {
+    "@aws-sdk/util-utf8-browser": {
+      "@smithy/util-utf8": "^2.0.0"
+    }
+  },
+  "resolutions": {
+    "@aws-sdk/util-utf8-browser": "npm:@smithy/util-utf8@~2",
+    "@redhat/backstage-plugin-orchestrator-common": "file:./embedded/redhat-backstage-plugin-orchestrator-common"
+  }
+}

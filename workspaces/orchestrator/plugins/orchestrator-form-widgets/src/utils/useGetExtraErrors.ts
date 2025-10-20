@@ -19,7 +19,7 @@ import { flatten, get } from 'lodash';
 import {
   OrchestratorFormContextProps,
   // useWrapperFormPropsContext,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+} from '@redhat/backstage-plugin-orchestrator-form-api';
 import { JsonObject } from '@backstage/types';
 import { ERRORS_KEY, ErrorSchema } from '@rjsf/utils';
 import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';

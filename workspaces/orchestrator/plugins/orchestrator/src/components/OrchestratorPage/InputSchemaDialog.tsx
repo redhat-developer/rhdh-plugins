@@ -23,7 +23,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 
-import { InputSchemaResponseDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { InputSchemaResponseDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api/api';
 import { FormattedWorkflowOverview } from '../../dataFormatters/WorkflowOverviewFormatter';

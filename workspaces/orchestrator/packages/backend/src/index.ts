@@ -56,13 +56,13 @@ backend.add(import('@backstage-community/plugin-rbac-backend'));
 
 // orchestrator
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),
+  import('@redhat/backstage-plugin-orchestrator-backend'),
 );
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 backend.add(
   import(
-    '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'
+    '@redhat/backstage-plugin-scaffolder-backend-module-orchestrator'
   ),
 );
 

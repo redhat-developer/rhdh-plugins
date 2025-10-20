@@ -1,0 +1,16 @@
+[id='configuring-authentication_{context}']
+= Configuring authentication
+
+{brandname} Server uses different SASL mechanisms to authenticate {hr_js} client connections.
+
+.Prerequisites
+
+* Create {brandname} users.
+* Add the SASL authentication mechanism to the Hot Rod connector in your {brandname} Server configuration.
+
+.Procedure
+
+. Open the {hr_js} client configuration for editing.
+. Add an `authentication` method that sets the `enabled: true` flag.
+. Specify a value for the `saslMechanism` parameter that matches the SASL authentication mechanism for the Hot Rod connector.
+. Configure any parameters specific to the SASL authentication mechanism as appropriate.

@@ -1,0 +1,22 @@
+var clz = require('.')
+var test = require('tape')
+
+test('various tests', function (assert) {
+  assert.equal(clz([         0]), 8)
+  assert.equal(clz([0b01111111]), 1)
+  assert.equal(clz([0b00111111]), 2)
+  assert.equal(clz([0b00011111]), 3)
+  assert.equal(clz([0b00000111]), 5)
+  assert.equal(clz([0b00000001]), 7)
+  assert.equal(clz([         0, 0b01111111]), 9)
+  assert.equal(clz([         0, 0b00011111]), 11)
+  assert.equal(clz([         0, 0b00000111]), 13)
+  assert.equal(clz([         0,          0]), 16)
+  assert.equal(clz([         0,          0, 0b01111111]), 17)
+  assert.equal(clz([ 127, 0]), 1)
+  assert.equal(clz([ 128, 0]), 0)
+
+  assert.equal(clz(Buffer.from([0, 0, 0])), 24)
+  assert.equal(clz(new Uint8Array([0, 0, 0])), 24)
+  assert.end()
+})

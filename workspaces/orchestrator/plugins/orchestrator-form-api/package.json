@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api",
+  "name": "@redhat/backstage-plugin-orchestrator-form-api",
   "description": "library for orchestrator form api, enabling creating a factory to extend the workflow execution form",
   "version": "2.1.0",
   "main": "src/index.ts",
@@ -29,7 +29,7 @@
   "dependencies": {
     "@backstage/core-plugin-api": "^1.10.9",
     "@backstage/types": "^1.2.1",
-    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
+    "@redhat/backstage-plugin-orchestrator-common": "workspace:^",
     "@rjsf/core": "^5.21.2",
     "@rjsf/utils": "^5.21.2",
     "json-schema": "^0.4.0"

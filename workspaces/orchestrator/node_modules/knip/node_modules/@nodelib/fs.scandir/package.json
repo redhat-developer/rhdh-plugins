@@ -1,0 +1,57 @@
+{
+  "name": "@nodelib/fs.scandir",
+  "version": "4.0.1",
+  "description": "List files and directories inside the specified directory",
+  "license": "MIT",
+  "repository": "https://github.com/nodelib/nodelib/tree/master/packages/fs/fs.scandir",
+  "keywords": [
+    "NodeLib",
+    "fs",
+    "FileSystem",
+    "file system",
+    "scandir",
+    "readdir",
+    "dirent"
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "files": [
+    "out/**",
+    "!out/benchmark",
+    "!out/**/*.map",
+    "!out/**/*.spec.*"
+  ],
+  "main": "out/index.js",
+  "typings": "out/index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./out/index.js"
+    },
+    "./promises": {
+      "default": "./out/scandir-promises.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf {tsconfig.tsbuildinfo,out}",
+    "lint": "eslint \"src/**/*.ts\" --cache",
+    "compile": "tsc -b .",
+    "compile:watch": "tsc -b . --watch --sourceMap",
+    "test": "mocha \"out/**/*.spec.js\" -s 0",
+    "build": "npm run clean && npm run compile && npm run lint && npm test",
+    "watch": "npm run clean && npm run compile:watch",
+    "bench": "npm run bench:sync && npm run bench:async",
+    "bench:sync": "hereby bench:sync",
+    "bench:async": "hereby bench:async"
+  },
+  "dependencies": {
+    "@nodelib/fs.stat": "4.0.0",
+    "run-parallel": "^1.2.0"
+  },
+  "devDependencies": {
+    "@nodelib/fs.macchiato": "3.0.0",
+    "@nodelib/fs.scandir.previous": "npm:@nodelib/fs.scandir@3",
+    "@types/run-parallel": "^1.1.0"
+  },
+  "gitHead": "4750471fdceb6b90ac7c58a93872d61e3f7f143b"
+}

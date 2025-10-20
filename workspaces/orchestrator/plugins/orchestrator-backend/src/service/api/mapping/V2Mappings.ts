@@ -34,7 +34,7 @@ import {
   WorkflowOverviewDTO,
   WorkflowRunStatusDTO,
   type ProcessInstanceStatusDTO as ProcessInstanceStatusDTOType,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 // Mapping functions
 export function mapToWorkflowOverviewDTO(

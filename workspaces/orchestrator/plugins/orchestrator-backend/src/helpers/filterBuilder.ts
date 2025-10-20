@@ -22,7 +22,7 @@ import {
   LogicalFilter,
   NestedFilter,
   TypeName,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 type ProcessType = 'ProcessDefinition' | 'ProcessInstance';
 

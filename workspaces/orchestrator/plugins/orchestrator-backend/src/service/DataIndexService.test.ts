@@ -27,7 +27,7 @@ import {
   TypeKind,
   TypeName,
   WorkflowInfo,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import * as buildGrahQLFilterUtils from '../helpers/filterBuilder';
 import * as buildGrahQLQueryUtils from '../helpers/queryBuilder';

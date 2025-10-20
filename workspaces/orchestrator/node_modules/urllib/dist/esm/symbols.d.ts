@@ -1,0 +1,22 @@
+declare const _default: {
+    kSocketId: symbol;
+    kSocketStartTime: symbol;
+    kSocketConnectedTime: symbol;
+    kSocketConnectErrorTime: symbol;
+    kSocketRequestEndTime: symbol;
+    kSocketLocalAddress: symbol;
+    kSocketLocalPort: symbol;
+    kSocketConnectHost: symbol;
+    kSocketConnectPort: symbol;
+    kSocketConnectProtocol: symbol;
+    kHandledRequests: symbol;
+    kHandledResponses: symbol;
+    kRequestSocket: symbol;
+    kRequestId: symbol;
+    kRequestStartTime: symbol;
+    kEnableRequestTiming: symbol;
+    kRequestTiming: symbol;
+    kRequestOriginalOpaque: symbol;
+    kErrorSocket: symbol;
+};
+export default _default;

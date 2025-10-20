@@ -24,7 +24,7 @@ import {
   DEFAULT_SONATAFLOW_CONTAINER_IMAGE,
   DEFAULT_SONATAFLOW_PERSISTENCE_PATH,
   DEFAULT_WORKFLOWS_PATH,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { spawn } from 'child_process';
 import { join, resolve } from 'path';

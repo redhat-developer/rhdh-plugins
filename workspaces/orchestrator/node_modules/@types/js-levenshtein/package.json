@@ -1,0 +1,25 @@
+{
+    "name": "@types/js-levenshtein",
+    "version": "1.1.3",
+    "description": "TypeScript definitions for js-levenshtein",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/js-levenshtein",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Pyry Rouvila",
+            "githubUsername": "naftis",
+            "url": "https://github.com/naftis"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/js-levenshtein"
+    },
+    "scripts": {},
+    "dependencies": {},
+    "typesPublisherContentHash": "d65cc6491de04a0af5479b8e6f8eb96d953937f58152edeffb24735556692124",
+    "typeScriptVersion": "4.5"
+}

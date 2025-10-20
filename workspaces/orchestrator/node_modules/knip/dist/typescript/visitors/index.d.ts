@@ -1,0 +1,12 @@
+import type ts from 'typescript';
+import type { GetImportsAndExportsOptions } from '../../types/config.js';
+import type { ExportNode } from '../../types/exports.js';
+import type { ImportNode } from '../../types/imports.js';
+type FileCondition = (sourceFile: ts.SourceFile) => boolean;
+type VisitorFactory<T> = (fileCondition: FileCondition, fn: Visitor<T>) => VisitorCondition<T>;
+type VisitorCondition<T> = (sourceFile: ts.SourceFile) => Visitor<T>;
+type Visitor<T> = (node: ts.Node, options: GetImportsAndExportsOptions) => undefined | T | T[];
+export declare const importVisitor: VisitorFactory<ImportNode>;
+export declare const exportVisitor: VisitorFactory<ExportNode>;
+export declare const scriptVisitor: VisitorFactory<string>;
+export {};

@@ -58,7 +58,7 @@ import {
   ProcessInstanceDTO,
   ProcessInstanceStatusDTO,
   QUERY_PARAM_INSTANCE_ID,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
 import { SHORT_REFRESH_INTERVAL } from '../../constants';

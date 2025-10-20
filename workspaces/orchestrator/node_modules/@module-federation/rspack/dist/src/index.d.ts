@@ -1,0 +1,3 @@
+export { ModuleFederationPlugin, PLUGIN_NAME } from './ModuleFederationPlugin';
+export declare const ContainerPlugin: typeof import("@rspack/core/dist/container/ContainerPlugin").ContainerPlugin;
+export declare const ContainerReferencePlugin: typeof import("@rspack/core/dist/container/ContainerReferencePlugin").ContainerReferencePlugin;

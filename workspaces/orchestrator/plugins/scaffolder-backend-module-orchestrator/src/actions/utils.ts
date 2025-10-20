@@ -21,7 +21,7 @@ import axios, { AxiosRequestConfig, isAxiosError } from 'axios';
 import {
   Configuration,
   DefaultApi,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 export const getError = (err: unknown): Error => {
   if (

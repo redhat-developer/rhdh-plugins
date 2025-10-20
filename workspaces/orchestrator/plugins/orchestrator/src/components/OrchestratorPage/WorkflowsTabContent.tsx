@@ -25,7 +25,7 @@ import { useApi } from '@backstage/core-plugin-api';
 
 import Grid from '@mui/material/Grid';
 
-import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowOverviewDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
 import usePolling from '../../hooks/usePolling';

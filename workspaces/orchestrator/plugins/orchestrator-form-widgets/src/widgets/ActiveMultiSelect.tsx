@@ -26,7 +26,7 @@ import Chip from '@mui/material/Chip';
 
 import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@redhat/backstage-plugin-orchestrator-form-api';
 import { Widget } from '@rjsf/utils';
 
 import {

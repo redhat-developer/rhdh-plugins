@@ -1,0 +1,26 @@
+import type { IssueType } from './types/issues.js';
+export declare const ROOT_WORKSPACE_NAME = ".";
+export declare const IMPORT_STAR = "*";
+export declare const ANONYMOUS = "__anonymous";
+export declare const KNIP_CONFIG_LOCATIONS: string[];
+export declare const DEFAULT_EXTENSIONS: string[];
+export declare const GLOBAL_IGNORE_PATTERNS: string[];
+export declare const PUBLIC_TAG = "@public";
+export declare const INTERNAL_TAG = "@internal";
+export declare const BETA_TAG = "@beta";
+export declare const ALIAS_TAG = "@alias";
+export declare const DT_SCOPE = "@types";
+export declare const PROTOCOL_VIRTUAL = "virtual:";
+export declare const IGNORED_GLOBAL_BINARIES: Set<string>;
+export declare const IGNORED_DEPENDENCIES: Set<string>;
+export declare const IGNORED_RUNTIME_DEPENDENCIES: Set<string>;
+export declare const FOREIGN_FILE_EXTENSIONS: Set<string>;
+export declare const IGNORE_DEFINITELY_TYPED: Set<string>;
+export declare const ISSUE_TYPES: IssueType[];
+export declare const ISSUE_TYPE_TITLE: Record<IssueType, string>;
+export declare const FIX_FLAGS: {
+    readonly NONE: 0;
+    readonly OBJECT_BINDING: number;
+    readonly EMPTY_DECLARATION: number;
+    readonly WITH_NEWLINE: number;
+};

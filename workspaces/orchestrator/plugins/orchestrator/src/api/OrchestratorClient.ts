@@ -39,7 +39,7 @@ import {
   RetriggerInstanceRequestDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { OrchestratorApi } from './api';
 

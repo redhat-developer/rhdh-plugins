@@ -30,7 +30,7 @@ import {
   capitalize,
   ProcessInstanceStatusDTO,
   WorkflowOverviewDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
 import { VALUE_UNAVAILABLE } from '../../constants';

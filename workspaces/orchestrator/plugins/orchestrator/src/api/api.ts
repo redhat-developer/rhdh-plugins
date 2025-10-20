@@ -29,7 +29,7 @@ import {
   ProcessInstanceListResultDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 export interface OrchestratorApi {
   abortWorkflowInstance(instanceId: string): Promise<AxiosResponse<string>>;

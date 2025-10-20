@@ -38,11 +38,11 @@ import {
   AuthTokenDescriptor,
   InputSchemaResponseDTO,
   QUERY_PARAM_INSTANCE_ID,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 import {
   OrchestratorForm,
   TranslationFunction,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
+} from '@redhat/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';

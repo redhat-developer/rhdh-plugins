@@ -30,7 +30,7 @@ import {
 import {
   AuthToken,
   AuthTokenDescriptor,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 const isAuthApi = (api: any): api is OAuthApi => {
   return api && typeof api.getAccessToken === 'function';

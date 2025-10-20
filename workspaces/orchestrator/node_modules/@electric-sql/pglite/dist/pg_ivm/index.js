@@ -1,0 +1,2 @@
+import{j as e}from"../chunk-QY3QWFKW.js";e();var n=async(s,t)=>({emscriptenOpts:t,bundlePath:new URL("../pg_ivm.tar.gz",import.meta.url)}),r={name:"pg_ivm",setup:n};export{r as pg_ivm};
+//# sourceMappingURL=index.js.map

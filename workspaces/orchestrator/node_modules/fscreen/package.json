@@ -1,0 +1,34 @@
+{
+  "name": "fscreen",
+  "version": "1.2.0",
+  "description": "Vendor agnostic access to the fullscreen spec api",
+  "main": "dist/fscreen.cjs.js",
+  "module": "dist/fscreen.esm.js",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "npm link && npm run watch",
+    "build": "rollpkg build",
+    "watch": "rollpkg watch",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafgraph/fscreen.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "fullscreen",
+    "browser"
+  ],
+  "author": "Rafael Pedicini <rafael@rafgraph.dev>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rafgraph/fscreen/issues"
+  },
+  "homepage": "https://github.com/rafgraph/fscreen#readme",
+  "devDependencies": {
+    "rollpkg": "^0.4.2"
+  }
+}

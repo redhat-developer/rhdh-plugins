@@ -17,7 +17,7 @@ import { CodeSnippet, ErrorPanel } from '@backstage/core-components';
 
 import { makeStyles } from 'tss-react/mui';
 
-import { WorkflowFormatDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowFormatDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 type WorkflowEditorProps = {
   format: WorkflowFormatDTO;

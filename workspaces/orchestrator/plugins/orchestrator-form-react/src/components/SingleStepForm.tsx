@@ -15,7 +15,7 @@
  */
 import { useMemo } from 'react';
 
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@redhat/backstage-plugin-orchestrator-form-api';
 
 import OrchestratorFormStepper, {
   OrchestratorFormStep,

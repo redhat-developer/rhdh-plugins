@@ -1,0 +1,29 @@
+{
+  "name": "summary",
+  "description": "Takes an array of numbers and calculates some descriptive statistics",
+  "version": "2.1.0",
+  "author": "Andreas Madsen <amwebdk@gmail.com>",
+  "main": "./summary.js",
+  "scripts": {
+    "test": "tap test.js"
+  },
+  "repository" : {
+    "type": "git",
+    "url": "git://github.com/AndreasMadsen/summary.git"
+  },
+  "keywords": [
+    "summary",
+    "sort",
+    "size",
+    "mode",
+    "mean",
+    "quartile",
+    "median",
+    "variance",
+    "sd"
+  ],
+  "devDependencies": {
+    "tap": "~14.0.0"
+  },
+  "license": "MIT"
+}

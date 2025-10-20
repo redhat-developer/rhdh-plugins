@@ -16,7 +16,7 @@
 
 import { makeStyles } from 'tss-react/mui';
 
-import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { ProcessInstanceStatusDTO } from '@redhat/backstage-plugin-orchestrator-common';
 
 const useStyles = makeStyles()(
   theme =>

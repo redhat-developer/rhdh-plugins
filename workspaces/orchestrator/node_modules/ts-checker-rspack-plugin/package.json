@@ -1,0 +1,79 @@
+{
+  "name": "ts-checker-rspack-plugin",
+  "version": "1.1.6",
+  "description": "Runs typescript type checker and linter on separate process.",
+  "keywords": [
+    "rspack",
+    "plugin",
+    "typescript",
+    "typecheck"
+  ],
+  "bugs": {
+    "url": "https://github.com/rspack-contrib/ts-checker-rspack-plugin/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rspack-contrib/ts-checker-rspack-plugin.git"
+  },
+  "license": "MIT",
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "cross-env rimraf lib && cross-env tsc --version && cross-env tsc",
+    "lint": "echo lint",
+    "test": "pnpm build && pnpm test:unit && pnpm test:e2e",
+    "test:unit": "cross-env jest --config=test/unit/jest.config.js",
+    "test:e2e": "cd test/e2e && pnpm test",
+    "test:e2e:setup": "cd test/e2e && pnpm run setup",
+    "precommit": "pnpm build && pnpm test:unit",
+    "prepare": "husky install && pnpm build",
+    "bump": "npx bumpp"
+  },
+  "dependencies": {
+    "@babel/code-frame": "^7.27.1",
+    "@rspack/lite-tapable": "^1.0.1",
+    "chokidar": "^3.6.0",
+    "is-glob": "^4.0.3",
+    "memfs": "^4.47.0",
+    "minimatch": "^9.0.5",
+    "picocolors": "^1.1.1"
+  },
+  "peerDependencies": {
+    "@rspack/core": "^1.0.0",
+    "typescript": ">=3.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@rspack/core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@jest/console": "^27.5.1",
+    "@rspack/core": "^1.5.8",
+    "@types/babel__code-frame": "^7.0.6",
+    "@types/is-glob": "^4.0.4",
+    "@types/jest": "^27.5.2",
+    "@types/mock-fs": "^4.13.4",
+    "@types/node": "^16.18.126",
+    "cross-env": "^10.1.0",
+    "husky": "^7.0.4",
+    "jest": "^27.5.1",
+    "jest-circus": "^27.5.1",
+    "jest-environment-node": "^27.5.1",
+    "jest-runner": "^27.5.1",
+    "mock-fs": "^5.5.0",
+    "prettier": "^2.8.8",
+    "rimraf": "^3.0.2",
+    "strip-ansi": "^6.0.1",
+    "ts-jest": "^27.1.5",
+    "typescript": "^4.9.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "packageManager": "pnpm@9.15.9"
+}

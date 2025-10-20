@@ -30,7 +30,7 @@ import {
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
   WorkflowRunStatusDTO,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+} from '@redhat/backstage-plugin-orchestrator-common';
 
 import { Pagination } from '../../types/pagination';
 import { retryAsyncFunction } from '../Helper';

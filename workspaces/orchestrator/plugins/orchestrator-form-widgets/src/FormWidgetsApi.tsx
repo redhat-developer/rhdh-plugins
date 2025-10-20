@@ -19,7 +19,7 @@ import {
   FormDecoratorProps,
   OrchestratorFormApi,
   OrchestratorFormContextProps,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+} from '@redhat/backstage-plugin-orchestrator-form-api';
 import { FormValidation } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 

@@ -1,0 +1,45 @@
+{
+  "name": "@nodelib/fs.stat",
+  "version": "4.0.0",
+  "description": "Get the status of a file with some features",
+  "license": "MIT",
+  "repository": "https://github.com/nodelib/nodelib/tree/master/packages/fs/fs.stat",
+  "keywords": [
+    "NodeLib",
+    "fs",
+    "FileSystem",
+    "file system",
+    "stat"
+  ],
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "files": [
+    "out/**",
+    "!out/**/*.map",
+    "!out/**/*.spec.*"
+  ],
+  "main": "out/index.js",
+  "typings": "out/index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./out/index.js"
+    },
+    "./promises": {
+      "default": "./out/stat-promises.js"
+    }
+  },
+  "scripts": {
+    "clean": "rimraf {tsconfig.tsbuildinfo,out}",
+    "lint": "eslint \"src/**/*.ts\" --cache",
+    "compile": "tsc -b .",
+    "compile:watch": "tsc -b . --watch --sourceMap",
+    "test": "mocha \"out/**/*.spec.js\" -s 0",
+    "build": "npm run clean && npm run compile && npm run lint && npm test",
+    "watch": "npm run clean && npm run compile:watch"
+  },
+  "devDependencies": {
+    "@nodelib/fs.macchiato": "3.0.0"
+  },
+  "gitHead": "32f75d7dab34d403e1c3b8c3911437a9e3fc5f54"
+}

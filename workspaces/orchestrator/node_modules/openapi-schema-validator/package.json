@@ -1,0 +1,35 @@
+{
+  "name": "openapi-schema-validator",
+  "version": "12.1.3",
+  "description": "A validator for OpenAPI documents.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "cover": "../../bin/nyc",
+    "prepare": "../../bin/tsc",
+    "test-watch": "../../bin/tsc && ../../bin/mocha --watch-extensions ts -w",
+    "test": "../../bin/mocha"
+  },
+  "repository": "https://github.com/kogosoftwarellc/open-api/tree/master/packages/openapi-schema-validator",
+  "keywords": [
+    "openapi",
+    "schema",
+    "validator"
+  ],
+  "author": "Joseph Spencer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kogosoftwarellc/open-api/issues"
+  },
+  "homepage": "https://github.com/kogosoftwarellc/open-api/tree/master/packages/openapi-schema-validator#readme",
+  "dependencies": {
+    "ajv": "^8.1.0",
+    "ajv-formats": "^2.0.2",
+    "lodash.merge": "^4.6.1",
+    "openapi-types": "^12.1.3"
+  },
+  "gitHead": "09fed6d77536b3d7d1d38a2630a096041da773ee"
+}

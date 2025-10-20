@@ -21,7 +21,7 @@ import {
   OrchestratorFormApi,
   OrchestratorFormContextProps,
   OrchestratorFormDecorator,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+} from '@redhat/backstage-plugin-orchestrator-form-api';
 
 class DefaultFormApi implements OrchestratorFormApi {
   getFormDecorator(): OrchestratorFormDecorator {

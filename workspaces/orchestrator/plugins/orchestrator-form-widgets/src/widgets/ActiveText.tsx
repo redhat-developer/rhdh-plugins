@@ -22,7 +22,7 @@ import { UiProps } from '../uiPropTypes';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import { ErrorText } from './ErrorText';
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import { OrchestratorFormContextProps } from '@redhat/backstage-plugin-orchestrator-form-api';
 import { useFetchAndEvaluate } from '../utils';
 
 export const ActiveText: Widget<
