@@ -24,26 +24,3 @@ export type DbMetricValue = {
   timestamp: Date;
   error_message?: string;
 };
-
-/**
- * Interface for storing and retrieving metric values
- */
-export interface MetricValuesStore {
-  /**
-   * Insert multiple metric values in a batch
-   */
-  createMetricValues(metricValues: Omit<DbMetricValue, 'id'>[]): Promise<void>;
-
-  /**
-   * Get the latest metric values for a specific entity and metrics
-   */
-  readLatestEntityMetricValues(
-    catalog_entity_ref: string,
-    metric_ids: string[],
-  ): Promise<DbMetricValue[]>;
-
-  /**
-   * Delete metric values that are older than the given date
-   */
-  cleanupExpiredMetrics(olderThan: Date): Promise<number>;
-}

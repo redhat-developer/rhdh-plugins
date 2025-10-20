@@ -17,10 +17,7 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { JiraEntityFilters, JiraOptions, RequestOptions } from './types';
-import {
-  JIRA_MANDATORY_FILTER,
-  OPEN_ISSUES_CONFIG_PATH,
-} from '../constants';
+import { JIRA_MANDATORY_FILTER, OPEN_ISSUES_CONFIG_PATH } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
 import { ConnectionStrategy } from '../strategies/ConnectionStrategy';

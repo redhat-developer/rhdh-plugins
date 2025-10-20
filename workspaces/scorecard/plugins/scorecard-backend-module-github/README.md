@@ -93,12 +93,12 @@ Thresholds define conditions that determine which category a metric value belong
 
 ## Schedule Configuration
 
-The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers.
+The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers every hour by default. However, this configuration can be changed in the `app-config.yaml` file. Here is an example of how to do that:
 
 ```yaml
 scorecard:
   plugins:
-    jira:
+    github:
       open_prs:
         schedule:
           frequency:

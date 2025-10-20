@@ -15,12 +15,12 @@
  */
 
 import { Knex } from 'knex';
-import { DbMetricValue, MetricValuesStore } from './MetricValuesStore';
+import { DbMetricValue } from './types';
 
-export class DatabaseMetricValuesStore implements MetricValuesStore {
+export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
 
-  constructor(private readonly knex: Knex<any, any[]>) {}
+  constructor(private readonly dbClient: Knex<any, any[]>) {}
 
   /**
    * Insert multiple metric values
@@ -28,7 +28,7 @@ export class DatabaseMetricValuesStore implements MetricValuesStore {
   async createMetricValues(
     metricValues: Omit<DbMetricValue, 'id'>[],
   ): Promise<void> {
-    await this.knex(this.tableName).insert(metricValues);
+    await this.dbClient(this.tableName).insert(metricValues);
   }
 
   /**
@@ -38,11 +38,11 @@ export class DatabaseMetricValuesStore implements MetricValuesStore {
     catalog_entity_ref: string,
     metric_ids: string[],
   ): Promise<DbMetricValue[]> {
-    return await this.knex(this.tableName)
+    return await this.dbClient(this.tableName)
       .select('*')
       .whereIn(
         'id',
-        this.knex(this.tableName)
+        this.dbClient(this.tableName)
           .max('id')
           .whereIn('metric_id', metric_ids)
           .where('catalog_entity_ref', catalog_entity_ref)
@@ -54,7 +54,7 @@ export class DatabaseMetricValuesStore implements MetricValuesStore {
    * Delete metric values that are older than the given date
    */
   async cleanupExpiredMetrics(olderThan: Date): Promise<number> {
-    return await this.knex(this.tableName)
+    return await this.dbClient(this.tableName)
       .where('timestamp', '<', olderThan)
       .del();
   }

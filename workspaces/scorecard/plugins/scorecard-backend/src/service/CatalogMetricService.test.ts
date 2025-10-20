@@ -33,7 +33,7 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
-import { mockMetricValuesStore } from '../../__fixtures__/mockDatabase';
+import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
 
 const timestamp = '2024-01-15T10:30:00.000Z';
 const timestampDate = new Date(timestamp);
@@ -114,7 +114,7 @@ describe('CatalogMetricService', () => {
     registry.register(githubNumberProvider);
     registry.register(jiraBooleanProvider);
 
-    mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue(
+    mockDatabaseMetricValues.readLatestEntityMetricValues.mockResolvedValue(
       storedMetricValues,
     );
 
@@ -123,7 +123,7 @@ describe('CatalogMetricService', () => {
       auth: mockServices.auth(),
       registry,
       thresholdEvaluator: new ThresholdEvaluator(),
-      metricValuesStore: mockMetricValuesStore,
+      database: mockDatabaseMetricValues,
     });
   });
 
@@ -142,7 +142,7 @@ describe('CatalogMetricService', () => {
         }),
       );
       expect(
-        mockMetricValuesStore.readLatestEntityMetricValues,
+        mockDatabaseMetricValues.readLatestEntityMetricValues,
       ).toHaveBeenCalledWith('component:default/test-component', [
         'github.number_metric',
         'jira.boolean_metric',
@@ -194,7 +194,7 @@ describe('CatalogMetricService', () => {
 
     it('should retrieve metrics for specific provider IDs', async () => {
       mockCatalogService.getEntityByRef.mockResolvedValue(mockEntity);
-      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue([
+      mockDatabaseMetricValues.readLatestEntityMetricValues.mockResolvedValue([
         storedMetricValues[1],
       ]);
 
@@ -204,7 +204,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(
-        mockMetricValuesStore.readLatestEntityMetricValues,
+        mockDatabaseMetricValues.readLatestEntityMetricValues,
       ).toHaveBeenCalledWith('component:default/test-component', [
         'jira.boolean_metric',
       ]);
@@ -222,7 +222,7 @@ describe('CatalogMetricService', () => {
           error_message: 'Error: Jira API failure',
         },
       ];
-      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue(
+      mockDatabaseMetricValues.readLatestEntityMetricValues.mockResolvedValue(
         metricsWithError,
       );
 
@@ -278,7 +278,7 @@ describe('CatalogMetricService', () => {
         entityWithInvalidThresholds,
       );
 
-      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue([
+      mockDatabaseMetricValues.readLatestEntityMetricValues.mockResolvedValue([
         storedMetricValues[0],
       ]);
 
@@ -329,7 +329,7 @@ describe('CatalogMetricService', () => {
         ],
       };
 
-      mockMetricValuesStore.readLatestEntityMetricValues.mockResolvedValue([
+      mockDatabaseMetricValues.readLatestEntityMetricValues.mockResolvedValue([
         storedMetricValues[0],
       ]);
 
@@ -340,7 +340,7 @@ describe('CatalogMetricService', () => {
       );
 
       expect(
-        mockMetricValuesStore.readLatestEntityMetricValues,
+        mockDatabaseMetricValues.readLatestEntityMetricValues,
       ).toHaveBeenCalledWith('component:default/test-component', [
         'github.number_metric',
       ]);

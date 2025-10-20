@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export const DEFAULT_DATA_RETENTION_DAYS = 365;
+import { daysToMilliseconds } from './utils';
+
+describe('daysToMilliseconds', () => {
+  it('should convert days to milliseconds', () => {
+    expect(daysToMilliseconds(1)).toBe(86400000);
+  });
+});
