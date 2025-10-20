@@ -22,6 +22,11 @@ export type OptimizationsApi = Omit<
   'fetchApi' | 'discoveryApi'
 >;
 
+/** @public */
+export type GetCostManagementRequest = Parameters<
+  OptimizationsApi['getCostManagementReport']
+>[0];
+
 /**
  * This is a copy of GetTokenResponse, to avoid importing redhat-resource-optimization-backend.
  *
