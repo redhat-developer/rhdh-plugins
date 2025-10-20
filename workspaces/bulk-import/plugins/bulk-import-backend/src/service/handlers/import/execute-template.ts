@@ -100,7 +100,7 @@ export async function processTaskEvents(
       }
     }
   } catch (e) {
-    logger.error(`==== Failed to process events for task ${taskId}`, e);
+    logger.error(`Failed to process events for task ${taskId}`, e);
   }
 }
 
