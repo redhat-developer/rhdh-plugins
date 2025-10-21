@@ -9071,7 +9071,6 @@ __metadata:
     "@backstage/plugin-permission-node": ^0.10.3
     "@backstage/types": ^1.2.1
     "@gitbeaker/rest": ^43.4.0
-    "@microsoft/fetch-event-source": ^2.0.1
     "@octokit/auth-app": ^6.0.3
     "@octokit/rest": ^20.0.2
     "@openapitools/openapi-generator-cli": 2.20.2
@@ -9083,6 +9082,7 @@ __metadata:
     "@types/node-fetch": ^2.5.12
     "@types/supertest": 2.0.16
     ajv-formats: ^3.0.1
+    eventsource-client: ^1.2.0
     express: ^4.17.1
     git-url-parse: ^14.0.0
     js-yaml: ^4.1.0
@@ -18317,6 +18317,22 @@ __metadata:
   version: 3.3.0
   resolution: "events@npm:3.3.0"
   checksum: f6f487ad2198aa41d878fa31452f1a3c00958f46e9019286ff4787c84aac329332ab45c9cdc8c445928fc6d7ded294b9e005a7fce9426488518017831b272780
+  languageName: node
+  linkType: hard
+
+"eventsource-client@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "eventsource-client@npm:1.2.0"
+  dependencies:
+    eventsource-parser: ^3.0.0
+  checksum: 744b772176d09feab761244575cbf74b57d6fb6746e0863ece3549bfe606d38fc86d7d704e5ffa69bfb7b586929c29e29ce0059f194de20c2630b148c346d9bc
+  languageName: node
+  linkType: hard
+
+"eventsource-parser@npm:^3.0.0":
+  version: 3.0.6
+  resolution: "eventsource-parser@npm:3.0.6"
+  checksum: b90ec27f8d992afa7df171db202faaedb1782214f64e50690cbf78bc2629f7751575aa27a72d8ae447e5a7094938406b1a3ea1d89e5f0f2d6916cc8a694b6587
   languageName: node
   linkType: hard
 

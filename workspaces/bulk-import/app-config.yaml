@@ -97,22 +97,7 @@ catalog:
 
     # Local example templates
     - type: file
-      target: ../../examples/template/get-default-branch.yaml
-      rules:
-        - allow: [Template]
-
-    - type: file
-      target: ../../examples/template/create-repo-with-catalog-info.yaml
-      rules:
-        - allow: [Template]
-
-    - type: file
       target: ../../examples/template/create-pr-with-catalog-info.yaml
-      rules:
-        - allow: [Template]
-
-    - type: file
-      target: ../../examples/template/import-components-from-existing-repo.yaml
       rules:
         - allow: [Template]
 
@@ -136,3 +121,7 @@ catalog:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+# scaffolder template execution configuration. Disabled by default.
+# bulkImport:
+#   importTemplate: template:default/create-pr-with-catalog-info
+#   importAPI: scaffolder

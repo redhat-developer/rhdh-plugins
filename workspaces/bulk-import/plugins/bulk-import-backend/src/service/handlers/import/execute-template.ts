@@ -21,7 +21,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 
-import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { createEventSource } from 'eventsource-client';
 import gitUrlParse from 'git-url-parse';
 
 import { getCatalogFilename } from '../../../catalog/catalogUtils';
@@ -54,78 +54,35 @@ async function* getEvents(
   scaffolderUrl: string,
   token: string,
   logger: LoggerService,
-) {
+): AsyncGenerator<ScaffolderEvent> {
   const url = `${scaffolderUrl}/v2/tasks/${taskId}/eventstream`;
 
-  const queue: ScaffolderEvent[] = [];
-  let resolver: ((event: ScaffolderEvent) => void) | undefined;
-
-  const handleEvent = (data: any) => {
-    logger.info('Received event:', data);
-    if (resolver) {
-      resolver(data);
-      resolver = undefined;
-    } else {
-      queue.push(data);
-    }
-  };
-
-  const controller = new AbortController();
-
-  fetchEventSource(url, {
-    method: 'GET',
+  const eventSource = createEventSource({
+    url,
     headers: {
       Authorization: `Bearer ${token}`,
     },
-    signal: controller.signal,
-    onopen: async response => {
-      logger.info('SSE connection opened', { status: response.status });
-    },
-    onmessage: event => {
+  });
+  try {
+    for await (const event of eventSource) {
       try {
         const data: ScaffolderEvent = JSON.parse(event.data);
-        handleEvent(data);
+        yield data;
+        if (data.type === 'completion' || data.type === 'error') {
+          break;
+        }
       } catch (err) {
-        logger.error('==== Failed to parse SSE event', err);
+        logger.error('Failed to parse SSE event', err);
       }
-    },
-    onclose: () => {
-      logger.info('SSE connection closed');
-    },
-    onerror: err => {
-      logger.error('==== SSE error', err);
-      handleEvent({
-        type: 'error',
-        error: err,
-        id: -1,
-        isTaskRecoverable: false,
-        taskId,
-        body: { message: err?.message ?? '' },
-        createdAt: new Date().toISOString(),
-      });
-      controller.abort();
-    },
-  }).catch(err => logger.error('==== fetchEventSource failed', err));
-
-  const nextEvent = (): Promise<ScaffolderEvent> =>
-    new Promise(resolve => {
-      resolver = resolve;
-    });
-
-  while (true) {
-    const event: ScaffolderEvent =
-      queue.length > 0 ? queue.shift()! : await nextEvent();
-
-    yield event;
-
-    if (event.type === 'completion' || event.type === 'error') {
-      controller.abort();
-      break;
     }
+  } catch (err) {
+    logger.error('SSE error', err);
+  } finally {
+    eventSource.close();
   }
 }
 
-async function processTaskEvents(
+export async function processTaskEvents(
   taskId: string,
   scaffolderUrl: string,
   token: string,
@@ -143,7 +100,7 @@ async function processTaskEvents(
       }
     }
   } catch (e) {
-    logger.error(`==== Failed to process events for task ${taskId}`, e);
+    logger.error(`Failed to process events for task ${taskId}`, e);
   }
 }
 
