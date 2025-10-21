@@ -45,10 +45,10 @@ All events include these properties:
 
 ## Identify & Group Calls
 
-| Call Type    | Platform | Trigger                                     | ID Used     | Traits/Properties                          |
-| ------------ | -------- | ------------------------------------------- | ----------- | ------------------------------------------ |
-| **Identify** | Segment  | First time `userID` available in session    | `userID`    | `{ company: [user company] }`              |
-| **Group**    | Segment  | First time `accountID` available in session | `accountID` | `{ ebs: [account number] }` (when present) |
+| Call Type    | Platform | Trigger                                     | ID Used     | Traits/Properties                                                               |
+| ------------ | -------- | ------------------------------------------- | ----------- | ------------------------------------------------------------------------------- |
+| **Identify** | Segment  | First time `userID` available in session    | `userID`    | `{ company: [user company], email_domain: [user email domain] }` (when present) |
+| **Group**    | Segment  | First time `accountID` available in session | `accountID` | `{ ebs: [account number] }` (when present)                                      |
 
 ## Notes
 
