@@ -189,7 +189,7 @@ export const MarketplaceCatalogContent = () => {
                 severity="info"
                 message={
                   <>
-                    {t('alert.extensionsExample')}
+                    <MarkdownContent content={t('alert.extensionsExample')} />
                     <CodeSnippet
                       language="yaml"
                       showLineNumbers

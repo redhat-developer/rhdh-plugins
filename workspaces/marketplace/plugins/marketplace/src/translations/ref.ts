@@ -80,7 +80,8 @@ export const marketplaceMessages = {
     productionDisabled:
       'Plugin installation is disabled in the production environment.',
     installationDisabled: 'Plugin installation is disabled.',
-    extensionsExample: 'Example how to enable extensions plugin installation',
+    extensionsExample:
+      'To enable it, add or modify the extensions configuration in your **app-config.yaml** file.',
     singlePluginRestart:
       'The **{{pluginName}}** plugin requires a restart of the backend system to finish installing, updating, enabling or disabling.',
     multiplePluginRestart:
@@ -159,6 +160,8 @@ export const marketplaceMessages = {
     highlights: 'Highlights',
     about: 'About',
     notFound: 'Package {{namespace}}/{{name}} not found!',
+    notAvailable: 'Package {{name}} is not available',
+    ensureCatalogEntity: 'Ensure a catalog entity exists for this package.',
   },
 
   // Tables and lists
@@ -236,7 +239,11 @@ export const marketplaceMessages = {
   // Plugin metadata
   metadata: {
     by: ' by ',
+    comma: ', ',
     pluginNotFound: 'Plugin {{name}} not found!',
+    pluginNotAvailable: 'Plugin {{name}} is not available',
+    ensureCatalogEntityPlugin:
+      'Ensure a catalog entity exists for this plugin.',
     highlights: 'Highlights',
     about: 'About',
     publisher: 'Publisher',
@@ -245,6 +252,7 @@ export const marketplaceMessages = {
     bySomeone: 'by someone',
     category: 'Category',
     versions: 'Versions',
+    backstageCompatibility: 'Backstage compatibility version',
   },
 
   // Support type filters
@@ -299,6 +307,8 @@ export const marketplaceMessages = {
     packageUpdated: 'Package updated',
     packageEnabled: 'Package enabled',
     packageDisabled: 'Package disabled',
+    pluginEnabled: 'Plugin enabled',
+    pluginDisabled: 'Plugin disabled',
     errors: {
       missingPluginsList: "Invalid editor content: missing 'plugins' list",
       missingPackageItem: 'Invalid editor content: missing package item',

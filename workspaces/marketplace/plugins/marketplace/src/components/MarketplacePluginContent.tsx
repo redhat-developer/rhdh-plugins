@@ -19,7 +19,6 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   Content,
-  ErrorPage,
   Link,
   LinkButton,
   Table,
@@ -43,6 +42,8 @@ import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   isMarketplacePackage,
@@ -191,18 +192,18 @@ export const MarketplacePluginContentSkeleton = () => {
 
 const getColumns = (t: any): TableColumn<MarketplacePackage>[] => [
   {
-    title: 'Package name',
+    title: t('table.packageName'),
     field: 'spec.packageName',
     type: 'string',
     width: '40%',
   },
   {
-    title: 'Version',
+    title: t('table.version'),
     field: 'spec.version',
     type: 'string',
   },
   {
-    title: 'Role',
+    title: t('table.role'),
     field: 'spec.backstage.role',
     type: 'string',
     render(data) {
@@ -216,12 +217,12 @@ const getColumns = (t: any): TableColumn<MarketplacePackage>[] => [
     },
   },
   {
-    title: 'Backstage compatibility version',
+    title: t('metadata.backstageCompatibility'),
     field: 'spec.backstage.supportedVersions',
     type: 'string',
   },
   {
-    title: 'Status',
+    title: t('table.status'),
     field: 'spec.installStatus',
     type: 'string',
     render(data) {
@@ -352,10 +353,20 @@ export const MarketplacePluginContent = ({
           (res as any)?.error?.message ?? res,
         );
       } else {
+        let message = '';
+        if (isPluginEnabled && isPackage) {
+          message = t('install.packageDisabled');
+        } else if (isPluginEnabled && !isPackage) {
+          message = t('install.pluginDisabled');
+        } else if (!isPluginEnabled && isPackage) {
+          message = t('install.packageEnabled');
+        } else {
+          message = t('install.pluginEnabled');
+        }
+
         const updatedPlugins: InstallationType = {
           ...installedPlugins,
-          [plugin.metadata.title ?? plugin.metadata.name]:
-            `${subString} ${isPluginEnabled ? 'disabled' : 'enabled'}`,
+          [plugin.metadata.title ?? plugin.metadata.name]: message,
         };
         setInstalledPlugins(updatedPlugins);
         handleClose();
@@ -556,7 +567,7 @@ export const MarketplacePluginContent = ({
                 >
                   {plugin.spec.authors.map((author, index) => (
                     <Fragment key={author.name}>
-                      {index > 0 ? ', ' : ' by '}
+                      {index > 0 ? t('metadata.comma') : t('metadata.by')}
                       <Link
                         key={author.name}
                         to={withFilter('spec.authors.name', author.name)}
@@ -574,7 +585,7 @@ export const MarketplacePluginContent = ({
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
                 >
-                  by{' '}
+                  {t('metadata.by')}{' '}
                   <Link
                     key={plugin.spec?.author}
                     to={withFilter('spec.author', plugin.spec?.author)}
@@ -649,15 +660,30 @@ export const MarketplacePluginContent = ({
 };
 
 export const MarketplacePluginContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(pluginRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
 
   if (plugin.isLoading) {
     return <MarketplacePluginContentSkeleton />;
+  } else if (plugin.error || (plugin.data as any)?.error) {
+    return (
+      <Alert severity="warning">
+        <AlertTitle>
+          {t('metadata.pluginNotAvailable', { name: params.name } as any)}
+        </AlertTitle>
+        {t('metadata.ensureCatalogEntityPlugin')}
+      </Alert>
+    );
   } else if (plugin.data) {
     return <MarketplacePluginContent plugin={plugin.data} />;
-  } else if (plugin.error) {
-    return <ErrorPage statusMessage={plugin.error.toString()} />;
   }
-  return <ErrorPage statusMessage={`Plugin ${params.name} not found!`} />;
+  return (
+    <Alert severity="warning">
+      <AlertTitle>
+        {t('metadata.pluginNotAvailable', { name: params.name } as any)}
+      </AlertTitle>
+      {t('metadata.ensureCatalogEntityPlugin')}
+    </Alert>
+  );
 };
