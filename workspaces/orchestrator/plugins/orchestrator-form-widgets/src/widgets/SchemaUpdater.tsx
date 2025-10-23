@@ -28,6 +28,7 @@ import {
   useTemplateUnitEvaluator,
   useFetch,
   applySelectorObject,
+  useProcessingState,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -43,6 +44,8 @@ export const SchemaUpdater: Widget<
   const formData = formContext?.formData;
 
   const updateSchema = formContext?.updateSchema;
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
@@ -61,6 +64,13 @@ export const SchemaUpdater: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
+
   useEffect(() => {
     if (!data) {
       return;
@@ -72,44 +82,46 @@ export const SchemaUpdater: Widget<
     }
 
     const doItAsync = async () => {
-      let typedData: SchemaChunksResponse =
-        data as unknown as SchemaChunksResponse;
-      if (valueSelector) {
-        typedData = (await applySelectorObject(
-          data,
-          valueSelector,
-        )) as unknown as SchemaChunksResponse;
-      }
+      await wrapProcessing(async () => {
+        let typedData: SchemaChunksResponse =
+          data as unknown as SchemaChunksResponse;
+        if (valueSelector) {
+          typedData = (await applySelectorObject(
+            data,
+            valueSelector,
+          )) as unknown as SchemaChunksResponse;
+        }
 
-      // validate received response before updating
-      Object.keys(typedData).forEach(key => {
-        if (!typedData[key]?.type) {
+        // validate received response before updating
+        Object.keys(typedData).forEach(key => {
+          if (!typedData[key]?.type) {
+            // eslint-disable-next-line no-console
+            console.error('JSON response malformed: ', typedData);
+            setLocalError(
+              `JSON response malformed for SchemaUpdater, missing "type" field for "${key}" key.`,
+            );
+          }
+        });
+
+        try {
+          updateSchema(typedData);
+        } catch (err) {
           // eslint-disable-next-line no-console
-          console.error('JSON response malformed: ', typedData);
+          console.error('Error when updating schema', props.id, err);
           setLocalError(
-            `JSON response malformed for SchemaUpdater, missing "type" field for "${key}" key.`,
+            `Failed to update schema update by the ${props.id} SchemaUpdater`,
           );
         }
       });
-
-      try {
-        updateSchema(typedData);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error('Error when updating schema', props.id, err);
-        setLocalError(
-          `Failed to update schema update by the ${props.id} SchemaUpdater`,
-        );
-      }
     };
     doItAsync();
-  }, [data, props.id, updateSchema, valueSelector]);
+  }, [data, props.id, updateSchema, valueSelector, wrapProcessing]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  if (completeLoading) {
     return <CircularProgress size={20} />;
   }
   // No need to render anything

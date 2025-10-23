@@ -34,12 +34,16 @@ export const ActiveText: Widget<
   const uiProps = (options?.props ?? {}) as UiProps;
 
   const formData = formContext?.formData;
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const { text, error, loading } = useFetchAndEvaluate(
     uiProps['ui:text'] ?? '',
     formData ?? {},
     uiProps,
     id,
+    handleFetchStarted,
+    handleFetchEnded,
   );
 
   if (!uiProps['ui:text']) {

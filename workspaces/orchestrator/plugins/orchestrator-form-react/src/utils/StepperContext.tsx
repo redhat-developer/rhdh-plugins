@@ -26,6 +26,9 @@ export type StepperContext = {
   isValidating: boolean;
   handleValidateStarted: () => void;
   handleValidateEnded: () => void;
+  isFetching: boolean;
+  handleFetchStarted: () => void;
+  handleFetchEnded: () => void;
   t: TranslationFunction;
 };
 
@@ -50,6 +53,8 @@ export const StepperContextProvider = ({
 }) => {
   const [activeStep, setActiveStep] = useState<number>(0);
   const [isValidating, setIsValidating] = useState<boolean>(false);
+  const [fetchingCount, setFetchingCount] = useState<number>(0);
+
   const contextData = useMemo(() => {
     return {
       activeStep,
@@ -61,8 +66,20 @@ export const StepperContextProvider = ({
       isValidating,
       handleValidateStarted: () => setIsValidating(true),
       handleValidateEnded: () => setIsValidating(false),
+      isFetching: fetchingCount > 0,
+      handleFetchStarted: () => setFetchingCount(count => count + 1),
+      handleFetchEnded: () => setFetchingCount(count => Math.max(0, count - 1)),
       t,
     };
-  }, [t, setActiveStep, activeStep, reviewStep, isValidating, setIsValidating]);
+  }, [
+    t,
+    setActiveStep,
+    activeStep,
+    reviewStep,
+    isValidating,
+    setIsValidating,
+    fetchingCount,
+    setFetchingCount,
+  ]);
   return <context.Provider value={contextData}>{children}</context.Provider>;
 };
