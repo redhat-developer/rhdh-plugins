@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: extensions-plugin-demo
+  name: all-packages
+  description: A collection of all the extensions packages
+spec:
+  targets:
+    - ./packages/backstage-community-plugin-3scale-backend.yaml
+    - ./packages/backstage-community-plugin-acr.yaml
+    - ./packages/backstage-community-plugin-catalog-backend-module-keycloak.yaml
+    - ./packages/backstage-community-plugin-quay.yaml
+    - ./packages/backstage-community-plugin-tekton.yaml
+    - ./packages/backstage-community-plugin-topology.yaml
+    - ./packages/red-hat-developer-hub-backstage-plugin-bulk-import-backend.yaml
+    - ./packages/red-hat-developer-hub-backstage-plugin-bulk-import.yaml
+    - ./packages/red-hat-developer-hub-backstage-plugin-extensions-backend.yaml
+    - ./packages/red-hat-developer-hub-backstage-plugin-extensions.yaml

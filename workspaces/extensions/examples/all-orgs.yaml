@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: extensions-plugin-demo
+  name: all-orgs
+  description: A collection of all the extensions orgs
+spec:
+  targets:
+    - ./orgs/redhat.yaml

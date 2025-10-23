@@ -1,0 +1,19 @@
+meta {
+  name: guest login
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/api/auth/guest/refresh
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+vars:post-response {
+  token: res.body.backstageIdentity.token
+}

@@ -1,0 +1,15 @@
+meta {
+  name: all collections
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/api/extensions/collections
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

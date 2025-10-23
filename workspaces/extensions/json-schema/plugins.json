@@ -1,0 +1,239 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://extensions.backstage.io/v1alpha1/plugins",
+  "$ref": "#/$defs/ExtensionsPlugin",
+  "$defs": {
+    "ExtensionsPlugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apiVersion": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/$defs/EntityMetadata"
+        },
+        "spec": {
+          "$ref": "#/$defs/ExtensionsPluginSpec"
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata", "spec"]
+    },
+    "EntityMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityMetadataLink"
+          }
+        }
+      },
+      "required": ["name"]
+    },
+    "EntityMetadataLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": ["title", "url"]
+    },
+    "ExtensionsPluginSpec": {
+      "type": "object",
+      "properties": {
+        "icon": {
+          "type": "string"
+        },
+        "author": {
+          "$ref": "#/$defs/ExtensionsAuthor"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ExtensionsAuthor"
+          }
+        },
+        "publisher": {
+          "$ref": "#/$defs/ExtensionsAuthor"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "highlights": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "support": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "string",
+                  "enum": [
+                    "generally-available",
+                    "tech-preview",
+                    "dev-preview",
+                    "community",
+                    "none"
+                  ]
+                }
+              },
+              "required": ["provider", "level"],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "lifecycle": {
+          "type": "string"
+        },
+        "documentation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Documentation"
+          }
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Asset"
+          }
+        },
+        "history": {
+          "$ref": "#/$defs/History"
+        },
+        "installStatus": {
+          "type": "string"
+        }
+      }
+    },
+    "ExtensionsAuthor": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": ["name"]
+        }
+      ]
+    },
+    "Asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "originUri": {
+          "type": "string"
+        }
+      },
+      "required": ["filename", "originUri", "type"]
+    },
+    "Developer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": ["name"]
+    },
+    "Documentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "markdown": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": ["markdown", "type"]
+    },
+    "History": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "added": {
+          "type": "string"
+        }
+      },
+      "required": ["added"]
+    }
+  }
+}
