@@ -15,6 +15,7 @@
  */
 
 import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
+import { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
 
 import gitUrlParse from 'git-url-parse';
@@ -58,8 +59,29 @@ export function computeTotalCount<T>(
   return totalCount;
 }
 
-export function parseGitURLForApprovalTool(repoUrl: string) {
+export function parseGitURLForApprovalTool(
+  repoUrl: string,
+  config: Config,
+): 'GIT' | 'GITLAB' {
   const parsedRepoUrl = new URL(repoUrl);
+
+  const gitlabConfigs = config.getOptionalConfigArray('integrations.gitlab');
+  if (gitlabConfigs) {
+    const gitlabHosts = gitlabConfigs.map(c => c.getString('host'));
+    if (gitlabHosts.includes(parsedRepoUrl.hostname)) {
+      return 'GITLAB';
+    }
+  }
+
+  const githubConfigs = config.getOptionalConfigArray('integrations.github');
+  if (githubConfigs) {
+    const githubHosts = githubConfigs.map(c => c.getString('host'));
+    if (githubHosts.includes(parsedRepoUrl.hostname)) {
+      return 'GIT';
+    }
+  }
+
+  // Fallback for backward compatibility if integrations are not configured for the host
   if (parsedRepoUrl.hostname.includes('gitlab')) {
     return 'GITLAB';
   }
