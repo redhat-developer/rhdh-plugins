@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { LoggerService } from '@backstage/backend-plugin-api';
-import { PluginTaskScheduler } from '@backstage/backend-tasks';
+import { LoggerService, SchedulerService } from '@backstage/backend-plugin-api';
 
 import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
@@ -67,7 +66,7 @@ export class WorkflowCacheService {
   }
 
   public schedule(args: {
-    scheduler: PluginTaskScheduler;
+    scheduler: SchedulerService;
     frequencyInSeconds?: number;
     timeoutInMinutes?: number;
   }): void {
