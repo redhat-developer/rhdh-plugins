@@ -94,92 +94,102 @@ const Templates = () => {
           : t('templates.topNTitle' as any, { count: rowsPerPage.toString() })
       }
     >
-      <Table aria-labelledby="Templates" sx={{ width: '100%' }}>
-        <TableHead>
-          <TableRow>
-            {TEMPLATE_TABLE_HEADERS.map(header => (
-              <TableCell
-                key={header.id}
-                align="left"
-                sx={{
-                  borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
-                }}
-              >
-                {t(header.titleKey as any, {})}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {loading ? (
+      <Box sx={{ width: '100%' }}>
+        <Table aria-labelledby="Templates" sx={{ width: '100%' }}>
+          <TableHead>
             <TableRow>
-              <TableCell colSpan={TEMPLATE_TABLE_HEADERS.length} align="center">
-                <CircularProgress />
-              </TableCell>
-            </TableRow>
-          ) : (
-            visibleTemplates?.map(template => {
-              if (
-                !template.entityref ||
-                Object.keys(template.entityref).length === 0
-              )
-                return null;
-
-              const { name, namespace = 'default' } = parseEntityRef(
-                template?.entityref,
-              );
-              const entityHrefLink = `/create/templates/${namespace}/${name}`;
-
-              return (
-                <TableRow
-                  key={template.entityref}
+              {TEMPLATE_TABLE_HEADERS.map(header => (
+                <TableCell
+                  key={header.id}
+                  align="left"
                   sx={{
-                    '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                     borderBottom: theme =>
                       `1px solid ${theme.palette.grey[300]}`,
                   }}
                 >
-                  <TableCell sx={{ width: '50%' }}>
-                    <Link
-                      component="a"
-                      href={entityHrefLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {t(header.titleKey as any, {})}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={TEMPLATE_TABLE_HEADERS.length}
+                  align="center"
+                >
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : (
+              visibleTemplates?.map(template => {
+                if (
+                  !template.entityref ||
+                  Object.keys(template.entityref).length === 0
+                )
+                  return null;
+
+                const { name, namespace = 'default' } = parseEntityRef(
+                  template?.entityref,
+                );
+                const entityHrefLink = `/create/templates/${namespace}/${name}`;
+
+                return (
+                  <TableRow
+                    key={template.entityref}
+                    sx={{
+                      '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
+                      borderBottom: theme =>
+                        `1px solid ${theme.palette.grey[300]}`,
+                    }}
+                  >
+                    <TableCell
                       sx={{
-                        textDecoration: 'none',
-                        '&:hover': {
-                          textDecoration: 'none',
-                        },
+                        width: '50%',
                       }}
                     >
-                      {name ?? '--'}
-                    </Link>
-                  </TableCell>
-                  <TableCell sx={{ width: '50%' }}>
-                    {Number(template.count).toLocaleString('en-US') ?? '--'}
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell
-              colSpan={TEMPLATE_TABLE_HEADERS.length}
-              sx={{ padding: 0 }}
-            >
-              <TableFooterPagination
-                count={templates.data?.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                handleChangePage={handleChangePage}
-                handleChangeRowsPerPage={handleChangeRowsPerPage}
-              />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+                      <Link
+                        component="a"
+                        href={entityHrefLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'none',
+                          },
+                        }}
+                      >
+                        {name ?? '--'}
+                      </Link>
+                    </TableCell>
+                    <TableCell sx={{ width: '50%' }}>
+                      {Number(template.count).toLocaleString('en-US') ?? '--'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell
+                colSpan={TEMPLATE_TABLE_HEADERS.length}
+                sx={{ padding: 0 }}
+              >
+                <TableFooterPagination
+                  count={templates.data?.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  handleChangePage={handleChangePage}
+                  handleChangeRowsPerPage={handleChangeRowsPerPage}
+                />
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </Box>
     </CardWrapper>
   );
 };
