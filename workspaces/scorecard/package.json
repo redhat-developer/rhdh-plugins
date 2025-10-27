@@ -1,6 +1,6 @@
 {
   "name": "@internal/scorecard",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": "18 || 20 || 22"
@@ -44,7 +44,7 @@
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.15.1",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.56.0",
+    "@playwright/test": "^1.56.0",
     "@spotify/prettier-config": "^15.0.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -53,9 +53,7 @@
   },
   "resolutions": {
     "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "@backstage/plugin-catalog-backend": "2.0.0",
-    "@backstage/plugin-scaffolder-backend": "1.33.0"
+    "@types/react-dom": "^18"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

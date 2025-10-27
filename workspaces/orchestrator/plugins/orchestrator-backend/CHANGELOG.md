@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 8.3.0
+
+### Minor Changes
+
+- fceb33e: Removal of deprecated package @backstage/backend-tasks
+
 ## 8.2.0
 
 ### Minor Changes
