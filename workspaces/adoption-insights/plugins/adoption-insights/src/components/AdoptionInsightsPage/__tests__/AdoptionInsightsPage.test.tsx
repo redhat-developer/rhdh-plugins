@@ -118,6 +118,8 @@ describe('AdoptionInsightsPage', () => {
   const mockTheme = {
     breakpoints: {
       down: jest.fn(),
+      up: jest.fn(),
+      between: jest.fn(),
     },
   };
 
