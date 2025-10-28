@@ -17,6 +17,7 @@
 import type { ComponentType } from 'react';
 
 import type { Tool } from '@backstage/plugin-home';
+import type { CardLayout, CardSettings } from '@backstage/plugin-home-react';
 
 /**
  * @public
@@ -44,10 +45,26 @@ export interface Layout {
  * @public
  */
 export interface HomePageCardMountPointConfig {
-  priority?: number;
-  layouts?: Record<Breakpoint, Layout>;
+  /**
+   * This is the internal name that solves duplication issues when using the same
+   * component with different configurations.
+   * This is used as reference identifier (name) when calling `createCardExtension`
+   * for the `CustomHomepageGrid` component from the home plugin.
+   */
+  name?: string;
   title?: string;
+  titleKey?: string;
   description?: string;
+  descriptionKey?: string;
+
+  cardLayout?: CardLayout;
+  settings?: CardSettings;
+
+  priority?: number;
+  /**
+   * Setting a layout configuration enables this card by default.
+   */
+  layouts?: Record<Breakpoint, Layout>;
 }
 
 /**
@@ -55,6 +72,12 @@ export interface HomePageCardMountPointConfig {
  */
 export interface HomePageCardMountPoint {
   Component: ComponentType;
+
+  // Untested
+  Actions?: ComponentType;
+  // Untested
+  Settings?: ComponentType;
+
   config?: HomePageCardMountPointConfig & {
     props?: Record<string, any>;
   };

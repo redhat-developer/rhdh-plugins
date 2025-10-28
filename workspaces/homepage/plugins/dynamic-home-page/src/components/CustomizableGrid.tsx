@@ -14,181 +14,136 @@
  * limitations under the License.
  */
 
-// This complete read-only home page grid picks up the idea and styles from
-// https://github.com/backstage/backstage/blob/master/plugins/home
-// Esp. from the CustomHomepageGrid component:
-// https://github.com/backstage/backstage/blob/master/plugins/home/src/components/CustomHomepage/CustomHomepageGrid.tsx
-// but without the drag and drop functionality.
-
-import type { ComponentType } from 'react';
-
+import type { ReactElement } from 'react';
 import { useMemo } from 'react';
-import { Layout } from 'react-grid-layout';
+
+import {
+  CustomHomepageGrid,
+  LayoutConfiguration,
+} from '@backstage/plugin-home';
+import {
+  ComponentParts,
+  createCardExtension,
+} from '@backstage/plugin-home-react';
+
 import GlobalStyles from '@mui/material/GlobalStyles';
 import { useTheme } from '@mui/material/styles';
-
-import { ErrorBoundary } from '@backstage/core-components';
-import { CustomHomepageGrid } from '@backstage/plugin-home';
-import { attachComponentData } from '@backstage/core-plugin-api';
-
-import { makeStyles } from 'tss-react/mui';
 
 // Removes the doubled scrollbar
 import 'react-grid-layout/css/styles.css';
 
 import { HomePageCardMountPoint } from '../types';
-
-interface Card {
-  id: string;
-  Component: ComponentType<any>;
-  props?: Record<string, any>;
-  layouts: Record<string, Layout>;
-}
-
-const useStyles = makeStyles()({
-  // Make card content scrollable (so that cards don't overlap)
-  cardWrapper: {
-    '& > div[class*="MuiCard-root"]': {
-      width: '100%',
-      height: '100%',
-    },
-    '& div[class*="MuiCardContent-root"]': {
-      overflow: 'auto',
-    },
-  },
-});
+import { dynamicHomePagePlugin } from '../plugin';
+import { useTranslation } from '../hooks/useTranslation';
+import {
+  isCardADefaultConfiguration,
+  getCardName,
+  getCardTitle,
+  getCardDescription,
+} from '../utils/customizable-cards';
 
 /**
  * @public
  */
 export interface CustomizableGridProps {
-  mountPoints: HomePageCardMountPoint[];
-  defaultMountPoints?: HomePageCardMountPoint[]; // For config prop - only default cards
-  breakpoints?: Record<string, number>;
-  cols?: Record<string, number>;
+  cardMountPoints: HomePageCardMountPoint[];
 }
 
 /**
  * @public
  */
-export const CustomizableGrid = (props: CustomizableGridProps) => {
-  const { classes } = useStyles();
+export const CustomizableGrid = ({
+  cardMountPoints,
+}: CustomizableGridProps) => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
-  const cards = useMemo<Card[]>(() => {
-    if (!props.mountPoints || !Array.isArray(props.mountPoints)) {
-      return [];
-    }
+  const { children, config } = useMemo(() => {
+    // Children contains the additional / available cards a user can add.
+    // Maps the card name to the actual card component.
+    // Contains also the title to allow sorting before rendering.
+    const childDictionary: Record<
+      string,
+      { child: ReactElement; title: string | undefined }
+    > = {};
 
-    return props.mountPoints.map<Card>((mountPoint, index) => {
-      const id = (index + 1).toString();
-      const layouts: Record<string, Layout> = {};
+    // Config contains the default layout of the homepage
+    const defaultConfig: LayoutConfiguration[] = [];
 
-      // Apply config-based metadata to component if provided (skip if already exists)
-      if (mountPoint.config?.title) {
-        try {
-          attachComponentData(
-            mountPoint.Component,
-            'title',
-            mountPoint.config.title,
-          );
-        } catch (error) {
-          // Ignore duplicate metadata errors - component already has title
-        }
+    cardMountPoints.forEach(cardMountPoint => {
+      if (!cardMountPoint.Component) {
+        return;
       }
-      if (mountPoint.config?.description) {
-        try {
-          attachComponentData(
-            mountPoint.Component,
-            'description',
-            mountPoint.config.description,
-          );
-        } catch (error) {
-          // Ignore duplicate metadata errors - component already has description
-        }
+      const name = getCardName(cardMountPoint);
+      if (!name) {
+        return;
       }
+      const title = getCardTitle(t, cardMountPoint);
+      const description = getCardDescription(t, cardMountPoint);
 
-      if (mountPoint.config?.layouts) {
-        for (const [breakpoint, layout] of Object.entries(
-          mountPoint.config.layouts,
-        )) {
-          layouts[breakpoint] = {
-            i: id,
-            x: layout.x ?? 0,
-            y: layout.y ?? 0,
-            w: layout.w ?? 12,
-            h: layout.h ?? 4,
-            isDraggable: true,
-            isResizable: true,
-          };
-        }
-      } else {
-        // Default layout for cards without a layout configuration
-        ['xl', 'lg', 'md', 'sm', 'xs', 'xxs'].forEach(breakpoint => {
-          layouts[breakpoint] = {
-            i: id,
-            x: 0,
-            y: 0,
-            w: 12,
-            h: 4,
-            isDraggable: true,
-            isResizable: true,
-          };
+      const automaticallyWrapInInfoCard = false;
+
+      const componentParts: ComponentParts = {
+        Content: props => (
+          <cardMountPoint.Component
+            {...cardMountPoint.config?.props}
+            {...props}
+          />
+        ),
+        // Untested and unsupported for now!
+        Actions: cardMountPoint.Actions as () => JSX.Element,
+        // Untested and unsupported for now!
+        Settings: cardMountPoint.Settings as () => JSX.Element,
+        // This is a workaround to NOT automatically wrap in an InfoCard
+        ContextProvider: automaticallyWrapInInfoCard
+          ? undefined
+          : props => (
+              <cardMountPoint.Component
+                {...cardMountPoint.config?.props}
+                {...props}
+              />
+            ),
+      };
+
+      const cardExtension = createCardExtension({
+        name,
+        title,
+        description,
+        layout: cardMountPoint.config?.cardLayout,
+        settings: cardMountPoint.config?.settings,
+        components: () => Promise.resolve(componentParts),
+      });
+
+      const Card = dynamicHomePagePlugin.provide(cardExtension);
+
+      childDictionary[name] = {
+        child: <Card />,
+        title,
+      };
+
+      if (isCardADefaultConfiguration(cardMountPoint)) {
+        const layout = cardMountPoint.config?.layouts?.xl || {};
+
+        defaultConfig.push({
+          component: name,
+          x: layout.x ?? 0,
+          y: layout.y ?? 0,
+          width: layout.w ?? 12,
+          height: layout.h ?? 4,
+          movable: true,
+          deletable: true,
+          resizable: true,
         });
       }
-
-      return {
-        id,
-        Component: mountPoint.Component,
-        props: mountPoint.config?.props,
-        layouts,
-      };
     });
-  }, [props.mountPoints]);
 
-  const children = useMemo(() => {
-    return cards.map(card => (
-      <div
-        key={card.id}
-        data-cardid={card.id}
-        data-testid={`home-page card ${card.id}`}
-        data-layout={JSON.stringify(card.layouts)}
-        className={classes.cardWrapper}
-      >
-        <ErrorBoundary>
-          <card.Component {...card.props} />
-        </ErrorBoundary>
-      </div>
-    ));
-  }, [cards, classes.cardWrapper]);
-
-  // Create default layout configuration for "restore defaults" functionality
-  // Use only default mount points for restore defaults, but all mount points for "Add widget" dialog
-  const defaultConfig = useMemo(() => {
-    const configMountPoints = props.defaultMountPoints || []; // Use only default cards for restore
-
-    if (!configMountPoints || configMountPoints.length === 0) {
-      return [];
-    }
-
-    return configMountPoints.map((mountPoint, index) => {
-      const layout = mountPoint.config?.layouts?.xl || {};
-
-      return {
-        component: (
-          <mountPoint.Component {...(mountPoint.config?.props || {})} />
-        ),
-        x: layout.x ?? 0,
-        y: layout.y ?? index * 5,
-        width: layout.w ?? 12,
-        height: layout.h ?? 4,
-        movable: true,
-        resizable: true,
-        draggable: true,
-        deletable: true,
-      };
-    });
-  }, [props.defaultMountPoints]);
+    return {
+      children: Object.values(childDictionary)
+        .sort((a, b) => a.title && b.title ? a.title.localeCompare(b.title) : 0)
+        .map(e => e.child),
+      config: defaultConfig,
+    };
+  }, [cardMountPoints, t]);
 
   return (
     <>
@@ -203,9 +158,10 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
         }}
       />
       <CustomHomepageGrid
-        config={defaultConfig}
+        config={config}
         preventCollision={false}
         compactType="vertical"
+        style={{ margin: '-10px' }}
       >
         {children}
       </CustomHomepageGrid>

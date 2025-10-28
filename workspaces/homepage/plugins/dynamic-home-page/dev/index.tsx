@@ -17,7 +17,8 @@
 import type { ComponentType } from 'react';
 
 import { createDevApp, DevAppPageOptions } from '@backstage/dev-utils';
-import { TestApiProvider } from '@backstage/test-utils';
+import { mockApis, TestApiProvider } from '@backstage/test-utils';
+import { configApiRef } from '@backstage/core-plugin-api';
 import {
   CatalogEntityPage,
   CatalogIndexPage,
@@ -47,7 +48,6 @@ import {
   dynamicHomePagePlugin,
   CatalogStarredEntitiesCard,
   DynamicHomePage,
-  DynamicCustomizableHomePage,
   DynamicHomePageProps,
   FeaturedDocsCard,
   Headline,
@@ -73,19 +73,250 @@ const defaultMountPoints: HomePageCardMountPoint[] = [
   {
     Component: OnboardingSection,
     config: {
+      name: 'OnboardingSection',
+      title: 'Onboarding section',
       layouts: defaultLayouts.onboarding,
     },
   },
   {
     Component: EntitySection,
     config: {
+      name: 'EntitySection',
+      title: 'Entity section',
       layouts: defaultLayouts.entity,
     },
   },
   {
     Component: TemplateSection,
     config: {
+      name: 'TemplateSection',
+      title: 'Template section',
       layouts: defaultLayouts.template,
+    },
+  },
+  {
+    Component: SearchBar,
+    config: {
+      name: 'Search',
+      title: 'Search',
+    },
+  },
+  {
+    Component: QuickAccessCard,
+    config: {
+      name: 'QuickAccessCard',
+      title: 'Quick access card',
+    },
+  },
+  {
+    Component: Headline,
+    config: {
+      name: 'Headline',
+      title: 'Headline',
+    },
+  },
+  {
+    Component: Markdown,
+    config: {
+      name: 'Markdown',
+      title: 'Markdown',
+    },
+  },
+  {
+    Component: MarkdownCard,
+    config: {
+      name: 'MarkdownCard',
+      title: 'Markdown card',
+    },
+  },
+  {
+    Component: Placeholder,
+    config: {
+      name: 'Placeholder',
+      title: 'Placeholder',
+    },
+  },
+  {
+    Component: CatalogStarredEntitiesCard,
+    config: {
+      name: 'CatalogStarredEntitiesCard',
+      title: 'Catalog starred entities card',
+    },
+  },
+  {
+    Component: RecentlyVisitedCard as ComponentType,
+    config: {
+      name: 'RecentlyVisitedCard',
+      title: 'Recently visited card',
+    },
+  },
+  {
+    Component: TopVisitedCard as ComponentType,
+    config: {
+      name: 'TopVisitedCard',
+      title: 'Top visited card',
+    },
+  },
+  {
+    Component: FeaturedDocsCard as ComponentType,
+    config: {
+      name: 'FeaturedDocsCard',
+      title: 'Featured docs card',
+    },
+  },
+  {
+    Component: JokeCard,
+    config: {
+      name: 'JokeCard',
+      title: 'Joke card',
+    },
+  },
+];
+
+const customizedMountPoints: HomePageCardMountPoint[] = [
+  ...defaultMountPoints,
+  {
+    Component: Headline,
+    config: {
+      priority: 202,
+      props: {
+        align: 'left',
+        title: 'Left title',
+      },
+      layouts: {
+        xl: { w: 12, h: 1 },
+        lg: { w: 12, h: 1 },
+        md: { w: 12, h: 1 },
+        sm: { w: 12, h: 1 },
+        xs: { w: 12, h: 1 },
+        xxs: { w: 12, h: 1 },
+      },
+      cardLayout: {
+        width: {
+          minColumns: 4,
+          maxColumns: 12,
+          defaultColumns: 12,
+        },
+        height: {
+          minRows: 1,
+          maxRows: 1,
+          defaultRows: 1,
+        },
+      },
+    },
+  },
+  {
+    Component: Headline,
+    config: {
+      priority: 201,
+      props: {
+        align: 'center',
+        title: 'Centered title',
+      },
+      layouts: {
+        xl: { w: 12, h: 1 },
+        lg: { w: 12, h: 1 },
+        md: { w: 12, h: 1 },
+        sm: { w: 12, h: 1 },
+        xs: { w: 12, h: 1 },
+        xxs: { w: 12, h: 1 },
+      },
+      cardLayout: {
+        width: {
+          minColumns: 4,
+          maxColumns: 12,
+          defaultColumns: 12,
+        },
+        height: {
+          minRows: 1,
+          maxRows: 1,
+          defaultRows: 1,
+        },
+      },
+    },
+  },
+  {
+    Component: Headline,
+    config: {
+      priority: 200,
+      props: {
+        align: 'right',
+        title: 'Right title',
+      },
+      layouts: {
+        xl: { w: 12, h: 1 },
+        lg: { w: 12, h: 1 },
+        md: { w: 12, h: 1 },
+        sm: { w: 12, h: 1 },
+        xs: { w: 12, h: 1 },
+        xxs: { w: 12, h: 1 },
+      },
+      cardLayout: {
+        width: {
+          minColumns: 4,
+          maxColumns: 12,
+          defaultColumns: 12,
+        },
+        height: {
+          minRows: 1,
+          maxRows: 1,
+          defaultRows: 1,
+        },
+      },
+    },
+  },
+  {
+    Component: Placeholder,
+    config: {
+      priority: 102,
+      props: {
+        showBorder: true,
+        debugContent: '1x1',
+      },
+      layouts: {
+        xl: { w: 1, h: 1 },
+        lg: { w: 1, h: 1 },
+        md: { w: 1, h: 1 },
+        sm: { w: 1, h: 1 },
+        xs: { w: 1, h: 1 },
+        xxs: { w: 1, h: 1 },
+      },
+    },
+  },
+  {
+    Component: Placeholder,
+    config: {
+      priority: 101,
+      props: {
+        showBorder: true,
+        debugContent: '1x1',
+      },
+      layouts: {
+        xl: { w: 1, h: 1, x: 1 },
+        lg: { w: 1, h: 1, x: 1 },
+        md: { w: 1, h: 1, x: 1 },
+        sm: { w: 1, h: 1, x: 1 },
+        xs: { w: 1, h: 1, x: 1 },
+        xxs: { w: 1, h: 1, x: 1 },
+      },
+    },
+  },
+  {
+    Component: Placeholder,
+    config: {
+      priority: 100,
+      props: {
+        showBorder: true,
+        debugContent: '1x1',
+      },
+      layouts: {
+        xl: { w: 1, h: 1 },
+        lg: { w: 1, h: 1 },
+        md: { w: 1, h: 1 },
+        sm: { w: 1, h: 1 },
+        xs: { w: 1, h: 1 },
+        xxs: { w: 1, h: 1 },
+      },
     },
   },
 ];
@@ -216,6 +447,16 @@ const createPage = ({
   customizable?: boolean;
 }): DevAppPageOptions => {
   const backstageApis = [
+    [
+      configApiRef,
+      mockApis.config({
+        data: {
+          homepage: {
+            customizable: customizable ?? false,
+          },
+        },
+      }),
+    ],
     [searchApiRef, new MockSearchApi()],
     [quickAccessApiRef, new MockQuickAccessApi()],
     [catalogApiRef, mockCatalogApi],
@@ -239,14 +480,10 @@ const createPage = ({
   };
 
   const pageContent = (
-    <TestApiProvider apis={backstageApis}>
+    <TestApiProvider key={navTitle} apis={backstageApis}>
       <ScalprumContext.Provider value={scalprumState}>
         <div style={{ width: pageWidth }}>
-          {customizable ? (
-            <DynamicCustomizableHomePage title={pageTitle} {...props} />
-          ) : (
-            <DynamicHomePage title={pageTitle} {...props} />
-          )}
+          <DynamicHomePage title={pageTitle} {...props} />
         </div>
       </ScalprumContext.Provider>
     </TestApiProvider>
@@ -296,7 +533,7 @@ createDevApp()
     createPage({
       navTitle: 'Customizable',
       pageTitle: 'Customizable Homepage',
-      mountPoints: defaultMountPoints,
+      mountPoints: customizedMountPoints,
       customizable: true,
     }),
   )

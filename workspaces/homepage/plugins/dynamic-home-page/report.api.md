@@ -5,6 +5,8 @@
 ```ts
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import type { CardLayout } from '@backstage/plugin-home-react';
+import type { CardSettings } from '@backstage/plugin-home-react';
 import { ClockConfig } from '@backstage/plugin-home';
 import type { ComponentType } from 'react';
 import { FeaturedDocsCardProps } from '@backstage/plugin-home';
@@ -149,23 +151,7 @@ export const defaultLayouts: {
 };
 
 // @public
-export const DynamicCustomizableHomePage: ComponentType<DynamicCustomizableHomePageProps>;
-
-// @public
-export interface DynamicCustomizableHomePageProps {
-    // (undocumented)
-    localClock?: LocalClockProps;
-    // (undocumented)
-    pageTitle?: string;
-    // (undocumented)
-    personalizedTitle?: string;
-    // (undocumented)
-    subtitle?: string;
-    // (undocumented)
-    title?: string;
-    // (undocumented)
-    worldClocks?: ClockConfig[];
-}
+export const DynamicCustomizableHomePage: ComponentType<DynamicHomePageProps>;
 
 // @public
 export const DynamicHomePage: ComponentType<DynamicHomePageProps>;
@@ -211,6 +197,8 @@ export interface HeadlineProps {
 // @public (undocumented)
 export interface HomePageCardMountPoint {
     // (undocumented)
+    Actions?: ComponentType;
+    // (undocumented)
     Component: ComponentType;
     // (undocumented)
     config?: HomePageCardMountPointConfig & {
@@ -218,63 +206,73 @@ export interface HomePageCardMountPoint {
     };
     // (undocumented)
     enabled?: boolean;
+    // (undocumented)
+    Settings?: ComponentType;
 }
 
 // @public (undocumented)
 export interface HomePageCardMountPointConfig {
     // (undocumented)
+    cardLayout?: CardLayout;
+    // (undocumented)
     description?: string;
     // (undocumented)
+    descriptionKey?: string;
     layouts?: Record<Breakpoint, Layout>;
+    name?: string;
     // (undocumented)
     priority?: number;
     // (undocumented)
+    settings?: CardSettings;
+    // (undocumented)
     title?: string;
+    // (undocumented)
+    titleKey?: string;
 }
 
 // @public
 export const homepageTranslationRef: TranslationRef<"plugin.homepage", {
-readonly "search.placeholder": string;
 readonly "header.local": string;
 readonly "header.welcome": string;
 readonly "header.welcomePersonalized": string;
-readonly "templates.error": string;
-readonly "templates.title": string;
-readonly "templates.empty": string;
-readonly "templates.register": string;
-readonly "templates.fetchError": string;
-readonly "templates.emptyDescription": string;
-readonly "templates.viewAll": string;
-readonly "entities.error": string;
-readonly "entities.title": string;
-readonly "entities.close": string;
-readonly "entities.description": string;
-readonly "entities.empty": string;
-readonly "entities.register": string;
-readonly "entities.fetchError": string;
-readonly "entities.emptyDescription": string;
-readonly "entities.viewAll": string;
+readonly "search.placeholder": string;
 readonly "homePage.empty": string;
-readonly "quickAccess.error": string;
 readonly "quickAccess.title": string;
+readonly "quickAccess.error": string;
 readonly "quickAccess.fetchError": string;
 readonly "featuredDocs.learnMore": string;
-readonly "onboarding.guest": string;
+readonly "templates.title": string;
+readonly "templates.error": string;
+readonly "templates.empty": string;
+readonly "templates.fetchError": string;
+readonly "templates.emptyDescription": string;
+readonly "templates.register": string;
+readonly "templates.viewAll": string;
 readonly "onboarding.greeting.goodMorning": string;
 readonly "onboarding.greeting.goodAfternoon": string;
 readonly "onboarding.greeting.goodEvening": string;
+readonly "onboarding.guest": string;
 readonly "onboarding.getStarted.title": string;
-readonly "onboarding.getStarted.ariaLabel": string;
 readonly "onboarding.getStarted.description": string;
 readonly "onboarding.getStarted.buttonText": string;
+readonly "onboarding.getStarted.ariaLabel": string;
 readonly "onboarding.explore.title": string;
-readonly "onboarding.explore.ariaLabel": string;
 readonly "onboarding.explore.description": string;
 readonly "onboarding.explore.buttonText": string;
+readonly "onboarding.explore.ariaLabel": string;
 readonly "onboarding.learn.title": string;
-readonly "onboarding.learn.ariaLabel": string;
 readonly "onboarding.learn.description": string;
 readonly "onboarding.learn.buttonText": string;
+readonly "onboarding.learn.ariaLabel": string;
+readonly "entities.title": string;
+readonly "entities.description": string;
+readonly "entities.error": string;
+readonly "entities.close": string;
+readonly "entities.empty": string;
+readonly "entities.fetchError": string;
+readonly "entities.emptyDescription": string;
+readonly "entities.register": string;
+readonly "entities.viewAll": string;
 }>;
 
 // @public

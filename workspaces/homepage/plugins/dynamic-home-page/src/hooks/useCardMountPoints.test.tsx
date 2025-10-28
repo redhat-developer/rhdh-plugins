@@ -14,19 +14,30 @@
  * limitations under the License.
  */
 
+import { createElement, type ReactNode } from 'react';
 import { renderHook } from '@testing-library/react';
 import { ScalprumContext } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
-import { createElement, type ReactNode } from 'react';
-import { useDynamicHomePageCards } from './useDynamicHomePageCards';
+
 import { HomePageCardMountPoint } from '../types';
+import { useCardMountPoints } from './useCardMountPoints';
 
 // Mock component for testing
 const MockComponent = () => {
   return createElement('div', null, 'Mock Component');
 };
 
-describe('useDynamicHomePageCards', () => {
+describe('useCardMountPoints', () => {
+  const availableCards: HomePageCardMountPoint[] = [
+    {
+      Component: MockComponent,
+      config: {
+        name: '',
+        title: 'Available Card 1',
+      },
+    },
+  ];
+
   const defaultCards: HomePageCardMountPoint[] = [
     {
       Component: MockComponent,
@@ -56,22 +67,6 @@ describe('useDynamicHomePageCards', () => {
     },
   ];
 
-  const additionalCards: HomePageCardMountPoint[] = [
-    {
-      Component: MockComponent,
-      config: {
-        layouts: {
-          xl: { w: 6, h: 2 },
-          lg: { w: 6, h: 2 },
-          md: { w: 6, h: 2 },
-          sm: { w: 6, h: 2 },
-          xs: { w: 6, h: 2 },
-          xxs: { w: 6, h: 2 },
-        },
-      },
-    },
-  ];
-
   it('should return empty arrays when no scalprum state is provided', () => {
     const wrapper = ({ children }: { children: ReactNode }) =>
       createElement(
@@ -86,14 +81,12 @@ describe('useDynamicHomePageCards', () => {
         children,
       );
 
-    const { result } = renderHook(() => useDynamicHomePageCards(), { wrapper });
+    const { result } = renderHook(() => useCardMountPoints(), { wrapper });
 
-    expect(result.current.defaultCards).toEqual([]);
-    expect(result.current.additionalCards).toEqual([]);
-    expect(result.current.allCards).toEqual([]);
+    expect(result.current).toEqual([]);
   });
 
-  it('should return default cards only when no additional cards are provided', () => {
+  it('should return default cards only when no available cards are provided', () => {
     const scalprumState = {
       initialized: true,
       config: {},
@@ -114,14 +107,12 @@ describe('useDynamicHomePageCards', () => {
         children,
       );
 
-    const { result } = renderHook(() => useDynamicHomePageCards(), { wrapper });
+    const { result } = renderHook(() => useCardMountPoints(), { wrapper });
 
-    expect(result.current.defaultCards).toEqual(defaultCards);
-    expect(result.current.additionalCards).toEqual([]);
-    expect(result.current.allCards).toEqual(defaultCards);
+    expect(result.current).toEqual(defaultCards);
   });
 
-  it('should return both default and additional cards', () => {
+  it('should return both default and available cards', () => {
     const scalprumState = {
       initialized: true,
       config: {},
@@ -130,7 +121,7 @@ describe('useDynamicHomePageCards', () => {
         dynamicRootConfig: {
           mountPoints: {
             'home.page/cards': defaultCards,
-            'home.page/widgets': additionalCards,
+            'home.page/widgets': availableCards,
           },
         },
       },
@@ -143,14 +134,9 @@ describe('useDynamicHomePageCards', () => {
         children,
       );
 
-    const { result } = renderHook(() => useDynamicHomePageCards(), { wrapper });
+    const { result } = renderHook(() => useCardMountPoints(), { wrapper });
 
-    expect(result.current.defaultCards).toEqual(defaultCards);
-    expect(result.current.additionalCards).toEqual(additionalCards);
-    expect(result.current.allCards).toEqual([
-      ...defaultCards,
-      ...additionalCards,
-    ]);
+    expect(result.current).toEqual(defaultCards);
   });
 
   it('should handle non-array mount points gracefully', () => {
@@ -175,10 +161,8 @@ describe('useDynamicHomePageCards', () => {
         children,
       );
 
-    const { result } = renderHook(() => useDynamicHomePageCards(), { wrapper });
+    const { result } = renderHook(() => useCardMountPoints(), { wrapper });
 
-    expect(result.current.defaultCards).toEqual([]);
-    expect(result.current.additionalCards).toEqual([]);
-    expect(result.current.allCards).toEqual([]);
+    expect(result.current).toEqual([]);
   });
 });
