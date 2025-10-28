@@ -135,7 +135,7 @@ describe('AddRepositoriesForm', () => {
           ]}
         >
           <QueryClientProvider client={queryClient}>
-            <AddRepositories error={null} />
+            <AddRepositories />
           </QueryClientProvider>
         </TestApiProvider>
       </Router>,
@@ -148,7 +148,7 @@ describe('AddRepositoriesForm', () => {
     expect(screen.queryByTestId('preview-pullrequest-sidebar')).toBeFalsy();
   });
 
-  it('should show any load errors', async () => {
+  it('should show the drawer when openDrawer is true', async () => {
     (useDrawer as jest.Mock).mockReturnValue({
       openDrawer: true,
       drawerData: mockGetRepositories.repositories[0],
@@ -174,12 +174,11 @@ describe('AddRepositoriesForm', () => {
           ]}
         >
           <QueryClientProvider client={queryClient}>
-            <AddRepositories error={{ err: 'error occurred' }} />
+            <AddRepositories />
           </QueryClientProvider>
         </TestApiProvider>
       </Router>,
     );
-    expect(screen.getByText('error occurred')).toBeTruthy();
     expect(
       screen.getByText('Selected repositories (0)', { exact: false }),
     ).toBeInTheDocument();

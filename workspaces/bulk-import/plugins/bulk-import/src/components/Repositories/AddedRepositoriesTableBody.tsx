@@ -109,7 +109,11 @@ export const AddedRepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            {t('repositories.noRecordsFound')}
+            {t(
+              gitlabConfigured
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         </td>
       </tr>

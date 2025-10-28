@@ -43,7 +43,7 @@ export const getRepositoriesColumnHeader = (
       },
   {
     id: 'cataloginfoyaml',
-    title: t('table.headers.catalogInfoYaml'),
+    title: t('table.headers.status'),
     field: 'catalogInfoYaml.status',
   },
 ];

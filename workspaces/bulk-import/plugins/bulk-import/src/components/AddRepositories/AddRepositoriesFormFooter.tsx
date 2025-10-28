@@ -23,33 +23,19 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import { useGitlabConfigured } from '../../hooks';
-import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
-import {
-  AddRepositoriesFormValues,
-  ApprovalTool,
-  ImportFlow,
-} from '../../types';
+import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
 
 export const AddRepositoriesFormFooter = () => {
   const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
 
-  const importFlow = useImportFlow();
-  const gitlabConfigured = useGitlabConfigured();
-
   const isPluralRepositories =
     Object.keys(values.repositories || []).length > 1;
 
-  const getGitSubmitTitle = (isGitlabConfigured: boolean) => {
-    if (isGitlabConfigured || importFlow === ImportFlow.Scaffolder) {
-      return t('common.import');
-    }
-    return isPluralRepositories
-      ? t('forms.footer.createPullRequests')
-      : t('forms.footer.createPullRequest');
+  const getGitSubmitTitle = () => {
+    return t('common.import');
   };
 
   const label = {
@@ -64,16 +50,20 @@ export const AddRepositoriesFormFooter = () => {
       toolTipTitle: t('forms.footer.importTooltip'),
     },
     [ApprovalTool.Git]: {
-      submitTitle: getGitSubmitTitle(gitlabConfigured),
-      toolTipTitle:
-        gitlabConfigured || importFlow === ImportFlow.Scaffolder
-          ? t('forms.footer.importTooltip')
-          : t('forms.footer.pullRequestTooltip'),
+      submitTitle: getGitSubmitTitle(),
+      toolTipTitle: t('forms.footer.importTooltip'),
     },
   };
 
   const disableCreate =
     !values.repositories || Object.values(values.repositories).length === 0;
+
+  const getTooltipTitle = () => {
+    if (disableCreate) {
+      return t('forms.footer.selectRepositoryTooltip');
+    }
+    return label[values.approvalTool]?.toolTipTitle;
+  };
 
   const submitButton = (
     <Button
@@ -98,8 +88,8 @@ export const AddRepositoriesFormFooter = () => {
         justifyContent: 'left',
         position: 'fixed',
         bottom: 0,
-        pt: 3,
-        pb: 3,
+        pt: 2,
+        pb: 4,
         pl: 3,
         backgroundColor: theme =>
           theme.palette.mode === 'light'
@@ -114,7 +104,7 @@ export const AddRepositoriesFormFooter = () => {
     >
       {disableCreate ? (
         <Tooltip
-          title={label[values.approvalTool]?.toolTipTitle}
+          title={getTooltipTitle()}
           sx={{
             maxWidth: 'none',
           }}

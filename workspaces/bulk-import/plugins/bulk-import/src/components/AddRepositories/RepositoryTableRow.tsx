@@ -48,11 +48,13 @@ export const RepositoryTableRow = ({
   isItemSelected,
   data,
   isDrawer = false,
+  refetchTrigger,
 }: {
   handleClick: (_event: MouseEvent, id: AddRepositoryData) => void;
   isItemSelected: boolean;
   data: AddRepositoryData;
   isDrawer?: boolean;
+  refetchTrigger?: number;
 }) => {
   const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
@@ -66,7 +68,7 @@ export const RepositoryTableRow = ({
       return result;
     }
     return null;
-  }, [data.repoUrl]);
+  }, [data.repoUrl, refetchTrigger]);
 
   return (
     <TableRow
@@ -129,6 +131,10 @@ export const RepositoryTableRow = ({
           isItemSelected={isItemSelected}
           isDrawer={isDrawer}
           taskId={(value as ImportJobStatus)?.task?.taskId}
+          prUrl={
+            (value as ImportJobStatus)?.github?.pullRequest?.url ||
+            (value as ImportJobStatus)?.gitlab?.pullRequest?.url
+          }
         />
       </TableCell>
     </TableRow>

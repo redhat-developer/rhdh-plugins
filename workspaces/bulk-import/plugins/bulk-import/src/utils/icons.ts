@@ -23,6 +23,7 @@ import editPullRequestBlackImg from '../images/EditPullRequest_Black.svg';
 import editPullRequestWhiteImg from '../images/EditPullRequest_White.svg';
 import generateCatalogInfoBlackImg from '../images/GenerateCatalogInfo_Black.svg';
 import generateCatalogInfoWhiteImg from '../images/GenerateCatalogInfo_White.svg';
+import missingConfigurationImg from '../images/missing-configuration.png';
 import trackStatusBlackImg from '../images/TrackStatus_Black.svg';
 import trackStatusWhiteImg from '../images/TrackStatus_White.svg';
 
@@ -37,7 +38,8 @@ const logos = new Map<string, any>()
   .set('icon-generate-cataloginfo-white', generateCatalogInfoWhiteImg)
   .set('icon-track-status-white', trackStatusWhiteImg)
   .set('icon-approval-tool-white', approvalToolWhiteImg)
-  .set('icon-bulk-import-white', bulkImportWhiteImg);
+  .set('icon-bulk-import-white', bulkImportWhiteImg)
+  .set('missing-configuration', missingConfigurationImg);
 
 export const getImageForIconClass = (iconClass: string): string => {
   return logos.get(iconClass);

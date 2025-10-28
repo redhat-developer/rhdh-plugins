@@ -53,6 +53,7 @@ export const RepositoriesTable = ({
   drawerOrganization,
   isApprovalToolGitlab = false,
   updateSelectedReposInDrawer,
+  refetchTrigger,
 }: {
   searchString: string;
   page?: number;
@@ -61,6 +62,7 @@ export const RepositoriesTable = ({
   drawerOrganization?: string;
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
+  refetchTrigger?: number;
 }) => {
   const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
@@ -98,6 +100,13 @@ export const RepositoriesTable = ({
       setSelected(values.repositories);
     }
   }, [drawerOrganization, values?.repositories]);
+
+  // Sync local selected state with form values
+  useEffect(() => {
+    if (!drawerOrganization) {
+      setSelected(values.repositories || {});
+    }
+  }, [values.repositories, drawerOrganization]);
 
   useEffect(() => {
     if (showOrganizations) {
@@ -323,6 +332,7 @@ export const RepositoriesTable = ({
             isDrawer={!!drawerOrganization}
             isApprovalToolGitlab={isApprovalToolGitlab}
             showOrganizations={showOrganizations}
+            refetchTrigger={refetchTrigger}
           />
         </Table>
         {!isOpen && tableData?.length > 0 && (

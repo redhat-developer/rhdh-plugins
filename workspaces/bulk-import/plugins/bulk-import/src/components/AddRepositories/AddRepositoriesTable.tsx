@@ -26,13 +26,18 @@ import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   ApprovalTool as ApprovalToolEnum,
-  RepositorySelection,
 } from '../../types';
 import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
 
-export const AddRepositoriesTable = ({ title }: { title?: string }) => {
+export const AddRepositoriesTable = ({
+  title,
+  refetchTrigger,
+}: {
+  title?: string;
+  refetchTrigger?: number;
+}) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -54,13 +59,12 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
     [searchInput],
   );
 
-  const { numberOfApprovalTools, githubConfigured } =
-    useNumberOfApprovalTools();
+  const { numberOfApprovalTools } = useNumberOfApprovalTools();
 
   return (
     <Box sx={{ width: '100%' }}>
       <Paper style={{ width: '100%' }}>
-        {numberOfApprovalTools > 1 && githubConfigured && (
+        {numberOfApprovalTools > 1 && (
           <ApprovalTool
             approvalTool={values.approvalTool}
             setFieldValue={setFieldValue}
@@ -72,25 +76,14 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
             `${t('addRepositories.selectedLabel')} ${isApprovalToolGitlab ? t('addRepositories.selectedProjects') : t('addRepositories.selectedRepositories')}`
           }
           setSearchString={setSearchInput}
-          onPageChange={setPage}
-          isApprovalToolGitlab={isApprovalToolGitlab}
         />
-        {values.repositoryType === RepositorySelection.Repository ? (
-          <RepositoriesTable
-            searchString={searchString}
-            page={page}
-            isApprovalToolGitlab={isApprovalToolGitlab}
-            setPage={setPage}
-          />
-        ) : (
-          <RepositoriesTable
-            searchString={searchString}
-            page={page}
-            isApprovalToolGitlab={isApprovalToolGitlab}
-            setPage={setPage}
-            showOrganizations
-          />
-        )}
+        <RepositoriesTable
+          searchString={searchString}
+          page={page}
+          isApprovalToolGitlab={isApprovalToolGitlab}
+          setPage={setPage}
+          refetchTrigger={refetchTrigger}
+        />
       </Paper>
     </Box>
   );

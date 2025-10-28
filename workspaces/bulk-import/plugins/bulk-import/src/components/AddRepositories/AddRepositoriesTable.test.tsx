@@ -29,11 +29,7 @@ import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useRepositories } from '../../hooks';
-import {
-  mockGetImportJobs,
-  mockGetOrganizations,
-  mockGetRepositories,
-} from '../../mocks/mockData';
+import { mockGetImportJobs, mockGetRepositories } from '../../mocks/mockData';
 import { ImportJobStatus, RepositorySelection } from '../../types';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
@@ -176,48 +172,6 @@ describe('Add Repositories Table', () => {
       </TestApiProvider>,
     );
     expect(getByText('Selected repositories (1)')).toBeInTheDocument();
-    expect(getByTestId('repository-view')).toBeTruthy();
-    expect(getByTestId('organization-view')).toBeTruthy();
     expect(getByTestId('repositories-table')).toBeTruthy();
-  });
-
-  it('should render list of organizations', async () => {
-    (useFormikContext as jest.Mock).mockReturnValue({
-      errors: {},
-      values: {
-        repositories: {
-          'org/dessert/Cupcake': mockGetRepositories.repositories[0],
-        },
-        repositoryType: RepositorySelection.Organization,
-      },
-    });
-    mockUseRepositories.mockReturnValue({
-      loading: false,
-      data: {
-        organizations: mockGetOrganizations.organizations.reduce(
-          (acc, r) => ({ ...acc, [r.id]: r }),
-          {},
-        ),
-        totalOrganizations: 3,
-        totalRepositories: 0,
-      },
-      error: undefined,
-    });
-    const { getByText, getByTestId } = render(
-      <TestApiProvider
-        apis={[
-          [identityApiRef, mockIdentityApi],
-          [bulkImportApiRef, mockBulkImportApi],
-        ]}
-      >
-        <BrowserRouter>
-          <AddRepositoriesTable title="Selected repositories" />
-        </BrowserRouter>
-      </TestApiProvider>,
-    );
-    expect(getByText('Selected repositories (1)')).toBeInTheDocument();
-    expect(getByTestId('repository-view')).toBeTruthy();
-    expect(getByTestId('organization-view')).toBeTruthy();
-    expect(getByTestId('organizations-table')).toBeTruthy();
   });
 });

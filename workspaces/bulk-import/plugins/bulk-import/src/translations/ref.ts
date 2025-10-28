@@ -43,7 +43,8 @@ export const bulkImportMessages = {
     importedEntities: 'Imported entities',
     addedRepositoriesCount: 'Added repositories ({{count}})',
     importedEntitiesCount: 'Imported entities ({{count}})',
-    noRecordsFound: 'No records found',
+    noRecordsFound: 'No repositories available to import.',
+    noProjectsFound: 'No projects available to import.',
     refresh: 'Refresh',
     import: 'Import',
     removing: 'Removing...',
@@ -73,8 +74,13 @@ export const bulkImportMessages = {
   status: {
     alreadyImported: 'Already imported',
     added: 'Added',
-    waitingForApproval: 'Waiting for Approval',
+    waitingForApproval: 'Waiting for approval',
     imported: 'Imported',
+    readyToImport: 'Ready to import',
+    waitingForPullRequestToStart: 'Waiting for pull request to start',
+    missingConfigurations: 'Missing configurations',
+    failedCreatingPR: 'Failed to create PR',
+    pullRequestRejected: 'Pull request rejected',
   },
   errors: {
     prErrorPermissions:
@@ -122,22 +128,23 @@ export const bulkImportMessages = {
     },
   },
   steps: {
-    chooseApprovalTool: 'Choose approval tool (GitHub/GitLab) for PR creation',
+    chooseApprovalTool:
+      'Choose a source control tool for pull request creation',
     chooseRepositories: 'Choose repositories you want to add',
     chooseItems: 'Choose which items you want to import',
     generateCatalogInfo:
       'Generate a catalog-info.yaml file for each repository',
     generateCatalogInfoItems:
       'Generate a catalog-info.yaml file for each selected item',
-    editPullRequest: 'Edit the pull request details if needed',
+    editPullRequest: 'View the pull request details',
     trackStatus: 'Track the approval status',
   },
   addRepositories: {
     approvalTool: {
-      title: 'Approval tool',
-      description: 'Choose approval tool for PR creation',
+      title: 'Source control tool',
+      description: 'Choose source control tool for PR creation',
       tooltip:
-        'Importing requires approval. After the pull/merge request is approved, the repositories/projects will be imported to the Catalog page.',
+        'Importing requires approval. After the pull request is approved, the repositories will be imported to the Catalog page.',
       github: 'GitHub',
       gitlab: 'GitLab',
     },
@@ -190,7 +197,6 @@ export const bulkImportMessages = {
     secondsAgo: '{{count}} second(s) ago',
   },
   previewFile: {
-    readyToImport: 'Ready to import',
     previewFile: 'Preview file',
     previewFiles: 'Preview files',
     failedToCreatePR: 'Failed to create PR',
@@ -240,6 +246,7 @@ export const bulkImportMessages = {
       createServiceNowTickets: 'Create ServiceNow tickets',
       createPullRequest: 'Create pull request',
       createPullRequests: 'Create pull requests',
+      selectRepositoryTooltip: 'Select a repository to import.',
       serviceNowTooltip:
         'Catalog-info.yaml files must be generated before creating a ServiceNow ticket',
       importTooltip:
@@ -252,13 +259,13 @@ export const bulkImportMessages = {
     tasksFor: 'Tasks for {{importJobStatusId}}',
     taskId: 'Task ID',
     taskLink: 'Task Link',
-    viewTask: 'View Task',
+    viewTask: 'View task',
     loading: 'Loading...',
     errorFetchingData: 'Error fetching data',
     taskCancelled: 'Task cancelled',
     taskCompleted: 'Task completed',
-    taskFailed: 'Task failed',
-    taskOpen: 'Task open',
+    taskFailed: 'Failed to create PR',
+    taskOpen: 'Waiting for pull request to start',
     taskProcessing: 'Task processing',
     taskSkipped: 'Task skipped',
   },

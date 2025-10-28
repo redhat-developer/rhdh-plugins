@@ -47,7 +47,10 @@ const bulkImportTranslationEs = createTranslationMessages({
     'repositories.importedEntities': 'Entidades importadas',
     'repositories.addedRepositoriesCount': 'Repositorios agregados ({{count}})',
     'repositories.importedEntitiesCount': 'Entidades importadas ({{count}})',
-    'repositories.noRecordsFound': 'No se encontraron registros',
+    'repositories.noRecordsFound':
+      'No hay repositorios disponibles para importar.',
+    'repositories.noProjectsFound':
+      'No hay proyectos disponibles para importar.',
     'repositories.refresh': 'Actualizar',
     'repositories.import': 'Importar',
     'repositories.removing': 'Eliminando...',
@@ -83,6 +86,12 @@ const bulkImportTranslationEs = createTranslationMessages({
     'status.added': 'Añadido',
     'status.waitingForApproval': 'Esperando aprobación',
     'status.imported': 'Importado',
+    'status.readyToImport': 'Listo para importar',
+    'status.waitingForPullRequestToStart':
+      'Esperando que inicie la pull request',
+    'status.missingConfigurations': 'Configuraciones faltantes',
+    'status.failedCreatingPR': 'Error al crear PR',
+    'status.pullRequestRejected': 'Pull request rechazada',
 
     // Validation
     'validation.componentNameInvalid':
@@ -110,23 +119,22 @@ const bulkImportTranslationEs = createTranslationMessages({
 
     // Steps
     'steps.chooseApprovalTool':
-      'Elegir herramienta de aprobación (GitHub/GitLab) para la creación de PR',
+      'Elegir una herramienta de control de fuente para la creación de pull request',
     'steps.chooseRepositories': 'Elegir repositorios que quieres agregar',
     'steps.chooseItems': 'Elegir elementos que quieres importar',
     'steps.generateCatalogInfo':
       'Generar un archivo catalog-info.yaml para cada repositorio',
     'steps.generateCatalogInfoItems':
       'Generar un archivo catalog-info.yaml para cada elemento seleccionado',
-    'steps.editPullRequest':
-      'Editar los detalles del pull request si es necesario',
+    'steps.editPullRequest': 'Ver los detalles del pull request',
     'steps.trackStatus': 'Rastrear el estado de aprobación',
 
     // Add repositories
-    'addRepositories.approvalTool.title': 'Herramienta de aprobación',
+    'addRepositories.approvalTool.title': 'Herramienta de control de fuente',
     'addRepositories.approvalTool.description':
-      'Elegir herramienta de aprobación para la creación de PR',
+      'Elegir herramienta de control de fuente para la creación de PR',
     'addRepositories.approvalTool.tooltip':
-      'La importación requiere aprobación. Después de que se apruebe la pull/merge request, los repositorios/proyectos se importarán a la página Catálogo.',
+      'La importación requiere aprobación. Después de que se apruebe la pull request, los repositorios se importarán a la página Catálogo.',
     'addRepositories.approvalTool.github': 'GitHub',
     'addRepositories.approvalTool.gitlab': 'GitLab',
     'addRepositories.repositoryType.title': 'Tipo de repositorio',
@@ -188,7 +196,6 @@ const bulkImportTranslationEs = createTranslationMessages({
       'El archivo CODEOWNERS falta en el repositorio. Agregue un archivo CODEOWNERS para crear un nuevo PR.',
 
     // Preview File
-    'previewFile.readyToImport': 'Listo para importar',
     'previewFile.previewFile': 'Vista previa del archivo',
     'previewFile.previewFiles': 'Vista previa de archivos',
     'previewFile.failedToCreatePR': 'Error al crear PR',
@@ -240,6 +247,8 @@ const bulkImportTranslationEs = createTranslationMessages({
     'forms.footer.createServiceNowTickets': 'Crear tickets ServiceNow',
     'forms.footer.createPullRequest': 'Crear pull request',
     'forms.footer.createPullRequests': 'Crear pull requests',
+    'forms.footer.selectRepositoryTooltip':
+      'Selecciona un repositorio para importar.',
     'forms.footer.serviceNowTooltip':
       'Los archivos Catalog-info.yaml deben generarse antes de crear un ticket ServiceNow',
     'forms.footer.importTooltip':
