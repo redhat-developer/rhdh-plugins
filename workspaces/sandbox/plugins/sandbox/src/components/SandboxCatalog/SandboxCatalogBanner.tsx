@@ -19,6 +19,12 @@ import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import Skeleton from '@mui/material/Skeleton';
+import Popover from '@mui/material/Popover';
+import IconButton from '@mui/material/IconButton';
+import Link from '@mui/material/Link';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CloseIcon from '@mui/icons-material/Close';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useTheme } from '@mui/material/styles';
 import Image from '../../assets/images/sandbox-banner-image.svg';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
@@ -28,6 +34,7 @@ export const SandboxCatalogBanner: React.FC = () => {
   const theme = useTheme();
   const { userData, pendingApproval, verificationRequired, loading } =
     useSandboxContext();
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
 
   const calculateDaysLeft = React.useCallback(() => {
     if (userData?.endDate) {
@@ -37,6 +44,16 @@ export const SandboxCatalogBanner: React.FC = () => {
     // unable to compute days
     return undefined;
   }, [userData?.endDate]);
+
+  const handleInfoClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
 
   return (
     <Card
@@ -110,33 +127,69 @@ export const SandboxCatalogBanner: React.FC = () => {
                   >
                     Welcome, {userData.givenName || userData.compliantUsername}
                   </Typography>
-                  <Typography
-                    variant="inherit"
-                    color="textPrimary"
+                  <Box
                     sx={{
-                      fontWeight: 400,
-                      fontSize: { xs: '1rem', sm: '1.25rem', md: '1.5625rem' },
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
                     }}
-                    key={`user-status-${
-                      userData.endDate || ''
-                    }-${verificationRequired}-${pendingApproval}`}
                   >
-                    {(() => {
-                      if (verificationRequired) {
-                        return 'Click on "Try it" to initiate your free, no commitment 30-day trial.';
-                      }
-                      if (pendingApproval) {
-                        return 'Please wait for your trial to be approved.';
-                      }
-                      if (userData?.endDate) {
-                        const daysLeft = calculateDaysLeft();
-                        return `Your free trial expires in ${daysLeft} ${
-                          daysLeft === 1 ? 'day' : 'days'
-                        }`;
-                      }
-                      return '';
-                    })()}
-                  </Typography>
+                    <Typography
+                      variant="inherit"
+                      color="textPrimary"
+                      sx={{
+                        fontWeight: 400,
+                        fontSize: {
+                          xs: '1rem',
+                          sm: '1.25rem',
+                          md: '1.5625rem',
+                        },
+                      }}
+                      key={`user-status-${
+                        userData.endDate || ''
+                      }-${verificationRequired}-${pendingApproval}`}
+                    >
+                      {(() => {
+                        if (verificationRequired) {
+                          return 'Click on "Try it" to initiate your free, no commitment 30-day trial.';
+                        }
+                        if (pendingApproval) {
+                          return 'Please wait for your trial to be approved.';
+                        }
+                        if (userData?.endDate) {
+                          const daysLeft = calculateDaysLeft();
+                          return `Your free trial expires in ${daysLeft} ${
+                            daysLeft === 1 ? 'day' : 'days'
+                          }`;
+                        }
+                        return '';
+                      })()}
+                    </Typography>
+                    {userData?.endDate && (
+                      <IconButton
+                        onClick={handleInfoClick}
+                        size="small"
+                        sx={{
+                          padding: 0,
+                          color: theme.palette.text.secondary,
+                          '&:hover': {
+                            color: theme.palette.primary.main,
+                          },
+                        }}
+                        aria-label="Show trial information"
+                      >
+                        <InfoOutlinedIcon
+                          sx={{
+                            fontSize: {
+                              xs: '1.2rem',
+                              sm: '1.4rem',
+                              md: '1.5rem',
+                            },
+                          }}
+                        />
+                      </IconButton>
+                    )}
+                  </Box>
                 </>
               ) : (
                 <>
@@ -180,6 +233,98 @@ export const SandboxCatalogBanner: React.FC = () => {
           )}
         </Box>
       </Stack>
+
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handlePopoverClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              maxWidth: '360px',
+              borderRadius: '8px',
+              boxShadow: theme.shadows[8],
+              mt: 1,
+            },
+          },
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            padding: theme.spacing(3),
+          }}
+        >
+          <IconButton
+            onClick={handlePopoverClose}
+            size="small"
+            sx={{
+              position: 'absolute',
+              right: theme.spacing(1),
+              top: theme.spacing(1),
+              color: theme.palette.text.secondary,
+            }}
+            aria-label="Close"
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 600,
+              fontSize: '1rem',
+              marginBottom: theme.spacing(2),
+              paddingRight: theme.spacing(3),
+            }}
+          >
+            Sandbox access
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: '0.875rem',
+              color: theme.palette.text.secondary,
+              marginBottom: theme.spacing(2),
+              lineHeight: 1.5,
+            }}
+          >
+            Once this trial expires, you can start a new one right afterwards.
+            If you have work to save, please follow the instructions in the
+            documentation.
+          </Typography>
+
+          <Link
+            href="https://developers.redhat.com/learn/openshift/export-your-application-sandbox-red-hat-openshift-service-aws?source=sso"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.5,
+              color: theme.palette.primary.main,
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            }}
+          >
+            View documentation
+            <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+          </Link>
+        </Box>
+      </Popover>
     </Card>
   );
 };

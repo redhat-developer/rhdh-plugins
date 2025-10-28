@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { SandboxCatalogBanner } from '../SandboxCatalogBanner';
 import { useSandboxContext } from '../../../hooks/useSandboxContext';
@@ -245,5 +245,156 @@ describe('SandboxCatalogBanner', () => {
     const image = screen.getByAltText('Red Hat Trial');
     expect(image).toBeInTheDocument();
     expect(image.getAttribute('src')).toBe('mocked-image-path');
+  });
+
+  it('renders info icon when user has end date', () => {
+    const mockDate = new Date(2024, 0, 1);
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+
+    const futureDate = new Date(2024, 0, 5);
+
+    renderWithProviders({
+      userData: {
+        name: 'John Doe',
+        username: 'john_doe',
+        compliantUsername: 'john_doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        company: 'ACME Corp',
+        endDate: futureDate.toISOString(),
+        status: { ready: true, reason: '', verificationRequired: false },
+      },
+    });
+
+    const infoButton = screen.getByLabelText('Show trial information');
+    expect(infoButton).toBeInTheDocument();
+
+    jest.restoreAllMocks();
+  });
+
+  it('does not render info icon when user has no end date', () => {
+    renderWithProviders({
+      userData: {
+        name: 'John Doe',
+        username: 'john_doe',
+        compliantUsername: 'john_doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        company: 'ACME Corp',
+        status: { ready: true, reason: '', verificationRequired: false },
+      },
+    });
+
+    const infoButton = screen.queryByLabelText('Show trial information');
+    expect(infoButton).not.toBeInTheDocument();
+  });
+
+  it('opens popover when info icon is clicked', async () => {
+    const mockDate = new Date(2024, 0, 1);
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+
+    const futureDate = new Date(2024, 0, 5);
+
+    renderWithProviders({
+      userData: {
+        name: 'John Doe',
+        username: 'john_doe',
+        compliantUsername: 'john_doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        company: 'ACME Corp',
+        endDate: futureDate.toISOString(),
+        status: { ready: true, reason: '', verificationRequired: false },
+      },
+    });
+
+    const infoButton = screen.getByLabelText('Show trial information');
+    fireEvent.click(infoButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sandbox access')).toBeInTheDocument();
+    });
+
+    expect(
+      screen.getByText(
+        /Once this trial expires, you can start a new one right afterwards/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('View documentation')).toBeInTheDocument();
+
+    jest.restoreAllMocks();
+  });
+
+  it('closes popover when close button is clicked', async () => {
+    const mockDate = new Date(2024, 0, 1);
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+
+    const futureDate = new Date(2024, 0, 5);
+
+    renderWithProviders({
+      userData: {
+        name: 'John Doe',
+        username: 'john_doe',
+        compliantUsername: 'john_doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        company: 'ACME Corp',
+        endDate: futureDate.toISOString(),
+        status: { ready: true, reason: '', verificationRequired: false },
+      },
+    });
+
+    const infoButton = screen.getByLabelText('Show trial information');
+    fireEvent.click(infoButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sandbox access')).toBeInTheDocument();
+    });
+
+    const closeButton = screen.getByLabelText('Close');
+    fireEvent.click(closeButton);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Sandbox access')).not.toBeInTheDocument();
+    });
+
+    jest.restoreAllMocks();
+  });
+
+  it('includes correct documentation link in popover', async () => {
+    const mockDate = new Date(2024, 0, 1);
+    jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+
+    const futureDate = new Date(2024, 0, 5);
+
+    renderWithProviders({
+      userData: {
+        name: 'John Doe',
+        username: 'john_doe',
+        compliantUsername: 'john_doe',
+        givenName: 'John',
+        familyName: 'Doe',
+        company: 'ACME Corp',
+        endDate: futureDate.toISOString(),
+        status: { ready: true, reason: '', verificationRequired: false },
+      },
+    });
+
+    const infoButton = screen.getByLabelText('Show trial information');
+    fireEvent.click(infoButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Sandbox access')).toBeInTheDocument();
+    });
+
+    const docLink = screen.getByText('View documentation');
+    expect(docLink).toHaveAttribute(
+      'href',
+      'https://developers.redhat.com/learn/openshift/export-your-application-sandbox-red-hat-openshift-service-aws?source=sso',
+    );
+    expect(docLink).toHaveAttribute('target', '_blank');
+    expect(docLink).toHaveAttribute('rel', 'noopener noreferrer');
+
+    jest.restoreAllMocks();
   });
 });
