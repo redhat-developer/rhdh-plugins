@@ -35,6 +35,9 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
 
+// Internal configuration - set to false to hide the instructions section
+const SHOW_INSTRUCTIONS_SECTION = false;
+
 export const AddRepositoriesPage = () => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -55,7 +58,7 @@ export const AddRepositoriesPage = () => {
     if (bulkImportViewPermissionResult.allowed) {
       return (
         <>
-          {!formError && (
+          {SHOW_INSTRUCTIONS_SECTION && !formError && (
             <div style={{ padding: '24px' }}>
               <Accordion defaultExpanded>
                 <AccordionSummary
