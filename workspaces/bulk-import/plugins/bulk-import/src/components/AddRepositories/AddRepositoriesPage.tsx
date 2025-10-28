@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
+
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
@@ -28,7 +30,7 @@ import Typography from '@mui/material/Typography';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { useGitlabConfigured } from '../../hooks';
+import { useGitlabConfigured, useNumberOfApprovalTools } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
@@ -36,6 +38,7 @@ import { Illustrations } from './Illustrations';
 export const AddRepositoriesPage = () => {
   const theme = useTheme();
   const { t } = useTranslation();
+  const [formError, setFormError] = useState<any>(null);
 
   const bulkImportViewPermissionResult = usePermission({
     permission: bulkImportPermission,
@@ -43,6 +46,7 @@ export const AddRepositoriesPage = () => {
   });
 
   const gitlabConfigured = useGitlabConfigured();
+  const { numberOfApprovalTools } = useNumberOfApprovalTools();
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
@@ -51,80 +55,82 @@ export const AddRepositoriesPage = () => {
     if (bulkImportViewPermissionResult.allowed) {
       return (
         <>
-          <div style={{ padding: '24px' }}>
-            <Accordion defaultExpanded>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                id="add-repository-summary"
-              >
-                <Typography variant="h5">
-                  {gitlabConfigured
-                    ? t('page.importEntitiesSubtitle')
-                    : t('page.addRepositoriesSubtitle')}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                sx={{
-                  flexDirection: 'row',
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  overflow: 'auto',
-                }}
-              >
-                {gitlabConfigured && (
+          {!formError && (
+            <div style={{ padding: '24px' }}>
+              <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  id="add-repository-summary"
+                >
+                  <Typography variant="h5">
+                    {gitlabConfigured
+                      ? t('page.importEntitiesSubtitle')
+                      : t('page.addRepositoriesSubtitle')}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails
+                  sx={{
+                    flexDirection: 'row',
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    overflow: 'auto',
+                  }}
+                >
+                  {numberOfApprovalTools > 1 && (
+                    <Illustrations
+                      iconClassname={
+                        theme.palette.mode === 'dark'
+                          ? 'icon-approval-tool-white'
+                          : 'icon-approval-tool-black'
+                      }
+                      iconText={t('steps.chooseApprovalTool')}
+                    />
+                  )}
                   <Illustrations
                     iconClassname={
                       theme.palette.mode === 'dark'
-                        ? 'icon-approval-tool-white'
-                        : 'icon-approval-tool-black'
+                        ? 'icon-choose-repositories-white'
+                        : 'icon-choose-repositories-black'
                     }
-                    iconText={t('steps.chooseApprovalTool')}
+                    iconText={
+                      gitlabConfigured
+                        ? t('steps.chooseItems')
+                        : t('steps.chooseRepositories')
+                    }
                   />
-                )}
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-choose-repositories-white'
-                      : 'icon-choose-repositories-black'
-                  }
-                  iconText={
-                    gitlabConfigured
-                      ? t('steps.chooseItems')
-                      : t('steps.chooseRepositories')
-                  }
-                />
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-generate-cataloginfo-white'
-                      : 'icon-generate-cataloginfo-black'
-                  }
-                  iconText={
-                    gitlabConfigured
-                      ? t('steps.generateCatalogInfoItems')
-                      : t('steps.generateCatalogInfo')
-                  }
-                />
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-edit-pullrequest-white'
-                      : 'icon-edit-pullrequest-black'
-                  }
-                  iconText={t('steps.editPullRequest')}
-                />
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-track-status-white'
-                      : 'icon-track-status-black'
-                  }
-                  iconText={t('steps.trackStatus')}
-                />
-              </AccordionDetails>
-            </Accordion>
-          </div>
-          <AddRepositoriesForm />
+                  <Illustrations
+                    iconClassname={
+                      theme.palette.mode === 'dark'
+                        ? 'icon-generate-cataloginfo-white'
+                        : 'icon-generate-cataloginfo-black'
+                    }
+                    iconText={
+                      gitlabConfigured
+                        ? t('steps.generateCatalogInfoItems')
+                        : t('steps.generateCatalogInfo')
+                    }
+                  />
+                  <Illustrations
+                    iconClassname={
+                      theme.palette.mode === 'dark'
+                        ? 'icon-edit-pullrequest-white'
+                        : 'icon-edit-pullrequest-black'
+                    }
+                    iconText={t('steps.editPullRequest')}
+                  />
+                  <Illustrations
+                    iconClassname={
+                      theme.palette.mode === 'dark'
+                        ? 'icon-track-status-white'
+                        : 'icon-track-status-black'
+                    }
+                    iconText={t('steps.trackStatus')}
+                  />
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          )}
+          <AddRepositoriesForm onErrorChange={setFormError} />
         </>
       );
     }
@@ -139,15 +145,7 @@ export const AddRepositoriesPage = () => {
   };
   return (
     <Page themeId="tool">
-      <Header
-        title={
-          gitlabConfigured
-            ? t('page.importEntitiesTitle')
-            : t('page.addRepositoriesTitle')
-        }
-        type={t('page.typeLink')}
-        typeLink=".."
-      />
+      <Header title={t('page.title')} />
       <Content noPadding>{showContent()}</Content>
     </Page>
   );
