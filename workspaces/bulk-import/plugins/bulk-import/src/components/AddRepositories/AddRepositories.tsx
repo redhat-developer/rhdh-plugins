@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
 import { useFormikContext } from 'formik';
 
-import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesFormValues, PullRequestPreviewData } from '../../types';
 import { useDrawer } from '../DrawerContext';
 import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
-export const AddRepositories = ({ error }: { error: any }) => {
-  const { t } = useTranslation();
+export const AddRepositories = ({
+  refetchTrigger,
+}: {
+  refetchTrigger?: number;
+}) => {
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const { setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -45,8 +45,6 @@ export const AddRepositories = ({ error }: { error: any }) => {
     setOpenDrawer(false);
   };
 
-  const errorMessage = error?.error?.message && JSON.parse(error.error.message);
-
   return (
     <>
       <FormControl fullWidth>
@@ -56,21 +54,7 @@ export const AddRepositories = ({ error }: { error: any }) => {
             padding: '24px',
           }}
         >
-          {error && (
-            <div style={{ paddingBottom: '10px' }}>
-              <Alert severity="error">
-                <AlertTitle>
-                  {errorMessage?.error?.name ??
-                    error?.error?.name ??
-                    t('errors.errorOccurred')}
-                </AlertTitle>
-                {errorMessage?.error?.message ??
-                  error?.err ??
-                  t('errors.failedToCreatePullRequest')}
-              </Alert>
-            </div>
-          )}
-          <AddRepositoriesTable />
+          <AddRepositoriesTable refetchTrigger={refetchTrigger} />
         </div>
         <br />
       </FormControl>
