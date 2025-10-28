@@ -106,7 +106,7 @@ describe('AddRepositoriesPage', () => {
     expect(screen.getByTestId('add-repositories-form')).toBeInTheDocument();
   });
 
-  it('should show first step when multiple approval tools are configured', async () => {
+  it('should not show instructions section when SHOW_INSTRUCTIONS_SECTION is false', async () => {
     const { useNumberOfApprovalTools } = require('../../hooks');
     useNumberOfApprovalTools.mockReturnValue({
       numberOfApprovalTools: 2,
@@ -114,21 +114,7 @@ describe('AddRepositoriesPage', () => {
 
     await renderWithProviders(<AddRepositoriesPage />);
 
-    expect(
-      screen.getByText(
-        'Choose a source control tool for pull request creation',
-      ),
-    ).toBeInTheDocument();
-  });
-
-  it('should hide first step when only one approval tool is configured', async () => {
-    const { useNumberOfApprovalTools } = require('../../hooks');
-    useNumberOfApprovalTools.mockReturnValue({
-      numberOfApprovalTools: 1,
-    });
-
-    await renderWithProviders(<AddRepositoriesPage />);
-
+    // Instructions section should be hidden due to internal config
     expect(
       screen.queryByText(
         'Choose a source control tool for pull request creation',
@@ -136,7 +122,23 @@ describe('AddRepositoriesPage', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should hide first step when no approval tools are configured', async () => {
+  it('should hide instructions section when only one approval tool is configured', async () => {
+    const { useNumberOfApprovalTools } = require('../../hooks');
+    useNumberOfApprovalTools.mockReturnValue({
+      numberOfApprovalTools: 1,
+    });
+
+    await renderWithProviders(<AddRepositoriesPage />);
+
+    // Instructions section should be hidden due to internal config
+    expect(
+      screen.queryByText(
+        'Choose a source control tool for pull request creation',
+      ),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should hide instructions section when no approval tools are configured', async () => {
     const { useNumberOfApprovalTools } = require('../../hooks');
     useNumberOfApprovalTools.mockReturnValue({
       numberOfApprovalTools: 0,
@@ -144,6 +146,7 @@ describe('AddRepositoriesPage', () => {
 
     await renderWithProviders(<AddRepositoriesPage />);
 
+    // Instructions section should be hidden due to internal config
     expect(
       screen.queryByText(
         'Choose a source control tool for pull request creation',
