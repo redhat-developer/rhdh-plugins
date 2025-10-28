@@ -107,6 +107,7 @@ Use the previous chat history to interact and help the user.
 
 # {{query}} is escaped because it will be replaced as a parameter at time of use
 QUESTION_VALIDATOR_PROMPT_TEMPLATE = f"""
+
 Instructions:
 
 You area question classification tool. You are an expert in the following categories:
@@ -130,6 +131,7 @@ If a question is not related to your expert categories, answer with {SUBJECT_REJ
 
 You do not need to explain your answer.
 
+Below are some example questions:
 Example Question:
 Why is the sky blue?
 Example Response:
