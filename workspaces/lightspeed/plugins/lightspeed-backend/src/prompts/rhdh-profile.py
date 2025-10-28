@@ -148,7 +148,7 @@ Example Response:
 {SUBJECT_ALLOWED}
 
 Example Question:
-How do I accomplish $task in RHDH?
+How do I accomplish a task in RHDH?
 Example Response:
 {SUBJECT_ALLOWED}
 
