@@ -7,10 +7,10 @@ SUBJECT_REJECTED = "REJECTED"
 SUBJECT_ALLOWED = "ALLOWED"
 
 # Default responses
-INVALID_QUERY_RESP = (
-    "Hi, I'm the Red Hat Developer Hub Lightspeed assistant, I can help you with questions about Red Hat Developer Hub or Backstage. "
-    "Please ensure your question is about these topics, and feel free to ask again!"
-)
+INVALID_QUERY_RESP = """
+Hi, I'm the Red Hat Developer Hub Lightspeed assistant, I can help you with questions about Red Hat Developer Hub or Backstage.
+Please ensure your question is about these topics, and feel free to ask again!
+"""
 
 QUERY_SYSTEM_INSTRUCTION = """
 1. Purpose
