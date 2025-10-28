@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import { Page, TestInfo } from '@playwright/test';
 
-test('App should render the welcome page', async ({ page }) => {
-  await page.goto('/');
-
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-
-  await expect(page.getByText('Welcome back')).toBeVisible();
-});
+export async function runAccessibilityTests(
+  page: Page,
+  testInfo: TestInfo,
+  attachName = 'accessibility-scan-results.violations.json',
+) {
+  const accessibilityScanResults = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .disableRules(['color-contrast'])
+    .analyze();
+  await testInfo.attach(attachName, {
+    body: JSON.stringify(accessibilityScanResults.violations, null, 2),
+    contentType: 'application/json',
+  });
+}

@@ -44,12 +44,15 @@ integrations:
     #   token: ${GHE_TOKEN}
 
 proxy:
-  ### Example for how to add a proxy endpoint for the frontend.
-  ### A typical reason to do this is to handle HTTPS and CORS for internal services.
-  # endpoints:
-  #   '/test':
-  #     target: 'https://example.com'
-  #     changeOrigin: true
+  endpoints:
+    # Other Proxies
+    # customize developer hub instance
+    '/developer-hub':
+      target: https://raw.githubusercontent.com/ # i.e https://raw.githubusercontent.com/
+      pathRewrite:
+        '^/api/proxy/developer-hub': /debsmita1/test-homepage/refs/heads/main/data-homepage.json # i.e /redhat-developer/rhdh/main/packages/app/public/homepage/data.json
+      changeOrigin: true
+      secure: true
 
 # Reference documentation http://backstage.io/docs/features/techdocs/configuration
 # Note: After experimenting with basic setup, use CI/CD to generate docs
