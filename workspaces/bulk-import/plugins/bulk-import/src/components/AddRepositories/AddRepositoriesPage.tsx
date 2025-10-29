@@ -148,7 +148,14 @@ export const AddRepositoriesPage = () => {
   };
   return (
     <Page themeId="tool">
-      <Header title={t('page.title')} />
+      <Header
+        title={
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+            {t('page.title')}
+          </Typography>
+        }
+        style={{ borderBottom: '1px solid #ccc' }}
+      />
       <Content noPadding>{showContent()}</Content>
     </Page>
   );

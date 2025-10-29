@@ -95,6 +95,10 @@ export const bulkImportMessages = {
       'CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR.',
     errorOccurred: 'Error occurred',
     failedToCreatePullRequest: 'Failed to create pull request',
+    noIntegrationsConfigured:
+      'No GitHub or GitLab integrations are configured. Please add at least one integration to use the bulk import feature.',
+    addIntegrationsToConfig:
+      'To resolve this issue, ensure that the integrations are added to your Backstage configuration file (app-config.yaml).',
   },
   validation: {
     componentNameInvalid:
@@ -181,6 +185,7 @@ export const bulkImportMessages = {
     cancel: 'Cancel',
     close: 'Close',
     delete: 'Delete',
+    documentation: 'Documentation',
     edit: 'Edit',
     filter: 'Filter',
     import: 'Import',

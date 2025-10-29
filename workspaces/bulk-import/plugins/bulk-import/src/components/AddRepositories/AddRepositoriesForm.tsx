@@ -18,15 +18,11 @@ import { useEffect, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import Box from '@mui/material/Box';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Formik, FormikHelpers } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useNumberOfApprovalTools } from '../../hooks';
-import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
@@ -34,7 +30,6 @@ import {
   ImportJobResponse,
   RepositorySelection,
 } from '../../types';
-import { getImageForIconClass } from '../../utils/icons';
 import {
   getJobErrors,
   prepareDataForSubmission,
@@ -47,7 +42,6 @@ export const AddRepositoriesForm = ({
 }: {
   onErrorChange?: (error: any) => void;
 }) => {
-  const { t } = useTranslation();
   const bulkImportApi = useApi(bulkImportApiRef);
   const queryClient = useQueryClient();
   const { numberOfApprovalTools, gitlabConfigured } =
@@ -127,53 +121,6 @@ export const AddRepositoriesForm = ({
     }
   };
 
-  // Check if there's an error to display
-  const hasError = mutationCreate.error;
-  const errorMessage =
-    (mutationCreate.error as any)?.error?.message &&
-    JSON.parse((mutationCreate.error as any).error.message);
-
-  if (hasError) {
-    return (
-      <Box sx={{ display: 'flex', minHeight: '50vh', padding: 3 }}>
-        <Box sx={{ flex: 1, pr: 2 }}>
-          <Alert severity="error">
-            <AlertTitle>
-              {errorMessage?.error?.name ??
-                (mutationCreate.error as any)?.error?.name ??
-                t('errors.errorOccurred')}
-            </AlertTitle>
-            {errorMessage?.error?.message ??
-              (mutationCreate.error as any)?.err ??
-              t('errors.failedToCreatePullRequest')}
-          </Alert>
-        </Box>
-
-        <Box
-          sx={{
-            flex: 1,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <img
-            src={getImageForIconClass('missing-configuration')}
-            alt="Missing configuration"
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              width: 'auto',
-              height: 'auto',
-              opacity: 0.8,
-              objectFit: 'contain',
-            }}
-          />
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <DrawerContextProvider>
       <Formik
@@ -181,7 +128,10 @@ export const AddRepositoriesForm = ({
         enableReinitialize
         onSubmit={handleSubmit}
       >
-        <AddRepositories refetchTrigger={refetchTrigger} />
+        <AddRepositories
+          refetchTrigger={refetchTrigger}
+          error={mutationCreate.error}
+        />
       </Formik>
     </DrawerContextProvider>
   );

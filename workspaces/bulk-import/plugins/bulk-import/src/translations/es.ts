@@ -169,6 +169,7 @@ const bulkImportTranslationEs = createTranslationMessages({
     'common.cancel': 'Cancelar',
     'common.close': 'Cerrar',
     'common.delete': 'Eliminar',
+    'common.documentation': 'Documentación',
     'common.edit': 'Editar',
     'common.filter': 'Filtrar',
     'common.import': 'Importar',
@@ -187,6 +188,10 @@ const bulkImportTranslationEs = createTranslationMessages({
     // Errors
     'errors.errorOccurred': 'Ocurrió un error',
     'errors.failedToCreatePullRequest': 'Error al crear el pull request',
+    'errors.noIntegrationsConfigured':
+      'No se han configurado integraciones de GitHub o GitLab. Por favor, agregue al menos una integración para usar la función de importación masiva.',
+    'errors.addIntegrationsToConfig':
+      'Para resolver este problema, asegúrese de que las integraciones se agreguen a su archivo de configuración de Backstage (app-config.yaml).',
     'errors.prErrorPermissions':
       'No tienes permisos para crear un pull request',
     'errors.catalogInfoExists': 'catalog-info.yaml ya existe',
