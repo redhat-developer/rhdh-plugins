@@ -15,8 +15,8 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { TestUtils } from './utils/test-utils.js';
-import { HomePageCustomization } from './pages/home-page-customization.js';
+import { TestUtils } from './utils/testUtils.js';
+import { HomePageCustomization } from './pages/homePageCustomization.js';
 import { runAccessibilityTests } from './utils/accessibility.js';
 
 test.describe.serial('Dynamic Home Page Customization', () => {

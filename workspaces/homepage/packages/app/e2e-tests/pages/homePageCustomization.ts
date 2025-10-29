@@ -15,7 +15,7 @@
  */
 
 import { Page, expect, Locator } from '@playwright/test';
-import { TestUtils } from '../utils/test-utils.js';
+import { TestUtils } from '../utils/testUtils.js';
 
 export class HomePageCustomization {
   private page: Page;
