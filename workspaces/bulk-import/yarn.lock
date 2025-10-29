@@ -3961,28 +3961,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/ui@npm:^0.8.1":
-  version: 0.8.1
-  resolution: "@backstage/ui@npm:0.8.1"
-  dependencies:
-    "@base-ui-components/react": 1.0.0-alpha.7
-    "@remixicon/react": ^4.6.0
-    "@tanstack/react-table": ^8.21.3
-    clsx: ^2.1.1
-    react-aria-components: ^1.13.0
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.3.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 9b94e7cc33698edb85a964b324d9eef59c322c9b12ab0ab0c27a1159ca66b258921a1c166c6977c74728485baf2c8c10e2576a3641077bbbb1af5c034fc7c879
-  languageName: node
-  linkType: hard
-
-"@backstage/ui@npm:^0.8.2":
+"@backstage/ui@npm:^0.8.1, @backstage/ui@npm:^0.8.2":
   version: 0.8.2
   resolution: "@backstage/ui@npm:0.8.2"
   dependencies:
