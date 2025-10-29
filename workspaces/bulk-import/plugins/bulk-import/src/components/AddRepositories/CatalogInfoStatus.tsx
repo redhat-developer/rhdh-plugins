@@ -59,7 +59,10 @@ export const CatalogInfoStatus = ({
     useFormikContext<AddRepositoriesFormValues>();
 
   useEffect(() => {
-    if (importStatus === RepositoryStatus.ADDED) {
+    if (
+      importStatus === RepositoryStatus.ADDED ||
+      importStatus === RepositoryStatus.WAIT_PR_APPROVAL
+    ) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,

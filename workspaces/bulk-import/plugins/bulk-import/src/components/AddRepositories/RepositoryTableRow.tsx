@@ -88,9 +88,16 @@ export const RepositoryTableRow = ({
           disableRipple
           color="primary"
           checked={
-            value?.status === RepositoryStatus.ADDED ? true : isItemSelected
+            value?.status === RepositoryStatus.ADDED ||
+            value?.status === RepositoryStatus.WAIT_PR_APPROVAL
+              ? true
+              : isItemSelected
           }
-          disabled={loading || value?.status === RepositoryStatus.ADDED}
+          disabled={
+            loading ||
+            value?.status === RepositoryStatus.ADDED ||
+            value?.status === RepositoryStatus.WAIT_PR_APPROVAL
+          }
           onClick={event => handleClick(event, data)}
           style={{ padding: '0 12px' }}
         />
