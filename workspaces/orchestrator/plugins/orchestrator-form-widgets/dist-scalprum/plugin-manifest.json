@@ -1,11 +1,11 @@
 {
   "name": "red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets",
-  "version": "1.1.0",
+  "version": "1.8.0-rc.2",
   "extensions": [],
   "registrationMethod": "callback",
   "baseURL": "auto",
   "loadScripts": [
-    "red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets.c55aba0cc755f66dc2af.js"
+    "red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets.ffb81a3fc1dd7a7d718f.js"
   ],
-  "buildHash": "c55aba0cc755f66dc2af5fbd1b1b0ef7"
+  "buildHash": "ffb81a3fc1dd7a7d718fa82ad283124d"
 }
