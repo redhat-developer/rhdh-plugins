@@ -312,7 +312,7 @@ describe('SandboxCatalogBanner', () => {
     fireEvent.click(infoButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Sandbox access')).toBeInTheDocument();
+      expect(screen.getByText('Trial expiration')).toBeInTheDocument();
     });
 
     expect(
@@ -348,14 +348,14 @@ describe('SandboxCatalogBanner', () => {
     fireEvent.click(infoButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Sandbox access')).toBeInTheDocument();
+      expect(screen.getByText('Trial expiration')).toBeInTheDocument();
     });
 
     const closeButton = screen.getByLabelText('Close');
     fireEvent.click(closeButton);
 
     await waitFor(() => {
-      expect(screen.queryByText('Sandbox access')).not.toBeInTheDocument();
+      expect(screen.queryByText('Trial expiration')).not.toBeInTheDocument();
     });
 
     jest.restoreAllMocks();
@@ -384,7 +384,7 @@ describe('SandboxCatalogBanner', () => {
     fireEvent.click(infoButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Sandbox access')).toBeInTheDocument();
+      expect(screen.getByText('Trial expiration')).toBeInTheDocument();
     });
 
     const docLink = screen.getByText('View documentation');
