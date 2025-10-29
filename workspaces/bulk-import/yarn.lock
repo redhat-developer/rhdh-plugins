@@ -3982,6 +3982,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@backstage/ui@npm:^0.8.2":
+  version: 0.8.2
+  resolution: "@backstage/ui@npm:0.8.2"
+  dependencies:
+    "@base-ui-components/react": 1.0.0-alpha.7
+    "@remixicon/react": ^4.6.0
+    "@tanstack/react-table": ^8.21.3
+    clsx: ^2.1.1
+    react-aria-components: ^1.13.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 921f9d0adcc07bd262f83ef31f203ae6f5f2205cf2b77574ddedf3bb4416e76430918fac1b99a3b92fb220fccb26bf81b96ed6179fa080934c02048111b55ddb
+  languageName: node
+  linkType: hard
+
 "@backstage/version-bridge@npm:^1.0.11":
   version: 1.0.11
   resolution: "@backstage/version-bridge@npm:1.0.11"
@@ -15430,6 +15451,7 @@ __metadata:
     "@backstage/plugin-user-settings": ^0.8.28
     "@backstage/test-utils": ^1.7.12
     "@backstage/theme": ^0.7.0
+    "@backstage/ui": ^0.8.2
     "@mui/icons-material": 5.18.0
     "@mui/lab": 5.0.0-alpha.177
     "@mui/material": 5.18.0
