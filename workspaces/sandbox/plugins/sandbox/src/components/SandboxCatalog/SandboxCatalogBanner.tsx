@@ -286,7 +286,7 @@ export const SandboxCatalogBanner: React.FC = () => {
               paddingRight: theme.spacing(3),
             }}
           >
-            Sandbox access
+            Trial expiration
           </Typography>
 
           <Typography
@@ -298,9 +298,9 @@ export const SandboxCatalogBanner: React.FC = () => {
               lineHeight: 1.5,
             }}
           >
-            Once this trial expires, you can start a new one right afterwards.
-            If you have work to save, please follow the instructions in the
-            documentation.
+            Once this trial expires, you can start a new one immediately. Your
+            work from this trial will be deleted. To save your work, follow the
+            instructions in our documentation.
           </Typography>
 
           <Link
