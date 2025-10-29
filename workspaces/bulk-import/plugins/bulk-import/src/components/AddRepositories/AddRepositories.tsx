@@ -75,7 +75,7 @@ export const AddRepositories = ({
         sx={{ display: 'flex', minHeight: '50vh', padding: 3, paddingLeft: 6 }}
       >
         <Box sx={{ flex: 0.8, pr: 2, pt: 8, pl: 3 }}>
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, pt: 12 }}>
             <Typography
               variant="h3"
               component="h1"
