@@ -158,6 +158,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'common.cancel': 'Abbrechen',
     'common.close': 'Schließen',
     'common.delete': 'Löschen',
+    'common.documentation': 'Dokumentation',
     'common.edit': 'Bearbeiten',
     'common.filter': 'Filtern',
     'common.import': 'Importieren',
@@ -224,6 +225,10 @@ const bulkImportTranslationDe = createTranslationMessages({
     'errors.errorOccurred': 'Fehler aufgetreten',
     'errors.failedToCreatePullRequest':
       'Pull-Request konnte nicht erstellt werden',
+    'errors.noIntegrationsConfigured':
+      'Keine GitHub- oder GitLab-Integrationen sind konfiguriert. Bitte fügen Sie mindestens eine Integration hinzu, um die Bulk-Import-Funktion zu verwenden.',
+    'errors.addIntegrationsToConfig':
+      'Um dieses Problem zu lösen, stellen Sie sicher, dass die Integrationen zu Ihrer Backstage-Konfigurationsdatei (app-config.yaml) hinzugefügt werden.',
     'errors.prErrorPermissions':
       'Sie haben keine Berechtigung, einen Pull-Request zu erstellen',
     'errors.catalogInfoExists': 'catalog-info.yaml existiert bereits',
