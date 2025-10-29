@@ -55,6 +55,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.delete': 'Supprimer',
+    'common.documentation': 'Documentation',
     'common.edit': 'Modifier',
     'common.filter': 'Filtre',
     'common.import': 'Importer',
@@ -72,6 +73,10 @@ const bulkImportTranslationFr = createTranslationMessages({
     'errors.errorOccurred': "Une erreur s'est produite",
     'errors.failedToCreatePullRequest':
       "Échec de la création de la demande d'extraction",
+    'errors.noIntegrationsConfigured':
+      "Aucune intégration GitHub ou GitLab n'est configurée. Veuillez ajouter au moins une intégration pour utiliser la fonction d'importation en masse.",
+    'errors.addIntegrationsToConfig':
+      'Pour résoudre ce problème, assurez-vous que les intégrations sont ajoutées à votre fichier de configuration Backstage (app-config.yaml).',
     'errors.prErrorPermissions':
       "Impossible de créer un nouveau PR en raison d'autorisations insuffisantes. Contactez votre administrateur.",
     'errors.repoEmpty':
