@@ -15,12 +15,12 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { Common } from './utils/common.js';
+import { TestUtils } from './utils/test-utils.js';
 import { HomePageCustomization } from './pages/home-page-customization.js';
 import { runAccessibilityTests } from './utils/accessibility.js';
 
 test.describe.serial('Dynamic Home Page Customization', () => {
-  let common: Common;
+  let testUtils: TestUtils;
   let homePageCustomization: HomePageCustomization;
 
   test.beforeAll(async () => {
@@ -31,9 +31,9 @@ test.describe.serial('Dynamic Home Page Customization', () => {
   });
 
   test.beforeEach(async ({ page }) => {
-    common = new Common(page);
+    testUtils = new TestUtils(page);
     homePageCustomization = new HomePageCustomization(page);
-    await common.loginAsGuest();
+    await testUtils.loginAsGuest();
   });
 
   test('Verify Cards Display After Login', async ({ page }, testInfo) => {

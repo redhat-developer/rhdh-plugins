@@ -15,11 +15,11 @@
  */
 
 import { Page, expect, Locator } from '@playwright/test';
-import { UIhelper } from '../utils/ui-helper.js';
+import { TestUtils } from '../utils/test-utils.js';
 
 export class HomePageCustomization {
   private page: Page;
-  private uiHelper: UIhelper;
+  private testUtils: TestUtils;
 
   private readonly expectedCards = [
     'Good (morning|afternoon|evening)',
@@ -45,11 +45,11 @@ export class HomePageCustomization {
 
   constructor(page: Page) {
     this.page = page;
-    this.uiHelper = new UIhelper(page);
+    this.testUtils = new TestUtils(page);
   }
 
   async verifyHomePageLoaded(): Promise<void> {
-    await this.uiHelper.verifyHeading('Welcome back');
+    await this.testUtils.verifyHeading('Welcome back');
     await expect(this.greetingText()).toBeVisible();
     const quickstart = this.page.getByRole('button', { name: 'Hide' });
     if (await quickstart.isVisible()) {
@@ -62,22 +62,22 @@ export class HomePageCustomization {
       if (card.includes('Good')) {
         await expect(this.greetingText()).toBeVisible();
       } else {
-        await this.uiHelper.verifyText(card);
+        await this.testUtils.verifyText(card);
       }
     }
   }
 
   async verifyEditButtonVisible(): Promise<void> {
-    await this.uiHelper.verifyText('Edit');
+    await this.testUtils.verifyText('Edit');
   }
 
   async enterEditMode(): Promise<void> {
-    await this.uiHelper.clickButton('Edit');
+    await this.testUtils.clickButton('Edit');
     await expect(this.saveButton()).toBeVisible();
   }
 
   async exitEditMode(): Promise<void> {
-    await this.uiHelper.clickButton('Save');
+    await this.testUtils.clickButton('Save');
     await expect(this.editButton()).toBeVisible();
   }
 
@@ -195,7 +195,7 @@ export class HomePageCustomization {
   }
 
   async clearAllCardsWithButton(): Promise<void> {
-    await this.uiHelper.clickButton('Clear all');
+    await this.testUtils.clickButton('Clear all');
   }
 
   async verifyCardsDeleted(): Promise<void> {
@@ -216,7 +216,7 @@ export class HomePageCustomization {
   }
 
   async restoreDefaultCards(): Promise<void> {
-    await this.uiHelper.clickButton('Restore defaults');
+    await this.testUtils.clickButton('Restore defaults');
     await this.page.waitForTimeout(2000);
     await this.saveButton().click();
   }
@@ -227,7 +227,7 @@ export class HomePageCustomization {
   }
 
   async addWidget(widgetType: string = 'OnboardingSection'): Promise<void> {
-    await this.uiHelper.clickButton('Add widget');
+    await this.testUtils.clickButton('Add widget');
     await this.page.waitForTimeout(1000); // Wait for dialog to open
 
     // Select the specific widget type from the dialog
