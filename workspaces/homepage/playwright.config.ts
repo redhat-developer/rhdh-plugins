@@ -20,6 +20,8 @@ import { generateProjects } from '@backstage/e2e-test-utils/playwright';
 export default defineConfig({
   timeout: 2 * 60 * 1000,
 
+  workers: 1, // Run tests serially with 1 worker
+
   expect: {
     timeout: 5000,
   },
