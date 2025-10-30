@@ -317,7 +317,7 @@ describe('SandboxCatalogBanner', () => {
 
     expect(
       screen.getByText(
-        /Once this trial expires, you can start a new one right afterwards/,
+        /Once this trial expires, you can start a new one immediately/,
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('View documentation')).toBeInTheDocument();
