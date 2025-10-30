@@ -19,7 +19,7 @@ import {
   useEntityPresentation,
   useStarredEntities,
 } from '@backstage/plugin-catalog-react';
-import { Link } from '@backstage/core-components';
+import { Link, AppIcon } from '@backstage/core-components';
 import {
   CompoundEntityRef,
   Entity,
@@ -107,7 +107,7 @@ const StarredItem: FC<SectionComponentProps> = ({
             color: rhdhPalette?.general?.starredItemsColor ?? '#F3BA37',
           }}
         >
-          <Star />
+          <AppIcon id="star" Fallback={Star} />
         </IconButton>
       </Tooltip>
     </MenuItem>
@@ -123,7 +123,7 @@ export const StarredDropdown = () => {
 
   return (
     <HeaderDropdownComponent
-      buttonContent={<StarBorderIcon />}
+      buttonContent={<AppIcon id="unstarred" Fallback={StarBorderIcon} />}
       onOpen={handleOpen}
       onClose={handleClose}
       anchorEl={anchorEl}
