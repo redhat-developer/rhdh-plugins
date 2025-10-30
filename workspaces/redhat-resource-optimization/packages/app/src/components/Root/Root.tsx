@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
@@ -76,6 +76,49 @@ const Logo = (props: { isOpen?: boolean }) => {
   return logo;
 };
 
+const CollapsibleSubmenu = ({
+  icon,
+  text,
+  children,
+}: {
+  icon: React.ReactElement;
+  text: string;
+  children: React.ReactNode;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen: sidebarOpen } = useSidebarOpenState();
+
+  return (
+    <>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(!isOpen);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          padding: '16px 16px',
+          userSelect: 'none',
+        }}
+      >
+        {icon}
+        {sidebarOpen && <span style={{ marginLeft: 12, flex: 1 }}>{text}</span>}
+        {sidebarOpen && (
+          <span style={{ fontSize: '12px' }}>{isOpen ? '▼' : '▶'}</span>
+        )}
+      </div>
+      {isOpen && <div style={{ marginLeft: 40 }}>{children}</div>}
+    </>
+  );
+};
+
 const SidebarLogo = () => {
   const classes = useSidebarLogoStyles();
   const { isOpen } = useSidebarOpenState();
@@ -105,11 +148,16 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}
         <SidebarDivider />
-        <SidebarItem
-          icon={ResourceOptimizationIconOutlined}
-          to="/redhat-resource-optimization"
-          text="Optimizations"
-        />
+        <CollapsibleSubmenu
+          icon={<ResourceOptimizationIconOutlined />}
+          text="Cost management"
+        >
+          <SidebarItem
+            icon={ResourceOptimizationIconOutlined}
+            to="/redhat-resource-optimization"
+            text="Optimizations"
+          />
+        </CollapsibleSubmenu>
         <SidebarItem
           icon={OrchestratorIcon}
           to="orchestrator"
