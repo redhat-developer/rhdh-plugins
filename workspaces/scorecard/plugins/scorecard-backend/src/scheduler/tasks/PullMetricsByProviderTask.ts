@@ -28,12 +28,25 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValue } from '../../database/types';
-import { SchedulerTask } from '../types';
+import { SchedulerOptions, SchedulerTask } from '../types';
+
+type Options = Pick<
+  SchedulerOptions,
+  'scheduler' | 'logger' | 'database' | 'config' | 'catalog' | 'auth'
+>;
 
 export class PullMetricsByProviderTask implements SchedulerTask {
+  private readonly config: Config;
+  private readonly auth: AuthService;
   private readonly providerId: string;
+  private readonly logger: LoggerService;
+  private readonly catalog: CatalogService;
+  private readonly provider: MetricProvider;
+  private readonly scheduler: SchedulerService;
+  private readonly database: DatabaseMetricValues;
 
   private static readonly CATALOG_BATCH_SIZE = 50;
+
   private static readonly DEFAULT_SCHEDULE: SchedulerServiceTaskScheduleDefinition =
     {
       frequency: { hours: 1 },
@@ -41,16 +54,15 @@ export class PullMetricsByProviderTask implements SchedulerTask {
       initialDelay: { seconds: 3 },
     };
 
-  constructor(
-    private readonly scheduler: SchedulerService,
-    private readonly logger: LoggerService,
-    private readonly database: DatabaseMetricValues,
-    private readonly config: Config,
-    private readonly catalog: CatalogService,
-    private readonly auth: AuthService,
-    private readonly provider: MetricProvider,
-  ) {
-    this.providerId = this.provider.getProviderId();
+  constructor(options: Options, provider: MetricProvider) {
+    this.config = options.config;
+    this.auth = options.auth;
+    this.providerId = provider.getProviderId();
+    this.logger = options.logger;
+    this.catalog = options.catalog;
+    this.provider = provider;
+    this.scheduler = options.scheduler;
+    this.database = options.database;
   }
 
   async start(): Promise<void> {

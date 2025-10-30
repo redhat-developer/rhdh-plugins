@@ -53,12 +53,12 @@ describe('CleanupExpiredMetricsTask', () => {
       mockTaskRunner as any,
     );
 
-    task = new CleanupExpiredMetricsTask(
-      mockScheduler,
-      mockLogger,
-      mockDatabase,
-      mockConfig,
-    );
+    task = new CleanupExpiredMetricsTask({
+      scheduler: mockScheduler,
+      logger: mockLogger,
+      database: mockDatabase,
+      config: mockConfig,
+    });
   });
 
   afterEach(() => {
@@ -130,20 +130,6 @@ describe('CleanupExpiredMetricsTask', () => {
     it('should log success message', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Deleted 12 expired metrics older than 2 days',
-      );
-    });
-
-    it('should log error message when cleanup expired metrics fails', async () => {
-      const error = new Error('DB is not responding');
-
-      mockDatabase.cleanupExpiredMetrics.mockRejectedValue(error);
-      await expect(
-        (task as any).cleanupExpiredMetrics(mockLogger),
-      ).rejects.toThrow(error.message);
-
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Failed to cleanup expired metrics:',
-        error,
       );
     });
   });

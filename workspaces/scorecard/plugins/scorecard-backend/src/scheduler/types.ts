@@ -14,6 +14,26 @@
  * limitations under the License.
  */
 
+import type { Config } from '@backstage/config';
+import { CatalogService } from '@backstage/plugin-catalog-node';
+import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
+import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
+import {
+  AuthService,
+  LoggerService,
+  SchedulerService,
+} from '@backstage/backend-plugin-api';
+
 export interface SchedulerTask {
   start(): Promise<void>;
+}
+
+export interface SchedulerOptions {
+  auth: AuthService;
+  catalog: CatalogService;
+  config: Config;
+  logger: LoggerService;
+  scheduler: SchedulerService;
+  database: DatabaseMetricValues;
+  metricProvidersRegistry: MetricProvidersRegistry;
 }

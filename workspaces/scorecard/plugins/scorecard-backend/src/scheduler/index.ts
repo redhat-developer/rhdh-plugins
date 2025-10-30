@@ -25,18 +25,8 @@ import type { Config } from '@backstage/config';
 import { CLEANUP_EXPIRED_METRICS_ID } from './constants';
 import { CleanupExpiredMetricsTask } from './tasks/CleanupExpiredMetricsTask';
 import { PullMetricsByProviderTask } from './tasks/PullMetricsByProviderTask';
-import { SchedulerTask } from './types';
+import { SchedulerOptions, SchedulerTask } from './types';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
-
-export interface SchedulerOptions {
-  auth: AuthService;
-  catalog: CatalogService;
-  config: Config;
-  logger: LoggerService;
-  scheduler: SchedulerService;
-  database: DatabaseMetricValues;
-  metricProvidersRegistry: MetricProvidersRegistry;
-}
 
 export class Scheduler {
   private readonly auth: AuthService;
@@ -91,12 +81,12 @@ export class Scheduler {
     this.tasks = [
       {
         name: CLEANUP_EXPIRED_METRICS_ID,
-        task: new CleanupExpiredMetricsTask(
-          this.scheduler,
-          this.logger,
-          this.database,
-          this.config,
-        ),
+        task: new CleanupExpiredMetricsTask({
+          scheduler: this.scheduler,
+          logger: this.logger,
+          database: this.database,
+          config: this.config,
+        }),
       },
     ];
   }
@@ -108,12 +98,14 @@ export class Scheduler {
       this.tasks.push({
         name: provider.getProviderId(),
         task: new PullMetricsByProviderTask(
-          this.scheduler,
-          this.logger,
-          this.database,
-          this.config,
-          this.catalog,
-          this.auth,
+          {
+            scheduler: this.scheduler,
+            logger: this.logger,
+            database: this.database,
+            config: this.config,
+            catalog: this.catalog,
+            auth: this.auth,
+          },
           provider,
         ),
       });

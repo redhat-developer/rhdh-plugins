@@ -23,24 +23,35 @@ import { CLEANUP_EXPIRED_METRICS_ID } from '../constants';
 import { v4 as uuid } from 'uuid';
 import { daysToMilliseconds } from './utils';
 import type { Config } from '@backstage/config';
-import { SchedulerTask } from '../types';
+import { SchedulerTask, SchedulerOptions } from '../types';
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 
+type Options = Pick<
+  SchedulerOptions,
+  'scheduler' | 'logger' | 'database' | 'config'
+>;
+
 export class CleanupExpiredMetricsTask implements SchedulerTask {
+  private readonly config: Config;
+  private readonly logger: LoggerService;
+  private readonly scheduler: SchedulerService;
+  private readonly database: DatabaseMetricValues;
+
   private static readonly CLEANUP_SCHEDULE: SchedulerServiceTaskScheduleDefinition =
     {
       frequency: { days: 1 },
       timeout: { minutes: 2 },
       initialDelay: { seconds: 3 },
     };
+
   private static readonly DEFAULT_DATA_RETENTION_DAYS = 365;
 
-  constructor(
-    private readonly scheduler: SchedulerService,
-    private readonly logger: LoggerService,
-    private readonly database: DatabaseMetricValues,
-    private readonly config: Config,
-  ) {}
+  constructor(options: Options) {
+    this.config = options.config;
+    this.logger = options.logger;
+    this.scheduler = options.scheduler;
+    this.database = options.database;
+  }
 
   async start(): Promise<void> {
     const taskRunner = this.scheduler.createScheduledTaskRunner(
@@ -71,15 +82,10 @@ export class CleanupExpiredMetricsTask implements SchedulerTask {
       Date.now() - daysToMilliseconds(dataRetentionDays),
     );
 
-    try {
-      const deletedCount = await this.database.cleanupExpiredMetrics(olderThan);
-      logger.info(
-        `Deleted ${deletedCount} expired metrics older than ${dataRetentionDays} days`,
-      );
-    } catch (error) {
-      logger.error(`Failed to cleanup expired metrics:`, error);
-      throw error;
-    }
+    const deletedCount = await this.database.cleanupExpiredMetrics(olderThan);
+    logger.info(
+      `Deleted ${deletedCount} expired metrics older than ${dataRetentionDays} days`,
+    );
   }
 
   private getDataRetentionDays(): number {

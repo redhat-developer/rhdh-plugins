@@ -68,12 +68,14 @@ describe('PullMetricsByProviderTask', () => {
     );
 
     task = new PullMetricsByProviderTask(
-      mockScheduler,
-      mockLogger,
-      mockDatabase,
-      mockConfig,
-      mockCatalog,
-      mockAuth,
+      {
+        scheduler: mockScheduler,
+        logger: mockLogger,
+        database: mockDatabase,
+        config: mockConfig,
+        catalog: mockCatalog,
+        auth: mockAuth,
+      },
       mockProvider,
     );
   });
