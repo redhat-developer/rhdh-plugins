@@ -1,5 +1,30 @@
 ### Dependencies
 
+## 2.2.0
+
+### Minor Changes
+
+- 149804f: Disable Next button when active widgets are fetching and processing data
+  - Add isFetching state tracking to StepperContext using a counter to monitor multiple concurrent async operations
+  - Update OrchestratorFormToolbar to disable Next button when isFetching is true (in addition to existing isValidating check)
+  - Add handleFetchStarted and handleFetchEnded callbacks to OrchestratorFormContextProps to allow widgets to report their loading status
+  - Update useFetchAndEvaluate to track complete loading state (fetch + template evaluation) and notify context
+  - Create useProcessingState custom hook to reduce code duplication across widgets, providing a reusable pattern for tracking both fetch and processing states
+  - Refactor SchemaUpdater, ActiveTextInput, ActiveDropdown, and ActiveMultiSelect to use useProcessingState hook
+  - Track the complete loading lifecycle: fetch → process → ready, ensuring Next button is disabled until all async work completes
+  - Prevents race conditions where Next button becomes enabled before widgets finish processing data
+
+- 8b1ce63: Prune obsolete properties from form data before Review and Submit
+  - Update `OrchestratorForm` to prune form data before passing to Review step and execution
+  - Fixes issue where SchemaUpdater dynamically adds/removes fields but old values remain in form state
+  - Ensures only properties that exist in the final schema version are displayed on Review page and submitted
+  - Prevents stale data from previous schema versions from being included in workflow execution
+
+### Patch Changes
+
+- Updated dependencies [149804f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes
