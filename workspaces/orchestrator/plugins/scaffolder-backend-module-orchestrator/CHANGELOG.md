@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.2.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+
 ## 1.1.0
 
 ### Minor Changes

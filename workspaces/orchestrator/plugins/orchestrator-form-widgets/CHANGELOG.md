@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.4.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.3.0
+
 ## 1.3.0
 
 ### Minor Changes
