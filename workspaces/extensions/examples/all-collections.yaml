@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: extensions-plugin-demo
+  name: all-collections
+  description: A collection of extensions plugin collections
+spec:
+  targets:
+    - ./collections/featured.yaml
+    - ./collections/kubernetes.yaml

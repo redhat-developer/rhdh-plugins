@@ -1,0 +1,4 @@
+playwright.config.ts
+.eslintrc.js
+.prettierrc.js
+coverage
