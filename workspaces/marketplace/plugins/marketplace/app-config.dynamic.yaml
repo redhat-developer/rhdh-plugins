@@ -1,17 +1,20 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-marketplace:
+      translationResources:
+        - importName: marketplaceTranslations
+          ref: marketplaceTranslationRef
+          module: Alpha
       appIcons:
-        - name: marketplace
-          importName: MarketplaceIcon
+        - name: pluginsIcon
+          importName: PluginsIcon
       dynamicRoutes:
-        - path: /extensions/catalog
+        - path: /extensions
           importName: DynamicMarketplacePluginRouter
-      mountPoints:
-        - mountPoint: application/provider
-          importName: InstallationContextProvider
-        - mountPoint: internal.plugins/tab
-          importName: DynamicMarketplacePluginContent
-          config:
-            path: extensions
-            title: Catalog
+          menuItem:
+            icon: pluginsIcon
+            text: Extensions
+            textKey: menuItem.extensions
+      menuItems:
+        extensions:
+          parent: default.admin
