@@ -7,10 +7,10 @@ SUBJECT_REJECTED = "REJECTED"
 SUBJECT_ALLOWED = "ALLOWED"
 
 # Default responses
-INVALID_QUERY_RESP = (
-    "Hi, I'm the Red Hat Developer Hub Lightspeed assistant, I can help you with questions about Red Hat Developer Hub or Backstage. "
-    "Please ensure your question is about these topics, and feel free to ask again!"
-)
+INVALID_QUERY_RESP = """
+Hi, I'm the Red Hat Developer Hub Lightspeed assistant, I can help you with questions about Red Hat Developer Hub or Backstage.
+Please ensure your question is about these topics, and feel free to ask again!
+"""
 
 QUERY_SYSTEM_INSTRUCTION = """
 1. Purpose
@@ -107,6 +107,7 @@ Use the previous chat history to interact and help the user.
 
 # {{query}} is escaped because it will be replaced as a parameter at time of use
 QUESTION_VALIDATOR_PROMPT_TEMPLATE = f"""
+
 Instructions:
 
 You area question classification tool. You are an expert in the following categories:
@@ -130,6 +131,7 @@ If a question is not related to your expert categories, answer with {SUBJECT_REJ
 
 You do not need to explain your answer.
 
+Below are some example questions:
 Example Question:
 Why is the sky blue?
 Example Response:
@@ -146,7 +148,7 @@ Example Response:
 {SUBJECT_ALLOWED}
 
 Example Question:
-How do I accomplish $task in RHDH?
+How do I accomplish a task in RHDH?
 Example Response:
 {SUBJECT_ALLOWED}
 
