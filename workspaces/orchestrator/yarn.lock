@@ -11135,6 +11135,7 @@ __metadata:
     "@types/json-schema": 7.0.15
     "@types/lodash": ^4.14.151
     "@types/react": ^18.2.58
+    json-schema: ^0.4.0
     json-schema-library: ^9.0.0
     lodash: ^4.17.21
     prettier: 3.6.2
