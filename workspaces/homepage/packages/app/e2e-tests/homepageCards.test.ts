@@ -77,12 +77,12 @@ test.describe('Homepage Card Individual Tests', () => {
     // Verify entity links are visible
     await testUtils.verifyLinkInCard(
       'Explore Your Software Catalog',
-      'examples',
+      'red-hat-developer-hub-homepage',
     );
 
     await testUtils.verifyLinkInCard(
       'Explore Your Software Catalog',
-      'example-grpc-api',
+      'examples',
     );
 
     // Verify "View all" link
