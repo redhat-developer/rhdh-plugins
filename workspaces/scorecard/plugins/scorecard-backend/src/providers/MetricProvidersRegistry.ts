@@ -107,7 +107,12 @@ export class MetricProvidersRegistry {
     return Array.from(this.metricProviders.values());
   }
 
-  listMetrics(): Metric[] {
+  listMetrics(providerIds?: string[]): Metric[] {
+    if (providerIds && providerIds.length !== 0) {
+      return providerIds
+        .map(providerId => this.metricProviders.get(providerId)?.getMetric())
+        .filter((m): m is Metric => m !== undefined);
+    }
     return [...this.metricProviders.values()].map(provider =>
       provider.getMetric(),
     );

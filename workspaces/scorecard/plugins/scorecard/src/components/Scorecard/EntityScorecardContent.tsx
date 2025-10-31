@@ -24,7 +24,6 @@ import NoScorecardsState from '../Common/NoScorecardsState';
 import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
 import { getStatusConfig } from '../../utils/utils';
-import { useScorecardMetricsReadPermission } from '../../hooks/useScorecardMetricsReadPermission';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -32,12 +31,7 @@ export const EntityScorecardContent = () => {
   const { scorecards, loadingData, error } = useScorecards();
   const { t } = useTranslation();
 
-  const {
-    allowed: hasReadScorecardMetricsPermission,
-    loading: loadingPermission,
-  } = useScorecardMetricsReadPermission();
-
-  if (loadingData || loadingPermission) {
+  if (loadingData) {
     return (
       <Box
         display="flex"
@@ -50,11 +44,10 @@ export const EntityScorecardContent = () => {
     );
   }
 
-  if (!hasReadScorecardMetricsPermission) {
-    return <PermissionRequiredState />;
-  }
-
   if (error) {
+    if (error.message?.includes('NotAllowedError')) {
+      return <PermissionRequiredState />;
+    }
     return <ResponseErrorPanel error={error} />;
   }
 

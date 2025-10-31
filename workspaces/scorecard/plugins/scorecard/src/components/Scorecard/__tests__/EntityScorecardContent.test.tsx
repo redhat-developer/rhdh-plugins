@@ -83,10 +83,6 @@ jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
 }));
 
-jest.mock('../../../hooks/useScorecardMetricsReadPermission', () => ({
-  useScorecardMetricsReadPermission: jest.fn(),
-}));
-
 jest.mock('../../../utils/utils', () => ({
   getStatusConfig: jest.fn(),
 }));
@@ -148,20 +144,11 @@ const mockDataWithMetrics = [
 
 // Get the mocked functions
 const { useScorecards } = require('../../../hooks/useScorecards');
-const {
-  useScorecardMetricsReadPermission,
-} = require('../../../hooks/useScorecardMetricsReadPermission');
 const { getStatusConfig } = require('../../../utils/utils');
 
 describe('EntityScorecardContent Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Default permission mock - user has permission
-    useScorecardMetricsReadPermission.mockReturnValue({
-      allowed: true,
-      loading: false,
-    });
 
     getStatusConfig.mockReturnValue({
       color: 'green',
@@ -181,33 +168,14 @@ describe('EntityScorecardContent Component', () => {
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
-  it('should render loading state when permission is loading', () => {
-    useScorecards.mockReturnValue({
-      scorecards: mockDataWithMetrics,
-      loadingData: false,
-      error: undefined,
-    });
-
-    useScorecardMetricsReadPermission.mockReturnValue({
-      allowed: false,
-      loading: true,
-    });
-
-    render(<EntityScorecardContent />);
-
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-  });
-
   it('should render permission required state when user does not have permission', () => {
     useScorecards.mockReturnValue({
       scorecards: mockDataWithMetrics,
       loadingData: false,
-      error: undefined,
-    });
-
-    useScorecardMetricsReadPermission.mockReturnValue({
-      allowed: false,
-      loading: false,
+      error: {
+        message:
+          'Failed to fetch scorecards: 403 Forbidden. {"error":{"name":"NotAllowedError"}}',
+      },
     });
 
     render(<EntityScorecardContent />);

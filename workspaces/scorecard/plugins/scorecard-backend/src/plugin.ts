@@ -80,6 +80,9 @@ export const scorecardPlugin = createBackendPlugin({
       }) {
         permissionsRegistry.addResourceType({
           resourceRef: scorecardMetricPermissionResourceRef,
+          getResources: async (resourceRefs: string[]) => {
+            return metricProvidersRegistry.listMetrics(resourceRefs);
+          },
           permissions: scorecardPermissions,
           rules: Object.values(scorecardRules),
         });
