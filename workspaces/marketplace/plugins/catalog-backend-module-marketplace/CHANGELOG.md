@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.12.0
+
+### Minor Changes
+
+- f8e6f04: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [f8e6f04]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.12.0
+
 ## 0.7.1
 
 ### Patch Changes
