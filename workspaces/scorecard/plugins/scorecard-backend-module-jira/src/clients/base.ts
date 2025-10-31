@@ -17,7 +17,7 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { JiraEntityFilters, JiraOptions, RequestOptions } from './types';
-import { JIRA_OPTIONS_PATH, JIRA_MANDATORY_FILTER } from '../constants';
+import { JIRA_MANDATORY_FILTER, OPEN_ISSUES_CONFIG_PATH } from '../constants';
 import { ScorecardJiraAnnotations } from '../annotations';
 import { sanitizeValue, validateIdentifier, validateJQLValue } from './utils';
 import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
@@ -32,7 +32,9 @@ export abstract class JiraClient {
   constructor(rootConfig: Config, connectionStrategy: ConnectionStrategy) {
     this.connectionStrategy = connectionStrategy;
 
-    const jiraOptions = rootConfig.getOptionalConfig(JIRA_OPTIONS_PATH);
+    const jiraOptions = rootConfig.getOptionalConfig(
+      `${OPEN_ISSUES_CONFIG_PATH}.options`,
+    );
     if (jiraOptions) {
       this.options = {
         mandatoryFilter: jiraOptions.getOptionalString('mandatoryFilter'),

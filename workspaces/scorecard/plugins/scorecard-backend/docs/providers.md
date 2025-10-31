@@ -33,18 +33,19 @@ yarn --cwd plugins/scorecard-backend-module-my-datasource add @red-hat-developer
 Create the metric provider in the newly created plugin module `/plugins/scorecard-backend-module-my-datasource/src/metricProviders/MyMetricProvider.ts` and populate it with the following:
 
 ```typescript
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class MyMetricProvider implements MetricProvider<'number'> {
   // The datasource identifier for this provider
   getProviderDatasourceId(): string {
-    return 'my-datasource';
+    return 'my_datasource';
   }
 
   // The unique provider ID that combines datasource and metric name
   getProviderId(): string {
-    return 'my-datasource.example-metric';
+    return 'my_datasource.example_metric';
   }
 
   // Returns the metric definition
@@ -67,9 +68,12 @@ export class MyMetricProvider implements MetricProvider<'number'> {
     };
   }
 
-  // Determines whether this metric can be calculated for a specific entity (e.g., based on annotations)
-  supportsEntity(_: Entity): boolean {
-    return true;
+  // Returns a catalog filter that specifies which entities this metric provider can process.
+  // Use CATALOG_FILTER_EXISTS to check for the presence of specific annotations or fields.
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.my_datasource/project': CATALOG_FILTER_EXISTS,
+    };
   }
 
   // Calculates and returns the metric value
@@ -135,8 +139,32 @@ backend.add(
 Your metric provider will now be automatically registered and available through the Scorecard API endpoints. To confirm, try running `metrics` endpoint which should return your defined metrics:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics?datasource=my-datasource" -H "Content-Type: application/json" -H "Authorization: Bearer $token"
+curl -X GET "{{url}}/api/scorecard/metrics?datasource=my_datasource" -H "Content-Type: application/json" -H "Authorization: Bearer $token"
 ```
+
+## Metric Collection Scheduling
+
+The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers. Each metric provider runs on its own schedule to collect and store metric values in the database.
+
+You can customize the schedule for any metric provider by adding a `schedule` configuration in your `app-config.yaml`, under path `scorecard.plugins.{datasourceId}.{metricName}`:
+
+```yaml
+scorecard:
+  plugins:
+    my_datasource:
+      example_metric:
+        schedule:
+          frequency:
+            cron: '0 6 * * *'
+          timeout:
+            minutes: 5
+          initialDelay:
+            seconds: 5
+```
+
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
+
+Make sure the configured schedule stays within provider API rate limits.
 
 ## Example Metric Providers
 
