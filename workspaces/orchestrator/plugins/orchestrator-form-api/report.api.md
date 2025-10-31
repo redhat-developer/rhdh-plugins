@@ -38,6 +38,8 @@ export type OrchestratorFormContextProps = {
     setAuthTokenDescriptors: (authTokenDescriptors: AuthTokenDescriptor[]) => void;
     getIsChangedByUser: (id: string) => boolean;
     setIsChangedByUser: (id: string, isChangedByUser: boolean) => void;
+    handleFetchStarted?: () => void;
+    handleFetchEnded?: () => void;
 };
 
 // @public
@@ -58,7 +60,7 @@ export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:98:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:100:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 

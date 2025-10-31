@@ -34,6 +34,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 export const AdoptionInsightsPage = () => {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMediumScreen = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const { allowed: hasEventsReadPermission, loading } =
     useAdoptionInsightsEventsReadPermission();
   const { t } = useTranslation();
@@ -41,6 +43,13 @@ export const AdoptionInsightsPage = () => {
   if (loading) {
     return null;
   }
+
+  const getColumns = () => {
+    if (isSmallScreen) return 1;
+    if (isMediumScreen) return 1;
+    if (isLargeScreen) return 2;
+    return 1;
+  };
 
   return (
     <Page themeId="home">
@@ -52,7 +61,7 @@ export const AdoptionInsightsPage = () => {
         <DateRangeProvider>
           <InsightsHeader title={t('page.title')} />
           <Content>
-            <Masonry columns={isSmallScreen ? 1 : 2} spacing={2}>
+            <Masonry columns={getColumns()} spacing={2}>
               <ActiveUsers />
               <Users />
               <Templates />

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.0.1
+
+### Patch Changes
+
+- 4fcf3d4: update the question validation prompt
+
 ## 1.0.0
 
 ### Major Changes

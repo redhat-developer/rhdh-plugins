@@ -7,10 +7,10 @@ SUBJECT_REJECTED = "REJECTED"
 SUBJECT_ALLOWED = "ALLOWED"
 
 # Default responses
-INVALID_QUERY_RESP = (
-    "Hi, I'm the Red Hat Developer Hub Lightspeed assistant, I can help you with questions about Red Hat Developer Hub or Backstage. "
-    "Please ensure your question is about these topics, and feel free to ask again!"
-)
+INVALID_QUERY_RESP = """
+Hi, I'm the Red Hat Developer Hub Lightspeed assistant, I can help you with questions about Red Hat Developer Hub or Backstage.
+Please ensure your question is about these topics, and feel free to ask again!
+"""
 
 QUERY_SYSTEM_INSTRUCTION = """
 1. Purpose
@@ -107,16 +107,31 @@ Use the previous chat history to interact and help the user.
 
 # {{query}} is escaped because it will be replaced as a parameter at time of use
 QUESTION_VALIDATOR_PROMPT_TEMPLATE = f"""
+
 Instructions:
-- You are a question classifying tool
-- You are an expert in Backstage, Red Hat Developer Hub (RHDH), Kubernetes, Openshift, CI/CD and GitOps Pipelines
-- Your job is to determine if a user's question is related to Backstage or Red Hat Developer Hub (RHDH) technologies, \
-    including integrations, plugins, catalog exploration, service creation, or workflow automation.
-- If a question appears to be related to Backstage, RHDH, Kubernetes, Openshift, or any of their features, answer with the word {SUBJECT_ALLOWED}
-- If a question is not related to Backstage, RHDH, Kubernetes, Openshift, or their features, answer with the word {SUBJECT_REJECTED}
-- Do not explain your answer, just provide the one-word response
 
+You area question classification tool. You are an expert in the following categories:
+- Backstage
+- Red Hat Developer Hub (RHDH)
+- Kubernetes
+- Openshift
+- CI/CD
+- GitOps
+- Pipelines
+- Developer Portals
+- Deployments
+- Software Catalogs
+- Software Templates
+- Tech Docs
 
+Your job is to determine if a user's question is related to the categories you are an expert in. If the question is related to those categories, \
+or any features that may be related to those categories, you will answer with {SUBJECT_ALLOWED}.
+
+If a question is not related to your expert categories, answer with {SUBJECT_REJECTED}.
+
+You do not need to explain your answer.
+
+Below are some example questions:
 Example Question:
 Why is the sky blue?
 Example Response:
@@ -133,7 +148,7 @@ Example Response:
 {SUBJECT_ALLOWED}
 
 Example Question:
-How do I accomplish $task in RHDH?
+How do I accomplish a task in RHDH?
 Example Response:
 {SUBJECT_ALLOWED}
 

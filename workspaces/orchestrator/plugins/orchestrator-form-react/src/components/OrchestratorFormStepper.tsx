@@ -97,7 +97,8 @@ const OrchestratorFormStepper = ({
 
 export const OrchestratorFormToolbar = () => {
   const { t } = useTranslation();
-  const { activeStep, handleBack, isValidating } = useStepperContext();
+  const { activeStep, handleBack, isValidating, isFetching } =
+    useStepperContext();
   const { classes } = useStyles();
 
   return (
@@ -109,7 +110,9 @@ export const OrchestratorFormToolbar = () => {
       >
         {t('common.back')}
       </Button>
-      <SubmitButton submitting={isValidating}>{t('common.next')}</SubmitButton>
+      <SubmitButton submitting={isValidating || isFetching}>
+        {t('common.next')}
+      </SubmitButton>
     </div>
   );
 };
