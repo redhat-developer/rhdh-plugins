@@ -39,6 +39,7 @@ export const RepositoriesTableBody = ({
   selectedRepos,
   isDrawer,
   isApprovalToolGitlab = false,
+  refetchTrigger,
 }: {
   loading: boolean;
   ariaLabel: string;
@@ -50,6 +51,7 @@ export const RepositoriesTableBody = ({
   isDrawer?: boolean;
   showOrganizations?: boolean;
   isApprovalToolGitlab?: boolean;
+  refetchTrigger?: number;
 }) => {
   const { t } = useTranslation();
   const isSelected = (id: string) => {
@@ -97,6 +99,7 @@ export const RepositoriesTableBody = ({
               isItemSelected={isItemSelected}
               data={row}
               isDrawer={isDrawer}
+              refetchTrigger={refetchTrigger}
             />
           );
         })}
@@ -126,7 +129,11 @@ export const RepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            {t('repositories.noRecordsFound')}
+            {t(
+              isApprovalToolGitlab
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         </td>
       </tr>
