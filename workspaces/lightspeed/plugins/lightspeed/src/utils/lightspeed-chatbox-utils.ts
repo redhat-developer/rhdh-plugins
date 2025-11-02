@@ -167,7 +167,7 @@ export const getConversationsData = (
           ? new Date(conversation.completed_at).getTime()
           : Date.now(),
       ),
-      referencedDocuments: botMessage?.referencedDocuments ?? [],
+      referenced_documents: botMessage?.referenced_documents ?? [],
     },
   ];
 };

@@ -27,6 +27,7 @@ import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-p
 
 import { TranslationFunction } from '../hooks/useTranslation';
 import generateUiSchema from '../utils/generateUiSchema';
+import { pruneFormData } from '../utils/pruneFormData';
 import { StepperContextProvider } from '../utils/StepperContext';
 import OrchestratorFormWrapper from './OrchestratorFormWrapper';
 import ReviewStep from './ReviewStep';
@@ -114,6 +115,20 @@ const OrchestratorForm = ({
     initialFormData ? () => structuredClone(initialFormData) : {},
   );
 
+  const [changedByUserMap, setChangedByUserMap] = useState<
+    Record<string, boolean>
+  >({});
+  const getIsChangedByUser = useCallback(
+    (id: string) => !!changedByUserMap[id],
+    [changedByUserMap],
+  );
+  const setIsChangedByUser = useCallback(
+    (id: string, isChangedByUser: boolean) => {
+      setChangedByUserMap(prev => ({ ...prev, [id]: isChangedByUser }));
+    },
+    [],
+  );
+
   const schema = useMemo(() => removeHiddenSteps(rawSchema), [rawSchema]);
 
   const numStepsInMultiStepSchema = useMemo(
@@ -122,9 +137,16 @@ const OrchestratorForm = ({
   );
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
 
+  // Prune form data to remove properties that no longer exist in the schema
+  // This handles the case where SchemaUpdater dynamically adds/removes fields
+  const prunedFormData = useMemo(() => {
+    return pruneFormData(formData, schema);
+  }, [formData, schema]);
+
   const _handleExecute = useCallback(() => {
-    handleExecute(formData);
-  }, [formData, handleExecute]);
+    // Use pruned data for execution to avoid submitting stale properties
+    handleExecute(prunedFormData);
+  }, [prunedFormData, handleExecute]);
 
   const onSubmit = useCallback(
     (_formData: JsonObject) => {
@@ -140,14 +162,14 @@ const OrchestratorForm = ({
   const reviewStep = useMemo(
     () => (
       <ReviewStep
-        data={formData}
+        data={prunedFormData}
         schema={schema}
         busy={isExecuting}
         handleExecute={_handleExecute}
         // no schema update here
       />
     ),
-    [formData, schema, isExecuting, _handleExecute],
+    [prunedFormData, schema, isExecuting, _handleExecute],
   );
 
   return (
@@ -162,6 +184,8 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          getIsChangedByUser={getIsChangedByUser}
+          setIsChangedByUser={setIsChangedByUser}
         >
           <Fragment />
         </OrchestratorFormWrapper> // it is required to pass the fragment so rjsf won't generate a Submit button
@@ -174,6 +198,8 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          getIsChangedByUser={getIsChangedByUser}
+          setIsChangedByUser={setIsChangedByUser}
         />
       )}
     </StepperContextProvider>

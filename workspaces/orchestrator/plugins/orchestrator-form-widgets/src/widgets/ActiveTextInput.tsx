@@ -36,6 +36,7 @@ import {
   useFetch,
   applySelectorArray,
   applySelectorString,
+  useProcessingState,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -56,6 +57,8 @@ export const ActiveTextInput: Widget<
 
   const { id, label, value, onChange, formContext } = props;
   const formData = formContext?.formData;
+  const isChangedByUser = !!formContext?.getIsChangedByUser(id);
+  const setIsChangedByUser = formContext?.setIsChangedByUser;
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
@@ -74,6 +77,9 @@ export const ActiveTextInput: Widget<
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
 
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
+
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
     formData,
@@ -83,11 +89,22 @@ export const ActiveTextInput: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
+
   const handleChange = useCallback(
-    (changed: string) => {
+    (changed: string, isByUser: boolean) => {
+      if (isByUser && setIsChangedByUser) {
+        // we must handle this change out of this component's state since the component can be (de)mounted on wizard transitions or by the SchemaUpdater
+        setIsChangedByUser(id, true);
+      }
       onChange(changed);
     },
-    [onChange],
+    [onChange, id, setIsChangedByUser],
   );
 
   useEffect(() => {
@@ -96,25 +113,32 @@ export const ActiveTextInput: Widget<
     }
 
     const doItAsync = async () => {
-      if (value === undefined) {
-        // loading default so do it only once
-        const defaultValue = await applySelectorString(
-          data,
-          defaultValueSelector,
-        );
+      await wrapProcessing(async () => {
+        if (!isChangedByUser) {
+          // loading default so replace the value unless the user touched the field
+          const defaultValue = await applySelectorString(
+            data,
+            defaultValueSelector,
+          );
 
-        if (defaultValue && defaultValue !== null && defaultValue !== 'null') {
-          handleChange(defaultValue);
+          if (
+            value !== defaultValue &&
+            defaultValue &&
+            defaultValue !== null &&
+            defaultValue !== 'null'
+          ) {
+            handleChange(defaultValue, false);
+          }
         }
-      }
 
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-        );
-        setAutocompleteOptions(autocompleteValues);
-      }
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
+            data,
+            autocompleteSelector,
+          );
+          setAutocompleteOptions(autocompleteValues);
+        }
+      });
     };
 
     doItAsync();
@@ -125,13 +149,15 @@ export const ActiveTextInput: Widget<
     props.id,
     value,
     handleChange,
+    isChangedByUser,
+    wrapProcessing,
   ]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  if (completeLoading) {
     return <CircularProgress size={20} />;
   }
 
@@ -140,7 +166,7 @@ export const ActiveTextInput: Widget<
       <TextField
         {...params}
         data-testid={`${id}-textfield`}
-        onChange={event => handleChange(event.target.value)}
+        onChange={event => handleChange(event.target.value, true)}
         label={label}
         disabled={isReadOnly}
       />
@@ -152,7 +178,7 @@ export const ActiveTextInput: Widget<
           options={autocompleteOptions}
           data-testid={`${id}-autocomplete`}
           value={value}
-          onChange={(_, v) => handleChange(v)}
+          onChange={(_, v) => handleChange(v, true)}
           disabled={isReadOnly}
           renderInput={renderInput}
           renderOption={(liProps, item, state) => {
@@ -180,7 +206,7 @@ export const ActiveTextInput: Widget<
       <TextField
         value={value ?? ''}
         data-testid={`${id}-textfield`}
-        onChange={event => handleChange(event.target.value)}
+        onChange={event => handleChange(event.target.value, true)}
         label={label}
       />
     </FormControl>

@@ -138,7 +138,7 @@ export const useConversationMessages = (
               content: aiMessage.content,
               timestamp: aiMessage.timestamp,
               sources: transformDocumentsToSources(
-                aiMessage?.referencedDocuments ?? [],
+                aiMessage?.referenced_documents ?? [],
               ),
             }),
           ],

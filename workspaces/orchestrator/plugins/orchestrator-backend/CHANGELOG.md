@@ -1,5 +1,22 @@
 ### Dependencies
 
+## 8.4.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+
+## 8.3.0
+
+### Minor Changes
+
+- fceb33e: Removal of deprecated package @backstage/backend-tasks
+
 ## 8.2.0
 
 ### Minor Changes

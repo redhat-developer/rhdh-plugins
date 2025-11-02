@@ -34,6 +34,7 @@ import {
   applySelectorArray,
   useFetch,
   useRetriggerEvaluate,
+  useProcessingState,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -58,6 +59,8 @@ export const ActiveMultiSelect: Widget<
   const { id, name, label, value: rawValue, onChange, formContext } = props;
   const value = rawValue as string[];
   const formData = formContext?.formData;
+  const isChangedByUser = !!formContext?.getIsChangedByUser(id);
+  const setIsChangedByUser = formContext?.setIsChangedByUser;
 
   const uiProps = useMemo(
     () => (props.options.props ?? {}) as UiProps,
@@ -76,7 +79,6 @@ export const ActiveMultiSelect: Widget<
       ? undefined
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
-  const [isTouched, setIsTouched] = useState(false);
   const [inProgressItem, setInProgressItem] = useState<string | undefined>();
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
@@ -89,6 +91,9 @@ export const ActiveMultiSelect: Widget<
     return autocompleteOptions || [];
   }, [inProgressItem, autocompleteOptions, allowNewItems]);
 
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
+
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
     formData,
@@ -98,48 +103,57 @@ export const ActiveMultiSelect: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
+
   useEffect(() => {
     if (!data) {
       return;
     }
 
     const doItAsync = async () => {
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-          true,
-          true,
-        );
-        setAutocompleteOptions(autocompleteValues);
-      }
-
-      let defaults: string[] = [];
-      if (!isTouched) {
-        // set this just once, when the user has not touched the field
-        if (defaultValueSelector) {
-          defaults = await applySelectorArray(
+      await wrapProcessing(async () => {
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
             data,
-            defaultValueSelector,
+            autocompleteSelector,
             true,
             true,
           );
-          // no need to persist the defaults, they are used only once
+          setAutocompleteOptions(autocompleteValues);
         }
-      }
 
-      let mandatory: string[] = [];
-      if (mandatorySelector) {
-        mandatory = await applySelectorArray(data, mandatorySelector, true);
-        setMandatoryValues(mandatory);
-      }
+        let defaults: string[] = [];
+        if (!isChangedByUser) {
+          // set this just once, when the user has not touched the field
+          if (defaultValueSelector) {
+            defaults = await applySelectorArray(
+              data,
+              defaultValueSelector,
+              true,
+              true,
+            );
+            // no need to persist the defaults, they are used only once
+          }
+        }
 
-      if (
-        !mandatory.every(item => value.includes(item)) ||
-        !defaults.every(item => value.includes(item))
-      ) {
-        onChange([...new Set([...mandatory, ...value, ...defaults])]);
-      }
+        let mandatory: string[] = [];
+        if (mandatorySelector) {
+          mandatory = await applySelectorArray(data, mandatorySelector, true);
+          setMandatoryValues(mandatory);
+        }
+
+        if (
+          !mandatory.every(item => value.includes(item)) ||
+          !defaults.every(item => value.includes(item))
+        ) {
+          onChange([...new Set([...mandatory, ...value, ...defaults])]);
+        }
+      });
     };
 
     doItAsync();
@@ -147,18 +161,21 @@ export const ActiveMultiSelect: Widget<
     autocompleteSelector,
     mandatorySelector,
     defaultValueSelector,
-    isTouched,
+    isChangedByUser,
     data,
     props.id,
     value,
     onChange,
+    wrapProcessing,
   ]);
 
   const handleChange = (
     _: SyntheticEvent,
     changed: AutocompleteValue<string[], false, false, false>,
   ) => {
-    setIsTouched(true);
+    if (setIsChangedByUser) {
+      setIsChangedByUser(id, true);
+    }
     setInProgressItem(undefined);
     onChange(changed);
   };
@@ -167,7 +184,7 @@ export const ActiveMultiSelect: Widget<
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  if (completeLoading) {
     return <CircularProgress size={20} />;
   }
 

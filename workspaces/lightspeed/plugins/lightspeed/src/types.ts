@@ -57,7 +57,7 @@ export interface LCSConversation {
   messages: BaseMessage[];
   started_at: string;
   completed_at: string;
-  referencedDocuments?: ReferencedDocuments;
+  referenced_documents?: ReferencedDocuments;
 }
 
 export interface LCSShield {
@@ -75,7 +75,7 @@ export interface BaseMessage {
   model: string;
   timestamp: string;
   sources?: SourcesCardProps;
-  referencedDocuments?: ReferencedDocuments;
+  referenced_documents?: ReferencedDocuments;
   error?: AlertProps;
 }
 export type ConversationSummary = {

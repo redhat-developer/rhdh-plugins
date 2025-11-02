@@ -15,7 +15,7 @@
  */
 
 import { JsonObject } from '@backstage/types/index';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UiProps } from '../uiPropTypes';
 import { getErrorMessage } from './errorUtils';
 import { evaluateTemplateString } from './evaluateTemplate';
@@ -30,6 +30,8 @@ export const useFetchAndEvaluate = (
   formData: JsonObject,
   uiProps: UiProps,
   fieldId: string,
+  handleFetchStarted?: () => void,
+  handleFetchEnded?: () => void,
 ) => {
   const unitEvaluator = useTemplateUnitEvaluator();
   const retrigger = useRetriggerEvaluate(
@@ -88,9 +90,24 @@ export const useFetchAndEvaluate = (
       template,
     ],
   );
+
+  // Track the complete loading state (fetch + evaluation) in the parent context
+  const completeLoading = loading || fetchLoading;
+  useEffect(() => {
+    if (completeLoading && handleFetchStarted) {
+      handleFetchStarted();
+      return () => {
+        if (handleFetchEnded) {
+          handleFetchEnded();
+        }
+      };
+    }
+    return undefined;
+  }, [completeLoading, handleFetchStarted, handleFetchEnded]);
+
   return {
     text: resultText,
-    loading: loading || fetchLoading,
+    loading: completeLoading,
     error: error ?? fetchError,
   };
 };

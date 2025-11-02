@@ -32,6 +32,7 @@ import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
   applySelectorArray,
+  useProcessingState,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -60,6 +61,9 @@ export const ActiveDropdown: Widget<
 
   const { id, label, value, onChange, formContext } = props;
   const formData = formContext?.formData;
+  const isChangedByUser = !!formContext?.getIsChangedByUser(id);
+  const setIsChangedByUser = formContext?.setIsChangedByUser;
+
   const labelId = `${props.id}-label`;
 
   const uiProps = useMemo(
@@ -79,6 +83,9 @@ export const ActiveDropdown: Widget<
   const [labels, setLabels] = useState<string[]>();
   const [values, setValues] = useState<string[]>();
 
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
+
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
     formData,
@@ -88,47 +95,61 @@ export const ActiveDropdown: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
+
   useEffect(() => {
     if (!data || !labelSelector || !valueSelector) {
       return;
     }
 
     const doItAsync = async () => {
-      const selectedLabels = await applySelectorArray(data, labelSelector);
-      const selectedValues = await applySelectorArray(data, valueSelector);
+      await wrapProcessing(async () => {
+        const selectedLabels = await applySelectorArray(data, labelSelector);
+        const selectedValues = await applySelectorArray(data, valueSelector);
 
-      if (selectedLabels.length !== selectedValues.length) {
-        setLocalError(
-          `Selected labels and values have different count (${selectedLabels.length} and ${selectedValues.length}) for ${props.id}`,
-        );
-        return;
-      }
+        if (selectedLabels.length !== selectedValues.length) {
+          setLocalError(
+            `Selected labels and values have different count (${selectedLabels.length} and ${selectedValues.length}) for ${props.id}`,
+          );
+          return;
+        }
 
-      setLabels(selectedLabels);
-      setValues(selectedValues);
+        setLabels(selectedLabels);
+        setValues(selectedValues);
+      });
     };
 
     doItAsync();
-  }, [labelSelector, valueSelector, data, props.id]);
+  }, [labelSelector, valueSelector, data, props.id, wrapProcessing]);
 
   const handleChange = useCallback(
-    (changed: string) => {
+    (changed: string, isByUser: boolean) => {
+      if (isByUser && setIsChangedByUser) {
+        // we must handle this change out of this component's state since the component can be (de)mounted on wizard transitions or by the SchemaUpdater
+        setIsChangedByUser(id, true);
+      }
       onChange(changed);
     },
-    [onChange],
+    [onChange, id, setIsChangedByUser],
   );
 
+  // set default value to the first one
   useEffect(() => {
-    if (!value && values && values.length > 0) {
-      handleChange(values[0]);
+    if (!isChangedByUser && values && values.length > 0) {
+      handleChange(values[0], false);
     }
-  }, [handleChange, value, values]);
+  }, [handleChange, value, values, isChangedByUser]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading || !labels || !values) {
+  if (completeLoading || !labels || !values) {
     return <CircularProgress size={20} />;
   }
 
@@ -142,7 +163,7 @@ export const ActiveDropdown: Widget<
         value={value}
         label={label}
         disabled={isReadOnly}
-        onChange={event => handleChange(event.target.value as string)}
+        onChange={event => handleChange(event.target.value as string, true)}
         MenuProps={{
           PaperProps: { sx: { maxHeight: '20rem' } },
         }}

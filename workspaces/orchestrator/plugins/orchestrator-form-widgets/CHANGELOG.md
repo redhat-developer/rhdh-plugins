@@ -1,5 +1,51 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.4.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.3.0
+
+## 1.3.0
+
+### Minor Changes
+
+- 149804f: Disable Next button when active widgets are fetching and processing data
+  - Add isFetching state tracking to StepperContext using a counter to monitor multiple concurrent async operations
+  - Update OrchestratorFormToolbar to disable Next button when isFetching is true (in addition to existing isValidating check)
+  - Add handleFetchStarted and handleFetchEnded callbacks to OrchestratorFormContextProps to allow widgets to report their loading status
+  - Update useFetchAndEvaluate to track complete loading state (fetch + template evaluation) and notify context
+  - Create useProcessingState custom hook to reduce code duplication across widgets, providing a reusable pattern for tracking both fetch and processing states
+  - Refactor SchemaUpdater, ActiveTextInput, ActiveDropdown, and ActiveMultiSelect to use useProcessingState hook
+  - Track the complete loading lifecycle: fetch → process → ready, ensuring Next button is disabled until all async work completes
+  - Prevents race conditions where Next button becomes enabled before widgets finish processing data
+
+### Patch Changes
+
+- Updated dependencies [149804f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.2.0
+
+## 1.2.0
+
+### Minor Changes
+
+- e86bce0: Add markdown rendering support to ActiveText widget
+  - Replace Typography component with MarkdownContent from @backstage/core-components
+  - Support both static markdown content and dynamic template variables in markdown
+  - Markdown features include headers, bold/italic text, lists, links, blockquotes, code blocks, and tables
+  - Remove deprecated ui:variant prop as markdown provides its own styling through syntax
+  - Update documentation to reflect markdown support and provide usage examples
+
+### Patch Changes
+
+- 4fa1356: In the active widgets, the default value received from an endpoint now replaces the actual value, unless the user has modified it.
+
 ## 1.1.0
 
 ### Minor Changes
