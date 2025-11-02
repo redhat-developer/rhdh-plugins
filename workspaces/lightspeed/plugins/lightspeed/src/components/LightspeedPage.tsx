@@ -53,6 +53,7 @@ const LightspeedPageInner = () => {
   const identityApi = useApi(identityApiRef);
 
   const { data: models } = useAllModels();
+
   const { allowed: hasViewAccess, loading } = useLightspeedViewPermission();
 
   const { value: profile, loading: profileLoading } = useAsync(
@@ -67,11 +68,13 @@ const LightspeedPageInner = () => {
   const modelsItems = useMemo(
     () =>
       models
-        ? models.map(m => ({
-            label: m.provider_resource_id,
-            value: m.provider_resource_id,
-            provider: m.provider_id,
-          }))
+        ? models
+            .filter(model => model.model_type === 'llm')
+            .map(m => ({
+              label: m.provider_resource_id,
+              value: m.provider_resource_id,
+              provider: m.provider_id,
+            }))
         : [],
     [models],
   );

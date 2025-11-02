@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.0.1
+
+### Patch Changes
+
+- 7ba5eb5: use only llm models in the model dropdown
+
 ## 1.0.0
 
 ### Major Changes

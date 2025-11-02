@@ -35,20 +35,20 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.4.2",
-    "@backstage/catalog-client": "^1.11.0",
+    "@backstage/backend-plugin-api": "^1.4.4",
+    "@backstage/catalog-client": "^1.12.0",
     "@backstage/catalog-model": "^1.7.5",
     "@backstage/errors": "^1.2.7",
-    "@backstage/plugin-permission-common": "^0.9.1"
+    "@backstage/plugin-permission-common": "^0.9.2"
   },
   "devDependencies": {
-    "@backstage/backend-test-utils": "^1.8.0",
-    "@backstage/cli": "^0.34.1",
-    "@backstage/core-plugin-api": "^1.10.9"
+    "@backstage/backend-test-utils": "^1.9.1",
+    "@backstage/cli": "^0.34.4",
+    "@backstage/core-plugin-api": "^1.11.1"
   },
   "peerDependencies": {
-    "@backstage/backend-plugin-api": "^1.4.2",
-    "@backstage/types": "^1.2.1"
+    "@backstage/backend-plugin-api": "^1.4.4",
+    "@backstage/types": "^1.2.2"
   },
   "files": [
     "dist"

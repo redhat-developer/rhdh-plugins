@@ -96,97 +96,121 @@ const Plugins = () => {
           : t('plugins.topNTitle' as any, { count: rowsPerPage.toString() })
       }
     >
-      <Table aria-labelledby="Plugins" sx={{ width: '100%' }}>
-        <TableHead>
-          <TableRow>
-            {PLUGINS_TABLE_HEADERS.map(header => {
-              return (
+      <Box sx={{ width: '100%' }}>
+        <Table aria-labelledby="Plugins" sx={{ width: '100%' }}>
+          <TableHead>
+            <TableRow>
+              {PLUGINS_TABLE_HEADERS.map(header => {
+                return (
+                  <TableCell
+                    key={header.id}
+                    align="left"
+                    sx={{
+                      borderBottom: theme =>
+                        `1px solid ${theme.palette.grey[300]}`,
+                    }}
+                  >
+                    {t(header.titleKey as any, {})}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
                 <TableCell
-                  key={header.id}
-                  align="left"
+                  colSpan={PLUGINS_TABLE_HEADERS.length}
+                  align="center"
+                >
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : (
+              visiblePlugins?.map(plugin => (
+                <TableRow
+                  key={plugin.plugin_id}
                   sx={{
+                    '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                     borderBottom: theme =>
                       `1px solid ${theme.palette.grey[300]}`,
                   }}
                 >
-                  {t(header.titleKey as any, {})}
-                </TableCell>
-              );
-            })}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {loading ? (
+                  <TableCell
+                    sx={{
+                      width: '20%',
+                    }}
+                  >
+                    {plugin.plugin_id ?? '--'}
+                  </TableCell>
+                  <TableCell sx={{ width: '40%' }}>
+                    {plugin.trend?.length > 1 ? (
+                      <ResponsiveContainer width="100%" height={50}>
+                        <LineChart data={plugin.trend}>
+                          <Line
+                            type="monotone"
+                            dataKey="count"
+                            stroke="#9370DB"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      '--'
+                    )}
+                  </TableCell>
+                  <TableCell sx={{ width: '20%' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      {Math.round(Number(plugin.trend_percentage)) < 0 ? (
+                        <TrendingDownIcon
+                          sx={{ color: 'red', flexShrink: 0 }}
+                        />
+                      ) : (
+                        <TrendingUpIcon
+                          sx={{ color: 'green', flexShrink: 0 }}
+                        />
+                      )}
+                      <Typography
+                        variant="body2"
+                        sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+                      >
+                        {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
+                      </Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ width: '20%' }}>
+                    {Number(plugin.visit_count).toLocaleString('en-US') ?? '--'}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+          <TableFooter>
             <TableRow>
-              <TableCell colSpan={PLUGINS_TABLE_HEADERS.length} align="center">
-                <CircularProgress />
+              <TableCell
+                colSpan={PLUGINS_TABLE_HEADERS.length}
+                sx={{ padding: 0 }}
+              >
+                <TableFooterPagination
+                  count={plugins.data?.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  handleChangePage={handleChangePage}
+                  handleChangeRowsPerPage={handleChangeRowsPerPage}
+                />
               </TableCell>
             </TableRow>
-          ) : (
-            visiblePlugins?.map(plugin => (
-              <TableRow
-                key={plugin.plugin_id}
-                sx={{
-                  '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
-                  borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
-                }}
-              >
-                <TableCell sx={{ width: '20%' }}>
-                  {plugin.plugin_id ?? '--'}
-                </TableCell>
-                <TableCell sx={{ width: '40%' }}>
-                  {plugin.trend?.length > 1 ? (
-                    <ResponsiveContainer width={250} height={50}>
-                      <LineChart data={plugin.trend}>
-                        <Line
-                          type="monotone"
-                          dataKey="count"
-                          stroke="#9370DB"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    '--'
-                  )}
-                </TableCell>
-                <TableCell sx={{ width: '20%' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {Math.round(Number(plugin.trend_percentage)) < 0 ? (
-                      <TrendingDownIcon sx={{ color: 'red' }} />
-                    ) : (
-                      <TrendingUpIcon sx={{ color: 'green' }} />
-                    )}
-                    <Typography variant="body2">
-                      {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ width: '20%' }}>
-                  {Number(plugin.visit_count).toLocaleString('en-US') ?? '--'}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell
-              colSpan={PLUGINS_TABLE_HEADERS.length}
-              sx={{ padding: 0 }}
-            >
-              <TableFooterPagination
-                count={plugins.data?.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                handleChangePage={handleChangePage}
-                handleChangeRowsPerPage={handleChangeRowsPerPage}
-              />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+          </TableFooter>
+        </Table>
+      </Box>
     </CardWrapper>
   );
 };
