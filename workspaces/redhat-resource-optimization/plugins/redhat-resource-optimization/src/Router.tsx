@@ -17,9 +17,9 @@
 import { ErrorPage } from '@backstage/core-components';
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { optimizationsBreakdownRouteRef } from './routes';
 import { OptimizationsPage } from './pages/optimizations/OptimizationsPage';
 import { OptimizationsBreakdownPage } from './pages/optimizations-breakdown/OptimizationsBreakdownPage';
+import { OpenShiftPage } from './pages/openshift/OpenShiftPage';
 import { usePatternFlyTheme } from './hooks/usePatternFlyTheme';
 
 /** @public */
@@ -30,10 +30,8 @@ export function Router() {
   return (
     <Routes>
       <Route path="/" element={<OptimizationsPage />} />
-      <Route
-        path={optimizationsBreakdownRouteRef.path}
-        element={<OptimizationsBreakdownPage />}
-      />
+      <Route path="/ocp" element={<OpenShiftPage />} />
+      <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
       <Route
         path="*"
         element={<ErrorPage status="404" statusMessage="Page not found" />}

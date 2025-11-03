@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-export { ResourceOptimizationIcon } from './ResourceOptimizationIcon';
-export { ResourceOptimizationIconOutlined } from './ResourceOptimizationIconOutlined';
-export { ResourceOptimizationIconFilled } from './ResourceOptimizationIconFilled';
-export { AnalyticsIcon } from './AnalyticsIcon';
-export { AnalyticsIconOutlined } from './AnalyticsIconOutlined';
-export { AnalyticsIconFilled } from './AnalyticsIconFilled';
+import React from 'react';
+import type { SvgIconProps } from '@material-ui/core/SvgIcon';
+import { AnalyticsIcon } from './AnalyticsIcon';
+
+/**
+ * The filled variant of the Analytics icon.
+ *
+ * @public
+ */
+export const AnalyticsIconFilled = (props: SvgIconProps) => {
+  return <AnalyticsIcon variant="filled" {...props} />;
+};
