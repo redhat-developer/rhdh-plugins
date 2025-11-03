@@ -67,13 +67,22 @@ export const useFilteredPlugins = () => {
           .filter(filter => filter.startsWith('author='))
           .map(filter => filter.substring('author='.length));
         if (authors.length > 0) {
-          plugins = plugins.filter(plugin =>
-            plugin.spec?.authors?.some(author =>
-              typeof author === 'string'
-                ? authors.includes(author)
-                : authors.includes(author.name),
-            ),
-          );
+          plugins = plugins.filter(plugin => {
+            if (
+              plugin.spec?.authors?.some(author =>
+                typeof author === 'string'
+                  ? authors.includes(author)
+                  : authors.includes(author.name),
+              )
+            ) {
+              return true;
+            }
+
+            if (plugin.spec?.author && authors.includes(plugin.spec.author)) {
+              return true;
+            }
+            return false;
+          });
         }
 
         const showCertified = filters.includes('certified');
