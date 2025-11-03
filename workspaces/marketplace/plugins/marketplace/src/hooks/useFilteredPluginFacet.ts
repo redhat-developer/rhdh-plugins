@@ -34,6 +34,7 @@ export const useFilteredPluginFacet = (
   const marketplaceApi = useMarketplaceApi();
 
   const filters = searchParams.getAll('filter');
+  const fullTextSearch = searchParams.get('q');
 
   // Get all plugins and apply client-side filtering for accurate facet calculation
   const pluginsQuery = useQuery({
@@ -50,6 +51,7 @@ export const useFilteredPluginFacet = (
       'getFilteredPluginFacet',
       facet,
       filters,
+      fullTextSearch,
       excludeFilterType,
     ],
     queryFn: async () => {
@@ -81,6 +83,16 @@ export const useFilteredPluginFacet = (
       });
 
       let filteredPlugins = pluginsQuery.data.items;
+
+      // Apply search filter first (always applied, not excluded)
+      if (fullTextSearch) {
+        const lowerCaseSearch = fullTextSearch.toLocaleLowerCase('en-US');
+        filteredPlugins = filteredPlugins.filter(plugin => {
+          const lowerCaseValue =
+            plugin.metadata?.title?.toLocaleLowerCase('en-US');
+          return lowerCaseValue?.includes(lowerCaseSearch);
+        });
+      }
 
       // Apply category filters
       const categories = activeFilters
