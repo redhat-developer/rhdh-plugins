@@ -60,7 +60,7 @@ const mockAsyncData = {
       id: item.id,
       task: {
         id: item.task?.taskId || '',
-        status: 'TASK_COMPLETED' as TaskStatus,
+        status: TaskStatus.Completed,
       },
     })),
     totalJobs: mockGetImportJobs.imports.length,

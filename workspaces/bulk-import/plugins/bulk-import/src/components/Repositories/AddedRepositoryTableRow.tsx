@@ -28,6 +28,7 @@ import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   ApprovalTool,
+  ImportFlow,
 } from '../../types';
 import {
   calculateLastUpdated,
@@ -82,7 +83,7 @@ export const AddedRepositoryTableRow = ({
   return (
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
-        {importFlow === 'scaffolder' ? (
+        {importFlow === ImportFlow.Scaffolder ? (
           <Link
             to={`/bulk-import/repositories/tasks/${encodeURIComponent(
               data.repoUrl || '',
