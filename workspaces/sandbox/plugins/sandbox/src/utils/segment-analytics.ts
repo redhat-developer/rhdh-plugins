@@ -85,6 +85,14 @@ export const useSegmentAnalytics = (writeKey?: string, user?: SignupData) => {
           company: user?.company,
         };
 
+        // Extract email domain if email is available
+        if (user?.email) {
+          const emailDomain = user.email.split('@')[1];
+          if (emailDomain) {
+            traits.email_domain = emailDomain;
+          }
+        }
+
         analyticsRef.current.identify(currentUserId, traits);
         hasIdentifiedRef.current = true;
         lastIdentifiedUserIdRef.current = currentUserId;
