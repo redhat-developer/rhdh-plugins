@@ -29,6 +29,7 @@ export type SignupData = {
   givenName: string;
   familyName: string;
   company: string;
+  email?: string;
   userID?: string;
   accountID?: string;
   accountNumber?: string;

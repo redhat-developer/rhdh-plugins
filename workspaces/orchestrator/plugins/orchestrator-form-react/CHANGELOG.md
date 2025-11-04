@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 2.3.1
+
+### Patch Changes
+
+- 40e4267: Fixing endless onChange() loop and turning "ui:allowNewItems" from string to boolean type.
+
 ## 2.3.0
 
 ### Minor Changes

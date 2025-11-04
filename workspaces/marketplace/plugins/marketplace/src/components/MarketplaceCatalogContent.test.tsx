@@ -52,6 +52,18 @@ jest.mock('../hooks/usePluginFacets', () => ({
   }),
 }));
 
+jest.mock('../hooks/useFilteredPluginFacet', () => ({
+  useFilteredPluginFacet: jest.fn().mockReturnValue({
+    data: [],
+  }),
+}));
+
+jest.mock('../hooks/useFilteredSupportTypes', () => ({
+  useFilteredSupportTypes: jest.fn().mockReturnValue({
+    data: [],
+  }),
+}));
+
 afterAll(() => {
   jest.clearAllMocks();
 });

@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { JsonValue } from '@backstage/types/index';
-import { TypographyVariant } from '@mui/material/styles';
 
-export type UiProps = {
-  'ui:variant'?: TypographyVariant;
-  'ui:text'?: string;
-  'ui:allowNewItems'?: boolean;
-  'fetch:url'?: string;
-  'fetch:method'?: 'GET' | 'POST';
-  'fetch:headers'?: Record<string, string>;
-  'fetch:body'?: Record<string, JsonValue>;
-  'fetch:retrigger'?: string[];
-  [key: `fetch:response:${string}`]: string;
-};
+import React from 'react';
+import type { SvgIconProps } from '@material-ui/core/SvgIcon';
+import { AnalyticsIcon } from './AnalyticsIcon';
 
-export const isFetchResponseKey = (
-  key: string,
-): key is `fetch:response:${string}` => {
-  return key.startsWith('fetch:response:');
+/**
+ * The outlined variant of the Analytics icon.
+ *
+ * @public
+ */
+export const AnalyticsIconOutlined = (props: SvgIconProps) => {
+  return <AnalyticsIcon variant="outlined" {...props} />;
 };
