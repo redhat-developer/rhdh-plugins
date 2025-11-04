@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-export { ResourceOptimizationIcon } from './ResourceOptimizationIcon';
-export { ResourceOptimizationIconOutlined } from './ResourceOptimizationIconOutlined';
-export { ResourceOptimizationIconFilled } from './ResourceOptimizationIconFilled';
-export { AnalyticsIcon } from './AnalyticsIcon';
-export { AnalyticsIconOutlined } from './AnalyticsIconOutlined';
-export { AnalyticsIconFilled } from './AnalyticsIconFilled';
+import React from 'react';
+
+/** @public */
+export function OpenShiftPage() {
+  return <div>OpenShiftPage</div>;
+}

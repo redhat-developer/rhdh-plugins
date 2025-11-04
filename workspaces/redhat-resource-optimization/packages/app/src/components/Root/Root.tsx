@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
@@ -40,10 +40,15 @@ import {
 } from '@backstage/core-components';
 import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
-import { ResourceOptimizationIconOutlined } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import { AnalyticsIconOutlined } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { useRhdhTheme } from '../../hooks/useRhdhTheme';
 import { Administration } from '@backstage-community/plugin-rbac';
+
+// Empty icon component to satisfy SidebarItem's required icon prop
+const EmptyIcon = () => null;
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -76,6 +81,52 @@ const Logo = (props: { isOpen?: boolean }) => {
   return logo;
 };
 
+const CollapsibleSubmenu = ({
+  icon,
+  text,
+  children,
+}: {
+  icon: React.ReactElement;
+  text: string;
+  children: React.ReactNode;
+}) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const { isOpen: sidebarOpen } = useSidebarOpenState();
+
+  return (
+    <>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(!isOpen);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          padding: '12px 16px',
+          userSelect: 'none',
+        }}
+      >
+        {icon}
+        {sidebarOpen && <span style={{ marginLeft: 12, flex: 1 }}>{text}</span>}
+        {sidebarOpen &&
+          (isOpen ? (
+            <ExpandMoreIcon style={{ fontSize: '20px' }} />
+          ) : (
+            <ChevronRightIcon style={{ fontSize: '20px' }} />
+          ))}
+      </div>
+      {isOpen && <div style={{ marginLeft: 40 }}>{children}</div>}
+    </>
+  );
+};
+
 const SidebarLogo = () => {
   const classes = useSidebarLogoStyles();
   const { isOpen } = useSidebarOpenState();
@@ -105,11 +156,23 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}
         <SidebarDivider />
-        <SidebarItem
-          icon={ResourceOptimizationIconOutlined}
-          to="/redhat-resource-optimization"
-          text="Optimizations"
-        />
+
+        <CollapsibleSubmenu
+          icon={<AnalyticsIconOutlined />}
+          text="Cost management"
+        >
+          <SidebarItem
+            icon={EmptyIcon}
+            to="/redhat-resource-optimization/ocp"
+            text="OpenShift"
+          />
+          <SidebarItem
+            icon={EmptyIcon}
+            to="/redhat-resource-optimization"
+            text="Optimizations"
+          />
+        </CollapsibleSubmenu>
+
         <SidebarItem
           icon={OrchestratorIcon}
           to="orchestrator"
