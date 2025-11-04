@@ -19,7 +19,7 @@ import { TypographyVariant } from '@mui/material/styles';
 export type UiProps = {
   'ui:variant'?: TypographyVariant;
   'ui:text'?: string;
-  'ui:allowNewItems'?: 'true' | 'false';
+  'ui:allowNewItems'?: boolean;
   'fetch:url'?: string;
   'fetch:method'?: 'GET' | 'POST';
   'fetch:headers'?: Record<string, string>;
