@@ -20,7 +20,7 @@ import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
 import Grid from '@mui/material/Grid';
-import { withTheme } from '@rjsf/core';
+import { IChangeEvent, withTheme } from '@rjsf/core';
 import { Theme as MuiTheme } from '@rjsf/material-ui';
 import { ErrorSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
@@ -47,7 +47,6 @@ const MuiForm = withTheme<
 
 const FormComponent = (decoratorProps: FormDecoratorProps) => {
   const formContext = decoratorProps.formContext;
-
   const [extraErrors, setExtraErrors] = useState<
     ErrorSchema<JsonObject> | undefined
   >();
@@ -111,6 +110,15 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     }
   };
 
+  const onChange = (
+    e: IChangeEvent<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
+  ) => {
+    setFormData(e.formData || {});
+    if (decoratorProps.onChange) {
+      decoratorProps.onChange(e);
+    }
+  };
+
   return (
     <Grid container spacing={2} direction="column" wrap="nowrap">
       {validationError && (
@@ -131,12 +139,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           noHtml5Validate
           extraErrors={extraErrors}
           onSubmit={e => onSubmit(e.formData || {})}
-          onChange={e => {
-            setFormData(e.formData || {});
-            if (decoratorProps.onChange) {
-              decoratorProps.onChange(e);
-            }
-          }}
+          onChange={onChange}
         >
           {children}
         </MuiForm>
