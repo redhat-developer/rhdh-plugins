@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.4.1
+
+### Patch Changes
+
+- 40e4267: Fixing endless onChange() loop and turning "ui:allowNewItems" from string to boolean type.
+
 ## 1.4.0
 
 ### Minor Changes
