@@ -70,7 +70,7 @@ export const ActiveDropdown: Widget<
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
-  const isReadOnly = !!props.readonly;
+  const isReadOnly = !!props?.schema.readOnly;
 
   const labelSelector = uiProps['fetch:response:label']?.toString();
   const valueSelector = uiProps['fetch:response:value']?.toString();
@@ -140,7 +140,7 @@ export const ActiveDropdown: Widget<
 
   // set default value to the first one
   useEffect(() => {
-    if (!isChangedByUser && values && values.length > 0) {
+    if (!isChangedByUser && !value && values && values.length > 0) {
       handleChange(values[0], false);
     }
   }, [handleChange, value, values, isChangedByUser]);

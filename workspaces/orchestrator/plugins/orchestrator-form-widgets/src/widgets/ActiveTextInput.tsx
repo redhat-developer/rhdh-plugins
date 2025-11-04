@@ -64,7 +64,7 @@ export const ActiveTextInput: Widget<
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
-  const isReadOnly = !!props.readonly;
+  const isReadOnly = !!props?.schema.readOnly;
 
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const autocompleteSelector =
@@ -208,6 +208,7 @@ export const ActiveTextInput: Widget<
         data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value, true)}
         label={label}
+        disabled={isReadOnly}
       />
     </FormControl>
   );

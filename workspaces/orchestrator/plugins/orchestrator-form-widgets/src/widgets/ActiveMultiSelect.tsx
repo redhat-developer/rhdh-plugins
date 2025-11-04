@@ -66,14 +66,13 @@ export const ActiveMultiSelect: Widget<
     () => (props.options.props ?? {}) as UiProps,
     [props.options.props],
   );
-  const isReadOnly = !!props.readonly;
+  const isReadOnly = !!props?.schema.readOnly;
 
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
   const mandatorySelector = uiProps['fetch:response:mandatory']?.toString();
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
-  const allowNewItems = uiProps['ui:allowNewItems'] === 'true';
-
+  const allowNewItems = uiProps['ui:allowNewItems'] === true;
   const [localError] = useState<string | undefined>(
     autocompleteSelector
       ? undefined
@@ -124,7 +123,17 @@ export const ActiveMultiSelect: Widget<
             true,
             true,
           );
-          setAutocompleteOptions(autocompleteValues);
+
+          // Only update if arrays differ (by item or count).
+          const arraysAreEqual =
+            Array.isArray(autocompleteOptions) &&
+            autocompleteValues.length === autocompleteOptions.length &&
+            [...autocompleteValues].sort().join(',') ===
+              [...autocompleteOptions].sort().join(',');
+
+          if (!arraysAreEqual) {
+            setAutocompleteOptions(autocompleteValues);
+          }
         }
 
         let defaults: string[] = [];
@@ -144,7 +153,17 @@ export const ActiveMultiSelect: Widget<
         let mandatory: string[] = [];
         if (mandatorySelector) {
           mandatory = await applySelectorArray(data, mandatorySelector, true);
-          setMandatoryValues(mandatory);
+
+          // Only update if arrays differ (by item or count).
+          const arraysAreEqual =
+            Array.isArray(mandatoryValues) &&
+            mandatory.length === mandatoryValues.length &&
+            [...mandatory].sort().join(',') ===
+              [...mandatoryValues].sort().join(',');
+
+          if (!arraysAreEqual) {
+            setMandatoryValues(mandatory);
+          }
         }
 
         if (
@@ -161,6 +180,8 @@ export const ActiveMultiSelect: Widget<
     autocompleteSelector,
     mandatorySelector,
     defaultValueSelector,
+    autocompleteOptions,
+    mandatoryValues,
     isChangedByUser,
     data,
     props.id,
