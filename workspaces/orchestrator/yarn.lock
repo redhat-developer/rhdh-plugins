@@ -12742,6 +12742,7 @@ __metadata:
     "@types/express": 4.17.23
     "@types/fs-extra": 11.0.4
     "@types/json-schema": 7.0.15
+    "@types/luxon": ^3.7.1
     "@urql/core": ^4.1.4
     ajv-formats: ^2.1.1
     cloudevents: ^8.0.0
@@ -12750,7 +12751,7 @@ __metadata:
     fs-extra: ^10.1.0
     isomorphic-git: ^1.23.0
     lodash: ^4.17.21
-    moment: ^2.29.4
+    luxon: ^3.7.2
     openapi-backend: ^5.10.5
     prettier: 3.6.2
     yn: ^5.0.0
@@ -16169,7 +16170,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/luxon@npm:^3.0.0, @types/luxon@npm:~3.4.0":
+"@types/luxon@npm:^3.0.0, @types/luxon@npm:^3.7.1":
+  version: 3.7.1
+  resolution: "@types/luxon@npm:3.7.1"
+  checksum: ec5181716f9a744d2be1a4a72c3509670e1030a9271736d95e9e04af075ac6f24f6b35f2934f6d7eab496c1eefd9f81b572ad63fd33fd17a100eb2b315702a77
+  languageName: node
+  linkType: hard
+
+"@types/luxon@npm:~3.4.0":
   version: 3.4.2
   resolution: "@types/luxon@npm:3.4.2"
   checksum: 6f92d5bd02e89f310395753506bcd9cef3a56f5940f7a50db2a2b9822bce753553ac767d143cb5b4f9ed5ddd4a84e64f89ff538082ceb4d18739af7781b56925
@@ -28374,10 +28382,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:^3.0.0, luxon@npm:^3.2.1":
-  version: 3.5.0
-  resolution: "luxon@npm:3.5.0"
-  checksum: f290fe5788c8e51e748744f05092160d4be12150dca70f9fadc0d233e53d60ce86acd82e7d909a114730a136a77e56f0d3ebac6141bbb82fd310969a4704825b
+"luxon@npm:^3.0.0, luxon@npm:^3.2.1, luxon@npm:^3.7.2":
+  version: 3.7.2
+  resolution: "luxon@npm:3.7.2"
+  checksum: fc115fd6a7acc2adb7df3476d20c672beb2985d2a034294282f2c31de8c07f29a15460f5a2b7dd0107797be0dab545ddbc64862662b059fb18c1931a726064f4
   languageName: node
   linkType: hard
 

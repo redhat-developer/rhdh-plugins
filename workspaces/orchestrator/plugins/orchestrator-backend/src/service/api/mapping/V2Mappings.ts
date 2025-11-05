@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
+import { DateTime, Duration } from 'luxon';
 
 import {
   capitalize,
@@ -87,10 +87,14 @@ export function getProcessInstancesStatusDTOFromString(
 export function mapToProcessInstanceDTO(
   processInstance: ProcessInstance,
 ): ProcessInstanceDTO {
-  const start = moment(processInstance.start);
-  const end = moment(processInstance.end);
+  const start = DateTime.fromISO(processInstance.start as string, {
+    setZone: true,
+  });
+  const end = DateTime.fromISO(processInstance.end as string, {
+    setZone: true,
+  });
   const duration = processInstance.end
-    ? moment.duration(start.diff(end)).humanize()
+    ? Duration.fromMillis(end.diff(start).toMillis()).rescale().toHuman()
     : undefined;
 
   let variables: Record<string, unknown> | undefined;
