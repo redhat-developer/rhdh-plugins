@@ -31,6 +31,7 @@ import {
   evaluateMessage,
   getTranslations,
 } from './utils/translationUtils';
+import { runAccessibilityTests } from './utils/accessibility';
 
 test.describe.serial('Pre-RBAC Access Tests', () => {
   let translations: ScorecardMessages;
@@ -46,7 +47,7 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
 
   test('Display access denied message when RBAC is not configured', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const catalogPage = new CatalogPage(page);
     await page.goto('/');
     await catalogPage.navigateToCatalog(currentLocale);
@@ -62,6 +63,8 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
         'scorecard.metric.read',
       ),
     );
+
+    await runAccessibilityTests(page, testInfo);
   });
 });
 
@@ -92,7 +95,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
   test('Import component and validate scorecard tabs for GitHub PRs and Jira tickets', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, customScorecardResponse);
 
     await page.goto('/');
@@ -103,7 +106,6 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     );
     await importPage.viewImportedComponent();
     await scorecardPage.openTab();
-    await page.pause();
     await scorecardPage.verifyScorecardValues({
       [translations.metric['github.open_prs'].title]: '9',
       [translations.metric['jira.open_issues'].title]: '8',
@@ -112,11 +114,13 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     for (const metric of scorecardPage.scorecardMetrics) {
       await scorecardPage.validateScorecardAriaFor(metric);
     }
+
+    await runAccessibilityTests(page, testInfo);
   });
 
   test('Display empty state when scorecard API returns no metrics', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, emptyScorecardResponse);
 
     await page.goto('/');
@@ -125,11 +129,13 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await scorecardPage.openTab();
 
     await scorecardPage.expectEmptyState();
+
+    await runAccessibilityTests(page, testInfo);
   });
 
   test('Displays error state for unavailable data while rendering metrics', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, unavailableMetricResponse);
 
     await page.goto('/');
@@ -154,6 +160,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
       name: translations.errors.metricDataUnavailable,
     });
     await expect(errorLocator).toBeVisible();
+    await runAccessibilityTests(page, testInfo);
 
     await errorLocator.hover();
     const errorMetric = unavailableMetricResponse.find(
@@ -171,7 +178,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
   test('Display error state for invalid threshold config while rendering metrics', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, invalidThresholdResponse);
 
     await page.goto('/');
@@ -196,6 +203,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
       name: translations.errors.invalidThresholds,
     });
     await expect(errorLocator).toBeVisible();
+    await runAccessibilityTests(page, testInfo);
 
     await errorLocator.hover();
     const errorTooltip = invalidThresholdResponse.find(
