@@ -13,94 +13,154 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { test, expect, Page } from '@playwright/test';
+import {
+  test,
+  expect,
+  Page,
+  type BrowserContext,
+  type TestInfo,
+} from '@playwright/test';
+import {
+  navigateToInsights,
+  getPanel,
+  selectDateRange,
+  openDateRangePicker,
+  closeDateRangePicker,
+  visitCatalogEntity,
+  runTemplate,
+  visitDocs,
+  performSearch,
+  waitForDataFlush,
+  verifyTableEntries,
+  verifyPanelContainsTexts,
+  switchToLocale,
+} from './utils/insightsHelpers';
+import { runAccessibilityTests } from './utils/accessibility.js';
+import {
+  InsightsMessages,
+  getTranslations,
+  replaceTemplate,
+} from './utils/translations.js';
 
 test.describe.configure({ mode: 'serial' });
 
 let page: Page;
-
-async function navigate(link: string) {
-  const navLink = page.locator(`nav a:has-text("${link}")`).first();
-  await navLink.waitFor({ state: 'visible' });
-  await navLink.click();
-}
+let context: BrowserContext;
+let translations: InsightsMessages;
 
 test.beforeAll(async ({ browser }) => {
-  page = await browser.newPage();
+  context = await browser.newContext();
+  page = await context.newPage();
+  const currentLocale = await page.evaluate(
+    () => globalThis.navigator.language,
+  );
   await page.goto('/');
   await page.getByRole('button', { name: 'Enter' }).click();
 
-  // give the insights plugin some time to crunch the new login
-  await new Promise(res => setTimeout(res, 8000));
+  await switchToLocale(page, currentLocale);
+  translations = getTranslations(currentLocale);
+
+  await waitForDataFlush();
 });
 
-test('Insights is available', async () => {
-  await navigate('Adoption Insights');
+test.afterAll(async () => {
+  await context.close();
+});
 
-  const heading = page.getByRole('heading', { name: 'Insights' }).first();
+test('Insights is available', async ({
+  browser: _browser,
+}, testInfo: TestInfo) => {
+  await navigateToInsights(page, translations.header.title);
+
+  const heading = page
+    .getByRole('heading', { name: translations.header.title })
+    .first();
 
   expect(page.url()).toContain('/adoption-insights');
   await expect(heading).toBeVisible();
+
+  await runAccessibilityTests(page, testInfo);
 });
 
 test('Select date range', async () => {
-  const dateRanges = ['Today', 'Last week', 'Last month', 'Last year'];
-  await page.getByText('Last 28 days').click();
+  const dateRanges = [
+    translations.header.dateRange.today,
+    translations.header.dateRange.lastWeek,
+    translations.header.dateRange.lastMonth,
+    translations.header.dateRange.lastYear,
+  ];
+  await page.getByText(translations.header.dateRange.defaultLabel).click();
   for (const range of dateRanges) {
     await expect(page.getByRole('option', { name: range })).toBeVisible();
   }
-  const dateRange = page.getByRole('option', { name: `Date range...` });
-  await expect(dateRange).toBeVisible();
-  await dateRange.click();
+  await openDateRangePicker(page, translations.header.dateRange.dateRange);
 
   const datePicker = page.locator('.v5-MuiPaper-root', {
     hasText: 'Start date',
   });
   await expect(datePicker).toBeVisible();
-  await datePicker.getByRole('button', { name: 'Cancel' }).click();
+  await closeDateRangePicker(page, translations.header.dateRange.cancel);
   await expect(datePicker).not.toBeVisible();
 
-  await page.getByRole('option', { name: 'Today' }).click();
+  await selectDateRange(page, translations.header.dateRange.today);
 });
 
 test('Active users panel shows 1 visitor', async () => {
-  const panel = page.locator('.v5-MuiPaper-root', { hasText: 'Active users' });
+  const panel = getPanel(page, translations.activeUsers.title);
   await expect(panel.locator('.recharts-surface')).toBeVisible();
+  const averageTextContent = replaceTemplate(
+    translations.activeUsers.averageText,
+    {
+      count: 1,
+      period: translations.activeUsers.hour,
+    },
+  );
+  const averageText = `${translations.activeUsers.averagePrefix} ${averageTextContent}${translations.activeUsers.averageSuffix}`;
   await expect(panel).toMatchAriaSnapshot(`
-    - heading "Active users" [level=5]
-    - button "Export CSV"
-    - paragraph: Average peak active user count was 1 per hour for this period.
+    - heading "${translations.activeUsers.title}" [level=5]
+    - button "${translations.common.exportCSV}"
+    - paragraph: ${averageText}
+    - paragraph: ${translations.activeUsers.legend.returningUsers}
+    - paragraph: ${translations.activeUsers.legend.newUsers}
     `);
 });
 
 test('Total number of users panel shows 1 visitor of 100', async () => {
-  const panel = page.locator('.v5-MuiPaper-root', {
-    hasText: 'Total number of users',
-  });
+  const panel = getPanel(page, translations.users.title);
   await expect(panel.locator('.recharts-surface')).toBeVisible();
+  const ofTotalText = `1 ${replaceTemplate(translations.users.ofTotal, {
+    total: 100,
+  })}`;
   await expect(panel).toMatchAriaSnapshot(`
-    - heading "Total number of users" [level=5]
+    - heading "${translations.users.title}" [level=5]
     - img:
-      - text: 1 of 100
+      - text: ${ofTotalText}
     - list:
-      - listitem: Logged-in users
-      - listitem: Licensed (not logged in)
+      - listitem: ${translations.users.loggedInUsers}
+      - listitem: ${translations.users.licensedNotLoggedIn}
     - heading "1%" [level=1]
-    - paragraph: have logged in
+    - paragraph: ${translations.users.haveLoggedIn}
     `);
 });
 
 test('Top plugins shows catalog', async () => {
-  await navigate('Adoption Insights');
-  const panel = page.locator('.v5-MuiPaper-root', { hasText: 'All plugins' });
+  await navigateToInsights(page, translations.header.title);
+  const pluginText =
+    translations.plugins.allTitle.match(/plugins/i)?.[0] ||
+    translations.plugins.allTitle.match(/plugin/i)?.[0]!;
+
+  const pluginRegex = new RegExp(pluginText, 'i');
+
+  const panel = page.locator('.v5-MuiPaper-root', {
+    hasText: pluginRegex,
+  });
   await expect(panel).toMatchAriaSnapshot(`
-    - heading "All plugins" [level=5]
     - table:
       - rowgroup:
         - row :
-          - columnheader "Name"
-          - columnheader "Trend"
-          - columnheader "Views"
+          - columnheader "${translations.table.headers.name}"
+          - columnheader "${translations.table.headers.trend}"
+          - columnheader "${translations.table.headers.views}"
       - rowgroup:
         - row :
           - cell "catalog"
@@ -109,94 +169,107 @@ test('Top plugins shows catalog', async () => {
 
 test('Rest of the panels have no data', async () => {
   const titles = [
-    'Top templates',
-    'Top catalog entities',
-    'Top TechDocs',
-    'Top searches',
+    translations.templates.title,
+    translations.catalogEntities.title,
+    translations.techDocs.title,
+    translations.searches.title,
   ];
   for (const title of titles) {
-    const panel = page.locator('.v5-MuiPaper-root', { hasText: title });
-    await expect(panel).toContainText('No results for this date range.');
+    const panel = getPanel(page, title);
+    await expect(panel).toContainText(translations.common.noResults);
   }
 });
 
 test.describe(() => {
   test.beforeAll(async () => {
     // visit a catalog entity
-    await navigate('home');
-    await page.getByRole('link', { name: 'example-website' }).click();
-    await page
-      .getByRole('heading', { name: 'example-website' })
-      .waitFor({ state: 'visible' });
+    await visitCatalogEntity(page, 'example-website');
 
     // run a template
-    await navigate('create...');
-    await page.getByTestId('template-card-actions--create').click();
-    await page.getByRole('textbox').fill('reallyUniqueName');
-    await page.getByRole('button', { name: 'next' }).click();
-    await page.getByRole('textbox').first().fill('orgthatdoesntexist');
-    await page.getByRole('textbox').last().fill('repothatdoesntexist');
-    await page.getByRole('button', { name: 'review' }).click();
-    await page.getByRole('button', { name: 'create' }).click();
-    await page
-      .getByText('Run of Example Node.js Template')
-      .waitFor({ state: 'visible' });
+    await runTemplate(
+      page,
+      'reallyUniqueName',
+      'orgthatdoesntexist',
+      'repothatdoesntexist',
+    );
 
     // visit the docs
-    await navigate('docs');
-    await page.getByText('No documents to show').waitFor({ state: 'visible' });
+    await visitDocs(page);
 
     // do a search
-    await page.getByRole('button', { name: 'search' }).click();
-    await page.getByRole('textbox').fill('searching for something');
-
-    const noSearchResults = page.getByRole('heading', {
-      name: 'Sorry, no results were found',
-    });
-    await noSearchResults.waitFor({ state: 'visible' });
-    await page.getByRole('button', { name: 'close' }).click();
+    await performSearch(page, 'searching for something');
 
     // wait for the flush interval to be sure
-    await new Promise(res => setTimeout(res, 8000));
+    await waitForDataFlush();
 
-    await navigate('Adoption Insights');
-    await page.getByText('Last 28 days').click();
-    await page.getByRole('option', { name: `Today` }).click();
+    await navigateToInsights(page);
+    await page.getByText(translations.header.dateRange.defaultLabel).click();
+    await selectDateRange(page, translations.header.dateRange.today);
   });
 
   test('Visited component shows up in top catalog entities', async () => {
-    const panel = page.locator('.v5-MuiPaper-root', {
-      hasText: 'All catalog entities',
-    });
-    const entries = panel.locator('tbody').locator('tr');
-    await expect(entries).toHaveCount(1);
-    await expect(entries).toContainText('example-website');
+    const panel = getPanel(page, translations.catalogEntities.allTitle);
+    await expect(panel).toContainText(translations.filter.selectKind);
+    await panel.getByLabel(translations.filter.selectKind).click();
+    await expect(page.getByRole('listbox')).toMatchAriaSnapshot(`
+      - listbox "${translations.filter.selectKind}":
+        - option "${translations.filter.all}"
+        - option "Component"
+      `);
+
+    await verifyPanelContainsTexts(panel, [
+      translations.table.headers.name,
+      translations.table.headers.kind,
+      translations.table.headers.lastUsed,
+      translations.table.headers.views,
+    ]);
+
+    await verifyTableEntries(panel, 1, 'example-website');
   });
 
   test('Visited TechDoc shows up in top TechDocs', async () => {
-    const panel = page.locator('.v5-MuiPaper-root', {
-      hasText: 'All TechDocs',
-    });
-    const entries = panel.locator('tbody').locator('tr');
-    await expect(entries).toHaveCount(1);
+    const panel = getPanel(page, translations.techDocs.allTitle);
+
+    await verifyPanelContainsTexts(panel, [
+      translations.table.headers.name,
+      translations.table.headers.entity,
+      translations.table.headers.lastUsed,
+      translations.table.headers.views,
+    ]);
+
+    await verifyTableEntries(panel, 1, 'docs');
   });
 
   test('New data shows in searches', async () => {
-    const panel = page.locator('.v5-MuiPaper-root', { hasText: '1 searches' });
+    const panel = getPanel(
+      page,
+      replaceTemplate(translations.searches.totalCount, { count: 1 }),
+    );
     await panel.scrollIntoViewIfNeeded();
     await expect(panel.locator('.recharts-surface')).toBeVisible();
-    await expect(panel).toContainText(
-      'Average search count was 1 per hour for this period.',
+    const averageTextContent = replaceTemplate(
+      translations.searches.averageText,
+      {
+        count: 1,
+        period: translations.searches.hour,
+      },
     );
+    const averageText = `${translations.searches.averagePrefix} ${averageTextContent}${translations.searches.averageSuffix}`;
+    await expect(panel).toContainText(averageText);
   });
 
-  test('New data shows in top templates', async () => {
-    const panel = page.locator('.v5-MuiPaper-root', {
-      hasText: 'All templates',
-    });
+  test('New data shows in top templates', async ({
+    browser: _browser,
+  }, testInfo: TestInfo) => {
+    const panel = getPanel(page, translations.templates.allTitle);
+    await verifyPanelContainsTexts(panel, [
+      translations.table.headers.name,
+      translations.table.headers.executions,
+    ]);
+
     await panel.scrollIntoViewIfNeeded();
-    const entries = panel.locator('tbody').locator('tr');
-    await expect(entries).toHaveCount(1);
-    await expect(entries).toContainText('example-nodejs-template');
+    await verifyTableEntries(panel, 1, 'example-nodejs-template');
+
+    await runAccessibilityTests(page, testInfo);
   });
 });
