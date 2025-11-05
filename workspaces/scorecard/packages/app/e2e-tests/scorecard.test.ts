@@ -26,20 +26,41 @@ import {
   unavailableMetricResponse,
   invalidThresholdResponse,
 } from './utils/scorecardResponseUtils';
+import {
+  ScorecardMessages,
+  evaluateMessage,
+  getTranslations,
+} from './utils/translationUtils';
 
 test.describe.serial('Pre-RBAC Access Tests', () => {
+  let translations: ScorecardMessages;
+  let currentLocale: string;
+
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    currentLocale = await page.evaluate(() => globalThis.navigator.language);
+    translations = getTranslations(currentLocale);
+    await context.close();
+  });
+
   test('Display access denied message when RBAC is not configured', async ({
     page,
   }) => {
     const catalogPage = new CatalogPage(page);
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
+    await catalogPage.navigateToCatalog(currentLocale);
     await catalogPage.openComponent('Red Hat Developer Hub');
     await page.getByText('Scorecard').click();
 
-    await expect(page.getByText('Missing permission')).toBeVisible();
+    await expect(
+      page.getByText(translations.permissionRequired.title),
+    ).toBeVisible();
     await expect(page.getByRole('article')).toContainText(
-      'To view Scorecard plugin, contact your administrator to give the scorecard.metric.read permission.',
+      evaluateMessage(
+        translations.permissionRequired.description,
+        'scorecard.metric.read',
+      ),
     );
   });
 });
@@ -48,6 +69,8 @@ test.describe.serial('Scorecard Plugin Tests', () => {
   let catalogPage: CatalogPage;
   let importPage: ComponentImportPage;
   let scorecardPage: ScorecardPage;
+  let translations: ScorecardMessages;
+  let currentLocale: string;
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
@@ -55,13 +78,16 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
     await setupRBAC(page);
 
+    currentLocale = await page.evaluate(() => globalThis.navigator.language);
+    translations = getTranslations(currentLocale);
+
     await context.close();
   });
 
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
     importPage = new ComponentImportPage(page);
-    scorecardPage = new ScorecardPage(page);
+    scorecardPage = new ScorecardPage(page, translations);
   });
 
   test('Import component and validate scorecard tabs for GitHub PRs and Jira tickets', async ({
@@ -70,17 +96,17 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await mockScorecardResponse(page, customScorecardResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
+    await catalogPage.navigateToCatalog(currentLocale);
     await importPage.startComponentImport();
     await importPage.analyzeComponent(
       'https://github.com/rhdh-pai-qe/backstage-catalog/blob/main/catalog-info.yaml',
     );
     await importPage.viewImportedComponent();
     await scorecardPage.openTab();
-
+    await page.pause();
     await scorecardPage.verifyScorecardValues({
-      'GitHub open PRs': '9',
-      'Jira open blocking tickets': '8',
+      [translations.metric['github.open_prs'].title]: '9',
+      [translations.metric['jira.open_issues'].title]: '8',
     });
 
     for (const metric of scorecardPage.scorecardMetrics) {
@@ -94,7 +120,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await mockScorecardResponse(page, emptyScorecardResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
+    await catalogPage.navigateToCatalog(currentLocale);
     await catalogPage.openComponent('rhdh-app');
     await scorecardPage.openTab();
 
@@ -107,7 +133,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await mockScorecardResponse(page, unavailableMetricResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
+    await catalogPage.navigateToCatalog(currentLocale);
     await catalogPage.openComponent('rhdh-app');
     await scorecardPage.openTab();
 
@@ -125,7 +151,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     expect(isGithubVisible).toBe(true);
 
     const errorLocator = page.getByRole('heading', {
-      name: 'Metric data unavailable',
+      name: translations.errors.metricDataUnavailable,
     });
     await expect(errorLocator).toBeVisible();
 
@@ -149,7 +175,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     await mockScorecardResponse(page, invalidThresholdResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
+    await catalogPage.navigateToCatalog(currentLocale);
     await catalogPage.openComponent('rhdh-app');
     await scorecardPage.openTab();
 
@@ -167,7 +193,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     expect(isJiraVisible).toBe(true);
 
     const errorLocator = page.getByRole('heading', {
-      name: 'Invalid thresholds',
+      name: translations.errors.invalidThresholds,
     });
     await expect(errorLocator).toBeVisible();
 

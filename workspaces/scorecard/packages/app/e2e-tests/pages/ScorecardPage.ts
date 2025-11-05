@@ -16,25 +16,26 @@
 
 import { Page, expect } from '@playwright/test';
 import { waitUntilApiCallSucceeds } from '../utils/apiUtils';
+import { ScorecardMessages } from '../utils/translationUtils';
 
 export class ScorecardPage {
   readonly page: Page;
+  readonly translations: ScorecardMessages;
 
-  constructor(page: Page) {
+  constructor(page: Page, translations: ScorecardMessages) {
     this.page = page;
+    this.translations = translations;
   }
 
   get scorecardMetrics() {
     return [
       {
-        title: 'GitHub open PRs',
-        description:
-          'Current count of open Pull Requests for a given GitHub repository.',
+        title: this.translations.metric['github.open_prs'].title,
+        description: this.translations.metric['github.open_prs'].description,
       },
       {
-        title: 'Jira open blocking tickets',
-        description:
-          'Highlights the number of critical, blocking issues that are currently open in Jira.',
+        title: this.translations.metric['jira.open_issues'].title,
+        description: this.translations.metric['jira.open_issues'].description,
       },
     ];
   }
@@ -56,12 +57,16 @@ export class ScorecardPage {
   }
 
   async expectEmptyState() {
-    await expect(this.page.getByText('No scorecards added yet')).toBeVisible();
+    await expect(
+      this.page.getByText(this.translations.emptyState.title),
+    ).toBeVisible();
     await expect(this.page.getByRole('article')).toContainText(
-      'Scorecards help you monitor component health at a glance. To begin, explore our documentation for setup guidelines.',
+      this.translations.emptyState.description,
     );
     await expect(
-      this.page.getByRole('link', { name: 'View documentation' }),
+      this.page.getByRole('link', {
+        name: this.translations.emptyState.button,
+      }),
     ).toBeVisible();
   }
 
@@ -85,9 +90,15 @@ export class ScorecardPage {
     await expect(scorecardCard.getByText(description)).toBeVisible();
 
     // Check that threshold information is present (Error, Warning, Success)
-    await expect(scorecardCard.getByText(/Error/)).toBeVisible();
-    await expect(scorecardCard.getByText(/Warning/)).toBeVisible();
-    await expect(scorecardCard.getByText(/Success/)).toBeVisible();
+    await expect(
+      scorecardCard.getByText(this.translations.thresholds.error),
+    ).toBeVisible();
+    await expect(
+      scorecardCard.getByText(this.translations.thresholds.warning),
+    ).toBeVisible();
+    await expect(
+      scorecardCard.getByText(this.translations.thresholds.success),
+    ).toBeVisible();
   }
 
   async isScorecardVisible(scorecardTitle: string): Promise<boolean> {
