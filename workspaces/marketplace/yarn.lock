@@ -14607,46 +14607,82 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bare-events@npm:^2.0.0, bare-events@npm:^2.2.0":
+"bare-events@npm:^2.2.0":
   version: 2.5.0
   resolution: "bare-events@npm:2.5.0"
   checksum: 5aa10716e7f33c5dfc471fd657eee2a33f2db0f78b3c83b5cdd1a45a7e7871114a69460ea96cd838807c55eb470b9e53dd0dfda8c83cced1352cc8253cebff48
   languageName: node
   linkType: hard
 
-"bare-fs@npm:^2.1.1":
-  version: 2.3.5
-  resolution: "bare-fs@npm:2.3.5"
+"bare-events@npm:^2.5.4, bare-events@npm:^2.7.0":
+  version: 2.8.1
+  resolution: "bare-events@npm:2.8.1"
+  peerDependencies:
+    bare-abort-controller: "*"
+  peerDependenciesMeta:
+    bare-abort-controller:
+      optional: true
+  checksum: 18511c49cd23d72ddc660530a7d802bcd767d343110ebcf47829ae312bddbc8eff81d08190d62364f1be14041242f30d24d9c755043a648f44d0fda47b92fdff
+  languageName: node
+  linkType: hard
+
+"bare-fs@npm:^4.0.1":
+  version: 4.5.0
+  resolution: "bare-fs@npm:4.5.0"
   dependencies:
-    bare-events: ^2.0.0
-    bare-path: ^2.0.0
-    bare-stream: ^2.0.0
-  checksum: 071b1dff94a213eaf0b41693953959bf10af2deade597a56ff206a5d833579d56bc8530aa4614bb88bf39fd6d52f2404f7c36af4695109ffa756a13837ac3d91
+    bare-events: ^2.5.4
+    bare-path: ^3.0.0
+    bare-stream: ^2.6.4
+    bare-url: ^2.2.2
+    fast-fifo: ^1.3.2
+  peerDependencies:
+    bare-buffer: "*"
+  peerDependenciesMeta:
+    bare-buffer:
+      optional: true
+  checksum: 5330df4c87092f43f808518a84b7505d07554c5755b01f780a4bb1b7d88918b118fa46e8b290911782b933aba9f63cba7baa7866d58f5de5743f46237353117c
   languageName: node
   linkType: hard
 
-"bare-os@npm:^2.1.0":
-  version: 2.4.4
-  resolution: "bare-os@npm:2.4.4"
-  checksum: e90088a7dc0307c020350a28df8ec5564cae5a4b7a213d8509d70831d7064308e2ed31de801b68f474cb004ad3a0a66bd28c38374d270484d9025ee71af20396
+"bare-os@npm:^3.0.1":
+  version: 3.6.2
+  resolution: "bare-os@npm:3.6.2"
+  checksum: 339187a5f294b0433f2aa0e3180ffe635f82b9d4536fc818ec8b2b44af752421b1d4bb8eebefd5034cc462a26756900d67b95052ed5eeb2278cb2e23e566ae7a
   languageName: node
   linkType: hard
 
-"bare-path@npm:^2.0.0, bare-path@npm:^2.1.0":
-  version: 2.1.3
-  resolution: "bare-path@npm:2.1.3"
+"bare-path@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "bare-path@npm:3.0.0"
   dependencies:
-    bare-os: ^2.1.0
-  checksum: 20301aeb05b735852a396515464908e51e896922c3bb353ef2a09ff54e81ced94e6ad857bb0a36d2ce659c42bd43dd5c3d5643edd8faaf910ee9950c4e137b88
+    bare-os: ^3.0.1
+  checksum: 51d559515f332f62cf9c37c38f2640c1b84b5e8c9de454b70baf029f806058cf94c51d6a0dfec0025cc7760f2069dc3e16c82f0d24f4a9ddb18c829bf9c0206d
   languageName: node
   linkType: hard
 
-"bare-stream@npm:^2.0.0":
+"bare-stream@npm:^2.6.4":
+  version: 2.7.0
+  resolution: "bare-stream@npm:2.7.0"
+  dependencies:
+    streamx: ^2.21.0
+  peerDependencies:
+    bare-buffer: "*"
+    bare-events: "*"
+  peerDependenciesMeta:
+    bare-buffer:
+      optional: true
+    bare-events:
+      optional: true
+  checksum: aa7a762b65271022ecc154c1f65eff37a9ff5aa1effd3f3065074b2885d4e6101c1f9fe06001cf3f88f73b56cc2a4b87ce70405d266891ac5082aeb1e1f6a310
+  languageName: node
+  linkType: hard
+
+"bare-url@npm:^2.2.2":
   version: 2.3.2
-  resolution: "bare-stream@npm:2.3.2"
+  resolution: "bare-url@npm:2.3.2"
   dependencies:
-    streamx: ^2.20.0
-  checksum: 051c817f0b74617d99002a91c61e6fa2b56bff3bb329c5ab4a817287bc1f46f3aef5f13bc11201b344a91873782a45f755d3910012381f16e47feee2194fd792
+    bare-path: ^3.0.0
+  checksum: 7b2a6335a55a010ffcc863f62cc5bfaa216b383bc05a8e7fb30caccb5600e09d403ad482fc671582eba531bbca4a891dba8eefa866f2e2d222b0a72f2460c340
   languageName: node
   linkType: hard
 
@@ -18606,6 +18642,15 @@ __metadata:
   version: 4.0.7
   resolution: "eventemitter3@npm:4.0.7"
   checksum: 1875311c42fcfe9c707b2712c32664a245629b42bb0a5a84439762dd0fd637fc54d078155ea83c2af9e0323c9ac13687e03cfba79b03af9f40c89b4960099374
+  languageName: node
+  linkType: hard
+
+"events-universal@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "events-universal@npm:1.0.1"
+  dependencies:
+    bare-events: ^2.7.0
+  checksum: fb8451c98535bde30585004303a368d55c38e5bc3ed6aa9b5d29fecaabaf8ec276a33ff77dcc1d1c05eecf83b8161f184cabc9a03b76a06c10e9a4ce827a6abc
   languageName: node
   linkType: hard
 
@@ -30248,7 +30293,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"streamx@npm:^2.15.0, streamx@npm:^2.20.0":
+"streamx@npm:^2.15.0":
   version: 2.20.1
   resolution: "streamx@npm:2.20.1"
   dependencies:
@@ -30260,6 +30305,17 @@ __metadata:
     bare-events:
       optional: true
   checksum: 48605ddd3abdd86d2e3ee945ec7c9317f36abb5303347a8fff6e4c7926a72c33ec7ac86b50734ccd1cf65602b6a38e247966e8199b24e5a7485d9cec8f5327bd
+  languageName: node
+  linkType: hard
+
+"streamx@npm:^2.21.0":
+  version: 2.23.0
+  resolution: "streamx@npm:2.23.0"
+  dependencies:
+    events-universal: ^1.0.0
+    fast-fifo: ^1.3.2
+    text-decoder: ^1.1.0
+  checksum: d57de47db76ffd926842afab562fc8b139d7333269c6db11da5a233e8524cd326161b48bdddd28cefc010cec0b143af04dbb6f5e92d5034839ce7428928dfcae
   languageName: node
   linkType: hard
 
@@ -30828,23 +30884,23 @@ __metadata:
   linkType: hard
 
 "tar-fs@npm:^2.0.0":
-  version: 2.1.1
-  resolution: "tar-fs@npm:2.1.1"
+  version: 2.1.4
+  resolution: "tar-fs@npm:2.1.4"
   dependencies:
     chownr: ^1.1.1
     mkdirp-classic: ^0.5.2
     pump: ^3.0.0
     tar-stream: ^2.1.4
-  checksum: f5b9a70059f5b2969e65f037b4e4da2daf0fa762d3d232ffd96e819e3f94665dbbbe62f76f084f1acb4dbdcce16c6e4dac08d12ffc6d24b8d76720f4d9cf032d
+  checksum: a9e18e2e6114b8ac2568d7c2b42d006b1fe30d83957e4e75ba2361a889c2fc54e54236476782d06494e081358a393feacdf19311df12b3056c8a64dc1f7ed309
   languageName: node
   linkType: hard
 
 "tar-fs@npm:^3.0.6":
-  version: 3.0.6
-  resolution: "tar-fs@npm:3.0.6"
+  version: 3.1.1
+  resolution: "tar-fs@npm:3.1.1"
   dependencies:
-    bare-fs: ^2.1.1
-    bare-path: ^2.1.0
+    bare-fs: ^4.0.1
+    bare-path: ^3.0.0
     pump: ^3.0.0
     tar-stream: ^3.1.5
   dependenciesMeta:
@@ -30852,7 +30908,7 @@ __metadata:
       optional: true
     bare-path:
       optional: true
-  checksum: b4fa09c70f75caf05bf5cf87369cd2862f1ac5fb75c4ddf9d25d55999f7736a94b58ad679d384196cba837c5f5ff14086e060fafccef5474a16e2d3058ffa488
+  checksum: eaae4c5410897e00bd03c44bcaf9bad43f793d1dd8fa2fe0ba808c809c8b169d6f40c093eab0ce20e12e9b6b8bf63f11438b2a6a8695c1dfc441fa71a5013896
   languageName: node
   linkType: hard
 
