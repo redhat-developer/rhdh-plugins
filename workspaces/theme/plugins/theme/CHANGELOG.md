@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.10.2
+
+### Patch Changes
+
+- 374d565: Scope TechDocs subheader toolbar to use `background.paper`, fixing the gray strip under the page header. Adds a `MuiCssBaseline` rule targeting `[class*="BackstageHeader-header-"] + [class*="MuiToolbar-root"]` so other toolbars remain unaffected.
+
 ## 0.10.1
 
 ### Patch Changes
