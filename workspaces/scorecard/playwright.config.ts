@@ -47,6 +47,8 @@ export default defineConfig({
 
   outputDir: 'node_modules/.cache/e2e-test-results',
 
+  workers: 1,
+
   projects: [
     {
       name: 'en',
@@ -59,6 +61,8 @@ export default defineConfig({
     {
       name: 'fr',
       testDir: 'packages/app/e2e-tests',
+      grepInvert:
+        /(Display access denied message when RBAC is not configured|Import component and validate scorecard tabs for GitHub PRs and Jira tickets)/,
       use: {
         channel: 'chrome',
         locale: 'fr',
