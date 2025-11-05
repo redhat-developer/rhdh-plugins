@@ -145,11 +145,12 @@ test('Total number of users panel shows 1 visitor of 100', async () => {
 
 test('Top plugins shows catalog', async () => {
   await navigateToInsights(page, translations.header.title);
-  const pluginText =
-    translations.plugins.allTitle.match(/plugins/i)?.[0] ||
-    translations.plugins.allTitle.match(/plugin/i)?.[0]!;
-
-  const pluginRegex = new RegExp(pluginText, 'i');
+  const pluginRegex = new RegExp(
+    `${translations.plugins.allTitle}|${replaceTemplate(
+      translations.plugins.topNTitle,
+      { count: '\\d' },
+    )}`,
+  );
 
   const panel = page.locator('.v5-MuiPaper-root', {
     hasText: pluginRegex,
