@@ -21,6 +21,7 @@ import {
 import { ThresholdConfigFormatError } from '../errors';
 import type { JsonValue } from '@backstage/types';
 import { ComparisonOperator, RangeOperator } from './types';
+import type { Config } from '@backstage/config';
 
 function parseRangeOperator(
   expression: string,
@@ -164,4 +165,27 @@ export function validateThresholds(
     seenKeys.add(rule.key);
     parseThresholdExpression(rule.expression, expectedMetricType);
   }
+}
+
+/**
+ * Read and validate threshold configuration from config or return undefined
+ * @public
+ */
+export function getThresholdsFromConfig(
+  config: Config,
+  thresholdsPath: string,
+  expectedMetricType: MetricType,
+): ThresholdConfig | undefined {
+  try {
+    const thresholdsConfig = config.getOptional(thresholdsPath);
+    if (thresholdsConfig) {
+      validateThresholds(thresholdsConfig, expectedMetricType);
+      return thresholdsConfig;
+    }
+  } catch (error) {
+    throw new Error(
+      `Invalid thresholds configuration at ${thresholdsPath}: ${error}`,
+    );
+  }
+  return undefined;
 }

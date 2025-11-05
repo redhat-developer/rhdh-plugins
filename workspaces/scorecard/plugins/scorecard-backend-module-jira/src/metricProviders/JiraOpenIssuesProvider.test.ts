@@ -21,7 +21,6 @@ import {
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { validateThresholds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraOpenIssuesProvider } from './JiraOpenIssuesProvider';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { JiraClient } from '../clients/base';
@@ -40,9 +39,6 @@ import {
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
 jest.mock('../clients/JiraClientFactory');
-jest.mock('@red-hat-developer-hub/backstage-plugin-scorecard-node', () => ({
-  validateThresholds: jest.fn(),
-}));
 jest.mock('../strategies/ConnectionStrategy');
 
 const mockJiraClient = {
@@ -60,9 +56,6 @@ const mockedDirectConnectionStrategy =
   DirectConnectionStrategy as unknown as jest.Mocked<
     typeof DirectConnectionStrategy
   >;
-const mockedValidateThresholds = validateThresholds as jest.MockedFunction<
-  typeof validateThresholds
->;
 
 const mockEntity: Entity = newEntityComponent({
   [PROJECT_KEY]: 'TEST',
@@ -180,7 +173,6 @@ describe('JiraOpenIssuesProvider', () => {
         mockAuthOptions,
       );
 
-      expect(mockedValidateThresholds).not.toHaveBeenCalled();
       expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
 
@@ -191,11 +183,6 @@ describe('JiraOpenIssuesProvider', () => {
         config,
         mockAuthOptions,
       );
-
-      expect(mockedValidateThresholds).toHaveBeenCalledWith(
-        customThresholds,
-        'number',
-      );
       expect(provider.getMetricThresholds()).toEqual(customThresholds);
     });
 
@@ -203,18 +190,11 @@ describe('JiraOpenIssuesProvider', () => {
       const invalidThresholds = {
         rules: [{ key: 'invalid', expression: 'bad' }],
       };
-      mockedValidateThresholds.mockImplementation(() => {
-        throw new Error('Invalid thresholds');
-      });
       const config = newMockRootConfig({ thresholds: invalidThresholds });
 
       expect(() =>
         JiraOpenIssuesProvider.fromConfig(config, mockAuthOptions),
       ).toThrow('Invalid thresholds');
-      expect(mockedValidateThresholds).toHaveBeenCalledWith(
-        invalidThresholds,
-        'number',
-      );
     });
 
     it('should create provider with proxy connection strategy when proxy path is configured', () => {

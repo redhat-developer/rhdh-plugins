@@ -14,22 +14,4 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
-import {
-  Metric,
-  MetricType,
-  MetricValue,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-/**
- * @public
- */
-export interface MetricProvider<T extends MetricType = MetricType> {
-  getProviderDatasourceId(): string;
-  getProviderId(): string;
-  getMetric(): Metric<T>;
-  getMetricThresholds(): ThresholdConfig;
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
-}
+export const CLEANUP_EXPIRED_METRICS_ID = 'cleanup-expired-metrics' as const;

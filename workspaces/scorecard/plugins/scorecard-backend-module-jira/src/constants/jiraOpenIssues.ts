@@ -14,25 +14,14 @@
  * limitations under the License.
  */
 
-/**
- * Jira open issues thresholds configuration path
- * @public
- */
-export const THRESHOLDS_CONFIG_PATH =
-  'scorecard.plugins.jira.open_issues.thresholds' as const;
+export const OPEN_ISSUES_CONFIG_PATH =
+  'scorecard.plugins.jira.open_issues' as const;
 
 /**
  * Jira integration configuration path
  * @public
  */
 export const JIRA_CONFIG_PATH = 'jira' as const;
-
-/**
- * Jira open issues options configuration path
- * @public
- */
-export const JIRA_OPTIONS_PATH =
-  'scorecard.plugins.jira.open_issues.options' as const;
 
 export const DATA_CENTER_API_VERSION = 2 as const;
 

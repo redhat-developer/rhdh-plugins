@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
@@ -36,6 +37,12 @@ abstract class MockMetricProvider<T extends MetricType>
   ) {}
 
   abstract getMetricThresholds(): ThresholdConfig;
+
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.mock/key': CATALOG_FILTER_EXISTS,
+    };
+  }
 
   getProviderDatasourceId(): string {
     return this.datasourceId;

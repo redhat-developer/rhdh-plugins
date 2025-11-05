@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
-import {
-  Metric,
-  MetricType,
-  MetricValue,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { MetricProvidersRegistry } from '../src/providers/MetricProvidersRegistry';
 
-/**
- * @public
- */
-export interface MetricProvider<T extends MetricType = MetricType> {
-  getProviderDatasourceId(): string;
-  getProviderId(): string;
-  getMetric(): Metric<T>;
-  getMetricThresholds(): ThresholdConfig;
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
-}
+export const mockMetricProvidersRegistry = {
+  register: jest.fn(),
+  getProvider: jest.fn(),
+  getMetric: jest.fn(),
+  calculateMetric: jest.fn(),
+  calculateMetrics: jest.fn(),
+  listProviders: jest.fn().mockReturnValue([]),
+  listMetrics: jest.fn().mockReturnValue([]),
+  listMetricsByDatasource: jest.fn().mockReturnValue([]),
+} as unknown as jest.Mocked<MetricProvidersRegistry>;

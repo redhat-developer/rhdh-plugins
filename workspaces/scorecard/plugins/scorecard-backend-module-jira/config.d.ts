@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
+
 export interface Config {
   /** Configuration for jira plugin */
   jira: (
@@ -48,6 +50,7 @@ export interface Config {
               expression: string;
             }>;
           };
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
       };
     };

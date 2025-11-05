@@ -118,6 +118,24 @@ describe('MetricProvidersRegistry', () => {
     });
   });
 
+  describe('getProvider', () => {
+    it('should return provider for registered provider', () => {
+      registry.register(githubNumberProvider);
+
+      const provider = registry.getProvider('github.number_metric');
+
+      expect(provider).toEqual(githubNumberProvider);
+    });
+
+    it('should throw NotFoundError for unregistered provider', () => {
+      expect(() => registry.getProvider('non_existent')).toThrow(
+        new NotFoundError(
+          "Metric provider with ID 'non_existent' is not registered.",
+        ),
+      );
+    });
+  });
+
   describe('getMetric', () => {
     it('should return metric for registered provider', () => {
       registry.register(githubNumberProvider);
@@ -238,6 +256,24 @@ describe('MetricProvidersRegistry', () => {
       expect(results[1].error?.message).toBe(
         "Metric provider with ID 'non_existent' is not registered.",
       );
+    });
+  });
+
+  describe('listProviders', () => {
+    it('should return empty array when no providers registered', () => {
+      const providers = registry.listProviders();
+      expect(providers).toEqual([]);
+    });
+
+    it('should return all registered providers', () => {
+      registry.register(githubNumberProvider);
+      registry.register(jiraBooleanProvider);
+
+      const providers = registry.listProviders();
+
+      expect(providers).toHaveLength(2);
+      expect(providers).toContain(githubNumberProvider);
+      expect(providers).toContain(jiraBooleanProvider);
     });
   });
 

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { CatalogApi } from '@backstage/catalog-client';
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import {
   MetricResult,
@@ -37,69 +36,71 @@ import {
   PermissionCriteria,
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
+import { CatalogService } from '@backstage/plugin-catalog-node';
+import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 
 export type CatalogMetricServiceOptions = {
-  catalogApi: CatalogApi;
+  catalog: CatalogService;
+  auth: AuthService;
   registry: MetricProvidersRegistry;
   thresholdEvaluator: ThresholdEvaluator;
-  auth?: AuthService;
+  database: DatabaseMetricValues;
 };
 
 export class CatalogMetricService {
-  private readonly catalogApi: CatalogApi;
+  private readonly catalog: CatalogService;
+  private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
   private readonly thresholdEvaluator: ThresholdEvaluator;
-  private readonly auth?: AuthService;
+  private readonly database: DatabaseMetricValues;
 
   constructor(options: CatalogMetricServiceOptions) {
-    this.thresholdEvaluator = options.thresholdEvaluator;
-    this.registry = options.registry;
-    this.catalogApi = options.catalogApi;
+    this.catalog = options.catalog;
     this.auth = options.auth;
+    this.registry = options.registry;
+    this.thresholdEvaluator = options.thresholdEvaluator;
+    this.database = options.database;
   }
 
   /**
-   * Calculate metric results for a specific catalog entity.
+   * Get latest metric results for a specific catalog entity and metric providers.
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
-   * @param providerIds - Optional array of provider IDs to calculate.
-   *                      If not provided, calculates all available metrics.
+   * @param providerIds - Optional array of provider IDs to get latest metrics of.
+   *                      If not provided, gets all available latest metrics.
+   * @param filter - Permission filter
    * @returns Metric results with entity-specific thresholds applied
    */
-  async calculateEntityMetrics(
+  async getLatestEntityMetrics(
     entityRef: string,
     providerIds?: string[],
     filter?: PermissionCriteria<
       PermissionCondition<string, PermissionRuleParams>
     >,
   ): Promise<MetricResult[]> {
-    const token = await this.getServiceToken();
-    const entity = await this.catalogApi.getEntityByRef(entityRef, token);
+    const entity = await this.catalog.getEntityByRef(entityRef, {
+      credentials: await this.auth.getOwnServiceCredentials(),
+    });
     if (!entity) {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const metricsToCalculate = providerIds
+    const metricsToFetch = providerIds
       ? this.registry.listMetrics().filter(m => providerIds.includes(m.id))
       : this.registry.listMetrics();
 
-    const supportedMetricsToCalculate = metricsToCalculate.filter(m => {
-      const provider = this.registry.getProvider(m.id);
-      return provider.supportsEntity(entity);
-    });
-
-    const authorizedMetricsToCalculate = filterAuthorizedMetrics(
-      supportedMetricsToCalculate,
+    const authorizedMetricsToFetch = filterAuthorizedMetrics(
+      metricsToFetch,
       filter,
     );
-    const rawResults = await this.registry.calculateMetrics(
-      authorizedMetricsToCalculate.map(m => m.id),
-      entity,
+    const rawResults = await this.database.readLatestEntityMetricValues(
+      entityRef,
+      authorizedMetricsToFetch.map(m => m.id),
     );
 
-    return rawResults.map(({ providerId, value, error }, index) => {
-      const provider = this.registry.getProvider(providerId);
-      const metric = authorizedMetricsToCalculate[index];
+    return rawResults.map(({ metric_id, value, error_message, timestamp }) => {
+      const provider = this.registry.getProvider(metric_id);
+      const metric = provider.getMetric();
 
       let thresholds: ThresholdConfig | undefined;
       let evaluation: string | undefined;
@@ -124,7 +125,7 @@ export class CatalogMetricService {
         thresholdError = stringifyError(e);
       }
 
-      const isMetricCalcError = error || value === undefined;
+      const isMetricCalcError = error_message || value === undefined;
       return {
         id: metric.id,
         status: isMetricCalcError ? 'error' : 'success',
@@ -135,13 +136,13 @@ export class CatalogMetricService {
           history: metric.history,
         },
         ...(isMetricCalcError && {
-          error: error
-            ? stringifyError(error)
-            : stringifyError(new Error(`Metric value is 'undefined'`)),
+          error:
+            error_message ??
+            stringifyError(new Error(`Metric value is 'undefined'`)),
         }),
         result: {
           value,
-          timestamp: new Date().toISOString(),
+          timestamp: new Date(timestamp).toISOString(),
           thresholdResult: {
             definition: thresholds,
             status: thresholdError ? 'error' : 'success',
@@ -150,16 +151,6 @@ export class CatalogMetricService {
           },
         },
       };
-    });
-  }
-
-  private async getServiceToken(): Promise<{ token: string } | undefined> {
-    if (!this.auth) {
-      return undefined;
-    }
-    return await this.auth.getPluginRequestToken({
-      onBehalfOf: await this.auth.getOwnServiceCredentials(),
-      targetPluginId: 'catalog',
     });
   }
 

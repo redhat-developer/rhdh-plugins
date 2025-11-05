@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import type { Entity } from '@backstage/catalog-model';
 import {
-  Metric,
-  MetricType,
-  MetricValue,
-  ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+  DatabaseService,
+  resolvePackagePath,
+} from '@backstage/backend-plugin-api';
 
-/**
- * @public
- */
-export interface MetricProvider<T extends MetricType = MetricType> {
-  getProviderDatasourceId(): string;
-  getProviderId(): string;
-  getMetric(): Metric<T>;
-  getMetricThresholds(): ThresholdConfig;
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
-  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
+const migrationsDir = resolvePackagePath(
+  '@red-hat-developer-hub/backstage-plugin-scorecard-backend',
+  'migrations',
+);
+
+export async function migrate(databaseManager: DatabaseService) {
+  const knex = await databaseManager.getClient();
+
+  if (!databaseManager.migrations?.skip) {
+    await knex.migrate.latest({
+      directory: migrationsDir,
+    });
+  }
 }
