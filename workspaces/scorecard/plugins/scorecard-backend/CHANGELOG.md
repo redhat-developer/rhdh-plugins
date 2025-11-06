@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.0.1
+
+### Patch Changes
+
+- 94050aa: Fixes scorecard conditional permissions and conditional access check for Catalog entity.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.0.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
