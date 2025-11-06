@@ -11090,9 +11090,11 @@ __metadata:
     "@backstage/plugin-permission-react": ^0.4.37
     "@backstage/test-utils": ^1.7.12
     "@backstage/theme": ^0.7.0
+    "@backstage/ui": ^0.8.2
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0

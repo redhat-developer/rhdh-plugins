@@ -16,6 +16,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react';
 import { EntityScorecardContent } from '../EntityScorecardContent';
+import { mockScorecardSuccessData } from '../../../../__fixtures__/scorecardData';
 
 // Mock the child components
 jest.mock('../../Common/NoScorecardsState', () => {
@@ -87,61 +88,6 @@ jest.mock('../../../utils/utils', () => ({
   getStatusConfig: jest.fn(),
 }));
 
-const mockDataWithMetrics = [
-  {
-    id: 'github.pull_requests_open_1',
-    status: 'success',
-    metadata: {
-      title: 'GitHub open PRs',
-      description:
-        'Current count of open Pull Requests for a given GitHub repository.',
-      type: 'number',
-      history: true,
-    },
-    result: {
-      value: 8,
-      timestamp: '2025-08-08T10:00:00Z',
-      thresholdResult: {
-        definition: {
-          rules: [
-            { key: 'success', expression: '< 10' },
-            { key: 'warning', expression: '10-50' },
-            { key: 'error', expression: '> 50' },
-          ],
-        },
-        status: 'success',
-        evaluation: 'success',
-      },
-    },
-  },
-  {
-    id: 'jira.issues_open_1',
-    status: 'success',
-    metadata: {
-      title: 'Jira open blocking tickets',
-      description:
-        'Highlights the number of critical, blocking issues that are currently open in Jira.',
-      type: 'number',
-      history: true,
-    },
-    result: {
-      value: 22,
-      timestamp: '2025-08-08T10:00:00Z',
-      thresholdResult: {
-        definition: {
-          rules: [
-            { key: 'success', expression: '< 10' },
-            { key: 'warning', expression: '10-50' },
-            { key: 'error', expression: '> 50' },
-          ],
-        },
-        evaluation: 'success',
-        status: 'success',
-      },
-    },
-  },
-];
-
 // Get the mocked functions
 const { useScorecards } = require('../../../hooks/useScorecards');
 const { getStatusConfig } = require('../../../utils/utils');
@@ -170,7 +116,7 @@ describe('EntityScorecardContent Component', () => {
 
   it('should render permission required state when user does not have permission', () => {
     useScorecards.mockReturnValue({
-      scorecards: mockDataWithMetrics,
+      scorecards: mockScorecardSuccessData,
       loadingData: false,
       error: {
         message:
@@ -199,7 +145,7 @@ describe('EntityScorecardContent Component', () => {
 
   it('should render scorecards when data is loaded successfully and user has permission', async () => {
     useScorecards.mockReturnValue({
-      scorecards: mockDataWithMetrics,
+      scorecards: mockScorecardSuccessData,
       loadingData: false,
       error: undefined,
     });
@@ -222,7 +168,7 @@ describe('EntityScorecardContent Component', () => {
 
   it('should call getStatusConfig for each metric', () => {
     useScorecards.mockReturnValue({
-      scorecards: mockDataWithMetrics,
+      scorecards: mockScorecardSuccessData,
       loadingData: false,
       error: undefined,
     });
@@ -231,26 +177,28 @@ describe('EntityScorecardContent Component', () => {
 
     expect(getStatusConfig).toHaveBeenCalledTimes(2);
     expect(getStatusConfig).toHaveBeenCalledWith({
-      evaluation: mockDataWithMetrics[0].result.thresholdResult.evaluation,
-      thresholdStatus: mockDataWithMetrics[0].result.thresholdResult.status,
-      metricStatus: mockDataWithMetrics[0].status,
+      evaluation: mockScorecardSuccessData[0].result.thresholdResult.evaluation,
+      thresholdStatus:
+        mockScorecardSuccessData[0].result.thresholdResult.status,
+      metricStatus: mockScorecardSuccessData[0].status,
     });
     expect(getStatusConfig).toHaveBeenCalledWith({
-      evaluation: mockDataWithMetrics[1].result.thresholdResult.evaluation,
-      thresholdStatus: mockDataWithMetrics[1].result.thresholdResult.status,
-      metricStatus: mockDataWithMetrics[1].status,
+      evaluation: mockScorecardSuccessData[1].result.thresholdResult.evaluation,
+      thresholdStatus:
+        mockScorecardSuccessData[1].result.thresholdResult.status,
+      metricStatus: mockScorecardSuccessData[1].status,
     });
   });
 
   it('should render multiple scorecards with different statuses', async () => {
     const mockDataWithDifferentStatuses = [
       {
-        ...mockDataWithMetrics[0],
+        ...mockScorecardSuccessData[0],
         id: 'test_ideal',
         result: {
-          ...mockDataWithMetrics[0].result,
+          ...mockScorecardSuccessData[0].result,
           thresholdResult: {
-            ...mockDataWithMetrics[0].result.thresholdResult,
+            ...mockScorecardSuccessData[0].result.thresholdResult,
             evaluation: {
               status: 'green',
               matchedRule: '< 10',
@@ -260,12 +208,12 @@ describe('EntityScorecardContent Component', () => {
         },
       },
       {
-        ...mockDataWithMetrics[1],
+        ...mockScorecardSuccessData[1],
         id: 'test_warning',
         result: {
-          ...mockDataWithMetrics[1].result,
+          ...mockScorecardSuccessData[1].result,
           thresholdResult: {
-            ...mockDataWithMetrics[1].result.thresholdResult,
+            ...mockScorecardSuccessData[1].result.thresholdResult,
             evaluation: {
               status: 'orange',
               matchedRule: '10-50',
@@ -275,17 +223,17 @@ describe('EntityScorecardContent Component', () => {
         },
       },
       {
-        ...mockDataWithMetrics[0],
+        ...mockScorecardSuccessData[0],
         id: 'test_critical',
         metadata: {
-          ...mockDataWithMetrics[0].metadata,
+          ...mockScorecardSuccessData[0].metadata,
           title: 'Critical Test',
         },
         result: {
-          ...mockDataWithMetrics[0].result,
+          ...mockScorecardSuccessData[0].result,
           value: 75,
           thresholdResult: {
-            ...mockDataWithMetrics[0].result.thresholdResult,
+            ...mockScorecardSuccessData[0].result.thresholdResult,
             evaluation: {
               status: 'red',
               matchedRule: '> 50',
@@ -312,7 +260,7 @@ describe('EntityScorecardContent Component', () => {
 
   it('should pass correct props to Scorecard component', () => {
     useScorecards.mockReturnValue({
-      scorecards: [mockDataWithMetrics[0]],
+      scorecards: [mockScorecardSuccessData[0]],
       loadingData: false,
       error: undefined,
     });
@@ -335,11 +283,11 @@ describe('EntityScorecardContent Component', () => {
   it('should handle threshold errors correctly', () => {
     const mockDataWithThresholdError = [
       {
-        ...mockDataWithMetrics[0],
+        ...mockScorecardSuccessData[0],
         result: {
-          ...mockDataWithMetrics[0].result,
+          ...mockScorecardSuccessData[0].result,
           thresholdResult: {
-            ...mockDataWithMetrics[0].result.thresholdResult,
+            ...mockScorecardSuccessData[0].result.thresholdResult,
             status: 'error',
             error: 'Threshold evaluation failed',
           },
@@ -366,11 +314,11 @@ describe('EntityScorecardContent Component', () => {
   it('should handle metric data errors correctly', () => {
     const mockDataWithMetricError = [
       {
-        ...mockDataWithMetrics[0],
+        ...mockScorecardSuccessData[0],
         status: 'error',
         error: 'Failed to fetch metric data',
         result: {
-          ...mockDataWithMetrics[0].result,
+          ...mockScorecardSuccessData[0].result,
           value: undefined,
         },
       },
