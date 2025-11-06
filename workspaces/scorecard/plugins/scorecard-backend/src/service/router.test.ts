@@ -253,6 +253,20 @@ describe('createRouter', () => {
       expect(response.body).toEqual(mockMetricResults);
     });
 
+    it('should handle uppercase in url parameters', async () => {
+      const response = await request(app).get(
+        '/metrics/catalog/Component/default/my-service',
+      );
+
+      expect(response.status).toBe(200);
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
+        'component:default/my-service',
+        undefined,
+        undefined,
+      );
+      expect(response.body).toEqual(mockMetricResults);
+    });
+
     it('should handle multiple metricIds parameter', async () => {
       const response = await request(app).get(
         '/metrics/catalog/component/default/my-service?metricIds=github.open_prs,github.open_issues',

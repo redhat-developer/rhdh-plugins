@@ -293,6 +293,16 @@ describe('MetricProvidersRegistry', () => {
       expect(metrics[0].id).toBe('github.number_metric');
       expect(metrics[1].id).toBe('jira.boolean_metric');
     });
+
+    it('should return filtered metrics', () => {
+      registry.register(githubNumberProvider);
+      registry.register(jiraBooleanProvider);
+
+      const metrics = registry.listMetrics(['jira.boolean_metric']);
+
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].id).toBe('jira.boolean_metric');
+    });
   });
 
   describe('listMetricsByDatasource', () => {
