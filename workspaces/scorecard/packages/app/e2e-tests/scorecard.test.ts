@@ -16,7 +16,6 @@
 
 import { test, expect } from '@playwright/test';
 import { mockScorecardResponse } from './utils/apiUtils';
-import { ComponentImportPage } from './pages/ComponentImportPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { setupRBAC } from './utils/rbacSetup';
@@ -70,7 +69,6 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
 
 test.describe.serial('Scorecard Plugin Tests', () => {
   let catalogPage: CatalogPage;
-  let importPage: ComponentImportPage;
   let scorecardPage: ScorecardPage;
   let translations: ScorecardMessages;
   let currentLocale: string;
@@ -89,22 +87,17 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
-    importPage = new ComponentImportPage(page);
     scorecardPage = new ScorecardPage(page, translations);
   });
 
-  test('Import component and validate scorecard tabs for GitHub PRs and Jira tickets', async ({
+  test('Validate scorecard tabs for GitHub PRs and Jira tickets', async ({
     page,
   }, testInfo) => {
     await mockScorecardResponse(page, customScorecardResponse);
 
     await page.goto('/');
     await catalogPage.navigateToCatalog(currentLocale);
-    await importPage.startComponentImport();
-    await importPage.analyzeComponent(
-      'https://github.com/rhdh-pai-qe/backstage-catalog/blob/main/catalog-info.yaml',
-    );
-    await importPage.viewImportedComponent();
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
     await scorecardPage.verifyScorecardValues({
       [translations.metric['github.open_prs'].title]: '9',
@@ -125,7 +118,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
     await page.goto('/');
     await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('rhdh-app');
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
 
     await scorecardPage.expectEmptyState();
@@ -140,7 +133,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
     await page.goto('/');
     await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('rhdh-app');
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
 
     const jiraMetric = scorecardPage.scorecardMetrics[1];
@@ -183,7 +176,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
     await page.goto('/');
     await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('rhdh-app');
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
 
     const githubMetric = scorecardPage.scorecardMetrics[0];

@@ -17,7 +17,7 @@ import { Page, expect } from '@playwright/test';
 
 export async function waitUntilApiCallSucceeds(
   page: Page,
-  urlPart: string = '/api/scorecard/metrics/catalog/Component/default/rhdh-app',
+  urlPart: string = '/api/scorecard/metrics/catalog/Component/default/red-hat-developer-hub',
 ): Promise<void> {
   const response = await page.waitForResponse(
     async res => {
@@ -32,7 +32,7 @@ export async function waitUntilApiCallSucceeds(
 }
 
 const SCORECARD_API_ROUTE =
-  '**/api/scorecard/metrics/catalog/Component/default/rhdh-app';
+  '**/api/scorecard/metrics/catalog/Component/default/red-hat-developer-hub';
 
 export async function mockScorecardResponse(
   page: Page,
