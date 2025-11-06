@@ -22,16 +22,24 @@ export class CatalogPage {
     this.page = page;
   }
 
-  async navigateToCatalog() {
+  async navigateToCatalog(locale: string) {
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible();
     await enterButton.click();
     await expect(this.page.getByText('My Company Catalog')).toBeVisible();
+    await this.switchToLocale(this.page, locale);
   }
 
   async openComponent(componentName: string) {
     const link = this.page.getByRole('link', { name: componentName });
     await expect(link).toBeVisible();
     await link.click();
+  }
+
+  async switchToLocale(page: Page, locale: string): Promise<void> {
+    await page.getByRole('link', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'English' }).click();
+    await page.getByRole('option', { name: locale }).click();
+    await page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }

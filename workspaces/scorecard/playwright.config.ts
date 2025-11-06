@@ -15,7 +15,6 @@
  */
 
 import { defineConfig } from '@playwright/test';
-import { generateProjects } from '@backstage/e2e-test-utils/playwright';
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -29,7 +28,7 @@ export default defineConfig({
     : {
         command: 'yarn start',
         port: 3000,
-        reuseExistingServer: false,
+        reuseExistingServer: true,
         env: {
           JIRA_URL: 'https://issues.redhat.com',
           JIRA_TOKEN: 'my-jira-token',
@@ -42,12 +41,28 @@ export default defineConfig({
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
-    actionTimeout: 0,
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
   },
 
   outputDir: 'node_modules/.cache/e2e-test-results',
 
-  projects: generateProjects(), // Auto-discover e2e-tests in packages
+  projects: [
+    {
+      name: 'en',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'en',
+      },
+    },
+    {
+      name: 'fr',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'fr',
+      },
+    },
+  ],
 });
