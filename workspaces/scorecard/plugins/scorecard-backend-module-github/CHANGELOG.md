@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github
 
+## 2.1.0
+
+### Minor Changes
+
+- 54465f3: Backstage version bump to v1.44.2
+
+### Patch Changes
+
+- Updated dependencies [54465f3]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.1.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
