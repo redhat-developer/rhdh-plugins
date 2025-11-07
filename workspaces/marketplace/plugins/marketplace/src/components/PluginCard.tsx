@@ -173,7 +173,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                       {index > 0 ? t('common.comma') : t('common.by')}
                       <Link
                         key={author.name}
-                        to={withFilter('spec.authors.name', author.name)}
+                        to={withFilter('author', author.name)}
                         color="primary"
                         onClick={e => e.stopPropagation()}
                       >
