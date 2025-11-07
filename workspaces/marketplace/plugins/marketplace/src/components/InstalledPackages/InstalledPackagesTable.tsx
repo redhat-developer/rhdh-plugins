@@ -31,7 +31,10 @@ import Typography from '@mui/material/Typography';
 import AlertTitle from '@mui/material/AlertTitle';
 import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
-import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import {
+  MarketplacePackage,
+  MarketplacePackageInstallStatus,
+} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 
 import { useMarketplaceApi } from '../../hooks/useMarketplaceApi';
 import { getReadableName } from '../../utils/pluginProcessing';
@@ -224,7 +227,11 @@ export const InstalledPackagesTable = () => {
             // Show the npm package name directly from dynamic-plugins-info record
             packageName: p.name,
             parentPlugin: entity?.spec?.partOf?.[0] ?? '',
-            installStatus: entity?.spec?.installStatus,
+            // If entity exists, use its installStatus; otherwise, since the package is installed,
+            // set installStatus to Installed (matching the Catalog tab behavior)
+            installStatus:
+              entity?.spec?.installStatus ??
+              MarketplacePackageInstallStatus.Installed,
             // Humanized role from dynamic-plugins-info
             role: (p as any).role
               ? (() => {
