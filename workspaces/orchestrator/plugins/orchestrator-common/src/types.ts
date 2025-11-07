@@ -16,7 +16,7 @@
 
 import type { JsonObject } from '@backstage/types';
 
-import type { Specification } from '@severlessworkflow/sdk-typescript';
+import type { Specification } from '@serverlessworkflow/sdk-typescript';
 import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
 import type { ProcessInstanceStateValues } from './models';
@@ -36,7 +36,7 @@ export type OmitRecursively<T, K extends PropertyKey> = Omit<
 
 export type WorkflowDefinition = OmitRecursively<
   Specification.Workflow,
-  'normalize'
+  'normalize' | 'asPlainObject'
 >;
 
 export type WorkflowListResult = {
