@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.12.0
+
+### Minor Changes
+
+- f8e6f04: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- 06bc4ea: Fixed `installStatus` value on the `Installed packages` tab.
+- 2a445d2: Fix Support Type filter count inconsistency when other filters are applied.
+- 7ef79ef: Fixed filter function of clicking on "Author" on a plugin card.
+- Updated dependencies [f8e6f04]
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.12.0
+
 ## 0.11.4
 
 ### Patch Changes
