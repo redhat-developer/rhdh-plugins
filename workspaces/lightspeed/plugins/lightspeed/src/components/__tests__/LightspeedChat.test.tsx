@@ -211,7 +211,7 @@ describe('LightspeedChat', () => {
     const input = screen.getByTestId('attachment-input') as HTMLInputElement;
     expect(input).toHaveAttribute(
       'accept',
-      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml,application/xml,.xml',
+      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml',
     );
   });
 
@@ -244,7 +244,7 @@ describe('LightspeedChat', () => {
 
     expect(
       screen.getByText(
-        'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+        'Unsupported file type. Supported types are: .txt, .yaml, and .json.',
       ),
     ).toBeInTheDocument();
   });

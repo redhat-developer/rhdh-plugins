@@ -112,10 +112,10 @@ const lightspeedTranslationEs = createTranslationMessages({
     'chatbox.welcome.greeting': 'Hola, {{userName}}',
     'chatbox.welcome.description': '¿Cómo puedo ayudarte hoy?',
     'chatbox.message.placeholder':
-      'Envía un mensaje y opcionalmente sube un archivo JSON, YAML, TXT o XML...',
+      'Envía un mensaje y opcionalmente sube un archivo JSON, YAML, o TXT...',
     'chatbox.fileUpload.failed': 'La carga del archivo falló',
     'chatbox.fileUpload.infoText':
-      'Los tipos de archivo soportados son: .txt, .yaml, .json y .xml. El tamaño máximo del archivo es 25 MB.',
+      'Los tipos de archivo soportados son: .txt, .yaml, y .json. El tamaño máximo del archivo es 25 MB.',
 
     // Accessibility and ARIA labels
     'aria.chatbotSelector': 'Selector de chatbot',
@@ -158,7 +158,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'file.upload.error.alreadyExists': 'El archivo ya existe.',
     'file.upload.error.multipleFiles': 'Se subió más de un archivo.',
     'file.upload.error.unsupportedType':
-      'Tipo de archivo no soportado. Los tipos soportados son: .txt, .yaml, .json y .xml.',
+      'Tipo de archivo no soportado. Los tipos soportados son: .txt, .yaml, y .json.',
     'file.upload.error.fileTooLarge':
       'El tamaño de tu archivo es demasiado grande. Por favor asegúrate de que tu archivo sea menor a 25 MB.',
     'file.upload.error.readFailed':

@@ -108,10 +108,10 @@ const lightspeedTranslationDe = createTranslationMessages({
     'chatbox.welcome.greeting': 'Hallo, {{userName}}',
     'chatbox.welcome.description': 'Wie kann ich Ihnen heute helfen?',
     'chatbox.message.placeholder':
-      'Senden Sie eine Nachricht und laden Sie optional eine JSON-, YAML-, TXT- oder XML-Datei hoch...',
+      'Senden Sie eine Nachricht und laden Sie optional eine JSON-, YAML-, oder TXT-Datei hoch...',
     'chatbox.fileUpload.failed': 'Datei-Upload fehlgeschlagen',
     'chatbox.fileUpload.infoText':
-      'Unterstützte Dateitypen sind: .txt, .yaml, .json und .xml. Die maximale Dateigröße beträgt 25 MB.',
+      'Unterstützte Dateitypen sind: .txt, .yaml, und .json. Die maximale Dateigröße beträgt 25 MB.',
 
     // Accessibility and ARIA labels
     'aria.chatbotSelector': 'Chatbot-Auswahl',
@@ -154,7 +154,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'file.upload.error.alreadyExists': 'Die Datei existiert bereits.',
     'file.upload.error.multipleFiles': 'Mehr als eine Datei hochgeladen.',
     'file.upload.error.unsupportedType':
-      'Nicht unterstützter Dateityp. Unterstützte Typen sind: .txt, .yaml, .json und .xml.',
+      'Nicht unterstützter Dateityp. Unterstützte Typen sind: .txt, .yaml, und .json.',
     'file.upload.error.fileTooLarge':
       'Ihre Dateigröße ist zu groß. Bitte stellen Sie sicher, dass Ihre Datei kleiner als 25 MB ist.',
     'file.upload.error.readFailed':

@@ -50,13 +50,6 @@ describe('isSupportedFileType', () => {
     expect(isSupportedFileType(file)).toBe(true);
   });
 
-  it('should return true for XML file type', () => {
-    const xmlFile = new File(['<note>Test</note>'], 'test.xml', {
-      type: 'application/xml',
-    });
-    expect(isSupportedFileType(xmlFile)).toBe(true);
-  });
-
   it('should return false for unsupported file type', () => {
     const file = new File(['<html></html>'], 'test.html', {
       type: 'text/html',
