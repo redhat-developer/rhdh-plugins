@@ -9,6 +9,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 | Class             | Method                                                                                       | HTTP request                                           | Description                                                                                                                      |
 | ----------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | _ImportApi_       | [**createImportJobs**](Apis/ImportApi.md#createimportjobs)                                   | **POST** /imports                                      | Submit Import Jobs                                                                                                               |
+| _ImportApi_       | [**createOrhestratorWorkflowJobs**](Apis/ImportApi.md#createorhestratorworkflowjobs)         | **POST** /orchestrator-workflows                       | Execute an orchestrator workflow                                                                                                 |
 | _ImportApi_       | [**createTaskImportJobs**](Apis/ImportApi.md#createtaskimportjobs)                           | **POST** /task-imports                                 | Execute a scaffolder template for a list of repositories                                                                         |
 | _ImportApi_       | [**deleteImportByRepo**](Apis/ImportApi.md#deleteimportbyrepo)                               | **DELETE** /import/by-repo                             | Delete Import by repository                                                                                                      |
 | _ImportApi_       | [**deleteTaskImportByRepo**](Apis/ImportApi.md#deletetaskimportbyrepo)                       | **DELETE** /task-import/by-repo                        | Delete stored scaffolder task records for a specific repository                                                                  |
@@ -34,6 +35,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 - [Import_github](./Models/Import_github.md)
 - [Import_gitlab](./Models/Import_gitlab.md)
 - [Import_task](./Models/Import_task.md)
+- [Import_workflow](./Models/Import_workflow.md)
 - [Organization](./Models/Organization.md)
 - [OrganizationList](./Models/OrganizationList.md)
 - [PullRequest](./Models/PullRequest.md)

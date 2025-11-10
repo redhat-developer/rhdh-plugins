@@ -46,9 +46,13 @@ declare namespace Components {
     export interface Import {
       id?: string;
       status?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+        | ImportStatus
+        | /* Import Job status */ TaskImportStatus;
       task?: {
         taskId?: string;
+      };
+      workflow?: {
+        workflowId?: string;
       };
       tasks?: {
         taskId?: string;
@@ -135,7 +139,11 @@ declare namespace Components {
     /**
      * Import Job status
      */
-    export type ImportStatus = 'ADDED' | 'WAIT_PR_APPROVAL' | 'PR_ERROR' | null;
+    export type ImportStatus =
+      | 'ADDED'
+      | 'WAIT_PR_APPROVAL'
+      | 'PR_ERROR'
+      | 'null';
     /**
      * Organization
      */
@@ -216,7 +224,8 @@ declare namespace Components {
        */
       organization?: string;
       importStatus?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+        | ImportStatus
+        | /* Import Job status */ TaskImportStatus;
       /**
        * default branch
        */
@@ -250,16 +259,20 @@ declare namespace Components {
      *   * null - Import source is unknown
      *
      */
-    export type Source = 'config' | 'location' | 'integration' | null;
+    export type Source = 'config' | 'location' | 'integration' | 'null';
     /**
      * Import Job with source it originates from
      */
     export interface SourceImport {
       id?: string;
       status?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+        | ImportStatus
+        | /* Import Job status */ TaskImportStatus;
       task?: {
         taskId?: string;
+      };
+      workflow?: {
+        workflowId?: string;
       };
       tasks?: {
         taskId?: string;
@@ -304,7 +317,8 @@ declare namespace Components {
       | 'TASK_OPEN'
       | 'TASK_PROCESSING'
       | 'TASK_SKIPPED'
-      | 'TASK_FETCH_FAILED';
+      | 'TASK_FETCH_FAILED'
+      | 'null';
   }
 }
 declare namespace Paths {
@@ -319,6 +333,13 @@ declare namespace Paths {
       /* Import Job request */ Components.Schemas.ImportRequest[];
     namespace Responses {
       export type $202 = /* Import Job */ Components.Schemas.Import[];
+    }
+  }
+  namespace CreateOrhestratorWorkflowJobs {
+    export type RequestBody =
+      /* Import Job request */ Components.Schemas.ImportRequest[];
+    namespace Responses {
+      export interface $200 {}
     }
   }
   namespace CreateTaskImportJobs {
@@ -389,8 +410,7 @@ declare namespace Paths {
       approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
-      export type $200 =
-        /* Import Job with source it originates from */
+      export type $200 = /* Import Job with source it originates from */
         | Components.Schemas.SourceImport[]
         | /* Import Job List */ Components.Schemas.ImportJobListV2;
       export type $500 =
@@ -469,8 +489,7 @@ declare namespace Paths {
       search?: Parameters.Search;
     }
     namespace Responses {
-      export type $200 =
-        /* Import Job with source it originates from */
+      export type $200 = /* Import Job with source it originates from */
         | Components.Schemas.SourceImport[]
         | /* Import Job List */ Components.Schemas.ImportJobListV2;
       export type $500 =
@@ -620,6 +639,14 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
   /**
+   * createOrhestratorWorkflowJobs - Execute an orchestrator workflow
+   */
+  'createOrhestratorWorkflowJobs'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: Paths.CreateOrhestratorWorkflowJobs.RequestBody,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.CreateOrhestratorWorkflowJobs.Responses.$200>;
+  /**
    * findTaskImportStatusByRepo - Get Import Status by repository
    */
   'findTaskImportStatusByRepo'(
@@ -738,6 +765,16 @@ export interface PathsDictionary {
       data?: Paths.CreateTaskImportJobs.RequestBody,
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
+  };
+  ['/orchestrator-workflows']: {
+    /**
+     * createOrhestratorWorkflowJobs - Execute an orchestrator workflow
+     */
+    'post'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: Paths.CreateOrhestratorWorkflowJobs.RequestBody,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.CreateOrhestratorWorkflowJobs.Responses.$200>;
   };
   ['/task-import/by-repo']: {
     /**

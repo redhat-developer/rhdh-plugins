@@ -103,11 +103,11 @@ export class RepositoryDao {
 
   async insertRepository(
     repoUrl: string,
-    taskId: string,
+    taskOrWorkflowId: string,
     approvalTool: string,
   ): Promise<number> {
     this.logger.debug(
-      `Saving task ${taskId} for repo ${repoUrl} to database..`,
+      `Saving repository ${repoUrl} for task/workflow ${taskOrWorkflowId} to database..`,
     );
     const repository = await this.knex('repositories')
       .where({ url: repoUrl })
@@ -219,5 +219,38 @@ export class TaskLocationsDao {
       'location',
       'type',
     );
+  }
+}
+
+export interface OrchestratorWorkflow {
+  id: number;
+  instanceId: string;
+  repositoryUrl: string;
+  createdAt: Date;
+}
+
+// @internal
+export class OrchestratorWorkflowDao {
+  constructor(private readonly knex: Knex<any, any[]>) {}
+
+  async insertWorkflow(
+    instanceId: string,
+    repositoryUrl: string,
+  ): Promise<number> {
+    const [newWorkflow] = await this.knex('orchestrator_workflows')
+      .insert({
+        instance_id: instanceId,
+        repository_url: repositoryUrl,
+      })
+      .returning('id');
+    return newWorkflow.id;
+  }
+
+  async findWorkflowByInstanceId(
+    instanceId: string,
+  ): Promise<OrchestratorWorkflow | undefined> {
+    return await this.knex('orchestrator_workflows')
+      .where({ instance_id: instanceId })
+      .first();
   }
 }
