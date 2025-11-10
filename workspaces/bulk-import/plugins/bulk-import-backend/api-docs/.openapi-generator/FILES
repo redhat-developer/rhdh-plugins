@@ -12,6 +12,7 @@ Models/ImportStatus.md
 Models/Import_github.md
 Models/Import_gitlab.md
 Models/Import_task.md
+Models/Import_workflow.md
 Models/Organization.md
 Models/OrganizationList.md
 Models/PullRequest.md

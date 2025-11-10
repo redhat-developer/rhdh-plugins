@@ -578,6 +578,44 @@ const OPENAPI = `
         }
       }
     },
+    "/orchestrator-workflows": {
+      "post": {
+        "operationId": "createOrhestratorWorkflowJobs",
+        "summary": "Execute an orchestrator workflow",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "requestBody": {
+          "description": "List of Import jobs to create",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ImportRequest"
+                }
+              },
+              "examples": {
+                "multipleImportRequests": {
+                  "$ref": "#/components/examples/multipleImportRequests"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The orchestrator workflow was triggered successfully."
+          }
+        }
+      }
+    },
     "/task-import/by-repo": {
       "get": {
         "operationId": "findTaskImportStatusByRepo",
@@ -1028,7 +1066,6 @@ const OPENAPI = `
       },
       "TaskImportStatus": {
         "type": "string",
-        "nullable": true,
         "description": "Import Job status",
         "enum": [
           "TASK_CANCELLED",
@@ -1037,12 +1074,12 @@ const OPENAPI = `
           "TASK_OPEN",
           "TASK_PROCESSING",
           "TASK_SKIPPED",
-          "TASK_FETCH_FAILED"
+          "TASK_FETCH_FAILED",
+          null
         ]
       },
       "ImportStatus": {
         "type": "string",
-        "nullable": true,
         "description": "Import Job status",
         "enum": [
           "ADDED",
@@ -1099,6 +1136,14 @@ const OPENAPI = `
             "type": "object",
             "properties": {
               "taskId": {
+                "type": "string"
+              }
+            }
+          },
+          "workflow": {
+            "type": "object",
+            "properties": {
+              "workflowId": {
                 "type": "string"
               }
             }
@@ -1205,7 +1250,6 @@ const OPENAPI = `
       },
       "Source": {
         "type": "string",
-        "nullable": true,
         "description": "Import Source:\\n  * 'config' - Import from static catalog location configuration in 'app-config'\\n  * 'location' - Import of user registered entities using locations endpoint\\n  * 'integration' - Import using a GitHub integration\\n  * null - Import source is unknown\\n",
         "enum": [
           "config",

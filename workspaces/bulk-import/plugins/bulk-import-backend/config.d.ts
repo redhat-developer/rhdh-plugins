@@ -21,5 +21,11 @@ export interface Config {
      * @visibility backend
      */
     importTemplate?: string;
+    orchestratorWorkflow?: string;
+
+    orchestrator?: {
+      url: string;
+      token: string; // is this optional?
+    };
   };
 }

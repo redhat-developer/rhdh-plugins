@@ -2,16 +2,17 @@
 
 All URIs are relative to _http://localhost:7007/api/bulk-import_
 
-| Method                                                                    | HTTP request                    | Description                                                     |
-| ------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------- |
-| [**createImportJobs**](ImportApi.md#createImportJobs)                     | **POST** /imports               | Submit Import Jobs                                              |
-| [**createTaskImportJobs**](ImportApi.md#createTaskImportJobs)             | **POST** /task-imports          | Execute a scaffolder template for a list of repositories        |
-| [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo)                 | **DELETE** /import/by-repo      | Delete Import by repository                                     |
-| [**deleteTaskImportByRepo**](ImportApi.md#deleteTaskImportByRepo)         | **DELETE** /task-import/by-repo | Delete stored scaffolder task records for a specific repository |
-| [**findAllImports**](ImportApi.md#findAllImports)                         | **GET** /imports                | Fetch Import Jobs                                               |
-| [**findAllTaskImports**](ImportApi.md#findAllTaskImports)                 | **GET** /task-imports           | Fetch Import Jobs                                               |
-| [**findImportStatusByRepo**](ImportApi.md#findImportStatusByRepo)         | **GET** /import/by-repo         | Get Import Status by repository                                 |
-| [**findTaskImportStatusByRepo**](ImportApi.md#findTaskImportStatusByRepo) | **GET** /task-import/by-repo    | Get Import Status by repository                                 |
+| Method                                                                          | HTTP request                     | Description                                                     |
+| ------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------- |
+| [**createImportJobs**](ImportApi.md#createImportJobs)                           | **POST** /imports                | Submit Import Jobs                                              |
+| [**createOrhestratorWorkflowJobs**](ImportApi.md#createOrhestratorWorkflowJobs) | **POST** /orchestrator-workflows | Execute an orchestrator workflow                                |
+| [**createTaskImportJobs**](ImportApi.md#createTaskImportJobs)                   | **POST** /task-imports           | Execute a scaffolder template for a list of repositories        |
+| [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo)                       | **DELETE** /import/by-repo       | Delete Import by repository                                     |
+| [**deleteTaskImportByRepo**](ImportApi.md#deleteTaskImportByRepo)               | **DELETE** /task-import/by-repo  | Delete stored scaffolder task records for a specific repository |
+| [**findAllImports**](ImportApi.md#findAllImports)                               | **GET** /imports                 | Fetch Import Jobs                                               |
+| [**findAllTaskImports**](ImportApi.md#findAllTaskImports)                       | **GET** /task-imports            | Fetch Import Jobs                                               |
+| [**findImportStatusByRepo**](ImportApi.md#findImportStatusByRepo)               | **GET** /import/by-repo          | Get Import Status by repository                                 |
+| [**findTaskImportStatusByRepo**](ImportApi.md#findTaskImportStatusByRepo)       | **GET** /task-import/by-repo     | Get Import Status by repository                                 |
 
 <a name="createImportJobs"></a>
 
@@ -40,6 +41,33 @@ Submit Import Jobs
 
 - **Content-Type**: application/json
 - **Accept**: application/json
+
+<a name="createOrhestratorWorkflowJobs"></a>
+
+# **createOrhestratorWorkflowJobs**
+
+> createOrhestratorWorkflowJobs(ImportRequest)
+
+Execute an orchestrator workflow
+
+### Parameters
+
+| Name              | Type                                   | Description                   | Notes |
+| ----------------- | -------------------------------------- | ----------------------------- | ----- |
+| **ImportRequest** | [**List**](../Models/ImportRequest.md) | List of Import jobs to create |       |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
 
 <a name="createTaskImportJobs"></a>
 

@@ -45,6 +45,7 @@ import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
 import { migrate } from '../database/migration';
 import {
+  OrchestratorWorkflowDao,
   RepositoryDao,
   ScaffolderTaskDao,
   TaskLocationsDao,
@@ -68,6 +69,7 @@ import {
   findTaskImportStatusByRepo,
   sortImports,
 } from './handlers/import';
+import { createWorkflowImportJobs } from './handlers/import/execute-orchestrator-workflow';
 import { createTaskImportJobs } from './handlers/import/execute-template';
 import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
@@ -106,6 +108,8 @@ namespace Operations {
 
   export const CREATE_IMPORT_JOBS = 'createImportJobs';
   export const CREATE_TASK_IMPORT_JOBS = 'createTaskImportJobs';
+  export const CREATE_ORCHESTRATOR_WORKFLOW_JOBS =
+    'createOrhestratorWorkflowJobs';
 
   export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
   export const FIND_TASK_IMPORT_STATUS_BY_REPO = 'findTaskImportStatusByRepo';
@@ -138,6 +142,7 @@ export async function createRouter(
   const repositoryDao = new RepositoryDao(knex, logger);
   const taskDao = new ScaffolderTaskDao(knex);
   const taskLocationsDao = new TaskLocationsDao(knex);
+  const orchestratorWorkflowDao = new OrchestratorWorkflowDao(knex);
   // This should probably be sometype of object that holds all the scm API service objects
   const githubApiService = new GithubApiService(logger, config, cache);
   const gitlabApiService = new GitlabApiService(logger, config, cache);
@@ -178,6 +183,17 @@ export async function createRouter(
   if (templateRef) {
     finalTemplateRef = getImportTemplateRef(templateRef);
   }
+
+  const baseOrchestratorAPIUrl = config.getOptionalString(
+    `bulkImport.orchestrator.url`,
+  );
+  const orchestratorToken = config.getOptionalString(
+    `bulkImport.orchestrator.token`,
+  );
+
+  const orchestratorWorkflowId = config.getOptionalString(
+    'bulkImport.orchestratorWorkflow',
+  );
 
   await api.init();
 
@@ -427,6 +443,32 @@ export async function createRouter(
       );
 
       return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.CREATE_ORCHESTRATOR_WORKFLOW_JOBS,
+    async (
+      c: Context<Paths.CreateImportJobs.RequestBody>,
+      _req: Request,
+      res: Response,
+    ) => {
+      if (!orchestratorWorkflowId) {
+        throw new Error(
+          `Missing required config value: 'bulkImport.orchestratorWorkflow'`,
+        );
+      }
+      const response = await createWorkflowImportJobs({
+        orchestratorWorkflowId,
+        discovery,
+        baseOrchestratorAPIUrl,
+        token: orchestratorToken,
+        requestBody: c.request.requestBody,
+        orchestratorWorkflowDao,
+        repositoryDao,
+      });
+
+      res.status(response.statusCode).json(response.responseBody);
     },
   );
 
