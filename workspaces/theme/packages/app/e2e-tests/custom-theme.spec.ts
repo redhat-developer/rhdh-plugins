@@ -75,19 +75,28 @@ test.describe('CustomTheme should be applied', () => {
       'MUI v4 tests': ['Papers', 'Tabs', 'Grids', 'Inline styles'],
       'MUI v5 tests': ['Papers', 'Tabs', 'Grids', 'Inline styles'],
     };
-    for (const [tab, subTabs] of Object.entries(tabs)) {
-      await page.getByRole('link', { name: tab }).click();
-      await runAccessibilityTests(page, testInfo, `${tab}-accessibility`, {
-        skipViolationsAssert: true,
-      });
-      for (const subTab of subTabs) {
-        await page.getByRole('tab', { name: subTab }).click();
+    await page.getByRole('link', { name: 'BCC tests' }).click();
+
+    const themeNames = ['RHDH Dark (latest)', 'RHDH Light (latest)'];
+    for (const themeName of themeNames) {
+      await page.getByRole('button', { name: themeName }).click();
+      for (const [tab, subTabs] of Object.entries(tabs)) {
+        await page.getByRole('link', { name: tab }).click();
         await runAccessibilityTests(
           page,
           testInfo,
-          `${tab}-${subTab}-accessibility`,
+          `${themeName}-${tab}-accessibility`,
           { skipViolationsAssert: true },
         );
+        for (const subTab of subTabs) {
+          await page.getByRole('tab', { name: subTab }).click();
+          await runAccessibilityTests(
+            page,
+            testInfo,
+            `${themeName}-${tab}-${subTab}-accessibility`,
+            { skipViolationsAssert: true },
+          );
+        }
       }
     }
   });
