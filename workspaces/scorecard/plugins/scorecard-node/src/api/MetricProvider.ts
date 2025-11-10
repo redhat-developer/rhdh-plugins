@@ -30,6 +30,6 @@ export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderId(): string;
   getMetric(): Metric<T>;
   getMetricThresholds(): ThresholdConfig;
-  supportsEntity(entity: Entity): boolean;
   calculateMetric(entity: Entity): Promise<MetricValue<T>>;
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
 }

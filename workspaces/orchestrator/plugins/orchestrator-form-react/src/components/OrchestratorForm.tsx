@@ -159,8 +159,8 @@ const OrchestratorForm = ({
     return generateUiSchema(schema, isMultiStep);
   }, [schema, isMultiStep]);
 
-  const reviewStep = useMemo(
-    () => (
+  const reviewStep = useMemo(() => {
+    return (
       <ReviewStep
         data={prunedFormData}
         schema={schema}
@@ -168,9 +168,8 @@ const OrchestratorForm = ({
         handleExecute={_handleExecute}
         // no schema update here
       />
-    ),
-    [prunedFormData, schema, isExecuting, _handleExecute],
-  );
+    );
+  }, [prunedFormData, schema, isExecuting, _handleExecute]);
 
   return (
     <StepperContextProvider reviewStep={reviewStep} t={t}>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import {
   ProcessInstance,
@@ -121,7 +121,9 @@ export function generateProcessInstance(id: number): ProcessInstance {
     processId: `proceesId${id}`,
     state: ProcessInstanceState.Active,
     start: BASE_DATE,
-    end: moment(BASE_DATE).add(1, 'hour').toISOString(),
+    end: DateTime.fromISO(BASE_DATE, { setZone: true })
+      .plus({ hours: 1 })
+      .toISO() as string,
     nodes: [],
     endpoint: 'enpoint/foo',
     serviceUrl: 'service/bar',

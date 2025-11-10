@@ -33,18 +33,15 @@ import {
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
-import { CatalogClient } from '@backstage/catalog-client';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
   AuthorizeResult,
   PolicyDecision,
 } from '@backstage/plugin-permission-common';
 import { PermissionsService } from '@backstage/backend-plugin-api';
-
-const mockCatalogClient = {
-  getEntityByRef: jest.fn(),
-} as unknown as CatalogClient;
+import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
 
 const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
   result: AuthorizeResult.CONDITIONAL,
@@ -76,10 +73,11 @@ describe('createRouter', () => {
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
     catalogMetricService = new CatalogMetricService({
-      catalogApi: mockCatalogClient,
+      catalog: catalogServiceMock.mock(),
       registry: metricProvidersRegistry,
       thresholdEvaluator: new ThresholdEvaluator(),
       auth: mockServices.auth(),
+      database: mockDatabaseMetricValues,
     });
 
     permissionsMock.authorizeConditional.mockResolvedValue([
@@ -225,7 +223,7 @@ describe('createRouter', () => {
 
     beforeEach(() => {
       jest
-        .spyOn(catalogMetricService, 'calculateEntityMetrics')
+        .spyOn(catalogMetricService, 'getLatestEntityMetrics')
         .mockResolvedValue(mockMetricResults);
     });
 
@@ -247,7 +245,21 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
+        'component:default/my-service',
+        undefined,
+        undefined,
+      );
+      expect(response.body).toEqual(mockMetricResults);
+    });
+
+    it('should handle uppercase in url parameters', async () => {
+      const response = await request(app).get(
+        '/metrics/catalog/Component/default/my-service',
+      );
+
+      expect(response.status).toBe(200);
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         undefined,
         undefined,
@@ -261,7 +273,7 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open_prs', 'github.open_issues'],
         undefined,
@@ -275,7 +287,7 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         ['github.open_prs'],
         undefined,
@@ -291,7 +303,7 @@ describe('createRouter', () => {
       );
 
       expect(response.status).toBe(200);
-      expect(catalogMetricService.calculateEntityMetrics).toHaveBeenCalledWith(
+      expect(catalogMetricService.getLatestEntityMetrics).toHaveBeenCalledWith(
         'component:default/my-service',
         undefined,
         {
@@ -308,7 +320,7 @@ describe('createRouter', () => {
 
     it('should return 404 NotFoundError when entity is not found', async () => {
       jest
-        .spyOn(catalogMetricService, 'calculateEntityMetrics')
+        .spyOn(catalogMetricService, 'getLatestEntityMetrics')
         .mockRejectedValue(
           new NotFoundError('Entity not found: component:default/non-existent'),
         );

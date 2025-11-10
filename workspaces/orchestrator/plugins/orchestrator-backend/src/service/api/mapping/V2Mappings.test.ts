@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
+import { DateTime, Duration } from 'luxon';
 
 import {
   ProcessInstance,
@@ -112,9 +112,15 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     // Arrange
     const processIntanceV1: ProcessInstance = generateProcessInstance(1);
 
-    const start = moment(processIntanceV1.start);
-    const end = moment(processIntanceV1.end);
-    const duration = moment.duration(start.diff(end)).humanize();
+    const start = DateTime.fromISO(processIntanceV1.start as string, {
+      setZone: true,
+    });
+    const end = DateTime.fromISO(processIntanceV1.end as string, {
+      setZone: true,
+    });
+    const duration = Duration.fromMillis(end.diff(start).toMillis())
+      .rescale()
+      .toHuman();
     // Act
     const result = mapToProcessInstanceDTO(processIntanceV1);
 
@@ -140,7 +146,7 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     );
     expect(result.end).toEqual(processIntanceV1.end);
     expect(result.duration).toEqual(duration);
-    expect(result.duration).toEqual('an hour');
+    expect(result.duration).toEqual('1 hour');
     expect(result.description).toEqual(processIntanceV1.description);
     expect(result.workflowdata).toEqual(
       // @ts-ignore

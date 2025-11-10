@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression, validateThresholds } from './thresholdUtils';
+export {
+  parseThresholdExpression,
+  validateThresholds,
+  getThresholdsFromConfig,
+} from './thresholdUtils';
 export type {
   ComparisonSign,
   ComparisonOperator,

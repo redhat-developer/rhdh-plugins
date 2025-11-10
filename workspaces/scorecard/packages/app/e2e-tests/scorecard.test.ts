@@ -16,7 +16,6 @@
 
 import { test, expect } from '@playwright/test';
 import { mockScorecardResponse } from './utils/apiUtils';
-import { ComponentImportPage } from './pages/ComponentImportPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { setupRBAC } from './utils/rbacSetup';
@@ -26,28 +25,53 @@ import {
   unavailableMetricResponse,
   invalidThresholdResponse,
 } from './utils/scorecardResponseUtils';
+import {
+  ScorecardMessages,
+  evaluateMessage,
+  getTranslations,
+} from './utils/translationUtils';
+import { runAccessibilityTests } from './utils/accessibility';
 
 test.describe.serial('Pre-RBAC Access Tests', () => {
+  let translations: ScorecardMessages;
+  let currentLocale: string;
+
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    currentLocale = await page.evaluate(() => globalThis.navigator.language);
+    translations = getTranslations(currentLocale);
+    await context.close();
+  });
+
   test('Display access denied message when RBAC is not configured', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const catalogPage = new CatalogPage(page);
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
+    await catalogPage.navigateToCatalog(currentLocale);
     await catalogPage.openComponent('Red Hat Developer Hub');
     await page.getByText('Scorecard').click();
 
-    await expect(page.getByText('Missing permission')).toBeVisible();
+    await expect(
+      page.getByText(translations.permissionRequired.title),
+    ).toBeVisible();
     await expect(page.getByRole('article')).toContainText(
-      'To view Scorecard plugin, contact your administrator to give the scorecard.metric.read permission.',
+      evaluateMessage(
+        translations.permissionRequired.description,
+        'scorecard.metric.read',
+      ),
     );
+
+    await runAccessibilityTests(page, testInfo);
   });
 });
 
 test.describe.serial('Scorecard Plugin Tests', () => {
   let catalogPage: CatalogPage;
-  let importPage: ComponentImportPage;
   let scorecardPage: ScorecardPage;
+  let translations: ScorecardMessages;
+  let currentLocale: string;
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
@@ -55,60 +79,61 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
     await setupRBAC(page);
 
+    currentLocale = await page.evaluate(() => globalThis.navigator.language);
+    translations = getTranslations(currentLocale);
+
     await context.close();
   });
 
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
-    importPage = new ComponentImportPage(page);
-    scorecardPage = new ScorecardPage(page);
+    scorecardPage = new ScorecardPage(page, translations);
   });
 
-  test('Import component and validate scorecard tabs for GitHub PRs and Jira tickets', async ({
+  test('Validate scorecard tabs for GitHub PRs and Jira tickets', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, customScorecardResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
-    await importPage.startComponentImport();
-    await importPage.analyzeComponent(
-      'https://github.com/rhdh-pai-qe/backstage-catalog/blob/main/catalog-info.yaml',
-    );
-    await importPage.viewImportedComponent();
+    await catalogPage.navigateToCatalog(currentLocale);
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
-
     await scorecardPage.verifyScorecardValues({
-      'GitHub open PRs': '9',
-      'Jira open blocking tickets': '8',
+      [translations.metric['github.open_prs'].title]: '9',
+      [translations.metric['jira.open_issues'].title]: '8',
     });
 
     for (const metric of scorecardPage.scorecardMetrics) {
       await scorecardPage.validateScorecardAriaFor(metric);
     }
+
+    await runAccessibilityTests(page, testInfo);
   });
 
   test('Display empty state when scorecard API returns no metrics', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, emptyScorecardResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
-    await catalogPage.openComponent('rhdh-app');
+    await catalogPage.navigateToCatalog(currentLocale);
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
 
     await scorecardPage.expectEmptyState();
+
+    await runAccessibilityTests(page, testInfo);
   });
 
   test('Displays error state for unavailable data while rendering metrics', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, unavailableMetricResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
-    await catalogPage.openComponent('rhdh-app');
+    await catalogPage.navigateToCatalog(currentLocale);
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
 
     const jiraMetric = scorecardPage.scorecardMetrics[1];
@@ -125,9 +150,10 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     expect(isGithubVisible).toBe(true);
 
     const errorLocator = page.getByRole('heading', {
-      name: 'Metric data unavailable',
+      name: translations.errors.metricDataUnavailable,
     });
     await expect(errorLocator).toBeVisible();
+    await runAccessibilityTests(page, testInfo);
 
     await errorLocator.hover();
     const errorMetric = unavailableMetricResponse.find(
@@ -145,12 +171,12 @@ test.describe.serial('Scorecard Plugin Tests', () => {
 
   test('Display error state for invalid threshold config while rendering metrics', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockScorecardResponse(page, invalidThresholdResponse);
 
     await page.goto('/');
-    await catalogPage.navigateToCatalog();
-    await catalogPage.openComponent('rhdh-app');
+    await catalogPage.navigateToCatalog(currentLocale);
+    await catalogPage.openComponent('Red Hat Developer Hub');
     await scorecardPage.openTab();
 
     const githubMetric = scorecardPage.scorecardMetrics[0];
@@ -167,9 +193,10 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     expect(isJiraVisible).toBe(true);
 
     const errorLocator = page.getByRole('heading', {
-      name: 'Invalid thresholds',
+      name: translations.errors.invalidThresholds,
     });
     await expect(errorLocator).toBeVisible();
+    await runAccessibilityTests(page, testInfo);
 
     await errorLocator.hover();
     const errorTooltip = invalidThresholdResponse.find(

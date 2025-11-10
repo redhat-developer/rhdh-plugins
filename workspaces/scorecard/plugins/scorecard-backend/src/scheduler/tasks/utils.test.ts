@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import { usePermission } from '@backstage/plugin-permission-react';
-import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { daysToMilliseconds } from './utils';
 
-export const useScorecardMetricsReadPermission = () => {
-  const canReadScorecardMetrics = usePermission({
-    permission: scorecardMetricReadPermission,
-    resourceRef: 'scorecard-metric',
+describe('daysToMilliseconds', () => {
+  it('should convert days to milliseconds', () => {
+    expect(daysToMilliseconds(1)).toBe(86400000);
   });
-
-  return {
-    loading: canReadScorecardMetrics.loading,
-    allowed: canReadScorecardMetrics.allowed,
-  };
-};
+});

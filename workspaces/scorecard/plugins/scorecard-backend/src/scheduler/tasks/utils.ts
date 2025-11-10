@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
-
-test('App should render the welcome page', async ({ page }) => {
-  await page.goto('/');
-
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-
-  await expect(page.getByText('Welcome back')).toBeVisible();
-});
+export const daysToMilliseconds = (days: number) => {
+  return days * 24 * 60 * 60 * 1000;
+};

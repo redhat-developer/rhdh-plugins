@@ -26,14 +26,14 @@ export const scorecardModuleJira = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
+        auth: coreServices.auth,
         config: coreServices.rootConfig,
         discovery: coreServices.discovery,
-        auth: coreServices.auth,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ config, discovery, auth, metrics }) {
+      async init({ auth, config, discovery, metrics }) {
         metrics.addMetricProvider(
-          JiraOpenIssuesProvider.fromConfig(config, { discovery, auth }),
+          JiraOpenIssuesProvider.fromConfig(config, { auth, discovery }),
         );
       },
     });

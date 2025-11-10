@@ -16,20 +16,23 @@
 
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
-import { JIRA_CONFIG_PATH, THRESHOLDS_CONFIG_PATH } from '../constants';
+import { JIRA_CONFIG_PATH, OPEN_ISSUES_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
+  getThresholdsFromConfig,
   MetricProvider,
-  validateThresholds,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
 import { ScorecardJiraAnnotations } from '../annotations';
-import { AuthService, DiscoveryService } from '@backstage/backend-plugin-api';
+import {
+  type AuthService,
+  type DiscoveryService,
+} from '@backstage/backend-plugin-api';
 import {
   ConnectionStrategy,
   DirectConnectionStrategy,
@@ -38,18 +41,29 @@ import {
 import { Product } from '../clients/types';
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
-export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
+export class JiraOpenIssuesProvider implements MetricProvider {
   private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
 
   private constructor(
     config: Config,
     connectionStrategy: ConnectionStrategy,
-    thresholds?: ThresholdConfig,
+    thresholds: ThresholdConfig,
   ) {
     this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
-    this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
+    this.thresholds = thresholds;
+  }
+
+  getMetricThresholds(): ThresholdConfig {
+    return this.thresholds;
+  }
+
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.jira/project-key': CATALOG_FILTER_EXISTS,
+    };
   }
 
   getProviderDatasourceId(): string {
@@ -71,10 +85,6 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     };
   }
 
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
-  }
-
   supportsEntity(entity: Entity): boolean {
     return entity.metadata.annotations?.[PROJECT_KEY] !== undefined;
   }
@@ -86,11 +96,6 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
       discovery: DiscoveryService;
     },
   ): JiraOpenIssuesProvider {
-    const configuredThresholds = config.getOptional(THRESHOLDS_CONFIG_PATH);
-    if (configuredThresholds !== undefined) {
-      validateThresholds(configuredThresholds, 'number');
-    }
-
     let connectionStrategy: ConnectionStrategy;
 
     const jiraConfig = config.getConfig(JIRA_CONFIG_PATH);
@@ -110,11 +115,14 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
       );
     }
 
-    return new JiraOpenIssuesProvider(
-      config,
-      connectionStrategy,
-      configuredThresholds,
-    );
+    const thresholds =
+      getThresholdsFromConfig(
+        config,
+        `${OPEN_ISSUES_CONFIG_PATH}.thresholds`,
+        'number',
+      ) ?? DEFAULT_NUMBER_THRESHOLDS;
+
+    return new JiraOpenIssuesProvider(config, connectionStrategy, thresholds);
   }
 
   async calculateMetric(entity: Entity): Promise<number> {

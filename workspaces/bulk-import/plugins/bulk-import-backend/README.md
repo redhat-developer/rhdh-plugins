@@ -117,6 +117,65 @@ For the RHDH instance to use the scaffolder functionality, it must be run with t
 export NODE_OPTIONS=--no-node-snapshot
 ```
 
+##### Scaffolder Template Input Parameters
+
+The **Bulk Import plugin** executes a Scaffolder template task with specified parameters. The Scaffolder template author should use these parameters within the template.
+
+The Bulk Import plugin parses Git repository information and provides the following parameters for the Scaffolder template task:
+
+- **`repoUrl`** – Normalized repository URL in the format:  
+  ${gitProviderHost}?owner=${owner}&repo=${repository-name}
+
+**Example:** `https://github.com/redhat-developer/rhdh-plugins` will be transformed to:  
+`github.com?owner=redhat-developer&repo=rhdh-plugins`.
+
+- **`name`** – Repository name.  
+  **Example:** For `https://github.com/redhat-developer/rhdh-plugins`, the `name` will be `rhdh-plugins`.
+
+- **`organization`** – Repository owner, which can be a user nickname or organization name.  
+  **Example:** For `https://github.com/redhat-developer/rhdh-plugins`, `organization` will be `redhat-developer`.
+
+- **`branchName`** – Proposed repository branch. By default, it is `bulk-import-catalog-entity`.
+
+- **`targetBranchName`** – Default branch of the Git repository.
+
+- **`gitProviderHost`** – Git provider host parsed from the repository URL.  
+  **Example:** For `https://github.com/redhat-developer/rhdh-plugins`, `gitProviderHost` will be `github.com`.  
+  This parameter allows the template author to write Git-provider-agnostic templates.
+
+### Example of Using Parameters in a Scaffolder Template
+
+```yaml
+parameters:
+  - title: Repository Details
+    required:
+      - repoUrl
+      - branchName
+      - targetBranchName
+      - name
+      - organization
+    properties:
+      repoUrl:
+        type: string
+        title: Repository URL (Backstage format)
+        description: 'e.g. github.com?owner=Org&repo=repoName or gitlab.com?owner=Org&repo=repoName'
+      organization:
+        type: string
+        title: Owner of the Repository
+      name:
+        type: string
+        title: Name of the repository
+      branchName:
+        type: string
+        title: Branch to add the catalog entity to
+      targetBranchName:
+        type: string
+        title: Branch to target the PR/MR to
+      gitProviderHost:
+        type: string
+        title: Git provider host
+```
+
 ### Audit Logging
 
 Audit logging is backed by the [`@backstage/backend-plugin-api`](https://www.npmjs.com/package/@backstage/backend-plugin-api) package.

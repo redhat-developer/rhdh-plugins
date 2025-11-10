@@ -88,6 +88,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         'pre, code': {
           fontFamily: redHatFonts.monospace,
         },
+        "[class*='BackstagePage-root-'] > [class*='MuiToolbar-root']": {
+          backgroundColor: theme.palette.background.paper,
+        },
       };
     },
   };

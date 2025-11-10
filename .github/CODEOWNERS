@@ -13,7 +13,7 @@
 # The workspace list is alphabetical ordered.
 # In VS code: select the lines and select ">Sort Lines Ascending" from the Commands menu.
 
-*                                                   @redhat-developer/rhdh-cope   @kim-tsao @JessicaJHee
+*                                                   @redhat-developer/rhdh-cope   @redhat-developer/rhdh-security
 
 /workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
 /workspaces/ai-integrations                         @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
