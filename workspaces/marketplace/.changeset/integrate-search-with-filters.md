@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-marketplace': minor
+'@red-hat-developer-hub/backstage-plugin-marketplace': patch
 ---
 
 Integrate search query with filter dropdown counts for dynamic filtering
