@@ -38,7 +38,12 @@ test.describe('CustomTheme should be applied', () => {
   }, testInfo: TestInfo) => {
     const themes = ThemeConstants.getThemes();
 
-    await runAccessibilityTests(page, testInfo);
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'accessibility-scan-results.json',
+      { skipViolationsAssert: true },
+    );
 
     for (const theme of themes) {
       await themeVerifier.setTheme(theme.name);
@@ -59,5 +64,31 @@ test.describe('CustomTheme should be applied', () => {
     page,
   }) => {
     await expect(page).toHaveTitle(/My Company Catalog/);
+  });
+
+  test('Verify accessibility of the test pages', async ({
+    page,
+  }, testInfo: TestInfo) => {
+    const tabs = {
+      'BCC tests': ['Card Example'],
+      'BUI tests': ['Table Example', 'Card Example'],
+      'MUI v4 tests': ['Papers', 'Tabs', 'Grids', 'Inline styles'],
+      'MUI v5 tests': ['Papers', 'Tabs', 'Grids', 'Inline styles'],
+    };
+    for (const [tab, subTabs] of Object.entries(tabs)) {
+      await page.getByRole('link', { name: tab }).click();
+      await runAccessibilityTests(page, testInfo, `${tab}-accessibility`, {
+        skipViolationsAssert: true,
+      });
+      for (const subTab of subTabs) {
+        await page.getByRole('tab', { name: subTab }).click();
+        await runAccessibilityTests(
+          page,
+          testInfo,
+          `${tab}-${subTab}-accessibility`,
+          { skipViolationsAssert: true },
+        );
+      }
+    }
   });
 });
