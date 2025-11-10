@@ -37,12 +37,22 @@ import type {
   OptimizationsApi,
   GetAccessResponse,
 } from './types';
+import type {
+  GetCostManagementRequest,
+  CostManagementReport,
+} from '../types/cost-management';
 import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 type DefaultApiClientOpFunc<
-  TRequest = GetRecommendationByIdRequest | GetRecommendationListRequest,
-  TResponse = RecommendationBoxPlots | RecommendationList,
+  TRequest =
+    | GetRecommendationByIdRequest
+    | GetRecommendationListRequest
+    | GetCostManagementRequest,
+  TResponse =
+    | RecommendationBoxPlots
+    | RecommendationList
+    | CostManagementReport,
 > = (
   this: DefaultApiClient,
   request: TRequest,
@@ -140,6 +150,44 @@ export class OptimizationsClient implements OptimizationsApi {
         return camelCaseTransformedResponse;
       },
     };
+  }
+
+  public async getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>> {
+    // Get access permission
+    const accessAPIResponse = await this.getAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    // Get or refresh token
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+
+    // Call the cost-management API via backend proxy
+    let response = await this.defaultClient.getCostManagementReport(request, {
+      token: this.token,
+    });
+
+    // Handle 401 errors by refreshing token and retrying
+    if (!response.ok && response.status === 401) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+
+      response = await this.defaultClient.getCostManagementReport(request, {
+        token: this.token,
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response;
   }
 
   private async getAccess(): Promise<GetAccessResponse> {

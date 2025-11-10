@@ -14,6 +14,36 @@
  * limitations under the License.
  */
 
-export * from './optimizations';
-export * from './orchestrator-slim';
-export * from './types/cost-management';
+export const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  AUD: 'A$',
+  CAD: 'CA$',
+  CHF: 'CHF',
+  CNY: 'CN¥',
+  INR: '₹',
+  MXN: '$',
+  NZD: 'NZ$',
+  SEK: 'SEK',
+  SGD: 'SGD',
+  HKD: 'HK$',
+  TWD: 'NT$',
+  THB: '฿',
+  RUB: '₽',
+  BRL: 'R$',
+  ZAR: 'ZAR',
+  PLN: 'zł',
+  KRW: '₩',
+  TRY: '₺',
+  IDR: 'Rp',
+  MYR: 'RM',
+  PHP: '₱',
+  VND: '₫',
+  HUF: 'Ft',
+  CZK: 'Kč',
+  NOK: 'NOK',
+  DKK: 'DKK',
+  NGN: '₦',
+};

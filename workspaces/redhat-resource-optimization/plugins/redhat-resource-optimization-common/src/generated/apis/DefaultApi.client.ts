@@ -25,6 +25,7 @@ import * as parser from 'uri-template';
 
 import { RecommendationBoxPlots } from '../models/RecommendationBoxPlots.model';
 import { RecommendationList } from '../models/RecommendationList.model';
+import type { CostManagementReport } from '../../clients/types/cost-management';
 
 /**
  * Wraps the Response type to convey a type on the json call.
@@ -147,6 +148,111 @@ export class DefaultApiClient {
     });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Get cost management report for OpenShift projects
+   * @param currency - Currency preference (USD, EUR, GBP)
+   * @param delta - Delta calculation method
+   * @param filter - Filter parameters
+   * @param group_by - Group by parameters
+   * @param order_by - Order by parameters
+   */
+  public async getCostManagementReport(
+    request: {
+      query: {
+        currency?: 'USD' | 'EUR' | 'GBP';
+        delta?: string;
+        'filter[limit]'?: number;
+        'filter[offset]'?: number;
+        'filter[resolution]'?: 'daily' | 'monthly';
+        'filter[time_scope_units]'?: 'day' | 'month';
+        'filter[time_scope_value]'?: number;
+        'group_by[project]'?: '*' | string;
+        'order_by[distributed_cost]'?: 'asc' | 'desc';
+        'order_by[markup_cost]'?: 'asc' | 'desc';
+        'order_by[raw_cost]'?: 'asc' | 'desc';
+      };
+    },
+    options?: RequestOptions,
+  ): Promise<TypedResponse<CostManagementReport>> {
+    // Get the proxy base URL for cost-management API
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+    const uri = '/reports/openshift/costs/';
+
+    // Build query string manually
+    const queryParams = new URLSearchParams();
+    if (request.query.currency) {
+      queryParams.append('currency', request.query.currency);
+    }
+    if (request.query.delta) {
+      queryParams.append('delta', request.query.delta);
+    }
+    if (request.query['filter[limit]']) {
+      queryParams.append(
+        'filter[limit]',
+        String(request.query['filter[limit]']),
+      );
+    }
+    if (request.query['filter[offset]']) {
+      queryParams.append(
+        'filter[offset]',
+        String(request.query['filter[offset]']),
+      );
+    }
+    if (request.query['filter[resolution]']) {
+      queryParams.append(
+        'filter[resolution]',
+        request.query['filter[resolution]'],
+      );
+    }
+    if (request.query['filter[time_scope_units]']) {
+      queryParams.append(
+        'filter[time_scope_units]',
+        request.query['filter[time_scope_units]'],
+      );
+    }
+    if (request.query['filter[time_scope_value]']) {
+      queryParams.append(
+        'filter[time_scope_value]',
+        String(request.query['filter[time_scope_value]']),
+      );
+    }
+    if (request.query['group_by[project]']) {
+      queryParams.append(
+        'group_by[project]',
+        request.query['group_by[project]'],
+      );
+    }
+    if (request.query['order_by[distributed_cost]']) {
+      queryParams.append(
+        'order_by[distributed_cost]',
+        request.query['order_by[distributed_cost]'],
+      );
+    }
+    if (request.query['order_by[markup_cost]']) {
+      queryParams.append(
+        'order_by[markup_cost]',
+        request.query['order_by[markup_cost]'],
+      );
+    }
+    if (request.query['order_by[raw_cost]']) {
+      queryParams.append(
+        'order_by[raw_cost]',
+        request.query['order_by[raw_cost]'],
+      );
+    }
+
+    const queryString = queryParams.toString();
+    const url = `${baseUrl}${uri}${queryString ? `?${queryString}` : ''}`;
+
+    return await this.fetchApi.fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
