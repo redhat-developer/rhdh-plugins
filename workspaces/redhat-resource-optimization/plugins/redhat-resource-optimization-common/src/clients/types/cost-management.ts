@@ -15,6 +15,40 @@
  */
 
 /** @public */
+export type CurrencyCode =
+  | 'USD'
+  | 'EUR'
+  | 'GBP'
+  | 'JPY'
+  | 'AUD'
+  | 'CAD'
+  | 'CHF'
+  | 'CNY'
+  | 'INR'
+  | 'MXN'
+  | 'NZD'
+  | 'SEK'
+  | 'SGD'
+  | 'HKD'
+  | 'TWD'
+  | 'THB'
+  | 'RUB'
+  | 'BRL'
+  | 'ZAR'
+  | 'PLN'
+  | 'KRW'
+  | 'TRY'
+  | 'IDR'
+  | 'MYR'
+  | 'PHP'
+  | 'VND'
+  | 'HUF'
+  | 'CZK'
+  | 'NOK'
+  | 'DKK'
+  | 'NGN';
+
+/** @public */
 export interface CostValue {
   value: number;
   units: string;
@@ -40,7 +74,10 @@ export interface DistributedCost extends BasicCost {
 /** @public */
 export interface ProjectValue {
   date: string;
-  project: string;
+  project?: string;
+  cluster?: string;
+  node?: string;
+  tag?: string;
   cost_group: number | string;
   classification: string;
   source_uuid: string[];
@@ -54,14 +91,36 @@ export interface ProjectValue {
 
 /** @public */
 export interface Project {
-  project: string;
+  project?: string;
+  values: ProjectValue[];
+}
+
+/** @public */
+export interface Cluster {
+  cluster: string;
+  values: ProjectValue[];
+}
+
+/** @public */
+export interface Node {
+  node: string;
+  values: ProjectValue[];
+}
+
+/** @public */
+export interface Tag {
+  tag: string;
   values: ProjectValue[];
 }
 
 /** @public */
 export interface DateData {
   date: string;
-  projects: Project[];
+  projects?: Project[];
+  clusters?: Cluster[];
+  nodes?: Node[];
+  tags?: Tag[];
+  [key: string]: unknown;
 }
 
 /** @public */
@@ -109,7 +168,7 @@ export interface CostManagementReport {
 /** @public */
 export interface GetCostManagementRequest {
   query: {
-    currency?: 'USD' | 'EUR' | 'GBP';
+    currency?: CurrencyCode;
     delta?: string;
     'filter[limit]'?: number;
     'filter[offset]'?: number;

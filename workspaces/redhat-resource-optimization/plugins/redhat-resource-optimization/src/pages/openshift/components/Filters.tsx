@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Box from '@material-ui/core/Box';
 import Divider from '@material-ui/core/Divider';
 import { makeStyles } from '@material-ui/core/styles';
 import { useBaseFiltersStyles } from '../../../components/filtersStyles';
 import { SelectComponent } from './SelectComponent';
 import { AutocompleteComponent } from './AutocompleteComponent';
+import { useApi } from '@backstage/core-plugin-api';
+import { optimizationsApiRef } from '../../../apis';
+import useAsync from 'react-use/lib/useAsync';
+import debounce from 'lodash/debounce';
 
 const useFiltersStyles = makeStyles(
   theme => ({
@@ -82,28 +86,96 @@ export function Filters(props: FiltersProps) {
   } = props;
   const baseClasses = useBaseFiltersStyles();
   const classes = useFiltersStyles();
+  const api = useApi(optimizationsApiRef);
 
-  // Generate filter value options based on the selected filterBy
-  const getFilterValueOptions = (): string[] => {
-    switch (filterBy) {
-      case 'project':
-        return [
-          'analytics',
-          'wolfpack',
-          'cost-management',
-          'install-test',
-          'Worker unallocated',
-        ];
-      case 'cluster':
-        return ['cluster-1', 'cluster-2', 'cluster-3', 'cluster-4'];
-      case 'node':
-        return ['node-1', 'node-2', 'node-3', 'node-4', 'node-5'];
-      case 'tag':
-        return ['production', 'staging', 'development', 'testing'];
-      default:
-        return ['Select a filter type first'];
+  // State for search input and debounced search
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+
+  // Debounce function to update debouncedSearch after 500ms
+  const debouncedSetSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setDebouncedSearch(value);
+      }, 500),
+    [],
+  );
+
+  // Update debounced search when searchInput changes
+  useEffect(() => {
+    debouncedSetSearch(searchInput);
+    return () => {
+      debouncedSetSearch.cancel();
+    };
+  }, [searchInput, debouncedSetSearch]);
+
+  // Reset search when filterBy changes
+  useEffect(() => {
+    setSearchInput('');
+    setDebouncedSearch('');
+  }, [filterBy]);
+
+  // Fetch resource options based on filterBy and debouncedSearch
+  const { value: resourceOptions, loading: isLoadingOptions } =
+    useAsync(async () => {
+      // Don't fetch if filterBy is 'tag' (empty for now)
+      if (filterBy === 'tag') {
+        return [];
+      }
+
+      // Don't fetch if there's no search term
+      if (!debouncedSearch.trim()) {
+        return [];
+      }
+
+      try {
+        let response;
+        switch (filterBy) {
+          case 'project':
+            response = await api.searchOpenShiftProjects(debouncedSearch);
+            break;
+          case 'cluster':
+            response = await api.searchOpenShiftClusters(debouncedSearch);
+            break;
+          case 'node':
+            response = await api.searchOpenShiftNodes(debouncedSearch);
+            break;
+          default:
+            return [];
+        }
+        const data = await response.json();
+        // Extract the 'value' property from each object in the data array
+        return (data.data || []).map((item: { value: string }) => item.value);
+      } catch {
+        // Silently return empty array on error
+        return [];
+      }
+    }, [filterBy, debouncedSearch, api]);
+
+  // Generate filter value options based on API results
+  // Always include the current filterValue if it's set, so it doesn't disappear
+  const getFilterValueOptions = useMemo((): string[] => {
+    if (filterBy === 'tag') {
+      return [];
     }
-  };
+    const options = resourceOptions || [];
+    // If filterValue is set and not already in options, add it
+    if (filterValue && !options.includes(filterValue)) {
+      return [filterValue, ...options];
+    }
+    return options;
+  }, [filterBy, resourceOptions, filterValue]);
+
+  // Handle input change in autocomplete
+  const handleInputChange = useCallback(
+    (_event: React.ChangeEvent<{}>, value: string, reason: string) => {
+      // Only update search input when user is typing (not when clearing or resetting)
+      if (reason === 'input') {
+        setSearchInput(value);
+      }
+    },
+    [],
+  );
 
   const currencyOptions: CurrencyOption[] = [
     { label: 'AUD (A$) - Australian Dollar', value: 'AUD' },
@@ -255,11 +327,16 @@ export function Filters(props: FiltersProps) {
 
             <AutocompleteComponent
               label=""
-              options={getFilterValueOptions()}
+              options={getFilterValueOptions}
               value={filterValue}
               placeholder={`Filter by ${filterBy || 'project'}`}
+              loading={isLoadingOptions}
+              onInputChange={handleInputChange}
               onChange={(_event, value): void => {
                 onFilterValueChange((value as string) ?? '');
+                // Clear search input when a value is selected
+                setSearchInput('');
+                setDebouncedSearch('');
               }}
             />
           </div>
