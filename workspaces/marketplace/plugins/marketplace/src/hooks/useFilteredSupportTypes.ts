@@ -39,6 +39,7 @@ export const useFilteredSupportTypes = () => {
   const marketplaceApi = useMarketplaceApi();
 
   const filters = searchParams.getAll('filter');
+  const fullTextSearch = searchParams.get('q');
 
   // Get all plugins (not pre-filtered)
   const allPluginsQuery = useQuery({
@@ -66,6 +67,16 @@ export const useFilteredSupportTypes = () => {
     if (!allPluginsQuery.data?.items) return [];
 
     let availablePlugins = allPluginsQuery.data.items;
+
+    // Apply search filter first (always applied)
+    if (fullTextSearch) {
+      const lowerCaseSearch = fullTextSearch.toLocaleLowerCase('en-US');
+      availablePlugins = availablePlugins.filter(plugin => {
+        const lowerCaseValue =
+          plugin.metadata?.title?.toLocaleLowerCase('en-US');
+        return lowerCaseValue?.includes(lowerCaseSearch);
+      });
+    }
 
     // Apply category filter if present
     const categories = nonSupportFilters
@@ -204,7 +215,7 @@ export const useFilteredSupportTypes = () => {
       (a, b) => (a.displayOrder || 0) - (b.displayOrder || 0),
     );
     return result;
-  }, [allPluginsQuery.data?.items, nonSupportFilters, t]);
+  }, [allPluginsQuery.data?.items, nonSupportFilters, fullTextSearch, t]);
 
   return {
     data: items,
