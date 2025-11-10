@@ -26,7 +26,7 @@ import {
 import type { Recommendations } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/models';
 import type { GetRecommendationListRequest } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
 import { useApi, useRouteRef } from '@backstage/core-plugin-api';
-import { PageLayout } from './components/PageLayout';
+import { PageLayout } from '../../components/PageLayout';
 import { TableToolbar } from './components/TableToolbar';
 import { Filters } from './components/Filters';
 import { BasePage } from '../../components/BasePage';

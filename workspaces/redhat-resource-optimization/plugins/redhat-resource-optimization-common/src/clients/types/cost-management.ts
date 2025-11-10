@@ -15,6 +15,29 @@
  */
 
 /** @public */
+export interface CostValue {
+  value: number;
+  units: string;
+}
+
+/** @public */
+export interface BasicCost {
+  raw: CostValue;
+  markup: CostValue;
+  usage: CostValue;
+  total: CostValue;
+}
+
+/** @public */
+export interface DistributedCost extends BasicCost {
+  platform_distributed: CostValue;
+  worker_unallocated_distributed: CostValue;
+  network_unattributed_distributed: CostValue;
+  storage_unattributed_distributed: CostValue;
+  distributed: CostValue;
+}
+
+/** @public */
 export interface ProjectValue {
   date: string;
   project: string;
@@ -24,29 +47,9 @@ export interface ProjectValue {
   clusters: string[];
   delta_value: number;
   delta_percent: number;
-  infrastructure: {
-    raw: { value: number; units: string };
-    markup: { value: number; units: string };
-    usage: { value: number; units: string };
-    total: { value: number; units: string };
-  };
-  supplementary: {
-    raw: { value: number; units: string };
-    markup: { value: number; units: string };
-    usage: { value: number; units: string };
-    total: { value: number; units: string };
-  };
-  cost: {
-    raw: { value: number; units: string };
-    markup: { value: number; units: string };
-    usage: { value: number; units: string };
-    platform_distributed: { value: number; units: string };
-    worker_unallocated_distributed: { value: number; units: string };
-    network_unattributed_distributed: { value: number; units: string };
-    storage_unattributed_distributed: { value: number; units: string };
-    distributed: { value: number; units: string };
-    total: { value: number; units: string };
-  };
+  infrastructure: BasicCost;
+  supplementary: BasicCost;
+  cost: DistributedCost;
 }
 
 /** @public */
@@ -89,29 +92,9 @@ export interface CostManagementReport {
     exclude: Record<string, unknown>;
     distributed_overhead: boolean;
     total: {
-      infrastructure: {
-        raw: { value: number; units: string };
-        markup: { value: number; units: string };
-        usage: { value: number; units: string };
-        total: { value: number; units: string };
-      };
-      supplementary: {
-        raw: { value: number; units: string };
-        markup: { value: number; units: string };
-        usage: { value: number; units: string };
-        total: { value: number; units: string };
-      };
-      cost: {
-        raw: { value: number; units: string };
-        markup: { value: number; units: string };
-        usage: { value: number; units: string };
-        platform_distributed: { value: number; units: string };
-        worker_unallocated_distributed: { value: number; units: string };
-        network_unattributed_distributed: { value: number; units: string };
-        storage_unattributed_distributed: { value: number; units: string };
-        distributed: { value: number; units: string };
-        total: { value: number; units: string };
-      };
+      infrastructure: BasicCost;
+      supplementary: BasicCost;
+      cost: DistributedCost;
     };
   };
   links: {

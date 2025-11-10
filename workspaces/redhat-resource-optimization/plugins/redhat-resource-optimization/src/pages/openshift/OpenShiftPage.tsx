@@ -18,8 +18,8 @@ import React, { useMemo, useState, useCallback } from 'react';
 import { Table, TableColumn, InfoCard } from '@backstage/core-components';
 import Typography from '@material-ui/core/Typography';
 import { BasePage } from '../../components/BasePage';
+import { PageLayout } from '../../components/PageLayout';
 import { Filters } from './components/Filters';
-import { PageLayout } from './components/PageLayout';
 import { Divider } from '@material-ui/core';
 import { PageHeader } from './components/PageHeader';
 import { TableToolbar } from './components/TableToolbar';
@@ -27,41 +27,7 @@ import BlackSvgIcon from './components/black-csv-icon.svg';
 import { useApi } from '@backstage/core-plugin-api';
 import { optimizationsApiRef } from '../../apis';
 import useAsync from 'react-use/lib/useAsync';
-
-// Currency symbol mapping
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  JPY: '¥',
-  AUD: 'A$',
-  CAD: 'CA$',
-  CHF: 'CHF',
-  CNY: 'CN¥',
-  INR: '₹',
-  MXN: '$',
-  NZD: 'NZ$',
-  SEK: 'SEK',
-  SGD: 'SGD',
-  HKD: 'HK$',
-  TWD: 'NT$',
-  THB: '฿',
-  RUB: '₽',
-  BRL: 'R$',
-  ZAR: 'ZAR',
-  PLN: 'zł',
-  KRW: '₩',
-  TRY: '₺',
-  IDR: 'Rp',
-  MYR: 'RM',
-  PHP: '₱',
-  VND: '₫',
-  HUF: 'Ft',
-  CZK: 'Kč',
-  NOK: 'NOK',
-  DKK: 'DKK',
-  NGN: '₦',
-};
+import { CURRENCY_SYMBOLS } from '../../constants/currencies';
 
 // Helper function to format currency
 const formatCurrency = (value: number, currencyCode: string): string => {

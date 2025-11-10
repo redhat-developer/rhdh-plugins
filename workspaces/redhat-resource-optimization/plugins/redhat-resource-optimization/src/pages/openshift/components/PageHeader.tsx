@@ -16,41 +16,7 @@
 
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
-
-// Currency symbol mapping (should match the one in OpenShiftPage.tsx)
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  USD: '$',
-  EUR: '€',
-  GBP: '£',
-  JPY: '¥',
-  AUD: 'A$',
-  CAD: 'CA$',
-  CHF: 'CHF',
-  CNY: 'CN¥',
-  INR: '₹',
-  MXN: '$',
-  NZD: 'NZ$',
-  SEK: 'SEK',
-  SGD: 'SGD',
-  HKD: 'HK$',
-  TWD: 'NT$',
-  THB: '฿',
-  RUB: '₽',
-  BRL: 'R$',
-  ZAR: 'ZAR',
-  PLN: 'zł',
-  KRW: '₩',
-  TRY: '₺',
-  IDR: 'Rp',
-  MYR: 'RM',
-  PHP: '₱',
-  VND: '₫',
-  HUF: 'Ft',
-  CZK: 'Kč',
-  NOK: 'NOK',
-  DKK: 'DKK',
-  NGN: '₦',
-};
+import { CURRENCY_SYMBOLS } from '../../../constants/currencies';
 
 const formatCurrency = (value: number, currencyCode: string): string => {
   const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
