@@ -138,15 +138,15 @@ const mountPoints: HomePageCardMountPoint[] = [
 
 const scalprumState: ScalprumState = {
   initialized: true,
-  api: {
-    dynamicRootConfig: {
-      mountPoints: {
-        'home.page/cards': mountPoints,
-        // Additional cards from other plugins will be loaded at runtime
-        'home.page/widgets': [],
-      },
-    },
-  },
+  api: mountPoints
+    ? {
+        dynamicRootConfig: {
+          mountPoints: {
+            'home.page/cards': mountPoints,
+          },
+        },
+      }
+    : undefined,
   config: {},
   pluginStore: new PluginStore(),
 };

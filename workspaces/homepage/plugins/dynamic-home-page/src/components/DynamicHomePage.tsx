@@ -38,7 +38,7 @@ export interface DynamicHomePageProps {
  * @public
  */
 export const DynamicHomePage = (props: DynamicHomePageProps) => {
-  const { allCards } = useDynamicHomePageCards();
+  const cards = useDynamicHomePageCards();
 
-  return <HomePage {...props} cards={allCards} />;
+  return <HomePage {...props} cards={cards} />;
 };
