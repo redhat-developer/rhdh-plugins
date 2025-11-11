@@ -10,7 +10,7 @@ metadata:
     - ai
 spec:
   type: backstage-plugin
-  lifecycle: production
+  lifecycle: active
   owner: rhdh-team
   system: rhdh
   subcomponentOf: rhdh-plugins

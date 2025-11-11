@@ -24,7 +24,6 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.35.1",
     "pluginId": "lightspeed",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-lightspeed",
     "pluginPackages": [
@@ -108,7 +107,6 @@
     "directory": "workspaces/lightspeed/plugins/lightspeed"
   },
   "keywords": [
-    "lifecycle:active",
     "backstage",
     "plugin"
   ],

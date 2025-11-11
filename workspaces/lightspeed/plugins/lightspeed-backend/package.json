@@ -15,8 +15,7 @@
       "@red-hat-developer-hub/backstage-plugin-lightspeed",
       "@red-hat-developer-hub/backstage-plugin-lightspeed-backend",
       "@red-hat-developer-hub/backstage-plugin-lightspeed-common"
-    ],
-    "supported-versions": "1.35.1"
+    ]
   },
   "exports": {
     ".": "./src/index.ts",

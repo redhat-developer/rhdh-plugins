@@ -10,4 +10,4 @@ metadata:
 spec:
   type: website
   owner: jcollier@redhat.com
-  lifecycle: experimental
+  lifecycle: active

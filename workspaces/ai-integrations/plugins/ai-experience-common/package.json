@@ -19,7 +19,6 @@
   },
   "backstage": {
     "role": "common-library",
-    "supported-versions": "1.35.1",
     "pluginId": "ai-experience",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-ai-experience-common",
     "pluginPackages": [
