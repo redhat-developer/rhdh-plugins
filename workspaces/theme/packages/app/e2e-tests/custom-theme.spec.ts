@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import { test, TestInfo, expect } from '@playwright/test';
-import { ThemeVerifier } from './theme-verifier';
-import { ThemeConstants } from './theme-constants';
-import { TestUtils } from './test-utils';
-import { runAccessibilityTests } from './acessibility';
+import { ThemeVerifier } from './utils/theme-verifier';
+import { ThemeConstants } from './utils/theme-constants';
+import { TestUtils } from './utils/test-utils';
+import { runAccessibilityTests } from './utils/acessibility';
 
 test.describe('CustomTheme should be applied', () => {
   let themeVerifier: ThemeVerifier;
