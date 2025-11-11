@@ -1,5 +1,22 @@
 ### Dependencies
 
+## 5.3.0
+
+### Minor Changes
+
+- 782c33f: Removal and updating outdated and unmaintained dependencies
+
+### Patch Changes
+
+- f5f4973: Updated dependency `@openapitools/openapi-generator-cli` to `2.25.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+- Updated dependencies [a1671ab]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.3.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.3.2
+
 ## 5.2.1
 
 ### Patch Changes

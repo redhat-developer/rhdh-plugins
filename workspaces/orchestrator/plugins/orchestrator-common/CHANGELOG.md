@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.3.0
+
+### Minor Changes
+
+- 782c33f: Removal and updating outdated and unmaintained dependencies
+
+### Patch Changes
+
+- a1671ab: The js-yaml-cli package was removed in error here: #1735 . While it is not being used in the code, it is used to generate the API for the router
+- f5f4973: Updated dependency `@openapitools/openapi-generator-cli` to `2.25.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+
 ## 3.2.0
 
 ### Minor Changes
