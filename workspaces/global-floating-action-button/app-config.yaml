@@ -67,6 +67,7 @@ techdocs:
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
+    guest: {}
     # See https://backstage.io/docs/auth/guest/provider
     github:
       development:

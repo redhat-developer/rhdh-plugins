@@ -15,13 +15,126 @@
  */
 
 import { expect, test } from '@playwright/test';
+import {
+  testSettingsMenuItem,
+  testSearchMenuItem,
+  testCreateMenuItem,
+  testDocsMenuItem,
+  testApisMenuItem,
+} from './helpers';
 
-test('App should render the welcome page', async ({ page }) => {
+test.beforeEach(async ({ page }) => {
   await page.goto('/');
 
   const enterButton = page.getByRole('button', { name: 'Enter' });
   await expect(enterButton).toBeVisible();
   await enterButton.click();
+  await expect(page.locator('h1')).toContainText('My Company Catalog');
+});
 
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
+test('global floating action buttons should be visible', async ({ page }) => {
+  const menuButton = page.getByRole('button', { name: 'Menu' });
+  const count = await menuButton.count();
+  expect(count).toBe(2);
+});
+
+test.describe('tests for right floating action button', () => {
+  test('should display menu items with correct accessibility structure', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: 'Menu' }).first().click();
+
+    await expect(page.getByTestId('settings')).toMatchAriaSnapshot(`
+      - button "Settings":
+        - paragraph: Settings
+      `);
+    await expect(page.getByTestId('github')).toMatchAriaSnapshot(`
+      - link "GitHub":
+        - /url: https://github.com/redhat-developer/rhdh-plugins
+        - paragraph: GitHub
+      `);
+
+    await expect(page.getByTestId('search')).toMatchAriaSnapshot(`
+      - button "Search":
+        - paragraph
+      `);
+
+    await expect(page.getByTestId('create')).toMatchAriaSnapshot(`
+      - button "Create":
+        - paragraph: Create
+      `);
+  });
+
+  test('should display correct tooltip texts for floating action button elements', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: 'Menu' }).first().click();
+
+    await page.getByRole('button', { name: 'Menu' }).first().hover();
+    await expect(page.getByRole('tooltip')).toContainText('Menu');
+
+    await page.getByTestId('settings').hover();
+    await expect(page.getByRole('tooltip', { name: 'Settings' })).toContainText(
+      'Settings',
+    );
+
+    await page.getByTestId('github').hover();
+    await expect(page.getByRole('tooltip', { name: 'GitHub' })).toContainText(
+      'GitHub Repository',
+    );
+
+    await page.getByTestId('search').hover();
+    await expect(page.getByRole('tooltip', { name: 'Search' })).toContainText(
+      'Search',
+    );
+
+    await page.getByTestId('create').hover();
+    await expect(page.getByRole('tooltip', { name: 'Create' })).toContainText(
+      'Create entity',
+    );
+  });
+
+  test('test menu items', async ({ page }) => {
+    await testSettingsMenuItem(page);
+    await testSearchMenuItem(page);
+    await testCreateMenuItem(page);
+  });
+});
+
+test.describe('tests for left floating action button', () => {
+  test('should display menu items with correct accessibility structure', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: 'Menu' }).nth(1).click();
+    await expect(page.getByRole('main')).toMatchAriaSnapshot(`
+      - button "APIs":
+        - paragraph
+      `);
+    await expect(page.getByTestId('docs')).toMatchAriaSnapshot(`
+      - button "Docs":
+        - paragraph: Docs
+        - paragraph
+      `);
+  });
+
+  test('should display correct tooltip texts for floating action button elements', async ({
+    page,
+  }) => {
+    await page.getByRole('button', { name: 'Menu' }).nth(1).click();
+    await page.getByRole('button', { name: 'Menu' }).nth(1).hover();
+    await expect(page.getByRole('tooltip')).toContainText('Menu');
+    await page.getByTestId('apis').hover();
+    await expect(
+      page.getByRole('tooltip', { name: 'API Documentation' }),
+    ).toContainText('API Documentation');
+    await page.getByTestId('docs').hover();
+    await expect(
+      page.getByRole('tooltip', { name: 'Documentation', exact: true }),
+    ).toContainText('Documentation');
+  });
+
+  test('test menu items', async ({ page }) => {
+    await testDocsMenuItem(page);
+    await testApisMenuItem(page);
+  });
 });
