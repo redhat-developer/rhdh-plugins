@@ -46,8 +46,6 @@ export interface Layout {
 export interface HomePageCardMountPointConfig {
   priority?: number;
   layouts?: Record<Breakpoint, Layout>;
-  title?: string;
-  description?: string;
 }
 
 /**

@@ -22,38 +22,19 @@ interface ScalprumState {
   api?: {
     dynamicRootConfig?: {
       mountPoints?: {
-        'home.page/cards': HomePageCardMountPoint[]; // Default cards
-        'home.page/widgets': HomePageCardMountPoint[]; // Additional cards from plugins
+        'home.page/cards': HomePageCardMountPoint[];
       };
     };
   };
 }
 
-/**
- * Hook to get all available homepage cards from both default and additional mount points
- */
-export const useDynamicHomePageCards = (): {
-  defaultCards: HomePageCardMountPoint[];
-  additionalCards: HomePageCardMountPoint[];
-  allCards: HomePageCardMountPoint[];
-} => {
+export const useDynamicHomePageCards = ():
+  | HomePageCardMountPoint[]
+  | undefined => {
   const scalprum = useScalprum<ScalprumState>();
 
-  const defaultCards =
-    scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/cards'] || [];
+  const cards =
+    scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/cards'];
 
-  const additionalCards =
-    scalprum?.api?.dynamicRootConfig?.mountPoints?.['home.page/widgets'] || [];
-
-  // Combine all cards - ensure they're arrays
-  const allCards = [
-    ...(Array.isArray(defaultCards) ? defaultCards : []),
-    ...(Array.isArray(additionalCards) ? additionalCards : []),
-  ];
-
-  return {
-    defaultCards: Array.isArray(defaultCards) ? defaultCards : [],
-    additionalCards: Array.isArray(additionalCards) ? additionalCards : [],
-    allCards,
-  };
+  return cards;
 };

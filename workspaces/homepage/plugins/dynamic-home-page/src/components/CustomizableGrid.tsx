@@ -29,7 +29,6 @@ import { useTheme } from '@mui/material/styles';
 
 import { ErrorBoundary } from '@backstage/core-components';
 import { CustomHomepageGrid } from '@backstage/plugin-home';
-import { attachComponentData } from '@backstage/core-plugin-api';
 
 import { makeStyles } from 'tss-react/mui';
 
@@ -63,7 +62,6 @@ const useStyles = makeStyles()({
  */
 export interface CustomizableGridProps {
   mountPoints: HomePageCardMountPoint[];
-  defaultMountPoints?: HomePageCardMountPoint[]; // For config prop - only default cards
   breakpoints?: Record<string, number>;
   cols?: Record<string, number>;
 }
@@ -76,37 +74,9 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
   const theme = useTheme();
 
   const cards = useMemo<Card[]>(() => {
-    if (!props.mountPoints || !Array.isArray(props.mountPoints)) {
-      return [];
-    }
-
     return props.mountPoints.map<Card>((mountPoint, index) => {
       const id = (index + 1).toString();
       const layouts: Record<string, Layout> = {};
-
-      // Apply config-based metadata to component if provided (skip if already exists)
-      if (mountPoint.config?.title) {
-        try {
-          attachComponentData(
-            mountPoint.Component,
-            'title',
-            mountPoint.config.title,
-          );
-        } catch (error) {
-          // Ignore duplicate metadata errors - component already has title
-        }
-      }
-      if (mountPoint.config?.description) {
-        try {
-          attachComponentData(
-            mountPoint.Component,
-            'description',
-            mountPoint.config.description,
-          );
-        } catch (error) {
-          // Ignore duplicate metadata errors - component already has description
-        }
-      }
 
       if (mountPoint.config?.layouts) {
         for (const [breakpoint, layout] of Object.entries(
@@ -162,16 +132,13 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
     ));
   }, [cards, classes.cardWrapper]);
 
-  // Create default layout configuration for "restore defaults" functionality
-  // Use only default mount points for restore defaults, but all mount points for "Add widget" dialog
+  // Create default layout configuration for initial display AND restore defaults functionality
   const defaultConfig = useMemo(() => {
-    const configMountPoints = props.defaultMountPoints || []; // Use only default cards for restore
-
-    if (!configMountPoints || configMountPoints.length === 0) {
+    if (!props.mountPoints || props.mountPoints.length === 0) {
       return [];
     }
 
-    return configMountPoints.map((mountPoint, index) => {
+    return props.mountPoints.map((mountPoint, index) => {
       const layout = mountPoint.config?.layouts?.xl || {};
 
       return {
@@ -188,7 +155,7 @@ export const CustomizableGrid = (props: CustomizableGridProps) => {
         deletable: true,
       };
     });
-  }, [props.defaultMountPoints]);
+  }, [props.mountPoints]);
 
   return (
     <>
