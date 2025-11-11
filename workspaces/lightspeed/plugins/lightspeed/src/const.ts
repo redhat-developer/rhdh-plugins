@@ -31,7 +31,6 @@ export const supportedFileTypes = {
   'text/plain': ['.txt'],
   'application/json': ['.json'],
   'application/yaml': ['.yaml', '.yml'],
-  'application/xml': ['.xml'],
 };
 
 export const DEFAULT_SAMPLE_PROMPTS: SamplePrompts = [
