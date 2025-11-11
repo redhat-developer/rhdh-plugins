@@ -30,7 +30,7 @@ export const sendMessage = async (
   waitForResponse = true,
 ) => {
   const inputLocator = page.getByRole('textbox', {
-    name: 'Send a message and optionally upload a JSON, YAML, TXT, or XML file...',
+    name: 'Send a message and optionally upload a JSON, YAML, or TXT file...',
   });
   await inputLocator.fill(message);
   const sendButton = page.getByRole('button', { name: 'Send' });

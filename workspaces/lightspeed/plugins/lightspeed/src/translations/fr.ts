@@ -111,10 +111,10 @@ const lightspeedTranslationFr = createTranslationMessages({
     'chatbox.welcome.greeting': 'Bonjour, {{userName}}',
     'chatbox.welcome.description': "Comment puis-je vous aider aujourd'hui ?",
     'chatbox.message.placeholder':
-      'Envoyez un message et téléchargez optionnellement un fichier JSON, YAML, TXT ou XML...',
+      'Envoyez un message et téléchargez optionnellement un fichier JSON, YAML, ou TXT...',
     'chatbox.fileUpload.failed': 'Le téléchargement du fichier a échoué',
     'chatbox.fileUpload.infoText':
-      'Les types de fichiers pris en charge sont : .txt, .yaml, .json et .xml. La taille maximale du fichier est de 25 Mo.',
+      'Les types de fichiers pris en charge sont : .txt, .yaml, et .json. La taille maximale du fichier est de 25 Mo.',
 
     // Accessibility and ARIA labels
     'aria.chatbotSelector': 'Sélecteur de chatbot',
@@ -157,7 +157,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'file.upload.error.alreadyExists': 'Le fichier existe déjà.',
     'file.upload.error.multipleFiles': "Plus d'un fichier a été téléchargé.",
     'file.upload.error.unsupportedType':
-      'Type de fichier non pris en charge. Les types pris en charge sont : .txt, .yaml, .json et .xml.',
+      'Type de fichier non pris en charge. Les types pris en charge sont : .txt, .yaml, et .json.',
     'file.upload.error.fileTooLarge':
       'La taille de votre fichier est trop importante. Veuillez vous assurer que votre fichier fait moins de 25 Mo.',
     'file.upload.error.readFailed':

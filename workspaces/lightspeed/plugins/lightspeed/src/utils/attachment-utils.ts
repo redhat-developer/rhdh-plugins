@@ -22,9 +22,8 @@ export const isSupportedFileType = (file: File) => {
     file.name.endsWith('.yaml') ||
     file.name.endsWith('.yml');
   const isText = file.type === SupportedFileType.TEXT;
-  const isXml = file.name.endsWith('.xml');
 
-  return isJson || isYaml || isText || isXml;
+  return isJson || isYaml || isText;
 };
 
 export const readFileAsText = (file: File): Promise<string | null> =>
@@ -39,8 +38,6 @@ export const sanitizeFileType = (fileContent: FileContent): string => {
   switch (fileContent.type) {
     case SupportedFileType.YAML:
       return 'application/yaml';
-    case SupportedFileType.XML:
-      return 'application/xml';
     default:
       return fileContent.type;
   }
