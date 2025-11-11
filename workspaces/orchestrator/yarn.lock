@@ -5620,7 +5620,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/ui@npm:^0.8.1":
+"@backstage/ui@npm:^0.8.1, @backstage/ui@npm:^0.8.2":
   version: 0.8.2
   resolution: "@backstage/ui@npm:0.8.2"
   dependencies:
@@ -17550,6 +17550,7 @@ __metadata:
     "@backstage/plugin-user-settings": ^0.8.28
     "@backstage/test-utils": ^1.7.12
     "@backstage/theme": ^0.7.0
+    "@backstage/ui": ^0.8.2
     "@mui/icons-material": 5.18.0
     "@mui/lab": 5.0.0-alpha.177
     "@mui/material": 5.18.0
