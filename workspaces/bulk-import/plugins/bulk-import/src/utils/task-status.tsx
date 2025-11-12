@@ -21,34 +21,29 @@ import {
   StatusRunning,
 } from '@backstage/core-components';
 
-export const statusMapKeys = [
-  'TASK_CANCELLED',
-  'TASK_COMPLETED',
-  'TASK_FAILED',
-  'TASK_OPEN',
-  'TASK_PROCESSING',
-  'TASK_SKIPPED',
-] as const;
+import { TaskStatus } from '../types';
 
-export type StatusMapKey = (typeof statusMapKeys)[number];
+export const statusMapKeys = Object.values(TaskStatus);
+
+export type StatusMapKey = TaskStatus;
 
 export const createStatusMap = (t: (key: string) => string) =>
   ({
-    TASK_CANCELLED: t('tasks.taskCancelled'),
-    TASK_COMPLETED: t('tasks.taskCompleted'),
-    TASK_FAILED: t('tasks.taskFailed'),
-    TASK_OPEN: t('tasks.taskOpen'),
-    TASK_PROCESSING: t('tasks.taskProcessing'),
-    TASK_SKIPPED: t('tasks.taskSkipped'),
+    [TaskStatus.Cancelled]: t('tasks.taskCancelled'),
+    [TaskStatus.Completed]: t('tasks.taskCompleted'),
+    [TaskStatus.Failed]: t('tasks.taskFailed'),
+    [TaskStatus.Open]: t('tasks.taskOpen'),
+    [TaskStatus.Processing]: t('tasks.taskProcessing'),
+    [TaskStatus.Skipped]: t('tasks.taskSkipped'),
   }) as Record<StatusMapKey, string>;
 
 export const statusIconMap: Record<StatusMapKey, JSX.Element> = {
-  TASK_CANCELLED: <StatusAborted />,
-  TASK_COMPLETED: <StatusOK />,
-  TASK_FAILED: <StatusError />,
-  TASK_OPEN: <StatusPending />,
-  TASK_PROCESSING: <StatusRunning />,
-  TASK_SKIPPED: <StatusAborted />,
+  [TaskStatus.Cancelled]: <StatusAborted />,
+  [TaskStatus.Completed]: <StatusOK />,
+  [TaskStatus.Failed]: <StatusError />,
+  [TaskStatus.Open]: <StatusPending />,
+  [TaskStatus.Processing]: <StatusRunning />,
+  [TaskStatus.Skipped]: <StatusAborted />,
 };
 
 export const getTaskStatusInfo = (

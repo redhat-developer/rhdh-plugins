@@ -15,9 +15,12 @@
  */
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-export const useImportFlow = () => {
+import { ImportFlow } from '../types/types';
+
+export const useImportFlow = (): ImportFlow => {
   const configApi = useApi(configApiRef);
-  return (
-    configApi.getOptionalString('bulkImport.importAPI') ?? 'open-pull-requests'
-  );
+  const flowValue =
+    configApi.getOptionalString('bulkImport.importAPI') ??
+    ImportFlow.OpenPullRequests;
+  return flowValue as ImportFlow;
 };
