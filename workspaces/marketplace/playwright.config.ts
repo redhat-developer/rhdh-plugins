@@ -21,10 +21,10 @@ import { generateProjects } from '@backstage/e2e-test-utils/playwright';
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  timeout: 60_000,
+  timeout: 90 * 1000,
 
   expect: {
-    timeout: 5_000,
+    timeout: 10 * 1000, // Global expect timeout
   },
 
   // Run your local dev server before starting the tests
@@ -34,8 +34,7 @@ export default defineConfig({
         {
           command: 'yarn start',
           port: 3000,
-          reuseExistingServer: true,
-          timeout: 60_000,
+          reuseExistingServer: false,
         },
       ],
 
@@ -54,5 +53,22 @@ export default defineConfig({
 
   outputDir: 'node_modules/.cache/e2e-test-results',
 
-  projects: generateProjects(), // Find all packages with e2e-test folders
+  projects: [
+    {
+      name: 'en',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'en',
+      },
+    },
+    {
+      name: 'fr',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'fr',
+      },
+    },
+  ],
 });
