@@ -247,6 +247,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+   # This might actually need to know the workflow instanceID to get the proper log
+  # TODO: also need a raw log endpoint, or just a parameter
+  /v2/workflows/instances/{instanceId}/logs:
+    get:
+      operationId: getWorkflowLogById
+      description: Returns the log for a given workflow ID.
+      parameters:
+        - name: instanceId
+          in: path
+          description: ID of the workflow instance
+          required: true
+          schema:
+            type: string
+        - name: rawlog
+          in: query
+          description: whether to return the raw log or not
+          schema:
+            type: boolean
+            default: 'false'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessInstanceDTO' # Need to create something new here
+        '500':
+          description: Error fetching workflow statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /v2/workflows/instances/statuses:
     get:
       operationId: getWorkflowStatuses
