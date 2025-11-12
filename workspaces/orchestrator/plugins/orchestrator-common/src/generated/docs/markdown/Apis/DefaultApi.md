@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost*
 | [**getInstances**](DefaultApi.md#getInstances) | **POST** /v2/workflows/instances | Get instances |
 | [**getWorkflowInputSchemaById**](DefaultApi.md#getWorkflowInputSchemaById) | **GET** /v2/workflows/{workflowId}/inputSchema |  |
 | [**getWorkflowInstances**](DefaultApi.md#getWorkflowInstances) | **POST** /v2/workflows/{workflowId}/instances | Get instances for a specific workflow |
+| [**getWorkflowLogById**](DefaultApi.md#getWorkflowLogById) | **GET** /v2/workflows/instances/{instanceId}/logs |  |
 | [**getWorkflowOverviewById**](DefaultApi.md#getWorkflowOverviewById) | **GET** /v2/workflows/{workflowId}/overview |  |
 | [**getWorkflowSourceById**](DefaultApi.md#getWorkflowSourceById) | **GET** /v2/workflows/{workflowId}/source |  |
 | [**getWorkflowStatuses**](DefaultApi.md#getWorkflowStatuses) | **GET** /v2/workflows/instances/statuses | Get workflow status list |
@@ -182,6 +183,34 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: application/json
+- **Accept**: application/json
+
+<a name="getWorkflowLogById"></a>
+# **getWorkflowLogById**
+> ProcessInstanceDTO getWorkflowLogById(instanceId, rawlog)
+
+
+
+    Returns the log for a given workflow ID.
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **instanceId** | **String**| ID of the workflow instance | [default to null] |
+| **rawlog** | **Boolean**| whether to return the raw log or not | [optional] [default to false] |
+
+### Return type
+
+[**ProcessInstanceDTO**](../Models/ProcessInstanceDTO.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 <a name="getWorkflowOverviewById"></a>
