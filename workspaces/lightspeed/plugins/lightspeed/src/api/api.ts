@@ -37,6 +37,10 @@ export type LightspeedAPI = {
   deleteConversation: (
     conversation_id: string,
   ) => Promise<{ success: boolean }>;
+  renameConversation: (
+    conversation_id: string,
+    newName: string,
+  ) => Promise<{ success: boolean }>;
   getConversations: () => Promise<ConversationList>;
   getFeedbackStatus: () => Promise<boolean>;
   captureFeedback: (payload: CaptureFeedback) => Promise<{ response: string }>;

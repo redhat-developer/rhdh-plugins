@@ -73,10 +73,14 @@ const lightspeedTranslationEs = createTranslationMessages({
       '¿Puedes guiarme a través de los primeros pasos para comenzar a usar Developer Hub como desarrollador, como explorar el Catálogo de Software y agregar mi servicio?',
 
     // Conversation history
-    'conversation.history.confirm.title': '¿Eliminar chat?',
-    'conversation.history.confirm.message':
+    'conversation.delete.confirm.title': '¿Eliminar chat?',
+    'conversation.delete.confirm.message':
       'Ya no verás este chat aquí. Esto también eliminará la actividad relacionada como prompts, respuestas y comentarios de tu Actividad de Lightspeed.',
-    'conversation.history.confirm.delete': 'Eliminar',
+    'conversation.delete.confirm.action': 'Eliminar',
+    'conversation.rename.confirm.title': '¿Renombrar chat?',
+    'conversation.rename.confirm.action': 'Renombrar',
+    'conversation.rename.placeholder': 'Nombre del chat',
+    'conversation.action.error': 'Error ocurrido: {{error}}',
 
     // Permissions
     'permission.required.title': 'Permisos faltantes',
@@ -102,13 +106,21 @@ const lightspeedTranslationEs = createTranslationMessages({
 
     // Common actions
     'common.cancel': 'Cancelar',
+    'common.close': 'Cerrar',
+    'common.readMore': 'Leer más',
 
     // Menu items
     'menu.newConversation': 'Nuevo Chat',
 
     // Chat-specific UI elements
     'chatbox.header.title': 'Developer Lightspeed',
-    'chatbox.search.placeholder': 'Buscar chats anteriores...',
+    'chatbox.search.placeholder': 'Buscar',
+    'chatbox.provider.other': 'Otro',
+    'chatbox.emptyState.noPinnedChats': 'No hay chats fijados',
+    'chatbox.emptyState.noRecentChats': 'No hay chats recientes',
+    'chatbox.emptyState.noResults.title': 'No se encontraron resultados',
+    'chatbox.emptyState.noResults.body':
+      'Ajusta tu consulta de búsqueda e inténtalo de nuevo. Verifica tu ortografía o prueba un término más general.',
     'chatbox.welcome.greeting': 'Hola, {{userName}}',
     'chatbox.welcome.description': '¿Cómo puedo ayudarte hoy?',
     'chatbox.message.placeholder':
@@ -120,6 +132,15 @@ const lightspeedTranslationEs = createTranslationMessages({
     // Accessibility and ARIA labels
     'aria.chatbotSelector': 'Selector de chatbot',
     'aria.important': 'Importante',
+    'aria.chatHistoryMenu': 'Menú de historial de chat',
+    'aria.closeDrawerPanel': 'Cerrar panel lateral',
+    'aria.search.placeholder': 'Buscar',
+    'aria.searchPreviousConversations': 'Buscar chats anteriores',
+    'aria.resize': 'Redimensionar',
+    'aria.options.label': 'Opciones',
+    'aria.scroll.down': 'Volver abajo',
+    'aria.scroll.up': 'Volver arriba',
+    'aria.settings.label': 'Opciones del chatbot',
 
     // Modal actions
     'modal.edit': 'Editar',
@@ -129,6 +150,9 @@ const lightspeedTranslationEs = createTranslationMessages({
 
     // Conversation actions
     'conversation.delete': 'Eliminar',
+    'conversation.rename': 'Renombrar',
+    'conversation.addToPinnedChats': 'Fijar',
+    'conversation.removeFromPinnedChats': 'Desfijar',
     'conversation.announcement.userMessage':
       'Mensaje del Usuario: {{prompt}}. El mensaje del Bot está cargando.',
 
@@ -142,6 +166,11 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tooltip.microphone.active': 'Dejar de escuchar',
     'tooltip.microphone.inactive': 'Usar micrófono',
     'button.newChat': 'Nuevo chat',
+    'tooltip.chatHistoryMenu': 'Menú de historial de chat',
+    'tooltip.responseRecorded': 'Respuesta registrada',
+    'tooltip.backToTop': 'Volver arriba',
+    'tooltip.backToBottom': 'Volver abajo',
+    'tooltip.settings': 'Opciones del chatbot',
 
     // Modal titles
     'modal.title.preview': 'Vista previa del adjunto',
@@ -190,10 +219,16 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Hemos recibido tu respuesta. ¡Gracias por compartir tu feedback!',
 
     // Conversation categorization
-    'conversation.category.today': 'Hoy',
-    'conversation.category.yesterday': 'Ayer',
-    'conversation.category.previous7Days': 'Últimos 7 días',
-    'conversation.category.previous30Days': 'Últimos 30 días',
+    'conversation.category.pinnedChats': 'Fijados',
+    'conversation.category.recent': 'Recientes',
+
+    // lightspeed settings
+    'settings.pinned.enable': 'Habilitar chats fijados',
+    'settings.pinned.disable': 'Deshabilitar chats fijados',
+    'settings.pinned.enabled.description':
+      'Los chats fijados están actualmente habilitados',
+    'settings.pinned.disabled.description':
+      'Los chats fijados están actualmente deshabilitados',
   },
 });
 

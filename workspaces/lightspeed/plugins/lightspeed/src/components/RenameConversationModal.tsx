@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
+
+import { TextField } from '@material-ui/core';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -25,47 +29,48 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
-import { useDeleteConversation } from '../hooks';
+import { useRenameConversation } from '../hooks/useRenameConversation';
 import { useTranslation } from '../hooks/useTranslation';
 
-export const DeleteModal = ({
+export const RenameConversationModal = ({
   isOpen,
-  conversationId,
   onClose,
-  onConfirm,
+  conversationId,
 }: {
   isOpen: boolean;
-  conversationId: string;
   onClose: () => void;
-  onConfirm: () => void;
+  conversationId: string;
 }) => {
   const { t } = useTranslation();
   const {
-    mutateAsync: deleteConversation,
+    mutateAsync: renameConversation,
     isError,
     error,
-    isPending,
-  } = useDeleteConversation();
+  } = useRenameConversation();
+  const [chatName, setChatName] = useState<string>('');
 
-  const handleDeleteConversation = async () => {
-    try {
-      await deleteConversation({
+  const handleChatNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setChatName(event.target.value);
+  };
+
+  const handleRename = () => {
+    (async () => {
+      await renameConversation({
         conversation_id: conversationId,
+        newName: chatName,
         invalidateCache: false,
       });
-      onConfirm();
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn(e);
-    }
+      onClose();
+    })();
   };
 
   return (
     <Dialog
       open={isOpen}
       onClose={onClose}
-      aria-labelledby="delete-modal"
-      aria-describedby="delete-modal-confiramtion"
+      aria-labelledby="rename-modal"
+      aria-describedby="rename-modal-confirmation"
+      fullWidth
     >
       <DialogTitle sx={{ p: '16px 20px', fontStyle: 'inherit' }}>
         <Box
@@ -76,7 +81,7 @@ export const DeleteModal = ({
           }}
         >
           <Typography component="span" sx={{ fontWeight: 'bold' }}>
-            {t('conversation.delete.confirm.title')}
+            {t('conversation.rename.confirm.title')}
           </Typography>
 
           <IconButton
@@ -95,8 +100,27 @@ export const DeleteModal = ({
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent id="delete-modal-body-confirmation">
-        {t('conversation.delete.confirm.message')}
+      <DialogContent id="rename-modal-body-input">
+        <TextField
+          id="outlined-chat-name-input"
+          label={t('conversation.rename.placeholder')}
+          onChange={handleChatNameChange}
+          fullWidth
+          value={chatName}
+          style={{ marginTop: '10px' }}
+          variant="outlined"
+          InputProps={{
+            endAdornment: (
+              <IconButton
+                aria-label="clear-input"
+                onClick={() => setChatName('')}
+                edge="end"
+              >
+                <CancelOutlinedIcon />
+              </IconButton>
+            ),
+          }}
+        />
       </DialogContent>
       {isError && (
         <Box maxWidth="650px" marginLeft="20px">
@@ -109,16 +133,23 @@ export const DeleteModal = ({
       )}
       <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
         <Button
-          key="confirm"
           variant="contained"
-          color="error"
-          onClick={handleDeleteConversation}
-          style={{ marginRight: '16px' }}
-          disabled={isPending}
+          sx={{
+            textTransform: 'none',
+          }}
+          disabled={chatName.trim() === ''}
+          onClick={handleRename}
         >
-          {t('conversation.delete.confirm.action')}
+          {t('conversation.rename.confirm.action')}
         </Button>
-        <Button key="cancel" variant="outlined" onClick={onClose}>
+        <Button
+          key="cancel"
+          variant="outlined"
+          sx={{
+            textTransform: 'none',
+          }}
+          onClick={onClose}
+        >
           {t('common.cancel')}
         </Button>
       </DialogActions>
