@@ -75,6 +75,10 @@ const mockUsePermission = usePermission as jest.MockedFunction<
 >;
 
 describe('LightspeedPage', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it('should not display chatbot if permission checks are in loading phase', async () => {
     mockUsePermission.mockReturnValue({ loading: true, allowed: true });
 
@@ -152,5 +156,220 @@ describe('LightspeedPage', () => {
     expect(result.current.t('conversation.history.confirm.message')).toBe(
       "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
     );
+  });
+
+  describe('localStorage model persistence', () => {
+    const LAST_SELECTED_MODEL_KEY = 'lastSelectedModel';
+    const mockModels = [
+      {
+        provider_resource_id: 'model-1',
+        provider_id: 'provider-1',
+        model_type: 'llm',
+      },
+      {
+        provider_resource_id: 'model-2',
+        provider_id: 'provider-2',
+        model_type: 'llm',
+      },
+      {
+        provider_resource_id: 'model-3',
+        provider_id: 'provider-3',
+        model_type: 'llm',
+      },
+    ];
+
+    beforeEach(() => {
+      mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+      const { useAllModels } = require('../../hooks/useAllModels');
+      (useAllModels as jest.Mock).mockReturnValue({
+        data: mockModels,
+        isLoading: false,
+        isError: false,
+        error: null,
+      });
+    });
+
+    it('should load last selected model from localStorage on mount', async () => {
+      const storedData = JSON.stringify({
+        model: 'model-2',
+        provider: 'provider-2',
+      });
+      localStorage.setItem(LAST_SELECTED_MODEL_KEY, storedData);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [identityApiRef, identityApi],
+            [lightspeedApiRef, mockLightspeedApi],
+          ]}
+        >
+          <LightspeedPage />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+      });
+
+      // Verify the stored model was loaded
+      const storedValue = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+      expect(storedValue).toBe(storedData);
+    });
+
+    it('should fallback to first model if stored model does not exist', async () => {
+      const storedData = JSON.stringify({
+        model: 'non-existent-model',
+        provider: 'non-existent-provider',
+      });
+      localStorage.setItem(LAST_SELECTED_MODEL_KEY, storedData);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [identityApiRef, identityApi],
+            [lightspeedApiRef, mockLightspeedApi],
+          ]}
+        >
+          <LightspeedPage />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+      });
+
+      // Should fallback to first model and save it
+      await waitFor(() => {
+        const storedValue = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+        const parsed = storedValue ? JSON.parse(storedValue) : null;
+        expect(parsed?.model).toBe('model-1');
+        expect(parsed?.provider).toBe('provider-1');
+      });
+    });
+
+    it('should save model to localStorage when model is selected', async () => {
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [identityApiRef, identityApi],
+            [lightspeedApiRef, mockLightspeedApi],
+          ]}
+        >
+          <LightspeedPage />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+      });
+
+      // Should save first model by default
+      await waitFor(() => {
+        const storedValue = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+        const parsed = storedValue ? JSON.parse(storedValue) : null;
+        expect(parsed?.model).toBe('model-1');
+        expect(parsed?.provider).toBe('provider-1');
+      });
+    });
+
+    it('should handle localStorage errors gracefully when loading', async () => {
+      // Mock localStorage.getItem to throw an error for the specific key
+      const originalGetItem = localStorage.getItem;
+      const getItemSpy = jest.fn((key: string) => {
+        if (key === LAST_SELECTED_MODEL_KEY) {
+          throw new Error('localStorage error');
+        }
+        return originalGetItem.call(localStorage, key);
+      });
+      localStorage.getItem = getItemSpy;
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [identityApiRef, identityApi],
+            [lightspeedApiRef, mockLightspeedApi],
+          ]}
+        >
+          <LightspeedPage />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+      });
+
+      // Restore before checking localStorage
+      localStorage.getItem = originalGetItem;
+
+      // Should still render and fallback to first model (saved after error)
+      // This verifies that the component handles the error gracefully
+      await waitFor(() => {
+        const storedValue = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+        const parsed = storedValue ? JSON.parse(storedValue) : null;
+        expect(parsed?.model).toBe('model-1');
+        expect(parsed?.provider).toBe('provider-1');
+      });
+    });
+
+    it('should handle localStorage errors gracefully when saving', async () => {
+      // Mock localStorage.setItem to throw an error for the specific key
+      const originalSetItem = localStorage.setItem;
+      const setItemSpy = jest.fn((key: string, value: string) => {
+        if (key === LAST_SELECTED_MODEL_KEY) {
+          throw new Error('localStorage setItem error');
+        }
+        return originalSetItem.call(localStorage, key, value);
+      });
+      localStorage.setItem = setItemSpy;
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [identityApiRef, identityApi],
+            [lightspeedApiRef, mockLightspeedApi],
+          ]}
+        >
+          <LightspeedPage />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+      });
+
+      // Should still render despite save error
+      // This verifies that the component handles the error gracefully
+      expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+
+      // Restore
+      localStorage.setItem = originalSetItem;
+    });
+
+    it('should use first model when localStorage is empty', async () => {
+      localStorage.removeItem(LAST_SELECTED_MODEL_KEY);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [identityApiRef, identityApi],
+            [lightspeedApiRef, mockLightspeedApi],
+          ]}
+        >
+          <LightspeedPage />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
+      });
+
+      // Should save first model
+      await waitFor(() => {
+        const storedValue = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+        const parsed = storedValue ? JSON.parse(storedValue) : null;
+        expect(parsed?.model).toBe('model-1');
+        expect(parsed?.provider).toBe('provider-1');
+      });
+    });
   });
 });
