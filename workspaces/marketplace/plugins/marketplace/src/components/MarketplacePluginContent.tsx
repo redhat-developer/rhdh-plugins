@@ -19,7 +19,6 @@ import { useNavigate } from 'react-router-dom';
 
 import {
   Content,
-  ErrorPage,
   Link,
   LinkButton,
   Table,
@@ -43,6 +42,8 @@ import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   isMarketplacePackage,
@@ -191,18 +192,18 @@ export const MarketplacePluginContentSkeleton = () => {
 
 const getColumns = (t: any): TableColumn<MarketplacePackage>[] => [
   {
-    title: 'Package name',
+    title: t('table.packageName'),
     field: 'spec.packageName',
     type: 'string',
     width: '40%',
   },
   {
-    title: 'Version',
+    title: t('table.version'),
     field: 'spec.version',
     type: 'string',
   },
   {
-    title: 'Role',
+    title: t('table.role'),
     field: 'spec.backstage.role',
     type: 'string',
     render(data) {
@@ -216,12 +217,12 @@ const getColumns = (t: any): TableColumn<MarketplacePackage>[] => [
     },
   },
   {
-    title: 'Backstage compatibility version',
+    title: t('metadata.backstageCompatibility'),
     field: 'spec.backstage.supportedVersions',
     type: 'string',
   },
   {
-    title: 'Status',
+    title: t('table.status'),
     field: 'spec.installStatus',
     type: 'string',
     render(data) {
@@ -233,18 +234,12 @@ const getColumns = (t: any): TableColumn<MarketplacePackage>[] => [
 ];
 
 const PluginPackageTable = ({
-  plugin,
+  packages,
 }: {
-  plugin: MarketplacePlugin | MarketplacePackage;
+  packages: MarketplacePackage[];
 }) => {
   const { t } = useTranslation();
-
-  const packages = usePluginPackages(
-    plugin.metadata.namespace!,
-    plugin.metadata.name,
-  );
-
-  if (!packages.data?.length) {
+  if (!packages?.length) {
     return null;
   }
 
@@ -259,7 +254,7 @@ const PluginPackageTable = ({
       </Typography>
       <Table
         columns={getColumns(t)}
-        data={packages.data}
+        data={packages}
         options={{
           toolbar: false,
           paging: false,
@@ -284,6 +279,10 @@ export const MarketplacePluginContent = ({
   const [isPluginEnabled, setIsPluginEnabled] = useState<boolean>(false);
   const open = Boolean(anchorEl);
   const { installedPlugins, setInstalledPlugins } = useInstallationContext();
+  const packages = usePluginPackages(
+    plugin.metadata.namespace!,
+    plugin.metadata.name,
+  );
 
   const isPackage = isMarketplacePackage(plugin);
 
@@ -352,10 +351,20 @@ export const MarketplacePluginContent = ({
           (res as any)?.error?.message ?? res,
         );
       } else {
+        let message = '';
+        if (isPluginEnabled && isPackage) {
+          message = t('install.packageDisabled');
+        } else if (isPluginEnabled && !isPackage) {
+          message = t('install.pluginDisabled');
+        } else if (!isPluginEnabled && isPackage) {
+          message = t('install.packageEnabled');
+        } else {
+          message = t('install.pluginEnabled');
+        }
+
         const updatedPlugins: InstallationType = {
           ...installedPlugins,
-          [plugin.metadata.title ?? plugin.metadata.name]:
-            `${subString} ${isPluginEnabled ? 'disabled' : 'enabled'}`,
+          [plugin.metadata.title ?? plugin.metadata.name]: message,
         };
         setInstalledPlugins(updatedPlugins);
         handleClose();
@@ -384,14 +393,20 @@ export const MarketplacePluginContent = ({
   const isProductionEnvironment =
     nodeEnvironment?.data?.nodeEnv === 'production';
 
+  const missingDynamicArtifact = isMarketplacePackage(plugin)
+    ? !plugin.spec?.dynamicArtifact
+    : packages?.data?.some(p => !p.spec?.dynamicArtifact);
+
   const pluginActionButton = () => {
     const disablePluginActions =
-      pluginConfigPerm.data?.read !== 'ALLOW' &&
-      pluginConfigPerm.data?.write !== 'ALLOW';
+      !extensionsConfig.data?.enabled ||
+      (pluginConfigPerm.data?.read !== 'ALLOW' &&
+        pluginConfigPerm.data?.write !== 'ALLOW');
     const viewOnly =
       isProductionEnvironment ||
       pluginConfigPerm.data?.write !== 'ALLOW' ||
-      !extensionsConfig.data?.enabled;
+      !extensionsConfig.data?.enabled ||
+      missingDynamicArtifact;
 
     const icon = isPluginEnabled ? (
       <ToggleOnOutlinedIcon />
@@ -419,18 +434,21 @@ export const MarketplacePluginContent = ({
 
     const testId = isPluginEnabled ? 'disable-plugin' : 'enable-plugin';
 
+    const tooltipMessage = getPluginActionTooltipMessage(
+      isProductionEnvironment,
+      {
+        read: pluginConfigPerm.data?.read ?? 'DENY',
+        write: pluginConfigPerm.data?.write ?? 'DENY',
+      },
+      t,
+      !extensionsConfig.data?.enabled,
+      missingDynamicArtifact,
+      !isPackage,
+    );
+
     if (disablePluginActions) {
       return (
-        <Tooltip
-          title={getPluginActionTooltipMessage(
-            isProductionEnvironment,
-            {
-              read: pluginConfigPerm.data?.read ?? 'DENY',
-              write: pluginConfigPerm.data?.write ?? 'DENY',
-            },
-            t,
-          )}
-        >
+        <Tooltip title={tooltipMessage}>
           <div>
             <Button
               color="primary"
@@ -447,17 +465,21 @@ export const MarketplacePluginContent = ({
 
     if (viewOnly) {
       return (
-        <LinkButton
-          to={getInstallPath({
-            namespace: plugin.metadata.namespace!,
-            name: plugin.metadata.name,
-          })}
-          color="primary"
-          variant="contained"
-          data-testId="view"
-        >
-          {t('actions.view')}
-        </LinkButton>
+        <Tooltip title={tooltipMessage}>
+          <div>
+            <LinkButton
+              to={getInstallPath({
+                namespace: plugin.metadata.namespace!,
+                name: plugin.metadata.name,
+              })}
+              color="primary"
+              variant="contained"
+              data-testId="view"
+            >
+              {t('actions.view')}
+            </LinkButton>
+          </div>
+        </Tooltip>
       );
     }
 
@@ -556,7 +578,7 @@ export const MarketplacePluginContent = ({
                 >
                   {plugin.spec.authors.map((author, index) => (
                     <Fragment key={author.name}>
-                      {index > 0 ? ', ' : ' by '}
+                      {index > 0 ? t('metadata.comma') : t('metadata.by')}
                       <Link
                         key={author.name}
                         to={withFilter('spec.authors.name', author.name)}
@@ -574,7 +596,7 @@ export const MarketplacePluginContent = ({
                   variant="subtitle2"
                   style={{ fontWeight: 'normal' }}
                 >
-                  by{' '}
+                  {t('metadata.by')}{' '}
                   <Link
                     key={plugin.spec?.author}
                     to={withFilter('spec.author', plugin.spec?.author)}
@@ -640,7 +662,9 @@ export const MarketplacePluginContent = ({
 
             <Links entity={plugin} />
 
-            <PluginPackageTable plugin={plugin} />
+            {!isMarketplacePackage(plugin) && (
+              <PluginPackageTable packages={packages.data ?? []} />
+            )}
           </Grid>
         </Grid>
       </Stack>
@@ -649,15 +673,24 @@ export const MarketplacePluginContent = ({
 };
 
 export const MarketplacePluginContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(pluginRouteRef);
   const plugin = usePlugin(params.namespace, params.name);
 
   if (plugin.isLoading) {
     return <MarketplacePluginContentSkeleton />;
-  } else if (plugin.data) {
-    return <MarketplacePluginContent plugin={plugin.data} />;
-  } else if (plugin.error) {
-    return <ErrorPage statusMessage={plugin.error.toString()} />;
   }
-  return <ErrorPage statusMessage={`Plugin ${params.name} not found!`} />;
+
+  if (plugin.data) {
+    return <MarketplacePluginContent plugin={plugin.data} />;
+  }
+
+  return (
+    <Alert severity="warning">
+      <AlertTitle>
+        {t('metadata.pluginNotAvailable', { name: params.name } as any)}
+      </AlertTitle>
+      {t('metadata.ensureCatalogEntityPlugin')}
+    </Alert>
+  );
 };

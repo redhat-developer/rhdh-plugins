@@ -147,9 +147,11 @@ export const getPluginActionTooltipMessage = (
   permissions: {
     read: 'ALLOW' | 'DENY';
     write: 'ALLOW' | 'DENY';
-  },
+  } | null,
   t: TranslationFunction<typeof marketplaceTranslationRef.T>,
   extensionsDisabled?: boolean,
+  missingDynamicArtifact?: boolean,
+  isPlugin: boolean = true,
 ) => {
   if (isProductionEnvironment) {
     return t('tooltips.productionDisabled');
@@ -157,8 +159,17 @@ export const getPluginActionTooltipMessage = (
   if (extensionsDisabled) {
     return t('tooltips.extensionsDisabled');
   }
-  if (permissions.read !== 'ALLOW' && permissions.write !== 'ALLOW') {
+  if (
+    permissions &&
+    permissions.read !== 'ALLOW' &&
+    permissions.write !== 'ALLOW'
+  ) {
     return t('tooltips.noPermissions');
+  }
+  if (missingDynamicArtifact) {
+    return t('tooltips.missingDynamicArtifact' as any, {
+      type: isPlugin ? 'plugin' : 'package',
+    });
   }
 
   return '';
