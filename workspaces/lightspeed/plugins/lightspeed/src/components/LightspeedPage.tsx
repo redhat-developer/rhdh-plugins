@@ -42,6 +42,7 @@ const useStyles = makeStyles(() =>
 
 const THEME_DARK = 'dark';
 const THEME_DARK_CLASS = 'pf-v6-theme-dark';
+const LAST_SELECTED_MODEL_KEY = 'lastSelectedModel';
 
 const LightspeedPageInner = () => {
   const classes = useStyles();
@@ -91,10 +92,56 @@ const LightspeedPageInner = () => {
 
   useEffect(() => {
     if (modelsItems.length > 0) {
-      setSelectedModel(modelsItems[0].value);
-      setSelectedProvider(modelsItems[0].provider);
+      try {
+        const storedData = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+        const parsedData = storedData ? JSON.parse(storedData) : null;
+
+        // Check if stored model exists in available models
+        const storedModel = parsedData?.model
+          ? modelsItems.find(m => m.value === parsedData.model)
+          : null;
+
+        if (storedModel) {
+          setSelectedModel(storedModel.value);
+          setSelectedProvider(storedModel.provider);
+        } else {
+          // Fallback to first model if stored model is not available
+          setSelectedModel(modelsItems[0].value);
+          setSelectedProvider(modelsItems[0].provider);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(
+          'Error loading last selected model from localStorage:',
+          error,
+        );
+        // Fallback to first model on error
+        setSelectedModel(modelsItems[0].value);
+        setSelectedProvider(modelsItems[0].provider);
+      }
     }
   }, [modelsItems]);
+
+  // Save to localStorage whenever model or provider changes
+  useEffect(() => {
+    if (selectedModel && selectedProvider) {
+      try {
+        localStorage.setItem(
+          LAST_SELECTED_MODEL_KEY,
+          JSON.stringify({
+            model: selectedModel,
+            provider: selectedProvider,
+          }),
+        );
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(
+          'Error saving last selected model to localStorage:',
+          error,
+        );
+      }
+    }
+  }, [selectedModel, selectedProvider]);
 
   if (loading) {
     return null;
