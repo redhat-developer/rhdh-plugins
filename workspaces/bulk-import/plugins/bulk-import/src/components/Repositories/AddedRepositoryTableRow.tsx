@@ -24,11 +24,7 @@ import { useFormikContext } from 'formik';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
-import {
-  AddRepositoriesFormValues,
-  AddRepositoryData,
-  ApprovalTool,
-} from '../../types';
+import { AddRepositoriesFormValues, AddRepositoryData } from '../../types';
 import {
   calculateLastUpdated,
   getImportStatus,
@@ -57,7 +53,6 @@ const ImportStatusComponent = ({ data }: { data: AddRepositoryData }) => {
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
     values.repositories?.[data.id]?.task?.id,
-    values?.approvalTool === ApprovalTool.Gitlab,
   );
 };
 
