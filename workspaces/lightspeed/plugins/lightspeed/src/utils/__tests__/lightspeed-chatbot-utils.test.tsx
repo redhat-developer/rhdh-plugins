@@ -312,52 +312,102 @@ describe('getCategorizeMessages', () => {
     {
       conversation_id: '1',
       last_message_timestamp: Date.now() / 1000,
-      topic_summary: 'Today message',
+      topic_summary: 'First message',
     },
     {
       conversation_id: '2',
       last_message_timestamp: (Date.now() - 24 * 60 * 60 * 1000) / 1000,
-      topic_summary: 'Yesterday message',
+      topic_summary: 'Second message',
     },
     {
       conversation_id: '3',
       last_message_timestamp: (Date.now() - 5 * 24 * 60 * 60 * 1000) / 1000,
-      topic_summary: '5 days ago',
+      topic_summary: 'Third message',
     },
     {
       conversation_id: '4',
       last_message_timestamp: (Date.now() - 15 * 24 * 60 * 60 * 1000) / 1000,
-      topic_summary: '15 days ago',
+      topic_summary: 'Fourth message',
     },
     {
       conversation_id: '5',
       last_message_timestamp: (Date.now() - 45 * 24 * 60 * 60 * 1000) / 1000,
-      topic_summary: '45 days ago',
+      topic_summary: 'Fifth message',
     },
   ];
 
-  it('categorizes messages correctly', () => {
-    const result = getCategorizeMessages(messages, addProps);
+  it('categorizes messages into Pinned and Recent correctly', () => {
+    const pinnedChats: string[] = ['1', '3'];
+    const result = getCategorizeMessages(messages, pinnedChats, addProps);
 
-    expect(result.Today).toHaveLength(1);
-    expect(result.Today[0].text).toBe('Today message');
+    expect(result.Pinned).toHaveLength(2);
+    expect(result.Pinned[0].text).toBe('First message');
+    expect(result.Pinned[0].id).toBe('1');
+    expect(result.Pinned[1].text).toBe('Third message');
+    expect(result.Pinned[1].id).toBe('3');
 
-    expect(result.Yesterday).toHaveLength(1);
-    expect(result.Yesterday[0].text).toBe('Yesterday message');
+    expect(result.Recent).toHaveLength(3);
+    expect(result.Recent[0].text).toBe('Second message');
+    expect(result.Recent[0].id).toBe('2');
+    expect(result.Recent[1].text).toBe('Fourth message');
+    expect(result.Recent[1].id).toBe('4');
+    expect(result.Recent[2].text).toBe('Fifth message');
+    expect(result.Recent[2].id).toBe('5');
+  });
 
-    expect(result['Previous 7 Days']).toHaveLength(1);
-    expect(result['Previous 7 Days'][0].text).toBe('5 days ago');
+  it('categorizes all messages as Recent when no pinned chats', () => {
+    const pinnedChats: string[] = [];
+    const result = getCategorizeMessages(messages, pinnedChats, addProps);
 
-    expect(result['Previous 30 Days']).toHaveLength(1);
-    expect(result['Previous 30 Days'][0].text).toBe('15 days ago');
+    expect(result.Pinned).toHaveLength(0);
+    expect(result.Recent).toHaveLength(5);
+    expect(result.Recent[0].text).toBe('First message');
+    expect(result.Recent[4].text).toBe('Fifth message');
+  });
 
-    const monthYearKey = new Date(
-      messages[4].last_message_timestamp * 1000,
-    ).toLocaleString('default', {
-      month: 'long',
-      year: 'numeric',
+  it('categorizes all messages as Pinned when all are pinned', () => {
+    const pinnedChats: string[] = ['1', '2', '3', '4', '5'];
+    const result = getCategorizeMessages(messages, pinnedChats, addProps);
+
+    expect(result.Pinned).toHaveLength(5);
+    expect(result.Recent).toHaveLength(0);
+    expect(result.Pinned[0].text).toBe('First message');
+    expect(result.Pinned[4].text).toBe('Fifth message');
+  });
+
+  it('sorts messages by last_message_timestamp in descending order', () => {
+    const pinnedChats: string[] = [];
+    const result = getCategorizeMessages(messages, pinnedChats, addProps);
+
+    // Messages should be sorted by timestamp descending (newest first)
+    expect(result.Recent[0].id).toBe('1'); // Most recent
+    expect(result.Recent[1].id).toBe('2');
+    expect(result.Recent[2].id).toBe('3');
+    expect(result.Recent[3].id).toBe('4');
+    expect(result.Recent[4].id).toBe('5'); // Oldest
+  });
+
+  it('uses translation function when provided', () => {
+    const pinnedChats: string[] = [];
+    const mockT = jest.fn((key: string) => {
+      if (key === 'conversation.category.pinnedChats') return 'Fijados';
+      if (key === 'conversation.category.recent') return 'Recientes';
+      if (key === 'message.options.label') return 'Opciones';
+      return key;
     });
-    expect(result[monthYearKey]).toHaveLength(1);
-    expect(result[monthYearKey][0].text).toBe('45 days ago');
+
+    const result = getCategorizeMessages(
+      messages,
+      pinnedChats,
+      addProps,
+      mockT,
+    );
+
+    expect(mockT).toHaveBeenCalledWith('conversation.category.pinnedChats');
+    expect(mockT).toHaveBeenCalledWith('conversation.category.recent');
+    expect(mockT).toHaveBeenCalledWith('message.options.label');
+    expect(result.Fijados).toBeDefined();
+    expect(result.Recientes).toBeDefined();
+    expect(result.Recientes[0].label).toBe('Opciones');
   });
 });
