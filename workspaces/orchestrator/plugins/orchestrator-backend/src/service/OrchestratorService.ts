@@ -18,6 +18,7 @@ import {
   AuthToken,
   Filter,
   ProcessInstance,
+  ProcessInstanceDTO,
   ProcessInstanceVariables,
   WorkflowDefinition,
   WorkflowExecutionResponse,
@@ -29,12 +30,14 @@ import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
 import { WorkflowCacheService } from './WorkflowCacheService';
+import { WorkflowLoggerService } from './WorkflowLoggerService';
 
 export class OrchestratorService {
   constructor(
     private readonly sonataFlowService: SonataFlowService,
     private readonly dataIndexService: DataIndexService,
     private readonly workflowCacheService: WorkflowCacheService,
+    private readonly workflowLoggerService: WorkflowLoggerService,
   ) {}
 
   // Data Index Service Wrapper
@@ -169,6 +172,12 @@ export class OrchestratorService {
       await this.sonataFlowService.fetchWorkflowOverview(definitionId);
     if (overview) overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
     return overview;
+  }
+
+  public async fetchWorkflowLogsById(args: {
+    instance: ProcessInstanceDTO;
+  }): Promise<any> {
+    return this.workflowLoggerService.fetchWorkflowLogsById(args.instance);
   }
 
   public async pingWorkflowService(args: {
