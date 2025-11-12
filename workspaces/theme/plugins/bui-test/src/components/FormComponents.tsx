@@ -19,10 +19,11 @@ import {
   ButtonProps,
   Checkbox,
   Flex,
-  Icon,
   Switch,
   Text,
 } from '@backstage/ui';
+import CloudIcon from '@mui/icons-material/Cloud';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 const Buttons = () => {
   const variants: ButtonProps['variant'][] = [
@@ -43,22 +44,22 @@ const Buttons = () => {
                 Button
               </Button>
               <Button
-                iconStart={<Icon name="cloud" />}
+                iconStart={<CloudIcon fontSize="small" />}
                 variant={variant}
                 size={size}
               >
                 Button
               </Button>
               <Button
-                iconEnd={<Icon name="chevron-right" />}
+                iconEnd={<ChevronRightIcon fontSize="small" />}
                 variant={variant}
                 size={size}
               >
                 Button
               </Button>
               <Button
-                iconStart={<Icon name="cloud" />}
-                iconEnd={<Icon name="chevron-right" />}
+                iconStart={<CloudIcon fontSize="small" />}
+                iconEnd={<ChevronRightIcon fontSize="small" />}
                 style={{
                   width: '200px',
                 }}
@@ -71,7 +72,7 @@ const Buttons = () => {
                 Button
               </Button>
               <Button
-                iconStart={<Icon name="cloud" />}
+                iconStart={<CloudIcon fontSize="small" />}
                 variant={variant}
                 size={size}
                 isDisabled
@@ -79,7 +80,7 @@ const Buttons = () => {
                 Button
               </Button>
               <Button
-                iconEnd={<Icon name="chevron-right" />}
+                iconEnd={<ChevronRightIcon fontSize="small" />}
                 variant={variant}
                 size={size}
                 isDisabled
