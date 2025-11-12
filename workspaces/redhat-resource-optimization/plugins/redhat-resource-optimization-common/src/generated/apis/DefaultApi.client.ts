@@ -25,7 +25,10 @@ import * as parser from 'uri-template';
 
 import { RecommendationBoxPlots } from '../models/RecommendationBoxPlots.model';
 import { RecommendationList } from '../models/RecommendationList.model';
-import type { CostManagementReport } from '../../clients/types/cost-management';
+import type {
+  CostManagementReport,
+  CurrencyCode,
+} from '../../clients/types/cost-management';
 
 /**
  * Wraps the Response type to convey a type on the json call.
@@ -158,7 +161,7 @@ export class DefaultApiClient {
 
   /**
    * Get cost management report for OpenShift projects
-   * @param currency - Currency preference (USD, EUR, GBP)
+   * @param currency - Currency preference (USD, EUR, GBP, JPY, AUD, CAD, CHF, CNY, INR, MXN, NZD, SEK, SGD, HKD, TWD, THB, RUB, BRL, ZAR, PLN, KRW, TRY, IDR, MYR, PHP, VND, HUF, CZK, NOK, DKK, NGN)
    * @param delta - Delta calculation method
    * @param filter - Filter parameters
    * @param group_by - Group by parameters
@@ -167,7 +170,7 @@ export class DefaultApiClient {
   public async getCostManagementReport(
     request: {
       query: {
-        currency?: 'USD' | 'EUR' | 'GBP';
+        currency?: CurrencyCode;
         delta?: string;
         'filter[limit]'?: number;
         'filter[offset]'?: number;
@@ -175,9 +178,14 @@ export class DefaultApiClient {
         'filter[time_scope_units]'?: 'day' | 'month';
         'filter[time_scope_value]'?: number;
         'group_by[project]'?: '*' | string;
+        'group_by[cluster]'?: '*' | string;
+        'group_by[node]'?: '*' | string;
+        'group_by[tag]'?: '*' | string;
+        'order_by[cost]'?: 'asc' | 'desc';
         'order_by[distributed_cost]'?: 'asc' | 'desc';
         'order_by[markup_cost]'?: 'asc' | 'desc';
         'order_by[raw_cost]'?: 'asc' | 'desc';
+        [key: string]: string | number | undefined;
       };
     },
     options?: RequestOptions,
@@ -224,30 +232,47 @@ export class DefaultApiClient {
         String(request.query['filter[time_scope_value]']),
       );
     }
-    if (request.query['group_by[project]']) {
-      queryParams.append(
-        'group_by[project]',
-        request.query['group_by[project]'],
-      );
-    }
-    if (request.query['order_by[distributed_cost]']) {
-      queryParams.append(
-        'order_by[distributed_cost]',
-        request.query['order_by[distributed_cost]'],
-      );
-    }
-    if (request.query['order_by[markup_cost]']) {
-      queryParams.append(
-        'order_by[markup_cost]',
-        request.query['order_by[markup_cost]'],
-      );
-    }
-    if (request.query['order_by[raw_cost]']) {
-      queryParams.append(
-        'order_by[raw_cost]',
-        request.query['order_by[raw_cost]'],
-      );
-    }
+    // Handle dynamic group_by parameters (project, cluster, node, tag, etc.)
+    Object.keys(request.query).forEach(key => {
+      if (key.startsWith('group_by[') && key.endsWith(']')) {
+        const value = request.query[key as keyof typeof request.query];
+        if (value) {
+          queryParams.append(key, String(value));
+        }
+      }
+    });
+
+    // Handle dynamic order_by parameters (cost, distributed_cost, raw_cost, etc.)
+    Object.keys(request.query).forEach(key => {
+      if (key.startsWith('order_by[') && key.endsWith(']')) {
+        const value = request.query[key as keyof typeof request.query];
+        if (value) {
+          queryParams.append(key, String(value));
+        }
+      }
+    });
+
+    // Handle dynamic filter parameters (filter[project], filter[cluster], filter[node], etc.)
+    // Skip the ones already handled explicitly above (limit, offset, resolution, time_scope_units, time_scope_value)
+    const handledFilterKeys = [
+      'filter[limit]',
+      'filter[offset]',
+      'filter[resolution]',
+      'filter[time_scope_units]',
+      'filter[time_scope_value]',
+    ];
+    Object.keys(request.query).forEach(key => {
+      if (
+        key.startsWith('filter[') &&
+        key.endsWith(']') &&
+        !handledFilterKeys.includes(key)
+      ) {
+        const value = request.query[key as keyof typeof request.query];
+        if (value) {
+          queryParams.append(key, String(value));
+        }
+      }
+    });
 
     const queryString = queryParams.toString();
     const url = `${baseUrl}${uri}${queryString ? `?${queryString}` : ''}`;

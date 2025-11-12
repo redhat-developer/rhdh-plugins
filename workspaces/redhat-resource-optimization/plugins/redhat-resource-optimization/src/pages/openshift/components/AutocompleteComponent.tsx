@@ -52,6 +52,12 @@ type SingleProps = BaseProps & {
     reason: AutocompleteChangeReason,
     details?: AutocompleteChangeDetails<string> | undefined,
   ) => void;
+  onInputChange?: (
+    event: React.ChangeEvent<{}>,
+    value: string,
+    reason: string,
+  ) => void;
+  loading?: boolean;
 };
 
 type MultipleProps = BaseProps & {
@@ -90,6 +96,12 @@ export function AutocompleteComponent(props: AutocompleteComponentProps) {
             (props.onChange as any)(event, value, reason, details);
           }
         }}
+        onInputChange={(event, value, reason) => {
+          if ((props as SingleProps).onInputChange) {
+            (props as SingleProps).onInputChange!(event, value, reason);
+          }
+        }}
+        loading={(props as SingleProps).loading ?? false}
         popupIcon={<ExpandMoreIcon data-testid="expand-icon" />}
         renderInput={params => (
           <TextField

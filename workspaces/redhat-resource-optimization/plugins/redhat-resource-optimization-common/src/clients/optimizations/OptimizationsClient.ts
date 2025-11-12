@@ -190,6 +190,112 @@ export class OptimizationsClient implements OptimizationsApi {
     return response;
   }
 
+  /**
+   * Search OpenShift projects
+   * @param search - Search term to filter projects
+   */
+  public async searchOpenShiftProjects(
+    search: string = '',
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-projects/${searchParam}`;
+
+    return await this.fetchResourceType(url);
+  }
+
+  /**
+   * Search OpenShift clusters
+   * @param search - Search term to filter clusters
+   */
+  public async searchOpenShiftClusters(
+    search: string = '',
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-clusters/${searchParam}`;
+
+    return await this.fetchResourceType(url);
+  }
+
+  /**
+   * Search OpenShift nodes
+   * @param search - Search term to filter nodes
+   */
+  public async searchOpenShiftNodes(
+    search: string = '',
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-nodes/${searchParam}`;
+
+    return await this.fetchResourceType(url);
+  }
+
+  private async fetchResourceType(
+    url: string,
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    // Get access permission
+    const accessAPIResponse = await this.getAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    // Get or refresh token
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+
+    // Call the API via backend proxy
+    let response = await this.fetchApi.fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`,
+      },
+      method: 'GET',
+    });
+
+    // Handle 401 errors by refreshing token and retrying
+    if (!response.ok && response.status === 401) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+
+      response = await this.fetchApi.fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        method: 'GET',
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return {
+      ...response,
+      json: async () => {
+        const data = await response.json();
+        return data as {
+          data: Array<{ value: string }>;
+          meta?: any;
+          links?: any;
+        };
+      },
+    };
+  }
+
   private async getAccess(): Promise<GetAccessResponse> {
     const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
     const response = await this.fetchApi.fetch(`${baseUrl}/access`);
