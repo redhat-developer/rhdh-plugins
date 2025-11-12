@@ -62,6 +62,7 @@ import { DataInputSchemaService } from './DataInputSchemaService';
 import { OrchestratorService } from './OrchestratorService';
 import { SonataFlowService } from './SonataFlowService';
 import { WorkflowCacheService } from './WorkflowCacheService';
+import { WorkflowLoggerService } from './WorkflowLoggerService';
 
 interface PublicServices {
   dataInputSchemaService: DataInputSchemaService;
@@ -259,11 +260,19 @@ function initPublicServices(
     sonataFlowService,
   );
   workflowCacheService.schedule({ scheduler: scheduler });
-
+  // Get the orchestrator logging config
+  // Create that workflow logging class/interface instance here
+  const logStorageUrl = config.getString('');
+  const workflowLoggerService = new WorkflowLoggerService(
+    logStorageUrl,
+    logger,
+  );
+  // ADD the workflow logging interface here
   const orchestratorService = new OrchestratorService(
     sonataFlowService,
     dataIndexService,
     workflowCacheService,
+    workflowLoggerService,
   );
 
   const dataInputSchemaService = new DataInputSchemaService();

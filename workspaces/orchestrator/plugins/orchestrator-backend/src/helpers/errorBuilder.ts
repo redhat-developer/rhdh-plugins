@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+export const NO_LOG_STORAGE_URL = 'NO_LOG_STORAGE_URL';
 export const NO_DATA_INDEX_URL = 'NO_DATA_INDEX_URL';
 export const NO_BACKEND_EXEC_CTX = 'NO_BACKEND_EXEC_CTX';
 export const NO_CLIENT_PROVIDED = 'NO_CLIENT_PROVIDED';
@@ -24,6 +26,13 @@ export class ErrorBuilder {
     const e = new Error(message);
     e.name = name;
     return e;
+  }
+
+  public static GET_NO_LOG_STORAGE_URL_ERR(): Error {
+    return this.NewBackendError(
+      NO_LOG_STORAGE_URL,
+      'No log storage url specified or found',
+    );
   }
 
   public static GET_NO_DATA_INDEX_URL_ERR(): Error {
