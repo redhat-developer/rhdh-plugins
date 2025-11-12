@@ -18,7 +18,7 @@ import { expect, Page } from '@playwright/test';
 import {
   getTranslations,
   GlobalFloatingActionButtonMessages,
-} from './utils/translations.js';
+} from './translations.js';
 
 async function getPageTranslations(
   page: Page,

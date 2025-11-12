@@ -22,11 +22,12 @@ import {
   testDocsMenuItem,
   testApisMenuItem,
   switchToLocale,
-} from './helpers';
+} from './utils/helpers.js';
 import {
   GlobalFloatingActionButtonMessages,
   getTranslations,
 } from './utils/translations.js';
+import { runAccessibilityTests } from './utils/accessibility.js';
 
 test.describe('Global Floating Action Button Tests', () => {
   let sharedPage: Page;
@@ -60,20 +61,27 @@ test.describe('Global Floating Action Button Tests', () => {
     await sharedPage.waitForTimeout(1000);
   });
 
-  test('global floating action buttons should be visible', async () => {
+  test('global floating action buttons should be visible', async ({
+    browser: _browser,
+  }, testInfo) => {
     const menuButton = sharedPage.getByRole('button', {
       name: translations.fab.menu.tooltip,
     });
     const count = await menuButton.count();
     expect(count).toBe(2);
+    await runAccessibilityTests(sharedPage, testInfo);
   });
 
   test.describe('tests for right floating action button', () => {
-    test('should display menu items with correct accessibility structure', async () => {
+    test('should display menu items with correct accessibility structure', async ({
+      browser: _browser,
+    }, testInfo) => {
       await sharedPage
         .getByRole('button', { name: translations.fab.menu.tooltip })
         .first()
         .click();
+
+      await runAccessibilityTests(sharedPage, testInfo);
 
       await expect(sharedPage.getByTestId('settings')).toMatchAriaSnapshot(`
       - button "Settings":
@@ -151,11 +159,16 @@ test.describe('Global Floating Action Button Tests', () => {
   });
 
   test.describe('tests for left floating action button', () => {
-    test('should display menu items with correct accessibility structure', async () => {
+    test('should display menu items with correct accessibility structure', async ({
+      browser: _browser,
+    }, testInfo) => {
       await sharedPage
         .getByRole('button', { name: translations.fab.menu.tooltip })
         .nth(1)
         .click();
+
+      await runAccessibilityTests(sharedPage, testInfo);
+
       await expect(sharedPage.getByRole('main')).toMatchAriaSnapshot(`
       - button "${translations.fab.apis.label}":
         - paragraph
