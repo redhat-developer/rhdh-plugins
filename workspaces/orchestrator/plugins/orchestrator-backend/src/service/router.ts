@@ -946,6 +946,74 @@ function setupInternalRoutes(
 
   // v2
   routerApi.openApiBackend.register(
+    'getWorkflowLogById',
+    async (c, request: express.Request, res: express.Response, next) => {
+      const instanceId = c.request.params.instanceId as string;
+      // TODO: will probably have to get the raw log at some point
+      // const rawLog = c.request.query.instanceId as Boolean;
+
+      const auditEvent = await auditor.createEvent({
+        eventId: 'get-logs-by-instance',
+        request,
+        meta: {
+          actionType: 'by-id',
+          instanceId,
+        },
+      });
+
+      try {
+        const instance = await routerApi.v2.getInstanceById(instanceId);
+        const workflowId = instance.processId;
+
+        const decision = await authorize(
+          request,
+          [
+            orchestratorWorkflowPermission,
+            orchestratorWorkflowSpecificPermission(workflowId),
+          ],
+          permissions,
+          httpAuth,
+        );
+        if (decision.result === AuthorizeResult.DENY) {
+          manageDenyAuthorization(auditEvent);
+        }
+
+        const credentials = await httpAuth.credentials(request);
+        const initiatorEntity = (await userInfo.getUserInfo(credentials))
+          .userEntityRef;
+        // Check if user is authorized to view all instances
+        const isUserAuthorizedForInstanceAdminView =
+          await isUserAuthorizedForInstanceAdminViewPermission(
+            request,
+            permissions,
+            httpAuth,
+          );
+
+        // If not an admin, enforce initiatorEntity check
+        if (!isUserAuthorizedForInstanceAdminView) {
+          const instanceInitiatorEntity = instance.initiatorEntity;
+          if (instanceInitiatorEntity !== initiatorEntity) {
+            throw new Error(
+              `Unauthorized to access instance ${instanceId} not initiated by user.`,
+            );
+          }
+        }
+
+        // TODO: Using the instanceId, retrieve the log from Loki or some other log provider
+        const logs = await routerApi.v2.getInstanceLogsById(instance);
+        console.log(logs);
+
+        auditEvent.success();
+        res.status(200).json(instance);
+      } catch (error) {
+        auditEvent.fail({ error });
+        next(error);
+      }
+    },
+  );
+
+  // v2
+  routerApi.openApiBackend.register(
     'abortWorkflow',
     async (c, request, res, next) => {
       const instanceId = c.request.params.instanceId as string;
