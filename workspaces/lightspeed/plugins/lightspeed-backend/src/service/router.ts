@@ -73,8 +73,7 @@ export async function createRouter(
   // Middleware proxy to exclude rcs POST endpoints
   router.use('/', async (req, res, next) => {
     const passthroughPaths = ['/v1/query', '/v1/feedback'];
-
-    if (passthroughPaths.includes(req.path)) {
+    if (passthroughPaths.includes(req.path) || req.method === 'PUT') {
       return next(); // This will skip proxying and go to POST endpoints
     }
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
@@ -232,6 +231,59 @@ export async function createRouter(
         fetchResponse.body.pipe(response);
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
+        logger.error(errormsg);
+
+        if (error instanceof NotAllowedError) {
+          response.status(403).json({ error: error.message });
+        } else {
+          response.status(500).json({ error: errormsg });
+        }
+      }
+    },
+  );
+
+  router.put(
+    '/v2/conversations/:conversation_id',
+    async (request, response) => {
+      try {
+        const credentials = await httpAuth.credentials(request);
+        const userEntity = await userInfo.getUserInfo(credentials);
+        const user_id = userEntity.userEntityRef;
+        const conversation_id = request.params.conversation_id;
+
+        const requestBody = JSON.stringify(request.body);
+        await authorizer.authorizeUser(
+          lightspeedChatCreatePermission,
+          credentials,
+        );
+        const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+        const fetchResponse = await fetch(
+          `http://0.0.0.0:${port}/v2/conversations/${conversation_id}?${userQueryParam}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          },
+        );
+        if (!fetchResponse.ok) {
+          // Read the error body
+          const errorBody = await fetchResponse.json();
+          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
+          logger.error(errormsg);
+
+          // Return a 500 status for any upstream error
+          response.status(500).json({
+            error: errormsg,
+          });
+          return;
+        }
+
+        const data = await fetchResponse.json();
+        response.status(fetchResponse.status).json(data);
+      } catch (error) {
+        const errormsg = `Error while updating topic summary: ${error}`;
         logger.error(errormsg);
 
         if (error instanceof NotAllowedError) {
