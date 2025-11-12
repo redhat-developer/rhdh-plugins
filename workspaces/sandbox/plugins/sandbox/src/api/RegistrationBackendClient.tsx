@@ -25,6 +25,10 @@ export type RegistrationBackendClientOptions = {
   secureFetchApi: SecureFetchApi;
 };
 
+export interface UIConfig {
+  workatoWebHookURL?: string;
+}
+
 export interface RegistrationService {
   getRecaptchaAPIKey(): string;
   getSignUpData(): Promise<SignupData | undefined>;
@@ -36,6 +40,7 @@ export interface RegistrationService {
   completePhoneVerification(code: string): Promise<void>;
   verifyActivationCode(code: string): Promise<void>;
   getSegmentWriteKey(): Promise<string>;
+  getUIConfig(): Promise<UIConfig>;
 }
 
 export class RegistrationBackendClient implements RegistrationService {
@@ -209,5 +214,27 @@ export class RegistrationBackendClient implements RegistrationService {
 
     const writeKey = await response.text();
     return writeKey.trim();
+  };
+
+  getUIConfig = async (): Promise<UIConfig> => {
+    try {
+      const signupAPI = this.configApi.getString('sandbox.signupAPI');
+      const response = await this.secureFetchApi.fetch(
+        `${signupAPI}/uiconfig`,
+        {
+          method: 'GET',
+        },
+      );
+
+      if (!response.ok) {
+        // Return empty config if fetch fails - UI config is optional
+        return {};
+      }
+
+      return response.json();
+    } catch (error) {
+      // Return empty config on any error - UI config is optional
+      return {};
+    }
   };
 }

@@ -1,14 +1,15 @@
 # Developer Sandbox - Analytics Events
 
-This document lists all analytics events sent to **Segment** and **Adobe Analytics (EDDL)**.
+This document lists all analytics events sent to **Segment**, **Adobe Analytics (EDDL)**, and **Marketo**.
 
 ## Track Events
 
-All events are sent to both Segment and Adobe Analytics with the following patterns:
+All events are sent to Segment and Adobe Analytics with the following patterns. Additionally, **Catalog clicks only** are sent to Marketo:
 
 - **Segment**: Event name = `{text} {verb}` where verb is `launched` (CTA) or `clicked` (non-CTA)
 - **Adobe CTA**: Pushed to `window.appEventData` as `Master Link Clicked`
 - **Adobe non-CTA**: Automatically tracked via data attributes
+- **Marketo**: Catalog clicks only sent to Workato webhook for Marketo integration
 
 | Event Text                                                                             | Section      | Link Type | Segment Event Name                                                                           | Adobe Tracking  | Description                                                                  | Intcmp ID          |
 | -------------------------------------------------------------------------------------- | ------------ | --------- | -------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------- | ------------------ |
@@ -50,9 +51,29 @@ All events include these properties:
 | **Identify** | Segment  | First time `userID` available in session    | `userID`    | `{ company: [user company], email_domain: [user email domain] }` (when present) |
 | **Group**    | Segment  | First time `accountID` available in session | `accountID` | `{ ebs: [account number] }` (when present)                                      |
 
+## Marketo Integration (Catalog Clicks Only)
+
+Catalog clicks are sent to Marketo via a Workato webhook. The webhook URL is fetched dynamically from the `/uiconfig` API endpoint (`workatoWebHookURL` field).
+
+### Marketo Payload
+
+| Field                 | Source                      | Example                          | Description                                         |
+| --------------------- | --------------------------- | -------------------------------- | --------------------------------------------------- |
+| `C_FirstName`         | `userData.givenName`        | `John`                           | User's first name                                   |
+| `C_LastName`          | `userData.familyName`       | `Doe`                            | User's last name                                    |
+| `C_EmailAddress`      | `userData.email`            | `jdtest@test.com`                | User's email address (required for tracking)        |
+| `C_Company`           | `userData.company`          | `Red Hat`                        | User's company (empty if not available)             |
+| `A_Timestamp`         | Current UTC timestamp       | `2025/10/20 14:57:46`            | Timestamp of the click in UTC (YYYY/MM/DD HH:mm:ss) |
+| `F_FormData_Source`   | Fixed value                 | `sandbox-redhat-com-integration` | Fixed identifier for this integration               |
+| `A_OfferID`           | `internalCampaign` (Intcmp) | `701Pe00000dnCEYIA2`             | Product offer ID from intcmp parameter              |
+| `A_TacticID_External` | Cookie: `rh_omni_tc`        | `RHCTN1250000786344`             | External tactic ID from Red Hat marketing cookie    |
+| `A_TacticID_Internal` | Cookie: `rh_omni_itc`       | `RHCTE1250000786360`             | Internal tactic ID from Red Hat marketing cookie    |
+| `Status`              | Fixed value                 | `Engaged`                        | User engagement status                              |
+
 ## Notes
 
 - **Segment** tracks all events (both CTA and non-CTA)
 - **Adobe** manually tracks CTA events; non-CTA events use automatic tracking via dpal.js
+- **Marketo** tracks Catalog clicks only via Workato webhook integration
 - All tracking is non-blocking and includes error handling
 - Scripts loaded: `trustarc.js` (privacy), `dpal.js` (Adobe tracking)
