@@ -14,127 +14,195 @@
  * limitations under the License.
  */
 
-import { expect, test } from '@playwright/test';
+import { expect, test, BrowserContext, Page } from '@playwright/test';
 import {
   testSettingsMenuItem,
   testSearchMenuItem,
   testCreateMenuItem,
   testDocsMenuItem,
   testApisMenuItem,
+  switchToLocale,
 } from './helpers';
+import {
+  GlobalFloatingActionButtonMessages,
+  getTranslations,
+} from './utils/translations.js';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+test.describe('Global Floating Action Button Tests', () => {
+  let sharedPage: Page;
+  let sharedContext: BrowserContext;
+  let translations: GlobalFloatingActionButtonMessages;
 
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-  await expect(page.locator('h1')).toContainText('My Company Catalog');
-});
+  test.beforeAll(async ({ browser }) => {
+    sharedContext = await browser.newContext();
+    sharedPage = await sharedContext.newPage();
+    const currentLocale = await sharedPage.evaluate(
+      () => globalThis.navigator.language,
+    );
+    translations = getTranslations(currentLocale);
 
-test('global floating action buttons should be visible', async ({ page }) => {
-  const menuButton = page.getByRole('button', { name: 'Menu' });
-  const count = await menuButton.count();
-  expect(count).toBe(2);
-});
+    await sharedPage.goto('/');
 
-test.describe('tests for right floating action button', () => {
-  test('should display menu items with correct accessibility structure', async ({
-    page,
-  }) => {
-    await page.getByRole('button', { name: 'Menu' }).first().click();
+    const enterButton = sharedPage.getByRole('button', { name: 'Enter' });
+    await expect(enterButton).toBeVisible();
+    await enterButton.click();
+    await expect(sharedPage.locator('h1')).toContainText('My Company Catalog');
+    await switchToLocale(sharedPage, currentLocale);
+  });
 
-    await expect(page.getByTestId('settings')).toMatchAriaSnapshot(`
+  test.afterAll(async () => {
+    await sharedContext.close();
+  });
+
+  // Needed to reload the page after each test to avoid the issue with the menu button
+  test.beforeEach(async () => {
+    await sharedPage.reload();
+    await sharedPage.waitForTimeout(1000);
+  });
+
+  test('global floating action buttons should be visible', async () => {
+    const menuButton = sharedPage.getByRole('button', {
+      name: translations.fab.menu.tooltip,
+    });
+    const count = await menuButton.count();
+    expect(count).toBe(2);
+  });
+
+  test.describe('tests for right floating action button', () => {
+    test('should display menu items with correct accessibility structure', async () => {
+      await sharedPage
+        .getByRole('button', { name: translations.fab.menu.tooltip })
+        .first()
+        .click();
+
+      await expect(sharedPage.getByTestId('settings')).toMatchAriaSnapshot(`
       - button "Settings":
         - paragraph: Settings
       `);
-    await expect(page.getByTestId('github')).toMatchAriaSnapshot(`
-      - link "GitHub":
+      await expect(
+        sharedPage.getByTestId(translations.fab.github.label.toLowerCase()),
+      ).toMatchAriaSnapshot(`
+      - link "${translations.fab.github.label}":
         - /url: https://github.com/redhat-developer/rhdh-plugins
-        - paragraph: GitHub
+        - paragraph: ${translations.fab.github.label}
       `);
 
-    await expect(page.getByTestId('search')).toMatchAriaSnapshot(`
+      await expect(sharedPage.getByTestId('search')).toMatchAriaSnapshot(`
       - button "Search":
         - paragraph
       `);
 
-    await expect(page.getByTestId('create')).toMatchAriaSnapshot(`
-      - button "Create":
-        - paragraph: Create
+      await expect(
+        sharedPage.getByTestId(translations.fab.create.label.toLowerCase()),
+      ).toMatchAriaSnapshot(`
+      - button "${translations.fab.create.label}":
+        - paragraph: ${translations.fab.create.label}
       `);
+    });
+
+    test('should display correct tooltip texts for floating action button elements', async () => {
+      await sharedPage
+        .getByRole('button', { name: translations.fab.menu.tooltip })
+        .first()
+        .click();
+
+      await sharedPage
+        .getByRole('button', { name: translations.fab.menu.tooltip })
+        .first()
+        .hover();
+      await expect(sharedPage.getByRole('tooltip')).toContainText(
+        translations.fab.menu.tooltip,
+      );
+
+      await sharedPage.getByTestId('settings').hover();
+      await expect(
+        sharedPage.getByRole('tooltip', { name: 'Settings' }),
+      ).toContainText('Settings');
+
+      await sharedPage
+        .getByTestId(translations.fab.github.label.toLowerCase())
+        .hover();
+      await expect(
+        sharedPage.getByRole('tooltip', {
+          name: translations.fab.github.label,
+        }),
+      ).toContainText(translations.fab.github.tooltip);
+
+      await sharedPage.getByTestId('search').hover();
+      await expect(
+        sharedPage.getByRole('tooltip', { name: 'Search' }),
+      ).toContainText('Search');
+
+      await sharedPage
+        .getByTestId(translations.fab.create.label.toLowerCase())
+        .hover();
+      await expect(
+        sharedPage.getByRole('tooltip', {
+          name: translations.fab.create.label,
+        }),
+      ).toContainText(translations.fab.create.tooltip);
+    });
+
+    test('test menu items', async () => {
+      await testSettingsMenuItem(sharedPage, translations.fab.menu.tooltip);
+      await testSearchMenuItem(sharedPage, translations.fab.menu.tooltip);
+      await testCreateMenuItem(sharedPage);
+    });
   });
 
-  test('should display correct tooltip texts for floating action button elements', async ({
-    page,
-  }) => {
-    await page.getByRole('button', { name: 'Menu' }).first().click();
-
-    await page.getByRole('button', { name: 'Menu' }).first().hover();
-    await expect(page.getByRole('tooltip')).toContainText('Menu');
-
-    await page.getByTestId('settings').hover();
-    await expect(page.getByRole('tooltip', { name: 'Settings' })).toContainText(
-      'Settings',
-    );
-
-    await page.getByTestId('github').hover();
-    await expect(page.getByRole('tooltip', { name: 'GitHub' })).toContainText(
-      'GitHub Repository',
-    );
-
-    await page.getByTestId('search').hover();
-    await expect(page.getByRole('tooltip', { name: 'Search' })).toContainText(
-      'Search',
-    );
-
-    await page.getByTestId('create').hover();
-    await expect(page.getByRole('tooltip', { name: 'Create' })).toContainText(
-      'Create entity',
-    );
-  });
-
-  test('test menu items', async ({ page }) => {
-    await testSettingsMenuItem(page);
-    await testSearchMenuItem(page);
-    await testCreateMenuItem(page);
-  });
-});
-
-test.describe('tests for left floating action button', () => {
-  test('should display menu items with correct accessibility structure', async ({
-    page,
-  }) => {
-    await page.getByRole('button', { name: 'Menu' }).nth(1).click();
-    await expect(page.getByRole('main')).toMatchAriaSnapshot(`
-      - button "APIs":
+  test.describe('tests for left floating action button', () => {
+    test('should display menu items with correct accessibility structure', async () => {
+      await sharedPage
+        .getByRole('button', { name: translations.fab.menu.tooltip })
+        .nth(1)
+        .click();
+      await expect(sharedPage.getByRole('main')).toMatchAriaSnapshot(`
+      - button "${translations.fab.apis.label}":
         - paragraph
       `);
-    await expect(page.getByTestId('docs')).toMatchAriaSnapshot(`
-      - button "Docs":
-        - paragraph: Docs
+      await expect(
+        sharedPage.getByTestId(translations.fab.docs.label.toLowerCase()),
+      ).toMatchAriaSnapshot(`
+      - button "${translations.fab.docs.label}":
+        - paragraph: ${translations.fab.docs.label}
         - paragraph
       `);
-  });
+    });
 
-  test('should display correct tooltip texts for floating action button elements', async ({
-    page,
-  }) => {
-    await page.getByRole('button', { name: 'Menu' }).nth(1).click();
-    await page.getByRole('button', { name: 'Menu' }).nth(1).hover();
-    await expect(page.getByRole('tooltip')).toContainText('Menu');
-    await page.getByTestId('apis').hover();
-    await expect(
-      page.getByRole('tooltip', { name: 'API Documentation' }),
-    ).toContainText('API Documentation');
-    await page.getByTestId('docs').hover();
-    await expect(
-      page.getByRole('tooltip', { name: 'Documentation', exact: true }),
-    ).toContainText('Documentation');
-  });
+    test('should display correct tooltip texts for floating action button elements', async () => {
+      await sharedPage
+        .getByRole('button', { name: translations.fab.menu.tooltip })
+        .nth(1)
+        .click();
+      await sharedPage
+        .getByRole('button', { name: translations.fab.menu.tooltip })
+        .nth(1)
+        .hover();
+      await expect(sharedPage.getByRole('tooltip')).toContainText(
+        translations.fab.menu.tooltip,
+      );
+      await sharedPage
+        .getByTestId(translations.fab.apis.label.toLowerCase())
+        .hover();
+      await expect(
+        sharedPage.getByRole('tooltip', {
+          name: translations.fab.apis.tooltip,
+        }),
+      ).toContainText(translations.fab.apis.tooltip);
+      await sharedPage
+        .getByTestId(translations.fab.docs.label.toLowerCase())
+        .hover();
+      await expect(
+        sharedPage.getByRole('tooltip', {
+          name: translations.fab.docs.tooltip,
+          exact: true,
+        }),
+      ).toContainText(translations.fab.docs.tooltip);
+    });
 
-  test('test menu items', async ({ page }) => {
-    await testDocsMenuItem(page);
-    await testApisMenuItem(page);
+    test('test menu items', async () => {
+      await testDocsMenuItem(sharedPage, translations.fab.menu.tooltip);
+      await testApisMenuItem(sharedPage, translations.fab.menu.tooltip);
+    });
   });
 });

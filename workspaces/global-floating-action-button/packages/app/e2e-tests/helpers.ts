@@ -15,9 +15,25 @@
  */
 
 import { expect, Page } from '@playwright/test';
+import {
+  getTranslations,
+  GlobalFloatingActionButtonMessages,
+} from './utils/translations.js';
 
-export async function openRightMenu(page: Page): Promise<void> {
-  const menuButton = page.getByRole('button', { name: 'Menu' }).first();
+async function getPageTranslations(
+  page: Page,
+): Promise<GlobalFloatingActionButtonMessages> {
+  const currentLocale = await page.evaluate(
+    () => globalThis.navigator.language,
+  );
+  return getTranslations(currentLocale);
+}
+
+export async function openRightMenu(
+  page: Page,
+  menuTooltip: string = 'Menu',
+): Promise<void> {
+  const menuButton = page.getByRole('button', { name: menuTooltip }).first();
   await menuButton.click();
 }
 
@@ -26,8 +42,23 @@ export async function navigateToHome(page: Page): Promise<void> {
   await homeButton.click();
 }
 
-export async function testSettingsMenuItem(page: Page): Promise<void> {
-  await openRightMenu(page);
+export async function switchToLocale(
+  page: Page,
+  locale: string,
+): Promise<void> {
+  if (locale !== 'en') {
+    await page.getByRole('link', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'English' }).click();
+    await page.getByRole('option', { name: locale }).click();
+    await page.locator('a').filter({ hasText: 'Home' }).click();
+  }
+}
+
+export async function testSettingsMenuItem(
+  page: Page,
+  menuTooltip: string = 'Menu',
+): Promise<void> {
+  await openRightMenu(page, menuTooltip);
   await page.getByTestId('settings').click();
   await expect(page).toHaveURL('/settings');
   await expect(page.locator('h1')).toContainText('Settings');
@@ -36,8 +67,11 @@ export async function testSettingsMenuItem(page: Page): Promise<void> {
   await navigateToHome(page);
 }
 
-export async function testSearchMenuItem(page: Page): Promise<void> {
-  await openRightMenu(page);
+export async function testSearchMenuItem(
+  page: Page,
+  menuTooltip: string = 'Menu',
+): Promise<void> {
+  await openRightMenu(page, menuTooltip);
   await page.getByTestId('search').click();
   await expect(
     page.getByPlaceholder('Search in Scaffolded').first(),
@@ -50,7 +84,8 @@ export async function testSearchMenuItem(page: Page): Promise<void> {
 }
 
 export async function testCreateMenuItem(page: Page): Promise<void> {
-  await page.getByTestId('create').click();
+  const translations = await getPageTranslations(page);
+  await page.getByTestId(translations.fab.create.label.toLowerCase()).click();
   await expect(page).toHaveURL('/create');
   await expect(page.locator('h1')).toContainText('Create a new component');
   await expect(
@@ -59,14 +94,21 @@ export async function testCreateMenuItem(page: Page): Promise<void> {
   await navigateToHome(page);
 }
 
-export async function openLeftMenu(page: Page): Promise<void> {
-  const menuButton = page.getByRole('button', { name: 'Menu' }).nth(1);
+export async function openLeftMenu(
+  page: Page,
+  menuTooltip: string = 'Menu',
+): Promise<void> {
+  const menuButton = page.getByRole('button', { name: menuTooltip }).last();
   await menuButton.click();
 }
 
-export async function testDocsMenuItem(page: Page): Promise<void> {
-  await openLeftMenu(page);
-  await page.getByTestId('docs').click();
+export async function testDocsMenuItem(
+  page: Page,
+  menuTooltip: string = 'Menu',
+): Promise<void> {
+  const translations = await getPageTranslations(page);
+  await openLeftMenu(page, menuTooltip);
+  await page.getByTestId(translations.fab.docs.label.toLowerCase()).click();
   await expect(page).toHaveURL('/docs');
   await expect(page.locator('h1')).toContainText('Documentation');
   await expect(page.locator('header')).toContainText(
@@ -75,9 +117,13 @@ export async function testDocsMenuItem(page: Page): Promise<void> {
   await navigateToHome(page);
 }
 
-export async function testApisMenuItem(page: Page): Promise<void> {
-  await openLeftMenu(page);
-  await page.getByTestId('apis').click();
+export async function testApisMenuItem(
+  page: Page,
+  menuTooltip: string = 'Menu',
+): Promise<void> {
+  const translations = await getPageTranslations(page);
+  await openLeftMenu(page, menuTooltip);
+  await page.getByTestId(translations.fab.apis.label.toLowerCase()).click();
   await expect(page).toHaveURL('/api-docs');
   await expect(page.locator('h1')).toContainText('APIs');
   await expect(page.locator('header')).toContainText('My Company API Explorer');
