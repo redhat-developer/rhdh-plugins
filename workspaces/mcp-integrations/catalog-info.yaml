@@ -8,6 +8,8 @@ metadata:
   #   github.com/project-slug: backstage/backstage
   #   backstage.io/techdocs-ref: dir:.
 spec:
-  type: website
+  type: backstage-plugin
   owner: john@example.com
   lifecycle: active
+  system: rhdh
+  subcomponentOf: rhdh-plugins

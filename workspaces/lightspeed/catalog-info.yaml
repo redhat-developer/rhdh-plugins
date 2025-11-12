@@ -3,6 +3,8 @@ kind: Component
 metadata:
   name: developer-lightspeed
   title: Developer Lightspeed plugin
+  description: |
+    Red Hat Developer Lightspeed for Red Hat Developer Hub is a virtual assistant powered by generative AI that offers in-depth insights into RHDH, including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
   tags:
     - backstage
     - rhdh

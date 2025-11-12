@@ -2,12 +2,15 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: sandbox
+  title: Sandbox
   description: An example of a Backstage application.
   # Example for optional annotations
   # annotations:
   #   github.com/project-slug: backstage/backstage
   #   backstage.io/techdocs-ref: dir:.
 spec:
-  type: website
+  type: backstage-plugin
   owner: john@example.com
   lifecycle: active
+  system: rhdh
+  subcomponentOf: rhdh-plugins
