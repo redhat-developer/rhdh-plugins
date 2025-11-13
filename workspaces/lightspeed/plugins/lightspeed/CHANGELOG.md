@@ -1,5 +1,26 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.0.2
+
+### Patch Changes
+
+- ad1528c: Add localStorage persistence for last selected model
+
+  The Lightspeed plugin now remembers the user's last selected model across page refreshes, automatically restoring it when available.
+
+- f686a9a: updated legal text
+- be83b61: Upgrade patternfly chatbot
+
+  Monaco editor is used from npm package instead of cdn allowing us to remove custom csp rules
+
+- c5fa204: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `msw` to `2.11.6`.
+  Updated dependency `@patternfly/chatbot` to `6.4.1`.
+  Updated dependency `@patternfly/react-core` to `6.4.0`.
+- 71bb80d: fix streaming response in lightspeed UI
+- d8bb650: Remove unsupported file type from lightspeed
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes
