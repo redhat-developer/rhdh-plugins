@@ -48,5 +48,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "@backstage/backend-defaults": "^0.13.0"
   }
 }
