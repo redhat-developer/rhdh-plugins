@@ -57,7 +57,7 @@
     "@material-ui/core": "^4.9.13",
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "^6.1.8",
-    "@patternfly/chatbot": "6.4.1",
+    "@patternfly/chatbot": "6.5.0-prerelease.6",
     "@patternfly/react-core": "6.4.0",
     "@patternfly/react-icons": "^6.3.1",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
@@ -102,6 +102,12 @@
     }
   },
   "configSchema": "config.d.ts",
+  "jest": {
+    "moduleNameMapper": {
+      "^monaco-editor$": "<rootDir>/src/__mocks__/monaco-editor.ts",
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",

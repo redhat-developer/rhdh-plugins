@@ -8479,9 +8479,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.4.1":
-  version: 6.4.1
-  resolution: "@patternfly/chatbot@npm:6.4.1"
+"@patternfly/chatbot@npm:6.5.0-prerelease.6":
+  version: 6.5.0-prerelease.6
+  resolution: "@patternfly/chatbot@npm:6.5.0-prerelease.6"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -8489,10 +8489,12 @@ __metadata:
     "@patternfly/react-table": ^6.1.0
     "@segment/analytics-next": ^1.76.0
     clsx: ^2.1.0
+    monaco-editor: ^0.54.0
     path-browserify: ^1.0.1
     posthog-js: ^1.194.4
     react-markdown: ^9.0.1
     rehype-external-links: ^3.0.0
+    rehype-highlight: ^7.0.0
     rehype-sanitize: ^6.0.0
     rehype-unwrap-images: ^1.0.0
     remark-gfm: ^4.0.0
@@ -8500,7 +8502,7 @@ __metadata:
   peerDependencies:
     react: ^18 || ^19
     react-dom: ^18 || ^19
-  checksum: ca0526885670b0c7d4dce2d204da4f323c59bdd1df449fecd3f15fbf4a0e189252e7e58c6e186dce7f1749004f520d7869846866d739724330dbc8c59ee8152e
+  checksum: 972582bf0a271e0f7bff0015551b7947d0e25c55ab7a19c7c32589d22162f4fdff123a3e11eb8c300505e7414fe9a2e00a2d1bf04e06cdcd688274cb4d720f39
   languageName: node
   linkType: hard
 
@@ -9295,7 +9297,7 @@ __metadata:
     "@material-ui/core": ^4.9.13
     "@material-ui/lab": ^4.0.0-alpha.61
     "@mui/icons-material": ^6.1.8
-    "@patternfly/chatbot": 6.4.1
+    "@patternfly/chatbot": 6.5.0-prerelease.6
     "@patternfly/react-core": 6.4.0
     "@patternfly/react-icons": ^6.3.1
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"
@@ -17239,6 +17241,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"dompurify@npm:3.1.7":
+  version: 3.1.7
+  resolution: "dompurify@npm:3.1.7"
+  checksum: 0a9b811bbc94f3dba60cf6486962362b0f1a5b4ab789f5e1cbd4749b6ba1a1fad190a677a962dc8850ce28764424765fe425e9d6508e4e93ba648ef15d54bc24
+  languageName: node
+  linkType: hard
+
 "dompurify@npm:=3.1.6":
   version: 3.1.6
   resolution: "dompurify@npm:3.1.6"
@@ -20115,6 +20124,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hast-util-to-text@npm:^4.0.0":
+  version: 4.0.2
+  resolution: "hast-util-to-text@npm:4.0.2"
+  dependencies:
+    "@types/hast": ^3.0.0
+    "@types/unist": ^3.0.0
+    hast-util-is-element: ^3.0.0
+    unist-util-find-after: ^5.0.0
+  checksum: 72cce08666b86511595d3eef52236b86897cfbac166f2a0752b70b16d1f590b5aa91ea1a553c0d1603f9e0c7e373ceacab381be3d8f176129ad6e301d2a56d94
+  languageName: node
+  linkType: hard
+
 "hast-util-whitespace@npm:^2.0.0":
   version: 2.0.1
   resolution: "hast-util-whitespace@npm:2.0.1"
@@ -20192,6 +20213,13 @@ __metadata:
   version: 10.7.3
   resolution: "highlight.js@npm:10.7.3"
   checksum: defeafcd546b535d710d8efb8e650af9e3b369ef53e28c3dc7893eacfe263200bba4c5fcf43524ae66d5c0c296b1af0870523ceae3e3104d24b7abf6374a4fea
+  languageName: node
+  linkType: hard
+
+"highlight.js@npm:~11.11.0":
+  version: 11.11.1
+  resolution: "highlight.js@npm:11.11.1"
+  checksum: 841ddd329a92be123a61ef4051698f824c3575deef588fbb810bd638f1575ddc96b7bdd925b97c05a29276bb119dfcb8e5bcb0acb31c86249371bf046e131d72
   languageName: node
   linkType: hard
 
@@ -23600,6 +23628,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lowlight@npm:^3.0.0":
+  version: 3.3.0
+  resolution: "lowlight@npm:3.3.0"
+  dependencies:
+    "@types/hast": ^3.0.0
+    devlop: ^1.0.0
+    highlight.js: ~11.11.0
+  checksum: 0903db036d938d7bd4a7ce9b55f9e4cd02c46b932d632f512540d700fb0f61a689553231f6d15bc6ebf8a7372c58254f7efc3f18a7d4cb328ee366290a694801
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:@wolfy1339/lru-cache@^11.0.2-patch.1":
   version: 11.0.2-patch.1
   resolution: "@wolfy1339/lru-cache@npm:11.0.2-patch.1"
@@ -23815,6 +23854,15 @@ __metadata:
   peerDependencies:
     react: ">= 0.14.0"
   checksum: 534f4d688378a94a6c8c2ce5e4b22c1551efea974c2bb7d4ea820d8f2b7956e4979a2b886b3d14227d4cd8af09682b9e7f7f9ce34d39703eb1a981e2337e12ce
+  languageName: node
+  linkType: hard
+
+"marked@npm:14.0.0":
+  version: 14.0.0
+  resolution: "marked@npm:14.0.0"
+  bin:
+    marked: bin/marked.js
+  checksum: 965405cde11d180e5da78cf51074b1947f1e5483ed99691d3ec990a078aa6ca9113cf19bbd44da45473d0e7eec7298255e7d860a650dd5e7aed78ca5a8e0161b
   languageName: node
   linkType: hard
 
@@ -25418,6 +25466,16 @@ __metadata:
   bin:
     mockttp: dist/admin/admin-bin.js
   checksum: a143a05ea77e674f0c813d32e4ee7a3875fce94861852142d9cd83d4d446ea6bdb0e7754bc4939409fd6fe659d267e55daf9be8c97149c5b5d15cac8c9c5247d
+  languageName: node
+  linkType: hard
+
+"monaco-editor@npm:^0.54.0":
+  version: 0.54.0
+  resolution: "monaco-editor@npm:0.54.0"
+  dependencies:
+    dompurify: 3.1.7
+    marked: 14.0.0
+  checksum: 27bda0afafe5bbce693be9c72531e772bf71cfce6362a8358acd28815ddb95113cc1738ddccb28359a9d9def00da4dd928c1f32514dc0d1611ba0251758c3e2a
   languageName: node
   linkType: hard
 
@@ -29260,6 +29318,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rehype-highlight@npm:^7.0.0":
+  version: 7.0.2
+  resolution: "rehype-highlight@npm:7.0.2"
+  dependencies:
+    "@types/hast": ^3.0.0
+    hast-util-to-text: ^4.0.0
+    lowlight: ^3.0.0
+    unist-util-visit: ^5.0.0
+    vfile: ^6.0.0
+  checksum: 1382766418e3cd5fb21a4a1aced577cb6472058de958ceb1ebce763a17321786ef0658ecd34bdf096f0733973dbcb284653302b6ee7bd775442c0de07291000d
+  languageName: node
+  linkType: hard
+
 "rehype-sanitize@npm:^6.0.0":
   version: 6.0.0
   resolution: "rehype-sanitize@npm:6.0.0"
@@ -32792,6 +32863,16 @@ __metadata:
   dependencies:
     imurmurhash: ^0.1.4
   checksum: 0884b58365af59f89739e6f71e3feacb5b1b41f2df2d842d0757933620e6de08eff347d27e9d499b43c40476cbaf7988638d3acb2ffbcb9d35fd035591adfd15
+  languageName: node
+  linkType: hard
+
+"unist-util-find-after@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "unist-util-find-after@npm:5.0.0"
+  dependencies:
+    "@types/unist": ^3.0.0
+    unist-util-is: ^6.0.0
+  checksum: e64bd5ebee7ac021cf990bf33e9ec29fc6452159187d4a7fa0f77334bea8e378fea7a7fb0bcf957300b2ffdba902ff25b62c165fc8b86309613da35ad793ada0
   languageName: node
   linkType: hard
 
