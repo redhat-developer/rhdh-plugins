@@ -4,8 +4,7 @@ metadata:
   name: ai-integrations
   title: AI Model Catalog
   description: |
-    Backend plugins that integrates with Red Hat OpenShift AI to map AI Models and Model Servers from Red Hat OpenShift AI as Component, Resourece, and API entities.  The plugins also facilitate
-    creating TechDocs for the Components and Resources from the Model Cards for the AI Models
+    Backend plugins that integrate with Red Hat OpenShift AI to map AI Models and Model Servers from Red Hat OpenShift AI as Component, Resource, and API entities. The plugins also facilitate creating TechDocs for the Components and Resources from the Model Cards for the AI Models.
   # Example for optional annotations
   # annotations:
   #   github.com/project-slug: backstage/backstage
