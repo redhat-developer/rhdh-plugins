@@ -1,5 +1,18 @@
 ### Dependencies
 
+## 8.5.0
+
+### Minor Changes
+
+- 43376f1: Removing the deprecated moment package and replacing with luxon
+
+### Patch Changes
+
+- Updated dependencies [a1671ab]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+
 ## 8.4.0
 
 ### Minor Changes
