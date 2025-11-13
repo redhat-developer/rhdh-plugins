@@ -102,6 +102,12 @@
     }
   },
   "configSchema": "config.d.ts",
+  "jest": {
+    "moduleNameMapper": {
+      "^monaco-editor$": "<rootDir>/src/__mocks__/monaco-editor.ts",
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
