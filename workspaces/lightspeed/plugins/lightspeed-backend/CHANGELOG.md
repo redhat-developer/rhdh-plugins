@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.0.3
+
+### Patch Changes
+
+- e102a81: proxy PUT /v2/conversations/:conversation request
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes
