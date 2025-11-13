@@ -16,6 +16,7 @@
 
 import { useCallback } from 'react';
 import { useSandboxContext } from '../hooks/useSandboxContext';
+import { trackMarketoEvent } from './marketo-utils';
 
 /**
  * Get Red Hat EDDL data attributes for tracking clicks (for non-CTA elements)
@@ -77,11 +78,15 @@ export const pushCtaEvent = (
 };
 
 /**
- * React hook for dual analytics tracking (Adobe EDDL + Segment)
- * This hook returns a function that tracks events to both Adobe Analytics (via EDDL) and Segment Analytics
+ * React hook for triple analytics tracking (Adobe EDDL + Segment + Marketo)
+ * This hook returns a function that tracks events to:
+ * - Adobe Analytics (via EDDL)
+ * - Segment Analytics
+ * - Marketo (for Catalog clicks only)
  */
 export const useTrackAnalytics = () => {
-  const { segmentTrackClick } = useSandboxContext();
+  const { segmentTrackClick, userData, marketoWebhookURL } =
+    useSandboxContext();
 
   return useCallback(
     async (
@@ -110,7 +115,20 @@ export const useTrackAnalytics = () => {
           // Segment tracking failed, continue without blocking user experience
         }
       }
+
+      // Marketo tracking (Catalog clicks only)
+      if (section === 'Catalog') {
+        try {
+          await trackMarketoEvent(
+            userData,
+            internalCampaign,
+            marketoWebhookURL,
+          );
+        } catch (error) {
+          // Marketo tracking failed, continue without blocking user experience
+        }
+      }
     },
-    [segmentTrackClick],
+    [segmentTrackClick, userData, marketoWebhookURL],
   );
 };
