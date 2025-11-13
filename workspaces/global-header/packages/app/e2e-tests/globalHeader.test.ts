@@ -38,6 +38,7 @@ test.beforeAll(async ({ browser }) => {
     () => globalThis.navigator.language,
   );
   await page.goto('/');
+  await page.waitForTimeout(2000);
   await page.getByRole('button', { name: 'Enter' }).click();
 
   // Extract base language code (e.g., "en" from "en-US")
@@ -147,7 +148,6 @@ test('Verify Search functionality and results', async () => {
   const expectedUrl = /\/example-grpc-api/;
 
   await search.fill(searchQuery);
-  await page.waitForTimeout(5000);
 
   await expect(page.getByRole('listbox')).toMatchAriaSnapshot(`
     - listbox:
