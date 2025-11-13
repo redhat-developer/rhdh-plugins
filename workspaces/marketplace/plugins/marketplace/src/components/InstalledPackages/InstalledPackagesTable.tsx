@@ -27,10 +27,6 @@ import { Query, QueryResult } from '@material-table/core';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import AlertTitle from '@mui/material/AlertTitle';
-import Link from '@mui/material/Link';
-import Alert from '@mui/material/Alert';
 import {
   MarketplacePackage,
   MarketplacePackageInstallStatus,
@@ -53,9 +49,16 @@ import {
 import { useInstallationContext } from '../InstallationContext';
 import { useNodeEnvironment } from '../../hooks/useNodeEnvironment';
 import { InstalledPluginsDialog } from '../InstalledPluginsDialog';
+import { useExtensionsConfiguration } from '../../hooks/useExtensionsConfiguration';
+import {
+  ProductionEnvironmentAlert,
+  ExtensionsConfigurationAlert,
+  BackendRestartAlert,
+} from '../SharedAlerts';
 
 export const InstalledPackagesTable = () => {
   const { t } = useTranslation();
+  const extensionsConfig = useExtensionsConfiguration();
   const { installedPackages } = useInstallationContext();
   const nodeEnvironment = useNodeEnvironment();
   const [error, setError] = useState<Error | undefined>(undefined);
@@ -174,7 +177,11 @@ export const InstalledPackagesTable = () => {
       render: (row: InstalledPackageRow) => {
         return (
           <Box display="flex" gap={1}>
-            <EditPackage pkg={row} isProductionEnv={isProductionEnvironment} />
+            <EditPackage
+              pkg={row}
+              isProductionEnv={isProductionEnvironment}
+              isInstallationEnabled={extensionsConfig.data?.enabled ?? false}
+            />
             {/* Show it when uninstall functionality is implemented */}
             {showUninstall && <UninstallPackage pkg={row} />}
             <DownloadPackageYaml
@@ -184,6 +191,7 @@ export const InstalledPackagesTable = () => {
             <TogglePackage
               pkg={row}
               isProductionEnv={isProductionEnvironment}
+              isInstallationEnabled={extensionsConfig.data?.enabled ?? false}
             />
           </Box>
         );
@@ -247,6 +255,7 @@ export const InstalledPackagesTable = () => {
               (entity?.spec?.version as string | undefined) ??
               undefined,
             hasEntity: !!entity,
+            missingDynamicArtifact: !entity?.spec?.dynamicArtifact,
             namespace: entity?.metadata?.namespace ?? 'default',
             name: entity?.metadata?.name,
           } as InstalledPackageRow;
@@ -298,32 +307,19 @@ export const InstalledPackagesTable = () => {
     ? t('installedPackages.table.emptyMessages.noResults')
     : t('installedPackages.table.emptyMessages.noRecords');
 
+  const showExtensionsConfigurationAlert =
+    !isProductionEnvironment && !extensionsConfig.data?.enabled;
+
   return (
     <>
-      {isProductionEnvironment && (
-        <Alert severity="info" sx={{ mb: '1rem' }}>
-          <AlertTitle>{t('alert.productionDisabled')}</AlertTitle>
-        </Alert>
-      )}
-      {installedPackagesCount > 0 && (
-        <Alert severity="info" sx={{ mb: '1rem' }}>
-          <AlertTitle>{t('alert.backendRestartRequired')}</AlertTitle>
-          {packageInfo()}
-          {installedPackagesCount > 1 && (
-            <Typography component="div" sx={{ pt: '8px' }}>
-              <Link
-                component="button"
-                underline="none"
-                onClick={() => {
-                  setOpenInstalledPackagesDialog(true);
-                }}
-              >
-                {t('alert.viewPackages')}
-              </Link>
-            </Typography>
-          )}
-        </Alert>
-      )}
+      {isProductionEnvironment && <ProductionEnvironmentAlert />}
+      {showExtensionsConfigurationAlert && <ExtensionsConfigurationAlert />}
+      <BackendRestartAlert
+        count={installedPackagesCount}
+        itemInfo={packageInfo()}
+        viewItemsLabel={t('alert.viewPackages')}
+        onViewItems={() => setOpenInstalledPackagesDialog(true)}
+      />
 
       <div
         style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}

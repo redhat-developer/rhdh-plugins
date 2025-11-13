@@ -45,6 +45,7 @@ export type InstalledPackageRow = {
   role?: string;
   version?: string;
   hasEntity: boolean;
+  missingDynamicArtifact: boolean;
   namespace?: string;
   name?: string;
 };
@@ -122,9 +123,11 @@ export const DownloadPackageYaml = ({
 export const EditPackage = ({
   pkg,
   isProductionEnv,
+  isInstallationEnabled,
 }: {
   pkg: InstalledPackageRow;
   isProductionEnv: boolean;
+  isInstallationEnabled: boolean;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -147,16 +150,6 @@ export const EditPackage = ({
     </Box>
   );
 
-  if (isProductionEnv) {
-    return (
-      <Tooltip
-        title={t('installedPackages.table.tooltips.packageProductionDisabled')}
-      >
-        {disabledEditIcon}
-      </Tooltip>
-    );
-  }
-
   if (!pkg.hasEntity) {
     return (
       <Tooltip title={t('installedPackages.table.tooltips.enableActions')}>
@@ -171,10 +164,54 @@ export const EditPackage = ({
   const searchParamString = searchParams.size > 0 ? `?${searchParams}` : '';
   const packagePathWithSearchParams = `${packagePath}${searchParamString}`;
 
+  const viewIcon = (
+    <IconButton
+      size="small"
+      sx={{ color: theme => theme.palette.text.primary }}
+      onClick={() =>
+        navigate(packagePathWithSearchParams, {
+          state: { editAction: true, viewOnly: true },
+        })
+      }
+    >
+      View
+    </IconButton>
+  );
+
   if (packageConfigPermission.data?.write !== 'ALLOW') {
     return (
       <Tooltip title={t('installedPackages.table.tooltips.noEditPermissions')}>
         {disabledEditIcon}
+      </Tooltip>
+    );
+  }
+
+  if (pkg.missingDynamicArtifact) {
+    return (
+      <Tooltip
+        title={t('tooltips.missingDynamicArtifact' as any, { type: 'package' })}
+      >
+        {viewIcon}
+      </Tooltip>
+    );
+  }
+
+  if (isProductionEnv) {
+    return (
+      <Tooltip
+        title={t('installedPackages.table.tooltips.packageProductionDisabled')}
+      >
+        {viewIcon}
+      </Tooltip>
+    );
+  }
+
+  if (!isInstallationEnabled) {
+    return (
+      <Tooltip
+        title={t('installedPackages.table.tooltips.installationDisabled')}
+      >
+        {viewIcon}
       </Tooltip>
     );
   }
@@ -197,9 +234,11 @@ export const EditPackage = ({
 export const TogglePackage = ({
   pkg,
   isProductionEnv,
+  isInstallationEnabled,
 }: {
   pkg: InstalledPackageRow;
   isProductionEnv: boolean;
+  isInstallationEnabled: boolean;
 }) => {
   const { t } = useTranslation();
   const { installedPackages, setInstalledPackages } = useInstallationContext();
@@ -230,6 +269,16 @@ export const TogglePackage = ({
     );
   }
 
+  if (!isInstallationEnabled) {
+    return (
+      <Tooltip
+        title={t('installedPackages.table.tooltips.installationDisabled')}
+      >
+        {disabledIcon}
+      </Tooltip>
+    );
+  }
+
   if (!pkg.hasEntity || packageConfigPermission.data?.write !== 'ALLOW') {
     return (
       <Tooltip
@@ -238,6 +287,16 @@ export const TogglePackage = ({
             ? t('installedPackages.table.tooltips.noTogglePermissions')
             : t('installedPackages.table.tooltips.enableActions')
         }
+      >
+        {disabledIcon}
+      </Tooltip>
+    );
+  }
+
+  if (pkg.missingDynamicArtifact) {
+    return (
+      <Tooltip
+        title={t('tooltips.missingDynamicArtifact' as any, { type: 'package' })}
       >
         {disabledIcon}
       </Tooltip>
@@ -300,10 +359,15 @@ export const TogglePackage = ({
 
 export const UninstallPackage = ({ pkg }: { pkg: InstalledPackageRow }) => {
   const { t } = useTranslation();
-  const disabled = !pkg.hasEntity;
-  if (disabled) {
+  if (!pkg.hasEntity || pkg.missingDynamicArtifact) {
     return (
-      <Tooltip title={t('installedPackages.table.tooltips.enableActions')}>
+      <Tooltip
+        title={
+          !pkg.hasEntity
+            ? t('installedPackages.table.tooltips.enableActions')
+            : t('tooltips.missingDynamicArtifact' as any, { type: 'package' })
+        }
+      >
         <IconButton
           size="small"
           disabled

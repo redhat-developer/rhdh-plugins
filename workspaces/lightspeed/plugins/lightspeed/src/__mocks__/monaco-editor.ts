@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
+const mockEditor = {
+  layout: jest.fn(),
+  focus: jest.fn(),
+  dispose: jest.fn(),
+  getModel: jest.fn(),
+  updateOptions: jest.fn(),
+};
 
-test('App should render the welcome page', async ({ page }) => {
-  await page.goto('/');
+const mockModel = {
+  updateOptions: jest.fn(),
+  dispose: jest.fn(),
+};
 
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
-});
+module.exports = {
+  editor: {
+    create: jest.fn(() => mockEditor),
+    getModels: jest.fn(() => [mockModel]),
+  },
+};

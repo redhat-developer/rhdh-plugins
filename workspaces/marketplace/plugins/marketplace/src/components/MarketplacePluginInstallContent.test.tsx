@@ -282,6 +282,41 @@ describe('MarketplacePluginInstallContent', () => {
     expect(getByTestId('install-disabled')).toBeInTheDocument();
   });
 
+  it('should have the `Install` button disabled for when dynamicArtifact for a package is missing', async () => {
+    usePluginConfigMock.mockReturnValue({
+      isLoading: false,
+      data: {
+        configYaml,
+      },
+    });
+    useExtensionsConfigurationMock.mockReturnValue({
+      data: {
+        enabled: false,
+      },
+    });
+    const { getByTestId } = render(
+      <TestApiProvider
+        apis={[
+          [marketplaceApiRef, mockMarketplaceApi],
+          [alertApiRef, mockAlertApiRef],
+        ]}
+      >
+        <BrowserRouter>
+          <MarketplacePluginInstallContent
+            packages={[
+              {
+                ...packages[0],
+                spec: { ...packages[0].spec, dynamicArtifact: undefined },
+              },
+            ]}
+            plugin={plugin}
+          />
+        </BrowserRouter>
+      </TestApiProvider>,
+    );
+    expect(getByTestId('install-disabled')).toBeInTheDocument();
+  });
+
   it('should show an error when installation fails', async () => {
     useInstallPluginMock.mockReturnValue({
       mutateAsync: jest.fn().mockResolvedValue({

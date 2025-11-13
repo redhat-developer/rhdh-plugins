@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.6.1
+
+### Patch Changes
+
+- 543f65a: Fix horizontal page overflow issue in Backstage v1.44.2 by adding required CSS import. Added `@backstage/ui/css/styles.css` import to resolve layout issues introduced in the v1.44.2 upgrade.
+
 ## 1.6.0
 
 ### Minor Changes

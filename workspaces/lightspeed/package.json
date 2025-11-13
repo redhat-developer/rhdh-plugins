@@ -60,7 +60,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@backstage/plugin-catalog-backend": "2.0.0",
-    "@backstage/plugin-scaffolder-backend": "1.33.0"
+    "@backstage/plugin-scaffolder-backend": "1.33.0",
+    "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
