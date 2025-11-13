@@ -51,13 +51,11 @@ export class Extensions {
     ];
   }
 
-  // Following translated strings are replaces due to bug with the translations
   private getTableHeaders() {
     return [
       this.translations.table.packageName,
       this.translations.table.version,
       this.translations.table.role,
-      'Backstage compatibility version',
       this.translations.table.status,
     ];
   }
@@ -121,10 +119,11 @@ export class Extensions {
   async emptyCategoryComboBox(timeout: number = 20000) {
     const categoryLocator = this.page
       .getByLabel(this.translations.search.category)
-      .getByRole('combobox')
-      .first();
-    await categoryLocator.waitFor({ state: 'visible', timeout: timeout });
-    await expect(categoryLocator).toBeEmpty();
+      .getByTestId('CancelIcon');
+    for (const icon of await categoryLocator.all()) {
+      await icon.click();
+    }
+    await categoryLocator.waitFor({ state: 'hidden', timeout: timeout });
   }
 
   async toggleOption(name: string) {
@@ -212,8 +211,7 @@ export class Extensions {
 
     if (includeTable) {
       await this.extensionHelper.verifyTableHeadingAndRows(
-        // this.getTableHeaders(),
-        this.getNotTranslatedTableHeaders(),
+        this.getTableHeaders(),
       );
     }
 
