@@ -97,12 +97,6 @@ test('Lightspeed is available', async ({ page }) => {
 });
 
 test('Verify disclaimer to be visible', async ({ page }) => {
-  await expect(
-    page.getByRole('heading', { name: 'Info alert: Important' }),
-  ).toBeVisible();
-  await expect(page.getByLabel('Scrollable message log')).toContainText(
-    "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
-  );
   await expect(page.getByLabel('Scrollable message log')).toMatchAriaSnapshot(`
     - 'heading "Info alert: Important" [level=4]'
     - text: This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.
