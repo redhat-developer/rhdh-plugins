@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "license": "Apache-2.0",
   "description": "The model-catalog backend module for the catalog plugin.",
   "main": "src/index.ts",
