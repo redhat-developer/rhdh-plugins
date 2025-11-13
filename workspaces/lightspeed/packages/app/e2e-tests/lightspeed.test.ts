@@ -96,6 +96,13 @@ test('Lightspeed is available', async ({ page }) => {
   ).toContainText('How can I help');
 });
 
+test('Verify disclaimer to be visible', async ({ page }) => {
+  await expect(page.getByLabel('Scrollable message log')).toMatchAriaSnapshot(`
+    - 'heading "Info alert: Important" [level=4]'
+    - text: This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.
+    `);
+});
+
 test('Models are available', async ({ page }) => {
   const model = models[1].provider_resource_id;
   const dropdown = page.locator('button[aria-label="Chatbot selector"]');
