@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.0.3
+
+### Patch Changes
+
+- 5a26e61: Rever PF upgrade to reduce the bundle size
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes
