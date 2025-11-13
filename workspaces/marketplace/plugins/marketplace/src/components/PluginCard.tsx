@@ -191,10 +191,7 @@ export const PluginCard = ({ plugin }: { plugin: MarketplacePlugin }) => {
                 >
                   <CategoryLinkButton
                     categoryName={plugin.spec.categories[0]}
-                    to={withFilter(
-                      'spec.categories',
-                      plugin.spec.categories[0],
-                    )}
+                    to={withFilter('category', plugin.spec.categories[0])}
                     onClick={e => e.stopPropagation()}
                   />
                 </Typography>

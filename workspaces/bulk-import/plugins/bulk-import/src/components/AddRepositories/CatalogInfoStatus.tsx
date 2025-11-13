@@ -27,6 +27,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
+  ImportFlow,
   RepositoryStatus,
 } from '../../types';
 import {
@@ -79,7 +80,7 @@ export const CatalogInfoStatus = ({
 
   const importFlow = useImportFlow();
   if (
-    importFlow !== 'scaffolder' &&
+    importFlow !== ImportFlow.Scaffolder &&
     !isDrawer &&
     (isSelected ||
       (data?.totalReposInOrg && data.totalReposInOrg > 0 && allSelected))

@@ -36,7 +36,7 @@ import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import { useGitlabConfigured } from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
-import { AddRepositoryData } from '../../types';
+import { AddRepositoryData, ImportFlow } from '../../types';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -88,7 +88,7 @@ const DeleteRepositoryDialog = ({
 
   const importFlow = useImportFlow();
   let deleteMsg;
-  if (importFlow === 'scaffolder') {
+  if (importFlow === ImportFlow.Scaffolder) {
     deleteMsg = t('repositories.removeRepositoryWarningScaffolder');
   } else {
     deleteMsg = gitlabConfigured

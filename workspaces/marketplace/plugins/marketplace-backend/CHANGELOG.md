@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-backend
 
+## 0.12.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-marketplace-common@0.12.1
+
 ## 0.12.0
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.12.1
+
+### Patch Changes
+
+- 2cd673e: Integrate search query with filter dropdown counts for dynamic filtering
+
+  - Ensure filter dropdowns show only relevant options after search is applied
+  - Maintain AND logic across search + category + author + support filters
+
+- a416e91: Fixed filter function of clicking catalog tag on a plugin card.
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.12.1
+
 ## 0.12.0
 
 ### Minor Changes

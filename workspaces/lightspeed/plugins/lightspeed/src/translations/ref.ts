@@ -79,13 +79,12 @@ export const lightspeedMessages = {
 
   // Disclaimers
   'disclaimer.withValidation':
-    "Developer Lightspeed can answer questions on many topics using your configured models. Developer Lightspeed's responses are influenced by the Red Hat Developer Hub documentation but Developer Lightspeed does not have access to your Software Catalog, TechDocs, or Templates etc. Developer Lightspeed uses question (prompt) validation to ensure that conversations remain focused on technical topics relevant to Red Hat Developer Hub, such as Backstage, Kubernetes, and OpenShift. Do not include personal or sensitive information in your input. Interactions with Developer Lightspeed may be reviewed and used to improve products or services.",
+    "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
   'disclaimer.withoutValidation':
-    "Developer Lightspeed can answer questions on many topics using your configured models. Developer Lightspeed's responses are influenced by the Red Hat Developer Hub documentation but Developer Lightspeed does not have access to your Software Catalog, TechDocs, or Templates etc. Do not include personal or sensitive information in your input. Interactions with Developer Lightspeed may be reviewed and used to improve products or services.",
+    "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
 
   // Footer and feedback
-  'footer.accuracy.label':
-    'Always check AI/LLM generated responses for accuracy prior to use.',
+  'footer.accuracy.label': 'Always review AI generated content prior to use.',
   'footer.accuracy.popover.title': 'Verify accuracy',
   'footer.accuracy.popover.description':
     "While Developer Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.",
@@ -105,10 +104,10 @@ export const lightspeedMessages = {
   'chatbox.welcome.greeting': 'Hello, {{userName}}',
   'chatbox.welcome.description': 'How can I help you today?',
   'chatbox.message.placeholder':
-    'Send a message and optionally upload a JSON, YAML, TXT, or XML file...',
+    'Send a message and optionally upload a JSON, YAML, or TXT file...',
   'chatbox.fileUpload.failed': 'File upload failed',
   'chatbox.fileUpload.infoText':
-    'Supported file types are: .txt, .yaml, .json and .xml. The maximum file size is 25 MB.',
+    'Supported file types are: .txt, .yaml, and .json. The maximum file size is 25 MB.',
 
   // Accessibility and ARIA labels
   'aria.chatbotSelector': 'Chatbot selector',
@@ -151,7 +150,7 @@ export const lightspeedMessages = {
   'file.upload.error.alreadyExists': 'File already exists.',
   'file.upload.error.multipleFiles': 'Uploaded more than one file.',
   'file.upload.error.unsupportedType':
-    'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+    'Unsupported file type. Supported types are: .txt, .yaml, and .json.',
   'file.upload.error.fileTooLarge':
     'Your file size is too large. Please ensure that your file is less than 25 MB.',
   'file.upload.error.readFailed': 'Failed to read file: {{errorMessage}}',

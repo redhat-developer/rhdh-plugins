@@ -37,12 +37,22 @@ import type {
   OptimizationsApi,
   GetAccessResponse,
 } from './types';
+import type {
+  GetCostManagementRequest,
+  CostManagementReport,
+} from '../types/cost-management';
 import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 type DefaultApiClientOpFunc<
-  TRequest = GetRecommendationByIdRequest | GetRecommendationListRequest,
-  TResponse = RecommendationBoxPlots | RecommendationList,
+  TRequest =
+    | GetRecommendationByIdRequest
+    | GetRecommendationListRequest
+    | GetCostManagementRequest,
+  TResponse =
+    | RecommendationBoxPlots
+    | RecommendationList
+    | CostManagementReport,
 > = (
   this: DefaultApiClient,
   request: TRequest,
@@ -138,6 +148,150 @@ export class OptimizationsClient implements OptimizationsApi {
           camelCase as (value: string | number) => string,
         ) as RecommendationList;
         return camelCaseTransformedResponse;
+      },
+    };
+  }
+
+  public async getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>> {
+    // Get access permission
+    const accessAPIResponse = await this.getAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    // Get or refresh token
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+
+    // Call the cost-management API via backend proxy
+    let response = await this.defaultClient.getCostManagementReport(request, {
+      token: this.token,
+    });
+
+    // Handle 401 errors by refreshing token and retrying
+    if (!response.ok && response.status === 401) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+
+      response = await this.defaultClient.getCostManagementReport(request, {
+        token: this.token,
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return response;
+  }
+
+  /**
+   * Search OpenShift projects
+   * @param search - Search term to filter projects
+   */
+  public async searchOpenShiftProjects(
+    search: string = '',
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-projects/${searchParam}`;
+
+    return await this.fetchResourceType(url);
+  }
+
+  /**
+   * Search OpenShift clusters
+   * @param search - Search term to filter clusters
+   */
+  public async searchOpenShiftClusters(
+    search: string = '',
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-clusters/${searchParam}`;
+
+    return await this.fetchResourceType(url);
+  }
+
+  /**
+   * Search OpenShift nodes
+   * @param search - Search term to filter nodes
+   */
+  public async searchOpenShiftNodes(
+    search: string = '',
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-nodes/${searchParam}`;
+
+    return await this.fetchResourceType(url);
+  }
+
+  private async fetchResourceType(
+    url: string,
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  > {
+    // Get access permission
+    const accessAPIResponse = await this.getAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    // Get or refresh token
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+
+    // Call the API via backend proxy
+    let response = await this.fetchApi.fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.token}`,
+      },
+      method: 'GET',
+    });
+
+    // Handle 401 errors by refreshing token and retrying
+    if (!response.ok && response.status === 401) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+
+      response = await this.fetchApi.fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        method: 'GET',
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return {
+      ...response,
+      json: async () => {
+        const data = await response.json();
+        return data as {
+          data: Array<{ value: string }>;
+          meta?: any;
+          links?: any;
+        };
       },
     };
   }

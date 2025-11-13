@@ -82,13 +82,13 @@ const lightspeedTranslationDe = createTranslationMessages({
 
     // Disclaimers
     'disclaimer.withValidation':
-      'Developer Lightspeed kann Fragen zu vielen Themen beantworten, indem es Ihre konfigurierten Modelle verwendet. Die Antworten von Developer Lightspeed werden von der Red Hat Developer Hub-Dokumentation beeinflusst, aber Developer Lightspeed hat keinen Zugriff auf Ihren Software-Katalog, TechDocs oder Vorlagen usw. Developer Lightspeed verwendet Fragenvalidierung (Prompts), um sicherzustellen, dass Gespräche auf technische Themen fokussiert bleiben, die für Red Hat Developer Hub relevant sind, wie Backstage, Kubernetes und OpenShift. Geben Sie keine persönlichen oder sensiblen Informationen in Ihre Eingabe ein. Interaktionen mit Developer Lightspeed können überprüft und zur Verbesserung von Produkten oder Dienstleistungen verwendet werden.',
+      'Diese Funktion verwendet KI-Technologie. Geben Sie keine persönlichen Informationen oder andere sensible Informationen in Ihre Eingabe ein. Interaktionen können zur Verbesserung der Produkte oder Dienstleistungen von Red Hat verwendet werden.',
     'disclaimer.withoutValidation':
-      'Developer Lightspeed kann Fragen zu vielen Themen beantworten, indem es Ihre konfigurierten Modelle verwendet. Die Antworten von Developer Lightspeed werden von der Red Hat Developer Hub-Dokumentation beeinflusst, aber Developer Lightspeed hat keinen Zugriff auf Ihren Software-Katalog, TechDocs oder Vorlagen usw. Geben Sie keine persönlichen oder sensiblen Informationen in Ihre Eingabe ein. Interaktionen mit Developer Lightspeed können überprüft und zur Verbesserung von Produkten oder Dienstleistungen verwendet werden.',
+      'Diese Funktion verwendet KI-Technologie. Geben Sie keine persönlichen Informationen oder andere sensible Informationen in Ihre Eingabe ein. Interaktionen können zur Verbesserung der Produkte oder Dienstleistungen von Red Hat verwendet werden.',
 
     // Footer and feedback
     'footer.accuracy.label':
-      'Überprüfen Sie immer die Genauigkeit von KI/LLM-generierten Antworten vor der Verwendung.',
+      'Überprüfen Sie KI-generierte Inhalte immer vor der Verwendung.',
     'footer.accuracy.popover.title': 'Genauigkeit überprüfen',
     'footer.accuracy.popover.description':
       'Obwohl Developer Lightspeed sich um Genauigkeit bemüht, besteht immer die Möglichkeit von Fehlern. Es ist eine gute Praxis, kritische Informationen aus zuverlässigen Quellen zu überprüfen, besonders wenn sie für Entscheidungsfindung oder Handlungen entscheidend sind.',
@@ -108,10 +108,10 @@ const lightspeedTranslationDe = createTranslationMessages({
     'chatbox.welcome.greeting': 'Hallo, {{userName}}',
     'chatbox.welcome.description': 'Wie kann ich Ihnen heute helfen?',
     'chatbox.message.placeholder':
-      'Senden Sie eine Nachricht und laden Sie optional eine JSON-, YAML-, TXT- oder XML-Datei hoch...',
+      'Senden Sie eine Nachricht und laden Sie optional eine JSON-, YAML-, oder TXT-Datei hoch...',
     'chatbox.fileUpload.failed': 'Datei-Upload fehlgeschlagen',
     'chatbox.fileUpload.infoText':
-      'Unterstützte Dateitypen sind: .txt, .yaml, .json und .xml. Die maximale Dateigröße beträgt 25 MB.',
+      'Unterstützte Dateitypen sind: .txt, .yaml, und .json. Die maximale Dateigröße beträgt 25 MB.',
 
     // Accessibility and ARIA labels
     'aria.chatbotSelector': 'Chatbot-Auswahl',
@@ -154,7 +154,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'file.upload.error.alreadyExists': 'Die Datei existiert bereits.',
     'file.upload.error.multipleFiles': 'Mehr als eine Datei hochgeladen.',
     'file.upload.error.unsupportedType':
-      'Nicht unterstützter Dateityp. Unterstützte Typen sind: .txt, .yaml, .json und .xml.',
+      'Nicht unterstützter Dateityp. Unterstützte Typen sind: .txt, .yaml, und .json.',
     'file.upload.error.fileTooLarge':
       'Ihre Dateigröße ist zu groß. Bitte stellen Sie sicher, dass Ihre Datei kleiner als 25 MB ist.',
     'file.upload.error.readFailed':

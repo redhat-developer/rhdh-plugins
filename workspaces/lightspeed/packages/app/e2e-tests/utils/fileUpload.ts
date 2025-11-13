@@ -15,7 +15,7 @@
  */
 import { Page, Locator, FileChooser, expect } from '@playwright/test';
 
-export const supportedFileTypes = ['.txt', '.yaml', '.json', '.xml'];
+export const supportedFileTypes = ['.txt', '.yaml', '.json'];
 
 export async function triggerFileChooser(
   page: Page,
@@ -83,7 +83,7 @@ export async function validateSuccessfulUpload(page: Page, fileName: string) {
 export async function validateFailedUpload(page: Page) {
   const alertHeader = page.getByText('File upload failed');
   const alertText = page.getByText(
-    'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+    'Unsupported file type. Supported types are: .txt, .yaml, and .json.',
   );
 
   await expect(alertHeader).toBeVisible();

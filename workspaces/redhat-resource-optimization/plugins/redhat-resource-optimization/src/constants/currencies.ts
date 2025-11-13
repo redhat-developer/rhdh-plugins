@@ -14,14 +14,36 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
-
-test('App should render the welcome page', async ({ page }) => {
-  await page.goto('/');
-
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
-});
+export const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  AUD: 'A$',
+  CAD: 'CA$',
+  CHF: 'CHF',
+  CNY: 'CN¥',
+  INR: '₹',
+  MXN: '$',
+  NZD: 'NZ$',
+  SEK: 'SEK',
+  SGD: 'SGD',
+  HKD: 'HK$',
+  TWD: 'NT$',
+  THB: '฿',
+  RUB: '₽',
+  BRL: 'R$',
+  ZAR: 'ZAR',
+  PLN: 'zł',
+  KRW: '₩',
+  TRY: '₺',
+  IDR: 'Rp',
+  MYR: 'RM',
+  PHP: '₱',
+  VND: '₫',
+  HUF: 'Ft',
+  CZK: 'Kč',
+  NOK: 'NOK',
+  DKK: 'DKK',
+  NGN: '₦',
+};

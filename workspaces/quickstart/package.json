@@ -35,9 +35,9 @@
     "directory": "workspaces/quickstart"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.1",
+    "@backstage/cli": "^0.34.4",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.15.1",
+    "@backstage/repo-tools": "^0.15.3",
     "@changesets/cli": "^2.27.1",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -233,7 +233,8 @@
     "@backstage/plugin-user-settings-backend": "0.3.5",
     "@backstage/plugin-user-settings-common": "0.0.1",
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

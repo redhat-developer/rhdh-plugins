@@ -15,12 +15,34 @@
  */
 
 import { DefaultApiClient } from '../../generated/apis/DefaultApi.client';
+import type { TypedResponse } from '../../generated/apis/DefaultApi.client';
 
 /** @public */
 export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
->;
+> & {
+  searchOpenShiftProjects(
+    search?: string,
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  >;
+  searchOpenShiftClusters(
+    search?: string,
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  >;
+  searchOpenShiftNodes(
+    search?: string,
+  ): Promise<
+    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+  >;
+};
+
+/** @public */
+export type GetCostManagementRequest = Parameters<
+  OptimizationsApi['getCostManagementReport']
+>[0];
 
 /**
  * This is a copy of GetTokenResponse, to avoid importing redhat-resource-optimization-backend.

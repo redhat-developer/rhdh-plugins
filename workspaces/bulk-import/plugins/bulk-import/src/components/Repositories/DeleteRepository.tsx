@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
-import { AddRepositoryData } from '../../types';
+import { AddRepositoryData, ImportFlow } from '../../types';
 import { useDeleteDialog } from '../DeleteDialogContext';
 
 const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
@@ -36,7 +36,7 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
   const importFlow = useImportFlow();
   let tooltipMessage;
   let delDisabled;
-  if (importFlow === 'scaffolder') {
+  if (importFlow === ImportFlow.Scaffolder) {
     tooltipMessage = t('repositories.removeTooltipRepositoryScaffolder');
     delDisabled = false;
   } else {

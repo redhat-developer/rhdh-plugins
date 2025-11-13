@@ -88,7 +88,6 @@ export enum SupportedFileType {
   JSON = 'application/json',
   YAML = 'application/x-yaml',
   TEXT = 'text/plain',
-  XML = 'text/xml',
 }
 export interface FileContent {
   content: string;

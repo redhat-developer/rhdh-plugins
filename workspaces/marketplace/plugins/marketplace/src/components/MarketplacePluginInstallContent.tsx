@@ -17,10 +17,9 @@
 import { useEffect, useState, useCallback } from 'react';
 
 import {
-  CodeSnippet,
   ErrorPage,
+  MarkdownContent,
   Progress,
-  WarningPanel,
 } from '@backstage/core-components';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
@@ -52,15 +51,14 @@ import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTheme } from '@mui/material/styles';
+import AlertTitle from '@mui/material/AlertTitle';
 
 import { pluginInstallRouteRef, pluginRouteRef } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
 import {
-  DYNAMIC_PLUGIN_CONFIG_YAML,
-  EXTENSIONS_CONFIG_YAML,
   ExtensionsStatus,
-  getErrorMessage,
   getPluginActionTooltipMessage,
   isPluginInstalled,
 } from '../utils';
@@ -78,9 +76,9 @@ import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { mapMarketplacePluginInstallStatusToInstallPageButton } from '../labels';
 import { useTranslation } from '../hooks/useTranslation';
-import { useTheme } from '@mui/material/styles';
 import { CodeEditorCard } from './CodeEditorCard';
 import { TabPanel } from './TabPanel';
+import { InstallationWarning } from './InstallationWarning';
 
 const generateCheckboxList = (packages: MarketplacePackage[], t: any) => {
   const hasFrontend = packages.some(
@@ -298,6 +296,8 @@ export const MarketplacePluginInstallContent = ({
     }
   };
 
+  const missingDynamicArtifact = packages.some(p => !p.spec?.dynamicArtifact);
+
   const isInstallDisabled =
     isProductionEnvironment ||
     installationError ||
@@ -305,7 +305,8 @@ export const MarketplacePluginInstallContent = ({
     (pluginConfig.data as any)?.error ||
     !extensionsConfig?.data?.enabled ||
     isSubmitting ||
-    packages.length === 0;
+    packages.length === 0 ||
+    missingDynamicArtifact;
 
   const installTooltip = getPluginActionTooltipMessage(
     isProductionEnvironment,
@@ -315,6 +316,7 @@ export const MarketplacePluginInstallContent = ({
     },
     t,
     !extensionsConfig?.data?.enabled,
+    missingDynamicArtifact,
   );
 
   const showInstallationWarning =
@@ -335,7 +337,7 @@ export const MarketplacePluginInstallContent = ({
   };
 
   const getCardHeaderTitle = () => {
-    if (isProductionEnvironment) {
+    if (isProductionEnvironment || isInstallDisabled) {
       return t('install.instructions');
     }
     if (isPluginInstalled(plugin.spec?.installStatus)) {
@@ -344,46 +346,24 @@ export const MarketplacePluginInstallContent = ({
     return t('install.installationInstructions');
   };
 
-  const installationWarning = () => {
-    const errorMessage = getErrorMessage(
-      (pluginConfig.data as any)?.error?.reason,
-      (pluginConfig.data as any)?.error?.message,
-      t,
-    );
-
-    return (
-      <>
-        <WarningPanel
-          title={errorMessage.title}
-          severity="info"
-          message={
-            <>
-              {errorMessage.message}
-              <CodeSnippet
-                language="yaml"
-                showLineNumbers
-                highlightedNumbers={errorMessage?.highlightedLineNumbers}
-                text={`${
-                  (pluginConfig.data as any)?.error?.reason ===
-                  ExtensionsStatus.INVALID_CONFIG
-                    ? DYNAMIC_PLUGIN_CONFIG_YAML
-                    : EXTENSIONS_CONFIG_YAML
-                }`}
-              />
-            </>
-          }
-        />
-        <br />
-      </>
-    );
-  };
-
   return (
     <>
-      {showInstallationWarning && installationWarning()}
+      {showInstallationWarning && (
+        <InstallationWarning configData={pluginConfig.data} />
+      )}
       {installationError && (
         <Alert severity="error" sx={{ mb: '1rem' }}>
           {installationError}
+        </Alert>
+      )}
+      {missingDynamicArtifact && (
+        <Alert severity="error" sx={{ mb: '1rem' }}>
+          <AlertTitle>
+            {t('alert.missingDynamicArtifactTitlePlugin')}
+          </AlertTitle>
+          <MarkdownContent
+            content={t('alert.missingDynamicArtifactForPlugin')}
+          />
         </Alert>
       )}
       <Box
@@ -437,7 +417,7 @@ export const MarketplacePluginInstallContent = ({
                       }}
                     >
                       <FileDownloadOutlinedIcon fontSize="small" />
-                      Download
+                      {t('install.download')}
                     </Typography>
                   }
                   sx={{ pb: 0 }}
@@ -456,7 +436,7 @@ export const MarketplacePluginInstallContent = ({
                       <Tabs
                         value={tabIndex}
                         onChange={handleTabChange}
-                        aria-label="Plugin tabs"
+                        aria-label={t('install.pluginTabs')}
                         sx={{ px: 0 }}
                       >
                         {availableTabs.map((tab, index) => (
@@ -582,6 +562,7 @@ export const MarketplacePluginInstallContent = ({
 };
 
 export const MarketplacePluginInstallContentLoader = () => {
+  const { t } = useTranslation();
   const params = useRouteRefParams(pluginInstallRouteRef);
 
   const plugin = usePlugin(params.namespace, params.name);
@@ -605,7 +586,9 @@ export const MarketplacePluginInstallContentLoader = () => {
   }
   return (
     <ErrorPage
-      statusMessage={`Plugin ${params.namespace}/${params.name} not found!`}
+      statusMessage={t('metadata.pluginNotFound', {
+        name: `${params.namespace}/${params.name}`,
+      } as any)}
     />
   );
 };

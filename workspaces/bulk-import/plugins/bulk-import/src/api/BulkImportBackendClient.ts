@@ -25,6 +25,7 @@ import {
   APITypes,
   ApprovalTool,
   CreateImportJobRepository,
+  ImportFlow,
   ImportJobResponse,
   ImportJobs,
   ImportJobStatus,
@@ -108,13 +109,13 @@ export class BulkImportBackendClient implements BulkImportAPI {
     this.identityApi = options.identityApi;
     const importAPI =
       this.configApi.getOptionalString('bulkImport.importAPI') ??
-      'open-pull-requests';
+      ImportFlow.OpenPullRequests;
 
     switch (importAPI) {
-      case 'scaffolder':
+      case ImportFlow.Scaffolder:
         this.pathProvider = new ScaffolderBulkImportBackendClientPathProvider();
         break;
-      case 'open-pull-requests':
+      case ImportFlow.OpenPullRequests:
         this.pathProvider = new PRBulkImportBackendClientPathProvider();
         break;
       default:

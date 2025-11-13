@@ -39,6 +39,7 @@
     "directory": "workspaces/theme"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@backstage/cli": "^0.34.1",
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.15.1",
@@ -54,7 +55,8 @@
   },
   "resolutions": {
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

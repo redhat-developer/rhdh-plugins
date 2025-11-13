@@ -81,6 +81,7 @@ function Table(props: { children: React.ReactNode }) {
   );
 }
 
+/** @public */
 export function PageLayout(props: { children: React.ReactNode }) {
   return (
     <Grid container style={{ position: 'relative' }}>

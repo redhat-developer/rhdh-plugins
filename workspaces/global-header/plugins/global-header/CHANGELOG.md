@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.19.0
+
+### Minor Changes
+
+- 7982d37: Backstage version bump to v1.44.2
+
+## 1.18.2
+
+### Patch Changes
+
+- e8b5090: fix: add ability to use custom star icons
+
 ## 1.18.1
 
 ### Patch Changes
