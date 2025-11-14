@@ -1,5 +1,17 @@
 ### Dependencies
 
+## 6.7.0
+
+### Minor Changes
+
+- 3764e8e: Use enums for importFlow and TaskStatus
+  - Convert TaskStatus from union type to enum for better status handling and type safety
+  - Add ImportFlow enum to standardize import flow configuration values
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.0
+
 ## 1.19.0
 
 ### Minor Changes

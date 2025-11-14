@@ -1,5 +1,11 @@
 ### Dependencies
 
+## 6.7.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.0
+
 ## 6.6.0
 
 ### Minor Changes
