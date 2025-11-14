@@ -12725,6 +12725,7 @@ __metadata:
     "@backstage/backend-plugin-api": ^1.4.4
     "@backstage/backend-test-utils": ^1.9.1
     "@backstage/cli": ^0.34.4
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
   languageName: unknown
   linkType: soft
@@ -12886,6 +12887,7 @@ __metadata:
   dependencies:
     "@backstage/backend-plugin-api": ^1.4.4
     "@backstage/cli": ^0.34.4
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
   languageName: unknown
   linkType: soft
 
