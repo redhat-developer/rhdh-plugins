@@ -16,6 +16,14 @@
 
 import { Page, expect } from '@playwright/test';
 import { mockFeedbackReceived } from './devMode';
+import { LightspeedMessages } from './translations';
+
+export const switchToLocale = async (page: Page, locale: string) => {
+  await page.getByRole('link', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'English' }).click();
+  await page.getByRole('option', { name: locale }).click();
+  await page.locator('a').filter({ hasText: 'Home' }).click();
+};
 
 export const openLightspeed = async (page: Page) => {
   const navLink = page.getByRole('link', { name: 'Lightspeed' });
@@ -27,10 +35,11 @@ export const openLightspeed = async (page: Page) => {
 export const sendMessage = async (
   message: string,
   page: Page,
+  translations: LightspeedMessages,
   waitForResponse = true,
 ) => {
   const inputLocator = page.getByRole('textbox', {
-    name: 'Send a message and optionally upload a JSON, YAML, or TXT file...',
+    name: translations['chatbox.message.placeholder'],
   });
   await inputLocator.fill(message);
   const sendButton = page.getByRole('button', { name: 'Send' });
@@ -57,15 +66,16 @@ export async function submitFeedback(
   page: Page,
   ratingButtonName: string,
   devMode: boolean,
+  translations: LightspeedMessages,
 ) {
   // Click the Good/Bad response button
   await page.getByRole('button', { name: ratingButtonName }).click();
 
-  const feedbackCard = page.getByLabel('Why did you choose this rating?');
+  const feedbackCard = page.getByLabel(translations['feedback.form.title']);
   await expect(feedbackCard).toBeVisible();
 
   const optionalFeedback = feedbackCard.getByPlaceholder(
-    'Provide optional additional feedback',
+    translations['feedback.form.textAreaPlaceholder'],
   );
   await expect(optionalFeedback).toBeVisible();
 
@@ -81,14 +91,19 @@ export async function submitFeedback(
     await mockFeedbackReceived(page);
   }
 
-  await feedbackCard.getByRole('button', { name: 'Submit' }).click();
+  await feedbackCard
+    .getByRole('button', { name: translations['feedback.form.submitWord'] })
+    .click();
 
-  const feedbackConfirmationPanel = page.getByLabel('Feedback submitted');
+  const feedbackConfirmationPanel = page.getByLabel(
+    translations['feedback.completion.title'],
+  );
   await expect(feedbackConfirmationPanel).toBeVisible();
   await expect(feedbackConfirmationPanel).toContainText(
-    "We've received your response. Thank you for sharing your feedback!",
+    translations['feedback.completion.body'],
   );
   await feedbackConfirmationPanel.waitFor({ state: 'hidden' });
+  // missing translation
   await page.getByRole('button', { name: 'Response recorded' }).hover();
   const tooltipMsg = page.getByRole('tooltip', { name: 'Response recorded' });
   await expect(tooltipMsg).toBeVisible();
