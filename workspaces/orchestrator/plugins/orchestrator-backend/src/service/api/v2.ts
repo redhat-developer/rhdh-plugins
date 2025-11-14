@@ -180,39 +180,13 @@ export class V2 {
     return mapToProcessInstanceDTO(instance);
   }
 
-  public async getInstanceLogsById(instance: ProcessInstanceDTO): Promise<any> {
-    // Fetch the logs, probably add something to that orchestrator service object? OR maybe a logViewerService object instead
-    // We are not querying actual orchestrator since the logs don't live there
-    // Query will be against the log provider, like Loki for example
-    // logViewerService is probably going to be the new class/interface that other providers can implement in the future
-    const baseURL = 'http://localhost:3100/loki/api/v1/query_range';
-    const params = new URLSearchParams({
-      query: `{service_name=~".+"} |="${instance.id}"`,
-      start: instance.start as string,
-      end: instance.end || '',
+  public async getInstanceLogsByInstance(
+    instance: ProcessInstanceDTO,
+  ): Promise<any> {
+    const logs = await this.orchestratorService.fetchWorkflowLogsByInstance({
+      instance,
     });
-
-    const urlToFetch = `${baseURL}?${params.toString()}`;
-
-    const response = await fetch(urlToFetch);
-
-    let allResults;
-    if (response.status !== 200) {
-      console.log('ERror', response.statusText, response);
-    } else {
-      const jsonResponse = await response.json();
-      // Reduce the results into another array
-      allResults = jsonResponse.data.result.reduce(
-        (acc: any[], curr: { values: any[] }) => {
-          curr.values.reduce((_innerAcc: any, innerCurr: any) => {
-            acc.push(innerCurr);
-          }, acc);
-          return acc;
-        },
-        [],
-      );
-    }
-    return allResults;
+    return logs;
   }
 
   public async executeWorkflow(
