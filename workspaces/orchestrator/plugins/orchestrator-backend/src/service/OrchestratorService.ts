@@ -25,19 +25,19 @@ import {
   WorkflowInfo,
   WorkflowOverview,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
 import { WorkflowCacheService } from './WorkflowCacheService';
-import { WorkflowLoggerService } from './WorkflowLoggerService';
 
 export class OrchestratorService {
   constructor(
     private readonly sonataFlowService: SonataFlowService,
     private readonly dataIndexService: DataIndexService,
     private readonly workflowCacheService: WorkflowCacheService,
-    private readonly workflowLoggerService: WorkflowLoggerService,
+    private readonly workflowLogProvider?: WorkflowLogProvider,
   ) {}
 
   // Data Index Service Wrapper
@@ -174,10 +174,10 @@ export class OrchestratorService {
     return overview;
   }
 
-  public async fetchWorkflowLogsById(args: {
+  public async fetchWorkflowLogsByInstance(args: {
     instance: ProcessInstanceDTO;
   }): Promise<any> {
-    return this.workflowLoggerService.fetchWorkflowLogsById(args.instance);
+    return this.workflowLogProvider?.fetchWorkflowLogsByIntance(args.instance);
   }
 
   public async pingWorkflowService(args: {

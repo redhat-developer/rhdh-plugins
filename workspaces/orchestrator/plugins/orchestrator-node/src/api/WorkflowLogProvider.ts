@@ -14,4 +14,15 @@
  * limitations under the License.
  */
 
-export { orchestratorPlugin as default } from './plugin';
+import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+/**
+ * @public
+ */
+export interface WorkflowLogProvider {
+  getProviderId(): string;
+  getBaseURL(): string;
+  fetchWorkflowLogsByIntance(
+    workflowInstance: ProcessInstanceDTO,
+  ): Promise<any>;
+}

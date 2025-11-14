@@ -14,4 +14,10 @@
  * limitations under the License.
  */
 
-export { orchestratorPlugin as default } from './plugin';
+/**
+ * The loki backend module for the orchestrator plugin.
+ *
+ * @packageDocumentation
+ */
+
+export { orchestratorModuleLoki as default } from './module';

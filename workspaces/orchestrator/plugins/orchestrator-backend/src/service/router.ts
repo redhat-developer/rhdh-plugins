@@ -53,7 +53,9 @@ import {
   orchestratorWorkflowUseSpecificPermission,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
+import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { RouterOptions } from '../routerWrapper';
 import { buildPagination } from '../types/pagination';
 import { V2 } from './api/v2';
@@ -185,8 +187,14 @@ export async function createBackendRouter(
     permissions,
     httpAuth,
     userInfo,
+    workflowLogsProvidersRegistry,
   } = options;
-  const publicServices = initPublicServices(logger, config, scheduler);
+  const publicServices = initPublicServices(
+    logger,
+    config,
+    scheduler,
+    workflowLogsProvidersRegistry,
+  );
 
   const routerApi = await initRouterApi(publicServices.orchestratorService);
 
@@ -249,6 +257,7 @@ function initPublicServices(
   logger: LoggerService,
   config: Config,
   scheduler: SchedulerService,
+  workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry,
 ): PublicServices {
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
   const dataIndexService = new DataIndexService(dataIndexUrl, logger);
@@ -260,19 +269,23 @@ function initPublicServices(
     sonataFlowService,
   );
   workflowCacheService.schedule({ scheduler: scheduler });
+
+  // All the workflow logging related stuff should be moved to their respective backend module
+  // Probablt define that WorkflowLoggerService Class/type in the common or perhaps that -node package
   // Get the orchestrator logging config
   // Create that workflow logging class/interface instance here
-  const logStorageUrl = config.getString('');
-  const workflowLoggerService = new WorkflowLoggerService(
-    logStorageUrl,
-    logger,
-  );
+  const workflowLogProvider: WorkflowLogProvider | undefined =
+    workflowLogsProvidersRegistry.getProvider('loki');
+  if (workflowLogProvider) {
+    console.log('There is a provider');
+  }
+
   // ADD the workflow logging interface here
   const orchestratorService = new OrchestratorService(
     sonataFlowService,
     dataIndexService,
     workflowCacheService,
-    workflowLoggerService,
+    workflowLogProvider,
   );
 
   const dataInputSchemaService = new DataInputSchemaService();
@@ -1008,12 +1021,12 @@ function setupInternalRoutes(
           }
         }
 
-        // TODO: Using the instanceId, retrieve the log from Loki or some other log provider
-        const logs = await routerApi.v2.getInstanceLogsById(instance);
+        const logs = await routerApi.v2.getInstanceLogsByInstance(instance);
+        // Do something with the logs to send back
         console.log(logs);
 
         auditEvent.success();
-        res.status(200).json(instance);
+        res.status(200).json(logs);
       } catch (error) {
         auditEvent.fail({ error });
         next(error);
