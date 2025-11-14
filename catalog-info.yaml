@@ -10,6 +10,6 @@ metadata:
     #sonarqube.org/project-key: redhat-developer_rhdh-plugins
 spec:
   type: backstage-plugin-repository
-  lifecycle: production
+  lifecycle: active
   owner: rhdh-team
   system: rhdh

@@ -93,7 +93,6 @@
   },
   "configSchema": "config.d.ts",
   "keywords": [
-    "lifecycle:active",
     "backstage",
     "plugin"
   ],

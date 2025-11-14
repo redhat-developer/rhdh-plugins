@@ -77,8 +77,6 @@
     "react-router-dom": "^6.0.0"
   },
   "keywords": [
-    "support:production",
-    "lifecycle:active",
     "backstage",
     "plugin"
   ],

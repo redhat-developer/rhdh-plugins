@@ -13,7 +13,6 @@
   },
   "backstage": {
     "role": "common-library",
-    "supported-versions": "1.35.1",
     "pluginId": "lightspeed",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-lightspeed-common",
     "pluginPackages": [

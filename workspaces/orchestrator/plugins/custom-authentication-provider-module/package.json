@@ -12,7 +12,6 @@
   },
   "backstage": {
     "role": "frontend-plugin",
-    "supported-versions": "1.39.1",
     "pluginId": "custom-authentication-provider-module",
     "pluginPackages": [
       "custom-authentication-provider-module",

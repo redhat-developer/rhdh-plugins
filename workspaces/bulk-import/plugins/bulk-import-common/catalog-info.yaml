@@ -16,7 +16,7 @@ metadata:
       type: source
 spec:
   type: backstage-common-library
-  lifecycle: production
+  lifecycle: active
   owner: rhdh-ui-team
   system: rhdh
   subcomponentOf: red-hat-developer-hub-bulk-import

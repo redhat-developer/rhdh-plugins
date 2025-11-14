@@ -2,12 +2,16 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: scorecard
-  description: An example of a Backstage application.
+  title: Scorecard
+  description: |
+    Track the health, security, and compliance of your components with customizable KPIs.
   # Example for optional annotations
   # annotations:
   #   github.com/project-slug: backstage/backstage
   #   backstage.io/techdocs-ref: dir:.
 spec:
-  type: website
+  type: backstage-plugin
   owner: john@example.com
-  lifecycle: experimental
+  lifecycle: active
+  system: rhdh
+  subcomponentOf: rhdh-plugins

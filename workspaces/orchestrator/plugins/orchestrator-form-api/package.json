@@ -11,8 +11,7 @@
     "types": "dist/index.d.ts"
   },
   "backstage": {
-    "role": "web-library",
-    "supported-versions": "1.39.1"
+    "role": "web-library"
   },
   "sideEffects": false,
   "scripts": {

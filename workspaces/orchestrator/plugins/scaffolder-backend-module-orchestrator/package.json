@@ -16,7 +16,6 @@
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "scaffolder",
-    "supported-versions": "1.39.1",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
       "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator"
@@ -25,8 +24,6 @@
   },
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "keywords": [
-    "support:tech-preview",
-    "lifecycle:active",
     "backstage",
     "plugin",
     "orchestrator",
