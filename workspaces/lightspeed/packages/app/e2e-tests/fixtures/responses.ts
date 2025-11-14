@@ -87,7 +87,7 @@ export const contents = [
   },
 ];
 
-export const mockShields = [
+export const mockedShields = [
   {
     identifier: 'test-shield-id',
     provider_id: 'test-shield-id',
