@@ -204,6 +204,79 @@ describe('lightspeed router tests', () => {
     });
   });
 
+  describe('PUT /v2/conversations/:conversation_id', () => {
+    it('should successfully update topic summary', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${encodedConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        conversation_id: mockConversationId,
+        success: true,
+        message: 'Topic summary updated successfully',
+      });
+    });
+
+    it('should fail with unauthorized error while updating topic summary', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${encodedConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(403);
+      expect(response.body.error).toBeDefined();
+    });
+
+    it('should return 500 error when conversation does not exist', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${mockAnotherConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain('not found');
+    });
+
+    it('should handle upstream server errors properly', async () => {
+      const backendServer = await startBackendServer();
+      // Override the handler to simulate an error from upstream
+      rcs.use(
+        http.put(`${LOCAL_LCS_ADDR}/v2/conversations/:conversation_id`, () => {
+          return new HttpResponse(
+            JSON.stringify({
+              error: {
+                message: 'Internal server error',
+              },
+            }),
+            {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' },
+            },
+          );
+        }),
+      );
+
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${encodedConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
+    });
+  });
+
   describe('GET and DELETE /v2/conversations/:conversation_id', () => {
     it('load history', async () => {
       const backendServer = await startBackendServer();

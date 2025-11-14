@@ -58,6 +58,14 @@ export const chatHistory: any = {};
 chatHistory[mockConversationId] = conversation1History;
 chatHistory[mockConversationId2] = conversation2History;
 
+export function resetChatHistory() {
+  // Clear all existing keys
+  Object.keys(chatHistory).forEach(key => delete chatHistory[key]);
+  // Restore the original conversations
+  chatHistory[mockConversationId] = conversation1History;
+  chatHistory[mockConversationId2] = conversation2History;
+}
+
 export const lcsHandlers = [
   // Models endpoint now served by LCS
   http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
@@ -173,6 +181,33 @@ export const lcsHandlers = [
         }),
         {
           status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    },
+  ),
+
+  http.put(
+    `${LOCAL_LCS_ADDR}/v2/conversations/:conversation_id`,
+    ({ params }) => {
+      const conversation_id = params.conversation_id as string;
+
+      if (conversation_id in chatHistory) {
+        const response = {
+          conversation_id,
+          success: true,
+          message: 'Topic summary updated successfully',
+        };
+        return HttpResponse.json(response);
+      }
+      return new HttpResponse(
+        JSON.stringify({
+          detail: {
+            cause: `Conversation ${conversation_id} not found`,
+          },
+        }),
+        {
+          status: 404,
           headers: { 'Content-Type': 'application/json' },
         },
       );

@@ -1,5 +1,9 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 1.0.3
+
+## 1.0.2
+
 ## 0.4.0
 
 ### Minor Changes

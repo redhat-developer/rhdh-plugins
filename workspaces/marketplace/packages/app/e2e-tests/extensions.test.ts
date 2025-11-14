@@ -79,20 +79,11 @@ test.describe('Admin > Extensions', () => {
       );
 
       await extensionHelper.clickHeading('APIs with 3scale');
-      // Following translated lines are commented due to bug with the translations
-      // await extensionHelper.verifyTableHeadingAndRows([
-      //   translations.table.packageName,
-      //   translations.table.version,
-      //   translations.table.role,
-      //   'Backstage compatibility version',
-      //   translations.table.status,
-      // ]);
       await extensionHelper.verifyTableHeadingAndRows([
-        'Package name',
-        'Version',
-        'Role',
-        'Backstage compatibility version',
-        'Status',
+        translations.table.packageName,
+        translations.table.version,
+        translations.table.role,
+        translations.table.status,
       ]);
       await extensionHelper.verifyHeading(translations.metadata.versions);
       await extensionHelper.closeBar('Close');
@@ -133,20 +124,11 @@ test.describe('Admin > Extensions', () => {
         true,
       );
       await extensionHelper.verifyHeading(translations.metadata.versions);
-      // Following translated lines are commented due to bug with the translations
-      // await extensionHelper.verifyTableHeadingAndRows([
-      //   translations.table.packageName,
-      //   translations.table.version,
-      //   translations.table.role,
-      //   'Backstage compatibility version',
-      //   translations.table.status,
-      // ]);
       await extensionHelper.verifyTableHeadingAndRows([
-        'Package name',
-        'Version',
-        'Role',
-        'Backstage compatibility version',
-        'Status',
+        translations.table.packageName,
+        translations.table.version,
+        translations.table.role,
+        translations.table.status,
       ]);
       await extensionHelper.closeBar('Close');
       await extensions.resetSupportTypeFilter(translations.badges.certified);

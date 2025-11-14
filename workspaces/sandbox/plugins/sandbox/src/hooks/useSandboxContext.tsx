@@ -47,6 +47,7 @@ interface SandboxContextType {
   ansibleError: string | null;
   ansibleStatus: AnsibleStatus;
   segmentTrackClick?: (data: SegmentTrackingData) => Promise<void>;
+  marketoWebhookURL?: string;
 }
 
 const SandboxContext = createContext<SandboxContextType | undefined>(undefined);
@@ -67,6 +68,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const kubeApi = useApi(kubeApiRef);
   const registerApi = useApi(registerApiRef);
   const [segmentWriteKey, setSegmentWriteKey] = useState<string>();
+  const [marketoWebhookURL, setMarketoWebhookURL] = useState<string>();
   const [statusUnknown, setStatusUnknown] = React.useState(true);
   const [userFound, setUserFound] = useState<boolean>(false);
   const [userData, setData] = useState<SignupData | undefined>(undefined);
@@ -219,6 +221,17 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchSegmentWriteKey();
   }, [registerApi]);
 
+  // Fetch Marketo webhook URL from UI config
+  useEffect(() => {
+    const fetchUIConfig = async () => {
+      const uiConfig = await registerApi.getUIConfig();
+      if (uiConfig.workatoWebHookURL) {
+        setMarketoWebhookURL(uiConfig.workatoWebHookURL);
+      }
+    };
+    fetchUIConfig();
+  }, [registerApi]);
+
   const pollStatus = userFound && !userReady;
   const pollInterval =
     status === 'provisioning' ? SHORT_INTERVAL : LONG_INTERVAL;
@@ -270,6 +283,7 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         ansibleError,
         ansibleStatus,
         segmentTrackClick: segmentAnalytics.trackClick,
+        marketoWebhookURL,
       }}
     >
       {children}
