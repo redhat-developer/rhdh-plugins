@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.12.2
+
+### Patch Changes
+
+- 17e7e5b: - improve plugin installation alert message with link to documentation
+  - show err message on the drawer when plugin/package content is not available
+  - show an alert when the dynamicArtifact for a package is missing
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.12.2
+
 ## 0.12.1
 
 ### Patch Changes
