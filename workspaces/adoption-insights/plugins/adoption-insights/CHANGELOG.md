@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.4.1
+
+### Patch Changes
+
+- d3ab6a9: fixed scaling issues
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.4.1
+
 ## 0.3.2
 
 ### Patch Changes
