@@ -15,7 +15,11 @@
  */
 
 import type { Config } from '@backstage/config';
-import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { DateTime } from 'luxon';
+import {
+  ProcessInstanceDTO,
+  WorkflowLogsResponse,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
 export class LokiProvider implements WorkflowLogProvider {
@@ -31,17 +35,30 @@ export class LokiProvider implements WorkflowLogProvider {
     return 'loki';
   }
 
-  async fetchWorkflowLogsByIntance(instance: ProcessInstanceDTO) {
+  async fetchWorkflowLogsByIntance(
+    instance: ProcessInstanceDTO,
+  ): Promise<WorkflowLogsResponse> {
     // Fetch the logs, probably add something to that orchestrator service object? OR maybe a logViewerService object instead
     // We are not querying actual orchestrator since the logs don't live there
     // Query will be against the log provider, like Loki for example
     // logViewerService is probably going to be the new class/interface that other providers can implement in the future
 
+    // Becuase of timing issues, subtract 5 mintues from the start and add 5 minutes to the end
+    const startTime = DateTime.fromISO(instance.start as string, {
+      setZone: true,
+    })
+      .minus({ minutes: 5 })
+      .toISO();
+    const endTime = instance.end
+      ? DateTime.fromISO(instance.end as string, { setZone: true })
+          .plus({ minutes: 5 })
+          .toISO()
+      : '';
     const lokiApiEndpoint = '/loki/api/v1/query_range';
     const params = new URLSearchParams({
       query: `{service_name=~".+"} |="${instance.id}"`,
-      start: instance.start as string,
-      end: instance.end || '',
+      start: startTime as string,
+      end: endTime as string,
     });
 
     const urlToFetch = `${this.baseURL}${lokiApiEndpoint}?${params.toString()}`;
@@ -50,7 +67,7 @@ export class LokiProvider implements WorkflowLogProvider {
 
     let allResults;
     if (response.status !== 200) {
-      console.log('ERror', response.statusText, response);
+      console.log('Error', response.statusText, response);
     } else {
       const jsonResponse = await response.json();
       // Reduce the results into another array
@@ -64,18 +81,19 @@ export class LokiProvider implements WorkflowLogProvider {
         [],
       );
     }
-    return allResults.sort((a: number[], b: number[]) => {
-      return a[0] - b[0];
-    });
+    const workflowLogsResponse: WorkflowLogsResponse = {
+      instanceId: instance.id,
+      logs: allResults.sort((a: number[], b: number[]) => {
+        return a[0] - b[0];
+      }),
+    };
+    return workflowLogsResponse;
   }
 
   static fromConfig(config: Config): LokiProvider {
     const lokiConfig = config.getConfig(
-      'orchestrator.workflowLogProviders.loki',
+      'orchestrator.workflowLogProvider.loki',
     );
-    console.log(lokiConfig);
-    // const random = config.getString('orchestrator.workflowLogProviders.loki.thing');
-    // console.log(random);
     return new LokiProvider(lokiConfig);
   }
 }
