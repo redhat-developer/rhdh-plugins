@@ -21,7 +21,7 @@ import {
   OAuthRequestDialog,
   SignInPage,
 } from '@backstage/core-components';
-import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { githubAuthApiRef, gitlabAuthApiRef } from '@backstage/core-plugin-api';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -46,20 +46,26 @@ import {
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
+import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
-import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { NotificationsPage } from '@backstage/plugin-notifications';
+import { SignalsDisplay } from '@backstage/plugin-signals';
+import { RbacPage } from '@backstage-community/plugin-rbac';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
+import { orchestratorTranslations } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
 const app = createApp({
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
-    resources: [bulkImportTranslations],
+    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+    resources: [bulkImportTranslations, orchestratorTranslations],
   },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
@@ -91,11 +97,20 @@ const app = createApp({
             message: 'Sign in using GitHub',
             apiRef: githubAuthApiRef,
           },
+          {
+            id: 'gitlab-auth-provider',
+            title: 'GitLab',
+            message: 'Sign in using GitLab',
+            apiRef: gitlabAuthApiRef,
+          },
         ]}
       />
     ),
   },
   themes: getThemes(),
+  /* Hardcoded deployment of the Orchestrator Form Widget library in our DEV-only instance.
+    In a production deployment, the plugin will be loaded dynamically. */
+  plugins: [orchestratorFormWidgetsPlugin],
 });
 
 const routes = (
@@ -134,6 +149,9 @@ const routes = (
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/bulk-import" element={<Navigate to="repositories" />} />
     <Route path="/bulk-import/repositories" element={<BulkImportPage />} />
+    <Route path="/notifications" element={<NotificationsPage />} />
+    <Route path="/orchestrator" element={<OrchestratorPage />} />
+    <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );
 
@@ -141,6 +159,7 @@ export default app.createRoot(
   <>
     <AlertDisplay />
     <OAuthRequestDialog />
+    <SignalsDisplay />
     <AppRouter>
       <Root>{routes}</Root>
     </AppRouter>

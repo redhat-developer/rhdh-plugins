@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-export interface Config {
-  bulkImport?: {
-    /**
-     * The name of the API used for bulk import operations.
-     *
-     * `open-pull-requests`:  Uses the Open Pull Requests API to create pull requests for each repository.
-     *  This is the default option
-     *
-     * `scaffolder`: Uses the Scaffolder API to create import jobs.  This option is useful when you need to
-     *  customize the import process or integrate it with other Scaffolder actions.
-     * @visibility frontend
-     */
-    importAPI?: 'open-pull-requests' | 'scaffolder' | 'orchestrator';
-  };
-}
+/**
+ * @param {Knex} knex
+ */
+exports.up = async function up(knex) {
+  await knex.schema.alterTable('orchestrator_workflows', table => {
+    table.string('status');
+  });
+};
+
+/**
+ * @param {Knex} knex
+ */
+exports.down = async function down(knex) {
+  await knex.schema.alterTable('orchestrator_workflows', table => {
+    table.dropColumn('status');
+  });
+};

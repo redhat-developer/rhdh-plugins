@@ -46,7 +46,6 @@ export async function createWorkflowImportJobs(
   const {
     orchestratorWorkflowId,
     discovery,
-    baseOrchestratorAPIUrl,
     token,
     requestBody,
     orchestratorWorkflowDao,
@@ -64,11 +63,9 @@ export async function createWorkflowImportJobs(
   const baseUrl = await discovery.getBaseUrl('orchestrator');
   const config = new Configuration();
 
+  console.log(`URL is ${baseUrl}`);
   // Initialize the client
-  const url = baseOrchestratorAPIUrl
-    ? baseOrchestratorAPIUrl
-    : `${baseUrl}/v2/workflows/instances`;
-  const orchestratorApi = new DefaultApi(config, url);
+  const orchestratorApi = new DefaultApi(config, baseUrl);
 
   for (const repo of requestBody) {
     if (!repo.repository.url) {
@@ -78,7 +75,11 @@ export async function createWorkflowImportJobs(
     try {
       const requestDTO: ExecuteWorkflowRequestDTO = {
         inputData: {
-          repositoryUrl: repo.repository.url,
+          // owner: 'AndrienkoAleksandr',
+          // repo: 'AngularJS',
+          // baseBranch: 'test',
+          // targetBranch: "master"
+          // repositoryUrl: repo.repository.url,
         },
       };
 

@@ -27,6 +27,7 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
+import { InputError } from '@backstage/errors';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
@@ -63,9 +64,11 @@ import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
+  deleteOrchestratorImportByRepo,
   deleteTaskImportByRepo,
   findAllImports,
   findImportStatusByRepo,
+  findOrchestratorImportStatusByRepo,
   findTaskImportStatusByRepo,
   sortImports,
 } from './handlers/import';
@@ -105,6 +108,8 @@ namespace Operations {
 
   export const FIND_ALL_IMPORTS = 'findAllImports';
   export const FIND_ALL_TASK_IMPORTS = 'findAllTaskImports';
+  export const FIND_ALL_ORCHESTRATOR_WORKFLOW_IMPORTS =
+    'findAllOrchestratorWorkflowImports';
 
   export const CREATE_IMPORT_JOBS = 'createImportJobs';
   export const CREATE_TASK_IMPORT_JOBS = 'createTaskImportJobs';
@@ -113,9 +118,13 @@ namespace Operations {
 
   export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
   export const FIND_TASK_IMPORT_STATUS_BY_REPO = 'findTaskImportStatusByRepo';
+  export const FIND_ORCHESTRATOR_IMPORT_STATUS_BY_REPO =
+    'findOrchestratorImportStatusByRepo';
 
   export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo';
   export const DELETE_TASK_IMPORT_BY_REPO = 'deleteTaskImportByRepo';
+  export const DELETE_ORCHESTRATOR_IMPORT_BY_REPO =
+    'deleteOrchestratorImportByRepo';
 }
 
 /**
@@ -183,13 +192,6 @@ export async function createRouter(
   if (templateRef) {
     finalTemplateRef = getImportTemplateRef(templateRef);
   }
-
-  const baseOrchestratorAPIUrl = config.getOptionalString(
-    `bulkImport.orchestrator.url`,
-  );
-  const orchestratorToken = config.getOptionalString(
-    `bulkImport.orchestrator.token`,
-  );
 
   const orchestratorWorkflowId = config.getOptionalString(
     'bulkImport.orchestratorWorkflow',
@@ -387,6 +389,48 @@ export async function createRouter(
   );
 
   api.register(
+    Operations.FIND_ALL_ORCHESTRATOR_WORKFLOW_IMPORTS,
+    async (c: Context, req: Request, res: Response) => {
+      const { pageNumber, pageSize, search, sortColumn, sortOrder } =
+        getFindImportsParams(c);
+      const imports: SourceImport[] = [];
+      const repositories = await repositoryDao.findRepositories(
+        pageNumber,
+        pageSize,
+        search,
+      );
+
+      const token = getBearerTokenFromReq(req);
+
+      for (const repo of repositories.data) {
+        const response = await findOrchestratorImportStatusByRepo(
+          {
+            logger,
+            orchestratorWorkflowDao,
+            discovery,
+          },
+          repo.url,
+          token,
+        );
+        if (response.responseBody) {
+          imports.push(response.responseBody);
+        }
+      }
+
+      sortImports(imports, sortColumn, sortOrder);
+
+      const responseBody: Components.Schemas.ImportJobListV2 = {
+        imports,
+        totalCount: repositories.total,
+        page: pageNumber || 1,
+        size: pageSize || 5,
+      };
+
+      return res.status(200).json(responseBody);
+    },
+  );
+
+  api.register(
     Operations.CREATE_IMPORT_JOBS,
     async (
       c: Context<Paths.CreateImportJobs.RequestBody>,
@@ -450,7 +494,7 @@ export async function createRouter(
     Operations.CREATE_ORCHESTRATOR_WORKFLOW_JOBS,
     async (
       c: Context<Paths.CreateImportJobs.RequestBody>,
-      _req: Request,
+      req: Request,
       res: Response,
     ) => {
       if (!orchestratorWorkflowId) {
@@ -458,11 +502,13 @@ export async function createRouter(
           `Missing required config value: 'bulkImport.orchestratorWorkflow'`,
         );
       }
+
+      const token = getBearerTokenFromReq(req);
+
       const response = await createWorkflowImportJobs({
         orchestratorWorkflowId,
         discovery,
-        baseOrchestratorAPIUrl,
-        token: orchestratorToken,
+        token,
         requestBody: c.request.requestBody,
         orchestratorWorkflowDao,
         repositoryDao,
@@ -527,6 +573,29 @@ export async function createRouter(
   );
 
   api.register(
+    Operations.FIND_ORCHESTRATOR_IMPORT_STATUS_BY_REPO,
+    async (c: Context, req: Request, res: Response) => {
+      const q: Paths.FindImportStatusByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank parameter');
+      }
+      const token = getBearerTokenFromReq(req);
+      const response = await findOrchestratorImportStatusByRepo(
+        {
+          logger,
+          orchestratorWorkflowDao,
+          discovery,
+        },
+        q.repo,
+        token,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
     Operations.DELETE_TASK_IMPORT_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.DeleteImportByRepo.QueryParameters = {
@@ -567,6 +636,26 @@ export async function createRouter(
         },
         q.repo,
         q.defaultBranch,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.DELETE_ORCHESTRATOR_IMPORT_BY_REPO,
+    async (c: Context, _req: Request, res: Response) => {
+      const q: Paths.DeleteImportByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank "repo" parameter');
+      }
+      const response = await deleteOrchestratorImportByRepo(
+        {
+          logger,
+          dao: repositoryDao,
+        },
+        q.repo,
       );
       return res.status(response.statusCode).json(response.responseBody);
     },
@@ -679,6 +768,7 @@ async function createAuditorEventByOperationId(
       break;
     case Operations.DELETE_IMPORT_BY_REPO:
     case Operations.DELETE_TASK_IMPORT_BY_REPO:
+    case Operations.DELETE_ORCHESTRATOR_IMPORT_BY_REPO:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'delete',
         repository: req.query.repo,
@@ -739,4 +829,12 @@ function getFindImportsParams(c: Context<any, any, any, any, any, Document>): {
     sortColumn: q.sortColumn,
     sortOrder: q.sortOrder,
   };
+}
+
+function getBearerTokenFromReq(req: express.Request): string {
+  const header = req.header('authorization') ?? req.headers.authorization;
+  if (header && header.startsWith(`Bearer `)) {
+    return header.replace('Bearer ', '');
+  }
+  throw new InputError(`Request provided without token`);
 }

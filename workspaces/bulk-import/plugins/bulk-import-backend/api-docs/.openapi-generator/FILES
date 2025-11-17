@@ -23,6 +23,7 @@ Models/ScaffolderTask.md
 Models/Source.md
 Models/SourceImport.md
 Models/TaskImportStatus.md
+Models/WorkflowImportStatus.md
 Models/findAllImports_200_response.md
 Models/findAllImports_500_response.md
 Models/ping_200_response.md
