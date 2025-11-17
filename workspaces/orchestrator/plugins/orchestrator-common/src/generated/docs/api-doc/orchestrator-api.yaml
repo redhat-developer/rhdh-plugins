@@ -259,8 +259,6 @@ spec:
                 application/json:
                   schema:
                     $ref: '#/components/schemas/ErrorResponse'
-       # This might actually need to know the workflow instanceID to get the proper log
-      # TODO: also need a raw log endpoint, or just a parameter
       /v2/workflows/instances/{instanceId}/logs:
         get:
           operationId: getWorkflowLogById
