@@ -2,7 +2,7 @@ app:
   title: RHDH Plugins
   baseUrl: http://localhost:3001
 listen:
-    port: 3001
+  port: 3001
 
 organization:
   name: Red Hat
