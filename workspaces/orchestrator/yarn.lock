@@ -12682,6 +12682,7 @@ __metadata:
     "@backstage/cli": ^0.34.4
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
+    luxon: ^3.7.2
   languageName: unknown
   linkType: soft
 

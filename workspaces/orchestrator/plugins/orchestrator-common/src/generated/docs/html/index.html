@@ -1238,6 +1238,18 @@ ul.nav-tabs {
     }
   }
 };
+    defs["WorkflowLogsResponse"] = {
+  "properties" : {
+    "instanceId" : {
+      "type" : "string",
+      "description" : "The ID of the workflow instance"
+    },
+    "logs" : {
+      "description" : "An Array of the logs to return"
+    }
+  },
+  "description" : "Result of workflow log query"
+};
     defs["WorkflowOverviewDTO"] = {
   "required" : [ "format", "workflowId" ],
   "properties" : {
@@ -4225,7 +4237,7 @@ public class DefaultApiExample {
         Boolean rawlog = true; // Boolean | whether to return the raw log or not
 
         try {
-            ProcessInstanceDTO result = apiInstance.getWorkflowLogById(instanceId, rawlog);
+            WorkflowLogsResponse result = apiInstance.getWorkflowLogById(instanceId, rawlog);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getWorkflowLogById");
@@ -4264,7 +4276,7 @@ public class DefaultApiExample {
         Boolean rawlog = true; // Boolean | whether to return the raw log or not
 
         try {
-            ProcessInstanceDTO result = apiInstance.getWorkflowLogById(instanceId, rawlog);
+            WorkflowLogsResponse result = apiInstance.getWorkflowLogById(instanceId, rawlog);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#getWorkflowLogById");
@@ -4287,7 +4299,7 @@ Boolean *rawlog = true; // whether to return the raw log or not (optional) (defa
 
 [apiInstance getWorkflowLogByIdWith:instanceId
     rawlog:rawlog
-              completionHandler: ^(ProcessInstanceDTO output, NSError* error) {
+              completionHandler: ^(WorkflowLogsResponse output, NSError* error) {
     if (output) {
         NSLog(@"%@", output);
     }
@@ -4342,7 +4354,7 @@ namespace Example
             var rawlog = true;  // Boolean | whether to return the raw log or not (optional)  (default to false)
 
             try {
-                ProcessInstanceDTO result = apiInstance.getWorkflowLogById(instanceId, rawlog);
+                WorkflowLogsResponse result = apiInstance.getWorkflowLogById(instanceId, rawlog);
                 Debug.WriteLine(result);
             } catch (Exception e) {
                 Debug.Print("Exception when calling DefaultApi.getWorkflowLogById: " + e.Message );

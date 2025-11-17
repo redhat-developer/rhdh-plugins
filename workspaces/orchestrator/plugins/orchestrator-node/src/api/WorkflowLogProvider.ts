@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import {
+  ProcessInstanceDTO,
+  WorkflowLogsResponse,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 /**
  * @public
@@ -24,5 +27,5 @@ export interface WorkflowLogProvider {
   getBaseURL(): string;
   fetchWorkflowLogsByIntance(
     workflowInstance: ProcessInstanceDTO,
-  ): Promise<any>;
+  ): Promise<WorkflowLogsResponse>;
 }
