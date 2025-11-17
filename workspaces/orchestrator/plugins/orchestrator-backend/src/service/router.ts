@@ -64,7 +64,6 @@ import { DataInputSchemaService } from './DataInputSchemaService';
 import { OrchestratorService } from './OrchestratorService';
 import { SonataFlowService } from './SonataFlowService';
 import { WorkflowCacheService } from './WorkflowCacheService';
-import { WorkflowLoggerService } from './WorkflowLoggerService';
 
 interface PublicServices {
   dataInputSchemaService: DataInputSchemaService;
@@ -276,11 +275,7 @@ function initPublicServices(
   // Create that workflow logging class/interface instance here
   const workflowLogProvider: WorkflowLogProvider | undefined =
     workflowLogsProvidersRegistry.getProvider('loki');
-  if (workflowLogProvider) {
-    console.log('There is a provider');
-  }
 
-  // ADD the workflow logging interface here
   const orchestratorService = new OrchestratorService(
     sonataFlowService,
     dataIndexService,
@@ -971,7 +966,7 @@ function setupInternalRoutes(
     'getWorkflowLogById',
     async (c, request: express.Request, res: express.Response, next) => {
       const instanceId = c.request.params.instanceId as string;
-      // TODO: will probably have to get the raw log at some point
+      // will probably have to get the raw log at some point
       // const rawLog = c.request.query.instanceId as Boolean;
 
       const auditEvent = await auditor.createEvent({
@@ -984,6 +979,10 @@ function setupInternalRoutes(
       });
 
       try {
+        // Check that a log provider has been setup
+        if (!services.orchestratorService.hasLogProvider()) {
+          throw new Error(`No log provider setup`);
+        }
         const instance = await routerApi.v2.getInstanceById(instanceId);
         const workflowId = instance.processId;
 
@@ -1022,8 +1021,6 @@ function setupInternalRoutes(
         }
 
         const logs = await routerApi.v2.getInstanceLogsByInstance(instance);
-        // Do something with the logs to send back
-        console.log(logs);
 
         auditEvent.success();
         res.status(200).json(logs);

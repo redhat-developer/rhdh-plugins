@@ -42,8 +42,6 @@ export const orchestratorPlugin = createBackendPlugin({
         ...newWorkflowLogProviders: WorkflowLogProvider[]
       ) {
         newWorkflowLogProviders.forEach(workflowLogProvider => {
-          // TODO: add this workflow log provider to our list of providers
-          console.log(workflowLogProvider);
           workflowLogsProvidersRegistry.register(workflowLogProvider);
         });
       },

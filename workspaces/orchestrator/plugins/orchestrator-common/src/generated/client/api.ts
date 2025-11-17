@@ -640,6 +640,25 @@ export interface WorkflowListResultDTO {
     'paginationInfo': PaginationInfoDTO;
 }
 /**
+ * Result of workflow log query
+ * @export
+ * @interface WorkflowLogsResponse
+ */
+export interface WorkflowLogsResponse {
+    /**
+     * The ID of the workflow instance
+     * @type {string}
+     * @memberof WorkflowLogsResponse
+     */
+    'instanceId'?: string;
+    /**
+     * An Array of the logs to return
+     * @type {any}
+     * @memberof WorkflowLogsResponse
+     */
+    'logs'?: any;
+}
+/**
  * 
  * @export
  * @interface WorkflowOverviewDTO
@@ -1488,7 +1507,7 @@ export const DefaultApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getWorkflowLogById(instanceId: string, rawlog?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProcessInstanceDTO>> {
+        async getWorkflowLogById(instanceId: string, rawlog?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<WorkflowLogsResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getWorkflowLogById(instanceId, rawlog, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DefaultApi.getWorkflowLogById']?.[localVarOperationServerIndex]?.url;
@@ -1660,7 +1679,7 @@ export const DefaultApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getWorkflowLogById(instanceId: string, rawlog?: boolean, options?: any): AxiosPromise<ProcessInstanceDTO> {
+        getWorkflowLogById(instanceId: string, rawlog?: boolean, options?: any): AxiosPromise<WorkflowLogsResponse> {
             return localVarFp.getWorkflowLogById(instanceId, rawlog, options).then((request) => request(axios, basePath));
         },
         /**

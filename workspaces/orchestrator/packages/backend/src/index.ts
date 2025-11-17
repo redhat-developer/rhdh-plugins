@@ -75,6 +75,7 @@ backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
 // custom authentication provider module
 backend.add(import('custom-authentication-provider-module-backend'));
 
+// orchestrator Log Provider
 backend.add(
   import(
     '@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki'

@@ -24,6 +24,7 @@ Models/WorkflowDTO.md
 Models/WorkflowDataDTO.md
 Models/WorkflowFormatDTO.md
 Models/WorkflowListResultDTO.md
+Models/WorkflowLogsResponse.md
 Models/WorkflowOverviewDTO.md
 Models/WorkflowOverviewListResultDTO.md
 Models/WorkflowProgressDTO.md

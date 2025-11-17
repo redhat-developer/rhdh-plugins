@@ -272,7 +272,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProcessInstanceDTO' # Need to create something new here
+                $ref: '#/components/schemas/WorkflowLogsResponse' # Need to create something new here
         '500':
           description: Error fetching workflow statuses
           content:
@@ -808,3 +808,14 @@ components:
           type: object
         data:
           type: object
+
+    WorkflowLogsResponse:
+      description: Result of workflow log query
+      type: object
+      properties:
+        instanceId:
+          description: The ID of the workflow instance
+          type: string
+        logs:
+          description: An Array of the logs to return
+          type: array

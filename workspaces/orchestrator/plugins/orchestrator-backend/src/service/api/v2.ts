@@ -27,6 +27,7 @@ import {
   RetriggerInstanceRequestDTO,
   WorkflowDTO,
   WorkflowInfo,
+  WorkflowLogsResponse,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
   WorkflowRunStatusDTO,
@@ -182,7 +183,7 @@ export class V2 {
 
   public async getInstanceLogsByInstance(
     instance: ProcessInstanceDTO,
-  ): Promise<any> {
+  ): Promise<WorkflowLogsResponse> {
     const logs = await this.orchestratorService.fetchWorkflowLogsByInstance({
       instance,
     });

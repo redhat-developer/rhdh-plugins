@@ -187,7 +187,7 @@ No authorization required
 
 <a name="getWorkflowLogById"></a>
 # **getWorkflowLogById**
-> ProcessInstanceDTO getWorkflowLogById(instanceId, rawlog)
+> WorkflowLogsResponse getWorkflowLogById(instanceId, rawlog)
 
 
 
@@ -202,7 +202,7 @@ No authorization required
 
 ### Return type
 
-[**ProcessInstanceDTO**](../Models/ProcessInstanceDTO.md)
+[**WorkflowLogsResponse**](../Models/WorkflowLogsResponse.md)
 
 ### Authorization
 

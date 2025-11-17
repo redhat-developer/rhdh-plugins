@@ -23,6 +23,7 @@ import {
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowInfo,
+  WorkflowLogsResponse,
   WorkflowOverview,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
@@ -176,8 +177,17 @@ export class OrchestratorService {
 
   public async fetchWorkflowLogsByInstance(args: {
     instance: ProcessInstanceDTO;
-  }): Promise<any> {
-    return this.workflowLogProvider?.fetchWorkflowLogsByIntance(args.instance);
+  }): Promise<WorkflowLogsResponse> {
+    return this.workflowLogProvider?.fetchWorkflowLogsByIntance(
+      args.instance,
+    ) as WorkflowLogsResponse;
+  }
+
+  public hasLogProvider(): boolean {
+    if (this.workflowLogProvider) {
+      return true;
+    }
+    return false;
   }
 
   public async pingWorkflowService(args: {

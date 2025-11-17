@@ -34,6 +34,7 @@ export const orchestratorModuleLoki = createBackendModule({
         logger.info('Hello World!');
         console.log('In the loki backend module');
         workflowLogs.addWorkflowLogProvider(LokiProvider.fromConfig(config));
+        console.log('here');
       },
     });
   },

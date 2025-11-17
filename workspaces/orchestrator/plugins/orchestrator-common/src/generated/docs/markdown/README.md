@@ -50,6 +50,7 @@ All URIs are relative to *http://localhost*
  - [WorkflowDataDTO](./Models/WorkflowDataDTO.md)
  - [WorkflowFormatDTO](./Models/WorkflowFormatDTO.md)
  - [WorkflowListResultDTO](./Models/WorkflowListResultDTO.md)
+ - [WorkflowLogsResponse](./Models/WorkflowLogsResponse.md)
  - [WorkflowOverviewDTO](./Models/WorkflowOverviewDTO.md)
  - [WorkflowOverviewListResultDTO](./Models/WorkflowOverviewListResultDTO.md)
  - [WorkflowProgressDTO](./Models/WorkflowProgressDTO.md)
