@@ -112,6 +112,7 @@ export class DevModeService {
 
     this.logger.info(
       `Auto starting SonataFlow through: ${
+        //
         launcherCmd.command
       } ${launcherCmd.args.join(' ')}`,
     );

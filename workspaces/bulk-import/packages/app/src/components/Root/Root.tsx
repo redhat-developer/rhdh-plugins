@@ -44,6 +44,7 @@ import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-b
 import { PropsWithChildren } from 'react';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -97,6 +98,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             to="create"
             text="Create..."
           />
+          <SidebarItem
+            icon={() => <></>}
+            to="orchestrator"
+            text="Orchestrator"
+          />
           <BulkImportSidebarItem />
 
           {/* End global nav */}
@@ -112,6 +118,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           icon={<UserSettingsSignInAvatar />}
           to="/settings"
         >
+          <NotificationsSidebarItem />
           <SidebarSettings />
         </SidebarGroup>
       </Sidebar>

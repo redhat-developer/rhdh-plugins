@@ -579,6 +579,97 @@ const OPENAPI = `
       }
     },
     "/orchestrator-workflows": {
+      "get": {
+        "operationId": "findAllOrchestratorWorkflowImports",
+        "summary": "Fetch Import Jobs",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/apiVersionHeaderParam"
+          },
+          {
+            "$ref": "#/components/parameters/pagePerIntegrationQueryParamDeprecated"
+          },
+          {
+            "$ref": "#/components/parameters/sizePerIntegrationQueryParamDeprecated"
+          },
+          {
+            "$ref": "#/components/parameters/pageQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sizeQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sortOrderQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/sortColumnQueryParam"
+          },
+          {
+            "$ref": "#/components/parameters/searchQueryParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import Job list was fetched successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SourceImport"
+                      }
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImportJobListV2"
+                    }
+                  ]
+                },
+                "examples": {
+                  "twoImports": {
+                    "$ref": "#/components/examples/twoImports"
+                  },
+                  "multipleImportJobsV2": {
+                    "$ref": "#/components/examples/multipleImportJobsV2"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error when there are errors and no Import Job is returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "description": "Generic error"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ImportJobListV2"
+                    }
+                  ]
+                },
+                "examples": {
+                  "repositoryListErrors": {
+                    "$ref": "#/components/examples/importJobListErrors"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "operationId": "createOrhestratorWorkflowJobs",
         "summary": "Execute an orchestrator workflow",
@@ -674,6 +765,83 @@ const OPENAPI = `
       "delete": {
         "operationId": "deleteTaskImportByRepo",
         "summary": "Delete stored scaffolder task records for a specific repository",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "repo",
+            "description": "the full URL to the repo",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/approvalToolParam"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Repository was deleted successfully with no errors"
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      }
+    },
+    "/orchestrator-import/by-repo": {
+      "get": {
+        "operationId": "findOrchestratorImportStatusByRepo",
+        "summary": "Get Import Status by repository",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Import"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "repo",
+            "description": "the full URL to the repo",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Import Job status was determined successfully with no errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Import"
+                },
+                "examples": {
+                  "singleImportStatusForRepo": {
+                    "$ref": "#/components/examples/singleImportStatusForRepo"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Generic error"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteOrchestratorImportByRepo",
+        "summary": "Delete stored orchestrator workflow records for a specific repository",
         "security": [
           {
             "BearerAuth": []
@@ -1037,6 +1205,9 @@ const OPENAPI = `
               },
               {
                 "$ref": "#/components/schemas/TaskImportStatus"
+              },
+              {
+                "$ref": "#/components/schemas/WorkflowImportStatus"
               }
             ]
           },
@@ -1129,6 +1300,9 @@ const OPENAPI = `
               },
               {
                 "$ref": "#/components/schemas/TaskImportStatus"
+              },
+              {
+                "$ref": "#/components/schemas/WorkflowImportStatus"
               }
             ]
           },
@@ -1341,6 +1515,17 @@ const OPENAPI = `
             }
           }
         }
+      },
+      "WorkflowImportStatus": {
+        "type": "string",
+        "description": "Import Job status",
+        "enum": [
+          "WORKFLOW_SCHEDULED",
+          "WORKFLOW_RUNNING",
+          "WORKFLOW_COMPLETED",
+          "WORKFLOW_FAILED",
+          "WORKFLOW_FETCH_FAILED"
+        ]
       }
     },
     "securitySchemes": {

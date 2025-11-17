@@ -21,8 +21,14 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
+import { NotFoundError } from '@backstage/errors';
 
 import gitUrlParse from 'git-url-parse';
+
+import {
+  Configuration,
+  DefaultApi,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
 import type { CatalogInfoGenerator } from '../../../catalog/catalogInfoGenerator';
@@ -31,6 +37,7 @@ import {
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
 import {
+  OrchestratorWorkflowDao,
   RepositoryDao,
   ScaffolderTaskDao,
   TaskLocationsDao,
@@ -775,7 +782,7 @@ export async function findImportStatusByRepo(
       defaultBranch,
     },
     approvalTool: deps.approvalTool,
-    status: null,
+    status: 'ADDED',
   } as Components.Schemas.Import;
   try {
     // Check to see if there are any PR
@@ -973,6 +980,89 @@ export async function findTaskImportStatusByRepo(
   };
 }
 
+export async function findOrchestratorImportStatusByRepo(
+  deps: {
+    logger: LoggerService;
+    orchestratorWorkflowDao: OrchestratorWorkflowDao;
+    discovery: DiscoveryService;
+  },
+  repoUrl: string,
+  token: string,
+): Promise<HandlerResponse<Components.Schemas.Import>> {
+  deps.logger.debug(
+    `Getting orchestrator workflow import job status for ${repoUrl}..`,
+  );
+
+  const gitUrl = gitUrlParse(repoUrl);
+
+  const errors: string[] = [];
+  const result: Components.Schemas.Import = {
+    id: repoUrl,
+    repository: {
+      url: repoUrl,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+    },
+    approvalTool: 'GIT',
+  };
+  try {
+    const workflow =
+      await deps.orchestratorWorkflowDao.findWorkflowByRepoUrl(repoUrl);
+    if (!workflow) {
+      throw new NotFoundError(
+        `Workflow for repository ${repoUrl} was not found`,
+      );
+    }
+    if (workflow.instanceId) {
+      const baseUrl = await deps.discovery.getBaseUrl('orchestrator');
+      const config = new Configuration();
+      const orchestratorApi = new DefaultApi(config, baseUrl);
+      const response = await orchestratorApi.getInstanceById(
+        workflow.instanceId,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const instance = response.data;
+      if (instance) {
+        result.workflow = {
+          workflowId: instance.id,
+        };
+        result.lastUpdate = instance.end;
+        const status =
+          `WORKFLOW_${(instance.state as string)?.toLocaleUpperCase()}` as Components.Schemas.WorkflowImportStatus;
+        result.status = status;
+        if (workflow.instanceId) {
+          await deps.orchestratorWorkflowDao.updateWorkflow(
+            workflow.instanceId,
+            status,
+          );
+        }
+      }
+    }
+  } catch (error: any) {
+    errors.push(error.message);
+    result.errors = errors;
+    result.status = 'WORKFLOW_FETCH_FAILED';
+    if (error.message?.includes('Not Found')) {
+      return {
+        statusCode: 404,
+        responseBody: result,
+      };
+    }
+  }
+
+  return {
+    statusCode: 200,
+    responseBody: result,
+  };
+}
+
 async function parsePullOrMergeRequestInfo(
   checkpoints: Record<string, any>,
   githubApiService: GitlabApiService,
@@ -1094,6 +1184,32 @@ export async function deleteImportByRepo(
 }
 
 export async function deleteTaskImportByRepo(
+  deps: {
+    logger: LoggerService;
+    dao: RepositoryDao;
+  },
+  repoUrl: string,
+): Promise<HandlerResponse<void>> {
+  deps.logger.debug(`Deleting repository from database by name ${repoUrl}...`);
+  try {
+    await deps.dao.deleteRepository(repoUrl);
+
+    return {
+      statusCode: 204,
+      responseBody: undefined,
+    };
+  } catch (error: any) {
+    deps.logger.error(
+      `Failed to delete repository from database by url ${repoUrl}`,
+      error,
+    );
+    return {
+      statusCode: 500,
+    };
+  }
+}
+
+export async function deleteOrchestratorImportByRepo(
   deps: {
     logger: LoggerService;
     dao: RepositoryDao;

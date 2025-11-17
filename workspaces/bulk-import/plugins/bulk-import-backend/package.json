@@ -87,9 +87,6 @@
     "prettier": "3.6.2",
     "supertest": "6.3.4"
   },
-  "peerDependencies": {
-    "@janus-idp/backstage-plugin-audit-log-node": "^1.7.0"
-  },
   "files": [
     "dist",
     "migrations",
