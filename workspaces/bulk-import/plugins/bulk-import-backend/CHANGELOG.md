@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 6.7.2
+
+### Patch Changes
+
+- 8694ed5: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@playwright/test` to `1.56.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.2
+
 ## 6.7.1
 
 ### Patch Changes
