@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-bui-test
 
+## 0.1.0
+
+### Minor Changes
+
+- 11029f6: Backstage version bump to v1.44.2
+
 ## 0.0.2
 
 ### Patch Changes
