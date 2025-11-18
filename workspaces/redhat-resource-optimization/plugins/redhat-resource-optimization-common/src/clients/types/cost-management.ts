@@ -164,20 +164,3 @@ export interface CostManagementReport {
   };
   data: DateData[];
 }
-
-/** @public */
-export interface GetCostManagementRequest {
-  query: {
-    currency?: CurrencyCode;
-    delta?: string;
-    'filter[limit]'?: number;
-    'filter[offset]'?: number;
-    'filter[resolution]'?: 'daily' | 'monthly';
-    'filter[time_scope_units]'?: 'day' | 'month';
-    'filter[time_scope_value]'?: number;
-    'group_by[project]'?: '*' | string;
-    'order_by[distributed_cost]'?: 'asc' | 'desc';
-    'order_by[markup_cost]'?: 'asc' | 'desc';
-    'order_by[raw_cost]'?: 'asc' | 'desc';
-  };
-}
