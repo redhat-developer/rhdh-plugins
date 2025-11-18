@@ -86,6 +86,7 @@
     "@patternfly/react-icons": "^6.4.0",
     "@patternfly/react-styles": "^6.4.0",
     "@patternfly/react-topology": "^6.4.0",
+    "@red-hat-developer-hub/backstage-plugin-konflux-backend": "workspace:^",
     "@tanstack/react-query": "^5.90.5",
     "cookie-parser": "^1.4.7",
     "js-yaml": "^4.1.0",
