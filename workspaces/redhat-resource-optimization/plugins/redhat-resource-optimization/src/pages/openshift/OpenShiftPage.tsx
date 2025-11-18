@@ -15,7 +15,12 @@
  */
 
 import React, { useMemo, useState, useCallback } from 'react';
-import { Table, TableColumn, InfoCard } from '@backstage/core-components';
+import {
+  Table,
+  TableColumn,
+  InfoCard,
+  ResponseErrorPanel,
+} from '@backstage/core-components';
 import Typography from '@material-ui/core/Typography';
 import { BasePage } from '../../components/BasePage';
 import { PageLayout } from '../../components/PageLayout';
@@ -29,7 +34,6 @@ import { optimizationsApiRef } from '../../apis';
 import useAsync from 'react-use/lib/useAsync';
 import { CURRENCY_SYMBOLS } from '../../constants/currencies';
 
-// Helper function to format currency
 const formatCurrency = (value: number, currencyCode: string): string => {
   const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
   return `${symbol}${value.toLocaleString('en-US', {
@@ -38,7 +42,6 @@ const formatCurrency = (value: number, currencyCode: string): string => {
   })}`;
 };
 
-// Mock data types for cost management
 interface ProjectCost {
   id: string;
   projectName: string;
@@ -65,15 +68,15 @@ export function OpenShiftPage() {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(5);
+  const [sortField, setSortField] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
-  // Fetch cost data from API
   const {
     value: costData,
     loading,
     error,
   } = useAsync(async () => {
     try {
-      // Map groupBy to the API format
       const groupByParam = `group_by[${groupBy}]`;
 
       let deltaParam = 'cost';
@@ -81,11 +84,9 @@ export function OpenShiftPage() {
         deltaParam = 'distributed_cost';
       }
 
-      // Determine time scope based on timeRange
       const timeScopeValue = timeRange === 'month-to-date' ? -1 : -2;
       const timeScopeUnits = 'month';
 
-      // Build query parameters
       const offset = currentPage * pageSize;
       const queryParams: Record<string, string | number> = {
         currency,
@@ -97,17 +98,20 @@ export function OpenShiftPage() {
         'filter[time_scope_value]': timeScopeValue,
       };
 
-      // Add group_by parameter dynamically (supports project, cluster, node, tag, etc.)
       queryParams[groupByParam] = '*';
 
-      // Add filter parameters if filterValue is set
       if (filterValue) {
         queryParams[`filter[${filterBy}]`] = filterValue;
       }
 
-      // Add order_by - should match the delta parameter
-      const orderByParam = `order_by[${deltaParam}]`;
-      queryParams[orderByParam] = 'desc';
+      if (sortField) {
+        const apiSortField = deltaParam;
+        const orderByParam = `order_by[${apiSortField}]`;
+        queryParams[orderByParam] = sortDirection;
+      } else {
+        const orderByParam = `order_by[${deltaParam}]`;
+        queryParams[orderByParam] = 'desc';
+      }
 
       const response = await api.getCostManagementReport({
         query: queryParams,
@@ -126,19 +130,18 @@ export function OpenShiftPage() {
     api,
     currentPage,
     pageSize,
+    sortField,
+    sortDirection,
   ]);
 
-  // Transform API data to table format
   const displayData = useMemo(() => {
     if (!costData) return null;
 
-    // Determine the array key based on groupBy (projects, clusters, nodes, tags, etc.)
     const arrayKey = `${groupBy}s` as keyof (typeof costData.data)[0];
     const groupedArray = costData.data?.[0]?.[arrayKey] as
       | Array<{ [key: string]: unknown; values: unknown[] }>
       | undefined;
 
-    // Extract items from the API response structure dynamically
     const projects =
       groupedArray?.map((item, index) => {
         const value =
@@ -155,13 +158,9 @@ export function OpenShiftPage() {
             delta_value?: number;
           }) || {};
 
-        // Get the name field dynamically based on groupBy
         const nameField = groupBy as keyof typeof item;
         const itemName = (item[nameField] as string) || 'Unknown';
 
-        // Determine cost field based on groupBy and overhead distribution
-        // Only project grouping supports overhead distribution
-        // For other groupings (cluster, node, tag), always use 'total'
         const costField =
           groupBy === 'project' && overheadDistribution === 'distribute'
             ? 'distributed'
@@ -176,7 +175,7 @@ export function OpenShiftPage() {
           id: `${index}`,
           projectName: itemName,
           cost: costValue,
-          costPercentage: 0, // Will be calculated below
+          costPercentage: 0,
           monthOverMonthChange: deltaPercent,
           monthOverMonthValue: Math.abs(deltaValue),
           includesOverhead:
@@ -188,24 +187,19 @@ export function OpenShiftPage() {
         };
       }) || [];
 
-    // Calculate total cost from meta.total.cost.distributed
     const totalCost = costData.meta?.total?.cost?.distributed?.value || 0;
 
-    // Get currency from API response or use selected currency as fallback
     const currencyCode = costData.meta?.currency || currency;
 
-    // Calculate percentages
     const projectsWithPercentage = projects.map(p => ({
       ...p,
       costPercentage: totalCost > 0 ? (p.cost / totalCost) * 100 : 0,
     }));
 
-    // Calculate month and endDate based on timeRange
     let month: string;
     let endDate: string;
 
     if (timeRange === 'previous-month') {
-      // For previous month: show previous month name and last day of that month
       const today = new Date();
       const previousMonth = new Date(
         today.getFullYear(),
@@ -213,7 +207,6 @@ export function OpenShiftPage() {
         1,
       );
       month = previousMonth.toLocaleString('en-US', { month: 'long' });
-      // Get last day of previous month
       const lastDayOfPreviousMonth = new Date(
         today.getFullYear(),
         today.getMonth(),
@@ -221,7 +214,6 @@ export function OpenShiftPage() {
       ).getDate();
       endDate = lastDayOfPreviousMonth.toString();
     } else {
-      // For month-to-date: show current month and today's date
       const today = new Date();
       month = today.toLocaleString('en-US', { month: 'long' });
       endDate = today.getDate().toString();
@@ -236,7 +228,6 @@ export function OpenShiftPage() {
     };
   }, [costData, currency, groupBy, overheadDistribution, timeRange]);
 
-  // Handle individual row selection
   const handleRowSelect = useCallback(
     (rowId: string, isSelected: boolean) => {
       const newSelectedRows = new Set(selectedRows);
@@ -250,7 +241,6 @@ export function OpenShiftPage() {
     [selectedRows],
   );
 
-  // Handle select all/none
   const handleSelectAll = useCallback(
     (isSelected: boolean) => {
       if (isSelected && displayData) {
@@ -264,19 +254,16 @@ export function OpenShiftPage() {
     [displayData],
   );
 
-  // Handle page change
   const handlePageChange = useCallback((page: number, newPageSize: number) => {
     setCurrentPage(page);
     setPageSize(newPageSize);
   }, []);
 
-  // Handle rows per page change
   const handleRowsPerPageChange = useCallback((newPageSize: number) => {
     setPageSize(newPageSize);
-    setCurrentPage(0); // Reset to first page when page size changes
+    setCurrentPage(0);
   }, []);
 
-  // Get total count from API response meta
   const totalCount = costData?.meta?.count || 0;
 
   const isAllSelected =
@@ -359,6 +346,7 @@ export function OpenShiftPage() {
       {
         title: 'Month over month change',
         field: 'monthOverMonthChange',
+        sorting: false,
         render: data => (
           <div>
             <div
@@ -396,6 +384,7 @@ export function OpenShiftPage() {
       {
         title: 'Actions',
         field: 'actions',
+        sorting: false,
         render: () => (
           <div style={{ display: 'flex', gap: '8px' }}>
             <img src={BlackSvgIcon} alt="CSV" style={{ cursor: 'pointer' }} />
@@ -413,6 +402,38 @@ export function OpenShiftPage() {
       groupBy,
     ],
   );
+
+  const handleOrderChange = useCallback(
+    (orderBy: number, orderDirection: 'asc' | 'desc') => {
+      // If orderBy is -1, it means "no sorting" - ignore it to prevent removing sorting
+      if (orderBy === -1) {
+        return;
+      }
+
+      const column = columns[orderBy];
+      if (
+        column?.field &&
+        column.field !== 'actions' &&
+        column.sorting !== false
+      ) {
+        const newField = column.field as string;
+
+        if (sortField === newField) {
+          const newDirection = sortDirection === 'desc' ? 'asc' : 'desc';
+          setSortDirection(newDirection);
+        } else {
+          setSortField(newField);
+          setSortDirection(orderDirection);
+        }
+        setCurrentPage(0);
+      }
+    },
+    [columns, sortField, sortDirection],
+  );
+
+  if (error) {
+    return <ResponseErrorPanel error={error} />;
+  }
 
   if (!displayData) {
     return (
@@ -453,7 +474,7 @@ export function OpenShiftPage() {
             filterValue={filterValue}
             onGroupByChange={value => {
               setGroupBy(value);
-              setCurrentPage(0); // Reset to first page when filter changes
+              setCurrentPage(0);
             }}
             onOverheadDistributionChange={value => {
               setOverheadDistribution(value);
@@ -504,11 +525,13 @@ export function OpenShiftPage() {
                   search: false,
                   sorting: true,
                   padding: 'dense',
+                  thirdSortClick: false,
                 }}
                 totalCount={totalCount}
                 page={currentPage}
                 onPageChange={handlePageChange}
                 onRowsPerPageChange={handleRowsPerPageChange}
+                onOrderChange={handleOrderChange}
                 style={{ outline: 'none' }}
                 localization={{
                   pagination: {
