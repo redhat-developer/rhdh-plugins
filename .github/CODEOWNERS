@@ -27,7 +27,7 @@
 /workspaces/openshift-image-registry                @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
 /workspaces/orchestrator                            @batzionb @mareklibra @gciavarrini
 /workspaces/quickstart                              @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
-/workspaces/redhat-resource-optimization            @ydayagi @mareklibra @batzionb @PreetiW
+/workspaces/redhat-resource-optimization            @ydayagi @mareklibra @batzionb @PreetiW @asmasarw
 /workspaces/sandbox                                 @lucifergene @rohitkrai03 @karthikjeeyar @xcoulon @alexeykazakov @mfrancisc @rsoaresd @jrosental @rajivnathan @MatousJobanek
 /workspaces/scorecard                               @redhat-developer/rhdh-plugins   @redhat-developer/rhdh-ui @christoph-jerolimov @its-mitesh-kumar @eswaraiahsapram
 /workspaces/theme                                   @redhat-developer/rhdh-ui @ciiay   @logonoff

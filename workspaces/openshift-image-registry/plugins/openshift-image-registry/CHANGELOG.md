@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 1.16.1
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- b8fb354: Updated dependency `@testing-library/jest-dom` to `6.9.1`.
+
 ## 1.16.0
 
 ### Minor Changes

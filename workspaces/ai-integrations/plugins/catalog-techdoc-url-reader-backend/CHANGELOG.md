@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend
 
+## 0.4.0
+
+### Minor Changes
+
+- 44c967a: Backstage version bump to v1.44.2
+
 ## 0.3.0
 
 ### Minor Changes

@@ -16,7 +16,7 @@ metadata:
       type: source
 spec:
   type: backstage-backend-plugin
-  lifecycle: production
+  lifecycle: active
   owner: orchestrator-team
   system: rhdh
   subcomponentOf: red-hat-developer-hub-orchestrator

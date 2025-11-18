@@ -8,8 +8,7 @@
         "pluginId": "global-header",
         "pluginPackages": [
           "@red-hat-developer-hub/backstage-plugin-global-header"
-        ],
-        "supported-versions": "1.39.0"
+        ]
       },
       "repository": {
         "type": "git",
@@ -17,12 +16,7 @@
         "directory": "workspaces/global-header/plugins/global-header"
       },
       "license": "Apache-2.0",
-      "keywords": [
-        "support:production",
-        "lifecycle:active",
-        "backstage",
-        "plugin"
-      ]
+      "keywords": ["backstage", "plugin"]
     }
   }
 ]

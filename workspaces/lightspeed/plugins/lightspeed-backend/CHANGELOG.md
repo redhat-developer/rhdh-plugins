@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.0.3
+
+### Patch Changes
+
+- e102a81: proxy PUT /v2/conversations/:conversation request
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.3
+
+## 1.0.2
+
+### Patch Changes
+
+- c5fa204: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `msw` to `2.11.6`.
+  Updated dependency `@patternfly/chatbot` to `6.4.1`.
+  Updated dependency `@patternfly/react-core` to `6.4.0`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes

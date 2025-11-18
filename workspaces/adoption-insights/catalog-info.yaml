@@ -2,12 +2,16 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: adoption-insights
-  description: An example of a Backstage application.
+  title: Adoption Insights for Red Hat Developer Hub
+  description: |
+    The Adoption Insights plugin enables you to visualize and analyze adoption and engagement metrics such as active users, total users, top catalog entities by views, top templates, TechDocs and plugin usage, and portal search trends within your internal developer portal.
   # Example for optional annotations
   # annotations:
   #   github.com/project-slug: backstage/backstage
   #   backstage.io/techdocs-ref: dir:.
 spec:
-  type: website
+  type: backstage-plugin
   owner: john@example.com
-  lifecycle: experimental
+  lifecycle: active
+  system: rhdh
+  subcomponentOf: rhdh-plugins
