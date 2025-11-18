@@ -3561,7 +3561,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.13.0
     "@changesets/cli": ^2.27.1
-    "@playwright/test": ^1.52.0
+    "@playwright/test": ^1.56.1
     "@spotify/prettier-config": ^12.0.0
     "@types/lodash": ^4.17.16
     knip: ^5.27.4
@@ -5380,14 +5380,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.52.0":
-  version: 1.54.0
-  resolution: "@playwright/test@npm:1.54.0"
+"@playwright/test@npm:^1.56.1":
+  version: 1.56.1
+  resolution: "@playwright/test@npm:1.56.1"
   dependencies:
-    playwright: 1.54.0
+    playwright: 1.56.1
   bin:
     playwright: cli.js
-  checksum: b31b9311cb6242ec06d3963e61d9a9596272c192562b35bb6da4cf27ae34eef97e5bbaceb782f4796a7e2a3a85935643e80ec2a01d9beeffd08765711db1b4a7
+  checksum: 109544665800de973987893adffa17d1e563fb99d3485d6399784e8c8a9269081cae9a00e09ca308aa140e932a4e862dca0b3de07a21e2dfbf8cfcc3b2b6b4f3
   languageName: node
   linkType: hard
 
@@ -18370,27 +18370,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.54.0":
-  version: 1.54.0
-  resolution: "playwright-core@npm:1.54.0"
+"playwright-core@npm:1.56.1":
+  version: 1.56.1
+  resolution: "playwright-core@npm:1.56.1"
   bin:
     playwright-core: cli.js
-  checksum: 83c285486d04a02c09ea727c4e662482aeaf5874e5781ca114ecea147634aff65ef0353ff5b75f2488a22512d4dd18206da419f47d583ebd5c5f072410d5ccab
+  checksum: 170dff398b47da140182631ae025190248dabde7a5264335f54e238546a478f522ac9a620b31462e6e31c883273223bff8e883b502a699da490abe9741fb3b71
   languageName: node
   linkType: hard
 
-"playwright@npm:1.54.0":
-  version: 1.54.0
-  resolution: "playwright@npm:1.54.0"
+"playwright@npm:1.56.1":
+  version: 1.56.1
+  resolution: "playwright@npm:1.56.1"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.54.0
+    playwright-core: 1.56.1
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 57db38e75aa0a2c1581b56bbc7b2a0d200992dee7c1e08fc7ceeffd3c6facf618bc549dfa49f41f50669c3c3a8d6b0074d5dec6f74b03d1c4f51e882afe4ecf0
+  checksum: e7537e7d5048a1a8544d7675b005196ba9db919edc3b6d46b92273ee6f20e37ada8991774c5df9ef5123ea4610978d582feb141c8a02f4cf256a6c0b224b8793
   languageName: node
   linkType: hard
 
