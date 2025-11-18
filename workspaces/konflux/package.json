@@ -1,0 +1,94 @@
+{
+  "name": "@internal/konflux",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "18 || 20 || 22"
+  },
+  "scripts": {
+    "dev": "yarn start",
+    "start": "backstage-cli repo start",
+    "start-backend": "yarn workspace backend start",
+    "tsc": "tsc",
+    "tsc:full": "tsc --skipLibCheck false --incremental false",
+    "build:all": "backstage-cli repo build --all",
+    "build:api-reports": "yarn build:api-reports:only --tsc",
+    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags",
+    "build:knip-reports": "backstage-repo-tools knip-reports",
+    "clean": "backstage-cli repo clean",
+    "test": "backstage-cli repo test",
+    "test:all": "backstage-cli repo test --coverage",
+    "fix": "backstage-cli repo fix",
+    "lint": "backstage-cli repo lint --since origin/main",
+    "lint:all": "backstage-cli repo lint",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "new": "backstage-cli new --scope @red-hat-developer-hub"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "plugins/*"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/konflux"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.34.2",
+    "@backstage/e2e-test-utils": "^0.1.1",
+    "@backstage/repo-tools": "^0.15.2",
+    "@changesets/cli": "^2.27.1",
+    "@testing-library/dom": "^10.0.0",
+    "@testing-library/react": "^15.0.0",
+    "@types/cookie-parser": "^1",
+    "@types/js-yaml": "^4.0.5",
+    "@types/lodash": "^4",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.2.19",
+    "knip": "^5.27.4",
+    "node-gyp": "^10.0.0",
+    "prettier": "^2.3.2",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "typescript": "~5.3.0"
+  },
+  "resolutions": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0",
+    "@testing-library/react": "^15.0.0"
+  },
+  "files": [
+    "dist",
+    "config.d.ts"
+  ],
+  "configSchema": "config.d.ts",
+  "prettier": "@backstage/cli/config/prettier",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@backstage/catalog-model": "^1.7.5",
+    "@backstage/config": "^1.3.5",
+    "@backstage/plugin-auth-backend-module-oidc-provider": "^0.4.7",
+    "@patternfly/react-icons": "^6.4.0",
+    "@patternfly/react-styles": "^6.4.0",
+    "@patternfly/react-topology": "^6.4.0",
+    "@tanstack/react-query": "^5.90.5",
+    "cookie-parser": "^1.4.7",
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21"
+  }
+}
