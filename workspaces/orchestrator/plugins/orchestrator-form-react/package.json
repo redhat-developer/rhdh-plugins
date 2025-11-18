@@ -15,8 +15,7 @@
     "pluginId": "orchestrator-form",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react"
-    ],
-    "supported-versions": "1.39.1"
+    ]
   },
   "sideEffects": false,
   "scripts": {

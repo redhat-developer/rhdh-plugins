@@ -12,7 +12,6 @@
   },
   "backstage": {
     "role": "common-library",
-    "supported-versions": "1.39.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
@@ -28,8 +27,6 @@
   },
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "keywords": [
-    "support:tech-preview",
-    "lifecycle:active",
     "backstage",
     "plugin",
     "orchestrator",

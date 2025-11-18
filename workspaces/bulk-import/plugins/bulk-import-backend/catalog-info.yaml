@@ -16,7 +16,7 @@ metadata:
       type: source
 spec:
   type: backstage-backend-plugin
-  lifecycle: production
+  lifecycle: active
   owner: rhdh-team
   system: rhdh
   subcomponentOf: red-hat-developer-hub-bulk-import
@@ -42,7 +42,7 @@ metadata:
       type: source
 spec:
   type: openapi
-  lifecycle: production
+  lifecycle: active
   owner: rhdh-team
   system: rhdh
   subcomponentOf: red-hat-developer-hub-bulk-import
