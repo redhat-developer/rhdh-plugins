@@ -57,10 +57,16 @@ export const useComponentFilters = ({
 
     return {
       uniqueSubcomponents: hasSubcomponents
-        ? Array.from(new Set(uniqueSubcomponents)).sort()
+        ? Array.from(new Set(uniqueSubcomponents)).sort((a, b) =>
+            a.localeCompare(b),
+          )
         : [],
-      uniqueClusters: Array.from(new Set(uniqueClusters)).sort(),
-      uniqueApplications: Array.from(new Set(uniqueApplications)).sort(),
+      uniqueClusters: Array.from(new Set(uniqueClusters)).sort((a, b) =>
+        a.localeCompare(b),
+      ),
+      uniqueApplications: Array.from(new Set(uniqueApplications)).sort((a, b) =>
+        a.localeCompare(b),
+      ),
     };
   }, [components, hasSubcomponents]);
 };

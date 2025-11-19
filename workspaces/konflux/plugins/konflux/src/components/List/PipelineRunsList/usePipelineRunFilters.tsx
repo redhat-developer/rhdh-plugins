@@ -73,16 +73,22 @@ export const usePipelineRunFilters = ({
 
     return {
       uniqueSubcomponents: hasSubcomponents
-        ? Array.from(new Set(uniqueSubcomponents)).sort()
+        ? Array.from(new Set(uniqueSubcomponents)).sort((a, b) =>
+            a.localeCompare(b),
+          )
         : [],
-      uniqueClusters: Array.from(new Set(uniqueClusters)).sort(),
-      uniqueApplications: Array.from(new Set(uniqueApplications)).sort(),
+      uniqueClusters: Array.from(new Set(uniqueClusters)).sort((a, b) =>
+        a.localeCompare(b),
+      ),
+      uniqueApplications: Array.from(new Set(uniqueApplications)).sort((a, b) =>
+        a.localeCompare(b),
+      ),
       uniquePipelineRunStatuses: Array.from(
         new Set(uniquePipelineRunStatuses),
-      ).sort(),
-      uniquePipelineRunTypes: Array.from(
-        new Set(uniquePipelineRunTypes),
-      ).sort(),
+      ).sort((a, b) => a.localeCompare(b)),
+      uniquePipelineRunTypes: Array.from(new Set(uniquePipelineRunTypes)).sort(
+        (a, b) => a.localeCompare(b),
+      ),
     };
   }, [pipelineRuns, hasSubcomponents]);
 };
