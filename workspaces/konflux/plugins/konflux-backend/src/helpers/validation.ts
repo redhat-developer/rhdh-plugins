@@ -35,8 +35,13 @@ export const validateUserEmailForImpersonation = (
 
   const trimmedEmail = email.trim();
 
+  if (trimmedEmail.length > 254) {
+    throw new Error(`Invalid email format: email too long`);
+  }
+
   // basic email format validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex =
+    /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}$/;
   if (!emailRegex.test(trimmedEmail)) {
     throw new Error(`Invalid email format: ${trimmedEmail}`);
   }
