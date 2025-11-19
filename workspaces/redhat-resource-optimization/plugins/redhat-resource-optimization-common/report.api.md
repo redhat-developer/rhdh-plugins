@@ -9,6 +9,71 @@ import { IdentityApi } from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
 // @public (undocumented)
+export interface BasicCost {
+  // (undocumented)
+  markup: CostValue;
+  // (undocumented)
+  raw: CostValue;
+  // (undocumented)
+  total: CostValue;
+  // (undocumented)
+  usage: CostValue;
+}
+
+// @public (undocumented)
+export interface Cluster {
+  // (undocumented)
+  cluster: string;
+  // (undocumented)
+  values: ProjectValue[];
+}
+
+// @public (undocumented)
+export interface CostManagementReport {
+  // (undocumented)
+  data: DateData[];
+  // (undocumented)
+  links: {
+    first: string;
+    next: string | null;
+    previous: string | null;
+    last: string;
+  };
+  // (undocumented)
+  meta: {
+    count: number;
+    limit: number;
+    offset: number;
+    others: number;
+    currency: string;
+    delta: {
+      value: number;
+      percent: number;
+    };
+    filter: {
+      resolution: string;
+      time_scope_value: string;
+      time_scope_units: string;
+      limit: number;
+      offset: number;
+    };
+    group_by: {
+      [key: string]: string[];
+    };
+    order_by: {
+      [key: string]: string;
+    };
+    exclude: Record<string, unknown>;
+    distributed_overhead: boolean;
+    total: {
+      infrastructure: BasicCost;
+      supplementary: BasicCost;
+      cost: DistributedCost;
+    };
+  };
+}
+
+// @public (undocumented)
 export interface CostRecommendation {
   // (undocumented)
   config?: CostRecommendationConfig;
@@ -145,6 +210,14 @@ export interface CostRecommendationVariationRequestsMemory {
 }
 
 // @public (undocumented)
+export interface CostValue {
+  // (undocumented)
+  units: string;
+  // (undocumented)
+  value: number;
+}
+
+// @public (undocumented)
 export interface CPULimitOptimisedNotification {
   // (undocumented)
   _323005?: CPULimitOptimisedNotification323005;
@@ -192,6 +265,56 @@ export interface CpuUsage {
   q3?: number;
 }
 
+// @public (undocumented)
+export type CurrencyCode =
+  | 'USD'
+  | 'EUR'
+  | 'GBP'
+  | 'JPY'
+  | 'AUD'
+  | 'CAD'
+  | 'CHF'
+  | 'CNY'
+  | 'INR'
+  | 'MXN'
+  | 'NZD'
+  | 'SEK'
+  | 'SGD'
+  | 'HKD'
+  | 'TWD'
+  | 'THB'
+  | 'RUB'
+  | 'BRL'
+  | 'ZAR'
+  | 'PLN'
+  | 'KRW'
+  | 'TRY'
+  | 'IDR'
+  | 'MYR'
+  | 'PHP'
+  | 'VND'
+  | 'HUF'
+  | 'CZK'
+  | 'NOK'
+  | 'DKK'
+  | 'NGN';
+
+// @public (undocumented)
+export interface DateData {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  clusters?: Cluster[];
+  // (undocumented)
+  date: string;
+  // (undocumented)
+  nodes?: Node_2[];
+  // (undocumented)
+  projects?: Project[];
+  // (undocumented)
+  tags?: Tag[];
+}
+
 // @public
 export class DefaultApiClient {
   constructor(options: {
@@ -202,6 +325,29 @@ export class DefaultApiClient {
       fetch: typeof fetch;
     };
   });
+  getCostManagementReport(
+    request: {
+      query: {
+        currency?: CurrencyCode;
+        delta?: string;
+        'filter[limit]'?: number;
+        'filter[offset]'?: number;
+        'filter[resolution]'?: 'daily' | 'monthly';
+        'filter[time_scope_units]'?: 'day' | 'month';
+        'filter[time_scope_value]'?: number;
+        'group_by[project]'?: '*' | string;
+        'group_by[cluster]'?: '*' | string;
+        'group_by[node]'?: '*' | string;
+        'group_by[tag]'?: '*' | string;
+        'order_by[cost]'?: 'asc' | 'desc';
+        'order_by[distributed_cost]'?: 'asc' | 'desc';
+        'order_by[markup_cost]'?: 'asc' | 'desc';
+        'order_by[raw_cost]'?: 'asc' | 'desc';
+        [key: string]: string | number | undefined;
+      };
+    },
+    options?: RequestOptions,
+  ): Promise<TypedResponse<CostManagementReport>>;
   getRecommendationById(
     request: {
       path: {
@@ -241,6 +387,20 @@ export class DefaultApiClient {
 }
 
 // @public (undocumented)
+export interface DistributedCost extends BasicCost {
+  // (undocumented)
+  distributed: CostValue;
+  // (undocumented)
+  network_unattributed_distributed: CostValue;
+  // (undocumented)
+  platform_distributed: CostValue;
+  // (undocumented)
+  storage_unattributed_distributed: CostValue;
+  // (undocumented)
+  worker_unallocated_distributed: CostValue;
+}
+
+// @public (undocumented)
 export interface GetAccessResponse {
   // (undocumented)
   authorizeClusterIds: string[];
@@ -249,6 +409,11 @@ export interface GetAccessResponse {
   // (undocumented)
   decision: string;
 }
+
+// @public (undocumented)
+export type GetCostManagementRequest = Parameters<
+  OptimizationsApi['getCostManagementReport']
+>[0];
 
 // @public (undocumented)
 export type GetRecommendationByIdRequest = Parameters<
@@ -368,14 +533,55 @@ export interface MemoryUsage {
 }
 
 // @public (undocumented)
+interface Node_2 {
+  // (undocumented)
+  node: string;
+  // (undocumented)
+  values: ProjectValue[];
+}
+export { Node_2 as Node };
+
+// @public (undocumented)
 export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
->;
+> & {
+  searchOpenShiftProjects(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftClusters(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftNodes(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+};
 
 // @public
 export class OptimizationsClient implements OptimizationsApi {
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
+  // (undocumented)
+  getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>>;
   // (undocumented)
   getRecommendationById(
     request: GetRecommendationByIdRequest,
@@ -384,6 +590,33 @@ export class OptimizationsClient implements OptimizationsApi {
   getRecommendationList(
     request: GetRecommendationListRequest,
   ): Promise<TypedResponse<RecommendationList>>;
+  searchOpenShiftClusters(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftNodes(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftProjects(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
 }
 
 // @public (undocumented)
@@ -549,6 +782,46 @@ export interface PlotsData {
   plotsData?: {
     [key: string]: PlotDetailsValue;
   };
+}
+
+// @public (undocumented)
+export interface Project {
+  // (undocumented)
+  project?: string;
+  // (undocumented)
+  values: ProjectValue[];
+}
+
+// @public (undocumented)
+export interface ProjectValue {
+  // (undocumented)
+  classification: string;
+  // (undocumented)
+  cluster?: string;
+  // (undocumented)
+  clusters: string[];
+  // (undocumented)
+  cost: DistributedCost;
+  // (undocumented)
+  cost_group: number | string;
+  // (undocumented)
+  date: string;
+  // (undocumented)
+  delta_percent: number;
+  // (undocumented)
+  delta_value: number;
+  // (undocumented)
+  infrastructure: BasicCost;
+  // (undocumented)
+  node?: string;
+  // (undocumented)
+  project?: string;
+  // (undocumented)
+  source_uuid: string[];
+  // (undocumented)
+  supplementary: BasicCost;
+  // (undocumented)
+  tag?: string;
 }
 
 // @public (undocumented)
@@ -745,6 +1018,14 @@ export interface ShortTermRecommendationBoxPlots {
   plots?: PlotsData;
   // (undocumented)
   recommendationEngines?: LongTermRecommendationRecommendationEngines;
+}
+
+// @public (undocumented)
+export interface Tag {
+  // (undocumented)
+  tag: string;
+  // (undocumented)
+  values: ProjectValue[];
 }
 
 // @public
