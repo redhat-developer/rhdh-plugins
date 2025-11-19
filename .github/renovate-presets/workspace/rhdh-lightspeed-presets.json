@@ -6,7 +6,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Lightspeed)"
       ],
-      "addLabels": ["team/rhdh", "lightspeed"]
+      "addLabels": ["team/pai", "lightspeed"]
     },
     {
       "description": "all Lightspeed patch updates",
@@ -14,7 +14,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Lightspeed)"
       ],
-      "addLabels": ["team/rhdh", "lightspeed"]
+      "addLabels": ["team/pai", "lightspeed"]
     },
     {
       "description": "all Lightspeed dev dependency updates",
@@ -22,7 +22,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Lightspeed)"
       ],
-      "addLabels": ["team/rhdh", "lightspeed"]
+      "addLabels": ["team/pai", "lightspeed"]
     }
   ]
 }
