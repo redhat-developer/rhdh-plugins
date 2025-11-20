@@ -16,6 +16,7 @@
 
 import approvalToolBlackImg from '../images/ApprovalTool_Black.svg';
 import approvalToolWhiteImg from '../images/ApprovalTool_White.svg';
+import bulkImportBlackImg from '../images/BulkImportIcon-Black.svg';
 import bulkImportWhiteImg from '../images/BulkImportIcon-White.svg';
 import chooseRepositoriesBlackImg from '../images/ChooseRepositories_Black.svg';
 import chooseRepositoriesWhiteImg from '../images/ChooseRepositories_White.svg';
@@ -38,6 +39,7 @@ const logos = new Map<string, any>()
   .set('icon-generate-cataloginfo-white', generateCatalogInfoWhiteImg)
   .set('icon-track-status-white', trackStatusWhiteImg)
   .set('icon-approval-tool-white', approvalToolWhiteImg)
+  .set('icon-bulk-import-black', bulkImportBlackImg)
   .set('icon-bulk-import-white', bulkImportWhiteImg)
   .set('missing-configuration', missingConfigurationImg);
 
