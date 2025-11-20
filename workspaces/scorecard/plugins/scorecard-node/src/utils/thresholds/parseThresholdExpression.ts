@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  ThresholdConfig,
-  MetricType,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { ThresholdConfigFormatError } from '../errors';
-import type { JsonValue } from '@backstage/types';
-import { ComparisonOperator, RangeOperator } from './types';
-import type { Config } from '@backstage/config';
+import type { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { ComparisonOperator, RangeOperator } from '../types';
+import { ThresholdConfigFormatError } from '../../errors';
 
 function parseRangeOperator(
   expression: string,
@@ -115,77 +110,4 @@ export function parseThresholdExpression(
   throw new ThresholdConfigFormatError(
     `Invalid threshold expression: "${expression}".`,
   );
-}
-
-/**
- * Validate thresholds conform to the expected schema and expressions match the expected metric type
- * @public
- */
-export function validateThresholds(
-  thresholds: JsonValue,
-  expectedMetricType: MetricType,
-): asserts thresholds is ThresholdConfig {
-  if (
-    typeof thresholds !== 'object' ||
-    thresholds === null ||
-    !('rules' in thresholds) ||
-    !Array.isArray(thresholds.rules)
-  ) {
-    throw new ThresholdConfigFormatError(
-      'Invalid type for ThresholdConfig, must have a rules property that is an array',
-    );
-  }
-
-  const seenKeys = new Set<string>();
-  for (const rule of thresholds.rules) {
-    if (
-      typeof rule !== 'object' ||
-      rule === null ||
-      !('key' in rule) ||
-      !('expression' in rule) ||
-      typeof rule.key !== 'string' ||
-      typeof rule.expression !== 'string'
-    ) {
-      throw new ThresholdConfigFormatError(
-        `Invalid threshold rule format "${JSON.stringify(
-          rule,
-        )}": must be an object with "key" and "expression" string properties`,
-      );
-    }
-    if (!['error', 'warning', 'success'].includes(rule.key)) {
-      throw new ThresholdConfigFormatError(
-        `Invalid threshold rule key "${rule.key}": only supported values are "success", "warning", "error"`,
-      );
-    }
-    if (seenKeys.has(rule.key)) {
-      throw new ThresholdConfigFormatError(
-        `Duplicate key detected for "${rule.key}" with expression "${rule.expression}"`,
-      );
-    }
-    seenKeys.add(rule.key);
-    parseThresholdExpression(rule.expression, expectedMetricType);
-  }
-}
-
-/**
- * Read and validate threshold configuration from config or return undefined
- * @public
- */
-export function getThresholdsFromConfig(
-  config: Config,
-  thresholdsPath: string,
-  expectedMetricType: MetricType,
-): ThresholdConfig | undefined {
-  try {
-    const thresholdsConfig = config.getOptional(thresholdsPath);
-    if (thresholdsConfig) {
-      validateThresholds(thresholdsConfig, expectedMetricType);
-      return thresholdsConfig;
-    }
-  } catch (error) {
-    throw new Error(
-      `Invalid thresholds configuration at ${thresholdsPath}: ${error}`,
-    );
-  }
-  return undefined;
 }
