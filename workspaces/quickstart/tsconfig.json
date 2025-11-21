@@ -2,6 +2,7 @@
   "extends": "@backstage/cli/config/tsconfig.json",
   "include": [
     "packages/*/src",
+    "packages/*/e2e-tests",
     "plugins/*/src",
     "plugins/*/dev",
     "plugins/*/migrations"
