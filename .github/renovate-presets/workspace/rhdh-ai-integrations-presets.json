@@ -6,7 +6,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Ai Integrations)"
       ],
-      "addLabels": ["team/rhdh", "ai-integrations"]
+      "addLabels": ["team/pai", "ai-integrations"]
     },
     {
       "description": "all Ai Integrations patch updates",
@@ -14,7 +14,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Ai Integrations)"
       ],
-      "addLabels": ["team/rhdh", "ai-integrations"]
+      "addLabels": ["team/pai", "ai-integrations"]
     },
     {
       "description": "all Ai Integrations dev dependency updates",
@@ -22,7 +22,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Ai Integrations)"
       ],
-      "addLabels": ["team/rhdh", "ai-integrations"]
+      "addLabels": ["team/pai", "ai-integrations"]
     }
   ]
 }

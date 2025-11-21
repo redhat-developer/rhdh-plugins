@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.5.0
+
+### Minor Changes
+
+- 44dd4f2: Backstage version bump to v1.44.2
+
+### Patch Changes
+
+- Updated dependencies [44dd4f2]
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.5.0
+
+## 0.4.1
+
+### Patch Changes
+
+- d3ab6a9: fixed scaling issues
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.4.1
+
 ## 0.3.2
 
 ### Patch Changes

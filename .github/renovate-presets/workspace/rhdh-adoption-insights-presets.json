@@ -6,7 +6,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Adoption Insights)"
       ],
-      "addLabels": ["team/pai", "adoption-insights"]
+      "addLabels": ["team/rhdh", "adoption-insights"]
     },
     {
       "description": "all RHDH Adoption Insights plugins patch updates",
@@ -14,7 +14,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Adoption Insights)"
       ],
-      "addLabels": ["team/pai", "adoption-insights"]
+      "addLabels": ["team/rhdh", "adoption-insights"]
     },
     {
       "description": "all RHDH Adoption Insights plugins dev dependency updates",
@@ -22,7 +22,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Adoption Insights)"
       ],
-      "addLabels": ["team/pai", "adoption-insights"]
+      "addLabels": ["team/rhdh", "adoption-insights"]
     }
   ]
 }

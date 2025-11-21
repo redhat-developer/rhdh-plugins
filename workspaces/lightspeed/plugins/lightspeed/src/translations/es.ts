@@ -85,13 +85,13 @@ const lightspeedTranslationEs = createTranslationMessages({
 
     // Disclaimers
     'disclaimer.withValidation':
-      'Developer Lightspeed puede responder preguntas sobre muchos temas usando tus modelos configurados. Las respuestas de Developer Lightspeed están influenciadas por la documentación de Red Hat Developer Hub, pero Developer Lightspeed no tiene acceso a tu Catálogo de Software, TechDocs o Plantillas, etc. Developer Lightspeed usa validación de preguntas (prompts) para asegurar que las conversaciones permanezcan enfocadas en temas técnicos relevantes para Red Hat Developer Hub, como Backstage, Kubernetes y OpenShift. No incluyas información personal o sensible en tu entrada. Las interacciones con Developer Lightspeed pueden ser revisadas y usadas para mejorar productos o servicios.',
+      'Esta función utiliza tecnología de IA. No incluyas información personal ni otra información sensible en tu entrada. Las interacciones pueden ser utilizadas para mejorar los productos o servicios de Red Hat.',
     'disclaimer.withoutValidation':
-      'Developer Lightspeed puede responder preguntas sobre muchos temas usando tus modelos configurados. Las respuestas de Developer Lightspeed están influenciadas por la documentación de Red Hat Developer Hub, pero Developer Lightspeed no tiene acceso a tu Catálogo de Software, TechDocs o Plantillas, etc. No incluyas información personal o sensible en tu entrada. Las interacciones con Developer Lightspeed pueden ser revisadas y usadas para mejorar productos o servicios.',
+      'Esta función utiliza tecnología de IA. No incluyas información personal ni otra información sensible en tu entrada. Las interacciones pueden ser utilizadas para mejorar los productos o servicios de Red Hat.',
 
     // Footer and feedback
     'footer.accuracy.label':
-      'Siempre verifica la precisión de las respuestas generadas por IA/LLM antes de usarlas.',
+      'Siempre revisa el contenido generado por IA antes de usarlo.',
     'footer.accuracy.popover.title': 'Verificar precisión',
     'footer.accuracy.popover.description':
       'Si bien Developer Lightspeed se esfuerza por la precisión, siempre existe la posibilidad de errores. Es una buena práctica verificar información crítica de fuentes confiables, especialmente si es crucial para la toma de decisiones o acciones.',

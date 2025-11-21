@@ -53,13 +53,14 @@ export type ImportStatus =
   | 'REPO_EMPTY'
   | 'CODEOWNERS_FILE_NOT_FOUND_IN_REPO';
 
-export type TaskStatus =
-  | 'TASK_CANCELLED'
-  | 'TASK_COMPLETED'
-  | 'TASK_FAILED'
-  | 'TASK_OPEN'
-  | 'TASK_PROCESSING'
-  | 'TASK_SKIPPED';
+export enum TaskStatus {
+  Cancelled = 'TASK_CANCELLED',
+  Completed = 'TASK_COMPLETED',
+  Failed = 'TASK_FAILED',
+  Open = 'TASK_OPEN',
+  Processing = 'TASK_PROCESSING',
+  Skipped = 'TASK_SKIPPED',
+}
 
 export type AddRepositoryData = {
   id: string;
@@ -135,6 +136,11 @@ export enum ApprovalTool {
   Git = 'GIT',
   ServiceNow = 'servicenow',
   Gitlab = 'GITLAB',
+}
+
+export enum ImportFlow {
+  OpenPullRequests = 'open-pull-requests',
+  Scaffolder = 'scaffolder',
 }
 
 export type CreateImportJobRepository = {

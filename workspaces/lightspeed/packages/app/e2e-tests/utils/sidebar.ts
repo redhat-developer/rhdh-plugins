@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 import { Page, expect, Locator } from '@playwright/test';
+import { LightspeedMessages } from './translations';
 
-export async function assertChatDialogInitialState(page: Page) {
+export async function assertChatDialogInitialState(
+  page: Page,
+  translations: LightspeedMessages,
+) {
   await expect(page.getByLabel('Chatbot', { exact: true })).toContainText(
-    'Developer Lightspeed',
+    translations['chatbox.header.title'],
   );
   await expect(
     page.getByRole('button', { name: 'Chat history menu' }),
   ).toBeVisible();
-  await assertDrawerState(page, 'open');
+  await assertDrawerState(page, 'open', translations);
 }
 
 export async function closeChatDrawer(page: Page) {
@@ -31,11 +35,16 @@ export async function closeChatDrawer(page: Page) {
 }
 
 export async function openChatDrawer(page: Page) {
+  // missing translation
   const toggleButton = page.getByRole('button', { name: 'Chat history menu' });
   await toggleButton.click();
 }
 
-export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
+export async function assertDrawerState(
+  page: Page,
+  state: 'open' | 'closed',
+  translations: LightspeedMessages,
+) {
   const expectations = {
     open: (locator: Locator) => expect(locator).toBeVisible(),
     closed: (locator: Locator) => expect(locator).toBeHidden(),
@@ -43,7 +52,7 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
 
   const checks = [
     page.getByRole('button', { name: 'Close drawer panel' }),
-    page.getByRole('textbox', { name: 'Search previous conversations' }),
+    page.getByPlaceholder(translations['chatbox.search.placeholder']),
     page.getByRole('separator', { name: 'Resize' }),
   ];
 
@@ -52,11 +61,16 @@ export async function assertDrawerState(page: Page, state: 'open' | 'closed') {
   }
 }
 
-export async function verifySidePanelConversation(page: Page) {
+export async function verifySidePanelConversation(
+  page: Page,
+  translations: LightspeedMessages,
+) {
   const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
   await expect(sidePanel).toBeVisible();
 
-  const newButton = sidePanel.getByRole('button', { name: 'new chat' });
+  const newButton = sidePanel.getByRole('button', {
+    name: translations['menu.newConversation'],
+  });
   await expect(newButton).toBeEnabled({ timeout: 60000 });
 
   const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');

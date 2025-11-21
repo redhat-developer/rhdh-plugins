@@ -2,12 +2,16 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: ai-integrations
-  description: An example of a Backstage application.
+  title: AI Model Catalog
+  description: |
+    Backend plugins that integrate with Red Hat OpenShift AI to map AI Models and Model Servers from Red Hat OpenShift AI as Component, Resource, and API entities. The plugins also facilitate creating TechDocs for the Components and Resources from the Model Cards for the AI Models.
   # Example for optional annotations
   # annotations:
   #   github.com/project-slug: backstage/backstage
   #   backstage.io/techdocs-ref: dir:.
 spec:
-  type: website
+  type: backstage-plugin
   owner: jcollier@redhat.com
-  lifecycle: experimental
+  lifecycle: active
+  system: rhdh
+  subcomponentOf: rhdh-plugins

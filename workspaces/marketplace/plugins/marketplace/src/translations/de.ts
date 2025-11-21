@@ -69,8 +69,15 @@ const marketplaceTranslationDe = createTranslationMessages({
     'alert.productionDisabled':
       'Plugin-Installation ist in der Produktionsumgebung deaktiviert.',
     'alert.installationDisabled': 'Plugin-Installation ist deaktiviert.',
+    'alert.missingDynamicArtifact':
+      'Dieses Paket kann nicht verwaltet werden. Um Aktionen zu aktivieren, muss eine Katalogeintrag mit dem erforderlichen **spec.dynamicArtifact** hinzugefügt werden.',
+    'alert.missingDynamicArtifactTitle': 'Paket kann nicht geändert werden',
+    'alert.missingDynamicArtifactForPlugin':
+      'Dieses Plugin kann nicht verwaltet werden. Um Aktionen zu aktivieren, muss eine Katalogeintrag mit dem erforderlichen **spec.dynamicArtifact** zu allen zugehörigen Paketen hinzugefügt werden.',
+    'alert.missingDynamicArtifactTitlePlugin':
+      'Plugin kann nicht geändert werden',
     'alert.extensionsExample':
-      'Beispiel zur Aktivierung der Extensions-Plugin-Installation',
+      'Um es zu aktivieren, fügen Sie die Erweiterungs-Konfiguration in Ihrer dynamischen Plugins-Konfigurationsdatei hinzu oder ändern Sie diese.',
     'alert.singlePluginRestart':
       'Das **{{pluginName}}** Plugin erfordert einen Neustart des Backend-Systems, um die Installation, Aktualisierung, Aktivierung oder Deaktivierung abzuschließen.',
     'alert.multiplePluginRestart':
@@ -141,6 +148,9 @@ const marketplaceTranslationDe = createTranslationMessages({
     'package.highlights': 'Highlights',
     'package.about': 'Über',
     'package.notFound': 'Paket {{namespace}}/{{name}} nicht gefunden!',
+    'package.notAvailable': 'Paket {{name}} ist nicht verfügbar',
+    'package.ensureCatalogEntity':
+      'Stellen Sie sicher, dass eine Katalogeintrag für dieses Paket existiert.',
 
     // Tables and lists
     'table.packageName': 'Paketname',
@@ -168,6 +178,8 @@ const marketplaceTranslationDe = createTranslationMessages({
     'installedPackages.table.columns.actions': 'Aktionen',
     'installedPackages.table.tooltips.packageProductionDisabled':
       'Das Paket kann in der Produktionsumgebung nicht verwaltet werden.',
+    'installedPackages.table.tooltips.installationDisabled':
+      'Das Paket kann nicht verwaltet werden, da die Plugin-Installation deaktiviert ist. Um es zu aktivieren, fügen Sie die Erweiterungs-Konfiguration in Ihrer dynamischen Plugins-Konfigurationsdatei hinzu oder ändern Sie diese.',
     'installedPackages.table.tooltips.enableActions':
       'Um Aktionen zu aktivieren, fügen Sie eine Katalogeintrag für dieses Paket hinzu',
     'installedPackages.table.tooltips.noDownloadPermissions':
@@ -206,7 +218,11 @@ const marketplaceTranslationDe = createTranslationMessages({
 
     // Plugin metadata
     'metadata.by': ' von ',
+    'metadata.comma': ', ',
     'metadata.pluginNotFound': 'Plugin {{name}} nicht gefunden!',
+    'metadata.pluginNotAvailable': 'Plugin {{name}} ist nicht verfügbar',
+    'metadata.ensureCatalogEntityPlugin':
+      'Stellen Sie sicher, dass eine Katalogeintrag für dieses Plugin existiert.',
     'metadata.highlights': 'Highlights',
     'metadata.about': 'Über',
     'metadata.publisher': 'Herausgeber',
@@ -215,6 +231,7 @@ const marketplaceTranslationDe = createTranslationMessages({
     'metadata.bySomeone': 'von jemandem',
     'metadata.category': 'Kategorie',
     'metadata.versions': 'Versionen',
+    'metadata.backstageCompatibility': 'Backstage-Kompatibilitätsversion',
 
     // Support type filters
     'supportTypes.certifiedBy': 'Zertifiziert von {{value}} ({{count}})',
@@ -261,6 +278,8 @@ const marketplaceTranslationDe = createTranslationMessages({
     'install.packageUpdated': 'Paket aktualisiert',
     'install.packageEnabled': 'Paket aktiviert',
     'install.packageDisabled': 'Paket deaktiviert',
+    'install.pluginEnabled': 'Plugin aktiviert',
+    'install.pluginDisabled': 'Plugin deaktiviert',
     'install.errors.missingPluginsList':
       "Ungültiger Editor-Inhalt: 'plugins'-Liste fehlt",
     'install.errors.missingPackageItem':
@@ -291,9 +310,11 @@ const marketplaceTranslationDe = createTranslationMessages({
     'tooltips.productionDisabled':
       'Plugin-Installation ist in der Produktionsumgebung deaktiviert.',
     'tooltips.extensionsDisabled':
-      'Plugin-Installation ist deaktiviert. Um es zu aktivieren, aktualisieren Sie Ihre Erweiterungskonfiguration in Ihrer app-config.yaml-Datei.',
+      'Plugin-Installation ist deaktiviert. Um es zu aktivieren, fügen Sie die Erweiterungs-Konfiguration in Ihrer dynamischen Plugins-Konfigurationsdatei hinzu oder ändern Sie diese.',
     'tooltips.noPermissions':
       'Sie haben keine Berechtigung, Plugins zu installieren oder deren Konfigurationen anzuzeigen. Wenden Sie sich an Ihren Administrator, um Zugriff oder Unterstützung anzufordern.',
+    'tooltips.missingDynamicArtifact':
+      'Dieses {{type}} kann nicht verwaltet werden. Um Aktionen zu aktivieren, muss eine Katalogeintrag mit dem erforderlichen spec.dynamicArtifact hinzugefügt werden.',
 
     // Accessibility
     'aria.openPlugin': 'Plugin {{name}} öffnen',

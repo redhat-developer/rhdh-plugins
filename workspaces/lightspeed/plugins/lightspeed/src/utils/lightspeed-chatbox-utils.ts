@@ -31,7 +31,7 @@ export const getFootnoteProps = (
 ) => ({
   label:
     t?.('footer.accuracy.label') ||
-    'Always check AI/LLM generated responses for accuracy prior to use.',
+    'Always review AI generated content prior to use.',
   popover: {
     popoverProps: {
       className: additionalClassName ?? '',

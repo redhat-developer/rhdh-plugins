@@ -36,11 +36,9 @@ import type {
   GetTokenResponse,
   OptimizationsApi,
   GetAccessResponse,
-} from './types';
-import type {
   GetCostManagementRequest,
-  CostManagementReport,
-} from '../types/cost-management';
+} from './types';
+import type { CostManagementReport } from '../types/cost-management';
 import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 

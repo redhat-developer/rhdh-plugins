@@ -1,5 +1,29 @@
 ### Dependencies
 
+## 6.7.2
+
+### Patch Changes
+
+- 8694ed5: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@playwright/test` to `1.56.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.2
+
+## 6.7.1
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [40b80fe]
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.1
+
+## 6.7.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.0
+
 ## 6.6.0
 
 ### Minor Changes

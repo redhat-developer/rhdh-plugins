@@ -14,8 +14,7 @@
     "pluginId": "orchestrator-form-widgets",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets"
-    ],
-    "supported-versions": "1.39.1"
+    ]
   },
   "homepage": "https://red.ht/rhdh",
   "repository": {
@@ -26,8 +25,6 @@
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "sideEffects": false,
   "keywords": [
-    "support:tech-preview",
-    "lifecycle:active",
     "backstage",
     "plugin",
     "orchestrator",

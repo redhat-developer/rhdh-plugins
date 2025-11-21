@@ -226,6 +226,11 @@ describe('MarketplacePluginContent', () => {
   });
 
   it('should render the Actions button', async () => {
+    usePluginPackagesMock.mockReturnValue({
+      isLoading: false,
+      data: packages,
+    });
+
     const installedPlugin = {
       ...plugin,
       spec: {
@@ -269,5 +274,44 @@ describe('MarketplacePluginContent', () => {
       </QueryClientProvider>,
     );
     expect(getByText('View')).toBeInTheDocument();
+  });
+
+  it('should have the View button when package is missing dynamicArtifact', async () => {
+    const packageWithoutDynamicArtifact = {
+      ...packages[0],
+      spec: {
+        partOf: ['backstage-community-plugin-3scale-backend'],
+      },
+    };
+
+    const { getByText } = renderWithProviders(
+      <MarketplacePluginContent plugin={packageWithoutDynamicArtifact} />,
+    );
+    expect(getByText('View')).toBeInTheDocument();
+  });
+
+  it('should render the Actions button when packages have dynamicArtifact', async () => {
+    const installedPlugin = {
+      ...plugin,
+      spec: {
+        ...plugin.spec,
+        installStatus: MarketplacePluginInstallStatus.Installed,
+      },
+    };
+
+    usePluginPackagesMock.mockReturnValue({
+      isLoading: false,
+      data: packages,
+    });
+
+    const { getByText, getByTestId } = renderWithProviders(
+      <MarketplacePluginContent plugin={installedPlugin} />,
+    );
+    expect(getByText('Actions')).toBeInTheDocument();
+    const actionsButton = getByTestId('plugin-actions');
+    fireEvent.click(actionsButton);
+
+    expect(getByTestId('actions-button')).toBeInTheDocument();
+    expect(getByTestId('disable-plugin')).toBeInTheDocument();
   });
 });

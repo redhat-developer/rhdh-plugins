@@ -28,6 +28,7 @@ import {
 import {
   AddedRepositoryColumnNameEnum,
   ApprovalTool,
+  ImportFlow,
   RepositoryStatus,
   SortingOrderEnum,
 } from '../types';
@@ -180,7 +181,7 @@ beforeAll(() => server.listen());
 afterEach(() => server.restoreHandlers());
 afterAll(() => server.close());
 
-const getConfigApi = (importAPI: 'open-pull-requests' | 'scaffolder') => ({
+const getConfigApi = (importAPI: ImportFlow) => ({
   has: jest.fn(),
   keys: jest.fn(),
   get: jest.fn(),
@@ -222,7 +223,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
 
   beforeEach(() => {
     bulkImportApi = new BulkImportBackendClient({
-      configApi: getConfigApi('open-pull-requests'),
+      configApi: getConfigApi(ImportFlow.OpenPullRequests),
       identityApi: identityApi,
     });
   });
@@ -446,7 +447,7 @@ describe('BulkImportBackendClient with scaffolder', () => {
 
   beforeEach(() => {
     bulkImportApi = new BulkImportBackendClient({
-      configApi: getConfigApi('scaffolder'),
+      configApi: getConfigApi(ImportFlow.Scaffolder),
       identityApi: identityApi,
     });
   });

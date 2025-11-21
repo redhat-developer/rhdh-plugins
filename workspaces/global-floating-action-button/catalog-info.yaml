@@ -15,7 +15,7 @@ metadata:
     - ui
 spec:
   type: backstage-plugin
-  lifecycle: development
+  lifecycle: active
   owner: rhdh-ui-team
   system: rhdh
   subcomponentOf: rhdh-plugins

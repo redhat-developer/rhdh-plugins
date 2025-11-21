@@ -16,11 +16,9 @@
 
 import { useState } from 'react';
 import {
-  CodeSnippet,
   Content,
   LinkButton,
   MarkdownContent,
-  WarningPanel,
 } from '@backstage/core-components';
 import { CatalogFilterLayout } from '@backstage/plugin-catalog-react';
 
@@ -29,9 +27,6 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Launch from '@mui/icons-material/Launch';
-import AlertTitle from '@mui/material/AlertTitle';
-import Link from '@mui/material/Link';
-import Alert from '@mui/material/Alert';
 
 import { SearchTextField } from '../shared-components/SearchTextField';
 
@@ -46,9 +41,10 @@ import { useInstallationContext } from './InstallationContext';
 import { InstalledPluginsDialog } from './InstalledPluginsDialog';
 import notFoundImag from '../assets/notfound.png';
 import {
-  EXTENSIONS_CONFIG_YAML,
-  generateExtensionsEnableLineNumbers,
-} from '../utils';
+  ProductionEnvironmentAlert,
+  ExtensionsConfigurationAlert,
+  BackendRestartAlert,
+} from './SharedAlerts';
 import { useTranslation } from '../hooks/useTranslation';
 
 const EmptyState = ({ isError }: { isError?: boolean }) => {
@@ -177,52 +173,16 @@ export const MarketplaceCatalogContent = () => {
     <>
       {!filteredPlugins.isLoading && (
         <>
-          {isProductionEnvironment && (
-            <Alert severity="info" sx={{ mb: '1rem' }}>
-              <AlertTitle>{t('alert.productionDisabled')}</AlertTitle>
-            </Alert>
-          )}
-          {showExtensionsConfigurationAlert && (
-            <>
-              <WarningPanel
-                title={t('alert.installationDisabled')}
-                severity="info"
-                message={
-                  <>
-                    {t('alert.extensionsExample')}
-                    <CodeSnippet
-                      language="yaml"
-                      showLineNumbers
-                      highlightedNumbers={generateExtensionsEnableLineNumbers()}
-                      text={EXTENSIONS_CONFIG_YAML}
-                    />
-                  </>
-                }
-              />
-              <br />
-            </>
-          )}
+          {isProductionEnvironment && <ProductionEnvironmentAlert />}
+          {showExtensionsConfigurationAlert && <ExtensionsConfigurationAlert />}
         </>
       )}
-      {installedPluginsCount > 0 && (
-        <Alert severity="info" sx={{ mb: '1rem' }}>
-          <AlertTitle>{t('alert.backendRestartRequired')}</AlertTitle>
-          {pluginInfo()}
-          {installedPluginsCount > 1 && (
-            <Typography component="div" sx={{ pt: '8px' }}>
-              <Link
-                component="button"
-                underline="none"
-                onClick={() => {
-                  setOpenInstalledPluginsDialog(true);
-                }}
-              >
-                {t('alert.viewPlugins')}
-              </Link>
-            </Typography>
-          )}
-        </Alert>
-      )}
+      <BackendRestartAlert
+        count={installedPluginsCount}
+        itemInfo={pluginInfo()}
+        viewItemsLabel={t('alert.viewPlugins')}
+        onViewItems={() => setOpenInstalledPluginsDialog(true)}
+      />
       <CatalogFilterLayout>
         <CatalogFilterLayout.Filters>
           <MarketplacePluginFilter />

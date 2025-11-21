@@ -9,6 +9,143 @@ import { IdentityApi } from '@backstage/core-plugin-api';
 import type { JsonObject } from '@backstage/types';
 
 // @public (undocumented)
+export interface BasicCost {
+  // (undocumented)
+  markup: CostValue;
+  // (undocumented)
+  raw: CostValue;
+  // (undocumented)
+  total: CostValue;
+  // (undocumented)
+  usage: CostValue;
+}
+
+// @public (undocumented)
+export interface Cluster {
+  // (undocumented)
+  cluster: string;
+  // (undocumented)
+  values: ProjectValue[];
+}
+
+// @public (undocumented)
+export interface CostManagementReport {
+  // (undocumented)
+  data: DateData[];
+  // (undocumented)
+  links: {
+    first: string;
+    next: string | null;
+    previous: string | null;
+    last: string;
+  };
+  // (undocumented)
+  meta: {
+    count: number;
+    limit: number;
+    offset: number;
+    others: number;
+    currency: string;
+    delta: {
+      value: number;
+      percent: number;
+    };
+    filter: {
+      resolution: string;
+      time_scope_value: string;
+      time_scope_units: string;
+      limit: number;
+      offset: number;
+    };
+    group_by: {
+      [key: string]: string[];
+    };
+    order_by: {
+      [key: string]: string;
+    };
+    exclude: Record<string, unknown>;
+    distributed_overhead: boolean;
+    total: {
+      infrastructure: BasicCost;
+      supplementary: BasicCost;
+      cost: DistributedCost;
+    };
+  };
+}
+
+// @public (undocumented)
+export interface CostValue {
+  // (undocumented)
+  units: string;
+  // (undocumented)
+  value: number;
+}
+
+// @public (undocumented)
+export type CurrencyCode =
+  | 'USD'
+  | 'EUR'
+  | 'GBP'
+  | 'JPY'
+  | 'AUD'
+  | 'CAD'
+  | 'CHF'
+  | 'CNY'
+  | 'INR'
+  | 'MXN'
+  | 'NZD'
+  | 'SEK'
+  | 'SGD'
+  | 'HKD'
+  | 'TWD'
+  | 'THB'
+  | 'RUB'
+  | 'BRL'
+  | 'ZAR'
+  | 'PLN'
+  | 'KRW'
+  | 'TRY'
+  | 'IDR'
+  | 'MYR'
+  | 'PHP'
+  | 'VND'
+  | 'HUF'
+  | 'CZK'
+  | 'NOK'
+  | 'DKK'
+  | 'NGN';
+
+// @public (undocumented)
+export interface DateData {
+  // (undocumented)
+  [key: string]: unknown;
+  // (undocumented)
+  clusters?: Cluster[];
+  // (undocumented)
+  date: string;
+  // (undocumented)
+  nodes?: Node_2[];
+  // (undocumented)
+  projects?: Project[];
+  // (undocumented)
+  tags?: Tag[];
+}
+
+// @public (undocumented)
+export interface DistributedCost extends BasicCost {
+  // (undocumented)
+  distributed: CostValue;
+  // (undocumented)
+  network_unattributed_distributed: CostValue;
+  // (undocumented)
+  platform_distributed: CostValue;
+  // (undocumented)
+  storage_unattributed_distributed: CostValue;
+  // (undocumented)
+  worker_unallocated_distributed: CostValue;
+}
+
+// @public (undocumented)
 export interface GetAccessResponse {
   // (undocumented)
   authorizeClusterIds: string[];
@@ -17,6 +154,11 @@ export interface GetAccessResponse {
   // (undocumented)
   decision: string;
 }
+
+// @public (undocumented)
+export type GetCostManagementRequest = Parameters<
+  OptimizationsApi['getCostManagementReport']
+>[0];
 
 // @public (undocumented)
 export type GetRecommendationByIdRequest = Parameters<
@@ -35,18 +177,58 @@ export interface GetTokenResponse {
   expiresAt: number;
 }
 
+// @public (undocumented)
+interface Node_2 {
+  // (undocumented)
+  node: string;
+  // (undocumented)
+  values: ProjectValue[];
+}
+export { Node_2 as Node };
+
 // Warning: (ae-forgotten-export) The symbol "DefaultApiClient" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
 export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
->;
+> & {
+  searchOpenShiftProjects(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftClusters(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftNodes(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+};
 
 // @public
 export class OptimizationsClient implements OptimizationsApi {
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
-  // Warning: (ae-forgotten-export) The symbol "TypedResponse" needs to be exported by the entry point index.d.ts
+  // (undocumented)
+  getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>>;
   // Warning: (ae-forgotten-export) The symbol "RecommendationBoxPlots" needs to be exported by the entry point index.d.ts
   //
   // (undocumented)
@@ -59,6 +241,33 @@ export class OptimizationsClient implements OptimizationsApi {
   getRecommendationList(
     request: GetRecommendationListRequest,
   ): Promise<TypedResponse<RecommendationList>>;
+  searchOpenShiftClusters(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftNodes(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftProjects(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
 }
 
 // @public (undocumented)
@@ -91,6 +300,58 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
   // (undocumented)
   isWorkflowAvailable(workflowId: string): Promise<boolean>;
 }
+
+// @public (undocumented)
+export interface Project {
+  // (undocumented)
+  project?: string;
+  // (undocumented)
+  values: ProjectValue[];
+}
+
+// @public (undocumented)
+export interface ProjectValue {
+  // (undocumented)
+  classification: string;
+  // (undocumented)
+  cluster?: string;
+  // (undocumented)
+  clusters: string[];
+  // (undocumented)
+  cost: DistributedCost;
+  // (undocumented)
+  cost_group: number | string;
+  // (undocumented)
+  date: string;
+  // (undocumented)
+  delta_percent: number;
+  // (undocumented)
+  delta_value: number;
+  // (undocumented)
+  infrastructure: BasicCost;
+  // (undocumented)
+  node?: string;
+  // (undocumented)
+  project?: string;
+  // (undocumented)
+  source_uuid: string[];
+  // (undocumented)
+  supplementary: BasicCost;
+  // (undocumented)
+  tag?: string;
+}
+
+// @public (undocumented)
+export interface Tag {
+  // (undocumented)
+  tag: string;
+  // (undocumented)
+  values: ProjectValue[];
+}
+
+// Warnings were encountered during analysis:
+//
+// src/clients/optimizations/types.d.ts:5:5 - (ae-forgotten-export) The symbol "TypedResponse" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 ```
