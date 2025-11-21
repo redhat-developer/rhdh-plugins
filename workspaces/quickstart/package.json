@@ -21,7 +21,8 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "cd ../../ && yarn install",
+    "test:e2e": "playwright test"
   },
   "workspaces": {
     "packages": [
@@ -39,6 +40,7 @@
     "@backstage/e2e-test-utils": "^0.1.1",
     "@backstage/repo-tools": "^0.15.3",
     "@changesets/cli": "^2.27.1",
+    "@playwright/test": "1.56.1",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
@@ -245,5 +247,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "playwright": "^1.56.1"
   }
 }
