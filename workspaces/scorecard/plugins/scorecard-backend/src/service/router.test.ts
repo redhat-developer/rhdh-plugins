@@ -26,6 +26,7 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockBooleanProvider,
+  githubNumberMetricMetadata,
 } from '../../__fixtures__/mockProviders';
 import {
   Metric,
@@ -40,7 +41,6 @@ import {
 } from '@backstage/plugin-permission-common';
 import { PermissionsService } from '@backstage/backend-plugin-api';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
-import { githubNumberMetricMetadata } from '../../__fixtures__/mockProviders';
 
 const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
   result: AuthorizeResult.CONDITIONAL,

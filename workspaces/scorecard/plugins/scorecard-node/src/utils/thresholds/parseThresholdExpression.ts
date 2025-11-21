@@ -35,7 +35,7 @@ function parseRangeOperator(
   const minValue = Number(rangeMatch[1]);
   const maxValue = Number(rangeMatch[2]);
 
-  if (isNaN(minValue) || isNaN(maxValue)) {
+  if (Number.isNaN(minValue) || Number.isNaN(maxValue)) {
     throw new ThresholdConfigFormatError(
       `Cannot parse range values ${minValue} and ${maxValue} from expression: "${expression}"`,
     );
@@ -64,7 +64,7 @@ function parseComparisonOperator(
 
   if (targetType === 'number') {
     const value = Number(valueStr);
-    if (isNaN(value)) {
+    if (Number.isNaN(value)) {
       throw new ThresholdConfigFormatError(
         `Cannot parse "${valueStr}" as number from expression: "${expression}"`,
       );
