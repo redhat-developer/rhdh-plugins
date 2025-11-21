@@ -6130,7 +6130,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.15.3
     "@changesets/cli": ^2.27.1
-    "@playwright/test": ^1.56.0
+    "@playwright/test": ^1.56.1
     "@spotify/prettier-config": ^15.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -8647,7 +8647,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:^1.54.1, @playwright/test@npm:^1.56.0":
+"@playwright/test@npm:^1.56.1":
   version: 1.56.1
   resolution: "@playwright/test@npm:1.56.1"
   dependencies:
@@ -15577,7 +15577,7 @@ __metadata:
     "@backstage/ui": ^0.8.2
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@playwright/test": ^1.54.1
+    "@playwright/test": ^1.56.1
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
     "@roadiehq/backstage-plugin-github-pull-requests": ^3.5.1
