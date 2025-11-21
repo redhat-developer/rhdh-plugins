@@ -1,5 +1,13 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.0.4
+
+### Patch Changes
+
+- 40b80fe: Remove "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.4
+
 ## 1.0.3
 
 ### Patch Changes
