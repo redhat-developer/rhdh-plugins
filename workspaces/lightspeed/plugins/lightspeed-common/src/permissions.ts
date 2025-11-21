@@ -45,6 +45,16 @@ export const lightspeedChatDeletePermission = createPermission({
     action: 'delete',
   },
 });
+
+/** This permission is used to access the lightspeed update endpoint
+ * @public
+ */
+export const lightspeedChatUpdatePermission = createPermission({
+  name: 'lightspeed.chat.update',
+  attributes: {
+    action: 'update',
+  },
+});
 /**
  * List of all permissions on permission polices.
  *
@@ -54,4 +64,5 @@ export const lightspeedPermissions = [
   lightspeedChatReadPermission,
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
+  lightspeedChatUpdatePermission,
 ];

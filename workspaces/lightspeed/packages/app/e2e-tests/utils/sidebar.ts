@@ -24,19 +24,28 @@ export async function assertChatDialogInitialState(
     translations['chatbox.header.title'],
   );
   await expect(
-    page.getByRole('button', { name: 'Chat history menu' }),
+    page.getByRole('button', { name: translations['aria.chatHistoryMenu'] }),
   ).toBeVisible();
   await assertDrawerState(page, 'open', translations);
 }
 
-export async function closeChatDrawer(page: Page) {
-  const closeButton = page.getByRole('button', { name: 'Close drawer panel' });
+export async function closeChatDrawer(
+  page: Page,
+  translations: LightspeedMessages,
+) {
+  const closeButton = page.getByRole('button', {
+    name: translations['aria.closeDrawerPanel'],
+  });
   await closeButton.click();
 }
 
-export async function openChatDrawer(page: Page) {
-  // missing translation
-  const toggleButton = page.getByRole('button', { name: 'Chat history menu' });
+export async function openChatDrawer(
+  page: Page,
+  translations: LightspeedMessages,
+) {
+  const toggleButton = page.getByRole('button', {
+    name: translations['aria.chatHistoryMenu'],
+  });
   await toggleButton.click();
 }
 
@@ -51,14 +60,18 @@ export async function assertDrawerState(
   };
 
   const checks = [
-    page.getByRole('button', { name: 'Close drawer panel' }),
+    page.getByRole('button', {
+      name: translations['aria.closeDrawerPanel'],
+    }),
     page.getByPlaceholder(translations['chatbox.search.placeholder']),
-    page.getByRole('separator', { name: 'Resize' }),
   ];
 
   for (const locator of checks) {
     await expectations[state](locator);
   }
+
+  const resizeSeparator = page.locator('.pf-v6-c-drawer__splitter');
+  await expectations[state](resizeSeparator);
 }
 
 export async function verifySidePanelConversation(

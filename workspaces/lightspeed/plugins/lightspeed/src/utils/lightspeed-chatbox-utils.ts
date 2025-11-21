@@ -188,82 +188,41 @@ export const transformDocumentsToSources = (
   };
 };
 
-export const getDayDifference = (sourceTime: number, targetTime: number) => {
-  const sourceDate = new Date(sourceTime);
-  const targetDate = new Date(targetTime);
-
-  sourceDate.setHours(0, 0, 0, 0);
-  targetDate.setHours(0, 0, 0, 0);
-
-  const timeDifference = sourceDate.getTime() - targetDate.getTime();
-
-  return Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-};
-
 export const getCategorizeMessages = (
   messages: ConversationList,
+  favoriteChats: string[],
   addProps: (c: ConversationSummary) => { [k: string]: any },
   t?: (key: string, params?: any) => string,
 ): { [k: string]: Conversation[] } => {
-  const now: any = new Date();
-  const today = now.toDateString();
-
+  const favoritesKey = t?.('conversation.category.favorites') || 'Favorites';
+  const recentKey = t?.('conversation.category.recent') || 'Recent';
   const categorizedMessages: { [k: string]: Conversation[] } = {
-    [t?.('conversation.category.today') || 'Today']: [],
-    [t?.('conversation.category.yesterday') || 'Yesterday']: [],
-    [t?.('conversation.category.previous7Days') || 'Previous 7 Days']: [],
-    [t?.('conversation.category.previous30Days') || 'Previous 30 Days']: [],
+    [favoritesKey]: [],
+    [recentKey]: [],
   };
   messages
     .sort((a, b) => b.last_message_timestamp - a.last_message_timestamp)
     .forEach(c => {
-      const messageDate = new Date(c.last_message_timestamp * 1000);
-      const messageDayString = messageDate.toDateString();
-      const dayDifference = getDayDifference(
-        now,
-        c.last_message_timestamp * 1000,
-      );
       const message: Conversation = {
         id: c.conversation_id,
         text: c.topic_summary,
         label: t?.('message.options.label') || 'Options',
+        additionalProps: {
+          'aria-label': t?.('aria.options.label') || 'Options',
+        },
         ...addProps(c),
       };
 
-      if (messageDayString === today) {
-        categorizedMessages[t?.('conversation.category.today') || 'Today'].push(
-          message,
-        );
-      } else if (dayDifference === 1) {
-        categorizedMessages[
-          t?.('conversation.category.yesterday') || 'Yesterday'
-        ].push(message);
-      } else if (dayDifference <= 7) {
-        categorizedMessages[
-          t?.('conversation.category.previous7Days') || 'Previous 7 Days'
-        ].push(message);
-      } else if (dayDifference <= 30) {
-        categorizedMessages[
-          t?.('conversation.category.previous30Days') || 'Previous 30 Days'
-        ].push(message);
+      if (favoriteChats.includes(c.conversation_id)) {
+        categorizedMessages[favoritesKey].push(message);
       } else {
-        // handle month-wise grouping
-        const monthYear = messageDate.toLocaleString('default', {
-          month: 'long',
-          year: 'numeric',
-        });
-        if (!categorizedMessages[monthYear]) {
-          categorizedMessages[monthYear] = [];
-        }
-        categorizedMessages[monthYear].push(message);
+        categorizedMessages[recentKey].push(message);
       }
     });
 
   const filteredCategories = Object.keys(categorizedMessages).reduce(
     (result, category) => {
-      if (categorizedMessages[category].length > 0) {
-        result[category] = categorizedMessages[category];
-      }
+      result[category] = categorizedMessages[category];
       return result;
     },
     {} as any,

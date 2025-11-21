@@ -146,13 +146,13 @@ test.describe('Lightspeed tests', () => {
     });
 
     await test.step('Close the sidebar and verify elements are hidden', async () => {
-      await closeChatDrawer(sharedPage);
+      await closeChatDrawer(sharedPage, translations);
       await runAccessibilityTests(sharedPage, testInfo);
       await assertDrawerState(sharedPage, 'closed', translations);
     });
 
     await test.step('Reopen the sidebar and verify elements are visible again', async () => {
-      await openChatDrawer(sharedPage);
+      await openChatDrawer(sharedPage, translations);
       await assertDrawerState(sharedPage, 'open', translations);
     });
   });
@@ -288,10 +288,10 @@ test.describe('Lightspeed tests', () => {
       await sendMessage(message, sharedPage, translations, false);
 
       const jumpTopButton = sharedPage.getByRole('button', {
-        name: 'Back to top',
+        name: translations['aria.scroll.up'],
       });
       const jumpBottomButton = sharedPage.getByRole('button', {
-        name: 'Back to bottom',
+        name: translations['aria.scroll.down'],
       });
 
       await runAccessibilityTests(sharedPage, testInfo);
@@ -327,7 +327,7 @@ test.describe('Lightspeed tests', () => {
 
       const chats = sidePanel.locator('li.pf-chatbot__menu-item');
       if (devMode) {
-        await expect(chats).toHaveCount(2);
+        await expect(chats).toHaveCount(3);
       } else {
         expect(await chats.count()).toBeGreaterThanOrEqual(1);
         await sharedPage
@@ -344,10 +344,23 @@ test.describe('Lightspeed tests', () => {
         translations['chatbox.search.placeholder'],
       );
       await searchBox.fill(devMode ? 'new' : 'Backstage');
-      for (const chat of await chats.all()) {
-        expect(chat).toContainText(searchText);
+
+      const validChat = sidePanel
+        .locator('li.pf-chatbot__menu-item')
+        .filter({ hasText: searchText })
+        .first();
+
+      const chatItems = await chats.all();
+      for (const chat of chatItems) {
+        const text = await chat.textContent();
+        // Skip empty state messages (e.g., "No favorites added")
+        if (text?.includes(translations['chatbox.emptyState.noFavorites'])) {
+          continue;
+        }
+        await expect(chat).toContainText(searchText);
       }
-      await chats.first().click();
+
+      await validChat.click();
 
       const userMessage = sharedPage.locator('.pf-chatbot__message--user');
       const botMessage = sharedPage.locator('.pf-chatbot__message--bot');

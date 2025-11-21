@@ -192,6 +192,28 @@ export class LightspeedApiClient implements LightspeedAPI {
     return { success: true };
   }
 
+  async renameConversation(conversation_id: string, newName: string) {
+    const baseUrl = await this.getBaseUrl();
+
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/v2/conversations/${encodeURIComponent(conversation_id)}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ topic_summary: newName }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `failed to rename conversation, status ${response.status}: ${response.statusText}`,
+      );
+    }
+    return { success: true };
+  }
+
   getFeedbackStatus = async () => {
     const baseUrl = await this.getBaseUrl();
 

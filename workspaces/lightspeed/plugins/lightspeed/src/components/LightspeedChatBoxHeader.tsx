@@ -17,7 +17,12 @@
 import { Ref, useMemo, useState } from 'react';
 
 import { createStyles, makeStyles } from '@material-ui/core';
-import { ChatbotHeaderActions } from '@patternfly/chatbot';
+import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
+import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
+import {
+  ChatbotHeaderActions,
+  ChatbotHeaderOptionsDropdown,
+} from '@patternfly/chatbot';
 import {
   Dropdown,
   DropdownGroup,
@@ -33,6 +38,8 @@ type LightspeedChatBoxHeaderProps = {
   selectedModel: string;
   handleSelectedModel: (item: string) => void;
   models: { label: string; value: string; provider: string }[];
+  isChatFavoritesEnabled: boolean;
+  onChatFavoritesToggle: (state: boolean) => void;
 };
 
 const useStyles = makeStyles(() =>
@@ -50,6 +57,8 @@ export const LightspeedChatBoxHeader = ({
   selectedModel,
   handleSelectedModel,
   models,
+  isChatFavoritesEnabled,
+  onChatFavoritesToggle,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const { t } = useTranslation();
@@ -63,7 +72,7 @@ export const LightspeedChatBoxHeader = ({
     } = {};
 
     models.forEach(model => {
-      const provider = model.provider || 'Other';
+      const provider = model.provider || t('chatbox.provider.other');
       if (!groups[provider]) {
         groups[provider] = [];
       }
@@ -71,7 +80,7 @@ export const LightspeedChatBoxHeader = ({
     });
 
     return groups;
-  }, [models]);
+  }, [models, t]);
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <MenuToggle
@@ -84,6 +93,10 @@ export const LightspeedChatBoxHeader = ({
       {selectedModel}
     </MenuToggle>
   );
+
+  const handleChatFavoritesToggle = (state: boolean) => {
+    onChatFavoritesToggle(state);
+  };
 
   return (
     <ChatbotHeaderActions>
@@ -112,6 +125,39 @@ export const LightspeedChatBoxHeader = ({
           ))}
         </DropdownList>
       </Dropdown>
+      <ChatbotHeaderOptionsDropdown
+        isCompact
+        toggleProps={{ 'aria-label': t('aria.settings.label') }}
+        tooltipProps={{
+          content: t('tooltip.settings'),
+        }}
+      >
+        <DropdownGroup>
+          <DropdownList>
+            {isChatFavoritesEnabled ? (
+              <DropdownItem
+                value="disableChatFavorites"
+                key="disableChatFavorites"
+                icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
+                description={t('settings.favorites.enabled.description')}
+                onClick={() => handleChatFavoritesToggle(false)}
+              >
+                {t('settings.favorites.disable')}
+              </DropdownItem>
+            ) : (
+              <DropdownItem
+                value="enableChatFavorites"
+                key="enableChatFavorites"
+                icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
+                description={t('settings.favorites.disabled.description')}
+                onClick={() => handleChatFavoritesToggle(true)}
+              >
+                {t('settings.favorites.enable')}
+              </DropdownItem>
+            )}
+          </DropdownList>
+        </DropdownGroup>
+      </ChatbotHeaderOptionsDropdown>
     </ChatbotHeaderActions>
   );
 };
