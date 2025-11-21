@@ -22,6 +22,10 @@ import type {
 import { ThresholdConfigFormatError } from '../../errors';
 import { parseThresholdExpression } from './parseThresholdExpression';
 
+/**
+ * Validate thresholds configuration
+ * @public
+ */
 export function validateThresholds(
   thresholds: JsonValue,
   expectedMetricType: MetricType,

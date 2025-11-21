@@ -23,14 +23,43 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 /**
+ * Interface for a metric provider
  * @public
  */
 export interface MetricProvider<T extends MetricType = MetricType> {
+  /**
+   * Get the datasource ID for the metric provider
+   * @public
+   */
   getProviderDatasourceId(): string;
+  /**
+   * Get the provider ID for the metric provider
+   * @public
+   */
   getProviderId(): string;
+  /**
+   * Get the metric type for the metric provider
+   * @public
+   */
   getMetricType(): T;
+  /**
+   * Get the metric for the metric provider
+   * @public
+   */
   getMetric(): Metric<T>;
+  /**
+   * Get the metric thresholds for the metric provider
+   * @public
+   */
   getMetricThresholds(): ThresholdConfig;
+  /**
+   * Calculate the metric for the metric provider
+   * @public
+   */
   calculateMetric(entity: Entity): Promise<MetricValue<T>>;
+  /**
+   * Get the catalog filter for the metric provider
+   * @public
+   */
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
 }
