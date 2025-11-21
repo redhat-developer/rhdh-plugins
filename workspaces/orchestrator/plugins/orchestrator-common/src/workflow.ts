@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Specification } from '@severlessworkflow/sdk-typescript';
+import { Specification } from '@serverlessworkflow/sdk-typescript';
 import { dump } from 'js-yaml';
 
 import { WorkflowDefinition, WorkflowFormat } from './types';
