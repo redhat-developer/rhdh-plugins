@@ -320,15 +320,16 @@ Get Import Status by repository
 
 # **findOrchestratorImportStatusByRepo**
 
-> Import findOrchestratorImportStatusByRepo(repo)
+> Import findOrchestratorImportStatusByRepo(repo, approvalTool)
 
 Get Import Status by repository
 
 ### Parameters
 
-| Name     | Type       | Description              | Notes                        |
-| -------- | ---------- | ------------------------ | ---------------------------- |
-| **repo** | **String** | the full URL to the repo | [optional] [default to null] |
+| Name             | Type       | Description              | Notes                        |
+| ---------------- | ---------- | ------------------------ | ---------------------------- |
+| **repo**         | **String** | the full URL to the repo | [optional] [default to null] |
+| **approvalTool** | **String** | the approvalTool to use  | [optional] [default to GIT]  |
 
 ### Return type
 

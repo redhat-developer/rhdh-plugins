@@ -30,6 +30,12 @@ exports.up = async function up(knex) {
       .string('repository_url')
       .notNullable()
       .comment('The URL of the repository this workflow is for');
+    // table.integer('repositoryId').notNullable();
+    table
+      .foreign('repository_url')
+      .references('url')
+      .inTable('repositories')
+      .onDelete('CASCADE');
     table
       .timestamp('created_at')
       .defaultTo(knex.fn.now())

@@ -465,6 +465,7 @@ paths:
           description: the full URL to the repo
           schema:
             type: string
+        - $ref: '#/components/parameters/approvalToolParam'
       responses:
         200:
           description: Import Job status was determined successfully with no errors
@@ -860,6 +861,13 @@ components:
             properties:
               taskId:
                 type: string
+        workflows:
+          type: array
+          items:
+            type: object
+            properties:
+              workflowId:
+                type: string
         catalogEntityName:
           type: string
           description: Specified entity name in the catalog. Filled only in response for dry-run import requests.
@@ -999,11 +1007,13 @@ components:
       type: string
       description: Import Job status
       enum:
-        - 'WORKFLOW_SCHEDULED'
-        - 'WORKFLOW_RUNNING'
+        - 'WORKFLOW_ACTIVE'
         - 'WORKFLOW_COMPLETED'
-        - 'WORKFLOW_FAILED'
-        - 'WORKFLOW_FETCH_FAILED'
+        - 'WORKFLOW_ABORTED'
+        - 'WORKFLOW_SUSPENDED'
+        - 'WORKFLOW_ERROR'
+        - 'WORKFLOW_PENDING'
+        - WORKFLOW_FETCH_FAILED
 
   securitySchemes:
     BearerAuth:

@@ -983,11 +983,13 @@ export async function findTaskImportStatusByRepo(
 export async function findOrchestratorImportStatusByRepo(
   deps: {
     logger: LoggerService;
+    repositoryDao: RepositoryDao;
     orchestratorWorkflowDao: OrchestratorWorkflowDao;
     discovery: DiscoveryService;
   },
   repoUrl: string,
   token: string,
+  skipWorkflows?: boolean,
 ): Promise<HandlerResponse<Components.Schemas.Import>> {
   deps.logger.debug(
     `Getting orchestrator workflow import job status for ${repoUrl}..`,
@@ -1007,41 +1009,49 @@ export async function findOrchestratorImportStatusByRepo(
     approvalTool: 'GIT',
   };
   try {
-    const workflow =
-      await deps.orchestratorWorkflowDao.findWorkflowByRepoUrl(repoUrl);
-    if (!workflow) {
-      throw new NotFoundError(
-        `Workflow for repository ${repoUrl} was not found`,
-      );
-    }
-    if (workflow.instanceId) {
-      const baseUrl = await deps.discovery.getBaseUrl('orchestrator');
-      const config = new Configuration();
-      const orchestratorApi = new DefaultApi(config, baseUrl);
-      const response = await orchestratorApi.getInstanceById(
-        workflow.instanceId,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+    const repository = await deps.repositoryDao.findRepositoryByUrl(repoUrl);
+    if (repository?.id) {
+      const workflow =
+        await deps.orchestratorWorkflowDao.findWorkflowByRepoUrl(repoUrl);
+      if (!workflow) {
+        throw new NotFoundError(
+          `Workflow for repository ${repoUrl} was not found`,
+        );
+      }
+      if (workflow.instanceId) {
+        const baseUrl = await deps.discovery.getBaseUrl('orchestrator');
+        const orchestratorApi = new DefaultApi(new Configuration(), baseUrl);
+        const response = await orchestratorApi.getInstanceById(
+          workflow.instanceId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
           },
-        },
-      );
+        );
 
-      const instance = response.data;
-      if (instance) {
-        result.workflow = {
-          workflowId: instance.id,
-        };
-        result.lastUpdate = instance.end;
-        const status =
-          `WORKFLOW_${(instance.state as string)?.toLocaleUpperCase()}` as Components.Schemas.WorkflowImportStatus;
-        result.status = status;
-        if (workflow.instanceId) {
-          await deps.orchestratorWorkflowDao.updateWorkflow(
-            workflow.instanceId,
-            status,
-          );
+        const instance = response.data;
+        if (instance) {
+          result.workflow = {
+            workflowId: instance.id,
+          };
+          if (!skipWorkflows) {
+            const workflows =
+              await deps.orchestratorWorkflowDao.findWorkflowsByRepositoryUrl(
+                repoUrl,
+              );
+            result.workflows = workflows.map(w => ({
+              workflowId: w.instanceId,
+            }));
+          }
+
+          result.approvalTool =
+            repository.approvalTool as unknown as Components.Schemas.ApprovalTool;
+          result.lastUpdate = instance.end;
+          const status =
+            `WORKFLOW_${(instance.state as string)?.toLocaleUpperCase()}` as Components.Schemas.WorkflowImportStatus;
+          result.status = status;
         }
       }
     }

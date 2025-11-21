@@ -9,6 +9,7 @@
 | **task**              | [**Import_task**](Import_task.md)                         |                                                                                            | [optional] [default to null] |
 | **workflow**          | [**Import_workflow**](Import_workflow.md)                 |                                                                                            | [optional] [default to null] |
 | **tasks**             | [**List**](Import_task.md)                                |                                                                                            | [optional] [default to null] |
+| **workflows**         | [**List**](Import_workflow.md)                            |                                                                                            | [optional] [default to null] |
 | **catalogEntityName** | **String**                                                | Specified entity name in the catalog. Filled only in response for dry-run import requests. | [optional] [default to null] |
 | **lastUpdate**        | **Date**                                                  |                                                                                            | [optional] [default to null] |
 | **errors**            | **List**                                                  |                                                                                            | [optional] [default to null] |

@@ -58,6 +58,9 @@ declare namespace Components {
       tasks?: {
         taskId?: string;
       }[];
+      workflows?: {
+        workflowId?: string;
+      }[];
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
        */
@@ -280,6 +283,9 @@ declare namespace Components {
       tasks?: {
         taskId?: string;
       }[];
+      workflows?: {
+        workflowId?: string;
+      }[];
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
        */
@@ -326,10 +332,12 @@ declare namespace Components {
      * Import Job status
      */
     export type WorkflowImportStatus =
-      | 'WORKFLOW_SCHEDULED'
-      | 'WORKFLOW_RUNNING'
+      | 'WORKFLOW_ACTIVE'
       | 'WORKFLOW_COMPLETED'
-      | 'WORKFLOW_FAILED'
+      | 'WORKFLOW_ABORTED'
+      | 'WORKFLOW_SUSPENDED'
+      | 'WORKFLOW_ERROR'
+      | 'WORKFLOW_PENDING'
       | 'WORKFLOW_FETCH_FAILED';
   }
 }
@@ -581,10 +589,12 @@ declare namespace Paths {
   }
   namespace FindOrchestratorImportStatusByRepo {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type Repo = string;
     }
     export interface QueryParameters {
       repo?: Parameters.Repo;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 = /* Import Job */ Components.Schemas.Import;
