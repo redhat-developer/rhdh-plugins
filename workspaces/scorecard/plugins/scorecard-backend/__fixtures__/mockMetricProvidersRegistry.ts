@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { MetricProvidersRegistry } from '../src/providers/MetricProvidersRegistry';
+import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const mockMetricProvidersRegistry = {
   register: jest.fn(),
@@ -26,3 +28,26 @@ export const mockMetricProvidersRegistry = {
   listMetrics: jest.fn().mockReturnValue([]),
   listMetricsByDatasource: jest.fn().mockReturnValue([]),
 } as unknown as jest.Mocked<MetricProvidersRegistry>;
+
+type BuildMockMetricProvidersRegistryParams = {
+  provider?: MetricProvider;
+  metricsList?: Metric[];
+};
+
+export const buildMockMetricProvidersRegistry = ({
+  provider,
+  metricsList,
+}: BuildMockMetricProvidersRegistryParams) => {
+  const getProvider = provider
+    ? jest.fn().mockReturnValue(provider)
+    : jest.fn();
+  const listMetrics = metricsList
+    ? jest.fn().mockReturnValue(metricsList)
+    : jest.fn();
+
+  return {
+    ...mockMetricProvidersRegistry,
+    getProvider,
+    listMetrics,
+  } as unknown as jest.Mocked<MetricProvidersRegistry>;
+};

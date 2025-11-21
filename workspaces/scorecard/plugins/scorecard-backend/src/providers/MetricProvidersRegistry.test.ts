@@ -21,10 +21,12 @@ import {
   githubNumberProvider,
   jiraBooleanMetricMetadata,
   jiraBooleanProvider,
+} from '../../__fixtures__/mockProviders';
+import { mockEntity } from '../../__fixtures__/mockEntities';
+import {
   MockNumberProvider,
   MockBooleanProvider,
 } from '../../__fixtures__/mockProviders';
-import { mockEntity } from '../../__fixtures__/mockEntities';
 
 describe('MetricProvidersRegistry', () => {
   let registry: MetricProvidersRegistry;

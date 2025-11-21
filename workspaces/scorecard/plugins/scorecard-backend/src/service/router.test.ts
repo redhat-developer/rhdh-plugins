@@ -26,14 +26,12 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
   MockBooleanProvider,
-  githubNumberMetricMetadata,
 } from '../../__fixtures__/mockProviders';
 import {
   Metric,
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
-import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
@@ -42,6 +40,7 @@ import {
 } from '@backstage/plugin-permission-common';
 import { PermissionsService } from '@backstage/backend-plugin-api';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
+import { githubNumberMetricMetadata } from '../../__fixtures__/mockProviders';
 
 const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
   result: AuthorizeResult.CONDITIONAL,
@@ -75,7 +74,6 @@ describe('createRouter', () => {
     catalogMetricService = new CatalogMetricService({
       catalog: catalogServiceMock.mock(),
       registry: metricProvidersRegistry,
-      thresholdEvaluator: new ThresholdEvaluator(),
       auth: mockServices.auth(),
       database: mockDatabaseMetricValues,
     });

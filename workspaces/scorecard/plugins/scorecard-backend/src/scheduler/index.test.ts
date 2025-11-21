@@ -27,6 +27,7 @@ import {
 } from '../../__fixtures__/mockProviders';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
 import { mockMetricProvidersRegistry } from '../../__fixtures__/mockMetricProvidersRegistry';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 
 jest.mock('./tasks/CleanupExpiredMetricsTask');
 jest.mock('./tasks/PullMetricsByProviderTask');
@@ -72,6 +73,7 @@ describe('Scheduler', () => {
       scheduler: mockScheduler,
       database: mockDatabase,
       metricProvidersRegistry: mockRegistry,
+      thresholdEvaluator: new ThresholdEvaluator(),
     });
 
     mockCleanupTask = {
@@ -121,6 +123,12 @@ describe('Scheduler', () => {
 
     it('should add "metricProvidersRegistry" to scheduler', () => {
       expect((scheduler as any).metricProvidersRegistry).toBe(mockRegistry);
+    });
+
+    it('should add "thresholdEvaluator" to scheduler', () => {
+      expect((scheduler as any).thresholdEvaluator).toBeInstanceOf(
+        ThresholdEvaluator,
+      );
     });
   });
 
