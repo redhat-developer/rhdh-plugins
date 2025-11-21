@@ -25,14 +25,22 @@ import {
 import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
 import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValue } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
+import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
 
 type Options = Pick<
   SchedulerOptions,
-  'scheduler' | 'logger' | 'database' | 'config' | 'catalog' | 'auth'
+  | 'scheduler'
+  | 'logger'
+  | 'database'
+  | 'config'
+  | 'catalog'
+  | 'auth'
+  | 'thresholdEvaluator'
 >;
 
 export class PullMetricsByProviderTask implements SchedulerTask {
@@ -44,6 +52,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
   private readonly provider: MetricProvider;
   private readonly scheduler: SchedulerService;
   private readonly database: DatabaseMetricValues;
+  private readonly thresholdEvaluator: ThresholdEvaluator;
 
   private static readonly CATALOG_BATCH_SIZE = 50;
 
@@ -63,6 +72,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     this.provider = provider;
     this.scheduler = options.scheduler;
     this.database = options.database;
+    this.thresholdEvaluator = options.thresholdEvaluator;
   }
 
   async start(): Promise<void> {
@@ -111,6 +121,8 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     let totalProcessed = 0;
     let cursor: string | undefined = undefined;
 
+    const metricType = provider.getMetricType();
+
     try {
       do {
         const entitiesResponse = await this.catalog.queryEntities(
@@ -127,19 +139,28 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         const batchResults = await Promise.allSettled(
           entitiesResponse.items.map(async entity => {
             try {
+              const thresholds = mergeEntityAndProviderThresholds(
+                entity,
+                provider,
+              );
               const value = await provider.calculateMetric(entity);
+              const status = this.thresholdEvaluator.getFirstMatchingThreshold(
+                value,
+                metricType,
+                thresholds,
+              );
+
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
                 value,
                 timestamp: new Date(),
-                error_message: undefined,
+                status,
               };
             } catch (error) {
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
-                value: undefined,
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),

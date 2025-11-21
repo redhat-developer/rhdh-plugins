@@ -15,6 +15,10 @@
  */
 import { CustomErrorBase } from '@backstage/errors';
 
+/**
+ * Error thrown when the threshold configuration is invalid
+ * @public
+ */
 export class ThresholdConfigFormatError extends CustomErrorBase {
   name = 'ThresholdConfigFormatError' as const;
 }

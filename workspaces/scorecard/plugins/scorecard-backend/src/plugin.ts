@@ -97,7 +97,6 @@ export const scorecardPlugin = createBackendPlugin({
           catalog,
           auth,
           registry: metricProvidersRegistry,
-          thresholdEvaluator: new ThresholdEvaluator(),
           database: dbMetricValues,
         });
 
@@ -109,6 +108,7 @@ export const scorecardPlugin = createBackendPlugin({
           scheduler,
           database: dbMetricValues,
           metricProvidersRegistry,
+          thresholdEvaluator: new ThresholdEvaluator(),
         }).start();
 
         httpRouter.use(

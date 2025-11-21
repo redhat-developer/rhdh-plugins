@@ -97,11 +97,22 @@ describe('JiraOpenIssuesProvider', () => {
     });
   });
 
+  describe('getMetricType', () => {
+    it('should return "number"', () => {
+      const provider = JiraOpenIssuesProvider.fromConfig(
+        mockConfig,
+        mockAuthOptions,
+      );
+      expect(provider.getMetricType()).toEqual('number');
+    });
+  });
+
   describe('getMetric', () => {
     let getMetricResult: Metric<'number'>;
 
     beforeEach(() => {
       jest.spyOn(JiraOpenIssuesProvider.prototype, 'getProviderId');
+      jest.spyOn(JiraOpenIssuesProvider.prototype, 'getMetricType');
 
       const provider = JiraOpenIssuesProvider.fromConfig(
         mockConfig,
@@ -123,6 +134,10 @@ describe('JiraOpenIssuesProvider', () => {
 
     it('should call getProviderId', () => {
       expect(JiraOpenIssuesProvider.prototype.getProviderId).toHaveBeenCalled();
+    });
+
+    it('should call getMetricType', () => {
+      expect(JiraOpenIssuesProvider.prototype.getMetricType).toHaveBeenCalled();
     });
   });
 
