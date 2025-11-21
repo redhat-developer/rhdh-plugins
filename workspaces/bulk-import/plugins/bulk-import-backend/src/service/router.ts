@@ -406,11 +406,13 @@ export async function createRouter(
         const response = await findOrchestratorImportStatusByRepo(
           {
             logger,
+            repositoryDao,
             orchestratorWorkflowDao,
             discovery,
           },
           repo.url,
           token,
+          true,
         );
         if (response.responseBody) {
           imports.push(response.responseBody);
@@ -585,6 +587,7 @@ export async function createRouter(
       const response = await findOrchestratorImportStatusByRepo(
         {
           logger,
+          repositoryDao,
           orchestratorWorkflowDao,
           discovery,
         },

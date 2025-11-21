@@ -63,7 +63,6 @@ export async function createWorkflowImportJobs(
   const baseUrl = await discovery.getBaseUrl('orchestrator');
   const config = new Configuration();
 
-  console.log(`URL is ${baseUrl}`);
   // Initialize the client
   const orchestratorApi = new DefaultApi(config, baseUrl);
 
@@ -72,6 +71,7 @@ export async function createWorkflowImportJobs(
       continue;
     }
 
+    let workflowStatus: Components.Schemas.WorkflowImportStatus | undefined;
     try {
       const requestDTO: ExecuteWorkflowRequestDTO = {
         inputData: {
@@ -100,18 +100,29 @@ export async function createWorkflowImportJobs(
         wfResult.data.id,
         repo.approvalTool ?? 'GIT',
       );
-
       await orchestratorWorkflowDao.insertWorkflow(
         wfResult.data.id,
         repo.repository.url,
       );
+
+      const response = await orchestratorApi.getInstanceById(wfResult.data.id, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      workflowStatus =
+        `WORKFLOW_${(response.data.state as string)?.toLocaleUpperCase()}` as Components.Schemas.WorkflowImportStatus;
+
       result.push({
         repository: repo.repository,
         workflow: { workflowId: wfResult.data.id },
+        status: workflowStatus,
       });
     } catch (error: any) {
       result.push({
         repository: repo.repository,
+        status: workflowStatus ?? 'WORKFLOW_ABORTED',
         errors: [error.message],
       });
     }

@@ -44,10 +44,13 @@ import {
   Repository,
   RepositorySelection,
   RepositoryStatus,
+  TaskStatus,
+  WorkflowStatus,
 } from '../types';
+import { getWorkflowStatusInfo } from './orchestratorStatus';
 import { getTaskStatusInfo } from './task-status';
 
-const TaskLink = ({
+export const TaskLink = ({
   labelText,
   taskId,
 }: {
@@ -62,7 +65,34 @@ const TaskLink = ({
   return (
     <Link
       to={`${appBaseUrl}/create/tasks/${taskId}`}
-      data-testid="pull request url"
+      data-testid={`task-id-${taskId}`}
+      style={{
+        paddingLeft: '5px',
+        display: 'inline-flex',
+        alignItems: 'center',
+      }}
+    >
+      {labelText}
+    </Link>
+  );
+};
+
+export const WorkflowLink = ({
+  labelText,
+  workflowId,
+}: {
+  labelText: string;
+  workflowId?: string;
+}) => {
+  const configApi = useApi(configApiRef);
+  const appBaseUrl = configApi.getString('app.baseUrl');
+
+  if (!workflowId) return <>{labelText}</>;
+
+  return (
+    <Link
+      to={`${appBaseUrl}/orchestrator/instances/${workflowId}`}
+      data-testid={`workflow-id-${workflowId}`}
       style={{
         paddingLeft: '5px',
         display: 'inline-flex',
@@ -265,7 +295,7 @@ export const getImportStatus = (
   t: (key: string) => string,
   showIcon?: boolean,
   prUrl?: string,
-  taskId?: string,
+  taskOrWorkflowId?: string,
   gitlabConfigured: boolean = false,
 ) => {
   if (!status) {
@@ -300,7 +330,7 @@ export const getImportStatus = (
     );
   }
 
-  if (taskId && status.startsWith('TASK')) {
+  if (taskOrWorkflowId && status.startsWith('TASK')) {
     const { taskLabelText, taskIcon } = getTaskStatusInfo(status, t);
     return showIcon ? (
       <Typography
@@ -308,10 +338,34 @@ export const getImportStatus = (
         style={{ display: 'flex', alignItems: 'baseline' }}
       >
         {taskIcon}
-        <TaskLink labelText={taskLabelText} taskId={taskId} />
+        <TaskLink labelText={taskLabelText} taskId={taskOrWorkflowId} />
       </Typography>
     ) : (
-      <TaskLink labelText={taskLabelText} taskId={taskId} />
+      <TaskLink labelText={taskLabelText} taskId={taskOrWorkflowId} />
+    );
+  }
+
+  if (taskOrWorkflowId && status.startsWith('WORKFLOW')) {
+    const { workflowLabelText, workflowIcon } = getWorkflowStatusInfo(
+      status,
+      t,
+    );
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {workflowIcon}
+        <WorkflowLink
+          labelText={workflowLabelText}
+          workflowId={taskOrWorkflowId}
+        />
+      </Typography>
+    ) : (
+      <WorkflowLink
+        labelText={workflowLabelText}
+        workflowId={taskOrWorkflowId}
+      />
     );
   }
 
@@ -677,19 +731,17 @@ export const prepareDataForAddedRepositories = (
     return { repoData: {}, totalJobs: 0 };
   }
   const importJobs = addedRepositories as ImportJobs;
+  // console.log(`hmmm: ${JSON.stringify(importJobs)}`);
   const repoData: { [id: string]: AddRepositoryData } =
     importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
       const id = `${val.repository.organization}/${val.repository.name}`;
       const gitProvider = isGithubJob(val) ? 'github' : 'gitlab';
-      return {
+
+      const result: { [id: string]: AddRepositoryData } = {
         ...acc,
         [id]: {
           id,
           source: val.source,
-          task: {
-            id: val.task?.taskId,
-            status: val.status,
-          },
           approvalTool: val.approvalTool,
           repoName: val.repository.name,
           defaultBranch: val.repository.defaultBranch,
@@ -717,6 +769,21 @@ export const prepareDataForAddedRepositories = (
           },
         },
       };
+
+      if (val.task) {
+        result[id].task = {
+          id: val.task.taskId,
+          status: val.status as TaskStatus,
+        };
+      }
+      if (val.workflow) {
+        result[id].workflow = {
+          id: val.workflow.workflowId,
+          status: val.status as WorkflowStatus,
+        };
+      }
+
+      return result;
     }, {});
   return {
     repoData,

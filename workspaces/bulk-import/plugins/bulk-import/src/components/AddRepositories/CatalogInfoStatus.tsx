@@ -43,7 +43,7 @@ export const CatalogInfoStatus = ({
   isLoading,
   isDrawer,
   importStatus,
-  taskId,
+  taskOrWorkflowId,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -51,7 +51,7 @@ export const CatalogInfoStatus = ({
   isItemSelected?: boolean;
   isDrawer?: boolean;
   importStatus?: string;
-  taskId?: string;
+  taskOrWorkflowId?: string;
 }) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
@@ -81,6 +81,7 @@ export const CatalogInfoStatus = ({
   const importFlow = useImportFlow();
   if (
     importFlow !== ImportFlow.Scaffolder &&
+    importFlow !== ImportFlow.Orchestrator &&
     !isDrawer &&
     (isSelected ||
       (data?.totalReposInOrg && data.totalReposInOrg > 0 && allSelected))
@@ -109,7 +110,7 @@ export const CatalogInfoStatus = ({
           (key: string) => t(key as any, {}),
           false,
           undefined,
-          taskId,
+          taskOrWorkflowId,
           gitlabConfigured,
         )}
       </Typography>

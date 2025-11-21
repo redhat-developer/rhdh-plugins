@@ -52,6 +52,8 @@ export const bulkImportMessages = {
     repositoryText: 'repository',
     removeRepositoryWarningScaffolder:
       'Removing a repository will also remove all associated scaffolder task info.',
+    removeRepositoryWarningOrchestrator:
+      'Delete repository and associated orchestrator workflow info.',
     removeRepositoryWarning:
       'Removing a repository erases all associated information from the Catalog page.',
     removeRepositoryWarningGitlab:
@@ -63,6 +65,8 @@ export const bulkImportMessages = {
       'This repository added to the app-config file. To remove it modify the file directly',
     removeTooltipRepositoryScaffolder:
       'Delete repository and associated scaffolder task info',
+    removeTooltipRepositoryOrchestrator:
+      'Delete repository and associated orchestrator workflow info',
     errorOccuredWhileFetching: 'Error occured while fetching the pull request',
     failedToCreatePullRequest: 'Failed to create pull request',
     errorOccured: 'Error occured',
@@ -253,14 +257,30 @@ export const bulkImportMessages = {
     taskId: 'Task ID',
     taskLink: 'Task Link',
     viewTask: 'View Task',
-    loading: 'Loading...',
-    errorFetchingData: 'Error fetching data',
     taskCancelled: 'Task cancelled',
     taskCompleted: 'Task completed',
     taskFailed: 'Task failed',
     taskOpen: 'Task open',
     taskProcessing: 'Task processing',
     taskSkipped: 'Task skipped',
+  },
+  workflows: {
+    workflowsFor: 'Workflows for {{importJobStatusId}}',
+    workflowId: 'Workflow ID',
+    workflowLink: 'Workflow Link',
+    viewWorkflow: 'View Workflow',
+    workflowPending: 'Workflow pending',
+    workflowActive: 'Workflow active',
+    workflowCompleted: 'Workflow completed',
+    workflowAborted: 'Workflow aborted',
+    workflowError: 'Workflow error',
+    workflowFetchError: 'Workflow fetch error',
+    workflowSuspended: 'workflow suspended',
+  },
+  importActions: {
+    loading: 'Loading...',
+    errorFetchingData: 'Error fetching data',
+    noActions: 'No import actions found for this repository.',
   },
 };
 

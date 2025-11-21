@@ -816,6 +816,9 @@ const OPENAPI = `
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "$ref": "#/components/parameters/approvalToolParam"
           }
         ],
         "responses": {
@@ -1333,6 +1336,17 @@ const OPENAPI = `
               }
             }
           },
+          "workflows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "workflowId": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "catalogEntityName": {
             "type": "string",
             "description": "Specified entity name in the catalog. Filled only in response for dry-run import requests."
@@ -1520,10 +1534,12 @@ const OPENAPI = `
         "type": "string",
         "description": "Import Job status",
         "enum": [
-          "WORKFLOW_SCHEDULED",
-          "WORKFLOW_RUNNING",
+          "WORKFLOW_ACTIVE",
           "WORKFLOW_COMPLETED",
-          "WORKFLOW_FAILED",
+          "WORKFLOW_ABORTED",
+          "WORKFLOW_SUSPENDED",
+          "WORKFLOW_ERROR",
+          "WORKFLOW_PENDING",
           "WORKFLOW_FETCH_FAILED"
         ]
       }

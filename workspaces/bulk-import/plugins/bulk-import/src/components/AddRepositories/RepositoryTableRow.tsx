@@ -68,6 +68,15 @@ export const RepositoryTableRow = ({
     return null;
   }, [data.repoUrl]);
 
+  const importStatus = value as ImportJobStatus;
+  let importId = '';
+  if (importStatus?.task) {
+    importId = importStatus.task.taskId;
+  }
+  if (importStatus?.workflow) {
+    importId = importStatus.workflow.workflowId;
+  }
+
   return (
     <TableRow
       hover
@@ -128,7 +137,7 @@ export const RepositoryTableRow = ({
           isLoading={loading}
           isItemSelected={isItemSelected}
           isDrawer={isDrawer}
-          taskId={(value as ImportJobStatus)?.task?.taskId}
+          taskOrWorkflowId={importId}
         />
       </TableCell>
     </TableRow>
