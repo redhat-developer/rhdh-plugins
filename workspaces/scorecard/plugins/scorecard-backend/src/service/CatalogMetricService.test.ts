@@ -148,11 +148,9 @@ describe('CatalogMetricService', () => {
     });
 
     it('should get own service credentials', async () => {
-      await service.getLatestEntityMetrics(
-        'component:default/test-component',
-        ['github.important_metric'],
-        undefined,
-      );
+      await service.getLatestEntityMetrics('component:default/test-component', [
+        'github.important_metric',
+      ]);
 
       expect(mockedAuth.getOwnServiceCredentials).toHaveBeenCalledWith();
     });
