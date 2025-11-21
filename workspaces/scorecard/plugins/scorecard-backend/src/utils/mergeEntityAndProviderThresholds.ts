@@ -46,9 +46,9 @@ function parseEntityOverrideThresholds(
       } catch (e) {
         if (isError(e)) {
           throw new ThresholdConfigFormatError(
-            `Invalid threshold annotation '${annotationKey}: ${expression}' in entity '${stringifyEntityRef(
-              entity,
-            )}': ${e.message}`,
+            `Invalid threshold annotation '${annotationKey}: ${String(
+              expression,
+            )}' in entity '${stringifyEntityRef(entity)}': ${e.message}`,
           );
         }
         throw e;
@@ -73,9 +73,7 @@ export function mergeEntityAndProviderThresholds(
   const mergedRules = [...providerThresholds.rules];
   for (const override of entityOverrideThresholds) {
     const foundKey = mergedRules.findIndex(rule => rule.key === override.key);
-    if (foundKey !== -1) {
-      mergedRules[foundKey] = override;
-    } else {
+    if (foundKey === -1) {
       throw new ThresholdConfigFormatError(
         `Unable to override ${stringifyEntityRef(
           entity,
@@ -86,6 +84,8 @@ export function mergeEntityAndProviderThresholds(
         }`,
       );
     }
+
+    mergedRules[foundKey] = override;
   }
 
   return {
