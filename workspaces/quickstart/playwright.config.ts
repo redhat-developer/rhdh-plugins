@@ -43,6 +43,7 @@ export default defineConfig({
     {
       name: 'en',
       testDir: 'packages/app/e2e-tests',
+      testIgnore: '**/quick-start-developer.spec.ts',
       use: {
         channel: 'chrome',
         locale: 'en',
@@ -52,6 +53,7 @@ export default defineConfig({
     {
       name: 'fr',
       testDir: 'packages/app/e2e-tests',
+      testIgnore: '**/quick-start-developer.spec.ts',
       use: {
         channel: 'chrome',
         locale: 'fr',
@@ -61,6 +63,7 @@ export default defineConfig({
     {
       name: 'dev-config',
       testDir: 'packages/app/e2e-tests',
+      testMatch: '**/quick-start-developer.spec.ts',
       use: {
         channel: 'chrome',
         locale: 'en',
@@ -70,6 +73,7 @@ export default defineConfig({
     {
       name: 'dev-config-fr',
       testDir: 'packages/app/e2e-tests',
+      testMatch: '**/quick-start-developer.spec.ts',
       use: {
         channel: 'chrome',
         locale: 'fr',

@@ -58,3 +58,13 @@ export class UIhelper {
     await this.page.getByTestId(dataTestId).first().click();
   }
 }
+
+export async function switchToLocale(
+  page: Page,
+  locale: string,
+): Promise<void> {
+  await page.getByRole('link', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'English' }).click();
+  await page.getByRole('option', { name: locale }).click();
+  await page.locator('a').filter({ hasText: 'Home' }).click();
+}

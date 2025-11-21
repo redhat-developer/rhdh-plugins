@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { expect, test, Page, TestInfo } from '@playwright/test';
-import { UIhelper } from './utils/helper';
+import { test, TestInfo } from '@playwright/test';
+import { UIhelper, switchToLocale } from './utils/helper';
 import { getTranslations, QuickstartMessages } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
-
-async function switchToLocale(page: Page, locale: string): Promise<void> {
-  await page.getByRole('link', { name: 'Settings' }).click();
-  await page.getByRole('button', { name: 'English' }).click();
-  await page.getByRole('option', { name: locale }).click();
-  await page.locator('a').filter({ hasText: 'Home' }).click();
-}
 
 test.describe('Test Quick Start plugin', () => {
   let uiHelper: UIhelper;
@@ -50,66 +43,7 @@ test.describe('Test Quick Start plugin', () => {
     translations = getTranslations(currentLocale);
   });
 
-  test('Access Quick start as Guest or Admin', async ({
-    page,
-  }, testInfo: TestInfo) => {
-    if (
-      test.info().project.name === 'dev-config' ||
-      test.info().project.name === 'dev-config-fr'
-    ) {
-      test.skip();
-    }
-    await page.waitForTimeout(1000);
-
-    await uiHelper.verifyText(translations.header.title);
-    await uiHelper.verifyText(translations.header.subtitle);
-    await uiHelper.verifyText(translations.footer.notStarted);
-
-    await runAccessibilityTests(page, testInfo, 'quick-start-accessibility', {
-      skipViolationsAssert: true,
-    });
-
-    await page.getByText(translations.steps.setupAuthentication.title).click();
-    await uiHelper.verifyButtonURL(
-      translations.steps.setupAuthentication.ctaTitle,
-      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/',
-      { exact: false },
-    );
-    await page.getByText(translations.steps.configureRbac.title).click();
-    await uiHelper.verifyButtonURL(
-      translations.steps.configureRbac.ctaTitle,
-      '/rbac',
-    );
-    await page.getByText(translations.steps.configureGit.title).click();
-    await uiHelper.verifyButtonURL(
-      translations.steps.configureGit.ctaTitle,
-      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/',
-      { exact: false },
-    );
-    await page.getByText(translations.steps.managePlugins.title).click();
-    await uiHelper.verifyButtonURL(
-      translations.steps.managePlugins.ctaTitle,
-      '/extensions',
-    );
-    await uiHelper.clickButtonByText(translations.steps.managePlugins.ctaTitle);
-    await expect(page).toHaveURL(/extensions/);
-    const progressPattern = new RegExp(
-      translations.footer.progress.replace('{{progress}}', '\\d+'),
-    );
-    await uiHelper.verifyText(progressPattern);
-    await uiHelper.clickButtonByText(translations.footer.hide);
-    await expect(
-      page.getByRole('button', { name: translations.footer.hide }),
-    ).toBeHidden();
-  });
-
   test('Access Quick start as User', async ({ page }, testInfo: TestInfo) => {
-    if (
-      test.info().project.name === 'en' ||
-      test.info().project.name === 'fr'
-    ) {
-      test.skip();
-    }
     await page.waitForTimeout(1000);
     await uiHelper.verifyText(translations.header.title);
     await runAccessibilityTests(
