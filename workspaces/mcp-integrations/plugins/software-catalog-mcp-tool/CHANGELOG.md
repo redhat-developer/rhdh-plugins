@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool
 
+## 0.3.0
+
+### Minor Changes
+
+- 887c404: add regsiter/unregister existing components to software-catalog-mcp-tool
+
 ## 0.2.4
 
 ### Patch Changes
