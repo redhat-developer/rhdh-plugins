@@ -18,6 +18,7 @@ import { createExtensionPoint } from '@backstage/backend-plugin-api';
 import { MetricProvider } from './api';
 
 /**
+ * Interface for the Scorecard metrics extension point
  * @public
  */
 export interface ScorecardMetricsExtensionPoint {
@@ -25,6 +26,7 @@ export interface ScorecardMetricsExtensionPoint {
 }
 
 /**
+ * Extension point for adding metric providers to the Scorecard plugin
  * @public
  */
 export const scorecardMetricsExtensionPoint =

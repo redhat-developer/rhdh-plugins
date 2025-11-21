@@ -13,13 +13,13 @@ import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-co
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-// @public (undocumented)
+// @public
 export type ComparisonOperator = {
   operator: ComparisonSign;
   value: MetricValue;
 };
 
-// @public (undocumented)
+// @public
 export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
 
 // @public
@@ -29,19 +29,14 @@ export function getThresholdsFromConfig(
   expectedMetricType: MetricType,
 ): ThresholdConfig | undefined;
 
-// @public (undocumented)
+// @public
 export interface MetricProvider<T extends MetricType = MetricType> {
-  // (undocumented)
   calculateMetric(entity: Entity): Promise<MetricValue<T>>;
-  // (undocumented)
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
-  // (undocumented)
   getMetric(): Metric<T>;
-  // (undocumented)
   getMetricThresholds(): ThresholdConfig;
-  // (undocumented)
+  getMetricType(): T;
   getProviderDatasourceId(): string;
-  // (undocumented)
   getProviderId(): string;
 }
 
@@ -51,22 +46,22 @@ export function parseThresholdExpression(
   targetType: MetricType,
 ): ComparisonOperator | RangeOperator;
 
-// @public (undocumented)
+// @public
 export type RangeOperator = {
   operator: '-';
   values: [number, number];
 };
 
-// @public (undocumented)
+// @public
 export interface ScorecardMetricsExtensionPoint {
   // (undocumented)
   addMetricProvider(...metricProviders: Array<MetricProvider>): void;
 }
 
-// @public (undocumented)
+// @public
 export const scorecardMetricsExtensionPoint: ExtensionPoint<ScorecardMetricsExtensionPoint>;
 
-// @public (undocumented)
+// @public
 export class ThresholdConfigFormatError extends CustomErrorBase {
   // (undocumented)
   name: 'ThresholdConfigFormatError';
