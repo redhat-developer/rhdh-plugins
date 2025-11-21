@@ -14,21 +14,9 @@
  * limitations under the License.
  */
 
-import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
-import {
-  MetricResult,
-  MetricType,
-  ThresholdConfig,
-  ThresholdRule,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
-import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
-import { isError, NotFoundError, stringifyError } from '@backstage/errors';
-import {
-  MetricProvider,
-  ThresholdConfigFormatError,
-  validateThresholds,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { NotFoundError, stringifyError } from '@backstage/errors';
 import { AuthService } from '@backstage/backend-plugin-api';
 import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
 import {
@@ -38,12 +26,12 @@ import {
 } from '@backstage/plugin-permission-common';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
+import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
 
 export type CatalogMetricServiceOptions = {
   catalog: CatalogService;
   auth: AuthService;
   registry: MetricProvidersRegistry;
-  thresholdEvaluator: ThresholdEvaluator;
   database: DatabaseMetricValues;
 };
 
@@ -51,14 +39,12 @@ export class CatalogMetricService {
   private readonly catalog: CatalogService;
   private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
-  private readonly thresholdEvaluator: ThresholdEvaluator;
   private readonly database: DatabaseMetricValues;
 
   constructor(options: CatalogMetricServiceOptions) {
     this.catalog = options.catalog;
     this.auth = options.auth;
     this.registry = options.registry;
-    this.thresholdEvaluator = options.thresholdEvaluator;
     this.database = options.database;
   }
 
@@ -98,136 +84,44 @@ export class CatalogMetricService {
       authorizedMetricsToFetch.map(m => m.id),
     );
 
-    return rawResults.map(({ metric_id, value, error_message, timestamp }) => {
-      const provider = this.registry.getProvider(metric_id);
-      const metric = provider.getMetric();
+    return rawResults.map(
+      ({ metric_id, value, error_message, timestamp, status }) => {
+        const provider = this.registry.getProvider(metric_id);
+        const metric = provider.getMetric();
 
-      let thresholds: ThresholdConfig | undefined;
-      let evaluation: string | undefined;
-      let thresholdError: string | undefined;
-      try {
-        thresholds = this.mergeEntityAndProviderThresholds(
-          entity,
-          provider,
-          metric.type,
-        );
-        if (value === undefined) {
-          thresholdError =
-            'Unable to evaluate thresholds, metric value is missing';
-        } else {
-          evaluation = this.thresholdEvaluator.getFirstMatchingThreshold(
-            value,
-            metric.type,
-            thresholds,
-          );
-        }
-      } catch (e) {
-        thresholdError = stringifyError(e);
-      }
+        const isMetricCalcError = error_message || value === undefined;
+        const thresholdError =
+          value === undefined
+            ? 'Unable to evaluate thresholds, metric value is missing'
+            : null;
+        const thresholds = mergeEntityAndProviderThresholds(entity, provider);
 
-      const isMetricCalcError = error_message || value === undefined;
-      return {
-        id: metric.id,
-        status: isMetricCalcError ? 'error' : 'success',
-        metadata: {
-          title: metric.title,
-          description: metric.description,
-          type: metric.type,
-          history: metric.history,
-        },
-        ...(isMetricCalcError && {
-          error:
-            error_message ??
-            stringifyError(new Error(`Metric value is 'undefined'`)),
-        }),
-        result: {
-          value,
-          timestamp: new Date(timestamp).toISOString(),
-          thresholdResult: {
-            definition: thresholds,
-            status: thresholdError ? 'error' : 'success',
-            evaluation,
-            ...(thresholdError && { error: thresholdError }),
+        return {
+          id: metric.id,
+          status: isMetricCalcError ? 'error' : 'success',
+          metadata: {
+            title: metric.title,
+            description: metric.description,
+            type: metric.type,
+            history: metric.history,
           },
-        },
-      };
-    });
-  }
-
-  /**
-   * Parse threshold overrides from entity annotations.
-   * Looks for annotations in the format:
-   *   scorecard.io/{providerId}.thresholds.rules.{thresholdName}: "{expression}"
-   *
-   * @param entity - The catalog entity
-   * @param providerId - The metric provider ID (e.g., 'jira.open_issues')
-   * @param metricType - The metric type
-   * @returns Threshold rules from entity annotations, or empty rules if none found or invalid
-   */
-  private parseEntityOverrideThresholds(
-    entity: Entity,
-    providerId: string,
-    metricType: MetricType,
-  ): ThresholdRule[] {
-    const annotations = entity.metadata?.annotations || {};
-    const prefix = `scorecard.io/${providerId}.thresholds.rules.`;
-    const overrides: ThresholdRule[] = [];
-
-    for (const [annotationKey, expression] of Object.entries(annotations)) {
-      if (annotationKey.startsWith(prefix) && expression) {
-        const key = annotationKey.substring(prefix.length);
-        const entityRule = { key, expression };
-        try {
-          validateThresholds({ rules: [entityRule] }, metricType);
-          overrides.push(entityRule);
-        } catch (e) {
-          if (isError(e)) {
-            throw new ThresholdConfigFormatError(
-              `Invalid threshold annotation '${annotationKey}: ${expression}' in entity '${stringifyEntityRef(
-                entity,
-              )}': ${e.message}`,
-            );
-          }
-          throw e;
-        }
-      }
-    }
-
-    return overrides;
-  }
-
-  private mergeEntityAndProviderThresholds(
-    entity: Entity,
-    provider: MetricProvider,
-    metricType: MetricType,
-  ): ThresholdConfig {
-    const providerThresholds = provider.getMetricThresholds();
-    const entityOverrideThresholds = this.parseEntityOverrideThresholds(
-      entity,
-      provider.getProviderId(),
-      metricType,
+          ...(isMetricCalcError && {
+            error:
+              error_message ??
+              stringifyError(new Error(`Metric value is 'undefined'`)),
+          }),
+          result: {
+            value,
+            timestamp: new Date(timestamp).toISOString(),
+            thresholdResult: {
+              definition: thresholds,
+              status: thresholdError ? 'error' : 'success',
+              evaluation: status,
+              ...(thresholdError && { error: thresholdError }),
+            },
+          },
+        };
+      },
     );
-
-    const mergedRules = [...providerThresholds.rules];
-    for (const override of entityOverrideThresholds) {
-      const foundKey = mergedRules.findIndex(rule => rule.key === override.key);
-      if (foundKey !== -1) {
-        mergedRules[foundKey] = override;
-      } else {
-        throw new ThresholdConfigFormatError(
-          `Unable to override ${stringifyEntityRef(
-            entity,
-          )} thresholds by ${JSON.stringify(
-            override,
-          )}, metric provider ${provider.getProviderId()} does not support key ${
-            override.key
-          }`,
-        );
-      }
-    }
-
-    return {
-      rules: mergedRules,
-    };
   }
 }
