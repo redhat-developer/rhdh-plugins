@@ -130,7 +130,9 @@ describe('RepositoriesList', () => {
     ).toBeInTheDocument();
     const emptyMessage = screen.getByTestId('no-import-jobs-found');
     expect(emptyMessage).toBeInTheDocument();
-    expect(emptyMessage).toHaveTextContent('No records found');
+    expect(emptyMessage).toHaveTextContent(
+      'No repositories available to import.',
+    );
   });
 
   it('should display an alert in case of any errors', async () => {

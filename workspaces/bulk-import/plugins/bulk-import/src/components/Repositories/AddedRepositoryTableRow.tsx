@@ -27,7 +27,6 @@ import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
-  ApprovalTool,
   ImportFlow,
 } from '../../types';
 import {
@@ -58,7 +57,6 @@ const ImportStatusComponent = ({ data }: { data: AddRepositoryData }) => {
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
     values.repositories?.[data.id]?.task?.id,
-    values?.approvalTool === ApprovalTool.Gitlab,
   );
 };
 

@@ -266,21 +266,15 @@ export const getImportStatus = (
   showIcon?: boolean,
   prUrl?: string,
   taskId?: string,
-  gitlabConfigured: boolean = false,
 ) => {
   if (!status) {
     return '';
   }
-  const labelText = gitlabConfigured
-    ? t('status.alreadyImported')
-    : t('status.added');
+  const labelText = t('status.imported');
 
   if (status === 'WAIT_PR_APPROVAL') {
     return showIcon ? (
-      <WaitingForPR
-        url={prUrl as string}
-        isApprovalToolGitlab={gitlabConfigured}
-      />
+      <WaitingForPR url={prUrl as string} />
     ) : (
       t('status.waitingForApproval')
     );
@@ -293,7 +287,7 @@ export const getImportStatus = (
         style={{ display: 'flex', alignItems: 'baseline' }}
       >
         <StatusOK />
-        {gitlabConfigured ? t('status.imported') : t('status.added')}
+        {t('status.imported')}
       </Typography>
     ) : (
       labelText

@@ -21,7 +21,6 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import { useGitlabConfigured } from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -44,6 +43,7 @@ export const CatalogInfoStatus = ({
   isDrawer,
   importStatus,
   taskId,
+  prUrl,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -52,14 +52,17 @@ export const CatalogInfoStatus = ({
   isDrawer?: boolean;
   importStatus?: string;
   taskId?: string;
+  prUrl?: string;
 }) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
-  const gitlabConfigured = useGitlabConfigured();
 
   useEffect(() => {
-    if (importStatus === RepositoryStatus.ADDED) {
+    if (
+      importStatus === RepositoryStatus.ADDED ||
+      importStatus === RepositoryStatus.WAIT_PR_APPROVAL
+    ) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,
@@ -107,10 +110,9 @@ export const CatalogInfoStatus = ({
         {getImportStatus(
           importStatus,
           (key: string) => t(key as any, {}),
-          false,
-          undefined,
+          true,
+          prUrl,
           taskId,
-          gitlabConfigured,
         )}
       </Typography>
     );

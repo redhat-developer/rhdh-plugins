@@ -16,8 +16,16 @@
 
 import { BrowserRouter as Router } from 'react-router-dom';
 
-import { configApiRef, identityApiRef } from '@backstage/core-plugin-api';
-import { MockConfigApi, TestApiProvider } from '@backstage/test-utils';
+import {
+  configApiRef,
+  errorApiRef,
+  identityApiRef,
+} from '@backstage/core-plugin-api';
+import {
+  MockConfigApi,
+  MockErrorApi,
+  TestApiProvider,
+} from '@backstage/test-utils';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
@@ -61,6 +69,13 @@ jest.mock('@mui/material', () => ({
       approvalToolTooltip: 'approvalToolTooltip',
     };
   },
+}));
+
+jest.mock('@backstage/core-components', () => ({
+  ...jest.requireActual('@backstage/core-components'),
+  CodeSnippet: ({ text }: { text: string }) => (
+    <pre data-testid="code-snippet">{text}</pre>
+  ),
 }));
 
 const createTestQueryClient = () =>
@@ -122,6 +137,7 @@ describe('AddRepositoriesForm', () => {
           apis={[
             [identityApiRef, mockIdentityApi],
             [bulkImportApiRef, mockBulkImportApi],
+            [errorApiRef, new MockErrorApi()],
             [
               configApiRef,
               new MockConfigApi({
@@ -130,12 +146,20 @@ describe('AddRepositoriesForm', () => {
                     entityFilename: 'test.yaml',
                   },
                 },
+                integrations: {
+                  github: [
+                    {
+                      host: 'github.com',
+                      token: 'test-token',
+                    },
+                  ],
+                },
               }),
             ],
           ]}
         >
           <QueryClientProvider client={queryClient}>
-            <AddRepositories error={null} />
+            <AddRepositories />
           </QueryClientProvider>
         </TestApiProvider>
       </Router>,
@@ -148,7 +172,7 @@ describe('AddRepositoriesForm', () => {
     expect(screen.queryByTestId('preview-pullrequest-sidebar')).toBeFalsy();
   });
 
-  it('should show any load errors', async () => {
+  it('should show the drawer when openDrawer is true', async () => {
     (useDrawer as jest.Mock).mockReturnValue({
       openDrawer: true,
       drawerData: mockGetRepositories.repositories[0],
@@ -161,6 +185,7 @@ describe('AddRepositoriesForm', () => {
           apis={[
             [identityApiRef, mockIdentityApi],
             [bulkImportApiRef, mockBulkImportApi],
+            [errorApiRef, new MockErrorApi()],
             [
               configApiRef,
               new MockConfigApi({
@@ -169,19 +194,84 @@ describe('AddRepositoriesForm', () => {
                     entityFilename: 'test.yaml',
                   },
                 },
+                integrations: {
+                  github: [
+                    {
+                      host: 'github.com',
+                      token: 'test-token',
+                    },
+                  ],
+                },
               }),
             ],
           ]}
         >
           <QueryClientProvider client={queryClient}>
-            <AddRepositories error={{ err: 'error occurred' }} />
+            <AddRepositories />
           </QueryClientProvider>
         </TestApiProvider>
       </Router>,
     );
-    expect(screen.getByText('error occurred')).toBeTruthy();
     expect(
       screen.getByText('Selected repositories (0)', { exact: false }),
     ).toBeInTheDocument();
+  });
+
+  it('should show missing configurations page when no integrations are configured', async () => {
+    (useDrawer as jest.Mock).mockReturnValue({
+      openDrawer: false,
+      setOpenDrawer: jest.fn(),
+      setDrawerData: jest.fn(),
+    });
+    render(
+      <Router>
+        <TestApiProvider
+          apis={[
+            [identityApiRef, mockIdentityApi],
+            [bulkImportApiRef, mockBulkImportApi],
+            [errorApiRef, new MockErrorApi()],
+            [
+              configApiRef,
+              new MockConfigApi({
+                catalog: {
+                  import: {
+                    entityFilename: 'test.yaml',
+                  },
+                },
+                // No integrations configured
+              }),
+            ],
+          ]}
+        >
+          <QueryClientProvider client={queryClient}>
+            <AddRepositories />
+          </QueryClientProvider>
+        </TestApiProvider>
+      </Router>,
+    );
+
+    // Check that the missing configurations page is displayed
+    expect(screen.getByText('Missing configurations')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'No GitHub or GitLab integrations are configured. Please add at least one integration to use the bulk import feature.',
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'To resolve this issue, ensure that the integrations are added to your Backstage configuration file (app-config.yaml).',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('code-snippet')).toBeInTheDocument();
+    expect(screen.getByText('Documentation')).toBeInTheDocument();
+    expect(screen.getByAltText('Missing configuration')).toBeInTheDocument();
+
+    // Check that the normal repositories list is NOT displayed
+    expect(
+      screen.queryByText('Selected repositories (0)', { exact: false }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('add-repository-footer'),
+    ).not.toBeInTheDocument();
   });
 });
