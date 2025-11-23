@@ -13,30 +13,6 @@ export class DefaultApiClient {
       fetch: typeof fetch;
     };
   });
-  // Warning: (ae-forgotten-export) The symbol "CostManagementReport" needs to be exported by the entry point index.d.ts
-  getCostManagementReport(
-    request: {
-      query: {
-        currency?: CurrencyCode;
-        delta?: string;
-        'filter[limit]'?: number;
-        'filter[offset]'?: number;
-        'filter[resolution]'?: 'daily' | 'monthly';
-        'filter[time_scope_units]'?: 'day' | 'month';
-        'filter[time_scope_value]'?: number;
-        'group_by[project]'?: '*' | string;
-        'group_by[cluster]'?: '*' | string;
-        'group_by[node]'?: '*' | string;
-        'group_by[tag]'?: '*' | string;
-        'order_by[cost]'?: 'asc' | 'desc';
-        'order_by[distributed_cost]'?: 'asc' | 'desc';
-        'order_by[markup_cost]'?: 'asc' | 'desc';
-        'order_by[raw_cost]'?: 'asc' | 'desc';
-        [key: string]: string | number | undefined;
-      };
-    },
-    options?: RequestOptions,
-  ): Promise<TypedResponse<CostManagementReport>>;
   // Warning: (ae-forgotten-export) The symbol "RecommendationBoxPlots" needs to be exported by the entry point index.d.ts
   getRecommendationById(
     request: {
@@ -87,10 +63,6 @@ export interface RequestOptions {
 export type TypedResponse<T> = Omit<Response, 'json'> & {
   json: () => Promise<T>;
 };
-
-// Warnings were encountered during analysis:
-//
-// src/generated/apis/DefaultApi.client.d.ts:91:13 - (ae-forgotten-export) The symbol "CurrencyCode" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 ```

@@ -325,29 +325,6 @@ export class DefaultApiClient {
       fetch: typeof fetch;
     };
   });
-  getCostManagementReport(
-    request: {
-      query: {
-        currency?: CurrencyCode;
-        delta?: string;
-        'filter[limit]'?: number;
-        'filter[offset]'?: number;
-        'filter[resolution]'?: 'daily' | 'monthly';
-        'filter[time_scope_units]'?: 'day' | 'month';
-        'filter[time_scope_value]'?: number;
-        'group_by[project]'?: '*' | string;
-        'group_by[cluster]'?: '*' | string;
-        'group_by[node]'?: '*' | string;
-        'group_by[tag]'?: '*' | string;
-        'order_by[cost]'?: 'asc' | 'desc';
-        'order_by[distributed_cost]'?: 'asc' | 'desc';
-        'order_by[markup_cost]'?: 'asc' | 'desc';
-        'order_by[raw_cost]'?: 'asc' | 'desc';
-        [key: string]: string | number | undefined;
-      };
-    },
-    options?: RequestOptions,
-  ): Promise<TypedResponse<CostManagementReport>>;
   getRecommendationById(
     request: {
       path: {
@@ -411,9 +388,27 @@ export interface GetAccessResponse {
 }
 
 // @public (undocumented)
-export type GetCostManagementRequest = Parameters<
-  OptimizationsApi['getCostManagementReport']
->[0];
+export interface GetCostManagementRequest {
+  // (undocumented)
+  query: {
+    currency?: CurrencyCode;
+    delta?: string;
+    'filter[limit]'?: number;
+    'filter[offset]'?: number;
+    'filter[resolution]'?: 'daily' | 'monthly';
+    'filter[time_scope_units]'?: 'day' | 'month';
+    'filter[time_scope_value]'?: number;
+    'group_by[project]'?: '*' | string;
+    'group_by[cluster]'?: '*' | string;
+    'group_by[node]'?: '*' | string;
+    'group_by[tag]'?: '*' | string;
+    'order_by[cost]'?: 'asc' | 'desc';
+    'order_by[distributed_cost]'?: 'asc' | 'desc';
+    'order_by[markup_cost]'?: 'asc' | 'desc';
+    'order_by[raw_cost]'?: 'asc' | 'desc';
+    [key: string]: string | number | undefined;
+  };
+}
 
 // @public (undocumented)
 export type GetRecommendationByIdRequest = Parameters<
@@ -546,6 +541,9 @@ export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
 > & {
+  getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>>;
   searchOpenShiftProjects(search?: string): Promise<
     TypedResponse<{
       data: Array<{
