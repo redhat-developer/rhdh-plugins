@@ -16,12 +16,41 @@
 
 import { DefaultApiClient } from '../../generated/apis/DefaultApi.client';
 import type { TypedResponse } from '../../generated/apis/DefaultApi.client';
+import type {
+  CostManagementReport,
+  CurrencyCode,
+} from '../types/cost-management';
+
+/** @public */
+export interface GetCostManagementRequest {
+  query: {
+    currency?: CurrencyCode;
+    delta?: string;
+    'filter[limit]'?: number;
+    'filter[offset]'?: number;
+    'filter[resolution]'?: 'daily' | 'monthly';
+    'filter[time_scope_units]'?: 'day' | 'month';
+    'filter[time_scope_value]'?: number;
+    'group_by[project]'?: '*' | string;
+    'group_by[cluster]'?: '*' | string;
+    'group_by[node]'?: '*' | string;
+    'group_by[tag]'?: '*' | string;
+    'order_by[cost]'?: 'asc' | 'desc';
+    'order_by[distributed_cost]'?: 'asc' | 'desc';
+    'order_by[markup_cost]'?: 'asc' | 'desc';
+    'order_by[raw_cost]'?: 'asc' | 'desc';
+    [key: string]: string | number | undefined;
+  };
+}
 
 /** @public */
 export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
 > & {
+  getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>>;
   searchOpenShiftProjects(
     search?: string,
   ): Promise<
@@ -38,11 +67,6 @@ export type OptimizationsApi = Omit<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   >;
 };
-
-/** @public */
-export type GetCostManagementRequest = Parameters<
-  OptimizationsApi['getCostManagementReport']
->[0];
 
 /**
  * This is a copy of GetTokenResponse, to avoid importing redhat-resource-optimization-backend.
