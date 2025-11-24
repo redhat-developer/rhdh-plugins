@@ -25,6 +25,7 @@ import {
   K8sResourceCommonWithClusterInfo,
   PAGINATION_CONFIG,
   ClusterError,
+  GroupVersionKind,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 import {
@@ -125,6 +126,14 @@ export class KonfluxService {
       this.konfluxLogger,
     );
 
+    if (!konfluxConfig) {
+      this.konfluxLogger.warn('No Konflux configuration found', {
+        entityRef,
+        resource,
+      });
+      return { data: [] };
+    }
+
     // determine cluster-namespace combinations
     let combinations = await determineClusterNamespaceCombinations(
       entity,
@@ -142,30 +151,31 @@ export class KonfluxService {
       return { data: [] };
     }
 
-    if (filters?.subcomponent) {
-      const beforeCount = combinations.length;
-      combinations = combinations.filter(
-        c => c.subcomponent === filters.subcomponent,
-      );
-      this.konfluxLogger.debug('Applied subcomponent filter', {
-        entityRef,
-        resource,
-        subcomponent: filters.subcomponent,
-        beforeCount,
-        afterCount: combinations.length,
-      });
-    }
+    // apply filters to combinations
+    const beforeFilterCount = combinations.length;
+    combinations = combinations.filter(combination => {
+      if (
+        filters?.subcomponent &&
+        combination.subcomponent !== filters.subcomponent
+      ) {
+        return false;
+      }
+      if (
+        filters?.clusters?.length &&
+        !filters.clusters.includes(combination.cluster)
+      ) {
+        return false;
+      }
+      return true;
+    });
 
-    if (filters?.clusters && filters.clusters.length > 0) {
-      const beforeCount = combinations.length;
-      combinations = combinations.filter(c =>
-        filters.clusters?.includes(c.cluster),
-      );
-      this.konfluxLogger.debug('Applied cluster filter', {
+    if (combinations.length !== beforeFilterCount) {
+      this.konfluxLogger.debug('Applied filters', {
         entityRef,
         resource,
-        clusters: filters.clusters,
-        beforeCount,
+        subcomponent: filters?.subcomponent,
+        clusters: filters?.clusters,
+        beforeCount: beforeFilterCount,
         afterCount: combinations.length,
       });
     }
@@ -195,7 +205,6 @@ export class KonfluxService {
     }
 
     // fetch resources from all clusters in parallel
-    const aggregatedData: K8sResourceCommonWithClusterInfo[] = [];
     const clusterErrors: ClusterError[] = [];
 
     // Track new pagination tokens for next page
@@ -221,16 +230,6 @@ export class KonfluxService {
       const hasAnyToken = sourceState.k8sToken || sourceState.kubearchiveToken;
 
       if (isLoadMoreRequest && !hasAnyToken) {
-        return null;
-      }
-
-      if (!konfluxConfig) {
-        this.konfluxLogger.warn('Konflux config missing for fetch', {
-          entityRef,
-          resource,
-          cluster: combination.cluster,
-          namespace: combination.namespace,
-        });
         return null;
       }
 
@@ -285,45 +284,14 @@ export class KonfluxService {
           items: filteredItems,
         };
       } catch (error) {
-        // Determine error source based on pagination state
-        // If we have kubearchiveToken but no k8sToken, error likely from kubearchive
-        // Otherwise, default to kubernetes
-        const errorSource: 'kubernetes' | 'kubearchive' =
-          sourceState.kubearchiveToken && !sourceState.k8sToken
-            ? 'kubearchive'
-            : 'kubernetes';
-
-        // Extract detailed error information
-        const errorDetails = extractKubernetesErrorDetails(
+        const clusterError = this.handleFetchError(
           error,
+          sourceState,
           resourceModel,
-          combination.namespace,
-          errorSource,
+          combination,
+          resource,
         );
-
-        this.konfluxLogger.error(
-          `Error fetching ${resource} from ${combination.cluster}/${combination.namespace}`,
-          error,
-          {
-            cluster: combination.cluster,
-            namespace: combination.namespace,
-            resource,
-            errorType: errorDetails.errorType,
-            statusCode: errorDetails.statusCode,
-            source: errorSource,
-          },
-        );
-
-        clusterErrors.push({
-          cluster: combination.cluster,
-          namespace: combination.namespace,
-          errorType: errorDetails.errorType,
-          message: errorDetails.message,
-          statusCode: errorDetails.statusCode,
-          reason: errorDetails.reason,
-          resourcePath: errorDetails.resourcePath,
-          source: errorDetails.source,
-        });
+        clusterErrors.push(clusterError);
         return null;
       }
     });
@@ -337,32 +305,25 @@ export class KonfluxService {
       : false;
 
     // aggregate the results
-    for (const result of results) {
-      if (result && result.items) {
-        const clusterInfo = konfluxConfig?.clusters[result.combination.cluster];
-        const enrichedItems = result.items.map(
-          (item: K8sResourceCommonWithClusterInfo) =>
-            createResourceWithClusterInfo(
-              item,
-              result.combination.cluster,
-              result.combination.subcomponent,
-              clusterInfo?.uiUrl,
-            ),
+    const aggregatedData = results
+      .filter((r): r is NonNullable<typeof r> => !!r && !!r.items)
+      .flatMap(result => {
+        const clusterInfo = konfluxConfig.clusters[result.combination.cluster];
+        return result.items.map((item: K8sResourceCommonWithClusterInfo) =>
+          createResourceWithClusterInfo(
+            item,
+            result.combination.cluster,
+            result.combination.subcomponent,
+            clusterInfo?.uiUrl,
+          ),
         );
-
-        aggregatedData.push(...enrichedItems);
-      }
-    }
+      });
 
     // Sort by creation timestamp (newest first) across all sources
     aggregatedData.sort((a, b) => {
-      const timeA = a.metadata?.creationTimestamp
-        ? new Date(a.metadata.creationTimestamp).getTime()
-        : 0;
-      const timeB = b.metadata?.creationTimestamp
-        ? new Date(b.metadata.creationTimestamp).getTime()
-        : 0;
-      return timeB - timeA; // Descending (newest first)
+      const timeA = this.getCreationTimestamp(a);
+      const timeB = this.getCreationTimestamp(b);
+      return timeB - timeA; // descending (newest first)
     });
 
     // Generate continuation token if there are more pages available
@@ -379,11 +340,13 @@ export class KonfluxService {
       });
     }
 
+    const clustersQueried = combinations.map(c => c.cluster);
+
     this.konfluxLogger.info('Aggregation completed', {
       entityRef,
       resource,
       totalItems: aggregatedData.length,
-      clustersQueried: combinations.map(c => c.cluster),
+      clustersQueried,
       clusterErrors: clusterErrors.length,
       hasContinuationToken: !!continuationToken,
     });
@@ -392,12 +355,74 @@ export class KonfluxService {
       data: aggregatedData,
       metadata: {
         totalLoaded: aggregatedData.length,
-        clustersQueried: combinations.map(c => c.cluster),
+        clustersQueried,
         possiblyMoreData,
       },
       clusterErrors: clusterErrors.length > 0 ? clusterErrors : undefined,
       continuationToken,
     };
+  }
+
+  /**
+   * Handles fetch errors and returns a ClusterError object
+   */
+  private handleFetchError(
+    error: unknown,
+    sourceState: { k8sToken?: string; kubearchiveToken?: string },
+    resourceModel: GroupVersionKind,
+    combination: SubcomponentClusterConfig,
+    resource: string,
+  ): ClusterError {
+    // Determine error source based on pagination state
+    // If we have kubearchiveToken but no k8sToken, error likely from kubearchive
+    // Otherwise, default to kubernetes
+    const errorSource: 'kubernetes' | 'kubearchive' =
+      sourceState.kubearchiveToken && !sourceState.k8sToken
+        ? 'kubearchive'
+        : 'kubernetes';
+
+    // extract detailed error information
+    const errorDetails = extractKubernetesErrorDetails(
+      error,
+      resourceModel,
+      combination.namespace,
+      errorSource,
+    );
+
+    this.konfluxLogger.error(
+      `Error fetching ${resource} from ${combination.cluster}/${combination.namespace}`,
+      error,
+      {
+        cluster: combination.cluster,
+        namespace: combination.namespace,
+        resource,
+        errorType: errorDetails.errorType,
+        statusCode: errorDetails.statusCode,
+        source: errorSource,
+      },
+    );
+
+    return {
+      cluster: combination.cluster,
+      namespace: combination.namespace,
+      errorType: errorDetails.errorType,
+      message: errorDetails.message,
+      statusCode: errorDetails.statusCode,
+      reason: errorDetails.reason,
+      resourcePath: errorDetails.resourcePath,
+      source: errorDetails.source,
+    };
+  }
+
+  /**
+   * Extracts creation timestamp from resource metadata
+   */
+  private getCreationTimestamp(
+    resource: K8sResourceCommonWithClusterInfo,
+  ): number {
+    return resource.metadata?.creationTimestamp
+      ? new Date(resource.metadata.creationTimestamp).getTime()
+      : 0;
   }
 
   private applyInMemoryFiltering(

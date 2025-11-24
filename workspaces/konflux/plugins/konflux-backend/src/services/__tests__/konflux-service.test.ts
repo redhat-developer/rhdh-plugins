@@ -389,9 +389,10 @@ describe('KonfluxService', () => {
       );
 
       expect(mockKonfluxLogger.debug).toHaveBeenCalledWith(
-        'Applied subcomponent filter',
+        'Applied filters',
         expect.objectContaining({
           subcomponent: 'sub1',
+          clusters: undefined,
           beforeCount: 2,
           afterCount: 1,
         }),
@@ -426,9 +427,10 @@ describe('KonfluxService', () => {
       );
 
       expect(mockKonfluxLogger.debug).toHaveBeenCalledWith(
-        'Applied cluster filter',
+        'Applied filters',
         expect.objectContaining({
           clusters: ['cluster1'],
+          subcomponent: undefined,
           beforeCount: 2,
           afterCount: 1,
         }),
@@ -546,15 +548,11 @@ describe('KonfluxService', () => {
       expect(mockResourceFetcher.fetchFromSource).toHaveBeenCalledTimes(1);
     });
 
-    it('should return null for combination when konflux config is missing', async () => {
+    it('should return empty data when konflux config is missing', async () => {
       const entity = createMockEntity('test-entity');
-      const combination = createMockCombination();
 
       (mockCatalog.getEntityByRef as jest.Mock).mockResolvedValue(entity);
       mockGetKonfluxConfig.mockResolvedValue(undefined);
-      mockDetermineClusterNamespaceCombinations.mockResolvedValue([
-        combination,
-      ]);
 
       const result = await service.aggregateResources(
         entityRef,
@@ -565,12 +563,13 @@ describe('KonfluxService', () => {
 
       expect(result.data).toEqual([]);
       expect(mockKonfluxLogger.warn).toHaveBeenCalledWith(
-        'Konflux config missing for fetch',
+        'No Konflux configuration found',
         expect.objectContaining({
-          cluster: 'cluster1',
-          namespace: 'namespace1',
+          entityRef,
+          resource,
         }),
       );
+      expect(mockDetermineClusterNamespaceCombinations).not.toHaveBeenCalled();
     });
 
     it('should handle cluster errors gracefully', async () => {
