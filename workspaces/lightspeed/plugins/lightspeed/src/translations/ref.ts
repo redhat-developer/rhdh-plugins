@@ -100,6 +100,7 @@ export const lightspeedMessages = {
   'common.cancel': 'Cancel',
   'common.close': 'Close',
   'common.readMore': 'Read more',
+  'common.noSearchResults': 'No result matches the search',
 
   // Menu items
   'menu.newConversation': 'New Chat',

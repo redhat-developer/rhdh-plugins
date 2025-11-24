@@ -55,6 +55,7 @@ readonly "footer.accuracy.popover.link.label": string;
 readonly "common.cancel": string;
 readonly "common.close": string;
 readonly "common.readMore": string;
+readonly "common.noSearchResults": string;
 readonly "menu.newConversation": string;
 readonly "chatbox.header.title": string;
 readonly "chatbox.search.placeholder": string;

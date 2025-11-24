@@ -368,9 +368,18 @@ export const LightspeedChat = ({
             } else {
               acc[pinnedChatsKey] = [
                 {
-                  id: 'no-pinned-chats',
-                  text: t('chatbox.emptyState.noPinnedChats'),
+                  id:
+                    categorizedMessages[pinnedChatsKey].length > 0
+                      ? 'no-pinned-chats-search-results'
+                      : 'no-pinned-chats',
+                  text:
+                    categorizedMessages[pinnedChatsKey].length > 0
+                      ? t('common.noSearchResults')
+                      : t('chatbox.emptyState.noPinnedChats'),
                   noIcon: true,
+                  additionalProps: {
+                    isDisabled: true,
+                  },
                 },
               ];
             }
@@ -380,9 +389,18 @@ export const LightspeedChat = ({
             } else {
               acc[key] = [
                 {
-                  id: 'no-recent-chats',
-                  text: t('chatbox.emptyState.noRecentChats'),
+                  id:
+                    categorizedMessages[pinnedChatsKey].length > 0
+                      ? 'no-recent-chats-search-results'
+                      : 'no-recent-chats',
+                  text:
+                    categorizedMessages[key].length > 0
+                      ? t('common.noSearchResults')
+                      : t('chatbox.emptyState.noRecentChats'),
                   noIcon: true,
+                  additionalProps: {
+                    isDisabled: true,
+                  },
                 },
               ];
             }

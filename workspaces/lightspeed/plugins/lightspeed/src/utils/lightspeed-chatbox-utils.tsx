@@ -104,7 +104,7 @@ type MessageProps = {
   content: string;
   timestamp: string;
   name?: string;
-  avatar?: string;
+  avatar?: string | any;
   isLoading?: boolean;
   error?: {
     title: string;

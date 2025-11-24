@@ -108,6 +108,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'common.cancel': 'Cancelar',
     'common.close': 'Cerrar',
     'common.readMore': 'Leer más',
+    'common.noSearchResults': 'Ningún resultado coincide con la búsqueda',
 
     // Menu items
     'menu.newConversation': 'Nuevo Chat',
