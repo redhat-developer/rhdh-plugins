@@ -25,10 +25,13 @@ jobs:
     steps:
         - name: Check PR title, author, branch and merged status
           id: check_pr
+          env:
+              PR_TITLE: ${{ github.event.pull_request.title }}
+              HEAD_REF: ${{ github.event.pull_request.head.ref }}          
           run: |
-              if [[ "${{ github.event.pull_request.title }}" == Version*Packages* \
+              if [[ "$PR_TITLE" == Version*Packages* \
               && "${{ github.event.pull_request.user.login }}" == "rhdh-bot" ]] \
-              && [[ "${{ github.event.pull_request.head.ref }}" == maintenance-changesets-release/* ]] \
+              && [[ "$HEAD_REF" == maintenance-changesets-release/* ]] \
               && [[ "${{ github.event.pull_request.merged }}" == "true" ]]; then
                 echo "is_version_pr=true" >> $GITHUB_OUTPUT
               else
