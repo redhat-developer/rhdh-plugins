@@ -32,6 +32,7 @@ import { PipelineRunItemRow } from './PipelineRunItemRow';
 import { usePipelineRunFilters } from './usePipelineRunFilters';
 import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
 import { EmptyState } from '../../common/EmptyState';
+import { normalizeFilter } from '../../../utils/filterUtils';
 
 type PipelineRunsListProps = {
   hasSubcomponents?: boolean;
@@ -65,17 +66,11 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
     plrs,
     {
       nameSearch,
-      cluster: selectedCluster !== 'All' ? selectedCluster : undefined,
-      subcomponent:
-        selectedSubcomponent !== 'All' ? selectedSubcomponent : undefined,
-      application:
-        selectedApplication !== 'All' ? selectedApplication : undefined,
-      pipelineRunStatus:
-        selectedPipelineRunStatus !== 'All'
-          ? selectedPipelineRunStatus
-          : undefined,
-      pipelineRunType:
-        selectedPipelineRunType !== 'All' ? selectedPipelineRunType : undefined,
+      cluster: normalizeFilter(selectedCluster),
+      subcomponent: normalizeFilter(selectedSubcomponent),
+      application: normalizeFilter(selectedApplication),
+      pipelineRunStatus: normalizeFilter(selectedPipelineRunStatus),
+      pipelineRunType: normalizeFilter(selectedPipelineRunType),
     },
     { page, rowsPerPage },
   );

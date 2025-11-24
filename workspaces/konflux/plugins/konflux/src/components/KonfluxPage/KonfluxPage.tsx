@@ -20,7 +20,7 @@ import { Progress } from '@backstage/core-components';
 // import { Divider, makeStyles, Theme } from '@material-ui/core';
 import { useEntity } from '@backstage/plugin-catalog-react';
 
-import { useEntitySubcomponents } from '../../hooks/useEntitySubcomponents';
+import { usePageLoading } from '../../hooks/usePageLoading';
 
 import { ApplicationsList } from '../List/ApplicationsList/ApplicationsList';
 import { ComponentsList } from '../List/ComponentsList/ComponentsList';
@@ -32,7 +32,7 @@ import './KonfluxPage.css';
 
 export const KonfluxPageComponent = () => {
   const { entity } = useEntity();
-  const { subcomponentEntities, loading } = useEntitySubcomponents(entity);
+  const { loading, hasSubcomponents } = usePageLoading(entity);
 
   if (loading) {
     return (
@@ -45,13 +45,9 @@ export const KonfluxPageComponent = () => {
   return (
     <KonfluxQueryProvider>
       <RefreshButton />
-      <ApplicationsList
-        hasSubcomponents={(subcomponentEntities?.length || 0) > 1}
-      />
+      <ApplicationsList hasSubcomponents={hasSubcomponents} />
       <Divider component="div" className="divider" />
-      <ComponentsList
-        hasSubcomponents={(subcomponentEntities?.length || 0) > 1}
-      />
+      <ComponentsList hasSubcomponents={hasSubcomponents} />
     </KonfluxQueryProvider>
   );
 };

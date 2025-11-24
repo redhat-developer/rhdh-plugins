@@ -15,7 +15,7 @@
  */
 
 import { Progress } from '@backstage/core-components';
-import { useEntitySubcomponents } from '../../hooks/useEntitySubcomponents';
+import { usePageLoading } from '../../hooks/usePageLoading';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { PipelineRunsList } from '../List/PipelineRunsList/PipelineRunsList';
 import { CommitsList } from '../List/CommitsList';
@@ -27,7 +27,7 @@ import { Divider } from '@patternfly/react-core';
 
 export const KonfluxCIPageComponent = () => {
   const { entity } = useEntity();
-  const { subcomponentEntities, loading } = useEntitySubcomponents(entity);
+  const { loading, hasSubcomponents } = usePageLoading(entity);
 
   if (loading) {
     return (
@@ -40,11 +40,9 @@ export const KonfluxCIPageComponent = () => {
   return (
     <KonfluxQueryProvider>
       <RefreshButton />
-      <PipelineRunsList
-        hasSubcomponents={(subcomponentEntities?.length || 0) > 1}
-      />
+      <PipelineRunsList hasSubcomponents={hasSubcomponents} />
       <Divider className="divider" />
-      <CommitsList hasSubcomponents={(subcomponentEntities?.length || 0) > 1} />
+      <CommitsList hasSubcomponents={hasSubcomponents} />
     </KonfluxQueryProvider>
   );
 };

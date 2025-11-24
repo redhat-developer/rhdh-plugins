@@ -31,6 +31,7 @@ import { ComponentItemRow } from './ComponentItemRow';
 import { useComponentFilters } from './useComponentFilters';
 import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
 import { EmptyState } from '../../common/EmptyState';
+import { normalizeFilter } from '../../../utils/filterUtils';
 
 type Props = {
   hasSubcomponents: boolean;
@@ -59,11 +60,9 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
     components,
     {
       nameSearch,
-      cluster: selectedCluster !== 'All' ? selectedCluster : undefined,
-      subcomponent:
-        selectedSubcomponent !== 'All' ? selectedSubcomponent : undefined,
-      application:
-        selectedApplication !== 'All' ? selectedApplication : undefined,
+      cluster: normalizeFilter(selectedCluster),
+      subcomponent: normalizeFilter(selectedSubcomponent),
+      application: normalizeFilter(selectedApplication),
     },
     { page, rowsPerPage },
   );
