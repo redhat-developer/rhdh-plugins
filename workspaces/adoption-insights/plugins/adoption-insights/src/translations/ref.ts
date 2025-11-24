@@ -37,6 +37,9 @@ export const adoptionInsightsMessages = {
       cancel: 'Cancel',
       ok: 'OK',
       defaultLabel: 'Last 28 days',
+      title: 'Date range',
+      startDate: 'Start date',
+      endDate: 'End date',
     },
   },
   activeUsers: {
