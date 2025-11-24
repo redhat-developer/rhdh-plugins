@@ -332,11 +332,10 @@ describe('KubearchiveService', () => {
         },
       );
       expect(mockKonfluxLogger.debug).toHaveBeenCalledWith(
-        'Using OIDC token for Kubearchive',
+        'Using OIDC token for authentication',
         expect.objectContaining({
           cluster,
           namespace,
-          resource,
         }),
       );
     });
@@ -500,7 +499,7 @@ describe('KubearchiveService', () => {
       );
 
       expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
-        'No authentication token available for Kubearchive',
+        'No authentication token available',
         undefined,
         expect.objectContaining({
           cluster,

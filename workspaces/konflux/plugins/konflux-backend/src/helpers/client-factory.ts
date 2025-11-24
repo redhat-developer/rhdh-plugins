@@ -17,11 +17,22 @@ import { KonfluxConfig } from '@red-hat-developer-hub/backstage-plugin-konflux-c
 import { KubeConfig } from '@kubernetes/client-node';
 import { KonfluxLogger } from './logger';
 
+/**
+ * Creates a KubeConfig for connecting to a Kubernetes cluster.
+ *
+ * @param konfluxConfig - Konflux configuration
+ * @param cluster - Cluster name
+ * @param konfluxLogger - Logger instance
+ * @param token - Optional authentication token (falls back to serviceAccountToken)
+ * @param useKubearchiveUrl - If true, uses kubearchiveApiUrl instead of apiUrl
+ * @returns KubeConfig instance or null if creation fails
+ */
 export const createKubeConfig = (
   konfluxConfig: KonfluxConfig | undefined,
   cluster: string,
   konfluxLogger: KonfluxLogger,
   token?: string,
+  useKubearchiveUrl = false,
 ): KubeConfig | null => {
   try {
     if (!konfluxConfig) {
@@ -36,8 +47,16 @@ export const createKubeConfig = (
       throw new Error('Cluster Config not found.');
     }
 
-    if (!clusterConfig?.apiUrl) {
-      throw new Error('Cluster Config missing API url.');
+    const apiUrl = useKubearchiveUrl
+      ? clusterConfig.kubearchiveApiUrl
+      : clusterConfig.apiUrl;
+
+    if (!apiUrl) {
+      throw new Error(
+        useKubearchiveUrl
+          ? 'Cluster Config missing kubearchiveApiUrl.'
+          : 'Cluster Config missing API url.',
+      );
     }
 
     const userToken = token || clusterConfig.serviceAccountToken;
@@ -56,7 +75,7 @@ export const createKubeConfig = (
     kubeConfig.loadFromOptions({
       clusters: [
         {
-          server: clusterConfig.apiUrl,
+          server: apiUrl,
           name: cluster,
         },
       ],

@@ -28,6 +28,7 @@ import { KubearchiveService } from './kubearchive-service';
 import uniqBy from 'lodash/uniqBy';
 import { createKubeConfig } from '../helpers/client-factory';
 import { KonfluxLogger } from '../helpers/logger';
+import { getAuthToken } from '../helpers/auth';
 
 /**
  * Options for fetching resources from a single source
@@ -107,68 +108,19 @@ export class ResourceFetcherService {
     const clusterConfig = konfluxConfig?.clusters[cluster];
     const apiUrl = clusterConfig?.apiUrl || 'unknown';
 
-    let token: string | undefined;
-
-    // If authProvider is 'oidc', try to use OIDC token from request body first
-    if (konfluxConfig?.authProvider === 'oidc') {
-      if (context.oidcToken) {
-        token = context.oidcToken;
-        this.konfluxLogger.debug('Using OIDC token for authentication', {
-          cluster,
-          namespace,
-        });
-      } else {
-        this.konfluxLogger.error(
-          'OIDC authProvider configured but no token available',
-          undefined,
-          {
-            cluster,
-            namespace,
-            resource: resourceModel.plural,
-          },
-        );
-        throw new Error(
-          `OIDC authProvider configured for cluster ${cluster} but no token available (neither OIDC nor Backstage token)`,
-        );
-      }
-    } else {
-      // for non-OIDC auth providers, use serviceAccountToken
-      token = clusterConfig?.serviceAccountToken;
-    }
-
-    if (!token) {
-      this.konfluxLogger.error('No authentication token available', undefined, {
+    const { token, requiresImpersonation } = getAuthToken(
+      konfluxConfig,
+      clusterConfig,
+      context.oidcToken,
+      userEmail,
+      this.konfluxLogger,
+      {
         cluster,
         namespace,
         resource: resourceModel.plural,
-        authProvider: konfluxConfig?.authProvider,
-      });
-      throw new Error(
-        `No authentication token available for cluster ${cluster}`,
-      );
-    }
+      },
+    );
 
-    // validate that userEmail is provided if impersonation is required
-    if (
-      konfluxConfig?.authProvider === 'impersonationHeaders' &&
-      (!userEmail || userEmail.trim().length === 0)
-    ) {
-      this.konfluxLogger.error(
-        'Impersonation headers required but user email is missing',
-        undefined,
-        {
-          cluster,
-          namespace,
-          resource: resourceModel.plural,
-          authProvider: konfluxConfig?.authProvider,
-        },
-      );
-      throw new Error(
-        `User email is required for impersonation but was not provided for cluster ${cluster}`,
-      );
-    }
-
-    // create KubeConfig with the determined token
     const kc = createKubeConfig(
       konfluxConfig,
       cluster,
@@ -210,7 +162,7 @@ export class ResourceFetcherService {
         undefined,
         {
           headers: {
-            ...(konfluxConfig?.authProvider === 'impersonationHeaders' && {
+            ...(requiresImpersonation && {
               'Impersonate-User': userEmail,
               'Impersonate-Group': 'system:authenticated',
             }),

@@ -19,8 +19,10 @@ import {
   K8sResourceCommonWithClusterInfo,
   KonfluxConfig,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { CustomObjectsApi, KubeConfig } from '@kubernetes/client-node';
+import { CustomObjectsApi } from '@kubernetes/client-node';
 import { KonfluxLogger } from '../helpers/logger';
+import { getAuthToken } from '../helpers/auth';
+import { createKubeConfig } from '../helpers/client-factory';
 
 export class KubearchiveService {
   private readonly logger: KonfluxLogger;
@@ -29,66 +31,6 @@ export class KubearchiveService {
     this.logger = new KonfluxLogger(logger);
   }
 
-  private createKubeConfig(
-    konfluxConfig: KonfluxConfig | undefined,
-    cluster: string,
-    token?: string,
-  ): KubeConfig | null {
-    try {
-      if (!konfluxConfig) {
-        return null;
-      }
-
-      const kubeConfig = new KubeConfig();
-
-      const clusterConfig = konfluxConfig.clusters?.[cluster];
-
-      if (!clusterConfig) {
-        throw new Error('Cluster Config not found.');
-      }
-
-      if (!clusterConfig?.kubearchiveApiUrl) {
-        throw new Error('Cluster Config missing kubearchiveApiUrl.');
-      }
-
-      // Use provided token if available, otherwise fallback to serviceAccountToken
-      const userToken = token || clusterConfig.serviceAccountToken;
-
-      const user = {
-        name: 'backstage',
-        token: userToken,
-      };
-
-      const context = {
-        name: cluster,
-        user: user.name,
-        cluster: cluster,
-      };
-
-      kubeConfig.loadFromOptions({
-        clusters: [
-          {
-            server: clusterConfig.kubearchiveApiUrl,
-            name: cluster,
-          },
-        ],
-        users: [user],
-        contexts: [context],
-        currentContext: context.name,
-      });
-
-      return kubeConfig;
-    } catch (e) {
-      this.logger.error('Error creating Kube Config', e, {
-        cluster,
-      });
-      return null;
-    }
-  }
-
-  /**
-   * List all results with optional filtering
-   */
   /**
    * Fetch resources from Kubearchive using the Kubernetes API pattern
    * @param cluster - Target cluster name
@@ -117,70 +59,22 @@ export class KubearchiveService {
     try {
       const clusterConfig = konfluxConfig?.clusters[cluster];
 
-      let token: string | undefined;
+      const { token, requiresImpersonation } = getAuthToken(
+        konfluxConfig,
+        clusterConfig,
+        oidcToken,
+        userEmail,
+        this.logger,
+        { cluster, namespace, resource },
+      );
 
-      if (konfluxConfig?.authProvider === 'oidc') {
-        if (oidcToken) {
-          token = oidcToken;
-          this.logger.debug('Using OIDC token for Kubearchive', {
-            cluster,
-            namespace,
-            resource,
-          });
-        } else {
-          this.logger.error(
-            'OIDC authProvider configured but no token available',
-            undefined,
-            {
-              cluster,
-              namespace,
-              resource,
-            },
-          );
-          throw new Error(
-            `OIDC authProvider configured for cluster ${cluster} but no token available`,
-          );
-        }
-      } else {
-        token = clusterConfig?.serviceAccountToken;
-      }
-
-      if (!token) {
-        this.logger.error(
-          'No authentication token available for Kubearchive',
-          undefined,
-          {
-            cluster,
-            namespace,
-            resource,
-            authProvider: konfluxConfig?.authProvider,
-          },
-        );
-        throw new Error(
-          `No authentication token available for cluster ${cluster}`,
-        );
-      }
-
-      if (
-        konfluxConfig?.authProvider === 'impersonationHeaders' &&
-        (!userEmail || userEmail.trim().length === 0)
-      ) {
-        this.logger.error(
-          'Impersonation headers required but user email is missing',
-          undefined,
-          {
-            cluster,
-            namespace,
-            resource,
-            authProvider: konfluxConfig?.authProvider,
-          },
-        );
-        throw new Error(
-          `User email is required for impersonation but was not provided for cluster ${cluster}`,
-        );
-      }
-
-      const kc = this.createKubeConfig(konfluxConfig, cluster, token);
+      const kc = createKubeConfig(
+        konfluxConfig,
+        cluster,
+        this.logger,
+        token,
+        true, // useKubearchiveUrl = true
+      );
       if (!kc) {
         this.logger.error(
           'Failed to create KubeConfig - cluster not found',
@@ -193,12 +87,6 @@ export class KubearchiveService {
         );
         throw new Error(`Cluster '${cluster}' not found`);
       }
-
-      const params = new URLSearchParams();
-      if (options.pageSize) params.append('limit', options.pageSize.toString());
-      if (options.pageToken) params.append('continue', options.pageToken);
-      if (options.labelSelector)
-        params.append('labelSelector', options.labelSelector);
 
       const customApi = kc.makeApiClient(CustomObjectsApi);
       const response = await customApi.listNamespacedCustomObject(
@@ -218,7 +106,7 @@ export class KubearchiveService {
         undefined,
         {
           headers: {
-            ...(konfluxConfig?.authProvider === 'impersonationHeaders' && {
+            ...(requiresImpersonation && {
               'Impersonate-User': userEmail,
               'Impersonate-Group': 'system:authenticated',
             }),
