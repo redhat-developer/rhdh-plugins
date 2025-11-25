@@ -140,9 +140,7 @@ const updateCommitObject = (
   if (!newCommit.components) {
     newCommit.components = [component];
   } else {
-    const compIndex = newCommit.components.findIndex(
-      comp => comp === component,
-    );
+    const compIndex = newCommit.components.indexOf(component);
     if (compIndex < 0) newCommit.components.push(component);
   }
   newCommit.pipelineRuns.push(plr);

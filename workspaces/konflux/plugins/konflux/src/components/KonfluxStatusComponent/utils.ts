@@ -23,6 +23,7 @@ import {
 import { getReleaseStatus } from '../../hooks/useReleaseStatus';
 import { pipelineRunStatus } from '../../utils/pipeline-runs';
 import { LatestPipelineRunByType } from './types';
+import { safeToSorted } from '../../utils/array';
 
 const compareDate = (
   resourceA: PipelineRunResource | ReleaseResource,
@@ -57,9 +58,9 @@ export const getLatestPLRs = (
     plr => plr.metadata?.labels?.[PipelineRunLabel.PIPELINE_TYPE] === 'build',
   );
 
-  const sortedTestPLRs = testPLRs?.sort((a, b) => compareDate(a, b));
-  const sortedBuildPLRs = buildPLRs?.sort((a, b) => compareDate(a, b));
-  const sortedReleasePLRs = filteredReleases?.sort((a, b) => compareDate(a, b));
+  const sortedTestPLRs = safeToSorted(testPLRs, compareDate);
+  const sortedBuildPLRs = safeToSorted(buildPLRs, compareDate);
+  const sortedReleasePLRs = safeToSorted(filteredReleases, compareDate);
 
   return {
     test: sortedTestPLRs?.[0] || null,

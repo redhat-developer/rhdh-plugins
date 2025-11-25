@@ -111,7 +111,7 @@ describe('datetime', () => {
 
     it('should return false for invalid Date', () => {
       expect(isValid(new Date('invalid'))).toBe(false);
-      expect(isValid(new Date(NaN))).toBe(false);
+      expect(isValid(new Date(Number.NaN))).toBe(false);
     });
 
     it('should return false for non-Date values', () => {
@@ -130,7 +130,7 @@ describe('datetime', () => {
 
     it('should return empty string for invalid values', () => {
       expect(formatPrometheusDuration(-1000)).toBe('');
-      expect(formatPrometheusDuration(NaN)).toBe('');
+      expect(formatPrometheusDuration(Number.NaN)).toBe('');
       expect(formatPrometheusDuration(Infinity)).toBe('');
     });
 

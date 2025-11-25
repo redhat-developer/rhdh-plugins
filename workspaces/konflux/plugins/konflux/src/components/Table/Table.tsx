@@ -108,7 +108,7 @@ export const Table = <T extends ItemWithKey>({
           onPageChange={(_, newPage) => pagination.setPage(newPage)}
           rowsPerPage={pagination.rowsPerPage}
           onRowsPerPageChange={e => {
-            pagination.setRowsPerPage(parseInt(e.target.value, 10));
+            pagination.setRowsPerPage(Number.parseInt(e.target.value, 10));
             pagination.setPage(0);
           }}
           rowsPerPageOptions={ROWS_PER_PAGE_OPTIONS}

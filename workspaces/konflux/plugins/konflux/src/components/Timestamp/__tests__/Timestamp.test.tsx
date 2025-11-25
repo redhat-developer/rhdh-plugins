@@ -127,7 +127,9 @@ describe('Timestamp', () => {
     // isValid is called with an invalid date (NaN), check that it was called with an invalid date
     expect(mockDateTime.isValid).toHaveBeenCalled();
     expect(mockDateTime.isValid.mock.calls[0][0]).toBeInstanceOf(Date);
-    expect(isNaN(mockDateTime.isValid.mock.calls[0][0].getTime())).toBe(true);
+    expect(Number.isNaN(mockDateTime.isValid.mock.calls[0][0].getTime())).toBe(
+      true,
+    );
     expect(getByTest('timestamp')).not.toBeInTheDocument();
   });
 

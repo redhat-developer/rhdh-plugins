@@ -107,7 +107,7 @@ export const conditionsRunStatus = (
   );
   const succeedCondition = conditions.find(c => c.type === 'Succeeded');
 
-  if (!succeedCondition || !succeedCondition.status) {
+  if (!succeedCondition?.status) {
     return runStatus.Pending;
   }
 

@@ -147,7 +147,7 @@ export const fromNow = (dateTime: string | Date, now?: Date, options?: any) => {
 };
 
 export const isValid = (dateTime: Date) =>
-  dateTime instanceof Date && !isNaN(dateTime.valueOf());
+  dateTime instanceof Date && !Number.isNaN(dateTime.valueOf());
 
 // Conversions between units and milliseconds
 const s = 1000;
@@ -185,7 +185,7 @@ export const parsePrometheusDuration = (duration: string): number => {
     return sumBy(
       parts,
       p =>
-        parseInt(p?.[1] ?? '1', 10) *
+        Number.parseInt(p?.[1] ?? '1', 10) *
         (p?.[2] ? units[p[2] as keyof typeof units] : 1),
     );
   } catch (ignored) {

@@ -19,6 +19,7 @@ import {
   ReleaseResource,
   SubcomponentClusterConfig,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import { safeToSorted } from '../../../utils/array';
 
 export const getLatestRelease = (
   {
@@ -40,13 +41,15 @@ export const getLatestRelease = (
   );
 
   // get all applications from matching configs
-  const appNames = matchingConfigs.flatMap(config => config.applications);
+  const appNames = new Set(
+    matchingConfigs.flatMap(config => config.applications),
+  );
 
   const filteredReleases = releases.filter(release => {
     const applicationName = getApplicationFromResource(release) || '';
     return (
       release.subcomponent?.name === subcomponent &&
-      appNames.includes(applicationName) &&
+      appNames.has(applicationName) &&
       release.cluster.name === cluster &&
       release.metadata?.namespace === namespace
     );
@@ -54,11 +57,11 @@ export const getLatestRelease = (
 
   if (!filteredReleases?.length) return null;
 
-  const sortedReleases = filteredReleases.sort(
-    (a, b) =>
-      new Date(b.metadata?.creationTimestamp || '').getTime() -
-      new Date(a.metadata?.creationTimestamp || '').getTime(),
-  );
+  const compareFn = (a: ReleaseResource, b: ReleaseResource) =>
+    new Date(b.metadata?.creationTimestamp || '').getTime() -
+    new Date(a.metadata?.creationTimestamp || '').getTime();
+
+  const sortedReleases = safeToSorted(filteredReleases, compareFn);
 
   if (!sortedReleases?.length) return null;
 
