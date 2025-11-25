@@ -24,6 +24,26 @@ import { KonfluxLogger } from '../helpers/logger';
 import { getAuthToken } from '../helpers/auth';
 import { createKubeConfig } from '../helpers/client-factory';
 
+/**
+ * Options for fetching resources from Kubearchive
+ */
+interface FetchResourcesOptions {
+  konfluxConfig: KonfluxConfig;
+  userEmail: string;
+  cluster: string;
+  apiGroup: string;
+  apiVersion: string;
+  resource: string;
+  namespace: string;
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+    filter?: string; // TODO: handle filter
+    labelSelector?: string; // TODO: handle labelSelector
+  };
+  oidcToken?: string;
+}
+
 export class KubearchiveService {
   private readonly logger: KonfluxLogger;
 
@@ -33,29 +53,21 @@ export class KubearchiveService {
 
   /**
    * Fetch resources from Kubearchive using the Kubernetes API pattern
-   * @param cluster - Target cluster name
-   * @param apiGroup - API group (e.g., 'tekton.dev', 'apps', '')
-   * @param apiVersion - API version (e.g., 'v1', 'v1beta1')
-   * @param resource - Resource type (e.g., 'pipelineruns', 'pods', 'deployments')
-   * @param namespace - Namespace to search in
-   * @param options - Additional query options
    */
   async fetchResources(
-    konfluxConfig: KonfluxConfig,
-    userEmail: string,
-    cluster: string,
-    apiGroup: string,
-    apiVersion: string,
-    resource: string,
-    namespace: string,
-    options: {
-      pageSize?: number;
-      pageToken?: string;
-      filter?: string; // TODO: handle filter
-      labelSelector?: string; // TODO: handle labelSelector
-    } = {},
-    oidcToken?: string,
+    params: FetchResourcesOptions,
   ): Promise<{ results: any[]; nextPageToken?: string }> {
+    const {
+      konfluxConfig,
+      userEmail,
+      cluster,
+      apiGroup,
+      apiVersion,
+      resource,
+      namespace,
+      options = {},
+      oidcToken,
+    } = params;
     try {
       const clusterConfig = konfluxConfig?.clusters[cluster];
 

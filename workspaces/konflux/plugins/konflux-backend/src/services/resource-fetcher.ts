@@ -230,21 +230,21 @@ export class ResourceFetcherService {
       context;
 
     const { results, nextPageToken } =
-      await this.kubearchiveService.fetchResources(
+      await this.kubearchiveService.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
-        resourceModel.apiGroup,
-        resourceModel.apiVersion,
-        resourceModel.plural,
+        apiGroup: resourceModel.apiGroup,
+        apiVersion: resourceModel.apiVersion,
+        resource: resourceModel.plural,
         namespace,
-        {
+        options: {
           pageSize,
           pageToken,
           labelSelector,
         },
-        context.oidcToken,
-      );
+        oidcToken: context.oidcToken,
+      });
 
     return {
       items: results || [],

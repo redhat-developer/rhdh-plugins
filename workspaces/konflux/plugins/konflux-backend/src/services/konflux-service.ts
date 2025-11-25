@@ -61,6 +61,25 @@ export interface AggregatedResourcesResponse {
   continuationToken?: string;
 }
 
+/**
+ * Options for fetching resources for a combination
+ */
+interface FetchCombinationOptions {
+  combination: SubcomponentClusterConfig;
+  resource: string;
+  resourceModel: GroupVersionKind;
+  konfluxConfig: any;
+  filters: Filters | undefined;
+  validatedFilters: Filters & { limitPerCluster?: number };
+  paginationState: PaginationState;
+  isLoadMoreRequest: boolean;
+  userEmail: string;
+  credentials: BackstageCredentials;
+  oidcToken: string | undefined;
+  newPaginationState: PaginationState;
+  clusterErrors: ClusterError[];
+}
+
 export class KonfluxService {
   private readonly konfluxLogger: KonfluxLogger;
   private readonly catalog?: CatalogService;
@@ -244,7 +263,7 @@ export class KonfluxService {
 
     // Create fetch promises for all resource types across all combinations
     const fetchPromises = combinations.map(combination =>
-      this.fetchResourcesForCombination(
+      this.fetchResourcesForCombination({
         combination,
         resource,
         resourceModel,
@@ -258,7 +277,7 @@ export class KonfluxService {
         oidcToken,
         newPaginationState,
         clusterErrors,
-      ),
+      }),
     );
 
     const results = await Promise.all(fetchPromises);
@@ -332,24 +351,27 @@ export class KonfluxService {
    * Fetch resources for a single cluster-namespace combination
    */
   private async fetchResourcesForCombination(
-    combination: SubcomponentClusterConfig,
-    resource: string,
-    resourceModel: GroupVersionKind,
-    konfluxConfig: any,
-    filters: Filters | undefined,
-    validatedFilters: Filters & { limitPerCluster?: number },
-    paginationState: PaginationState,
-    isLoadMoreRequest: boolean,
-    userEmail: string,
-    credentials: BackstageCredentials,
-    oidcToken: string | undefined,
-    newPaginationState: PaginationState,
-    clusterErrors: ClusterError[],
+    options: FetchCombinationOptions,
   ): Promise<{
     combination: SubcomponentClusterConfig;
     resource: string;
     items: K8sResourceCommonWithClusterInfo[];
   } | null> {
+    const {
+      combination,
+      resource,
+      resourceModel,
+      konfluxConfig,
+      filters,
+      validatedFilters,
+      paginationState,
+      isLoadMoreRequest,
+      userEmail,
+      credentials,
+      oidcToken,
+      newPaginationState,
+      clusterErrors,
+    } = options;
     const sourceKey = `${combination.cluster}:${combination.namespace}`;
     const sourceState = paginationState[sourceKey] || {};
     const hasAnyToken = sourceState.k8sToken || sourceState.kubearchiveToken;

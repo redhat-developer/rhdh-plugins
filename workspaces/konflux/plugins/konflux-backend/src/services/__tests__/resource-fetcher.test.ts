@@ -483,21 +483,21 @@ describe('ResourceFetcherService', () => {
 
       expect(result.items).toEqual(mockItems);
       expect(result.continueToken).toBe('next-token-123');
-      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith(
-        context.konfluxConfig,
-        'user@example.com',
-        'cluster1',
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'pipelineruns',
-        'namespace1',
-        {
+      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith({
+        konfluxConfig: context.konfluxConfig,
+        userEmail: 'user@example.com',
+        cluster: 'cluster1',
+        apiGroup: 'appstudio.redhat.com',
+        apiVersion: 'v1alpha1',
+        resource: 'pipelineruns',
+        namespace: 'namespace1',
+        options: {
           pageSize: 10,
           pageToken: 'page-token-456',
           labelSelector: 'label-selector',
         },
-        undefined,
-      );
+        oidcToken: undefined,
+      });
     });
 
     it('should handle empty results', async () => {
@@ -524,17 +524,17 @@ describe('ResourceFetcherService', () => {
 
       await service.fetchFromKubearchive(context);
 
-      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        'oidc-token-789',
-      );
+      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith({
+        konfluxConfig: expect.anything(),
+        userEmail: expect.anything(),
+        cluster: expect.anything(),
+        apiGroup: expect.anything(),
+        apiVersion: expect.anything(),
+        resource: expect.anything(),
+        namespace: expect.anything(),
+        options: expect.anything(),
+        oidcToken: 'oidc-token-789',
+      });
     });
   });
 
@@ -662,21 +662,21 @@ describe('ResourceFetcherService', () => {
       expect(result.newPaginationState).toEqual({
         kubearchiveToken: 'ka-token-456',
       });
-      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith(
-        context.konfluxConfig,
-        'user@example.com',
-        'cluster1',
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'pipelineruns',
-        'namespace1',
-        {
+      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith({
+        konfluxConfig: context.konfluxConfig,
+        userEmail: 'user@example.com',
+        cluster: 'cluster1',
+        apiGroup: 'appstudio.redhat.com',
+        apiVersion: 'v1alpha1',
+        resource: 'pipelineruns',
+        namespace: 'namespace1',
+        options: {
           pageSize: 10,
           pageToken: 'ka-token-123',
           labelSelector: undefined,
         },
-        undefined,
-      );
+        oidcToken: undefined,
+      });
     });
 
     it('should merge K8s and Kubearchive results when K8s exhausted on initial load', async () => {
@@ -824,21 +824,21 @@ describe('ResourceFetcherService', () => {
 
       await service.fetchFromSource(context, {}, { limit: 10 });
 
-      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith(
-        context.konfluxConfig,
-        'user@example.com',
-        'cluster1',
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'pipelineruns',
-        'namespace1',
-        {
+      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith({
+        konfluxConfig: context.konfluxConfig,
+        userEmail: 'user@example.com',
+        cluster: 'cluster1',
+        apiGroup: 'appstudio.redhat.com',
+        apiVersion: 'v1alpha1',
+        resource: 'pipelineruns',
+        namespace: 'namespace1',
+        options: {
           pageSize: 8, // 10 - 2
           pageToken: undefined,
           labelSelector: undefined,
         },
-        undefined,
-      );
+        oidcToken: undefined,
+      });
     });
 
     it('should not fetch from Kubearchive when limit is reached', async () => {
@@ -1077,21 +1077,21 @@ describe('ResourceFetcherService', () => {
         },
       );
 
-      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith(
-        context.konfluxConfig,
-        'user@example.com',
-        'cluster1',
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'pipelineruns',
-        'namespace1',
-        {
+      expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith({
+        konfluxConfig: context.konfluxConfig,
+        userEmail: 'user@example.com',
+        cluster: 'cluster1',
+        apiGroup: 'appstudio.redhat.com',
+        apiVersion: 'v1alpha1',
+        resource: 'pipelineruns',
+        namespace: 'namespace1',
+        options: {
           pageSize: undefined,
           pageToken: undefined,
           labelSelector: 'app=myapp',
         },
-        undefined,
-      );
+        oidcToken: undefined,
+      });
     });
 
     it('should return empty pagination state when Kubearchive returns no items', async () => {

@@ -128,7 +128,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      const result = await service.fetchResources(
+      const result = await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -136,7 +136,7 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-      );
+      });
 
       expect(result.results).toEqual(mockItems);
       expect(result.nextPageToken).toBeUndefined();
@@ -189,7 +189,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      const result = await service.fetchResources(
+      const result = await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -197,11 +197,11 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-        {
+        options: {
           pageSize: 25,
           pageToken: 'current-page-token',
         },
-      );
+      });
 
       expect(result.results).toEqual(mockItems);
       expect(result.nextPageToken).toBe(pageToken);
@@ -242,7 +242,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      const result = await service.fetchResources(
+      const result = await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -250,10 +250,10 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-        {
+        options: {
           labelSelector,
         },
-      );
+      });
 
       expect(result.results).toEqual(mockItems);
       expect(
@@ -295,7 +295,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      const result = await service.fetchResources(
+      const result = await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -303,9 +303,9 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-        {},
+        options: {},
         oidcToken,
-      );
+      });
 
       expect(result.results).toEqual(mockItems);
       expect(
@@ -346,7 +346,7 @@ describe('KubearchiveService', () => {
       });
 
       await expect(
-        service.fetchResources(
+        service.fetchResources({
           konfluxConfig,
           userEmail,
           cluster,
@@ -354,7 +354,7 @@ describe('KubearchiveService', () => {
           apiVersion,
           resource,
           namespace,
-        ),
+        }),
       ).rejects.toThrow(
         `OIDC authProvider configured for cluster ${cluster} but no token available`,
       );
@@ -383,7 +383,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      const result = await service.fetchResources(
+      const result = await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -391,7 +391,7 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-      );
+      });
 
       expect(result.results).toEqual(mockItems);
       expect(
@@ -427,15 +427,15 @@ describe('KubearchiveService', () => {
       });
 
       await expect(
-        service.fetchResources(
+        service.fetchResources({
           konfluxConfig,
-          '',
+          userEmail: '',
           cluster,
           apiGroup,
           apiVersion,
           resource,
           namespace,
-        ),
+        }),
       ).rejects.toThrow(
         `User email is required for impersonation but was not provided for cluster ${cluster}`,
       );
@@ -458,15 +458,15 @@ describe('KubearchiveService', () => {
       });
 
       await expect(
-        service.fetchResources(
+        service.fetchResources({
           konfluxConfig,
-          '   ',
+          userEmail: '   ',
           cluster,
           apiGroup,
           apiVersion,
           resource,
           namespace,
-        ),
+        }),
       ).rejects.toThrow(
         `User email is required for impersonation but was not provided for cluster ${cluster}`,
       );
@@ -485,7 +485,7 @@ describe('KubearchiveService', () => {
       });
 
       await expect(
-        service.fetchResources(
+        service.fetchResources({
           konfluxConfig,
           userEmail,
           cluster,
@@ -493,7 +493,7 @@ describe('KubearchiveService', () => {
           apiVersion,
           resource,
           namespace,
-        ),
+        }),
       ).rejects.toThrow(
         `No authentication token available for cluster ${cluster}`,
       );
@@ -518,7 +518,7 @@ describe('KubearchiveService', () => {
 
       // provide OIDC token so it passes token check and reaches createKubeConfig
       await expect(
-        service.fetchResources(
+        service.fetchResources({
           konfluxConfig,
           userEmail,
           cluster,
@@ -526,9 +526,9 @@ describe('KubearchiveService', () => {
           apiVersion,
           resource,
           namespace,
-          {},
-          'oidc-token-123',
-        ),
+          options: {},
+          oidcToken: 'oidc-token-123',
+        }),
       ).rejects.toThrow(`Cluster '${cluster}' not found`);
 
       expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
@@ -554,7 +554,7 @@ describe('KubearchiveService', () => {
       });
 
       await expect(
-        service.fetchResources(
+        service.fetchResources({
           konfluxConfig,
           userEmail,
           cluster,
@@ -562,7 +562,7 @@ describe('KubearchiveService', () => {
           apiVersion,
           resource,
           namespace,
-        ),
+        }),
       ).rejects.toThrow(`Cluster '${cluster}' not found`);
 
       expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
@@ -583,7 +583,7 @@ describe('KubearchiveService', () => {
       );
 
       await expect(
-        service.fetchResources(
+        service.fetchResources({
           konfluxConfig,
           userEmail,
           cluster,
@@ -591,7 +591,7 @@ describe('KubearchiveService', () => {
           apiVersion,
           resource,
           namespace,
-        ),
+        }),
       ).rejects.toThrow('API request failed');
 
       expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
@@ -617,7 +617,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      const result = await service.fetchResources(
+      const result = await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -625,7 +625,7 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-      );
+      });
 
       expect(result.results).toEqual([]);
       expect(result.nextPageToken).toBeUndefined();
@@ -645,7 +645,7 @@ describe('KubearchiveService', () => {
         body: undefined,
       } as any);
 
-      const result = await service.fetchResources(
+      const result = await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -653,7 +653,7 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-      );
+      });
 
       expect(result.results).toBeUndefined();
       expect(result.nextPageToken).toBeUndefined();
@@ -673,7 +673,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      await service.fetchResources(
+      await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -681,12 +681,12 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-        {
+        options: {
           pageSize,
           pageToken,
           labelSelector,
         },
-      );
+      });
 
       expect(
         mockCustomObjectsApi.listNamespacedCustomObject,
@@ -727,7 +727,7 @@ describe('KubearchiveService', () => {
         },
       } as any);
 
-      await service.fetchResources(
+      await service.fetchResources({
         konfluxConfig,
         userEmail,
         cluster,
@@ -735,9 +735,9 @@ describe('KubearchiveService', () => {
         apiVersion,
         resource,
         namespace,
-        {},
+        options: {},
         oidcToken,
-      );
+      });
 
       // verify that the custom token is used in the Authorization header
       expect(
