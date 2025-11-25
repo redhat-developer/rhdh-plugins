@@ -473,12 +473,14 @@ const domainPage = (
 
 export const entityPage = (
   <EntitySwitch>
-    <EntitySwitch.Case if={isKind('component')} children={componentPage} />
-    <EntitySwitch.Case if={isKind('api')} children={apiPage} />
-    <EntitySwitch.Case if={isKind('group')} children={groupPage} />
-    <EntitySwitch.Case if={isKind('user')} children={userPage} />
-    <EntitySwitch.Case if={isKind('system')} children={systemPage} />
-    <EntitySwitch.Case if={isKind('domain')} children={domainPage} />
+    <EntitySwitch.Case if={isKind('component')}>
+      {componentPage}
+    </EntitySwitch.Case>
+    <EntitySwitch.Case if={isKind('api')}>{apiPage}</EntitySwitch.Case>
+    <EntitySwitch.Case if={isKind('group')}>{groupPage}</EntitySwitch.Case>
+    <EntitySwitch.Case if={isKind('user')}>{userPage}</EntitySwitch.Case>
+    <EntitySwitch.Case if={isKind('system')}>{systemPage}</EntitySwitch.Case>
+    <EntitySwitch.Case if={isKind('domain')}>{domainPage}</EntitySwitch.Case>
 
     <EntitySwitch.Case>{defaultEntityPage}</EntitySwitch.Case>
   </EntitySwitch>
