@@ -189,7 +189,8 @@ export const parsePrometheusDuration = (duration: string): number => {
         (p?.[2] ? units[p[2] as keyof typeof units] : 1),
     );
   } catch (error_) {
-    // Invalid duration format
+    // eslint-disable-next-line no-console
+    console.error('Invalid duration format');
     return 0;
   }
 };

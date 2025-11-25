@@ -137,11 +137,11 @@ const updateCommitObject = (
   ) {
     newCommit.creationTime = creationTime;
   }
-  if (!newCommit.components) {
-    newCommit.components = [component];
-  } else {
+  if (newCommit.components) {
     const compIndex = newCommit.components.indexOf(component);
     if (compIndex < 0) newCommit.components.push(component);
+  } else {
+    newCommit.components = [component];
   }
   newCommit.pipelineRuns.push(plr);
   return newCommit;
