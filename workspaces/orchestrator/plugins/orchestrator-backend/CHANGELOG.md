@@ -1,5 +1,22 @@
 ### Dependencies
 
+## 8.5.0
+
+### Minor Changes
+
+- 43376f1: Removing the deprecated moment package and replacing with luxon
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [a1671ab]
+- Updated dependencies [40b80fe]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+
 ## 8.4.0
 
 ### Minor Changes
