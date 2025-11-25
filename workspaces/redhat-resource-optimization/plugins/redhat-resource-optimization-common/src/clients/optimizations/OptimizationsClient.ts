@@ -336,6 +336,78 @@ export class OptimizationsClient implements OptimizationsApi {
     return await this.fetchResourceType(url);
   }
 
+  /**
+   * Get OpenShift tags
+   * @param timeScopeValue - Time scope value (-1 for month-to-date, -2 for previous-month). Defaults to -1.
+   * @returns TypedResponse with array of tag strings
+   */
+  public async getOpenShiftTags(
+    timeScopeValue: number = -1,
+  ): Promise<TypedResponse<{ data: string[]; meta?: any; links?: any }>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[time_scope_value]=${timeScopeValue}&key_only=true&limit=1000`;
+
+    // Get access permission
+    const accessAPIResponse = await this.getAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    // Get or refresh token
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+
+    return await this.fetchWithTokenAndRetry<{
+      data: string[];
+      meta?: any;
+      links?: any;
+    }>(url);
+  }
+
+  /**
+   * Get OpenShift tag values for a specific tag key
+   * @param tagKey - The tag key to get values for
+   * @param timeScopeValue - Time scope value (-1 for month-to-date, -2 for previous-month). Defaults to -1.
+   * @returns TypedResponse with array of tag value objects
+   */
+  public async getOpenShiftTagValues(
+    tagKey: string,
+    timeScopeValue: number = -1,
+  ): Promise<
+    TypedResponse<{
+      data: Array<{ key: string; values: string[]; enabled: boolean }>;
+      meta?: any;
+      links?: any;
+    }>
+  > {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[key]=${encodeURIComponent(
+      tagKey,
+    )}&filter[time_scope_value]=${timeScopeValue}`;
+
+    // Get access permission
+    const accessAPIResponse = await this.getAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    // Get or refresh token
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+
+    return await this.fetchWithTokenAndRetry<{
+      data: Array<{ key: string; values: string[]; enabled: boolean }>;
+      meta?: any;
+      links?: any;
+    }>(url);
+  }
+
   private async fetchResourceType(
     url: string,
   ): Promise<
