@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  LoggerService,
+  BackstageCredentials,
+} from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
-import { BackstageCredentials } from '@backstage/backend-plugin-api';
 import {
   konfluxResourceModels,
   SubcomponentClusterConfig,
@@ -78,6 +80,46 @@ export class KonfluxService {
     catalog: CatalogService,
   ): KonfluxService {
     return new KonfluxService(config, logger, catalog);
+  }
+
+  /**
+   * apply filters to cluster-namespace combinations
+   */
+  private applyFiltersToCombinations(
+    combinations: SubcomponentClusterConfig[],
+    filters: Filters | undefined,
+    entityRef: string,
+    resource: string,
+  ): SubcomponentClusterConfig[] {
+    const beforeFilterCount = combinations.length;
+    const filtered = combinations.filter(combination => {
+      if (
+        filters?.subcomponent &&
+        combination.subcomponent !== filters.subcomponent
+      ) {
+        return false;
+      }
+      if (
+        filters?.clusters?.length &&
+        !filters.clusters.includes(combination.cluster)
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    if (filtered.length !== beforeFilterCount) {
+      this.konfluxLogger.debug('Applied filters', {
+        entityRef,
+        resource,
+        subcomponent: filters?.subcomponent,
+        clusters: filters?.clusters,
+        beforeCount: beforeFilterCount,
+        afterCount: filtered.length,
+      });
+    }
+
+    return filtered;
   }
 
   /**
@@ -152,33 +194,12 @@ export class KonfluxService {
     }
 
     // apply filters to combinations
-    const beforeFilterCount = combinations.length;
-    combinations = combinations.filter(combination => {
-      if (
-        filters?.subcomponent &&
-        combination.subcomponent !== filters.subcomponent
-      ) {
-        return false;
-      }
-      if (
-        filters?.clusters?.length &&
-        !filters.clusters.includes(combination.cluster)
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    if (combinations.length !== beforeFilterCount) {
-      this.konfluxLogger.debug('Applied filters', {
-        entityRef,
-        resource,
-        subcomponent: filters?.subcomponent,
-        clusters: filters?.clusters,
-        beforeCount: beforeFilterCount,
-        afterCount: combinations.length,
-      });
-    }
+    combinations = this.applyFiltersToCombinations(
+      combinations,
+      filters,
+      entityRef,
+      resource,
+    );
 
     // decode continuation token to get pagination state for each source
     let paginationState: PaginationState = {};
@@ -222,79 +243,23 @@ export class KonfluxService {
     }
 
     // Create fetch promises for all resource types across all combinations
-    const fetchPromises = combinations.map(async combination => {
-      const sourceKey = `${combination.cluster}:${combination.namespace}`;
-
-      // ceck if source is exhausted (for Load More requests)
-      const sourceState = paginationState[sourceKey] || {};
-      const hasAnyToken = sourceState.k8sToken || sourceState.kubearchiveToken;
-
-      if (isLoadMoreRequest && !hasAnyToken) {
-        return null;
-      }
-
-      try {
-        const labelSelector = buildLabelSelector(
-          resource,
-          combination,
-          filters,
-        );
-
-        // Validate email if impersonation is required
-        const validatedEmail = validateUserEmailForImpersonation(
-          userEmail,
-          konfluxConfig?.authProvider,
-        );
-
-        const fetchContext: FetchContext = {
-          cluster: combination.cluster,
-          namespace: combination.namespace,
-          userEmail: validatedEmail,
-          konfluxConfig,
-          resourceModel,
-          credentials,
-          oidcToken,
-        };
-
-        const { items, newPaginationState: updatedState } =
-          await this.resourceFetcher.fetchFromSource(
-            fetchContext,
-            sourceState,
-            {
-              limit: validatedFilters?.limitPerCluster,
-              labelSelector,
-            },
-          );
-
-        if (this.resourceFetcher.hasMoreData(updatedState)) {
-          newPaginationState[sourceKey] = updatedState;
-        }
-
-        const filteredItems = this.applyInMemoryFiltering(
-          items,
-          combination,
-          resource,
-          filters,
-          labelSelector,
-        );
-
-        return {
-          combination,
-          resource,
-          items: filteredItems,
-        };
-      } catch (error) {
-        const clusterError = this.handleFetchError(
-          error,
-          sourceState,
-          resourceModel,
-          combination,
-          resource,
-        );
-        clusterErrors.push(clusterError);
-        return null;
-      }
-    });
+    const fetchPromises = combinations.map(combination =>
+      this.fetchResourcesForCombination(
+        combination,
+        resource,
+        resourceModel,
+        konfluxConfig,
+        filters,
+        validatedFilters,
+        paginationState,
+        isLoadMoreRequest,
+        userEmail,
+        credentials,
+        oidcToken,
+        newPaginationState,
+        clusterErrors,
+      ),
+    );
 
     const results = await Promise.all(fetchPromises);
 
@@ -361,6 +326,90 @@ export class KonfluxService {
       clusterErrors: clusterErrors.length > 0 ? clusterErrors : undefined,
       continuationToken,
     };
+  }
+
+  /**
+   * Fetch resources for a single cluster-namespace combination
+   */
+  private async fetchResourcesForCombination(
+    combination: SubcomponentClusterConfig,
+    resource: string,
+    resourceModel: GroupVersionKind,
+    konfluxConfig: any,
+    filters: Filters | undefined,
+    validatedFilters: Filters & { limitPerCluster?: number },
+    paginationState: PaginationState,
+    isLoadMoreRequest: boolean,
+    userEmail: string,
+    credentials: BackstageCredentials,
+    oidcToken: string | undefined,
+    newPaginationState: PaginationState,
+    clusterErrors: ClusterError[],
+  ): Promise<{
+    combination: SubcomponentClusterConfig;
+    resource: string;
+    items: K8sResourceCommonWithClusterInfo[];
+  } | null> {
+    const sourceKey = `${combination.cluster}:${combination.namespace}`;
+    const sourceState = paginationState[sourceKey] || {};
+    const hasAnyToken = sourceState.k8sToken || sourceState.kubearchiveToken;
+
+    if (isLoadMoreRequest && !hasAnyToken) {
+      return null;
+    }
+
+    try {
+      const labelSelector = buildLabelSelector(resource, combination, filters);
+
+      const validatedEmail = validateUserEmailForImpersonation(
+        userEmail,
+        konfluxConfig?.authProvider,
+      );
+
+      const fetchContext: FetchContext = {
+        cluster: combination.cluster,
+        namespace: combination.namespace,
+        userEmail: validatedEmail,
+        konfluxConfig,
+        resourceModel,
+        credentials,
+        oidcToken,
+      };
+
+      const { items, newPaginationState: updatedState } =
+        await this.resourceFetcher.fetchFromSource(fetchContext, sourceState, {
+          limit: validatedFilters?.limitPerCluster,
+          labelSelector,
+        });
+
+      if (this.resourceFetcher.hasMoreData(updatedState)) {
+        newPaginationState[sourceKey] = updatedState;
+      }
+
+      const filteredItems = this.applyInMemoryFiltering(
+        items,
+        combination,
+        resource,
+        filters,
+        labelSelector,
+      );
+
+      return {
+        combination,
+        resource,
+        items: filteredItems,
+      };
+    } catch (error) {
+      const clusterError = this.handleFetchError(
+        error,
+        sourceState,
+        resourceModel,
+        combination,
+        resource,
+      );
+      clusterErrors.push(clusterError);
+      return null;
+    }
   }
 
   /**

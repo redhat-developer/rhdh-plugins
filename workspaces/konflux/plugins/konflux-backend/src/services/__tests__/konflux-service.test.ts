@@ -15,10 +15,12 @@
  */
 
 import { KonfluxService } from '../konflux-service';
-import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  LoggerService,
+  BackstageCredentials,
+} from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
-import { BackstageCredentials } from '@backstage/backend-plugin-api';
 import {
   SubcomponentClusterConfig,
   K8sResourceCommonWithClusterInfo,

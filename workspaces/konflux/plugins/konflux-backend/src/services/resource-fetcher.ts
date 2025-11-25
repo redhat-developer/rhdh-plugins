@@ -68,7 +68,10 @@ export interface FetchContext {
   oidcToken?: string;
 }
 
-const AVAILABLE_KUBEARCHIVE_RESOURCES_TO_FETCH = ['pipelineruns', 'releases'];
+const AVAILABLE_KUBEARCHIVE_RESOURCES_TO_FETCH = new Set([
+  'pipelineruns',
+  'releases',
+]);
 
 /**
  * Service responsible for fetching Kubernetes resources from multiple sources
@@ -268,10 +271,107 @@ export class ResourceFetcherService {
     clusterConfig: any,
   ): boolean {
     return (
-      AVAILABLE_KUBEARCHIVE_RESOURCES_TO_FETCH.includes(resourceModel.plural) &&
+      AVAILABLE_KUBEARCHIVE_RESOURCES_TO_FETCH.has(resourceModel.plural) &&
       !!namespace &&
       !!clusterConfig?.kubearchiveApiUrl
     );
+  }
+
+  /**
+   * cntinue pagination from Kubearchive when K8s is exhausted
+   */
+  private async continueFromKubearchive(
+    context: FetchContext,
+    kubearchiveToken: string,
+    options?: FetchOptions,
+  ): Promise<{
+    items: K8sResourceCommonWithClusterInfo[];
+    newPaginationState: SourcePaginationState;
+  }> {
+    this.konfluxLogger.debug('Continuing pagination from Kubearchive', {
+      cluster: context.cluster,
+      namespace: context.namespace,
+      resource: context.resourceModel.plural,
+    });
+
+    const { items, continueToken } = await this.fetchFromKubearchive(
+      context,
+      options?.limit,
+      kubearchiveToken,
+      options?.labelSelector,
+    );
+
+    return {
+      items,
+      newPaginationState: continueToken
+        ? { kubearchiveToken: continueToken }
+        : {},
+    };
+  }
+
+  /**
+   * Merge K8s and Kubearchive results when K8s is exhausted
+   */
+  private async mergeKubearchiveResults(
+    context: FetchContext,
+    k8sItems: K8sResourceCommonWithClusterInfo[],
+    options?: FetchOptions,
+  ): Promise<{
+    items: K8sResourceCommonWithClusterInfo[];
+    newPaginationState: SourcePaginationState;
+  } | null> {
+    this.konfluxLogger.debug('k8s exhausted, fetching from Kubearchive', {
+      cluster: context.cluster,
+      namespace: context.namespace,
+      resource: context.resourceModel.plural,
+      k8sItemCount: k8sItems.length,
+    });
+
+    const limit = options?.limit;
+    const remainingLimit =
+      limit !== undefined ? limit - k8sItems.length : undefined;
+
+    const shouldFetchFromKubearchive =
+      limit === undefined ||
+      (remainingLimit !== undefined && remainingLimit > 0);
+
+    if (!shouldFetchFromKubearchive) {
+      return null;
+    }
+
+    const { items: kubearchiveItems, continueToken: kaToken } =
+      await this.fetchFromKubearchive(
+        context,
+        remainingLimit,
+        undefined,
+        options?.labelSelector,
+      );
+
+    if (kubearchiveItems.length === 0) {
+      return null;
+    }
+
+    // merge and deduplicate by resource name
+    const mergedItems = uniqBy(
+      [...k8sItems, ...kubearchiveItems],
+      r => r.metadata?.name,
+    );
+
+    this.konfluxLogger.debug('Merged k8s and Kubearchive results', {
+      cluster: context.cluster,
+      namespace: context.namespace,
+      resource: context.resourceModel.plural,
+      k8sItemCount: k8sItems.length,
+      kubearchiveItemCount: kubearchiveItems.length,
+      mergedItemCount: mergedItems.length,
+      duplicatesRemoved:
+        k8sItems.length + kubearchiveItems.length - mergedItems.length,
+    });
+
+    return {
+      items: mergedItems,
+      newPaginationState: kaToken ? { kubearchiveToken: kaToken } : {},
+    };
   }
 
   /**
@@ -309,25 +409,7 @@ export class ResourceFetcherService {
 
     // case 1: continue from Kubearchive (k8s already exhausted)
     if (kubearchiveToken && !k8sToken && hasKubearchive) {
-      this.konfluxLogger.debug('Continuing pagination from Kubearchive', {
-        cluster: context.cluster,
-        namespace: context.namespace,
-        resource: resourceModel.plural,
-      });
-
-      const { items, continueToken } = await this.fetchFromKubearchive(
-        context,
-        options?.limit,
-        kubearchiveToken,
-        options?.labelSelector,
-      );
-
-      return {
-        items,
-        newPaginationState: continueToken
-          ? { kubearchiveToken: continueToken }
-          : {},
-      };
+      return this.continueFromKubearchive(context, kubearchiveToken, options);
     }
 
     // case 2: fetch from K8s (either continuing or initial load)
@@ -346,58 +428,17 @@ export class ResourceFetcherService {
 
     // k8s exhausted - if this was initial load, try to fill from Kubearchiv
     if (hasKubearchive && !k8sToken) {
-      this.konfluxLogger.debug('k8s exhausted, fetching from Kubearchive', {
-        cluster: context.cluster,
-        namespace: context.namespace,
-        resource: resourceModel.plural,
-        k8sItemCount: k8sItems.length,
-      });
-
-      // If limit is undefined, there's no limit - fetch all from Kubearchive
-      // Otherwise, calculate remaining limit after K8s items
-      const limit = options?.limit;
-      const remainingLimit =
-        limit !== undefined ? limit - k8sItems.length : undefined;
-
-      if (
-        limit === undefined ||
-        (remainingLimit !== undefined && remainingLimit > 0)
-      ) {
-        const { items: kubearchiveItems, continueToken: kaToken } =
-          await this.fetchFromKubearchive(
-            context,
-            remainingLimit,
-            undefined,
-            options?.labelSelector,
-          );
-
-        if (kubearchiveItems.length > 0) {
-          // merge and deduplicate by resource name
-          const mergedItems = uniqBy(
-            [...k8sItems, ...kubearchiveItems],
-            r => r.metadata?.name,
-          );
-
-          this.konfluxLogger.debug('Merged k8s and Kubearchive results', {
-            cluster: context.cluster,
-            namespace: context.namespace,
-            resource: resourceModel.plural,
-            k8sItemCount: k8sItems.length,
-            kubearchiveItemCount: kubearchiveItems.length,
-            mergedItemCount: mergedItems.length,
-            duplicatesRemoved:
-              k8sItems.length + kubearchiveItems.length - mergedItems.length,
-          });
-
-          return {
-            items: mergedItems,
-            newPaginationState: kaToken ? { kubearchiveToken: kaToken } : {},
-          };
-        }
+      const mergedResult = await this.mergeKubearchiveResults(
+        context,
+        k8sItems,
+        options,
+      );
+      if (mergedResult) {
+        return mergedResult;
       }
     }
 
-    // k8s exhausted and either no Kubearchive or no remaining slots
+    // k8s exhausted and no Kubearchive
     return {
       items: k8sItems,
       newPaginationState: {},

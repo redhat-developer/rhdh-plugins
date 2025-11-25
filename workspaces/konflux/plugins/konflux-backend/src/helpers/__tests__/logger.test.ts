@@ -313,7 +313,7 @@ describe('logger', () => {
     });
 
     it('should log warning with empty context when undefined', () => {
-      konfluxLogger.warn('Test warning message', undefined);
+      konfluxLogger.warn('Test warning message');
 
       expect(mockBaseLogger.warn).toHaveBeenCalledTimes(1);
       expect(mockBaseLogger.warn).toHaveBeenCalledWith(
@@ -349,7 +349,7 @@ describe('logger', () => {
     });
 
     it('should log info with empty context when undefined', () => {
-      konfluxLogger.info('Test info message', undefined);
+      konfluxLogger.info('Test info message');
 
       expect(mockBaseLogger.info).toHaveBeenCalledTimes(1);
       expect(mockBaseLogger.info).toHaveBeenCalledWith('Test info message', {});
@@ -387,7 +387,7 @@ describe('logger', () => {
     });
 
     it('should log debug with empty context when undefined', () => {
-      konfluxLogger.debug('Test debug message', undefined);
+      konfluxLogger.debug('Test debug message');
 
       expect(mockBaseLogger.debug).toHaveBeenCalledTimes(1);
       expect(mockBaseLogger.debug).toHaveBeenCalledWith(

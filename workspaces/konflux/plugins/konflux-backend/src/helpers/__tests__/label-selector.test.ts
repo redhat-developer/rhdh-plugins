@@ -140,7 +140,7 @@ describe('label-selector', () => {
     it('should handle undefined filters', () => {
       const combination = createMockCombination({ applications: ['app1'] });
 
-      const result = buildLabelSelector('pipelineruns', combination, undefined);
+      const result = buildLabelSelector('pipelineruns', combination);
 
       expect(result).toBe(`${PipelineRunLabel.APPLICATION}=app1`);
     });

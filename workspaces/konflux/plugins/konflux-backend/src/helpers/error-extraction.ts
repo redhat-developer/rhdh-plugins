@@ -66,6 +66,118 @@ function buildResourcePath(
 }
 
 /**
+ * Extract status code from error object
+ */
+function extractStatusCode(error: unknown): number | undefined {
+  if (
+    typeof error !== 'object' ||
+    error === null ||
+    (!('statusCode' in error) && !('status' in error))
+  ) {
+    return undefined;
+  }
+
+  const statusCode =
+    'statusCode' in error
+      ? (error.statusCode as number)
+      : (error.status as number);
+
+  return typeof statusCode === 'number' ? statusCode : undefined;
+}
+
+/**
+ * Parse error body from string or object
+ */
+function parseErrorBody(error: unknown): {
+  parsedBody: KubernetesErrorBody | undefined;
+  fallbackMessage?: string;
+} {
+  if (
+    typeof error !== 'object' ||
+    error === null ||
+    !('body' in error) ||
+    !error.body
+  ) {
+    return { parsedBody: undefined };
+  }
+
+  if (typeof error.body === 'string') {
+    try {
+      return { parsedBody: JSON.parse(error.body) as KubernetesErrorBody };
+    } catch {
+      return { parsedBody: undefined, fallbackMessage: error.body };
+    }
+  }
+
+  if (typeof error.body === 'object') {
+    return { parsedBody: error.body as KubernetesErrorBody };
+  }
+
+  return { parsedBody: undefined };
+}
+
+/**
+ * Extract error details from parsed body
+ */
+function extractErrorDetailsFromBody(
+  parsedBody: KubernetesErrorBody,
+  currentMessage: string,
+): Partial<ExtractedErrorDetails> {
+  const details: Partial<ExtractedErrorDetails> = {};
+
+  if (parsedBody.code) {
+    details.statusCode = parsedBody.code;
+  }
+
+  if (parsedBody.reason) {
+    details.errorType = parsedBody.reason;
+    details.reason = parsedBody.reason;
+  }
+
+  if (parsedBody.message) {
+    details.message = parsedBody.message;
+  }
+
+  if (parsedBody.details?.causes && parsedBody.details.causes.length > 0) {
+    const causeMessages = parsedBody.details.causes
+      .map(cause => cause.message || cause.reason)
+      .filter(Boolean)
+      .join('; ');
+    if (causeMessages) {
+      details.message = `${
+        details.message || currentMessage
+      } ${causeMessages}`.trim();
+    }
+  }
+
+  return details;
+}
+
+/**
+ * Infer error type from HTTP status code
+ */
+function inferErrorTypeFromStatusCode(statusCode: number): string {
+  switch (statusCode) {
+    case 401:
+      return 'Unauthorized';
+    case 403:
+      return 'Forbidden';
+    case 404:
+      return 'NotFound';
+    case 409:
+      return 'Conflict';
+    case 422:
+      return 'Invalid';
+    case 500:
+    case 502:
+    case 503:
+      return 'InternalError';
+    default:
+      return 'Unknown';
+  }
+}
+
+/**
  * Extracts detailed error information from Kubernetes/Kubearchive API errors
  *
  * @param error - The error object from the API call
@@ -83,7 +195,6 @@ export function extractKubernetesErrorDetails(
   const fallbackMessage =
     error instanceof Error ? error.message : String(error);
 
-  // build resource path
   const resourcePath = buildResourcePath(
     resourceModel.apiGroup,
     resourceModel.apiVersion,
@@ -97,105 +208,30 @@ export function extractKubernetesErrorDetails(
     source,
   };
 
-  // try to extract status code
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    ('statusCode' in error || 'status' in error)
-  ) {
-    const statusCode =
-      // eslint-disable-next-line no-nested-ternary
-      'statusCode' in error
-        ? (error.statusCode as number)
-        : 'status' in error
-        ? (error.status as number)
-        : undefined;
+  const statusCode = extractStatusCode(error);
+  if (statusCode) {
+    result.statusCode = statusCode;
+  }
 
-    if (typeof statusCode === 'number') {
-      result.statusCode = statusCode;
+  const { parsedBody, fallbackMessage: bodyMessage } = parseErrorBody(error);
+  if (bodyMessage) {
+    result.message = bodyMessage;
+  }
+
+  if (parsedBody) {
+    const bodyDetails = extractErrorDetailsFromBody(
+      parsedBody,
+      result.message ?? '',
+    );
+    Object.assign(result, bodyDetails);
+
+    if (parsedBody.code && !result.statusCode) {
+      result.statusCode = parsedBody.code;
     }
   }
 
-  // try to parse error body
-  if (
-    typeof error === 'object' &&
-    error !== null &&
-    'body' in error &&
-    error.body
-  ) {
-    let parsedBody: KubernetesErrorBody | undefined;
-
-    // body might be a string (JSON) or already an object
-    if (typeof error.body === 'string') {
-      try {
-        parsedBody = JSON.parse(error.body) as KubernetesErrorBody;
-      } catch {
-        // if parsing fails, use the string as-is
-        result.message = error.body;
-      }
-    } else if (typeof error.body === 'object') {
-      parsedBody = error.body as KubernetesErrorBody;
-    }
-
-    if (parsedBody) {
-      // extract status code from body if not already set
-      if (parsedBody.code && !result.statusCode) {
-        result.statusCode = parsedBody.code;
-      }
-
-      // Extract reason (error type)
-      if (parsedBody.reason) {
-        result.errorType = parsedBody.reason;
-        result.reason = parsedBody.reason;
-      }
-
-      // Extract detailed message
-      if (parsedBody.message) {
-        result.message = parsedBody.message;
-      }
-
-      // Extract additional details if available
-      if (parsedBody.details) {
-        const details = parsedBody.details;
-        if (details.causes && details.causes.length > 0) {
-          const causeMessages = details.causes
-            .map(cause => cause.message || cause.reason)
-            .filter(Boolean)
-            .join('; ');
-          if (causeMessages) {
-            result.message = `${result.message || ''} ${causeMessages}`.trim();
-          }
-        }
-      }
-    }
-  }
-
-  // If we have a status code but no error type, try to infer it
   if (result.statusCode && !result.errorType) {
-    switch (result.statusCode) {
-      case 401:
-        result.errorType = 'Unauthorized';
-        break;
-      case 403:
-        result.errorType = 'Forbidden';
-        break;
-      case 404:
-        result.errorType = 'NotFound';
-        break;
-      case 409:
-        result.errorType = 'Conflict';
-        break;
-      case 422:
-        result.errorType = 'Invalid';
-        break;
-      case 500:
-      case 502:
-      case 503:
-        result.errorType = 'InternalError';
-        break;
-      default:
-        result.errorType = 'Unknown';
-    }
+    result.errorType = inferErrorTypeFromStatusCode(result.statusCode);
   }
 
   return result;

@@ -202,7 +202,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      createKubeConfig(config, 'cluster1', mockLogger, undefined);
+      createKubeConfig(config, 'cluster1', mockLogger);
 
       expect(mockLoadFromOptions).toHaveBeenCalledWith(
         expect.objectContaining({
