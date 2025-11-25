@@ -35,6 +35,9 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'header.dateRange.cancel': 'Annulla',
     'header.dateRange.ok': 'OK',
     'header.dateRange.defaultLabel': 'Ultimi 28 giorni',
+    'header.dateRange.title': 'Intervallo di date',
+    'header.dateRange.startDate': 'Data di inizio',
+    'header.dateRange.endDate': 'Data di fine',
     'activeUsers.title': 'Utenti Attivi',
     'activeUsers.averagePrefix':
       'Il numero medio di utenti attivi di picco era',

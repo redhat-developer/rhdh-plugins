@@ -28,6 +28,7 @@ import { isAfter, isBefore, isSameDay } from 'date-fns';
 import { DatePicker } from '@mui/x-date-pickers';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface DateRangePickerProps {
   startDate: Date | null;
@@ -42,6 +43,7 @@ const DateRangePicker: FC<DateRangePickerProps> = ({
   endDate,
   setEndDate,
 }) => {
+  const { t } = useTranslation();
   const handleDateChange = useCallback(
     (date: Date | null) => {
       if (!date) return;
@@ -141,7 +143,7 @@ const DateRangePicker: FC<DateRangePickerProps> = ({
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box>
         <Typography variant="h5" p={2} pb={0} fontWeight="400">
-          Date range
+          {t('header.dateRange.title')}
         </Typography>
         <Divider sx={{ mt: 2 }} />
         <Grid
@@ -151,7 +153,7 @@ const DateRangePicker: FC<DateRangePickerProps> = ({
         >
           <Grid item xs={6} sx={{ padding: '16px 8px 16px 24px !important' }}>
             <DatePicker
-              label="Start date"
+              label={t('header.dateRange.startDate')}
               value={startDate}
               onChange={handleStartDateChange}
               renderInput={params => (
@@ -168,7 +170,7 @@ const DateRangePicker: FC<DateRangePickerProps> = ({
 
           <Grid item xs={6} sx={{ padding: '16px 24px 16px 8px !important' }}>
             <DatePicker
-              label="End date"
+              label={t('header.dateRange.endDate')}
               value={endDate}
               onChange={handleEndDateChange}
               renderInput={params => (

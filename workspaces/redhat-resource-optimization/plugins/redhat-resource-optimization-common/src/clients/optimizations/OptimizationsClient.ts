@@ -166,26 +166,126 @@ export class OptimizationsClient implements OptimizationsApi {
       this.token = accessToken;
     }
 
-    // Call the cost-management API via backend proxy
-    let response = await this.defaultClient.getCostManagementReport(request, {
-      token: this.token,
-    });
+    // Get the proxy base URL for cost-management API
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const uri = '/cost-management/v1/reports/openshift/costs/';
 
-    // Handle 401 errors by refreshing token and retrying
-    if (!response.ok && response.status === 401) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
+    const queryParams = this.buildCostManagementQueryParams(request);
+    const queryString = queryParams.toString();
+    const queryPart = queryString ? `?${queryString}` : '';
+    const url = `${baseUrl}${uri}${queryPart}`;
 
-      response = await this.defaultClient.getCostManagementReport(request, {
-        token: this.token,
-      });
+    return await this.fetchWithTokenAndRetry<CostManagementReport>(url);
+  }
+
+  /**
+   * Builds query parameters for cost management report request
+   * @param request - The cost management request
+   * @returns URLSearchParams with all query parameters
+   */
+  private buildCostManagementQueryParams(
+    request: GetCostManagementRequest,
+  ): URLSearchParams {
+    const queryParams = new URLSearchParams();
+    this.appendBasicQueryParams(queryParams, request);
+    this.appendDynamicParams(queryParams, request, 'group_by[');
+    this.appendDynamicParams(queryParams, request, 'order_by[');
+    this.appendDynamicFilterParams(queryParams, request);
+    return queryParams;
+  }
+
+  /**
+   * Appends basic query parameters (currency, delta, and standard filters)
+   */
+  private appendBasicQueryParams(
+    queryParams: URLSearchParams,
+    request: GetCostManagementRequest,
+  ): void {
+    const basicParams: Array<{
+      key: keyof typeof request.query;
+      paramName: string;
+      needsStringConversion?: boolean;
+    }> = [
+      { key: 'currency', paramName: 'currency' },
+      { key: 'delta', paramName: 'delta' },
+      {
+        key: 'filter[limit]',
+        paramName: 'filter[limit]',
+        needsStringConversion: true,
+      },
+      {
+        key: 'filter[offset]',
+        paramName: 'filter[offset]',
+        needsStringConversion: true,
+      },
+      { key: 'filter[resolution]', paramName: 'filter[resolution]' },
+      {
+        key: 'filter[time_scope_units]',
+        paramName: 'filter[time_scope_units]',
+      },
+      {
+        key: 'filter[time_scope_value]',
+        paramName: 'filter[time_scope_value]',
+        needsStringConversion: true,
+      },
+    ];
+
+    for (const { key, paramName, needsStringConversion } of basicParams) {
+      const value = request.query[key];
+      if (value) {
+        queryParams.append(
+          paramName,
+          needsStringConversion ? String(value) : (value as string),
+        );
+      }
     }
+  }
 
-    if (!response.ok) {
-      throw new Error(response.statusText);
+  /**
+   * Appends dynamic parameters that match a specific prefix (e.g., 'group_by[', 'order_by[')
+   */
+  private appendDynamicParams(
+    queryParams: URLSearchParams,
+    request: GetCostManagementRequest,
+    prefix: string,
+  ): void {
+    for (const key of Object.keys(request.query)) {
+      if (key.startsWith(prefix) && key.endsWith(']')) {
+        const value = request.query[key as keyof typeof request.query];
+        if (value) {
+          queryParams.append(key, String(value));
+        }
+      }
     }
+  }
 
-    return response;
+  /**
+   * Appends dynamic filter parameters, excluding those already handled explicitly
+   */
+  private appendDynamicFilterParams(
+    queryParams: URLSearchParams,
+    request: GetCostManagementRequest,
+  ): void {
+    const handledFilterKeys = new Set([
+      'filter[limit]',
+      'filter[offset]',
+      'filter[resolution]',
+      'filter[time_scope_units]',
+      'filter[time_scope_value]',
+    ]);
+
+    for (const key of Object.keys(request.query)) {
+      if (
+        key.startsWith('filter[') &&
+        key.endsWith(']') &&
+        !handledFilterKeys.has(key)
+      ) {
+        const value = request.query[key as keyof typeof request.query];
+        if (value) {
+          queryParams.append(key, String(value));
+        }
+      }
+    }
   }
 
   /**
@@ -254,6 +354,21 @@ export class OptimizationsClient implements OptimizationsApi {
       this.token = accessToken;
     }
 
+    return await this.fetchWithTokenAndRetry<{
+      data: Array<{ value: string }>;
+      meta?: any;
+      links?: any;
+    }>(url);
+  }
+
+  /**
+   * Fetches a URL with token authentication, handles 401 errors by refreshing token and retrying
+   * @param url - The URL to fetch
+   * @returns TypedResponse with the response data
+   */
+  private async fetchWithTokenAndRetry<T>(
+    url: string,
+  ): Promise<TypedResponse<T>> {
     // Call the API via backend proxy
     let response = await this.fetchApi.fetch(url, {
       headers: {
@@ -284,12 +399,8 @@ export class OptimizationsClient implements OptimizationsApi {
     return {
       ...response,
       json: async () => {
-        const data = await response.json();
-        return data as {
-          data: Array<{ value: string }>;
-          meta?: any;
-          links?: any;
-        };
+        const data = (await response.json()) as T;
+        return data;
       },
     };
   }

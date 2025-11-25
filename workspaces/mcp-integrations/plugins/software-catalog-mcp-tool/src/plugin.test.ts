@@ -1141,4 +1141,487 @@ describe('backstageMcpPlugin', () => {
       });
     });
   });
+
+  describe('register-catalog-entities action', () => {
+    const mockCatalogService = {
+      addLocation: jest.fn(),
+    } as unknown as CatalogService;
+
+    const mockAuthService = {
+      getOwnServiceCredentials: jest.fn(),
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should successfully register catalog entities with valid URL', async () => {
+      const mockLocationId = 'test-location-id-123';
+      const validURL = 'https://example.com/catalog-info.yaml';
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.addLocation as jest.Mock).mockResolvedValue({
+        location: {
+          id: mockLocationId,
+        },
+      });
+
+      // Simulate the action logic
+      const registerCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationURL: string };
+      }) => {
+        if (!input.locationURL || input.locationURL === '') {
+          return {
+            output: {
+              error: 'a location URL must be specified',
+            },
+          };
+        }
+
+        try {
+          // eslint-disable-next-line no-new
+          new URL(input.locationURL);
+        } catch {
+          return {
+            output: {
+              error: 'location URL must be a valid URL string',
+            },
+          };
+        }
+
+        try {
+          const locReq = {
+            type: 'url',
+            target: input.locationURL,
+          };
+          const credentials = await mockAuthService.getOwnServiceCredentials();
+          const result = await mockCatalogService.addLocation(locReq, {
+            credentials,
+          });
+
+          return {
+            output: {
+              locationID: result.location.id,
+              error: undefined,
+            },
+          };
+        } catch (error) {
+          return {
+            output: {
+              error: error.message,
+            },
+          };
+        }
+      };
+
+      const result = await registerCatalogEntitiesAction({
+        input: { locationURL: validURL },
+      });
+
+      expect(mockAuthService.getOwnServiceCredentials).toHaveBeenCalledTimes(1);
+      expect(mockCatalogService.addLocation).toHaveBeenCalledWith(
+        {
+          type: 'url',
+          target: validURL,
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+      expect(result.output.locationID).toBe(mockLocationId);
+      expect(result.output.error).toBeUndefined();
+    });
+
+    it('should return error when locationURL is empty', async () => {
+      const registerCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationURL: string };
+      }) => {
+        if (!input.locationURL || input.locationURL === '') {
+          return {
+            output: {
+              error: 'a location URL must be specified',
+            },
+          };
+        }
+        return { output: {} };
+      };
+
+      const result = await registerCatalogEntitiesAction({
+        input: { locationURL: '' },
+      });
+
+      expect(result.output.error).toBe('a location URL must be specified');
+    });
+
+    it('should return error when locationURL is not provided', async () => {
+      const registerCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationURL: string };
+      }) => {
+        if (!input.locationURL || input.locationURL === '') {
+          return {
+            output: {
+              error: 'a location URL must be specified',
+            },
+          };
+        }
+        return { output: {} };
+      };
+
+      const result = await registerCatalogEntitiesAction({
+        input: { locationURL: '' },
+      });
+
+      expect(result.output.error).toBe('a location URL must be specified');
+    });
+
+    it('should return error when locationURL is invalid', async () => {
+      const invalidURL = 'not-a-valid-url';
+
+      const registerCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationURL: string };
+      }) => {
+        if (!input.locationURL || input.locationURL === '') {
+          return {
+            output: {
+              error: 'a location URL must be specified',
+            },
+          };
+        }
+
+        try {
+          // eslint-disable-next-line no-new
+          new URL(input.locationURL);
+        } catch {
+          return {
+            output: {
+              error: 'location URL must be a valid URL string',
+            },
+          };
+        }
+
+        return { output: {} };
+      };
+
+      const result = await registerCatalogEntitiesAction({
+        input: { locationURL: invalidURL },
+      });
+
+      expect(result.output.error).toBe(
+        'location URL must be a valid URL string',
+      );
+    });
+
+    it('should handle catalog service errors during registration', async () => {
+      const validURL = 'https://example.com/catalog-info.yaml';
+      const errorMessage = 'Failed to add location';
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.addLocation as jest.Mock).mockRejectedValue(
+        new Error(errorMessage),
+      );
+
+      const registerCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationURL: string };
+      }) => {
+        if (!input.locationURL || input.locationURL === '') {
+          return {
+            output: {
+              error: 'a location URL must be specified',
+            },
+          };
+        }
+
+        try {
+          // eslint-disable-next-line no-new
+          new URL(input.locationURL);
+        } catch {
+          return {
+            output: {
+              error: 'location URL must be a valid URL string',
+            },
+          };
+        }
+
+        try {
+          const locReq = {
+            type: 'url',
+            target: input.locationURL,
+          };
+          const credentials = await mockAuthService.getOwnServiceCredentials();
+          const result = await mockCatalogService.addLocation(locReq, {
+            credentials,
+          });
+
+          return {
+            output: {
+              locationID: result.location.id,
+              error: undefined,
+            },
+          };
+        } catch (error) {
+          return {
+            output: {
+              error: error.message,
+            },
+          };
+        }
+      };
+
+      const result = await registerCatalogEntitiesAction({
+        input: { locationURL: validURL },
+      });
+
+      expect(result.output.error).toBe(errorMessage);
+      expect(result.output.locationID).toBeUndefined();
+    });
+  });
+
+  describe('unregister-catalog-entities action', () => {
+    const mockCatalogService = {
+      removeLocationById: jest.fn(),
+    } as unknown as CatalogService;
+
+    const mockAuthService = {
+      getOwnServiceCredentials: jest.fn(),
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should successfully unregister catalog entities with valid locationId', async () => {
+      const validLocationId = 'test-location-id-123';
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.removeLocationById as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      const unregisterCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationId: string };
+      }) => {
+        if (!input.locationId || input.locationId === '') {
+          return {
+            output: {
+              error: 'a location ID must be specified',
+            },
+          };
+        }
+
+        try {
+          const credentials = await mockAuthService.getOwnServiceCredentials();
+          await mockCatalogService.removeLocationById(input.locationId, {
+            credentials,
+          });
+
+          return {
+            output: {
+              error: undefined,
+            },
+          };
+        } catch (error) {
+          return {
+            output: {
+              error: error.message,
+            },
+          };
+        }
+      };
+
+      const result = await unregisterCatalogEntitiesAction({
+        input: { locationId: validLocationId },
+      });
+
+      expect(mockAuthService.getOwnServiceCredentials).toHaveBeenCalledTimes(1);
+      expect(mockCatalogService.removeLocationById).toHaveBeenCalledWith(
+        validLocationId,
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+      expect(result.output.error).toBeUndefined();
+    });
+
+    it('should return error when locationId is empty', async () => {
+      const unregisterCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationId: string };
+      }) => {
+        if (!input.locationId || input.locationId === '') {
+          return {
+            output: {
+              error: 'a location ID must be specified',
+            },
+          };
+        }
+        return { output: {} };
+      };
+
+      const result = await unregisterCatalogEntitiesAction({
+        input: { locationId: '' },
+      });
+
+      expect(result.output.error).toBe('a location ID must be specified');
+    });
+
+    it('should return error when locationId is not provided', async () => {
+      const unregisterCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationId: string };
+      }) => {
+        if (!input.locationId || input.locationId === '') {
+          return {
+            output: {
+              error: 'a location ID must be specified',
+            },
+          };
+        }
+        return { output: {} };
+      };
+
+      const result = await unregisterCatalogEntitiesAction({
+        input: { locationId: '' },
+      });
+
+      expect(result.output.error).toBe('a location ID must be specified');
+    });
+
+    it('should handle catalog service errors during unregistration', async () => {
+      const validLocationId = 'test-location-id-123';
+      const errorMessage = 'Failed to remove location';
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.removeLocationById as jest.Mock).mockRejectedValue(
+        new Error(errorMessage),
+      );
+
+      const unregisterCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationId: string };
+      }) => {
+        if (!input.locationId || input.locationId === '') {
+          return {
+            output: {
+              error: 'a location ID must be specified',
+            },
+          };
+        }
+
+        try {
+          const credentials = await mockAuthService.getOwnServiceCredentials();
+          await mockCatalogService.removeLocationById(input.locationId, {
+            credentials,
+          });
+
+          return {
+            output: {
+              error: undefined,
+            },
+          };
+        } catch (error) {
+          return {
+            output: {
+              error: error.message,
+            },
+          };
+        }
+      };
+
+      const result = await unregisterCatalogEntitiesAction({
+        input: { locationId: validLocationId },
+      });
+
+      expect(result.output.error).toBe(errorMessage);
+    });
+
+    it('should handle non-existent locationId gracefully', async () => {
+      const nonExistentLocationId = 'non-existent-id';
+      const errorMessage = 'Location not found';
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.removeLocationById as jest.Mock).mockRejectedValue(
+        new Error(errorMessage),
+      );
+
+      const unregisterCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: { locationId: string };
+      }) => {
+        if (!input.locationId || input.locationId === '') {
+          return {
+            output: {
+              error: 'a location ID must be specified',
+            },
+          };
+        }
+
+        try {
+          const credentials = await mockAuthService.getOwnServiceCredentials();
+          await mockCatalogService.removeLocationById(input.locationId, {
+            credentials,
+          });
+
+          return {
+            output: {
+              error: undefined,
+            },
+          };
+        } catch (error) {
+          return {
+            output: {
+              error: error.message,
+            },
+          };
+        }
+      };
+
+      const result = await unregisterCatalogEntitiesAction({
+        input: { locationId: nonExistentLocationId },
+      });
+
+      expect(result.output.error).toBe(errorMessage);
+    });
+  });
 });

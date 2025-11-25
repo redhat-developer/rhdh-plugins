@@ -59,9 +59,13 @@ export async function openDateRangePicker(page: Page, dateRangeText?: string) {
 /**
  * Close the date range picker
  */
-export async function closeDateRangePicker(page: Page, cancelText?: string) {
+export async function closeDateRangePicker(
+  page: Page,
+  cancelText?: string,
+  startDateText?: string,
+) {
   const datePicker = page.locator('.v5-MuiPaper-root', {
-    hasText: 'Start date',
+    hasText: startDateText || 'Start date',
   });
   await datePicker
     .getByRole('button', { name: cancelText || 'Cancel' })
