@@ -32,6 +32,7 @@ import { ApplicationItemRow } from './ApplicationItemRow';
 import { useApplicationFilters } from './useApplicationFilters';
 import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
 import { EmptyState } from '../../common/EmptyState';
+import { normalizeFilter } from '../../../utils/filterUtils';
 
 type ApplicationsListProps = {
   hasSubcomponents?: boolean;
@@ -61,9 +62,8 @@ export const ApplicationsList: React.FC<ApplicationsListProps> = ({
     applications,
     {
       nameSearch,
-      subcomponent:
-        selectedSubcomponent !== 'All' ? selectedSubcomponent : undefined,
-      cluster: selectedCluster !== 'All' ? selectedCluster : undefined,
+      subcomponent: normalizeFilter(selectedSubcomponent),
+      cluster: normalizeFilter(selectedCluster),
     },
     { page, rowsPerPage },
   );

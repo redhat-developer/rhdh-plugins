@@ -189,14 +189,39 @@ export const getSourceUrl = (
   );
 };
 
-export const getDuration = (seconds: number, long?: boolean): string => {
-  if (!seconds || seconds <= 0) {
-    return 'less than a second';
+function formatHours(hours: number, long: boolean): string {
+  if (long) {
+    return hours === 1 ? `${hours} hour` : `${hours} hours`;
   }
-  let sec = Math.round(seconds);
+  return `${hours} h`;
+}
+
+function formatMinutes(minutes: number, long: boolean): string {
+  if (long) {
+    return minutes === 1 ? `${minutes} minute` : `${minutes} minutes`;
+  }
+  return `${minutes} m`;
+}
+
+function formatSeconds(seconds: number, long: boolean): string {
+  if (long) {
+    return seconds === 1 ? `${seconds} second` : `${seconds} seconds`;
+  }
+  return `${seconds} s`;
+}
+
+/**
+ * Convert seconds to hours, minutes, and seconds
+ */
+function convertSecondsToTimeUnits(totalSeconds: number): {
+  hours: number;
+  minutes: number;
+  seconds: number;
+} {
+  let sec = Math.round(totalSeconds);
   let min = 0;
   let hr = 0;
-  let duration = '';
+
   if (sec >= 60) {
     min = Math.floor(sec / 60);
     sec %= 60;
@@ -205,27 +230,29 @@ export const getDuration = (seconds: number, long?: boolean): string => {
     hr = Math.floor(min / 60);
     min %= 60;
   }
-  if (hr > 0) {
-    duration += long ? (hr === 1 ? `${hr} hour` : `${hr} hours`) : `${hr} h`;
-    duration += ' ';
-  }
-  if (min > 0) {
-    duration += long
-      ? min === 1
-        ? `${min} minute`
-        : `${min} minutes`
-      : `${min} m`;
-    duration += ' ';
-  }
-  if (sec > 0) {
-    duration += long
-      ? sec === 1
-        ? `${sec} second`
-        : `${sec} seconds`
-      : `${sec} s`;
+
+  return { hours: hr, minutes: min, seconds: sec };
+}
+
+export const getDuration = (seconds: number, long?: boolean): string => {
+  if (!seconds || seconds <= 0) {
+    return 'less than a second';
   }
 
-  return duration.trim();
+  const { hours, minutes, seconds: sec } = convertSecondsToTimeUnits(seconds);
+  const parts: string[] = [];
+
+  if (hours > 0) {
+    parts.push(formatHours(hours, !!long));
+  }
+  if (minutes > 0) {
+    parts.push(formatMinutes(minutes, !!long));
+  }
+  if (sec > 0) {
+    parts.push(formatSeconds(sec, !!long));
+  }
+
+  return parts.join(' ');
 };
 
 export const calculateDuration = (

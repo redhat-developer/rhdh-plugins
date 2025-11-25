@@ -22,6 +22,7 @@ import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedDat
 import { PipelineRunType } from '../../../utils/pipeline-runs';
 import { getCommitsFromPLRs } from '../../../utils/commits';
 import { useCommitFilters } from './useCommitFilters';
+import { normalizeFilter } from '../../../utils/filterUtils';
 import {
   InfoCard,
   Progress,
@@ -115,11 +116,9 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
     commits,
     {
       nameSearch,
-      cluster: selectedCluster !== 'All' ? selectedCluster : undefined,
-      subcomponent:
-        selectedSubcomponent !== 'All' ? selectedSubcomponent : undefined,
-      commitStatus:
-        selectedCommitStatus !== 'All' ? selectedCommitStatus : undefined,
+      cluster: normalizeFilter(selectedCluster),
+      subcomponent: normalizeFilter(selectedSubcomponent),
+      commitStatus: normalizeFilter(selectedCommitStatus),
     },
     { page, rowsPerPage },
   );
