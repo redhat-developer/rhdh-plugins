@@ -155,40 +155,45 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
         isFetching={isFetching}
       />
 
-      {!loaded ? (
-        <Progress />
-      ) : allClustersFailed ? (
-        <>
-          <ClusterErrorPanel errors={clusterErrors} />
-        </>
-      ) : data.length === 0 ? (
-        <EmptyState
-          title="No pipeline runs found"
-          description="No pipeline runs match the current filters."
-        />
-      ) : (
-        <Table
-          isFetching={isFetching}
-          columns={columns}
-          data={data}
-          ItemRow={pipelineRun => (
-            <PipelineRunItemRow
-              pipelineRun={pipelineRun}
-              hasSubcomponents={hasSubcomponents}
-              entity={entity}
+      {(() => {
+        if (!loaded) {
+          return <Progress />;
+        }
+        if (allClustersFailed) {
+          return <ClusterErrorPanel errors={clusterErrors} />;
+        }
+        if (data.length === 0) {
+          return (
+            <EmptyState
+              title="No pipeline runs found"
+              description="No pipeline runs match the current filters."
             />
-          )}
-          pagination={{
-            page,
-            totalCount,
-            setPage,
-            rowsPerPage,
-            setRowsPerPage,
-          }}
-          onLoadMore={hasMore ? loadMore : undefined}
-          hasMore={hasMore}
-        />
-      )}
+          );
+        }
+        return (
+          <Table
+            isFetching={isFetching}
+            columns={columns}
+            data={data}
+            ItemRow={pipelineRun => (
+              <PipelineRunItemRow
+                pipelineRun={pipelineRun}
+                hasSubcomponents={hasSubcomponents}
+                entity={entity}
+              />
+            )}
+            pagination={{
+              page,
+              totalCount,
+              setPage,
+              rowsPerPage,
+              setRowsPerPage,
+            }}
+            onLoadMore={hasMore ? loadMore : undefined}
+            hasMore={hasMore}
+          />
+        );
+      })()}
     </InfoCard>
   );
 };

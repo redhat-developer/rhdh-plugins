@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -27,16 +26,10 @@ import {
   ReleaseResource,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { useReleases } from '../../../hooks/resources/useReleases';
-import {
-  InfoCard,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
-import { Table } from '../../Table';
+import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { getLatestRelease } from './utils';
 import { LatestReleaseItemRow } from './LatestReleaseItemRow';
-import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
-import { EmptyState } from '../../common/EmptyState';
+import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
 
 export const LatestReleasesList = () => {
   const { data: releases, loaded, error, clusterErrors } = useReleases();
@@ -141,30 +134,22 @@ export const LatestReleasesList = () => {
 
   return (
     <InfoCard title="Konflux Latest Releases">
-      {!loaded || loading ? (
-        <Progress data-test="latest-releases-progress" />
-      ) : allClustersFailed ? (
-        <>
-          <ClusterErrorPanel errors={clusterErrors} />
-        </>
-      ) : data.length === 0 ? (
-        <EmptyState
-          title="No releases found"
-          description="No releases match the current configuration."
-        />
-      ) : (
-        <Table
-          columns={columns}
-          data={data}
-          ItemRow={release => (
-            <LatestReleaseItemRow
-              release={release}
-              entity={entity}
-              hasSubcomponents={hasSubcomponents}
-            />
-          )}
-        />
-      )}
+      <ResourceListContent
+        loaded={loaded && !loading}
+        allClustersFailed={!!allClustersFailed}
+        clusterErrors={clusterErrors}
+        data={data}
+        emptyStateTitle="No releases found"
+        emptyStateDescription="No releases match the current configuration."
+        columns={columns}
+        ItemRow={release => (
+          <LatestReleaseItemRow
+            release={release}
+            entity={entity}
+            hasSubcomponents={hasSubcomponents}
+          />
+        )}
+      />
     </InfoCard>
   );
 };

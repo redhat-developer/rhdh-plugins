@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -23,18 +22,12 @@ import { PipelineRunType } from '../../../utils/pipeline-runs';
 import { getCommitsFromPLRs } from '../../../utils/commits';
 import { useCommitFilters } from './useCommitFilters';
 import { normalizeFilter } from '../../../utils/filterUtils';
-import {
-  InfoCard,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
-import { Table } from '../../Table';
+import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import TableFilters from '../../Table/TableFilters';
 import { CommitItemRow } from './CommitItemRow';
 import { useComponents } from '../../../hooks/resources/useComponents';
 import { PipelineRunLabel } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
-import { EmptyState } from '../../common/EmptyState';
+import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
 
 type Props = {
   hasSubcomponents: boolean;
@@ -191,41 +184,33 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
         isFetching={isFetching}
       />
 
-      {!loaded || !componentsLoaded ? (
-        <Progress />
-      ) : allClustersFailed ? (
-        <>
-          <ClusterErrorPanel errors={clusterErrors} />
-        </>
-      ) : data.length === 0 ? (
-        <EmptyState
-          title="No commits found"
-          description="No commits match the current filters."
-        />
-      ) : (
-        <Table
-          isFetching={isFetching}
-          columns={columns}
-          data={data}
-          ItemRow={commit => (
-            <CommitItemRow
-              commit={commit}
-              entity={entity}
-              pipelineRuns={allPipelineRunsFilteredByComponents || []}
-              hasSubcomponents={hasSubcomponents}
-            />
-          )}
-          pagination={{
-            page,
-            totalCount,
-            setPage,
-            rowsPerPage,
-            setRowsPerPage,
-          }}
-          onLoadMore={hasMore ? loadMore : undefined}
-          hasMore={hasMore}
-        />
-      )}
+      <ResourceListContent
+        loaded={loaded && componentsLoaded}
+        allClustersFailed={!!allClustersFailed}
+        clusterErrors={clusterErrors}
+        data={data}
+        emptyStateTitle="No commits found"
+        emptyStateDescription="No commits match the current filters."
+        isFetching={isFetching}
+        columns={columns}
+        ItemRow={commit => (
+          <CommitItemRow
+            commit={commit}
+            entity={entity}
+            pipelineRuns={allPipelineRunsFilteredByComponents || []}
+            hasSubcomponents={hasSubcomponents}
+          />
+        )}
+        pagination={{
+          page,
+          totalCount,
+          setPage,
+          rowsPerPage,
+          setRowsPerPage,
+        }}
+        onLoadMore={hasMore ? loadMore : undefined}
+        hasMore={hasMore}
+      />
     </InfoCard>
   );
 };

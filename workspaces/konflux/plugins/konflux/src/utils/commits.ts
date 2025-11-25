@@ -211,7 +211,7 @@ export const showPLRType = (plr: PipelineRunResource): string | null => {
   if (!plr) {
     return null;
   }
-  const runType = plr?.metadata?.labels?.[PipelineRunLabel.COMMIT_TYPE_LABEL];
+  const runType = plr?.metadata?.labels?.[PipelineRunLabel.PIPELINE_TYPE];
   if (!runType) {
     return null;
   }
@@ -228,7 +228,7 @@ export const showPLRType = (plr: PipelineRunResource): string | null => {
 };
 
 export const showPLRMessage = (plr: PipelineRunResource): string | null => {
-  const runType = plr?.metadata?.labels?.[PipelineRunLabel.COMMIT_TYPE_LABEL];
+  const runType = plr?.metadata?.labels?.[PipelineRunLabel.PIPELINE_TYPE];
   if (!runType) {
     return null;
   }

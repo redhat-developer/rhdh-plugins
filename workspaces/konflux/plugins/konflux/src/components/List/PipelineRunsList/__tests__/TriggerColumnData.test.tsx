@@ -56,7 +56,6 @@ describe('TriggerColumnData', () => {
     await renderTriggerColumnData(
       'pull_request',
       '9066bd16f3450cd2d7553375ceca07e70349c94f',
-      undefined,
     );
 
     expect(screen.getByText('-')).toBeInTheDocument();

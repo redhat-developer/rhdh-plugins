@@ -36,11 +36,11 @@ import './Table.css';
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
 
-type ItemWithKey = {
+export type ItemWithKey = {
   itemKey: string;
 };
 
-type Pagination = {
+export type Pagination = {
   page: number;
   totalCount: number;
   setPage: (p: number) => void;
@@ -80,9 +80,9 @@ export const Table = <T extends ItemWithKey>({
         <MUTable>
           <TableHead>
             <TableRow>
-              {columns.map((c, index) => (
+              {columns.map(c => (
                 <TableCell
-                  key={index}
+                  key={c}
                   align="left"
                   className="header"
                   padding="default"

@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -17,21 +16,15 @@
 
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
-import {
-  InfoCard,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
+import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { useMemo, useEffect, useState } from 'react';
-import { Table } from '../../Table';
 import { useComponents } from '../../../hooks/resources/useComponents';
 import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedData';
 import TableFilters from '../../Table/TableFilters';
 import { ComponentItemRow } from './ComponentItemRow';
 import { useComponentFilters } from './useComponentFilters';
-import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
-import { EmptyState } from '../../common/EmptyState';
 import { normalizeFilter } from '../../../utils/filterUtils';
+import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
 
 type Props = {
   hasSubcomponents: boolean;
@@ -119,34 +112,26 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
         isFetching={isFetching}
       />
 
-      {!loaded ? (
-        <Progress />
-      ) : allClustersFailed ? (
-        <>
-          <ClusterErrorPanel errors={clusterErrors} />
-        </>
-      ) : data.length === 0 ? (
-        <EmptyState
-          title="No components found"
-          description="No components match the current filters."
-        />
-      ) : (
-        <Table
-          isFetching={isFetching}
-          columns={['NAME', 'APPLICATION', 'CLUSTER', 'NAMESPACE']}
-          data={data}
-          ItemRow={component => <ComponentItemRow component={component} />}
-          pagination={{
-            page,
-            totalCount,
-            setPage,
-            rowsPerPage,
-            setRowsPerPage,
-          }}
-          onLoadMore={hasMore ? loadMore : undefined}
-          hasMore={hasMore}
-        />
-      )}
+      <ResourceListContent
+        loaded={loaded}
+        allClustersFailed={!!allClustersFailed}
+        clusterErrors={clusterErrors}
+        data={data}
+        emptyStateTitle="No components found"
+        emptyStateDescription="No components match the current filters."
+        isFetching={isFetching}
+        columns={['NAME', 'APPLICATION', 'CLUSTER', 'NAMESPACE']}
+        ItemRow={component => <ComponentItemRow component={component} />}
+        pagination={{
+          page,
+          totalCount,
+          setPage,
+          rowsPerPage,
+          setRowsPerPage,
+        }}
+        onLoadMore={hasMore ? loadMore : undefined}
+        hasMore={hasMore}
+      />
     </InfoCard>
   );
 };

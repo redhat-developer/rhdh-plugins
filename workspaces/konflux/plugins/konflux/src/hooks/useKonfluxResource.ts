@@ -108,9 +108,12 @@ async function fetchKonfluxResources<
   }
 
   const queryString = params.toString();
-  const url = `${baseUrl}/entity/${encodeURIComponent(
+  const resourcePath = `/entity/${encodeURIComponent(
     entityRef,
-  )}/resource/${resource}${queryString ? `?${queryString}` : ''}`;
+  )}/resource/${resource}`;
+  const url = queryString
+    ? `${baseUrl}${resourcePath}?${queryString}`
+    : `${baseUrl}${resourcePath}`;
 
   const headers: HeadersInit = {};
   if (oidcToken) {

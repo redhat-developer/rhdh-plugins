@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -17,26 +16,21 @@
 
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
-import {
-  InfoCard,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
+import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { useMemo, useEffect, useState } from 'react';
-import { Table } from '../../Table';
 import { useApplications } from '../../../hooks/resources/useApplications';
 import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedData';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import TableFilters from '../../Table/TableFilters';
 import { ApplicationItemRow } from './ApplicationItemRow';
 import { useApplicationFilters } from './useApplicationFilters';
-import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
-import { EmptyState } from '../../common/EmptyState';
 import { normalizeFilter } from '../../../utils/filterUtils';
+import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
 
 type ApplicationsListProps = {
   hasSubcomponents?: boolean;
 };
+
 export const ApplicationsList: React.FC<ApplicationsListProps> = ({
   hasSubcomponents = true,
 }) => {
@@ -129,40 +123,32 @@ export const ApplicationsList: React.FC<ApplicationsListProps> = ({
         isFetching={isFetching}
       />
 
-      {!loaded ? (
-        <Progress />
-      ) : allClustersFailed ? (
-        <>
-          <ClusterErrorPanel errors={clusterErrors} />
-        </>
-      ) : data.length === 0 ? (
-        <EmptyState
-          title="No applications found"
-          description="No applications match the current filters."
-        />
-      ) : (
-        <Table
-          isFetching={isFetching}
-          columns={columns}
-          data={data}
-          ItemRow={application => (
-            <ApplicationItemRow
-              application={application}
-              hasSubcomponents={hasSubcomponents}
-              entity={entity}
-            />
-          )}
-          pagination={{
-            page,
-            totalCount,
-            setPage,
-            rowsPerPage,
-            setRowsPerPage,
-          }}
-          onLoadMore={hasMore ? loadMore : undefined}
-          hasMore={hasMore}
-        />
-      )}
+      <ResourceListContent
+        loaded={loaded}
+        allClustersFailed={!!allClustersFailed}
+        clusterErrors={clusterErrors}
+        data={data}
+        emptyStateTitle="No applications found"
+        emptyStateDescription="No applications match the current filters."
+        isFetching={isFetching}
+        columns={columns}
+        ItemRow={application => (
+          <ApplicationItemRow
+            application={application}
+            hasSubcomponents={hasSubcomponents}
+            entity={entity}
+          />
+        )}
+        pagination={{
+          page,
+          totalCount,
+          setPage,
+          rowsPerPage,
+          setRowsPerPage,
+        }}
+        onLoadMore={hasMore ? loadMore : undefined}
+        hasMore={hasMore}
+      />
     </InfoCard>
   );
 };

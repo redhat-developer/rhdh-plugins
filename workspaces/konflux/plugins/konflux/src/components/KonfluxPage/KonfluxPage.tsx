@@ -17,7 +17,6 @@
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 import { Progress } from '@backstage/core-components';
-// import { Divider, makeStyles, Theme } from '@material-ui/core';
 import { useEntity } from '@backstage/plugin-catalog-react';
 
 import { usePageLoading } from '../../hooks/usePageLoading';

@@ -79,11 +79,7 @@ describe('getLatestRelease', () => {
   });
 
   it('should return null when releases is undefined', () => {
-    const result = getLatestRelease(
-      clusterNamespaceComb,
-      subcomponentConfigs,
-      undefined,
-    );
+    const result = getLatestRelease(clusterNamespaceComb, subcomponentConfigs);
 
     expect(result).toBeNull();
   });

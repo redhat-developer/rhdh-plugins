@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -111,13 +110,14 @@ export const conditionsRunStatus = (
     return runStatus.Pending;
   }
 
-  const status =
-    // eslint-disable-next-line no-nested-ternary
-    succeedCondition.status === 'True'
-      ? runStatus.Succeeded
-      : succeedCondition.status === 'False'
-      ? runStatus.Failed
-      : runStatus.Running;
+  let status: runStatus;
+  if (succeedCondition.status === 'True') {
+    status = runStatus.Succeeded;
+  } else if (succeedCondition.status === 'False') {
+    status = runStatus.Failed;
+  } else {
+    status = runStatus.Running;
+  }
 
   if (
     (specStatus === SucceedConditionReason.PipelineRunCancelled &&
@@ -189,6 +189,9 @@ export const getSourceUrl = (
   );
 };
 
+/**
+ * Format hours unit for duration string
+ */
 function formatHours(hours: number, long: boolean): string {
   if (long) {
     return hours === 1 ? `${hours} hour` : `${hours} hours`;
@@ -196,6 +199,9 @@ function formatHours(hours: number, long: boolean): string {
   return `${hours} h`;
 }
 
+/**
+ * Format minutes unit for duration string
+ */
 function formatMinutes(minutes: number, long: boolean): string {
   if (long) {
     return minutes === 1 ? `${minutes} minute` : `${minutes} minutes`;
@@ -203,6 +209,9 @@ function formatMinutes(minutes: number, long: boolean): string {
   return `${minutes} m`;
 }
 
+/**
+ * Format seconds unit for duration string
+ */
 function formatSeconds(seconds: number, long: boolean): string {
   if (long) {
     return seconds === 1 ? `${seconds} second` : `${seconds} seconds`;

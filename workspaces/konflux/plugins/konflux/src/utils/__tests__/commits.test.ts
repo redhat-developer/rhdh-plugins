@@ -439,7 +439,7 @@ describe('commits', () => {
 
   describe('getLatestCommitFromPipelineRuns', () => {
     it('should return null when pipelineruns is undefined', () => {
-      expect(getLatestCommitFromPipelineRuns(undefined)).toBeNull();
+      expect(getLatestCommitFromPipelineRuns()).toBeNull();
     });
 
     it('should return null when pipelineruns is empty', () => {
@@ -489,7 +489,7 @@ describe('commits', () => {
       expect(showPLRType(null as any)).toBeNull();
     });
 
-    it('should return null when COMMIT_TYPE_LABEL is missing', () => {
+    it('should return null when PIPELINE_TYPE is missing', () => {
       const plr = createMockPipelineRun();
       expect(showPLRType(plr)).toBeNull();
     });
@@ -498,7 +498,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: PipelineRunType.BUILD,
+            [PipelineRunLabel.PIPELINE_TYPE]: PipelineRunType.BUILD,
           },
         },
       });
@@ -509,7 +509,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: PipelineRunType.TEST,
+            [PipelineRunLabel.PIPELINE_TYPE]: PipelineRunType.TEST,
           },
         },
       });
@@ -520,7 +520,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: PipelineRunType.RELEASE,
+            [PipelineRunLabel.PIPELINE_TYPE]: PipelineRunType.RELEASE,
           },
         },
       });
@@ -531,7 +531,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: 'unknown',
+            [PipelineRunLabel.PIPELINE_TYPE]: 'unknown',
           },
         },
       });
@@ -540,7 +540,7 @@ describe('commits', () => {
   });
 
   describe('showPLRMessage', () => {
-    it('should return null when COMMIT_TYPE_LABEL is missing', () => {
+    it('should return null when PIPELINE_TYPE is missing', () => {
       const plr = createMockPipelineRun();
       expect(showPLRMessage(plr)).toBeNull();
     });
@@ -549,7 +549,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: PipelineRunType.BUILD,
+            [PipelineRunLabel.PIPELINE_TYPE]: PipelineRunType.BUILD,
           },
         },
       });
@@ -560,7 +560,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: PipelineRunType.TEST,
+            [PipelineRunLabel.PIPELINE_TYPE]: PipelineRunType.TEST,
           },
         },
       });
@@ -571,7 +571,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: PipelineRunType.RELEASE,
+            [PipelineRunLabel.PIPELINE_TYPE]: PipelineRunType.RELEASE,
           },
         },
       });
@@ -582,7 +582,7 @@ describe('commits', () => {
       const plr = createMockPipelineRun({
         metadata: {
           labels: {
-            [PipelineRunLabel.COMMIT_TYPE_LABEL]: 'unknown',
+            [PipelineRunLabel.PIPELINE_TYPE]: 'unknown',
           },
         },
       });
