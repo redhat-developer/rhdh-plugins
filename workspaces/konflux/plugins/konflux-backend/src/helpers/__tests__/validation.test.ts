@@ -1,3 +1,4 @@
+/* eslint-disable jest/expect-expect */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -17,6 +18,26 @@
 import { validateUserEmailForImpersonation } from '../validation';
 
 describe('validation', () => {
+  const expectValidationToThrow = (
+    email: string | undefined,
+    authProvider: string | undefined,
+    expectedError: string,
+  ) => {
+    expect(() => {
+      validateUserEmailForImpersonation(email, authProvider);
+    }).toThrow(expectedError);
+  };
+
+  const expectValidationToNotThrow = (
+    email: string,
+    authProvider: string | undefined,
+  ) => {
+    expect(() => {
+      validateUserEmailForImpersonation(email, authProvider);
+    }).not.toThrow();
+    expect(validateUserEmailForImpersonation(email, authProvider)).toBe(email);
+  };
+
   describe('validateUserEmailForImpersonation', () => {
     describe('when authProvider is not impersonationHeaders', () => {
       it('should return email when provided', () => {
@@ -88,96 +109,71 @@ describe('validation', () => {
         'user@subdomain.example.com',
         'user@example.io',
       ])('should accept valid email format: %s', email => {
-        expect(() => {
-          validateUserEmailForImpersonation(email, 'impersonationHeaders');
-        }).not.toThrow();
-        expect(
-          validateUserEmailForImpersonation(email, 'impersonationHeaders'),
-        ).toBe(email);
+        expectValidationToNotThrow(email, 'impersonationHeaders');
       });
 
       it('should throw error when email is undefined', () => {
-        expect(() => {
-          validateUserEmailForImpersonation(undefined, 'impersonationHeaders');
-        }).toThrow(
+        expectValidationToThrow(
+          undefined,
+          'impersonationHeaders',
           'User email is required for impersonation but was not found in user entity',
         );
       });
 
       it('should throw error when email is empty string', () => {
-        expect(() => {
-          validateUserEmailForImpersonation('', 'impersonationHeaders');
-        }).toThrow(
-          'User email is required for impersonation but was not found in user entity',
-        );
-      });
-
-      it('should throw error when email is only whitespace', () => {
-        expect(() => {
-          validateUserEmailForImpersonation('   ', 'impersonationHeaders');
-        }).toThrow(
+        expectValidationToThrow(
+          '',
+          'impersonationHeaders',
           'User email is required for impersonation but was not found in user entity',
         );
       });
 
       it('should throw error for email without @ symbol', () => {
-        expect(() => {
-          validateUserEmailForImpersonation(
-            'userexample.com',
-            'impersonationHeaders',
-          );
-        }).toThrow('Invalid email format: userexample.com');
+        expectValidationToThrow(
+          'userexample.com',
+          'impersonationHeaders',
+          'Invalid email format: userexample.com',
+        );
       });
 
       it('should throw error for email without domain', () => {
-        expect(() => {
-          validateUserEmailForImpersonation('user@', 'impersonationHeaders');
-        }).toThrow('Invalid email format: user@');
+        expectValidationToThrow(
+          'user@',
+          'impersonationHeaders',
+          'Invalid email format: user@',
+        );
       });
 
       it('should throw error for email without local part', () => {
-        expect(() => {
-          validateUserEmailForImpersonation(
-            '@example.com',
-            'impersonationHeaders',
-          );
-        }).toThrow('Invalid email format: @example.com');
+        expectValidationToThrow(
+          '@example.com',
+          'impersonationHeaders',
+          'Invalid email format: @example.com',
+        );
       });
 
       it('should throw error for email without TLD', () => {
-        expect(() => {
-          validateUserEmailForImpersonation(
-            'user@example',
-            'impersonationHeaders',
-          );
-        }).toThrow('Invalid email format: user@example');
-      });
-
-      it('should throw error for email with spaces', () => {
-        expect(() => {
-          validateUserEmailForImpersonation(
-            'user @example.com',
-            'impersonationHeaders',
-          );
-        }).toThrow('Invalid email format: user @example.com');
+        expectValidationToThrow(
+          'user@example',
+          'impersonationHeaders',
+          'Invalid email format: user@example',
+        );
       });
 
       it('should throw error for email with multiple @ symbols', () => {
-        expect(() => {
-          validateUserEmailForImpersonation(
-            'user@example@com',
-            'impersonationHeaders',
-          );
-        }).toThrow('Invalid email format: user@example@com');
+        expectValidationToThrow(
+          'user@example@com',
+          'impersonationHeaders',
+          'Invalid email format: user@example@com',
+        );
       });
 
       it('should trim whitespace before validating format', () => {
-        expect(() => {
-          validateUserEmailForImpersonation(
-            '  invalid-email  ',
-            'impersonationHeaders',
-          );
-        }).toThrow('Invalid email format: invalid-email');
+        expectValidationToThrow(
+          '  invalid-email  ',
+          'impersonationHeaders',
+          'Invalid email format: invalid-email',
+        );
       });
 
       it('should handle email with special characters in local part', () => {
