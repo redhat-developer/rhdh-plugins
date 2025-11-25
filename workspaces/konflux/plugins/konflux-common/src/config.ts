@@ -30,7 +30,8 @@ export const parseEntityKonfluxConfig = <T>(
   try {
     const clustersParsedYaml = yaml.load(annotation) as T;
     return clustersParsedYaml;
-  } catch (e) {
+  } catch {
+    // YAML parsing failed, return null to indicate invalid configuration
     return null;
   }
 };
@@ -75,7 +76,8 @@ export const parseClusterConfigs = (
       };
     }
     return clusters;
-  } catch (e) {
+  } catch {
+    // Configuration parsing failed, return null to indicate failure
     return null;
   }
 };
