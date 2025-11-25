@@ -16,7 +16,7 @@
 
 import { screen } from '@testing-library/react';
 import { CommitItemRow } from '../CommitItemRow';
-import { Commit } from '../../../../utils/pipeline-runs';
+import { Commit, pipelineRunStatus } from '../../../../utils/pipeline-runs';
 import {
   PipelineRunResource,
   runStatus,
@@ -25,8 +25,6 @@ import { Entity } from '@backstage/catalog-model';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { Table, TableBody } from '@material-ui/core';
 import { catalogApiRef, CatalogApi } from '@backstage/plugin-catalog-react';
-
-import { pipelineRunStatus } from '../../../../utils/pipeline-runs';
 import { getCommitSha, createRepoBranchURL } from '../../../../utils/commits';
 import { useEntitySubcomponents } from '../../../../hooks/useEntitySubcomponents';
 

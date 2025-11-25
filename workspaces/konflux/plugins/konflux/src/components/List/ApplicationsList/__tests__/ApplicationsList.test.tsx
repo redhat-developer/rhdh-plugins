@@ -16,20 +16,23 @@
 
 import { screen, waitFor } from '@testing-library/react';
 import { ApplicationsList } from '../ApplicationsList';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import {
+  TestApiProvider,
+  renderInTestApp,
+  mockApis,
+} from '@backstage/test-utils';
 import {
   catalogApiRef,
   EntityProvider,
   CatalogApi,
+  useEntity,
 } from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
-import { mockApis } from '@backstage/test-utils';
 import { useApplications } from '../../../../hooks/resources/useApplications';
 import { useFilteredPaginatedData } from '../../../../hooks/useFilteredPaginatedData';
 import { useApplicationFilters } from '../useApplicationFilters';
-import { useEntity } from '@backstage/plugin-catalog-react';
 
 // Mock the hooks
 jest.mock('../../../../hooks/resources/useApplications');

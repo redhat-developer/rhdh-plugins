@@ -16,7 +16,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { useCommitFilters } from '../useCommitFilters';
-import { Commit } from '../../../../utils/pipeline-runs';
+import { Commit, pipelineRunStatus } from '../../../../utils/pipeline-runs';
 import {
   PipelineRunResource,
   runStatus,
@@ -27,8 +27,6 @@ jest.mock('../../../../utils/pipeline-runs', () => ({
   ...jest.requireActual('../../../../utils/pipeline-runs'),
   pipelineRunStatus: jest.fn(),
 }));
-
-import { pipelineRunStatus } from '../../../../utils/pipeline-runs';
 
 const mockPipelineRunStatus = pipelineRunStatus as jest.MockedFunction<
   typeof pipelineRunStatus

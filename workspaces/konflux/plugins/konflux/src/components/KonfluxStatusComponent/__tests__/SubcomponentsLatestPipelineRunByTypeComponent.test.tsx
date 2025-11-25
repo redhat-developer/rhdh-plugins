@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { screen, waitFor } from '@testing-library/react';
-import { render } from '@testing-library/react';
+import { screen, waitFor, render } from '@testing-library/react';
 import { SubcomponentsLatestPipelineRunByTypeComponent } from '../SubcomponentsLatestPipelineRunByTypeComponent';
 import {
   PipelineRunResource,

@@ -16,22 +16,25 @@
 
 import { screen, waitFor } from '@testing-library/react';
 import { CommitsList } from '../CommitsList';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import {
+  TestApiProvider,
+  renderInTestApp,
+  mockApis,
+} from '@backstage/test-utils';
 import {
   CatalogApi,
   catalogApiRef,
   EntityProvider,
+  useEntity,
 } from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
-import { mockApis } from '@backstage/test-utils';
 import { usePipelineruns } from '../../../../hooks/resources/usePipelineruns';
 import { useComponents } from '../../../../hooks/resources/useComponents';
 import { useFilteredPaginatedData } from '../../../../hooks/useFilteredPaginatedData';
 import { getCommitsFromPLRs } from '../../../../utils/commits';
 import { useCommitFilters } from '../useCommitFilters';
-import { useEntity } from '@backstage/plugin-catalog-react';
 import { Commit } from '../../../../utils/pipeline-runs';
 
 // Mock the hooks
