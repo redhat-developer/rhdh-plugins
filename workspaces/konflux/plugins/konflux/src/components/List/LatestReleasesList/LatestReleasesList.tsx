@@ -27,16 +27,30 @@ import {
   ReleaseResource,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { useReleases } from '../../../hooks/resources/useReleases';
-import {
-  InfoCard,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
-import { Table } from '../../Table';
+import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { getLatestRelease } from './utils';
 import { LatestReleaseItemRow } from './LatestReleaseItemRow';
-import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
-import { EmptyState } from '../../common/EmptyState';
+import { Entity } from '@backstage/catalog-model';
+import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+
+type LatestReleaseItemRowWithPropsProps = ReleaseResource & {
+  itemKey: string;
+  hasSubcomponents: boolean;
+  entity: Entity;
+};
+
+const LatestReleaseItemRowWithProps = (
+  props: LatestReleaseItemRowWithPropsProps,
+) => {
+  const { hasSubcomponents, entity, itemKey, ...release } = props;
+  return (
+    <LatestReleaseItemRow
+      release={release}
+      hasSubcomponents={hasSubcomponents}
+      entity={entity}
+    />
+  );
+};
 
 export const LatestReleasesList = () => {
   const { data: releases, loaded, error, clusterErrors } = useReleases();
@@ -112,13 +126,15 @@ export const LatestReleasesList = () => {
     return c;
   }, [hasSubcomponents]);
 
-  const data = useMemo(
+  const data = useMemo<LatestReleaseItemRowWithPropsProps[]>(
     () =>
       filteredReleases?.map(release => ({
         ...release,
         itemKey: `${release.metadata?.name}-${release.metadata?.namespace}-${release.cluster.name}`,
+        hasSubcomponents,
+        entity,
       })) ?? [],
-    [filteredReleases],
+    [entity, filteredReleases, hasSubcomponents],
   );
 
   if (loaded && error) {
@@ -141,35 +157,16 @@ export const LatestReleasesList = () => {
 
   return (
     <InfoCard title="Konflux Latest Releases">
-      {(() => {
-        if (!loaded || loading) {
-          return <Progress data-test="latest-releases-progress" />;
-        }
-        if (allClustersFailed) {
-          return <ClusterErrorPanel errors={clusterErrors} />;
-        }
-        if (data.length === 0) {
-          return (
-            <EmptyState
-              title="No releases found"
-              description="No releases match the current configuration."
-            />
-          );
-        }
-        return (
-          <Table
-            columns={columns}
-            data={data}
-            ItemRow={release => (
-              <LatestReleaseItemRow
-                release={release}
-                entity={entity}
-                hasSubcomponents={hasSubcomponents}
-              />
-            )}
-          />
-        );
-      })()}
+      <ResourceListContent
+        loaded={loaded && !loading}
+        allClustersFailed={!!allClustersFailed}
+        clusterErrors={clusterErrors}
+        data={data}
+        emptyStateTitle="No releases found"
+        emptyStateDescription="No releases match the current configuration."
+        columns={columns}
+        ItemRow={LatestReleaseItemRowWithProps}
+      />
     </InfoCard>
   );
 };

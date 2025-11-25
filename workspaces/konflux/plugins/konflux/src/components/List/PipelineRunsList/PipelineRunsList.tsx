@@ -17,26 +17,42 @@
 
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
-import {
-  InfoCard,
-  Progress,
-  ResponseErrorPanel,
-} from '@backstage/core-components';
+import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { useMemo, useEffect, useState } from 'react';
-import { Table } from '../../Table';
 import { usePipelineruns } from '../../../hooks/resources/usePipelineruns';
 import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedData';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import TableFilters from '../../Table/TableFilters';
 import { PipelineRunItemRow } from './PipelineRunItemRow';
 import { usePipelineRunFilters } from './usePipelineRunFilters';
-import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
-import { EmptyState } from '../../common/EmptyState';
 import { normalizeFilter } from '../../../utils/filterUtils';
+import { PipelineRunResource } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import { Entity } from '@backstage/catalog-model';
+import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
 
 type PipelineRunsListProps = {
   hasSubcomponents?: boolean;
 };
+
+type PipelineRunItemRowWithPropsProps = PipelineRunResource & {
+  itemKey: string;
+  hasSubcomponents: boolean;
+  entity: Entity;
+};
+
+const PipelineRunItemRowWithProps = (
+  props: PipelineRunItemRowWithPropsProps,
+) => {
+  const { hasSubcomponents, entity, itemKey, ...pipelineRun } = props;
+  return (
+    <PipelineRunItemRow
+      pipelineRun={pipelineRun}
+      hasSubcomponents={hasSubcomponents}
+      entity={entity}
+    />
+  );
+};
+
 export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
   hasSubcomponents = true,
 }) => {
@@ -105,13 +121,15 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
     return c;
   }, [hasSubcomponents]);
 
-  const data = useMemo(() => {
+  const data = useMemo<PipelineRunItemRowWithPropsProps[]>(() => {
     if (!paginatedData) return [];
     return paginatedData.map(plr => ({
       ...plr,
       itemKey: `${plr.metadata?.name}-${plr.metadata?.namespace}-${plr?.cluster.name}`,
+      hasSubcomponents,
+      entity,
     }));
-  }, [paginatedData]);
+  }, [entity, hasSubcomponents, paginatedData]);
 
   if (loaded && error) {
     return (
@@ -155,45 +173,26 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
         isFetching={isFetching}
       />
 
-      {(() => {
-        if (!loaded) {
-          return <Progress />;
-        }
-        if (allClustersFailed) {
-          return <ClusterErrorPanel errors={clusterErrors} />;
-        }
-        if (data.length === 0) {
-          return (
-            <EmptyState
-              title="No pipeline runs found"
-              description="No pipeline runs match the current filters."
-            />
-          );
-        }
-        return (
-          <Table
-            isFetching={isFetching}
-            columns={columns}
-            data={data}
-            ItemRow={pipelineRun => (
-              <PipelineRunItemRow
-                pipelineRun={pipelineRun}
-                hasSubcomponents={hasSubcomponents}
-                entity={entity}
-              />
-            )}
-            pagination={{
-              page,
-              totalCount,
-              setPage,
-              rowsPerPage,
-              setRowsPerPage,
-            }}
-            onLoadMore={hasMore ? loadMore : undefined}
-            hasMore={hasMore}
-          />
-        );
-      })()}
+      <ResourceListContent
+        loaded={loaded}
+        allClustersFailed={!!allClustersFailed}
+        clusterErrors={clusterErrors}
+        data={data}
+        emptyStateTitle="No pipeline runs found"
+        emptyStateDescription="No pipeline runs match the current filters."
+        isFetching={isFetching}
+        columns={columns}
+        ItemRow={PipelineRunItemRowWithProps}
+        pagination={{
+          page,
+          totalCount,
+          setPage,
+          rowsPerPage,
+          setRowsPerPage,
+        }}
+        onLoadMore={hasMore ? loadMore : undefined}
+        hasMore={hasMore}
+      />
     </InfoCard>
   );
 };
