@@ -66,6 +66,19 @@ export type OptimizationsApi = Omit<
   ): Promise<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   >;
+  getOpenShiftTags(
+    timeScopeValue?: number,
+  ): Promise<TypedResponse<{ data: string[]; meta?: any; links?: any }>>;
+  getOpenShiftTagValues(
+    tagKey: string,
+    timeScopeValue?: number,
+  ): Promise<
+    TypedResponse<{
+      data: Array<{ key: string; values: string[]; enabled: boolean }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
 };
 
 /**

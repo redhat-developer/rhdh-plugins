@@ -52,6 +52,10 @@ export type FiltersProps = {
   filterBy: string;
   filterOperation: string;
   filterValue: string;
+  tags?: string[];
+  selectedTag?: string;
+  selectedTagKey?: string;
+  selectedTagValue?: string;
   onGroupByChange: (value: string) => void;
   onOverheadDistributionChange: (value: string) => void;
   onTimeRangeChange: (value: string) => void;
@@ -59,6 +63,9 @@ export type FiltersProps = {
   onFilterByChange: (value: string) => void;
   onFilterOperationChange: (value: string) => void;
   onFilterValueChange: (value: string) => void;
+  onSelectedTagChange: (value: string) => void;
+  onSelectedTagKeyChange: (value: string) => void;
+  onSelectedTagValueChange: (value: string) => void;
 };
 
 export type CurrencyOption = {
@@ -76,6 +83,10 @@ export function Filters(props: FiltersProps) {
     filterBy,
     filterOperation,
     filterValue,
+    tags = [],
+    selectedTag = '',
+    selectedTagKey = '',
+    selectedTagValue = '',
     onGroupByChange,
     onOverheadDistributionChange,
     onTimeRangeChange,
@@ -83,6 +94,9 @@ export function Filters(props: FiltersProps) {
     onFilterByChange,
     onFilterOperationChange,
     onFilterValueChange,
+    onSelectedTagChange,
+    onSelectedTagKeyChange,
+    onSelectedTagValueChange,
   } = props;
   const baseClasses = useBaseFiltersStyles();
   const classes = useFiltersStyles();
@@ -118,9 +132,15 @@ export function Filters(props: FiltersProps) {
   // Fetch resource options based on filterBy and debouncedSearch
   const { value: resourceOptions, loading: isLoadingOptions } =
     useAsync(async () => {
-      // Don't fetch if filterBy is 'tag' (empty for now)
+      // For tags, filter the tags array based on search input (for tag key selection)
       if (filterBy === 'tag') {
-        return [];
+        if (!debouncedSearch.trim()) {
+          return tags;
+        }
+        const searchLower = debouncedSearch.toLocaleLowerCase('en-US');
+        return tags.filter(tag =>
+          tag.toLocaleLowerCase('en-US').includes(searchLower),
+        );
       }
 
       // Don't fetch if there's no search term
@@ -150,21 +170,48 @@ export function Filters(props: FiltersProps) {
         // Silently return empty array on error
         return [];
       }
-    }, [filterBy, debouncedSearch, api]);
+    }, [filterBy, debouncedSearch, api, tags]);
+
+  // Fetch tag values when a tag key is selected for filtering
+  const { value: tagValuesData, loading: isLoadingTagValues } =
+    useAsync(async () => {
+      if (filterBy === 'tag' && selectedTagKey) {
+        try {
+          const timeScopeValue = timeRange === 'month-to-date' ? -1 : -2;
+          const response = await api.getOpenShiftTagValues(
+            selectedTagKey,
+            timeScopeValue,
+          );
+          const data = await response.json();
+          // Extract all unique values from all items in the data array
+          const allValues = new Set<string>();
+          for (const item of data.data || []) {
+            if (item.values) {
+              for (const value of item.values) {
+                allValues.add(value);
+              }
+            }
+          }
+          return Array.from(allValues).sort((a, b) =>
+            a.localeCompare(b, 'en-US'),
+          );
+        } catch {
+          return [];
+        }
+      }
+      return [];
+    }, [filterBy, selectedTagKey, timeRange, api]);
 
   // Generate filter value options based on API results
   // Always include the current filterValue if it's set, so it doesn't disappear
   const getFilterValueOptions = useMemo((): string[] => {
-    if (filterBy === 'tag') {
-      return [];
-    }
     const options = resourceOptions || [];
     // If filterValue is set and not already in options, add it
     if (filterValue && !options.includes(filterValue)) {
       return [filterValue, ...options];
     }
     return options;
-  }, [filterBy, resourceOptions, filterValue]);
+  }, [resourceOptions, filterValue]);
 
   // Handle input change in autocomplete
   const handleInputChange = useCallback(
@@ -219,6 +266,20 @@ export function Filters(props: FiltersProps) {
                 onGroupByChange(event.target.value as string)
               }
             />
+            {groupBy === 'tag' && (
+              <Box p={0} pt={0}>
+                <AutocompleteComponent
+                  label="Choose key"
+                  options={tags}
+                  value={selectedTag}
+                  placeholder="Choose key"
+                  loading={false}
+                  onChange={(_event, value): void => {
+                    onSelectedTagChange((value as string) ?? '');
+                  }}
+                />
+              </Box>
+            )}
           </Box>
         </div>
 
@@ -306,8 +367,14 @@ export function Filters(props: FiltersProps) {
               value={filterBy}
               placeholder=""
               onChange={(event): void => {
-                onFilterByChange(event.target.value as string);
+                const newFilterBy = event.target.value as string;
+                onFilterByChange(newFilterBy);
                 onFilterValueChange('');
+                // Clear tag-related selections when filterBy changes away from 'tag'
+                if (newFilterBy !== 'tag') {
+                  onSelectedTagKeyChange('');
+                  onSelectedTagValueChange('');
+                }
               }}
             />
             <SelectComponent
@@ -325,20 +392,56 @@ export function Filters(props: FiltersProps) {
               }}
             />
 
-            <AutocompleteComponent
-              label=""
-              options={getFilterValueOptions}
-              value={filterValue}
-              placeholder={`Filter by ${filterBy || 'project'}`}
-              loading={isLoadingOptions}
-              onInputChange={handleInputChange}
-              onChange={(_event, value): void => {
-                onFilterValueChange((value as string) ?? '');
-                // Clear search input when a value is selected
-                setSearchInput('');
-                setDebouncedSearch('');
-              }}
-            />
+            {filterBy === 'tag' ? (
+              <>
+                <AutocompleteComponent
+                  label=""
+                  options={getFilterValueOptions}
+                  value={selectedTagKey}
+                  placeholder="Select tag key"
+                  loading={false}
+                  onInputChange={handleInputChange}
+                  onChange={(_event, value): void => {
+                    const tagKey = (value as string) ?? '';
+                    onSelectedTagKeyChange(tagKey);
+                    // Clear tag value when tag key changes
+                    onSelectedTagValueChange('');
+                    // Clear search input when a value is selected
+                    setSearchInput('');
+                    setDebouncedSearch('');
+                  }}
+                />
+                {selectedTagKey && (
+                  <Box style={{ marginTop: '-8px' }}>
+                    <AutocompleteComponent
+                      label=""
+                      options={tagValuesData || []}
+                      value={selectedTagValue}
+                      placeholder="Select tag value"
+                      loading={isLoadingTagValues}
+                      onChange={(_event, value): void => {
+                        onSelectedTagValueChange((value as string) ?? '');
+                      }}
+                    />
+                  </Box>
+                )}
+              </>
+            ) : (
+              <AutocompleteComponent
+                label=""
+                options={getFilterValueOptions}
+                value={filterValue}
+                placeholder={`Filter by ${filterBy || 'project'}`}
+                loading={isLoadingOptions}
+                onInputChange={handleInputChange}
+                onChange={(_event, value): void => {
+                  onFilterValueChange((value as string) ?? '');
+                  // Clear search input when a value is selected
+                  setSearchInput('');
+                  setDebouncedSearch('');
+                }}
+              />
+            )}
           </div>
         </div>
 
