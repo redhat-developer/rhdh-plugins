@@ -38,6 +38,7 @@ test.beforeAll(async ({ browser }) => {
     () => globalThis.navigator.language,
   );
   await page.goto('/');
+  await page.waitForTimeout(2000);
   await page.getByRole('button', { name: 'Enter' }).click();
 
   // Extract base language code (e.g., "en" from "en-US")
