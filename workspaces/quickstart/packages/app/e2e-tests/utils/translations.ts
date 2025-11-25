@@ -27,15 +27,15 @@ function transform(messages: typeof quickstartTranslationDe.messages) {
   const result = Object.keys(messages).reduce((res, key) => {
     const path = key.split('.');
     const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      (acc as any)[currentPath] =
+    path.reduce((acc: Record<string, string | {}>, currentPath, i) => {
+      acc[currentPath] =
         lastIndex === i
-          ? (messages as any)[key]
-          : (acc as any)[currentPath] || {};
-      return (acc as any)[currentPath];
+          ? (messages as Record<string, string>)[key]
+          : acc[currentPath] || {};
+      return acc[currentPath];
     }, res);
     return res;
-  }, {} as any);
+  }, {});
 
   return result as QuickstartMessages;
 }
