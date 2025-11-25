@@ -49,6 +49,7 @@ const getRelatedEntities = async (
   entity: Entity,
   credentials: BackstageCredentials,
   catalog: CatalogService | null,
+  konfluxLogger: KonfluxLogger,
 ): Promise<Entity[] | null> => {
   try {
     if (catalog) {
@@ -68,9 +69,8 @@ const getRelatedEntities = async (
       return filteredRelatedEntities;
     }
     return null;
-  } catch (e) {
-    // Log error if needed, but return null to indicate failure
-    // The error is likely a configuration parsing issue
+  } catch (error) {
+    konfluxLogger.error('Error getting related entities', error);
     return null;
   }
 };
@@ -87,12 +87,14 @@ const extractComponentConfigsFromEntities = async (
   entity: Entity,
   credentials: BackstageCredentials,
   catalog: CatalogService | null,
+  konfluxLogger: KonfluxLogger,
 ): Promise<SubcomponentClusterConfig[]> => {
   try {
     const relatedEntities = await getRelatedEntities(
       entity,
       credentials,
       catalog,
+      konfluxLogger,
     );
 
     const subcomponentEntities = getSubcomponentsWithFallback(
@@ -132,9 +134,11 @@ const extractComponentConfigsFromEntities = async (
     });
 
     return subcomponentConfigs;
-  } catch (e) {
-    // Log error if needed, but return empty array to indicate no configs found
-    // The error is likely a configuration parsing issue
+  } catch (error) {
+    konfluxLogger.error(
+      'Error extracting component configs from entities',
+      error,
+    );
     return [];
   }
 };
@@ -161,6 +165,7 @@ export const getKonfluxConfig = async (
       entity,
       credentials,
       catalog,
+      konfluxLogger,
     );
 
     return {
@@ -190,6 +195,7 @@ export const determineClusterNamespaceCombinations = async (
     entity,
     credentials,
     catalog,
+    konfluxLogger,
   );
 
   const subcomponentEntities = getSubcomponentsWithFallback(

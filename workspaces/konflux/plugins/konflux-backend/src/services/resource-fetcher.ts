@@ -329,7 +329,7 @@ export class ResourceFetcherService {
 
     const limit = options?.limit;
     const remainingLimit =
-      limit !== undefined ? limit - k8sItems.length : undefined;
+      limit === undefined ? undefined : limit - k8sItems.length;
 
     if (
       limit !== undefined &&
