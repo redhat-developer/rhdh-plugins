@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.6.2
+
+### Patch Changes
+
+- 40b80fe: Remove "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+
 ## 1.6.1
 
 ### Patch Changes
