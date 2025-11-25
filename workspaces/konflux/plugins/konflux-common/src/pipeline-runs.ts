@@ -31,8 +31,7 @@ export enum PipelineRunLabel {
   COMMIT_FULL_REPO_URL_ANNOTATION = 'pipelinesascode.tekton.dev/repo-url',
   COMMIT_PROVIDER_LABEL = 'pipelinesascode.tekton.dev/git-provider',
   COMMIT_SHA_TITLE_ANNOTATION = 'pipelinesascode.tekton.dev/sha-title',
-  COMMIT_TYPE_LABEL = 'pipelines.appstudio.openshift.io/type',
-  REPOSITORY_NAME = 'pipelinesascode.tekton.dev/url-repository',
+
   SNAPSHOT = 'appstudio.openshift.io/snapshot',
   COMMIT_EVENT_TYPE_LABEL = 'pipelinesascode.tekton.dev/event-type',
   PULL_REQUEST_NUMBER_LABEL = 'pipelinesascode.tekton.dev/pull-request',

@@ -151,31 +151,6 @@ export type ReleaseResource = K8sResourceCommonWithClusterInfo & {
 };
 
 // Response data types
-// export type KonfluxResponseData = {
-//   pipelineruns?: ResourceData<PipelineRunResource>;
-//   taskruns?: ResourceData<TaskRunResource>;
-//   applications?: ResourceData<ApplicationResource>;
-//   components?: ResourceData<ComponentResource>;
-//   releases?: ResourceData<ReleaseResource>;
-//   [key: string]: ResourceData<any> | undefined;
-// };
-
-// export type ClusterKonfluxData = {
-//   resources: KonfluxResponseData;
-//   errors: ClusterErrors;
-//   cluster: ClusterInfo;
-// };
-
-// export type MultiClusterKonfluxResponseData = {
-//   [clusterName: string]: ClusterKonfluxData;
-// };
-
-// export type KonfluxResourcesContextData = {
-//   multiClusterData?: MultiClusterKonfluxResponseData;
-//   aggregatedResources?: KonfluxResponseData;
-//   loaded?: boolean;
-//   responseError?: string;
-// };
 
 // Types for subcomponent-based configuration
 export type SubcomponentClusterConfig = {
