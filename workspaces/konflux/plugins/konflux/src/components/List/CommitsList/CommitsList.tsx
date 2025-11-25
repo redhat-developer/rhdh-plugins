@@ -18,7 +18,7 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { useEffect, useMemo, useState } from 'react';
 import { usePipelineruns } from '../../../hooks/resources/usePipelineruns';
 import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedData';
-import { PipelineRunType } from '../../../utils/pipeline-runs';
+import { Commit, PipelineRunType } from '../../../utils/pipeline-runs';
 import { getCommitsFromPLRs } from '../../../utils/commits';
 import { useCommitFilters } from './useCommitFilters';
 import { normalizeFilter } from '../../../utils/filterUtils';
@@ -26,11 +26,40 @@ import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import TableFilters from '../../Table/TableFilters';
 import { CommitItemRow } from './CommitItemRow';
 import { useComponents } from '../../../hooks/resources/useComponents';
-import { PipelineRunLabel } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import {
+  PipelineRunLabel,
+  PipelineRunResource,
+} from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+import { Entity } from '@backstage/catalog-model';
 
 type Props = {
   hasSubcomponents: boolean;
+};
+
+type CommitItemRowWithPropsProps = Commit & {
+  itemKey: string;
+  allPipelineRunsFilteredByComponents: PipelineRunResource[];
+  hasSubcomponents: boolean;
+  entity: Entity;
+};
+
+const CommitItemRowWithProps = (props: CommitItemRowWithPropsProps) => {
+  const {
+    hasSubcomponents,
+    entity,
+    itemKey,
+    allPipelineRunsFilteredByComponents,
+    ...commit
+  } = props;
+  return (
+    <CommitItemRow
+      commit={commit}
+      hasSubcomponents={hasSubcomponents}
+      entity={entity}
+      pipelineRuns={allPipelineRunsFilteredByComponents}
+    />
+  );
 };
 
 export const CommitsList = ({ hasSubcomponents }: Props) => {
@@ -133,13 +162,22 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
   const { uniqueClusters, uniqueSubcomponents, uniquePipelineRunStatuses } =
     useCommitFilters({ commits: commits, hasSubcomponents });
 
-  const data = useMemo(() => {
+  const data = useMemo<CommitItemRowWithPropsProps[]>(() => {
     if (!paginatedData) return [];
     return paginatedData.map(commit => ({
       ...commit,
       itemKey: commit.metadata?.name,
+      hasSubcomponents,
+      entity,
+      allPipelineRunsFilteredByComponents:
+        allPipelineRunsFilteredByComponents ?? [],
     }));
-  }, [paginatedData]);
+  }, [
+    allPipelineRunsFilteredByComponents,
+    entity,
+    hasSubcomponents,
+    paginatedData,
+  ]);
 
   // combine errors from both hooks
   const error = plrsError || componentsError;
@@ -193,14 +231,7 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
         emptyStateDescription="No commits match the current filters."
         isFetching={isFetching}
         columns={columns}
-        ItemRow={commit => (
-          <CommitItemRow
-            commit={commit}
-            entity={entity}
-            pipelineRuns={allPipelineRunsFilteredByComponents || []}
-            hasSubcomponents={hasSubcomponents}
-          />
-        )}
+        ItemRow={CommitItemRowWithProps}
         pagination={{
           page,
           totalCount,

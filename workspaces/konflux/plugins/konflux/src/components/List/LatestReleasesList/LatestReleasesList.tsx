@@ -30,6 +30,26 @@ import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { getLatestRelease } from './utils';
 import { LatestReleaseItemRow } from './LatestReleaseItemRow';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+import { Entity } from '@backstage/catalog-model';
+
+type LatestReleaseItemRowWithPropsProps = ReleaseResource & {
+  itemKey: string;
+  hasSubcomponents: boolean;
+  entity: Entity;
+};
+
+const LatestReleaseItemRowWithProps = (
+  props: LatestReleaseItemRowWithPropsProps,
+) => {
+  const { hasSubcomponents, entity, itemKey, ...release } = props;
+  return (
+    <LatestReleaseItemRow
+      release={release}
+      hasSubcomponents={hasSubcomponents}
+      entity={entity}
+    />
+  );
+};
 
 export const LatestReleasesList = () => {
   const { data: releases, loaded, error, clusterErrors } = useReleases();
@@ -105,13 +125,15 @@ export const LatestReleasesList = () => {
     return c;
   }, [hasSubcomponents]);
 
-  const data = useMemo(
+  const data = useMemo<LatestReleaseItemRowWithPropsProps[]>(
     () =>
       filteredReleases?.map(release => ({
         ...release,
         itemKey: `${release.metadata?.name}-${release.metadata?.namespace}-${release.cluster.name}`,
+        hasSubcomponents,
+        entity,
       })) ?? [],
-    [filteredReleases],
+    [entity, filteredReleases, hasSubcomponents],
   );
 
   if (loaded && error) {
@@ -142,13 +164,7 @@ export const LatestReleasesList = () => {
         emptyStateTitle="No releases found"
         emptyStateDescription="No releases match the current configuration."
         columns={columns}
-        ItemRow={release => (
-          <LatestReleaseItemRow
-            release={release}
-            entity={entity}
-            hasSubcomponents={hasSubcomponents}
-          />
-        )}
+        ItemRow={LatestReleaseItemRowWithProps}
       />
     </InfoCard>
   );

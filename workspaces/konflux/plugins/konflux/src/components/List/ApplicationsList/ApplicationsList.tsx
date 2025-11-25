@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -26,9 +27,30 @@ import { ApplicationItemRow } from './ApplicationItemRow';
 import { useApplicationFilters } from './useApplicationFilters';
 import { normalizeFilter } from '../../../utils/filterUtils';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+import { ApplicationResource } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import { Entity } from '@backstage/catalog-model';
 
 type ApplicationsListProps = {
   hasSubcomponents?: boolean;
+};
+
+type ApplicationItemRowWithPropsProps = ApplicationResource & {
+  itemKey: string;
+  hasSubcomponents: boolean;
+  entity: Entity;
+};
+
+const ApplicationItemRowWithProps = (
+  props: ApplicationItemRowWithPropsProps,
+) => {
+  const { hasSubcomponents, entity, itemKey, ...application } = props;
+  return (
+    <ApplicationItemRow
+      application={application}
+      hasSubcomponents={hasSubcomponents}
+      entity={entity}
+    />
+  );
 };
 
 export const ApplicationsList: React.FC<ApplicationsListProps> = ({
@@ -82,13 +104,15 @@ export const ApplicationsList: React.FC<ApplicationsListProps> = ({
     return c;
   }, [hasSubcomponents]);
 
-  const data = useMemo(() => {
+  const data = useMemo<ApplicationItemRowWithPropsProps[]>(() => {
     if (!paginatedData) return [];
     return paginatedData.map(application => ({
       ...application,
       itemKey: `${application.metadata?.name}-${application.metadata?.namespace}-${application.cluster.name}`,
+      hasSubcomponents,
+      entity,
     }));
-  }, [paginatedData]);
+  }, [paginatedData, hasSubcomponents, entity]);
 
   if (loaded && error) {
     return (
@@ -132,13 +156,7 @@ export const ApplicationsList: React.FC<ApplicationsListProps> = ({
         emptyStateDescription="No applications match the current filters."
         isFetching={isFetching}
         columns={columns}
-        ItemRow={application => (
-          <ApplicationItemRow
-            application={application}
-            hasSubcomponents={hasSubcomponents}
-            entity={entity}
-          />
-        )}
+        ItemRow={ApplicationItemRowWithProps}
         pagination={{
           page,
           totalCount,

@@ -25,9 +25,19 @@ import { ComponentItemRow } from './ComponentItemRow';
 import { useComponentFilters } from './useComponentFilters';
 import { normalizeFilter } from '../../../utils/filterUtils';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+import { ComponentResource } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 type Props = {
   hasSubcomponents: boolean;
+};
+
+type ComponentItemRowWithPropsProps = ComponentResource & {
+  itemKey: string;
+};
+
+const ComponentItemRowWithProps = (props: ComponentItemRowWithPropsProps) => {
+  const { itemKey, ...component } = props;
+  return <ComponentItemRow component={component} />;
 };
 
 export const ComponentsList = ({ hasSubcomponents }: Props) => {
@@ -68,7 +78,7 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
   const { uniqueSubcomponents, uniqueClusters, uniqueApplications } =
     useComponentFilters({ components, hasSubcomponents });
 
-  const data = useMemo(() => {
+  const data = useMemo<ComponentItemRowWithPropsProps[]>(() => {
     if (!paginatedData) return [];
     return paginatedData.map(component => ({
       ...component,
@@ -121,7 +131,7 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
         emptyStateDescription="No components match the current filters."
         isFetching={isFetching}
         columns={['NAME', 'APPLICATION', 'CLUSTER', 'NAMESPACE']}
-        ItemRow={component => <ComponentItemRow component={component} />}
+        ItemRow={ComponentItemRowWithProps}
         pagination={{
           page,
           totalCount,
