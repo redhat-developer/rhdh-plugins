@@ -42,6 +42,25 @@ describe('auth', () => {
     resource: 'pipelineruns',
   };
 
+  const expectAuthTokenToThrow = (
+    konfluxConfig: KonfluxConfig,
+    clusterConfig: any,
+    oidcToken: string | undefined,
+    userEmail: string,
+    expectedError: string,
+  ) => {
+    expect(() => {
+      getAuthToken(
+        konfluxConfig,
+        clusterConfig,
+        oidcToken,
+        userEmail,
+        mockKonfluxLogger,
+        defaultContext,
+      );
+    }).toThrow(expectedError);
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -88,16 +107,11 @@ describe('auth', () => {
         });
         const clusterConfig = konfluxConfig.clusters.cluster1;
 
-        expect(() => {
-          getAuthToken(
-            konfluxConfig,
-            clusterConfig,
-            undefined,
-            'user@example.com',
-            mockKonfluxLogger,
-            defaultContext,
-          );
-        }).toThrow(
+        expectAuthTokenToThrow(
+          konfluxConfig,
+          clusterConfig,
+          undefined,
+          'user@example.com',
           'OIDC authProvider configured for cluster cluster1 but no token available',
         );
 
@@ -161,16 +175,13 @@ describe('auth', () => {
         const clusterConfig = { ...konfluxConfig.clusters.cluster1 };
         delete clusterConfig.serviceAccountToken;
 
-        expect(() => {
-          getAuthToken(
-            konfluxConfig,
-            clusterConfig,
-            undefined,
-            'user@example.com',
-            mockKonfluxLogger,
-            defaultContext,
-          );
-        }).toThrow('No authentication token available for cluster cluster1');
+        expectAuthTokenToThrow(
+          konfluxConfig,
+          clusterConfig,
+          undefined,
+          'user@example.com',
+          'No authentication token available for cluster cluster1',
+        );
 
         expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
           'No authentication token available',
@@ -184,21 +195,19 @@ describe('auth', () => {
         );
       });
 
+      // eslint-disable-next-line jest/expect-expect
       it('should throw error when clusterConfig is undefined', () => {
         const konfluxConfig = createMockKonfluxConfig({
           authProvider: 'serviceAccount',
         });
 
-        expect(() => {
-          getAuthToken(
-            konfluxConfig,
-            undefined,
-            undefined,
-            'user@example.com',
-            mockKonfluxLogger,
-            defaultContext,
-          );
-        }).toThrow('No authentication token available for cluster cluster1');
+        expectAuthTokenToThrow(
+          konfluxConfig,
+          undefined,
+          undefined,
+          'user@example.com',
+          'No authentication token available for cluster cluster1',
+        );
       });
     });
 
@@ -228,16 +237,11 @@ describe('auth', () => {
         });
         const clusterConfig = konfluxConfig.clusters.cluster1;
 
-        expect(() => {
-          getAuthToken(
-            konfluxConfig,
-            clusterConfig,
-            undefined,
-            '',
-            mockKonfluxLogger,
-            defaultContext,
-          );
-        }).toThrow(
+        expectAuthTokenToThrow(
+          konfluxConfig,
+          clusterConfig,
+          undefined,
+          '',
           'User email is required for impersonation but was not provided for cluster cluster1',
         );
 
@@ -253,22 +257,18 @@ describe('auth', () => {
         );
       });
 
+      // eslint-disable-next-line jest/expect-expect
       it('should throw error when userEmail is only whitespace for impersonationHeaders', () => {
         const konfluxConfig = createMockKonfluxConfig({
           authProvider: 'impersonationHeaders',
         });
         const clusterConfig = konfluxConfig.clusters.cluster1;
 
-        expect(() => {
-          getAuthToken(
-            konfluxConfig,
-            clusterConfig,
-            undefined,
-            '   ',
-            mockKonfluxLogger,
-            defaultContext,
-          );
-        }).toThrow(
+        expectAuthTokenToThrow(
+          konfluxConfig,
+          clusterConfig,
+          undefined,
+          '   ',
           'User email is required for impersonation but was not provided for cluster cluster1',
         );
       });

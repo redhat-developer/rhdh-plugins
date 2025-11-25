@@ -35,6 +35,104 @@ export interface RouterOptions {
   userInfo: UserInfoService;
 }
 
+interface UserEmailInfo {
+  email: string;
+  userEntityRef?: string;
+}
+
+/**
+ * Extract user email from user entity if available
+ */
+async function extractUserEmail(
+  userEntityRef: string | undefined,
+  catalog: CatalogService | undefined,
+  credentials: any,
+  konfluxLogger: KonfluxLogger,
+  entityRef: string,
+  resource: string,
+): Promise<UserEmailInfo> {
+  if (!userEntityRef || !catalog) {
+    return { email: '' };
+  }
+
+  const userEntity = (await catalog.getEntityByRef(userEntityRef, {
+    credentials,
+  })) as UserEntity | undefined;
+
+  const email = userEntity?.spec?.profile?.email || '';
+
+  if (!email) {
+    konfluxLogger.debug('User email not found in user entity', {
+      userEntityRef,
+      entityRef,
+      resource,
+    });
+  }
+
+  return { email, userEntityRef };
+}
+
+/**
+ * Handle errors and return appropriate HTTP status codes
+ */
+function handleError(
+  error: unknown,
+  res: express.Response,
+  konfluxLogger: KonfluxLogger,
+  entityRef: string,
+  resource: string,
+): void {
+  konfluxLogger.error('Error in aggregate resources endpoint', error, {
+    entityRef,
+    resource,
+  });
+
+  if (!(error instanceof Error)) {
+    res.status(500).json({ error: 'Failed to aggregate resources' });
+    return;
+  }
+
+  const message = error.message;
+
+  if (
+    message.includes('cannot be empty') ||
+    message.includes('Invalid') ||
+    message.includes('too long') ||
+    message.includes('too short')
+  ) {
+    res.status(400).json({ error: message });
+    return;
+  }
+
+  if (message.includes('Entity not found')) {
+    res.status(404).json({ error: message });
+    return;
+  }
+
+  if (message.includes('Catalog service not available')) {
+    res.status(503).json({ error: 'Catalog service unavailable' });
+    return;
+  }
+
+  if (message.includes('required for impersonation')) {
+    res.status(400).json({
+      error: message,
+      hint: 'User email must be configured in the user entity profile',
+    });
+    return;
+  }
+
+  if (message.includes('OIDC authProvider configured but no token available')) {
+    res.status(400).json({
+      error: message,
+      hint: 'OIDC token must be provided in x-oidc-token header',
+    });
+    return;
+  }
+
+  res.status(500).json({ error: 'Failed to aggregate resources' });
+}
+
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
@@ -57,22 +155,14 @@ export async function createRouter(
 
     try {
       const user = await userInfo.getUserInfo(credentials);
-      let email;
-      let userEntityRef: string | undefined;
-      if (user.userEntityRef && catalog) {
-        userEntityRef = user.userEntityRef;
-        const userEntity = (await catalog.getEntityByRef(user.userEntityRef, {
-          credentials,
-        })) as UserEntity | undefined;
-        email = userEntity?.spec?.profile?.email;
-        if (!email) {
-          konfluxLogger.debug('User email not found in user entity', {
-            userEntityRef: user.userEntityRef,
-            entityRef,
-            resource,
-          });
-        }
-      }
+      const { email, userEntityRef } = await extractUserEmail(
+        user.userEntityRef,
+        catalog,
+        credentials,
+        konfluxLogger,
+        entityRef,
+        resource,
+      );
 
       const oidcToken = req.headers['x-oidc-token'] as string | undefined;
       if (oidcToken) {
@@ -86,7 +176,7 @@ export async function createRouter(
         entityRef,
         resource,
         credentials,
-        email || '',
+        email,
         {
           component: component as string,
           continuationToken: continuationToken as string | undefined,
@@ -110,54 +200,7 @@ export async function createRouter(
 
       res.json(result);
     } catch (error) {
-      konfluxLogger.error('Error in aggregate resources endpoint', error, {
-        entityRef,
-        resource,
-      });
-
-      if (error instanceof Error) {
-        if (
-          error.message.includes('cannot be empty') ||
-          error.message.includes('Invalid') ||
-          error.message.includes('too long') ||
-          error.message.includes('too short')
-        ) {
-          res.status(400).json({ error: error.message });
-          return;
-        }
-
-        if (error.message.includes('Entity not found')) {
-          res.status(404).json({ error: error.message });
-          return;
-        }
-
-        if (error.message.includes('Catalog service not available')) {
-          res.status(503).json({ error: 'Catalog service unavailable' });
-          return;
-        }
-
-        if (error.message.includes('required for impersonation')) {
-          res.status(400).json({
-            error: error.message,
-            hint: 'User email must be configured in the user entity profile',
-          });
-          return;
-        }
-
-        if (
-          error.message.includes(
-            'OIDC authProvider configured but no token available',
-          )
-        ) {
-          res.status(400).json({
-            error: error.message,
-            hint: 'OIDC token must be provided in x-oidc-token header',
-          });
-          return;
-        }
-      }
-
-      res.status(500).json({ error: 'Failed to aggregate resources' });
+      handleError(error, res, konfluxLogger, entityRef, resource);
     }
   });
 

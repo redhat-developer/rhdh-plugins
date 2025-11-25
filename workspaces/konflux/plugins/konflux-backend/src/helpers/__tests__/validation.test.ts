@@ -79,25 +79,21 @@ describe('validation', () => {
         expect(result).toBe('user@example.com');
       });
 
-      it('should accept valid email formats', () => {
-        const validEmails = [
-          'user@example.com',
-          'user.name@example.com',
-          'user+tag@example.com',
-          'user_name@example.co.uk',
-          'user123@example-domain.com',
-          'user@subdomain.example.com',
-          'user@example.io',
-        ];
-
-        validEmails.forEach(email => {
-          expect(() => {
-            validateUserEmailForImpersonation(email, 'impersonationHeaders');
-          }).not.toThrow();
-          expect(
-            validateUserEmailForImpersonation(email, 'impersonationHeaders'),
-          ).toBe(email);
-        });
+      it.each([
+        'user@example.com',
+        'user.name@example.com',
+        'user+tag@example.com',
+        'user_name@example.co.uk',
+        'user123@example-domain.com',
+        'user@subdomain.example.com',
+        'user@example.io',
+      ])('should accept valid email format: %s', email => {
+        expect(() => {
+          validateUserEmailForImpersonation(email, 'impersonationHeaders');
+        }).not.toThrow();
+        expect(
+          validateUserEmailForImpersonation(email, 'impersonationHeaders'),
+        ).toBe(email);
       });
 
       it('should throw error when email is undefined', () => {
