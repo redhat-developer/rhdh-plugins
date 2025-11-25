@@ -49,7 +49,7 @@ test.describe('Test Quick Start plugin', () => {
     await runAccessibilityTests(
       page,
       testInfo,
-      'quick-start-user-accessibility',
+      'quick-start-user-accessibility.json',
       { skipViolationsAssert: true },
     );
 

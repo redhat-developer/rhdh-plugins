@@ -147,7 +147,6 @@ test('Verify Search functionality and results', async () => {
   const expectedUrl = /\/example-grpc-api/;
 
   await search.fill(searchQuery);
-  await page.waitForTimeout(5000);
 
   await expect(page.getByRole('listbox')).toMatchAriaSnapshot(`
     - listbox:

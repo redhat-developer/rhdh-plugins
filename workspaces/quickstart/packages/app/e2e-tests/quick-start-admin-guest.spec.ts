@@ -52,9 +52,14 @@ test.describe('Test Quick Start plugin', () => {
     await uiHelper.verifyText(translations.header.subtitle);
     await uiHelper.verifyText(translations.footer.notStarted);
 
-    await runAccessibilityTests(page, testInfo, 'quick-start-accessibility', {
-      skipViolationsAssert: true,
-    });
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'quick-start-accessibility.json',
+      {
+        skipViolationsAssert: true,
+      },
+    );
 
     await page.getByText(translations.steps.setupAuthentication.title).click();
     await uiHelper.verifyButtonURL(
