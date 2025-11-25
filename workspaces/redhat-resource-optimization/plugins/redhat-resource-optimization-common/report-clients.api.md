@@ -241,6 +241,27 @@ export type OptimizationsApi = Omit<
       links?: any;
     }>
   >;
+  getOpenShiftTags(timeScopeValue?: number): Promise<
+    TypedResponse<{
+      data: string[];
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  getOpenShiftTagValues(
+    tagKey: string,
+    timeScopeValue?: number,
+  ): Promise<
+    TypedResponse<{
+      data: Array<{
+        key: string;
+        values: string[];
+        enabled: boolean;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
 };
 
 // @public
@@ -250,6 +271,27 @@ export class OptimizationsClient implements OptimizationsApi {
   getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>>;
+  getOpenShiftTags(timeScopeValue?: number): Promise<
+    TypedResponse<{
+      data: string[];
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  getOpenShiftTagValues(
+    tagKey: string,
+    timeScopeValue?: number,
+  ): Promise<
+    TypedResponse<{
+      data: Array<{
+        key: string;
+        values: string[];
+        enabled: boolean;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
   // Warning: (ae-forgotten-export) The symbol "RecommendationBoxPlots" needs to be exported by the entry point index.d.ts
   //
   // (undocumented)

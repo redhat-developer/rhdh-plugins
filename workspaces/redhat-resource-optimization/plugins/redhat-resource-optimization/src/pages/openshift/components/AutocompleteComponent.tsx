@@ -80,7 +80,12 @@ export function AutocompleteComponent(props: AutocompleteComponentProps) {
 
   return (
     <Box className={className ?? classes.root} pb={1} pt={1}>
-      <Typography className={classes.label} variant="button" component="label">
+      <Typography
+        className={classes.label}
+        variant="button"
+        component="label"
+        style={{ textTransform: 'none' }}
+      >
         {label}
       </Typography>
       <Autocomplete
