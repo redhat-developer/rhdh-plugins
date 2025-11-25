@@ -21,6 +21,21 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 
 import DateRangePicker from '../DateRangePicker';
 
+// Mock translation hooks - define the mock inline to avoid hoisting issues
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      // Mock the specific translation keys we need for this test
+      const translations: Record<string, string> = {
+        'header.dateRange.title': 'Date range',
+        'header.dateRange.startDate': 'Start date',
+        'header.dateRange.endDate': 'End date',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 const renderWithState = () => {
   const Wrapper = () => {
     const [startDate, setStartDate] = useState<Date | null>(null);
