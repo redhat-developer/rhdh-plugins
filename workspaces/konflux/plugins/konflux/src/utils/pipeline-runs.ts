@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -269,7 +270,7 @@ export const calculateDuration = (
   endTime?: string | number,
 ) => {
   const start = new Date(startTime).getTime();
-  const end = endTime ? new Date(endTime).getTime() : new Date().getTime();
+  const end = endTime ? new Date(endTime).getTime() : Date.now();
   const durationInSeconds = (end - start) / 1000;
   return getDuration(durationInSeconds, true);
 };

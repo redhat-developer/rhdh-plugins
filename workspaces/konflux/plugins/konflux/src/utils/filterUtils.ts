@@ -21,5 +21,5 @@
  * @returns The value if not "All", otherwise undefined
  */
 export function normalizeFilter(value: string): string | undefined {
-  return value !== 'All' ? value : undefined;
+  return value === 'All' ? undefined : value;
 }

@@ -16,13 +16,13 @@
 
 import { renderHook } from '@testing-library/react';
 import { useFilteredPaginatedData } from '../useFilteredPaginatedData';
-import { K8sResourceCommonWithClusterInfo } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import * as konfluxCommon from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import * as pipelineRunsUtils from '../../utils/pipeline-runs';
 import {
+  K8sResourceCommonWithClusterInfo,
   runStatus,
   PipelineRunLabel,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import * as konfluxCommon from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import * as pipelineRunsUtils from '../../utils/pipeline-runs';
 
 jest.mock('@red-hat-developer-hub/backstage-plugin-konflux-common', () => ({
   ...jest.requireActual(

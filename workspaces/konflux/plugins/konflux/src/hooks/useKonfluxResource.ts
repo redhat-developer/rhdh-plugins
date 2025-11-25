@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { useApi } from '@backstage/core-plugin-api';
 import {
+  useApi,
   discoveryApiRef,
   fetchApiRef,
-  OpenIdConnectApi,
+  createApiRef,
 } from '@backstage/core-plugin-api';
+import type { OpenIdConnectApi } from '@backstage/core-plugin-api';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import {
@@ -28,7 +29,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useKonfluxConfig } from './useKonfluxConfig';
-import { createApiRef } from '@backstage/core-plugin-api';
 
 export const oidcAuthApiRef = createApiRef<OpenIdConnectApi>({
   id: 'internal.auth.oidc',

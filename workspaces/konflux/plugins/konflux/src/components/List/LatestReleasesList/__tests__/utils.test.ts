@@ -19,6 +19,7 @@ import {
   ReleaseResource,
   SubcomponentClusterConfig,
   PipelineRunLabel,
+  getApplicationFromResource,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 jest.mock('@red-hat-developer-hub/backstage-plugin-konflux-common', () => ({
@@ -27,8 +28,6 @@ jest.mock('@red-hat-developer-hub/backstage-plugin-konflux-common', () => ({
   ),
   getApplicationFromResource: jest.fn(),
 }));
-
-import { getApplicationFromResource } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 const mockGetApplicationFromResource =
   getApplicationFromResource as jest.MockedFunction<

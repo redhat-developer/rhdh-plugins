@@ -181,14 +181,14 @@ export const parsePrometheusDuration = (duration: string): number => {
     const parts = duration
       .trim()
       .split(/\s+/)
-      .map(p => p.match(/^(\d+)([wdhms])$/));
+      .map(p => /^(\d+)([wdhms])$/.exec(p));
     return sumBy(
       parts,
       p =>
         Number.parseInt(p?.[1] ?? '1', 10) *
         (p?.[2] ? units[p[2] as keyof typeof units] : 1),
     );
-  } catch (ignored) {
+  } catch (error_) {
     // Invalid duration format
     return 0;
   }

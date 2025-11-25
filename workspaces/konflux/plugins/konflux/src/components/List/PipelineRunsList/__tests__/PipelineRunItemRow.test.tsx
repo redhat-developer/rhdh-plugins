@@ -20,6 +20,7 @@ import {
   PipelineRunResource,
   PipelineRunLabel,
   getApplicationFromResource,
+  runStatus,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { Entity } from '@backstage/catalog-model';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
@@ -52,7 +53,6 @@ import {
   calculateDuration,
 } from '../../../../utils/pipeline-runs';
 import { createCommitObjectFromPLR } from '../../../../utils/commits';
-import { runStatus } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { useEntitySubcomponents } from '../../../../hooks/useEntitySubcomponents';
 
 const mockPipelineRunStatus = pipelineRunStatus as jest.MockedFunction<

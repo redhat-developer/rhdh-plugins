@@ -16,18 +16,21 @@
 
 import { screen, waitFor } from '@testing-library/react';
 
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import {
+  TestApiProvider,
+  renderInTestApp,
+  mockApis,
+} from '@backstage/test-utils';
 import {
   CatalogApi,
   catalogApiRef,
   EntityProvider,
+  useEntity,
 } from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
-import { mockApis } from '@backstage/test-utils';
 import { useReleases } from '../../../../hooks/resources/useReleases';
-import { useEntity } from '@backstage/plugin-catalog-react';
 import { useEntitySubcomponents } from '../../../../hooks/useEntitySubcomponents';
 import { useKonfluxConfig } from '../../../../hooks/useKonfluxConfig';
 import { LatestReleasesList } from '../LatestReleasesList';

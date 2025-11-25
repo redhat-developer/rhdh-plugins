@@ -16,16 +16,20 @@
 
 import { screen, waitFor } from '@testing-library/react';
 import { PipelineRunsList } from '../PipelineRunsList';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import {
+  TestApiProvider,
+  renderInTestApp,
+  mockApis,
+} from '@backstage/test-utils';
 import {
   CatalogApi,
   catalogApiRef,
   EntityProvider,
+  useEntity,
 } from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
-import { mockApis } from '@backstage/test-utils';
 
 // Mock the hooks
 jest.mock('../../../../hooks/resources/usePipelineruns');
@@ -39,7 +43,6 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 import { usePipelineruns } from '../../../../hooks/resources/usePipelineruns';
 import { useFilteredPaginatedData } from '../../../../hooks/useFilteredPaginatedData';
 import { usePipelineRunFilters } from '../usePipelineRunFilters';
-import { useEntity } from '@backstage/plugin-catalog-react';
 import { PipelineRunResource } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 const mockUsePipelineruns = usePipelineruns as jest.MockedFunction<

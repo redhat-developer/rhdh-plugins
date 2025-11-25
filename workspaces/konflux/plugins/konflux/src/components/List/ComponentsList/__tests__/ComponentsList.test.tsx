@@ -16,7 +16,11 @@
 
 import { screen, waitFor } from '@testing-library/react';
 import { ComponentsList } from '../../ComponentsList/ComponentsList';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
+import {
+  TestApiProvider,
+  renderInTestApp,
+  mockApis,
+} from '@backstage/test-utils';
 import {
   catalogApiRef,
   EntityProvider,
@@ -25,7 +29,6 @@ import {
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { Entity } from '@backstage/catalog-model';
-import { mockApis } from '@backstage/test-utils';
 import { useComponents } from '../../../../hooks/resources/useComponents';
 import { useFilteredPaginatedData } from '../../../../hooks/useFilteredPaginatedData';
 import { useComponentFilters } from '../../ComponentsList/useComponentFilters';

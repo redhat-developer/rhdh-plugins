@@ -161,7 +161,7 @@ export const CommitItemRow = ({
         />
       </TableCell>
       <TableCell>
-        {!!repoBranchUrl ? (
+        {repoBranchUrl ? (
           <ExternalLink to={repoBranchUrl} label={commit.branch || ''} />
         ) : (
           `${commit.branch || '-'}`

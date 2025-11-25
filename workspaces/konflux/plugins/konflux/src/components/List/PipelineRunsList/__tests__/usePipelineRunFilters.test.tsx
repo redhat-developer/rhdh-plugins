@@ -20,6 +20,7 @@ import {
   PipelineRunResource,
   PipelineRunLabel,
   getApplicationFromResource,
+  runStatus,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 // Mock the pipelineRunStatus function
@@ -36,7 +37,6 @@ jest.mock('@red-hat-developer-hub/backstage-plugin-konflux-common', () => ({
 }));
 
 import { pipelineRunStatus } from '../../../../utils/pipeline-runs';
-import { runStatus } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 const mockPipelineRunStatus = pipelineRunStatus as jest.MockedFunction<
   typeof pipelineRunStatus

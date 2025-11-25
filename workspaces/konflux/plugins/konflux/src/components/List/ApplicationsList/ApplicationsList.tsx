@@ -100,11 +100,11 @@ export const ApplicationsList: React.FC<ApplicationsListProps> = ({
     if (hasSubcomponents) {
       c.push('SUBCOMPONENT');
     }
-    c.push(...['NAMESPACE', 'CLUSTER']);
+    c.push('NAMESPACE', 'CLUSTER');
     return c;
   }, [hasSubcomponents]);
 
-  const data = useMemo<ApplicationItemRowWithPropsProps[]>(() => {
+  const data = useMemo(() => {
     if (!paginatedData) return [];
     return paginatedData.map(application => ({
       ...application,

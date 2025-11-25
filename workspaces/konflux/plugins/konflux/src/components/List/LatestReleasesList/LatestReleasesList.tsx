@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -26,30 +27,16 @@ import {
   ReleaseResource,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { useReleases } from '../../../hooks/resources/useReleases';
-import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
+import {
+  InfoCard,
+  Progress,
+  ResponseErrorPanel,
+} from '@backstage/core-components';
+import { Table } from '../../Table';
 import { getLatestRelease } from './utils';
 import { LatestReleaseItemRow } from './LatestReleaseItemRow';
-import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
-import { Entity } from '@backstage/catalog-model';
-
-type LatestReleaseItemRowWithPropsProps = ReleaseResource & {
-  itemKey: string;
-  hasSubcomponents: boolean;
-  entity: Entity;
-};
-
-const LatestReleaseItemRowWithProps = (
-  props: LatestReleaseItemRowWithPropsProps,
-) => {
-  const { hasSubcomponents, entity, itemKey, ...release } = props;
-  return (
-    <LatestReleaseItemRow
-      release={release}
-      hasSubcomponents={hasSubcomponents}
-      entity={entity}
-    />
-  );
-};
+import { ClusterErrorPanel } from '../../common/ClusterErrorPanel';
+import { EmptyState } from '../../common/EmptyState';
 
 export const LatestReleasesList = () => {
   const { data: releases, loaded, error, clusterErrors } = useReleases();
@@ -121,19 +108,17 @@ export const LatestReleasesList = () => {
     if (hasSubcomponents) {
       c.push('SUBCOMPONENT');
     }
-    c.push(...['APPLICATION', 'RELEASE', 'CREATION TIME', 'STATUS']);
+    c.push('APPLICATION', 'RELEASE', 'CREATION TIME', 'STATUS');
     return c;
   }, [hasSubcomponents]);
 
-  const data = useMemo<LatestReleaseItemRowWithPropsProps[]>(
+  const data = useMemo(
     () =>
       filteredReleases?.map(release => ({
         ...release,
         itemKey: `${release.metadata?.name}-${release.metadata?.namespace}-${release.cluster.name}`,
-        hasSubcomponents,
-        entity,
       })) ?? [],
-    [entity, filteredReleases, hasSubcomponents],
+    [filteredReleases],
   );
 
   if (loaded && error) {
@@ -156,16 +141,35 @@ export const LatestReleasesList = () => {
 
   return (
     <InfoCard title="Konflux Latest Releases">
-      <ResourceListContent
-        loaded={loaded && !loading}
-        allClustersFailed={!!allClustersFailed}
-        clusterErrors={clusterErrors}
-        data={data}
-        emptyStateTitle="No releases found"
-        emptyStateDescription="No releases match the current configuration."
-        columns={columns}
-        ItemRow={LatestReleaseItemRowWithProps}
-      />
+      {(() => {
+        if (!loaded || loading) {
+          return <Progress data-test="latest-releases-progress" />;
+        }
+        if (allClustersFailed) {
+          return <ClusterErrorPanel errors={clusterErrors} />;
+        }
+        if (data.length === 0) {
+          return (
+            <EmptyState
+              title="No releases found"
+              description="No releases match the current configuration."
+            />
+          );
+        }
+        return (
+          <Table
+            columns={columns}
+            data={data}
+            ItemRow={release => (
+              <LatestReleaseItemRow
+                release={release}
+                entity={entity}
+                hasSubcomponents={hasSubcomponents}
+              />
+            )}
+          />
+        );
+      })()}
     </InfoCard>
   );
 };

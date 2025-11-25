@@ -16,14 +16,20 @@
 
 import { screen, waitFor } from '@testing-library/react';
 import { ClusterErrorPanel } from '../ClusterErrorPanel';
-import { EntityProvider, catalogApiRef } from '@backstage/plugin-catalog-react';
+import {
+  EntityProvider,
+  catalogApiRef,
+  CatalogApi,
+} from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
 import { ClusterError } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
-import { CatalogApi } from '@backstage/plugin-catalog-react';
+import {
+  TestApiProvider,
+  renderInTestApp,
+  mockApis,
+} from '@backstage/test-utils';
 import { errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
-import { mockApis } from '@backstage/test-utils';
 
 const mockEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
