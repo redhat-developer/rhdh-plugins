@@ -20,6 +20,7 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import {
+  DefaultGitlabCredentialsProvider,
   GitLabIntegrationConfig,
   ScmIntegrations,
 } from '@backstage/integration';
@@ -80,6 +81,21 @@ export class GitlabApiService {
     this.gitlabCredentialsProvider =
       CustomGitlabCredentialsProvider.fromIntegrations(this.integrations);
     this.cache = cacheService;
+  }
+
+  async getCredentials(repoUrl: string): Promise<{ token: string }> {
+    const provider = DefaultGitlabCredentialsProvider.fromIntegrations(
+      this.integrations,
+    );
+    const creds = await provider.getCredentials({
+      url: repoUrl,
+    });
+    if (!creds || !creds.token) {
+      throw new Error(`Token not configured for 'gitlab' provider`);
+    }
+    return {
+      token: creds.token,
+    };
   }
 
   async getRepositoryFromIntegrations(repoUrl: string): Promise<{

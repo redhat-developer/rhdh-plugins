@@ -514,6 +514,8 @@ export async function createRouter(
         requestBody: c.request.requestBody,
         orchestratorWorkflowDao,
         repositoryDao,
+        githubApiService,
+        gitlabApiService,
       });
 
       res.status(response.statusCode).json(response.responseBody);

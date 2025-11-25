@@ -16,6 +16,7 @@
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 
 import {
+  AuthToken,
   Configuration,
   DefaultApi,
   ExecuteWorkflowRequestDTO,
@@ -26,6 +27,8 @@ import {
   RepositoryDao,
 } from '../../../database/repositoryDao';
 import { Components, ImportRequest } from '../../../generated/openapi';
+import { GithubApiService } from '../../../github';
+import { GitlabApiService } from '../../../gitlab';
 import { HandlerResponse } from '../handlers';
 
 export type CreateWorkflowImportJobsArgs = {
@@ -36,6 +39,8 @@ export type CreateWorkflowImportJobsArgs = {
   requestBody: ImportRequest[];
   orchestratorWorkflowDao: OrchestratorWorkflowDao;
   repositoryDao: RepositoryDao;
+  githubApiService: GithubApiService;
+  gitlabApiService: GitlabApiService;
 };
 
 export async function createWorkflowImportJobs(
@@ -50,6 +55,8 @@ export async function createWorkflowImportJobs(
     requestBody,
     orchestratorWorkflowDao,
     repositoryDao,
+    githubApiService,
+    gitlabApiService,
   } = args;
 
   if (requestBody.length === 0) {
@@ -61,10 +68,10 @@ export async function createWorkflowImportJobs(
 
   const result: Components.Schemas.Import[] = [];
   const baseUrl = await discovery.getBaseUrl('orchestrator');
-  const config = new Configuration();
+  const apiConfig = new Configuration();
 
   // Initialize the client
-  const orchestratorApi = new DefaultApi(config, baseUrl);
+  const orchestratorApi = new DefaultApi(apiConfig, baseUrl);
 
   for (const repo of requestBody) {
     if (!repo.repository.url) {
@@ -73,14 +80,30 @@ export async function createWorkflowImportJobs(
 
     let workflowStatus: Components.Schemas.WorkflowImportStatus | undefined;
     try {
+      const approvalTool = repo.approvalTool ?? 'GIT';
+
+      const authTokens: AuthToken[] = [];
+      if (approvalTool === 'GIT') {
+        const creds = await githubApiService.getCredentials(
+          repo.repository.url,
+        );
+        authTokens.push({ token: creds?.token, provider: 'github' });
+      }
+      if (approvalTool === 'GITLAB') {
+        const creds = await gitlabApiService.getCredentials(
+          repo.repository.url,
+        );
+        authTokens.push({ token: creds?.token, provider: 'gitlab' });
+      }
+
       const requestDTO: ExecuteWorkflowRequestDTO = {
         inputData: {
-          // owner: 'AndrienkoAleksandr',
-          // repo: 'AngularJS',
-          // baseBranch: 'test',
-          // targetBranch: "master"
-          // repositoryUrl: repo.repository.url,
+          owner: repo.repository.organization,
+          repo: repo.repository.name,
+          baseBranch: repo.repository.defaultBranch,
+          targetBranch: `bulk-import-orchestrator`,
         },
+        authTokens,
       };
 
       // Execute a workflow
@@ -123,7 +146,7 @@ export async function createWorkflowImportJobs(
       result.push({
         repository: repo.repository,
         status: workflowStatus ?? 'WORKFLOW_ABORTED',
-        errors: [error.message],
+        errors: [(error as Error).message],
       });
     }
   }
