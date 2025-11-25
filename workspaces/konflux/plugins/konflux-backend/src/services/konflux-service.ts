@@ -438,7 +438,7 @@ export class KonfluxService {
    * Handles fetch errors and returns a ClusterError object
    */
   private handleFetchError(
-    error: unknown,
+    error: Error | undefined,
     sourceState: { k8sToken?: string; kubearchiveToken?: string },
     resourceModel: GroupVersionKind,
     combination: SubcomponentClusterConfig,

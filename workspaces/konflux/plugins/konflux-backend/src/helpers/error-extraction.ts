@@ -192,8 +192,14 @@ export function extractKubernetesErrorDetails(
   namespace: string,
   source: 'kubernetes' | 'kubearchive' = 'kubernetes',
 ): ExtractedErrorDetails {
-  const fallbackMessage =
-    error instanceof Error ? error.message : String(error);
+  let fallbackMessage;
+  if (error instanceof Error) {
+    fallbackMessage = error.message;
+  } else if (typeof error === 'object' && error !== null) {
+    fallbackMessage = JSON.stringify(error);
+  } else {
+    fallbackMessage = String(error);
+  }
 
   const resourcePath = buildResourcePath(
     resourceModel.apiGroup,
@@ -208,11 +214,13 @@ export function extractKubernetesErrorDetails(
     source,
   };
 
+  // Extract status code from error object
   const statusCode = extractStatusCode(error);
   if (statusCode) {
     result.statusCode = statusCode;
   }
 
+  // Parse and extract details from error body
   const { parsedBody, fallbackMessage: bodyMessage } = parseErrorBody(error);
   if (bodyMessage) {
     result.message = bodyMessage;
@@ -221,15 +229,17 @@ export function extractKubernetesErrorDetails(
   if (parsedBody) {
     const bodyDetails = extractErrorDetailsFromBody(
       parsedBody,
-      result.message ?? '',
+      result.message || '',
     );
     Object.assign(result, bodyDetails);
 
+    // Use status code from body if not already set
     if (parsedBody.code && !result.statusCode) {
       result.statusCode = parsedBody.code;
     }
   }
 
+  // Infer error type from status code if not already set
   if (result.statusCode && !result.errorType) {
     result.errorType = inferErrorTypeFromStatusCode(result.statusCode);
   }

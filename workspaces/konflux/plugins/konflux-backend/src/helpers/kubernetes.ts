@@ -58,7 +58,7 @@ export const createResourceWithClusterInfo = (
   clusterName: string,
   subcomponentName: string | undefined,
   konfluxUI: string | undefined,
-) => ({
+): K8sResourceCommonWithClusterInfo => ({
   ...resource,
   cluster: {
     name: clusterName,

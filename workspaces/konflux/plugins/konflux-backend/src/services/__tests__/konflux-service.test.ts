@@ -332,12 +332,8 @@ describe('KonfluxService', () => {
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
       mockCreateResourceWithClusterInfo
-        .mockReturnValueOnce(
-          resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-        )
-        .mockReturnValueOnce(
-          resource2 as ReturnType<typeof createResourceWithClusterInfo>,
-        );
+        .mockReturnValueOnce(resource1)
+        .mockReturnValueOnce(resource2);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       const result = await service.aggregateResources(
@@ -601,9 +597,7 @@ describe('KonfluxService', () => {
         })
         .mockRejectedValueOnce(new Error('Cluster error'));
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
-      mockCreateResourceWithClusterInfo.mockReturnValue(
-        resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-      );
+      mockCreateResourceWithClusterInfo.mockReturnValue(resource1);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       const result = await service.aggregateResources(
@@ -656,9 +650,7 @@ describe('KonfluxService', () => {
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(true);
       mockEncodeContinuationToken.mockReturnValue('encoded-next-token');
-      mockCreateResourceWithClusterInfo.mockReturnValue(
-        resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-      );
+      mockCreateResourceWithClusterInfo.mockReturnValue(resource1);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       const result = await service.aggregateResources(
@@ -772,15 +764,9 @@ describe('KonfluxService', () => {
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
       mockCreateResourceWithClusterInfo
-        .mockReturnValueOnce(
-          resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-        )
-        .mockReturnValueOnce(
-          resource2 as ReturnType<typeof createResourceWithClusterInfo>,
-        )
-        .mockReturnValueOnce(
-          resource3 as ReturnType<typeof createResourceWithClusterInfo>,
-        );
+        .mockReturnValueOnce(resource1)
+        .mockReturnValueOnce(resource2)
+        .mockReturnValueOnce(resource3);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       const result = await service.aggregateResources(
@@ -817,12 +803,8 @@ describe('KonfluxService', () => {
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
       mockCreateResourceWithClusterInfo
-        .mockReturnValueOnce(
-          resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-        )
-        .mockReturnValueOnce(
-          resource2 as ReturnType<typeof createResourceWithClusterInfo>,
-        );
+        .mockReturnValueOnce(resource1)
+        .mockReturnValueOnce(resource2);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       const result = await service.aggregateResources(
@@ -857,15 +839,9 @@ describe('KonfluxService', () => {
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
       mockCreateResourceWithClusterInfo
-        .mockReturnValueOnce(
-          resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-        )
-        .mockReturnValueOnce(
-          resource2 as ReturnType<typeof createResourceWithClusterInfo>,
-        )
-        .mockReturnValueOnce(
-          resource3 as ReturnType<typeof createResourceWithClusterInfo>,
-        );
+        .mockReturnValueOnce(resource1)
+        .mockReturnValueOnce(resource2)
+        .mockReturnValueOnce(resource3);
       mockFilterResourcesByApplication.mockReturnValue([resource1, resource2]);
 
       const result = await service.aggregateResources(
@@ -911,12 +887,8 @@ describe('KonfluxService', () => {
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
       mockCreateResourceWithClusterInfo
-        .mockReturnValueOnce(
-          resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-        )
-        .mockReturnValueOnce(
-          resource2 as ReturnType<typeof createResourceWithClusterInfo>,
-        );
+        .mockReturnValueOnce(resource1)
+        .mockReturnValueOnce(resource2);
       mockFilterResourcesByApplication.mockReturnValue([resource1]);
 
       await service.aggregateResources(
@@ -951,9 +923,7 @@ describe('KonfluxService', () => {
         newPaginationState: {},
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
-      mockCreateResourceWithClusterInfo.mockReturnValue(
-        resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-      );
+      mockCreateResourceWithClusterInfo.mockReturnValue(resource1);
 
       // Filter for app2, but combination only has app1
       await service.aggregateResources(
@@ -984,9 +954,7 @@ describe('KonfluxService', () => {
         newPaginationState: {},
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
-      mockCreateResourceWithClusterInfo.mockReturnValue(
-        resource1 as ReturnType<typeof createResourceWithClusterInfo>,
-      );
+      mockCreateResourceWithClusterInfo.mockReturnValue(resource1);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       await service.aggregateResources(
@@ -1019,9 +987,7 @@ describe('KonfluxService', () => {
         newPaginationState: {},
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
-      mockCreateResourceWithClusterInfo.mockImplementation(
-        item => item as ReturnType<typeof createResourceWithClusterInfo>,
-      );
+      mockCreateResourceWithClusterInfo.mockImplementation(item => item);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       const result = await service.aggregateResources(
@@ -1099,9 +1065,7 @@ describe('KonfluxService', () => {
         newPaginationState: {},
       });
       mockResourceFetcher.hasMoreData.mockReturnValue(false);
-      mockCreateResourceWithClusterInfo.mockReturnValue(
-        enrichedResource as ReturnType<typeof createResourceWithClusterInfo>,
-      );
+      mockCreateResourceWithClusterInfo.mockReturnValue(enrichedResource);
       mockFilterResourcesByApplication.mockImplementation(items => items);
 
       await service.aggregateResources(

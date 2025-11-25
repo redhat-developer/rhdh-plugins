@@ -69,6 +69,8 @@ const getRelatedEntities = async (
     }
     return null;
   } catch (e) {
+    // Log error if needed, but return null to indicate failure
+    // The error is likely a configuration parsing issue
     return null;
   }
 };
@@ -131,6 +133,8 @@ const extractComponentConfigsFromEntities = async (
 
     return subcomponentConfigs;
   } catch (e) {
+    // Log error if needed, but return empty array to indicate no configs found
+    // The error is likely a configuration parsing issue
     return [];
   }
 };

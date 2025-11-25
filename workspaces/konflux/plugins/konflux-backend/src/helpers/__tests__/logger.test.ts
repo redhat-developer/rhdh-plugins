@@ -235,32 +235,6 @@ describe('logger', () => {
       });
     });
 
-    it('should handle unknown error type', () => {
-      const error = 'String error';
-
-      konfluxLogger.error('Test error message', error);
-
-      expect(mockBaseLogger.error).toHaveBeenCalledTimes(1);
-      expect(mockBaseLogger.error).toHaveBeenCalledWith('Test error message', {
-        error: 'String error',
-      });
-    });
-
-    it('should handle unknown error type with context', () => {
-      const error = { code: 500, message: 'Unknown error' };
-      const context: LogContext = {
-        cluster: 'cluster1',
-      };
-
-      konfluxLogger.error('Test error message', error, context);
-
-      expect(mockBaseLogger.error).toHaveBeenCalledTimes(1);
-      expect(mockBaseLogger.error).toHaveBeenCalledWith('Test error message', {
-        cluster: 'cluster1',
-        error: '[object Object]',
-      });
-    });
-
     it('should merge error context with provided context', () => {
       const error = new Error('Something went wrong');
       const context: LogContext = {

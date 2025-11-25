@@ -331,11 +331,11 @@ export class ResourceFetcherService {
     const remainingLimit =
       limit !== undefined ? limit - k8sItems.length : undefined;
 
-    const shouldFetchFromKubearchive =
-      limit === undefined ||
-      (remainingLimit !== undefined && remainingLimit > 0);
-
-    if (!shouldFetchFromKubearchive) {
+    if (
+      limit !== undefined &&
+      remainingLimit !== undefined &&
+      remainingLimit <= 0
+    ) {
       return null;
     }
 

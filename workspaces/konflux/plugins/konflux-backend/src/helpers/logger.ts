@@ -61,7 +61,7 @@ export class KonfluxLogger {
    * Log an error with context
    * Automatically extracts error information and merges it with provided context
    */
-  error(message: string, error?: Error | unknown, context?: LogContext): void {
+  error(message: string, error?: Error, context?: LogContext): void {
     const fullContext = this.buildContext(context);
     const errorContext = this.extractErrorContext(error);
 
@@ -108,7 +108,7 @@ export class KonfluxLogger {
   /**
    * Extract error information into a structured format
    */
-  private extractErrorContext(error?: Error | unknown): LogContext {
+  private extractErrorContext(error?: Error): LogContext {
     if (!error) {
       return {};
     }
@@ -145,7 +145,7 @@ export class KonfluxLogger {
     }
 
     return {
-      error: String(error),
+      error: JSON.stringify(error),
     };
   }
 }

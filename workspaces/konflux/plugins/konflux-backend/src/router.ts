@@ -24,8 +24,8 @@ import { CatalogService } from '@backstage/plugin-catalog-node';
 import express from 'express';
 import Router from 'express-promise-router';
 import { KonfluxService } from './services/konflux-service';
-import { UserEntity } from '@backstage/catalog-model';
 import { KonfluxLogger } from './helpers/logger';
+import { UserEntity } from '@backstage/catalog-model';
 
 export interface RouterOptions {
   logger: LoggerService;
@@ -55,11 +55,12 @@ async function extractUserEmail(
     return { email: '' };
   }
 
-  const userEntity = (await catalog.getEntityByRef(userEntityRef, {
+  const userEntity = await catalog.getEntityByRef(userEntityRef, {
     credentials,
-  })) as UserEntity | undefined;
+  });
 
-  const email = userEntity?.spec?.profile?.email || '';
+  const email =
+    (userEntity as UserEntity | undefined)?.spec?.profile?.email || '';
 
   if (!email) {
     konfluxLogger.debug('User email not found in user entity', {
@@ -76,7 +77,7 @@ async function extractUserEmail(
  * Handle errors and return appropriate HTTP status codes
  */
 function handleError(
-  error: unknown,
+  error: Error | undefined,
   res: express.Response,
   konfluxLogger: KonfluxLogger,
   entityRef: string,
@@ -94,6 +95,7 @@ function handleError(
 
   const message = error.message;
 
+  // Validation errors (400)
   if (
     message.includes('cannot be empty') ||
     message.includes('Invalid') ||
@@ -104,16 +106,19 @@ function handleError(
     return;
   }
 
+  // Entity not found (404)
   if (message.includes('Entity not found')) {
     res.status(404).json({ error: message });
     return;
   }
 
+  // Service unavailable (503)
   if (message.includes('Catalog service not available')) {
     res.status(503).json({ error: 'Catalog service unavailable' });
     return;
   }
 
+  // Impersonation errors (400)
   if (message.includes('required for impersonation')) {
     res.status(400).json({
       error: message,
@@ -122,6 +127,7 @@ function handleError(
     return;
   }
 
+  // OIDC token errors (400)
   if (message.includes('OIDC authProvider configured but no token available')) {
     res.status(400).json({
       error: message,
@@ -130,6 +136,7 @@ function handleError(
     return;
   }
 
+  // Default error (500)
   res.status(500).json({ error: 'Failed to aggregate resources' });
 }
 
