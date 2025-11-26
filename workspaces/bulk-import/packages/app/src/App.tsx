@@ -48,7 +48,6 @@ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
-import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
@@ -64,7 +63,7 @@ import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-
 const app = createApp({
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+    availableLanguages: ['en', 'de', 'fr', 'es'],
     resources: [bulkImportTranslations, orchestratorTranslations],
   },
   bindRoutes({ bind }) {
@@ -108,9 +107,6 @@ const app = createApp({
     ),
   },
   themes: getThemes(),
-  /* Hardcoded deployment of the Orchestrator Form Widget library in our DEV-only instance.
-    In a production deployment, the plugin will be loaded dynamically. */
-  plugins: [orchestratorFormWidgetsPlugin],
 });
 
 const routes = (
