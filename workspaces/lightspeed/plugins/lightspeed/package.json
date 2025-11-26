@@ -61,6 +61,7 @@
     "@patternfly/react-core": "6.4.0",
     "@patternfly/react-icons": "^6.3.1",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
     "@tanstack/react-query": "^5.59.15",
     "react-markdown": "^9.0.1",
     "react-use": "^17.2.4"

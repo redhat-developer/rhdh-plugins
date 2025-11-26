@@ -10996,6 +10996,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-application-drawer@^0.1.0, @red-hat-developer-hub/backstage-plugin-application-drawer@workspace:^, @red-hat-developer-hub/backstage-plugin-application-drawer@workspace:plugins/application-drawer":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-application-drawer@workspace:plugins/application-drawer"
+  dependencies:
+    "@backstage/cli": ^0.34.5
+    "@backstage/core-components": ^0.18.3
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/dev-utils": ^1.1.17
+    "@backstage/test-utils": ^1.7.13
+    "@backstage/theme": ^0.7.0
+    "@mui/icons-material": 5.18.0
+    "@mui/material": 5.18.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
+    "@testing-library/jest-dom": ^6.0.0
+    "@testing-library/react": ^14.0.0
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-global-header@npm:^1.17.1":
   version: 1.17.1
   resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:1.17.1"
@@ -15318,6 +15339,7 @@ __metadata:
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@playwright/test": 1.57.0
+    "@red-hat-developer-hub/backstage-plugin-application-drawer": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header": ^1.17.1
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.12.0

@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-} from './plugin';
-export { LightspeedIcon, LightspeedFABIcon } from './components/LightspeedIcon';
-export { useLightspeedDrawerContext } from './hooks/useLightspeedDrawerContext';
-export { lightspeedApiRef } from './api/api';
-export { LightspeedApiClient } from './api/LightspeedApiClient';
+import { PropsWithChildren } from 'react';
+import { useTestDrawerContext } from './TestDrawerContext';
+import { ResizableDrawer } from '../../../../packages/app/src/components/Root/ResizableDrawer';
+
+export const DrawerComponent = ({ children }: PropsWithChildren) => {
+  const { isDrawerOpen, drawerWidth, setDrawerWidth } = useTestDrawerContext();
+
+  return (
+    <ResizableDrawer
+      isDrawerOpen={isDrawerOpen}
+      drawerWidth={drawerWidth}
+      onWidthChange={setDrawerWidth}
+      isResizable
+    >
+      {children}
+    </ResizableDrawer>
+  );
+};

@@ -15,11 +15,15 @@
  */
 
 export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
+  testDrawerPlugin,
+  TestDrawerProvider,
+  TestDrawerContent,
+  TestDrawerButton,
 } from './plugin';
-export { LightspeedIcon, LightspeedFABIcon } from './components/LightspeedIcon';
-export { useLightspeedDrawerContext } from './hooks/useLightspeedDrawerContext';
-export { lightspeedApiRef } from './api/api';
-export { LightspeedApiClient } from './api/LightspeedApiClient';
+
+export {
+  TestDrawerContext,
+  useTestDrawerContext,
+  TestDrawerStateExposer,
+} from './components';
+export type { TestDrawerContextType } from './components';

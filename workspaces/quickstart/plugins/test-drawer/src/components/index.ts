@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-} from './plugin';
-export { LightspeedIcon, LightspeedFABIcon } from './components/LightspeedIcon';
-export { useLightspeedDrawerContext } from './hooks/useLightspeedDrawerContext';
-export { lightspeedApiRef } from './api/api';
-export { LightspeedApiClient } from './api/LightspeedApiClient';
+export { TestDrawerContext, useTestDrawerContext } from './TestDrawerContext';
+export type { TestDrawerContextType } from './TestDrawerContext';
+export { TestDrawerContent } from './TestDrawerContent';
+export { TestDrawerProvider } from './TestDrawerProvider';
+export { TestDrawerButton } from './TestDrawerButton';
+export { DrawerComponent } from './DrawerComponent';
+export { TestDrawerStateExposer } from './TestDrawerStateExposer';

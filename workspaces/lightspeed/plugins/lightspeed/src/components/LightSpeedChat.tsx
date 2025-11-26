@@ -30,6 +30,7 @@ import {
   ChatbotHeaderMain,
   ChatbotHeaderMenu,
   ChatbotHeaderTitle,
+  ChatbotModal,
   FileDropZone,
   MessageBar,
   MessageProps,
@@ -48,6 +49,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
 } from '../hooks';
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
@@ -64,6 +66,7 @@ import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 import { RenameConversationModal } from './RenameConversationModal';
+import { ResizableDrawer } from './ResizableDrawer';
 
 const useStyles = makeStyles(theme => ({
   body: {
@@ -130,18 +133,26 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [conversationId, setConversationId] = useState<string>('');
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(!isMobile);
+  const [isEmbeddedDrawerOpen, setIsEmbeddedDrawerOpen] =
+    useState<boolean>(!isMobile);
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
-  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true); // read from user settings in future
-  const [pinnedChats, setPinnedChats] = useState<string[]>([]); // read from user settings in future
+  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true);
+  const [pinnedChats, setPinnedChats] = useState<string[]>([]);
   const [targetConversationId, setTargetConversationId] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-
+  const {
+    displayMode,
+    setDisplayMode,
+    drawerWidth,
+    setDrawerWidth,
+    currentConversationId: routeConversationId,
+    setCurrentConversationId,
+  } = useLightspeedDrawerContext();
   const {
     uploadError,
     showAlert,
@@ -164,6 +175,18 @@ export const LightspeedChat = ({
       setPinnedChats([]);
     }
   }, [isPinningChatsEnabled]);
+
+  useEffect(() => {
+    if (displayMode === ChatbotDisplayMode.embedded) {
+      setIsEmbeddedDrawerOpen(true);
+    } else if (
+      displayMode === ChatbotDisplayMode.docked ||
+      displayMode === ChatbotDisplayMode.default
+    ) {
+      setIsEmbeddedDrawerOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayMode]);
 
   const queryClient = useQueryClient();
 
@@ -196,6 +219,35 @@ export const LightspeedChat = ({
   }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
 
   useEffect(() => {
+    if (
+      !isLoading &&
+      !isRefetching &&
+      routeConversationId &&
+      displayMode === ChatbotDisplayMode.embedded
+    ) {
+      const conversationExists = conversations.some(
+        (c: ConversationSummary) => c.conversation_id === routeConversationId,
+      );
+      if (!conversationExists) {
+        // Conversation from route doesn't exist, start a new chat
+        setConversationId(TEMP_CONVERSATION_ID);
+        setCurrentConversationId(undefined);
+        setNewChatCreated(true);
+      } else if (conversationId !== routeConversationId) {
+        setConversationId(routeConversationId);
+      }
+    }
+  }, [
+    isLoading,
+    isRefetching,
+    routeConversationId,
+    conversations,
+    displayMode,
+    conversationId,
+    setCurrentConversationId,
+  ]);
+
+  useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
     if (conversationId) {
       setLastOpenedId(conversationId);
@@ -204,6 +256,7 @@ export const LightspeedChat = ({
 
   const onStart = (conv_id: string) => {
     setConversationId(conv_id);
+    setCurrentConversationId(conv_id);
   };
 
   const onComplete = (message: string) => {
@@ -254,14 +307,18 @@ export const LightspeedChat = ({
         setUploadError({ message: null });
         setConversationId(TEMP_CONVERSATION_ID);
         setNewChatCreated(true);
+        setCurrentConversationId(undefined);
+        if (displayMode !== ChatbotDisplayMode.embedded) {
+          setIsEmbeddedDrawerOpen(false);
+        }
       }
     })();
   }, [
     conversationId,
-    setConversationId,
-    setMessages,
-    setUploadError,
     setFileContents,
+    setUploadError,
+    displayMode,
+    setCurrentConversationId,
   ]);
 
   const openDeleteModal = (conversation_id: string) => {
@@ -429,17 +486,25 @@ export const LightspeedChat = ({
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
       setNewChatCreated(false);
+      const newConvId = String(selectedItem);
       setConversationId((c_id: string) => {
         if (c_id !== selectedItem) {
-          return String(selectedItem);
+          return newConvId;
         }
         return c_id;
       });
+      setCurrentConversationId(newConvId);
       setFileContents([]);
       setUploadError({ message: null });
       scrollToBottomRef.current?.scrollToBottom();
     },
-    [setConversationId, setUploadError, setFileContents, scrollToBottomRef],
+    [
+      setConversationId,
+      setUploadError,
+      setFileContents,
+      scrollToBottomRef,
+      setCurrentConversationId,
+    ],
   );
 
   const conversationFound = !!conversations.find(
@@ -465,8 +530,8 @@ export const LightspeedChat = ({
     setFilterValue(value);
   }, []);
 
-  const onDrawerToggle = useCallback(() => {
-    setIsDrawerOpen(isOpen => !isOpen);
+  const onEmbeddedDrawerToggle = useCallback(() => {
+    setIsEmbeddedDrawerOpen(isOpen => !isOpen);
   }, []);
 
   const handleAttach = (data: File[], event: DropEvent) => {
@@ -483,6 +548,189 @@ export const LightspeedChat = ({
         });
       }
     });
+  };
+
+  const chatbot = (
+    <Chatbot displayMode={ChatbotDisplayMode.embedded} className={classes.body}>
+      <ChatbotHeader className={classes.header}>
+        <ChatbotHeaderMain>
+          <ChatbotHeaderMenu
+            aria-expanded={isEmbeddedDrawerOpen}
+            onMenuToggle={() => setIsEmbeddedDrawerOpen(!isEmbeddedDrawerOpen)}
+            className={classes.headerMenu}
+            tooltipContent={t('tooltip.chatHistoryMenu')}
+            aria-label={t('aria.chatHistoryMenu')}
+          />
+          {displayMode === ChatbotDisplayMode.embedded && (
+            <ChatbotHeaderTitle className={classes.headerTitle}>
+              <Title headingLevel="h1" size="3xl">
+                {t('chatbox.header.title')}
+              </Title>
+            </ChatbotHeaderTitle>
+          )}
+        </ChatbotHeaderMain>
+
+        <LightspeedChatBoxHeader
+          selectedModel={selectedModel}
+          handleSelectedModel={item => {
+              onNewChat();
+              handleSelectedModel(item);
+            }}
+          models={models}
+          isPinningChatsEnabled={isPinningChatsEnabled}
+          onPinnedChatsToggle={setIsPinningChatsEnabled}
+          isModelSelectorDisabled={isSendButtonDisabled}
+          setDisplayMode={setDisplayMode}
+          displayMode={displayMode}
+        />
+      </ChatbotHeader>
+      <Divider />
+      <ChatbotConversationHistoryNav
+        drawerPanelContentProps={{
+          isResizable: displayMode === ChatbotDisplayMode.embedded,
+          hasNoBorder: displayMode !== ChatbotDisplayMode.embedded,
+          style:
+            displayMode === ChatbotDisplayMode.embedded
+              ? undefined
+              : { zIndex: 1300 },
+        }}
+        reverseButtonOrder
+        displayMode={ChatbotDisplayMode.embedded}
+        onDrawerToggle={onEmbeddedDrawerToggle}
+        title=""
+        navTitleIcon={null}
+        isDrawerOpen={isEmbeddedDrawerOpen}
+        drawerCloseButtonProps={{
+          'aria-label': t('aria.closeDrawerPanel'),
+        }}
+        setIsDrawerOpen={setIsEmbeddedDrawerOpen}
+        activeItemId={conversationId}
+        onSelectActiveItem={onSelectActiveItem}
+        conversations={filterConversations(filterValue)}
+        onNewChat={newChatCreated ? undefined : onNewChat}
+        newChatButtonText={t('button.newChat')}
+        newChatButtonProps={{
+          icon: <PlusIcon />,
+        }}
+        handleTextInputChange={handleFilter}
+        searchInputPlaceholder={t('chatbox.search.placeholder')}
+        searchInputAriaLabel={t('aria.search.placeholder')}
+        searchInputProps={{
+          value: filterValue,
+          onClear: () => {
+            setFilterValue('');
+          },
+        }}
+        noResultsState={
+          filterValue &&
+          Object.keys(filterConversations(filterValue)).length === 0
+            ? {
+                bodyText: t('chatbox.emptyState.noResults.body'),
+                titleText: t('chatbox.emptyState.noResults.title'),
+                icon: SearchIcon,
+              }
+            : undefined
+        }
+        drawerContent={
+          <FileDropZone
+            onFileDrop={(e, data) => handleAttach(data, e)}
+            displayMode={ChatbotDisplayMode.embedded}
+            infoText={t('chatbox.fileUpload.infoText')}
+            allowedFileTypes={supportedFileTypes}
+            onAttachRejected={onAttachRejected}
+          >
+            {showAlert && uploadError.message && (
+              <div className={classes.errorContainer}>
+                <ChatbotAlert
+                  component="h4"
+                  title={t('chatbox.fileUpload.failed')}
+                  variant={uploadError.type ?? 'danger'}
+                  isInline
+                  onClose={() => setUploadError({ message: null })}
+                >
+                  {uploadError.message}
+                </ChatbotAlert>
+              </div>
+            )}
+
+            <ChatbotContent>
+              <LightspeedChatBox
+                userName={userName}
+                messages={messages}
+                profileLoading={profileLoading}
+                announcement={announcement}
+                ref={scrollToBottomRef}
+                welcomePrompts={welcomePrompts}
+                conversationId={conversationId}
+                isStreaming={isSendButtonDisabled}
+                topicRestrictionEnabled={topicRestrictionEnabled}
+                displayMode={displayMode}
+              />
+            </ChatbotContent>
+            <ChatbotFooter className={classes.footer}>
+              <FilePreview />
+              <MessageBar
+                onSendMessage={sendMessage}
+                isSendButtonDisabled={isSendButtonDisabled}
+                hasAttachButton
+                handleAttach={handleAttach}
+                hasMicrophoneButton
+                buttonProps={{
+                  attach: {
+                    inputTestId: 'attachment-input',
+                    tooltipContent: t('tooltip.attach'),
+                  },
+                  microphone: {
+                    tooltipContent: {
+                      active: t('tooltip.microphone.active'),
+                      inactive: t('tooltip.microphone.inactive'),
+                    },
+                  },
+                  send: {
+                    tooltipContent: t('tooltip.send'),
+                  },
+                }}
+                allowedFileTypes={supportedFileTypes}
+                onAttachRejected={onAttachRejected}
+                placeholder={t('chatbox.message.placeholder')}
+              />
+              <ChatbotFootnote
+                {...getFootnoteProps(classes.footerPopover, t)}
+              />
+            </ChatbotFooter>
+          </FileDropZone>
+        }
+      />
+    </Chatbot>
+  );
+
+  const getChatDisplay = () => {
+    if (displayMode === ChatbotDisplayMode.docked) {
+      return (
+        <ResizableDrawer
+          isDrawerOpen
+          drawerWidth={drawerWidth}
+          onWidthChange={setDrawerWidth}
+        >
+          {chatbot}
+        </ResizableDrawer>
+      );
+    }
+    if (displayMode === ChatbotDisplayMode.default) {
+      return (
+        <ChatbotModal
+          isOpen
+          displayMode={displayMode}
+          onClose={() => {}}
+          ouiaId="LightspeedChatbotModal"
+          aria-labelledby="lightspeed-chatpopup-modal"
+        >
+          {chatbot}
+        </ChatbotModal>
+      );
+    }
+
+    return chatbot;
   };
 
   return (
@@ -502,148 +750,7 @@ export const LightspeedChat = ({
           conversationId={targetConversationId}
         />
       )}
-      <Chatbot
-        displayMode={ChatbotDisplayMode.embedded}
-        className={classes.body}
-      >
-        <ChatbotHeader className={classes.header}>
-          <ChatbotHeaderMain>
-            <ChatbotHeaderMenu
-              aria-expanded={isDrawerOpen}
-              onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
-              className={classes.headerMenu}
-              tooltipContent={t('tooltip.chatHistoryMenu')}
-              aria-label={t('aria.chatHistoryMenu')}
-            />
-            <ChatbotHeaderTitle className={classes.headerTitle}>
-              <Title headingLevel="h1" size="3xl">
-                {t('chatbox.header.title')}
-              </Title>
-            </ChatbotHeaderTitle>
-          </ChatbotHeaderMain>
-
-          <LightspeedChatBoxHeader
-            selectedModel={selectedModel}
-            handleSelectedModel={item => {
-              onNewChat();
-              handleSelectedModel(item);
-            }}
-            models={models}
-            isPinningChatsEnabled={isPinningChatsEnabled}
-            onPinnedChatsToggle={setIsPinningChatsEnabled}
-            isModelSelectorDisabled={isSendButtonDisabled}
-          />
-        </ChatbotHeader>
-        <Divider />
-        <ChatbotConversationHistoryNav
-          drawerPanelContentProps={{ isResizable: true, minSize: '200px' }}
-          reverseButtonOrder
-          displayMode={ChatbotDisplayMode.embedded}
-          onDrawerToggle={onDrawerToggle}
-          title=""
-          navTitleIcon={null}
-          isDrawerOpen={isDrawerOpen}
-          drawerCloseButtonProps={{
-            'aria-label': t('aria.closeDrawerPanel'),
-          }}
-          setIsDrawerOpen={setIsDrawerOpen}
-          activeItemId={conversationId}
-          onSelectActiveItem={onSelectActiveItem}
-          conversations={filterConversations(filterValue)}
-          onNewChat={newChatCreated ? undefined : onNewChat}
-          newChatButtonText={t('button.newChat')}
-          newChatButtonProps={{
-            icon: <PlusIcon />,
-          }}
-          handleTextInputChange={handleFilter}
-          searchInputPlaceholder={t('chatbox.search.placeholder')}
-          searchInputAriaLabel={t('aria.search.placeholder')}
-          searchInputProps={{
-            value: filterValue,
-            onClear: () => {
-              setFilterValue('');
-            },
-          }}
-          noResultsState={
-            filterValue &&
-            Object.keys(filterConversations(filterValue)).length === 0
-              ? {
-                  bodyText: t('chatbox.emptyState.noResults.body'),
-                  titleText: t('chatbox.emptyState.noResults.title'),
-                  icon: SearchIcon,
-                }
-              : undefined
-          }
-          drawerContent={
-            <FileDropZone
-              onFileDrop={(e, data) => handleAttach(data, e)}
-              displayMode={ChatbotDisplayMode.embedded}
-              infoText={t('chatbox.fileUpload.infoText')}
-              allowedFileTypes={supportedFileTypes}
-              onAttachRejected={onAttachRejected}
-            >
-              {showAlert && uploadError.message && (
-                <div className={classes.errorContainer}>
-                  <ChatbotAlert
-                    component="h4"
-                    title={t('chatbox.fileUpload.failed')}
-                    variant={uploadError.type ?? 'danger'}
-                    isInline
-                    onClose={() => setUploadError({ message: null })}
-                  >
-                    {uploadError.message}
-                  </ChatbotAlert>
-                </div>
-              )}
-
-              <ChatbotContent>
-                <LightspeedChatBox
-                  userName={userName}
-                  messages={messages}
-                  profileLoading={profileLoading}
-                  announcement={announcement}
-                  ref={scrollToBottomRef}
-                  welcomePrompts={welcomePrompts}
-                  conversationId={conversationId}
-                  isStreaming={isSendButtonDisabled}
-                  topicRestrictionEnabled={topicRestrictionEnabled}
-                />
-              </ChatbotContent>
-              <ChatbotFooter className={classes.footer}>
-                <FilePreview />
-                <MessageBar
-                  onSendMessage={sendMessage}
-                  isSendButtonDisabled={isSendButtonDisabled}
-                  hasAttachButton
-                  handleAttach={handleAttach}
-                  hasMicrophoneButton
-                  buttonProps={{
-                    attach: {
-                      inputTestId: 'attachment-input',
-                      tooltipContent: t('tooltip.attach'),
-                    },
-                    microphone: {
-                      tooltipContent: {
-                        active: t('tooltip.microphone.active'),
-                        inactive: t('tooltip.microphone.inactive'),
-                      },
-                    },
-                    send: {
-                      tooltipContent: t('tooltip.send'),
-                    },
-                  }}
-                  allowedFileTypes={supportedFileTypes}
-                  onAttachRejected={onAttachRejected}
-                  placeholder={t('chatbox.message.placeholder')}
-                />
-                <ChatbotFootnote
-                  {...getFootnoteProps(classes.footerPopover, t)}
-                />
-              </ChatbotFooter>
-            </FileDropZone>
-          }
-        />
-      </Chatbot>
+      {getChatDisplay()}
       <Attachment />
     </>
   );

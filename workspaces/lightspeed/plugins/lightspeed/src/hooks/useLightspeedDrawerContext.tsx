@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-} from './plugin';
-export { LightspeedIcon, LightspeedFABIcon } from './components/LightspeedIcon';
-export { useLightspeedDrawerContext } from './hooks/useLightspeedDrawerContext';
-export { lightspeedApiRef } from './api/api';
-export { LightspeedApiClient } from './api/LightspeedApiClient';
+import { useContext } from 'react';
+
+import { LightspeedDrawerContext } from '../components/LightspeedDrawerContext';
+
+/**
+ * Hook to access the LightspeedDrawerContext
+ * @public
+ */
+export const useLightspeedDrawerContext = () => {
+  const context = useContext(LightspeedDrawerContext);
+  if (context === undefined) {
+    throw new Error(
+      'useLightspeedDrawerContext must be used within a LightspeedDrawerProvider',
+    );
+  }
+  return context;
+};

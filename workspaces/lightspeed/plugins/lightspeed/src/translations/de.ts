@@ -138,6 +138,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'aria.scroll.down': 'Nach unten',
     'aria.scroll.up': 'Nach oben',
     'aria.settings.label': 'Chatbot-Optionen',
+    'aria.close': 'Chatbot schließen',
 
     // Modal actions
     'modal.edit': 'Bearbeiten',
@@ -168,6 +169,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.backToTop': 'Nach oben',
     'tooltip.backToBottom': 'Nach unten',
     'tooltip.settings': 'Chatbot-Optionen',
+    'tooltip.close': 'Schließen',
 
     // Modal titles
     'modal.title.preview': 'Anhang-Vorschau',
@@ -241,6 +243,11 @@ const lightspeedTranslationDe = createTranslationMessages({
     'toolCall.copyResponse': 'Antwort kopieren',
     'toolCall.summary': 'Hier ist eine Zusammenfassung Ihrer Antwort',
     'toolCall.mcpServer': 'MCP-Server',
+    // Display modes
+    'settings.displayMode.label': 'Anzeigemodus',
+    'settings.displayMode.overlay': 'Überlagerung',
+    'settings.displayMode.docked': 'An Fenster andocken',
+    'settings.displayMode.fullscreen': 'Vollbild',
   },
 });
 

@@ -24,10 +24,11 @@ import Snackbar from '@mui/material/Snackbar';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
-import { QuickstartDrawer } from './QuickstartDrawer';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
+
+const DRAWER_ID = 'quickstart';
 
 /**
  * Provider component for the Quickstart Drawer functionality
@@ -44,25 +45,6 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
 
   // Determine role once at provider level to avoid re-fetching on drawer open/close
   const { isLoading: roleLoading, userRole } = useQuickstartRole();
-
-  // Single useEffect - sets class on document.body
-  useEffect(() => {
-    if (isDrawerOpen) {
-      document.body.classList.add('quickstart-drawer-open');
-      document.body.style.setProperty(
-        '--quickstart-drawer-width',
-        `${drawerWidth}px`,
-      );
-    } else {
-      document.body.classList.remove('quickstart-drawer-open');
-      document.body.style.removeProperty('--quickstart-drawer-width');
-    }
-
-    return () => {
-      document.body.classList.remove('quickstart-drawer-open');
-      document.body.style.removeProperty('--quickstart-drawer-width');
-    };
-  }, [isDrawerOpen, drawerWidth]);
 
   // Resolve the current user's identity to scope localStorage keys per user
   useEffect(() => {
@@ -190,6 +172,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   return (
     <QuickstartDrawerContext.Provider
       value={{
+        id: DRAWER_ID,
         isDrawerOpen,
         openDrawer,
         closeDrawer,
@@ -201,7 +184,6 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       }}
     >
       {children}
-      <QuickstartDrawer />
       <Snackbar
         sx={{ top: '80px !important' }}
         open={showNotification}

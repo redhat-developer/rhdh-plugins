@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-export {
-  lightspeedPlugin,
-  LightspeedPage,
-  LightspeedDrawerProvider,
-} from './plugin';
-export { LightspeedIcon, LightspeedFABIcon } from './components/LightspeedIcon';
-export { useLightspeedDrawerContext } from './hooks/useLightspeedDrawerContext';
-export { lightspeedApiRef } from './api/api';
-export { LightspeedApiClient } from './api/LightspeedApiClient';
+import { SidebarItem, StarIcon } from '@backstage/core-components';
+import { useTestDrawerContext } from '@red-hat-developer-hub/backstage-plugin-test-drawer';
+
+export const TestDrawerSidebarItem = () => {
+  const { toggleDrawer } = useTestDrawerContext();
+
+  return (
+    <SidebarItem text="Test Drawer" icon={StarIcon} onClick={toggleDrawer} />
+  );
+};

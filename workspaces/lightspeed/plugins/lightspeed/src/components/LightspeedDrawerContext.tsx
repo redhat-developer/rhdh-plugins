@@ -15,33 +15,33 @@
  */
 
 import { createContext } from 'react';
-import { UserRole } from '../types';
+
+import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 /**
- * Type for QuickstartDrawerContext
+ * Type for LightspeedDrawerContext
  *
- *  @public
+ * @public
  */
-export interface QuickstartDrawerContextType {
-  id: string;
+export interface LightspeedDrawerContextType {
   /**
-   * The prop to check if the drawer is open
+   * Whether the chatbot is active
    */
-  isDrawerOpen: boolean;
+  isChatbotActive: boolean;
   /**
-   * The function to open the drawer
+   * Toggle the chatbot open/closed
    */
-  openDrawer: () => void;
+  toggleChatbot: () => void;
   /**
-   * The function to close the drawer
+   * The current display mode
    */
-  closeDrawer: () => void;
+  displayMode: ChatbotDisplayMode;
   /**
-   * The function to toggle the drawer state
+   * Set the display mode (overlay, docked, or fullscreen/embedded)
    */
-  toggleDrawer: () => void;
+  setDisplayMode: (mode: ChatbotDisplayMode) => void;
   /**
-   * The prop for drawer width
+   * The drawer width (for docked mode)
    */
   drawerWidth: number;
   /**
@@ -49,18 +49,19 @@ export interface QuickstartDrawerContextType {
    */
   setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
   /**
-   * The user's role for quickstart functionality
+   * The current conversation ID
    */
-  userRole: UserRole | null;
+  currentConversationId?: string;
   /**
-   * Whether the role is still loading
+   * Set the current conversation ID and update the route if in embedded mode
+   * Pass undefined to clear the conversation (example: for new chat)
    */
-  roleLoading: boolean;
+  setCurrentConversationId: (id: string | undefined) => void;
 }
 
 /**
  * @public
  */
-export const QuickstartDrawerContext = createContext<
-  QuickstartDrawerContextType | undefined
+export const LightspeedDrawerContext = createContext<
+  LightspeedDrawerContextType | undefined
 >(undefined);
