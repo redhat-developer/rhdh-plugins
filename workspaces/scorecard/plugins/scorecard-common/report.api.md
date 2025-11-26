@@ -5,6 +5,36 @@
 ```ts
 import { ResourcePermission } from '@backstage/plugin-permission-common';
 
+// @public (undocumented)
+export type AggregatedMetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result: {
+    value?: AggregatedMetricValue;
+    timestamp: string;
+    lastUpdated: string;
+  };
+};
+
+// @public (undocumented)
+export type AggregatedMetricValue = {
+  success?: {
+    value: number;
+  };
+  warning?: {
+    value: number;
+  };
+  error?: {
+    value: number;
+  };
+};
+
 // @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
 
@@ -36,7 +66,7 @@ export type MetricResult = {
 };
 
 // @public (undocumented)
-export type MetricType = 'number' | 'boolean';
+export type MetricType = 'number' | 'boolean' | 'object';
 
 // @public (undocumented)
 export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
