@@ -39,6 +39,7 @@ import {
 import {
   OrchestratorWorkflowDao,
   RepositoryDao,
+  RepositoryName,
   ScaffolderTaskDao,
   TaskLocationsDao,
 } from '../../../database/repositoryDao';
@@ -1194,36 +1195,12 @@ export async function deleteImportByRepo(
   };
 }
 
-export async function deleteTaskImportByRepo(
+export async function deleteRepositoryRecord<
+  DAO extends RepositoryDao<RepositoryName>,
+>(
   deps: {
     logger: LoggerService;
-    dao: RepositoryDao<'repositories'>;
-  },
-  repoUrl: string,
-): Promise<HandlerResponse<void>> {
-  deps.logger.debug(`Deleting repository from database by name ${repoUrl}...`);
-  try {
-    await deps.dao.deleteRepository(repoUrl);
-
-    return {
-      statusCode: 204,
-      responseBody: undefined,
-    };
-  } catch (error: any) {
-    deps.logger.error(
-      `Failed to delete repository from database by url ${repoUrl}`,
-      error,
-    );
-    return {
-      statusCode: 500,
-    };
-  }
-}
-
-export async function deleteOrchestratorImportByRepo(
-  deps: {
-    logger: LoggerService;
-    dao: RepositoryDao<'orchestrator_repositories'>;
+    dao: DAO;
   },
   repoUrl: string,
 ): Promise<HandlerResponse<void>> {

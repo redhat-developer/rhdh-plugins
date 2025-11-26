@@ -64,8 +64,7 @@ import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
-  deleteOrchestratorImportByRepo,
-  deleteTaskImportByRepo,
+  deleteRepositoryRecord,
   findAllImports,
   findImportStatusByRepo,
   findOrchestratorImportStatusByRepo,
@@ -614,7 +613,7 @@ export async function createRouter(
       if (!q.repo?.trim()) {
         throw new Error('missing or blank "repo" parameter');
       }
-      const response = await deleteTaskImportByRepo(
+      const response = await deleteRepositoryRecord(
         {
           logger,
           dao: repositoryDao,
@@ -660,7 +659,7 @@ export async function createRouter(
       if (!q.repo?.trim()) {
         throw new Error('missing or blank "repo" parameter');
       }
-      const response = await deleteOrchestratorImportByRepo(
+      const response = await deleteRepositoryRecord(
         {
           logger,
           dao: orchestratorRepositoryDao,
