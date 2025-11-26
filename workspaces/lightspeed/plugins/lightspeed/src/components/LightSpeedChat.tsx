@@ -354,6 +354,8 @@ export const LightspeedChat = ({
   const filterConversations = useCallback(
     (targetValue: string) => {
       const pinnedChatsKey = t('conversation.category.pinnedChats') || 'Pinned';
+      let isNoPinnedChatsSearchResults = false;
+      let isNoRecentChatsSearchResults = false;
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
@@ -366,16 +368,16 @@ export const LightspeedChat = ({
             if (filteredItems.length > 0) {
               acc[pinnedChatsKey] = filteredItems;
             } else {
+              isNoPinnedChatsSearchResults =
+                categorizedMessages[pinnedChatsKey].length > 0;
               acc[pinnedChatsKey] = [
                 {
-                  id:
-                    categorizedMessages[pinnedChatsKey].length > 0
-                      ? 'no-pinned-chats-search-results'
-                      : 'no-pinned-chats',
-                  text:
-                    categorizedMessages[pinnedChatsKey].length > 0
-                      ? t('common.noSearchResults')
-                      : t('chatbox.emptyState.noPinnedChats'),
+                  id: isNoPinnedChatsSearchResults
+                    ? 'no-pinned-chats-search-results'
+                    : 'no-pinned-chats',
+                  text: isNoPinnedChatsSearchResults
+                    ? t('common.noSearchResults')
+                    : t('chatbox.emptyState.noPinnedChats'),
                   noIcon: true,
                   additionalProps: {
                     isDisabled: true,
@@ -387,16 +389,17 @@ export const LightspeedChat = ({
             if (filteredItems.length > 0) {
               acc[key] = filteredItems;
             } else {
+              isNoRecentChatsSearchResults =
+                categorizedMessages[key].length > 0;
+
               acc[key] = [
                 {
-                  id:
-                    categorizedMessages[pinnedChatsKey].length > 0
-                      ? 'no-recent-chats-search-results'
-                      : 'no-recent-chats',
-                  text:
-                    categorizedMessages[key].length > 0
-                      ? t('common.noSearchResults')
-                      : t('chatbox.emptyState.noRecentChats'),
+                  id: isNoRecentChatsSearchResults
+                    ? 'no-recent-chats-search-results'
+                    : 'no-recent-chats',
+                  text: isNoRecentChatsSearchResults
+                    ? t('common.noSearchResults')
+                    : t('chatbox.emptyState.noRecentChats'),
                   noIcon: true,
                   additionalProps: {
                     isDisabled: true,
@@ -405,11 +408,15 @@ export const LightspeedChat = ({
               ];
             }
           }
-
           return acc;
         },
         {} as any,
       );
+      // If both sections had items but search filtered them all out, return empty object
+      // so PatternFly's default empty state shows instead of custom empty state messages
+      if (isNoPinnedChatsSearchResults && isNoRecentChatsSearchResults) {
+        return {};
+      }
       return filteredConversations;
     },
     [categorizedMessages, isPinningChatsEnabled, t],
