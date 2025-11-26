@@ -16,6 +16,7 @@ readonly "table.headers.url": string;
 readonly "table.headers.repoUrl": string;
 readonly "table.headers.organizationGroup": string;
 readonly "table.headers.group": string;
+readonly "table.headers.taskStatus": string;
 readonly "table.headers.lastUpdated": string;
 readonly "table.headers.actions": string;
 readonly "table.headers.catalogInfoYaml": string;

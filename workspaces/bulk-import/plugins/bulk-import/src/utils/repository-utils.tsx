@@ -48,28 +48,28 @@ import {
 import { getTaskStatusInfo } from './task-status';
 
 const TaskLink = ({
-  labelText,
   taskId,
+  t,
 }: {
-  labelText: string;
   taskId?: string;
+  t: (key: string) => string;
 }) => {
   const configApi = useApi(configApiRef);
   const appBaseUrl = configApi.getString('app.baseUrl');
 
-  if (!taskId) return <>{labelText}</>;
+  if (!taskId) return null;
 
   return (
     <Link
       to={`${appBaseUrl}/create/tasks/${taskId}`}
-      data-testid="pull request url"
+      data-testid="view-task-link"
       style={{
         paddingLeft: '5px',
         display: 'inline-flex',
         alignItems: 'center',
       }}
     >
-      {labelText}
+      {t('tasks.viewTask')}
     </Link>
   );
 };
@@ -302,10 +302,17 @@ export const getImportStatus = (
         style={{ display: 'flex', alignItems: 'baseline' }}
       >
         {taskIcon}
-        <TaskLink labelText={taskLabelText} taskId={taskId} />
+        {taskLabelText}
+        <TaskLink taskId={taskId} t={t} />
       </Typography>
     ) : (
-      <TaskLink labelText={taskLabelText} taskId={taskId} />
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {taskLabelText}
+        <TaskLink taskId={taskId} t={t} />
+      </Typography>
     );
   }
 
