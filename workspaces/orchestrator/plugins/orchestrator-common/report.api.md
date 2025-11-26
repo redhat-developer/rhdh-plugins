@@ -14,7 +14,7 @@ import type { JSONSchema7Definition } from 'json-schema';
 import { JsonValue } from '@backstage/types';
 import { OAuthScope } from '@backstage/core-plugin-api';
 import type { RawAxiosRequestConfig } from 'axios';
-import type { Specification } from '@severlessworkflow/sdk-typescript';
+import type { Specification } from '@serverlessworkflow/sdk-typescript';
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
@@ -1232,7 +1232,7 @@ export interface WorkflowDataDTO {
 // Warning: (ae-missing-release-tag) "WorkflowDefinition" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export type WorkflowDefinition = OmitRecursively<Specification.Workflow, 'normalize'>;
+export type WorkflowDefinition = OmitRecursively<Specification.Workflow, 'normalize' | 'asPlainObject'>;
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
