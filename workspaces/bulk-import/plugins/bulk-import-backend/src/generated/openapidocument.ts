@@ -1248,8 +1248,7 @@ const OPENAPI = `
           "TASK_OPEN",
           "TASK_PROCESSING",
           "TASK_SKIPPED",
-          "TASK_FETCH_FAILED",
-          null
+          "TASK_FETCH_FAILED"
         ]
       },
       "ImportStatus": {
