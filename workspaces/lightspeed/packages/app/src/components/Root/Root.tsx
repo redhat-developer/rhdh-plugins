@@ -43,9 +43,11 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
-
-import { LightspeedIcon } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
-import { IconComponent } from '@backstage/core-plugin-api';
+import { GlobalFloatingActionButton } from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
+import {
+  LightspeedFABIcon,
+  useLightspeedDrawerContext,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -75,46 +77,64 @@ const SidebarLogo = () => {
   );
 };
 
-export const Root = ({ children }: PropsWithChildren<{}>) => (
-  <SidebarPage>
-    <Sidebar>
-      <SidebarLogo />
-      <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-        <SidebarSearchModal />
-      </SidebarGroup>
-      <SidebarDivider />
-      <SidebarGroup label="Menu" icon={<MenuIcon />}>
-        {/* Global nav, not org-specific */}
-        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
-        <MyGroupsSidebarItem
-          singularTitle="My Group"
-          pluralTitle="My Groups"
-          icon={GroupIcon}
-        />
-        <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-        <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-        <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
-        <SidebarItem
-          icon={LightspeedIcon as IconComponent}
-          to="lightspeed"
-          text="Lightspeed"
-        />
-        ;{/* End global nav */}
+export const Root = ({ children }: PropsWithChildren<{}>) => {
+  const { isChatbotActive, toggleChatbot } = useLightspeedDrawerContext();
+
+  return (
+    <SidebarPage>
+      <GlobalFloatingActionButton
+        floatingButtons={[
+          {
+            color: 'inherit',
+            icon: <LightspeedFABIcon />,
+            label: 'Lightspeed',
+            toolTip: isChatbotActive ? 'Close Lightspeed' : 'Open Lightspeed',
+            size: 'small',
+            isOpen: isChatbotActive,
+            displayCloseWhenOpen: true,
+            onClick: toggleChatbot,
+            disableHoverEffect: true,
+          },
+        ]}
+      />
+      <Sidebar>
+        <SidebarLogo />
+        <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+          <SidebarSearchModal />
+        </SidebarGroup>
         <SidebarDivider />
-        <SidebarScrollWrapper>
-          {/* Items in this group will be scrollable if they run out of space */}
-        </SidebarScrollWrapper>
-      </SidebarGroup>
-      <SidebarSpace />
-      <SidebarDivider />
-      <SidebarGroup
-        label="Settings"
-        icon={<UserSettingsSignInAvatar />}
-        to="/settings"
-      >
-        <SidebarSettings />
-      </SidebarGroup>
-    </Sidebar>
-    {children}
-  </SidebarPage>
-);
+        <SidebarGroup label="Menu" icon={<MenuIcon />}>
+          {/* Global nav, not org-specific */}
+          <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+          <MyGroupsSidebarItem
+            singularTitle="My Group"
+            pluralTitle="My Groups"
+            icon={GroupIcon}
+          />
+          <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+          <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+          <SidebarItem
+            icon={CreateComponentIcon}
+            to="create"
+            text="Create..."
+          />
+          {/* End global nav */}
+          <SidebarDivider />
+          <SidebarScrollWrapper>
+            {/* Items in this group will be scrollable if they run out of space */}
+          </SidebarScrollWrapper>
+        </SidebarGroup>
+        <SidebarSpace />
+        <SidebarDivider />
+        <SidebarGroup
+          label="Settings"
+          icon={<UserSettingsSignInAvatar />}
+          to="/settings"
+        >
+          <SidebarSettings />
+        </SidebarGroup>
+      </Sidebar>
+      {children}
+    </SidebarPage>
+  );
+};

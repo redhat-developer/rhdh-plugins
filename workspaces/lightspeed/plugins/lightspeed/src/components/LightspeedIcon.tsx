@@ -16,6 +16,7 @@
 
 import { useTranslation } from '../hooks/useTranslation';
 import logo from '../images/logo-white.svg';
+import roundedLogo from '../images/rounded-logo.svg';
 
 /**
  * @public
@@ -29,6 +30,25 @@ export const LightspeedIcon = () => {
       src={logo as any}
       alt={t('icon.lightspeed.alt')}
       style={{ height: '25px' }}
+    />
+  );
+};
+
+/**
+ * @public
+ * Lightspeed FAB Icon */
+export const LightspeedFABIcon = () => {
+  const { t } = useTranslation();
+
+  return (
+    <img
+      src={roundedLogo as any}
+      alt={t('icon.lightspeed.alt')}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'block',
+      }}
     />
   );
 };

@@ -17,9 +17,12 @@
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/chatbot/dist/css/main.css';
 
+import { PropsWithChildren } from 'react';
+
 import {
   configApiRef,
   createApiFactory,
+  createComponentExtension,
   createPlugin,
   createRoutableExtension,
   fetchApiRef,
@@ -63,3 +66,21 @@ export const LightspeedPage = lightspeedPlugin.provide(
     mountPoint: rootRouteRef,
   }),
 );
+
+/**
+ * Lightspeed Drawer Provider
+ *
+ * @public
+ */
+export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren> =
+  lightspeedPlugin.provide(
+    createComponentExtension({
+      name: 'LightspeedDrawerProvider',
+      component: {
+        lazy: () =>
+          import('./components/LightspeedDrawerProvider').then(
+            m => m.LightspeedDrawerProvider,
+          ),
+      },
+    }),
+  );

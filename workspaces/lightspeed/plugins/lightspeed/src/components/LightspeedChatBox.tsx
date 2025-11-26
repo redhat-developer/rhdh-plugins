@@ -25,6 +25,7 @@ import {
 
 import { makeStyles } from '@material-ui/core';
 import {
+  ChatbotDisplayMode,
   ChatbotWelcomePrompt,
   Message,
   MessageBox,
@@ -49,6 +50,12 @@ const useStyles = makeStyles(theme => ({
   alert: {
     background: 'unset !important',
   },
+  promptSuggestions: {
+    '& div.pf-chatbot__prompt-suggestions': {
+      'flex-direction': 'column !important',
+    },
+  },
+
   userMessageText: {
     '& div.pf-chatbot__message--user': {
       '& div.pf-chatbot__message-text': {
@@ -69,6 +76,7 @@ type LightspeedChatBoxProps = {
   welcomePrompts: WelcomePrompt[];
   conversationId: string;
   isStreaming: boolean;
+  displayMode?: ChatbotDisplayMode;
 };
 
 export interface ScrollContainerHandle {
@@ -86,6 +94,7 @@ export const LightspeedChatBox = forwardRef(
       welcomePrompts,
       isStreaming,
       topicRestrictionEnabled,
+      displayMode,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle>,
   ) => {
@@ -144,11 +153,12 @@ export const LightspeedChatBox = forwardRef(
     }, [autoScroll, cmessages, containerRef]);
 
     const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
+    const isEmbeddedMode = displayMode === ChatbotDisplayMode.embedded;
     return (
       <MessageBox
         className={
           welcomePrompts.length
-            ? `${messageBoxClasses} ${classes.prompt}`
+            ? `${messageBoxClasses} ${classes.prompt}${!isEmbeddedMode ? ` ${classes.promptSuggestions}` : ''}`
             : messageBoxClasses
         }
         announcement={announcement}
