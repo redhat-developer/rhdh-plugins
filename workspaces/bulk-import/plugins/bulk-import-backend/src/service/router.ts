@@ -748,6 +748,7 @@ async function createAuditorEventByOperationId(
     }
     case Operations.FIND_ALL_IMPORTS:
     case Operations.FIND_ALL_TASK_IMPORTS:
+    case Operations.FIND_ALL_ORCHESTRATOR_WORKFLOW_IMPORTS:
       auditorEvent = await auditCreateEvent(auditor, 'import-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',
         search: req.query.search,
@@ -755,19 +756,14 @@ async function createAuditorEventByOperationId(
       break;
     case Operations.CREATE_IMPORT_JOBS:
     case Operations.CREATE_TASK_IMPORT_JOBS:
+    case Operations.CREATE_ORCHESTRATOR_WORKFLOW_JOBS:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
       });
       break;
     case Operations.FIND_IMPORT_STATUS_BY_REPO:
-      auditorEvent = await auditCreateEvent(
-        auditor,
-        'import-status-read',
-        req,
-        { queryType: 'by-query', repo: req.query.repo },
-      );
-      break;
     case Operations.FIND_TASK_IMPORT_STATUS_BY_REPO:
+    case Operations.FIND_ORCHESTRATOR_IMPORT_STATUS_BY_REPO:
       auditorEvent = await auditCreateEvent(
         auditor,
         'import-status-read',
