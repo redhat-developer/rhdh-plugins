@@ -87,6 +87,11 @@ export const submitChatRename = async (
       name: translations['conversation.rename.placeholder'],
     })
     .fill(newName);
+  await expect(
+    page.getByRole('textbox', {
+      name: translations['conversation.rename.placeholder'],
+    }),
+  ).toBeVisible();
   await page
     .getByRole('button', {
       name: translations['conversation.rename.confirm.action'],
@@ -305,4 +310,55 @@ export const selectEnablePinnedChats = async (
   await page
     .getByRole('menuitem', { name: translations['settings.pinned.enable'] })
     .click();
+};
+
+export const searchChats = async (
+  page: Page,
+  searchQuery: string,
+  translations: LightspeedMessages,
+) => {
+  await page
+    .getByRole('textbox', { name: translations['chatbox.search.placeholder'] })
+    .fill(searchQuery);
+};
+
+export const clearSearch = async (page: Page) => {
+  await page.getByRole('button', { name: 'Reset' }).click();
+};
+
+export const verifyEmptySearchResults = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await expect(page.getByLabel(translations['conversation.category.recent']))
+    .toMatchAriaSnapshot(`
+    - heading "${translations['conversation.category.pinnedChats']}"
+    - menu:
+      - menuitem "${translations['chatbox.emptyState.noPinnedChats']}" 
+    - heading "${translations['conversation.category.recent']}"
+    - menu:
+      - menuitem "${translations['common.noSearchResults']}" 
+    `);
+};
+
+export const verifyNoResultsFoundMessage = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await expect(page.getByLabel(translations['button.newChat']))
+    .toMatchAriaSnapshot(`
+    - heading "${translations['chatbox.emptyState.noResults.title']}"
+    - text: ${translations['chatbox.emptyState.noResults.body']}
+    `);
+};
+
+export const verifyChatUnpinned = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await expect(
+    page
+      .getByRole('menu')
+      .filter({ hasText: translations['chatbox.emptyState.noPinnedChats'] }),
+  ).toBeVisible();
 };
