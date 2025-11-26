@@ -354,7 +354,7 @@ declare namespace Paths {
       export type $202 = /* Import Job */ Components.Schemas.Import[];
     }
   }
-  namespace CreateOrhestratorWorkflowJobs {
+  namespace CreateOrchestratorWorkflowJobs {
     export type RequestBody =
       /* Import Job request */ Components.Schemas.ImportRequest[];
     namespace Responses {
@@ -737,13 +737,13 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.FindAllOrchestratorWorkflowImports.Responses.$200>;
   /**
-   * createOrhestratorWorkflowJobs - Execute an orchestrator workflow
+   * createOrchestratorWorkflowJobs - Execute an orchestrator workflow
    */
-  'createOrhestratorWorkflowJobs'(
+  'createOrchestratorWorkflowJobs'(
     parameters?: Parameters<UnknownParamsObject> | null,
-    data?: Paths.CreateOrhestratorWorkflowJobs.RequestBody,
+    data?: Paths.CreateOrchestratorWorkflowJobs.RequestBody,
     config?: AxiosRequestConfig,
-  ): OperationResponse<Paths.CreateOrhestratorWorkflowJobs.Responses.$200>;
+  ): OperationResponse<Paths.CreateOrchestratorWorkflowJobs.Responses.$200>;
   /**
    * findTaskImportStatusByRepo - Get Import Status by repository
    */
@@ -893,13 +893,13 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.FindAllOrchestratorWorkflowImports.Responses.$200>;
     /**
-     * createOrhestratorWorkflowJobs - Execute an orchestrator workflow
+     * createOrchestratorWorkflowJobs - Execute an orchestrator workflow
      */
     'post'(
       parameters?: Parameters<UnknownParamsObject> | null,
-      data?: Paths.CreateOrhestratorWorkflowJobs.RequestBody,
+      data?: Paths.CreateOrchestratorWorkflowJobs.RequestBody,
       config?: AxiosRequestConfig,
-    ): OperationResponse<Paths.CreateOrhestratorWorkflowJobs.Responses.$200>;
+    ): OperationResponse<Paths.CreateOrchestratorWorkflowJobs.Responses.$200>;
   };
   ['/task-import/by-repo']: {
     /**

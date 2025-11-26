@@ -378,7 +378,7 @@ paths:
                   $ref: '#/components/examples/importJobListErrors'
 
     post:
-      operationId: createOrhestratorWorkflowJobs
+      operationId: createOrchestratorWorkflowJobs
       summary: Execute an orchestrator workflow
       security:
         - BearerAuth: []

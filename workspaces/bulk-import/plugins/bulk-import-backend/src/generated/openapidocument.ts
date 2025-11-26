@@ -671,7 +671,7 @@ const OPENAPI = `
         }
       },
       "post": {
-        "operationId": "createOrhestratorWorkflowJobs",
+        "operationId": "createOrchestratorWorkflowJobs",
         "summary": "Execute an orchestrator workflow",
         "security": [
           {

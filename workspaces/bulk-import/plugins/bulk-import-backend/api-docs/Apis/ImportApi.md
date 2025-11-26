@@ -5,7 +5,7 @@ All URIs are relative to _http://localhost:7007/api/bulk-import_
 | Method                                                                                    | HTTP request                            | Description                                                           |
 | ----------------------------------------------------------------------------------------- | --------------------------------------- | --------------------------------------------------------------------- |
 | [**createImportJobs**](ImportApi.md#createImportJobs)                                     | **POST** /imports                       | Submit Import Jobs                                                    |
-| [**createOrhestratorWorkflowJobs**](ImportApi.md#createOrhestratorWorkflowJobs)           | **POST** /orchestrator-workflows        | Execute an orchestrator workflow                                      |
+| [**createOrchestratorWorkflowJobs**](ImportApi.md#createOrchestratorWorkflowJobs)         | **POST** /orchestrator-workflows        | Execute an orchestrator workflow                                      |
 | [**createTaskImportJobs**](ImportApi.md#createTaskImportJobs)                             | **POST** /task-imports                  | Execute a scaffolder template for a list of repositories              |
 | [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo)                                 | **DELETE** /import/by-repo              | Delete Import by repository                                           |
 | [**deleteOrchestratorImportByRepo**](ImportApi.md#deleteOrchestratorImportByRepo)         | **DELETE** /orchestrator-import/by-repo | Delete stored orchestrator workflow records for a specific repository |
@@ -45,11 +45,11 @@ Submit Import Jobs
 - **Content-Type**: application/json
 - **Accept**: application/json
 
-<a name="createOrhestratorWorkflowJobs"></a>
+<a name="createOrchestratorWorkflowJobs"></a>
 
-# **createOrhestratorWorkflowJobs**
+# **createOrchestratorWorkflowJobs**
 
-> createOrhestratorWorkflowJobs(ImportRequest)
+> createOrchestratorWorkflowJobs(ImportRequest)
 
 Execute an orchestrator workflow
 
