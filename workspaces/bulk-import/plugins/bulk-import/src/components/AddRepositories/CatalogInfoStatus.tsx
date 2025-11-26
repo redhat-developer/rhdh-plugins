@@ -28,6 +28,7 @@ import {
   AddRepositoryData,
   ImportFlow,
   RepositoryStatus,
+  TaskStatus,
 } from '../../types';
 import {
   areAllRowsSelected,
@@ -61,7 +62,9 @@ export const CatalogInfoStatus = ({
   useEffect(() => {
     if (
       importStatus === RepositoryStatus.ADDED ||
-      importStatus === RepositoryStatus.WAIT_PR_APPROVAL
+      importStatus === RepositoryStatus.WAIT_PR_APPROVAL ||
+      importStatus === TaskStatus.Processing ||
+      importStatus === TaskStatus.Completed
     ) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
@@ -82,6 +85,8 @@ export const CatalogInfoStatus = ({
   );
 
   const importFlow = useImportFlow();
+  const isScaffolderFlow = importFlow === ImportFlow.Scaffolder;
+
   if (
     importFlow !== ImportFlow.Scaffolder &&
     !isDrawer &&
@@ -105,8 +110,12 @@ export const CatalogInfoStatus = ({
   }
 
   if (importStatus) {
+    // For scaffolder flow, task statuses (Processing, Completed, etc.) should have normal color
+    const isTaskStatus = taskId && importStatus.startsWith('TASK');
+    const textColor = isScaffolderFlow && isTaskStatus ? undefined : '#6A6E73';
+
     return (
-      <Typography component="span" style={{ color: '#6A6E73' }}>
+      <Typography component="span" style={{ color: textColor }}>
         {getImportStatus(
           importStatus,
           (key: string) => t(key as any, {}),
@@ -120,6 +129,15 @@ export const CatalogInfoStatus = ({
 
   if (isDrawer || data?.totalReposInOrg === 0) {
     return null;
+  }
+
+  // For scaffolder flow, show "Ready to import" instead of "Not generated"
+  if (isScaffolderFlow) {
+    return (
+      <Typography component="span" style={{ color: '#6A6E73' }}>
+        {t('status.readyToImport')}
+      </Typography>
+    );
   }
 
   return (

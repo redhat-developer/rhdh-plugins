@@ -22,6 +22,7 @@ import { AddRepositoryData } from '../../types';
 export const getRepositoriesListColumns = (
   t: (key: string, ...args: any[]) => string,
   gitlabConfigured: boolean,
+  isScaffolderEnabled: boolean = false,
 ): TableColumn<AddRepositoryData>[] => [
   {
     id: 'name',
@@ -47,7 +48,9 @@ export const getRepositoriesListColumns = (
   },
   {
     id: 'status',
-    title: t('table.headers.status'),
+    title: isScaffolderEnabled
+      ? t('table.headers.taskStatus')
+      : t('table.headers.status'),
     field: 'catalogInfoYaml.status',
     type: 'string',
   },

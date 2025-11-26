@@ -31,6 +31,7 @@ import {
   AddRepositoryData,
   ImportJobStatus,
   RepositoryStatus,
+  TaskStatus,
 } from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
 import { CatalogInfoStatus } from './CatalogInfoStatus';
@@ -89,14 +90,18 @@ export const RepositoryTableRow = ({
           color="primary"
           checked={
             value?.status === RepositoryStatus.ADDED ||
-            value?.status === RepositoryStatus.WAIT_PR_APPROVAL
+            value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
+            value?.status === TaskStatus.Processing ||
+            value?.status === TaskStatus.Completed
               ? true
               : isItemSelected
           }
           disabled={
             loading ||
             value?.status === RepositoryStatus.ADDED ||
-            value?.status === RepositoryStatus.WAIT_PR_APPROVAL
+            value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
+            value?.status === TaskStatus.Processing ||
+            value?.status === TaskStatus.Completed
           }
           onClick={event => handleClick(event, data)}
           style={{ padding: '0 12px' }}

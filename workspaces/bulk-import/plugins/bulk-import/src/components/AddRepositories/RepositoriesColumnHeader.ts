@@ -19,6 +19,7 @@ import { TableColumn } from '@backstage/core-components';
 export const getRepositoriesColumnHeader = (
   isApprovalToolGitlab: boolean = false,
   t: (key: string, ...args: any[]) => string,
+  isScaffolderEnabled: boolean = false,
 ): TableColumn[] => [
   {
     id: 'name',
@@ -43,7 +44,9 @@ export const getRepositoriesColumnHeader = (
       },
   {
     id: 'cataloginfoyaml',
-    title: t('table.headers.status'),
+    title: isScaffolderEnabled
+      ? t('table.headers.taskStatus')
+      : t('table.headers.status'),
     field: 'catalogInfoYaml.status',
   },
 ];
