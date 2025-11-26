@@ -5,13 +5,13 @@ metadata:
   title: Adoption Insights for Red Hat Developer Hub
   description: |
     The Adoption Insights plugin enables you to visualize and analyze adoption and engagement metrics such as active users, total users, top catalog entities by views, top templates, TechDocs and plugin usage, and portal search trends within your internal developer portal.
-  # Example for optional annotations
-  # annotations:
-  #   github.com/project-slug: backstage/backstage
-  #   backstage.io/techdocs-ref: dir:.
+  annotations:
+    github.com/project-slug: redhat-developer/rhdh-plugins
+    jira/project-key: RHIDP
+    jira/component: adoption insights
 spec:
   type: backstage-plugin
-  owner: john@example.com
+  owner: rhdh-team
   lifecycle: active
   system: rhdh
   subcomponentOf: rhdh-plugins

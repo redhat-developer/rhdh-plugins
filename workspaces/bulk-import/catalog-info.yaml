@@ -9,9 +9,11 @@ metadata:
     a simple to use interface that can list all the repositories in your organization and allows you to select the ones
     you want to import.
   annotations:
-    github.com/project-slug: red-hat-developer-hub/backstage-plugins
+    github.com/project-slug: redhat-developer/rhdh-plugins
     github.com/team-slug: rhdh/maintainers-plugins
-    sonarqube.org/project-key: red_hat_developer_hub_plugins
+    sonarqube.org/project-key: redhat-developer_rhdh-plugins
+    jira/project-key: RHIDP
+    jira/component: Bulk Import Plugin
   tags:
     - backstage
     - rhdh

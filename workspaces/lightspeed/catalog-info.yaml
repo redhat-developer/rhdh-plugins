@@ -10,6 +10,9 @@ metadata:
     - rhdh
     - plugin
     - ai
+  annotations:
+    jira/project-key: RHIDP
+    jira/component: Lightspeed
 spec:
   type: backstage-plugin
   lifecycle: active

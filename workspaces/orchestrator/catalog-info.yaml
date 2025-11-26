@@ -6,9 +6,11 @@ metadata:
   title: RHDH Orchestrator plugin
   description: Orchestrator Plugin for Backstage
   annotations:
-    github.com/project-slug: red-hat-developer-hub/backstage-plugins
-    github.com/team-slug: red-hat-developer-hub/orchestrator-codeowners
-    sonarqube.org/project-key: red_hat_developer_hub_plugins
+    github.com/project-slug: redhat-developer/rhdh-plugins
+    github.com/team-slug: redhat-developer/rhdh-plugins-contributers
+    sonarqube.org/project-key: redhat-developer_rhdh-plugins
+    jira/project-key: RHIDP
+    jira/component: Orchestrator
   tags:
     - backstage
     - rhdh

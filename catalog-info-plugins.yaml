@@ -4,18 +4,30 @@ metadata:
   name: rhdh-plugins-plugins
   title: RHDH plugins (list of plugins)
   description: Backstage Plugins by Red Hat
+  annotations:
+    github.com/project-slug: redhat-developer/rhdh-plugins
+    jira/project-key: RHIDP
+    jira/all-issues-jql: project in (RHDHPLAN, RHIDP, RHDHBUGS) and status != closed
 spec:
   targets:
     # This list contains just the high-level entities for each workspace=plugin
     # while the file `catalog-info-plugin-packages.yaml` contains all
     # included packages (=frontend plugins, backend plugins, etc.).
     # For maintance reasons, please keep this list alphabetically sorted.
+    - ./workspaces/adoption-insights/catalog-info.yaml
+    - ./workspaces/ai-integrations/catalog-info.yaml
     - ./workspaces/bulk-import/catalog-info.yaml
     - ./workspaces/global-floating-action-button/catalog-info.yaml
     - ./workspaces/global-header/catalog-info.yaml
     - ./workspaces/homepage/catalog-info.yaml
     - ./workspaces/lightspeed/catalog-info.yaml
     - ./workspaces/marketplace/catalog-info.yaml
+    - ./workspaces/mcp-integrations/catalog-info.yaml
     - ./workspaces/openshift-image-registry/catalog-info.yaml
     - ./workspaces/orchestrator/catalog-info.yaml
+    - ./workspaces/quickstart/catalog-info.yaml
+    - ./workspaces/redhat-resource-optimization/catalog-info.yaml
+    # - ./workspaces/sandbox/catalog-info.yaml
+    - ./workspaces/scorecard/catalog-info.yaml
     - ./workspaces/theme/catalog-info.yaml
+    - ./workspaces/translations/catalog-info.yaml
