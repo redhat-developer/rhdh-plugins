@@ -267,7 +267,6 @@ export class OrchestratorWorkflowDao {
         instanceId: 'instance_id',
         repositoryUrl: 'repository_url',
         createdAt: 'created_at',
-        // status: 'status', ?
       })
       .where({ instance_id: instanceId })
       .first();
@@ -283,7 +282,6 @@ export class OrchestratorWorkflowDao {
         instanceId: 'instance_id',
         repositoryUrl: 'repository_url',
         createdAt: 'created_at',
-        // status: 'status', ?
       })
       .where({ repository_url: repositoryUrl })
       .orderBy('created_at', 'desc')

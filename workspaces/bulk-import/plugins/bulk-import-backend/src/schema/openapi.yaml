@@ -796,7 +796,6 @@ components:
         - 'TASK_PROCESSING'
         - 'TASK_SKIPPED'
         - TASK_FETCH_FAILED
-        - null
 
     ImportStatus:
       type: string
