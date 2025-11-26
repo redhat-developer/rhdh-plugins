@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Navigate, Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -54,6 +54,7 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { ScorecardHomepageSection } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 const app = createApp({
   apis,
@@ -100,7 +101,7 @@ const app = createApp({
 
 const routes = (
   <FlatRoutes>
-    <Route path="/" element={<Navigate to="catalog" />} />
+    <Route path="/" element={<ScorecardHomepageSection />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"
