@@ -51,7 +51,7 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
     await page.goto('/');
     await catalogPage.navigateToCatalog(currentLocale);
     await catalogPage.openComponent('Red Hat Developer Hub');
-    await page.getByText('Scorecard').click();
+    await page.getByTestId('header-tab-5').click();
 
     await expect(
       page.getByText(translations.permissionRequired.title),
