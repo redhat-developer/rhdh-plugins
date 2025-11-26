@@ -18,29 +18,35 @@
  * @param {import('knex').Knex} knex
  */
 exports.up = async function up(knex) {
-  await knex.schema.createTable('orchestrator_workflows', table => {
-    table.comment('Stores the orchestrator workflow execution instances');
-    table.increments('id').primary().comment('Primary key');
-    table
-      .string('instance_id')
-      .notNullable()
-      .unique()
-      .comment('The workflow execution instance ID from the orchestrator');
-    table
-      .string('repository_url')
-      .notNullable()
-      .comment('The URL of the repository this workflow is for');
-    // table.integer('repositoryId').notNullable();
-    table
-      .foreign('repository_url')
-      .references('url')
-      .inTable('repositories')
-      .onDelete('CASCADE');
-    table
-      .timestamp('created_at')
-      .defaultTo(knex.fn.now())
-      .comment('Creation timestamp');
-  });
+  await knex.schema
+    .createTable('orchestrator_repositories', function repositories(table) {
+      table.increments('id').primary();
+      table.string('url').notNullable().unique();
+      table.string('approvalTool').notNullable();
+    })
+    .createTable('orchestrator_workflows', table => {
+      table.comment('Stores the orchestrator workflow execution instances');
+      table.increments('id').primary().comment('Primary key');
+      table
+        .string('instance_id')
+        .notNullable()
+        .unique()
+        .comment('The workflow execution instance ID from the orchestrator');
+      table
+        .string('repository_url')
+        .notNullable()
+        .comment('The URL of the repository this workflow is for');
+      // table.integer('repositoryId').notNullable();
+      table
+        .foreign('repository_url')
+        .references('url')
+        .inTable('orchestrator_repositories')
+        .onDelete('CASCADE');
+      table
+        .timestamp('created_at')
+        .defaultTo(knex.fn.now())
+        .comment('Creation timestamp');
+    });
 };
 
 /**
@@ -48,4 +54,5 @@ exports.up = async function up(knex) {
  */
 exports.down = async function down(knex) {
   await knex.schema.dropTable('orchestrator_workflows');
+  await knex.schema.dropTable('orchestrator_repositories');
 };

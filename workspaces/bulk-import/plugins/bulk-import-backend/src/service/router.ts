@@ -148,9 +148,14 @@ export async function createRouter(
   } = options;
 
   const knex = await migrate(database);
-  const repositoryDao = new RepositoryDao(knex, logger);
+  const repositoryDao = new RepositoryDao(knex, logger, 'repositories');
   const taskDao = new ScaffolderTaskDao(knex);
   const taskLocationsDao = new TaskLocationsDao(knex);
+  const orchestratorRepositoryDao = new RepositoryDao(
+    knex,
+    logger,
+    'orchestrator_repositories',
+  );
   const orchestratorWorkflowDao = new OrchestratorWorkflowDao(knex);
   // This should probably be sometype of object that holds all the scm API service objects
   const githubApiService = new GithubApiService(logger, config, cache);
@@ -394,7 +399,7 @@ export async function createRouter(
       const { pageNumber, pageSize, search, sortColumn, sortOrder } =
         getFindImportsParams(c);
       const imports: SourceImport[] = [];
-      const repositories = await repositoryDao.findRepositories(
+      const repositories = await orchestratorRepositoryDao.findRepositories(
         pageNumber,
         pageSize,
         search,
@@ -406,7 +411,7 @@ export async function createRouter(
         const response = await findOrchestratorImportStatusByRepo(
           {
             logger,
-            repositoryDao,
+            orchestratorRepositoryDao,
             orchestratorWorkflowDao,
             discovery,
           },
@@ -513,7 +518,7 @@ export async function createRouter(
         token,
         requestBody: c.request.requestBody,
         orchestratorWorkflowDao,
-        repositoryDao,
+        orchestratorRepositoryDao,
         githubApiService,
         gitlabApiService,
       });
@@ -589,7 +594,7 @@ export async function createRouter(
       const response = await findOrchestratorImportStatusByRepo(
         {
           logger,
-          repositoryDao,
+          orchestratorRepositoryDao,
           orchestratorWorkflowDao,
           discovery,
         },
@@ -658,7 +663,7 @@ export async function createRouter(
       const response = await deleteOrchestratorImportByRepo(
         {
           logger,
-          dao: repositoryDao,
+          dao: orchestratorRepositoryDao,
         },
         q.repo,
       );

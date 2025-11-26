@@ -868,7 +868,7 @@ export async function findTaskImportStatusByRepo(
     githubApiService: GithubApiService;
     gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
-    repositoryDao: RepositoryDao;
+    repositoryDao: RepositoryDao<'repositories'>;
     taskDao: ScaffolderTaskDao;
     taskLocationsDao: TaskLocationsDao;
     discovery: DiscoveryService;
@@ -983,7 +983,7 @@ export async function findTaskImportStatusByRepo(
 export async function findOrchestratorImportStatusByRepo(
   deps: {
     logger: LoggerService;
-    repositoryDao: RepositoryDao;
+    orchestratorRepositoryDao: RepositoryDao<'orchestrator_repositories'>;
     orchestratorWorkflowDao: OrchestratorWorkflowDao;
     discovery: DiscoveryService;
   },
@@ -1009,7 +1009,8 @@ export async function findOrchestratorImportStatusByRepo(
     approvalTool: 'GIT',
   };
   try {
-    const repository = await deps.repositoryDao.findRepositoryByUrl(repoUrl);
+    const repository =
+      await deps.orchestratorRepositoryDao.findRepositoryByUrl(repoUrl);
     if (repository?.id) {
       const workflow =
         await deps.orchestratorWorkflowDao.findWorkflowByRepoUrl(repoUrl);
@@ -1196,7 +1197,7 @@ export async function deleteImportByRepo(
 export async function deleteTaskImportByRepo(
   deps: {
     logger: LoggerService;
-    dao: RepositoryDao;
+    dao: RepositoryDao<'repositories'>;
   },
   repoUrl: string,
 ): Promise<HandlerResponse<void>> {
@@ -1222,7 +1223,7 @@ export async function deleteTaskImportByRepo(
 export async function deleteOrchestratorImportByRepo(
   deps: {
     logger: LoggerService;
-    dao: RepositoryDao;
+    dao: RepositoryDao<'orchestrator_repositories'>;
   },
   repoUrl: string,
 ): Promise<HandlerResponse<void>> {
