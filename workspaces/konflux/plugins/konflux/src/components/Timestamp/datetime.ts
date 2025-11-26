@@ -188,9 +188,9 @@ export const parsePrometheusDuration = (duration: string): number => {
         Number.parseInt(p?.[1] ?? '1', 10) *
         (p?.[2] ? units[p[2] as keyof typeof units] : 1),
     );
-  } catch (error_) {
+  } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Invalid duration format');
+    console.warn('Failed to render clock', error);
     return 0;
   }
 };
