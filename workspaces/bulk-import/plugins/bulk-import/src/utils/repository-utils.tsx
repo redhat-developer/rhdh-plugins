@@ -731,7 +731,6 @@ export const prepareDataForAddedRepositories = (
     return { repoData: {}, totalJobs: 0 };
   }
   const importJobs = addedRepositories as ImportJobs;
-  // console.log(`hmmm: ${JSON.stringify(importJobs)}`);
   const repoData: { [id: string]: AddRepositoryData } =
     importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
       const id = `${val.repository.organization}/${val.repository.name}`;

@@ -118,14 +118,14 @@ export async function createWorkflowImportJobs(
         },
       );
 
-      await orchestratorRepositoryDao.insertRepository(
+      const repositoryId = await orchestratorRepositoryDao.insertRepository(
         repo.repository.url,
         wfResult.data.id,
         approvalTool,
       );
       await orchestratorWorkflowDao.insertWorkflow(
         wfResult.data.id,
-        repo.repository.url,
+        repositoryId,
       );
 
       const response = await orchestratorApi.getInstanceById(wfResult.data.id, {

@@ -33,13 +33,13 @@ exports.up = async function up(knex) {
         .unique()
         .comment('The workflow execution instance ID from the orchestrator');
       table
-        .string('repository_url')
+        .integer('repositoryId')
+        .unsigned()
         .notNullable()
-        .comment('The URL of the repository this workflow is for');
-      // table.integer('repositoryId').notNullable();
+        .comment('The ID of the repository this workflow is for');
       table
-        .foreign('repository_url')
-        .references('url')
+        .foreign('repositoryId')
+        .references('id')
         .inTable('orchestrator_repositories')
         .onDelete('CASCADE');
       table

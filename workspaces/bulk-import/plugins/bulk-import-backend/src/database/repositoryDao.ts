@@ -228,7 +228,7 @@ export class TaskLocationsDao {
 export interface OrchestratorWorkflow {
   id: number;
   instanceId: string;
-  repositoryUrl: string;
+  repositoryId: number;
   createdAt: Date;
   status?: string;
 }
@@ -239,12 +239,12 @@ export class OrchestratorWorkflowDao {
 
   async insertWorkflow(
     instanceId: string,
-    repositoryUrl: string,
+    repositoryId: number,
   ): Promise<number> {
     const [newWorkflow] = await this.knex('orchestrator_workflows')
       .insert({
         instance_id: instanceId,
-        repository_url: repositoryUrl,
+        repositoryId: repositoryId,
       })
       .returning('id');
     return newWorkflow.id;
@@ -265,7 +265,7 @@ export class OrchestratorWorkflowDao {
       .select({
         id: 'id',
         instanceId: 'instance_id',
-        repositoryUrl: 'repository_url',
+        repositoryId: 'repositoryId',
         createdAt: 'created_at',
       })
       .where({ instance_id: instanceId })
@@ -273,31 +273,31 @@ export class OrchestratorWorkflowDao {
     return result;
   }
 
-  async findWorkflowByRepoUrl(
-    repositoryUrl: string,
+  async findWorkflowByRepoId(
+    repositoryId: number,
   ): Promise<OrchestratorWorkflow | undefined> {
     const result = await this.knex('orchestrator_workflows')
       .select({
         id: 'id',
         instanceId: 'instance_id',
-        repositoryUrl: 'repository_url',
+        repositoryId: 'repositoryId',
         createdAt: 'created_at',
       })
-      .where({ repository_url: repositoryUrl })
+      .where({ repositoryId: repositoryId })
       .orderBy('created_at', 'desc')
       .first();
     return result;
   }
 
-  async findWorkflowsByRepositoryUrl(
-    repositoryUrl: string,
+  async findWorkflowsByRepositoryId(
+    repositoryId: number,
   ): Promise<OrchestratorWorkflow[]> {
     return await this.knex('orchestrator_workflows')
-      .where({ repository_url: repositoryUrl })
+      .where({ repositoryId: repositoryId })
       .select({
         id: 'id',
         instanceId: 'instance_id',
-        repositoryUrl: 'repository_url',
+        repositoryId: 'repositoryId',
         createdAt: 'created_at',
       });
   }
