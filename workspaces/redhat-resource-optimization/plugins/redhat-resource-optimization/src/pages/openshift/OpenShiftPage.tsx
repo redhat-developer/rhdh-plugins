@@ -125,13 +125,28 @@ export function OpenShiftPage() {
         'filter[time_scope_value]': timeScopeValue,
       };
 
+      // Add category parameter when showPlatformSum is enabled
+      if (showPlatformSum) {
+        queryParams.category = 'Platform';
+      }
+
       queryParams[groupByParam] = '*';
 
-      // Handle tag filtering differently
+      // Handle filtering based on operation (includes/excludes)
       if (filterBy === 'tag' && selectedTagKey && selectedTagValue) {
-        queryParams[`filter[tag:${selectedTagKey}]`] = selectedTagValue;
+        // Tag filtering uses filter[tag:key] or exclude[tag:key]
+        if (filterOperation === 'excludes') {
+          queryParams[`exclude[tag:${selectedTagKey}]`] = selectedTagValue;
+        } else {
+          queryParams[`filter[tag:${selectedTagKey}]`] = selectedTagValue;
+        }
       } else if (filterValue) {
-        queryParams[`filter[${filterBy}]`] = filterValue;
+        // Regular filtering uses filter[field] or exclude[field]
+        if (filterOperation === 'excludes') {
+          queryParams[`exclude[${filterBy}]`] = filterValue;
+        } else {
+          queryParams[`filter[${filterBy}]`] = filterValue;
+        }
       }
 
       if (sortField) {
@@ -164,13 +179,14 @@ export function OpenShiftPage() {
     groupBy,
     filterBy,
     filterValue,
+    filterOperation,
+    showPlatformSum,
     api,
     currentPage,
     pageSize,
     sortField,
     sortDirection,
     selectedTag,
-    filterBy,
     selectedTagKey,
     selectedTagValue,
   ]);
@@ -532,6 +548,10 @@ export function OpenShiftPage() {
               if (value !== 'tag') {
                 setSelectedTag('');
               }
+              // Reset showPlatformSum when groupBy changes away from 'project'
+              if (value !== 'project') {
+                setShowPlatformSum(false);
+              }
             }}
             selectedTag={selectedTag}
             onSelectedTagChange={value => {
@@ -592,6 +612,7 @@ export function OpenShiftPage() {
                       showPlatformSum={showPlatformSum}
                       setShowPlatformSum={setShowPlatformSum}
                       projectsCount={displayData?.projects?.length || 0}
+                      groupBy={groupBy}
                     />
                   ),
                 }}

@@ -191,6 +191,7 @@ export class OptimizationsClient implements OptimizationsApi {
     this.appendDynamicParams(queryParams, request, 'group_by[');
     this.appendDynamicParams(queryParams, request, 'order_by[');
     this.appendDynamicFilterParams(queryParams, request);
+    this.appendDynamicExcludeParams(queryParams, request);
     return queryParams;
   }
 
@@ -208,6 +209,7 @@ export class OptimizationsClient implements OptimizationsApi {
     }> = [
       { key: 'currency', paramName: 'currency' },
       { key: 'delta', paramName: 'delta' },
+      { key: 'category', paramName: 'category' },
       {
         key: 'filter[limit]',
         paramName: 'filter[limit]',
@@ -280,6 +282,23 @@ export class OptimizationsClient implements OptimizationsApi {
         key.endsWith(']') &&
         !handledFilterKeys.has(key)
       ) {
+        const value = request.query[key as keyof typeof request.query];
+        if (value) {
+          queryParams.append(key, String(value));
+        }
+      }
+    }
+  }
+
+  /**
+   * Appends dynamic exclude parameters (e.g., exclude[project], exclude[cluster], exclude[tag:key])
+   */
+  private appendDynamicExcludeParams(
+    queryParams: URLSearchParams,
+    request: GetCostManagementRequest,
+  ): void {
+    for (const key of Object.keys(request.query)) {
+      if (key.startsWith('exclude[') && key.endsWith(']')) {
         const value = request.query[key as keyof typeof request.query];
         if (value) {
           queryParams.append(key, String(value));
