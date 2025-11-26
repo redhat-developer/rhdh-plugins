@@ -199,9 +199,10 @@ export function extractKubernetesErrorDetails(
     fallbackMessage = JSON.stringify(error);
   } else if (typeof error === 'string') {
     fallbackMessage = error;
+  } else if (error === null || error === undefined) {
+    fallbackMessage = 'Unknown error';
   } else {
-    // for primitives (number, boolean, undefined, null, etc.)
-    fallbackMessage = String(error ?? 'Unknown error');
+    fallbackMessage = String(error);
   }
 
   const resourcePath = buildResourcePath(
