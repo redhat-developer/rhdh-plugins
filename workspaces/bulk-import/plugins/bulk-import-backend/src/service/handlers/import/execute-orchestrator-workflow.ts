@@ -121,7 +121,7 @@ export async function createWorkflowImportJobs(
       await orchestratorRepositoryDao.insertRepository(
         repo.repository.url,
         wfResult.data.id,
-        repo.approvalTool ?? 'GIT',
+        approvalTool,
       );
       await orchestratorWorkflowDao.insertWorkflow(
         wfResult.data.id,

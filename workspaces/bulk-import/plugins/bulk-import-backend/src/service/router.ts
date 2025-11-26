@@ -113,7 +113,7 @@ namespace Operations {
   export const CREATE_IMPORT_JOBS = 'createImportJobs';
   export const CREATE_TASK_IMPORT_JOBS = 'createTaskImportJobs';
   export const CREATE_ORCHESTRATOR_WORKFLOW_JOBS =
-    'createOrhestratorWorkflowJobs';
+    'createOrchestratorWorkflowJobs';
 
   export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
   export const FIND_TASK_IMPORT_STATUS_BY_REPO = 'findTaskImportStatusByRepo';
