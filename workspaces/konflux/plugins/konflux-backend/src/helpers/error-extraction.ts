@@ -192,13 +192,16 @@ export function extractKubernetesErrorDetails(
   namespace: string,
   source: 'kubernetes' | 'kubearchive' = 'kubernetes',
 ): ExtractedErrorDetails {
-  let fallbackMessage;
+  let fallbackMessage: string;
   if (error instanceof Error) {
     fallbackMessage = error.message;
   } else if (typeof error === 'object' && error !== null) {
     fallbackMessage = JSON.stringify(error);
+  } else if (typeof error === 'string') {
+    fallbackMessage = error;
   } else {
-    fallbackMessage = String(error);
+    // for primitives (number, boolean, undefined, null, etc.)
+    fallbackMessage = String(error ?? 'Unknown error');
   }
 
   const resourcePath = buildResourcePath(

@@ -83,7 +83,7 @@ describe('error-extraction', () => {
           namespace,
         );
 
-        expect(result.message).toBe('null');
+        expect(result.message).toBe('Unknown error');
         expect(result.source).toBe('kubernetes');
       });
 
@@ -95,7 +95,7 @@ describe('error-extraction', () => {
           namespace,
         );
 
-        expect(result.message).toBe('undefined');
+        expect(result.message).toBe('Unknown error');
         expect(result.source).toBe('kubernetes');
       });
     });

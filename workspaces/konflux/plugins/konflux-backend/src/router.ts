@@ -25,7 +25,7 @@ import express from 'express';
 import Router from 'express-promise-router';
 import { KonfluxService } from './services/konflux-service';
 import { KonfluxLogger } from './helpers/logger';
-import { UserEntity } from '@backstage/catalog-model';
+import { isUserEntity } from '@backstage/catalog-model';
 
 export interface RouterOptions {
   logger: LoggerService;
@@ -60,7 +60,9 @@ async function extractUserEmail(
   });
 
   const email =
-    (userEntity as UserEntity | undefined)?.spec?.profile?.email || '';
+    userEntity && isUserEntity(userEntity)
+      ? userEntity?.spec?.profile?.email ?? ''
+      : '';
 
   if (!email) {
     konfluxLogger.debug('User email not found in user entity', {
