@@ -23,5 +23,5 @@ export type DbMetricValue = {
   value?: MetricValue;
   timestamp: Date;
   error_message?: string;
-  status?: string;
+  status?: 'success' | 'warning' | 'error';
 };

@@ -156,7 +156,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 value,
                 timestamp: new Date(),
                 status,
-              };
+              } as Omit<DbMetricValue, 'id'>;
             } catch (error) {
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
@@ -164,7 +164,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),
-              };
+              } as Omit<DbMetricValue, 'id'>;
             }
           }),
         ).then(promises =>

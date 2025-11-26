@@ -15,32 +15,13 @@
  */
 
 exports.up = async function up(knex) {
-  const client = knex.client.config.client;
-
-  if (client === 'pg') {
-    await knex.raw(`
-        DO $$ BEGIN
-          CREATE TYPE metric_values_status_enum AS ENUM ('success', 'warning', 'error');
-        EXCEPTION
-          WHEN duplicate_object THEN null;
-        END $$;
-      `);
-    await knex.schema.alterTable('metric_values', table => {
-      table.specificType('status', 'metric_values_status_enum').nullable();
-    });
-  } else {
-    await knex.schema.alterTable('metric_values', table => {
-      table.enum('status', ['success', 'warning', 'error']).nullable();
-    });
-  }
+  await knex.schema.alterTable('metric_values', table => {
+    table.enu('status', ['success', 'warning', 'error']).nullable();
+  });
 };
 
 exports.down = async function down(knex) {
   await knex.schema.alterTable('metric_values', table => {
     table.dropColumn('status');
   });
-
-  if (knex.client.config.client === 'pg') {
-    await knex.raw('DROP TYPE IF EXISTS metric_values_status_enum');
-  }
 };

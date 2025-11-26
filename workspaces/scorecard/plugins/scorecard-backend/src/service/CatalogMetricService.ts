@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  MetricResult,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { NotFoundError, stringifyError } from '@backstage/errors';
 import { AuthService } from '@backstage/backend-plugin-api';
@@ -86,15 +89,24 @@ export class CatalogMetricService {
 
     return rawResults.map(
       ({ metric_id, value, error_message, timestamp, status }) => {
+        let thresholds: ThresholdConfig | undefined;
+        let thresholdError: string | undefined;
+
         const provider = this.registry.getProvider(metric_id);
         const metric = provider.getMetric();
 
+        try {
+          thresholds = mergeEntityAndProviderThresholds(entity, provider);
+
+          if (value === undefined) {
+            thresholdError =
+              'Unable to evaluate thresholds, metric value is missing';
+          }
+        } catch (error) {
+          thresholdError = stringifyError(error);
+        }
+
         const isMetricCalcError = error_message || value === undefined;
-        const thresholdError =
-          value === undefined
-            ? 'Unable to evaluate thresholds, metric value is missing'
-            : null;
-        const thresholds = mergeEntityAndProviderThresholds(entity, provider);
 
         return {
           id: metric.id,

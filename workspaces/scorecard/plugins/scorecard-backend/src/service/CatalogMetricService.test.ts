@@ -30,16 +30,11 @@ import { AuthService } from '@backstage/backend-plugin-api';
 import * as permissionUtils from '../permissions/permissionUtils';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import * as thresholdUtils from '../utils/mergeEntityAndProviderThresholds';
+import { DbMetricValue } from '../database/types';
+import { mockThresholdRules } from '../../__fixtures__/mockThresholdRules';
 
-jest.mock('../utils/mergeEntityAndProviderThresholds', () => ({
-  mergeEntityAndProviderThresholds: jest.fn(),
-}));
-
-jest.mock('../permissions/permissionUtils', () => ({
-  filterAuthorizedMetrics: jest
-    .fn()
-    .mockReturnValue([{ id: 'github.important_metric' }]),
-}));
+jest.mock('../utils/mergeEntityAndProviderThresholds');
+jest.mock('../permissions/permissionUtils');
 
 const provider = new MockNumberProvider('github.important_metric', 'github');
 
@@ -52,8 +47,8 @@ const latestEntityMetric = [
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
     error_message: undefined,
     status: 'success',
-  },
-];
+  } as DbMetricValue,
+] as DbMetricValue[];
 
 const metricsList = [
   { id: 'github.important_metric' },
@@ -87,6 +82,12 @@ describe('CatalogMetricService', () => {
     (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
       { id: 'github.important_metric' },
     ]);
+
+    (
+      thresholdUtils.mergeEntityAndProviderThresholds as jest.Mock
+    ).mockReturnValue({
+      rules: mockThresholdRules,
+    });
 
     service = new CatalogMetricService({
       catalog: mockedCatalog,
@@ -292,6 +293,25 @@ describe('CatalogMetricService', () => {
       );
     });
 
+    it('should set threshold error when merge thresholds fails', async () => {
+      (
+        thresholdUtils.mergeEntityAndProviderThresholds as jest.Mock
+      ).mockImplementation(() => {
+        throw new Error('Merge thresholds failed');
+      });
+
+      const newResult = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.important_metric'],
+      );
+
+      expect(newResult).toHaveLength(1);
+
+      const thresholdResult = newResult[0].result.thresholdResult;
+      expect(thresholdResult.status).toBe('error');
+      expect(thresholdResult.error).toBe('Error: Merge thresholds failed');
+    });
+
     it('should return metric result', async () => {
       const result = await service.getLatestEntityMetrics(
         'component:default/test-component',
@@ -321,7 +341,9 @@ describe('CatalogMetricService', () => {
           value: 42,
           timestamp: '2024-01-15T12:00:00.000Z',
           thresholdResult: expect.objectContaining({
-            definition: undefined,
+            definition: {
+              rules: mockThresholdRules,
+            },
             status: 'success',
             evaluation: 'success',
           }),
@@ -376,8 +398,9 @@ describe('CatalogMetricService', () => {
         ['github.important_metric'],
       );
 
-      expect(newResult[0].result.thresholdResult.status).toBe('error');
-      expect(newResult[0].result.thresholdResult.error).toBe(
+      const thresholdResult = newResult[0].result.thresholdResult;
+      expect(thresholdResult.status).toBe('error');
+      expect(thresholdResult.error).toBe(
         'Unable to evaluate thresholds, metric value is missing',
       );
     });
