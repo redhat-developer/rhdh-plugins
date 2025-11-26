@@ -1013,8 +1013,9 @@ export async function findOrchestratorImportStatusByRepo(
     const repository =
       await deps.orchestratorRepositoryDao.findRepositoryByUrl(repoUrl);
     if (repository?.id) {
-      const workflow =
-        await deps.orchestratorWorkflowDao.findWorkflowByRepoUrl(repoUrl);
+      const workflow = await deps.orchestratorWorkflowDao.findWorkflowByRepoId(
+        repository.id,
+      );
       if (!workflow) {
         throw new NotFoundError(
           `Workflow for repository ${repoUrl} was not found`,
@@ -1040,12 +1041,14 @@ export async function findOrchestratorImportStatusByRepo(
           };
           if (!skipWorkflows) {
             const workflows =
-              await deps.orchestratorWorkflowDao.findWorkflowsByRepositoryUrl(
-                repoUrl,
+              await deps.orchestratorWorkflowDao.findWorkflowsByRepositoryId(
+                repository.id,
               );
-            result.workflows = workflows.map(w => ({
-              workflowId: w.instanceId,
-            }));
+            result.workflows = workflows.map(
+              (w: { instanceId: string | undefined }) => ({
+                workflowId: w.instanceId,
+              }),
+            );
           }
 
           result.approvalTool =

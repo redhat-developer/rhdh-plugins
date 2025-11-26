@@ -16682,7 +16682,7 @@ __metadata:
     "@types/supertest": 2.0.16
     ajv-formats: ^3.0.1
     app: "link:../app"
-    better-sqlite3: ^9.0.0
+    better-sqlite3: ^12.4.1
     eventsource-client: ^1.2.0
     express: ^4.17.1
     git-url-parse: ^14.0.0
@@ -16881,14 +16881,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"better-sqlite3@npm:^9.0.0":
-  version: 9.6.0
-  resolution: "better-sqlite3@npm:9.6.0"
+"better-sqlite3@npm:^12.4.1":
+  version: 12.4.6
+  resolution: "better-sqlite3@npm:12.4.6"
   dependencies:
     bindings: ^1.5.0
     node-gyp: latest
     prebuild-install: ^7.1.1
-  checksum: be3a1d2a3f6f9b5141be6607a38c0a51fa5849495b071955e507bc0c2a2fb08430852c1bf03796eec1a53344b25645807db48dcb51c71b0662b74c5a70420bb0
+  checksum: b12ef44e0cbe4770c42c672861cbcdaf9509f191f18dafd9d5c81ac9b5a7a2e0066103ff9141ea4397a777f6bca1029fa75b64341b017ced6acd1af6314b13c6
   languageName: node
   linkType: hard
 
