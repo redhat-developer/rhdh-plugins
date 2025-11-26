@@ -38,7 +38,7 @@ export type CreateWorkflowImportJobsArgs = {
   token?: string;
   requestBody: ImportRequest[];
   orchestratorWorkflowDao: OrchestratorWorkflowDao;
-  repositoryDao: RepositoryDao;
+  orchestratorRepositoryDao: RepositoryDao<'orchestrator_repositories'>;
   githubApiService: GithubApiService;
   gitlabApiService: GitlabApiService;
 };
@@ -54,7 +54,7 @@ export async function createWorkflowImportJobs(
     token,
     requestBody,
     orchestratorWorkflowDao,
-    repositoryDao,
+    orchestratorRepositoryDao,
     githubApiService,
     gitlabApiService,
   } = args;
@@ -118,7 +118,7 @@ export async function createWorkflowImportJobs(
         },
       );
 
-      await repositoryDao.insertRepository(
+      await orchestratorRepositoryDao.insertRepository(
         repo.repository.url,
         wfResult.data.id,
         repo.approvalTool ?? 'GIT',
