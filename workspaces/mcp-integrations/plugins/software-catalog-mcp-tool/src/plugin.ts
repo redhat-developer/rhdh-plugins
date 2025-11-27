@@ -62,36 +62,6 @@ When to use this tool:
 - List all available Software Templates
 - Search for templates by name, title, or unique identifier
 - Get template configuration details (parameters, steps)
-
-When to use 'fetch-catalog-entities' instead:
-- You need the full Backstage entity object (use verbose: true)
-- You want to filter templates by additional criteria (type, lifecycle, tags)
-- You're searching across multiple entity kinds, not just Templates
-
-Example invocations and outputs:
-  # List all Software Templates
-  Invocation: fetch-template-metadata
-  Output: {
-  "templates": [
-    {
-      "name": "chatbot",
-      "tags": "ai,llamacpp,vllm,python",
-      "description": "Build your own Large Language Model (LLM)-enabled chat application.",
-      "owner": "rhdh-pai",
-      "parameters": "[{\\"title\\":\\"Application Information\\",\\"required\\":[\\"name\\",\\"owner\\"]}]",
-      "steps": "[{\\"id\\":\\"fetch-base\\",\\"name\\":\\"Fetch Base\\",\\"action\\":\\"fetch:template\\"}]"
-    },
-    {
-      "name": "object-detection",
-      "tags": "ai,detr,python",
-      "labels": "app-type:ml,framework:streamlit",
-      "description": "Identify and locate objects in an image using an AI-enabled object detection application.",
-      "owner": "rhdh-pai",
-      "parameters": "[{\\"title\\":\\"Application Information\\"}]",
-      "steps": "[{\\"id\\":\\"fetch-base\\",\\"action\\":\\"fetch:template\\"}]"
-    }
-  ]
-}
 `,
           schema: {
             input: z =>
