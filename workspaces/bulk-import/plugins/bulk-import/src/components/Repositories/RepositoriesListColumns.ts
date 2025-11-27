@@ -17,6 +17,7 @@
 import { TableColumn } from '@backstage/core-components';
 
 import { AddRepositoryData } from '../../types';
+import { SHOW_STATUS_COLUMN } from '../../utils/constants';
 
 // Translation keys for table headers
 export const getRepositoriesListColumns = (
@@ -46,25 +47,30 @@ export const getRepositoriesListColumns = (
     field: 'organizationUrl',
     type: 'string',
   },
-  {
-    id: 'status',
-    title: isScaffolderEnabled
-      ? t('table.headers.taskStatus')
-      : t('table.headers.status'),
-    field: 'catalogInfoYaml.status',
-    type: 'string',
-  },
+  // Status column hidden based on configuration
+  ...(SHOW_STATUS_COLUMN
+    ? [
+        {
+          id: 'status',
+          title: isScaffolderEnabled
+            ? t('table.headers.taskStatus')
+            : t('table.headers.status'),
+          field: 'catalogInfoYaml.status',
+          type: 'string' as const,
+        },
+      ]
+    : []),
   {
     id: 'last-updated',
     title: t('table.headers.lastUpdated'),
     field: 'catalogInfoYaml.lastUpdated',
-    type: 'datetime',
+    type: 'datetime' as const,
   },
   {
     id: 'actions',
     title: t('table.headers.actions'),
     field: 'actions',
     sorting: false,
-    type: 'string',
+    type: 'string' as const,
   },
 ];

@@ -16,6 +16,8 @@
 
 import { TableColumn } from '@backstage/core-components';
 
+import { SHOW_STATUS_COLUMN } from '../../utils/constants';
+
 export const getRepositoriesColumnHeader = (
   isApprovalToolGitlab: boolean = false,
   t: (key: string, ...args: any[]) => string,
@@ -42,11 +44,16 @@ export const getRepositoriesColumnHeader = (
         title: t('table.headers.organization'),
         field: 'organizationUrl',
       },
-  {
-    id: 'cataloginfoyaml',
-    title: isScaffolderEnabled
-      ? t('table.headers.taskStatus')
-      : t('table.headers.status'),
-    field: 'catalogInfoYaml.status',
-  },
+  // Status column hidden based on configuration
+  ...(SHOW_STATUS_COLUMN
+    ? [
+        {
+          id: 'cataloginfoyaml',
+          title: isScaffolderEnabled
+            ? t('table.headers.taskStatus')
+            : t('table.headers.status'),
+          field: 'catalogInfoYaml.status',
+        },
+      ]
+    : []),
 ];

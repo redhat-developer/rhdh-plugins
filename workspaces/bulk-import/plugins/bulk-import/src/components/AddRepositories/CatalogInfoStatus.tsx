@@ -30,6 +30,7 @@ import {
   RepositoryStatus,
   TaskStatus,
 } from '../../types';
+import { SHOW_STATUS_COLUMN } from '../../utils/constants';
 import {
   areAllRowsSelected,
   getImportStatus,
@@ -86,6 +87,11 @@ export const CatalogInfoStatus = ({
 
   const importFlow = useImportFlow();
   const isScaffolderFlow = importFlow === ImportFlow.Scaffolder;
+
+  // Don't show any status based on configuration
+  if (!SHOW_STATUS_COLUMN && !isDrawer) {
+    return null;
+  }
 
   if (
     importFlow !== ImportFlow.Scaffolder &&
