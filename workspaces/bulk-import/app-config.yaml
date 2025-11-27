@@ -11,6 +11,13 @@ backend:
   # information on the format
   auth:
     dangerouslyDisableDefaultAuthPolicy: true
+    externalAccess:
+      - type: static
+        options:
+          # notsecret
+          # echo mycurlpasswd | base64
+          token: bXljdXJscGFzc3dkCg==
+          subject: my-external-feed
     # keys:
     #   - secret: ${BACKEND_SECRET}
   baseUrl: http://localhost:7007
@@ -122,6 +129,6 @@ permission:
   # setting this to `false` will disable permissions
   enabled: true
 # scaffolder template execution configuration. Disabled by default.
-# bulkImport:
-#   importTemplate: template:default/create-pr-with-catalog-info
-#   importAPI: scaffolder
+bulkImport:
+  importTemplate: template:default/create-pr-with-catalog-info
+  importAPI: scaffolder

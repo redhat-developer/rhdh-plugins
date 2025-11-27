@@ -175,10 +175,14 @@ const bulkImportTranslationFr = createTranslationMessages({
     'repositories.repositoryText': 'Dépôt',
     'repositories.removeRepositoryWarningScaffolder':
       'La suppression d’un dépôt supprimera également toutes les informations de tâche Scaffolder associées.',
+    'repositories.removeRepositoryWarningOrchestrator':
+      'Supprimer le référentiel et les informations de flux de travail orchestrateur associées.',
     'repositories.unableToRemoveRepository':
       'Impossible de supprimer le dépôt. {{error}}',
     'repositories.removeTooltipRepositoryScaffolder':
       'Supprimer le dépôt et les informations de tâche Scaffolder associées',
+    'repositories.removeTooltipRepositoryOrchestrator':
+      'Supprimer le référentiel et les informations de flux de travail orchestrateur associées',
     'repositories.viewCatalogInfoTooltip':
       'Afficher le fichier catalog-info.yaml',
     'sidebar.bulkImport': 'Importation en masse',
@@ -230,14 +234,30 @@ const bulkImportTranslationFr = createTranslationMessages({
     'tasks.taskId': 'ID de la tâche',
     'tasks.taskLink': 'Lien de la tâche',
     'tasks.viewTask': 'Voir la tâche',
-    'tasks.loading': 'Chargement...',
-    'tasks.errorFetchingData': 'Erreur lors de la récupération des données',
     'tasks.taskCancelled': 'Tâche annulée',
     'tasks.taskCompleted': 'Tâche terminée',
     'tasks.taskFailed': 'Tâche échouée',
     'tasks.taskOpen': 'Tâche ouverte',
     'tasks.taskProcessing': 'Tâche en cours',
     'tasks.taskSkipped': 'Tâche ignorée',
+    // Workflows
+    'workflows.workflowsFor': 'Workflows pour {{importJobStatusId}}',
+    'workflows.workflowId': 'ID du workflow',
+    'workflows.workflowLink': 'Lien du workflow',
+    'workflows.viewWorkflow': 'Voir le workflow',
+    'workflows.workflowPending': 'Workflow en attente',
+    'workflows.workflowActive': 'Workflow actif',
+    'workflows.workflowCompleted': 'Workflow terminé',
+    'workflows.workflowAborted': 'Workflow abandonné',
+    'workflows.workflowError': 'Erreur de workflow',
+    'workflows.workflowSuspended': 'Workflow suspendu',
+    'workflows.workflowFetchError': 'Erreur de récupération du workflow',
+
+    'importActions.loading': 'Chargement...',
+    'importActions.errorFetchingData':
+      'Erreur lors de la récupération des données',
+    'importActions.noActions':
+      "Aucune action d'importation trouvée pour ce référentiel.",
   },
 });
 

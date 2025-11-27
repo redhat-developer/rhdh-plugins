@@ -21,5 +21,6 @@ export interface Config {
      * @visibility backend
      */
     importTemplate?: string;
+    orchestratorWorkflow?: string;
   };
 }

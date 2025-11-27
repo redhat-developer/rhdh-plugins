@@ -175,7 +175,7 @@ export const createTaskImportJobs = async (
   logger: LoggerService,
   auth: AuthService,
   config: Config,
-  repositoryDao: RepositoryDao,
+  repositoryDao: RepositoryDao<'repositories'>,
   taskDao: ScaffolderTaskDao,
   taskLocationsDao: TaskLocationsDao,
   importRequests: Components.Schemas.ImportRequest[],

@@ -26,6 +26,6 @@ export interface Config {
      *  customize the import process or integrate it with other Scaffolder actions.
      * @visibility frontend
      */
-    importAPI?: 'open-pull-requests' | 'scaffolder';
+    importAPI?: 'open-pull-requests' | 'scaffolder' | 'orchestrator';
   };
 }

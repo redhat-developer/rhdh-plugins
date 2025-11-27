@@ -2,9 +2,9 @@
 apiVersion: backstage.io/v1alpha1
 kind: User
 metadata:
-  name: mareklibra
+  name: AndrienkoAleksandr
 spec:
   profile:
-    displayName: Marek Libra
-    email: foo@xyzbar.cz
+    displayName: Andriienko Oleksandr
+    email: oandriie@redhat.com
   memberOf: []

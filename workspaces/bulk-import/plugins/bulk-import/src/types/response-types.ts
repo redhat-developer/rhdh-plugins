@@ -29,7 +29,9 @@ export type Repository = {
 
 export interface ScaffolderTask {
   taskId: string;
-  repositoryId: number;
+}
+export interface OrchestratorWorkflow {
+  workflowId: string;
 }
 
 export type ImportJobResponse = {
@@ -61,7 +63,11 @@ export type ImportJobStatus<
   task?: {
     taskId: string;
   };
+  workflow?: {
+    workflowId: string;
+  };
   tasks?: ScaffolderTask[];
+  workflows?: OrchestratorWorkflow[];
   status: string;
   id: string;
   source?: 'location' | 'config' | 'integration';

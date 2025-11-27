@@ -21,8 +21,14 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
+import { NotFoundError } from '@backstage/errors';
 
 import gitUrlParse from 'git-url-parse';
+
+import {
+  Configuration,
+  DefaultApi,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
 import type { CatalogInfoGenerator } from '../../../catalog/catalogInfoGenerator';
@@ -31,7 +37,9 @@ import {
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
 import {
+  OrchestratorWorkflowDao,
   RepositoryDao,
+  RepositoryName,
   ScaffolderTaskDao,
   TaskLocationsDao,
 } from '../../../database/repositoryDao';
@@ -775,7 +783,7 @@ export async function findImportStatusByRepo(
       defaultBranch,
     },
     approvalTool: deps.approvalTool,
-    status: null,
+    status: 'ADDED',
   } as Components.Schemas.Import;
   try {
     // Check to see if there are any PR
@@ -861,7 +869,7 @@ export async function findTaskImportStatusByRepo(
     githubApiService: GithubApiService;
     gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
-    repositoryDao: RepositoryDao;
+    repositoryDao: RepositoryDao<'repositories'>;
     taskDao: ScaffolderTaskDao;
     taskLocationsDao: TaskLocationsDao;
     discovery: DiscoveryService;
@@ -959,6 +967,103 @@ export async function findTaskImportStatusByRepo(
     errors.push(error.message);
     result.errors = errors;
     result.status = 'TASK_FETCH_FAILED';
+    if (error.message?.includes('Not Found')) {
+      return {
+        statusCode: 404,
+        responseBody: result,
+      };
+    }
+  }
+
+  return {
+    statusCode: 200,
+    responseBody: result,
+  };
+}
+
+export async function findOrchestratorImportStatusByRepo(
+  deps: {
+    logger: LoggerService;
+    orchestratorRepositoryDao: RepositoryDao<'orchestrator_repositories'>;
+    orchestratorWorkflowDao: OrchestratorWorkflowDao;
+    discovery: DiscoveryService;
+  },
+  repoUrl: string,
+  token: string,
+  skipWorkflows?: boolean,
+): Promise<HandlerResponse<Components.Schemas.Import>> {
+  deps.logger.debug(
+    `Getting orchestrator workflow import job status for ${repoUrl}..`,
+  );
+
+  const gitUrl = gitUrlParse(repoUrl);
+
+  const errors: string[] = [];
+  const result: Components.Schemas.Import = {
+    id: repoUrl,
+    repository: {
+      url: repoUrl,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+    },
+    approvalTool: 'GIT',
+  };
+  try {
+    const repository =
+      await deps.orchestratorRepositoryDao.findRepositoryByUrl(repoUrl);
+    if (repository?.id) {
+      const workflow = await deps.orchestratorWorkflowDao.findWorkflowByRepoId(
+        repository.id,
+      );
+      if (!workflow) {
+        throw new NotFoundError(
+          `Workflow for repository ${repoUrl} was not found`,
+        );
+      }
+      if (workflow.instanceId) {
+        const baseUrl = await deps.discovery.getBaseUrl('orchestrator');
+        const orchestratorApi = new DefaultApi(new Configuration(), baseUrl);
+        const response = await orchestratorApi.getInstanceById(
+          workflow.instanceId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        const instance = response.data;
+        if (instance) {
+          result.workflow = {
+            workflowId: instance.id,
+          };
+          if (!skipWorkflows) {
+            const workflows =
+              await deps.orchestratorWorkflowDao.findWorkflowsByRepositoryId(
+                repository.id,
+              );
+            result.workflows = workflows.map(
+              (w: { instanceId: string | undefined }) => ({
+                workflowId: w.instanceId,
+              }),
+            );
+          }
+
+          result.approvalTool =
+            repository.approvalTool as unknown as Components.Schemas.ApprovalTool;
+          result.lastUpdate = instance.end;
+          const status =
+            `WORKFLOW_${(instance.state as string)?.toLocaleUpperCase()}` as Components.Schemas.WorkflowImportStatus;
+          result.status = status;
+        }
+      }
+    }
+  } catch (error: any) {
+    errors.push(error.message);
+    result.errors = errors;
+    result.status = 'WORKFLOW_FETCH_FAILED';
     if (error.message?.includes('Not Found')) {
       return {
         statusCode: 404,
@@ -1093,10 +1198,12 @@ export async function deleteImportByRepo(
   };
 }
 
-export async function deleteTaskImportByRepo(
+export async function deleteRepositoryRecord<
+  DAO extends RepositoryDao<RepositoryName>,
+>(
   deps: {
     logger: LoggerService;
-    dao: RepositoryDao;
+    dao: DAO;
   },
   repoUrl: string,
 ): Promise<HandlerResponse<void>> {

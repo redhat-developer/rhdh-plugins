@@ -29,6 +29,7 @@ backend.add(import('@backstage/plugin-auth-backend'));
 backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
 // See https://backstage.io/docs/auth/guest/provider
 backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
+backend.add(import('@backstage/plugin-auth-backend-module-gitlab-provider'));
 
 // catalog plugin
 backend.add(import('@backstage/plugin-catalog-backend'));
@@ -38,14 +39,6 @@ backend.add(
 
 // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
-
-// permission plugin
-backend.add(import('@backstage/plugin-permission-backend'));
-
-// See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
-backend.add(
-  import('@backstage/plugin-permission-backend-module-allow-all-policy'),
-);
 
 // search plugin
 backend.add(import('@backstage/plugin-search-backend'));
@@ -62,7 +55,26 @@ backend.add(import('@backstage/plugin-search-backend-module-techdocs'));
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-bulk-import-backend'),
 );
+
+// permission plugin
+backend.add(import('@backstage-community/plugin-rbac-backend'));
+
+// orchestrator
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend'),
+);
+backend.add(import('@backstage/plugin-notifications-backend'));
+backend.add(import('@backstage/plugin-signals-backend'));
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'
+  ),
+);
+
+// for integrating templates with github
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
+
+// for integrating templates with gitlab
 backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
 
 backend.start();
