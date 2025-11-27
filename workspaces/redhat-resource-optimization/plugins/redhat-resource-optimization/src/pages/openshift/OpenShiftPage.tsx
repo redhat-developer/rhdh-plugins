@@ -70,14 +70,41 @@ export function OpenShiftPage() {
   const [pageSize, setPageSize] = useState(5);
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [tags, setTags] = useState<string[]>([]);
+  const [selectedTag, setSelectedTag] = useState<string>('');
+  const [selectedTagKey, setSelectedTagKey] = useState<string>('');
+  const [selectedTagValue, setSelectedTagValue] = useState<string>('');
+
+  // Fetch tags on first load
+  useAsync(async () => {
+    try {
+      const timeScopeValue = timeRange === 'month-to-date' ? -1 : -2;
+      const response = await api.getOpenShiftTags(timeScopeValue);
+      const tagsData = await response.json();
+      setTags(tagsData.data || []);
+    } catch {
+      // Silently fail if tags can't be loaded
+      setTags([]);
+    }
+  }, [api, timeRange]);
 
   const {
     value: costData,
     loading,
     error,
   } = useAsync(async () => {
+    // Don't make API call if groupBy is 'tag' but no tag is selected
+    if (groupBy === 'tag' && !selectedTag) {
+      return null;
+    }
+
     try {
-      const groupByParam = `group_by[${groupBy}]`;
+      let groupByParam: string;
+      if (groupBy === 'tag') {
+        groupByParam = `group_by[tag:${selectedTag}]`;
+      } else {
+        groupByParam = `group_by[${groupBy}]`;
+      }
 
       let deltaParam = 'cost';
       if (groupBy === 'project' && overheadDistribution === 'distribute') {
@@ -98,10 +125,28 @@ export function OpenShiftPage() {
         'filter[time_scope_value]': timeScopeValue,
       };
 
+      // Add category parameter when showPlatformSum is enabled
+      if (showPlatformSum) {
+        queryParams.category = 'Platform';
+      }
+
       queryParams[groupByParam] = '*';
 
-      if (filterValue) {
-        queryParams[`filter[${filterBy}]`] = filterValue;
+      // Handle filtering based on operation (includes/excludes)
+      if (filterBy === 'tag' && selectedTagKey && selectedTagValue) {
+        // Tag filtering uses filter[tag:key] or exclude[tag:key]
+        if (filterOperation === 'excludes') {
+          queryParams[`exclude[tag:${selectedTagKey}]`] = selectedTagValue;
+        } else {
+          queryParams[`filter[tag:${selectedTagKey}]`] = selectedTagValue;
+        }
+      } else if (filterValue) {
+        // Regular filtering uses filter[field] or exclude[field]
+        if (filterOperation === 'excludes') {
+          queryParams[`exclude[${filterBy}]`] = filterValue;
+        } else {
+          queryParams[`filter[${filterBy}]`] = filterValue;
+        }
       }
 
       if (sortField) {
@@ -134,15 +179,45 @@ export function OpenShiftPage() {
     groupBy,
     filterBy,
     filterValue,
+    filterOperation,
+    showPlatformSum,
     api,
     currentPage,
     pageSize,
     sortField,
     sortDirection,
+    selectedTag,
+    selectedTagKey,
+    selectedTagValue,
   ]);
 
   const displayData = useMemo(() => {
-    if (!costData) return null;
+    // If costData is null, return empty structure to keep table visible during loading
+    if (!costData) {
+      const today = new Date();
+      const month =
+        timeRange === 'previous-month'
+          ? new Date(
+              today.getFullYear(),
+              today.getMonth() - 1,
+              1,
+            ).toLocaleString('en-US', { month: 'long' })
+          : today.toLocaleString('en-US', { month: 'long' });
+      const endDate =
+        timeRange === 'previous-month'
+          ? new Date(today.getFullYear(), today.getMonth(), 0)
+              .getDate()
+              .toString()
+          : today.getDate().toString();
+
+      return {
+        totalCost: 0,
+        month,
+        endDate,
+        currencyCode: currency,
+        projects: [],
+      };
+    }
 
     const arrayKey = `${groupBy}s` as keyof (typeof costData.data)[0];
     const groupedArray = costData.data?.[0]?.[arrayKey] as
@@ -437,14 +512,6 @@ export function OpenShiftPage() {
     return <ResponseErrorPanel error={error} />;
   }
 
-  if (!displayData) {
-    return (
-      <BasePage pageTitle="" withContentPadding>
-        <div>Loading...</div>
-      </BasePage>
-    );
-  }
-
   return (
     <BasePage pageTitle="" withContentPadding>
       <PageHeader
@@ -474,8 +541,21 @@ export function OpenShiftPage() {
             filterBy={filterBy}
             filterOperation={filterOperation}
             filterValue={filterValue}
+            tags={tags}
             onGroupByChange={value => {
               setGroupBy(value);
+              setCurrentPage(0);
+              if (value !== 'tag') {
+                setSelectedTag('');
+              }
+              // Reset showPlatformSum when groupBy changes away from 'project'
+              if (value !== 'project') {
+                setShowPlatformSum(false);
+              }
+            }}
+            selectedTag={selectedTag}
+            onSelectedTagChange={value => {
+              setSelectedTag(value);
               setCurrentPage(0);
             }}
             onOverheadDistributionChange={value => {
@@ -493,6 +573,11 @@ export function OpenShiftPage() {
             onFilterByChange={value => {
               setFilterBy(value);
               setCurrentPage(0);
+              // Clear tag-related selections when filterBy changes away from 'tag'
+              if (value !== 'tag') {
+                setSelectedTagKey('');
+                setSelectedTagValue('');
+              }
             }}
             onFilterOperationChange={value => {
               setFilterOperation(value);
@@ -500,6 +585,17 @@ export function OpenShiftPage() {
             }}
             onFilterValueChange={value => {
               setFilterValue(value);
+              setCurrentPage(0);
+            }}
+            selectedTagKey={selectedTagKey}
+            selectedTagValue={selectedTagValue}
+            onSelectedTagKeyChange={value => {
+              setSelectedTagKey(value);
+              setSelectedTagValue('');
+              setCurrentPage(0);
+            }}
+            onSelectedTagValueChange={value => {
+              setSelectedTagValue(value);
               setCurrentPage(0);
             }}
           />
@@ -516,6 +612,7 @@ export function OpenShiftPage() {
                       showPlatformSum={showPlatformSum}
                       setShowPlatformSum={setShowPlatformSum}
                       projectsCount={displayData?.projects?.length || 0}
+                      groupBy={groupBy}
                     />
                   ),
                 }}

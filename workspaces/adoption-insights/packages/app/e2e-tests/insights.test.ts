@@ -96,10 +96,14 @@ test('Select date range', async () => {
   await openDateRangePicker(page, translations.header.dateRange.dateRange);
 
   const datePicker = page.locator('.v5-MuiPaper-root', {
-    hasText: 'Start date',
+    hasText: translations.header.dateRange.startDate,
   });
   await expect(datePicker).toBeVisible();
-  await closeDateRangePicker(page, translations.header.dateRange.cancel);
+  await closeDateRangePicker(
+    page,
+    translations.header.dateRange.cancel,
+    translations.header.dateRange.startDate,
+  );
   await expect(datePicker).not.toBeVisible();
 
   await selectDateRange(page, translations.header.dateRange.today);

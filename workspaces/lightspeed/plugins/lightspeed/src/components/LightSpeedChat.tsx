@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { FileRejection } from 'react-dropzone/.';
 
-import { ErrorPanel } from '@backstage/core-components';
-
-import { Box, makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+import Divider from '@mui/material/Divider';
 import {
   Chatbot,
   ChatbotAlert,
@@ -37,7 +36,7 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
-import { SearchIcon } from '@patternfly/react-icons';
+import { PlusIcon, SearchIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
@@ -45,11 +44,11 @@ import {
   useBackstageUserIdentity,
   useConversationMessages,
   useConversations,
-  useDeleteConversation,
   useIsMobile,
   useLastOpenedConversation,
   useLightspeedDeletePermission,
 } from '../hooks';
+import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary } from '../types';
@@ -64,6 +63,7 @@ import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
+import { RenameConversationModal } from './RenameConversationModal';
 
 const useStyles = makeStyles(theme => ({
   body: {
@@ -134,9 +134,11 @@ export const LightspeedChat = ({
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true); // read from user settings in future
+  const [pinnedChats, setPinnedChats] = useState<string[]>([]); // read from user settings in future
   const [targetConversationId, setTargetConversationId] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
 
@@ -157,6 +159,12 @@ export const LightspeedChat = ({
     }
   }, [lastOpenedId, isReady]);
 
+  useEffect(() => {
+    if (!isPinningChatsEnabled) {
+      setPinnedChats([]);
+    }
+  }, [isPinningChatsEnabled]);
+
   const queryClient = useQueryClient();
 
   const {
@@ -164,8 +172,9 @@ export const LightspeedChat = ({
     isLoading,
     isRefetching,
   } = useConversations();
-  const { mutateAsync: deleteConversation } = useDeleteConversation();
+
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
+  const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
     if (user && lastOpenedId === null && isReady) {
@@ -260,53 +269,93 @@ export const LightspeedChat = ({
     setIsDeleteModalOpen(true);
   };
 
+  const openChatRenameModal = (conversation_id: string) => {
+    setTargetConversationId(conversation_id);
+    setIsRenameModalOpen(true);
+  };
+
   const handleDeleteConversation = useCallback(() => {
-    (async () => {
-      try {
-        await deleteConversation({
-          conversation_id: targetConversationId,
-          invalidateCache: false,
-        });
-        if (targetConversationId === lastOpenedId) {
-          onNewChat();
-          clearLastOpenedId();
-        }
-        setIsDeleteModalOpen(false);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn(e);
-        setError(e);
-      }
-    })();
-  }, [
-    deleteConversation,
-    clearLastOpenedId,
-    lastOpenedId,
-    onNewChat,
-    targetConversationId,
-  ]);
+    if (targetConversationId === lastOpenedId) {
+      onNewChat();
+      clearLastOpenedId();
+    }
+    setIsDeleteModalOpen(false);
+  }, [clearLastOpenedId, lastOpenedId, onNewChat, targetConversationId]);
+
+  const pinChat = (convId: string) => {
+    setPinnedChats(prev => [...prev, convId]); // write to user settings in future
+  };
+
+  const unpinChat = (convId: string) => {
+    setPinnedChats(prev => prev.filter(id => id !== convId)); // write to user settings in future
+  };
 
   const additionalMessageProps = useCallback(
-    (conversationSummary: ConversationSummary) => ({
-      menuItems: (
-        <DropdownItem
-          isDisabled={!hasDeleteAccess}
-          onClick={() => openDeleteModal(conversationSummary.conversation_id)}
-        >
-          {t('conversation.delete')}
-        </DropdownItem>
-      ),
-    }),
-    [hasDeleteAccess, t],
+    (conversationSummary: ConversationSummary) => {
+      const isChatFavorite = pinnedChats?.find(
+        c => c === conversationSummary.conversation_id,
+      );
+      return {
+        menuItems: (
+          <>
+            <DropdownItem
+              isDisabled={!hasUpdateAccess}
+              onClick={() =>
+                openChatRenameModal(conversationSummary.conversation_id)
+              }
+            >
+              {t('conversation.rename')}
+            </DropdownItem>
+            {isPinningChatsEnabled && (
+              <>
+                {isChatFavorite ? (
+                  <DropdownItem
+                    onClick={() =>
+                      unpinChat(conversationSummary.conversation_id)
+                    }
+                  >
+                    {t('conversation.removeFromPinnedChats')}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    onClick={() => pinChat(conversationSummary.conversation_id)}
+                  >
+                    {t('conversation.addToPinnedChats')}
+                  </DropdownItem>
+                )}
+              </>
+            )}
+            <DropdownItem
+              isDisabled={!hasDeleteAccess}
+              onClick={() =>
+                openDeleteModal(conversationSummary.conversation_id)
+              }
+            >
+              {t('conversation.delete')}
+            </DropdownItem>
+          </>
+        ),
+      };
+    },
+    [pinnedChats, hasDeleteAccess, isPinningChatsEnabled, hasUpdateAccess, t],
   );
-  const categorizedMessages = getCategorizeMessages(
-    conversations,
-    additionalMessageProps,
-    t,
+
+  const categorizedMessages = useMemo(
+    () =>
+      getCategorizeMessages(
+        conversations,
+        pinnedChats,
+        additionalMessageProps,
+        t,
+      ),
+    [additionalMessageProps, conversations, pinnedChats, t],
   );
 
   const filterConversations = useCallback(
     (targetValue: string) => {
+      const pinnedChatsKey = t('conversation.category.pinnedChats') || 'Pinned';
+      let isNoPinnedChatsSearchResults = false;
+      let isNoRecentChatsSearchResults = false;
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
@@ -314,16 +363,63 @@ export const LightspeedChat = ({
               .toLocaleLowerCase('en-US')
               .includes(targetValue.toLocaleLowerCase('en-US')),
           );
-          if (filteredItems.length > 0) {
-            acc[key] = filteredItems;
+          const isPinnedCategory = key === pinnedChatsKey;
+          if (isPinnedCategory && isPinningChatsEnabled) {
+            if (filteredItems.length > 0) {
+              acc[pinnedChatsKey] = filteredItems;
+            } else {
+              isNoPinnedChatsSearchResults =
+                categorizedMessages[pinnedChatsKey].length > 0;
+              acc[pinnedChatsKey] = [
+                {
+                  id: isNoPinnedChatsSearchResults
+                    ? 'no-pinned-chats-search-results'
+                    : 'no-pinned-chats',
+                  text: isNoPinnedChatsSearchResults
+                    ? t('common.noSearchResults')
+                    : t('chatbox.emptyState.noPinnedChats'),
+                  noIcon: true,
+                  additionalProps: {
+                    isDisabled: true,
+                  },
+                },
+              ];
+            }
+          } else if (!isPinnedCategory) {
+            if (filteredItems.length > 0) {
+              acc[key] = filteredItems;
+            } else {
+              isNoRecentChatsSearchResults =
+                categorizedMessages[key].length > 0;
+
+              acc[key] = [
+                {
+                  id: isNoRecentChatsSearchResults
+                    ? 'no-recent-chats-search-results'
+                    : 'no-recent-chats',
+                  text: isNoRecentChatsSearchResults
+                    ? t('common.noSearchResults')
+                    : t('chatbox.emptyState.noRecentChats'),
+                  noIcon: true,
+                  additionalProps: {
+                    isDisabled: true,
+                  },
+                },
+              ];
+            }
           }
           return acc;
         },
         {} as any,
       );
+      // If both sections had items but search filtered them all out, return empty object
+      // so PatternFly's default empty state shows instead of custom empty state messages
+      if (isNoPinnedChatsSearchResults && isNoRecentChatsSearchResults) {
+        return {};
+      }
       return filteredConversations;
     },
-    [categorizedMessages],
+    [categorizedMessages, isPinningChatsEnabled, t],
   );
 
   useEffect(() => {
@@ -389,21 +485,21 @@ export const LightspeedChat = ({
     });
   };
 
-  if (error) {
-    return (
-      <Box padding={1}>
-        <ErrorPanel error={error} />
-      </Box>
-    );
-  }
-
   return (
     <>
       {isDeleteModalOpen && (
         <DeleteModal
           isOpen={isDeleteModalOpen}
+          conversationId={targetConversationId}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDeleteConversation}
+        />
+      )}
+      {isRenameModalOpen && (
+        <RenameConversationModal
+          isOpen={isRenameModalOpen}
+          onClose={() => setIsRenameModalOpen(false)}
+          conversationId={targetConversationId}
         />
       )}
       <Chatbot
@@ -416,6 +512,8 @@ export const LightspeedChat = ({
               aria-expanded={isDrawerOpen}
               onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
               className={classes.headerMenu}
+              tooltipContent={t('tooltip.chatHistoryMenu')}
+              aria-label={t('aria.chatHistoryMenu')}
             />
             <ChatbotHeaderTitle className={classes.headerTitle}>
               <Title headingLevel="h1" size="3xl">
@@ -428,22 +526,34 @@ export const LightspeedChat = ({
             selectedModel={selectedModel}
             handleSelectedModel={item => handleSelectedModel(item)}
             models={models}
+            isPinningChatsEnabled={isPinningChatsEnabled}
+            onPinnedChatsToggle={setIsPinningChatsEnabled}
           />
         </ChatbotHeader>
+        <Divider />
         <ChatbotConversationHistoryNav
           drawerPanelContentProps={{ isResizable: true, minSize: '200px' }}
           reverseButtonOrder
           displayMode={ChatbotDisplayMode.embedded}
           onDrawerToggle={onDrawerToggle}
+          title=""
+          navTitleIcon={null}
           isDrawerOpen={isDrawerOpen}
+          drawerCloseButtonProps={{
+            'aria-label': t('aria.closeDrawerPanel'),
+          }}
           setIsDrawerOpen={setIsDrawerOpen}
           activeItemId={conversationId}
           onSelectActiveItem={onSelectActiveItem}
           conversations={filterConversations(filterValue)}
           onNewChat={newChatCreated ? undefined : onNewChat}
           newChatButtonText={t('button.newChat')}
+          newChatButtonProps={{
+            icon: <PlusIcon />,
+          }}
           handleTextInputChange={handleFilter}
           searchInputPlaceholder={t('chatbox.search.placeholder')}
+          searchInputAriaLabel={t('aria.search.placeholder')}
           searchInputProps={{
             value: filterValue,
             onClear: () => {
@@ -454,9 +564,8 @@ export const LightspeedChat = ({
             filterValue &&
             Object.keys(filterConversations(filterValue)).length === 0
               ? {
-                  bodyText:
-                    'Adjust your search query and try again. Check your spelling or try a more general term.',
-                  titleText: 'No results found',
+                  bodyText: t('chatbox.emptyState.noResults.body'),
+                  titleText: t('chatbox.emptyState.noResults.title'),
                   icon: SearchIcon,
                 }
               : undefined

@@ -62,7 +62,7 @@ const PermissionRequiredState = () => {
             target="_blank"
             href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/lightspeed/plugins/lightspeed/README.md#permission-framework-support"
           >
-            Read more &nbsp; <OpenInNewIcon />
+            {t('common.readMore')} &nbsp; <OpenInNewIcon />
           </Button>
         }
       />

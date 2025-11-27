@@ -46,6 +46,40 @@ import {
   assertDrawerState,
   verifySidePanelConversation,
 } from './utils/sidebar';
+import {
+  openChatContextMenu,
+  openChatContextMenuByName,
+  verifyChatContextMenuOptions,
+  selectRenameAction,
+  verifyRenameChatForm,
+  submitChatRename,
+  verifyChatRenamed,
+  verifyEmptyPinnedChatsMessage,
+  verifyPinnedChatsNotEmpty,
+  selectPinAction,
+  verifyChatPinned,
+  verifyPinActionAvailable,
+  selectDeleteAction,
+  verifyDeleteConfirmation,
+  cancelChatDeletion,
+  confirmChatDeletion,
+  verifyChatDeleted,
+  openChatbotSettings,
+  verifyChatbotSettingsVisible,
+  verifyPinnedSectionVisible,
+  verifyPinnedSectionHidden,
+  verifyDisablePinnedChatsOption,
+  verifyEnablePinnedChatsOption,
+  selectDisablePinnedChats,
+  selectEnablePinnedChats,
+  verifyUnpinActionAvailable,
+  selectUnpinAction,
+  searchChats,
+  verifyEmptySearchResults,
+  verifyNoResultsFoundMessage,
+  verifyChatUnpinned,
+  clearSearch,
+} from './utils/chatManagement';
 import { login } from './utils/login';
 import {
   mockChatHistory,
@@ -142,17 +176,17 @@ test.describe('Lightspeed tests', () => {
     browser,
   }, testInfo) => {
     await test.step('Verify initial state of sidebar', async () => {
-      await assertChatDialogInitialState(sharedPage, translations);
+      await assertChatDialogInitialState(sharedPage, translations, devMode);
     });
 
     await test.step('Close the sidebar and verify elements are hidden', async () => {
-      await closeChatDrawer(sharedPage);
+      await closeChatDrawer(sharedPage, translations);
       await runAccessibilityTests(sharedPage, testInfo);
       await assertDrawerState(sharedPage, 'closed', translations);
     });
 
     await test.step('Reopen the sidebar and verify elements are visible again', async () => {
-      await openChatDrawer(sharedPage);
+      await openChatDrawer(sharedPage, translations);
       await assertDrawerState(sharedPage, 'open', translations);
     });
   });
@@ -288,10 +322,10 @@ test.describe('Lightspeed tests', () => {
       await sendMessage(message, sharedPage, translations, false);
 
       const jumpTopButton = sharedPage.getByRole('button', {
-        name: 'Back to top',
+        name: translations['aria.scroll.up'],
       });
       const jumpBottomButton = sharedPage.getByRole('button', {
-        name: 'Back to bottom',
+        name: translations['aria.scroll.down'],
       });
 
       await runAccessibilityTests(sharedPage, testInfo);
@@ -327,7 +361,7 @@ test.describe('Lightspeed tests', () => {
 
       const chats = sidePanel.locator('li.pf-chatbot__menu-item');
       if (devMode) {
-        await expect(chats).toHaveCount(2);
+        await expect(chats).toHaveCount(3);
       } else {
         expect(await chats.count()).toBeGreaterThanOrEqual(1);
         await sharedPage
@@ -344,10 +378,21 @@ test.describe('Lightspeed tests', () => {
         translations['chatbox.search.placeholder'],
       );
       await searchBox.fill(devMode ? 'new' : 'Backstage');
-      for (const chat of await chats.all()) {
-        expect(chat).toContainText(searchText);
+      const validChat = sidePanel
+        .locator('li.pf-chatbot__menu-item')
+        .filter({ hasText: searchText })
+        .first();
+
+      const chatItems = await chats.all();
+      for (const chat of chatItems) {
+        const text = await chat.textContent();
+        // Skip empty state messages (e.g., "No pinned chats")
+        if (text?.includes(translations['chatbox.emptyState.noPinnedChats'])) {
+          continue;
+        }
+        await expect(chat).toContainText(searchText);
       }
-      await chats.first().click();
+      await validChat.click();
 
       const userMessage = sharedPage.locator('.pf-chatbot__message--user');
       const botMessage = sharedPage.locator('.pf-chatbot__message--bot');
@@ -358,6 +403,93 @@ test.describe('Lightspeed tests', () => {
       await expect(botMessage).toContainText(
         devMode ? contents[0].messages[1].content : 'Backstage',
       );
+    });
+
+    const chatManagementDescribeFn = devMode
+      ? test.describe
+      : test.describe.skip;
+    chatManagementDescribeFn('Chat Management', () => {
+      const testChatName = 'Test Rename';
+
+      test('Verify chat actions menu', async () => {
+        await sharedPage.reload();
+        await openChatContextMenu(sharedPage);
+        await verifyChatContextMenuOptions(sharedPage, translations);
+      });
+
+      test('Verify Rename chat and its actions', async () => {
+        await selectRenameAction(sharedPage, translations);
+        await verifyRenameChatForm(sharedPage, translations);
+        await submitChatRename(sharedPage, testChatName, translations);
+        await verifyChatRenamed(sharedPage, testChatName);
+      });
+
+      test('Verify pin chat and its actions', async () => {
+        await verifyEmptyPinnedChatsMessage(sharedPage, translations);
+        await openChatContextMenu(sharedPage);
+        await verifyPinActionAvailable(sharedPage, translations);
+        await selectPinAction(sharedPage, translations);
+        await verifyChatPinned(sharedPage, testChatName);
+        await verifyPinnedChatsNotEmpty(sharedPage, translations);
+      });
+
+      test('Verify delete chat and its actions', async () => {
+        await verifyChatRenamed(sharedPage, testChatName);
+        await openChatContextMenuByName(sharedPage, testChatName, translations);
+        await selectDeleteAction(sharedPage, translations);
+        await verifyDeleteConfirmation(sharedPage, translations);
+        await cancelChatDeletion(sharedPage, translations);
+        await verifyChatRenamed(sharedPage, testChatName);
+
+        await openChatContextMenuByName(sharedPage, testChatName, translations);
+        await selectDeleteAction(sharedPage, translations);
+        await confirmChatDeletion(sharedPage, translations);
+        await verifyChatDeleted(sharedPage, testChatName);
+      });
+
+      test('Verify disable pinned chats section via settings', async () => {
+        await verifyPinnedSectionVisible(sharedPage, translations);
+        await verifyEmptyPinnedChatsMessage(sharedPage, translations);
+        await verifyChatbotSettingsVisible(sharedPage, translations);
+        await openChatbotSettings(sharedPage, translations);
+        await verifyDisablePinnedChatsOption(sharedPage, translations);
+        await selectDisablePinnedChats(sharedPage, translations);
+        await verifyPinnedSectionHidden(sharedPage, translations);
+        await verifyPinnedChatsNotEmpty(sharedPage, translations);
+      });
+
+      test('Verify enable pinned chats section via settings', async () => {
+        await verifyPinnedSectionHidden(sharedPage, translations);
+        await verifyPinnedChatsNotEmpty(sharedPage, translations);
+        await openChatbotSettings(sharedPage, translations);
+        await verifyEnablePinnedChatsOption(sharedPage, translations);
+        await selectEnablePinnedChats(sharedPage, translations);
+        await verifyPinnedSectionVisible(sharedPage, translations);
+        await verifyEmptyPinnedChatsMessage(sharedPage, translations);
+      });
+
+      test.describe('Search no-results scenarios', () => {
+        test('Verify search results when chats are not pinned', async () => {
+          await searchChats(sharedPage, 'dummy search', translations);
+          await verifyEmptySearchResults(sharedPage, translations);
+        });
+
+        test('Verify search results when chats are pinned', async () => {
+          await sharedPage.reload();
+          await openChatContextMenu(sharedPage);
+          await selectPinAction(sharedPage, translations);
+          await searchChats(sharedPage, 'dummy search', translations);
+          await verifyNoResultsFoundMessage(sharedPage, translations);
+        });
+      });
+
+      test('Verify unpin chat action removes chat from pinned section', async () => {
+        await clearSearch(sharedPage);
+        await openChatContextMenu(sharedPage);
+        await verifyUnpinActionAvailable(sharedPage, translations);
+        await selectUnpinAction(sharedPage, translations);
+        await verifyChatUnpinned(sharedPage, translations);
+      });
     });
   });
 });

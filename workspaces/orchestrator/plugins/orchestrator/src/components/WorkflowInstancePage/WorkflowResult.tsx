@@ -137,7 +137,7 @@ const ResultMessage = ({
           &nbsp;
           <Trans
             message="run.status.workflowIsRunning"
-            params={{ startedTime }}
+            params={{ time: startedTime }}
           />
         </>
       );

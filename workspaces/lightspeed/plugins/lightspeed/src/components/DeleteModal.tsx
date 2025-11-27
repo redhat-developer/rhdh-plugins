@@ -14,49 +14,114 @@
  * limitations under the License.
  */
 
-import {
-  Button,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-  ModalVariant,
-} from '@patternfly/react-core';
+import CloseIcon from '@mui/icons-material/Close';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
 
+import { useDeleteConversation } from '../hooks';
 import { useTranslation } from '../hooks/useTranslation';
 
 export const DeleteModal = ({
   isOpen,
+  conversationId,
   onClose,
   onConfirm,
 }: {
   isOpen: boolean;
+  conversationId: string;
   onClose: () => void;
   onConfirm: () => void;
 }) => {
   const { t } = useTranslation();
+  const {
+    mutateAsync: deleteConversation,
+    isError,
+    error,
+    isPending,
+  } = useDeleteConversation();
+
+  const handleDeleteConversation = async () => {
+    try {
+      await deleteConversation({
+        conversation_id: conversationId,
+        invalidateCache: false,
+      });
+      onConfirm();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(e);
+    }
+  };
 
   return (
-    <Modal
-      variant={ModalVariant.small}
-      isOpen={isOpen}
+    <Dialog
+      open={isOpen}
       onClose={onClose}
-      ouiaId="DeleteModal"
       aria-labelledby="delete-modal"
       aria-describedby="delete-modal-confiramtion"
     >
-      <ModalHeader title={t('conversation.history.confirm.title')} />
-      <ModalBody id="delete-modal-body-confirmation">
-        {t('conversation.history.confirm.message')}
-      </ModalBody>
-      <ModalFooter>
-        <Button key="confirm" variant="danger" onClick={onConfirm}>
-          {t('conversation.history.confirm.delete')}
+      <DialogTitle sx={{ p: '16px 20px', fontStyle: 'inherit' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+          }}
+        >
+          <Typography component="span" sx={{ fontWeight: 'bold' }}>
+            {t('conversation.delete.confirm.title')}
+          </Typography>
+
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            title={t('common.close')}
+            size="large"
+            sx={{
+              position: 'absolute',
+              right: 1,
+              top: 1,
+              color: 'grey.700',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
+      </DialogTitle>
+      <DialogContent id="delete-modal-body-confirmation">
+        {t('conversation.delete.confirm.message')}
+      </DialogContent>
+      {isError && (
+        <Box maxWidth="650px" marginLeft="20px">
+          <Alert severity="error">
+            {t('conversation.action.error' as any, {
+              error: String(error),
+            })}
+          </Alert>
+        </Box>
+      )}
+      <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
+        <Button
+          key="confirm"
+          variant="contained"
+          color="error"
+          onClick={handleDeleteConversation}
+          style={{ marginRight: '16px' }}
+          disabled={isPending}
+        >
+          {t('conversation.delete.confirm.action')}
         </Button>
-        <Button key="cancel" variant="link" onClick={onClose}>
+        <Button key="cancel" variant="outlined" onClick={onClose}>
           {t('common.cancel')}
         </Button>
-      </ModalFooter>
-    </Modal>
+      </DialogActions>
+    </Dialog>
   );
 };

@@ -155,6 +155,10 @@ export const LightspeedChatBox = forwardRef(
         ref={containerRef}
         onScrollToTopClick={scrollToTop}
         onScrollToBottomClick={scrollToBottom}
+        jumpButtonBottomProps={{ 'aria-label': t('aria.scroll.down') }}
+        jumpButtonTopProps={{ 'aria-label': t('aria.scroll.up') }}
+        jumpButtonBottomTooltipProps={{ content: t('tooltip.backToBottom') }}
+        jumpButtonTopTooltipProps={{ content: t('tooltip.backToTop') }}
       >
         <div>
           <Alert

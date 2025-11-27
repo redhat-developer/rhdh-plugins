@@ -1,0 +1,209 @@
+app:
+  title: Scaffolded Backstage App
+  baseUrl: http://localhost:3001
+  quickstart:
+    - title: Set up authentication
+      titleKey: steps.setupAuthentication.title
+      icon: Admin
+      roles:
+        - admin
+      description: Set up secure login credentials to protect your account from unauthorized access.
+      descriptionKey: steps.setupAuthentication.description
+      cta:
+        text: Learn more
+        textKey: steps.setupAuthentication.ctaTitle
+        link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
+    - title: Configure RBAC
+      titleKey: steps.configureRbac.title
+      icon: Rbac
+      description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
+      descriptionKey: steps.configureRbac.description
+      cta:
+        text: Manage access
+        textKey: steps.configureRbac.ctaTitle
+        link: /rbac
+    - title: Configure Git
+      titleKey: steps.configureGit.title
+      icon: Git
+      description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.
+      descriptionKey: steps.configureGit.description
+      cta:
+        text: Learn more
+        textKey: steps.configureGit.ctaTitle
+        link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
+    - title: Manage plugins
+      titleKey: steps.managePlugins.title
+      icon: Plugins
+      description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+      descriptionKey: steps.managePlugins.description
+      cta:
+        text: Explore plugins
+        textKey: steps.managePlugins.ctaTitle
+        link: /extensions
+    - title: Import application
+      titleKey: steps.importApplication.title
+      roles:
+        - developer
+      icon: Import
+      description: Import your existing code and services into the catalog to organize and access them through your developer portal.
+      descriptionKey: steps.importApplication.description
+      cta:
+        text: Import
+        textKey: steps.importApplication.ctaTitle
+        link: /bulk-import/repositories
+    - title: Learn about the Catalog
+      titleKey: steps.learnAboutCatalog.title
+      roles:
+        - developer
+      icon: Catalog
+      description: Discover all software components, services, and APIs, and view their owners and documentation.
+      descriptionKey: steps.learnAboutCatalog.description
+      cta:
+        text: View Catalog
+        textKey: steps.learnAboutCatalog.ctaTitle
+        link: /catalog
+    - title: Explore Self-service templates
+      titleKey: steps.exploreSelfServiceTemplates.title
+      roles:
+        - developer
+      icon: SelfService
+      description: Use our self-service templates to quickly set up new projects, services, or documentation.
+      descriptionKey: steps.exploreSelfServiceTemplates.description
+      cta:
+        text: Explore templates
+        textKey: steps.exploreSelfServiceTemplates.ctaTitle
+        link: /create
+    - title: Find all Learning Paths
+      titleKey: steps.findAllLearningPaths.title
+      roles:
+        - developer
+      icon: Learning
+      description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.
+      descriptionKey: steps.findAllLearningPaths.description
+      cta:
+        text: View Learning Paths
+        textKey: steps.findAllLearningPaths.ctaTitle
+        link: /learning-paths
+
+organization:
+  name: My Company
+
+backend:
+  # Used for enabling authentication, secret is shared by all backend plugins
+  # See https://backstage.io/docs/auth/service-to-service-auth for
+  # information on the format
+  # auth:
+  #   keys:
+  #     - secret: ${BACKEND_SECRET}
+  baseUrl: http://localhost:7008
+  listen:
+    port: 7008
+    # Uncomment the following host directive to bind to specific interfaces
+    # host: 127.0.0.1
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+    # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
+    # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+  cors:
+    origin: http://localhost:3001
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  # This is for local development only, it is not recommended to use this in production
+  # The production database configuration is stored in app-config.production.yaml
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+  # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+
+integrations:
+  github:
+    - host: github.com
+      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+      # about setting up the GitHub integration here: https://backstage.io/docs/integrations/github/locations#configuration
+      token: ${GITHUB_TOKEN}
+    ### Example for how to add your GitHub Enterprise instance using the API:
+    # - host: ghe.example.net
+    #   apiBaseUrl: https://ghe.example.net/api/v3
+    #   token: ${GHE_TOKEN}
+
+proxy:
+  ### Example for how to add a proxy endpoint for the frontend.
+  ### A typical reason to do this is to handle HTTPS and CORS for internal services.
+  # endpoints:
+  #   '/test':
+  #     target: 'https://example.com'
+  #     changeOrigin: true
+
+# Reference documentation http://backstage.io/docs/features/techdocs/configuration
+# Note: After experimenting with basic setup, use CI/CD to generate docs
+# and an external cloud storage when deploying TechDocs for production use-case.
+# https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+techdocs:
+  builder: 'local' # Alternatives - 'external'
+  generator:
+    runIn: 'docker' # Alternatives - 'local'
+  publisher:
+    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+
+# auth:
+#   # see https://backstage.io/docs/auth/ to learn about auth providers
+#   providers:
+#     # See https://backstage.io/docs/auth/guest/provider
+#     guest: {}
+
+auth:
+  providers:
+    guest:
+      userEntityRef: user:default/john-smith
+      ownershipEntityRefs: [group:default/smith-family]
+      dangerouslyAllowOutsideDevelopment: false
+
+scaffolder:
+  # see https://backstage.io/docs/features/software-templates/configuration for software template options
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+  locations:
+    # Local example data, file locations are relative to the backend process, typically `packages/backend`
+    - type: file
+      target: ../../examples/entities.yaml
+
+    # Local example template
+    - type: file
+      target: ../../examples/template/template.yaml
+      rules:
+        - allow: [Template]
+
+    # Local example organizational data
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
+
+    ## Uncomment these lines to add more example data
+    # - type: url
+    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+
+    ## Uncomment these lines to add an example org
+    # - type: url
+    #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
+    #   rules:
+    #     - allow: [User, Group]
+  # Experimental: Always use the search method in UrlReaderProcessor.
+  # New adopters are encouraged to enable it as this behavior will be the default in a future release.
+  useUrlReadersSearch: true
+
+kubernetes:
+  # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
+# see https://backstage.io/docs/permissions/getting-started for more on the permission framework
+permission:
+  # setting this to `false` will disable permissions
+  enabled: true
+  rbac:
+    pluginsWithPermission:
+      - catalog
+      - extensions

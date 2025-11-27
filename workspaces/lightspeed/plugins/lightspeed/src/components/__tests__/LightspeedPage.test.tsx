@@ -150,10 +150,10 @@ describe('LightspeedPage', () => {
   it('should translate conversation messages correctly', () => {
     const { result } = renderHook(() => useTranslation());
 
-    expect(result.current.t('conversation.history.confirm.title')).toBe(
+    expect(result.current.t('conversation.delete.confirm.title')).toBe(
       'Delete chat?',
     );
-    expect(result.current.t('conversation.history.confirm.message')).toBe(
+    expect(result.current.t('conversation.delete.confirm.message')).toBe(
       "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
     );
   });

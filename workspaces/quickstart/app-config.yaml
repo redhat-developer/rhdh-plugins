@@ -50,7 +50,7 @@ app:
       cta:
         text: Import
         textKey: steps.importApplication.ctaTitle
-        link: /bulk-import
+        link: /bulk-import/repositories
     - title: Learn about the Catalog
       titleKey: steps.learnAboutCatalog.title
       roles:
@@ -83,7 +83,7 @@ app:
       cta:
         text: View Learning Paths
         textKey: steps.findAllLearningPaths.ctaTitle
-        link: /docs
+        link: /learning-paths
 
 organization:
   name: My Company

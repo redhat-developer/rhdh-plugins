@@ -30,6 +30,7 @@ export const adoptionInsightsTranslationRef: TranslationRef<
   'plugin.adoption-insights',
   {
     readonly 'header.title': string;
+    readonly 'header.dateRange.title': string;
     readonly 'header.dateRange.dateRange': string;
     readonly 'header.dateRange.today': string;
     readonly 'header.dateRange.lastWeek': string;
@@ -39,6 +40,8 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'header.dateRange.cancel': string;
     readonly 'header.dateRange.ok': string;
     readonly 'header.dateRange.defaultLabel': string;
+    readonly 'header.dateRange.startDate': string;
+    readonly 'header.dateRange.endDate': string;
     readonly 'table.headers.name': string;
     readonly 'table.headers.kind': string;
     readonly 'table.headers.lastUsed': string;

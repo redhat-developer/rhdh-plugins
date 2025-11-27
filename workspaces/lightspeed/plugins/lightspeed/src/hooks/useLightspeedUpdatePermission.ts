@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
+import { usePermission } from '@backstage/plugin-permission-react';
 
-test('App should render the welcome page', async ({ page }) => {
-  await page.goto('/');
+import { lightspeedChatUpdatePermission } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
+export const useLightspeedUpdatePermission = () => {
+  const lightspeedUpdatePermissionResult = usePermission({
+    permission: lightspeedChatUpdatePermission,
+  });
 
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
-});
+  return lightspeedUpdatePermissionResult;
+};

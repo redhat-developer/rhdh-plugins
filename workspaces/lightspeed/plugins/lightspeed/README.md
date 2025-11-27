@@ -22,6 +22,7 @@ The Lightspeed plugin has support for the permission framework.
 p, role:default/team_a, lightspeed.chat.read, read, allow
 p, role:default/team_a, lightspeed.chat.create, create, allow
 p, role:default/team_a, lightspeed.chat.delete, delete, allow
+p, role:default/team_a, lightspeed.chat.update, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 

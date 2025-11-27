@@ -67,10 +67,14 @@ export const lightspeedMessages = {
     'Can you guide me through the first steps to start using Developer Hub as a developer, like exploring the Software Catalog and adding my service?',
 
   // Conversation history
-  'conversation.history.confirm.title': 'Delete chat?',
-  'conversation.history.confirm.message':
+  'conversation.delete.confirm.title': 'Delete chat?',
+  'conversation.delete.confirm.message':
     "You'll no longer see this chat here. This will also delete related activity like prompts, responses, and feedback from your Lightspeed Activity.",
-  'conversation.history.confirm.delete': 'Delete',
+  'conversation.delete.confirm.action': 'Delete',
+  'conversation.rename.confirm.title': 'Rename chat?',
+  'conversation.rename.confirm.action': 'Rename',
+  'conversation.rename.placeholder': 'Chat name',
+  'conversation.action.error': 'Error occured: {{error}}',
 
   // Permissions
   'permission.required.title': 'Missing permissions',
@@ -94,13 +98,22 @@ export const lightspeedMessages = {
 
   // Common actions
   'common.cancel': 'Cancel',
+  'common.close': 'Close',
+  'common.readMore': 'Read more',
+  'common.noSearchResults': 'No result matches the search',
 
   // Menu items
   'menu.newConversation': 'New Chat',
 
   // Chat-specific UI elements
   'chatbox.header.title': 'Developer Lightspeed',
-  'chatbox.search.placeholder': 'Search previous chats...',
+  'chatbox.search.placeholder': 'Search',
+  'chatbox.provider.other': 'Other',
+  'chatbox.emptyState.noPinnedChats': 'No pinned chats',
+  'chatbox.emptyState.noRecentChats': 'No recent chats',
+  'chatbox.emptyState.noResults.title': 'No results found',
+  'chatbox.emptyState.noResults.body':
+    'Adjust your search query and try again. Check your spelling or try a more general term.',
   'chatbox.welcome.greeting': 'Hello, {{userName}}',
   'chatbox.welcome.description': 'How can I help you today?',
   'chatbox.message.placeholder':
@@ -112,6 +125,15 @@ export const lightspeedMessages = {
   // Accessibility and ARIA labels
   'aria.chatbotSelector': 'Chatbot selector',
   'aria.important': 'Important',
+  'aria.chatHistoryMenu': 'Chat history menu',
+  'aria.closeDrawerPanel': 'Close drawer panel',
+  'aria.search.placeholder': 'Search',
+  'aria.searchPreviousConversations': 'Search previous conversations',
+  'aria.resize': 'Resize',
+  'aria.options.label': 'Options',
+  'aria.scroll.down': 'Back to bottom',
+  'aria.scroll.up': 'Back to top',
+  'aria.settings.label': 'Chatbot options',
 
   // Modal actions
   'modal.edit': 'Edit',
@@ -121,6 +143,9 @@ export const lightspeedMessages = {
 
   // Conversation actions
   'conversation.delete': 'Delete',
+  'conversation.rename': 'Rename',
+  'conversation.addToPinnedChats': 'Pin',
+  'conversation.removeFromPinnedChats': 'Unpin',
   'conversation.announcement.userMessage':
     'Message from User: {{prompt}}. Message from Bot is loading.',
 
@@ -134,6 +159,11 @@ export const lightspeedMessages = {
   'tooltip.microphone.active': 'Stop listening',
   'tooltip.microphone.inactive': 'Use microphone',
   'button.newChat': 'New chat',
+  'tooltip.chatHistoryMenu': 'Chat history menu',
+  'tooltip.responseRecorded': 'Response recorded',
+  'tooltip.backToTop': 'Back to top',
+  'tooltip.backToBottom': 'Back to bottom',
+  'tooltip.settings': 'Chatbot options',
 
   // Modal titles
   'modal.title.preview': 'Preview attachment',
@@ -180,10 +210,14 @@ export const lightspeedMessages = {
     "We've received your response. Thank you for sharing your feedback!",
 
   // Conversation categorization
-  'conversation.category.today': 'Today',
-  'conversation.category.yesterday': 'Yesterday',
-  'conversation.category.previous7Days': 'Previous 7 Days',
-  'conversation.category.previous30Days': 'Previous 30 Days',
+  'conversation.category.pinnedChats': 'Pinned',
+  'conversation.category.recent': 'Recent',
+
+  // lightspeed settings
+  'settings.pinned.enable': 'Enable pinned chats',
+  'settings.pinned.disable': 'Disable pinned chats',
+  'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
+  'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
 };
 
 /**

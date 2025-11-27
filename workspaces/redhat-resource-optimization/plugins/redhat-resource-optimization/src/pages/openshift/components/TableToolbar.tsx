@@ -35,11 +35,12 @@ type TableToolbarProps = {
   showPlatformSum: boolean;
   setShowPlatformSum: (showPlatformSum: boolean) => void;
   projectsCount: number;
+  groupBy: string;
 };
 
 /** @public */
 export function TableToolbar(props: TableToolbarProps) {
-  const { showPlatformSum, setShowPlatformSum, projectsCount } = props;
+  const { showPlatformSum, setShowPlatformSum, projectsCount, groupBy } = props;
   const classes = useStyles();
 
   return (
@@ -63,22 +64,24 @@ export function TableToolbar(props: TableToolbarProps) {
             Projects ({projectsCount})
           </Typography>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <Switch
-              checked={showPlatformSum}
-              onChange={e => setShowPlatformSum(e.target.checked)}
-              className={classes.switchOff}
-            />
-            <Typography variant="body2" style={{ color: '#6A6E73' }}>
-              Sum platform costs
-            </Typography>
-          </div>
+          {groupBy === 'project' && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <Switch
+                checked={showPlatformSum}
+                onChange={e => setShowPlatformSum(e.target.checked)}
+                className={classes.switchOff}
+              />
+              <Typography variant="body2" style={{ color: '#6A6E73' }}>
+                Sum platform costs
+              </Typography>
+            </div>
+          )}
 
           <div
             style={{

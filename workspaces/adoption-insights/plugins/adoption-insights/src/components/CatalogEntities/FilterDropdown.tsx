@@ -36,9 +36,11 @@ const FilterDropdown = ({
         <InputLabel id="kind-select">{t('filter.selectKind')}</InputLabel>
         <Select
           labelId="kind-select"
-          renderValue={(selected: string) =>
-            selected.length === 0 ? t('filter.selectKind') : selected
-          }
+          renderValue={(selected: string) => {
+            if (selected.length === 0) return t('filter.selectKind');
+            if (selected === 'All') return t('filter.all');
+            return selected;
+          }}
           value={selectedOption}
           onChange={handleChange}
           label={t('filter.selectKind')}
