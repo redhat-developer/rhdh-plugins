@@ -12718,6 +12718,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:plugins/orchestrator-backend-module-loki":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:plugins/orchestrator-backend-module-loki"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.4.4
+    "@backstage/backend-test-utils": ^1.9.1
+    "@backstage/cli": ^0.34.4
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
+    luxon: ^3.7.2
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-orchestrator-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-backend@workspace:plugins/orchestrator-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-backend@workspace:plugins/orchestrator-backend"
@@ -12739,6 +12752,7 @@ __metadata:
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
     "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
     "@types/express": 4.17.23
     "@types/fs-extra": 11.0.4
     "@types/json-schema": 7.0.15
@@ -12865,6 +12879,16 @@ __metadata:
     tss-react: ^4.9.18
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-orchestrator-node@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-node@workspace:plugins/orchestrator-node":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-node@workspace:plugins/orchestrator-node"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.4.4
+    "@backstage/cli": ^0.34.4
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
   languageName: unknown
   linkType: soft
 
@@ -18306,6 +18330,7 @@ __metadata:
     "@backstage/plugin-signals-backend": ^0.3.9
     "@backstage/plugin-techdocs-backend": ^2.1.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator": "workspace:^"
     "@types/express": ^4.17.6
     "@types/express-serve-static-core": ^4.17.5
