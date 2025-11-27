@@ -72,6 +72,13 @@ import {
   verifyEnablePinnedChatsOption,
   selectDisablePinnedChats,
   selectEnablePinnedChats,
+  verifyUnpinActionAvailable,
+  selectUnpinAction,
+  searchChats,
+  verifyEmptySearchResults,
+  verifyNoResultsFoundMessage,
+  verifyChatUnpinned,
+  clearSearch,
 } from './utils/chatManagement';
 import { login } from './utils/login';
 import {
@@ -169,7 +176,7 @@ test.describe('Lightspeed tests', () => {
     browser,
   }, testInfo) => {
     await test.step('Verify initial state of sidebar', async () => {
-      await assertChatDialogInitialState(sharedPage, translations);
+      await assertChatDialogInitialState(sharedPage, translations, devMode);
     });
 
     await test.step('Close the sidebar and verify elements are hidden', async () => {
@@ -398,12 +405,14 @@ test.describe('Lightspeed tests', () => {
       );
     });
 
-    test.describe('Chat Management', () => {
+    const chatManagementDescribeFn = devMode
+      ? test.describe
+      : test.describe.skip;
+    chatManagementDescribeFn('Chat Management', () => {
       const testChatName = 'Test Rename';
 
       test('Verify chat actions menu', async () => {
         await sharedPage.reload();
-        await sharedPage.waitForTimeout(3000);
         await openChatContextMenu(sharedPage);
         await verifyChatContextMenuOptions(sharedPage, translations);
       });
@@ -438,7 +447,7 @@ test.describe('Lightspeed tests', () => {
         await verifyChatDeleted(sharedPage, testChatName);
       });
 
-      test('Verify disable pinned chats', async () => {
+      test('Verify disable pinned chats section via settings', async () => {
         await verifyPinnedSectionVisible(sharedPage, translations);
         await verifyEmptyPinnedChatsMessage(sharedPage, translations);
         await verifyChatbotSettingsVisible(sharedPage, translations);
@@ -449,7 +458,7 @@ test.describe('Lightspeed tests', () => {
         await verifyPinnedChatsNotEmpty(sharedPage, translations);
       });
 
-      test('Verify enable pinned chats', async () => {
+      test('Verify enable pinned chats section via settings', async () => {
         await verifyPinnedSectionHidden(sharedPage, translations);
         await verifyPinnedChatsNotEmpty(sharedPage, translations);
         await openChatbotSettings(sharedPage, translations);
@@ -458,11 +467,29 @@ test.describe('Lightspeed tests', () => {
         await verifyPinnedSectionVisible(sharedPage, translations);
         await verifyEmptyPinnedChatsMessage(sharedPage, translations);
       });
-      /**
-       * TODO (after persistence is implemented):
-       * - Verify pinned chat is visible after page refresh
-       * - Add test to verify unpin actions
-       */
+
+      test.describe('Search no-results scenarios', () => {
+        test('Verify search results when chats are not pinned', async () => {
+          await searchChats(sharedPage, 'dummy search', translations);
+          await verifyEmptySearchResults(sharedPage, translations);
+        });
+
+        test('Verify search results when chats are pinned', async () => {
+          await sharedPage.reload();
+          await openChatContextMenu(sharedPage);
+          await selectPinAction(sharedPage, translations);
+          await searchChats(sharedPage, 'dummy search', translations);
+          await verifyNoResultsFoundMessage(sharedPage, translations);
+        });
+      });
+
+      test('Verify unpin chat action removes chat from pinned section', async () => {
+        await clearSearch(sharedPage);
+        await openChatContextMenu(sharedPage);
+        await verifyUnpinActionAvailable(sharedPage, translations);
+        await selectUnpinAction(sharedPage, translations);
+        await verifyChatUnpinned(sharedPage, translations);
+      });
     });
   });
 });

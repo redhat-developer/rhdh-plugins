@@ -19,6 +19,7 @@ import { LightspeedMessages } from './translations';
 export async function assertChatDialogInitialState(
   page: Page,
   translations: LightspeedMessages,
+  devMode = true,
 ) {
   await expect(page.getByLabel('Chatbot', { exact: true })).toContainText(
     translations['chatbox.header.title'],
@@ -27,6 +28,18 @@ export async function assertChatDialogInitialState(
     page.getByRole('button', { name: translations['aria.chatHistoryMenu'] }),
   ).toBeVisible();
   await assertDrawerState(page, 'open', translations);
+
+  if (devMode) {
+    await expect(page.getByLabel(translations['conversation.category.recent']))
+      .toMatchAriaSnapshot(`
+      - heading "${translations['conversation.category.pinnedChats']}"
+      - menu:
+        - menuitem "${translations['chatbox.emptyState.noPinnedChats']}"
+      - heading "${translations['conversation.category.recent']}"
+      - menu:
+        - menuitem "${translations['chatbox.emptyState.noRecentChats']}"
+      `);
+  }
 }
 
 export async function closeChatDrawer(
