@@ -34,7 +34,7 @@ export async function navigateToInsights(page: Page, insightsTitle?: string) {
 /**
  * Get a panel locator by its title
  */
-export function getPanel(page: Page, panelTitle: string) {
+export function getPanel(page: Page, panelTitle: string | RegExp) {
   return page.locator('.v5-MuiPaper-root', { hasText: panelTitle });
 }
 
@@ -70,61 +70,6 @@ export async function closeDateRangePicker(
   await datePicker
     .getByRole('button', { name: cancelText || 'Cancel' })
     .click();
-}
-
-/**
- * Visit a catalog entity by name
- */
-export async function visitCatalogEntity(page: Page, entityName: string) {
-  await navigate(page, 'home');
-  await page.getByRole('link', { name: entityName }).click();
-  await page
-    .getByRole('heading', { name: entityName })
-    .waitFor({ state: 'visible' });
-}
-
-/**
- * Run a template with the given parameters
- */
-export async function runTemplate(
-  page: Page,
-  runName: string,
-  org: string,
-  repo: string,
-) {
-  await navigate(page, 'create...');
-  await page.getByTestId('template-card-actions--create').click();
-  await page.getByRole('textbox').fill(runName);
-  await page.getByRole('button', { name: 'next' }).click();
-  await page.getByRole('textbox').first().fill(org);
-  await page.getByRole('textbox').last().fill(repo);
-  await page.getByRole('button', { name: 'review' }).click();
-  await page.getByRole('button', { name: 'create' }).click();
-  await page
-    .getByText('Run of Example Node.js Template')
-    .waitFor({ state: 'visible' });
-}
-
-/**
- * Visit the docs page
- */
-export async function visitDocs(page: Page) {
-  await navigate(page, 'docs');
-  await page.getByText('No documents to show').waitFor({ state: 'visible' });
-}
-
-/**
- * Perform a search query
- */
-export async function performSearch(page: Page, searchQuery: string) {
-  await page.getByRole('button', { name: 'search' }).click();
-  await page.getByRole('textbox').fill(searchQuery);
-
-  const noSearchResults = page.getByRole('heading', {
-    name: 'Sorry, no results were found',
-  });
-  await noSearchResults.waitFor({ state: 'visible' });
-  await page.getByRole('button', { name: 'close' }).click();
 }
 
 /**

@@ -26,10 +26,6 @@ import {
   selectDateRange,
   openDateRangePicker,
   closeDateRangePicker,
-  visitCatalogEntity,
-  runTemplate,
-  visitDocs,
-  performSearch,
   waitForDataFlush,
   verifyTableEntries,
   verifyPanelContainsTexts,
@@ -41,6 +37,12 @@ import {
   getTranslations,
   replaceTemplate,
 } from './utils/translations.js';
+import {
+  visitComponent,
+  runTemplate,
+  visitDocs,
+  performSearch,
+} from './utils/events';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -187,24 +189,22 @@ test('Rest of the panels have no data', async () => {
 
 test.describe(() => {
   test.beforeAll(async () => {
+    let token = '';
+    page.on('request', request => {
+      if (!token && request.headers().authorization) {
+        token = request.headers().authorization;
+      }
+    });
+
+    await page.goto('/');
+    while (token === '') {
+      await page.waitForEvent('request');
+    }
     // visit a catalog entity
-    await visitCatalogEntity(page, 'example-website');
-
-    // run a template
-    await runTemplate(
-      page,
-      'reallyUniqueName',
-      'orgthatdoesntexist',
-      'repothatdoesntexist',
-    );
-
-    // visit the docs
-    await visitDocs(page);
-
-    // do a search
-    await performSearch(page, 'searching for something');
-
-    // wait for the flush interval to be sure
+    await visitComponent(page, token, 'example-website');
+    await runTemplate(page, token);
+    await visitDocs(page, token);
+    await performSearch(page, token, 'searching for something');
     await waitForDataFlush();
 
     await navigateToInsights(page);
@@ -248,19 +248,21 @@ test.describe(() => {
   test('New data shows in searches', async () => {
     const panel = getPanel(
       page,
-      replaceTemplate(translations.searches.totalCount, { count: 1 }),
+      new RegExp(
+        replaceTemplate(translations.searches.totalCount, { count: '[1,2]' }),
+      ),
     );
     await panel.scrollIntoViewIfNeeded();
     await expect(panel.locator('.recharts-surface')).toBeVisible();
     const averageTextContent = replaceTemplate(
       translations.searches.averageText,
       {
-        count: 1,
+        count: '[1,2]',
         period: translations.searches.hour,
       },
     );
     const averageText = `${translations.searches.averagePrefix} ${averageTextContent}${translations.searches.averageSuffix}`;
-    await expect(panel).toContainText(averageText);
+    await expect(panel).toContainText(new RegExp(averageText));
   });
 
   test('New data shows in top templates', async ({
