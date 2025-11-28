@@ -3,8 +3,8 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: red-hat-developer-hub-orchestrator
-  title: RHDH Orchestrator plugin
-  description: Orchestrator Plugin for Backstage
+  title: Orchestrator Plugin for Red Hat Developer Hub
+  description: Orchestrator Plugin for Red Hat Developer Hub
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
     github.com/team-slug: redhat-developer/rhdh-plugins-contributers

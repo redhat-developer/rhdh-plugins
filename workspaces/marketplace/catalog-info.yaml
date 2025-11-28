@@ -1,8 +1,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: red-hat-developer-hub-extensions
-  title: RHDH Extensions plugin
+  name: rhdh-extensions
+  title: Extensions Plugin for Red Hat Developer Hub
   description: Extensions plugin that will live in Backstage Community Plugin.
   annotations:
     backstage.io/techdocs-ref: dir:.

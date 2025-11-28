@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: ai-integrations
-  title: AI Model Catalog
+  title: AI Model Catalog for Red Hat Developer Hub
   description: |
     Backend plugins that integrate with Red Hat OpenShift AI to map AI Models and Model Servers from Red Hat OpenShift AI as Component, Resource, and API entities. The plugins also facilitate creating TechDocs for the Components and Resources from the Model Cards for the AI Models.
     github.com/project-slug: redhat-developer/rhdh-plugins

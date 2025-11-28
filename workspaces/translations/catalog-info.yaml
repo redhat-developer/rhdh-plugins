@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: rhdh-translations-plugin
-  title: RHDH Translations Plugin
+  title: Translations Plugin for Red Hat Developer Hub
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
     github.com/team-slug: redhat-developer/rhdh-plugins-contributers

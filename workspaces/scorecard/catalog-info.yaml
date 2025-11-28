@@ -1,8 +1,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: scorecard
-  title: Scorecard
+  name: rhdh-scorecard
+  title: Scorecard Plugin for Red Hat Developer Hub
   description: |
     Track the health, security, and compliance of your components with customizable KPIs.
   annotations:

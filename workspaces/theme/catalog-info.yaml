@@ -2,8 +2,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: red-hat-developer-hub-theme
-  title: RHDH Theme
+  name: rhdh-theme
+  title: Theme for Red Hat Developer Hub
   description: Theme for RHDH 1.5 and later.
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins

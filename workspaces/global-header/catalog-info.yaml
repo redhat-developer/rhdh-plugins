@@ -1,8 +1,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: red-hat-developer-hub-global-header
-  title: RHDH Global Header plugin
+  name: rhdh-global-header-plugin
+  title: Global Header plugin for Red Hat Developer Hub
   description: The global header plugins provides an extendable way for the RHDH header. It provides a set of default components and also allow other plugins can contribute components to the header.
   annotations:
     backstage.io/techdocs-ref: dir:.

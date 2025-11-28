@@ -2,8 +2,8 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: red-hat-developer-hub-openshift-image-registry
-  title: RHDH OpenShift Image Registry plugin
-  description: OpenShift Image Registry plugin for Backstage
+  title: OpenShift Image Registry plugin for Red Hat Developer Hub
+  description: OpenShift Image Registry plugin for Red Hat Developer Hub
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
     github.com/team-slug: redhat-developer/rhdh-plugins-contributers

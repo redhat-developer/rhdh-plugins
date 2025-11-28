@@ -1,8 +1,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: red-hat-developer-hub-global-floating-action-button
-  title: RHDH Global Floating Action Button plugin
+  name: rhdh-global-floating-action-button-plugin
+  title: Global Floating Action Button plugin for Red Hat Developer Hub
   description: The global floating action button plugin allows other plugins to add a floating action button to the RHDH app.
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins

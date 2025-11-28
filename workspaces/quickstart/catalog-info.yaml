@@ -1,8 +1,8 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: quickstart
-  title: Quickstart
+  name: rhdh-quickstart
+  title: Quickstart Plugin for Red Hat Developer Hub
   description: 'Guided quickstarts to help users discover and set up key features in Red Hat Developer Hub.'
   annotations:
     github.com/project-slug: redhat-developer/rhdh-plugins
@@ -12,7 +12,7 @@ metadata:
     jira/component: Quickstart Plugin
 spec:
   type: backstage-plugin
-  owner: john@example.com
+  owner: rhdh-team
   lifecycle: active
   system: rhdh
   subcomponentOf: rhdh-plugins
