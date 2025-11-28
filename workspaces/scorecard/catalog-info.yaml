@@ -5,10 +5,12 @@ metadata:
   title: Scorecard
   description: |
     Track the health, security, and compliance of your components with customizable KPIs.
-  # Example for optional annotations
-  # annotations:
-  #   github.com/project-slug: backstage/backstage
-  #   backstage.io/techdocs-ref: dir:.
+  annotations:
+    github.com/project-slug: redhat-developer/rhdh-plugins
+    github.com/team-slug: redhat-developer/rhdh-plugins-contributers
+    sonarqube.org/project-key: redhat-developer_rhdh-plugins
+    jira/project-key: RHIDP
+    jira/component: Scorecard plugin
 spec:
   type: backstage-plugin
   owner: john@example.com
