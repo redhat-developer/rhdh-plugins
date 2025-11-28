@@ -178,6 +178,36 @@ function inferErrorTypeFromStatusCode(statusCode: number): string {
 }
 
 /**
+ * Safely convert an error to a string message
+ * @internal - exported for testing
+ */
+export function errorToString(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (typeof error === 'object' && error !== null) {
+    return JSON.stringify(error);
+  }
+  if (error === null || error === undefined) {
+    return 'Unknown error';
+  }
+  if (
+    typeof error === 'number' ||
+    typeof error === 'boolean' ||
+    typeof error === 'bigint'
+  ) {
+    return `${error}`;
+  }
+  if (typeof error === 'symbol') {
+    return error.toString();
+  }
+  return 'Unknown error';
+}
+
+/**
  * Extracts detailed error information from Kubernetes/Kubearchive API errors
  *
  * @param error - The error object from the API call
@@ -192,18 +222,7 @@ export function extractKubernetesErrorDetails(
   namespace: string,
   source: 'kubernetes' | 'kubearchive' = 'kubernetes',
 ): ExtractedErrorDetails {
-  let fallbackMessage: string;
-  if (error instanceof Error) {
-    fallbackMessage = error.message;
-  } else if (typeof error === 'object' && error !== null) {
-    fallbackMessage = JSON.stringify(error);
-  } else if (typeof error === 'string') {
-    fallbackMessage = error;
-  } else if (error === null || error === undefined) {
-    fallbackMessage = 'Unknown error';
-  } else {
-    fallbackMessage = String(error);
-  }
+  const fallbackMessage = errorToString(error);
 
   const resourcePath = buildResourcePath(
     resourceModel.apiGroup,

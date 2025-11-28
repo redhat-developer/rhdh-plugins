@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { extractKubernetesErrorDetails } from '../error-extraction';
+import {
+  extractKubernetesErrorDetails,
+  errorToString,
+} from '../error-extraction';
 import { GroupVersionKind } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 describe('error-extraction', () => {
@@ -639,6 +642,69 @@ describe('error-extraction', () => {
         expect(result).toBeDefined();
         expect(result.resourcePath).toBeDefined();
       });
+    });
+  });
+
+  describe('errorToString', () => {
+    it('should handle Error instances', () => {
+      const error = new Error('Test error message');
+      expect(errorToString(error)).toBe('Test error message');
+    });
+
+    it('should handle string errors', () => {
+      expect(errorToString('String error')).toBe('String error');
+    });
+
+    it('should handle number errors', () => {
+      expect(errorToString(12345)).toBe('12345');
+      expect(errorToString(0)).toBe('0');
+      expect(errorToString(-42)).toBe('-42');
+    });
+
+    it('should handle boolean errors', () => {
+      expect(errorToString(true)).toBe('true');
+      expect(errorToString(false)).toBe('false');
+    });
+
+    it('should handle bigint errors', () => {
+      expect(errorToString(BigInt(123456789))).toBe('123456789');
+    });
+
+    it('should handle symbol errors', () => {
+      const sym = Symbol('test');
+      expect(errorToString(sym)).toBe(sym.toString());
+    });
+
+    it('should handle null errors', () => {
+      expect(errorToString(null)).toBe('Unknown error');
+    });
+
+    it('should handle undefined errors', () => {
+      expect(errorToString(undefined)).toBe('Unknown error');
+    });
+
+    it('should handle object errors with JSON.stringify', () => {
+      const error = { message: 'Test', code: 500 };
+      expect(errorToString(error)).toBe('{"message":"Test","code":500}');
+    });
+
+    it('should handle nested object errors', () => {
+      const error = {
+        message: 'Test',
+        details: { nested: { value: 123 } },
+      };
+      expect(errorToString(error)).toBe(
+        '{"message":"Test","details":{"nested":{"value":123}}}',
+      );
+    });
+
+    it('should handle array errors', () => {
+      const error = [1, 2, 3];
+      expect(errorToString(error)).toBe('[1,2,3]');
+    });
+
+    it('should handle empty object', () => {
+      expect(errorToString({})).toBe('{}');
     });
   });
 });
