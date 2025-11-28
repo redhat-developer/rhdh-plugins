@@ -51,6 +51,10 @@ interface ProjectCost {
   monthOverMonthValue: number;
   includesOverhead: boolean;
   previousPeriodCost: number;
+  infrastructureCost: number;
+  infrastructureCostPercentage: number;
+  supplementaryCost: number;
+  supplementaryCostPercentage: number;
 }
 
 /** @public */
@@ -74,6 +78,10 @@ export function OpenShiftPage() {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [selectedTagKey, setSelectedTagKey] = useState<string>('');
   const [selectedTagValue, setSelectedTagValue] = useState<string>('');
+  const [showMonthOverMonthChange, setShowMonthOverMonthChange] =
+    useState(true);
+  const [showInfrastructureCost, setShowInfrastructureCost] = useState(false);
+  const [showSupplementaryCost, setShowSupplementaryCost] = useState(false);
 
   // Fetch tags on first load
   useAsync(async () => {
@@ -236,6 +244,12 @@ export function OpenShiftPage() {
               platform_distributed?: { value?: number };
               storage_unattributed_distributed?: { value?: number };
             };
+            infrastructure?: {
+              total?: { value?: number };
+            };
+            supplementary?: {
+              total?: { value?: number };
+            };
             delta_percent?: number;
             delta_value?: number;
           }) || {};
@@ -253,6 +267,9 @@ export function OpenShiftPage() {
         const deltaPercent = value?.delta_percent || 0;
         const deltaValue = value?.delta_value || 0;
 
+        const infrastructureValue = value?.infrastructure?.total?.value || 0;
+        const supplementaryValue = value?.supplementary?.total?.value || 0;
+
         return {
           id: `${index}`,
           projectName: itemName,
@@ -266,16 +283,32 @@ export function OpenShiftPage() {
             value?.cost?.platform_distributed?.value !== 0 ||
             value?.cost?.storage_unattributed_distributed?.value !== 0,
           previousPeriodCost: costValue + Math.abs(deltaValue),
+          infrastructureCost: infrastructureValue,
+          infrastructureCostPercentage: 0,
+          supplementaryCost: supplementaryValue,
+          supplementaryCostPercentage: 0,
         };
       }) || [];
 
-    const totalCost = costData.meta?.total?.cost?.distributed?.value || 0;
+    const totalCost = costData.meta?.total?.cost?.total?.value || 0;
+    const totalInfrastructureCost =
+      costData.meta?.total?.infrastructure?.total?.value || 0;
+    const totalSupplementaryCost =
+      costData.meta?.total?.supplementary?.total?.value || 0;
 
     const currencyCode = costData.meta?.currency || currency;
 
     const projectsWithPercentage = projects.map(p => ({
       ...p,
       costPercentage: totalCost > 0 ? (p.cost / totalCost) * 100 : 0,
+      infrastructureCostPercentage:
+        totalInfrastructureCost > 0
+          ? (p.infrastructureCost / totalInfrastructureCost) * 100
+          : 0,
+      supplementaryCostPercentage:
+        totalSupplementaryCost > 0
+          ? (p.supplementaryCost / totalSupplementaryCost) * 100
+          : 0,
     }));
 
     let month: string;
@@ -357,8 +390,8 @@ export function OpenShiftPage() {
     selectedRows.size > 0 &&
     selectedRows.size < displayData.projects.length;
 
-  const columns = useMemo<TableColumn<ProjectCost>[]>(
-    () => [
+  const columns = useMemo<TableColumn<ProjectCost>[]>(() => {
+    const cols: TableColumn<ProjectCost>[] = [
       {
         title: (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -425,7 +458,10 @@ export function OpenShiftPage() {
           </div>
         ),
       },
-      {
+    ];
+
+    if (showMonthOverMonthChange) {
+      cols.push({
         title: 'Month over month change',
         field: 'monthOverMonthChange',
         sorting: false,
@@ -448,42 +484,88 @@ export function OpenShiftPage() {
             </div>
           </div>
         ),
-      },
-      {
-        title: 'Cost',
-        field: 'cost',
+      });
+    }
+
+    cols.push({
+      title: 'Cost',
+      field: 'cost',
+      render: data => (
+        <div>
+          <div>
+            {formatCurrency(data.cost, displayData?.currencyCode || '')}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#666' }}>
+            {data.costPercentage.toFixed(2)}% of cost
+          </div>
+        </div>
+      ),
+    });
+
+    if (showInfrastructureCost) {
+      cols.push({
+        title: 'Infrastructure cost',
+        field: 'infrastructureCost',
         render: data => (
           <div>
             <div>
-              {formatCurrency(data.cost, displayData?.currencyCode || '')}
+              {formatCurrency(
+                data.infrastructureCost,
+                displayData?.currencyCode || '',
+              )}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#666' }}>
-              {data.costPercentage.toFixed(2)}% of cost
+              {data.infrastructureCostPercentage.toFixed(2)}% of cost
             </div>
           </div>
         ),
-      },
-      {
-        title: 'Actions',
-        field: 'actions',
-        sorting: false,
-        render: () => (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <img src={BlackSvgIcon} alt="CSV" style={{ cursor: 'pointer' }} />
+      });
+    }
+
+    if (showSupplementaryCost) {
+      cols.push({
+        title: 'Supplementary cost',
+        field: 'supplementaryCost',
+        render: data => (
+          <div>
+            <div>
+              {formatCurrency(
+                data.supplementaryCost,
+                displayData?.currencyCode || '',
+              )}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#666' }}>
+              {data.supplementaryCostPercentage.toFixed(2)}% of cost
+            </div>
           </div>
         ),
-      },
-    ],
-    [
-      handleRowSelect,
-      isAllSelected,
-      isIndeterminate,
-      selectedRows,
-      handleSelectAll,
-      displayData?.currencyCode,
-      groupBy,
-    ],
-  );
+      });
+    }
+
+    cols.push({
+      title: 'Actions',
+      field: 'actions',
+      sorting: false,
+      render: () => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <img src={BlackSvgIcon} alt="CSV" style={{ cursor: 'pointer' }} />
+        </div>
+      ),
+    });
+
+    return cols;
+  }, [
+    handleRowSelect,
+    isAllSelected,
+    isIndeterminate,
+    selectedRows,
+    handleSelectAll,
+    displayData?.currencyCode,
+    groupBy,
+    showMonthOverMonthChange,
+    showInfrastructureCost,
+    showSupplementaryCost,
+  ]);
 
   const handleOrderChange = useCallback(
     (orderBy: number, orderDirection: 'asc' | 'desc') => {
@@ -613,6 +695,12 @@ export function OpenShiftPage() {
                       setShowPlatformSum={setShowPlatformSum}
                       projectsCount={displayData?.projects?.length || 0}
                       groupBy={groupBy}
+                      showMonthOverMonthChange={showMonthOverMonthChange}
+                      setShowMonthOverMonthChange={setShowMonthOverMonthChange}
+                      showInfrastructureCost={showInfrastructureCost}
+                      setShowInfrastructureCost={setShowInfrastructureCost}
+                      showSupplementaryCost={showSupplementaryCost}
+                      setShowSupplementaryCost={setShowSupplementaryCost}
                     />
                   ),
                 }}
