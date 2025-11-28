@@ -5756,7 +5756,7 @@ __metadata:
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.15.1
     "@changesets/cli": ^2.27.1
-    "@playwright/test": 1.55.1
+    "@playwright/test": 1.57.0
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -8160,14 +8160,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.55.1":
-  version: 1.55.1
-  resolution: "@playwright/test@npm:1.55.1"
+"@playwright/test@npm:1.57.0":
+  version: 1.57.0
+  resolution: "@playwright/test@npm:1.57.0"
   dependencies:
-    playwright: 1.55.1
+    playwright: 1.57.0
   bin:
     playwright: cli.js
-  checksum: 8df3bd1dde94c94c172e0f727ebbeee8ba7c35d7438e3b487ab598dbef221a8bc0685546c5e10624ffd5d0caec52c79ef6f4d13187dee353d47f14e70a408bee
+  checksum: 1a84783a240d69c2c8081a127b446f812a8dc86fe6f60a9511dd501cc0e6229cbec7e7753972678f3f063ad2bebb2cedbe9caebc5faa41014aebed35773ea242
   languageName: node
   linkType: hard
 
@@ -8833,8 +8833,8 @@ __metadata:
     "@mui/material": 5.18.0
     "@mui/styles": 5.18.0
     "@openshift/dynamic-plugin-sdk": 5.0.1
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
-    "@scalprum/react-core": 0.9.5
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
+    "@scalprum/react-core": 0.11.1
     "@testing-library/jest-dom": 6.9.1
     "@testing-library/react": 14.3.1
     "@testing-library/user-event": 14.6.1
@@ -8850,19 +8850,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.11.0"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.9
-    "@backstage/theme": ^0.6.8
+    "@backstage/core-plugin-api": ^1.11.1
+    "@backstage/theme": ^0.7.0
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: a5626d864def2e255d026d1620d370ada033f11ee357b145a9f5bd95185cbb9392cae1c83d2dbdcafde8747feb95d79f7067f645d5c6086628d5910a216cf34e
+  checksum: 70368eb43351805dbea8a6f9b1a7e5e0c50ac6edc2ab7639c2fe48084d783b0d3f7a629225ae0e6ae3fd47b3fccdf2eecc4ad9a913ddec32e948f94fb6ecbd92
   languageName: node
   linkType: hard
 
@@ -9457,27 +9457,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.8.3":
-  version: 0.8.3
-  resolution: "@scalprum/core@npm:0.8.3"
+"@scalprum/core@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "@scalprum/core@npm:0.9.0"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     tslib: ^2.6.2
-  checksum: 31d1d376c795d47cfc7c4cf84d262989f7a62e3c536aedff03cfa6e23bf969713f70f0e3c9035fe46b280a5133c85c416f1cd2b46c98f9822080ac9d7c752819
+  checksum: 302d3df87fda872c05a95d8c6b86809f46854f46af8a44b7faa0250de9a0b0ebeaccdcdc69f9767c858fcef2c34c121b3e1087d0781fa1bcd7eee98d244db72b
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.9.5":
-  version: 0.9.5
-  resolution: "@scalprum/react-core@npm:0.9.5"
+"@scalprum/react-core@npm:0.11.1":
+  version: 0.11.1
+  resolution: "@scalprum/react-core@npm:0.11.1"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
-    "@scalprum/core": ^0.8.3
+    "@scalprum/core": ^0.9.0
     lodash: ^4.17.0
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 824cc4c53437a3d0da9a760fefa31a6aba436caef7b2cad69838fb43bd19b6301f90d60e33e823628596ef5e7174a208ba0e67ab129688cf122771fc101b0598
+  checksum: 2eac484690307aa80ebbaf482f7a9d6b756476bfe4da8722a4be05925c32c3fa5ac31614978cc5197598f19afdf6dbc80cc6f13e6f1b00cdb2a03f61ba6b4ed0
   languageName: node
   linkType: hard
 
@@ -12875,10 +12875,10 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@openshift/dynamic-plugin-sdk": ^5.0.1
-    "@playwright/test": 1.55.1
+    "@playwright/test": 1.57.0
     "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
-    "@scalprum/react-core": 0.9.5
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
+    "@scalprum/react-core": 0.11.1
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
@@ -25357,27 +25357,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.55.1":
-  version: 1.55.1
-  resolution: "playwright-core@npm:1.55.1"
+"playwright-core@npm:1.57.0":
+  version: 1.57.0
+  resolution: "playwright-core@npm:1.57.0"
   bin:
     playwright-core: cli.js
-  checksum: a2b981223fd8f5c50a4e0b6cc36a3ce40b41919d418b564561f085bcd6c8ce9df2354e687fbc76e662fddb9f2b28d0bc1f0124c085958406fcab6c6cf3b8228f
+  checksum: 960e80d6ec06305b11a3ca9e78e8e4201cc17f37dd37279cb6fece4df43d74bf589833f4f94535fadd284b427f98c5f1cf09368e22f0f00b6a9477571ce6b03b
   languageName: node
   linkType: hard
 
-"playwright@npm:1.55.1":
-  version: 1.55.1
-  resolution: "playwright@npm:1.55.1"
+"playwright@npm:1.57.0":
+  version: 1.57.0
+  resolution: "playwright@npm:1.57.0"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.55.1
+    playwright-core: 1.57.0
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 4935122ed687cd14861d64e6fdc79613d36d45f1363e911213a338da9993525d3872d7379300471f70209e1ad68ec91c0d65f0136e6c09c0775477943aaf7fb3
+  checksum: 176fd9fd890f390e0aa00d42697b70072d534243b15467d9430f3af329e77b3225b67a0afa12ea76fb440300dabd92d4cf040baf5edceee8eeff0ee1590ae5b7
   languageName: node
   linkType: hard
 
