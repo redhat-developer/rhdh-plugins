@@ -195,7 +195,7 @@ const OptimizationsBreakdownChart: React.FC<
     const result: (string | string[] | undefined)[] = [];
 
     if (series) {
-      series.map(serie => {
+      series.forEach(serie => {
         // Each group of chart names are hidden / shown together
         if (serie.childName === 'usage') {
           result.push([serie.childName, 'scatter']);
