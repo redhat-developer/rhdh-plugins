@@ -16,7 +16,7 @@
 
 import { useMemo } from 'react';
 
-import { Content, StructuredMetadataTable } from '@backstage/core-components';
+import { Content } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
 import Box from '@mui/material/Box';
@@ -28,6 +28,7 @@ import { makeStyles } from 'tss-react/mui';
 import { useTranslation } from '../hooks/useTranslation';
 import generateReviewTableData from '../utils/generateReviewTableData';
 import { useStepperContext } from '../utils/StepperContext';
+import NestedReviewTable from './NestedReviewTable';
 import SubmitButton from './SubmitButton';
 
 const useStyles = makeStyles()(theme => ({
@@ -78,7 +79,7 @@ const ReviewStep = ({
   return (
     <Content noPadding>
       <Paper square elevation={0} className={classes.paper}>
-        <StructuredMetadataTable dense metadata={displayData} />
+        <NestedReviewTable data={displayData} />
         <Box mb={4} />
         <div className={classes.footer}>
           <Button
