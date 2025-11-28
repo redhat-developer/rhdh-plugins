@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Navigate, Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -56,12 +56,59 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { ScorecardHomepageSection } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
+import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
+import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+import {
+  DynamicCustomizableHomePage,
+  OnboardingSection,
+  defaultLayouts,
+  HomePageCardMountPoint,
+  homepageTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+
+const mountPoints: HomePageCardMountPoint[] = [
+  {
+    Component: OnboardingSection,
+    config: {
+      layouts: defaultLayouts.onboarding,
+    },
+  },
+  {
+    Component: ScorecardHomepageSection,
+    config: {
+      layouts: {
+        xl: { w: 12, h: 6 },
+        lg: { w: 12, h: 6 },
+        md: { w: 12, h: 7 },
+        sm: { w: 12, h: 8 },
+        xs: { w: 12, h: 9 },
+        xxs: { w: 12, h: 10 },
+      },
+    },
+  },
+];
+
+const scalprumState: ScalprumState = {
+  initialized: true,
+  api: mountPoints
+    ? {
+        dynamicRootConfig: {
+          mountPoints: {
+            'home.page/cards': mountPoints,
+          },
+        },
+      }
+    : undefined,
+  config: {},
+  pluginStore: new PluginStore(),
+};
+
 const app = createApp({
   apis,
   themes: getThemes(),
   __experimentalTranslations: {
     availableLanguages: ['en', 'de', 'fr', 'es'],
-    resources: [scorecardTranslations],
+    resources: [scorecardTranslations, homepageTranslations],
   },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
@@ -101,7 +148,14 @@ const app = createApp({
 
 const routes = (
   <FlatRoutes>
-    <Route path="/" element={<Navigate to="catalog" />} />
+    <Route
+      path="/"
+      element={
+        <ScalprumContext.Provider value={scalprumState}>
+          <DynamicCustomizableHomePage />
+        </ScalprumContext.Provider>
+      }
+    />
     <Route path="/scorecard" element={<ScorecardHomepageSection />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route

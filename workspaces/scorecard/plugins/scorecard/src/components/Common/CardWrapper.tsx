@@ -24,20 +24,27 @@ import Divider from '@mui/material/Divider';
 interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   children: ReactNode;
   title: string;
-  subtitle: ReactNode;
+  subtitle?: ReactNode;
+  width?: string;
 }
 
 export const CardWrapper = ({
   children,
   title,
   subtitle,
+  width = '371px',
 }: CardWrapperProps) => {
   return (
-    <Card sx={{ width: '371px' }}>
+    <Card sx={{ width }}>
       <CardHeader
         title={title}
-        subheader={subtitle}
-        titleTypographyProps={{ mb: 0.5, fontWeight: 500 }}
+        subheader={subtitle ?? undefined}
+        sx={{
+          '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {
+            fontSize: '1.25rem',
+            fontWeight: 500,
+          },
+        }}
       />
       <Divider />
       <CardContent>{children}</CardContent>
