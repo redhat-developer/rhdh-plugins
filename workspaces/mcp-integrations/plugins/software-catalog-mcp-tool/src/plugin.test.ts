@@ -1107,7 +1107,7 @@ describe('backstageMcpPlugin', () => {
         const mockLoggerService = mockServices.logger.mock();
 
         // Test the action logic
-        const fetchCatalogEntitiesAction = async ({}) => {
+        const fetchCatalogEntitiesAction = async () => {
           const result = await fetchCatalogEntities(
             mockCatalogService,
             mockAuthService,
@@ -1121,7 +1121,7 @@ describe('backstageMcpPlugin', () => {
           };
         };
 
-        const result = await fetchCatalogEntitiesAction({});
+        const result = await fetchCatalogEntitiesAction();
 
         expect(result.output).toHaveProperty('entities');
         expect(result.output).toHaveProperty('error');
