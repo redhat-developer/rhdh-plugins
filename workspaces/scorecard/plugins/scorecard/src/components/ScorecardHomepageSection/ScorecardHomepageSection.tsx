@@ -19,7 +19,6 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { ScorecardHomepageCard } from './ScorecardHomepageCard';
@@ -51,28 +50,18 @@ export const ScorecardHomepageSection = () => {
   }
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        padding: '24px',
-        border: 'none',
-        backgroundColor: 'transparent',
-        overflow: 'auto',
-      }}
-    >
-      <Box sx={{ padding: '8px 8px 8px 0' }}>
-        <Grid container spacing={2}>
-          {aggregatedScorecards
-            ?.slice(0, 2)
-            .map((scorecard: AggregatedMetricResult) => (
-              <Grid item key={scorecard.id}>
-                <ScorecardHomepageCard
-                  scorecard={scorecard as AggregatedMetricResult}
-                />
-              </Grid>
-            ))}
-        </Grid>
-      </Box>
-    </Card>
+    <Box sx={{ padding: '8px 8px 8px 0' }}>
+      <Grid container spacing={2}>
+        {aggregatedScorecards
+          ?.slice(0, 2)
+          .map((scorecard: AggregatedMetricResult) => (
+            <Grid item key={scorecard.id}>
+              <ScorecardHomepageCard
+                scorecard={scorecard as AggregatedMetricResult}
+              />
+            </Grid>
+          ))}
+      </Grid>
+    </Box>
   );
 };
