@@ -15,12 +15,11 @@
  */
 
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePipelineruns } from '../../../hooks/resources/usePipelineruns';
 import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedData';
 import { Commit, PipelineRunType } from '../../../utils/pipeline-runs';
 import { getCommitsFromPLRs } from '../../../utils/commits';
-import { useCommitFilters } from './useCommitFilters';
 import { normalizeFilter } from '../../../utils/filterUtils';
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import TableFilters from '../../Table/TableFilters';
@@ -28,10 +27,17 @@ import { CommitItemRow } from './CommitItemRow';
 import { useComponents } from '../../../hooks/resources/useComponents';
 import {
   PipelineRunLabel,
+  FILTER_ALL_VALUE,
   PipelineRunResource,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { Entity } from '@backstage/catalog-model';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+import { Entity } from '@backstage/catalog-model';
+import {
+  useListState,
+  useResetPageOnFilterChange,
+} from '../../../hooks/useListState';
+import { useAllClustersFailed } from '../../../hooks/useAllClustersFailed';
+import { useCommitFilters } from './useCommitFilters';
 
 type Props = {
   hasSubcomponents: boolean;
@@ -65,13 +71,15 @@ const CommitItemRowWithProps = (props: CommitItemRowWithPropsProps) => {
 export const CommitsList = ({ hasSubcomponents }: Props) => {
   const { entity } = useEntity();
 
-  const [selectedSubcomponent, setSelectedSubcomponent] = useState('All');
-  const [selectedCluster, setSelectedCluster] = useState('All');
-  const [selectedCommitStatus, setSelectedCommitStatus] = useState('All');
+  const [selectedSubcomponent, setSelectedSubcomponent] =
+    useState<string>(FILTER_ALL_VALUE);
+  const [selectedCluster, setSelectedCluster] =
+    useState<string>(FILTER_ALL_VALUE);
+  const [selectedCommitStatus, setSelectedCommitStatus] =
+    useState<string>(FILTER_ALL_VALUE);
   const [nameSearch, setNameSearch] = useState('');
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { page, setPage, rowsPerPage, setRowsPerPage } = useListState();
 
   const {
     data: plrs,
@@ -155,9 +163,12 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
     return c;
   }, [hasSubcomponents]);
 
-  useEffect(() => {
-    setPage(0);
-  }, [selectedSubcomponent, selectedCluster, selectedCommitStatus, nameSearch]);
+  useResetPageOnFilterChange(setPage, [
+    selectedSubcomponent,
+    selectedCluster,
+    selectedCommitStatus,
+    nameSearch,
+  ]);
 
   const { uniqueClusters, uniqueSubcomponents, uniquePipelineRunStatuses } =
     useCommitFilters({ commits: commits, hasSubcomponents });
@@ -173,10 +184,10 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
         allPipelineRunsFilteredByComponents ?? [],
     }));
   }, [
-    allPipelineRunsFilteredByComponents,
-    entity,
-    hasSubcomponents,
     paginatedData,
+    hasSubcomponents,
+    entity,
+    allPipelineRunsFilteredByComponents,
   ]);
 
   // combine errors from both hooks
@@ -185,6 +196,12 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
     ...(plrsClusterErrors || []),
     ...(componentsClusterErrors || []),
   ];
+
+  const allClustersFailed = useAllClustersFailed(
+    loaded && componentsLoaded,
+    commits,
+    clusterErrors,
+  );
 
   if (loaded && componentsLoaded && error) {
     return (
@@ -196,13 +213,6 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
       </InfoCard>
     );
   }
-
-  // show cluster errors only when all clusters failed
-  const allClustersFailed =
-    loaded &&
-    componentsLoaded &&
-    commits.length === 0 &&
-    clusterErrors.length > 0;
 
   return (
     <InfoCard title="Commits" data-testid="commits-list">
@@ -224,7 +234,7 @@ export const CommitsList = ({ hasSubcomponents }: Props) => {
 
       <ResourceListContent
         loaded={loaded && componentsLoaded}
-        allClustersFailed={!!allClustersFailed}
+        allClustersFailed={allClustersFailed}
         clusterErrors={clusterErrors}
         data={data}
         emptyStateTitle="No commits found"

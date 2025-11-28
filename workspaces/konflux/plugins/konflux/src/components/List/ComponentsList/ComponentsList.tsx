@@ -17,15 +17,24 @@
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useComponents } from '../../../hooks/resources/useComponents';
 import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedData';
 import TableFilters from '../../Table/TableFilters';
 import { ComponentItemRow } from './ComponentItemRow';
-import { useComponentFilters } from './useComponentFilters';
 import { normalizeFilter } from '../../../utils/filterUtils';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
-import { ComponentResource } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import {
+  ComponentResource,
+  FILTER_ALL_VALUE,
+} from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import {
+  useListState,
+  useResetPageOnFilterChange,
+} from '../../../hooks/useListState';
+import { useAllClustersFailed } from '../../../hooks/useAllClustersFailed';
+import { createItemKey } from '../../../utils/resourceUtils';
+import { useComponentFilters } from './useComponentFilters';
 
 type Props = {
   hasSubcomponents: boolean;
@@ -41,13 +50,15 @@ const ComponentItemRowWithProps = (props: ComponentItemRowWithPropsProps) => {
 };
 
 export const ComponentsList = ({ hasSubcomponents }: Props) => {
-  const [selectedSubcomponent, setSelectedSubcomponent] = useState('All');
-  const [selectedCluster, setSelectedCluster] = useState('All');
-  const [selectedApplication, setSelectedApplication] = useState('All');
+  const [selectedSubcomponent, setSelectedSubcomponent] =
+    useState<string>(FILTER_ALL_VALUE);
+  const [selectedCluster, setSelectedCluster] =
+    useState<string>(FILTER_ALL_VALUE);
+  const [selectedApplication, setSelectedApplication] =
+    useState<string>(FILTER_ALL_VALUE);
   const [nameSearch, setNameSearch] = useState('');
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { page, setPage, rowsPerPage, setRowsPerPage } = useListState();
 
   const {
     data: components,
@@ -70,10 +81,12 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
     { page, rowsPerPage },
   );
 
-  // reset to page 0 when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [selectedSubcomponent, selectedCluster, nameSearch, selectedApplication]);
+  useResetPageOnFilterChange(setPage, [
+    selectedSubcomponent,
+    selectedCluster,
+    nameSearch,
+    selectedApplication,
+  ]);
 
   const { uniqueSubcomponents, uniqueClusters, uniqueApplications } =
     useComponentFilters({ components, hasSubcomponents });
@@ -82,9 +95,15 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
     if (!paginatedData) return [];
     return paginatedData.map(component => ({
       ...component,
-      itemKey: `${component.metadata?.name}-${component.metadata?.namespace}-${component.cluster.name}`,
+      itemKey: createItemKey(component),
     }));
   }, [paginatedData]);
+
+  const allClustersFailed = useAllClustersFailed(
+    loaded,
+    components,
+    clusterErrors,
+  );
 
   if (loaded && error) {
     return (
@@ -96,13 +115,6 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
       </InfoCard>
     );
   }
-
-  // show cluster errors only when all clusters failed
-  const allClustersFailed =
-    loaded &&
-    (!components || components.length === 0) &&
-    clusterErrors &&
-    clusterErrors.length > 0;
 
   return (
     <InfoCard title="Components">
@@ -124,7 +136,7 @@ export const ComponentsList = ({ hasSubcomponents }: Props) => {
 
       <ResourceListContent
         loaded={loaded}
-        allClustersFailed={!!allClustersFailed}
+        allClustersFailed={allClustersFailed}
         clusterErrors={clusterErrors}
         data={data}
         emptyStateTitle="No components found"

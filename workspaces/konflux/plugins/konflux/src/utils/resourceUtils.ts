@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-import { FILTER_ALL_VALUE } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import { K8sResourceCommonWithClusterInfo } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 /**
- * Normalizes a filter value by converting "All" to undefined.
+ * Creates a unique key for a resource item based on its metadata
+ * Format: {name}-{namespace}-{clusterName}
  *
- * @param value - The filter value ("All" or a specific value)
- * @returns The value if not "All", otherwise undefined
+ * @param resource - The Kubernetes resource with cluster info
+ * @returns A unique string key for the resource
  */
-export function normalizeFilter(value: string): string | undefined {
-  return value === FILTER_ALL_VALUE ? undefined : value;
-}
+export const createItemKey = (
+  resource: K8sResourceCommonWithClusterInfo,
+): string => {
+  return `${resource.metadata?.name}-${resource.metadata?.namespace}-${resource.cluster.name}`;
+};

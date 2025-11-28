@@ -33,8 +33,9 @@ import {
 } from '@patternfly/react-core';
 
 import './Table.css';
+import { FRONTEND_PAGINATION } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
-const ROWS_PER_PAGE_OPTIONS = [5, 10, 25, 50];
+const ROWS_PER_PAGE_OPTIONS = FRONTEND_PAGINATION.ROWS_PER_PAGE_OPTIONS;
 
 export type ItemWithKey = {
   itemKey: string;

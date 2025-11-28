@@ -18,17 +18,26 @@
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/patternfly/utilities/Accessibility/accessibility.css';
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePipelineruns } from '../../../hooks/resources/usePipelineruns';
 import { useFilteredPaginatedData } from '../../../hooks/useFilteredPaginatedData';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import TableFilters from '../../Table/TableFilters';
 import { PipelineRunItemRow } from './PipelineRunItemRow';
-import { usePipelineRunFilters } from './usePipelineRunFilters';
 import { normalizeFilter } from '../../../utils/filterUtils';
-import { PipelineRunResource } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { Entity } from '@backstage/catalog-model';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+import {
+  PipelineRunResource,
+  FILTER_ALL_VALUE,
+} from '@red-hat-developer-hub/backstage-plugin-konflux-common';
+import { Entity } from '@backstage/catalog-model';
+import {
+  useListState,
+  useResetPageOnFilterChange,
+} from '../../../hooks/useListState';
+import { useAllClustersFailed } from '../../../hooks/useAllClustersFailed';
+import { createItemKey } from '../../../utils/resourceUtils';
+import { usePipelineRunFilters } from './usePipelineRunFilters';
 
 type PipelineRunsListProps = {
   hasSubcomponents?: boolean;
@@ -57,16 +66,19 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
   hasSubcomponents = true,
 }) => {
   const { entity } = useEntity();
-  const [selectedSubcomponent, setSelectedSubcomponent] = useState('All');
-  const [selectedCluster, setSelectedCluster] = useState('All');
-  const [selectedApplication, setSelectedApplication] = useState('All');
+  const [selectedSubcomponent, setSelectedSubcomponent] =
+    useState<string>(FILTER_ALL_VALUE);
+  const [selectedCluster, setSelectedCluster] =
+    useState<string>(FILTER_ALL_VALUE);
+  const [selectedApplication, setSelectedApplication] =
+    useState<string>(FILTER_ALL_VALUE);
   const [selectedPipelineRunStatus, setSelectedPipelineRunStatus] =
-    useState('All');
-  const [selectedPipelineRunType, setSelectedPipelineRunType] = useState('All');
+    useState<string>(FILTER_ALL_VALUE);
+  const [selectedPipelineRunType, setSelectedPipelineRunType] =
+    useState<string>(FILTER_ALL_VALUE);
   const [nameSearch, setNameSearch] = useState('');
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const { page, setPage, rowsPerPage, setRowsPerPage } = useListState();
 
   const {
     data: plrs,
@@ -91,10 +103,7 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
     { page, rowsPerPage },
   );
 
-  // reset to page 0 when filters change
-  useEffect(() => {
-    setPage(0);
-  }, [
+  useResetPageOnFilterChange(setPage, [
     selectedSubcomponent,
     selectedCluster,
     selectedApplication,
@@ -125,11 +134,13 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
     if (!paginatedData) return [];
     return paginatedData.map(plr => ({
       ...plr,
-      itemKey: `${plr.metadata?.name}-${plr.metadata?.namespace}-${plr?.cluster.name}`,
+      itemKey: createItemKey(plr),
       hasSubcomponents,
       entity,
     }));
-  }, [entity, hasSubcomponents, paginatedData]);
+  }, [paginatedData, hasSubcomponents, entity]);
+
+  const allClustersFailed = useAllClustersFailed(loaded, plrs, clusterErrors);
 
   if (loaded && error) {
     return (
@@ -141,13 +152,6 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
       </InfoCard>
     );
   }
-
-  // show cluster errors only when all clusters failed
-  const allClustersFailed =
-    loaded &&
-    (!plrs || plrs.length === 0) &&
-    clusterErrors &&
-    clusterErrors.length > 0;
 
   return (
     <InfoCard title="Pipeline Runs" data-testid="pipeline-runs-list">
@@ -175,7 +179,7 @@ export const PipelineRunsList: React.FC<PipelineRunsListProps> = ({
 
       <ResourceListContent
         loaded={loaded}
-        allClustersFailed={!!allClustersFailed}
+        allClustersFailed={allClustersFailed}
         clusterErrors={clusterErrors}
         data={data}
         emptyStateTitle="No pipeline runs found"
