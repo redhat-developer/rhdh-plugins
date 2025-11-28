@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholds } from './thresholds/validateThresholds';
-export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+exports.up = async function up(knex) {
+  await knex.schema.alterTable('metric_values', table => {
+    table
+      .string('status')
+      .checkIn(['success', 'warning', 'error'], 'status_check')
+      .nullable();
+  });
+};
+
+exports.down = async function down(knex) {
+  await knex.schema.alterTable('metric_values', table => {
+    table.dropColumn('status');
+  });
+};

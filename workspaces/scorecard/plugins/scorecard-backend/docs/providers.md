@@ -48,12 +48,17 @@ export class MyMetricProvider implements MetricProvider<'number'> {
     return 'my_datasource.example_metric';
   }
 
+  // Returns the metric type
+  getMetricType(): 'number' {
+    return 'number';
+  }
+
   // Returns the metric definition
   getMetric(): Metric<'number'> {
     return {
       id: this.getProviderId(),
       title: 'Example Metric',
-      type: 'number',
+      type: this.getMetricType(),
       history: true,
     };
   }
@@ -91,6 +96,8 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 - Both IDs must follow the format `<datasourceId>.<metricName>` where:
   - `datasourceId` matches the value returned by `getProviderDatasourceId()`
   - `metricName` is a non-empty identifier for the specific metric
+- The metric type returned by `getMetricType()` must match the `type` property in the metric returned by `getMetric()`
+- In `getMetric()`, always use `type: this.getMetricType()` instead of hardcoding the type value
 - Configuration for metric provider must follow the schema defined in [`config.d.ts`](../config.d.ts).
 
 ## Updating the Module

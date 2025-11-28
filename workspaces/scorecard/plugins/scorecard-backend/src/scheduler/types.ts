@@ -23,6 +23,7 @@ import {
   LoggerService,
   SchedulerService,
 } from '@backstage/backend-plugin-api';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 
 export interface SchedulerTask {
   start(): Promise<void>;
@@ -36,4 +37,5 @@ export interface SchedulerOptions {
   scheduler: SchedulerService;
   database: DatabaseMetricValues;
   metricProvidersRegistry: MetricProvidersRegistry;
+  thresholdEvaluator: ThresholdEvaluator;
 }

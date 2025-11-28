@@ -32,11 +32,18 @@ export class MetricProvidersRegistry {
   register(metricProvider: MetricProvider): void {
     const providerId = metricProvider.getProviderId();
     const providerDatasource = metricProvider.getProviderDatasourceId();
-    const metricId = metricProvider.getMetric().id;
+    const metric = metricProvider.getMetric();
+    const metricType = metricProvider.getMetricType();
 
-    if (providerId !== metricId) {
+    if (providerId !== metric.id) {
       throw new Error(
-        `Invalid metric provider with ID ${providerId}, provider ID must match metric ID '${metricId}'`,
+        `Invalid metric provider with ID ${providerId}, provider ID must match metric ID '${metric.id}'`,
+      );
+    }
+
+    if (metricType !== metric.type) {
+      throw new Error(
+        `Invalid metric provider with ID ${providerId}, getMetricType() must match getMetric().type. Expected '${metricType}', but got '${metric.type}'`,
       );
     }
 

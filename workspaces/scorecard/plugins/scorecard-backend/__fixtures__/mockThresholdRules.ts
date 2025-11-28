@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholds } from './thresholds/validateThresholds';
-export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export const mockThresholdRules = [
+  { key: 'error', expression: '>40' },
+  { key: 'warning', expression: '>20' },
+  { key: 'success', expression: '<=20' },
+] as unknown as ThresholdRule[];
