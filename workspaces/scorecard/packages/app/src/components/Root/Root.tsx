@@ -89,7 +89,11 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
           pluralTitle="My Groups"
           icon={GroupIcon}
         />
-        <SidebarItem icon={DataUsageIcon} to="scorecard" text="Scorecard" />
+        <SidebarItem
+          icon={DataUsageIcon}
+          to="scorecard"
+          text="Aggregated Scorecards"
+        />
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
