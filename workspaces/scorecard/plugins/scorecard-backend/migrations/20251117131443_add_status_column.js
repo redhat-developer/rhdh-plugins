@@ -16,7 +16,10 @@
 
 exports.up = async function up(knex) {
   await knex.schema.alterTable('metric_values', table => {
-    table.enu('status', ['success', 'warning', 'error']).nullable();
+    table
+      .string('status')
+      .checkIn(['success', 'warning', 'error'], 'status_check')
+      .nullable();
   });
 };
 
