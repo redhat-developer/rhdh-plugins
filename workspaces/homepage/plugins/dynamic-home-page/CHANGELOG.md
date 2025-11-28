@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.3
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog.yaml
+
 ## 1.9.2
 
 ### Patch Changes
