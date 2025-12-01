@@ -38,6 +38,11 @@ export function processSchema(
 
   const name = definitionInSchema?.title ?? key;
   if (definitionInSchema) {
+    // Skip hidden fields in the review table
+    if (definitionInSchema['ui:hidden'] === true) {
+      return {};
+    }
+
     if (definitionInSchema['ui:widget'] === 'password') {
       return { [name]: '******' };
     }
@@ -54,6 +59,11 @@ export function processSchema(
         },
         {},
       );
+
+      // Skip if all nested fields are hidden (resulting in empty object)
+      if (Object.keys(nestedValue).length === 0) {
+        return {};
+      }
 
       return { [name]: nestedValue };
     }
