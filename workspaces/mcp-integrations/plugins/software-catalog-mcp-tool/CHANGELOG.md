@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool
 
+## 0.4.0
+
+### Minor Changes
+
+- 7b01424: add a new mcp action for fetching metadata related to a Backstage Software Template
+
 ## 0.3.0
 
 ### Minor Changes
