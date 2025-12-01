@@ -130,7 +130,7 @@ const InsightsHeader: FC<InsightsHeaderProps> = () => {
   }, [startDateRange, endDateRange, t, locale]);
 
   return (
-    <Header title={t('header.title')}>
+    <Header title={t('header.title')} pageTitleOverride={t('header.title')}>
       <Select
         displayEmpty
         open={menuOpen}
