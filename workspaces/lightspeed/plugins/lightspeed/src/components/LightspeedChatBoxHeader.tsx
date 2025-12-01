@@ -24,6 +24,7 @@ import {
   ChatbotHeaderOptionsDropdown,
 } from '@patternfly/chatbot';
 import {
+  Divider,
   Dropdown,
   DropdownGroup,
   DropdownItem,
@@ -54,6 +55,9 @@ const useStyles = makeStyles(() =>
       '& svg': {
         transform: 'none !important',
       },
+    },
+    groupTitle: {
+      fontWeight: 'bold',
     },
   }),
 );
@@ -119,15 +123,27 @@ export const LightspeedChatBoxHeader = ({
         toggle={toggle}
       >
         <DropdownList>
-          {Object.entries(groupedModels).map(([provider, providerModels]) => (
-            <DropdownGroup key={provider} label={provider}>
-              {providerModels.map(model => (
-                <DropdownItem value={model.value} key={model.value}>
-                  {model.label}
-                </DropdownItem>
-              ))}
-            </DropdownGroup>
-          ))}
+          {Object.entries(groupedModels).map(
+            ([provider, providerModels], index) => (
+              <>
+                <DropdownGroup
+                  className={styles.groupTitle}
+                  key={provider}
+                  label={provider}
+                  labelHeadingLevel="h1"
+                >
+                  {providerModels.map(model => (
+                    <DropdownItem value={model.value} key={model.value}>
+                      {model.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownGroup>
+                {index < Object.entries(groupedModels).length - 1 && (
+                  <Divider component="li" />
+                )}
+              </>
+            ),
+          )}
         </DropdownList>
       </Dropdown>
       <ChatbotHeaderOptionsDropdown
