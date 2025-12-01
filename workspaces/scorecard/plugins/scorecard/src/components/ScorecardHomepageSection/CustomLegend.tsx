@@ -93,7 +93,10 @@ const CustomLegend = (props: any) => {
             }}
           >
             <StyledLegendColorBox color={category?.color} />
-            <Typography variant="body2" sx={{ fontSize: '14px' }}>
+            <Typography
+              variant="body2"
+              sx={{ fontSize: '0.875rem', fontWeight: 400 }}
+            >
               {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
             </Typography>
           </StyledLegendItem>

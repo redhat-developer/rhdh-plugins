@@ -26,9 +26,8 @@ import {
 } from 'recharts';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
 
-import { CardWrapper } from './CardWrapper';
+import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
 import CustomLegend from './CustomLegend';
 import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -51,7 +50,6 @@ export const ScorecardHomepageCard = ({
 }: {
   scorecard: AggregatedMetricResult;
 }) => {
-  const theme = useTheme();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -66,11 +64,10 @@ export const ScorecardHomepageCard = ({
         value,
         color:
           {
-            success: theme.palette.success.main,
-            warning: theme.palette.warning.main,
-            error: theme.palette.error.main,
-          }[key as 'success' | 'warning' | 'error'] ||
-          theme.palette.success.main,
+            success: '#3E8635',
+            warning: '#F0AB00',
+            error: '#C9190B',
+          }[key as 'success' | 'warning' | 'error'] || '#3E8635',
       };
     },
   );
@@ -84,7 +81,7 @@ export const ScorecardHomepageCard = ({
         <Typography
           variant="body2"
           color="textSecondary"
-          sx={{ fontSize: '16px' }}
+          sx={{ fontSize: '1rem', fontWeight: 400 }}
         >
           {scorecard.metadata.description}
         </Typography>
@@ -123,7 +120,7 @@ export const ScorecardHomepageCard = ({
               nameKey="name"
               cx="22%"
               cy="50%"
-              innerRadius={65}
+              innerRadius={64}
               outerRadius={74}
               startAngle={90}
               endAngle={-270}

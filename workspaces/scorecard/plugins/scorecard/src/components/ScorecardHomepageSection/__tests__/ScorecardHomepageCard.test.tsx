@@ -21,7 +21,7 @@ import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
 import { mockAggregatedScorecardSuccessData } from '../../../../__fixtures__/aggregatedScorecardData';
 
 // Mock the child components
-jest.mock('../CardWrapper', () => ({
+jest.mock('../../Common/CardWrapper', () => ({
   CardWrapper: function MockCardWrapper({
     title,
     subtitle,
