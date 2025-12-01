@@ -9,6 +9,7 @@ This decorator supports overriding a selected set of [react-json-schema-form pro
   - **Asynchronous Validation** via the `getExtraErrors` property, for validations requiring backend calls.
 - **Custom Components:** Replace default form components by overriding the `widgets` property.
 - **Interdependent Field Values:** Manage complex inter-field dependencies using the `onChange` and `formData` properties.
+- **Custom Review Page:** Replace the default review page with a custom component via the `getReviewComponent` method.
 
 The custom decorator is delivered via a factory method that leverages a [Backstage utility API](https://backstage.io/docs/api/utility-apis) provided by the orchestrator.
 To trigger the desired behavior, the workflow schema should include custom UI properties.
@@ -57,6 +58,62 @@ The most simple implementation of the API is the default one - adds no extra log
 See [its sources](../plugins/orchestrator-form-api/src/DefaultFormApi.tsx).
 
 More complex example is [the FormWidgetsApi provided by orchestrator-form-widgets plugin](../plugins/orchestrator-form-widgets/src/FormWidgetsApi.tsx).
+
+### Custom Review Page Component
+
+You can provide a custom review page component to replace the default review step. This is useful when you want to customize how the form data is displayed before submission.
+
+#### Review Component Props
+
+The custom review component receives the following props:
+
+```typescript
+export type ReviewComponentProps = {
+  /** Whether the workflow execution is in progress */
+  busy: boolean;
+  /** The JSON Schema for the workflow form */
+  schema: JSONSchema7;
+  /** The form data to be reviewed before submission */
+  data: JsonObject;
+  /** Callback to execute the workflow */
+  handleExecute: () => void;
+};
+```
+
+#### Example Implementation
+
+A complete example implementation is available at:
+[`plugins/orchestrator-form-widgets/src/components/CustomReviewPage.tsx`](../plugins/orchestrator-form-widgets/src/components/CustomReviewPage.tsx)
+
+This example shows:
+
+- How to structure a custom review component
+- Handling of form data display with proper formatting
+- Integration with Material-UI components
+- Flattening nested objects for better readability
+- Proper button states during execution
+
+#### How to Use in Your Plugin
+
+```typescript
+import { CustomReviewPage } from './components/CustomReviewPage';
+
+class MyFormApi implements OrchestratorFormApi {
+  getFormDecorator(): OrchestratorFormDecorator {
+    // ... your decorator implementation
+  }
+
+  getReviewComponent() {
+    // Return your custom component
+    return CustomReviewPage;
+
+    // Or return undefined to use the default review page
+    // return undefined;
+  }
+}
+```
+
+**Note:** By default, `getReviewComponent()` returns `undefined`, which uses the built-in default review page. To enable a custom review page, return your custom component from this method.
 
 ### Plugin Creation Example
 
