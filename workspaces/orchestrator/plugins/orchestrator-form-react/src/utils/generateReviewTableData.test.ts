@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type { JSONSchema7 } from 'json-schema';
 
 import generateReviewTableData from './generateReviewTableData';
@@ -160,6 +161,158 @@ describe('mapSchemaToData', () => {
             city: 'City B',
           },
         ],
+      },
+    };
+
+    const result = generateReviewTableData(schema, data);
+    expect(result).toEqual(expectedResult);
+  });
+
+  it('should exclude fields with ui:hidden from review table', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        visibleField: {
+          type: 'string',
+          title: 'Visible Field',
+        },
+        hiddenField: {
+          type: 'string',
+          title: 'Hidden Field',
+          'ui:hidden': true,
+        } as JSONSchema7,
+        anotherVisible: {
+          type: 'string',
+          title: 'Another Visible',
+        },
+      },
+    };
+
+    const data = {
+      visibleField: 'shown',
+      hiddenField: 'should not appear',
+      anotherVisible: 'also shown',
+    };
+
+    const expectedResult = {
+      'Visible Field': 'shown',
+      'Another Visible': 'also shown',
+      // hiddenField should not be present
+    };
+
+    const result = generateReviewTableData(schema, data);
+    expect(result).toEqual(expectedResult);
+  });
+
+  it('should exclude nested hidden fields from review table', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        person: {
+          type: 'object',
+          title: 'Person',
+          properties: {
+            name: {
+              type: 'string',
+              title: 'Name',
+            },
+            secret: {
+              type: 'string',
+              title: 'Secret',
+              'ui:hidden': true,
+            } as JSONSchema7,
+            age: {
+              type: 'number',
+              title: 'Age',
+            },
+          },
+        },
+      },
+    };
+
+    const data = {
+      person: {
+        name: 'John',
+        secret: 'hidden-value',
+        age: 30,
+      },
+    };
+
+    const expectedResult = {
+      Person: {
+        Name: 'John',
+        Age: 30,
+        // secret should not be present
+      },
+    };
+
+    const result = generateReviewTableData(schema, data);
+    expect(result).toEqual(expectedResult);
+  });
+
+  it('should exclude entire step when all fields are hidden', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        visibleStep: {
+          type: 'object',
+          title: 'Visible Step',
+          properties: {
+            name: {
+              type: 'string',
+              title: 'Name',
+            },
+          },
+        },
+        allHiddenStep: {
+          type: 'object',
+          title: 'All Hidden Step',
+          properties: {
+            hiddenField1: {
+              type: 'string',
+              title: 'Hidden Field 1',
+              'ui:hidden': true,
+            } as JSONSchema7,
+            hiddenField2: {
+              type: 'string',
+              title: 'Hidden Field 2',
+              'ui:hidden': true,
+            } as JSONSchema7,
+          },
+        },
+        anotherVisibleStep: {
+          type: 'object',
+          title: 'Another Visible Step',
+          properties: {
+            email: {
+              type: 'string',
+              title: 'Email',
+            },
+          },
+        },
+      },
+    };
+
+    const data = {
+      visibleStep: {
+        name: 'John',
+      },
+      allHiddenStep: {
+        hiddenField1: 'secret1',
+        hiddenField2: 'secret2',
+      },
+      anotherVisibleStep: {
+        email: 'test@example.com',
+      },
+    };
+
+    const expectedResult = {
+      'Visible Step': {
+        Name: 'John',
+      },
+      // allHiddenStep should not be present at all
+      'Another Visible Step': {
+        Email: 'test@example.com',
       },
     };
 
