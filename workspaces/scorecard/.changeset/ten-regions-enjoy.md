@@ -1,8 +1,8 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github': major
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira': major
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend': major
-'@red-hat-developer-hub/backstage-plugin-scorecard-node': major
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-node': minor
 ---
 
 Implemented saving metric `status` to the database. Added logic for saving `status` in the metric puller scheduler.
