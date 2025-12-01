@@ -68,4 +68,12 @@ export class FormWidgetsApi implements OrchestratorFormApi {
       };
     };
   };
+
+  getReviewComponent: OrchestratorFormApi['getReviewComponent'] = () => {
+    // Return undefined to use the default review page
+    // To use a custom review page, return your custom component here
+    // Example: return CustomReviewPage;
+    // See: plugins/orchestrator-form-widgets/src/components/CustomReviewPage.tsx
+    return undefined;
+  };
 }
