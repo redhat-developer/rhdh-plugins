@@ -98,6 +98,12 @@ catalog:
       rules:
         - allow: [Template]
 
+    # AI Lab Template Data
+    - type: url
+      target: https://github.com/redhat-ai-dev/ai-lab-template/blob/main/all.yaml
+      rules:
+        - allow: [Template, Location]
+
     # Local example organizational data
     - type: file
       target: ../../examples/org.yaml
