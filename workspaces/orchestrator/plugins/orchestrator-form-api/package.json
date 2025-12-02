@@ -26,7 +26,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/core-plugin-api": "^1.11.1",
+    "@backstage/core-plugin-api": "^1.12.0",
     "@backstage/types": "^1.2.2",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@rjsf/core": "^5.21.2",
@@ -37,7 +37,7 @@
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.4",
+    "@backstage/cli": "^0.34.5",
     "@types/json-schema": "7.0.15",
     "@types/react": "^18.2.58",
     "prettier": "3.6.2",
