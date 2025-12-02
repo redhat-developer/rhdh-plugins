@@ -19,11 +19,18 @@ import React from 'react';
 
 type DownloadIconButtonProps = {
   label: string;
-  variant: 'gray' | 'black';
+  variant: 'gray' | 'black' | 'white';
+};
+
+const getColor = (variant: 'gray' | 'black' | 'white') => {
+  if (variant === 'gray') return '#C7C7C7';
+  if (variant === 'black') return '#000000';
+  if (variant === 'white') return '#FFFFFF';
+  return '#C7C7C7';
 };
 
 export function DownloadIconButton(props: Readonly<DownloadIconButtonProps>) {
-  const color = props.variant === 'gray' ? '#C7C7C7' : '#000000';
+  const color = getColor(props.variant);
 
   return (
     <div
