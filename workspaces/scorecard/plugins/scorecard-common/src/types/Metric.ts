@@ -19,7 +19,7 @@ import { ThresholdResult } from './threshold';
 /**
  * @public
  */
-export type MetricType = 'number' | 'boolean' | 'object';
+export type MetricType = 'number' | 'boolean';
 
 /**
  * @public
@@ -59,32 +59,4 @@ export type MetricResult = {
     thresholdResult: ThresholdResult;
   };
   error?: string;
-};
-
-/**
- * @public
- */
-export type AggregatedMetricValue = {
-  success?: { value: number };
-  warning?: { value: number };
-  error?: { value: number };
-};
-
-/**
- * @public
- */
-export type AggregatedMetricResult = {
-  id: string;
-  status: 'success' | 'error';
-  metadata: {
-    title: string;
-    description: string;
-    type: MetricType;
-    history?: boolean;
-  };
-  result: {
-    value?: AggregatedMetricValue;
-    timestamp: string;
-    lastUpdated: string;
-  };
 };

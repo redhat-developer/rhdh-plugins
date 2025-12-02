@@ -19,6 +19,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
 import { mockAggregatedScorecardSuccessData } from '../../../../__fixtures__/aggregatedScorecardData';
+import type { AggregatedMetricResult } from '../../../utils/utils';
 
 // Mock the child components
 jest.mock('../../Common/CardWrapper', () => ({
@@ -151,18 +152,17 @@ describe('ScorecardHomepageCard Component', () => {
   });
 
   it('should handle scorecard with zero total entities', () => {
-    const scorecardWithZero = {
+    const scorecardWithZero: AggregatedMetricResult = {
       ...mockAggregatedScorecardSuccessData[0],
       result: {
-        value: {
-          success: { value: 0 },
-          warning: { value: 0 },
-          error: { value: 0 },
-        },
-        timestamp: '2024-01-15T10:30:00Z',
-        lastUpdated: '2024-01-15T10:30:00Z',
+        ...mockAggregatedScorecardSuccessData[0].result,
+        values: [
+          { count: 0, name: 'success' },
+          { count: 0, name: 'warning' },
+          { count: 0, name: 'error' },
+        ],
+        total: 0,
       },
-      // Fix: Add missing 'lastUpdated' property to 'result' to satisfy AggregatedMetricResult type
     };
 
     render(<ScorecardHomepageCard scorecard={scorecardWithZero} />, {
@@ -172,13 +172,13 @@ describe('ScorecardHomepageCard Component', () => {
     expect(screen.getByTestId('card-subtitle')).toHaveTextContent('0 entities');
   });
 
-  it('should handle scorecard with empty result value', () => {
-    const scorecardWithEmpty = {
+  it('should handle scorecard with empty result values', () => {
+    const scorecardWithEmpty: AggregatedMetricResult = {
       ...mockAggregatedScorecardSuccessData[0],
       result: {
-        value: {},
-        timestamp: '2024-01-15T10:30:00Z',
-        lastUpdated: '2024-01-15T10:30:00Z',
+        ...mockAggregatedScorecardSuccessData[0].result,
+        values: [],
+        total: 0,
       },
     };
 
@@ -189,13 +189,13 @@ describe('ScorecardHomepageCard Component', () => {
     expect(screen.getByTestId('card-subtitle')).toHaveTextContent('0 entities');
   });
 
-  it('should handle scorecard with null result value', () => {
-    const scorecardWithNull = {
+  it('should handle scorecard with missing result values', () => {
+    const scorecardWithNull: AggregatedMetricResult = {
       ...mockAggregatedScorecardSuccessData[0],
       result: {
-        value: {},
-        timestamp: '2024-01-15T10:30:00Z',
-        lastUpdated: '2024-01-15T10:30:00Z',
+        ...mockAggregatedScorecardSuccessData[0].result,
+        values: undefined,
+        total: 0,
       },
     };
 
@@ -215,7 +215,7 @@ describe('ScorecardHomepageCard Component', () => {
     );
 
     expect(screen.getByTestId('card-title')).toHaveTextContent(
-      'Open Jira Issues',
+      'Jira open blocking tickets',
     );
     expect(screen.getByTestId('card-subtitle')).toHaveTextContent('4 entities');
     expect(

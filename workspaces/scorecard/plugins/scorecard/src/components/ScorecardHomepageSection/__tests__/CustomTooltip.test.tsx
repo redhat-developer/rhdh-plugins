@@ -23,7 +23,7 @@ describe('CustomTooltip Component', () => {
     render(
       <CustomTooltip
         payload={[{ name: 'Test', value: 10 }]}
-        pieData={[{ name: 'Test', value: 10 }]}
+        pieData={[{ name: 'Test', value: 10, color: 'red' }]}
       />,
     );
     expect(screen.getByText('10 entities')).toBeInTheDocument();
@@ -34,16 +34,9 @@ describe('CustomTooltip Component', () => {
     render(
       <CustomTooltip
         payload={[{ name: 'Test', value: 0 }]}
-        pieData={[{ name: 'Test', value: 0 }]}
+        pieData={[{ name: 'Test', value: 0, color: 'red' }]}
       />,
     );
     expect(screen.getByText('No entities in Test state')).toBeInTheDocument();
-  });
-
-  it('should render with the correct content when there is no payload', () => {
-    render(
-      <CustomTooltip payload={null} pieData={[{ name: 'Test', value: 10 }]} />,
-    );
-    expect(null).toBeNull();
   });
 });

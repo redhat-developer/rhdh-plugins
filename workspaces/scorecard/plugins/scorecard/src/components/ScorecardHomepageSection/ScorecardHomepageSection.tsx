@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ResponseErrorPanel } from '@backstage/core-components';
 
 import Grid from '@mui/material/Grid';
@@ -24,6 +23,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ScorecardHomepageCard } from './ScorecardHomepageCard';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { useAggregatedScorecards } from '../../hooks/useAggregatedScorecards';
+import type { AggregatedMetricResult } from '../../utils/utils';
 
 export const ScorecardHomepageSection = () => {
   const { aggregatedScorecards, loadingData, error } =

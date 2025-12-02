@@ -19,7 +19,6 @@ import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
-import DataUsageIcon from '@material-ui/icons/DataUsage';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import {
@@ -88,11 +87,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
           singularTitle="My Group"
           pluralTitle="My Groups"
           icon={GroupIcon}
-        />
-        <SidebarItem
-          icon={DataUsageIcon}
-          to="scorecard"
-          text="Aggregated Scorecards"
         />
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />

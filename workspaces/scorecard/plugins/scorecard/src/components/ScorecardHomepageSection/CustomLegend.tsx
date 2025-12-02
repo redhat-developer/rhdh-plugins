@@ -17,6 +17,7 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
+import type { PieData as PieDataProps } from '../../utils/utils';
 
 const StyledLegend = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -39,10 +40,16 @@ const StyledLegendColorBox = styled(Box)<{ color: string }>(({ color }) => ({
   flexShrink: 0,
 }));
 
-const CustomLegend = (props: any) => {
-  const { payload, pieData, activeIndex, setActiveIndex, setTooltipPosition } =
-    props;
-  if (!payload || payload.length === 0) return null;
+type CustomLegendProps = {
+  pieData: PieDataProps[];
+  activeIndex: number | null;
+  setActiveIndex: (index: number | null) => void;
+  setTooltipPosition: (position: { x: number; y: number } | null) => void;
+};
+
+const CustomLegend = (props: CustomLegendProps) => {
+  const { pieData, activeIndex, setActiveIndex, setTooltipPosition } = props;
+  if (!pieData || pieData.length === 0) return null;
 
   return (
     <StyledLegend
@@ -51,10 +58,10 @@ const CustomLegend = (props: any) => {
         setTooltipPosition(null);
       }}
     >
-      {pieData.map((category: any, index: number) => {
+      {pieData.map((category: PieDataProps, index: number) => {
         return (
           <StyledLegendItem
-            key={`legend-${index}`}
+            key={`legend-${category.name}`}
             onMouseEnter={e => {
               if (activeIndex === index) return;
               setActiveIndex(index);
