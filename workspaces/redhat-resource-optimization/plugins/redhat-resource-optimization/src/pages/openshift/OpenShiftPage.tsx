@@ -28,11 +28,11 @@ import { Filters } from './components/Filters';
 import { Divider } from '@material-ui/core';
 import { PageHeader } from './components/PageHeader';
 import { TableToolbar } from './components/TableToolbar';
-import BlackSvgIcon from './components/black-csv-icon.svg';
 import { useApi } from '@backstage/core-plugin-api';
 import { optimizationsApiRef } from '../../apis';
 import useAsync from 'react-use/lib/useAsync';
 import { CURRENCY_SYMBOLS } from '../../constants/currencies';
+import { DownloadIconButton } from './components/DownloadIconButton';
 
 const formatCurrency = (value: number, currencyCode: string): string => {
   const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
@@ -394,42 +394,40 @@ export function OpenShiftPage() {
     const cols: TableColumn<ProjectCost>[] = [
       {
         title: (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
+          <div style={{ marginLeft: 0, paddingLeft: 0 }}>
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              ref={input => {
+                if (input) input.indeterminate = isIndeterminate;
+              }}
+              onChange={e => {
+                e.stopPropagation();
+                handleSelectAll(e.target.checked);
+              }}
               style={{
-                position: 'relative',
-                display: 'inline-block',
                 width: '18px',
                 height: '18px',
+                cursor: 'pointer',
+                margin: 0,
+                padding: 0,
               }}
-            >
-              <input
-                type="checkbox"
-                checked={isAllSelected}
-                ref={input => {
-                  if (input) input.indeterminate = isIndeterminate;
-                }}
-                onChange={e => {
-                  e.stopPropagation();
-                  handleSelectAll(e.target.checked);
-                }}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  cursor: 'pointer',
-                }}
-              />
-            </div>
-
-            <Typography variant="body2" style={{ fontWeight: 'bold' }}>
-              {groupBy.charAt(0).toLocaleUpperCase('en-US') + groupBy.slice(1)}{' '}
-              name
-            </Typography>
+            />
           </div>
         ),
-        field: 'projectName',
+        field: 'checkbox',
+        sorting: false,
+        width: '40px',
+        cellStyle: {
+          paddingLeft: '4px',
+          paddingRight: '4px',
+        },
+        headerStyle: {
+          paddingLeft: '4px',
+          paddingRight: '4px',
+        },
         render: data => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ paddingRight: '4px' }}>
             <input
               type="checkbox"
               checked={selectedRows.has(data.id)}
@@ -438,8 +436,23 @@ export function OpenShiftPage() {
                 width: '18px',
                 height: '18px',
                 cursor: 'pointer',
+                margin: 0,
+                padding: 0,
               }}
             />
+          </div>
+        ),
+      },
+      {
+        title: (
+          <Typography variant="body2" style={{ fontWeight: 'bold' }}>
+            {groupBy.charAt(0).toLocaleUpperCase('en-US') + groupBy.slice(1)}{' '}
+            name
+          </Typography>
+        ),
+        field: 'projectName',
+        render: data => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Typography variant="body2">{data.projectName}</Typography>
             {data.includesOverhead && (
               <Typography
@@ -548,7 +561,8 @@ export function OpenShiftPage() {
       sorting: false,
       render: () => (
         <div style={{ display: 'flex', gap: '8px' }}>
-          <img src={BlackSvgIcon} alt="CSV" style={{ cursor: 'pointer' }} />
+          <DownloadIconButton label="CSV" variant="black" />
+          <DownloadIconButton label="JSON" variant="black" />
         </div>
       ),
     });
