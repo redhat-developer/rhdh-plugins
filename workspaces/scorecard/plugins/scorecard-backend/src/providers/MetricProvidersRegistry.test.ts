@@ -81,6 +81,27 @@ describe('MetricProvidersRegistry', () => {
       );
     });
 
+    it('should throw error when metric type does not match metricType', () => {
+      class InvalidProvider extends MockNumberProvider {
+        // @ts-expect-error - put wrong metric type for testing
+        getMetricType() {
+          return 'boolean';
+        }
+      }
+
+      const invalidProvider = new InvalidProvider(
+        'github.test_metric',
+        'github',
+      );
+
+      // @ts-expect-error - expect error to be thrown
+      expect(() => registry.register(invalidProvider)).toThrow(
+        new Error(
+          "Invalid metric provider with ID github.test_metric, getMetricType() must match getMetric().type. Expected 'boolean', but got 'number'",
+        ),
+      );
+    });
+
     it('should throw error when provider ID does not start with datasource ID', () => {
       const invalidProvider = new MockNumberProvider(
         'invalid_format',
