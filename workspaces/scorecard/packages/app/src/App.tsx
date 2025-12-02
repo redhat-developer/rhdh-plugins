@@ -156,7 +156,6 @@ const routes = (
         </ScalprumContext.Provider>
       }
     />
-    <Route path="/scorecard" element={<ScorecardHomepageSection />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"
