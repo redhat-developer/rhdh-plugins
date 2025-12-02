@@ -53,6 +53,8 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
   - [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)
     - [Example](#example)
   - [Retrieving Data from Backstage Catalog](#retrieving-data-from-backstage-catalog)
+  - [Hiding Fields](#hiding-fields)
+    - [Example Usage](#example-usage)
   - [Customization](#customization)
 
 ## Context
@@ -682,6 +684,53 @@ That’s the reason for listing the exposed keys explicitly.
 Integration with the Backstage Catalog can be achieved via calling the Catalog REST API, leveraging the fetch:response:\* selectors and the use of the `$${{...}}` templates.
 
 In the future, new widgets wrapping such explicit use case can be added.
+
+## Hiding Fields
+
+Fields can be hidden from the form display while still maintaining their widget functionality and participating in form submission using the `"ui:hidden": true` property.
+
+This is different from `"ui:widget": "hidden"` which changes the widget type itself. With `"ui:hidden": true`, the field keeps its original widget type (like `ActiveText`, `ActiveTextInput`, etc.) but is visually hidden from the user.
+
+### Example Usage
+
+```json
+{
+  "hiddenField": {
+    "type": "string",
+    "title": "Hidden ActiveText",
+    "ui:widget": "ActiveText",
+    "ui:hidden": true,
+    "ui:props": {
+      "ui:text": "This text is hidden but still rendered"
+    }
+  },
+  "hiddenInput": {
+    "type": "string",
+    "title": "Hidden Input",
+    "ui:hidden": true,
+    "default": "secret-value"
+  }
+}
+```
+
+**Key differences:**
+
+| Property                | Behavior                                    | Use Case                                                                               |
+| ----------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `"ui:widget": "hidden"` | Changes widget type to hidden input         | Simple hidden form values                                                              |
+| `"ui:hidden": true`     | Keeps original widget but hides it visually | Hide widgets while preserving their functionality (e.g., ActiveText that fetches data) |
+
+Hidden fields:
+
+- Are not displayed in the form
+- Are not shown in the wizard stepper navigation (multi-step forms)
+- Still participate in form validation
+- Are included in form submission
+- Are excluded from the review page
+- Maintain their widget functionality (fetching, validation, etc.)
+
+**Automatic Step Hiding:**
+If all inputs within a multi-step form's step are marked with `"ui:hidden": true`, the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
 
 ## Customization
 
