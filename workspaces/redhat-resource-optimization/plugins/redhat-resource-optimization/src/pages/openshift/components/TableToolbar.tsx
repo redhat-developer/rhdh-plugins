@@ -27,7 +27,7 @@ import {
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import ViewWeekIcon from '@material-ui/icons/ViewWeek';
-import GraySvgIcon from './grey-csv-icon.svg';
+import { DownloadIconButton } from './DownloadIconButton';
 
 const useStyles = makeStyles({
   switchOff: {
@@ -144,15 +144,8 @@ export function TableToolbar(props: TableToolbarProps) {
           </div>
         )}
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <img src={GraySvgIcon} alt="CSV" style={{ cursor: 'pointer' }} />
-        </div>
+        <DownloadIconButton label="CSV" variant="gray" />
+        <DownloadIconButton label="JSON" variant="gray" />
       </div>
       <IconButton
         aria-label="menu"

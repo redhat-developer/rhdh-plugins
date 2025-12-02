@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import React, { PropsWithChildren, useState } from 'react';
-import { makeStyles } from '@material-ui/core';
+import React, { PropsWithChildren, useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { makeStyles, Button, Typography } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
@@ -65,6 +66,22 @@ const useSidebarLogoStyles = makeStyles({
   },
 });
 
+const useSidebarItemStyles = makeStyles({
+  costManagementItem: {
+    marginBottom: 4,
+    '& .MuiBox-root': {
+      display: 'none',
+    },
+    '& .MuiTypography-root': {
+      marginLeft: 12,
+    },
+  },
+  inactiveItem: {
+    backgroundColor: 'transparent !important',
+    color: 'inherit !important',
+  },
+});
+
 const Logo = (props: { isOpen?: boolean }) => {
   const { isOpen = false } = props;
   const rhdhTheme = useRhdhTheme();
@@ -95,34 +112,31 @@ const CollapsibleSubmenu = ({
 
   return (
     <>
-      <div
+      <Button
         onClick={() => setIsOpen(!isOpen)}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setIsOpen(!isOpen);
-          }
-        }}
-        role="button"
-        tabIndex={0}
+        fullWidth
         style={{
           display: 'flex',
           alignItems: 'center',
-          cursor: 'pointer',
+          justifyContent: 'flex-start',
           padding: '12px 16px',
-          userSelect: 'none',
+          textTransform: 'none',
+          color: 'inherit',
+          marginLeft: 18,
         }}
       >
         {icon}
-        {sidebarOpen && <span style={{ marginLeft: 12, flex: 1 }}>{text}</span>}
+        {sidebarOpen && (
+          <Typography style={{ flex: 1, fontSize: 14 }}>{text}</Typography>
+        )}
         {sidebarOpen &&
           (isOpen ? (
-            <ExpandMoreIcon style={{ fontSize: '20px' }} />
+            <ExpandMoreIcon style={{ fontSize: 20 }} />
           ) : (
-            <ChevronRightIcon style={{ fontSize: '20px' }} />
+            <ChevronRightIcon style={{ fontSize: 20 }} />
           ))}
-      </div>
-      {isOpen && <div style={{ marginLeft: 40 }}>{children}</div>}
+      </Button>
+      {isOpen && <div style={{ marginLeft: 38 }}>{children}</div>}
     </>
   );
 };
@@ -140,56 +154,91 @@ const SidebarLogo = () => {
   );
 };
 
-export const Root = ({ children }: PropsWithChildren<{}>) => (
-  <SidebarPage>
-    <Sidebar>
-      <SidebarLogo />
-      <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-        <SidebarSearchModal />
-      </SidebarGroup>
-      <SidebarDivider />
-      <SidebarGroup label="Menu" icon={<MenuIcon />}>
-        {/* Global nav, not org-specific */}
-        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
-        <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-        <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-        <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
-        {/* End global nav */}
+export const Root = ({ children }: PropsWithChildren<{}>) => {
+  const classes = useSidebarItemStyles();
+  const location = useLocation();
+
+  const isOpenShiftActive = useMemo(() => {
+    const pathname = location.pathname;
+    return pathname === '/redhat-resource-optimization/ocp';
+  }, [location.pathname]);
+
+  const isOptimizationsActive = useMemo(() => {
+    const pathname = location.pathname;
+    const basePath = '/redhat-resource-optimization';
+    if (pathname === basePath) {
+      return true;
+    }
+    if (pathname.startsWith(`${basePath}/`)) {
+      const remainingPath = pathname.slice(basePath.length + 1);
+      const pathParts = remainingPath.split('/');
+      const firstPart = pathParts[0];
+      return firstPart !== undefined && firstPart !== '' && firstPart !== 'ocp';
+    }
+    return false;
+  }, [location.pathname]);
+
+  return (
+    <SidebarPage>
+      <Sidebar>
+        <SidebarLogo />
+        <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+          <SidebarSearchModal />
+        </SidebarGroup>
         <SidebarDivider />
+        <SidebarGroup label="Menu" icon={<MenuIcon />}>
+          {/* Global nav, not org-specific */}
+          <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+          <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+          <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+          <SidebarItem
+            icon={CreateComponentIcon}
+            to="create"
+            text="Create..."
+          />
+          {/* End global nav */}
+          <SidebarDivider />
 
-        <CollapsibleSubmenu
-          icon={<AnalyticsIconOutlined />}
-          text="Cost management"
+          <CollapsibleSubmenu
+            icon={<AnalyticsIconOutlined />}
+            text="Cost management"
+          >
+            <SidebarItem
+              icon={EmptyIcon}
+              to="/redhat-resource-optimization/ocp"
+              text="OpenShift"
+              className={`${classes.costManagementItem} ${
+                isOpenShiftActive ? '' : classes.inactiveItem
+              }`}
+            />
+            <SidebarItem
+              icon={EmptyIcon}
+              to="/redhat-resource-optimization"
+              text="Optimizations"
+              className={`${classes.costManagementItem} ${
+                isOptimizationsActive ? '' : classes.inactiveItem
+              }`}
+            />
+          </CollapsibleSubmenu>
+
+          <SidebarItem
+            icon={OrchestratorIcon}
+            to="orchestrator"
+            text="Orchestrator"
+          />
+        </SidebarGroup>
+        <SidebarSpace />
+        <SidebarDivider />
+        <Administration />
+        <SidebarGroup
+          label="Settings"
+          icon={<UserSettingsSignInAvatar />}
+          to="/settings"
         >
-          <SidebarItem
-            icon={EmptyIcon}
-            to="/redhat-resource-optimization/ocp"
-            text="OpenShift"
-          />
-          <SidebarItem
-            icon={EmptyIcon}
-            to="/redhat-resource-optimization"
-            text="Optimizations"
-          />
-        </CollapsibleSubmenu>
-
-        <SidebarItem
-          icon={OrchestratorIcon}
-          to="orchestrator"
-          text="Orchestrator"
-        />
-      </SidebarGroup>
-      <SidebarSpace />
-      <SidebarDivider />
-      <Administration />
-      <SidebarGroup
-        label="Settings"
-        icon={<UserSettingsSignInAvatar />}
-        to="/settings"
-      >
-        <SidebarSettings />
-      </SidebarGroup>
-    </Sidebar>
-    {children}
-  </SidebarPage>
-);
+          <SidebarSettings />
+        </SidebarGroup>
+      </Sidebar>
+      {children}
+    </SidebarPage>
+  );
+};
