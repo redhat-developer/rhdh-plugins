@@ -15,9 +15,38 @@
  */
 
 import { DatabaseMetricValues } from '../src/database/DatabaseMetricValues';
+import { DbMetricValue } from '../src/database/types';
+
+type BuildMockDatabaseMetricValuesParams = {
+  metricValues?: DbMetricValue[];
+  latestEntityMetric?: DbMetricValue[];
+  countOfExpiredMetrics?: number;
+};
 
 export const mockDatabaseMetricValues = {
   createMetricValues: jest.fn(),
   readLatestEntityMetricValues: jest.fn(),
   cleanupExpiredMetrics: jest.fn(),
 } as unknown as jest.Mocked<DatabaseMetricValues>;
+
+export const buildMockDatabaseMetricValues = ({
+  metricValues,
+  latestEntityMetric,
+  countOfExpiredMetrics,
+}: BuildMockDatabaseMetricValuesParams) => {
+  const createMetricValues = metricValues
+    ? jest.fn().mockResolvedValue(metricValues)
+    : mockDatabaseMetricValues.createMetricValues;
+  const readLatestEntityMetricValues = latestEntityMetric
+    ? jest.fn().mockResolvedValue(latestEntityMetric)
+    : mockDatabaseMetricValues.readLatestEntityMetricValues;
+  const cleanupExpiredMetrics = countOfExpiredMetrics
+    ? jest.fn().mockResolvedValue(countOfExpiredMetrics)
+    : mockDatabaseMetricValues.cleanupExpiredMetrics;
+
+  return {
+    createMetricValues,
+    readLatestEntityMetricValues,
+    cleanupExpiredMetrics,
+  } as unknown as jest.Mocked<DatabaseMetricValues>;
+};

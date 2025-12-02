@@ -27,6 +27,7 @@ import { CleanupExpiredMetricsTask } from './tasks/CleanupExpiredMetricsTask';
 import { PullMetricsByProviderTask } from './tasks/PullMetricsByProviderTask';
 import { SchedulerOptions, SchedulerTask } from './types';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 
 export class Scheduler {
   private readonly auth: AuthService;
@@ -36,6 +37,7 @@ export class Scheduler {
   private readonly scheduler: SchedulerService;
   private readonly database: DatabaseMetricValues;
   private readonly metricProvidersRegistry: MetricProvidersRegistry;
+  private readonly thresholdEvaluator: ThresholdEvaluator;
 
   private tasks: Array<{ name: string; task: SchedulerTask }> = [];
 
@@ -47,6 +49,7 @@ export class Scheduler {
     this.scheduler = options.scheduler;
     this.database = options.database;
     this.metricProvidersRegistry = options.metricProvidersRegistry;
+    this.thresholdEvaluator = options.thresholdEvaluator;
   }
 
   static create(options: SchedulerOptions): Scheduler {
@@ -105,6 +108,7 @@ export class Scheduler {
             config: this.config,
             catalog: this.catalog,
             auth: this.auth,
+            thresholdEvaluator: this.thresholdEvaluator,
           },
           provider,
         ),

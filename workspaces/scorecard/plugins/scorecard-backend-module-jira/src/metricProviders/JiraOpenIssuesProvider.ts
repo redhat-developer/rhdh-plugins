@@ -43,7 +43,7 @@ import { Product } from '../clients/types';
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
-export class JiraOpenIssuesProvider implements MetricProvider {
+export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   private readonly thresholds: ThresholdConfig;
   private readonly jiraClient: JiraClient;
 
@@ -74,13 +74,17 @@ export class JiraOpenIssuesProvider implements MetricProvider {
     return 'jira.open_issues';
   }
 
+  getMetricType(): 'number' {
+    return 'number';
+  }
+
   getMetric(): Metric<'number'> {
     return {
       id: this.getProviderId(),
       title: 'Jira open blocking tickets',
       description:
         'Highlights the number of issues that are currently open in Jira.',
-      type: 'number',
+      type: this.getMetricType(),
       history: true,
     };
   }
