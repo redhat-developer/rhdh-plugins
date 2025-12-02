@@ -16,24 +16,31 @@
 
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import type { TooltipProps } from 'recharts';
+import type { PieData } from '../../utils/utils';
 
-export const CustomTooltip = ({
-  payload,
-  pieData,
-}: {
-  payload: any;
-  pieData: any;
-}) => {
+type CustomTooltipPayload = {
+  name?: string;
+  value?: number;
+  payload?: PieData;
+};
+
+type CustomTooltipProps = TooltipProps<number, string> & {
+  payload?: readonly CustomTooltipPayload[];
+  pieData: PieData[];
+};
+
+export const CustomTooltip = ({ payload, pieData }: CustomTooltipProps) => {
   const getPercentage = () => {
     if (!Array.isArray(pieData) || pieData.length === 0) return 0;
     if (!payload || payload.length === 0) return 0;
 
     const total = pieData.reduce(
-      (acc: number, curr: any) => acc + (curr.value || 0),
+      (acc: number, curr: PieData) => acc + (curr.value || 0),
       0,
     );
     const threshold = pieData.find(
-      (item: any) => item.name === payload?.[0]?.name,
+      (item: PieData) => item.name === payload?.[0]?.name,
     );
 
     const thresholdValue = threshold?.value || 0;

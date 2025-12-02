@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { AggregatedMetricResult } from '../src/utils/utils';
 
 export const mockAggregatedScorecardSuccessData: AggregatedMetricResult[] = [
   {
@@ -28,17 +28,12 @@ export const mockAggregatedScorecardSuccessData: AggregatedMetricResult[] = [
       history: true,
     },
     result: {
-      value: {
-        success: {
-          value: 11,
-        },
-        warning: {
-          value: 14,
-        },
-        error: {
-          value: 12,
-        },
-      },
+      values: [
+        { count: 11, name: 'success' },
+        { count: 14, name: 'warning' },
+        { count: 12, name: 'error' },
+      ],
+      total: 37,
       timestamp: '2024-01-15T10:30:00Z',
       lastUpdated: '2024-01-15T10:30:00Z',
     },
@@ -47,24 +42,19 @@ export const mockAggregatedScorecardSuccessData: AggregatedMetricResult[] = [
     id: 'jira.issues_open',
     status: 'success',
     metadata: {
-      title: 'Open Jira Issues',
+      title: 'Jira open blocking tickets',
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
       type: 'object',
       history: true,
     },
     result: {
-      value: {
-        success: {
-          value: 0,
-        },
-        warning: {
-          value: 1,
-        },
-        error: {
-          value: 3,
-        },
-      },
+      values: [
+        { count: 0, name: 'success' },
+        { count: 1, name: 'warning' },
+        { count: 3, name: 'error' },
+      ],
+      total: 4,
       timestamp: '2024-01-15T10:30:00Z',
       lastUpdated: '2024-01-15T10:30:00Z',
     },

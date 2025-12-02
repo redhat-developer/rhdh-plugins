@@ -90,15 +90,13 @@ const mountPoints: HomePageCardMountPoint[] = [
 
 const scalprumState: ScalprumState = {
   initialized: true,
-  api: mountPoints
-    ? {
-        dynamicRootConfig: {
-          mountPoints: {
-            'home.page/cards': mountPoints,
-          },
-        },
-      }
-    : undefined,
+  api: {
+    dynamicRootConfig: {
+      mountPoints: {
+        'home.page/cards': mountPoints,
+      },
+    },
+  },
   config: {},
   pluginStore: new PluginStore(),
 };
@@ -156,7 +154,6 @@ const routes = (
         </ScalprumContext.Provider>
       }
     />
-    <Route path="/scorecard" element={<ScorecardHomepageSection />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"

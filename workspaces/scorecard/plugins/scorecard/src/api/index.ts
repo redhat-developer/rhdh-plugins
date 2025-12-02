@@ -20,11 +20,9 @@ import {
   DiscoveryApi,
 } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
-import type {
-  AggregatedMetricResult,
-  MetricResult,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { mockAggregatedScorecardSuccessData } from '../../__fixtures__/aggregatedScorecardData';
+import type { AggregatedMetricResult } from '../utils/utils';
 
 export interface ScorecardApi {
   /**
@@ -34,9 +32,7 @@ export interface ScorecardApi {
    * @returns Promise resolving to an array of metric results
    */
   getScorecards(entity: Entity, metricIds?: string[]): Promise<MetricResult[]>;
-  getAggregatedScorecards(
-    metricIds?: string[],
-  ): Promise<AggregatedMetricResult[]>;
+  getAggregatedScorecards(): Promise<AggregatedMetricResult[]>;
 }
 
 export const scorecardApiRef = createApiRef<ScorecardApi>({
@@ -124,12 +120,8 @@ export class ScorecardApiClient implements ScorecardApi {
     }
   }
 
-  async getAggregatedScorecards(
-    metricIds?: string[],
-  ): Promise<AggregatedMetricResult[]> {
+  async getAggregatedScorecards(): Promise<AggregatedMetricResult[]> {
     // Return mock data instead of making an API call
-    // eslint-disable-next-line no-console
-    console.log('getAggregatedScorecards', metricIds);
     return mockAggregatedScorecardSuccessData;
 
     // Commented out the original API call

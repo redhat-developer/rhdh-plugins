@@ -17,29 +17,16 @@ import { useMemo } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 import useAsync from 'react-use/lib/useAsync';
-import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardApiRef } from '../api';
+import { AggregatedMetricResult } from '../utils/utils';
 
-export interface UseAggregatedScorecardsOptions {
-  /**
-   * Optional array of specific metric IDs to retrieve.
-   * If not provided, all available metrics will be fetched.
-   */
-  metricIds?: string[];
-}
-
-export const useAggregatedScorecards = (
-  options: UseAggregatedScorecardsOptions = {},
-) => {
+export const useAggregatedScorecards = () => {
   const scorecardApi = useApi(scorecardApiRef);
-  const { metricIds } = options;
 
   const { error, loading, value } = useAsync(async () => {
     try {
-      const aggregatedScorecards = await scorecardApi.getAggregatedScorecards(
-        metricIds,
-      );
+      const aggregatedScorecards = await scorecardApi.getAggregatedScorecards();
 
       if (!aggregatedScorecards || !Array.isArray(aggregatedScorecards)) {
         throw new Error(
@@ -56,7 +43,7 @@ export const useAggregatedScorecards = (
         `Unexpected error fetching aggregated scorecards: ${String(err)}`,
       );
     }
-  }, [scorecardApi, metricIds]);
+  }, [scorecardApi]);
 
   return useMemo(
     () => ({

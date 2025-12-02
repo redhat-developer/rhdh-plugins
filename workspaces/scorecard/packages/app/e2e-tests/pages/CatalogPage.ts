@@ -26,7 +26,7 @@ export class CatalogPage {
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible();
     await enterButton.click();
-    await expect(this.page.getByText('My Company Catalog')).toBeVisible();
+    await expect(this.page.getByText('Welcome back!')).toBeVisible();
     await this.switchToLocale(this.page, locale);
   }
 

@@ -19,6 +19,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { ScorecardHomepageSection } from '../ScorecardHomepageSection';
 import { mockAggregatedScorecardSuccessData } from '../../../../__fixtures__/aggregatedScorecardData';
+import type { AggregatedMetricResult } from '../../../utils/utils';
 
 // Mock the child components
 jest.mock('../../Common/PermissionRequiredState', () => {
@@ -117,11 +118,11 @@ describe('ScorecardHomepageSection Component', () => {
     const cards = screen.getAllByTestId('scorecard-homepage-card');
     expect(cards).toHaveLength(2);
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.getByText('Open Jira Issues')).toBeInTheDocument();
+    expect(screen.getByText('Jira open blocking tickets')).toBeInTheDocument();
   });
 
   it('should render only first two scorecards when more than two are available', () => {
-    const threeScorecards = [
+    const threeScorecards: AggregatedMetricResult[] = [
       ...mockAggregatedScorecardSuccessData,
       {
         id: 'third.scorecard',
@@ -130,12 +131,13 @@ describe('ScorecardHomepageSection Component', () => {
           title: 'Third Scorecard',
           description: 'Third description',
           type: 'object',
+          history: true,
         },
         result: {
-          value: {
-            success: { value: 5 },
-          },
+          values: [{ count: 5, name: 'success' }],
+          total: 5,
           timestamp: '2024-01-15T10:30:00Z',
+          lastUpdated: '2024-01-15T10:30:00Z',
         },
       },
     ];
@@ -151,7 +153,7 @@ describe('ScorecardHomepageSection Component', () => {
     const cards = screen.getAllByTestId('scorecard-homepage-card');
     expect(cards).toHaveLength(2);
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.getByText('Open Jira Issues')).toBeInTheDocument();
+    expect(screen.getByText('Jira open blocking tickets')).toBeInTheDocument();
     expect(screen.queryByText('Third Scorecard')).not.toBeInTheDocument();
   });
 
