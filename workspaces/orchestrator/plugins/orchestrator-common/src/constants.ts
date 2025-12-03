@@ -22,7 +22,7 @@
  * This approach will enable a more smooth dev mode experience, as opposed to using nightly or dayly builds.
  */
 export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE =
-  'quay.io/kubesmarts/incubator-kie-sonataflow-devmode:9.103.x-prod';
+  'quay.io/kubesmarts/incubator-kie-sonataflow-devmode:main';
 export const DEFAULT_SONATAFLOW_PERSISTENCE_PATH = '/home/kogito/persistence';
 export const DEFAULT_SONATAFLOW_BASE_URL = 'http://localhost';
 
