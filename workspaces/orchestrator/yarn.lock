@@ -2949,7 +2949,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-test-utils@npm:^1.10.0":
+"@backstage/backend-test-utils@npm:^1.10.0, @backstage/backend-test-utils@npm:^1.9.1":
   version: 1.10.0
   resolution: "@backstage/backend-test-utils@npm:1.10.0"
   dependencies:
@@ -3036,7 +3036,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli@npm:^0.34.5":
+"@backstage/cli@npm:^0.34.4, @backstage/cli@npm:^0.34.5":
   version: 0.34.5
   resolution: "@backstage/cli@npm:0.34.5"
   dependencies:
