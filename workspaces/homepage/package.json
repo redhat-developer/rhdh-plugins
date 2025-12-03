@@ -54,7 +54,8 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "refractor@npm:3.6.0/prismjs": "^1.30.0"
+    "refractor@npm:3.6.0/prismjs": "^1.30.0",
+    "@backstage/plugin-home@^0.8.11": "patch:@backstage/plugin-home@npm%3A0.8.11#./.yarn/patches/@backstage-plugin-home-npm-0.8.11-a127246043.patch"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

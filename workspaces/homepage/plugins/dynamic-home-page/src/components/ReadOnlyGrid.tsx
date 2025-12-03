@@ -40,6 +40,7 @@ import 'react-grid-layout/css/styles.css';
 import useMeasure from 'react-use/lib/useMeasure';
 
 import { HomePageCardMountPoint } from '../types';
+import { isCardADefaultConfiguration } from '../utils/customizable-cards';
 
 interface Card {
   id: string;
@@ -98,59 +99,59 @@ const useStyles = makeStyles()({
  */
 export interface ReadOnlyGridProps {
   mountPoints: HomePageCardMountPoint[];
-  breakpoints?: Record<string, number>;
-  cols?: Record<string, number>;
 }
 
 /**
  * @public
  */
-export const ReadOnlyGrid = (props: ReadOnlyGridProps) => {
+export const ReadOnlyGrid = ({ mountPoints }: ReadOnlyGridProps) => {
   const { classes } = useStyles();
   const [measureRef, measureRect] = useMeasure<HTMLDivElement>();
 
   const cards = useMemo<Card[]>(() => {
-    return props.mountPoints.map<Card>((mountPoint, index) => {
-      const id = (index + 1).toString();
-      const layouts: Record<string, Layout> = {};
+    return mountPoints
+      .filter(isCardADefaultConfiguration)
+      .map<Card>((cardMountPoint, index) => {
+        const id = (index + 1).toString();
+        const layouts: Record<string, Layout> = {};
 
-      if (mountPoint.config?.layouts) {
-        for (const [breakpoint, layout] of Object.entries(
-          mountPoint.config.layouts,
-        )) {
-          layouts[breakpoint] = {
-            i: id,
-            x: layout.x ?? 0,
-            y: layout.y ?? 0,
-            w: layout.w ?? 12,
-            h: layout.h ?? 4,
-            isDraggable: false,
-            isResizable: false,
-          };
+        if (cardMountPoint.config?.layouts) {
+          for (const [breakpoint, layout] of Object.entries(
+            cardMountPoint.config.layouts,
+          )) {
+            layouts[breakpoint] = {
+              i: id,
+              x: layout.x ?? 0,
+              y: layout.y ?? 0,
+              w: layout.w ?? 12,
+              h: layout.h ?? 4,
+              isDraggable: false,
+              isResizable: false,
+            };
+          }
+        } else {
+          // Default layout for cards without a layout configuration
+          ['xl', 'lg', 'md', 'sm', 'xs', 'xxs'].forEach(breakpoint => {
+            layouts[breakpoint] = {
+              i: id,
+              x: 0,
+              y: 0,
+              w: 12,
+              h: 4,
+              isDraggable: false,
+              isResizable: false,
+            };
+          });
         }
-      } else {
-        // Default layout for cards without a layout configuration
-        ['xl', 'lg', 'md', 'sm', 'xs', 'xxs'].forEach(breakpoint => {
-          layouts[breakpoint] = {
-            i: id,
-            x: 0,
-            y: 0,
-            w: 12,
-            h: 4,
-            isDraggable: false,
-            isResizable: false,
-          };
-        });
-      }
 
-      return {
-        id,
-        Component: mountPoint.Component,
-        props: mountPoint.config?.props,
-        layouts,
-      };
-    });
-  }, [props.mountPoints]);
+        return {
+          id,
+          Component: cardMountPoint.Component,
+          props: cardMountPoint.config?.props,
+          layouts,
+        };
+      });
+  }, [mountPoints]);
 
   const layouts = useMemo<Layouts>(() => {
     const result: Layouts = {};
