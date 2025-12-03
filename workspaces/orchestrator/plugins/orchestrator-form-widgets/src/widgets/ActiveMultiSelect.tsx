@@ -49,6 +49,10 @@ const useStyles = makeStyles()(
   }),
 );
 
+const toSortedString = (array: string[]) => {
+  return [...array].sort((a, b) => a.localeCompare(b)).join(',');
+};
+
 export const ActiveMultiSelect: Widget<
   JsonObject,
   JSONSchema7,
@@ -128,8 +132,8 @@ export const ActiveMultiSelect: Widget<
           const arraysAreEqual =
             Array.isArray(autocompleteOptions) &&
             autocompleteValues.length === autocompleteOptions.length &&
-            [...autocompleteValues].sort().join(',') ===
-              [...autocompleteOptions].sort().join(',');
+            toSortedString(autocompleteValues) ===
+              toSortedString(autocompleteOptions);
 
           if (!arraysAreEqual) {
             setAutocompleteOptions(autocompleteValues);
@@ -158,8 +162,7 @@ export const ActiveMultiSelect: Widget<
           const arraysAreEqual =
             Array.isArray(mandatoryValues) &&
             mandatory.length === mandatoryValues.length &&
-            [...mandatory].sort().join(',') ===
-              [...mandatoryValues].sort().join(',');
+            toSortedString(mandatory) === toSortedString(mandatoryValues);
 
           if (!arraysAreEqual) {
             setMandatoryValues(mandatory);
