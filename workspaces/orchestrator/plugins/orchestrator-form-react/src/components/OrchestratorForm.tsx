@@ -23,7 +23,10 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import cloneDeep from 'lodash/cloneDeep';
 import get from 'lodash/get';
 
-import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import {
+  OrchestratorFormContextProps,
+  useOrchestratorFormApiOrDefault,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import { TranslationFunction } from '../hooks/useTranslation';
 import generateUiSchema from '../utils/generateUiSchema';
@@ -159,17 +162,30 @@ const OrchestratorForm = ({
     return generateUiSchema(schema, isMultiStep);
   }, [schema, isMultiStep]);
 
+  // Get custom review component from API if available
+  const orchestratorFormApi = useOrchestratorFormApiOrDefault();
+  const CustomReviewComponent = useMemo(() => {
+    return orchestratorFormApi.getReviewComponent?.();
+  }, [orchestratorFormApi]);
+
   const reviewStep = useMemo(() => {
+    // Use custom review component if provided, otherwise use default
+    const ReviewComponent = CustomReviewComponent || ReviewStep;
     return (
-      <ReviewStep
+      <ReviewComponent
         data={prunedFormData}
         schema={schema}
         busy={isExecuting}
         handleExecute={_handleExecute}
-        // no schema update here
       />
     );
-  }, [prunedFormData, schema, isExecuting, _handleExecute]);
+  }, [
+    CustomReviewComponent,
+    prunedFormData,
+    schema,
+    isExecuting,
+    _handleExecute,
+  ]);
 
   return (
     <StepperContextProvider reviewStep={reviewStep} t={t}>

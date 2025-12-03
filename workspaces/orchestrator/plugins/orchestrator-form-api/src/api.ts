@@ -117,6 +117,23 @@ export type OrchestratorFormSchemaUpdater = (
 
 /**
  * @public
+ * ReviewComponentProps
+ *
+ * Type definition for properties passed to a custom review page component.
+ */
+export type ReviewComponentProps = {
+  /** Whether the workflow execution is in progress */
+  busy: boolean;
+  /** The JSON Schema for the workflow form */
+  schema: JSONSchema7;
+  /** The form data to be reviewed before submission */
+  data: JsonObject;
+  /** Callback to execute the workflow */
+  handleExecute: () => void;
+};
+
+/**
+ * @public
  * OrchestratorFormApi
  * API to be implemented by factory in a custom plugin
  */
@@ -136,6 +153,14 @@ export interface OrchestratorFormApi {
    * return the form decorator
    */
   getFormDecorator(): OrchestratorFormDecorator;
+
+  /**
+   * @public
+   * getReviewComponent
+   * return a custom review page component to replace the default review step
+   * @returns A React component that accepts ReviewComponentProps, or undefined to use the default review page
+   */
+  getReviewComponent?(): React.ComponentType<ReviewComponentProps> | undefined;
 }
 
 /**
