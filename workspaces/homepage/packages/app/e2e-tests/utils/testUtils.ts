@@ -23,8 +23,8 @@ export class TestUtils {
     this.page = page;
   }
 
-  async loginAsGuest() {
-    await this.page.goto('/');
+  async loginAsGuest(url?: string) {
+    await this.page.goto(url ?? '/');
     await this.waitForLoad(240000);
 
     this.page.on('dialog', async dialog => {

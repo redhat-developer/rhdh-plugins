@@ -226,12 +226,12 @@ export class HomePageCustomization {
     await expect(this.editButton()).toBeVisible();
   }
 
-  async addWidget(widgetType: string = 'OnboardingSection'): Promise<void> {
+  async addWidget(title: string): Promise<void> {
     await this.testUtils.clickButton('Add widget');
     await this.page.waitForTimeout(1000); // Wait for dialog to open
 
     // Select the specific widget type from the dialog
-    await this.page.getByRole('button', { name: widgetType }).click();
+    await this.page.getByRole('button', { name: title }).click();
     await this.page.waitForTimeout(1000);
   }
 }

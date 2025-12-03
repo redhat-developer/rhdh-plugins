@@ -5,6 +5,8 @@
 ```ts
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import type { CardLayout } from '@backstage/plugin-home-react';
+import type { CardSettings } from '@backstage/plugin-home-react';
 import { ClockConfig } from '@backstage/plugin-home';
 import type { ComponentType } from 'react';
 import { FeaturedDocsCardProps } from '@backstage/plugin-home';
@@ -33,120 +35,6 @@ export enum Breakpoint {
 
 // @public (undocumented)
 export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps>;
-
-// @public
-export const defaultLayouts: {
-    onboarding: {
-        xl: {
-            w: number;
-            h: number;
-        };
-        lg: {
-            w: number;
-            h: number;
-        };
-        md: {
-            w: number;
-            h: number;
-        };
-        sm: {
-            w: number;
-            h: number;
-        };
-        xs: {
-            w: number;
-            h: number;
-        };
-        xxs: {
-            w: number;
-            h: number;
-        };
-    };
-    entity: {
-        xl: {
-            w: number;
-            h: number;
-        };
-        lg: {
-            w: number;
-            h: number;
-        };
-        md: {
-            w: number;
-            h: number;
-        };
-        sm: {
-            w: number;
-            h: number;
-        };
-        xs: {
-            w: number;
-            h: number;
-        };
-        xxs: {
-            w: number;
-            h: number;
-        };
-    };
-    template: {
-        xl: {
-            w: number;
-            h: number;
-        };
-        lg: {
-            w: number;
-            h: number;
-        };
-        md: {
-            w: number;
-            h: number;
-        };
-        sm: {
-            w: number;
-            h: number;
-        };
-        xs: {
-            w: number;
-            h: number;
-        };
-        xxs: {
-            w: number;
-            h: number;
-        };
-    };
-    quickAccessCard: {
-        xl: {
-            w: number;
-            h: number;
-            x: number;
-        };
-        lg: {
-            w: number;
-            h: number;
-            x: number;
-        };
-        md: {
-            w: number;
-            h: number;
-            x: number;
-        };
-        sm: {
-            w: number;
-            h: number;
-            x: number;
-        };
-        xs: {
-            w: number;
-            h: number;
-            x: number;
-        };
-        xxs: {
-            w: number;
-            h: number;
-            x: number;
-        };
-    };
-};
 
 // @public
 export const DynamicCustomizableHomePage: ComponentType<DynamicCustomizableHomePageProps>;
@@ -211,6 +99,8 @@ export interface HeadlineProps {
 // @public (undocumented)
 export interface HomePageCardMountPoint {
     // (undocumented)
+    Actions?: ComponentType;
+    // (undocumented)
     Component: ComponentType;
     // (undocumented)
     config?: HomePageCardMountPointConfig & {
@@ -218,14 +108,28 @@ export interface HomePageCardMountPoint {
     };
     // (undocumented)
     enabled?: boolean;
+    // (undocumented)
+    Settings?: ComponentType;
 }
 
 // @public (undocumented)
 export interface HomePageCardMountPointConfig {
     // (undocumented)
+    cardLayout?: CardLayout;
+    // (undocumented)
+    description?: string;
+    // (undocumented)
+    descriptionKey?: string;
+    id?: string;
     layouts?: Record<Breakpoint, Layout>;
     // (undocumented)
     priority?: number;
+    // (undocumented)
+    settings?: CardSettings;
+    // (undocumented)
+    title?: string;
+    // (undocumented)
+    titleKey?: string;
 }
 
 // @public

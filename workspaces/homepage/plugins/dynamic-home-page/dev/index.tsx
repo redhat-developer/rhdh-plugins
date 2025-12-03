@@ -47,7 +47,6 @@ import {
   dynamicHomePagePlugin,
   CatalogStarredEntitiesCard,
   DynamicHomePage,
-  DynamicCustomizableHomePage,
   DynamicHomePageProps,
   FeaturedDocsCard,
   Headline,
@@ -63,31 +62,210 @@ import {
   OnboardingSection,
   EntitySection,
   TemplateSection,
+  DynamicCustomizableHomePage,
 } from '../src/plugin';
 import { homepageTranslations } from '../src/translations';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';
-import { defaultLayouts } from '../src/defaults';
 
 const defaultMountPoints: HomePageCardMountPoint[] = [
   {
     Component: OnboardingSection,
     config: {
-      layouts: defaultLayouts.onboarding,
+      id: 'OnboardingSection',
+      title: 'Onboarding section',
+      // prettier-ignore
+      layouts: {
+        xl: { w: 12, h: 6 },
+        lg: { w: 12, h: 6 },
+        md: { w: 12, h: 7 },
+        sm: { w: 12, h: 8 },
+        xs: { w: 12, h: 9 },
+        xxs: { w: 12, h: 14 },
+      },
     },
   },
   {
     Component: EntitySection,
     config: {
-      layouts: defaultLayouts.entity,
+      id: 'EntitySection',
+      title: 'Entity section',
+      // prettier-ignore
+      layouts: {
+        xl: { w: 12, h: 7 },
+        lg: { w: 12, h: 7 },
+        md: { w: 12, h: 8 },
+        sm: { w: 12, h: 9 },
+        xs: { w: 12, h: 11 },
+        xxs: { w: 12, h: 15 },
+      },
     },
   },
   {
     Component: TemplateSection,
     config: {
-      layouts: defaultLayouts.template,
+      id: 'TemplateSection',
+      title: 'Template section',
+      // prettier-ignore
+      layouts: {
+        xl: { w: 12, h: 5 },
+        lg: { w: 12, h: 5 },
+        md: { w: 12, h: 5 },
+        sm: { w: 12, h: 5 },
+        xs: { w: 12, h: 7.5 },
+        xxs: { w: 12, h: 13.5 },
+      },
     },
   },
+  {
+    Component: SearchBar,
+    config: {
+      id: 'Search',
+      title: 'Search',
+    },
+  },
+  {
+    Component: QuickAccessCard,
+    config: {
+      id: 'QuickAccessCard',
+      title: 'Quick access card',
+    },
+  },
+  {
+    Component: Headline,
+    config: {
+      id: 'Headline',
+      title: 'Headline',
+    },
+  },
+  {
+    Component: Markdown,
+    config: {
+      id: 'Markdown',
+      title: 'Markdown',
+    },
+  },
+  {
+    Component: MarkdownCard,
+    config: {
+      id: 'MarkdownCard',
+      title: 'Markdown card',
+    },
+  },
+  {
+    Component: Placeholder,
+    config: {
+      id: 'Placeholder',
+      title: 'Placeholder',
+    },
+  },
+  {
+    Component: CatalogStarredEntitiesCard,
+    config: {
+      id: 'CatalogStarredEntitiesCard',
+      title: 'Catalog starred entities card',
+    },
+  },
+  {
+    Component: RecentlyVisitedCard as ComponentType,
+    config: {
+      id: 'RecentlyVisitedCard',
+      title: 'Recently visited card',
+    },
+  },
+  {
+    Component: TopVisitedCard as ComponentType,
+    config: {
+      id: 'TopVisitedCard',
+      title: 'Top visited card',
+    },
+  },
+  {
+    Component: FeaturedDocsCard as ComponentType,
+    config: {
+      id: 'FeaturedDocsCard',
+      title: 'Featured docs card',
+    },
+  },
+  {
+    Component: JokeCard,
+    config: {
+      id: 'JokeCard',
+      title: 'Joke card',
+    },
+  },
+];
+
+const createHeadline = ({
+  title,
+  align,
+  priority,
+}: {
+  title: string;
+  align: string;
+  priority: number;
+}): HomePageCardMountPoint => ({
+  Component: Headline,
+  config: {
+    priority,
+    props: {
+      title,
+      align,
+    },
+    layouts: {
+      xl: { w: 12, h: 1 },
+      lg: { w: 12, h: 1 },
+      md: { w: 12, h: 1 },
+      sm: { w: 12, h: 1 },
+      xs: { w: 12, h: 1 },
+      xxs: { w: 12, h: 1 },
+    },
+    cardLayout: {
+      width: {
+        minColumns: 4,
+        maxColumns: 12,
+        defaultColumns: 12,
+      },
+      height: {
+        minRows: 1,
+        maxRows: 1,
+        defaultRows: 1,
+      },
+    },
+  },
+});
+
+const createPlaceholder = ({
+  priority,
+}: {
+  priority: number;
+}): HomePageCardMountPoint => ({
+  Component: Placeholder,
+  config: {
+    priority,
+    props: {
+      showBorder: true,
+      debugContent: '1x1',
+    },
+    layouts: {
+      xl: { w: 1, h: 1 },
+      lg: { w: 1, h: 1 },
+      md: { w: 1, h: 1 },
+      sm: { w: 1, h: 1 },
+      xs: { w: 1, h: 1 },
+      xxs: { w: 1, h: 1 },
+    },
+  },
+});
+
+const customizedMountPoints: HomePageCardMountPoint[] = [
+  ...defaultMountPoints,
+  createHeadline({ title: 'Left title', align: 'left', priority: 202 }),
+  createHeadline({ title: 'Centered title', align: 'center', priority: 201 }),
+  createHeadline({ title: 'Right title', align: 'right', priority: 200 }),
+  createPlaceholder({ priority: 102 }),
+  createPlaceholder({ priority: 101 }),
+  createPlaceholder({ priority: 100 }),
 ];
 
 class MockQuickAccessApi implements QuickAccessApi {
@@ -239,7 +417,7 @@ const createPage = ({
   };
 
   const pageContent = (
-    <TestApiProvider apis={backstageApis}>
+    <TestApiProvider key={navTitle} apis={backstageApis}>
       <ScalprumContext.Provider value={scalprumState}>
         <div style={{ width: pageWidth }}>
           {customizable ? (
@@ -296,7 +474,7 @@ createDevApp()
     createPage({
       navTitle: 'Customizable',
       pageTitle: 'Customizable Homepage',
-      mountPoints: defaultMountPoints,
+      mountPoints: customizedMountPoints,
       customizable: true,
     }),
   )
