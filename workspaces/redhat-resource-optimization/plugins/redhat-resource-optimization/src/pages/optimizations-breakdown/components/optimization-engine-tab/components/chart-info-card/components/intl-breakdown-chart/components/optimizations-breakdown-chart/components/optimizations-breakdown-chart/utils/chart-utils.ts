@@ -46,7 +46,7 @@ export const getChartNames = (series: ChartSeries[]) => {
   const result: (string | undefined)[] = [];
 
   if (series) {
-    series.map(serie => {
+    series.forEach(serie => {
       // Each group of chart names are hidden / shown together
       result.push(serie.childName);
     });
