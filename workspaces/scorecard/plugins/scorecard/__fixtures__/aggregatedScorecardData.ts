@@ -47,7 +47,7 @@ export const mockAggregatedScorecardSuccessData: AggregatedMetricResult[] = [
     id: 'jira.issues_open',
     status: 'success',
     metadata: {
-      title: 'Open Jira Issues',
+      title: 'Jira open blocking tickets',
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
       type: 'object',
