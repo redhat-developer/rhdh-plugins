@@ -26,6 +26,7 @@ import {
 } from 'recharts';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
@@ -50,6 +51,7 @@ export const ScorecardHomepageCard = ({
 }: {
   scorecard: AggregatedMetricResult;
 }) => {
+  const theme = useTheme();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -64,10 +66,11 @@ export const ScorecardHomepageCard = ({
         value,
         color:
           {
-            success: '#3E8635',
-            warning: '#F0AB00',
-            error: '#C9190B',
-          }[key as 'success' | 'warning' | 'error'] || '#3E8635',
+            success: theme.palette.success.main,
+            warning: theme.palette.warning.main,
+            error: theme.palette.error.main,
+          }[key as 'success' | 'warning' | 'error'] ||
+          theme.palette.success.main,
       };
     },
   );
@@ -97,6 +100,9 @@ export const ScorecardHomepageCard = ({
           justifyContent: 'center',
           alignItems: 'center',
           cursor: 'default',
+          '& .recharts-wrapper > svg': {
+            outline: 'none',
+          },
         }}
       >
         <ResponsiveContainer
@@ -106,13 +112,6 @@ export const ScorecardHomepageCard = ({
             outline: 'none',
           }}
         >
-          <style>
-            {`
-              .recharts-wrapper > svg {
-                outline: none;
-              }
-            `}
-          </style>
           <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <Pie
               data={pieData}

@@ -117,7 +117,7 @@ describe('ScorecardHomepageSection Component', () => {
     const cards = screen.getAllByTestId('scorecard-homepage-card');
     expect(cards).toHaveLength(2);
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.getByText('Open Jira Issues')).toBeInTheDocument();
+    expect(screen.getByText('Jira open blocking tickets')).toBeInTheDocument();
   });
 
   it('should render only first two scorecards when more than two are available', () => {
@@ -151,7 +151,7 @@ describe('ScorecardHomepageSection Component', () => {
     const cards = screen.getAllByTestId('scorecard-homepage-card');
     expect(cards).toHaveLength(2);
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.getByText('Open Jira Issues')).toBeInTheDocument();
+    expect(screen.getByText('Jira open blocking tickets')).toBeInTheDocument();
     expect(screen.queryByText('Third Scorecard')).not.toBeInTheDocument();
   });
 

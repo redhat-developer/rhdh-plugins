@@ -215,7 +215,7 @@ describe('ScorecardHomepageCard Component', () => {
     );
 
     expect(screen.getByTestId('card-title')).toHaveTextContent(
-      'Open Jira Issues',
+      'Jira open blocking tickets',
     );
     expect(screen.getByTestId('card-subtitle')).toHaveTextContent('4 entities');
     expect(
