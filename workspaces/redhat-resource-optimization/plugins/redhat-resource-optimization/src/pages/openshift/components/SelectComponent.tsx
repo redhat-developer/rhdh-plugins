@@ -22,6 +22,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { useThemeBackgroundColor } from '../../../hooks/useThemeBackgroundColor';
 
 const useSelectStyles = makeStyles(
   {
@@ -30,7 +31,7 @@ const useSelectStyles = makeStyles(
     formControl: {
       width: '100%',
       marginTop: 5,
-      backgroundColor: '#ffffff',
+      backgroundColor: 'transparent',
     },
   },
   {
@@ -55,6 +56,7 @@ type SelectProps = {
 /** @public */
 export function SelectComponent(props: SelectProps) {
   const classes = useSelectStyles();
+  const { backgroundColor } = useThemeBackgroundColor();
   const {
     label,
     options,
@@ -73,6 +75,7 @@ export function SelectComponent(props: SelectProps) {
         className={classes.formControl}
         variant="outlined"
         hiddenLabel
+        style={{ backgroundColor }}
       >
         <Select
           displayEmpty
