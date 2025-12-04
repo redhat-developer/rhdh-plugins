@@ -23,6 +23,12 @@ export type StatusConfig = {
   icon?: React.ElementType;
 };
 
+export type PieData = {
+  name: string;
+  value: number;
+  color: string;
+};
+
 /**
  * @param evaluation - The evaluation status of the metric.
  * colors are mapped to MUI palette strings (e.g., 'error.main', 'warning.main', 'success.main').
@@ -50,4 +56,26 @@ export const getStatusConfig = ({
     default:
       return { color: 'success.main', icon: CheckCircleOutlineIcon };
   }
+};
+
+export type AggregatedMetricValue = {
+  count: number;
+  name: 'success' | 'warning' | 'error';
+};
+
+export type AggregatedMetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    description: string;
+    type: 'object';
+    history?: boolean;
+  };
+  result: {
+    values?: AggregatedMetricValue[];
+    total: number;
+    timestamp: string;
+    lastUpdated: string;
+  };
 };

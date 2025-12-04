@@ -14,38 +14,66 @@
  * limitations under the License.
  */
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
 import CustomLegend from '../CustomLegend';
+import { CustomTooltip } from '../CustomTooltip';
 
 describe('CustomLegend Component', () => {
   it('should render with the correct number of legend items', () => {
+    const pieData = [
+      { name: 'test1', value: 10, color: 'red' },
+      { name: 'test2', value: 20, color: 'blue' },
+      { name: 'test3', value: 30, color: 'green' },
+    ];
+
     render(
       <CustomLegend
-        payload={[{ name: 'Test', value: 10, color: 'red' }]}
-        pieData={[{ name: 'Test', value: 10, color: 'red' }]}
+        pieData={pieData}
+        activeIndex={null}
+        setActiveIndex={jest.fn()}
+        setTooltipPosition={jest.fn()}
       />,
     );
-    expect(screen.getByText('Test')).toBeInTheDocument();
+
+    const legendItems = screen.getAllByText(/Test[1-3]/i);
+    expect(legendItems).toHaveLength(3);
   });
 
-  it('should render with the correct value for the legend item', () => {
-    render(
-      <CustomLegend
-        payload={[{ name: 'Test', value: 10, color: 'red' }]}
-        pieData={[{ name: 'Test', value: 10, color: 'red' }]}
-      />,
-    );
-    expect(screen.getByText('Test')).toBeInTheDocument();
-  });
+  it('should show correct value in tooltip on hover', () => {
+    const setActiveIndex = jest.fn();
+    const setTooltipPosition = jest.fn();
+    const pieData = [{ name: 'Test', value: 10, color: 'red' }];
 
-  it('should render null if there are no payload', () => {
-    render(
-      <CustomLegend
-        payload={null}
-        pieData={[{ name: 'Test', value: 10, color: 'red' }]}
+    const { rerender } = render(
+      <div data-chart-container>
+        <CustomLegend
+          pieData={pieData}
+          activeIndex={null}
+          setActiveIndex={setActiveIndex}
+          setTooltipPosition={setTooltipPosition}
+        />
+      </div>,
+    );
+
+    const legendItem = screen.getByText('Test');
+    fireEvent.mouseEnter(legendItem);
+
+    expect(setActiveIndex).toHaveBeenCalledWith(0);
+
+    rerender(
+      <CustomTooltip
+        payload={[
+          {
+            name: pieData[0].name,
+            value: pieData[0].value,
+            payload: pieData[0],
+          },
+        ]}
+        pieData={pieData}
       />,
     );
-    expect(null).toBeNull();
+
+    expect(screen.getByText('10 entities')).toBeInTheDocument();
   });
 });
