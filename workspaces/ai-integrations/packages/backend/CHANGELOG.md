@@ -1,5 +1,11 @@
 # backend
 
+## 0.0.11
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-ai-experience-backend@0.3.1
+
 ## 0.0.10
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience
 
+## 0.4.1
+
+### Patch Changes
+
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-common@0.3.1
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-backend@0.3.1
+
 ## 0.4.0
 
 ### Minor Changes
