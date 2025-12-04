@@ -1,5 +1,44 @@
 ### Dependencies
 
+## 2.4.0
+
+### Minor Changes
+
+- 6db1430: Add ui:hidden property to hide fields while preserving functionality
+
+  **Hidden Fields Feature:**
+  - Add `ui:hidden` property to hide fields while preserving widget functionality
+  - Implement `HiddenFieldTemplate` to render hidden fields with `display: none`
+  - Hidden fields remain active, participate in validation, and are submitted with form data
+  - Hidden fields are automatically excluded from the review page
+  - Update `getSortedStepEntries` to filter out steps marked with `ui:hidden: true`
+  - Automatically hide entire steps when all inputs within the step are hidden
+
+  **Review Page Improvements:**
+  - Add `NestedReviewTable` component for improved hierarchical display of nested objects
+  - Update `generateReviewTableData` to skip hidden fields in review page
+  - Update `generateReviewTableData` to skip entire steps when all fields are hidden
+  - Simplified value rendering for better readability
+
+  **Documentation:**
+  - Update `orchestratorFormWidgets.md` with `ui:hidden` property documentation and usage examples
+
+- 29dfed0: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [a1671ab]
+- Updated dependencies [40b80fe]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+- Updated dependencies [40b80fe]
+- Updated dependencies [34a36cb]
+- Updated dependencies [29dfed0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.0
+
 ## 2.3.1
 
 ### Patch Changes
