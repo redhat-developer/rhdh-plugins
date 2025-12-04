@@ -1,0 +1,61 @@
+{
+  "name": "@red-hat-developer-hub/translations-cli",
+  "description": "CLI tools for translation workflows with our TMS.",
+  "version": "0.1.0",
+  "backstage": {
+    "role": "cli"
+  },
+  "private": true,
+  "homepage": "https://red.ht/rhdh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/translations/packages/cli"
+  },
+  "keywords": [
+    "backstage"
+  ],
+  "license": "Apache-2.0",
+  "main": "dist/index.cjs.js",
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "start": "nodemon --",
+    "dev": "ts-node src/index.ts",
+    "dev:help": "ts-node src/index.ts --help",
+    "test:local": "npm run build && node bin/translations-cli",
+    "test:watch": "vitest"
+  },
+  "bin": "bin/translations-cli",
+  "files": [
+    "bin",
+    "dist/**/*.js"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@backstage/cli": "^0.34.4",
+    "axios": "^1.9.0",
+    "chalk": "^4.0.0",
+    "commander": "^9.1.0",
+    "fs-extra": "^10.1.0",
+    "glob": "^8.0.0"
+  },
+  "nodemonConfig": {
+    "watch": "./src",
+    "exec": "bin/translations-cli",
+    "ext": "ts"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/glob": "^8.0.0",
+    "@types/node": "^18.19.34",
+    "chalk": "^4.1.2",
+    "commander": "^12.0.0",
+    "ts-node": "^10.9.2",
+    "vitest": "^1.0.0"
+  }
+}
