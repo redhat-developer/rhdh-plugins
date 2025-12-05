@@ -3154,15 +3154,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.3, @backstage/catalog-model@npm:^1.7.5":
-  version: 1.7.5
-  resolution: "@backstage/catalog-model@npm:1.7.5"
+"@backstage/catalog-model@npm:^1.7.0, @backstage/catalog-model@npm:^1.7.3, @backstage/catalog-model@npm:^1.7.5, @backstage/catalog-model@npm:^1.7.6":
+  version: 1.7.6
+  resolution: "@backstage/catalog-model@npm:1.7.6"
   dependencies:
     "@backstage/errors": ^1.2.7
-    "@backstage/types": ^1.2.1
+    "@backstage/types": ^1.2.2
     ajv: ^8.10.0
     lodash: ^4.17.21
-  checksum: 3f8d646268f31020f61a28139906f706b58b6dcf4ea51c4f8475c3a4a4437855406e12dd8cdb0792a7807d491d3a93971f2eb382919667806063a21844396df2
+  checksum: dc9350b4d1dc8bdd8f388b37cacf8dfa8d32509f87be500a9c6fbec2223a0c154cc609498ae7c5f4ae27c58b4fb1023b4f41bd754cd3def6ea3cd8cfe922d60b
   languageName: node
   linkType: hard
 
@@ -3173,41 +3173,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/cli-node@npm:^0.2.10, @backstage/cli-node@npm:^0.2.12, @backstage/cli-node@npm:^0.2.14":
-  version: 0.2.14
-  resolution: "@backstage/cli-node@npm:0.2.14"
+"@backstage/cli-node@npm:^0.2.10, @backstage/cli-node@npm:^0.2.12, @backstage/cli-node@npm:^0.2.14, @backstage/cli-node@npm:^0.2.15":
+  version: 0.2.15
+  resolution: "@backstage/cli-node@npm:0.2.15"
   dependencies:
     "@backstage/cli-common": ^0.1.15
     "@backstage/errors": ^1.2.7
-    "@backstage/types": ^1.2.1
+    "@backstage/types": ^1.2.2
     "@manypkg/get-packages": ^1.1.3
     "@yarnpkg/parsers": ^3.0.0
     fs-extra: ^11.2.0
     semver: ^7.5.3
     zod: ^3.22.4
-  checksum: a5523f8cfe37a851bb29040d4421d76b21dc17a665584edb99fa483a5f19adfd18765cf5dd2bfce3363356749b67710daff933012f040fe2dd33e0045fc6d44b
+  checksum: 9e11ce0acbcbea0c3e8aadb3569cc8fb9e6df9b4118e83375cb14d4b3f9f682476b604a722d66a1860d6a3cde8a499a16061de3f50a8746258d5c3f433b0bd6e
   languageName: node
   linkType: hard
 
-"@backstage/cli@npm:^0.34.1":
-  version: 0.34.3
-  resolution: "@backstage/cli@npm:0.34.3"
+"@backstage/cli@npm:^0.34.1, @backstage/cli@npm:^0.34.5":
+  version: 0.34.5
+  resolution: "@backstage/cli@npm:0.34.5"
   dependencies:
-    "@backstage/catalog-model": ^1.7.5
+    "@backstage/catalog-model": ^1.7.6
     "@backstage/cli-common": ^0.1.15
-    "@backstage/cli-node": ^0.2.14
-    "@backstage/config": ^1.3.3
-    "@backstage/config-loader": ^1.10.3
+    "@backstage/cli-node": ^0.2.15
+    "@backstage/config": ^1.3.6
+    "@backstage/config-loader": ^1.10.6
     "@backstage/errors": ^1.2.7
-    "@backstage/eslint-plugin": ^0.1.11
-    "@backstage/integration": ^1.18.0
+    "@backstage/eslint-plugin": ^0.2.0
+    "@backstage/integration": ^1.18.2
     "@backstage/release-manifests": ^0.0.13
     "@backstage/types": ^1.2.2
     "@manypkg/get-packages": ^1.1.3
     "@module-federation/enhanced": ^0.9.0
-    "@octokit/graphql": ^5.0.0
-    "@octokit/graphql-schema": ^13.7.0
-    "@octokit/oauth-app": ^4.2.0
     "@octokit/request": ^8.0.0
     "@rollup/plugin-commonjs": ^26.0.0
     "@rollup/plugin-json": ^6.0.0
@@ -3329,16 +3326,16 @@ __metadata:
       optional: true
   bin:
     backstage-cli: bin/backstage-cli
-  checksum: cbe719d497302c6708ae4106afe5b895612480fbb149807edd6100dbc3317ff3d1f099e46dd2be81f7eaff79ade3cc2afad4994d8c4a92c52149c732c42e54cf
+  checksum: de8208d659ecc9b850b78230878772212374de84d2dbf2457510227b612200260cfd87c6e03ee0878dcf8ad31a4608796985e40a2069c2cdf56a6a6bbbacafa9
   languageName: node
   linkType: hard
 
-"@backstage/config-loader@npm:^1.10.3, @backstage/config-loader@npm:^1.9.1, @backstage/config-loader@npm:^1.9.2, @backstage/config-loader@npm:^1.9.5":
-  version: 1.10.4
-  resolution: "@backstage/config-loader@npm:1.10.4"
+"@backstage/config-loader@npm:^1.10.3, @backstage/config-loader@npm:^1.10.6, @backstage/config-loader@npm:^1.9.1, @backstage/config-loader@npm:^1.9.2, @backstage/config-loader@npm:^1.9.5":
+  version: 1.10.6
+  resolution: "@backstage/config-loader@npm:1.10.6"
   dependencies:
     "@backstage/cli-common": ^0.1.15
-    "@backstage/config": ^1.3.4
+    "@backstage/config": ^1.3.6
     "@backstage/errors": ^1.2.7
     "@backstage/types": ^1.2.2
     "@types/json-schema": ^7.0.6
@@ -3352,18 +3349,18 @@ __metadata:
     minimist: ^1.2.5
     typescript-json-schema: ^0.65.0
     yaml: ^2.0.0
-  checksum: fe42f79b0eafa6825c241f882d3916c70b11c0f1063bbee1c76c3b0cc9a611e601a3e86277fad4456339eea144f936e83610811f65855fde094416ff65083468
+  checksum: 7e6cb18f9ecf6076885212616574d624f7c212ada7f4dc0831f5c8f0a600bd7fec0dff5506776e5bbbce767cc52e9afc73b670fd28a57f9bf191cd848ec33e38
   languageName: node
   linkType: hard
 
-"@backstage/config@npm:^1.2.0, @backstage/config@npm:^1.3.0, @backstage/config@npm:^1.3.2, @backstage/config@npm:^1.3.3, @backstage/config@npm:^1.3.4":
-  version: 1.3.4
-  resolution: "@backstage/config@npm:1.3.4"
+"@backstage/config@npm:^1.2.0, @backstage/config@npm:^1.3.0, @backstage/config@npm:^1.3.2, @backstage/config@npm:^1.3.3, @backstage/config@npm:^1.3.4, @backstage/config@npm:^1.3.6":
+  version: 1.3.6
+  resolution: "@backstage/config@npm:1.3.6"
   dependencies:
     "@backstage/errors": ^1.2.7
     "@backstage/types": ^1.2.2
     ms: ^2.1.3
-  checksum: fe7344c2b3b777ea0351fb0a5cebc56b8d964dc4b107547e15d2a9d40a17a349621f42bfb03d805ba0445ab0939adfa4239cf7db175525dd9ee276bb6139fa3c
+  checksum: eceac228ed740f61368c959738d6b81a8c2218bb6176e5304e13f4d98f92888c1276d9b1f29f51c0eea862e6625c6c847ba93cb4fe6dab7b20f48001e6040df6
   languageName: node
   linkType: hard
 
@@ -3650,13 +3647,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/eslint-plugin@npm:^0.1.11":
-  version: 0.1.11
-  resolution: "@backstage/eslint-plugin@npm:0.1.11"
+"@backstage/eslint-plugin@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@backstage/eslint-plugin@npm:0.2.0"
   dependencies:
     "@manypkg/get-packages": ^1.1.3
     minimatch: ^9.0.0
-  checksum: e6d6ee8ad07d17c634fd4a7388711268dd75debcd23148d0a4ceba2575d0138f617c1d794bd98d46925aa9db556c9cd1cfe4f092fcd974d80d38dd4cc2274b7b
+  checksum: 5afac8fb2b4d984f92358b741ec2e7e77256b786d9eae2b97885c98db976422798b643da5502b75c523674d3da0b9f78b648d1a88a3b661a664f7a9c4187362d
   languageName: node
   linkType: hard
 
@@ -3818,13 +3815,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration@npm:^1.15.0, @backstage/integration@npm:^1.15.2, @backstage/integration@npm:^1.17.1, @backstage/integration@npm:^1.18.0":
-  version: 1.18.0
-  resolution: "@backstage/integration@npm:1.18.0"
+"@backstage/integration@npm:^1.15.0, @backstage/integration@npm:^1.15.2, @backstage/integration@npm:^1.17.1, @backstage/integration@npm:^1.18.0, @backstage/integration@npm:^1.18.2":
+  version: 1.18.2
+  resolution: "@backstage/integration@npm:1.18.2"
   dependencies:
     "@azure/identity": ^4.0.0
     "@azure/storage-blob": ^12.5.0
-    "@backstage/config": ^1.3.3
+    "@backstage/config": ^1.3.6
     "@backstage/errors": ^1.2.7
     "@octokit/auth-app": ^4.0.0
     "@octokit/rest": ^19.0.3
@@ -3832,7 +3829,7 @@ __metadata:
     git-url-parse: ^15.0.0
     lodash: ^4.17.21
     luxon: ^3.0.0
-  checksum: bbb4eb31c1f3f2c71af46aadc6176207a5fc37f2b39268aa52690ccc4a0bced1f3445dc454959d7ec90acbf81d441414c3abba6b41724ca8c774de4d0a9c8605
+  checksum: 5d037450c4673a0eada8df7f000d4294b970b67c7937fa875165e7bac96a04943f1e8438fe2de06bd6ddfd39777e56c553a6b0cbe30cf1442ed49ae5399f3d67
   languageName: node
   linkType: hard
 
@@ -9813,16 +9810,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/auth-unauthenticated@npm:^3.0.0":
-  version: 3.0.5
-  resolution: "@octokit/auth-unauthenticated@npm:3.0.5"
-  dependencies:
-    "@octokit/request-error": ^3.0.0
-    "@octokit/types": ^9.0.0
-  checksum: 8372d732af9aeb09e51fc51c9aca00fb4522e182caf514898a27c5d7e33cfd8e39f9d00f7868cfc34ad437280a0fcafb312624a2968526110249e07b2b96b269
-  languageName: node
-  linkType: hard
-
 "@octokit/auth-unauthenticated@npm:^5.0.0":
   version: 5.0.1
   resolution: "@octokit/auth-unauthenticated@npm:5.0.1"
@@ -9833,7 +9820,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/core@npm:^4.0.0, @octokit/core@npm:^4.2.1":
+"@octokit/core@npm:^4.2.1":
   version: 4.2.4
   resolution: "@octokit/core@npm:4.2.4"
   dependencies:
@@ -9884,16 +9871,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@octokit/graphql-schema@npm:^13.7.0":
-  version: 13.10.0
-  resolution: "@octokit/graphql-schema@npm:13.10.0"
-  dependencies:
-    graphql: ^16.0.0
-    graphql-tag: ^2.10.3
-  checksum: fdec9c9a4df1f90b733ea0e24964744faceaf65e5d350b1727892e8e0e5821df1d29aec5cfa039925a044c6f56d4ed2028505108db7fbc0c68011053853c2411
-  languageName: node
-  linkType: hard
-
 "@octokit/graphql@npm:^5.0.0":
   version: 5.0.6
   resolution: "@octokit/graphql@npm:5.0.6"
@@ -9913,23 +9890,6 @@ __metadata:
     "@octokit/types": ^13.0.0
     universal-user-agent: ^6.0.0
   checksum: 7b2706796e0269fc033ed149ea211117bcacf53115fd142c1eeafc06ebc5b6290e4e48c03d6276c210d72e3695e8598f83caac556cd00714fc1f8e4707d77448
-  languageName: node
-  linkType: hard
-
-"@octokit/oauth-app@npm:^4.2.0":
-  version: 4.2.4
-  resolution: "@octokit/oauth-app@npm:4.2.4"
-  dependencies:
-    "@octokit/auth-oauth-app": ^5.0.0
-    "@octokit/auth-oauth-user": ^2.0.0
-    "@octokit/auth-unauthenticated": ^3.0.0
-    "@octokit/core": ^4.0.0
-    "@octokit/oauth-authorization-url": ^5.0.0
-    "@octokit/oauth-methods": ^2.0.0
-    "@types/aws-lambda": ^8.10.83
-    fromentries: ^1.3.1
-    universal-user-agent: ^6.0.0
-  checksum: 6d9798c9e63e84f3cb3031ac3f06f45c6ea053fd201be9a07a508786fd400479d7d9f6f85707d0fff7f094a265c7e966a2fa4c884001b99f02ddd927bf499d06
   languageName: node
   linkType: hard
 
@@ -11121,7 +11081,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react@workspace:plugins/orchestrator-form-react"
   dependencies:
-    "@backstage/cli": ^0.34.1
+    "@backstage/cli": ^0.34.5
     "@backstage/core-components": ^0.17.5
     "@backstage/core-plugin-api": ^1.10.9
     "@backstage/types": ^1.2.1
@@ -11132,8 +11092,6 @@ __metadata:
     "@rjsf/material-ui": ^5.21.2
     "@rjsf/utils": ^5.21.2
     "@rjsf/validator-ajv8": ^5.21.2
-    "@testing-library/jest-dom": ^6.0.0
-    "@testing-library/react": ^14.0.0
     "@types/json-schema": 7.0.15
     "@types/lodash": ^4.14.151
     "@types/react": ^18.2.58
@@ -22013,13 +21971,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fromentries@npm:^1.3.1":
-  version: 1.3.2
-  resolution: "fromentries@npm:1.3.2"
-  checksum: 33729c529ce19f5494f846f0dd4945078f4e37f4e8955f4ae8cc7385c218f600e9d93a7d225d17636c20d1889106fd87061f911550861b7072f53bf891e6b341
-  languageName: node
-  linkType: hard
-
 "fs-constants@npm:^1.0.0":
   version: 1.0.0
   resolution: "fs-constants@npm:1.0.0"
@@ -22761,7 +22712,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.10.3, graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
