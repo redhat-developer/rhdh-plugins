@@ -20,11 +20,15 @@ const path = require('path');
 // Figure out whether we're running inside the backstage repo or as an installed dependency
 /* eslint-disable-next-line no-restricted-syntax */
 const isLocal = require('fs').existsSync(path.resolve(__dirname, '../src'));
+const hasDist = require('fs').existsSync(path.resolve(__dirname, '../dist/index.cjs.js'));
 
-if (!isLocal) {
+// Prefer built version if available, otherwise use source with transform
+if (hasDist) {
   require('..');
-} else {
+} else if (isLocal) {
   require('@backstage/cli/config/nodeTransform.cjs');
   require('../src');
+} else {
+  require('..');
 }
 

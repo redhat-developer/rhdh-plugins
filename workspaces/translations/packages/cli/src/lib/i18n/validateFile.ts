@@ -102,6 +102,7 @@ async function validateJsonFile(filePath: string): Promise<boolean> {
 
     if (isNested(data)) {
       // Nested structure: { plugin: { en: { key: value } } }
+      // Keys are flat dot-notation strings (e.g., "menuItem.home": "Home")
       for (const [pluginName, pluginData] of Object.entries(data)) {
         if (typeof pluginData !== 'object' || pluginData === null) {
           throw new Error(`Plugin "${pluginName}" must be an object`);
@@ -116,7 +117,7 @@ async function validateJsonFile(filePath: string): Promise<boolean> {
           throw new Error(`Plugin "${pluginName}".en must be an object`);
         }
 
-        // Validate that all values are strings
+        // Validate that all values are strings (keys are flat dot-notation)
         for (const [key, value] of Object.entries(enData)) {
           if (typeof value !== 'string') {
             throw new Error(
