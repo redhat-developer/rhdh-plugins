@@ -10,6 +10,14 @@ A sample dev environment under `packages/` is provided to test the MCP tools. To
 
 3. Run `yarn dev` to launch the frontend and backend.
 
+## Updating Backstage Version
+
+To update the version of Backstage that these plugins target:
+
+1. Update `backstage.json` to point to your desired Backstage version
+
+2. Run `yarn backstage-cli versions:bump` and commit the changes
+
 ## Configuring Remote RHDH Instances
 
 If you are deploying these plugins on a remote instance of RHDH, you'll need to make the following changes to your app-config (the local dev environment app-config already has these set):
