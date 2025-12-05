@@ -10183,7 +10183,7 @@ __metadata:
     "@mui/material": ^5.15.17
     "@mui/styles": 5.18.0
     "@openshift/dynamic-plugin-sdk": 5.0.1
-    "@scalprum/react-core": 0.9.5
+    "@scalprum/react-core": 0.11.1
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     classnames: ^2.5.1
@@ -10196,19 +10196,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.11.0"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.9
-    "@backstage/theme": ^0.6.8
+    "@backstage/core-plugin-api": ^1.11.1
+    "@backstage/theme": ^0.7.0
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: a5626d864def2e255d026d1620d370ada033f11ee357b145a9f5bd95185cbb9392cae1c83d2dbdcafde8747feb95d79f7067f645d5c6086628d5910a216cf34e
+  checksum: 70368eb43351805dbea8a6f9b1a7e5e0c50ac6edc2ab7639c2fe48084d783b0d3f7a629225ae0e6ae3fd47b3fccdf2eecc4ad9a913ddec32e948f94fb6ecbd92
   languageName: node
   linkType: hard
 
@@ -10812,27 +10812,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@scalprum/core@npm:^0.8.3":
-  version: 0.8.3
-  resolution: "@scalprum/core@npm:0.8.3"
+"@scalprum/core@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "@scalprum/core@npm:0.9.0"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     tslib: ^2.6.2
-  checksum: 31d1d376c795d47cfc7c4cf84d262989f7a62e3c536aedff03cfa6e23bf969713f70f0e3c9035fe46b280a5133c85c416f1cd2b46c98f9822080ac9d7c752819
+  checksum: 302d3df87fda872c05a95d8c6b86809f46854f46af8a44b7faa0250de9a0b0ebeaccdcdc69f9767c858fcef2c34c121b3e1087d0781fa1bcd7eee98d244db72b
   languageName: node
   linkType: hard
 
-"@scalprum/react-core@npm:0.9.5":
-  version: 0.9.5
-  resolution: "@scalprum/react-core@npm:0.9.5"
+"@scalprum/react-core@npm:0.11.1":
+  version: 0.11.1
+  resolution: "@scalprum/react-core@npm:0.11.1"
   dependencies:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
-    "@scalprum/core": ^0.8.3
+    "@scalprum/core": ^0.9.0
     lodash: ^4.17.0
   peerDependencies:
     react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
     react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
-  checksum: 824cc4c53437a3d0da9a760fefa31a6aba436caef7b2cad69838fb43bd19b6301f90d60e33e823628596ef5e7174a208ba0e67ab129688cf122771fc101b0598
+  checksum: 2eac484690307aa80ebbaf482f7a9d6b756476bfe4da8722a4be05925c32c3fa5ac31614978cc5197598f19afdf6dbc80cc6f13e6f1b00cdb2a03f61ba6b4ed0
   languageName: node
   linkType: hard
 
@@ -14228,7 +14228,7 @@ __metadata:
     "@mui/styles": 5.18.0
     "@playwright/test": ^1.56.1
     "@red-hat-developer-hub/backstage-plugin-global-floating-action-button": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@types/react-dom": "*"
