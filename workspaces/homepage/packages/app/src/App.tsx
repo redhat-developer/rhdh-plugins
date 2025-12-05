@@ -67,7 +67,6 @@ import {
   QuickAccessCard,
   EntitySection,
   TemplateSection,
-  homepageTranslations,
   SearchBar,
   Headline,
   // Markdown,
@@ -81,6 +80,7 @@ import {
   WorldClock,
   HomePageCardMountPoint,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
 
 const identityProviders: IdentityProviders = [
   'guest',

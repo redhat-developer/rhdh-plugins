@@ -95,7 +95,7 @@ export const homepageMessages = {
 /**
  * Reference translation for Homepage.
  * Defines all the translation keys used in the plugin.
- * @public
+ * @alpha
  */
 export const homepageTranslationRef = createTranslationRef({
   id: 'plugin.homepage',
