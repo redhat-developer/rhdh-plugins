@@ -107,7 +107,7 @@ export async function createRouter(
     let decision: PolicyDecision;
     // No permission configured, always allow.
     if (!permission) {
-      return { result: AuthorizeResult.ALLOW as const };
+      return { result: AuthorizeResult.ALLOW };
     }
 
     if (permission.type === 'resource') {
