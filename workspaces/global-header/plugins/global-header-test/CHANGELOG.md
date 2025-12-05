@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header-test
 
+## 0.7.0
+
+### Minor Changes
+
+- 3f708c9: Backstage version bump to v1.45.2
+
 ## 0.6.0
 
 ### Minor Changes
