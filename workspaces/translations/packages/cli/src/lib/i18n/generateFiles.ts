@@ -89,6 +89,7 @@ async function generateJsonFile(
 
   if (isNestedStructure(keys)) {
     // New nested structure: { plugin: { en: { key: value } } }
+    // Keep keys as flat dot-notation strings (e.g., "menuItem.home": "Home")
     const normalizedData: NestedTranslationData = {};
 
     for (const [pluginName, pluginData] of Object.entries(keys)) {
