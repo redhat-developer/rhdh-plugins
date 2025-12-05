@@ -25,7 +25,7 @@ import Typography from '@material-ui/core/Typography';
 import { BasePage } from '../../components/BasePage';
 import { PageLayout } from '../../components/PageLayout';
 import { Filters } from './components/Filters';
-import { Divider } from '@material-ui/core';
+import { Divider, useTheme } from '@material-ui/core';
 import { PageHeader } from './components/PageHeader';
 import { TableToolbar } from './components/TableToolbar';
 import { useApi } from '@backstage/core-plugin-api';
@@ -57,6 +57,31 @@ interface ProjectCost {
   supplementaryCostPercentage: number;
 }
 
+/**
+ * Generates date range text based on time range selection
+ * @param timeRange - 'month-to-date' or 'previous-month'
+ * @returns Formatted string like "December 1-3" or "November 1-30"
+ */
+function getDateRangeText(timeRange: string): string {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const currentDay = now.getDate();
+
+  if (timeRange === 'month-to-date') {
+    // Current month: MONTH 1-<CURRENT_DAY>
+    const monthName = now.toLocaleString('en-US', { month: 'long' });
+    return `${monthName} 1-${currentDay}`;
+  }
+  // Previous month: PREVIOUS_MONTH 1-<LAST_DAY>
+  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const prevMonthDate = new Date(prevYear, prevMonth + 1, 0); // Last day of previous month
+  const lastDay = prevMonthDate.getDate();
+  const monthName = prevMonthDate.toLocaleString('en-US', { month: 'long' });
+  return `${monthName} 1-${lastDay}`;
+}
+
 /** @public */
 export function OpenShiftPage() {
   const api = useApi(optimizationsApiRef);
@@ -82,6 +107,8 @@ export function OpenShiftPage() {
     useState(true);
   const [showInfrastructureCost, setShowInfrastructureCost] = useState(false);
   const [showSupplementaryCost, setShowSupplementaryCost] = useState(false);
+  const theme = useTheme();
+  const isDarkMode = (theme.palette as any).mode === 'dark';
 
   // Fetch tags on first load
   useAsync(async () => {
@@ -391,6 +418,12 @@ export function OpenShiftPage() {
     selectedRows.size < displayData.projects.length;
 
   const columns = useMemo<TableColumn<ProjectCost>[]>(() => {
+    const getChangeColor = (change: number) => {
+      if (change > 0) return '#d32f2f';
+      if (isDarkMode) return '#4BB543';
+      return '#2e7d32';
+    };
+
     const cols: TableColumn<ProjectCost>[] = [
       {
         title: (
@@ -482,7 +515,7 @@ export function OpenShiftPage() {
           <div>
             <div
               style={{
-                color: data.monthOverMonthChange > 0 ? '#d32f2f' : '#2e7d32',
+                color: getChangeColor(data.monthOverMonthChange),
               }}
             >
               {Math.abs(data.monthOverMonthChange).toFixed(2)}%
@@ -493,7 +526,7 @@ export function OpenShiftPage() {
                 data.monthOverMonthValue,
                 displayData?.currencyCode || '',
               )}{' '}
-              for January 1-11
+              for {getDateRangeText(timeRange)}
             </div>
           </div>
         ),
@@ -561,8 +594,14 @@ export function OpenShiftPage() {
       sorting: false,
       render: () => (
         <div style={{ display: 'flex', gap: '8px' }}>
-          <DownloadIconButton label="CSV" variant="black" />
-          <DownloadIconButton label="JSON" variant="black" />
+          <DownloadIconButton
+            label="CSV"
+            variant={isDarkMode ? 'white' : 'black'}
+          />
+          <DownloadIconButton
+            label="JSON"
+            variant={isDarkMode ? 'white' : 'black'}
+          />
         </div>
       ),
     });
@@ -579,6 +618,8 @@ export function OpenShiftPage() {
     showMonthOverMonthChange,
     showInfrastructureCost,
     showSupplementaryCost,
+    timeRange,
+    isDarkMode,
   ]);
 
   const handleOrderChange = useCallback(

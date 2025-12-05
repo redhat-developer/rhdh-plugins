@@ -25,6 +25,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { optimizationsApiRef } from '../../../apis';
 import useAsync from 'react-use/lib/useAsync';
 import debounce from 'lodash/debounce';
+import { useThemeBackgroundColor } from '../../../hooks/useThemeBackgroundColor';
 
 const useFiltersStyles = makeStyles(
   theme => ({
@@ -102,6 +103,7 @@ export function Filters(props: FiltersProps) {
   const classes = useFiltersStyles();
   const api = useApi(optimizationsApiRef);
 
+  const { filterTableBackgroundColor } = useThemeBackgroundColor();
   // State for search input and debounced search
   const [searchInput, setSearchInput] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
@@ -351,7 +353,11 @@ export function Filters(props: FiltersProps) {
         {/* Filter table by */}
         <div className={classes.filterSection}>
           <div
-            style={{ backgroundColor: '#F2F2F2', padding: 16, borderRadius: 8 }}
+            style={{
+              backgroundColor: filterTableBackgroundColor,
+              padding: 16,
+              borderRadius: 8,
+            }}
           >
             <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
               Filter table by

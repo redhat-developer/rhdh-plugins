@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import '@backstage/ui/css/styles.css';
-import ReactDOM from 'react-dom/client';
-import App from './App';
+import { useTheme } from '@material-ui/core/styles';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+/**
+ * Hook that returns the appropriate background color based on the current theme mode.
+ * @returns Object with backgroundColor and filterTableBackgroundColor strings
+ */
+export const useThemeBackgroundColor = (): {
+  backgroundColor: string;
+  filterTableBackgroundColor: string;
+} => {
+  const theme = useTheme();
+  const isDarkMode = (theme.palette as any).mode === 'dark';
+
+  return {
+    backgroundColor: isDarkMode ? '#292929' : '#FFFFFF',
+    filterTableBackgroundColor: isDarkMode ? '#262626' : '#F2F2F2',
+  };
+};
