@@ -21,7 +21,6 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import { useGitlabConfigured } from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -29,7 +28,9 @@ import {
   AddRepositoryData,
   ImportFlow,
   RepositoryStatus,
+  TaskStatus,
 } from '../../types';
+import { SHOW_STATUS_COLUMN } from '../../utils/constants';
 import {
   areAllRowsSelected,
   getImportStatus,
@@ -44,6 +45,7 @@ export const CatalogInfoStatus = ({
   isDrawer,
   importStatus,
   taskId,
+  prUrl,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -52,14 +54,19 @@ export const CatalogInfoStatus = ({
   isDrawer?: boolean;
   importStatus?: string;
   taskId?: string;
+  prUrl?: string;
 }) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
-  const gitlabConfigured = useGitlabConfigured();
 
   useEffect(() => {
-    if (importStatus === RepositoryStatus.ADDED) {
+    if (
+      importStatus === RepositoryStatus.ADDED ||
+      importStatus === RepositoryStatus.WAIT_PR_APPROVAL ||
+      importStatus === TaskStatus.Processing ||
+      importStatus === TaskStatus.Completed
+    ) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,
@@ -79,6 +86,13 @@ export const CatalogInfoStatus = ({
   );
 
   const importFlow = useImportFlow();
+  const isScaffolderFlow = importFlow === ImportFlow.Scaffolder;
+
+  // Don't show any status based on configuration
+  if (!SHOW_STATUS_COLUMN && !isDrawer) {
+    return null;
+  }
+
   if (
     importFlow !== ImportFlow.Scaffolder &&
     !isDrawer &&
@@ -102,15 +116,18 @@ export const CatalogInfoStatus = ({
   }
 
   if (importStatus) {
+    // For scaffolder flow, task statuses (Processing, Completed, etc.) should have normal color
+    const isTaskStatus = taskId && importStatus.startsWith('TASK');
+    const textColor = isScaffolderFlow && isTaskStatus ? undefined : '#6A6E73';
+
     return (
-      <Typography component="span" style={{ color: '#6A6E73' }}>
+      <Typography component="span" style={{ color: textColor }}>
         {getImportStatus(
           importStatus,
           (key: string) => t(key as any, {}),
-          false,
-          undefined,
+          true,
+          prUrl,
           taskId,
-          gitlabConfigured,
         )}
       </Typography>
     );
@@ -118,6 +135,15 @@ export const CatalogInfoStatus = ({
 
   if (isDrawer || data?.totalReposInOrg === 0) {
     return null;
+  }
+
+  // For scaffolder flow, show "Ready to import" instead of "Not generated"
+  if (isScaffolderFlow) {
+    return (
+      <Typography component="span" style={{ color: '#6A6E73' }}>
+        {t('status.readyToImport')}
+      </Typography>
+    );
   }
 
   return (

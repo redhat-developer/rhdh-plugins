@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Formik, FormikHelpers } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useNumberOfApprovalTools } from '../../hooks';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
@@ -36,14 +37,30 @@ import {
 import { DrawerContextProvider } from '../DrawerContext';
 import { AddRepositories } from './AddRepositories';
 
-export const AddRepositoriesForm = () => {
+export const AddRepositoriesForm = ({
+  onErrorChange,
+}: {
+  onErrorChange?: (error: any) => void;
+}) => {
   const bulkImportApi = useApi(bulkImportApiRef);
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { numberOfApprovalTools, gitlabConfigured } =
+    useNumberOfApprovalTools();
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
+
+  // Set default approval tool based on configuration
+  const getDefaultApprovalTool = () => {
+    if (numberOfApprovalTools === 1) {
+      return gitlabConfigured ? ApprovalTool.Gitlab : ApprovalTool.Git;
+    }
+    return ApprovalTool.Git; // Default to GitHub when both are configured
+  };
+
   const initialValues: AddRepositoriesFormValues = {
     repositoryType: RepositorySelection.Repository,
     repositories: {},
     excludedRepositories: {},
-    approvalTool: ApprovalTool.Git,
+    approvalTool: getDefaultApprovalTool(),
   };
 
   const createImportJobs = (importOptions: {
@@ -56,6 +73,11 @@ export const AddRepositoriesForm = () => {
     );
 
   const mutationCreate = useMutation(createImportJobs);
+
+  // Notify parent component when error changes
+  useEffect(() => {
+    onErrorChange?.(mutationCreate.error);
+  }, [mutationCreate.error, onErrorChange]);
 
   const handleSubmit = async (
     values: AddRepositoriesFormValues,
@@ -87,7 +109,13 @@ export const AddRepositoriesForm = () => {
         if (Object.keys(createJobErrors?.errors || {}).length > 0) {
           formikHelpers.setStatus(createJobErrors);
         } else {
-          navigate(`..`);
+          // Successfully imported - stay on the same page
+          // Clear the selected repositories to reset the form
+          formikHelpers.setFieldValue('repositories', {});
+          // Invalidate repository queries to refresh data and show updated status
+          queryClient.invalidateQueries(['repositories']);
+          // Trigger refetch of individual repository statuses
+          setRefetchTrigger(prev => prev + 1);
         }
       }
     }
@@ -100,7 +128,10 @@ export const AddRepositoriesForm = () => {
         enableReinitialize
         onSubmit={handleSubmit}
       >
-        <AddRepositories error={mutationCreate.error} />
+        <AddRepositories
+          refetchTrigger={refetchTrigger}
+          error={mutationCreate.error}
+        />
       </Formik>
     </DrawerContextProvider>
   );

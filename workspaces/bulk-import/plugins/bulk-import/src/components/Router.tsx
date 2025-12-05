@@ -20,7 +20,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { addRepositoriesRouteRef, tasksRouteRef } from '../routes';
 import { AddRepositoriesPage } from './AddRepositories/AddRepositoriesPage';
-import { BulkImportPage } from './BulkImportPage';
 import { TasksPage } from './Repositories/TasksPage';
 
 const queryClient = new QueryClient();
@@ -32,7 +31,8 @@ const queryClient = new QueryClient();
 export const Router = () => (
   <QueryClientProvider client={queryClient}>
     <Routes>
-      <Route path="*" element={<BulkImportPage />} />
+      <Route path="/" element={<AddRepositoriesPage />} />
+      <Route path="repositories" element={<AddRepositoriesPage />} />
       <Route
         path={addRepositoriesRouteRef.path}
         element={<AddRepositoriesPage />}
