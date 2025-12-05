@@ -140,32 +140,32 @@ export async function generateCommand(opts: OptionValues): Promise<void> {
             fileName !== 'en';
 
           // Check if file contains createTranslationRef import (defines new translation keys)
+          // This is the primary source for English reference keys
           const hasCreateTranslationRef =
             content.includes('createTranslationRef') &&
             (content.includes("from '@backstage/core-plugin-api/alpha'") ||
               content.includes("from '@backstage/frontend-plugin-api'"));
 
-          // Check if file contains createTranslationMessages (overrides/extends existing keys)
-          // Only include if it's an English file (not a language file)
-          const hasCreateTranslationMessages =
+          // Also include English files with createTranslationMessages that have a ref
+          // These are English overrides/extensions of existing translations
+          // Only include -en.ts files to avoid non-English translations
+          const fullFileName = path.basename(filePath);
+          const isEnglishFile =
+            fullFileName.endsWith('-en.ts') ||
+            fullFileName.endsWith('-en.tsx') ||
+            fullFileName === 'en.ts' ||
+            fullFileName === 'en.tsx' ||
+            fileName.endsWith('-en') ||
+            fileName === 'en';
+          const hasCreateTranslationMessagesWithRef =
+            isEnglishFile &&
             content.includes('createTranslationMessages') &&
+            content.includes('ref:') &&
             (content.includes("from '@backstage/core-plugin-api/alpha'") ||
-              content.includes("from '@backstage/frontend-plugin-api'")) &&
-            !isLanguageFile;
+              content.includes("from '@backstage/frontend-plugin-api'"));
 
-          // Check if file contains createTranslationResource (sets up translation resources)
-          // Only include if it's an English file (not a language file)
-          const hasCreateTranslationResource =
-            content.includes('createTranslationResource') &&
-            (content.includes("from '@backstage/core-plugin-api/alpha'") ||
-              content.includes("from '@backstage/frontend-plugin-api'")) &&
-            !isLanguageFile;
-
-          if (
-            hasCreateTranslationRef ||
-            hasCreateTranslationMessages ||
-            hasCreateTranslationResource
-          ) {
+          // Include files that define new translation keys OR English overrides
+          if (hasCreateTranslationRef || hasCreateTranslationMessagesWithRef) {
             sourceFiles.push(filePath);
           }
         } catch {
