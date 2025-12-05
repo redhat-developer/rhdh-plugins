@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 5.3.1
+
+### Patch Changes
+
+- Updated dependencies [2be9dcc]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.0
+
 ## 5.3.0
 
 ### Minor Changes
