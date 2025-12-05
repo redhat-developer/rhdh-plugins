@@ -14,22 +14,4 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-
-import { homepageTranslationRef } from './ref';
-
-/**
- * The translation resource for the Homepage plugin.
- * @alpha
- */
-export const homepageTranslations = createTranslationResource({
-  ref: homepageTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    es: () => import('./es'),
-  },
-});
-
-export { homepageTranslationRef };
+export * from './translations';
