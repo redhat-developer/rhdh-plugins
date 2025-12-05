@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.4
+
+### Patch Changes
+
+- 09c378a: Updated dependency `react-router-dom` to `6.30.2`.
+  Updated dependency `@types/react-grid-layout` to `1.3.6`.
+
 ## 1.9.3
 
 ### Patch Changes
