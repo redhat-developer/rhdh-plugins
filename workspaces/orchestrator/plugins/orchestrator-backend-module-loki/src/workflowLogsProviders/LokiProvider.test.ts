@@ -15,10 +15,7 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import {
-  ProcessInstanceDTO,
-  WorkflowLogsResponse,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { LokiProvider } from './LokiProvider';
 import mockWorkflowLog from '../../__fixtures__/mockWorkflowLogs';
 
