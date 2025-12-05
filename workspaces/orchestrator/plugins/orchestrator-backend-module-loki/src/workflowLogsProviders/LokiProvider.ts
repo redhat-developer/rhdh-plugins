@@ -25,6 +25,8 @@ import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orc
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
   private constructor(config: Config) {
+    // TODO: will probably also need information regarding auth tokens and stuff for loki
+    // Might Also make sense to separate out the loki http stuff to its own "client"
     this.baseURL = config.getString('baseUrl');
   }
   getBaseURL(): string {
@@ -38,11 +40,6 @@ export class LokiProvider implements WorkflowLogProvider {
   async fetchWorkflowLogsByIntance(
     instance: ProcessInstanceDTO,
   ): Promise<WorkflowLogsResponse> {
-    // Fetch the logs, probably add something to that orchestrator service object? OR maybe a logViewerService object instead
-    // We are not querying actual orchestrator since the logs don't live there
-    // Query will be against the log provider, like Loki for example
-    // logViewerService is probably going to be the new class/interface that other providers can implement in the future
-
     // Becuase of timing issues, subtract 5 mintues from the start and add 5 minutes to the end
     const startTime = DateTime.fromISO(instance.start as string, {
       setZone: true,
@@ -66,25 +63,44 @@ export class LokiProvider implements WorkflowLogProvider {
     const response = await fetch(urlToFetch);
 
     let allResults;
-    if (response.status !== 200) {
+    if (response.status > 399) {
+      // TODO: These are errors, throw something here
       console.log('Error', response.statusText, response);
     } else {
       const jsonResponse = await response.json();
+
+      /**
+      Data should look like this
+        {
+          "instanceId": "efe0490f-6300-453b-bcb6-f47eb7efbb36",
+          "logs": [
+              {
+                id: "1763129443414066000",
+                log: "2025-11-14 14:08:52,645 d5932f2cb566 INFO [org.kie.kogito.serverless.workflow.devservices.DevModeServerlessWorkflowLogger:40] (executor-thread-97) Starting workflow 'hello_world' (efe0490f-6300-453b-bcb6-f47eb7efbb36)"
+              },
+          ...
+          ]
+        }
+      */
       // Reduce the results into another array
       allResults = jsonResponse.data.result.reduce(
         (acc: any[], curr: { values: any[] }) => {
-          curr.values.reduce((_innerAcc: any, innerCurr: any) => {
-            acc.push(innerCurr);
+          curr.values.reduce((_: any, innerCurr: any) => {
+            acc.push({
+              id: innerCurr[0],
+              log: innerCurr[1],
+            });
           }, acc);
           return acc;
         },
         [],
       );
     }
+
     const workflowLogsResponse: WorkflowLogsResponse = {
       instanceId: instance.id,
-      logs: allResults.sort((a: number[], b: number[]) => {
-        return a[0] - b[0];
+      logs: allResults.sort((a: { id: number }, b: { id: number }) => {
+        return Number(a.id) - Number(b.id);
       }),
     };
     return workflowLogsResponse;
