@@ -260,9 +260,9 @@ export const WorkflowInstancePage = () => {
   const permittedToUse = usePermissionArrayDecision(
     workflowId
       ? [
-          orchestratorWorkflowUsePermission,
-          orchestratorWorkflowUseSpecificPermission(workflowId),
-        ]
+        orchestratorWorkflowUsePermission,
+        orchestratorWorkflowUseSpecificPermission(workflowId),
+      ]
       : [orchestratorWorkflowUsePermission],
   );
 
@@ -330,8 +330,8 @@ export const WorkflowInstancePage = () => {
     }
     const routeUrl = !entityRef
       ? executeWorkflowLink({
-          workflowId: value.processId,
-        })
+        workflowId: value.processId,
+      })
       : `${executeWorkflowLink({ workflowId: value.processId })}?targetEntity=${entityRef}`;
 
     const urlToNavigate = buildUrl(routeUrl, {
@@ -391,12 +391,9 @@ export const WorkflowInstancePage = () => {
 
   const combinedError: Error | undefined = error || inputSchemaError;
 
-  const title = (
-    <Trans
-      message="run.pageTitle"
-      params={{ processName: value?.processName }}
-    />
-  ) as unknown as string;
+  const title = t('run.pageTitle', {
+    processName: value?.processName ?? '',
+  })
 
   return (
     <BaseOrchestratorPage title={title}>
