@@ -30,7 +30,11 @@ export const usePluginConfigurationPermissions = (
       namespace,
       name,
     ],
-    queryFn: () =>
-      marketplaceApi.getPluginConfigAuthorization?.(namespace, name),
+    queryFn: () => {
+      if (namespace && name) {
+        return marketplaceApi.getPluginConfigAuthorization?.(namespace, name);
+      }
+      return Promise.resolve({ read: 'DENY', write: 'DENY' });
+    },
   });
 };
