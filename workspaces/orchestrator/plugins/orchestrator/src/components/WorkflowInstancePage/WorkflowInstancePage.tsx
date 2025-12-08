@@ -392,7 +392,7 @@ export const WorkflowInstancePage = () => {
 
   const title = t('run.pageTitle', {
     processName: value?.processName ?? '',
-  })
+  });
 
   return (
     <BaseOrchestratorPage title={title}>
