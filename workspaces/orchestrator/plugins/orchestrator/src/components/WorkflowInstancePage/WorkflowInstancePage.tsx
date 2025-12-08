@@ -75,7 +75,6 @@ import { orchestratorTranslationRef } from '../../translations';
 import { deepSearchObject } from '../../utils/deepSearchObject';
 import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
-import { Trans } from '../Trans';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { InfoDialog } from '../ui/InfoDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
@@ -260,9 +259,9 @@ export const WorkflowInstancePage = () => {
   const permittedToUse = usePermissionArrayDecision(
     workflowId
       ? [
-        orchestratorWorkflowUsePermission,
-        orchestratorWorkflowUseSpecificPermission(workflowId),
-      ]
+          orchestratorWorkflowUsePermission,
+          orchestratorWorkflowUseSpecificPermission(workflowId),
+        ]
       : [orchestratorWorkflowUsePermission],
   );
 
@@ -330,8 +329,8 @@ export const WorkflowInstancePage = () => {
     }
     const routeUrl = !entityRef
       ? executeWorkflowLink({
-        workflowId: value.processId,
-      })
+          workflowId: value.processId,
+        })
       : `${executeWorkflowLink({ workflowId: value.processId })}?targetEntity=${entityRef}`;
 
     const urlToNavigate = buildUrl(routeUrl, {
