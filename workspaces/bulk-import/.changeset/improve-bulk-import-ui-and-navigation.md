@@ -10,5 +10,7 @@ Improve bulk import UI consistency and user experience
 - Update empty state message for better user guidance
 - Hide the "Import to Red Hat Developer Hub" top info bar
 - Added "Missing Configuration" page that displays when no GitHub or GitLab integrations are configured
+- Show "Task status" column header when scaffolder flow is enabled
+- Show "Ready to import" instead of "Not generated" status in scaffolder flow
 - Remove "Preview file" button for selected repositories in scaffolder flow
-- Hide status column in Repository list
+- Fix task status display to show status text + separate "View task" button
