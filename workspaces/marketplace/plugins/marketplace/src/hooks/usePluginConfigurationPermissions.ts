@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
+import { PluginPermissions, Permission } from '../types';
 
 export const usePluginConfigurationPermissions = (
   namespace: string,
   name: string,
-) => {
+): UseQueryResult<PluginPermissions, Error> => {
   const marketplaceApi = useMarketplaceApi();
 
   return useQuery({
@@ -34,7 +35,7 @@ export const usePluginConfigurationPermissions = (
       if (namespace && name) {
         return marketplaceApi.getPluginConfigAuthorization?.(namespace, name);
       }
-      return Promise.resolve({ read: 'DENY', write: 'DENY' });
+      return Promise.resolve({ read: Permission.DENY, write: Permission.DENY });
     },
   });
 };
