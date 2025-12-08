@@ -51,7 +51,7 @@
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.1",
+    "@backstage/cli": "^0.34.5",
     "@types/json-schema": "7.0.15",
     "@types/lodash": "^4.14.151",
     "@types/react": "^18.2.58",

@@ -158,6 +158,48 @@ function getValidProperties(
     });
   }
 
+  // Handle oneOf at the schema level
+  if (schema.oneOf) {
+    // For oneOf, we need to find which branch the current data matches
+    for (const branch of schema.oneOf) {
+      if (typeof branch !== 'object') continue;
+
+      const branchSchema = branch as JSONSchema7;
+      if (!branchSchema.properties) continue;
+
+      // Check if current data matches this branch
+      const branchMatches = Object.entries(formData).some(([key, value]) => {
+        const propSchema = branchSchema.properties?.[key];
+        if (!propSchema || typeof propSchema === 'boolean') return false;
+
+        const propSchemaDef = propSchema as JSONSchema7;
+        // Check if this property exists in this branch and matches its constraints
+        return (
+          matchesEnum(propSchemaDef, value) &&
+          matchesConst(propSchemaDef, value)
+        );
+      });
+
+      if (branchMatches) {
+        // Add all properties from the matching branch
+        Object.keys(branchSchema.properties).forEach(key => valid.add(key));
+        break; // Only one branch should match in oneOf
+      }
+    }
+
+    // If no branch matched, allow all properties from all branches
+    // This is a fallback to prevent data loss during schema transitions
+    if (valid.size === 0) {
+      schema.oneOf.forEach(branch => {
+        if (typeof branch !== 'object') return;
+        const branchSchema = branch as JSONSchema7;
+        if (branchSchema.properties) {
+          Object.keys(branchSchema.properties).forEach(key => valid.add(key));
+        }
+      });
+    }
+  }
+
   return valid;
 }
 
@@ -238,12 +280,13 @@ export function pruneFormData(
       value !== null &&
       !Array.isArray(value)
     ) {
-      // Only prune if schema has validation rules (properties, dependencies, or allOf)
+      // Only prune if schema has validation rules (properties, dependencies, allOf, or oneOf)
       // Otherwise keep data as-is (handles $ref and other schema patterns)
       if (
         propSchema.properties ||
         propSchema.dependencies ||
-        propSchema.allOf
+        propSchema.allOf ||
+        propSchema.oneOf
       ) {
         pruned[key] = pruneFormData(
           value as JsonObject,
