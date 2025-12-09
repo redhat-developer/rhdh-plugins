@@ -1,5 +1,30 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.1
+
+### Patch Changes
+
+- 1d11800: Updated dependency `react-grid-layout` to `1.5.3`.
+  Updated dependency `tss-react` to `4.9.20`.
+
+## 1.10.0
+
+### Minor Changes
+
+- 2998c31: Backstage version bump to v1.45.3
+
+### Patch Changes
+
+- c6c029b: allow base64 image in quick access icons
+- 09c378a: Updated dependency `react-router-dom` to `6.30.2`.
+  Updated dependency `@types/react-grid-layout` to `1.3.6`.
+
+## 1.9.4
+
+### Patch Changes
+
+- 4758d94: allow base64 image in quick access icons
+
 ## 1.9.3
 
 ### Patch Changes

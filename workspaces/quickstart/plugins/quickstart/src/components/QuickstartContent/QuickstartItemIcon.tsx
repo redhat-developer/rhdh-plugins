@@ -72,7 +72,8 @@ export const QuickstartItemIcon = ({ icon, sx }: QuickstartItemIconProps) => {
   if (
     icon.startsWith('https://') ||
     icon.startsWith('http://') ||
-    icon.startsWith('/')
+    icon.startsWith('/') ||
+    icon.startsWith('data:image/')
   ) {
     return (
       <MuiIcon

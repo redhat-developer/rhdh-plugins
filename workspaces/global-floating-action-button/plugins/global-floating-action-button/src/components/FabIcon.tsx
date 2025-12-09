@@ -51,7 +51,8 @@ export const FabIcon = ({ icon }: { icon: string | ReactElement }) => {
   if (
     strIcon.startsWith('https://') ||
     strIcon.startsWith('http://') ||
-    strIcon.startsWith('/')
+    strIcon.startsWith('/') ||
+    strIcon.startsWith('data:image/')
   ) {
     return (
       <MuiIcon baseClassName="material-icons-outlined">

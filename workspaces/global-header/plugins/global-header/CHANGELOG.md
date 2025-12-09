@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.20.0
+
+### Minor Changes
+
+- 3f708c9: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+
 ## 1.19.0
 
 ### Minor Changes

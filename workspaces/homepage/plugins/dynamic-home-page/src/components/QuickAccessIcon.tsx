@@ -63,7 +63,8 @@ export const QuickAccessIcon = ({
   if (
     strIcon.startsWith('https://') ||
     strIcon.startsWith('http://') ||
-    strIcon.startsWith('/')
+    strIcon.startsWith('/') ||
+    strIcon.startsWith('data:image/')
   ) {
     return <img src={strIcon} className={classes.img} alt={alt} />;
   }
