@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.13.1
+
+### Patch Changes
+
+- 95d2eda: Updated dependency `@scalprum/react-core` to `0.11.1`.
+  Updated dependency `monaco-editor` to `^0.55.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.13.1
+
 ## 0.13.0
 
 ### Minor Changes
