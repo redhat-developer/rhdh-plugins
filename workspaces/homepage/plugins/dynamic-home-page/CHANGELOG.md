@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.9.4
+
+### Patch Changes
+
+- 4758d94: allow base64 image in quick access icons
+
 ## 1.9.3
 
 ### Patch Changes
