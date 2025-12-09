@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.7.0
+
+### Minor Changes
+
+- 3c3ac01: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- c6c029b: allow base64 image in floating action button icon
+- 40b80fe: Remove "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+
 ## 1.6.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-application-listener-test
 
+## 0.6.0
+
+### Minor Changes
+
+- 3c3ac01: Backstage version bump to v1.45.2
+
 ## 0.5.0
 
 ### Minor Changes
