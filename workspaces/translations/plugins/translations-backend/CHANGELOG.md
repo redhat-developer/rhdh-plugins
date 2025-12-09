@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations-backend
 
+## 0.1.1
+
+### Patch Changes
+
+- 13c0b59: Updated dependency `express` to `4.22.1`.
+
 ## 0.1.0
 
 ### Minor Changes
