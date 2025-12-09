@@ -258,7 +258,13 @@ export const useTemplateUnitEvaluator = () => {
             `Template evaluation error: Attempting to access fetched data for ui property '${unit}', but the fetch response is undefined.`,
           );
         }
-        return await applySelectorString(responseData, uiProps[unit]);
+        const selector = uiProps[unit];
+        if (typeof selector !== 'string') {
+          throw new Error(
+            `Template evaluation error: The selector for '${unit}' must be a string (JSONata expression), but got ${typeof selector}.`,
+          );
+        }
+        return await applySelectorString(responseData, selector);
       }
 
       throw new Error(`Unknown template unit "${unit}"`);
