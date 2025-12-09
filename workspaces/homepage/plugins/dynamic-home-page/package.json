@@ -45,7 +45,7 @@
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@mui/styles": "5.18.0",
-    "@scalprum/react-core": "0.9.5",
+    "@scalprum/react-core": "0.11.1",
     "react-grid-layout": "1.5.3",
     "react-use": "17.6.0",
     "tss-react": "4.9.20"
@@ -61,7 +61,7 @@
     "@backstage/plugin-catalog": "^1.32.0",
     "@backstage/test-utils": "^1.7.13",
     "@openshift/dynamic-plugin-sdk": "5.0.1",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "14.3.1",
     "@testing-library/user-event": "14.6.1",
