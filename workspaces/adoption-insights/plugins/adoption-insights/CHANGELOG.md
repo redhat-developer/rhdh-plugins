@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.6.0
+
+### Minor Changes
+
+- 77529c3: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- 5918787: Add page title to the adoption insights page
+- d13d824: Add translation support for DateRangePicker component. Fixed hardcoded "Date range", "Start date", and "End date" text by implementing proper i18n support with translation keys and updated all language files (German, Spanish, French, Italian).
+- 4e14f2f: Fix FilterDropdown to show translated "All" option. When "All" is selected in the catalog entities filter dropdown, it now displays the translated text (e.g., "Tous" in French) instead of always showing "All" in English.
+- c88e68e: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+- Updated dependencies [77529c3]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
