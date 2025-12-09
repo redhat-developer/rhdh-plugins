@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-scorecard-node",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "license": "Apache-2.0",
   "description": "Node.js library for the scorecard plugin",
   "main": "src/index.ts",
