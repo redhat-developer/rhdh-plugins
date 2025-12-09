@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.1.1
+
+### Patch Changes
+
+- b0c55d6: Updated dependency `msw` to `2.12.4`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.1.1
+
 ## 1.1.0
 
 ### Minor Changes
