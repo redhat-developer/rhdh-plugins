@@ -46,7 +46,7 @@ declare namespace Components {
     export interface Import {
       id?: string;
       status?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+        ImportStatus | /* Import Job status */ TaskImportStatus;
       task?: {
         taskId?: string;
       };
@@ -216,7 +216,7 @@ declare namespace Components {
        */
       organization?: string;
       importStatus?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+        ImportStatus | /* Import Job status */ TaskImportStatus;
       /**
        * default branch
        */
@@ -257,7 +257,7 @@ declare namespace Components {
     export interface SourceImport {
       id?: string;
       status?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+        ImportStatus | /* Import Job status */ TaskImportStatus;
       task?: {
         taskId?: string;
       };
@@ -284,15 +284,14 @@ declare namespace Components {
       github?: {
         pullRequest?: PullRequest;
       };
-      source?: /**
+      source /**
        * Import Source:
        *   * 'config' - Import from static catalog location configuration in 'app-config'
        *   * 'location' - Import of user registered entities using locations endpoint
        *   * 'integration' - Import using a GitHub integration
        *   * null - Import source is unknown
        *
-       */
-      Source;
+       */?: Source;
     }
     /**
      * Import Job status

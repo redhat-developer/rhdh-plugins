@@ -27,9 +27,7 @@ import {
 // For reference
 // https://github.com/backstage/backstage/blob/master/packages/integration/src/gitlab/SingleInstanceGitlabCredentialsProvider.ts
 
-export class CustomSingleInstanceGitlabCredentialsProvider
-  implements ExtendedGitlabCredentialsProvider
-{
+export class CustomSingleInstanceGitlabCredentialsProvider implements ExtendedGitlabCredentialsProvider {
   static readonly create: (
     config: GitLabIntegrationConfig,
   ) => ExtendedGitlabCredentialsProvider = config => {
@@ -54,9 +52,7 @@ export class CustomSingleInstanceGitlabCredentialsProvider
   }
 }
 
-export class CustomGitlabCredentialsProvider
-  implements ExtendedGitlabCredentialsProvider
-{
+export class CustomGitlabCredentialsProvider implements ExtendedGitlabCredentialsProvider {
   static fromIntegrations(integrations: ScmIntegrationRegistry) {
     const credentialsProviders: Map<string, ExtendedGitlabCredentialsProvider> =
       new Map<string, ExtendedGitlabCredentialsProvider>();
