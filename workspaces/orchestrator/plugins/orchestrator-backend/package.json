@@ -13,7 +13,8 @@
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
       "@red-hat-developer-hub/backstage-plugin-orchestrator-backend",
-      "@red-hat-developer-hub/backstage-plugin-orchestrator-common"
+      "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
+      "@red-hat-developer-hub/backstage-plugin-orchestrator-node"
     ]
   },
   "exports": {
@@ -74,6 +75,7 @@
     "@backstage/plugin-scaffolder-backend": "^3.0.1",
     "@backstage/plugin-scaffolder-node": "^0.12.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^",
     "@urql/core": "^4.1.4",
     "ajv-formats": "^2.1.1",
     "cloudevents": "^8.0.0",
