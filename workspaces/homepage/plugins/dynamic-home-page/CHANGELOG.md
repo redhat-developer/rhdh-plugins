@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.2
+
+### Patch Changes
+
+- 777de64: Updated dependency `@scalprum/react-core` to `0.11.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+
 ## 1.10.1
 
 ### Patch Changes
