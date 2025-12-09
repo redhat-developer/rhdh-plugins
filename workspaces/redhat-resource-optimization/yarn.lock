@@ -8210,8 +8210,8 @@ __metadata:
     "@backstage/repo-tools": ^0.13.3
     "@changesets/cli": ^2.27.1
     "@microsoft/api-extractor-model": ^7.29.2
-    "@microsoft/tsdoc": ^0.15.0
-    "@microsoft/tsdoc-config": ^0.17.0
+    "@microsoft/tsdoc": ^0.16.0
+    "@microsoft/tsdoc-config": ^0.18.0
     "@useoptic/optic": ^0.55.0
     concurrently: ^9.0.0
     knip: ^5.27.4
@@ -9628,7 +9628,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@microsoft/tsdoc-config@npm:^0.17.0, @microsoft/tsdoc-config@npm:~0.17.1":
+"@microsoft/tsdoc-config@npm:^0.18.0":
+  version: 0.18.0
+  resolution: "@microsoft/tsdoc-config@npm:0.18.0"
+  dependencies:
+    "@microsoft/tsdoc": 0.16.0
+    ajv: ~8.12.0
+    jju: ~1.4.0
+    resolve: ~1.22.2
+  checksum: 2ecf902513e4e084b5698f62f89ba653d050d49f57f0daa34800770e3f00e88bf239a21790c0974082e0b358fa147d45b36d7653794e03afd2258b50a8a1daba
+  languageName: node
+  linkType: hard
+
+"@microsoft/tsdoc-config@npm:~0.17.1":
   version: 0.17.1
   resolution: "@microsoft/tsdoc-config@npm:0.17.1"
   dependencies:
@@ -9640,10 +9652,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@microsoft/tsdoc@npm:0.15.1, @microsoft/tsdoc@npm:^0.15.0, @microsoft/tsdoc@npm:~0.15.1":
+"@microsoft/tsdoc@npm:0.15.1, @microsoft/tsdoc@npm:~0.15.1":
   version: 0.15.1
   resolution: "@microsoft/tsdoc@npm:0.15.1"
   checksum: 526f125c48b4e5511571ee552ff38691405131c0b72df85f091b1aa47571315e7ba5258cd9f48c41b8ef80f2c1f489e9b09c8b1fcc1599b7f8a35f917e03ec65
+  languageName: node
+  linkType: hard
+
+"@microsoft/tsdoc@npm:0.16.0, @microsoft/tsdoc@npm:^0.16.0":
+  version: 0.16.0
+  resolution: "@microsoft/tsdoc@npm:0.16.0"
+  checksum: 8aece3371a45a18af4233a5d6f8ac94612c8baef65f782f925b0c1f5a98802f031e6bf8b487a849ceb35f4cc6c2ea15ba82a4497c72b50e5b33771ecd62729cd
   languageName: node
   linkType: hard
 
@@ -12196,19 +12215,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.11.0"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.9
-    "@backstage/theme": ^0.6.8
+    "@backstage/core-plugin-api": ^1.11.1
+    "@backstage/theme": ^0.7.0
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: a5626d864def2e255d026d1620d370ada033f11ee357b145a9f5bd95185cbb9392cae1c83d2dbdcafde8747feb95d79f7067f645d5c6086628d5910a216cf34e
+  checksum: 70368eb43351805dbea8a6f9b1a7e5e0c50ac6edc2ab7639c2fe48084d783b0d3f7a629225ae0e6ae3fd47b3fccdf2eecc4ad9a913ddec32e948f94fb6ecbd92
   languageName: node
   linkType: hard
 
@@ -17351,7 +17370,7 @@ __metadata:
     "@patternfly/patternfly": ^6.3.0
     "@playwright/test": ^1.56.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator": ^2.5.1
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@red-hat-developer-hub/plugin-redhat-resource-optimization": "workspace:^"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
