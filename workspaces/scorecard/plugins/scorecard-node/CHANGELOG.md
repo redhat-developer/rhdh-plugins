@@ -1,5 +1,40 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 2.2.0
+
+### Minor Changes
+
+- f8fb8e4: Implemented saving metric `status` to the database. Added logic for saving `status` in the metric puller scheduler.
+
+  **BREAKING**: Added method `getMetricType` to the `MetricProvider` interface and updated the `getMetric` method to use `getMetricType()` instead of hardcoded `type` values.
+
+  ```diff
+  export class MyMetricProvider implements MetricProvider {
+  +  getMetricType(): 'number' {
+  +    return 'number';
+  +  }
+
+    getMetric(): Metric<'number'> {
+      return {
+        id: this.getProviderId(),
+        title: 'GitHub open PRs',
+        description:
+          'Current count of open Pull Requests for a given GitHub repository.',
+  -      type: 'number',
+  +      type: this.getMetricType(),
+        history: true,
+      };
+    }
+  }
+  ```
+
+- 4c2261f: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- Updated dependencies [4c2261f]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace-common
 
+## 0.13.0
+
+### Minor Changes
+
+- bee615a: Backstage version bump to v1.45.2
+
 ## 0.12.2
 
 ## 0.12.1

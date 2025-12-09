@@ -16,13 +16,25 @@
 
 import { type MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+/**
+ * Type for comparison signs
+ * @public
+ */
 export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
 
+/**
+ * Type for comparison operators
+ * @public
+ */
 export type ComparisonOperator = {
   operator: ComparisonSign;
   value: MetricValue;
 };
 
+/**
+ * Type for range operators
+ * @public
+ */
 export type RangeOperator = {
   operator: '-';
   values: [number, number];

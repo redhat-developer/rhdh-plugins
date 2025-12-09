@@ -234,7 +234,7 @@ export class OptimizationsClient implements OptimizationsApi {
 
     for (const { key, paramName, needsStringConversion } of basicParams) {
       const value = request.query[key];
-      if (value) {
+      if (value !== undefined && value !== null && value !== '') {
         queryParams.append(
           paramName,
           needsStringConversion ? String(value) : (value as string),

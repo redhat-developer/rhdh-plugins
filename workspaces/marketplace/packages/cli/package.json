@@ -1,7 +1,7 @@
 {
   "name": "@red-hat-developer-hub/marketplace-cli",
   "description": "CLI for the Marketplace",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "backstage": {
     "role": "cli"
   },
@@ -29,8 +29,8 @@
     "dist/**/*.js"
   ],
   "dependencies": {
-    "@backstage/catalog-model": "^1.7.5",
-    "@backstage/cli": "^0.34.4",
+    "@backstage/catalog-model": "^1.7.6",
+    "@backstage/cli": "^0.34.5",
     "@backstage/errors": "^1.2.7",
     "@backstage/types": "^1.2.2",
     "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^",

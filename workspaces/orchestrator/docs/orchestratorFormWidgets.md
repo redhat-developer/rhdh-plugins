@@ -53,6 +53,8 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
   - [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)
     - [Example](#example)
   - [Retrieving Data from Backstage Catalog](#retrieving-data-from-backstage-catalog)
+  - [Hiding Fields](#hiding-fields)
+    - [Example Usage](#example-usage)
   - [Customization](#customization)
 
 ## Context
@@ -506,6 +508,8 @@ The behavior of `ui:props` listed below is similar among different components, i
 
 Various selectors (like `fetch:response:*`) are processed by the [jsonata](https://docs.jsonata.org/overview.html) library and so should conform to its [syntax](https://docs.jsonata.org/simple).
 
+**Note:** The `ui:props` object now supports both string and object type values for `fetch:response:*` properties, allowing for more flexible configurations. When used as JSONata selectors, these values should be strings.
+
 ### List of widget properties
 
 |    Property of ui:props     |                                                                                                                                                                                                                            Description                                                                                                                                                                                                                             |                                          Example value                                          |
@@ -515,7 +519,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |        fetch:method         |                                                                                                                                                                                                              HTTP method to use. The default is GET.                                                                                                                                                                                                               |                   GET, POST (So far no identified use-case for PUT or DELETE)                   |
 |         fetch:body          |                                                                                                                                                 An object representing the body of an HTTP POST request. Not used with the GET method. Property value can be a string template or an array of strings. templates.                                                                                                                                                  | `{“foo”: “bar $${{identityApi.token}}”, "myArray": ["constant", "$${{current.solutionName}}"]}` |
 |       fetch:retrigger       |                                                                                                                                                An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                |                      `["current.solutionName", "identityApi.profileName"]`                      |
-| fetch:response:\[YOUR_KEY\] |                                                                                                                           A json selector of data from the fetch-response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records to be used i.e. by the StaticText                                                                                                                            |                                 Account.Order.Product.ProductID                                 |
+| fetch:response:\[YOUR_KEY\] |                                                                                            A JSONata selector (string) or object value for extracting data from the fetch response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records. Supports both string selectors and object type values.                                                                                             |                                 Account.Order.Product.ProductID                                 |
 |    fetch:response:label     |                                                                                                                                                                         Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                         |                                                                                                 |
 |    fetch:response:value     |                                                                                                                                                                Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                 |                                                                                                 |
 | fetch:response:autocomplete |                                                                                                                                                            Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used for selecting list of strings for autocomplete feature (ActiveTextInput)                                                                                                                                                            |                                                                                                 |
@@ -682,6 +686,53 @@ That’s the reason for listing the exposed keys explicitly.
 Integration with the Backstage Catalog can be achieved via calling the Catalog REST API, leveraging the fetch:response:\* selectors and the use of the `$${{...}}` templates.
 
 In the future, new widgets wrapping such explicit use case can be added.
+
+## Hiding Fields
+
+Fields can be hidden from the form display while still maintaining their widget functionality and participating in form submission using the `"ui:hidden": true` property.
+
+This is different from `"ui:widget": "hidden"` which changes the widget type itself. With `"ui:hidden": true`, the field keeps its original widget type (like `ActiveText`, `ActiveTextInput`, etc.) but is visually hidden from the user.
+
+### Example Usage
+
+```json
+{
+  "hiddenField": {
+    "type": "string",
+    "title": "Hidden ActiveText",
+    "ui:widget": "ActiveText",
+    "ui:hidden": true,
+    "ui:props": {
+      "ui:text": "This text is hidden but still rendered"
+    }
+  },
+  "hiddenInput": {
+    "type": "string",
+    "title": "Hidden Input",
+    "ui:hidden": true,
+    "default": "secret-value"
+  }
+}
+```
+
+**Key differences:**
+
+| Property                | Behavior                                    | Use Case                                                                               |
+| ----------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `"ui:widget": "hidden"` | Changes widget type to hidden input         | Simple hidden form values                                                              |
+| `"ui:hidden": true`     | Keeps original widget but hides it visually | Hide widgets while preserving their functionality (e.g., ActiveText that fetches data) |
+
+Hidden fields:
+
+- Are not displayed in the form
+- Are not shown in the wizard stepper navigation (multi-step forms)
+- Still participate in form validation
+- Are included in form submission
+- Are excluded from the review page
+- Maintain their widget functionality (fetching, validation, etc.)
+
+**Automatic Step Hiding:**
+If all inputs within a multi-step form's step are marked with `"ui:hidden": true`, the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
 
 ## Customization
 

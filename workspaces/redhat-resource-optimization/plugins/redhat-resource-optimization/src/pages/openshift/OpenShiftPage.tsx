@@ -25,14 +25,14 @@ import Typography from '@material-ui/core/Typography';
 import { BasePage } from '../../components/BasePage';
 import { PageLayout } from '../../components/PageLayout';
 import { Filters } from './components/Filters';
-import { Divider } from '@material-ui/core';
+import { Divider, useTheme } from '@material-ui/core';
 import { PageHeader } from './components/PageHeader';
 import { TableToolbar } from './components/TableToolbar';
-import BlackSvgIcon from './components/black-csv-icon.svg';
 import { useApi } from '@backstage/core-plugin-api';
 import { optimizationsApiRef } from '../../apis';
 import useAsync from 'react-use/lib/useAsync';
 import { CURRENCY_SYMBOLS } from '../../constants/currencies';
+import { DownloadIconButton } from './components/DownloadIconButton';
 
 const formatCurrency = (value: number, currencyCode: string): string => {
   const symbol = CURRENCY_SYMBOLS[currencyCode] || currencyCode;
@@ -51,6 +51,35 @@ interface ProjectCost {
   monthOverMonthValue: number;
   includesOverhead: boolean;
   previousPeriodCost: number;
+  infrastructureCost: number;
+  infrastructureCostPercentage: number;
+  supplementaryCost: number;
+  supplementaryCostPercentage: number;
+}
+
+/**
+ * Generates date range text based on time range selection
+ * @param timeRange - 'month-to-date' or 'previous-month'
+ * @returns Formatted string like "December 1-3" or "November 1-30"
+ */
+function getDateRangeText(timeRange: string): string {
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const currentDay = now.getDate();
+
+  if (timeRange === 'month-to-date') {
+    // Current month: MONTH 1-<CURRENT_DAY>
+    const monthName = now.toLocaleString('en-US', { month: 'long' });
+    return `${monthName} 1-${currentDay}`;
+  }
+  // Previous month: PREVIOUS_MONTH 1-<LAST_DAY>
+  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const prevMonthDate = new Date(prevYear, prevMonth + 1, 0); // Last day of previous month
+  const lastDay = prevMonthDate.getDate();
+  const monthName = prevMonthDate.toLocaleString('en-US', { month: 'long' });
+  return `${monthName} 1-${lastDay}`;
 }
 
 /** @public */
@@ -74,6 +103,12 @@ export function OpenShiftPage() {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [selectedTagKey, setSelectedTagKey] = useState<string>('');
   const [selectedTagValue, setSelectedTagValue] = useState<string>('');
+  const [showMonthOverMonthChange, setShowMonthOverMonthChange] =
+    useState(true);
+  const [showInfrastructureCost, setShowInfrastructureCost] = useState(false);
+  const [showSupplementaryCost, setShowSupplementaryCost] = useState(false);
+  const theme = useTheme();
+  const isDarkMode = (theme.palette as any).mode === 'dark';
 
   // Fetch tags on first load
   useAsync(async () => {
@@ -236,6 +271,12 @@ export function OpenShiftPage() {
               platform_distributed?: { value?: number };
               storage_unattributed_distributed?: { value?: number };
             };
+            infrastructure?: {
+              total?: { value?: number };
+            };
+            supplementary?: {
+              total?: { value?: number };
+            };
             delta_percent?: number;
             delta_value?: number;
           }) || {};
@@ -253,6 +294,9 @@ export function OpenShiftPage() {
         const deltaPercent = value?.delta_percent || 0;
         const deltaValue = value?.delta_value || 0;
 
+        const infrastructureValue = value?.infrastructure?.total?.value || 0;
+        const supplementaryValue = value?.supplementary?.total?.value || 0;
+
         return {
           id: `${index}`,
           projectName: itemName,
@@ -266,16 +310,32 @@ export function OpenShiftPage() {
             value?.cost?.platform_distributed?.value !== 0 ||
             value?.cost?.storage_unattributed_distributed?.value !== 0,
           previousPeriodCost: costValue + Math.abs(deltaValue),
+          infrastructureCost: infrastructureValue,
+          infrastructureCostPercentage: 0,
+          supplementaryCost: supplementaryValue,
+          supplementaryCostPercentage: 0,
         };
       }) || [];
 
-    const totalCost = costData.meta?.total?.cost?.distributed?.value || 0;
+    const totalCost = costData.meta?.total?.cost?.total?.value || 0;
+    const totalInfrastructureCost =
+      costData.meta?.total?.infrastructure?.total?.value || 0;
+    const totalSupplementaryCost =
+      costData.meta?.total?.supplementary?.total?.value || 0;
 
     const currencyCode = costData.meta?.currency || currency;
 
     const projectsWithPercentage = projects.map(p => ({
       ...p,
       costPercentage: totalCost > 0 ? (p.cost / totalCost) * 100 : 0,
+      infrastructureCostPercentage:
+        totalInfrastructureCost > 0
+          ? (p.infrastructureCost / totalInfrastructureCost) * 100
+          : 0,
+      supplementaryCostPercentage:
+        totalSupplementaryCost > 0
+          ? (p.supplementaryCost / totalSupplementaryCost) * 100
+          : 0,
     }));
 
     let month: string;
@@ -357,46 +417,50 @@ export function OpenShiftPage() {
     selectedRows.size > 0 &&
     selectedRows.size < displayData.projects.length;
 
-  const columns = useMemo<TableColumn<ProjectCost>[]>(
-    () => [
+  const columns = useMemo<TableColumn<ProjectCost>[]>(() => {
+    const getChangeColor = (change: number) => {
+      if (change > 0) return '#d32f2f';
+      if (isDarkMode) return '#4BB543';
+      return '#2e7d32';
+    };
+
+    const cols: TableColumn<ProjectCost>[] = [
       {
         title: (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
+          <div style={{ marginLeft: 0, paddingLeft: 0 }}>
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              ref={input => {
+                if (input) input.indeterminate = isIndeterminate;
+              }}
+              onChange={e => {
+                e.stopPropagation();
+                handleSelectAll(e.target.checked);
+              }}
               style={{
-                position: 'relative',
-                display: 'inline-block',
                 width: '18px',
                 height: '18px',
+                cursor: 'pointer',
+                margin: 0,
+                padding: 0,
               }}
-            >
-              <input
-                type="checkbox"
-                checked={isAllSelected}
-                ref={input => {
-                  if (input) input.indeterminate = isIndeterminate;
-                }}
-                onChange={e => {
-                  e.stopPropagation();
-                  handleSelectAll(e.target.checked);
-                }}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  cursor: 'pointer',
-                }}
-              />
-            </div>
-
-            <Typography variant="body2" style={{ fontWeight: 'bold' }}>
-              {groupBy.charAt(0).toLocaleUpperCase('en-US') + groupBy.slice(1)}{' '}
-              name
-            </Typography>
+            />
           </div>
         ),
-        field: 'projectName',
+        field: 'checkbox',
+        sorting: false,
+        width: '40px',
+        cellStyle: {
+          paddingLeft: '4px',
+          paddingRight: '4px',
+        },
+        headerStyle: {
+          paddingLeft: '4px',
+          paddingRight: '4px',
+        },
         render: data => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ paddingRight: '4px' }}>
             <input
               type="checkbox"
               checked={selectedRows.has(data.id)}
@@ -405,8 +469,23 @@ export function OpenShiftPage() {
                 width: '18px',
                 height: '18px',
                 cursor: 'pointer',
+                margin: 0,
+                padding: 0,
               }}
             />
+          </div>
+        ),
+      },
+      {
+        title: (
+          <Typography variant="body2" style={{ fontWeight: 'bold' }}>
+            {groupBy.charAt(0).toLocaleUpperCase('en-US') + groupBy.slice(1)}{' '}
+            name
+          </Typography>
+        ),
+        field: 'projectName',
+        render: data => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Typography variant="body2">{data.projectName}</Typography>
             {data.includesOverhead && (
               <Typography
@@ -425,7 +504,10 @@ export function OpenShiftPage() {
           </div>
         ),
       },
-      {
+    ];
+
+    if (showMonthOverMonthChange) {
+      cols.push({
         title: 'Month over month change',
         field: 'monthOverMonthChange',
         sorting: false,
@@ -433,7 +515,7 @@ export function OpenShiftPage() {
           <div>
             <div
               style={{
-                color: data.monthOverMonthChange > 0 ? '#d32f2f' : '#2e7d32',
+                color: getChangeColor(data.monthOverMonthChange),
               }}
             >
               {Math.abs(data.monthOverMonthChange).toFixed(2)}%
@@ -444,46 +526,101 @@ export function OpenShiftPage() {
                 data.monthOverMonthValue,
                 displayData?.currencyCode || '',
               )}{' '}
-              for January 1-11
+              for {getDateRangeText(timeRange)}
             </div>
           </div>
         ),
-      },
-      {
-        title: 'Cost',
-        field: 'cost',
+      });
+    }
+
+    cols.push({
+      title: 'Cost',
+      field: 'cost',
+      render: data => (
+        <div>
+          <div>
+            {formatCurrency(data.cost, displayData?.currencyCode || '')}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#666' }}>
+            {data.costPercentage.toFixed(2)}% of cost
+          </div>
+        </div>
+      ),
+    });
+
+    if (showInfrastructureCost) {
+      cols.push({
+        title: 'Infrastructure cost',
+        field: 'infrastructureCost',
         render: data => (
           <div>
             <div>
-              {formatCurrency(data.cost, displayData?.currencyCode || '')}
+              {formatCurrency(
+                data.infrastructureCost,
+                displayData?.currencyCode || '',
+              )}
             </div>
             <div style={{ fontSize: '0.75rem', color: '#666' }}>
-              {data.costPercentage.toFixed(2)}% of cost
+              {data.infrastructureCostPercentage.toFixed(2)}% of cost
             </div>
           </div>
         ),
-      },
-      {
-        title: 'Actions',
-        field: 'actions',
-        sorting: false,
-        render: () => (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <img src={BlackSvgIcon} alt="CSV" style={{ cursor: 'pointer' }} />
+      });
+    }
+
+    if (showSupplementaryCost) {
+      cols.push({
+        title: 'Supplementary cost',
+        field: 'supplementaryCost',
+        render: data => (
+          <div>
+            <div>
+              {formatCurrency(
+                data.supplementaryCost,
+                displayData?.currencyCode || '',
+              )}
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#666' }}>
+              {data.supplementaryCostPercentage.toFixed(2)}% of cost
+            </div>
           </div>
         ),
-      },
-    ],
-    [
-      handleRowSelect,
-      isAllSelected,
-      isIndeterminate,
-      selectedRows,
-      handleSelectAll,
-      displayData?.currencyCode,
-      groupBy,
-    ],
-  );
+      });
+    }
+
+    cols.push({
+      title: 'Actions',
+      field: 'actions',
+      sorting: false,
+      render: () => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <DownloadIconButton
+            label="CSV"
+            variant={isDarkMode ? 'white' : 'black'}
+          />
+          <DownloadIconButton
+            label="JSON"
+            variant={isDarkMode ? 'white' : 'black'}
+          />
+        </div>
+      ),
+    });
+
+    return cols;
+  }, [
+    handleRowSelect,
+    isAllSelected,
+    isIndeterminate,
+    selectedRows,
+    handleSelectAll,
+    displayData?.currencyCode,
+    groupBy,
+    showMonthOverMonthChange,
+    showInfrastructureCost,
+    showSupplementaryCost,
+    timeRange,
+    isDarkMode,
+  ]);
 
   const handleOrderChange = useCallback(
     (orderBy: number, orderDirection: 'asc' | 'desc') => {
@@ -613,6 +750,12 @@ export function OpenShiftPage() {
                       setShowPlatformSum={setShowPlatformSum}
                       projectsCount={displayData?.projects?.length || 0}
                       groupBy={groupBy}
+                      showMonthOverMonthChange={showMonthOverMonthChange}
+                      setShowMonthOverMonthChange={setShowMonthOverMonthChange}
+                      showInfrastructureCost={showInfrastructureCost}
+                      setShowInfrastructureCost={setShowInfrastructureCost}
+                      showSupplementaryCost={showSupplementaryCost}
+                      setShowSupplementaryCost={setShowSupplementaryCost}
                     />
                   ),
                 }}

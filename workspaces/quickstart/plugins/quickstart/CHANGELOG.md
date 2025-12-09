@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.8.0
+
+### Minor Changes
+
+- 8e269d3: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- c6c029b: allow base64 image in quickstart icons
+
 ## 1.7.0
 
 ### Minor Changes

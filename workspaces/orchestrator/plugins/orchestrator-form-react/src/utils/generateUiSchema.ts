@@ -166,6 +166,23 @@ function extractUiSchema(mixedSchema: JSONSchema7): UiSchema<JsonObject> {
         processObject(curSchema.else, `${path}`);
       }
     }
+
+    // Handle dependencies with oneOf - extract UI properties from conditional branches
+    if (curSchema.dependencies) {
+      Object.entries(curSchema.dependencies).forEach(([_depKey, depValue]) => {
+        if (typeof depValue === 'object' && !Array.isArray(depValue)) {
+          const depSchema = depValue as JSONSchema7;
+          if (depSchema.oneOf) {
+            // Process each oneOf branch to extract UI properties
+            depSchema.oneOf.forEach(branch => {
+              if (typeof branch === 'object' && branch.properties) {
+                processObjectProperties(branch.properties, path);
+              }
+            });
+          }
+        }
+      });
+    }
   };
 
   processObject(mixedSchema, '');

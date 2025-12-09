@@ -199,7 +199,7 @@ export const MarkdownCard: ComponentType<MarkdownCardProps> =
 export const Placeholder: ComponentType<PlaceholderProps> =
   dynamicHomePagePlugin.provide(
     createComponentExtension({
-      name: 'MarkdownCard',
+      name: 'Placeholder',
       component: {
         lazy: () => import('./components/Placeholder').then(m => m.Placeholder),
       },

@@ -14,50 +14,39 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
-
 import { Content, EmptyState, Page } from '@backstage/core-components';
 
-import { HomePageCardMountPoint } from '../types';
 import { useTranslation } from '../hooks/useTranslation';
-
+import { HomePageCardMountPoint } from '../types';
 import { Header, HeaderProps } from './Header';
 import { ReadOnlyGrid } from './ReadOnlyGrid';
+import { CustomizableGrid } from './CustomizableGrid';
 
 export interface HomePageProps extends HeaderProps {
-  cards?: HomePageCardMountPoint[];
+  mountPoints: HomePageCardMountPoint[];
+  customizable: boolean;
 }
 
-export const HomePage = (props: HomePageProps) => {
+export const HomePage = ({
+  mountPoints,
+  customizable,
+  ...otherProps
+}: HomePageProps) => {
   const { t } = useTranslation();
-  const filteredAndSortedHomePageCards = useMemo(() => {
-    if (!props.cards) {
-      return [];
-    }
 
-    const filteredAndSorted = props.cards.filter(
-      card =>
-        card.enabled !== false &&
-        (!card.config?.priority || card.config.priority >= 0),
-    );
-
-    filteredAndSorted.sort(
-      (a, b) => (b.config?.priority ?? 0) - (a.config?.priority ?? 0),
-    );
-
-    return filteredAndSorted;
-  }, [props.cards]);
+  let content: React.ReactNode;
+  if (mountPoints.length === 0) {
+    content = <EmptyState title={t('homePage.empty')} missing="content" />;
+  } else if (customizable) {
+    content = <CustomizableGrid mountPoints={mountPoints} />;
+  } else {
+    content = <ReadOnlyGrid mountPoints={mountPoints} />;
+  }
 
   return (
     <Page themeId="home">
-      <Header title={t('header.welcome')} {...props} />
-      <Content>
-        {filteredAndSortedHomePageCards.length === 0 ? (
-          <EmptyState title={t('homePage.empty')} missing="content" />
-        ) : (
-          <ReadOnlyGrid mountPoints={filteredAndSortedHomePageCards} />
-        )}
-      </Content>
+      <Header title={t('header.welcome')} {...otherProps} />
+      <Content>{content}</Content>
     </Page>
   );
 };

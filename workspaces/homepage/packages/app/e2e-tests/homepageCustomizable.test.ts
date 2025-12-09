@@ -30,7 +30,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     sharedPage = await sharedContext.newPage();
     testUtils = new TestUtils(sharedPage);
     homePageCustomization = new HomePageCustomization(sharedPage);
-    await testUtils.loginAsGuest();
+    await testUtils.loginAsGuest('/customizable');
   });
 
   test.afterAll(async () => {
@@ -79,20 +79,24 @@ test.describe.serial('Dynamic Home Page Customization', () => {
   });
 
   test('Verify Add Widget Button Adds Cards', async () => {
-    await homePageCustomization.addWidget('OnboardingSection');
+    await homePageCustomization.addWidget('Red Hat Developer Hub - Onboarding');
     await expect(
       sharedPage.getByText(/Good (morning|afternoon|evening)/),
     ).toBeVisible();
 
-    await homePageCustomization.addWidget('EntitySection');
+    await homePageCustomization.addWidget(
+      'Red Hat Developer Hub - Software Catalog',
+    );
     await expect(
       sharedPage.getByText('Explore Your Software Catalog'),
     ).toBeVisible();
 
-    await homePageCustomization.addWidget('QuickAccessCard');
+    await homePageCustomization.addWidget('Quick Access Card');
     await expect(sharedPage.getByText('Quick Access')).toBeVisible();
 
-    await homePageCustomization.addWidget('TemplateSection');
+    await homePageCustomization.addWidget(
+      'Red Hat Developer Hub - Explore templates',
+    );
     await expect(sharedPage.getByText('Explore Templates')).toBeVisible();
   });
 });

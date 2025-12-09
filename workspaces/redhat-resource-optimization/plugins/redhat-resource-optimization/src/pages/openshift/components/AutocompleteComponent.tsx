@@ -25,12 +25,13 @@ import {
   AutocompleteChangeDetails,
   AutocompleteChangeReason,
 } from '@material-ui/lab';
+import { useThemeBackgroundColor } from '../../../hooks/useThemeBackgroundColor';
 
 const useAutocompleteStyles = makeStyles(
   {
     root: {},
     label: {},
-    input: { backgroundColor: '#ffffff' },
+    input: { backgroundColor: 'transparent' },
     fullWidth: { width: '100%' },
   },
   { name: 'AutocompleteComponent' },
@@ -77,6 +78,7 @@ type AutocompleteComponentProps = SingleProps | MultipleProps;
 export function AutocompleteComponent(props: AutocompleteComponentProps) {
   const classes = useAutocompleteStyles();
   const { label, options, placeholder, className } = props;
+  const { backgroundColor } = useThemeBackgroundColor();
 
   return (
     <Box className={className ?? classes.root} pb={1} pt={1}>
@@ -111,9 +113,9 @@ export function AutocompleteComponent(props: AutocompleteComponentProps) {
         renderInput={params => (
           <TextField
             {...params}
-            className={classes.input}
             variant="outlined"
             placeholder={placeholder}
+            style={{ backgroundColor }}
           />
         )}
         size="medium"

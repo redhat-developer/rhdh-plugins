@@ -1,5 +1,31 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.0
+
+### Minor Changes
+
+- 2998c31: Backstage version bump to v1.45.3
+
+### Patch Changes
+
+- c6c029b: allow base64 image in quick access icons
+- 09c378a: Updated dependency `react-router-dom` to `6.30.2`.
+  Updated dependency `@types/react-grid-layout` to `1.3.6`.
+
+## 1.9.3
+
+### Patch Changes
+
+- b62354f: Fixes an issue with the customizable home page that cards of the same mount point could not be displayed multiple times.
+
+  To enable this feature it is still required to change the home page mount point to `DynamicCustomizableHomePage`.
+
+  For these customizations the mount points requires also a `config.id` (unique identifier) and `config.title` to be displayed in the "Add widget" dialog. An additional `config.description` can be configured as well.
+
+  When customization is disabled mount points with an `config.layout` and these without a `config.id` for backward compatibility will be shown.
+
+- 40b80fe: Change "lifecycle" to active in catalog.yaml
+
 ## 1.9.2
 
 ### Patch Changes

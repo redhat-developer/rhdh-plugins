@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { JsonObject } from '@backstage/types';
+
 import { JSONSchema7 } from 'json-schema';
 
 import { pruneFormData } from './pruneFormData';
@@ -420,6 +422,145 @@ describe('pruneFormData', () => {
   });
 
   describe('Conditional Schemas (oneOf, anyOf, allOf)', () => {
+    it('should handle direct oneOf at property level', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          serviceDetails: {
+            type: 'object',
+            oneOf: [
+              {
+                title: 'General Service',
+                properties: {
+                  namespaceName: { type: 'string' },
+                  environment: { type: 'string' },
+                },
+              },
+              {
+                title: 'Dedicated Cluster',
+                properties: {
+                  clusterName: { type: 'string' },
+                  region: { type: 'string' },
+                },
+              },
+            ],
+          },
+        },
+      };
+
+      // Test with General Service data
+      const formDataGeneral = {
+        serviceDetails: {
+          namespaceName: 'my-namespace',
+          environment: 'production',
+        },
+      };
+
+      const resultGeneral = pruneFormData(formDataGeneral, schema);
+      expect(resultGeneral.serviceDetails).toHaveProperty('namespaceName');
+      expect(resultGeneral.serviceDetails).toHaveProperty('environment');
+
+      // Test with Dedicated Cluster data
+      const formDataDedicated = {
+        serviceDetails: {
+          clusterName: 'my-cluster',
+          region: 'us-east-1',
+        },
+      };
+
+      const resultDedicated = pruneFormData(formDataDedicated, schema);
+      expect(resultDedicated.serviceDetails).toHaveProperty('clusterName');
+      expect(resultDedicated.serviceDetails).toHaveProperty('region');
+    });
+
+    it('should handle oneOf with data matching first branch', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          serviceDetails: {
+            type: 'object',
+            oneOf: [
+              {
+                title: 'General Service',
+                properties: {
+                  namespaceName: { type: 'string' },
+                  environment: { type: 'string' },
+                },
+              },
+              {
+                title: 'Dedicated Cluster',
+                properties: {
+                  clusterName: { type: 'string' },
+                  region: { type: 'string' },
+                },
+              },
+            ],
+          },
+        },
+      };
+
+      // Test with data that matches the first branch
+      const formDataGeneral = {
+        serviceDetails: {
+          namespaceName: 'my-namespace',
+          environment: 'production',
+        },
+      };
+
+      const resultGeneral = pruneFormData(formDataGeneral, schema);
+      // Should keep fields from the matching branch
+      expect(resultGeneral.serviceDetails).toHaveProperty('namespaceName');
+      expect(resultGeneral.serviceDetails).toHaveProperty('environment');
+      expect(resultGeneral.serviceDetails).not.toHaveProperty('clusterName');
+    });
+
+    it('should handle nested oneOf structures', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          caasNamespace: {
+            type: 'object',
+            properties: {
+              serviceDetails: {
+                type: 'object',
+                oneOf: [
+                  {
+                    title: 'General Service',
+                    properties: {
+                      namespaceName: { type: 'string' },
+                    },
+                  },
+                  {
+                    title: 'Tekton',
+                    properties: {
+                      pipelineName: { type: 'string' },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+
+      const formData = {
+        caasNamespace: {
+          serviceDetails: {
+            pipelineName: 'my-pipeline',
+          },
+        },
+      };
+
+      const result = pruneFormData(formData, schema);
+      expect(result.caasNamespace).toBeDefined();
+      expect(
+        (result.caasNamespace as JsonObject)?.serviceDetails,
+      ).toHaveProperty('pipelineName');
+      expect(
+        (result.caasNamespace as JsonObject)?.serviceDetails,
+      ).not.toHaveProperty('namespaceName');
+    });
+
     it('should handle allOf schemas', () => {
       const schema: JSONSchema7 = {
         type: 'object',

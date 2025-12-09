@@ -33,7 +33,6 @@ import {
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
-import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { NotFoundError } from '@backstage/errors';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
@@ -75,7 +74,6 @@ describe('createRouter', () => {
     catalogMetricService = new CatalogMetricService({
       catalog: catalogServiceMock.mock(),
       registry: metricProvidersRegistry,
-      thresholdEvaluator: new ThresholdEvaluator(),
       auth: mockServices.auth(),
       database: mockDatabaseMetricValues,
     });

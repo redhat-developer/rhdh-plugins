@@ -52,6 +52,10 @@ abstract class MockMetricProvider<T extends MetricType>
     return this.providerId;
   }
 
+  getMetricType(): T {
+    return this.metricType;
+  }
+
   supportsEntity(_: Entity): boolean {
     return true;
   }
@@ -111,7 +115,6 @@ export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
     };
   }
 }
-
 export const githubNumberProvider = new MockNumberProvider(
   'github.number_metric',
   'github',
