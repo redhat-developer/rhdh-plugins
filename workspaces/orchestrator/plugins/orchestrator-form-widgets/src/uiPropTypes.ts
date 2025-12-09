@@ -25,7 +25,7 @@ export type UiProps = {
   'fetch:headers'?: Record<string, string>;
   'fetch:body'?: Record<string, JsonValue>;
   'fetch:retrigger'?: string[];
-  [key: `fetch:response:${string}`]: string;
+  [key: `fetch:response:${string}`]: JsonValue;
 };
 
 export const isFetchResponseKey = (
