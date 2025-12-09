@@ -50,7 +50,6 @@ const bulkImportTranslationFr = createTranslationMessages({
     'addRepositories.selectedProjects': 'projets',
     'addRepositories.selectedRepositories': 'dépôts',
     'catalogInfo.status.generating': 'Générateur',
-    'catalogInfo.status.notGenerated': 'Non généré',
     'common.add': 'Ajouter',
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',

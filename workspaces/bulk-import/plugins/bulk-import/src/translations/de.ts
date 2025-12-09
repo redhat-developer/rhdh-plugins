@@ -110,10 +110,10 @@ const bulkImportTranslationDe = createTranslationMessages({
     'steps.chooseApprovalTool':
       'Ein Quellcode-Verwaltungstool für die Pull-Request-Erstellung auswählen',
     'steps.chooseRepositories':
-      'Repositories auswählen, die Sie hinzufügen möchten',
+      'Elemente auswählen, die Sie importieren möchten',
     'steps.chooseItems': 'Elemente auswählen, die Sie importieren möchten',
     'steps.generateCatalogInfo':
-      'Eine catalog-info.yaml-Datei für jedes Repository generieren',
+      'Eine catalog-info.yaml-Datei für jedes ausgewählte Element generieren',
     'steps.generateCatalogInfoItems':
       'Eine catalog-info.yaml-Datei für jedes ausgewählte Element generieren',
     'steps.editPullRequest': 'Die Pull-Request-Details anzeigen',
@@ -150,7 +150,6 @@ const bulkImportTranslationDe = createTranslationMessages({
 
     // Catalog info status
     'catalogInfo.status.generating': 'Generierung',
-    'catalogInfo.status.notGenerated': 'Nicht generiert',
 
     // Preview file
 

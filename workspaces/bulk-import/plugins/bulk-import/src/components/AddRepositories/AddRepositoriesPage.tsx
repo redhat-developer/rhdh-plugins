@@ -30,13 +30,12 @@ import Typography from '@mui/material/Typography';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { useGitlabConfigured, useNumberOfApprovalTools } from '../../hooks';
+import { useNumberOfApprovalTools } from '../../hooks';
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
+import { ImportFlow } from '../../types';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
 import { Illustrations } from './Illustrations';
-
-// Internal configuration - set to false to hide the instructions section
-const SHOW_INSTRUCTIONS_SECTION = false;
 
 export const AddRepositoriesPage = () => {
   const theme = useTheme();
@@ -48,8 +47,11 @@ export const AddRepositoriesPage = () => {
     resourceRef: bulkImportPermission.resourceType,
   });
 
-  const gitlabConfigured = useGitlabConfigured();
   const { numberOfApprovalTools } = useNumberOfApprovalTools();
+  const importFlow = useImportFlow();
+
+  // Show instructions section only for pull request flow, hide for scaffolder flow
+  const showInstructionsSection = importFlow === ImportFlow.OpenPullRequests;
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
@@ -58,7 +60,7 @@ export const AddRepositoriesPage = () => {
     if (bulkImportViewPermissionResult.allowed) {
       return (
         <>
-          {SHOW_INSTRUCTIONS_SECTION && !formError && (
+          {showInstructionsSection && !formError && (
             <div style={{ padding: '24px' }}>
               <Accordion defaultExpanded>
                 <AccordionSummary
@@ -66,9 +68,7 @@ export const AddRepositoriesPage = () => {
                   id="add-repository-summary"
                 >
                   <Typography variant="h5">
-                    {gitlabConfigured
-                      ? t('page.importEntitiesSubtitle')
-                      : t('page.addRepositoriesSubtitle')}
+                    {t('page.importEntitiesSubtitle')}
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails
@@ -95,11 +95,7 @@ export const AddRepositoriesPage = () => {
                         ? 'icon-choose-repositories-white'
                         : 'icon-choose-repositories-black'
                     }
-                    iconText={
-                      gitlabConfigured
-                        ? t('steps.chooseItems')
-                        : t('steps.chooseRepositories')
-                    }
+                    iconText={t('steps.chooseRepositories')}
                   />
                   <Illustrations
                     iconClassname={
@@ -107,11 +103,7 @@ export const AddRepositoriesPage = () => {
                         ? 'icon-generate-cataloginfo-white'
                         : 'icon-generate-cataloginfo-black'
                     }
-                    iconText={
-                      gitlabConfigured
-                        ? t('steps.generateCatalogInfoItems')
-                        : t('steps.generateCatalogInfo')
-                    }
+                    iconText={t('steps.generateCatalogInfo')}
                   />
                   <Illustrations
                     iconClassname={

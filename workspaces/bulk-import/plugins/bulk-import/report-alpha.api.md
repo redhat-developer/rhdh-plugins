@@ -121,7 +121,6 @@ readonly "addRepositories.selectedCount": string;
 readonly "addRepositories.addSelected": string;
 readonly "addRepositories.preview": string;
 readonly "catalogInfo.status.generating": string;
-readonly "catalogInfo.status.notGenerated": string;
 readonly "common.select": string;
 readonly "common.filter": string;
 readonly "common.view": string;

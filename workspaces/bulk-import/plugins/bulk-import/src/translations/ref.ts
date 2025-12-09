@@ -135,10 +135,10 @@ export const bulkImportMessages = {
   steps: {
     chooseApprovalTool:
       'Choose a source control tool for pull request creation',
-    chooseRepositories: 'Choose repositories you want to add',
+    chooseRepositories: 'Choose which items you want to import',
     chooseItems: 'Choose which items you want to import',
     generateCatalogInfo:
-      'Generate a catalog-info.yaml file for each repository',
+      'Generate a catalog-info.yaml file for each selected item',
     generateCatalogInfoItems:
       'Generate a catalog-info.yaml file for each selected item',
     editPullRequest: 'View the pull request details',
@@ -178,7 +178,6 @@ export const bulkImportMessages = {
   catalogInfo: {
     status: {
       generating: 'Generating',
-      notGenerated: 'Not Generated',
     },
   },
   common: {

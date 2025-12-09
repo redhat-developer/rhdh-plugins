@@ -121,7 +121,7 @@ const bulkImportTranslationEs = createTranslationMessages({
     // Steps
     'steps.chooseApprovalTool':
       'Elegir una herramienta de control de fuente para la creación de pull request',
-    'steps.chooseRepositories': 'Elegir repositorios que quieres agregar',
+    'steps.chooseRepositories': 'Elegir elementos que quieres importar',
     'steps.chooseItems': 'Elegir elementos que quieres importar',
     'steps.generateCatalogInfo':
       'Generar un archivo catalog-info.yaml para cada repositorio',
@@ -161,7 +161,6 @@ const bulkImportTranslationEs = createTranslationMessages({
 
     // Catalog info status
     'catalogInfo.status.generating': 'Generando',
-    'catalogInfo.status.notGenerated': 'No generado',
 
     // Preview file
 

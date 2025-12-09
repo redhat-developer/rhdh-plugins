@@ -22,12 +22,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { screen } from '@testing-library/react';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { ImportFlow } from '../../types';
 import { AddRepositoriesPage } from './AddRepositoriesPage';
 
 jest.mock('../../hooks', () => ({
-  useNumberOfApprovalTools: jest.fn(),
-  useGitlabConfigured: jest.fn(() => false),
+  useNumberOfApprovalTools: jest.fn(() => ({ numberOfApprovalTools: 1 })),
   useRepositories: jest.fn(() => ({ loading: false, data: [], error: null })),
+  useImportFlow: jest.fn(() => 'open-pull-requests'),
 }));
 
 // Mock the heavy child components to make tests faster
@@ -95,10 +96,11 @@ describe('AddRepositoriesPage', () => {
   });
 
   it('should render page with correct title', async () => {
-    const { useNumberOfApprovalTools } = require('../../hooks');
+    const { useNumberOfApprovalTools, useImportFlow } = require('../../hooks');
     useNumberOfApprovalTools.mockReturnValue({
       numberOfApprovalTools: 2,
     });
+    useImportFlow.mockReturnValue(ImportFlow.OpenPullRequests);
 
     await renderWithProviders(<AddRepositoriesPage />);
 
@@ -106,51 +108,40 @@ describe('AddRepositoriesPage', () => {
     expect(screen.getByTestId('add-repositories-form')).toBeInTheDocument();
   });
 
-  it('should not show instructions section when SHOW_INSTRUCTIONS_SECTION is false', async () => {
-    const { useNumberOfApprovalTools } = require('../../hooks');
+  it('should show instructions section for pull request flow', async () => {
+    const { useNumberOfApprovalTools, useImportFlow } = require('../../hooks');
     useNumberOfApprovalTools.mockReturnValue({
       numberOfApprovalTools: 2,
     });
+    useImportFlow.mockReturnValue(ImportFlow.OpenPullRequests);
 
     await renderWithProviders(<AddRepositoriesPage />);
 
-    // Instructions section should be hidden due to internal config
+    // Instructions section should be shown for pull request flow
     expect(
-      screen.queryByText(
+      screen.getByText(
         'Choose a source control tool for pull request creation',
       ),
-    ).not.toBeInTheDocument();
+    ).toBeInTheDocument();
   });
 
-  it('should hide instructions section when only one approval tool is configured', async () => {
-    const { useNumberOfApprovalTools } = require('../../hooks');
+  it('should show all steps including edit pull request for pull request flow', async () => {
+    const { useNumberOfApprovalTools, useImportFlow } = require('../../hooks');
     useNumberOfApprovalTools.mockReturnValue({
-      numberOfApprovalTools: 1,
+      numberOfApprovalTools: 2,
     });
+    useImportFlow.mockReturnValue(ImportFlow.OpenPullRequests);
 
     await renderWithProviders(<AddRepositoriesPage />);
 
-    // Instructions section should be hidden due to internal config
+    // All steps should be shown for pull request flow (both GitHub and GitLab)
     expect(
-      screen.queryByText(
+      screen.getByText(
         'Choose a source control tool for pull request creation',
       ),
-    ).not.toBeInTheDocument();
-  });
-
-  it('should hide instructions section when no approval tools are configured', async () => {
-    const { useNumberOfApprovalTools } = require('../../hooks');
-    useNumberOfApprovalTools.mockReturnValue({
-      numberOfApprovalTools: 0,
-    });
-
-    await renderWithProviders(<AddRepositoriesPage />);
-
-    // Instructions section should be hidden due to internal config
+    ).toBeInTheDocument();
     expect(
-      screen.queryByText(
-        'Choose a source control tool for pull request creation',
-      ),
-    ).not.toBeInTheDocument();
+      screen.getByText('View the pull request details'),
+    ).toBeInTheDocument();
   });
 });

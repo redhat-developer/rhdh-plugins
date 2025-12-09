@@ -32,9 +32,7 @@ export const WaitingForPR = ({ url }: { url: string }) => {
       }}
     >
       <StatusPending />
-      <Typography component="span" style={{ color: '#757575' }}>
-        {t('status.waitingForApproval')}
-      </Typography>
+      <Typography component="span">{t('status.waitingForApproval')}</Typography>
       {url && (
         <Link
           to={url}

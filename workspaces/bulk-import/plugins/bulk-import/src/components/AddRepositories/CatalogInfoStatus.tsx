@@ -85,7 +85,6 @@ export const CatalogInfoStatus = ({
   );
 
   const importFlow = useImportFlow();
-  const isScaffolderFlow = importFlow === ImportFlow.Scaffolder;
 
   if (
     importFlow !== ImportFlow.Scaffolder &&
@@ -110,12 +109,8 @@ export const CatalogInfoStatus = ({
   }
 
   if (importStatus) {
-    // For scaffolder flow, task statuses (Processing, Completed, etc.) should have normal color
-    const isTaskStatus = taskId && importStatus.startsWith('TASK');
-    const textColor = isScaffolderFlow && isTaskStatus ? undefined : '#6A6E73';
-
     return (
-      <Typography component="span" style={{ color: textColor }}>
+      <Typography component="span">
         {getImportStatus(
           importStatus,
           (key: string) => t(key as any, {}),
@@ -131,18 +126,9 @@ export const CatalogInfoStatus = ({
     return null;
   }
 
-  // For scaffolder flow, show "Ready to import" instead of "Not generated"
-  if (isScaffolderFlow) {
-    return (
-      <Typography component="span" style={{ color: '#6A6E73' }}>
-        {t('status.readyToImport')}
-      </Typography>
-    );
-  }
-
   return (
-    <Typography component="span">
-      {t('catalogInfo.status.notGenerated')}
+    <Typography component="span" style={{ color: '#6A6E73' }}>
+      {t('status.readyToImport')}
     </Typography>
   );
 };
