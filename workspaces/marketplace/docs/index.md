@@ -144,3 +144,9 @@ spec:
     - tekton
     - topology
 ```
+
+## Tools
+
+The marketplace workspace includes additional tools to help manage plugin entities:
+
+- **[Marketplace CLI](./tools/cli.md)**: Command-line tool for initializing, generating, verifying, and exporting marketplace entities
