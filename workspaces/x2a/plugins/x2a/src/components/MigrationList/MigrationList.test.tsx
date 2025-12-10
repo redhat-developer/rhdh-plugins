@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 import { renderInTestApp } from '@backstage/test-utils';
-import { ExampleFetchComponent } from './ExampleFetchComponent';
+import { MigrationList } from './MigrationList';
 
-describe('ExampleFetchComponent', () => {
-  it('renders the user table', async () => {
+describe('MigrationList component', () => {
+  it('renders the table', async () => {
     const { getAllByText, getByAltText, getByText, findByRole } =
-      await renderInTestApp(<ExampleFetchComponent />);
+      await renderInTestApp(<MigrationList />);
 
     // Wait for the table to render
     const table = await findByRole('table');

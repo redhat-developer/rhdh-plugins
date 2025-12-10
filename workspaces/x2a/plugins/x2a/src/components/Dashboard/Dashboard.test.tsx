@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ExampleComponent } from './ExampleComponent';
+import { Dashboard } from './Dashboard';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { screen } from '@testing-library/react';
 import { registerMswTestHooks, renderInTestApp } from '@backstage/test-utils';
 
-describe('ExampleComponent', () => {
+describe('Dashboard component', () => {
   const server = setupServer();
   // Enable sane handlers for network requests
   registerMswTestHooks(server);
@@ -32,7 +32,7 @@ describe('ExampleComponent', () => {
   });
 
   it('should render', async () => {
-    await renderInTestApp(<ExampleComponent />);
-    expect(screen.getByText('Welcome to x2a!')).toBeInTheDocument();
+    await renderInTestApp(<Dashboard />);
+    expect(screen.getByText('Migration Hub')).toBeInTheDocument();
   });
 });

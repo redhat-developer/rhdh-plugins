@@ -13,4 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { ExampleComponent } from './ExampleComponent';
+import { Grid } from '@material-ui/core';
+import { Header, Page, Content } from '@backstage/core-components';
+import { MigrationList } from '../MigrationList';
+
+export const Dashboard = () => (
+  <Page themeId="tool">
+    <Header
+      title="Migration Hub"
+      subtitle="Initiate and track the asynchronous conversations of Chef files into production-ready Ansible Playbooks."
+    />
+
+    <Content>
+      <Grid container spacing={3} direction="column">
+        <Grid item>
+          <MigrationList />
+        </Grid>
+      </Grid>
+    </Content>
+  </Page>
+);

@@ -13,24 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  createPlugin,
-  createRoutableExtension,
-} from '@backstage/core-plugin-api';
-
-import { rootRouteRef } from './routes';
-
-export const x2APlugin = createPlugin({
-  id: 'x2a',
-  routes: {
-    root: rootRouteRef,
-  },
-});
-
-export const X2APage = x2APlugin.provide(
-  createRoutableExtension({
-    name: 'X2APage',
-    component: () => import('./components/Dashboard').then(m => m.Dashboard),
-    mountPoint: rootRouteRef,
-  }),
-);
+export { MigrationList } from './MigrationList';
