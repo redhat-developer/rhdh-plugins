@@ -183,6 +183,21 @@ export const orchestratorMessages = {
     review: 'Review',
     unavailable: '---',
   },
+  duration: {
+    aFewSeconds: 'a few seconds',
+    aSecond: 'a second',
+    seconds: '{{count}} seconds',
+    aMinute: 'a minute',
+    minutes: '{{count}} minutes',
+    anHour: 'an hour',
+    hours: '{{count}} hours',
+    aDay: 'a day',
+    days: '{{count}} days',
+    aMonth: 'a month',
+    months: '{{count}} months',
+    aYear: 'a year',
+    years: '{{count}} years',
+  },
   stepperObjectField: {
     error:
       "Stepper object field is not supported for schema that doesn't contain properties",

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import {
   WorkflowFormatDTO,
@@ -57,7 +57,9 @@ const WorkflowOverviewFormatter: DataFormatter<
       id: data.workflowId,
       name: data.name ?? VALUE_UNAVAILABLE,
       lastTriggered: data.lastTriggeredMs
-        ? moment(data.lastTriggeredMs).toDate().toLocaleString()
+        ? DateTime.fromMillis(data.lastTriggeredMs).toLocaleString(
+            DateTime.DATETIME_SHORT_WITH_SECONDS,
+          )
         : VALUE_UNAVAILABLE,
       lastRunStatus: formatLastRunStatus(data.lastRunStatus),
       lastRunId: data.lastRunId ?? VALUE_UNAVAILABLE,

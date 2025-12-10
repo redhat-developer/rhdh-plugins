@@ -75,6 +75,19 @@ readonly "common.links": string;
 readonly "common.back": string;
 readonly "common.next": string;
 readonly "common.review": string;
+readonly "duration.aFewSeconds": string;
+readonly "duration.aSecond": string;
+readonly "duration.seconds": string;
+readonly "duration.aMinute": string;
+readonly "duration.minutes": string;
+readonly "duration.anHour": string;
+readonly "duration.hours": string;
+readonly "duration.aDay": string;
+readonly "duration.days": string;
+readonly "duration.aMonth": string;
+readonly "duration.months": string;
+readonly "duration.aYear": string;
+readonly "duration.years": string;
 readonly "page.title": string;
 readonly "page.tabs.workflows": string;
 readonly "page.tabs.allRuns": string;
@@ -161,7 +174,7 @@ export const orchestratorTranslations: TranslationResource<"plugin.orchestrator"
 // src/components/catalogComponents/CatalogTab.d.ts:1:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
 // src/components/catalogComponents/CatalogTab.d.ts:2:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
 // src/translations/index.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorTranslations".
-// src/translations/ref.d.ts:168:22 - (ae-undocumented) Missing documentation for "orchestratorTranslationRef".
+// src/translations/ref.d.ts:183:22 - (ae-undocumented) Missing documentation for "orchestratorTranslationRef".
 
 // (No @packageDocumentation comment for this package)
 
