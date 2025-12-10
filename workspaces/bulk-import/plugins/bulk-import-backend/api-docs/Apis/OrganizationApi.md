@@ -1,28 +1,27 @@
 # OrganizationApi
 
-All URIs are relative to _http://localhost:7007/api/bulk-import_
+All URIs are relative to *http://localhost:7007/api/bulk-import*
 
-| Method                                                                                  | HTTP request                                           | Description                                                                                                                      |
-| --------------------------------------------------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| [**findAllOrganizations**](OrganizationApi.md#findAllOrganizations)                     | **GET** /organizations                                 | Fetch Organizations accessible by Backstage Github Integrations                                                                  |
+| Method | HTTP request | Description |
+|------------- | ------------- | -------------|
+| [**findAllOrganizations**](OrganizationApi.md#findAllOrganizations) | **GET** /organizations | Fetch Organizations accessible by Backstage Github Integrations |
 | [**findRepositoriesByOrganization**](OrganizationApi.md#findRepositoriesByOrganization) | **GET** /organizations/{organizationName}/repositories | Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations. |
 
+
 <a name="findAllOrganizations"></a>
-
 # **findAllOrganizations**
-
 > OrganizationList findAllOrganizations(pagePerIntegration, sizePerIntegration, search, approvalTool)
 
 Fetch Organizations accessible by Backstage Github Integrations
 
 ### Parameters
 
-| Name                   | Type        | Description                                            | Notes                        |
-| ---------------------- | ----------- | ------------------------------------------------------ | ---------------------------- |
-| **pagePerIntegration** | **Integer** | the page number for each Integration                   | [optional] [default to 1]    |
-| **sizePerIntegration** | **Integer** | the number of items per Integration to return per page | [optional] [default to 20]   |
-| **search**             | **String**  | returns only the items that match the search string    | [optional] [default to null] |
-| **approvalTool**       | **String**  | the approvalTool to use                                | [optional] [default to GIT]  |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **pagePerIntegration** | **Integer**| the page number for each Integration | [optional] [default to 1] |
+| **sizePerIntegration** | **Integer**| the number of items per Integration to return per page | [optional] [default to 20] |
+| **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
+| **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
 
 ### Return type
 
@@ -38,23 +37,21 @@ Fetch Organizations accessible by Backstage Github Integrations
 - **Accept**: application/json
 
 <a name="findRepositoriesByOrganization"></a>
-
 # **findRepositoriesByOrganization**
-
 > RepositoryList findRepositoriesByOrganization(organizationName, checkImportStatus, pagePerIntegration, sizePerIntegration, search, approvalTool)
 
 Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations.
 
 ### Parameters
 
-| Name                   | Type        | Description                                                                                                                                  | Notes                         |
-| ---------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| **organizationName**   | **String**  | Organization name                                                                                                                            | [default to null]             |
-| **checkImportStatus**  | **Boolean** | whether to return import status. Note that this might incur a performance penalty because the import status is computed for each repository. | [optional] [default to false] |
-| **pagePerIntegration** | **Integer** | the page number for each Integration                                                                                                         | [optional] [default to 1]     |
-| **sizePerIntegration** | **Integer** | the number of items per Integration to return per page                                                                                       | [optional] [default to 20]    |
-| **search**             | **String**  | returns only the items that match the search string                                                                                          | [optional] [default to null]  |
-| **approvalTool**       | **String**  | the approvalTool to use                                                                                                                      | [optional] [default to GIT]   |
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **organizationName** | **String**| Organization name | [default to null] |
+| **checkImportStatus** | **Boolean**| whether to return import status. Note that this might incur a performance penalty because the import status is computed for each repository. | [optional] [default to false] |
+| **pagePerIntegration** | **Integer**| the page number for each Integration | [optional] [default to 1] |
+| **sizePerIntegration** | **Integer**| the number of items per Integration to return per page | [optional] [default to 20] |
+| **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
+| **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
 
 ### Return type
 
@@ -68,3 +65,4 @@ Fetch Repositories in the specified GitHub organization, provided it is accessib
 
 - **Content-Type**: Not defined
 - **Accept**: application/json
+
