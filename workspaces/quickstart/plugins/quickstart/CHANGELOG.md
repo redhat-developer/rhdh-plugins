@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.8.1
+
+### Patch Changes
+
+- 98abe8b: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+
 ## 1.8.0
 
 ### Minor Changes
