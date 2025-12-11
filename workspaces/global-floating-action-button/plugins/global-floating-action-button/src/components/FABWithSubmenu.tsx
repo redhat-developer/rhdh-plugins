@@ -74,7 +74,7 @@ export const FABWithSubmenu = ({
     };
   }, [pathname]);
 
-  const handleClick = () => {
+  const handleToggle = () => {
     if (isMenuOpen) {
       setTimeout(() => {
         setIsMenuOpen(false);
@@ -104,7 +104,7 @@ export const FABWithSubmenu = ({
           <Fab
             size="medium"
             color="info"
-            onClick={handleClick}
+            onClick={handleToggle}
             aria-label="Menu"
             variant="circular"
             sx={{ zIndex: 1000 }}
@@ -118,6 +118,8 @@ export const FABWithSubmenu = ({
         </Typography>
       </Tooltip>
       {fabs?.map(fb => {
+        const FabComponent = fb.Component;
+
         return (
           <Slide
             key={fb.label}
@@ -129,13 +131,17 @@ export const FABWithSubmenu = ({
             timeout={500}
           >
             <Box>
-              <CustomFab
-                actionButton={fb}
-                t={t}
-                size="medium"
-                key={fb.label}
-                className={styles.button}
-              />
+              {FabComponent ? (
+                <FabComponent slot={slot} config={fb} />
+              ) : (
+                <CustomFab
+                  actionButton={fb}
+                  t={t}
+                  size="medium"
+                  key={fb.label}
+                  className={styles.button}
+                />
+              )}
             </Box>
           </Slide>
         );

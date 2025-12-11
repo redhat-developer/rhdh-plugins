@@ -31,6 +31,7 @@ import {
   globalFloatingActionButtonPlugin,
   globalFloatingActionButtonTranslations,
 } from '../src';
+import { ChatFABComponent, ChatPanelProvider } from './ChatbotComponent';
 
 const mockFloatingButtons: FloatingActionButton[] = [
   {
@@ -88,6 +89,14 @@ const mockFloatingButtons: FloatingActionButton[] = [
     to: 'https://github.com/xyz',
     priority: 200,
     excludeOnPaths: ['/test-global-floating-action'],
+  },
+];
+
+const mockFloatingButtonsWithCustomComponent: FloatingActionButton[] = [
+  {
+    label: 'Chat',
+    Component: ChatFABComponent,
+    priority: -1,
   },
 ];
 
@@ -200,4 +209,15 @@ createDevApp()
       component: <ExampleComponent />,
     }),
   )
+  .addPage({
+    element: (
+      <ChatPanelProvider>
+        <ExampleComponent
+          floatingButtons={mockFloatingButtonsWithCustomComponent}
+        />
+      </ChatPanelProvider>
+    ),
+    title: 'Custom FAB Component',
+    path: '/test-custom-component-fab',
+  })
   .render();
