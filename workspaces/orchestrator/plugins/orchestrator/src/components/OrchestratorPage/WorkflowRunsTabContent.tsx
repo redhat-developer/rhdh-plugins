@@ -241,7 +241,9 @@ export const WorkflowRunsTabContent = () => {
     );
 
     const clonedData: WorkflowRunDetail[] =
-      instances.data.items?.map(mapProcessInstanceToDetails) || [];
+      instances.data.items?.map(instance =>
+        mapProcessInstanceToDetails(instance, t),
+      ) || [];
     return clonedData;
   }, [
     orchestratorApi,
@@ -250,6 +252,7 @@ export const WorkflowRunsTabContent = () => {
     orderByField,
     orderDirection,
     getFilter,
+    t,
   ]);
 
   const { loading, error, value } = usePolling(fetchInstances);

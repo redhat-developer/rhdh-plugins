@@ -23,7 +23,7 @@ import { usePermission } from '@backstage/plugin-permission-react';
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { makeStyles } from 'tss-react/mui';
 
 import {
@@ -36,6 +36,7 @@ import {
 import { orchestratorApiRef } from '../../api/api';
 import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
+import { formatDuration } from '../../utils/DurationUtils';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
 import { WorkflowInputs } from './WorkflowInputs';
@@ -45,14 +46,18 @@ import { WorkflowRunDetails } from './WorkflowRunDetails';
 
 export const mapProcessInstanceToDetails = (
   instance: ProcessInstanceDTO,
+  t: any,
 ): WorkflowRunDetail => {
-  const start = instance.start ? moment(instance.start) : undefined;
+  const start = instance.start ? DateTime.fromISO(instance.start) : undefined;
   let duration: string = VALUE_UNAVAILABLE;
   if (start && instance.end) {
-    const end = moment(instance.end);
-    duration = moment.duration(start.diff(end)).humanize();
+    const end = DateTime.fromISO(instance.end);
+    const diffMs = end.diff(start).toMillis();
+    duration = formatDuration(diffMs, t);
   }
-  const started = start?.toDate().toLocaleString() ?? VALUE_UNAVAILABLE;
+  const started =
+    start?.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS) ??
+    VALUE_UNAVAILABLE;
 
   return {
     id: instance.id,
@@ -96,8 +101,8 @@ export const WorkflowInstancePageContent: React.FC<{
   const orchestratorApi = useApi(orchestratorApiRef);
 
   const details = useMemo(
-    () => mapProcessInstanceToDetails(instance),
-    [instance],
+    () => mapProcessInstanceToDetails(instance, t),
+    [instance, t],
   );
 
   const workflowdata = instance?.workflowdata;
