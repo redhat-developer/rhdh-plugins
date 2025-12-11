@@ -18,10 +18,9 @@ import {
   startTestBackend,
 } from '@backstage/backend-test-utils';
 import { createServiceFactory } from '@backstage/backend-plugin-api';
-import { todoListServiceRef } from './services/TodoListService';
+import { convertorServiceRef } from './services/ConvertorService';
 import { x2APlugin } from './plugin';
 import request from 'supertest';
-import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
   ConflictError,
   AuthenticationError,
@@ -34,23 +33,24 @@ import {
 // however, just like anyone who installs your plugin might replace the
 // services with their own implementations.
 describe('plugin', () => {
-  it('should create and read TODO items', async () => {
+  it('should create and read Migration items', async () => {
     const { server } = await startTestBackend({
       features: [x2APlugin],
     });
 
-    await request(server).get('/api/x2a/todos').expect(200, {
+    await request(server).get('/api/x2a/migrations').expect(200, {
       items: [],
     });
 
-    const createRes = await request(server)
-      .post('/api/x2a/todos')
-      .send({ title: 'My Todo' });
+    const createRes = await request(server).post('/api/x2a/migrations').send({
+      name: 'My Migration',
+      // TODO: more properties
+    });
 
     expect(createRes.status).toBe(201);
     expect(createRes.body).toEqual({
       id: expect.any(String),
-      title: 'My Todo',
+      title: 'My Migration',
       createdBy: mockCredentials.user().principal.userEntityRef,
       createdAt: expect.any(String),
     });
@@ -58,84 +58,49 @@ describe('plugin', () => {
     const createdTodoItem = createRes.body;
 
     await request(server)
-      .get('/api/x2a/todos')
+      .get('/api/x2a/migrations')
       .expect(200, {
         items: [createdTodoItem],
       });
 
     await request(server)
-      .get(`/api/x2a/todos/${createdTodoItem.id}`)
+      .get(`/api/x2a/migrations/${createdTodoItem.id}`)
       .expect(200, createdTodoItem);
   });
 
-  it('should create TODO item with catalog information', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        x2APlugin,
-        catalogServiceMock.factory({
-          entities: [
-            {
-              apiVersion: 'backstage.io/v1alpha1',
-              kind: 'Component',
-              metadata: {
-                name: 'my-component',
-                namespace: 'default',
-                title: 'My Component',
-              },
-              spec: {
-                type: 'service',
-                owner: 'me',
-              },
-            },
-          ],
-        }),
-      ],
-    });
-
-    const createRes = await request(server)
-      .post('/api/x2a/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
-
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: '[My Component] My Todo',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
-    });
-  });
-
-  it('should forward errors from the TodoListService', async () => {
+  it('should forward errors from the MigrationService', async () => {
     const { server } = await startTestBackend({
       features: [
         x2APlugin,
         createServiceFactory({
-          service: todoListServiceRef,
+          service: convertorServiceRef,
           deps: {},
           factory: () => ({
-            createTodo: jest.fn().mockRejectedValue(new ConflictError()),
-            listTodos: jest.fn().mockRejectedValue(new AuthenticationError()),
-            getTodo: jest.fn().mockRejectedValue(new NotAllowedError()),
+            createMigration: jest.fn().mockRejectedValue(new ConflictError()),
+            listMigrations: jest
+              .fn()
+              .mockRejectedValue(new AuthenticationError()),
+            getMigration: jest.fn().mockRejectedValue(new NotAllowedError()),
           }),
         }),
       ],
     });
 
     const createRes = await request(server)
-      .post('/api/x2a/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
+      .post('/api/x2a/migrations')
+      .send({ name: 'My Migration' });
     expect(createRes.status).toBe(409);
     expect(createRes.body).toMatchObject({
       error: { name: 'ConflictError' },
     });
 
-    const listRes = await request(server).get('/api/x2a/todos');
+    const listRes = await request(server).get('/api/x2a/migrations');
     expect(listRes.status).toBe(401);
     expect(listRes.body).toMatchObject({
       error: { name: 'AuthenticationError' },
     });
 
-    const getRes = await request(server).get('/api/x2a/todos/123');
+    const getRes = await request(server).get('/api/x2a/migrations/123');
     expect(getRes.status).toBe(403);
     expect(getRes.body).toMatchObject({
       error: { name: 'NotAllowedError' },

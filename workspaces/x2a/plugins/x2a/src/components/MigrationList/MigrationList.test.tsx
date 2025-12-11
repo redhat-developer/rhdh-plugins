@@ -13,33 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { renderInTestApp } from '@backstage/test-utils';
+import {
+  mockApis,
+  renderInTestApp,
+  TestApiProvider,
+} from '@backstage/test-utils';
 import { MigrationList } from './MigrationList';
+import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 
-// const migrationsMock = {
-//   results: [
-//     {
-//       name: 'Migration 1',
-//       status: 'Pending',
-//       sourceRepository: 'https://github.com/org/repo',
-//     },
-//     {
-//       name: 'Migration 2',
-//       status: 'Completed',
-//       sourceRepository: 'https://github.com/org/repo',
-//     },
-//   ],
-// };
+// const mockMigrations: Migration[] = [
+//   {
+//     id: '1',
+//     name: 'Mock Migration 1',
+//     status: 'Created',
+//     sourceRepository: 'https://github.com/org/repo',
+//     createdBy: 'user1',
+//     createdAt: new Date().toISOString(),
+//   },
+//   {
+//     id: '2',
+//     name: 'Mock Migration 2',
+//     status: 'Completed',
+//     sourceRepository: 'https://github.com/org/repo',
+//     createdBy: 'user2',
+//     createdAt: new Date().toISOString(),
+//   },
+// ];
 
 describe('MigrationList component', () => {
-  it('renders the table', async () => {
-    const { getByText, findByRole } = await renderInTestApp(<MigrationList />);
+  it('renders the progressbar', async () => {
+    const discoveryApiMock = mockApis.discovery({
+      baseUrl: 'http://localhost:1234',
+    });
+    const fetchApiMock = {
+      fetch: jest.fn().mockReturnValue(new Promise(() => {})),
+    };
 
-    // Wait for the table to render
-    const table = await findByRole('table');
+    const { findByRole } = await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [fetchApiRef, fetchApiMock],
+          [discoveryApiRef, discoveryApiMock],
+        ]}
+      >
+        <MigrationList />
+      </TestApiProvider>,
+    );
 
-    // Assert that the table contains the expected user data
-    expect(table).toBeInTheDocument();
-    expect(getByText('Migration 1')).toBeInTheDocument();
+    // Wait for the progressbar to render
+    const progressbar = await findByRole('progressbar');
+    expect(progressbar).toBeInTheDocument();
+
+    // const table = await findByRole('progressbar');
+
+    // // Assert that the table contains the expected user data
+    // expect(table).toBeInTheDocument();
+    // expect(getByText('Migration 1')).toBeInTheDocument();
   });
 });

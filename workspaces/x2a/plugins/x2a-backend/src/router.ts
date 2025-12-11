@@ -18,14 +18,14 @@ import { InputError } from '@backstage/errors';
 import { z } from 'zod';
 import express from 'express';
 import Router from 'express-promise-router';
-import { todoListServiceRef } from './services/TodoListService';
+import { convertorServiceRef } from './services/ConvertorService';
 
 export async function createRouter({
   httpAuth,
-  todoList,
+  convertor,
 }: {
   httpAuth: HttpAuthService;
-  todoList: typeof todoListServiceRef.T;
+  convertor: typeof convertorServiceRef.T;
 }): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -36,30 +36,31 @@ export async function createRouter({
   //
   // If you want to define a schema for your API we recommend using Backstage's
   // OpenAPI tooling: https://backstage.io/docs/next/openapi/01-getting-started
-  const todoSchema = z.object({
-    title: z.string(),
-    entityRef: z.string().optional(),
+  const migrationSchema = z.object({
+    name: z.string(),
+    // TODO: add more
+    // entityRef: z.string().optional(),
   });
 
-  router.post('/todos', async (req, res) => {
-    const parsed = todoSchema.safeParse(req.body);
+  router.post('/migrations', async (req, res) => {
+    const parsed = migrationSchema.safeParse(req.body);
     if (!parsed.success) {
       throw new InputError(parsed.error.toString());
     }
 
-    const result = await todoList.createTodo(parsed.data, {
+    const result = await convertor.createMigration(parsed.data, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
     });
 
     res.status(201).json(result);
   });
 
-  router.get('/todos', async (_req, res) => {
-    res.json(await todoList.listTodos());
+  router.get('/migrations', async (_req, res) => {
+    res.json(await convertor.listMigrations());
   });
 
-  router.get('/todos/:id', async (req, res) => {
-    res.json(await todoList.getTodo({ id: req.params.id }));
+  router.get('/migrations/:id', async (req, res) => {
+    res.json(await convertor.getMigration({ id: req.params.id }));
   });
 
   return router;

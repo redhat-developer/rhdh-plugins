@@ -18,7 +18,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { createRouter } from './router';
-import { todoListServiceRef } from './services/TodoListService';
+import { convertorServiceRef } from './services/ConvertorService';
 
 /**
  * x2APlugin backend plugin
@@ -32,13 +32,13 @@ export const x2APlugin = createBackendPlugin({
       deps: {
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        todoList: todoListServiceRef,
+        convertor: convertorServiceRef,
       },
-      async init({ httpAuth, httpRouter, todoList }) {
+      async init({ httpAuth, httpRouter, convertor }) {
         httpRouter.use(
           await createRouter({
             httpAuth,
-            todoList,
+            convertor,
           }),
         );
       },

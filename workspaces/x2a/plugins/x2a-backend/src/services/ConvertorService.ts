@@ -22,58 +22,63 @@ import {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import { NotFoundError } from '@backstage/errors';
-import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import {
   BackstageCredentials,
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
 import { Expand } from '@backstage/types';
+import { Migration } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-export interface TodoItem {
-  title: string;
-  id: string;
-  createdBy: string;
-  createdAt: string;
-}
+const mockMigrations: Migration[] = [
+  {
+    id: '1',
+    name: 'Mock Migration 1',
+    status: 'Created',
+    sourceRepository: 'https://github.com/org/repo',
+    createdBy: 'user1',
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    name: 'Mock Migration 2',
+    status: 'Completed',
+    sourceRepository: 'https://github.com/org/repo',
+    createdBy: 'user2',
+    createdAt: new Date().toISOString(),
+  },
+];
 
-// TEMPLATE NOTE:
-// This is a simple in-memory todo list store. It is recommended to use a
-// database to store data in a real application. See the database service
-// documentation for more information on how to do this:
-// https://backstage.io/docs/backend-system/core-services/database
-export class TodoListService {
+export class ConvertorService {
   readonly #logger: LoggerService;
-  readonly #catalog: typeof catalogServiceRef.T;
-
-  readonly #storedTodos = new Array<TodoItem>();
+  // readonly #catalog: typeof catalogServiceRef.T;
 
   static create(options: {
     logger: LoggerService;
-    catalog: typeof catalogServiceRef.T;
+    // catalog: typeof catalogServiceRef.T;
   }) {
-    return new TodoListService(options.logger, options.catalog);
+    return new ConvertorService(options.logger);
   }
 
   private constructor(
     logger: LoggerService,
-    catalog: typeof catalogServiceRef.T,
+    // catalog: typeof catalogServiceRef.T,
   ) {
     this.#logger = logger;
-    this.#catalog = catalog;
+    // this.#catalog = catalog;
   }
 
-  async createTodo(
+  async createMigration(
     input: {
-      title: string;
-      entityRef?: string;
+      name: string;
+      // TODO
+      // entityRef?: string;
     },
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
     },
-  ): Promise<TodoItem> {
-    let title = input.title;
-
-    // TEMPLATE NOTE:
+  ): Promise<Migration> {
+    /*
+    /* TEMPLATE NOTE:
     // A common pattern for Backstage plugins is to pass an entity reference
     // from the frontend to then fetch the entire entity from the catalog in the
     // backend plugin.
@@ -106,51 +111,54 @@ export class TodoListService {
       const entityDisplay = entity.metadata.title ?? input.entityRef;
       title = `[${entityDisplay}] ${input.title}`;
     }
+    */
 
     const id = crypto.randomUUID();
     const createdBy = options.credentials.principal.userEntityRef;
-    const newTodo = {
-      title,
+    const newMigration: Migration = {
+      name: input.name,
+      status: 'Created',
+      sourceRepository: '',
       id,
       createdBy,
       createdAt: new Date().toISOString(),
     };
 
-    this.#storedTodos.push(newTodo);
+    // TODO: persist in the DB
 
-    // TEMPLATE NOTE:
-    // The second argument of the logger methods can be used to pass
-    // structured metadata. You can read more about the logger service here:
-    // https://backstage.io/docs/backend-system/core-services/logger
-    this.#logger.info('Created new todo item', { id, title, createdBy });
+    this.#logger.info('Created new migration', { ...newMigration });
 
-    return newTodo;
+    return newMigration;
   }
 
-  async listTodos(): Promise<{ items: TodoItem[] }> {
-    return { items: Array.from(this.#storedTodos) };
+  async listMigrations(): Promise<{ migrations: Migration[] }> {
+    this.#logger.info('listMigrations called');
+    // TODO: fetch from the DB, sync with k8s
+    return { migrations: mockMigrations };
   }
 
-  async getTodo(request: { id: string }): Promise<TodoItem> {
-    const todo = this.#storedTodos.find(item => item.id === request.id);
-    if (!todo) {
-      throw new NotFoundError(`No todo found with id '${request.id}'`);
+  async getMigration(request: { id: string }): Promise<Migration> {
+    // TODO: fetch from the DB
+    const migration = mockMigrations.find(m => m.id === request.id);
+
+    if (!migration) {
+      throw new NotFoundError(`No migration found with id '${request.id}'`);
     }
-    return todo;
+    return migration;
   }
 }
 
-export const todoListServiceRef = createServiceRef<Expand<TodoListService>>({
-  id: 'todo.list',
+export const convertorServiceRef = createServiceRef<Expand<ConvertorService>>({
+  id: 'x2a-convertor',
   defaultFactory: async service =>
     createServiceFactory({
       service,
       deps: {
         logger: coreServices.logger,
-        catalog: catalogServiceRef,
+        // catalog: catalogServiceRef,
       },
       async factory(deps) {
-        return TodoListService.create(deps);
+        return ConvertorService.create(deps);
       },
     }),
 });

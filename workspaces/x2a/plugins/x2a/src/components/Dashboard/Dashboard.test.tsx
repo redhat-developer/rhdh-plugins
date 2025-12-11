@@ -17,7 +17,13 @@ import { Dashboard } from './Dashboard';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { screen } from '@testing-library/react';
-import { registerMswTestHooks, renderInTestApp } from '@backstage/test-utils';
+import {
+  mockApis,
+  registerMswTestHooks,
+  renderInTestApp,
+  TestApiProvider,
+} from '@backstage/test-utils';
+import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 
 describe('Dashboard component', () => {
   const server = setupServer();
@@ -32,7 +38,23 @@ describe('Dashboard component', () => {
   });
 
   it('should render', async () => {
-    await renderInTestApp(<Dashboard />);
+    const discoveryApiMock = mockApis.discovery({
+      baseUrl: 'http://localhost:1234',
+    });
+    const fetchApiMock = {
+      fetch: jest.fn().mockReturnValue(new Promise(() => {})),
+    };
+
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[
+          [fetchApiRef, fetchApiMock],
+          [discoveryApiRef, discoveryApiMock],
+        ]}
+      >
+        <Dashboard />
+      </TestApiProvider>,
+    );
     expect(screen.getByText('Migration Hub')).toBeInTheDocument();
   });
 });

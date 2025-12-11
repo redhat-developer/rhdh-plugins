@@ -22,11 +22,14 @@ import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
-import { todoListServiceRef } from './services/TodoListService';
+import { convertorServiceRef } from './services/ConvertorService';
+import { Migration } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-const mockTodoItem = {
-  title: 'Do the thing',
+const mockMigration: Migration = {
   id: '123',
+  name: 'Mock Migration',
+  status: 'Created',
+  sourceRepository: 'https://github.com/org/repo',
   createdBy: mockCredentials.user().principal.userEntityRef,
   createdAt: new Date().toISOString(),
 };
@@ -35,46 +38,48 @@ const mockTodoItem = {
 // Testing the router directly allows you to write a unit test that mocks the provided options.
 describe('createRouter', () => {
   let app: express.Express;
-  let todoList: jest.Mocked<typeof todoListServiceRef.T>;
+  let convertor: jest.Mocked<typeof convertorServiceRef.T>;
 
   beforeEach(async () => {
-    todoList = {
-      createTodo: jest.fn(),
-      listTodos: jest.fn(),
-      getTodo: jest.fn(),
+    convertor = {
+      createMigration: jest.fn(),
+      listMigrations: jest.fn(),
+      getMigration: jest.fn(),
     };
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
-      todoList,
+      convertor,
     });
     app = express();
     app.use(router);
     app.use(mockErrorHandler());
   });
 
-  it('should create a TODO', async () => {
-    todoList.createTodo.mockResolvedValue(mockTodoItem);
+  it('should create a migration', async () => {
+    convertor.createMigration.mockResolvedValue(mockMigration);
 
-    const response = await request(app).post('/todos').send({
-      title: 'Do the thing',
+    const response = await request(app).post('/migrations').send({
+      name: mockMigration.name,
+      // TODO: more
     });
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual(mockTodoItem);
+    expect(response.body).toEqual(mockMigration);
   });
 
-  it('should not allow unauthenticated requests to create a TODO', async () => {
-    todoList.createTodo.mockResolvedValue(mockTodoItem);
+  it('should not allow unauthenticated requests to create a migration', async () => {
+    convertor.createMigration.mockResolvedValue(mockMigration);
 
     // TEMPLATE NOTE:
     // The HttpAuth mock service considers all requests to be authenticated as a
     // mock user by default. In order to test other cases we need to explicitly
     // pass an authorization header with mock credentials.
     const response = await request(app)
-      .post('/todos')
+      .post('/migrations')
       .set('Authorization', mockCredentials.none.header())
       .send({
-        title: 'Do the thing',
+        name: mockMigration.name,
+        // TODO: more
       });
 
     expect(response.status).toBe(401);

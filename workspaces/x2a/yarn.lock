@@ -7387,6 +7387,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-x2a-common@workspace:plugins/x2a-common":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-x2a-common@workspace:plugins/x2a-common"
+  dependencies:
+    "@backstage/cli": ^0.34.5
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-x2a@workspace:plugins/x2a":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-x2a@workspace:plugins/x2a"
