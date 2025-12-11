@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: redhat-resource-optimization
-  title: RedHat Resource Optimizations For Red Hat Developer Hub
+  title: Red Hat Resource Optimizations For Red Hat Developer Hub
   description: |
     Red Hat Resource Optimization brings Red Hat Insights OpenShift recommendations into Backstage with extended actions. You can view recommendations and apply them to your configured clusters.
   # Example for optional annotations
