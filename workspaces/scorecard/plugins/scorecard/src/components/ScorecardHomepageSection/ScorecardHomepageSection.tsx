@@ -56,9 +56,7 @@ export const ScorecardHomepageSection = () => {
           ?.slice(0, 2)
           .map((scorecard: AggregatedMetricResult) => (
             <Grid item key={scorecard.id}>
-              <ScorecardHomepageCard
-                scorecard={scorecard as AggregatedMetricResult}
-              />
+              <ScorecardHomepageCard scorecard={scorecard} />
             </Grid>
           ))}
       </Grid>

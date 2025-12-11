@@ -123,39 +123,5 @@ export class ScorecardApiClient implements ScorecardApi {
   async getAggregatedScorecards(): Promise<AggregatedMetricResult[]> {
     // Return mock data instead of making an API call
     return mockAggregatedScorecardSuccessData;
-
-    // Commented out the original API call
-    // const baseUrl = await this.getBaseUrl();
-    // const url = new URL(
-    //   `${baseUrl}/metrics/catalog/aggregated`,
-    // );
-
-    // if (metricIds) {
-    //   url.searchParams.set('metricIds', metricIds.join(','));
-    // }
-
-    // try {
-    //   const response = await this.fetchApi.fetch(url.toString());
-
-    //   if (!response.ok) {
-    //     const errorText = await response.text();
-    //     throw new Error(
-    //       `Failed to fetch aggregated scorecards: ${response.status} ${response.statusText}. ${errorText}`,
-    //     );
-    //   }
-
-    //   const data = await response.json();
-
-    //   if (!Array.isArray(data)) {
-    //     throw new Error('Invalid response format from aggregated scorecard API');
-    //   }
-
-    //   return data;
-    // } catch (error) {
-    //   if (error instanceof Error) {
-    //     throw error;
-    //   }
-    //   throw new Error(`Unexpected error fetching aggregated scorecards: ${String(error)}`);
-    // }
   }
 }

@@ -47,15 +47,14 @@ export const ScorecardHomepageCard = ({
 
   const pieData: PieData[] =
     scorecard.result.values?.map(value => ({
-      name: value.name as 'success' | 'warning' | 'error',
+      name: value.name,
       value: value.count,
       color:
         {
           success: theme.palette.success.main,
           warning: theme.palette.warning.main,
           error: theme.palette.error.main,
-        }[value.name as 'success' | 'warning' | 'error'] ||
-        theme.palette.success.main,
+        }[value.name] || theme.palette.success.main,
     })) ?? [];
 
   return (
