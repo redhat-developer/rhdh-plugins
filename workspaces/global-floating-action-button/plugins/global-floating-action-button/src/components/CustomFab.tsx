@@ -32,6 +32,20 @@ const useStyles = makeStyles(() => ({
   openInNew: { paddingBottom: '5px', paddingTop: '3px' },
 }));
 
+const isExternalUri = (uri: string) => /^([a-z+.-]+):/.test(uri);
+
+const getIconOrder = (displayOnRight: boolean, isExternal: boolean) =>
+  displayOnRight
+    ? { externalIcon: isExternal ? 1 : -1, icon: 3 }
+    : { externalIcon: isExternal ? 3 : -1, icon: 1 };
+
+const getFabVariant = (
+  showLabel?: boolean,
+  isExternal?: boolean,
+  icon?: string | ReactElement,
+): 'extended' | 'circular' =>
+  showLabel || isExternal || !icon ? 'extended' : 'circular';
+
 const FABLabel = ({
   label,
   slot,
@@ -47,6 +61,7 @@ const FABLabel = ({
 }) => {
   const styles = useStyles();
   const marginStyle = getSlotOptions(slot).margin;
+
   return (
     <>
       {showExternalIcon && (
@@ -88,11 +103,15 @@ export const CustomFab = ({
   t: TranslationFunction<typeof globalFloatingActionButtonTranslationRef.T>;
 }) => {
   const navigate = useNavigate();
-  const isExternalUri = (uri: string) => /^([a-z+.-]+):/.test(uri);
-  const isExternal = isExternalUri(actionButton.to!);
-  const newWindow = isExternal && !!/^https?:/.exec(actionButton.to!);
-  const navigateTo = () =>
-    actionButton.to && !isExternal ? navigate(actionButton.to) : '';
+
+  const isExternal = actionButton.to ? isExternalUri(actionButton.to) : false;
+  const newWindow = isExternal && /^https?:/.test(actionButton.to || '');
+
+  const navigateTo = () => {
+    if (actionButton.to && !isExternal) {
+      navigate(actionButton.to);
+    }
+  };
 
   const resolvedLabel = getTranslatedTextWithFallback(
     t,
@@ -107,6 +126,18 @@ export const CustomFab = ({
       )
     : undefined;
 
+  const resolvedDisabledTooltip = actionButton.disabledToolTip
+    ? getTranslatedTextWithFallback(
+        t,
+        actionButton.disabledToolTipKey,
+        actionButton.disabledToolTip,
+      )
+    : undefined;
+
+  const currentTooltip = actionButton.isDisabled
+    ? resolvedDisabledTooltip
+    : resolvedTooltip;
+
   if (!resolvedLabel) {
     // eslint-disable-next-line no-console
     console.warn(
@@ -117,58 +148,54 @@ export const CustomFab = ({
   }
 
   const labelText =
-    (resolvedLabel || '').length > 20
+    resolvedLabel.length > 20
       ? `${resolvedLabel.slice(0, resolvedLabel.length)}...`
       : resolvedLabel;
-
-  const getColor = () => {
-    if (actionButton.color) {
-      return actionButton.color;
-    }
-    return undefined;
-  };
 
   const displayOnRight =
     actionButton.slot === Slot.PAGE_END || !actionButton.slot;
 
+  const slot = actionButton.slot || Slot.PAGE_END;
+  const displayLabel =
+    actionButton.showLabel || !actionButton.icon ? labelText : '';
+
+  const fabElement = (
+    <Fab
+      {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
+      className={className}
+      style={{
+        color: actionButton.iconColor || '#1f1f1f',
+        backgroundColor: actionButton.color ? '' : 'white',
+      }}
+      variant={getFabVariant(
+        actionButton.showLabel,
+        isExternal,
+        actionButton.icon,
+      )}
+      size={size || actionButton.size || 'medium'}
+      color={actionButton.color}
+      aria-label={resolvedLabel}
+      data-testid={resolvedLabel.replace(' ', '-').toLocaleLowerCase('en-US')}
+      onClick={actionButton.onClick || navigateTo}
+      disabled={actionButton.isDisabled}
+      {...(isExternal ? { href: actionButton.to } : {})}
+    >
+      <FABLabel
+        showExternalIcon={isExternal}
+        icon={actionButton.icon}
+        label={displayLabel}
+        order={getIconOrder(displayOnRight, isExternal)}
+        slot={slot}
+      />
+    </Fab>
+  );
+
   return (
     <Tooltip
-      title={resolvedTooltip}
+      title={currentTooltip}
       placement={getSlotOptions(actionButton.slot).tooltipDirection}
     >
-      <Fab
-        {...(newWindow ? { target: '_blank', rel: 'noopener' } : {})}
-        className={className}
-        style={{
-          color: actionButton?.iconColor || '#1f1f1f',
-          backgroundColor: actionButton.color ? '' : 'white',
-        }}
-        variant={
-          actionButton.showLabel || isExternal || !actionButton.icon
-            ? 'extended'
-            : 'circular'
-        }
-        size={size || actionButton.size || 'medium'}
-        color={getColor()}
-        aria-label={resolvedLabel}
-        data-testid={(resolvedLabel || '')
-          .replace(' ', '-')
-          .toLocaleLowerCase('en-US')}
-        onClick={actionButton.onClick || navigateTo}
-        {...(isExternal ? { href: actionButton.to } : {})}
-      >
-        <FABLabel
-          showExternalIcon={isExternal}
-          icon={actionButton.icon}
-          label={actionButton.showLabel || !actionButton.icon ? labelText : ''}
-          order={
-            displayOnRight
-              ? { externalIcon: isExternal ? 1 : -1, icon: 3 }
-              : { externalIcon: isExternal ? 3 : -1, icon: 1 }
-          }
-          slot={actionButton.slot || Slot.PAGE_END}
-        />
-      </Fab>
+      {fabElement}
     </Tooltip>
   );
 };
