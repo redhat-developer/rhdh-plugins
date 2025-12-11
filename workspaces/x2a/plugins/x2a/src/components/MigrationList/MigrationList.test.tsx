@@ -16,19 +16,30 @@
 import { renderInTestApp } from '@backstage/test-utils';
 import { MigrationList } from './MigrationList';
 
+// const migrationsMock = {
+//   results: [
+//     {
+//       name: 'Migration 1',
+//       status: 'Pending',
+//       sourceRepository: 'https://github.com/org/repo',
+//     },
+//     {
+//       name: 'Migration 2',
+//       status: 'Completed',
+//       sourceRepository: 'https://github.com/org/repo',
+//     },
+//   ],
+// };
+
 describe('MigrationList component', () => {
   it('renders the table', async () => {
-    const { getAllByText, getByAltText, getByText, findByRole } =
-      await renderInTestApp(<MigrationList />);
+    const { getByText, findByRole } = await renderInTestApp(<MigrationList />);
 
     // Wait for the table to render
     const table = await findByRole('table');
-    const nationality = getAllByText('GB');
+
     // Assert that the table contains the expected user data
     expect(table).toBeInTheDocument();
-    expect(getByAltText('Carolyn')).toBeInTheDocument();
-    expect(getByText('Carolyn Moore')).toBeInTheDocument();
-    expect(getByText('carolyn.moore@example.com')).toBeInTheDocument();
-    expect(nationality[0]).toBeInTheDocument();
+    expect(getByText('Migration 1')).toBeInTheDocument();
   });
 });
