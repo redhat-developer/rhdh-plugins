@@ -1,0 +1,50 @@
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: user1
+spec:
+  profile:
+    displayName: User One
+    email: user1@konflux.dev
+  memberOf: [team-konflux]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: user2
+spec:
+  profile:
+    displayName: User Two
+    email: user2@konflux.dev
+  memberOf: [team-konflux]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: user3
+spec:
+  profile:
+    displayName: User Three
+    email: user3@konflux.dev
+  memberOf: [team-konflux]
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: guest
+spec:
+  profile:
+    displayName: Guest User
+    email: guest@example.com
+  memberOf: [team-konflux]
+---
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: team-konflux
+spec:
+  type: team
+  profile:
+    displayName: Konflux Team
+    email: team-konflux@konflux.dev
+  children: []
