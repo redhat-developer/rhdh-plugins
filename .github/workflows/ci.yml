@@ -77,9 +77,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: https://registry.npmjs.org/ # Needed for auth
 
-      - name: Clean node_modules and caches
-        run: rm -rf node_modules ~/.cache/yarn node_modules/.cache/api-extractor
-
       - name: yarn install
         run: yarn install --immutable
 
