@@ -90,7 +90,7 @@ export const AddedRepositoryTableRow = ({
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
         {importFlow === ImportFlow.Scaffolder ||
-        importFlow === ImportFlow.Orchestrator ? ( // todo
+        importFlow === ImportFlow.Orchestrator ? (
           <Link
             to={`/bulk-import/repositories/import-history/${encodeURIComponent(
               data.repoUrl || '',

@@ -37,6 +37,7 @@ import {
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
 import {
+  OrchestratorWorkflow,
   OrchestratorWorkflowDao,
   RepositoryDao,
   RepositoryName,
@@ -878,7 +879,7 @@ export async function findTaskImportStatusByRepo(
   repoUrl: string,
   skipTasks?: boolean,
 ): Promise<HandlerResponse<Components.Schemas.Import>> {
-  deps.logger.debug(`Getting bulk import job status for ${repoUrl}..`);
+  deps.logger.debug(`Getting bulk import job status for ${repoUrl}.`);
 
   const gitUrl = gitUrlParse(repoUrl);
 
@@ -993,7 +994,7 @@ export async function findOrchestratorImportStatusByRepo(
   skipWorkflows?: boolean,
 ): Promise<HandlerResponse<Components.Schemas.Import>> {
   deps.logger.debug(
-    `Getting orchestrator workflow import job status for ${repoUrl}..`,
+    `Getting orchestrator workflow import job status for ${repoUrl}.`,
   );
 
   const gitUrl = gitUrlParse(repoUrl);
@@ -1044,11 +1045,9 @@ export async function findOrchestratorImportStatusByRepo(
               await deps.orchestratorWorkflowDao.findWorkflowsByRepositoryId(
                 repository.id,
               );
-            result.workflows = workflows.map(
-              (w: { instanceId: string | undefined }) => ({
-                workflowId: w.instanceId,
-              }),
-            );
+            result.workflows = workflows.map((w: OrchestratorWorkflow) => ({
+              workflowId: w.instanceId,
+            }));
           }
 
           result.approvalTool =
