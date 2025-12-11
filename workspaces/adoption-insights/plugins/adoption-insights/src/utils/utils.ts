@@ -74,7 +74,7 @@ export const formatDate = (
  * @param locale - User's language preference
  */
 export const formatShortDate = (date: Date, locale?: string) =>
-  formatDate(date, { year: '2-digit', month: 'short', day: 'numeric' }, locale);
+  formatDate(date, { year: 'numeric', month: 'short', day: 'numeric' }, locale);
 
 /**
  * Format date in long format: "January 15, 2024"
