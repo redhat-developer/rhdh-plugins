@@ -250,29 +250,6 @@ export class OrchestratorWorkflowDao {
     return newWorkflow.id;
   }
 
-  async updateWorkflow(instanceId: string, status: string): Promise<void> {
-    await this.knex('orchestrator_workflows')
-      .where({ instance_id: instanceId })
-      .update({
-        status: status,
-      });
-  }
-
-  async findWorkflowByInstanceId(
-    instanceId: string,
-  ): Promise<OrchestratorWorkflow | undefined> {
-    const result = await this.knex('orchestrator_workflows')
-      .select({
-        id: 'id',
-        instanceId: 'instance_id',
-        repositoryId: 'repositoryId',
-        createdAt: 'created_at',
-      })
-      .where({ instance_id: instanceId })
-      .first();
-    return result;
-  }
-
   async findWorkflowByRepoId(
     repositoryId: number,
   ): Promise<OrchestratorWorkflow | undefined> {
