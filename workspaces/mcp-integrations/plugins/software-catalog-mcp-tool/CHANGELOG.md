@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool
 
+## 0.4.1
+
+### Patch Changes
+
+- f2b1724: Bump Backstage version to 1.45.3
+
 ## 0.4.0
 
 ### Minor Changes

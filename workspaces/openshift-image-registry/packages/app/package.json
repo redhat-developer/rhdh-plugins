@@ -47,7 +47,7 @@
     "@mui/material": "5.18.0",
     "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-openshift-image-registry": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
     "history": "^5.0.0",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@backstage/test-utils": "^1.7.13",
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.57.0",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",

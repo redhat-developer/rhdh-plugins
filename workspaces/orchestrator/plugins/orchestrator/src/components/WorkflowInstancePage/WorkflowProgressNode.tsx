@@ -15,7 +15,6 @@
  */
 
 import { FC } from 'react';
-import Moment from 'react-moment';
 
 import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
@@ -24,6 +23,7 @@ import HourglassTop from '@mui/icons-material/HourglassTop';
 import PauseCircle from '@mui/icons-material/PauseCircle';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { DateTime } from 'luxon';
 
 import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -95,24 +95,26 @@ WorkflowProgressNodeIcon.displayName = 'WorkflowProgressNodeIcon';
 
 export const WorkflowProgressNode: React.FC<{
   model: WorkflowProgressNodeModel;
-}> = ({ model }) => (
-  <Paragraph>
-    <Typography
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
-      <WorkflowProgressNodeIcon status={model.status} error={model.error} />
-      <Typography style={{ paddingLeft: '8px' }}>{model.name}</Typography>
-    </Typography>
-    <small style={{ paddingLeft: '32px', color: 'grey' }}>
-      {!model.exit ? (
-        VALUE_UNAVAILABLE
-      ) : (
-        <Moment fromNow>{new Date(`${model.exit}`)}</Moment>
-      )}
-    </small>
-  </Paragraph>
-);
+}> = ({ model }) => {
+  const relativeTime = model.exit
+    ? (DateTime.fromISO(model.exit).toRelative() ?? VALUE_UNAVAILABLE)
+    : VALUE_UNAVAILABLE;
+
+  return (
+    <Paragraph>
+      <Typography
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <WorkflowProgressNodeIcon status={model.status} error={model.error} />
+        <Typography style={{ paddingLeft: '8px' }}>{model.name}</Typography>
+      </Typography>
+      <small style={{ paddingLeft: '32px', color: 'grey' }}>
+        {relativeTime}
+      </small>
+    </Paragraph>
+  );
+};
 WorkflowProgressNode.displayName = 'WorkflowProgressNode';
