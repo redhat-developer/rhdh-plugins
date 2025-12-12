@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.9.0
+
+### Minor Changes
+
+- f57ad78: Backstage version bump to v1.45.3
+
 ## 0.8.0
 
 ### Minor Changes
