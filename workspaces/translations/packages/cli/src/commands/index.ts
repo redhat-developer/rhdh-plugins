@@ -93,47 +93,34 @@ export function registerCommands(program: Command) {
   // Download command - download translated strings from TMS
   command
     .command('download')
-    .description('Download translated strings from TMS')
-    .option('--tms-url <url>', 'TMS API URL')
-    .option('--tms-token <token>', 'TMS API token')
+    .description('Download translated strings from TMS using Memsource CLI')
     .option('--project-id <id>', 'TMS project ID')
     .option(
       '--output-dir <path>',
       'Output directory for downloaded translations',
-      'i18n',
+      'i18n/downloads',
     )
     .option(
       '--languages <languages>',
-      'Comma-separated list of languages to download',
+      'Comma-separated list of languages to download (e.g., "it,ja,fr")',
     )
-    .option('--format <format>', 'Download format (json, po)', 'json')
-    .option('--include-completed', 'Include completed translations only', true)
-    .option('--include-draft', 'Include draft translations', false)
+    .option(
+      '--job-ids <ids>',
+      'Comma-separated list of specific job IDs to download (e.g., "13,14,16")',
+    )
     .action(wrapCommand(downloadCommand));
 
   // Deploy command - deploy translated strings back to language files
   command
     .command('deploy')
     .description(
-      'Deploy translated strings back to the application language files',
+      'Deploy downloaded translations to TypeScript translation files (it.ts, ja.ts, etc.)',
     )
     .option(
       '--source-dir <path>',
-      'Source directory containing downloaded translations',
-      'i18n',
+      'Source directory containing downloaded translations (from Memsource)',
+      'i18n/downloads',
     )
-    .option(
-      '--target-dir <path>',
-      'Target directory for language files',
-      'src/locales',
-    )
-    .option(
-      '--languages <languages>',
-      'Comma-separated list of languages to deploy',
-    )
-    .option('--format <format>', 'Input format (json, po)', 'json')
-    .option('--backup', 'Create backup of existing language files', true)
-    .option('--validate', 'Validate translations before deploying', true)
     .action(wrapCommand(deployCommand));
 
   // Status command - show translation status

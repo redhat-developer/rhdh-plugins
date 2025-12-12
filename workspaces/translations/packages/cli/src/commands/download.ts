@@ -19,194 +19,260 @@ import path from 'path';
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
+import { execSync } from 'child_process';
 
-import { TMSClient } from '../lib/i18n/tmsClient';
-import { saveTranslationFile } from '../lib/i18n/saveFile';
 import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
+
+/**
+ * Download translations using Memsource CLI
+ */
+async function downloadWithMemsourceCLI(
+  projectId: string,
+  outputDir: string,
+  jobIds?: string[],
+  languages?: string[],
+): Promise<Array<{ jobId: string; filename: string; lang: string }>> {
+  // Check if memsource CLI is available
+  try {
+    execSync('which memsource', { stdio: 'pipe' });
+  } catch {
+    throw new Error(
+      'memsource CLI not found. Please ensure memsource-cli is installed and ~/.memsourcerc is sourced.',
+    );
+  }
+
+  // Check if MEMSOURCE_TOKEN is available
+  if (!process.env.MEMSOURCE_TOKEN) {
+    throw new Error(
+      'MEMSOURCE_TOKEN not found. Please source ~/.memsourcerc first: source ~/.memsourcerc',
+    );
+  }
+
+  // Ensure output directory exists
+  await fs.ensureDir(outputDir);
+
+  const downloadResults: Array<{
+    jobId: string;
+    filename: string;
+    lang: string;
+  }> = [];
+
+  // If job IDs are provided, download those specific jobs
+  if (jobIds && jobIds.length > 0) {
+    console.log(
+      chalk.yellow(`📥 Downloading ${jobIds.length} specific job(s)...`),
+    );
+
+    for (const jobId of jobIds) {
+      try {
+        const cmd = [
+          'memsource',
+          'job',
+          'download',
+          '--project-id',
+          projectId,
+          '--job-id',
+          jobId,
+          '--type',
+          'target',
+          '--output-dir',
+          outputDir,
+        ];
+
+        execSync(cmd.join(' '), {
+          stdio: 'pipe',
+          env: { ...process.env },
+        });
+
+        // Get job info to determine filename and language
+        const jobInfoCmd = [
+          'memsource',
+          'job',
+          'list',
+          '--project-id',
+          projectId,
+          '--format',
+          'json',
+        ];
+        const jobListOutput = execSync(jobInfoCmd.join(' '), {
+          encoding: 'utf-8',
+          env: { ...process.env },
+        });
+        const jobs = JSON.parse(jobListOutput);
+        const jobArray = Array.isArray(jobs) ? jobs : [jobs];
+        const job = jobArray.find((j: any) => j.uid === jobId);
+
+        if (job) {
+          downloadResults.push({
+            jobId,
+            filename: job.filename,
+            lang: job.target_lang,
+          });
+          console.log(
+            chalk.green(
+              `✅ Downloaded job ${jobId}: ${job.filename} (${job.target_lang})`,
+            ),
+          );
+        }
+      } catch (error: any) {
+        console.warn(
+          chalk.yellow(
+            `⚠️  Warning: Could not download job ${jobId}: ${error.message}`,
+          ),
+        );
+      }
+    }
+  } else {
+    // List all completed jobs and download them
+    console.log(chalk.yellow('📋 Listing available jobs...'));
+
+    try {
+      const listCmd = [
+        'memsource',
+        'job',
+        'list',
+        '--project-id',
+        projectId,
+        '--format',
+        'json',
+      ];
+      const listOutput = execSync(listCmd.join(' '), {
+        encoding: 'utf-8',
+        env: { ...process.env },
+      });
+      const jobs = JSON.parse(listOutput);
+      const jobArray = Array.isArray(jobs) ? jobs : [jobs];
+
+      // Filter for completed jobs
+      const completedJobs = jobArray.filter(
+        (job: any) => job.status === 'COMPLETED',
+      );
+
+      // Filter by languages if specified
+      let jobsToDownload = completedJobs;
+      if (languages && languages.length > 0) {
+        jobsToDownload = completedJobs.filter((job: any) =>
+          languages.includes(job.target_lang),
+        );
+      }
+
+      console.log(
+        chalk.yellow(
+          `📥 Found ${jobsToDownload.length} completed job(s) to download...`,
+        ),
+      );
+
+      for (const job of jobsToDownload) {
+        try {
+          const cmd = [
+            'memsource',
+            'job',
+            'download',
+            '--project-id',
+            projectId,
+            '--job-id',
+            job.uid,
+            '--type',
+            'target',
+            '--output-dir',
+            outputDir,
+          ];
+
+          execSync(cmd.join(' '), {
+            stdio: 'pipe',
+            env: { ...process.env },
+          });
+
+          downloadResults.push({
+            jobId: job.uid,
+            filename: job.filename,
+            lang: job.target_lang,
+          });
+          console.log(
+            chalk.green(`✅ Downloaded: ${job.filename} (${job.target_lang})`),
+          );
+        } catch (error: any) {
+          console.warn(
+            chalk.yellow(
+              `⚠️  Warning: Could not download job ${job.uid}: ${error.message}`,
+            ),
+          );
+        }
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to list jobs: ${error.message}`);
+    }
+  }
+
+  return downloadResults;
+}
 
 export async function downloadCommand(opts: OptionValues): Promise<void> {
   console.log(chalk.blue('📥 Downloading translated strings from TMS...'));
 
   // Load config and merge with options
   const config = await loadI18nConfig();
-  // mergeConfigWithOptions is async (may generate token), so we await it
   const mergedOpts = await mergeConfigWithOptions(config, opts);
 
   const {
-    tmsUrl,
-    tmsToken,
     projectId,
-    outputDir = 'i18n',
+    outputDir = 'i18n/downloads',
     languages,
-    format = 'json',
-    includeCompleted = true,
-    includeDraft = false,
+    jobIds,
   } = mergedOpts as {
-    tmsUrl?: string;
-    tmsToken?: string;
     projectId?: string;
     outputDir?: string;
     languages?: string;
-    format?: string;
-    includeCompleted?: boolean;
-    includeDraft?: boolean;
+    jobIds?: string;
   };
 
   // Validate required options
-  if (!tmsUrl || !tmsToken || !projectId) {
+  if (!projectId) {
     console.error(chalk.red('❌ Missing required TMS configuration:'));
     console.error('');
-
-    if (!tmsUrl) {
-      console.error(chalk.yellow('   ✗ TMS URL'));
-      console.error(
-        chalk.gray(
-          '     Set via: --tms-url <url> or I18N_TMS_URL or .i18n.config.json',
-        ),
-      );
-    }
-    if (!tmsToken) {
-      console.error(chalk.yellow('   ✗ TMS Token'));
-      console.error(
-        chalk.gray(
-          '     Primary: Source ~/.memsourcerc (sets MEMSOURCE_TOKEN)',
-        ),
-      );
-      console.error(
-        chalk.gray(
-          '     Fallback: --tms-token <token> or I18N_TMS_TOKEN or ~/.i18n.auth.json',
-        ),
-      );
-    }
-    if (!projectId) {
-      console.error(chalk.yellow('   ✗ Project ID'));
-      console.error(
-        chalk.gray(
-          '     Set via: --project-id <id> or I18N_TMS_PROJECT_ID or .i18n.config.json',
-        ),
-      );
-    }
-
+    console.error(chalk.yellow('   ✗ Project ID'));
+    console.error(
+      chalk.gray(
+        '     Set via: --project-id <id> or I18N_TMS_PROJECT_ID or .i18n.config.json',
+      ),
+    );
     console.error('');
     console.error(chalk.blue('📋 Quick Setup Guide:'));
     console.error(chalk.gray('   1. Run: translations-cli i18n init'));
-    console.error(chalk.gray('      This creates .i18n.config.json'));
-    console.error('');
+    console.error(chalk.gray('   2. Edit .i18n.config.json to add Project ID'));
     console.error(
-      chalk.gray('   2. Edit .i18n.config.json in your project root:'),
-    );
-    console.error(
-      chalk.gray(
-        '      - Add your TMS URL (e.g., "https://cloud.memsource.com/web")',
-      ),
-    );
-    console.error(chalk.gray('      - Add your Project ID'));
-    console.error('');
-    console.error(
-      chalk.gray('   3. Set up Memsource authentication (recommended):'),
-    );
-    console.error(
-      chalk.gray('      - Run: translations-cli i18n setup-memsource'),
-    );
-    console.error(
-      chalk.gray(
-        '      - Or manually create ~/.memsourcerc following localization team instructions',
-      ),
-    );
-    console.error(chalk.gray('      - Then source it: source ~/.memsourcerc'));
-    console.error('');
-    console.error(
-      chalk.gray(
-        '   OR use ~/.i18n.auth.json as fallback (run init to create it)',
-      ),
-    );
-    console.error('');
-    console.error(
-      chalk.gray('   See docs/i18n-commands.md for detailed instructions.'),
+      chalk.gray('   3. Source ~/.memsourcerc: source ~/.memsourcerc'),
     );
     process.exit(1);
   }
 
+  // Check if MEMSOURCE_TOKEN is available
+  if (!process.env.MEMSOURCE_TOKEN) {
+    console.error(chalk.red('❌ MEMSOURCE_TOKEN not found'));
+    console.error(chalk.yellow('   Please source ~/.memsourcerc first:'));
+    console.error(chalk.gray('     source ~/.memsourcerc'));
+    process.exit(1);
+  }
+
   try {
-    // Ensure output directory exists
-    await fs.ensureDir(outputDir);
+    // Parse job IDs if provided (comma-separated)
+    const jobIdArray =
+      jobIds && typeof jobIds === 'string'
+        ? jobIds.split(',').map((id: string) => id.trim())
+        : undefined;
 
-    // Initialize TMS client
-    console.log(chalk.yellow(`🔗 Connecting to TMS at ${tmsUrl}...`));
-    const tmsClient = new TMSClient(tmsUrl, tmsToken);
-
-    // Test connection
-    await tmsClient.testConnection();
-    console.log(chalk.green(`✅ Connected to TMS successfully`));
-
-    // Get project information
-    console.log(chalk.yellow(`📋 Getting project information...`));
-    const projectInfo = await tmsClient.getProjectInfo(projectId);
-    console.log(chalk.gray(`   Project: ${projectInfo.name}`));
-    console.log(
-      chalk.gray(`   Languages: ${projectInfo.languages.join(', ')}`),
-    );
-
-    // Parse target languages
-    const targetLanguages =
+    // Parse languages if provided (comma-separated)
+    const languageArray =
       languages && typeof languages === 'string'
         ? languages.split(',').map((lang: string) => lang.trim())
-        : projectInfo.languages;
+        : undefined;
 
-    // Download translations for each language
-    const downloadResults = [];
-
-    for (const language of targetLanguages) {
-      console.log(
-        chalk.yellow(`📥 Downloading translations for ${language}...`),
-      );
-
-      try {
-        const translationData = await tmsClient.downloadTranslations(
-          projectId,
-          language,
-          {
-            includeCompleted: Boolean(includeCompleted),
-            includeDraft: Boolean(includeDraft),
-            format: String(format || 'json'),
-          },
-        );
-
-        if (translationData && Object.keys(translationData).length > 0) {
-          // Save translation file
-          const fileName = `${language}.${String(format || 'json')}`;
-          const filePath = path.join(String(outputDir || 'i18n'), fileName);
-
-          await saveTranslationFile(
-            translationData,
-            filePath,
-            String(format || 'json'),
-          );
-
-          downloadResults.push({
-            language,
-            filePath,
-            keyCount: Object.keys(translationData).length,
-          });
-
-          console.log(
-            chalk.green(
-              `✅ Downloaded ${language}: ${
-                Object.keys(translationData).length
-              } keys`,
-            ),
-          );
-        } else {
-          console.log(
-            chalk.yellow(`⚠️  No translations found for ${language}`),
-          );
-        }
-      } catch (error) {
-        console.warn(
-          chalk.yellow(`⚠️  Warning: Could not download ${language}: ${error}`),
-        );
-      }
-    }
+    const downloadResults = await downloadWithMemsourceCLI(
+      projectId,
+      String(outputDir),
+      jobIdArray,
+      languageArray,
+    );
 
     // Summary
     console.log(chalk.green(`✅ Download completed successfully!`));
@@ -218,13 +284,13 @@ export async function downloadCommand(opts: OptionValues): Promise<void> {
       for (const result of downloadResults) {
         console.log(
           chalk.gray(
-            `   ${result.language}: ${result.filePath} (${result.keyCount} keys)`,
+            `   ${result.filename} (${result.lang}) - Job ID: ${result.jobId}`,
           ),
         );
       }
     }
-  } catch (error) {
-    console.error(chalk.red('❌ Error downloading from TMS:'), error);
+  } catch (error: any) {
+    console.error(chalk.red('❌ Error downloading from TMS:'), error.message);
     throw error;
   }
 }
