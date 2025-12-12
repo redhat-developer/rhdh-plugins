@@ -22,6 +22,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Table from '@mui/material/Table';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { useRepositories } from '../../hooks';
@@ -45,6 +46,23 @@ import { AddRepositoriesDrawer } from './AddRepositoriesDrawer';
 import { RepositoriesHeader } from './RepositoriesHeader';
 import { RepositoriesTableBody } from './RepositoriesTableBody';
 
+const useStyles = makeStyles(() => ({
+  repositoriesTableFixedColumns: {
+    '& th:nth-child(1), & td:nth-child(1)': {
+      width: '20%',
+    },
+    '& th:nth-child(2), & td:nth-child(2)': {
+      width: '30%',
+    },
+    '& th:nth-child(3), & td:nth-child(3)': {
+      width: '20%',
+    },
+    '& th:nth-child(4), & td:nth-child(4)': {
+      width: '30%',
+    },
+  },
+}));
+
 export const RepositoriesTable = ({
   searchString,
   page,
@@ -64,6 +82,7 @@ export const RepositoriesTable = ({
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
   refetchTrigger?: number;
 }) => {
+  const classes = useStyles();
   const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -304,6 +323,7 @@ export const RepositoriesTable = ({
           style={{ minWidth: 750, height: '70%' }}
           size="small"
           data-testid={ariaLabel()}
+          className={classes.repositoriesTableFixedColumns}
         >
           <RepositoriesHeader
             numSelected={
