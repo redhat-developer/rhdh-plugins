@@ -15,15 +15,18 @@
  */
 
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
+import { execSync } from 'child_process';
 
-import { loadTranslationFile } from '../lib/i18n/loadFile';
-import { validateTranslationData } from '../lib/i18n/validateData';
-import { deployTranslationFiles } from '../lib/i18n/deployFiles';
-import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
+// Get __dirname equivalent in ES modules
+// eslint-disable-next-line no-restricted-syntax
+const __filename = fileURLToPath(import.meta.url);
+// eslint-disable-next-line no-restricted-syntax
+const __dirname = path.dirname(__filename);
 
 interface DeployResult {
   language: string;
@@ -171,6 +174,60 @@ function displaySummary(
   }
 }
 
+/**
+ * Deploy translations using the TypeScript deployment script
+ */
+async function deployWithTypeScriptScript(
+  sourceDir: string,
+  repoRoot: string,
+): Promise<void> {
+  // Find the deployment script
+  // Try multiple possible locations
+  const possibleScriptPaths = [
+    // From built location (dist/commands -> dist -> scripts)
+    // eslint-disable-next-line no-restricted-syntax
+    path.resolve(__dirname, '../../scripts/deploy-translations.ts'),
+    // From source location (src/commands -> src -> scripts)
+    // eslint-disable-next-line no-restricted-syntax
+    path.resolve(__dirname, '../../../scripts/deploy-translations.ts'),
+    // From repo root
+    path.resolve(
+      repoRoot,
+      'workspaces/translations/packages/cli/scripts/deploy-translations.ts',
+    ),
+  ];
+
+  let scriptPath: string | null = null;
+  for (const possiblePath of possibleScriptPaths) {
+    if (await fs.pathExists(possiblePath)) {
+      scriptPath = possiblePath;
+      break;
+    }
+  }
+
+  if (!scriptPath) {
+    throw new Error(
+      `Deployment script not found. Tried: ${possibleScriptPaths.join(', ')}`,
+    );
+  }
+
+  // Use tsx to run the TypeScript script
+  try {
+    execSync('which tsx', { stdio: 'pipe' });
+  } catch {
+    throw new Error(
+      'tsx not found. Please install it: npm install -g tsx, or yarn add -D tsx',
+    );
+  }
+
+  // Run the script with tsx
+  execSync(`tsx ${scriptPath} ${sourceDir}`, {
+    stdio: 'inherit',
+    cwd: repoRoot,
+    env: { ...process.env },
+  });
+}
+
 export async function deployCommand(opts: OptionValues): Promise<void> {
   console.log(
     chalk.blue(
@@ -178,83 +235,47 @@ export async function deployCommand(opts: OptionValues): Promise<void> {
     ),
   );
 
-  const config = await loadI18nConfig();
-  const mergedOpts = await mergeConfigWithOptions(config, opts);
-
-  const {
-    sourceDir = 'i18n',
-    targetDir = 'src/locales',
-    languages,
-    format = 'json',
-    backup = true,
-    validate = true,
-  } = mergedOpts as {
+  const { sourceDir = 'i18n/downloads' } = opts as {
     sourceDir?: string;
-    targetDir?: string;
-    languages?: string;
-    format?: string;
-    backup?: boolean;
-    validate?: boolean;
   };
 
   try {
-    const sourceDirStr = String(sourceDir || 'i18n');
-    const targetDirStr = String(targetDir || 'src/locales');
-    const formatStr = String(format || 'json');
-    const languagesStr =
-      languages && typeof languages === 'string' ? languages : undefined;
+    const sourceDirStr = String(sourceDir || 'i18n/downloads');
+    const repoRoot = process.cwd();
 
     if (!(await fs.pathExists(sourceDirStr))) {
       throw new Error(`Source directory not found: ${sourceDirStr}`);
     }
 
-    await fs.ensureDir(targetDirStr);
+    // Check if there are any JSON files in the source directory
+    const files = await fs.readdir(sourceDirStr);
+    const jsonFiles = files.filter(f => f.endsWith('.json'));
 
-    const filesToProcess = await findTranslationFiles(
-      sourceDirStr,
-      formatStr,
-      languagesStr,
-    );
-
-    if (filesToProcess.length === 0) {
+    if (jsonFiles.length === 0) {
       console.log(
-        chalk.yellow(`⚠️  No translation files found in ${sourceDirStr}`),
+        chalk.yellow(`⚠️  No translation JSON files found in ${sourceDirStr}`),
       );
+      console.log(
+        chalk.gray(
+          '   Make sure you have downloaded translations first using:',
+        ),
+      );
+      console.log(chalk.gray('   translations-cli i18n download'));
       return;
     }
 
     console.log(
       chalk.yellow(
-        `📁 Found ${filesToProcess.length} translation files to deploy`,
+        `📁 Found ${jsonFiles.length} translation file(s) to deploy`,
       ),
     );
 
-    if (backup) {
-      await createBackup(targetDirStr, formatStr);
-    }
+    // Deploy using TypeScript script
+    await deployWithTypeScriptScript(sourceDirStr, repoRoot);
 
-    const deployResults: DeployResult[] = [];
-
-    for (const fileName of filesToProcess) {
-      try {
-        const result = await processTranslationFile(
-          fileName,
-          sourceDirStr,
-          targetDirStr,
-          formatStr,
-          Boolean(validate),
-        );
-        deployResults.push(result);
-      } catch (error) {
-        const language = fileName.replace(`.${formatStr}`, '');
-        console.error(chalk.red(`❌ Error processing ${language}:`), error);
-        throw error;
-      }
-    }
-
-    displaySummary(deployResults, targetDirStr, Boolean(backup));
-  } catch (error) {
-    console.error(chalk.red('❌ Error deploying translations:'), error);
+    console.log(chalk.green(`✅ Deployment completed successfully!`));
+  } catch (error: any) {
+    console.error(chalk.red('❌ Error deploying translations:'), error.message);
     throw error;
   }
 }
