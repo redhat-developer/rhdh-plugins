@@ -21,6 +21,7 @@ import { TestApiProvider } from '@backstage/test-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import type { Entity } from '@backstage/catalog-model';
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { AggregatedMetricResult } from '../src/utils/utils';
 
 import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
@@ -29,6 +30,7 @@ import {
   mockScorecardErrorData,
   mockScorecardSuccessData,
 } from '../__fixtures__/scorecardData';
+import { mockAggregatedScorecardSuccessData } from '../__fixtures__/aggregatedScorecardData';
 
 const mockComponentEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
@@ -47,6 +49,11 @@ const mockComponentEntity: Entity = {
 class MockScorecardApi implements ScorecardApi {
   async getScorecards(_entity: Entity): Promise<MetricResult[]> {
     return [...mockScorecardSuccessData, ...mockScorecardErrorData];
+  }
+  async getAggregatedScorecards(
+    _metricIds?: string[],
+  ): Promise<AggregatedMetricResult[]> {
+    return mockAggregatedScorecardSuccessData;
   }
 }
 

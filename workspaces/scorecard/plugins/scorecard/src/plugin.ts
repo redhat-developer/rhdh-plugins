@@ -19,6 +19,7 @@ import {
   createApiFactory,
   fetchApiRef,
   discoveryApiRef,
+  createComponentExtension,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
@@ -61,5 +62,21 @@ export const EntityScorecardContent = scorecardPlugin.provide(
     component: () =>
       import('./components/Scorecard').then(m => m.EntityScorecardContent),
     mountPoint: rootRouteRef,
+  }),
+);
+
+/**
+ * Scorecard homepage section.
+ * @public
+ */
+export const ScorecardHomepageSection = scorecardPlugin.provide(
+  createComponentExtension({
+    name: 'ScorecardHomepageSection',
+    component: {
+      lazy: () =>
+        import('./components/ScorecardHomepageSection').then(
+          m => m.ScorecardHomepageSection,
+        ),
+    },
   }),
 );
