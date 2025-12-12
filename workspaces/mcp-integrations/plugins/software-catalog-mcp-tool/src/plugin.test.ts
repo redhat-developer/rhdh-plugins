@@ -1400,11 +1400,10 @@ describe('backstageMcpPlugin', () => {
   describe('unregister-catalog-entities action', () => {
     const mockCatalogService = {
       removeLocationById: jest.fn(),
+      getLocations: jest.fn(),
     } as unknown as CatalogService;
 
-    const mockAuthService = {
-      getOwnServiceCredentials: jest.fn(),
-    };
+    const mockLoggerService = mockServices.logger.mock();
 
     beforeEach(() => {
       jest.clearAllMocks();
@@ -1413,9 +1412,85 @@ describe('backstageMcpPlugin', () => {
     it('should successfully unregister catalog entities with valid locationId', async () => {
       const validLocationId = 'test-location-id-123';
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+      const mockCredentials = {
         principal: { type: 'service', subject: 'test' },
         token: 'test-token',
+      };
+
+      (mockCatalogService.removeLocationById as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
+      const unregisterCatalogEntitiesAction = async ({
+        input: { type },
+        credentials,
+      }: {
+        input: { type: { locationId?: string; locationUrl?: string } };
+        credentials: any;
+      }) => {
+        if ('locationId' in type && type.locationId) {
+          await mockCatalogService.removeLocationById(type.locationId, {
+            credentials,
+          });
+        } else if ('locationUrl' in type && type.locationUrl) {
+          const locations = await mockCatalogService
+            .getLocations({}, { credentials })
+            .then((response: any) =>
+              response.items.filter(
+                (location: any) =>
+                  location.target.toLowerCase() ===
+                  type.locationUrl!.toLowerCase(),
+              ),
+            );
+
+          if (locations.length === 0) {
+            mockLoggerService.error(
+              `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+            );
+            throw new Error(`Location with URL ${type.locationUrl} not found`);
+          }
+
+          for (const location of locations) {
+            await mockCatalogService.removeLocationById(location.id, {
+              credentials,
+            });
+          }
+        }
+
+        return { output: {} };
+      };
+
+      const result = await unregisterCatalogEntitiesAction({
+        input: { type: { locationId: validLocationId } },
+        credentials: mockCredentials,
+      });
+
+      expect(mockCatalogService.removeLocationById).toHaveBeenCalledWith(
+        validLocationId,
+        {
+          credentials: mockCredentials,
+        },
+      );
+      expect(result.output).toEqual({});
+    });
+
+    it('should successfully unregister catalog entities with valid locationUrl', async () => {
+      const validLocationUrl =
+        'https://github.com/example/repo/blob/main/catalog-info.yaml';
+      const mockLocationId = 'location-id-from-url';
+
+      const mockCredentials = {
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      };
+
+      (mockCatalogService.getLocations as jest.Mock).mockResolvedValue({
+        items: [
+          {
+            id: mockLocationId,
+            target: validLocationUrl,
+          },
+        ],
       });
 
       (mockCatalogService.removeLocationById as jest.Mock).mockResolvedValue(
@@ -1423,205 +1498,425 @@ describe('backstageMcpPlugin', () => {
       );
 
       const unregisterCatalogEntitiesAction = async ({
-        input,
+        input: { type },
+        credentials,
       }: {
-        input: { locationId: string };
+        input: { type: { locationId?: string; locationUrl?: string } };
+        credentials: any;
       }) => {
-        if (!input.locationId || input.locationId === '') {
-          return {
-            output: {
-              error: 'a location ID must be specified',
-            },
-          };
-        }
-
-        try {
-          const credentials = await mockAuthService.getOwnServiceCredentials();
-          await mockCatalogService.removeLocationById(input.locationId, {
+        if ('locationId' in type && type.locationId) {
+          await mockCatalogService.removeLocationById(type.locationId, {
             credentials,
           });
+        } else if ('locationUrl' in type && type.locationUrl) {
+          const locations = await mockCatalogService
+            .getLocations({}, { credentials })
+            .then((response: any) =>
+              response.items.filter(
+                (location: any) =>
+                  location.target.toLowerCase() ===
+                  type.locationUrl!.toLowerCase(),
+              ),
+            );
 
-          return {
-            output: {
-              error: undefined,
-            },
-          };
-        } catch (error) {
-          return {
-            output: {
-              error: error.message,
-            },
-          };
+          if (locations.length === 0) {
+            mockLoggerService.error(
+              `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+            );
+            throw new Error(`Location with URL ${type.locationUrl} not found`);
+          }
+
+          for (const location of locations) {
+            await mockCatalogService.removeLocationById(location.id, {
+              credentials,
+            });
+          }
         }
+
+        return { output: {} };
       };
 
       const result = await unregisterCatalogEntitiesAction({
-        input: { locationId: validLocationId },
+        input: { type: { locationUrl: validLocationUrl } },
+        credentials: mockCredentials,
       });
 
-      expect(mockAuthService.getOwnServiceCredentials).toHaveBeenCalledTimes(1);
+      expect(mockCatalogService.getLocations).toHaveBeenCalledWith(
+        {},
+        { credentials: mockCredentials },
+      );
       expect(mockCatalogService.removeLocationById).toHaveBeenCalledWith(
-        validLocationId,
+        mockLocationId,
         {
-          credentials: {
-            principal: { type: 'service', subject: 'test' },
-            token: 'test-token',
-          },
+          credentials: mockCredentials,
         },
       );
-      expect(result.output.error).toBeUndefined();
+      expect(result.output).toEqual({});
     });
 
-    it('should return error when locationId is empty', async () => {
+    it('should handle case-insensitive URL matching when unregistering by locationUrl', async () => {
+      const locationUrlUpperCase =
+        'HTTPS://GITHUB.COM/EXAMPLE/REPO/BLOB/MAIN/CATALOG-INFO.YAML';
+      const locationUrlLowerCase =
+        'https://github.com/example/repo/blob/main/catalog-info.yaml';
+      const mockLocationId = 'location-id-case-test';
+
+      const mockCredentials = {
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      };
+
+      (mockCatalogService.getLocations as jest.Mock).mockResolvedValue({
+        items: [
+          {
+            id: mockLocationId,
+            target: locationUrlLowerCase,
+          },
+        ],
+      });
+
+      (mockCatalogService.removeLocationById as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
       const unregisterCatalogEntitiesAction = async ({
-        input,
+        input: { type },
+        credentials,
       }: {
-        input: { locationId: string };
+        input: { type: { locationId?: string; locationUrl?: string } };
+        credentials: any;
       }) => {
-        if (!input.locationId || input.locationId === '') {
-          return {
-            output: {
-              error: 'a location ID must be specified',
-            },
-          };
+        if ('locationId' in type && type.locationId) {
+          await mockCatalogService.removeLocationById(type.locationId, {
+            credentials,
+          });
+        } else if ('locationUrl' in type && type.locationUrl) {
+          const locations = await mockCatalogService
+            .getLocations({}, { credentials })
+            .then((response: any) =>
+              response.items.filter(
+                (location: any) =>
+                  location.target.toLowerCase() ===
+                  type.locationUrl!.toLowerCase(),
+              ),
+            );
+
+          if (locations.length === 0) {
+            mockLoggerService.error(
+              `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+            );
+            throw new Error(`Location with URL ${type.locationUrl} not found`);
+          }
+
+          for (const location of locations) {
+            await mockCatalogService.removeLocationById(location.id, {
+              credentials,
+            });
+          }
         }
+
         return { output: {} };
       };
 
       const result = await unregisterCatalogEntitiesAction({
-        input: { locationId: '' },
+        input: { type: { locationUrl: locationUrlUpperCase } },
+        credentials: mockCredentials,
       });
 
-      expect(result.output.error).toBe('a location ID must be specified');
+      expect(mockCatalogService.getLocations).toHaveBeenCalledWith(
+        {},
+        { credentials: mockCredentials },
+      );
+      expect(mockCatalogService.removeLocationById).toHaveBeenCalledWith(
+        mockLocationId,
+        {
+          credentials: mockCredentials,
+        },
+      );
+      expect(result.output).toEqual({});
     });
 
-    it('should return error when locationId is not provided', async () => {
+    it('should handle multiple locations with the same URL when unregistering by locationUrl', async () => {
+      const validLocationUrl =
+        'https://github.com/example/repo/blob/main/catalog-info.yaml';
+      const mockLocationId1 = 'location-id-1';
+      const mockLocationId2 = 'location-id-2';
+
+      const mockCredentials = {
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      };
+
+      (mockCatalogService.getLocations as jest.Mock).mockResolvedValue({
+        items: [
+          {
+            id: mockLocationId1,
+            target: validLocationUrl,
+          },
+          {
+            id: mockLocationId2,
+            target: validLocationUrl,
+          },
+        ],
+      });
+
+      (mockCatalogService.removeLocationById as jest.Mock).mockResolvedValue(
+        undefined,
+      );
+
       const unregisterCatalogEntitiesAction = async ({
-        input,
+        input: { type },
+        credentials,
       }: {
-        input: { locationId: string };
+        input: { type: { locationId?: string; locationUrl?: string } };
+        credentials: any;
       }) => {
-        if (!input.locationId || input.locationId === '') {
-          return {
-            output: {
-              error: 'a location ID must be specified',
-            },
-          };
+        if ('locationId' in type && type.locationId) {
+          await mockCatalogService.removeLocationById(type.locationId, {
+            credentials,
+          });
+        } else if ('locationUrl' in type && type.locationUrl) {
+          const locations = await mockCatalogService
+            .getLocations({}, { credentials })
+            .then((response: any) =>
+              response.items.filter(
+                (location: any) =>
+                  location.target.toLowerCase() ===
+                  type.locationUrl!.toLowerCase(),
+              ),
+            );
+
+          if (locations.length === 0) {
+            mockLoggerService.error(
+              `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+            );
+            throw new Error(`Location with URL ${type.locationUrl} not found`);
+          }
+
+          for (const location of locations) {
+            await mockCatalogService.removeLocationById(location.id, {
+              credentials,
+            });
+          }
         }
+
         return { output: {} };
       };
 
       const result = await unregisterCatalogEntitiesAction({
-        input: { locationId: '' },
+        input: { type: { locationUrl: validLocationUrl } },
+        credentials: mockCredentials,
       });
 
-      expect(result.output.error).toBe('a location ID must be specified');
+      expect(mockCatalogService.getLocations).toHaveBeenCalledWith(
+        {},
+        { credentials: mockCredentials },
+      );
+      expect(mockCatalogService.removeLocationById).toHaveBeenCalledTimes(2);
+      expect(mockCatalogService.removeLocationById).toHaveBeenCalledWith(
+        mockLocationId1,
+        {
+          credentials: mockCredentials,
+        },
+      );
+      expect(mockCatalogService.removeLocationById).toHaveBeenCalledWith(
+        mockLocationId2,
+        {
+          credentials: mockCredentials,
+        },
+      );
+      expect(result.output).toEqual({});
     });
 
-    it('should handle catalog service errors during unregistration', async () => {
+    it('should throw error when locationUrl does not match any locations', async () => {
+      const nonExistentUrl =
+        'https://github.com/example/nonexistent/blob/main/catalog-info.yaml';
+
+      const mockCredentials = {
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      };
+
+      (mockCatalogService.getLocations as jest.Mock).mockResolvedValue({
+        items: [
+          {
+            id: 'other-location-id',
+            target: 'https://github.com/other/repo/blob/main/catalog-info.yaml',
+          },
+        ],
+      });
+
+      const unregisterCatalogEntitiesAction = async ({
+        input: { type },
+        credentials,
+      }: {
+        input: { type: { locationId?: string; locationUrl?: string } };
+        credentials: any;
+      }) => {
+        if ('locationId' in type && type.locationId) {
+          await mockCatalogService.removeLocationById(type.locationId, {
+            credentials,
+          });
+        } else if ('locationUrl' in type && type.locationUrl) {
+          const locations = await mockCatalogService
+            .getLocations({}, { credentials })
+            .then((response: any) =>
+              response.items.filter(
+                (location: any) =>
+                  location.target.toLowerCase() ===
+                  type.locationUrl!.toLowerCase(),
+              ),
+            );
+
+          if (locations.length === 0) {
+            mockLoggerService.error(
+              `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+            );
+            throw new Error(`Location with URL ${type.locationUrl} not found`);
+          }
+
+          for (const location of locations) {
+            await mockCatalogService.removeLocationById(location.id, {
+              credentials,
+            });
+          }
+        }
+
+        return { output: {} };
+      };
+
+      await expect(
+        unregisterCatalogEntitiesAction({
+          input: { type: { locationUrl: nonExistentUrl } },
+          credentials: mockCredentials,
+        }),
+      ).rejects.toThrow(`Location with URL ${nonExistentUrl} not found`);
+
+      expect(mockCatalogService.getLocations).toHaveBeenCalledWith(
+        {},
+        { credentials: mockCredentials },
+      );
+      expect(mockCatalogService.removeLocationById).not.toHaveBeenCalled();
+    });
+
+    it('should handle catalog service errors during unregistration by locationId', async () => {
       const validLocationId = 'test-location-id-123';
       const errorMessage = 'Failed to remove location';
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+      const mockCredentials = {
         principal: { type: 'service', subject: 'test' },
         token: 'test-token',
-      });
+      };
 
       (mockCatalogService.removeLocationById as jest.Mock).mockRejectedValue(
         new Error(errorMessage),
       );
 
       const unregisterCatalogEntitiesAction = async ({
-        input,
+        input: { type },
+        credentials,
       }: {
-        input: { locationId: string };
+        input: { type: { locationId?: string; locationUrl?: string } };
+        credentials: any;
       }) => {
-        if (!input.locationId || input.locationId === '') {
-          return {
-            output: {
-              error: 'a location ID must be specified',
-            },
-          };
-        }
-
-        try {
-          const credentials = await mockAuthService.getOwnServiceCredentials();
-          await mockCatalogService.removeLocationById(input.locationId, {
+        if ('locationId' in type && type.locationId) {
+          await mockCatalogService.removeLocationById(type.locationId, {
             credentials,
           });
+        } else if ('locationUrl' in type && type.locationUrl) {
+          const locations = await mockCatalogService
+            .getLocations({}, { credentials })
+            .then((response: any) =>
+              response.items.filter(
+                (location: any) =>
+                  location.target.toLowerCase() ===
+                  type.locationUrl!.toLowerCase(),
+              ),
+            );
 
-          return {
-            output: {
-              error: undefined,
-            },
-          };
-        } catch (error) {
-          return {
-            output: {
-              error: error.message,
-            },
-          };
+          if (locations.length === 0) {
+            mockLoggerService.error(
+              `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+            );
+            throw new Error(`Location with URL ${type.locationUrl} not found`);
+          }
+
+          for (const location of locations) {
+            await mockCatalogService.removeLocationById(location.id, {
+              credentials,
+            });
+          }
         }
+
+        return { output: {} };
       };
 
-      const result = await unregisterCatalogEntitiesAction({
-        input: { locationId: validLocationId },
-      });
-
-      expect(result.output.error).toBe(errorMessage);
+      await expect(
+        unregisterCatalogEntitiesAction({
+          input: { type: { locationId: validLocationId } },
+          credentials: mockCredentials,
+        }),
+      ).rejects.toThrow(errorMessage);
     });
 
     it('should handle non-existent locationId gracefully', async () => {
       const nonExistentLocationId = 'non-existent-id';
       const errorMessage = 'Location not found';
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+      const mockCredentials = {
         principal: { type: 'service', subject: 'test' },
         token: 'test-token',
-      });
+      };
 
       (mockCatalogService.removeLocationById as jest.Mock).mockRejectedValue(
         new Error(errorMessage),
       );
 
       const unregisterCatalogEntitiesAction = async ({
-        input,
+        input: { type },
+        credentials,
       }: {
-        input: { locationId: string };
+        input: { type: { locationId?: string; locationUrl?: string } };
+        credentials: any;
       }) => {
-        if (!input.locationId || input.locationId === '') {
-          return {
-            output: {
-              error: 'a location ID must be specified',
-            },
-          };
-        }
-
-        try {
-          const credentials = await mockAuthService.getOwnServiceCredentials();
-          await mockCatalogService.removeLocationById(input.locationId, {
+        if ('locationId' in type && type.locationId) {
+          await mockCatalogService.removeLocationById(type.locationId, {
             credentials,
           });
+        } else if ('locationUrl' in type && type.locationUrl) {
+          const locations = await mockCatalogService
+            .getLocations({}, { credentials })
+            .then((response: any) =>
+              response.items.filter(
+                (location: any) =>
+                  location.target.toLowerCase() ===
+                  type.locationUrl!.toLowerCase(),
+              ),
+            );
 
-          return {
-            output: {
-              error: undefined,
-            },
-          };
-        } catch (error) {
-          return {
-            output: {
-              error: error.message,
-            },
-          };
+          if (locations.length === 0) {
+            mockLoggerService.error(
+              `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+            );
+            throw new Error(`Location with URL ${type.locationUrl} not found`);
+          }
+
+          for (const location of locations) {
+            await mockCatalogService.removeLocationById(location.id, {
+              credentials,
+            });
+          }
         }
+
+        return { output: {} };
       };
 
-      const result = await unregisterCatalogEntitiesAction({
-        input: { locationId: nonExistentLocationId },
-      });
-
-      expect(result.output.error).toBe(errorMessage);
+      await expect(
+        unregisterCatalogEntitiesAction({
+          input: { type: { locationId: nonExistentLocationId } },
+          credentials: mockCredentials,
+        }),
+      ).rejects.toThrow(errorMessage);
     });
   });
 
