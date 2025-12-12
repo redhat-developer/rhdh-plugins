@@ -44,7 +44,11 @@ export const AddRepositoriesFormFooter = () => {
     Object.keys(values.repositories || []).length > 1;
 
   const getGitSubmitTitle = (isGitlabConfigured: boolean) => {
-    if (isGitlabConfigured || importFlow === ImportFlow.Scaffolder) {
+    if (
+      isGitlabConfigured ||
+      importFlow === ImportFlow.Scaffolder ||
+      importFlow === ImportFlow.Orchestrator
+    ) {
       return t('common.import');
     }
     return isPluralRepositories
@@ -66,7 +70,9 @@ export const AddRepositoriesFormFooter = () => {
     [ApprovalTool.Git]: {
       submitTitle: getGitSubmitTitle(gitlabConfigured),
       toolTipTitle:
-        gitlabConfigured || importFlow === ImportFlow.Scaffolder
+        gitlabConfigured ||
+        importFlow === ImportFlow.Scaffolder ||
+        importFlow === ImportFlow.Orchestrator
           ? t('forms.footer.importTooltip')
           : t('forms.footer.pullRequestTooltip'),
     },

@@ -90,6 +90,8 @@ const DeleteRepositoryDialog = ({
   let deleteMsg;
   if (importFlow === ImportFlow.Scaffolder) {
     deleteMsg = t('repositories.removeRepositoryWarningScaffolder');
+  } else if (importFlow === ImportFlow.Orchestrator) {
+    deleteMsg = t('repositories.removeRepositoryWarningOrchestrator');
   } else {
     deleteMsg = gitlabConfigured
       ? t('repositories.removeRepositoryWarningGitlab')
