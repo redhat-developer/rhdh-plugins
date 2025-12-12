@@ -181,11 +181,11 @@ describe('getXAxisformat', () => {
   });
 
   it('should format daily dates correctly', () => {
-    expect(getXAxisformat('2025-03-01', 'daily')).toMatch(/Mar \d{1,2}, \d{2}/);
+    expect(getXAxisformat('2025-03-01', 'daily')).toMatch(/Mar \d{1,2}, \d{4}/);
   });
 
   it('should format weekly dates correctly', () => {
-    expect(getXAxisformat('2025-03-02', 'daily')).toMatch(/Mar \d{1,2}, \d{2}/);
+    expect(getXAxisformat('2025-03-02', 'daily')).toMatch(/Mar \d{1,2}, \d{4}/);
   });
 
   it('should format monthly dates correctly', () => {
@@ -204,7 +204,7 @@ describe('getXAxisformat', () => {
 
   it('should handle +00 timezone format correctly for weekly grouping', () => {
     const result = getXAxisformat('2025-09-29T00:00:00+00', 'weekly');
-    expect(result).toMatch(/Sep \d{1,2}, \d{2}/);
+    expect(result).toMatch(/Sep \d{1,2}, \d{4}/);
   });
 
   it('should handle +00 timezone format correctly for monthly grouping', () => {
