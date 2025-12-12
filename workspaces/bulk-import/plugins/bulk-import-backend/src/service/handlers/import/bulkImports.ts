@@ -784,7 +784,7 @@ export async function findImportStatusByRepo(
       defaultBranch,
     },
     approvalTool: deps.approvalTool,
-    status: 'ADDED',
+    status: null,
   } as Components.Schemas.Import;
   try {
     // Check to see if there are any PR

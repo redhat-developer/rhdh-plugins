@@ -129,6 +129,6 @@ permission:
   # setting this to `false` will disable permissions
   enabled: true
 # scaffolder template execution configuration. Disabled by default.
-bulkImport:
-  importTemplate: template:default/create-pr-with-catalog-info
-  importAPI: scaffolder
+# bulkImport:
+#   importTemplate: template:default/create-pr-with-catalog-info
+#   importAPI: scaffolder

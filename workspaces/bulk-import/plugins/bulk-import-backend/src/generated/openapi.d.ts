@@ -143,11 +143,7 @@ declare namespace Components {
     /**
      * Import Job status
      */
-    export type ImportStatus =
-      | 'ADDED'
-      | 'WAIT_PR_APPROVAL'
-      | 'PR_ERROR'
-      | 'null';
+    export type ImportStatus = 'ADDED' | 'WAIT_PR_APPROVAL' | 'PR_ERROR' | null;
     /**
      * Organization
      */

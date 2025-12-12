@@ -1253,6 +1253,7 @@ const OPENAPI = `
       },
       "ImportStatus": {
         "type": "string",
+        "nullable": true,
         "description": "Import Job status",
         "enum": [
           "ADDED",

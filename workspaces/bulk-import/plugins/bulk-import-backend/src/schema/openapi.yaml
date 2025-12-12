@@ -799,6 +799,7 @@ components:
 
     ImportStatus:
       type: string
+      nullable: true
       description: Import Job status
       enum:
         #- WAIT_APPROVAL
@@ -930,6 +931,7 @@ components:
 
     Source:
       type: string
+      nullable: true
       description: >
         Import Source:
           * 'config' - Import from static catalog location configuration in 'app-config'
