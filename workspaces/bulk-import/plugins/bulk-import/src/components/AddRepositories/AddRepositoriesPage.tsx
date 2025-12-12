@@ -51,7 +51,9 @@ export const AddRepositoriesPage = () => {
   const importFlow = useImportFlow();
 
   // Show instructions section only for pull request flow, hide for scaffolder flow
-  const showInstructionsSection = importFlow === ImportFlow.OpenPullRequests;
+  // Also hide if no integrations are configured (missing configurations)
+  const showInstructionsSection =
+    importFlow === ImportFlow.OpenPullRequests && numberOfApprovalTools > 0;
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {

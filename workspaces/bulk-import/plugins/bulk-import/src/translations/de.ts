@@ -116,7 +116,7 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Eine catalog-info.yaml-Datei für jedes ausgewählte Element generieren',
     'steps.generateCatalogInfoItems':
       'Eine catalog-info.yaml-Datei für jedes ausgewählte Element generieren',
-    'steps.editPullRequest': 'Die Pull-Request-Details anzeigen',
+    'steps.editPullRequest': 'Die Pull/Merge-Request-Details anzeigen',
     'steps.trackStatus': 'Genehmigungsstatus verfolgen',
 
     // Add repositories

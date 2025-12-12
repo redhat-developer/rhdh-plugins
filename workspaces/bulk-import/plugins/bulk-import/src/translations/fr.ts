@@ -204,7 +204,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'steps.chooseItems': 'Choisissez les éléments que vous souhaitez importer',
     'steps.chooseRepositories':
       'Choisissez les référentiels que vous souhaitez ajouter',
-    'steps.editPullRequest': 'Voir les détails de la pull request',
+    'steps.editPullRequest': 'Voir les détails de la pull/merge request',
     'steps.generateCatalogInfo':
       'Générer un fichier catalog-info.yaml pour chaque référentiel',
     'steps.generateCatalogInfoItems':

@@ -141,7 +141,7 @@ export const bulkImportMessages = {
       'Generate a catalog-info.yaml file for each selected item',
     generateCatalogInfoItems:
       'Generate a catalog-info.yaml file for each selected item',
-    editPullRequest: 'View the pull request details',
+    editPullRequest: 'View the pull/merge request details',
     trackStatus: 'Track the approval status',
   },
   addRepositories: {
