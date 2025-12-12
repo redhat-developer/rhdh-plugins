@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-ai-experience-backend",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "license": "Apache-2.0",
   "private": true,
   "main": "src/index.ts",

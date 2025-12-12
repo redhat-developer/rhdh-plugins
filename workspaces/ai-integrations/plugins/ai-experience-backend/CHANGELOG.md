@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience-backend
 
+## 0.4.0
+
+### Minor Changes
+
+- f57ad78: Backstage version bump to v1.45.3
+
+### Patch Changes
+
+- Updated dependencies [f57ad78]
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-common@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes

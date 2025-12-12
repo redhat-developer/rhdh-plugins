@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-ai-experience-common",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "license": "Apache-2.0",
   "private": true,
   "description": "Common functionalities for the ai-experience plugin",
