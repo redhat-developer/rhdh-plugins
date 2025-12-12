@@ -19,9 +19,81 @@ import path from 'path';
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
-import { execSync } from 'child_process';
 
 import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
+import { commandExists, safeExecSyncOrThrow } from '../lib/utils/exec';
+
+/**
+ * Build memsource job download command arguments
+ */
+function buildDownloadJobArgs(
+  projectId: string,
+  jobId: string,
+  outputDir: string,
+): string[] {
+  return [
+    'job',
+    'download',
+    '--project-id',
+    projectId,
+    '--job-id',
+    jobId,
+    '--type',
+    'target',
+    '--output-dir',
+    outputDir,
+  ];
+}
+
+/**
+ * Build memsource job list command arguments
+ */
+function buildListJobsArgs(projectId: string): string[] {
+  return ['job', 'list', '--project-id', projectId, '--format', 'json'];
+}
+
+/**
+ * Download a single job and return its info
+ */
+async function downloadJob(
+  projectId: string,
+  jobId: string,
+  outputDir: string,
+): Promise<{ jobId: string; filename: string; lang: string } | null> {
+  try {
+    const cmdArgs = buildDownloadJobArgs(projectId, jobId, outputDir);
+    safeExecSyncOrThrow('memsource', cmdArgs, {
+      stdio: 'pipe',
+      env: { ...process.env },
+    });
+
+    // Get job info to determine filename and language
+    const jobInfoArgs = buildListJobsArgs(projectId);
+    const jobListOutput = safeExecSyncOrThrow('memsource', jobInfoArgs, {
+      encoding: 'utf-8',
+      env: { ...process.env },
+    });
+    const jobs = JSON.parse(jobListOutput);
+    const jobArray = Array.isArray(jobs) ? jobs : [jobs];
+    const job = jobArray.find((j: any) => j.uid === jobId);
+
+    if (job) {
+      return {
+        jobId,
+        filename: job.filename,
+        lang: job.target_lang,
+      };
+    }
+    return null;
+  } catch (error: any) {
+    console.warn(
+      chalk.yellow(
+        `⚠️  Warning: Could not download job ${jobId}: ${error.message}`,
+      ),
+    );
+    return null;
+  }
+}
 
 /**
  * Download translations using Memsource CLI
@@ -33,9 +105,7 @@ async function downloadWithMemsourceCLI(
   languages?: string[],
 ): Promise<Array<{ jobId: string; filename: string; lang: string }>> {
   // Check if memsource CLI is available
-  try {
-    execSync('which memsource', { stdio: 'pipe' });
-  } catch {
+  if (!commandExists('memsource')) {
     throw new Error(
       'memsource CLI not found. Please ensure memsource-cli is installed and ~/.memsourcerc is sourced.',
     );
@@ -64,60 +134,12 @@ async function downloadWithMemsourceCLI(
     );
 
     for (const jobId of jobIds) {
-      try {
-        const cmd = [
-          'memsource',
-          'job',
-          'download',
-          '--project-id',
-          projectId,
-          '--job-id',
-          jobId,
-          '--type',
-          'target',
-          '--output-dir',
-          outputDir,
-        ];
-
-        execSync(cmd.join(' '), {
-          stdio: 'pipe',
-          env: { ...process.env },
-        });
-
-        // Get job info to determine filename and language
-        const jobInfoCmd = [
-          'memsource',
-          'job',
-          'list',
-          '--project-id',
-          projectId,
-          '--format',
-          'json',
-        ];
-        const jobListOutput = execSync(jobInfoCmd.join(' '), {
-          encoding: 'utf-8',
-          env: { ...process.env },
-        });
-        const jobs = JSON.parse(jobListOutput);
-        const jobArray = Array.isArray(jobs) ? jobs : [jobs];
-        const job = jobArray.find((j: any) => j.uid === jobId);
-
-        if (job) {
-          downloadResults.push({
-            jobId,
-            filename: job.filename,
-            lang: job.target_lang,
-          });
-          console.log(
-            chalk.green(
-              `✅ Downloaded job ${jobId}: ${job.filename} (${job.target_lang})`,
-            ),
-          );
-        }
-      } catch (error: any) {
-        console.warn(
-          chalk.yellow(
-            `⚠️  Warning: Could not download job ${jobId}: ${error.message}`,
+      const result = await downloadJob(projectId, jobId, outputDir);
+      if (result) {
+        downloadResults.push(result);
+        console.log(
+          chalk.green(
+            `✅ Downloaded job ${result.jobId}: ${result.filename} (${result.lang})`,
           ),
         );
       }
@@ -127,16 +149,8 @@ async function downloadWithMemsourceCLI(
     console.log(chalk.yellow('📋 Listing available jobs...'));
 
     try {
-      const listCmd = [
-        'memsource',
-        'job',
-        'list',
-        '--project-id',
-        projectId,
-        '--format',
-        'json',
-      ];
-      const listOutput = execSync(listCmd.join(' '), {
+      const listArgs = buildListJobsArgs(projectId);
+      const listOutput = safeExecSyncOrThrow('memsource', listArgs, {
         encoding: 'utf-8',
         env: { ...process.env },
       });
@@ -163,39 +177,11 @@ async function downloadWithMemsourceCLI(
       );
 
       for (const job of jobsToDownload) {
-        try {
-          const cmd = [
-            'memsource',
-            'job',
-            'download',
-            '--project-id',
-            projectId,
-            '--job-id',
-            job.uid,
-            '--type',
-            'target',
-            '--output-dir',
-            outputDir,
-          ];
-
-          execSync(cmd.join(' '), {
-            stdio: 'pipe',
-            env: { ...process.env },
-          });
-
-          downloadResults.push({
-            jobId: job.uid,
-            filename: job.filename,
-            lang: job.target_lang,
-          });
+        const result = await downloadJob(projectId, job.uid, outputDir);
+        if (result) {
+          downloadResults.push(result);
           console.log(
-            chalk.green(`✅ Downloaded: ${job.filename} (${job.target_lang})`),
-          );
-        } catch (error: any) {
-          console.warn(
-            chalk.yellow(
-              `⚠️  Warning: Could not download job ${job.uid}: ${error.message}`,
-            ),
+            chalk.green(`✅ Downloaded: ${result.filename} (${result.lang})`),
           );
         }
       }

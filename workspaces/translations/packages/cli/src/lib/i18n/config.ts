@@ -16,7 +16,7 @@
 
 import path from 'path';
 import os from 'os';
-import { execSync } from 'child_process';
+import { commandExists, safeExecSyncOrThrow } from '../utils/exec';
 
 import fs from 'fs-extra';
 
@@ -351,12 +351,27 @@ async function generateMemsourceToken(
   password: string,
 ): Promise<string | undefined> {
   try {
-    // Check if memsource CLI is available by trying to run it
-    execSync('which memsource', { stdio: 'pipe' });
+    // Check if memsource CLI is available
+    if (!commandExists('memsource')) {
+      return undefined;
+    }
 
     // Generate token using memsource CLI
-    const token = execSync(
-      `memsource auth login --user-name ${username} --password "${password}" -c token -f value`,
+    // Note: Password is passed as argument, but it's from user input during setup
+    const token = safeExecSyncOrThrow(
+      'memsource',
+      [
+        'auth',
+        'login',
+        '--user-name',
+        username,
+        '--password',
+        password,
+        '-c',
+        'token',
+        '-f',
+        'value',
+      ],
       {
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'pipe'],
