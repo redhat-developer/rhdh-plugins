@@ -255,6 +255,10 @@ describe('repositoryDao', () => {
           url: 'https://github.com/test/repo1',
           approvalTool: 'github',
         });
+        expect(result.data[1]).toMatchObject({
+          url: 'https://github.com/test/repo2',
+          approvalTool: 'gitlab',
+        });
       });
 
       it('should find repositories with search term', async () => {
@@ -794,9 +798,8 @@ describe('repositoryDao', () => {
           },
         ]);
 
-        const result = await orchestratorWorkflowDao.findWorkflowByRepoId(
-          repo.id,
-        );
+        const result =
+          await orchestratorWorkflowDao.lastExecutedWorkflowByRepoId(repo.id);
 
         expect(result).toBeDefined();
         expect(result?.instanceId).toBe('instance-456');
@@ -811,9 +814,8 @@ describe('repositoryDao', () => {
           })
           .returning('id');
 
-        const result = await orchestratorWorkflowDao.findWorkflowByRepoId(
-          repo.id,
-        );
+        const result =
+          await orchestratorWorkflowDao.lastExecutedWorkflowByRepoId(repo.id);
 
         expect(result).toBeUndefined();
       });

@@ -1014,9 +1014,10 @@ export async function findOrchestratorImportStatusByRepo(
     const repository =
       await deps.orchestratorRepositoryDao.findRepositoryByUrl(repoUrl);
     if (repository?.id) {
-      const workflow = await deps.orchestratorWorkflowDao.findWorkflowByRepoId(
-        repository.id,
-      );
+      const workflow =
+        await deps.orchestratorWorkflowDao.lastExecutedWorkflowByRepoId(
+          repository.id,
+        );
       if (!workflow) {
         throw new NotFoundError(
           `Workflow for repository ${repoUrl} was not found`,

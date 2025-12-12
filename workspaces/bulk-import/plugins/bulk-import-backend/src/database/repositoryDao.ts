@@ -250,7 +250,7 @@ export class OrchestratorWorkflowDao {
     return newWorkflow.id;
   }
 
-  async findWorkflowByRepoId(
+  async lastExecutedWorkflowByRepoId(
     repositoryId: number,
   ): Promise<OrchestratorWorkflow | undefined> {
     const result = await this.knex('orchestrator_workflows')
