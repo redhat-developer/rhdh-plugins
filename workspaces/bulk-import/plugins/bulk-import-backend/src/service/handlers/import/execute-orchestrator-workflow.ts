@@ -30,11 +30,11 @@ import { Components, ImportRequest } from '../../../generated/openapi';
 import { GithubApiService } from '../../../github';
 import { GitlabApiService } from '../../../gitlab';
 import { HandlerResponse } from '../handlers';
+import { sortImports } from './bulkImports';
 
 export type CreateWorkflowImportJobsArgs = {
   orchestratorWorkflowId: string;
   discovery: DiscoveryApi;
-  baseOrchestratorAPIUrl?: string;
   token?: string;
   requestBody: ImportRequest[];
   orchestratorWorkflowDao: OrchestratorWorkflowDao;
@@ -45,9 +45,7 @@ export type CreateWorkflowImportJobsArgs = {
 
 export async function createWorkflowImportJobs(
   args: CreateWorkflowImportJobsArgs,
-): Promise<
-  HandlerResponse<Components.Schemas.Import[] | { errors: string[] }>
-> {
+): Promise<HandlerResponse<Components.Schemas.Import[]>> {
   const {
     orchestratorWorkflowId,
     discovery,
@@ -151,12 +149,7 @@ export async function createWorkflowImportJobs(
     }
   }
 
-  if (result.some(r => r.errors)) {
-    return {
-      statusCode: 202,
-      responseBody: { errors: result.flatMap(r => r.errors || []) },
-    };
-  }
+  sortImports(result);
 
   return {
     statusCode: 202,

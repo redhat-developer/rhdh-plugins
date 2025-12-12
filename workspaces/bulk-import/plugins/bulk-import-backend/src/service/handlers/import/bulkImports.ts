@@ -548,9 +548,7 @@ export async function createImportJobs(
     importRequests: Paths.CreateImportJobs.RequestBody;
     dryRun?: boolean;
   },
-): Promise<
-  HandlerResponse<Components.Schemas.Import[] | { errors: string[] }>
-> {
+): Promise<HandlerResponse<Components.Schemas.Import[]>> {
   const dryRun = reqParams.dryRun ?? false;
   const importRequests = reqParams.importRequests;
   deps.logger.debug(
