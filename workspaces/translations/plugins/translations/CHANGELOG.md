@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-translations
 
+## 0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
