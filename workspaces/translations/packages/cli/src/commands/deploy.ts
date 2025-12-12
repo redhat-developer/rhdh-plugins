@@ -20,7 +20,8 @@ import { fileURLToPath } from 'url';
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
-import { execSync } from 'child_process';
+
+import { commandExists, safeExecSyncOrThrow } from '../lib/utils/exec';
 
 // Get __dirname equivalent in ES modules
 // eslint-disable-next-line no-restricted-syntax
@@ -212,16 +213,15 @@ async function deployWithTypeScriptScript(
   }
 
   // Use tsx to run the TypeScript script
-  try {
-    execSync('which tsx', { stdio: 'pipe' });
-  } catch {
+  if (!commandExists('tsx')) {
     throw new Error(
       'tsx not found. Please install it: npm install -g tsx, or yarn add -D tsx',
     );
   }
 
   // Run the script with tsx
-  execSync(`tsx ${scriptPath} ${sourceDir}`, {
+  // Note: scriptPath and sourceDir are validated paths, safe to use
+  safeExecSyncOrThrow('tsx', [scriptPath, sourceDir], {
     stdio: 'inherit',
     cwd: repoRoot,
     env: { ...process.env },

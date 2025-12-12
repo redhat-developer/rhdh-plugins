@@ -94,19 +94,19 @@ async function loadPoFile(filePath: string): Promise<TranslationData> {
         }
 
         currentKey = unescapePoString(
-          trimmed.substring(6).replace(/^["']|["']$/g, ''),
+          trimmed.substring(6).replace(/(^["']|["']$)/g, ''),
         );
         currentValue = '';
         inMsgId = true;
         inMsgStr = false;
       } else if (trimmed.startsWith('msgstr ')) {
         currentValue = unescapePoString(
-          trimmed.substring(7).replace(/^["']|["']$/g, ''),
+          trimmed.substring(7).replace(/(^["']|["']$)/g, ''),
         );
         inMsgId = false;
         inMsgStr = true;
       } else if (trimmed.startsWith('"') && (inMsgId || inMsgStr)) {
-        const value = unescapePoString(trimmed.replace(/^["']|["']$/g, ''));
+        const value = unescapePoString(trimmed.replace(/(^["']|["']$)/g, ''));
         if (inMsgId) {
           currentKey += value;
         } else if (inMsgStr) {

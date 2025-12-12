@@ -15,7 +15,6 @@
  */
 
 import path from 'path';
-import { execSync } from 'child_process';
 
 import fs from 'fs-extra';
 import { OptionValues } from 'commander';
@@ -28,6 +27,8 @@ import {
   saveUploadCache,
   getCachedUpload,
 } from '../lib/i18n/uploadCache';
+import { commandExists, safeExecSyncOrThrow } from '../lib/utils/exec';
+import { countTranslationKeys } from '../lib/utils/translationUtils';
 
 /**
  * Detect repository name from git or directory
@@ -35,10 +36,11 @@ import {
 function detectRepoName(): string {
   try {
     // Try to get repo name from git
-    const gitRepoUrl = execSync('git config --get remote.origin.url', {
-      encoding: 'utf-8',
-      stdio: 'pipe',
-    }).trim();
+    const gitRepoUrl = safeExecSyncOrThrow('git', [
+      'config',
+      '--get',
+      'remote.origin.url',
+    ]);
     if (gitRepoUrl) {
       // Extract repo name from URL (handles both https and ssh formats)
       const match = gitRepoUrl.match(/([^/]+?)(?:\.git)?$/);
@@ -103,9 +105,7 @@ async function uploadWithMemsourceCLI(
   }
 
   // Check if memsource CLI is available
-  try {
-    execSync('which memsource', { stdio: 'pipe' });
-  } catch {
+  if (!commandExists('memsource')) {
     throw new Error(
       'memsource CLI not found. Please ensure memsource-cli is installed and ~/.memsourcerc is sourced.',
     );
@@ -132,7 +132,7 @@ async function uploadWithMemsourceCLI(
   // Execute memsource command
   // Note: MEMSOURCE_TOKEN should be set from ~/.memsourcerc
   try {
-    const output = execSync(`memsource ${args.join(' ')}`, {
+    const output = safeExecSyncOrThrow('memsource', args, {
       encoding: 'utf-8',
       stdio: 'pipe', // Capture both stdout and stderr
       env: {
@@ -152,25 +152,7 @@ async function uploadWithMemsourceCLI(
     let keyCount = 0;
     try {
       const data = JSON.parse(fileContent);
-      // Handle nested structure: { "plugin": { "en": { "key": "value" } } }
-      if (data && typeof data === 'object') {
-        const isNested = Object.values(data).some(
-          (val: unknown) =>
-            typeof val === 'object' && val !== null && 'en' in val,
-        );
-        if (isNested) {
-          for (const pluginData of Object.values(data)) {
-            const enData = (pluginData as { en?: Record<string, unknown> })?.en;
-            if (enData && typeof enData === 'object') {
-              keyCount += Object.keys(enData).length;
-            }
-          }
-        } else {
-          // Flat structure
-          const translations = data.translations || data;
-          keyCount = Object.keys(translations).length;
-        }
-      }
+      keyCount = countTranslationKeys(data);
     } catch {
       // If parsing fails, use a default
       keyCount = 0;
@@ -183,7 +165,7 @@ async function uploadWithMemsourceCLI(
 
     return result;
   } catch (error: unknown) {
-    // Extract error message from execSync error
+    // Extract error message from command execution error
     let errorMessage = 'Unknown error';
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -524,27 +506,10 @@ export async function uploadCommand(opts: OptionValues): Promise<void> {
       // Fallback: count keys from file
       try {
         const data = JSON.parse(fileContent);
-        if (data && typeof data === 'object') {
-          const isNested = Object.values(data).some(
-            (val: unknown) =>
-              typeof val === 'object' && val !== null && 'en' in val,
-          );
-          if (isNested) {
-            keyCount = 0;
-            for (const pluginData of Object.values(data)) {
-              const enData = (pluginData as { en?: Record<string, unknown> })
-                ?.en;
-              if (enData && typeof enData === 'object') {
-                keyCount += Object.keys(enData).length;
-              }
-            }
-          } else {
-            const translations = data.translations || data;
-            keyCount = Object.keys(translations).length;
-          }
-        }
+        keyCount = countTranslationKeys(data);
       } catch {
         // If parsing fails, use 0
+        keyCount = 0;
       }
     }
 
