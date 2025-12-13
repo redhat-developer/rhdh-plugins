@@ -1,5 +1,26 @@
 ### Dependencies
 
+## 5.3.1
+
+### Patch Changes
+
+- 48fb7f2: Fix browser tab showing `[object Object]` on workflow instance page
+
+  Replace `<Trans>` component with `t()` function for page title to ensure a string is returned instead of an element, which was causing `[object Object]` to appear in the browser tab title.
+
+- cc27a4b: Migrate from Moment.js to Luxon for date/time handling
+
+  **Breaking Change:** Removed deprecated Moment.js dependency
+  - Replace `moment` and `react-moment` with `luxon` for all date/time operations
+  - Add `formatDuration` utility function that mimics moment's `.humanize()` behavior
+  - Add comprehensive unit tests for duration formatting
+
+- Updated dependencies [2be9dcc]
+- Updated dependencies [d91ef65]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.1
+
 ## 5.3.0
 
 ### Minor Changes
