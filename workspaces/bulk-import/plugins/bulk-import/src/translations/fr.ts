@@ -26,12 +26,12 @@ const bulkImportTranslationFr = createTranslationMessages({
     'addRepositories.allRepositoriesAdded':
       'Tous les référentiels sont ajoutés',
     'addRepositories.approvalTool.description':
-      "Choisissez l'outil d'approbation pour la création de RP",
+      "Choisissez l'outil de contrôle de source pour la création de RP",
     'addRepositories.approvalTool.github': 'GitHub',
     'addRepositories.approvalTool.gitlab': 'GitLab',
-    'addRepositories.approvalTool.title': "Outil d'approbation",
+    'addRepositories.approvalTool.title': 'Outil de contrôle de source',
     'addRepositories.approvalTool.tooltip':
-      "L'importation nécessite une approbation. Une fois la demande d'extraction/fusion approuvée, les référentiels/projets seront importés sur la page Catalogue.",
+      "L'importation nécessite une approbation. Une fois la demande d'extraction approuvée, les référentiels seront importés sur la page Catalogue.",
     'addRepositories.clearSearch': 'recherche claire',
     'addRepositories.editPullRequest': "Modifier la demande d'extraction",
     'addRepositories.generateCatalogInfo': 'Générer catalog-info.yaml',
@@ -50,11 +50,11 @@ const bulkImportTranslationFr = createTranslationMessages({
     'addRepositories.selectedProjects': 'projets',
     'addRepositories.selectedRepositories': 'dépôts',
     'catalogInfo.status.generating': 'Générateur',
-    'catalogInfo.status.notGenerated': 'Non généré',
     'common.add': 'Ajouter',
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.delete': 'Supprimer',
+    'common.documentation': 'Documentation',
     'common.edit': 'Modifier',
     'common.filter': 'Filtre',
     'common.import': 'Importer',
@@ -72,12 +72,17 @@ const bulkImportTranslationFr = createTranslationMessages({
     'errors.errorOccurred': "Une erreur s'est produite",
     'errors.failedToCreatePullRequest':
       "Échec de la création de la demande d'extraction",
+    'errors.noIntegrationsConfigured':
+      "Aucune intégration GitHub ou GitLab n'est configurée. Veuillez ajouter au moins une intégration pour utiliser la fonction d'importation en masse.",
+    'errors.addIntegrationsToConfig':
+      'Pour résoudre ce problème, assurez-vous que les intégrations sont ajoutées à votre fichier de configuration Backstage (app-config.yaml).',
     'errors.prErrorPermissions':
       "Impossible de créer un nouveau PR en raison d'autorisations insuffisantes. Contactez votre administrateur.",
     'errors.repoEmpty':
       'Impossible de créer un nouveau PR car le référentiel est vide. Envoyez un commit initial au référentiel.',
     'forms.footer.createPullRequest': "Créer une demande d'extraction",
     'forms.footer.createPullRequests': "Créer des demandes d'extraction",
+    'forms.footer.selectRepositoryTooltip': 'Sélectionnez un dépôt à importer.',
     'forms.footer.createServiceNowTicket': 'Créer un ticket ServiceNow',
     'forms.footer.createServiceNowTickets': 'Créer des tickets ServiceNow',
     'forms.footer.importTooltip':
@@ -141,7 +146,6 @@ const bulkImportTranslationFr = createTranslationMessages({
     'previewFile.pullRequestPendingApproval':
       "Le [{{pullRequestText}}]({{pullRequestUrl}}) est en attente d'approbation",
     'previewFile.pullRequestText': "demande d'extraction",
-    'previewFile.readyToImport': 'Prêt à importer',
     'previewFile.useSemicolonSeparator':
       'Utilisez un point-virgule pour séparer {{label}}',
     'previewFile.viewRepository': 'Afficher le référentiel',
@@ -160,7 +164,10 @@ const bulkImportTranslationFr = createTranslationMessages({
     'repositories.import': 'Importer',
     'repositories.importedEntities': 'Entités importées',
     'repositories.importedEntitiesCount': 'Entités importées ({{count}})',
-    'repositories.noRecordsFound': 'Aucun enregistrement trouvé',
+    'repositories.noRecordsFound':
+      "Aucun référentiel disponible pour l'importation.",
+    'repositories.noProjectsFound':
+      "Aucun projet disponible pour l'importation.",
     'repositories.pr': 'PR',
     'repositories.refresh': 'Rafraîchir',
     'repositories.removeRepositoryQuestion':
@@ -186,13 +193,18 @@ const bulkImportTranslationFr = createTranslationMessages({
     'status.alreadyImported': 'Déjà importé',
     'status.imported': 'Importé',
     'status.waitingForApproval': "En attente d'approbation",
+    'status.readyToImport': 'Prêt à importer',
+    'status.waitingForPullRequestToStart':
+      'En attente du démarrage de la pull request',
+    'status.missingConfigurations': 'Configurations manquantes',
+    'status.failedCreatingPR': 'Échec de la création de la PR',
+    'status.pullRequestRejected': 'Pull request rejetée',
     'steps.chooseApprovalTool':
-      "Choisissez l'outil d'approbation (GitHub/GitLab) pour la création de PR",
+      'Choisir un outil de contrôle de source pour la création de pull request',
     'steps.chooseItems': 'Choisissez les éléments que vous souhaitez importer',
     'steps.chooseRepositories':
       'Choisissez les référentiels que vous souhaitez ajouter',
-    'steps.editPullRequest':
-      "Modifiez les détails de la demande d'extraction si nécessaire",
+    'steps.editPullRequest': 'Voir les détails de la pull/merge request',
     'steps.generateCatalogInfo':
       'Générer un fichier catalog-info.yaml pour chaque référentiel',
     'steps.generateCatalogInfoItems':
@@ -207,6 +219,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'table.headers.organizationGroup': 'Organisation/groupe',
     'table.headers.repoUrl': 'URL du dépôt',
     'table.headers.status': 'Statut',
+    'table.headers.taskStatus': 'Statut de la tâche',
     'table.headers.url': 'URL',
     'table.pagination.rows10': '10 lignes',
     'table.pagination.rows100': '100 lignes',
@@ -232,12 +245,12 @@ const bulkImportTranslationFr = createTranslationMessages({
     'tasks.viewTask': 'Voir la tâche',
     'tasks.loading': 'Chargement...',
     'tasks.errorFetchingData': 'Erreur lors de la récupération des données',
-    'tasks.taskCancelled': 'Tâche annulée',
-    'tasks.taskCompleted': 'Tâche terminée',
-    'tasks.taskFailed': 'Tâche échouée',
-    'tasks.taskOpen': 'Tâche ouverte',
-    'tasks.taskProcessing': 'Tâche en cours',
-    'tasks.taskSkipped': 'Tâche ignorée',
+    'tasks.taskCancelled': 'Annulée',
+    'tasks.taskCompleted': 'Terminée',
+    'tasks.taskFailed': 'Échouée',
+    'tasks.taskOpen': 'Ouverte',
+    'tasks.taskProcessing': 'En cours',
+    'tasks.taskSkipped': 'Ignorée',
   },
 });
 

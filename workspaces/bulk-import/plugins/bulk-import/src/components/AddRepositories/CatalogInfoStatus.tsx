@@ -21,7 +21,6 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import { useGitlabConfigured } from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -29,6 +28,7 @@ import {
   AddRepositoryData,
   ImportFlow,
   RepositoryStatus,
+  TaskStatus,
 } from '../../types';
 import {
   areAllRowsSelected,
@@ -44,6 +44,7 @@ export const CatalogInfoStatus = ({
   isDrawer,
   importStatus,
   taskId,
+  prUrl,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -52,14 +53,19 @@ export const CatalogInfoStatus = ({
   isDrawer?: boolean;
   importStatus?: string;
   taskId?: string;
+  prUrl?: string;
 }) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
-  const gitlabConfigured = useGitlabConfigured();
 
   useEffect(() => {
-    if (importStatus === RepositoryStatus.ADDED) {
+    if (
+      importStatus === RepositoryStatus.ADDED ||
+      importStatus === RepositoryStatus.WAIT_PR_APPROVAL ||
+      importStatus === TaskStatus.Processing ||
+      importStatus === TaskStatus.Completed
+    ) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,
@@ -79,6 +85,7 @@ export const CatalogInfoStatus = ({
   );
 
   const importFlow = useImportFlow();
+
   if (
     importFlow !== ImportFlow.Scaffolder &&
     !isDrawer &&
@@ -103,14 +110,13 @@ export const CatalogInfoStatus = ({
 
   if (importStatus) {
     return (
-      <Typography component="span" style={{ color: '#6A6E73' }}>
+      <Typography component="span">
         {getImportStatus(
           importStatus,
           (key: string) => t(key as any, {}),
-          false,
-          undefined,
+          true,
+          prUrl,
           taskId,
-          gitlabConfigured,
         )}
       </Typography>
     );
@@ -121,8 +127,8 @@ export const CatalogInfoStatus = ({
   }
 
   return (
-    <Typography component="span">
-      {t('catalogInfo.status.notGenerated')}
+    <Typography component="span" style={{ color: '#6A6E73' }}>
+      {t('status.readyToImport')}
     </Typography>
   );
 };

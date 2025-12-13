@@ -15,11 +15,10 @@
  */
 
 import { useState } from 'react';
-import { BrowserRouter } from 'react-router-dom';
 
-import { TestApiProvider } from '@backstage/test-utils';
+import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent } from '@testing-library/react';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
@@ -100,11 +99,9 @@ describe('Preview File', () => {
         },
       },
     });
-    const { queryByTestId, getByText } = render(
+    const { queryByTestId, getByText } = await renderInTestApp(
       <TestApiProvider apis={[[bulkImportApiRef, mockBulkImportApi]]}>
-        <BrowserRouter>
-          <PreviewFile data={mockGetRepositories.repositories[0]} />
-        </BrowserRouter>
+        <PreviewFile data={mockGetRepositories.repositories[0]} />
       </TestApiProvider>,
     );
     expect(getByText(/Preview File/i)).toBeInTheDocument();
@@ -125,19 +122,17 @@ describe('Preview File', () => {
         },
       },
     });
-    const { queryByTestId, getByText } = render(
+    const { queryByTestId, getByText } = await renderInTestApp(
       <TestApiProvider apis={[[bulkImportApiRef, mockBulkImportApi]]}>
-        <BrowserRouter>
-          <PreviewFile
-            data={{
-              ...mockGetOrganizations.organizations[0],
-              selectedRepositories: {
-                'org/dessert/cupcake': mockGetRepositories.repositories[0],
-                'org/dessert/donut': mockGetRepositories.repositories[1],
-              },
-            }}
-          />
-        </BrowserRouter>
+        <PreviewFile
+          data={{
+            ...mockGetOrganizations.organizations[0],
+            selectedRepositories: {
+              'org/dessert/cupcake': mockGetRepositories.repositories[0],
+              'org/dessert/donut': mockGetRepositories.repositories[1],
+            },
+          }}
+        />
       </TestApiProvider>,
     );
     expect(getByText(/Preview files/i)).toBeInTheDocument();
@@ -171,19 +166,17 @@ describe('Preview File', () => {
         },
       },
     });
-    const { queryByTestId, getByText } = render(
+    const { queryByTestId, getByText } = await renderInTestApp(
       <TestApiProvider apis={[[bulkImportApiRef, mockBulkImportApi]]}>
-        <BrowserRouter>
-          <PreviewFile
-            data={{
-              ...mockGetOrganizations.organizations[0],
-              selectedRepositories: {
-                'org/dessert/cupcake': mockGetRepositories.repositories[0],
-                'org/dessert/donut': mockGetRepositories.repositories[1],
-              },
-            }}
-          />
-        </BrowserRouter>
+        <PreviewFile
+          data={{
+            ...mockGetOrganizations.organizations[0],
+            selectedRepositories: {
+              'org/dessert/cupcake': mockGetRepositories.repositories[0],
+              'org/dessert/donut': mockGetRepositories.repositories[1],
+            },
+          }}
+        />
       </TestApiProvider>,
     );
     expect(getByText(/Failed to create PR/i)).toBeInTheDocument();

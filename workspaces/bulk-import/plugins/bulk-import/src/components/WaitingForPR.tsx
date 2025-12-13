@@ -19,17 +19,9 @@ import { Link, StatusPending } from '@backstage/core-components';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Typography from '@mui/material/Typography';
 
-import GitAltIcon from '../components/GitAltIcon';
-import GitLabIcon from '../components/GitLabIcon';
 import { useTranslation } from '../hooks/useTranslation';
 
-export const WaitingForPR = ({
-  url,
-  isApprovalToolGitlab,
-}: {
-  url: string;
-  isApprovalToolGitlab: boolean;
-}) => {
+export const WaitingForPR = ({ url }: { url: string }) => {
   const { t } = useTranslation();
 
   return (
@@ -40,27 +32,7 @@ export const WaitingForPR = ({
       }}
     >
       <StatusPending />
-      {isApprovalToolGitlab ? (
-        <GitLabIcon
-          style={{
-            height: '1.4em',
-            width: '2em',
-            paddingRight: '5px',
-            marginTop: '2px',
-          }}
-        />
-      ) : (
-        <GitAltIcon
-          style={{
-            height: '1.4em',
-            width: '2em',
-            paddingRight: '5px',
-          }}
-        />
-      )}
-      <Typography component="span" style={{ color: '#757575' }}>
-        {t('status.waitingForApproval')}
-      </Typography>
+      <Typography component="span">{t('status.waitingForApproval')}</Typography>
       {url && (
         <Link
           to={url}

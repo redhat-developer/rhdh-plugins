@@ -48,28 +48,28 @@ import {
 import { getTaskStatusInfo } from './task-status';
 
 const TaskLink = ({
-  labelText,
   taskId,
+  t,
 }: {
-  labelText: string;
   taskId?: string;
+  t: (key: string) => string;
 }) => {
   const configApi = useApi(configApiRef);
   const appBaseUrl = configApi.getString('app.baseUrl');
 
-  if (!taskId) return <>{labelText}</>;
+  if (!taskId) return null;
 
   return (
     <Link
       to={`${appBaseUrl}/create/tasks/${taskId}`}
-      data-testid="pull request url"
+      data-testid="view-task-link"
       style={{
         paddingLeft: '5px',
         display: 'inline-flex',
         alignItems: 'center',
       }}
     >
-      {labelText}
+      {t('tasks.viewTask')}
     </Link>
   );
 };
@@ -266,21 +266,15 @@ export const getImportStatus = (
   showIcon?: boolean,
   prUrl?: string,
   taskId?: string,
-  gitlabConfigured: boolean = false,
 ) => {
   if (!status) {
     return '';
   }
-  const labelText = gitlabConfigured
-    ? t('status.alreadyImported')
-    : t('status.added');
+  const labelText = t('status.imported');
 
   if (status === 'WAIT_PR_APPROVAL') {
     return showIcon ? (
-      <WaitingForPR
-        url={prUrl as string}
-        isApprovalToolGitlab={gitlabConfigured}
-      />
+      <WaitingForPR url={prUrl as string} />
     ) : (
       t('status.waitingForApproval')
     );
@@ -293,7 +287,7 @@ export const getImportStatus = (
         style={{ display: 'flex', alignItems: 'baseline' }}
       >
         <StatusOK />
-        {gitlabConfigured ? t('status.imported') : t('status.added')}
+        {t('status.imported')}
       </Typography>
     ) : (
       labelText
@@ -308,10 +302,17 @@ export const getImportStatus = (
         style={{ display: 'flex', alignItems: 'baseline' }}
       >
         {taskIcon}
-        <TaskLink labelText={taskLabelText} taskId={taskId} />
+        {taskLabelText}
+        <TaskLink taskId={taskId} t={t} />
       </Typography>
     ) : (
-      <TaskLink labelText={taskLabelText} taskId={taskId} />
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {taskLabelText}
+        <TaskLink taskId={taskId} t={t} />
+      </Typography>
     );
   }
 
