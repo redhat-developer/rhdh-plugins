@@ -37,6 +37,7 @@ import type {
   OptimizationsApi,
   GetAccessResponse,
   GetCostManagementRequest,
+  DownloadCostManagementRequest,
 } from './types';
 import type { CostManagementReport } from '../types/cost-management';
 import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
@@ -176,6 +177,193 @@ export class OptimizationsClient implements OptimizationsApi {
     const url = `${baseUrl}${uri}${queryPart}`;
 
     return await this.fetchWithTokenAndRetry<CostManagementReport>(url);
+  }
+
+  public async downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void> {
+    // Get access permission
+    const accessAPIResponse = await this.getAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    // Get or refresh token
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+
+    // Get the proxy base URL for cost-management API
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    const uri = '/cost-management/v1/reports/openshift/costs/';
+
+    // Build query params, setting limit to 0 to get all results
+    const downloadRequest: GetCostManagementRequest = {
+      query: {
+        ...request.query,
+        'filter[limit]': 0, // 0 means no limit - get all results
+      },
+    };
+    // Remove offset for download
+    delete downloadRequest.query['filter[offset]'];
+
+    const queryParams = this.buildCostManagementQueryParams(downloadRequest);
+    const queryString = queryParams.toString();
+    const queryPart = queryString ? `?${queryString}` : '';
+    const url = `${baseUrl}${uri}${queryPart}`;
+
+    // Determine content type based on format
+    const acceptHeader =
+      request.format === 'csv' ? 'text/csv' : 'application/json';
+
+    // Fetch with appropriate Accept header
+    let response = await this.fetchApi.fetch(url, {
+      headers: {
+        Accept: acceptHeader,
+        Authorization: `Bearer ${this.token}`,
+      },
+      method: 'GET',
+    });
+
+    // Handle 401 errors by refreshing token and retrying
+    if (!response.ok && response.status === 401) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+
+      response = await this.fetchApi.fetch(url, {
+        headers: {
+          Accept: acceptHeader,
+          Authorization: `Bearer ${this.token}`,
+        },
+        method: 'GET',
+      });
+    }
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    // Get the response data
+    const responseContentType = response.headers.get('content-type') || '';
+    const responseText = await response.text();
+
+    let data: string;
+    let mimeType: string;
+
+    if (request.format === 'csv') {
+      // User wants CSV - use response as-is (API returns CSV by default)
+      data = responseText;
+      mimeType = 'text/csv';
+    } else {
+      // User wants JSON
+      if (responseContentType.includes('application/json')) {
+        // Response is already JSON
+        const jsonData = JSON.parse(responseText);
+        data = JSON.stringify(jsonData, null, 2);
+      } else {
+        // Response is CSV, need to convert to JSON
+        data = this.convertCsvToJson(responseText);
+      }
+      mimeType = 'application/json';
+    }
+
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().replaceAll(/[:.]/g, '-');
+    const extension = request.format;
+    const filename = `openshift-costs-${timestamp}.${extension}`;
+
+    // Trigger download in browser
+    const blob = new Blob([data], { type: mimeType });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(downloadUrl);
+  }
+
+  /**
+   * Converts CSV string to JSON string
+   * @param csv - The CSV data as a string
+   * @returns JSON string representation of the CSV data
+   */
+  private convertCsvToJson(csv: string): string {
+    // Normalize line endings (handle both \r\n and \r)
+    const normalizedCsv = csv.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    const lines = normalizedCsv.trim().split('\n');
+    if (lines.length === 0) {
+      return JSON.stringify({ data: [] }, null, 2);
+    }
+
+    const headers = this.parseCsvLine(lines[0]);
+    const data: Record<string, string | number | null>[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = this.parseCsvLine(lines[i]);
+      const row: Record<string, string | number | null> = {};
+
+      for (let j = 0; j < headers.length; j++) {
+        const header = headers[j];
+        const value = values[j] || '';
+
+        // Try to parse as number if it looks like one
+        if (value === '') {
+          row[header] = null;
+        } else if (!Number.isNaN(Number(value)) && value !== '') {
+          row[header] = Number(value);
+        } else {
+          row[header] = value;
+        }
+      }
+
+      data.push(row);
+    }
+
+    return JSON.stringify({ data }, null, 2);
+  }
+
+  /**
+   * Parses a CSV line handling quoted values
+   * @param line - A single line from CSV
+   * @returns Array of values
+   */
+  private parseCsvLine(line: string): string[] {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    let skipNext = false;
+
+    for (let i = 0; i < line.length; i++) {
+      if (skipNext) {
+        skipNext = false;
+        continue;
+      }
+
+      const char = line[i];
+
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          // Escaped quote
+          current += '"';
+          skipNext = true;
+        } else {
+          // Toggle quote mode
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        result.push(current);
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    result.push(current);
+    return result;
   }
 
   /**

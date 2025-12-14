@@ -378,6 +378,16 @@ export interface DistributedCost extends BasicCost {
 }
 
 // @public (undocumented)
+export interface DownloadCostManagementRequest
+  extends GetCostManagementRequest {
+  // (undocumented)
+  format: ExportFormat;
+}
+
+// @public (undocumented)
+export type ExportFormat = 'csv' | 'json';
+
+// @public (undocumented)
 export interface GetAccessResponse {
   // (undocumented)
   authorizeClusterIds: string[];
@@ -544,6 +554,9 @@ export type OptimizationsApi = Omit<
   getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>>;
+  downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void>;
   searchOpenShiftProjects(search?: string): Promise<
     TypedResponse<{
       data: Array<{
@@ -597,6 +610,10 @@ export type OptimizationsApi = Omit<
 // @public
 export class OptimizationsClient implements OptimizationsApi {
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
+  // (undocumented)
+  downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void>;
   // (undocumented)
   getCostManagementReport(
     request: GetCostManagementRequest,

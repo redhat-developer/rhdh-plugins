@@ -146,6 +146,16 @@ export interface DistributedCost extends BasicCost {
 }
 
 // @public (undocumented)
+export interface DownloadCostManagementRequest
+  extends GetCostManagementRequest {
+  // (undocumented)
+  format: ExportFormat;
+}
+
+// @public (undocumented)
+export type ExportFormat = 'csv' | 'json';
+
+// @public (undocumented)
 export interface GetAccessResponse {
   // (undocumented)
   authorizeClusterIds: string[];
@@ -214,6 +224,9 @@ export type OptimizationsApi = Omit<
   getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>>;
+  downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void>;
   searchOpenShiftProjects(search?: string): Promise<
     TypedResponse<{
       data: Array<{
@@ -267,6 +280,10 @@ export type OptimizationsApi = Omit<
 // @public
 export class OptimizationsClient implements OptimizationsApi {
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
+  // (undocumented)
+  downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void>;
   // (undocumented)
   getCostManagementReport(
     request: GetCostManagementRequest,
@@ -414,7 +431,7 @@ export interface Tag {
 
 // Warnings were encountered during analysis:
 //
-// src/clients/optimizations/types.d.ts:27:5 - (ae-forgotten-export) The symbol "TypedResponse" needs to be exported by the entry point index.d.ts
+// src/clients/optimizations/types.d.ts:33:5 - (ae-forgotten-export) The symbol "TypedResponse" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 ```

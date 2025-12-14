@@ -33,6 +33,7 @@ describe('createRouter', () => {
         getRecommendationList: jest.fn(),
         getRecommendationById: jest.fn(),
         getCostManagementReport: jest.fn(),
+        downloadCostManagementReport: jest.fn(),
         searchOpenShiftProjects: jest.fn(),
         searchOpenShiftClusters: jest.fn(),
         searchOpenShiftNodes: jest.fn(),
