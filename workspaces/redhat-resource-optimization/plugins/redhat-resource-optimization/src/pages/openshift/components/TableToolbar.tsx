@@ -68,6 +68,9 @@ type TableToolbarProps = {
   setShowInfrastructureCost: (show: boolean) => void;
   showSupplementaryCost: boolean;
   setShowSupplementaryCost: (show: boolean) => void;
+  onDownloadCsv?: () => void;
+  onDownloadJson?: () => void;
+  isDownloading?: boolean;
 };
 
 /** @public */
@@ -83,6 +86,9 @@ export function TableToolbar(props: TableToolbarProps) {
     setShowInfrastructureCost,
     showSupplementaryCost,
     setShowSupplementaryCost,
+    onDownloadCsv,
+    onDownloadJson,
+    isDownloading,
   } = props;
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -144,8 +150,18 @@ export function TableToolbar(props: TableToolbarProps) {
           </div>
         )}
 
-        <DownloadIconButton label="CSV" variant="gray" />
-        <DownloadIconButton label="JSON" variant="gray" />
+        <DownloadIconButton
+          label="CSV"
+          variant="gray"
+          onClick={onDownloadCsv}
+          disabled={isDownloading}
+        />
+        <DownloadIconButton
+          label="JSON"
+          variant="gray"
+          onClick={onDownloadJson}
+          disabled={isDownloading}
+        />
       </div>
       <IconButton
         aria-label="menu"

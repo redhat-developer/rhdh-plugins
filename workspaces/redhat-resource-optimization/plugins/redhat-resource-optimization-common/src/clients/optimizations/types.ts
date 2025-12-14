@@ -44,6 +44,15 @@ export interface GetCostManagementRequest {
 }
 
 /** @public */
+export type ExportFormat = 'csv' | 'json';
+
+/** @public */
+export interface DownloadCostManagementRequest
+  extends GetCostManagementRequest {
+  format: ExportFormat;
+}
+
+/** @public */
 export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
@@ -51,6 +60,9 @@ export type OptimizationsApi = Omit<
   getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>>;
+  downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void>;
   searchOpenShiftProjects(
     search?: string,
   ): Promise<

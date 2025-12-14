@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
+import type { ExportFormat } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
 import {
   Table,
   TableColumn,
@@ -107,8 +108,12 @@ export function OpenShiftPage() {
     useState(true);
   const [showInfrastructureCost, setShowInfrastructureCost] = useState(false);
   const [showSupplementaryCost, setShowSupplementaryCost] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const theme = useTheme();
   const isDarkMode = (theme.palette as any).mode === 'dark';
+
+  // Ref to store display data for use in download handlers
+  const displayDataRef = useRef<typeof displayData | null>(null);
 
   // Fetch tags on first load
   useAsync(async () => {
@@ -370,6 +375,147 @@ export function OpenShiftPage() {
     };
   }, [costData, currency, groupBy, overheadDistribution, timeRange]);
 
+  // Update ref when displayData changes
+  displayDataRef.current = displayData;
+
+  /**
+   * Builds query parameters for download request
+   * @param specificItemName - Optional: specific item name to filter by (for row-level download)
+   */
+  const buildDownloadQueryParams = useCallback(
+    (specificItemName?: string): Record<string, string | number> => {
+      let groupByParam: string;
+      if (groupBy === 'tag') {
+        groupByParam = `group_by[tag:${selectedTag}]`;
+      } else {
+        groupByParam = `group_by[${groupBy}]`;
+      }
+
+      let deltaParam = 'cost';
+      if (groupBy === 'project' && overheadDistribution === 'distribute') {
+        deltaParam = 'distributed_cost';
+      }
+
+      const timeScopeValue = timeRange === 'month-to-date' ? -1 : -2;
+      const timeScopeUnits = 'month';
+
+      const queryParams: Record<string, string | number> = {
+        currency,
+        delta: deltaParam,
+        'filter[resolution]': 'monthly',
+        'filter[time_scope_units]': timeScopeUnits,
+        'filter[time_scope_value]': timeScopeValue,
+      };
+
+      // Add category parameter when showPlatformSum is enabled
+      if (showPlatformSum) {
+        queryParams.category = 'Platform';
+      }
+
+      queryParams[groupByParam] = '*';
+
+      // If downloading a specific row, add filter for that item
+      if (specificItemName) {
+        queryParams[`filter[${groupBy}]`] = specificItemName;
+      } else {
+        // Apply current filters for header download (all data)
+        if (filterBy === 'tag' && selectedTagKey && selectedTagValue) {
+          if (filterOperation === 'excludes') {
+            queryParams[`exclude[tag:${selectedTagKey}]`] = selectedTagValue;
+          } else {
+            queryParams[`filter[tag:${selectedTagKey}]`] = selectedTagValue;
+          }
+        } else if (filterValue) {
+          if (filterOperation === 'excludes') {
+            queryParams[`exclude[${filterBy}]`] = filterValue;
+          } else {
+            queryParams[`filter[${filterBy}]`] = filterValue;
+          }
+        }
+      }
+
+      // Add sorting
+      if (sortField) {
+        let apiSortField: string;
+        if (sortField === 'cost') {
+          apiSortField = deltaParam;
+        } else if (sortField === 'projectName') {
+          apiSortField = groupBy;
+        } else {
+          apiSortField = deltaParam;
+        }
+        queryParams[`order_by[${apiSortField}]`] = sortDirection;
+      } else {
+        queryParams[`order_by[${deltaParam}]`] = 'desc';
+      }
+
+      return queryParams;
+    },
+    [
+      groupBy,
+      selectedTag,
+      overheadDistribution,
+      timeRange,
+      currency,
+      showPlatformSum,
+      filterBy,
+      filterValue,
+      filterOperation,
+      selectedTagKey,
+      selectedTagValue,
+      sortField,
+      sortDirection,
+    ],
+  );
+
+  /**
+   * Handles download for header buttons (all data based on current filters)
+   */
+  const handleHeaderDownload = useCallback(
+    async (format: ExportFormat) => {
+      if (isDownloading) return;
+
+      setIsDownloading(true);
+      try {
+        const queryParams = buildDownloadQueryParams();
+        await api.downloadCostManagementReport({
+          query: queryParams,
+          format,
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to download ${format}:`, err);
+      } finally {
+        setIsDownloading(false);
+      }
+    },
+    [api, buildDownloadQueryParams, isDownloading],
+  );
+
+  /**
+   * Handles download for row-level buttons (specific item)
+   */
+  const handleRowDownload = useCallback(
+    async (itemName: string, format: ExportFormat) => {
+      if (isDownloading) return;
+
+      setIsDownloading(true);
+      try {
+        const queryParams = buildDownloadQueryParams(itemName);
+        await api.downloadCostManagementReport({
+          query: queryParams,
+          format,
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to download ${format} for ${itemName}:`, err);
+      } finally {
+        setIsDownloading(false);
+      }
+    },
+    [api, buildDownloadQueryParams, isDownloading],
+  );
+
   const handleRowSelect = useCallback(
     (rowId: string, isSelected: boolean) => {
       const newSelectedRows = new Set(selectedRows);
@@ -592,15 +738,19 @@ export function OpenShiftPage() {
       title: 'Actions',
       field: 'actions',
       sorting: false,
-      render: () => (
+      render: data => (
         <div style={{ display: 'flex', gap: '8px' }}>
           <DownloadIconButton
             label="CSV"
             variant={isDarkMode ? 'white' : 'black'}
+            onClick={() => handleRowDownload(data.projectName, 'csv')}
+            disabled={isDownloading}
           />
           <DownloadIconButton
             label="JSON"
             variant={isDarkMode ? 'white' : 'black'}
+            onClick={() => handleRowDownload(data.projectName, 'json')}
+            disabled={isDownloading}
           />
         </div>
       ),
@@ -609,8 +759,10 @@ export function OpenShiftPage() {
     return cols;
   }, [
     handleRowSelect,
+    handleRowDownload,
     isAllSelected,
     isIndeterminate,
+    isDownloading,
     selectedRows,
     handleSelectAll,
     displayData?.currencyCode,
@@ -756,6 +908,9 @@ export function OpenShiftPage() {
                       setShowInfrastructureCost={setShowInfrastructureCost}
                       showSupplementaryCost={showSupplementaryCost}
                       setShowSupplementaryCost={setShowSupplementaryCost}
+                      onDownloadCsv={() => handleHeaderDownload('csv')}
+                      onDownloadJson={() => handleHeaderDownload('json')}
+                      isDownloading={isDownloading}
                     />
                   ),
                 }}
