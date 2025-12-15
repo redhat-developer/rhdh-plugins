@@ -38,6 +38,7 @@ describe('plugin', () => {
       features: [x2APlugin],
     });
 
+    // TODO: so far BE provides mock data for the migrations, so failing here
     await request(server).get('/api/x2a/migrations').expect(200, {
       items: [],
     });

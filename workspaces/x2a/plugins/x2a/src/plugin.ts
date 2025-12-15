@@ -30,7 +30,7 @@ export const x2APlugin = createPlugin({
 export const X2APage = x2APlugin.provide(
   createRoutableExtension({
     name: 'X2APage',
-    component: () => import('./components/Dashboard').then(m => m.Dashboard),
+    component: () => import('./components/Router').then(m => m.Router),
     mountPoint: rootRouteRef,
   }),
 );

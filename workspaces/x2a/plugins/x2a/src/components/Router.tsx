@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
+import { Route, Routes } from 'react-router-dom';
+import { newMigrationRouteRef } from '../routes';
 
-export const rootRouteRef = createRouteRef({
-  id: 'x2a',
-});
+import { Dashboard } from './Dashboard';
+import { NewMigrationPage } from './NewMigrationPage/NewMigrationPage';
 
-export const newMigrationRouteRef = createSubRouteRef({
-  id: 'x2a/new-migration',
-  parent: rootRouteRef,
-  path: '/new-migration',
-});
+export const Router = () => {
+  return (
+    // relative to x2a/
+    <Routes>
+      <Route path="/*" element={<Dashboard />} />
+      <Route
+        path={`${newMigrationRouteRef.path}/*`}
+        element={<NewMigrationPage />}
+      />
+    </Routes>
+  );
+};

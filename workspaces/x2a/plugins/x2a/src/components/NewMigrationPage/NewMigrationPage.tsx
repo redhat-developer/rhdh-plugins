@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
+import { Content, Header, Page } from '@backstage/core-components';
 
-export const rootRouteRef = createRouteRef({
-  id: 'x2a',
-});
+export const NewMigrationPage = () => {
+  return (
+    <Page themeId="tool">
+      <Header title="Migration Hub" subtitle="Create new migration" />
 
-export const newMigrationRouteRef = createSubRouteRef({
-  id: 'x2a/new-migration',
-  parent: rootRouteRef,
-  path: '/new-migration',
-});
+      <Content>TODO: New Migration Page</Content>
+    </Page>
+  );
+};

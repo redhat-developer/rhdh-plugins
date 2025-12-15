@@ -64,7 +64,9 @@ describe('MigrationList component', () => {
     const progressbar = await findByRole('progressbar');
     expect(progressbar).toBeInTheDocument();
 
-    // const table = await findByRole('progressbar');
+    // TODO: test on mock data
+
+    // const table = await findByRole('table');
 
     // // Assert that the table contains the expected user data
     // expect(table).toBeInTheDocument();

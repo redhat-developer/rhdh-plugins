@@ -21,13 +21,14 @@ import {
   TableColumn,
   Progress,
   ResponseErrorPanel,
+  LinkButton,
 } from '@backstage/core-components';
 
 import DeleteIcon from '@material-ui/icons/Delete';
 
 import { Migration } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
-import { Grid } from '@material-ui/core';
+import { Box, Button, Grid } from '@material-ui/core';
 
 type DenseTableProps = {
   forceRefresh: () => void;
@@ -71,12 +72,24 @@ export const DenseTable = ({ migrations, forceRefresh }: DenseTableProps) => {
   );
 
   return (
-    <Grid container spacing={error ? 3 : 0} direction="column">
+    <Grid container spacing={3} direction="column">
       {error && (
         <Grid item>
           <ResponseErrorPanel error={error} />
         </Grid>
       )}
+
+      <Grid item>
+        <Box display="flex" justifyContent="flex-end">
+          <LinkButton
+            variant="contained"
+            color="primary"
+            to="/x2a/new-migration"
+          >
+            New Migration
+          </LinkButton>
+        </Box>
+      </Grid>
 
       <Grid item>
         <Table<Migration>
