@@ -60,7 +60,9 @@ export const CustomTooltip = ({ payload, pieData }: CustomTooltipProps) => {
     content = (
       <>
         <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-          {payload?.[0]?.value} entities
+          {payload?.[0]?.value === 1
+            ? '1 entity'
+            : `${payload?.[0]?.value} entities`}
         </Typography>
         <Typography
           sx={{
