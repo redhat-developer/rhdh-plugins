@@ -49,7 +49,7 @@
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
     "@roadiehq/backstage-plugin-github-pull-requests": "^3.5.1",
     "@roadiehq/backstage-plugin-jira": "^2.13.1",
     "react": "^18.0.2",

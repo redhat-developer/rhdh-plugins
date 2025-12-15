@@ -11069,7 +11069,7 @@ __metadata:
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
     "@testing-library/user-event": ^14.0.0
@@ -11082,19 +11082,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.10.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.11.0"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.9
-    "@backstage/theme": ^0.6.8
+    "@backstage/core-plugin-api": ^1.11.1
+    "@backstage/theme": ^0.7.0
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: a5626d864def2e255d026d1620d370ada033f11ee357b145a9f5bd95185cbb9392cae1c83d2dbdcafde8747feb95d79f7067f645d5c6086628d5910a216cf34e
+  checksum: 70368eb43351805dbea8a6f9b1a7e5e0c50ac6edc2ab7639c2fe48084d783b0d3f7a629225ae0e6ae3fd47b3fccdf2eecc4ad9a913ddec32e948f94fb6ecbd92
   languageName: node
   linkType: hard
 
@@ -15544,7 +15544,7 @@ __metadata:
     "@material-ui/icons": ^4.9.1
     "@playwright/test": ^1.56.1
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.10.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@roadiehq/backstage-plugin-github-pull-requests": ^3.5.1
     "@roadiehq/backstage-plugin-jira": ^2.13.1
     "@testing-library/dom": ^9.0.0
