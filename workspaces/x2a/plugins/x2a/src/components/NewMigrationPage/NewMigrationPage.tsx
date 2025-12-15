@@ -13,14 +13,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Content, Header, Page } from '@backstage/core-components';
+import { Content, Header, InfoCard, Page } from '@backstage/core-components';
+import { Grid, Step, StepLabel, Stepper } from '@material-ui/core';
+import { useState } from 'react';
+import { WizardActions } from './WizardActions';
 
 export const NewMigrationPage = () => {
+  const [activeStep, setActiveStep] = useState(0);
+
+  const steps = [
+    {
+      title: 'Job name and description',
+      content: <div>Job name and description</div>,
+    },
+    {
+      title: 'Source and target repositories',
+      content: <div>Source and target repositories</div>,
+    },
+    {
+      title: 'Review and start',
+      content: <div>Last step</div>,
+    },
+  ];
+
   return (
     <Page themeId="tool">
-      <Header title="Migration Hub" subtitle="Create new migration" />
+      <Header title="New migration" subtitle="Migration Hub / New migration" />
 
-      <Content>TODO: New Migration Page</Content>
+      <Content>
+        <Grid container spacing={3} direction="column">
+          <Grid item>
+            <InfoCard
+              title={
+                <Stepper
+                  activeStep={activeStep}
+                  variant="elevation"
+                  style={{ overflowX: 'auto', padding: 0 }}
+                >
+                  {steps.map(step => (
+                    <Step key={step.title}>
+                      <StepLabel aria-disabled="false" tabIndex={0}>
+                        {step.title}
+                      </StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
+              }
+              actions={
+                <WizardActions
+                  canNext={activeStep < steps.length - 1}
+                  canBack={activeStep > 0}
+                  onCancelLink="/x2a"
+                  onBack={() => setActiveStep(activeStep - 1)}
+                  onNext={() => setActiveStep(activeStep + 1)}
+                />
+              }
+            >
+              {steps[activeStep].content}
+            </InfoCard>
+          </Grid>
+        </Grid>
+      </Content>
     </Page>
   );
 };
