@@ -90,16 +90,22 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     setExtraErrors(undefined);
     let _extraErrors: ErrorSchema<JsonObject> | undefined = undefined;
     let _validationError: Error | undefined = undefined;
+    const activeKey = getActiveKey();
+
     if (decoratorProps.getExtraErrors) {
       try {
         handleValidateStarted();
         _extraErrors = await decoratorProps.getExtraErrors(formData, uiSchema);
-        const activeKey = getActiveKey();
-        setExtraErrors(
-          activeKey && _extraErrors?.[activeKey]
-            ? (_extraErrors[activeKey] as ErrorSchema<JsonObject>)
-            : _extraErrors,
-        );
+
+        if (activeKey) {
+          setExtraErrors(
+            _extraErrors?.[activeKey]
+              ? (_extraErrors[activeKey] as ErrorSchema<JsonObject>)
+              : undefined,
+          );
+        } else {
+          setExtraErrors(_extraErrors);
+        }
       } catch (err) {
         _validationError = err as Error;
       } finally {
@@ -107,8 +113,15 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       }
     }
     setValidationError(_validationError);
+
+    const currentStepErrors = activeKey
+      ? _extraErrors?.[activeKey]
+      : _extraErrors;
+    const hasCurrentStepErrors =
+      currentStepErrors && Object.keys(currentStepErrors).length > 0;
+
     if (
-      (!_extraErrors || Object.keys(_extraErrors).length === 0) &&
+      !hasCurrentStepErrors &&
       !_validationError &&
       activeStep < (numStepsInMultiStepSchema ?? 1)
     ) {
