@@ -19,10 +19,12 @@ import { useMemo } from 'react';
 import { Content } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import type { JSONSchema7 } from 'json-schema';
+import { get } from 'lodash';
 import { makeStyles } from 'tss-react/mui';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -55,7 +57,48 @@ const useStyles = makeStyles()(theme => ({
       },
     },
   },
+  hiddenFieldsAlert: {
+    marginBottom: theme.spacing(2),
+  },
 }));
+
+/**
+ * Recursively checks if the schema contains any fields with ui:hidden property
+ */
+const hasHiddenFields = (schema: JSONSchema7): boolean => {
+  if (typeof schema === 'boolean') {
+    return false;
+  }
+
+  // Check if this schema itself is hidden
+  if (get(schema, 'ui:hidden')) {
+    return true;
+  }
+
+  // Check properties
+  if (schema.properties) {
+    for (const prop of Object.values(schema.properties)) {
+      if (typeof prop !== 'boolean' && hasHiddenFields(prop)) {
+        return true;
+      }
+    }
+  }
+
+  // Check items (for arrays)
+  if (schema.items && typeof schema.items !== 'boolean') {
+    if (Array.isArray(schema.items)) {
+      for (const item of schema.items) {
+        if (typeof item !== 'boolean' && hasHiddenFields(item)) {
+          return true;
+        }
+      }
+    } else if (hasHiddenFields(schema.items)) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 const ReviewStep = ({
   busy,
@@ -76,9 +119,18 @@ const ReviewStep = ({
     return generateReviewTableData(schema, data);
   }, [schema, data]);
 
+  const showHiddenFieldsNote = useMemo(() => {
+    return hasHiddenFields(schema);
+  }, [schema]);
+
   return (
     <Content noPadding>
       <Paper square elevation={0} className={classes.paper}>
+        {showHiddenFieldsNote && (
+          <Alert severity="info" className={classes.hiddenFieldsAlert}>
+            {t('reviewStep.hiddenFieldsNote')}
+          </Alert>
+        )}
         <NestedReviewTable data={displayData} />
         <Box mb={4} />
         <div className={classes.footer}>
