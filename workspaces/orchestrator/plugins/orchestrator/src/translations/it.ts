@@ -135,6 +135,8 @@ const orchestratorTranslationIt = createTranslationMessages({
       'Questo workflow non ha uno schema JSON definito per la validazione degli input. Puoi comunque eseguire il workflow, ma la validazione degli input sarà limitata.',
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'Non sono disponibili dettagli aggiuntivi su questo errore',
+    'reviewStep.hiddenFieldsNote':
+      'Alcuni campi sono nascosti in questa pagina ma verranno inclusi nella richiesta di esecuzione del workflow.',
     'common.close': 'Chiudi',
     'common.cancel': 'Annulla',
     'common.execute': 'Esegui',

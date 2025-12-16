@@ -687,11 +687,13 @@ In the future, new widgets wrapping such explicit use case can be added.
 
 ## Hiding Fields
 
-Fields can be hidden from the form display while still maintaining their widget functionality and participating in form submission using the `"ui:hidden": true` property.
+Fields can be hidden from the form display while still maintaining their widget functionality and participating in form submission using the `ui:hidden` property. The `ui:hidden` property supports two modes: **static** and **conditional (dynamic)** hiding.
 
-This is different from `"ui:widget": "hidden"` which changes the widget type itself. With `"ui:hidden": true`, the field keeps its original widget type (like `ActiveText`, `ActiveTextInput`, etc.) but is visually hidden from the user.
+This is different from `"ui:widget": "hidden"` which changes the widget type itself. With `ui:hidden`, the field keeps its original widget type (like `ActiveText`, `ActiveTextInput`, etc.) but is visually hidden from the user.
 
-### Example Usage
+### Static Hiding
+
+Hide a field permanently using a boolean value:
 
 ```json
 {
@@ -703,34 +705,240 @@ This is different from `"ui:widget": "hidden"` which changes the widget type its
     "ui:props": {
       "ui:text": "This text is hidden but still rendered"
     }
-  },
-  "hiddenInput": {
-    "type": "string",
-    "title": "Hidden Input",
-    "ui:hidden": true,
-    "default": "secret-value"
   }
 }
 ```
 
-**Key differences:**
+### Conditional (Dynamic) Hiding
+
+Hide fields based on the values of other form fields using condition objects:
+
+#### Basic Conditions
+
+```json
+{
+  "deploymentType": {
+    "type": "string",
+    "title": "Deployment Type",
+    "enum": ["simple", "advanced", "custom", "managed"]
+  },
+  "advancedConfig": {
+    "type": "string",
+    "title": "Advanced Configuration",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "isNot": ["advanced", "custom"]
+    }
+  }
+}
+```
+
+In this example, `advancedConfig` is hidden unless `deploymentType` is `"advanced"` or `"custom"`.
+
+#### Supported Condition Patterns
+
+**1. Hide when field equals value(s) (`is`)**
+
+```json
+{
+  "debugMode": {
+    "type": "boolean",
+    "title": "Enable Debug Mode",
+    "ui:hidden": {
+      "when": "environment",
+      "is": "production"
+    }
+  }
+}
+```
+
+Use an array for multiple values (OR logic):
+
+```json
+{
+  "basicOptions": {
+    "type": "object",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "is": ["simple", "managed"]
+    }
+  }
+}
+```
+
+**2. Hide when field does NOT equal value(s) (`isNot`)**
+
+```json
+{
+  "customScript": {
+    "type": "string",
+    "title": "Custom Deployment Script",
+    "ui:widget": "textarea",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "isNot": "custom"
+    }
+  }
+}
+```
+
+**3. Hide when field is empty (`isEmpty`)**
+
+```json
+{
+  "childConfig": {
+    "type": "object",
+    "ui:hidden": {
+      "when": "parentField",
+      "isEmpty": true
+    }
+  }
+}
+```
+
+**4. Multiple conditions with AND logic (`allOf`)**
+
+```json
+{
+  "productionApprover": {
+    "type": "string",
+    "title": "Production Approver",
+    "ui:hidden": {
+      "allOf": [
+        { "when": "environment", "is": "production" },
+        { "when": "requiresApproval", "is": true }
+      ]
+    }
+  }
+}
+```
+
+**5. Multiple conditions with OR logic (`anyOf`)**
+
+```json
+{
+  "skipValidation": {
+    "type": "boolean",
+    "ui:hidden": {
+      "anyOf": [
+        { "when": "environment", "is": "development" },
+        { "when": "quickDeploy", "is": true }
+      ]
+    }
+  }
+}
+```
+
+#### Nested Field Paths
+
+You can reference nested fields using dot notation:
+
+```json
+{
+  "advancedPort": {
+    "type": "integer",
+    "ui:hidden": {
+      "when": "config.server.useDefaultPort",
+      "is": true
+    }
+  }
+}
+```
+
+### Complete Example
+
+```json
+{
+  "title": "Deployment Configuration",
+  "type": "object",
+  "properties": {
+    "deploymentType": {
+      "type": "string",
+      "title": "Deployment Type",
+      "enum": ["simple", "advanced", "custom", "managed"],
+      "default": "simple"
+    },
+    "environment": {
+      "type": "string",
+      "title": "Environment",
+      "enum": ["development", "staging", "production"],
+      "default": "development"
+    },
+    "replicas": {
+      "type": "integer",
+      "title": "Number of Replicas",
+      "default": 1,
+      "ui:hidden": {
+        "when": "deploymentType",
+        "is": "simple"
+      }
+    },
+    "customScript": {
+      "type": "string",
+      "title": "Custom Deployment Script",
+      "ui:widget": "textarea",
+      "ui:hidden": {
+        "when": "deploymentType",
+        "isNot": "custom"
+      }
+    },
+    "productionApprover": {
+      "type": "string",
+      "title": "Production Approver Email",
+      "ui:hidden": {
+        "anyOf": [
+          { "when": "environment", "isNot": "production" },
+          { "when": "deploymentType", "is": "simple" }
+        ]
+      }
+    },
+    "advancedSettings": {
+      "type": "object",
+      "title": "Advanced Settings",
+      "ui:hidden": {
+        "when": "deploymentType",
+        "is": ["simple", "managed"]
+      },
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "title": "CPU Limit"
+        },
+        "memory": {
+          "type": "string",
+          "title": "Memory Limit"
+        }
+      }
+    }
+  }
+}
+```
+
+### Key Differences
 
 | Property                | Behavior                                    | Use Case                                                                               |
 | ----------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `"ui:widget": "hidden"` | Changes widget type to hidden input         | Simple hidden form values                                                              |
 | `"ui:hidden": true`     | Keeps original widget but hides it visually | Hide widgets while preserving their functionality (e.g., ActiveText that fetches data) |
+| `"ui:hidden": {...}`    | Conditionally hides based on form data      | Dynamic forms that adapt to user input                                                 |
 
-Hidden fields:
+### Behavior of Hidden Fields
 
-- Are not displayed in the form
-- Are not shown in the wizard stepper navigation (multi-step forms)
-- Still participate in form validation
-- Are included in form submission
-- Are excluded from the review page
-- Maintain their widget functionality (fetching, validation, etc.)
+Hidden fields (regardless of hiding method):
 
-**Automatic Step Hiding:**
-If all inputs within a multi-step form's step are marked with `"ui:hidden": true`, the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
+- **Are not displayed** in the form
+- **Are not shown** in the wizard stepper navigation (multi-step forms)
+- **Still participate** in form validation
+- **Are included** in form submission
+- **Are excluded** from the review page (but will still be part of the request payload)
+- **Maintain their widget functionality** (fetching, validation, etc.)
+- **Update in real-time** when form data changes (for conditional hiding)
+
+> **Note:** Hidden fields are not displayed on the review page for clarity, but they are still included in the workflow execution request. If you need to completely exclude fields from the request payload, you can use the [`SchemaUpdater` API](./extensibleForm.md#schema-updater) to dynamically modify the schema.
+
+### Automatic Step Hiding
+
+If all inputs within a multi-step form's step are marked with `ui:hidden` (either statically or dynamically), the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
 
 ## Customization
 
