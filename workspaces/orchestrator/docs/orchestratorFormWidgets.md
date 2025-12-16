@@ -932,9 +932,11 @@ Hidden fields (regardless of hiding method):
 - **Are not shown** in the wizard stepper navigation (multi-step forms)
 - **Still participate** in form validation
 - **Are included** in form submission
-- **Are excluded** from the review page
+- **Are excluded** from the review page (but will still be part of the request payload)
 - **Maintain their widget functionality** (fetching, validation, etc.)
 - **Update in real-time** when form data changes (for conditional hiding)
+
+> **Note:** Hidden fields are not displayed on the review page for clarity, but they are still included in the workflow execution request. If you need to completely exclude fields from the request payload, you can use the [`SchemaUpdater` API](./extensibleForm.md#schema-updater) to dynamically modify the schema.
 
 ### Automatic Step Hiding
 
