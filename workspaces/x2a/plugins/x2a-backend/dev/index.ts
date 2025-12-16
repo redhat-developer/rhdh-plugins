@@ -72,4 +72,6 @@ backend.add(
 
 backend.add(import('../src'));
 
+backend.add(import('@backstage/plugin-kubernetes-backend'));
+
 backend.start();
