@@ -17,11 +17,19 @@
 import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
-  private readonly OPENSSF_API_BASE_URL =
-    'https://api.securityscorecards.dev/projects';
+  private readonly baseUrl: string;
+  private readonly gitServiceHost: string;
+
+  constructor(
+    baseUrl: string = 'https://api.securityscorecards.dev/projects',
+    gitServiceHost: string = 'github.com',
+  ) {
+    this.baseUrl = baseUrl;
+    this.gitServiceHost = gitServiceHost;
+  }
 
   async getScorecard(owner: string, repo: string): Promise<OpenSSFResponse> {
-    const apiUrl = `${this.OPENSSF_API_BASE_URL}/github.com/${owner}/${repo}`;
+    const apiUrl = `${this.baseUrl}/${this.gitServiceHost}/${owner}/${repo}`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',

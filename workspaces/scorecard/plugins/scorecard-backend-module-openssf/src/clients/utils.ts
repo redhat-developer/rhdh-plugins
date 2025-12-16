@@ -22,7 +22,7 @@ export const getRepositoryInformationFromEntity = (
   const projectSlug = entity.metadata.annotations?.['openssf/project'];
   if (!projectSlug) {
     throw new Error(
-      `Missing annotation 'github.com/project-slug' for entity ${stringifyEntityRef(
+      `Missing annotation 'openssf/project' for entity ${stringifyEntityRef(
         entity,
       )}`,
     );
@@ -31,7 +31,7 @@ export const getRepositoryInformationFromEntity = (
   const [owner, repo] = projectSlug.split('/');
   if (!owner || !repo) {
     throw new Error(
-      `Invalid format of 'github.com/project-slug' ${projectSlug} for entity ${stringifyEntityRef(
+      `Invalid format of 'openssf/project' ${projectSlug} for entity ${stringifyEntityRef(
         entity,
       )}`,
     );

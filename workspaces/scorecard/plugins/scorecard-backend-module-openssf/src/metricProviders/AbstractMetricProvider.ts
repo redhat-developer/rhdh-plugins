@@ -84,7 +84,7 @@ export abstract class AbstractMetricProvider
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
-      'metadata.annotations.github.com/project-slug': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.openssf/project-slug': CATALOG_FILTER_EXISTS,
     };
   }
 
