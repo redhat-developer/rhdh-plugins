@@ -138,6 +138,8 @@ const orchestratorTranslationDe = createTranslationMessages({
       'Dieser Workflow hat kein JSON-Schema für die Eingabevalidierung definiert. Sie können den Workflow trotzdem ausführen, aber die Eingabevalidierung wird eingeschränkt sein.',
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'Zusätzliche Informationen zu diesem Fehler sind nicht verfügbar',
+    'reviewStep.hiddenFieldsNote':
+      'Einige Felder sind auf dieser Seite ausgeblendet, werden aber in die Workflow-Ausführungsanforderung aufgenommen.',
     'common.close': 'Schließen',
     'common.cancel': 'Abbrechen',
     'common.execute': 'Ausführen',

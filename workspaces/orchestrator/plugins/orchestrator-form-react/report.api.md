@@ -6,9 +6,27 @@
 
 import { JsonObject } from '@backstage/types';
 import type { JSONSchema7 } from 'json-schema';
+import { JsonValue } from '@backstage/types';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { ReactNode } from 'react';
+
+// @public
+export type HiddenCondition = boolean | HiddenConditionObject | HiddenConditionComposite;
+
+// @public
+export interface HiddenConditionComposite {
+    allOf?: HiddenCondition[];
+    anyOf?: HiddenCondition[];
+}
+
+// @public
+export interface HiddenConditionObject {
+    is?: JsonValue | JsonValue[];
+    isEmpty?: boolean;
+    isNot?: JsonValue | JsonValue[];
+    when: string;
+}
 
 // @public
 export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, setAuthTokenDescriptors, t, }: OrchestratorFormProps) => JSX_2.Element;

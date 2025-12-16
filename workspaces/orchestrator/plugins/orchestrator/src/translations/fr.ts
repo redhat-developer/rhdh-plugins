@@ -138,6 +138,8 @@ const orchestratorTranslationFr = createTranslationMessages({
       "Ce workflow n'a pas de schéma JSON défini pour la validation des entrées. Vous pouvez toujours exécuter le workflow, mais la validation des entrées sera limitée.",
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       "Aucune information supplémentaire sur cet erreur n'est disponible",
+    'reviewStep.hiddenFieldsNote':
+      "Certains champs sont masqués sur cette page mais seront inclus dans la demande d'exécution du workflow.",
     'common.close': 'Fermer',
     'common.cancel': 'Annuler',
     'common.execute': 'Exécuter',

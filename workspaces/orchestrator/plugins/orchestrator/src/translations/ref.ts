@@ -170,6 +170,10 @@ export const orchestratorMessages = {
     additionalDetailsAboutThisErrorAreNotAvailable:
       'Additional details about this error are not available',
   },
+  reviewStep: {
+    hiddenFieldsNote:
+      'Some fields are hidden on this page but will be included in the workflow execution request.',
+  },
   common: {
     close: 'Close',
     cancel: 'Cancel',
