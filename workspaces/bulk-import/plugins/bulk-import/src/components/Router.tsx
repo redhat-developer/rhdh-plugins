@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -32,7 +32,8 @@ const queryClient = new QueryClient();
 export const Router = () => (
   <QueryClientProvider client={queryClient}>
     <Routes>
-      <Route path="*" element={<BulkImportPage />} />
+      <Route path="/" element={<Navigate to="repositories" replace />} />
+      <Route path="/repositories" element={<BulkImportPage />} />
       <Route
         path={addRepositoriesRouteRef.path}
         element={<AddRepositoriesPage />}
