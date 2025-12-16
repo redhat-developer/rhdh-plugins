@@ -160,7 +160,7 @@ describe('AbstractMetricProvider', () => {
   describe('getCatalogFilter', () => {
     it('should return filter for openssf/project-slug annotation', () => {
       expect(provider.getCatalogFilter()).toEqual({
-        'metadata.annotations.openssf/project-slug': CATALOG_FILTER_EXISTS,
+        'metadata.annotations.openssf/project': CATALOG_FILTER_EXISTS,
       });
     });
   });
