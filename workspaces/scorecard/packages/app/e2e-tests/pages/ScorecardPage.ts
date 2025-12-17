@@ -41,7 +41,7 @@ export class ScorecardPage {
   }
 
   async openTab() {
-    const scorecardTab = this.page.getByText('Scorecard');
+    const scorecardTab = this.page.getByText('Scorecard', { exact: true });
     await expect(scorecardTab).toBeVisible();
     await Promise.all([
       waitUntilApiCallSucceeds(this.page),

@@ -21,6 +21,8 @@ import {
 } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { mockAggregatedScorecardSuccessData } from '../../__fixtures__/aggregatedScorecardData';
+import type { AggregatedMetricResult } from '../utils/utils';
 
 export interface ScorecardApi {
   /**
@@ -30,6 +32,7 @@ export interface ScorecardApi {
    * @returns Promise resolving to an array of metric results
    */
   getScorecards(entity: Entity, metricIds?: string[]): Promise<MetricResult[]>;
+  getAggregatedScorecards(): Promise<AggregatedMetricResult[]>;
 }
 
 export const scorecardApiRef = createApiRef<ScorecardApi>({
@@ -115,5 +118,10 @@ export class ScorecardApiClient implements ScorecardApi {
       }
       throw new Error(`Unexpected error fetching scorecards: ${String(error)}`);
     }
+  }
+
+  async getAggregatedScorecards(): Promise<AggregatedMetricResult[]> {
+    // Return mock data instead of making an API call
+    return mockAggregatedScorecardSuccessData;
   }
 }
