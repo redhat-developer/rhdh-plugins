@@ -23,8 +23,8 @@ import {
 import Snackbar from '@mui/material/Snackbar';
 import CloseIcon from '@mui/icons-material/Close';
 import IconButton from '@mui/material/IconButton';
+import { useApplicationDrawerContext } from '@red-hat-developer-hub/backstage-plugin-application-drawer';
 import { QuickstartDrawerContext } from './QuickstartDrawerContext';
-import { QuickstartDrawer } from './QuickstartDrawer';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
@@ -41,9 +41,18 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   const [userKey, setUserKey] = useState<string>('guest');
   const identityApi = useApi(identityApiRef);
   const configApi = useApi(configApiRef);
+  const { addDrawerContext } = useApplicationDrawerContext();
 
   // Determine role once at provider level to avoid re-fetching on drawer open/close
   const { isLoading: roleLoading, userRole } = useQuickstartRole();
+
+  useEffect(() => {
+    addDrawerContext('quickstart', {
+      isDrawerOpen,
+      drawerWidth,
+      setDrawerWidth,
+    });
+  }, [addDrawerContext, drawerWidth, isDrawerOpen]);
 
   // Single useEffect - sets class on document.body
   useEffect(() => {
@@ -190,6 +199,7 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   return (
     <QuickstartDrawerContext.Provider
       value={{
+        id: 'quickstart',
         isDrawerOpen,
         openDrawer,
         closeDrawer,
@@ -201,7 +211,6 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
       }}
     >
       {children}
-      <QuickstartDrawer />
       <Snackbar
         sx={{ top: '80px !important' }}
         open={showNotification}

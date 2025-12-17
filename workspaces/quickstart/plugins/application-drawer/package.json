@@ -1,6 +1,6 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-quickstart",
-  "version": "1.8.0",
+  "name": "@red-hat-developer-hub/backstage-plugin-application-drawer",
+  "version": "0.1.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -10,13 +10,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/quickstart/plugins/quickstart"
+    "directory": "workspaces/quickstart/plugins/application-drawer"
   },
   "backstage": {
     "role": "frontend-plugin",
-    "pluginId": "quickstart",
+    "pluginId": "application-drawer",
     "pluginPackages": [
-      "@red-hat-developer-hub/backstage-plugin-quickstart"
+      "@red-hat-developer-hub/backstage-plugin-application-drawer"
     ]
   },
   "sideEffects": false,
@@ -30,52 +30,29 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage-community/plugin-rbac-common": "^1.19.0",
     "@backstage/core-components": "^0.18.3",
     "@backstage/core-plugin-api": "^1.12.0",
-    "@backstage/plugin-permission-react": "^0.4.38",
     "@backstage/theme": "^0.7.0",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-application-drawer": "^0.1.0",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
-    "react-use": "^17.6.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.5",
-    "@backstage/core-app-api": "^1.19.2",
     "@backstage/dev-utils": "^1.1.17",
-    "@backstage/plugin-permission-common": "^0.9.3",
     "@backstage/test-utils": "^1.7.13",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.0.0",
-    "msw": "^1.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
     "./package.json": "./package.json"
   },
-  "typesVersions": {
-    "*": {
-      "alpha": [
-        "src/alpha.ts"
-      ],
-      "package.json": [
-        "package.json"
-      ]
-    }
-  },
   "files": [
-    "dist",
-    "dist-scalprum",
-    "config.d.ts",
-    "app-config.dynamic.yaml"
-  ],
-  "configSchema": "config.d.ts"
+    "dist"
+  ]
 }

@@ -50,6 +50,14 @@ import Box from '@mui/material/Box';
 import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
 import { Administration } from '@backstage-community/plugin-rbac';
+import { QuickstartDrawerContent } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+import {
+  TestDrawerContent,
+  TestDrawerProvider,
+} from '@red-hat-developer-hub/backstage-plugin-test-drawer';
+import { ApplicationDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-application-drawer';
+import { ApplicationDrawer } from './ApplicationDrawer';
+import { TestDrawerSidebarItem } from './TestDrawerSidebarItem';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -94,54 +102,80 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             transition: 'margin-right 0.3s ease',
           },
         },
+        'body.test-drawer-open #sidebar&': {
+          "> div > main[class*='BackstagePage-root']": {
+            marginRight: 'calc(var(--test-drawer-width, 500px) + 1.5em)',
+            transition: 'margin-right 0.3s ease',
+          },
+        },
       }}
     >
       <SidebarPage>
         <GlobalHeaderComponent
           globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
         />
-        <QuickstartDrawerProvider>
-          <Sidebar>
-            <SidebarLogo />
-            <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-              <SidebarSearchModal />
-            </SidebarGroup>
-            <SidebarDivider />
-            <SidebarGroup label="Menu" icon={<MenuIcon />}>
-              {/* Global nav, not org-specific */}
-              <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
-              <MyGroupsSidebarItem
-                singularTitle="My Group"
-                pluralTitle="My Groups"
-                icon={GroupIcon}
+        <ApplicationDrawerProvider>
+          <QuickstartDrawerProvider>
+            <TestDrawerProvider>
+              <Sidebar>
+                <SidebarLogo />
+                <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+                  <SidebarSearchModal />
+                </SidebarGroup>
+                <SidebarDivider />
+                <SidebarGroup label="Menu" icon={<MenuIcon />}>
+                  {/* Global nav, not org-specific */}
+                  <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+                  <MyGroupsSidebarItem
+                    singularTitle="My Group"
+                    pluralTitle="My Groups"
+                    icon={GroupIcon}
+                  />
+                  <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+                  <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+                  <SidebarItem
+                    icon={CreateComponentIcon}
+                    to="create"
+                    text="Create..."
+                  />
+                  {/* End global nav */}
+                  <SidebarDivider />
+                  <Administration />
+                  <SidebarScrollWrapper>
+                    {/* Items in this group will be scrollable if they run out of space */}
+                  </SidebarScrollWrapper>
+                </SidebarGroup>
+                <SidebarSpace />
+                <QuickstartSidebarItem />
+                <TestDrawerSidebarItem />
+                <SidebarDivider />
+                <SidebarGroup
+                  label="Settings"
+                  icon={<UserSettingsSignInAvatar />}
+                  to="/settings"
+                >
+                  <SidebarSettings />
+                </SidebarGroup>
+              </Sidebar>
+              {children}
+              <ApplicationDrawer
+                drawerContents={[
+                  {
+                    Component: QuickstartDrawerContent,
+                    priority: 1,
+                    id: 'quickstart',
+                  },
+                  {
+                    Component: TestDrawerContent,
+                    priority: 100,
+                    id: 'test-drawer',
+                    resizable: true,
+                  },
+                ]}
               />
-              <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-              <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-              <SidebarItem
-                icon={CreateComponentIcon}
-                to="create"
-                text="Create..."
-              />
-              {/* End global nav */}
-              <SidebarDivider />
-              <Administration />
-              <SidebarScrollWrapper>
-                {/* Items in this group will be scrollable if they run out of space */}
-              </SidebarScrollWrapper>
-            </SidebarGroup>
-            <SidebarSpace />
-            <QuickstartSidebarItem />
-            <SidebarDivider />
-            <SidebarGroup
-              label="Settings"
-              icon={<UserSettingsSignInAvatar />}
-              to="/settings"
-            >
-              <SidebarSettings />
-            </SidebarGroup>
-          </Sidebar>
-          {children}
-        </QuickstartDrawerProvider>
+            </TestDrawerProvider>
+          </QuickstartDrawerProvider>
+        </ApplicationDrawerProvider>
       </SidebarPage>
     </Box>
   );

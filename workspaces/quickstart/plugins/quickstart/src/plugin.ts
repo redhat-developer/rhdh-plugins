@@ -56,6 +56,23 @@ export const QuickstartDrawerProvider: React.ComponentType<PropsWithChildren> =
   );
 
 /**
+ * Quickstart Drawer Content component extension
+ *
+ * @public
+ */
+export const QuickstartDrawerContent = quickstartPlugin.provide(
+  createComponentExtension({
+    name: 'QuickstartDrawerContent',
+    component: {
+      lazy: () =>
+        import('./components/QuickstartDrawerContent').then(
+          m => m.QuickstartDrawerContent,
+        ),
+    },
+  }),
+);
+
+/**
  * Quick start button for global header help dropdown
  *
  * @public
