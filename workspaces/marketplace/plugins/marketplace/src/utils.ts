@@ -19,6 +19,7 @@ import { JsonObject } from '@backstage/types';
 import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { marketplaceTranslationRef } from './translations';
+import { PluginPermissions, Permission } from './types';
 
 export enum ExtensionsStatus {
   INSTALLATION_DISABLED_IN_PRODUCTION = 'INSTALLATION_DISABLED_IN_PRODUCTION',
@@ -144,10 +145,7 @@ export const getErrorMessage = (
 
 export const getPluginActionTooltipMessage = (
   isProductionEnvironment: boolean,
-  permissions: {
-    read: 'ALLOW' | 'DENY';
-    write: 'ALLOW' | 'DENY';
-  },
+  permissions: PluginPermissions | null,
   t: TranslationFunction<typeof marketplaceTranslationRef.T>,
   extensionsDisabled?: boolean,
 ) => {
@@ -157,7 +155,11 @@ export const getPluginActionTooltipMessage = (
   if (extensionsDisabled) {
     return t('tooltips.extensionsDisabled');
   }
-  if (permissions.read !== 'ALLOW' && permissions.write !== 'ALLOW') {
+  if (
+    permissions &&
+    permissions.read !== Permission.ALLOW &&
+    permissions.write !== Permission.ALLOW
+  ) {
     return t('tooltips.noPermissions');
   }
 

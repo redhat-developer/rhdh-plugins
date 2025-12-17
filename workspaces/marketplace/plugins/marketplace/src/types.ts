@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export enum Permission {
+  ALLOW = 'ALLOW',
+  DENY = 'DENY',
+}
 
-import { useQuery } from '@tanstack/react-query';
-import { useMarketplaceApi } from './useMarketplaceApi';
-
-export const usePackageConfig = (namespace: string, name: string) => {
-  const marketplaceApi = useMarketplaceApi();
-  return useQuery({
-    queryKey: ['marketplaceApi', 'getPackageConfigByName', namespace, name],
-    queryFn: () => {
-      if (namespace && name) {
-        return marketplaceApi.getPackageConfigByName?.(namespace, name);
-      }
-      return null;
-    },
-    refetchOnWindowFocus: false,
-  });
+export type PluginPermissions = {
+  read: Permission;
+  write: Permission;
 };
