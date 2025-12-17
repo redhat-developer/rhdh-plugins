@@ -71,7 +71,6 @@ export const RepositoriesTable = ({
   drawerOrganization,
   isApprovalToolGitlab = false,
   updateSelectedReposInDrawer,
-  refetchTrigger,
 }: {
   searchString: string;
   page?: number;
@@ -80,7 +79,6 @@ export const RepositoriesTable = ({
   drawerOrganization?: string;
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
-  refetchTrigger?: number;
 }) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -352,7 +350,6 @@ export const RepositoriesTable = ({
             isDrawer={!!drawerOrganization}
             isApprovalToolGitlab={isApprovalToolGitlab}
             showOrganizations={showOrganizations}
-            refetchTrigger={refetchTrigger}
           />
         </Table>
         {!isOpen && tableData?.length > 0 && (

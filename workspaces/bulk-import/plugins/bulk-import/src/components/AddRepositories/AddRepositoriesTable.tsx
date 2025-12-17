@@ -31,13 +31,7 @@ import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
 
-export const AddRepositoriesTable = ({
-  title,
-  refetchTrigger,
-}: {
-  title?: string;
-  refetchTrigger?: number;
-}) => {
+export const AddRepositoriesTable = ({ title }: { title?: string }) => {
   const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -82,7 +76,6 @@ export const AddRepositoriesTable = ({
           page={page}
           isApprovalToolGitlab={isApprovalToolGitlab}
           setPage={setPage}
-          refetchTrigger={refetchTrigger}
         />
       </Paper>
     </Box>

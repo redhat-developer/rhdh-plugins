@@ -15,7 +15,6 @@
  */
 
 import type { MouseEvent } from 'react';
-import { useAsync } from 'react-use';
 
 import { Link } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
@@ -25,6 +24,7 @@ import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
+import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import {
@@ -49,27 +49,39 @@ export const RepositoryTableRow = ({
   isItemSelected,
   data,
   isDrawer = false,
-  refetchTrigger,
 }: {
   handleClick: (_event: MouseEvent, id: AddRepositoryData) => void;
   isItemSelected: boolean;
   data: AddRepositoryData;
   isDrawer?: boolean;
-  refetchTrigger?: number;
 }) => {
   const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
-  const { value, loading } = useAsync(async () => {
-    if (data.repoUrl) {
-      const result = await bulkImportApi.getImportAction(
-        data.repoUrl,
-        data?.defaultBranch || 'main',
-        data && (data as ImportJobStatus).approvalTool,
-      );
-      return result;
-    }
-    return null;
-  }, [data.repoUrl, refetchTrigger]);
+
+  const { data: value, isLoading: loading } = useQuery(
+    [
+      'importAction',
+      data.repoUrl,
+      data?.defaultBranch,
+      data && (data as ImportJobStatus).approvalTool,
+    ],
+    async () => {
+      if (data.repoUrl) {
+        const result = await bulkImportApi.getImportAction(
+          data.repoUrl,
+          data?.defaultBranch || 'main',
+          data && (data as ImportJobStatus).approvalTool,
+        );
+        return result;
+      }
+      return null;
+    },
+    {
+      enabled: !!data.repoUrl,
+      staleTime: 30000, // Consider data fresh for 30 seconds
+      refetchInterval: 60000, // Auto-refetch every minute
+    },
+  );
 
   return (
     <TableRow

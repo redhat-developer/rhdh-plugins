@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
@@ -46,7 +46,6 @@ export const AddRepositoriesForm = ({
   const queryClient = useQueryClient();
   const { numberOfApprovalTools, gitlabConfigured } =
     useNumberOfApprovalTools();
-  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   // Set default approval tool based on configuration
   const getDefaultApprovalTool = () => {
@@ -112,10 +111,20 @@ export const AddRepositoriesForm = ({
           // Successfully imported - stay on the same page
           // Clear the selected repositories to reset the form
           formikHelpers.setFieldValue('repositories', {});
-          // Invalidate repository queries to refresh data and show updated status
+
+          // Invalidate repository list queries to refresh data
           queryClient.invalidateQueries(['repositories']);
-          // Trigger refetch of individual repository statuses
-          setRefetchTrigger(prev => prev + 1);
+          queryClient.invalidateQueries(['organizations']);
+
+          // Invalidate specific importAction queries for each imported repository
+          importRepositories.forEach(repo => {
+            queryClient.invalidateQueries([
+              'importAction',
+              repo.repository.url,
+              repo.repository.defaultBranch,
+              repo.approvalTool,
+            ]);
+          });
         }
       }
     }
@@ -128,10 +137,7 @@ export const AddRepositoriesForm = ({
         enableReinitialize
         onSubmit={handleSubmit}
       >
-        <AddRepositories
-          refetchTrigger={refetchTrigger}
-          error={mutationCreate.error}
-        />
+        <AddRepositories error={mutationCreate.error} />
       </Formik>
     </DrawerContextProvider>
   );

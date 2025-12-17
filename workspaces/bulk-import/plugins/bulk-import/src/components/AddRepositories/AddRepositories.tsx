@@ -33,13 +33,7 @@ import { PreviewFileSidebar } from '../PreviewFile/PreviewFileSidebar';
 import { AddRepositoriesFormFooter } from './AddRepositoriesFormFooter';
 import { AddRepositoriesTable } from './AddRepositoriesTable';
 
-export const AddRepositories = ({
-  refetchTrigger,
-  error,
-}: {
-  refetchTrigger?: number;
-  error?: any;
-}) => {
+export const AddRepositories = ({ error }: { error?: any }) => {
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
@@ -51,8 +45,15 @@ export const AddRepositories = ({
   const hasGitLabIntegration = configApi.has('integrations.gitlab');
   const hasMissingIntegrations = !hasGitHubIntegration && !hasGitLabIntegration;
 
-  // Parse error message if it exists
-  const errorMessage = error?.error?.message && JSON.parse(error.error.message);
+  // Parse error message if it exists and is valid JSON
+  const errorMessage = (() => {
+    try {
+      return error?.error?.message ? JSON.parse(error.error.message) : null;
+    } catch {
+      // If parsing fails, return null and use the raw error message
+      return null;
+    }
+  })();
 
   const closeDrawer = () => {
     setOpenDrawer(false);
@@ -174,15 +175,18 @@ export const AddRepositories = ({
                 <AlertTitle>
                   {errorMessage?.error?.name ??
                     error?.error?.name ??
+                    error?.name ??
                     t('errors.errorOccurred')}
                 </AlertTitle>
                 {errorMessage?.error?.message ??
+                  error?.error?.message ??
+                  error?.message ??
                   error?.err ??
                   t('errors.failedToCreatePullRequest')}
               </Alert>
             </div>
           )}
-          <AddRepositoriesTable refetchTrigger={refetchTrigger} />
+          <AddRepositoriesTable />
         </div>
         <br />
       </FormControl>
