@@ -33,7 +33,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "peerDependencies": {
-    "@backstage/core-plugin-api": "^1.11.1",
+    "@backstage/core-plugin-api": "^1.12.0",
     "@backstage/theme": "^0.7.0",
     "@material-ui/icons": "^4.11.3",
     "@mui/icons-material": "^5.17.1",
@@ -41,13 +41,13 @@
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.4",
-    "@backstage/core-app-api": "^1.19.1",
-    "@backstage/core-components": "^0.18.2",
-    "@backstage/core-plugin-api": "^1.11.1",
-    "@backstage/dev-utils": "^1.1.16",
-    "@backstage/plugin-user-settings": "^0.8.28",
-    "@backstage/test-utils": "^1.7.12",
+    "@backstage/cli": "^0.34.5",
+    "@backstage/core-app-api": "^1.19.2",
+    "@backstage/core-components": "^0.18.3",
+    "@backstage/core-plugin-api": "^1.12.0",
+    "@backstage/dev-utils": "^1.1.17",
+    "@backstage/plugin-user-settings": "^0.8.29",
+    "@backstage/test-utils": "^1.7.13",
     "@backstage/theme": "^0.7.0",
     "@backstage/types": "^1.2.2",
     "@material-ui/icons": "^4.11.3",
