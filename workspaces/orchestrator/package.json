@@ -54,7 +54,9 @@
     "@types/react-dom": "^18",
     "react": "^18",
     "react-dom": "^18",
-    "refractor@npm:3.6.0/prismjs": "^1.30.0"
+    "refractor@npm:3.6.0/prismjs": "^1.30.0",
+    "archiver-utils/glob": "^11.1.0",
+    "typeorm/glob": "^11.1.0"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
