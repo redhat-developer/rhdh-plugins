@@ -47,17 +47,12 @@ g, user:default/<login-id/user-name>, role:default/team_a
    import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
    ...
    /* highlight-add-start */
-   <Route
-        path="/bulk-import"
-        element={<Navigate to="repositories" />}
-    />
-    <Route
-        path="/bulk-import/repositories"
-        element={<BulkImportPage />}
-    />
-    /* highlight-add-end */
+   <Route path="/bulk-import/*" element={<BulkImportPage />} />
+   /* highlight-add-end */
    ...
    ```
+
+   > **Note:** The plugin automatically redirects `/bulk-import` to `/bulk-import/repositories`. You only need to mount the plugin once at `/bulk-import/*`.
 
 3. Add **Bulk import** Sidebar Item in `packages/app/src/components/Root/Root.tsx`:
 

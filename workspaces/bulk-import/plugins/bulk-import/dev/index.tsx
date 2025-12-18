@@ -176,7 +176,7 @@ createDevApp()
       </TestApiProvider>
     ),
     title: 'Bulk import',
-    path: '/bulk-import/repositories',
+    path: '/bulk-import',
     icon: BulkImportIcon,
   })
   .render();
