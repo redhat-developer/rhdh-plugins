@@ -74,6 +74,132 @@ export interface CostManagementReport {
 }
 
 // @public (undocumented)
+export interface CostManagementSlimApi {
+  // (undocumented)
+  downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void>;
+  // (undocumented)
+  getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>>;
+  // (undocumented)
+  getOpenShiftTags(timeScopeValue?: number): Promise<
+    TypedResponse<{
+      data: string[];
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  // (undocumented)
+  getOpenShiftTagValues(
+    tagKey: string,
+    timeScopeValue?: number,
+  ): Promise<
+    TypedResponse<{
+      data: Array<{
+        key: string;
+        values: string[];
+        enabled: boolean;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  // (undocumented)
+  searchOpenShiftClusters(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  // (undocumented)
+  searchOpenShiftNodes(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  // (undocumented)
+  searchOpenShiftProjects(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+}
+
+// @public (undocumented)
+export class CostManagementSlimClient implements CostManagementSlimApi {
+  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi });
+  // (undocumented)
+  downloadCostManagementReport(
+    request: DownloadCostManagementRequest,
+  ): Promise<void>;
+  // (undocumented)
+  getCostManagementReport(
+    request: GetCostManagementRequest,
+  ): Promise<TypedResponse<CostManagementReport>>;
+  getOpenShiftTags(timeScopeValue?: number): Promise<
+    TypedResponse<{
+      data: string[];
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  getOpenShiftTagValues(
+    tagKey: string,
+    timeScopeValue?: number,
+  ): Promise<
+    TypedResponse<{
+      data: Array<{
+        key: string;
+        values: string[];
+        enabled: boolean;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftClusters(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftNodes(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+  searchOpenShiftProjects(search?: string): Promise<
+    TypedResponse<{
+      data: Array<{
+        value: string;
+      }>;
+      meta?: any;
+      links?: any;
+    }>
+  >;
+}
+
+// @public (undocumented)
 export interface CostRecommendation {
   // (undocumented)
   config?: CostRecommendationConfig;
@@ -550,95 +676,11 @@ export { Node_2 as Node };
 export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
-> & {
-  getCostManagementReport(
-    request: GetCostManagementRequest,
-  ): Promise<TypedResponse<CostManagementReport>>;
-  downloadCostManagementReport(
-    request: DownloadCostManagementRequest,
-  ): Promise<void>;
-  searchOpenShiftProjects(search?: string): Promise<
-    TypedResponse<{
-      data: Array<{
-        value: string;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
-  searchOpenShiftClusters(search?: string): Promise<
-    TypedResponse<{
-      data: Array<{
-        value: string;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
-  searchOpenShiftNodes(search?: string): Promise<
-    TypedResponse<{
-      data: Array<{
-        value: string;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
-  getOpenShiftTags(timeScopeValue?: number): Promise<
-    TypedResponse<{
-      data: string[];
-      meta?: any;
-      links?: any;
-    }>
-  >;
-  getOpenShiftTagValues(
-    tagKey: string,
-    timeScopeValue?: number,
-  ): Promise<
-    TypedResponse<{
-      data: Array<{
-        key: string;
-        values: string[];
-        enabled: boolean;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
-};
+>;
 
 // @public
 export class OptimizationsClient implements OptimizationsApi {
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
-  // (undocumented)
-  downloadCostManagementReport(
-    request: DownloadCostManagementRequest,
-  ): Promise<void>;
-  // (undocumented)
-  getCostManagementReport(
-    request: GetCostManagementRequest,
-  ): Promise<TypedResponse<CostManagementReport>>;
-  getOpenShiftTags(timeScopeValue?: number): Promise<
-    TypedResponse<{
-      data: string[];
-      meta?: any;
-      links?: any;
-    }>
-  >;
-  getOpenShiftTagValues(
-    tagKey: string,
-    timeScopeValue?: number,
-  ): Promise<
-    TypedResponse<{
-      data: Array<{
-        key: string;
-        values: string[];
-        enabled: boolean;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
   // (undocumented)
   getRecommendationById(
     request: GetRecommendationByIdRequest,
@@ -647,33 +689,6 @@ export class OptimizationsClient implements OptimizationsApi {
   getRecommendationList(
     request: GetRecommendationListRequest,
   ): Promise<TypedResponse<RecommendationList>>;
-  searchOpenShiftClusters(search?: string): Promise<
-    TypedResponse<{
-      data: Array<{
-        value: string;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
-  searchOpenShiftNodes(search?: string): Promise<
-    TypedResponse<{
-      data: Array<{
-        value: string;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
-  searchOpenShiftProjects(search?: string): Promise<
-    TypedResponse<{
-      data: Array<{
-        value: string;
-      }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
 }
 
 // @public (undocumented)
