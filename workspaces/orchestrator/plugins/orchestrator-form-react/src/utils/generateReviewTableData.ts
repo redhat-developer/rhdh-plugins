@@ -21,6 +21,9 @@ import { JsonSchema, Draft07 as JSONSchema } from 'json-schema-library';
 
 import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { HiddenCondition } from '../types/HiddenCondition';
+import { evaluateHiddenCondition } from './evaluateHiddenCondition';
+
 export function processSchema(
   key: string,
   value: JsonValue | undefined,
@@ -39,8 +42,14 @@ export function processSchema(
   const name = definitionInSchema?.title ?? key;
   if (definitionInSchema) {
     // Skip hidden fields in the review table
-    if (definitionInSchema['ui:hidden'] === true) {
-      return {};
+    const uiHidden = definitionInSchema['ui:hidden'];
+    if (uiHidden !== undefined) {
+      // Handle both static boolean and condition objects
+      const hiddenCondition = uiHidden as HiddenCondition;
+      const isHidden = evaluateHiddenCondition(hiddenCondition, formState);
+      if (isHidden) {
+        return {};
+      }
     }
 
     if (definitionInSchema['ui:widget'] === 'password') {

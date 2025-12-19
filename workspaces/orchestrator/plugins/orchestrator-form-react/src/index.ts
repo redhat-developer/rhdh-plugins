@@ -25,3 +25,8 @@
 
 export * from './components';
 export * from './hooks';
+export type {
+  HiddenCondition,
+  HiddenConditionObject,
+  HiddenConditionComposite,
+} from './types/HiddenCondition';

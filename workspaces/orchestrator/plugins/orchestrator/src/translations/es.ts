@@ -139,6 +139,8 @@ const orchestratorTranslationEs = createTranslationMessages({
       'Este flujo de trabajo no tiene un esquema JSON definido para la validación de entradas. Aún puedes ejecutar el flujo de trabajo, pero la validación de entradas será limitada.',
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'No hay detalles adicionales sobre este error disponibles',
+    'reviewStep.hiddenFieldsNote':
+      'Algunos campos están ocultos en esta página pero se incluirán en la solicitud de ejecución del flujo de trabajo.',
     'common.close': 'Cerrar',
     'common.cancel': 'Cancelar',
     'common.execute': 'Ejecutar',

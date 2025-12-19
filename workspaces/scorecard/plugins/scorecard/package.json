@@ -56,7 +56,8 @@
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
-    "react-use": "^17.2.4"
+    "react-use": "^17.2.4",
+    "recharts": "^3.3.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
@@ -68,7 +69,7 @@
     "@backstage/dev-utils": "^1.1.17",
     "@backstage/test-utils": "^1.7.13",
     "@backstage/ui": "^0.9.1",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",

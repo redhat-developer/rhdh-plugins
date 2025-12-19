@@ -100,10 +100,10 @@ const Checkboxes = () => {
     <Flex>
       <Text>Checkboxes</Text>
       <Flex align="center">
-        <Checkbox />
-        <Checkbox checked />
-        <Checkbox label="Checkbox" />
-        <Checkbox label="Checkbox" checked />
+        <Checkbox> </Checkbox>
+        <Checkbox defaultSelected> </Checkbox>
+        <Checkbox>Checkbox</Checkbox>
+        <Checkbox defaultSelected>Checkbox</Checkbox>
       </Flex>
     </Flex>
   );

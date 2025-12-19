@@ -70,6 +70,7 @@ import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration'
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { getPluginActionTooltipMessage } from '../utils';
+import { Permission } from '../types';
 
 import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
@@ -437,8 +438,8 @@ export const MarketplacePluginContent = ({
     const tooltipMessage = getPluginActionTooltipMessage(
       isProductionEnvironment,
       {
-        read: pluginConfigPerm.data?.read ?? 'DENY',
-        write: pluginConfigPerm.data?.write ?? 'DENY',
+        read: pluginConfigPerm.data?.read ?? Permission.DENY,
+        write: pluginConfigPerm.data?.write ?? Permission.DENY,
       },
       t,
       !extensionsConfig.data?.enabled,

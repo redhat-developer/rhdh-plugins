@@ -20,9 +20,12 @@ import React from 'react';
 type DownloadIconButtonProps = {
   label: string;
   variant: 'gray' | 'black' | 'white';
+  onClick?: () => void;
+  disabled?: boolean;
 };
 
-const getColor = (variant: 'gray' | 'black' | 'white') => {
+const getColor = (variant: 'gray' | 'black' | 'white', disabled?: boolean) => {
+  if (disabled) return '#999999';
   if (variant === 'gray') return '#C7C7C7';
   if (variant === 'black') return '#000000';
   if (variant === 'white') return '#FFFFFF';
@@ -30,25 +33,40 @@ const getColor = (variant: 'gray' | 'black' | 'white') => {
 };
 
 export function DownloadIconButton(props: Readonly<DownloadIconButtonProps>) {
-  const color = getColor(props.variant);
+  const { label, variant, onClick, disabled } = props;
+  const color = getColor(variant, disabled);
 
   return (
     <div
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      onClick={disabled ? undefined : onClick}
+      onKeyDown={
+        disabled
+          ? undefined
+          : e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+      }
       style={{
         border: `2px solid ${color}`,
         borderRadius: 2,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         paddingTop: 2,
+        opacity: disabled ? 0.6 : 1,
       }}
     >
       <Typography
         variant="body2"
         style={{ color, fontSize: 9, fontWeight: 'bold' }}
       >
-        {props.label}
+        {label}
       </Typography>
     </div>
   );

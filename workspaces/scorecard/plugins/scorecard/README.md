@@ -53,11 +53,11 @@ permission:
 1. Add the Scorecard page to you Entity overview page by modifying `packages/app/src/components/catalog/EntityPage.tsx`:
 
    ```tsx
-   import { ScorecardPage } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+   import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    const scorecardRoute = (
      <EntityLayout.Route path="/scorecard" title="Scorecard">
-       <ScorecardPage />
+       <EntityScorecardContent />
      </EntityLayout.Route>
    );
 

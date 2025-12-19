@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
+import type { ExportFormat } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
 import {
   Table,
   TableColumn,
@@ -82,6 +83,130 @@ function getDateRangeText(timeRange: string): string {
   return `${monthName} 1-${lastDay}`;
 }
 
+/**
+ * Configuration for building query parameters
+ */
+interface QueryParamsConfig {
+  groupBy: string;
+  selectedTag: string;
+  overheadDistribution: string;
+  timeRange: string;
+  currency: string;
+  showPlatformSum: boolean;
+  filterBy: string;
+  filterValue: string;
+  filterOperation: string;
+  selectedTagKey: string;
+  selectedTagValue: string;
+  sortField: string | null;
+  sortDirection: 'asc' | 'desc';
+}
+
+/**
+ * Options for building query parameters
+ */
+interface BuildQueryParamsOptions {
+  /** Pagination limit - omit for download (uses 0) */
+  limit?: number;
+  /** Pagination offset - omit for download */
+  offset?: number;
+  /** Specific item name to filter by (for row-level download) */
+  specificItemName?: string;
+}
+
+/**
+ * Builds query parameters for cost management API requests
+ * Shared between data fetching and download functionality
+ */
+function buildCostManagementQueryParams(
+  config: QueryParamsConfig,
+  options: BuildQueryParamsOptions = {},
+): Record<string, string | number> {
+  const {
+    groupBy,
+    selectedTag,
+    overheadDistribution,
+    timeRange,
+    currency,
+    showPlatformSum,
+    filterBy,
+    filterValue,
+    filterOperation,
+    selectedTagKey,
+    selectedTagValue,
+    sortField,
+    sortDirection,
+  } = config;
+
+  const { limit, offset, specificItemName } = options;
+
+  // Build group by parameter
+  const groupByParam =
+    groupBy === 'tag' ? `group_by[tag:${selectedTag}]` : `group_by[${groupBy}]`;
+
+  // Determine delta parameter
+  const deltaParam =
+    groupBy === 'project' && overheadDistribution === 'distribute'
+      ? 'distributed_cost'
+      : 'cost';
+
+  const timeScopeValue = timeRange === 'month-to-date' ? -1 : -2;
+
+  const queryParams: Record<string, string | number> = {
+    currency,
+    delta: deltaParam,
+    'filter[resolution]': 'monthly',
+    'filter[time_scope_units]': 'month',
+    'filter[time_scope_value]': timeScopeValue,
+  };
+
+  // Add pagination if provided
+  if (limit !== undefined) {
+    queryParams['filter[limit]'] = limit;
+  }
+  if (offset !== undefined) {
+    queryParams['filter[offset]'] = offset;
+  }
+
+  // Add category parameter when showPlatformSum is enabled
+  if (showPlatformSum) {
+    queryParams.category = 'Platform';
+  }
+
+  queryParams[groupByParam] = '*';
+
+  // Handle filtering
+  if (specificItemName) {
+    // Filter for specific item (row-level download)
+    queryParams[`filter[${groupBy}]`] = specificItemName;
+  } else if (filterBy === 'tag' && selectedTagKey && selectedTagValue) {
+    // Tag filtering
+    const filterPrefix = filterOperation === 'excludes' ? 'exclude' : 'filter';
+    queryParams[`${filterPrefix}[tag:${selectedTagKey}]`] = selectedTagValue;
+  } else if (filterValue) {
+    // Regular filtering
+    const filterPrefix = filterOperation === 'excludes' ? 'exclude' : 'filter';
+    queryParams[`${filterPrefix}[${filterBy}]`] = filterValue;
+  }
+
+  // Add sorting
+  let apiSortField: string;
+  if (sortField) {
+    if (sortField === 'cost') {
+      apiSortField = deltaParam;
+    } else if (sortField === 'projectName') {
+      apiSortField = groupBy;
+    } else {
+      apiSortField = deltaParam;
+    }
+    queryParams[`order_by[${apiSortField}]`] = sortDirection;
+  } else {
+    queryParams[`order_by[${deltaParam}]`] = 'desc';
+  }
+
+  return queryParams;
+}
+
 /** @public */
 export function OpenShiftPage() {
   const api = useApi(optimizationsApiRef);
@@ -107,8 +232,12 @@ export function OpenShiftPage() {
     useState(true);
   const [showInfrastructureCost, setShowInfrastructureCost] = useState(false);
   const [showSupplementaryCost, setShowSupplementaryCost] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const theme = useTheme();
   const isDarkMode = (theme.palette as any).mode === 'dark';
+
+  // Ref to store display data for use in download handlers
+  const displayDataRef = useRef<typeof displayData | null>(null);
 
   // Fetch tags on first load
   useAsync(async () => {
@@ -123,6 +252,40 @@ export function OpenShiftPage() {
     }
   }, [api, timeRange]);
 
+  // Build config object for query params builder (memoized to prevent unnecessary re-renders)
+  const queryParamsConfig: QueryParamsConfig = useMemo(
+    () => ({
+      groupBy,
+      selectedTag,
+      overheadDistribution,
+      timeRange,
+      currency,
+      showPlatformSum,
+      filterBy,
+      filterValue,
+      filterOperation,
+      selectedTagKey,
+      selectedTagValue,
+      sortField,
+      sortDirection,
+    }),
+    [
+      groupBy,
+      selectedTag,
+      overheadDistribution,
+      timeRange,
+      currency,
+      showPlatformSum,
+      filterBy,
+      filterValue,
+      filterOperation,
+      selectedTagKey,
+      selectedTagValue,
+      sortField,
+      sortDirection,
+    ],
+  );
+
   const {
     value: costData,
     loading,
@@ -134,71 +297,11 @@ export function OpenShiftPage() {
     }
 
     try {
-      let groupByParam: string;
-      if (groupBy === 'tag') {
-        groupByParam = `group_by[tag:${selectedTag}]`;
-      } else {
-        groupByParam = `group_by[${groupBy}]`;
-      }
-
-      let deltaParam = 'cost';
-      if (groupBy === 'project' && overheadDistribution === 'distribute') {
-        deltaParam = 'distributed_cost';
-      }
-
-      const timeScopeValue = timeRange === 'month-to-date' ? -1 : -2;
-      const timeScopeUnits = 'month';
-
       const offset = currentPage * pageSize;
-      const queryParams: Record<string, string | number> = {
-        currency,
-        delta: deltaParam,
-        'filter[limit]': pageSize,
-        'filter[offset]': offset,
-        'filter[resolution]': 'monthly',
-        'filter[time_scope_units]': timeScopeUnits,
-        'filter[time_scope_value]': timeScopeValue,
-      };
-
-      // Add category parameter when showPlatformSum is enabled
-      if (showPlatformSum) {
-        queryParams.category = 'Platform';
-      }
-
-      queryParams[groupByParam] = '*';
-
-      // Handle filtering based on operation (includes/excludes)
-      if (filterBy === 'tag' && selectedTagKey && selectedTagValue) {
-        // Tag filtering uses filter[tag:key] or exclude[tag:key]
-        if (filterOperation === 'excludes') {
-          queryParams[`exclude[tag:${selectedTagKey}]`] = selectedTagValue;
-        } else {
-          queryParams[`filter[tag:${selectedTagKey}]`] = selectedTagValue;
-        }
-      } else if (filterValue) {
-        // Regular filtering uses filter[field] or exclude[field]
-        if (filterOperation === 'excludes') {
-          queryParams[`exclude[${filterBy}]`] = filterValue;
-        } else {
-          queryParams[`filter[${filterBy}]`] = filterValue;
-        }
-      }
-
-      if (sortField) {
-        let apiSortField: string;
-        if (sortField === 'cost') {
-          apiSortField = deltaParam;
-        } else if (sortField === 'projectName') {
-          apiSortField = groupBy;
-        } else {
-          apiSortField = deltaParam;
-        }
-        const orderByParam = `order_by[${apiSortField}]`;
-        queryParams[orderByParam] = sortDirection;
-      } else {
-        const orderByParam = `order_by[${deltaParam}]`;
-        queryParams[orderByParam] = 'desc';
-      }
+      const queryParams = buildCostManagementQueryParams(queryParamsConfig, {
+        limit: pageSize,
+        offset,
+      });
 
       const response = await api.getCostManagementReport({
         query: queryParams,
@@ -369,6 +472,70 @@ export function OpenShiftPage() {
       projects: projectsWithPercentage,
     };
   }, [costData, currency, groupBy, overheadDistribution, timeRange]);
+
+  // Update ref when displayData changes
+  displayDataRef.current = displayData;
+
+  /**
+   * Builds query parameters for download request
+   * @param specificItemName - Optional: specific item name to filter by (for row-level download)
+   */
+  const buildDownloadQueryParams = useCallback(
+    (specificItemName?: string): Record<string, string | number> => {
+      return buildCostManagementQueryParams(queryParamsConfig, {
+        specificItemName,
+      });
+    },
+    [queryParamsConfig],
+  );
+
+  /**
+   * Handles download for header buttons (all data based on current filters)
+   */
+  const handleHeaderDownload = useCallback(
+    async (format: ExportFormat) => {
+      if (isDownloading) return;
+
+      setIsDownloading(true);
+      try {
+        const queryParams = buildDownloadQueryParams();
+        await api.downloadCostManagementReport({
+          query: queryParams,
+          format,
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to download ${format}:`, err);
+      } finally {
+        setIsDownloading(false);
+      }
+    },
+    [api, buildDownloadQueryParams, isDownloading],
+  );
+
+  /**
+   * Handles download for row-level buttons (specific item)
+   */
+  const handleRowDownload = useCallback(
+    async (itemName: string, format: ExportFormat) => {
+      if (isDownloading) return;
+
+      setIsDownloading(true);
+      try {
+        const queryParams = buildDownloadQueryParams(itemName);
+        await api.downloadCostManagementReport({
+          query: queryParams,
+          format,
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to download ${format} for ${itemName}:`, err);
+      } finally {
+        setIsDownloading(false);
+      }
+    },
+    [api, buildDownloadQueryParams, isDownloading],
+  );
 
   const handleRowSelect = useCallback(
     (rowId: string, isSelected: boolean) => {
@@ -592,15 +759,19 @@ export function OpenShiftPage() {
       title: 'Actions',
       field: 'actions',
       sorting: false,
-      render: () => (
+      render: data => (
         <div style={{ display: 'flex', gap: '8px' }}>
           <DownloadIconButton
             label="CSV"
             variant={isDarkMode ? 'white' : 'black'}
+            onClick={() => handleRowDownload(data.projectName, 'csv')}
+            disabled={isDownloading}
           />
           <DownloadIconButton
             label="JSON"
             variant={isDarkMode ? 'white' : 'black'}
+            onClick={() => handleRowDownload(data.projectName, 'json')}
+            disabled={isDownloading}
           />
         </div>
       ),
@@ -609,8 +780,10 @@ export function OpenShiftPage() {
     return cols;
   }, [
     handleRowSelect,
+    handleRowDownload,
     isAllSelected,
     isIndeterminate,
+    isDownloading,
     selectedRows,
     handleSelectAll,
     displayData?.currencyCode,
@@ -756,6 +929,9 @@ export function OpenShiftPage() {
                       setShowInfrastructureCost={setShowInfrastructureCost}
                       showSupplementaryCost={showSupplementaryCost}
                       setShowSupplementaryCost={setShowSupplementaryCost}
+                      onDownloadCsv={() => handleHeaderDownload('csv')}
+                      onDownloadJson={() => handleHeaderDownload('json')}
+                      isDownloading={isDownloading}
                     />
                   ),
                 }}

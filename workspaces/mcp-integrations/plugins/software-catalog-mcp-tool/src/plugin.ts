@@ -446,70 +446,89 @@ Example invocation and the output from the invocation:
         actionsRegistry.register({
           name: 'unregister-catalog-entities',
           title: 'Unregister Catalog Entities',
-          description: `Unregister a Location and the entities it ownws.
+          description: `Unregister a Location and the entities it owns.
 
 This tool is analogous to the "unregister location" function you see in the Backstage dashboard,
 where you supply the UUID for a Location entity link that allows for the removal of the Location and
-the various Entities (Components, Systems, Resources, APIs, Users, and Groups) that were also created 
-when the Location was imported..
+the various Entities (Components, Systems, Resources, APIs, Users, and Groups) that were also created
+when the Location was imported. Alternatively, you can provide the URL used to register the location.
 
 Example invocation and the output from the invocation:
-  # Register a Location from a GitHub URL
-  unregister-catalog-entities locationId: aaa-bbb-ccc-ddd
-  Output: {}      
+  # Unregister a Location by ID
+  unregister-catalog-entities type: { locationId: "aaa-bbb-ccc-ddd" }
+  Output: {}
+
+  # Unregister a Location by URL
+  unregister-catalog-entities type: { locationUrl: "https://github.com/redhat-ai-dev/model-catalog-example/blob/main/developer-model-service/catalog-info.yaml" }
+  Output: {}
 `,
           schema: {
             input: z =>
-              z.object({
-                locationId: z
-                  .string()
-                  .describe(
-                    `Location ID returned from the 'register-catalog-entities' call.`,
-                  ),
-              }),
-            output: z =>
-              z.object({
-                error: z
-                  .string()
-                  .optional()
-                  .describe('Error message if removal fails'),
-              }),
+              z
+                .object({
+                  type: z.union([
+                    z.object({
+                      locationId: z
+                        .string()
+                        .describe(`Location ID of the Entity to unregister`),
+                    }),
+                    z.object({
+                      locationUrl: z
+                        .string()
+                        .describe(
+                          `URL of the catalog-info.yaml file to unregister for example: https://github.com/backstage/demo/blob/master/catalog-info.yaml`,
+                        ),
+                    }),
+                  ]),
+                })
+                .describe(
+                  'The type to the unregister-catalog-entities action. Either locationId or locationUrl must be provided.',
+                ),
+            output: z => z.object({}),
           },
           attributes: {
             destructive: true,
             readOnly: false,
+            idempotent: true,
           },
-          action: async ({ input }) => {
-            if (!input.locationId || input.locationId === '') {
-              return {
-                output: {
-                  error: 'a location ID must be specified',
-                },
-              };
-            }
-
-            try {
-              const credentials = await auth.getOwnServiceCredentials();
-              await catalog.removeLocationById(input.locationId, {
+          action: async ({ input: { type }, credentials }) => {
+            if ('locationId' in type) {
+              await catalog.removeLocationById(type.locationId, {
                 credentials,
               });
+            } else {
+              const locations = await catalog
+                .getLocations(
+                  {},
+                  {
+                    credentials,
+                  },
+                )
+                .then(response =>
+                  response.items.filter(
+                    location =>
+                      location.target.toLowerCase() ===
+                      type.locationUrl.toLowerCase(),
+                  ),
+                );
 
-              return {
-                output: {
-                  error: undefined,
-                },
-              };
-            } catch (error) {
-              logger.error(
-                'unregister-catalog-entities: Error removing catalog entities:',
-                error,
-              );
-              return {
-                output: {
-                  error: error.message,
-                },
-              };
+              if (locations.length === 0) {
+                logger.error(
+                  `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+                );
+                throw new Error(
+                  `Location with URL ${type.locationUrl} not found`,
+                );
+              }
+
+              for (const location of locations) {
+                await catalog.removeLocationById(location.id, {
+                  credentials,
+                });
+              }
             }
+
+            return { output: {} };
           },
         });
       },
