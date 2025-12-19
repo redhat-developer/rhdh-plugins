@@ -31,6 +31,7 @@ import type {
   GetTokenResponse,
 } from '../optimizations/types';
 
+/** @public */
 export class CostManagementSlimClient implements CostManagementSlimApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;

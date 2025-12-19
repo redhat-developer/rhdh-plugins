@@ -21,6 +21,7 @@ import {
   GetCostManagementRequest,
 } from './types';
 
+/** @public */
 export interface CostManagementSlimApi {
   getCostManagementReport(
     request: GetCostManagementRequest,
