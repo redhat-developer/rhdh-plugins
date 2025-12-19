@@ -47,7 +47,10 @@ const bulkImportTranslationEs = createTranslationMessages({
     'repositories.importedEntities': 'Entidades importadas',
     'repositories.addedRepositoriesCount': 'Repositorios agregados ({{count}})',
     'repositories.importedEntitiesCount': 'Entidades importadas ({{count}})',
-    'repositories.noRecordsFound': 'No se encontraron registros',
+    'repositories.noRecordsFound':
+      'No hay repositorios disponibles para importar.',
+    'repositories.noProjectsFound':
+      'No hay proyectos disponibles para importar.',
     'repositories.refresh': 'Actualizar',
     'repositories.import': 'Importar',
     'repositories.removing': 'Eliminando...',
@@ -83,6 +86,12 @@ const bulkImportTranslationEs = createTranslationMessages({
     'status.added': 'Añadido',
     'status.waitingForApproval': 'Esperando aprobación',
     'status.imported': 'Importado',
+    'status.readyToImport': 'Listo para importar',
+    'status.waitingForPullRequestToStart':
+      'Esperando que inicie la pull request',
+    'status.missingConfigurations': 'Configuraciones faltantes',
+    'status.failedCreatingPR': 'Error al crear PR',
+    'status.pullRequestRejected': 'Pull request rechazada',
 
     // Validation
     'validation.componentNameInvalid':
@@ -104,29 +113,29 @@ const bulkImportTranslationEs = createTranslationMessages({
     'table.headers.organizationGroup': 'Organización/grupo',
     'table.headers.group': 'Grupo',
     'table.headers.status': 'Estado',
+    'table.headers.taskStatus': 'Estado de la tarea',
     'table.headers.lastUpdated': 'Última actualización',
     'table.headers.actions': 'Acciones',
     'table.headers.catalogInfoYaml': 'catalog-info.yaml',
 
     // Steps
     'steps.chooseApprovalTool':
-      'Elegir herramienta de aprobación (GitHub/GitLab) para la creación de PR',
-    'steps.chooseRepositories': 'Elegir repositorios que quieres agregar',
+      'Elegir una herramienta de control de fuente para la creación de pull request',
+    'steps.chooseRepositories': 'Elegir elementos que quieres importar',
     'steps.chooseItems': 'Elegir elementos que quieres importar',
     'steps.generateCatalogInfo':
       'Generar un archivo catalog-info.yaml para cada repositorio',
     'steps.generateCatalogInfoItems':
       'Generar un archivo catalog-info.yaml para cada elemento seleccionado',
-    'steps.editPullRequest':
-      'Editar los detalles del pull request si es necesario',
+    'steps.editPullRequest': 'Ver los detalles del pull/merge request',
     'steps.trackStatus': 'Rastrear el estado de aprobación',
 
     // Add repositories
-    'addRepositories.approvalTool.title': 'Herramienta de aprobación',
+    'addRepositories.approvalTool.title': 'Herramienta de control de fuente',
     'addRepositories.approvalTool.description':
-      'Elegir herramienta de aprobación para la creación de PR',
+      'Elegir herramienta de control de fuente para la creación de PR',
     'addRepositories.approvalTool.tooltip':
-      'La importación requiere aprobación. Después de que se apruebe la pull/merge request, los repositorios/proyectos se importarán a la página Catálogo.',
+      'La importación requiere aprobación. Después de que se apruebe la pull request, los repositorios se importarán a la página Catálogo.',
     'addRepositories.approvalTool.github': 'GitHub',
     'addRepositories.approvalTool.gitlab': 'GitLab',
     'addRepositories.repositoryType.title': 'Tipo de repositorio',
@@ -152,7 +161,6 @@ const bulkImportTranslationEs = createTranslationMessages({
 
     // Catalog info status
     'catalogInfo.status.generating': 'Generando',
-    'catalogInfo.status.notGenerated': 'No generado',
 
     // Preview file
 
@@ -161,6 +169,7 @@ const bulkImportTranslationEs = createTranslationMessages({
     'common.cancel': 'Cancelar',
     'common.close': 'Cerrar',
     'common.delete': 'Eliminar',
+    'common.documentation': 'Documentación',
     'common.edit': 'Editar',
     'common.filter': 'Filtrar',
     'common.import': 'Importar',
@@ -179,6 +188,10 @@ const bulkImportTranslationEs = createTranslationMessages({
     // Errors
     'errors.errorOccurred': 'Ocurrió un error',
     'errors.failedToCreatePullRequest': 'Error al crear el pull request',
+    'errors.noIntegrationsConfigured':
+      'No se han configurado integraciones de GitHub o GitLab. Por favor, agregue al menos una integración para usar la función de importación masiva.',
+    'errors.addIntegrationsToConfig':
+      'Para resolver este problema, asegúrese de que las integraciones se agreguen a su archivo de configuración de Backstage (app-config.yaml).',
     'errors.prErrorPermissions':
       'No tienes permisos para crear un pull request',
     'errors.catalogInfoExists': 'catalog-info.yaml ya existe',
@@ -188,7 +201,6 @@ const bulkImportTranslationEs = createTranslationMessages({
       'El archivo CODEOWNERS falta en el repositorio. Agregue un archivo CODEOWNERS para crear un nuevo PR.',
 
     // Preview File
-    'previewFile.readyToImport': 'Listo para importar',
     'previewFile.previewFile': 'Vista previa del archivo',
     'previewFile.previewFiles': 'Vista previa de archivos',
     'previewFile.failedToCreatePR': 'Error al crear PR',
@@ -240,6 +252,8 @@ const bulkImportTranslationEs = createTranslationMessages({
     'forms.footer.createServiceNowTickets': 'Crear tickets ServiceNow',
     'forms.footer.createPullRequest': 'Crear pull request',
     'forms.footer.createPullRequests': 'Crear pull requests',
+    'forms.footer.selectRepositoryTooltip':
+      'Selecciona un repositorio para importar.',
     'forms.footer.serviceNowTooltip':
       'Los archivos Catalog-info.yaml deben generarse antes de crear un ticket ServiceNow',
     'forms.footer.importTooltip':
@@ -259,12 +273,12 @@ const bulkImportTranslationEs = createTranslationMessages({
     'tasks.viewTask': 'Ver tarea',
     'tasks.loading': 'Cargando...',
     'tasks.errorFetchingData': 'Error al obtener los datos',
-    'tasks.taskCancelled': 'Tarea cancelada',
-    'tasks.taskCompleted': 'Tarea completada',
-    'tasks.taskFailed': 'Tarea fallida',
-    'tasks.taskOpen': 'Tarea abierta',
-    'tasks.taskProcessing': 'Tarea en proceso',
-    'tasks.taskSkipped': 'Tarea omitida',
+    'tasks.taskCancelled': 'Cancelada',
+    'tasks.taskCompleted': 'Completada',
+    'tasks.taskFailed': 'Fallida',
+    'tasks.taskOpen': 'Abierta',
+    'tasks.taskProcessing': 'Procesando',
+    'tasks.taskSkipped': 'Omitida',
   },
 });
 

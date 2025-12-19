@@ -20,6 +20,7 @@ import { usePermission } from '@backstage/plugin-permission-react';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
+import Typography from '@mui/material/Typography';
 import { Formik } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
@@ -75,7 +76,14 @@ export const BulkImportPage = () => {
 
   return (
     <Page themeId="tool">
-      <Header title={t('page.title')} />
+      <Header
+        title={
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+            {t('page.title')}
+          </Typography>
+        }
+        style={{ borderBottom: '1px solid #ccc' }}
+      />
       <DrawerContextProvider>
         <DeleteDialogContextProvider>
           <Content>{showContent()}</Content>

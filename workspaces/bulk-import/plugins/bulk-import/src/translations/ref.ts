@@ -43,7 +43,8 @@ export const bulkImportMessages = {
     importedEntities: 'Imported entities',
     addedRepositoriesCount: 'Added repositories ({{count}})',
     importedEntitiesCount: 'Imported entities ({{count}})',
-    noRecordsFound: 'No records found',
+    noRecordsFound: 'No repositories available to import.',
+    noProjectsFound: 'No projects available to import.',
     refresh: 'Refresh',
     import: 'Import',
     removing: 'Removing...',
@@ -73,8 +74,13 @@ export const bulkImportMessages = {
   status: {
     alreadyImported: 'Already imported',
     added: 'Added',
-    waitingForApproval: 'Waiting for Approval',
+    waitingForApproval: 'Waiting for approval',
     imported: 'Imported',
+    readyToImport: 'Ready to import',
+    waitingForPullRequestToStart: 'Waiting for pull request to start',
+    missingConfigurations: 'Missing configurations',
+    failedCreatingPR: 'Failed to create PR',
+    pullRequestRejected: 'Pull request rejected',
   },
   errors: {
     prErrorPermissions:
@@ -89,6 +95,10 @@ export const bulkImportMessages = {
       'CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR.',
     errorOccurred: 'Error occurred',
     failedToCreatePullRequest: 'Failed to create pull request',
+    noIntegrationsConfigured:
+      'No GitHub or GitLab integrations are configured. Please add at least one integration to use the bulk import feature.',
+    addIntegrationsToConfig:
+      'To resolve this issue, ensure that the integrations are added to your Backstage configuration file (app-config.yaml).',
   },
   validation: {
     componentNameInvalid:
@@ -109,6 +119,7 @@ export const bulkImportMessages = {
       organizationGroup: 'Organization/group',
       group: 'Group',
       status: 'Status',
+      taskStatus: 'Task status',
       lastUpdated: 'Last updated',
       actions: 'Actions',
       catalogInfoYaml: 'catalog-info.yaml',
@@ -122,22 +133,23 @@ export const bulkImportMessages = {
     },
   },
   steps: {
-    chooseApprovalTool: 'Choose approval tool (GitHub/GitLab) for PR creation',
-    chooseRepositories: 'Choose repositories you want to add',
+    chooseApprovalTool:
+      'Choose a source control tool for pull request creation',
+    chooseRepositories: 'Choose which items you want to import',
     chooseItems: 'Choose which items you want to import',
     generateCatalogInfo:
-      'Generate a catalog-info.yaml file for each repository',
+      'Generate a catalog-info.yaml file for each selected item',
     generateCatalogInfoItems:
       'Generate a catalog-info.yaml file for each selected item',
-    editPullRequest: 'Edit the pull request details if needed',
+    editPullRequest: 'View the pull/merge request details',
     trackStatus: 'Track the approval status',
   },
   addRepositories: {
     approvalTool: {
-      title: 'Approval tool',
-      description: 'Choose approval tool for PR creation',
+      title: 'Source control tool',
+      description: 'Choose source control tool for PR creation',
       tooltip:
-        'Importing requires approval. After the pull/merge request is approved, the repositories/projects will be imported to the Catalog page.',
+        'Importing requires approval. After the pull request is approved, the repositories will be imported to the Catalog page.',
       github: 'GitHub',
       gitlab: 'GitLab',
     },
@@ -166,7 +178,6 @@ export const bulkImportMessages = {
   catalogInfo: {
     status: {
       generating: 'Generating',
-      notGenerated: 'Not Generated',
     },
   },
   common: {
@@ -174,6 +185,7 @@ export const bulkImportMessages = {
     cancel: 'Cancel',
     close: 'Close',
     delete: 'Delete',
+    documentation: 'Documentation',
     edit: 'Edit',
     filter: 'Filter',
     import: 'Import',
@@ -190,7 +202,6 @@ export const bulkImportMessages = {
     secondsAgo: '{{count}} second(s) ago',
   },
   previewFile: {
-    readyToImport: 'Ready to import',
     previewFile: 'Preview file',
     previewFiles: 'Preview files',
     failedToCreatePR: 'Failed to create PR',
@@ -240,6 +251,7 @@ export const bulkImportMessages = {
       createServiceNowTickets: 'Create ServiceNow tickets',
       createPullRequest: 'Create pull request',
       createPullRequests: 'Create pull requests',
+      selectRepositoryTooltip: 'Select a repository to import.',
       serviceNowTooltip:
         'Catalog-info.yaml files must be generated before creating a ServiceNow ticket',
       importTooltip:
@@ -252,15 +264,15 @@ export const bulkImportMessages = {
     tasksFor: 'Tasks for {{importJobStatusId}}',
     taskId: 'Task ID',
     taskLink: 'Task Link',
-    viewTask: 'View Task',
+    viewTask: 'View task',
     loading: 'Loading...',
     errorFetchingData: 'Error fetching data',
-    taskCancelled: 'Task cancelled',
-    taskCompleted: 'Task completed',
-    taskFailed: 'Task failed',
-    taskOpen: 'Task open',
-    taskProcessing: 'Task processing',
-    taskSkipped: 'Task skipped',
+    taskCancelled: 'Cancelled',
+    taskCompleted: 'Completed',
+    taskFailed: 'Failed',
+    taskOpen: 'Open',
+    taskProcessing: 'Processing',
+    taskSkipped: 'Skipped',
   },
 };
 

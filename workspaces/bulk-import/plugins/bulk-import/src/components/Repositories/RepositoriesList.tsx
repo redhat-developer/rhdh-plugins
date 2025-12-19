@@ -184,7 +184,11 @@ export const RepositoriesList = () => {
               justifyContent: 'center',
             }}
           >
-            {t('repositories.noRecordsFound')}
+            {t(
+              gitlabConfigured
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         }
       />

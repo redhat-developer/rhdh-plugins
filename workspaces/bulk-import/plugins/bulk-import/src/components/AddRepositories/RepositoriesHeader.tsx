@@ -23,8 +23,9 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 
 import { useGitlabConfigured } from '../../hooks';
+import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Order } from '../../types';
+import { ImportFlow, Order } from '../../types';
 import { getRepositoriesListColumns } from '../Repositories/RepositoriesListColumns';
 import { getOrganizationsColumnHeader } from './OrganizationsColumnHeader';
 import { getRepositoriesColumnHeader } from './RepositoriesColumnHeader';
@@ -61,18 +62,28 @@ export const RepositoriesHeader = ({
   };
 
   const gitlabConfigured = useGitlabConfigured();
+  const importFlow = useImportFlow();
+  const isScaffolderEnabled = importFlow === ImportFlow.Scaffolder;
 
   const getColumnHeader = () => {
     if (showOrganizations) {
       return getOrganizationsColumnHeader(isApprovalToolGitlab, t);
     }
     if (showImportJobs) {
-      return getRepositoriesListColumns(t, gitlabConfigured);
+      return getRepositoriesListColumns(
+        t,
+        gitlabConfigured,
+        isScaffolderEnabled,
+      );
     }
     if (isRepoSelectDrawer) {
       return getReposSelectDrawerColumnHeader(t);
     }
-    return getRepositoriesColumnHeader(isApprovalToolGitlab, t);
+    return getRepositoriesColumnHeader(
+      isApprovalToolGitlab,
+      t,
+      isScaffolderEnabled,
+    );
   };
 
   const tableCellStyle = () => {

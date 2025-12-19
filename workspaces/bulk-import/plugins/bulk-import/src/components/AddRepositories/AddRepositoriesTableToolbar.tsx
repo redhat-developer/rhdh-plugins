@@ -14,55 +14,29 @@
  * limitations under the License.
  */
 
-import type { MouseEvent } from 'react';
 import { useEffect, useState } from 'react';
 
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import { useTranslation } from '../../hooks/useTranslation';
-import {
-  AddedRepositories,
-  AddRepositoriesFormValues,
-  RepositorySelection,
-} from '../../types';
+import { AddedRepositories, AddRepositoriesFormValues } from '../../types';
 import { RepositoriesSearchBar } from './RepositoriesSearchBar';
 
 export const AddRepositoriesTableToolbar = ({
   title,
   setSearchString,
-  onPageChange,
   activeOrganization,
   selectedReposFromDrawer,
-  isApprovalToolGitlab,
 }: {
   title: string;
   setSearchString: (str: string) => void;
-  onPageChange?: (page: number) => void;
   activeOrganization?: string;
   selectedReposFromDrawer?: AddedRepositories;
-  isApprovalToolGitlab?: boolean;
 }) => {
-  const { t } = useTranslation();
-  const { setFieldValue, values } =
-    useFormikContext<AddRepositoriesFormValues>();
-  const [selection, setSelection] = useState<string>(
-    RepositorySelection.Repository,
-  );
+  const { values } = useFormikContext<AddRepositoriesFormValues>();
   const [search, setSearch] = useState<string>('');
   const [selectedReposNumber, setSelectedReposNumber] = useState(0);
-  const handleToggle = (_event: MouseEvent<HTMLElement>, type: string) => {
-    if (type && onPageChange) {
-      setSelection(type);
-      setFieldValue('repositoryType', type);
-      onPageChange(0);
-    }
-    setSearchString('');
-    setSearch('');
-  };
 
   const handleSearch = (filter: string) => {
     setSearchString(filter);
@@ -96,34 +70,6 @@ export const AddRepositoriesTableToolbar = ({
       >
         {`${title} (${selectedReposNumber})`}
       </Typography>
-      {!activeOrganization && (
-        <ToggleButtonGroup
-          color="primary"
-          value={selection}
-          exclusive
-          onChange={handleToggle}
-          aria-label="repository-type"
-        >
-          <ToggleButton
-            value={RepositorySelection.Repository}
-            data-testid="repository-view"
-            sx={{ minWidth: '120px' }}
-          >
-            {isApprovalToolGitlab
-              ? t('addRepositories.repositoryType.project')
-              : t('addRepositories.repositoryType.repository')}
-          </ToggleButton>
-          <ToggleButton
-            value={RepositorySelection.Organization}
-            data-testid="organization-view"
-            sx={{ minWidth: '120px' }}
-          >
-            {isApprovalToolGitlab
-              ? t('addRepositories.repositoryType.group')
-              : t('addRepositories.repositoryType.organization')}
-          </ToggleButton>
-        </ToggleButtonGroup>
-      )}
       <RepositoriesSearchBar
         value={search}
         onChange={handleSearch}
