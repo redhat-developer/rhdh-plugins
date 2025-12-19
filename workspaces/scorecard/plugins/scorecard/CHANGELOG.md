@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.3.0
+
+### Minor Changes
+
+- 52b60ee: Added aggregated metric cards frontend
+
+### Patch Changes
+
+- 61d0c34: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+- Updated dependencies [52b60ee]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.0
+
 ## 2.2.0
 
 ### Minor Changes
