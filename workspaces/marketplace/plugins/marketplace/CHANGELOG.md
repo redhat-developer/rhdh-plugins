@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.13.2
+
+### Patch Changes
+
+- f57833e: add checks to plugin authorization and configuration API calls
+  - @red-hat-developer-hub/backstage-plugin-marketplace-common@0.13.2
+
 ## 0.13.1
 
 ### Patch Changes
