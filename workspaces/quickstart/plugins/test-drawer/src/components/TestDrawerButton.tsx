@@ -13,32 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import ViewSidebarIcon from '@mui/icons-material/ViewSidebar';
+import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 import { useTestDrawerContext } from './TestDrawerContext';
+import { useCallback } from 'react';
 
 /**
  * Button component to toggle the Test Drawer
  *
- * Can be used in the header or any other location to trigger the drawer.
+ * Can be used in the global header help dropdown
  *
  * @public
  */
-export const TestDrawerButton = () => {
-  const { toggleDrawer, isDrawerOpen } = useTestDrawerContext();
+export const TestDrawerButton = ({
+  onClick = () => {},
+}: {
+  onClick: () => void;
+}) => {
+  const { toggleDrawer } = useTestDrawerContext();
+  const theme = useTheme();
+
+  const handleClick = useCallback(() => {
+    toggleDrawer();
+    onClick();
+  }, [toggleDrawer, onClick]);
 
   return (
-    <Tooltip title={isDrawerOpen ? 'Close Test Drawer' : 'Open Test Drawer'}>
-      <IconButton
-        onClick={toggleDrawer}
-        color={isDrawerOpen ? 'primary' : 'default'}
-        aria-label="toggle test drawer"
+    <MenuItem
+      sx={{
+        width: '100%',
+        color: 'inherit',
+      }}
+      data-testid="test-drawer-button"
+      onClick={handleClick}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          margin: '8px 0',
+          color: 'inherit',
+          width: '100%',
+        }}
       >
-        <ViewSidebarIcon />
-      </IconButton>
-    </Tooltip>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}
+          >
+            <Typography variant="body2" color={theme.palette.text.primary}>
+              Test Drawer
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    </MenuItem>
   );
 };
-

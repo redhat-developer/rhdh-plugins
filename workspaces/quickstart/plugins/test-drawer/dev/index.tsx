@@ -25,7 +25,6 @@ import {
   useTestDrawerContext,
 } from '../src';
 import { DrawerComponent } from '../src/components';
-import { ApplicationDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-application-drawer';
 
 const TestPage = () => {
   const { toggleDrawer, isDrawerOpen, drawerWidth } = useTestDrawerContext();
@@ -67,14 +66,12 @@ const TestPage = () => {
 };
 
 const DevPage = () => (
-  <ApplicationDrawerProvider>
-    <TestDrawerProvider>
-      <TestPage />
-      <DrawerComponent>
-        <TestDrawerContent />
-      </DrawerComponent>
-    </TestDrawerProvider>
-  </ApplicationDrawerProvider>
+  <TestDrawerProvider>
+    <TestPage />
+    <DrawerComponent>
+      <TestDrawerContent />
+    </DrawerComponent>
+  </TestDrawerProvider>
 );
 
 createDevApp()

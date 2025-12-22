@@ -75,3 +75,19 @@ export const TestDrawerButton = testDrawerPlugin.provide(
   }),
 );
 
+/**
+ * Test Drawer State Exposer exposes its drawer state
+ *
+ * @public
+ */
+export const TestDrawerStateExposer = testDrawerPlugin.provide(
+  createComponentExtension({
+    name: 'TestDrawerStateExposer',
+    component: {
+      lazy: () =>
+        import('./components/TestDrawerStateExposer').then(
+          m => m.TestDrawerStateExposer,
+        ),
+    },
+  }),
+);

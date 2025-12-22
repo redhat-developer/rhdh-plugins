@@ -47,15 +47,18 @@ import {
   GlobalHeaderComponent,
 } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import Box from '@mui/material/Box';
-import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+import {
+  QuickstartDrawerProvider,
+  QuickstartDrawerContent,
+  QuickstartDrawerStateExposer,
+} from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
 import { Administration } from '@backstage-community/plugin-rbac';
-import { QuickstartDrawerContent } from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import {
   TestDrawerContent,
   TestDrawerProvider,
+  TestDrawerStateExposer,
 } from '@red-hat-developer-hub/backstage-plugin-test-drawer';
-import { ApplicationDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-application-drawer';
 import { ApplicationDrawer } from './ApplicationDrawer';
 import { TestDrawerSidebarItem } from './TestDrawerSidebarItem';
 
@@ -96,15 +99,9 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         // This code exists similarly in RHDH:
         // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/Root/Root.tsx#L159-L165
         // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/ErrorPages/ErrorPage.tsx#L54-L59
-        'body.quickstart-drawer-open #sidebar&': {
+        'body.docked-drawer-open #sidebar&': {
           "> div > main[class*='BackstagePage-root']": {
-            marginRight: 'calc(var(--quickstart-drawer-width, 500px) + 1.5em)',
-            transition: 'margin-right 0.3s ease',
-          },
-        },
-        'body.test-drawer-open #sidebar&': {
-          "> div > main[class*='BackstagePage-root']": {
-            marginRight: 'calc(var(--test-drawer-width, 500px) + 1.5em)',
+            marginRight: 'calc(var(--docked-drawer-width, 500px) + 1.5em)',
             transition: 'margin-right 0.3s ease',
           },
         },
@@ -114,68 +111,73 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         <GlobalHeaderComponent
           globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
         />
-        <ApplicationDrawerProvider>
-          <QuickstartDrawerProvider>
-            <TestDrawerProvider>
-              <Sidebar>
-                <SidebarLogo />
-                <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-                  <SidebarSearchModal />
-                </SidebarGroup>
+        <QuickstartDrawerProvider>
+          <TestDrawerProvider>
+            <Sidebar>
+              <SidebarLogo />
+              <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+                <SidebarSearchModal />
+              </SidebarGroup>
+              <SidebarDivider />
+              <SidebarGroup label="Menu" icon={<MenuIcon />}>
+                {/* Global nav, not org-specific */}
+                <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+                <MyGroupsSidebarItem
+                  singularTitle="My Group"
+                  pluralTitle="My Groups"
+                  icon={GroupIcon}
+                />
+                <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+                <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+                <SidebarItem
+                  icon={CreateComponentIcon}
+                  to="create"
+                  text="Create..."
+                />
+                {/* End global nav */}
                 <SidebarDivider />
-                <SidebarGroup label="Menu" icon={<MenuIcon />}>
-                  {/* Global nav, not org-specific */}
-                  <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
-                  <MyGroupsSidebarItem
-                    singularTitle="My Group"
-                    pluralTitle="My Groups"
-                    icon={GroupIcon}
-                  />
-                  <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-                  <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-                  <SidebarItem
-                    icon={CreateComponentIcon}
-                    to="create"
-                    text="Create..."
-                  />
-                  {/* End global nav */}
-                  <SidebarDivider />
-                  <Administration />
-                  <SidebarScrollWrapper>
-                    {/* Items in this group will be scrollable if they run out of space */}
-                  </SidebarScrollWrapper>
-                </SidebarGroup>
-                <SidebarSpace />
-                <QuickstartSidebarItem />
-                <TestDrawerSidebarItem />
-                <SidebarDivider />
-                <SidebarGroup
-                  label="Settings"
-                  icon={<UserSettingsSignInAvatar />}
-                  to="/settings"
-                >
-                  <SidebarSettings />
-                </SidebarGroup>
-              </Sidebar>
-              {children}
-              <ApplicationDrawer
-                drawerContents={[
-                  {
-                    Component: QuickstartDrawerContent,
-                    priority: 1,
-                    id: 'quickstart',
-                  },
-                  {
-                    Component: TestDrawerContent,
-                    priority: 100,
-                    id: 'test-drawer',
-                    resizable: true,
-                  },
-                ]}
-              />
-            </TestDrawerProvider>
-          </QuickstartDrawerProvider>
-        </ApplicationDrawerProvider>
+                <Administration />
+                <SidebarScrollWrapper>
+                  {/* Items in this group will be scrollable if they run out of space */}
+                </SidebarScrollWrapper>
+              </SidebarGroup>
+              <SidebarSpace />
+              <QuickstartSidebarItem />
+              <TestDrawerSidebarItem />
+              <SidebarDivider />
+              <SidebarGroup
+                label="Settings"
+                icon={<UserSettingsSignInAvatar />}
+                to="/settings"
+              >
+                <SidebarSettings />
+              </SidebarGroup>
+            </Sidebar>
+            {children}
+            <ApplicationDrawer
+              drawerContents={[
+                {
+                  Component: QuickstartDrawerContent,
+                  priority: 1,
+                  id: 'quickstart',
+                },
+                {
+                  Component: TestDrawerContent,
+                  priority: 100,
+                  id: 'test-drawer',
+                  resizable: true,
+                },
+              ]}
+              stateExposers={[
+                // In RHDH, these would come from mount points:
+                // - mountPoint: application/drawer-state
+                //   importName: QuickstartDrawerStateExposer
+                { Component: QuickstartDrawerStateExposer },
+                { Component: TestDrawerStateExposer },
+              ]}
+            />
+          </TestDrawerProvider>
+        </QuickstartDrawerProvider>
       </SidebarPage>
     </Box>
   );

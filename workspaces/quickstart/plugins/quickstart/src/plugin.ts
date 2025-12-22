@@ -89,3 +89,20 @@ export const QuickstartButton: React.ComponentType<QuickstartButtonProps> =
       },
     }),
   );
+
+/**
+ * Quickstart Drawer State Exposer exposes its drawer state
+ *
+ * @public
+ */
+export const QuickstartDrawerStateExposer = quickstartPlugin.provide(
+  createComponentExtension({
+    name: 'QuickstartDrawerStateExposer',
+    component: {
+      lazy: () =>
+        import('./components/QuickstartDrawerStateExposer').then(
+          m => m.QuickstartDrawerStateExposer,
+        ),
+    },
+  }),
+);

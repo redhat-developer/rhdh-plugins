@@ -24,6 +24,6 @@ export {
 export {
   TestDrawerContext,
   useTestDrawerContext,
+  TestDrawerStateExposer,
 } from './components';
 export type { TestDrawerContextType } from './components';
-

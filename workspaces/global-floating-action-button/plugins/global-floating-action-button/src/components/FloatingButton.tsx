@@ -31,10 +31,10 @@ const useStyles = makeStyles(theme => ({
     right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     alignItems: 'end',
 
-    // When quickstart drawer is open, adjust margin
-    '.quickstart-drawer-open &': {
+    // When drawer is docked, adjust margin
+    '.docked-drawer-open &': {
       transition: 'margin-right 0.3s ease',
-      marginRight: 'var(--quickstart-drawer-width, 500px) ',
+      marginRight: 'var(--docked-drawer-width, 500px) ',
     },
   },
   'bottom-left': {

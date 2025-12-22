@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { PropsWithChildren, useState, useCallback, useEffect } from 'react';
-import { useApplicationDrawerContext } from '@red-hat-developer-hub/backstage-plugin-application-drawer';
+import { PropsWithChildren, useState, useCallback } from 'react';
 import { TestDrawerContext } from './TestDrawerContext';
 
+const DRAWER_ID = 'test-drawer';
 const DEFAULT_DRAWER_WIDTH = 400;
 const MIN_DRAWER_WIDTH = 300;
 const MAX_DRAWER_WIDTH = 800;
@@ -30,34 +30,6 @@ const MAX_DRAWER_WIDTH = 800;
 export const TestDrawerProvider = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [drawerWidth, setDrawerWidth] = useState<number>(DEFAULT_DRAWER_WIDTH);
-
-  const { addDrawerContext } = useApplicationDrawerContext();
-
-  useEffect(() => {
-    addDrawerContext('test-drawer', {
-      isDrawerOpen,
-      drawerWidth,
-      setDrawerWidth,
-    });
-  }, [addDrawerContext, isDrawerOpen, drawerWidth]);
-
-  useEffect(() => {
-    if (isDrawerOpen) {
-      document.body.classList.add('test-drawer-open');
-      document.body.style.setProperty(
-        '--test-drawer-width',
-        `${drawerWidth}px`,
-      );
-    } else {
-      document.body.classList.remove('test-drawer-open');
-      document.body.style.removeProperty('--test-drawer-width');
-    }
-
-    return () => {
-      document.body.classList.remove('test-drawer-open');
-      document.body.style.removeProperty('--test-drawer-width');
-    };
-  }, [isDrawerOpen, drawerWidth]);
 
   const toggleDrawer = useCallback(() => {
     setIsDrawerOpen(prev => !prev);
@@ -75,7 +47,7 @@ export const TestDrawerProvider = ({ children }: PropsWithChildren) => {
   return (
     <TestDrawerContext.Provider
       value={{
-        id: 'test-drawer',
+        id: DRAWER_ID,
         isDrawerOpen,
         toggleDrawer,
         drawerWidth,

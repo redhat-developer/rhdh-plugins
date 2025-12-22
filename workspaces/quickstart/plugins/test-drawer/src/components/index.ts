@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-export {
-  TestDrawerContext,
-  useTestDrawerContext,
-} from './TestDrawerContext';
+export { TestDrawerContext, useTestDrawerContext } from './TestDrawerContext';
 export type { TestDrawerContextType } from './TestDrawerContext';
 export { TestDrawerContent } from './TestDrawerContent';
 export { TestDrawerProvider } from './TestDrawerProvider';
 export { TestDrawerButton } from './TestDrawerButton';
 export { DrawerComponent } from './DrawerComponent';
-
+export { TestDrawerStateExposer } from './TestDrawerStateExposer';

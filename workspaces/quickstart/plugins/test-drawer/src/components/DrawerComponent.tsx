@@ -15,8 +15,8 @@
  */
 
 import { PropsWithChildren } from 'react';
-import { ResizableDrawer } from '@red-hat-developer-hub/backstage-plugin-application-drawer';
 import { useTestDrawerContext } from './TestDrawerContext';
+import { ResizableDrawer } from '../../../../packages/app/src/components/Root/ResizableDrawer';
 
 export const DrawerComponent = ({ children }: PropsWithChildren) => {
   const { isDrawerOpen, drawerWidth, setDrawerWidth } = useTestDrawerContext();

@@ -14,12 +14,40 @@
  * limitations under the License.
  */
 
-import { ComponentType } from 'react';
 import {
-  useApplicationDrawerContext,
-  ResizableDrawer,
-} from '@red-hat-developer-hub/backstage-plugin-application-drawer';
+  ComponentType,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+} from 'react';
+import { ResizableDrawer } from './ResizableDrawer';
 
+/**
+ * Partial drawer state exposed by drawer plugins
+ *
+ * @public
+ */
+export interface DrawerPartialState {
+  id: string;
+  isDrawerOpen: boolean;
+  drawerWidth: number;
+  setDrawerWidth: (width: number) => void;
+}
+
+/**
+ * Props for drawer state exposer components
+ *
+ * @public
+ */
+export interface DrawerStateExposerProps {
+  onStateChange: (state: DrawerPartialState) => void;
+  onUnmount?: (id: string) => void;
+}
+
+/**
+ * Drawer content configuration
+ */
 type DrawerContentType = {
   id: string;
   Component: ComponentType<any>;
@@ -27,36 +55,122 @@ type DrawerContentType = {
   resizable?: boolean;
 };
 
+/**
+ * State exposer component type
+ */
+type StateExposerType = {
+  Component: ComponentType<DrawerStateExposerProps>;
+};
+
+export interface ApplicationDrawerProps {
+  /**
+   * Array of drawer content configurations
+   * Maps drawer IDs to their content components
+   */
+  drawerContents: DrawerContentType[];
+  /**
+   * Array of state exposer components from drawer plugins
+   * These are typically mounted via `application/drawer-state` mount point
+   *
+   * In RHDH dynamic plugins, this would come from:
+   * ```yaml
+   * mountPoints:
+   *   - mountPoint: application/drawer-state
+   *     importName: TestDrawerStateExposer
+   * ```
+   */
+  stateExposers?: StateExposerType[];
+}
+
 export const ApplicationDrawer = ({
   drawerContents,
-}: {
-  drawerContents: DrawerContentType[];
-}) => {
-  const { getDrawers } = useApplicationDrawerContext();
+  stateExposers = [],
+}: ApplicationDrawerProps) => {
+  // Collect drawer states from all state exposers
+  const [drawerStates, setDrawerStates] = useState<
+    Record<string, DrawerPartialState>
+  >({});
 
-  // Get active drawer - compute fresh each render since we use refs
-  const drawers = getDrawers();
-  const activeDrawer = drawers
-    .filter(p => p.isDrawerOpen)
-    .map(p => {
-      const content = drawerContents.find(c => c.id === p.id);
-      if (!content) return null;
-      return { ...p, ...content };
-    })
-    .filter(Boolean)
-    .sort((a, b) => (b?.priority ?? -1) - (a?.priority ?? -1))[0];
+  // Callback for state exposers to report their state
+  const handleStateChange = useCallback((state: DrawerPartialState) => {
+    setDrawerStates(prev => {
+      // Only update if something actually changed
+      const existing = prev[state.id];
+      if (
+        existing &&
+        existing.isDrawerOpen === state.isDrawerOpen &&
+        existing.drawerWidth === state.drawerWidth &&
+        existing.setDrawerWidth === state.setDrawerWidth
+      ) {
+        return prev;
+      }
+      return { ...prev, [state.id]: state };
+    });
+  }, []);
 
-  if (!activeDrawer) return null;
+  // Convert states record to array
+  const statesArray = useMemo(
+    () => Object.values(drawerStates),
+    [drawerStates],
+  );
 
-  const { Component, resizable, drawerWidth, setDrawerWidth } = activeDrawer;
+  // Get active drawer - find the open drawer with highest priority
+  const activeDrawer = useMemo(() => {
+    return statesArray
+      .filter(state => state.isDrawerOpen)
+      .map(state => {
+        const content = drawerContents.find(c => c.id === state.id);
+        if (!content) return null;
+        return { ...state, ...content };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (b?.priority ?? -1) - (a?.priority ?? -1))[0];
+  }, [statesArray, drawerContents]);
+
+  // Manage CSS classes and variables for layout adjustments
+  useEffect(() => {
+    if (activeDrawer) {
+      const className = `docked-drawer-open`;
+      const cssVar = `--docked-drawer-width`;
+
+      document.body.classList.add(className);
+      document.body.style.setProperty(cssVar, `${activeDrawer.drawerWidth}px`);
+
+      return () => {
+        document.body.classList.remove(className);
+        document.body.style.removeProperty(cssVar);
+      };
+    }
+    return undefined;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDrawer?.id, activeDrawer?.drawerWidth]);
+
+  // Wrapper to handle the width change callback type
+  const handleWidthChange = useCallback(
+    (width: number) => {
+      activeDrawer?.setDrawerWidth(width);
+    },
+    [activeDrawer],
+  );
+
   return (
-    <ResizableDrawer
-      isDrawerOpen
-      isResizable={resizable}
-      drawerWidth={drawerWidth}
-      onWidthChange={setDrawerWidth}
-    >
-      <Component />
-    </ResizableDrawer>
+    <>
+      {/* Render all state exposers - they return null but report their state */}
+      {stateExposers.map(({ Component }, index) => (
+        <Component key={index} onStateChange={handleStateChange} />
+      ))}
+
+      {/* Render the active drawer */}
+      {activeDrawer && (
+        <ResizableDrawer
+          isDrawerOpen
+          isResizable={activeDrawer.resizable}
+          drawerWidth={activeDrawer.drawerWidth}
+          onWidthChange={handleWidthChange}
+        >
+          <activeDrawer.Component />
+        </ResizableDrawer>
+      )}
+    </>
   );
 };
