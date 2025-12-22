@@ -47,11 +47,11 @@ export abstract class AbstractMetricProvider
     this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
-  protected abstract getMetricName(): string;
+  abstract getMetricName(): string;
 
-  protected abstract getMetricDisplayTitle(): string;
+  abstract getMetricDisplayTitle(): string;
 
-  protected abstract getMetricDescription(): string;
+  abstract getMetricDescription(): string;
 
   getProviderDatasourceId(): string {
     return 'openssf';

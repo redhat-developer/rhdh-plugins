@@ -20,4 +20,4 @@
  * @packageDocumentation
  */
 
-export { scorecardModuleOpenSSF as default } from './module';
+export { scorecardOpenSFFModule as default } from './module';

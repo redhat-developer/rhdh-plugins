@@ -15,13 +15,11 @@
  */
 
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { AbstractMetricProvider } from './AbstractMetricProvider';
 
 /**
  * Configuration for an OpenSSF metric provider.
  */
-interface OpenSSFMetricConfig {
+export interface OpenSSFMetricConfig {
   /** The name of the OpenSSF check (e.g., "Maintained", "Code-Review") */
   name: string;
   /** Display title for the metric (e.g., "OpenSSF Maintained") */
@@ -33,7 +31,7 @@ interface OpenSSFMetricConfig {
 /**
  * All available OpenSSF Security Scorecard metrics.
  */
-const OPENSSF_METRICS: OpenSSFMetricConfig[] = [
+export const OPENSSF_METRICS: OpenSSFMetricConfig[] = [
   {
     name: 'Binary-Artifacts',
     displayTitle: 'OpenSSF Binary Artifacts',
@@ -144,40 +142,10 @@ const OPENSSF_METRICS: OpenSSFMetricConfig[] = [
   },
 ];
 
-/**
- * Configurable metric provider for OpenSSF Security Scorecards.
- * Extracts a specific check from the OpenSSF scorecard response based on the provided configuration.
- */
-class ConfigurableMetricProvider extends AbstractMetricProvider {
-  constructor(
-    private readonly config: OpenSSFMetricConfig,
-    thresholds?: ThresholdConfig,
-  ) {
-    super(thresholds);
-  }
-
-  protected getMetricName(): string {
-    return this.config.name;
-  }
-
-  protected getMetricDisplayTitle(): string {
-    return this.config.displayTitle;
-  }
-
-  protected getMetricDescription(): string {
-    return this.config.description;
-  }
-}
-
-/**
- * Creates all OpenSSF metric providers.
- * @param thresholds Optional threshold configuration to apply to all providers
- * @returns Array of OpenSSF metric providers
- */
-export function createOpenSSFMetricProviders(
-  thresholds?: ThresholdConfig,
-): MetricProvider<'number'>[] {
-  return OPENSSF_METRICS.map(
-    config => new ConfigurableMetricProvider(config, thresholds),
-  );
-}
+export const OPENSSF_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    { key: 'error', expression: '<2' },
+    { key: 'warning', expression: '2-7' },
+    { key: 'success', expression: '>7' },
+  ],
+};
