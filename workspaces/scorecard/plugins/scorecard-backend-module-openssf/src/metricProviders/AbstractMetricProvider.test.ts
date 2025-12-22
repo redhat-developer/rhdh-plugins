@@ -30,15 +30,15 @@ jest.mock('../clients/OpenSSFClient');
 
 // Concrete implementation for testing the abstract class
 class TestMetricProvider extends AbstractMetricProvider {
-  protected getMetricName(): string {
+  getMetricName(): string {
     return 'Test-Metric';
   }
 
-  protected getMetricDisplayTitle(): string {
+  getMetricDisplayTitle(): string {
     return 'Test Metric Title';
   }
 
-  protected getMetricDescription(): string {
+  getMetricDescription(): string {
     return 'Test metric description';
   }
 }
@@ -147,9 +147,11 @@ describe('AbstractMetricProvider', () => {
 
     it('should return custom thresholds when provided', () => {
       const customThresholds: ThresholdConfig = {
-        green: 9,
-        yellow: 7,
-        red: 4,
+        rules: [
+          { key: 'success', expression: '>9' },
+          { key: 'warning', expression: '7-9' },
+          { key: 'error', expression: '<7' },
+        ],
       };
       const customProvider = new TestMetricProvider(customThresholds);
 

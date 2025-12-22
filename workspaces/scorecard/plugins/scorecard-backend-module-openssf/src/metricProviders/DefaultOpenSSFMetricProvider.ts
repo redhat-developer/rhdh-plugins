@@ -17,7 +17,7 @@
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { AbstractMetricProvider } from './AbstractMetricProvider';
-import { OPENSSF_METRICS } from './OpenSSFConfig';
+import { OPENSSF_METRICS, OpenSSFMetricConfig } from './OpenSSFConfig';
 
 /**
  * Default metric provider for OpenSSF Security Scorecards.
