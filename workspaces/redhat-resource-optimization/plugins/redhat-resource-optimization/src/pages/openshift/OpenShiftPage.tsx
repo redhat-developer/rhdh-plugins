@@ -30,7 +30,7 @@ import { Divider, useTheme } from '@material-ui/core';
 import { PageHeader } from './components/PageHeader';
 import { TableToolbar } from './components/TableToolbar';
 import { useApi } from '@backstage/core-plugin-api';
-import { optimizationsApiRef } from '../../apis';
+import { costManagementSlimApiRef } from '../../apis';
 import useAsync from 'react-use/lib/useAsync';
 import { CURRENCY_SYMBOLS } from '../../constants/currencies';
 import { DownloadIconButton } from './components/DownloadIconButton';
@@ -209,7 +209,7 @@ function buildCostManagementQueryParams(
 
 /** @public */
 export function OpenShiftPage() {
-  const api = useApi(optimizationsApiRef);
+  const api = useApi(costManagementSlimApiRef);
   const [groupBy, setGroupBy] = useState('project');
   const [overheadDistribution, setOverheadDistribution] =
     useState('distribute');

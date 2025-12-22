@@ -15,9 +15,10 @@
  */
 
 import { createApiRef } from '@backstage/core-plugin-api';
-import type {
-  OptimizationsApi,
-  OrchestratorSlimApi,
+import {
+  type OptimizationsApi,
+  type OrchestratorSlimApi,
+  type CostManagementSlimApi,
 } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
 
 /** @public */
@@ -28,4 +29,9 @@ export const optimizationsApiRef = createApiRef<OptimizationsApi>({
 /** @public */
 export const orchestratorSlimApiRef = createApiRef<OrchestratorSlimApi>({
   id: 'plugin.redhat-orchestrator-slim.api',
+});
+
+/** @public */
+export const costManagementSlimApiRef = createApiRef<CostManagementSlimApi>({
+  id: 'plugin.redhat-cost-management-slim.api',
 });

@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-export * from './optimizations';
-export * from './orchestrator-slim';
-export * from './cost-management';
+export * from './CostManagementSlimApi';
+export * from './CostManagementSlimClient';
+export * from './types';
