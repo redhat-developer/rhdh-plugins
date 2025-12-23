@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-marketplace
 
+## 0.11.5
+
+### Patch Changes
+
+- c02eaf5: add checks to plugin authorization and configuration API calls
+
 ## 0.11.4
 
 ### Patch Changes
