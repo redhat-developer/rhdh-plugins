@@ -54,13 +54,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
 import { Administration } from '@backstage-community/plugin-rbac';
-import {
-  TestDrawerContent,
-  TestDrawerProvider,
-  TestDrawerStateExposer,
-} from '@red-hat-developer-hub/backstage-plugin-test-drawer';
 import { ApplicationDrawer } from './ApplicationDrawer';
-import { TestDrawerSidebarItem } from './TestDrawerSidebarItem';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -112,71 +106,56 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           globalHeaderMountPoints={defaultGlobalHeaderComponentsMountPoints}
         />
         <QuickstartDrawerProvider>
-          <TestDrawerProvider>
-            <Sidebar>
-              <SidebarLogo />
-              <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-                <SidebarSearchModal />
-              </SidebarGroup>
+          <Sidebar>
+            <SidebarLogo />
+            <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+              <SidebarSearchModal />
+            </SidebarGroup>
+            <SidebarDivider />
+            <SidebarGroup label="Menu" icon={<MenuIcon />}>
+              {/* Global nav, not org-specific */}
+              <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+              <MyGroupsSidebarItem
+                singularTitle="My Group"
+                pluralTitle="My Groups"
+                icon={GroupIcon}
+              />
+              <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+              <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+              <SidebarItem
+                icon={CreateComponentIcon}
+                to="create"
+                text="Create..."
+              />
+              {/* End global nav */}
               <SidebarDivider />
-              <SidebarGroup label="Menu" icon={<MenuIcon />}>
-                {/* Global nav, not org-specific */}
-                <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
-                <MyGroupsSidebarItem
-                  singularTitle="My Group"
-                  pluralTitle="My Groups"
-                  icon={GroupIcon}
-                />
-                <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-                <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-                <SidebarItem
-                  icon={CreateComponentIcon}
-                  to="create"
-                  text="Create..."
-                />
-                {/* End global nav */}
-                <SidebarDivider />
-                <Administration />
-                <SidebarScrollWrapper>
-                  {/* Items in this group will be scrollable if they run out of space */}
-                </SidebarScrollWrapper>
-              </SidebarGroup>
-              <SidebarSpace />
-              <QuickstartSidebarItem />
-              <TestDrawerSidebarItem />
-              <SidebarDivider />
-              <SidebarGroup
-                label="Settings"
-                icon={<UserSettingsSignInAvatar />}
-                to="/settings"
-              >
-                <SidebarSettings />
-              </SidebarGroup>
-            </Sidebar>
-            {children}
-            <ApplicationDrawer
-              drawerContents={[
-                {
-                  Component: QuickstartDrawerContent,
-                  priority: 1,
-                  id: 'quickstart',
-                },
-                {
-                  Component: TestDrawerContent,
-                  priority: 100,
-                  id: 'test-drawer',
-                  resizable: true,
-                },
-              ]}
-              stateExposers={[
-                // In RHDH, these would come from mount points:
-                // - mountPoint: application/drawer-state
-                //   importName: QuickstartDrawerStateExposer
-                { Component: QuickstartDrawerStateExposer },
-                { Component: TestDrawerStateExposer },
-              ]}
-            />
-          </TestDrawerProvider>
+              <Administration />
+              <SidebarScrollWrapper>
+                {/* Items in this group will be scrollable if they run out of space */}
+              </SidebarScrollWrapper>
+            </SidebarGroup>
+            <SidebarSpace />
+            <QuickstartSidebarItem />
+            <SidebarDivider />
+            <SidebarGroup
+              label="Settings"
+              icon={<UserSettingsSignInAvatar />}
+              to="/settings"
+            >
+              <SidebarSettings />
+            </SidebarGroup>
+          </Sidebar>
+          {children}
+          <ApplicationDrawer
+            drawerContents={[
+              {
+                Component: QuickstartDrawerContent,
+                priority: 1,
+                id: 'quickstart',
+              },
+            ]}
+            stateExposers={[{ Component: QuickstartDrawerStateExposer }]}
+          />
         </QuickstartDrawerProvider>
       </SidebarPage>
     </Box>

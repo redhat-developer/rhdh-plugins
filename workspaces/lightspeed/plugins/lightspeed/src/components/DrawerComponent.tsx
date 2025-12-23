@@ -15,18 +15,20 @@
  */
 
 import { PropsWithChildren } from 'react';
-import { useTestDrawerContext } from './TestDrawerContext';
+
+import { ChatbotDisplayMode } from '@patternfly/chatbot';
+
 import { ResizableDrawer } from '../../../../packages/app/src/components/Root/ResizableDrawer';
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 
 export const DrawerComponent = ({ children }: PropsWithChildren) => {
-  const { isDrawerOpen, drawerWidth, setDrawerWidth } = useTestDrawerContext();
-
+  const { displayMode, drawerWidth, setDrawerWidth } =
+    useLightspeedDrawerContext();
   return (
     <ResizableDrawer
-      isDrawerOpen={isDrawerOpen}
+      isDrawerOpen={displayMode === ChatbotDisplayMode.docked}
       drawerWidth={drawerWidth}
       onWidthChange={setDrawerWidth}
-      isResizable
     >
       {children}
     </ResizableDrawer>

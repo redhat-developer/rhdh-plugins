@@ -15,10 +15,13 @@
  */
 
 import { useEffect } from 'react';
-import { useTestDrawerContext } from './TestDrawerContext';
+
+import { ChatbotDisplayMode } from '@patternfly/chatbot';
+
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 
 /**
- * Partial Test drawer state exposed to the ApplicationDrawer
+ * Partial Lightspeed drawer state exposed to the ApplicationDrawer
  *
  * @public
  */
@@ -42,27 +45,25 @@ export type DrawerStateExposerProps = {
 };
 
 /**
- * This exposes TestDrawer's partial context to the ApplicationDrawer
+ * This exposes LightspeedDrawer's partial context to the ApplicationDrawer
  *
- * It reads the TestDrawerContext and calls the onStateChange callback with the
+ * It reads the LightspeedDrawerContext and calls the onStateChange callback with the
  * partial state (id, isDrawerOpen, drawerWidth, setDrawerWidth).
  *
  * @public
  */
-export const TestDrawerStateExposer = ({
+export const LightspeedDrawerStateExposer = ({
   onStateChange,
 }: DrawerStateExposerProps) => {
-  const { id, isDrawerOpen, drawerWidth, setDrawerWidth } =
-    useTestDrawerContext();
-
+  const { displayMode, drawerWidth, setDrawerWidth } =
+    useLightspeedDrawerContext();
   useEffect(() => {
     onStateChange({
-      id,
-      isDrawerOpen,
+      id: 'lightspeed',
+      isDrawerOpen: displayMode === ChatbotDisplayMode.docked,
       drawerWidth,
       setDrawerWidth,
     });
-  }, [id, isDrawerOpen, drawerWidth, onStateChange, setDrawerWidth]);
-
+  }, [displayMode, drawerWidth, onStateChange, setDrawerWidth]);
   return null;
 };

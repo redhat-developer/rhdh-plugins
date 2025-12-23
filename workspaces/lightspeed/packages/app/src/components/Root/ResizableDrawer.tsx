@@ -33,7 +33,7 @@ const Handle = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.divider,
 }));
 
-type ResizableDrawerProps = {
+export type ResizableDrawerProps = {
   children: React.ReactNode;
   minWidth?: number;
   maxWidth?: number;
@@ -52,6 +52,7 @@ export const ResizableDrawer = (props: ResizableDrawerProps) => {
     maxWidth = 800,
     initialWidth = 400,
     isDrawerOpen,
+    isResizable = false,
     drawerWidth: externalDrawerWidth,
     onWidthChange,
     ...drawerProps
@@ -62,22 +63,23 @@ export const ResizableDrawer = (props: ResizableDrawerProps) => {
     externalDrawerWidth || initialWidth,
     minWidth,
   );
+
   const [width, setWidth] = useState(clampedInitialWidth);
   const resizingRef = useRef(false);
 
-  // Sync with external drawerWidth if provided, ensuring it's not below minWidth
+  // Sync with external drawerWidth when it changes
   useEffect(() => {
     if (externalDrawerWidth !== undefined) {
       const clampedWidth = Math.max(externalDrawerWidth, minWidth);
       if (clampedWidth !== width) {
         setWidth(clampedWidth);
         // If the external width was below min, update the parent
-        if (externalDrawerWidth < minWidth && onWidthChange) {
+        if (externalDrawerWidth < minWidth && onWidthChange && isResizable) {
           onWidthChange(clampedWidth);
         }
       }
     }
-  }, [externalDrawerWidth, width, minWidth, onWidthChange]);
+  }, [externalDrawerWidth, width, minWidth, onWidthChange, isResizable]);
 
   const onMouseDown = () => {
     resizingRef.current = true;
@@ -104,13 +106,16 @@ export const ResizableDrawer = (props: ResizableDrawerProps) => {
   };
 
   useEffect(() => {
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-  }, [onMouseMove]);
+    if (isResizable) {
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      };
+    }
+    return () => {};
+  }, [onMouseMove, isResizable]);
 
   // Ensure anchor is always 'right' and not overridden by drawerProps
   const { anchor: _, ...restDrawerProps } = drawerProps;
@@ -145,7 +150,7 @@ export const ResizableDrawer = (props: ResizableDrawerProps) => {
     >
       <Box sx={{ height: '100%', position: 'relative' }}>
         {children}
-        <Handle onMouseDown={onMouseDown} />
+        {isResizable && <Handle onMouseDown={onMouseDown} />}
       </Box>
     </Drawer>
   );

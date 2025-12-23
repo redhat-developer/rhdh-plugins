@@ -37,7 +37,6 @@
     "@backstage/theme": "^0.7.0",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-application-drawer": "^0.1.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
     "react-use": "^17.6.0"
   },
