@@ -14,53 +14,54 @@
  * limitations under the License.
  */
 
-import { createContext } from 'react';
-import { UserRole } from '../types';
+import { createContext, useContext } from 'react';
 
 /**
- * Type for QuickstartDrawerContext
+ * Type for TestDrawerContext
  *
- *  @public
+ * @public
  */
-export interface QuickstartDrawerContextType {
+export interface TestDrawerContextType {
   id: string;
   /**
-   * The prop to check if the drawer is open
+   * Whether the drawer is open
    */
   isDrawerOpen: boolean;
   /**
-   * The function to open the drawer
-   */
-  openDrawer: () => void;
-  /**
-   * The function to close the drawer
-   */
-  closeDrawer: () => void;
-  /**
-   * The function to toggle the drawer state
+   * Function to toggle the drawer state
    */
   toggleDrawer: () => void;
   /**
-   * The prop for drawer width
+   * Current drawer width in pixels
    */
   drawerWidth: number;
   /**
-   * The function for setting the drawer width
+   * Function to set the drawer width
    */
   setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
-  /**
-   * The user's role for quickstart functionality
-   */
-  userRole: UserRole | null;
-  /**
-   * Whether the role is still loading
-   */
-  roleLoading: boolean;
 }
 
 /**
+ * Context for the Test Drawer
+ *
  * @public
  */
-export const QuickstartDrawerContext = createContext<
-  QuickstartDrawerContextType | undefined
+export const TestDrawerContext = createContext<
+  TestDrawerContextType | undefined
 >(undefined);
+
+/**
+ * Hook to access the TestDrawerContext
+ *
+ * @public
+ */
+export const useTestDrawerContext = (): TestDrawerContextType => {
+  const context = useContext(TestDrawerContext);
+  if (!context) {
+    throw new Error(
+      'useTestDrawerContext must be used within a TestDrawerProvider',
+    );
+  }
+  return context;
+};
+
