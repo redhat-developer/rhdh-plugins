@@ -577,7 +577,9 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
 
   private async getAccess(): Promise<GetAccessResponse> {
     const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
-    const response = await this.fetchApi.fetch(`${baseUrl}/access`);
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/access/cost-management`,
+    );
     const data = (await response.json()) as GetAccessResponse;
     return data;
   }

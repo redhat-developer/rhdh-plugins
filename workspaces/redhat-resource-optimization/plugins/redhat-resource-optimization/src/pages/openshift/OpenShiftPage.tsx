@@ -296,20 +296,16 @@ export function OpenShiftPage() {
       return null;
     }
 
-    try {
-      const offset = currentPage * pageSize;
-      const queryParams = buildCostManagementQueryParams(queryParamsConfig, {
-        limit: pageSize,
-        offset,
-      });
+    const offset = currentPage * pageSize;
+    const queryParams = buildCostManagementQueryParams(queryParamsConfig, {
+      limit: pageSize,
+      offset,
+    });
 
-      const response = await api.getCostManagementReport({
-        query: queryParams,
-      });
-      return response.json();
-    } catch {
-      return null;
-    }
+    const response = await api.getCostManagementReport({
+      query: queryParams,
+    });
+    return response.json();
   }, [
     currency,
     overheadDistribution,
