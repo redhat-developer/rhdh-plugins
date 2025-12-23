@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 2.3.0
+
+### Minor Changes
+
+- 52b60ee: Added aggregated metric cards frontend
+
 ## 2.2.0
 
 ### Minor Changes
