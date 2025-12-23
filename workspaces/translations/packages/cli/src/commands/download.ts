@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
@@ -96,6 +96,124 @@ async function downloadJob(
 }
 
 /**
+ * Validate prerequisites for Memsource CLI download
+ */
+function validateMemsourcePrerequisites(): void {
+  if (!commandExists('memsource')) {
+    throw new Error(
+      'memsource CLI not found. Please ensure memsource-cli is installed and ~/.memsourcerc is sourced.',
+    );
+  }
+
+  if (!process.env.MEMSOURCE_TOKEN) {
+    throw new Error(
+      'MEMSOURCE_TOKEN not found. Please source ~/.memsourcerc first: source ~/.memsourcerc',
+    );
+  }
+}
+
+/**
+ * Download specific jobs by their IDs
+ */
+async function downloadSpecificJobs(
+  projectId: string,
+  jobIds: string[],
+  outputDir: string,
+): Promise<Array<{ jobId: string; filename: string; lang: string }>> {
+  console.log(
+    chalk.yellow(`📥 Downloading ${jobIds.length} specific job(s)...`),
+  );
+
+  const downloadResults: Array<{
+    jobId: string;
+    filename: string;
+    lang: string;
+  }> = [];
+
+  for (const jobId of jobIds) {
+    const result = await downloadJob(projectId, jobId, outputDir);
+    if (result) {
+      downloadResults.push(result);
+      console.log(
+        chalk.green(
+          `✅ Downloaded job ${result.jobId}: ${result.filename} (${result.lang})`,
+        ),
+      );
+    }
+  }
+
+  return downloadResults;
+}
+
+/**
+ * List and filter completed jobs
+ */
+function listCompletedJobs(
+  projectId: string,
+  languages?: string[],
+): Array<{ uid: string; filename: string; target_lang: string }> {
+  const listArgs = buildListJobsArgs(projectId);
+  const listOutput = safeExecSyncOrThrow('memsource', listArgs, {
+    encoding: 'utf-8',
+    env: { ...process.env },
+  });
+  const jobs = JSON.parse(listOutput);
+  const jobArray = Array.isArray(jobs) ? jobs : [jobs];
+
+  const completedJobs = jobArray.filter(
+    (job: any) => job.status === 'COMPLETED',
+  );
+
+  if (!languages || languages.length === 0) {
+    return completedJobs;
+  }
+
+  const languageSet = new Set(languages);
+  return completedJobs.filter((job: any) => languageSet.has(job.target_lang));
+}
+
+/**
+ * Download all completed jobs
+ */
+async function downloadAllCompletedJobs(
+  projectId: string,
+  outputDir: string,
+  languages?: string[],
+): Promise<Array<{ jobId: string; filename: string; lang: string }>> {
+  console.log(chalk.yellow('📋 Listing available jobs...'));
+
+  try {
+    const jobsToDownload = listCompletedJobs(projectId, languages);
+
+    console.log(
+      chalk.yellow(
+        `📥 Found ${jobsToDownload.length} completed job(s) to download...`,
+      ),
+    );
+
+    const downloadResults: Array<{
+      jobId: string;
+      filename: string;
+      lang: string;
+    }> = [];
+
+    for (const job of jobsToDownload) {
+      const result = await downloadJob(projectId, job.uid, outputDir);
+      if (result) {
+        downloadResults.push(result);
+        console.log(
+          chalk.green(`✅ Downloaded: ${result.filename} (${result.lang})`),
+        );
+      }
+    }
+
+    return downloadResults;
+  } catch (error: any) {
+    throw new Error(`Failed to list jobs: ${error.message}`);
+  }
+}
+
+/**
  * Download translations using Memsource CLI
  */
 async function downloadWithMemsourceCLI(
@@ -104,93 +222,14 @@ async function downloadWithMemsourceCLI(
   jobIds?: string[],
   languages?: string[],
 ): Promise<Array<{ jobId: string; filename: string; lang: string }>> {
-  // Check if memsource CLI is available
-  if (!commandExists('memsource')) {
-    throw new Error(
-      'memsource CLI not found. Please ensure memsource-cli is installed and ~/.memsourcerc is sourced.',
-    );
-  }
-
-  // Check if MEMSOURCE_TOKEN is available
-  if (!process.env.MEMSOURCE_TOKEN) {
-    throw new Error(
-      'MEMSOURCE_TOKEN not found. Please source ~/.memsourcerc first: source ~/.memsourcerc',
-    );
-  }
-
-  // Ensure output directory exists
+  validateMemsourcePrerequisites();
   await fs.ensureDir(outputDir);
 
-  const downloadResults: Array<{
-    jobId: string;
-    filename: string;
-    lang: string;
-  }> = [];
-
-  // If job IDs are provided, download those specific jobs
   if (jobIds && jobIds.length > 0) {
-    console.log(
-      chalk.yellow(`📥 Downloading ${jobIds.length} specific job(s)...`),
-    );
-
-    for (const jobId of jobIds) {
-      const result = await downloadJob(projectId, jobId, outputDir);
-      if (result) {
-        downloadResults.push(result);
-        console.log(
-          chalk.green(
-            `✅ Downloaded job ${result.jobId}: ${result.filename} (${result.lang})`,
-          ),
-        );
-      }
-    }
-  } else {
-    // List all completed jobs and download them
-    console.log(chalk.yellow('📋 Listing available jobs...'));
-
-    try {
-      const listArgs = buildListJobsArgs(projectId);
-      const listOutput = safeExecSyncOrThrow('memsource', listArgs, {
-        encoding: 'utf-8',
-        env: { ...process.env },
-      });
-      const jobs = JSON.parse(listOutput);
-      const jobArray = Array.isArray(jobs) ? jobs : [jobs];
-
-      // Filter for completed jobs
-      const completedJobs = jobArray.filter(
-        (job: any) => job.status === 'COMPLETED',
-      );
-
-      // Filter by languages if specified
-      let jobsToDownload = completedJobs;
-      if (languages && languages.length > 0) {
-        jobsToDownload = completedJobs.filter((job: any) =>
-          languages.includes(job.target_lang),
-        );
-      }
-
-      console.log(
-        chalk.yellow(
-          `📥 Found ${jobsToDownload.length} completed job(s) to download...`,
-        ),
-      );
-
-      for (const job of jobsToDownload) {
-        const result = await downloadJob(projectId, job.uid, outputDir);
-        if (result) {
-          downloadResults.push(result);
-          console.log(
-            chalk.green(`✅ Downloaded: ${result.filename} (${result.lang})`),
-          );
-        }
-      }
-    } catch (error: any) {
-      throw new Error(`Failed to list jobs: ${error.message}`);
-    }
+    return downloadSpecificJobs(projectId, jobIds, outputDir);
   }
 
-  return downloadResults;
+  return downloadAllCompletedJobs(projectId, outputDir, languages);
 }
 
 export async function downloadCommand(opts: OptionValues): Promise<void> {

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import path from 'path';
-import os from 'os';
+import path from 'node:path';
+import os from 'node:os';
 import { commandExists, safeExecSyncOrThrow } from '../utils/exec';
 
 import fs from 'fs-extra';
@@ -195,16 +195,13 @@ export async function loadI18nConfig(): Promise<I18nConfig> {
 }
 
 /**
- * Merge command options with config, command options take precedence
- * This function is async because it may need to generate a token using memsource CLI
+ * Merge directory configuration from config to merged options
  */
-export async function mergeConfigWithOptions(
+function mergeDirectoryConfig(
   config: I18nConfig,
   options: Record<string, string | boolean | undefined>,
-): Promise<MergedOptions> {
-  const merged: MergedOptions = {};
-
-  // Apply config defaults
+  merged: MergedOptions,
+): void {
   if (config.directories?.sourceDir && !options.sourceDir) {
     merged.sourceDir = config.directories.sourceDir;
   }
@@ -219,74 +216,133 @@ export async function mergeConfigWithOptions(
     merged.targetDir = config.directories.localesDir;
     merged.localesDir = config.directories.localesDir;
   }
-  if (config.tms?.url && !options.tmsUrl) {
-    merged.tmsUrl = config.tms.url;
-  }
+}
 
-  // Get token from auth config (personal only, not in project config)
-  // Priority: environment variable > config file > generate from username/password
-  // Note: If user sources .memsourcerc, MEMSOURCE_TOKEN will be in environment and used first
+/**
+ * Check if this is a Memsource setup based on environment and config
+ */
+function isMemsourceSetup(config: I18nConfig): boolean {
+  return (
+    Boolean(process.env.MEMSOURCE_URL) ||
+    Boolean(process.env.MEMSOURCE_USERNAME) ||
+    Boolean(config.tms?.url?.includes('memsource'))
+  );
+}
+
+/**
+ * Generate or retrieve TMS token from config
+ */
+async function getTmsToken(
+  config: I18nConfig,
+  options: Record<string, string | boolean | undefined>,
+): Promise<string | undefined> {
   let token = config.auth?.tms?.token;
 
-  // Only generate token if:
-  // 1. Token is not already set
-  // 2. Username and password are available
-  // 3. Not provided via command-line option
-  // 4. Memsource CLI is likely available (user is using memsource workflow)
-  if (
+  const shouldGenerateToken =
     !token &&
-    config.auth?.tms?.username &&
-    config.auth?.tms?.password &&
-    !options.tmsToken
-  ) {
-    // Check if this looks like a Memsource setup (has MEMSOURCE_URL or username suggests memsource)
-    const isMemsourceSetup =
-      process.env.MEMSOURCE_URL ||
-      process.env.MEMSOURCE_USERNAME ||
-      config.tms?.url?.includes('memsource');
+    Boolean(config.auth?.tms?.username) &&
+    Boolean(config.auth?.tms?.password) &&
+    !options.tmsToken;
 
-    if (isMemsourceSetup) {
-      // For Memsource, prefer using .memsourcerc workflow
-      // Only generate if memsource CLI is available and token generation is needed
-      token = await generateMemsourceToken(
-        config.auth.tms.username,
-        config.auth.tms.password,
-      );
-    }
+  if (shouldGenerateToken && isMemsourceSetup(config)) {
+    token = await generateMemsourceToken(
+      config.auth!.tms!.username!,
+      config.auth!.tms!.password!,
+    );
   }
 
-  if (token && !options.tmsToken) {
+  return token && !options.tmsToken ? token : undefined;
+}
+
+/**
+ * Merge authentication configuration from config to merged options
+ */
+async function mergeAuthConfig(
+  config: I18nConfig,
+  options: Record<string, string | boolean | undefined>,
+  merged: MergedOptions,
+): Promise<void> {
+  const token = await getTmsToken(config, options);
+  if (token) {
     merged.tmsToken = token;
   }
 
-  // Get username/password from auth config
   if (config.auth?.tms?.username && !options.tmsUsername) {
     merged.tmsUsername = config.auth.tms.username;
   }
   if (config.auth?.tms?.password && !options.tmsPassword) {
     merged.tmsPassword = config.auth.tms.password;
   }
+}
+
+/**
+ * Merge TMS configuration from config to merged options
+ */
+function mergeTmsConfig(
+  config: I18nConfig,
+  options: Record<string, string | boolean | undefined>,
+  merged: MergedOptions,
+): void {
+  if (config.tms?.url && !options.tmsUrl) {
+    merged.tmsUrl = config.tms.url;
+  }
   if (config.tms?.projectId && !options.projectId) {
     merged.projectId = config.tms.projectId;
   }
+}
+
+/**
+ * Merge language and format configuration from config to merged options
+ */
+function mergeLanguageAndFormatConfig(
+  config: I18nConfig,
+  options: Record<string, string | boolean | undefined>,
+  merged: MergedOptions,
+): void {
   if (config.languages && !options.languages && !options.targetLanguages) {
-    merged.languages = config.languages.join(',');
-    merged.targetLanguages = config.languages.join(',');
+    const languagesStr = config.languages.join(',');
+    merged.languages = languagesStr;
+    merged.targetLanguages = languagesStr;
   }
   if (config.format && !options.format) {
     merged.format = config.format;
   }
+}
+
+/**
+ * Merge pattern configuration from config to merged options
+ */
+function mergePatternConfig(
+  config: I18nConfig,
+  options: Record<string, string | boolean | undefined>,
+  merged: MergedOptions,
+): void {
   if (config.patterns?.include && !options.includePattern) {
     merged.includePattern = config.patterns.include;
   }
   if (config.patterns?.exclude && !options.excludePattern) {
     merged.excludePattern = config.patterns.exclude;
   }
+}
+
+/**
+ * Merge command options with config, command options take precedence
+ * This function is async because it may need to generate a token using memsource CLI
+ */
+export async function mergeConfigWithOptions(
+  config: I18nConfig,
+  options: Record<string, string | boolean | undefined>,
+): Promise<MergedOptions> {
+  const merged: MergedOptions = {};
+
+  mergeDirectoryConfig(config, options, merged);
+  mergeTmsConfig(config, options, merged);
+  await mergeAuthConfig(config, options, merged);
+  mergeLanguageAndFormatConfig(config, options, merged);
+  mergePatternConfig(config, options, merged);
 
   // Command options override config
-  // Ensure we always return a Promise (async function always returns Promise)
-  const result = { ...merged, ...options };
-  return Promise.resolve(result);
+  return { ...merged, ...options };
 }
 
 /**

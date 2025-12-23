@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -24,7 +24,12 @@ const __dirname = path.dirname(__filename);
 // Simplified paths for translations-cli
 export const paths = {
   targetDir: process.cwd(),
-  // eslint-disable-next-line no-restricted-syntax
   resolveOwn: (relativePath: string) =>
-    path.resolve(__dirname, '..', '..', relativePath),
+    path.resolve(
+      // eslint-disable-next-line no-restricted-syntax
+      __dirname,
+      '..',
+      '..',
+      relativePath,
+    ),
 };

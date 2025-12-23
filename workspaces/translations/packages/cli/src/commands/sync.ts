@@ -50,18 +50,20 @@ function hasTmsConfig(
 }
 
 /**
- * Execute step with dry run support
+ * Execute a step (actually perform the action)
  */
 async function executeStep(
   stepName: string,
-  dryRun: boolean,
   action: () => Promise<void>,
 ): Promise<void> {
-  if (dryRun) {
-    console.log(chalk.yellow(`🔍 Dry run: Would ${stepName}`));
-  } else {
-    await action();
-  }
+  await action();
+}
+
+/**
+ * Simulate a step (show what would be done)
+ */
+function simulateStep(stepName: string): void {
+  console.log(chalk.yellow(`🔍 Dry run: Would ${stepName}`));
 }
 
 /**
@@ -76,17 +78,21 @@ async function stepGenerate(
     chalk.blue('\n📝 Step 1: Generating translation reference files...'),
   );
 
-  await executeStep('generate translation files', dryRun, async () => {
-    await generateCommand({
-      sourceDir,
-      outputDir,
-      format: 'json',
-      includePattern: '**/*.{ts,tsx,js,jsx}',
-      excludePattern: '**/node_modules/**',
-      extractKeys: true,
-      mergeExisting: false,
+  if (dryRun) {
+    simulateStep('generate translation files');
+  } else {
+    await executeStep('generate translation files', async () => {
+      await generateCommand({
+        sourceDir,
+        outputDir,
+        format: 'json',
+        includePattern: '**/*.{ts,tsx,js,jsx}',
+        excludePattern: '**/node_modules/**',
+        extractKeys: true,
+        mergeExisting: false,
+      });
     });
-  });
+  }
 
   return 'Generate';
 }
@@ -105,18 +111,26 @@ async function stepUpload(options: SyncOptions): Promise<string | null> {
     return null;
   }
 
+  const tmsUrl = options.tmsUrl;
+  const tmsToken = options.tmsToken;
+  const projectId = options.projectId;
+
   console.log(chalk.blue('\n📤 Step 2: Uploading to TMS...'));
 
-  await executeStep('upload to TMS', options.dryRun, async () => {
-    await uploadCommand({
-      tmsUrl: options.tmsUrl!,
-      tmsToken: options.tmsToken!,
-      projectId: options.projectId!,
-      sourceFile: `${options.outputDir}/reference.json`,
-      targetLanguages: options.languages,
-      dryRun: false,
+  if (options.dryRun) {
+    simulateStep('upload to TMS');
+  } else {
+    await executeStep('upload to TMS', async () => {
+      await uploadCommand({
+        tmsUrl,
+        tmsToken,
+        projectId,
+        sourceFile: `${options.outputDir}/reference.json`,
+        targetLanguages: options.languages,
+        dryRun: false,
+      });
     });
-  });
+  }
 
   return 'Upload';
 }
@@ -139,20 +153,28 @@ async function stepDownload(options: SyncOptions): Promise<string | null> {
     return null;
   }
 
+  const tmsUrl = options.tmsUrl;
+  const tmsToken = options.tmsToken;
+  const projectId = options.projectId;
+
   console.log(chalk.blue('\n📥 Step 3: Downloading from TMS...'));
 
-  await executeStep('download from TMS', options.dryRun, async () => {
-    await downloadCommand({
-      tmsUrl: options.tmsUrl!,
-      tmsToken: options.tmsToken!,
-      projectId: options.projectId!,
-      outputDir: options.outputDir,
-      languages: options.languages,
-      format: 'json',
-      includeCompleted: true,
-      includeDraft: false,
+  if (options.dryRun) {
+    simulateStep('download from TMS');
+  } else {
+    await executeStep('download from TMS', async () => {
+      await downloadCommand({
+        tmsUrl,
+        tmsToken,
+        projectId,
+        outputDir: options.outputDir,
+        languages: options.languages,
+        format: 'json',
+        includeCompleted: true,
+        includeDraft: false,
+      });
     });
-  });
+  }
 
   return 'Download';
 }
@@ -168,16 +190,20 @@ async function stepDeploy(options: SyncOptions): Promise<string | null> {
 
   console.log(chalk.blue('\n🚀 Step 4: Deploying to application...'));
 
-  await executeStep('deploy to application', options.dryRun, async () => {
-    await deployCommand({
-      sourceDir: options.outputDir,
-      targetDir: options.localesDir,
-      languages: options.languages,
-      format: 'json',
-      backup: true,
-      validate: true,
+  if (options.dryRun) {
+    simulateStep('deploy to application');
+  } else {
+    await executeStep('deploy to application', async () => {
+      await deployCommand({
+        sourceDir: options.outputDir,
+        targetDir: options.localesDir,
+        languages: options.languages,
+        format: 'json',
+        backup: true,
+        validate: true,
+      });
     });
-  });
+  }
 
   return 'Deploy';
 }
@@ -233,29 +259,20 @@ export async function syncCommand(opts: OptionValues): Promise<void> {
   };
 
   try {
-    const steps: string[] = [];
-
     const generateStep = await stepGenerate(
       options.sourceDir,
       options.outputDir,
       options.dryRun,
     );
-    steps.push(generateStep);
 
-    const uploadStep = await stepUpload(options);
-    if (uploadStep) {
-      steps.push(uploadStep);
-    }
+    const allSteps = [
+      generateStep,
+      await stepUpload(options),
+      await stepDownload(options),
+      await stepDeploy(options),
+    ];
 
-    const downloadStep = await stepDownload(options);
-    if (downloadStep) {
-      steps.push(downloadStep);
-    }
-
-    const deployStep = await stepDeploy(options);
-    if (deployStep) {
-      steps.push(deployStep);
-    }
+    const steps = allSteps.filter((step): step is string => Boolean(step));
 
     displaySummary(steps, options);
   } catch (error) {

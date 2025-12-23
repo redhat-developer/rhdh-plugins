@@ -15,7 +15,7 @@
  */
 
 import { spawnSync, SpawnSyncOptions } from 'child_process';
-import { platform } from 'os';
+import { platform } from 'node:os';
 
 /**
  * Safely execute a command with arguments.

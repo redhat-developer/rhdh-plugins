@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -94,19 +94,21 @@ async function loadPoFile(filePath: string): Promise<TranslationData> {
         }
 
         currentKey = unescapePoString(
-          trimmed.substring(6).replace(/(^["']|["']$)/g, ''),
+          trimmed.substring(6).replaceAll(/(^["']|["']$)/g, ''),
         );
         currentValue = '';
         inMsgId = true;
         inMsgStr = false;
       } else if (trimmed.startsWith('msgstr ')) {
         currentValue = unescapePoString(
-          trimmed.substring(7).replace(/(^["']|["']$)/g, ''),
+          trimmed.substring(7).replaceAll(/(^["']|["']$)/g, ''),
         );
         inMsgId = false;
         inMsgStr = true;
       } else if (trimmed.startsWith('"') && (inMsgId || inMsgStr)) {
-        const value = unescapePoString(trimmed.replace(/(^["']|["']$)/g, ''));
+        const value = unescapePoString(
+          trimmed.replaceAll(/(^["']|["']$)/g, ''),
+        );
         if (inMsgId) {
           currentKey += value;
         } else if (inMsgStr) {
@@ -131,9 +133,9 @@ async function loadPoFile(filePath: string): Promise<TranslationData> {
  */
 function unescapePoString(str: string): string {
   return str
-    .replace(/\\n/g, '\n')
-    .replace(/\\r/g, '\r')
-    .replace(/\\t/g, '\t')
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\');
+    .replaceAll(/\\n/g, '\n')
+    .replaceAll(/\\r/g, '\r')
+    .replaceAll(/\\t/g, '\t')
+    .replaceAll(/\\"/g, '"')
+    .replaceAll(/\\\\/g, '\\');
 }
