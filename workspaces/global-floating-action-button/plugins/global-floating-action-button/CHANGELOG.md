@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.7.1
+
+### Patch Changes
+
+- 8ad44d8: Updated dependency `@scalprum/react-core` to `0.11.1`.
+
 ## 1.7.0
 
 ### Minor Changes
