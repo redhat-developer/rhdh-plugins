@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import os from 'os';
-import path from 'path';
+import os from 'node:os';
+import path from 'node:path';
 
 import { OptionValues } from 'commander';
 import chalk from 'chalk';

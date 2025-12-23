@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -81,10 +81,10 @@ async function generateJsonFile(
   // This ensures compatibility with TMS systems that might not handle Unicode quotes well
   const normalizeValue = (value: string): string => {
     return value
-      .replace(/'/g, "'") // U+2018 LEFT SINGLE QUOTATION MARK → U+0027 APOSTROPHE
-      .replace(/'/g, "'") // U+2019 RIGHT SINGLE QUOTATION MARK → U+0027 APOSTROPHE
-      .replace(/"/g, '"') // U+201C LEFT DOUBLE QUOTATION MARK → U+0022 QUOTATION MARK
-      .replace(/"/g, '"'); // U+201D RIGHT DOUBLE QUOTATION MARK → U+0022 QUOTATION MARK
+      .replaceAll(/'/g, "'") // U+2018 LEFT SINGLE QUOTATION MARK → U+0027 APOSTROPHE
+      .replaceAll(/'/g, "'") // U+2019 RIGHT SINGLE QUOTATION MARK → U+0027 APOSTROPHE
+      .replaceAll(/"/g, '"') // U+201C LEFT DOUBLE QUOTATION MARK → U+0022 QUOTATION MARK
+      .replaceAll(/"/g, '"'); // U+201D RIGHT DOUBLE QUOTATION MARK → U+0022 QUOTATION MARK
   };
 
   if (isNestedStructure(keys)) {
@@ -150,9 +150,9 @@ async function generatePoFile(
   // PO file header
   lines.push('msgid ""');
   lines.push('msgstr ""');
-  lines.push('"Content-Type: text/plain; charset=UTF-8\\n"');
-  lines.push(`"Generated: ${new Date().toISOString()}\\n"`);
-  lines.push(`"Total-Keys: ${Object.keys(flatKeys).length}\\n"`);
+  lines.push(String.raw`"Content-Type: text/plain; charset=UTF-8\n"`);
+  lines.push(String.raw`"Generated: ${new Date().toISOString()}\n"`);
+  lines.push(String.raw`"Total-Keys: ${Object.keys(flatKeys).length}\n"`);
   lines.push('');
 
   // Translation entries
@@ -170,9 +170,9 @@ async function generatePoFile(
  */
 function escapePoString(str: string): string {
   return str
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r')
-    .replace(/\t/g, '\\t');
+    .replaceAll(/\\/g, '\\\\')
+    .replaceAll(/"/g, '\\"')
+    .replaceAll(/\n/g, '\\n')
+    .replaceAll(/\r/g, '\\r')
+    .replaceAll(/\t/g, '\\t');
 }

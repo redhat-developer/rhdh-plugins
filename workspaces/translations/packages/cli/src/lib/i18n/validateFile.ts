@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -48,166 +48,189 @@ export async function validateTranslationFile(
 }
 
 /**
+ * Validate file content (UTF-8 and null bytes)
+ */
+function validateFileContent(content: string): void {
+  if (!isValidUTF8(content)) {
+    throw new Error('File contains invalid UTF-8 sequences');
+  }
+
+  if (content.includes('\x00')) {
+    throw new Error(
+      String.raw`File contains null bytes (\x00) which are not valid in JSON`,
+    );
+  }
+}
+
+/**
+ * Parse JSON content and validate it's an object
+ */
+function parseJsonContent(content: string): Record<string, unknown> {
+  let data: Record<string, unknown>;
+  try {
+    data = JSON.parse(content) as Record<string, unknown>;
+  } catch (parseError) {
+    throw new Error(
+      `JSON parse error: ${
+        parseError instanceof Error ? parseError.message : 'Unknown error'
+      }`,
+    );
+  }
+
+  if (typeof data !== 'object' || data === null) {
+    throw new TypeError('Root element must be a JSON object');
+  }
+
+  return data;
+}
+
+/**
+ * Type guard to check if object is nested structure
+ */
+function isNestedStructure(
+  obj: unknown,
+): obj is Record<string, { en: Record<string, unknown> }> {
+  if (typeof obj !== 'object' || obj === null) return false;
+  const firstKey = Object.keys(obj)[0];
+  if (!firstKey) return false;
+  const firstValue = (obj as Record<string, unknown>)[firstKey];
+  return (
+    typeof firstValue === 'object' && firstValue !== null && 'en' in firstValue
+  );
+}
+
+/**
+ * Validate a single translation value
+ */
+function validateTranslationValue(value: unknown, keyPath: string): void {
+  if (typeof value !== 'string') {
+    throw new TypeError(
+      `Translation value for "${keyPath}" must be a string, got ${typeof value}`,
+    );
+  }
+
+  if (value.includes('\x00')) {
+    throw new Error(`Translation value for "${keyPath}" contains null byte`);
+  }
+
+  const curlyApostrophe = /[\u2018\u2019]/;
+  const curlyQuotes = /[\u201C\u201D]/;
+  if (curlyApostrophe.test(value) || curlyQuotes.test(value)) {
+    console.warn(
+      `Warning: Translation value for "${keyPath}" contains Unicode curly quotes/apostrophes.`,
+    );
+    console.warn(`  Consider normalizing to standard quotes: ' → ' and " → "`);
+  }
+}
+
+/**
+ * Validate nested structure and count keys
+ */
+function validateNestedStructure(
+  data: Record<string, { en: Record<string, unknown> }>,
+): number {
+  let totalKeys = 0;
+
+  for (const [pluginName, pluginData] of Object.entries(data)) {
+    if (typeof pluginData !== 'object' || pluginData === null) {
+      throw new TypeError(`Plugin "${pluginName}" must be an object`);
+    }
+
+    if (!('en' in pluginData)) {
+      throw new Error(`Plugin "${pluginName}" must have an "en" property`);
+    }
+
+    const enData = pluginData.en;
+    if (typeof enData !== 'object' || enData === null) {
+      throw new TypeError(`Plugin "${pluginName}".en must be an object`);
+    }
+
+    for (const [key, value] of Object.entries(enData)) {
+      validateTranslationValue(value, `${pluginName}.en.${key}`);
+      totalKeys++;
+    }
+  }
+
+  return totalKeys;
+}
+
+/**
+ * Validate flat structure and count keys
+ */
+function validateFlatStructure(data: Record<string, unknown>): number {
+  const translations = data.translations || data;
+
+  if (typeof translations !== 'object' || translations === null) {
+    throw new TypeError('Translations must be an object');
+  }
+
+  let totalKeys = 0;
+  for (const [key, value] of Object.entries(translations)) {
+    validateTranslationValue(value, key);
+    totalKeys++;
+  }
+
+  return totalKeys;
+}
+
+/**
+ * Count keys in nested structure
+ */
+function countNestedKeys(
+  data: Record<string, { en: Record<string, unknown> }>,
+): number {
+  let count = 0;
+  for (const pluginData of Object.values(data)) {
+    if (pluginData.en && typeof pluginData.en === 'object') {
+      count += Object.keys(pluginData.en).length;
+    }
+  }
+  return count;
+}
+
+/**
+ * Count keys in flat structure
+ */
+function countFlatKeys(data: Record<string, unknown>): number {
+  const translations = data.translations || data;
+  return Object.keys(translations).length;
+}
+
+/**
+ * Validate round-trip JSON parsing
+ */
+function validateRoundTrip(
+  data: Record<string, unknown>,
+  originalKeyCount: number,
+): void {
+  const reStringified = JSON.stringify(data, null, 2);
+  const reparsed = JSON.parse(reStringified) as Record<string, unknown>;
+
+  const reparsedKeys = isNestedStructure(reparsed)
+    ? countNestedKeys(reparsed)
+    : countFlatKeys(reparsed);
+
+  if (originalKeyCount !== reparsedKeys) {
+    throw new Error(
+      `Key count mismatch: original has ${originalKeyCount} keys, reparsed has ${reparsedKeys} keys`,
+    );
+  }
+}
+
+/**
  * Validate JSON translation file
  */
 async function validateJsonFile(filePath: string): Promise<boolean> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
+    validateFileContent(content);
 
-    // Check for invalid unicode sequences
-    if (!isValidUTF8(content)) {
-      throw new Error('File contains invalid UTF-8 sequences');
-    }
+    const data = parseJsonContent(content);
+    const totalKeys = isNestedStructure(data)
+      ? validateNestedStructure(data)
+      : validateFlatStructure(data);
 
-    // Check for null bytes which are never valid in JSON strings
-    if (content.includes('\x00')) {
-      throw new Error(
-        'File contains null bytes (\\x00) which are not valid in JSON',
-      );
-    }
-
-    // Try to parse JSON - this will catch syntax errors
-    let data: Record<string, unknown>;
-    try {
-      data = JSON.parse(content) as Record<string, unknown>;
-    } catch (parseError) {
-      throw new Error(
-        `JSON parse error: ${
-          parseError instanceof Error ? parseError.message : 'Unknown error'
-        }`,
-      );
-    }
-
-    // Check if it's a valid JSON object
-    if (typeof data !== 'object' || data === null) {
-      throw new Error('Root element must be a JSON object');
-    }
-
-    // Check if it's nested structure: { plugin: { en: { keys } } }
-    const isNested = (
-      obj: unknown,
-    ): obj is Record<string, { en: Record<string, unknown> }> => {
-      if (typeof obj !== 'object' || obj === null) return false;
-      const firstKey = Object.keys(obj)[0];
-      if (!firstKey) return false;
-      const firstValue = (obj as Record<string, unknown>)[firstKey];
-      return (
-        typeof firstValue === 'object' &&
-        firstValue !== null &&
-        'en' in firstValue
-      );
-    };
-
-    let totalKeys = 0;
-
-    if (isNested(data)) {
-      // Nested structure: { plugin: { en: { key: value } } }
-      // Keys are flat dot-notation strings (e.g., "menuItem.home": "Home")
-      for (const [pluginName, pluginData] of Object.entries(data)) {
-        if (typeof pluginData !== 'object' || pluginData === null) {
-          throw new Error(`Plugin "${pluginName}" must be an object`);
-        }
-
-        if (!('en' in pluginData)) {
-          throw new Error(`Plugin "${pluginName}" must have an "en" property`);
-        }
-
-        const enData = pluginData.en;
-        if (typeof enData !== 'object' || enData === null) {
-          throw new Error(`Plugin "${pluginName}".en must be an object`);
-        }
-
-        // Validate that all values are strings (keys are flat dot-notation)
-        for (const [key, value] of Object.entries(enData)) {
-          if (typeof value !== 'string') {
-            throw new Error(
-              `Translation value for "${pluginName}.en.${key}" must be a string, got ${typeof value}`,
-            );
-          }
-
-          // Check for null bytes
-          if (value.includes('\x00')) {
-            throw new Error(
-              `Translation value for "${pluginName}.en.${key}" contains null byte`,
-            );
-          }
-
-          // Check for Unicode curly quotes/apostrophes
-          const curlyApostrophe = /['']/;
-          const curlyQuotes = /[""]/;
-          if (curlyApostrophe.test(value) || curlyQuotes.test(value)) {
-            console.warn(
-              `Warning: Translation value for "${pluginName}.en.${key}" contains Unicode curly quotes/apostrophes.`,
-            );
-            console.warn(
-              `  Consider normalizing to standard quotes: ' → ' and " → "`,
-            );
-          }
-
-          totalKeys++;
-        }
-      }
-    } else {
-      // Legacy structure: { translations: { key: value } } or flat { key: value }
-      const translations = data.translations || data;
-
-      if (typeof translations !== 'object' || translations === null) {
-        throw new Error('Translations must be an object');
-      }
-
-      // Validate that all values are strings
-      for (const [key, value] of Object.entries(translations)) {
-        if (typeof value !== 'string') {
-          throw new Error(
-            `Translation value for key "${key}" must be a string, got ${typeof value}`,
-          );
-        }
-
-        // Check for null bytes
-        if (value.includes('\x00')) {
-          throw new Error(
-            `Translation value for key "${key}" contains null byte`,
-          );
-        }
-
-        // Check for Unicode curly quotes/apostrophes
-        const curlyApostrophe = /['']/;
-        const curlyQuotes = /[""]/;
-        if (curlyApostrophe.test(value) || curlyQuotes.test(value)) {
-          console.warn(
-            `Warning: Translation value for key "${key}" contains Unicode curly quotes/apostrophes.`,
-          );
-          console.warn(
-            `  Consider normalizing to standard quotes: ' → ' and " → "`,
-          );
-        }
-
-        totalKeys++;
-      }
-    }
-
-    // Verify the file can be re-stringified (round-trip test)
-    const reStringified = JSON.stringify(data, null, 2);
-    const reparsed = JSON.parse(reStringified);
-
-    // Compare key counts to ensure nothing was lost
-    let reparsedKeys = 0;
-    if (isNested(reparsed)) {
-      for (const pluginData of Object.values(reparsed)) {
-        if (pluginData.en && typeof pluginData.en === 'object') {
-          reparsedKeys += Object.keys(pluginData.en).length;
-        }
-      }
-    } else {
-      const reparsedTranslations = reparsed.translations || reparsed;
-      reparsedKeys = Object.keys(reparsedTranslations).length;
-    }
-
-    if (totalKeys !== reparsedKeys) {
-      throw new Error(
-        `Key count mismatch: original has ${totalKeys} keys, reparsed has ${reparsedKeys} keys`,
-      );
-    }
+    validateRoundTrip(data, totalKeys);
 
     return true;
   } catch (error) {

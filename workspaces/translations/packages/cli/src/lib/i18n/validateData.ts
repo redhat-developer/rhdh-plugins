@@ -99,16 +99,18 @@ export async function validateTranslationData(
   }
 
   // Check for HTML tags in translations
+  // Use non-greedy quantifier to prevent ReDoS vulnerability
   const htmlTags = Object.entries(data).filter(([, value]) =>
-    /<[^>]*>/.test(value),
+    /<[^>]*?>/.test(value),
   );
   if (htmlTags.length > 0) {
     result.warnings.push(`Found ${htmlTags.length} values with HTML tags`);
   }
 
   // Check for placeholder patterns
+  // Use non-greedy quantifier to prevent ReDoS vulnerability
   const placeholderPatterns = Object.entries(data).filter(([, value]) =>
-    /\{\{|\$\{|\%\{|\{.*\}/.test(value),
+    /\{\{|\$\{|\%\{|\{.*?\}/.test(value),
   );
   if (placeholderPatterns.length > 0) {
     result.warnings.push(
@@ -122,7 +124,7 @@ export async function validateTranslationData(
   // U+201C: LEFT DOUBLE QUOTATION MARK (")
   // U+201D: RIGHT DOUBLE QUOTATION MARK (")
   const curlyApostrophes = Object.entries(data).filter(([, value]) =>
-    /['']/.test(value),
+    /[\u2018\u2019]/.test(value),
   );
   if (curlyApostrophes.length > 0) {
     result.warnings.push(

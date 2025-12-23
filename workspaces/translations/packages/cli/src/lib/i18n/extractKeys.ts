@@ -45,241 +45,332 @@ export function extractTranslationKeys(
     // Extract from exported object literals (Backstage translation ref pattern)
     // Pattern: export const messages = { key: 'value', nested: { key: 'value' } }
     // Also handles type assertions: { ... } as any
+
+    /**
+     * Unwrap type assertion expressions (e.g., { ... } as any)
+     */
+    const unwrapTypeAssertion = (node: ts.Node): ts.Node => {
+      return ts.isAsExpression(node) ? node.expression : node;
+    };
+
+    /**
+     * Extract key name from property name (identifier or string literal)
+     */
+    const extractPropertyKeyName = (
+      propertyName: ts.PropertyName,
+    ): string | null => {
+      if (ts.isIdentifier(propertyName)) {
+        return propertyName.text;
+      }
+      if (ts.isStringLiteral(propertyName)) {
+        return propertyName.text;
+      }
+      return null;
+    };
+
+    /**
+     * Extract translation keys from an object literal expression
+     */
     const extractFromObjectLiteral = (node: ts.Node, prefix = ''): void => {
-      // Handle type assertions: { ... } as any
-      let objectNode: ts.Node = node;
-      if (ts.isAsExpression(node)) {
-        objectNode = node.expression;
+      const objectNode = unwrapTypeAssertion(node);
+
+      if (!ts.isObjectLiteralExpression(objectNode)) {
+        return;
       }
 
-      if (ts.isObjectLiteralExpression(objectNode)) {
-        for (const property of objectNode.properties) {
-          if (ts.isPropertyAssignment(property) && property.name) {
-            let keyName = '';
-            if (ts.isIdentifier(property.name)) {
-              keyName = property.name.text;
-            } else if (ts.isStringLiteral(property.name)) {
-              keyName = property.name.text;
-            }
+      for (const property of objectNode.properties) {
+        if (!ts.isPropertyAssignment(property) || !property.name) {
+          continue;
+        }
 
-            if (keyName) {
-              const fullKey = prefix ? `${prefix}.${keyName}` : keyName;
+        const keyName = extractPropertyKeyName(property.name);
+        if (!keyName) {
+          continue;
+        }
 
-              // Handle type assertions in property initializers too
-              let initializer = property.initializer;
-              if (ts.isAsExpression(initializer)) {
-                initializer = initializer.expression;
-              }
+        const fullKey = prefix ? `${prefix}.${keyName}` : keyName;
+        const initializer = property.initializer;
+        if (!initializer) {
+          continue;
+        }
 
-              if (ts.isStringLiteral(initializer)) {
-                // Leaf node - this is a translation value
-                keys[fullKey] = initializer.text;
-              } else if (ts.isObjectLiteralExpression(initializer)) {
-                // Nested object - recurse
-                extractFromObjectLiteral(initializer, fullKey);
-              }
-            }
-          }
+        const unwrappedInitializer = unwrapTypeAssertion(initializer);
+
+        if (ts.isStringLiteral(unwrappedInitializer)) {
+          // Leaf node - this is a translation value
+          keys[fullKey] = unwrappedInitializer.text;
+        } else if (ts.isObjectLiteralExpression(unwrappedInitializer)) {
+          // Nested object - recurse
+          extractFromObjectLiteral(unwrappedInitializer, fullKey);
         }
       }
     };
 
-    // Visit all nodes in the AST
-    const visit = (node: ts.Node) => {
-      // Look for createTranslationRef calls with messages property
-      // Pattern: createTranslationRef({ id: '...', messages: { key: 'value' } })
+    /**
+     * Extract messages from object literal property
+     */
+    const extractMessagesFromProperty = (
+      property: ts.ObjectLiteralElementLike,
+      propertyName: string,
+    ): void => {
       if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 'createTranslationRef'
+        !ts.isPropertyAssignment(property) ||
+        !ts.isIdentifier(property.name) ||
+        property.name.text !== propertyName
       ) {
-        const args = node.arguments;
-        if (args.length > 0 && ts.isObjectLiteralExpression(args[0])) {
-          // Find the 'messages' property in the object literal
-          for (const property of args[0].properties) {
-            if (
-              ts.isPropertyAssignment(property) &&
-              ts.isIdentifier(property.name) &&
-              property.name.text === 'messages'
-            ) {
-              // Handle type assertions: { ... } as any
-              let messagesNode = property.initializer;
-              if (ts.isAsExpression(messagesNode)) {
-                messagesNode = messagesNode.expression;
-              }
-
-              if (ts.isObjectLiteralExpression(messagesNode)) {
-                // Extract keys from the messages object
-                extractFromObjectLiteral(messagesNode);
-              }
-            }
-          }
-        }
+        return;
       }
 
-      // Look for createTranslationResource calls
-      // Pattern: createTranslationResource({ ref: ..., translations: { ... } })
-      // Note: Most files using this don't contain keys directly, but we check anyway
-      if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 'createTranslationResource'
-      ) {
-        const args = node.arguments;
-        if (args.length > 0 && ts.isObjectLiteralExpression(args[0])) {
-          // Look for any object literals in the arguments that might contain keys
-          // Most createTranslationResource calls just set up imports, but check for direct keys
-          for (const property of args[0].properties) {
-            if (ts.isPropertyAssignment(property)) {
-              // If there's a 'translations' property with an object literal, extract from it
-              if (
-                ts.isIdentifier(property.name) &&
-                property.name.text === 'translations' &&
-                ts.isObjectLiteralExpression(property.initializer)
-              ) {
-                extractFromObjectLiteral(property.initializer);
-              }
-            }
-          }
-        }
+      const messagesNode = unwrapTypeAssertion(property.initializer);
+      if (ts.isObjectLiteralExpression(messagesNode)) {
+        extractFromObjectLiteral(messagesNode);
+      }
+    };
+
+    /**
+     * Extract from createTranslationRef calls
+     * Pattern: createTranslationRef({ id: '...', messages: { key: 'value' } })
+     */
+    const extractFromCreateTranslationRef = (node: ts.CallExpression): void => {
+      const args = node.arguments;
+      if (args.length === 0 || !ts.isObjectLiteralExpression(args[0])) {
+        return;
       }
 
-      // Look for createTranslationMessages calls
-      // Pattern: createTranslationMessages({ ref: ..., messages: { key: 'value' } })
-      // Also handles: messages: { ... } as any
-      if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 'createTranslationMessages'
-      ) {
-        const args = node.arguments;
-        if (args.length > 0 && ts.isObjectLiteralExpression(args[0])) {
-          // Find the 'messages' property in the object literal
-          for (const property of args[0].properties) {
-            if (
-              ts.isPropertyAssignment(property) &&
-              ts.isIdentifier(property.name) &&
-              property.name.text === 'messages'
-            ) {
-              // Handle type assertions: { ... } as any
-              let messagesNode = property.initializer;
-              if (ts.isAsExpression(messagesNode)) {
-                messagesNode = messagesNode.expression;
-              }
+      for (const property of args[0].properties) {
+        extractMessagesFromProperty(property, 'messages');
+      }
+    };
 
-              if (ts.isObjectLiteralExpression(messagesNode)) {
-                // Extract keys from the messages object
-                extractFromObjectLiteral(messagesNode);
-              }
-            }
-          }
-        }
+    /**
+     * Extract from createTranslationResource calls
+     * Pattern: createTranslationResource({ ref: ..., translations: { ... } })
+     */
+    const extractFromCreateTranslationResource = (
+      node: ts.CallExpression,
+    ): void => {
+      const args = node.arguments;
+      if (args.length === 0 || !ts.isObjectLiteralExpression(args[0])) {
+        return;
       }
 
-      // Look for exported const declarations with object literals (Backstage pattern)
-      // Pattern: export const messages = { ... }
-      if (ts.isVariableStatement(node)) {
-        for (const declaration of node.declarationList.declarations) {
-          if (
-            declaration.initializer &&
-            ts.isObjectLiteralExpression(declaration.initializer)
-          ) {
-            // Check if it's exported and has a name suggesting it's a messages object
-            const isExported = node.modifiers?.some(
-              m => m.kind === ts.SyntaxKind.ExportKeyword,
-            );
-            const varName = ts.isIdentifier(declaration.name)
-              ? declaration.name.text
-              : '';
-            if (
-              isExported &&
-              (varName.includes('Messages') ||
-                varName.includes('messages') ||
-                varName.includes('translations'))
-            ) {
-              extractFromObjectLiteral(declaration.initializer);
-            }
-          }
+      for (const property of args[0].properties) {
+        if (
+          ts.isPropertyAssignment(property) &&
+          ts.isIdentifier(property.name) &&
+          property.name.text === 'translations' &&
+          ts.isObjectLiteralExpression(property.initializer)
+        ) {
+          extractFromObjectLiteral(property.initializer);
         }
       }
+    };
 
-      // Look for t() function calls
-      if (
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === 't'
-      ) {
-        const args = node.arguments;
-        if (args.length > 0 && ts.isStringLiteral(args[0])) {
-          const key = args[0].text;
-          const value =
-            args.length > 1 && ts.isStringLiteral(args[1]) ? args[1].text : key;
-          keys[key] = value;
-        }
+    /**
+     * Extract from createTranslationMessages calls
+     * Pattern: createTranslationMessages({ ref: ..., messages: { key: 'value' } })
+     */
+    const extractFromCreateTranslationMessages = (
+      node: ts.CallExpression,
+    ): void => {
+      const args = node.arguments;
+      if (args.length === 0 || !ts.isObjectLiteralExpression(args[0])) {
+        return;
       }
 
-      // Look for i18n.t() method calls
-      if (
-        ts.isCallExpression(node) &&
+      for (const property of args[0].properties) {
+        extractMessagesFromProperty(property, 'messages');
+      }
+    };
+
+    /**
+     * Check if variable name suggests it's a messages object
+     */
+    const isMessagesVariableName = (varName: string): boolean => {
+      return (
+        varName.includes('Messages') ||
+        varName.includes('messages') ||
+        varName.includes('translations')
+      );
+    };
+
+    /**
+     * Extract from exported const declarations
+     * Pattern: export const messages = { ... }
+     */
+    const extractFromVariableStatement = (node: ts.VariableStatement): void => {
+      const isExported = node.modifiers?.some(
+        m => m.kind === ts.SyntaxKind.ExportKeyword,
+      );
+
+      if (!isExported) {
+        return;
+      }
+
+      for (const declaration of node.declarationList.declarations) {
+        if (
+          !declaration.initializer ||
+          !ts.isObjectLiteralExpression(declaration.initializer)
+        ) {
+          continue;
+        }
+
+        const varName = ts.isIdentifier(declaration.name)
+          ? declaration.name.text
+          : '';
+
+        if (isMessagesVariableName(varName)) {
+          extractFromObjectLiteral(declaration.initializer);
+        }
+      }
+    };
+
+    /**
+     * Extract key-value pair from translation function call
+     */
+    const extractFromTranslationCall = (
+      args: ts.NodeArray<ts.Expression>,
+    ): void => {
+      if (args.length === 0 || !ts.isStringLiteral(args[0])) {
+        return;
+      }
+
+      const key = args[0].text;
+      const value =
+        args.length > 1 && ts.isStringLiteral(args[1]) ? args[1].text : key;
+      keys[key] = value;
+    };
+
+    /**
+     * Extract from t() function calls
+     */
+    const extractFromTFunction = (node: ts.CallExpression): void => {
+      extractFromTranslationCall(node.arguments);
+    };
+
+    /**
+     * Check if node is i18n.t() call
+     */
+    const isI18nTCall = (node: ts.CallExpression): boolean => {
+      return (
         ts.isPropertyAccessExpression(node.expression) &&
         ts.isIdentifier(node.expression.expression) &&
         node.expression.expression.text === 'i18n' &&
         ts.isIdentifier(node.expression.name) &&
         node.expression.name.text === 't'
-      ) {
-        const args = node.arguments;
-        if (args.length > 0 && ts.isStringLiteral(args[0])) {
-          const key = args[0].text;
-          const value =
-            args.length > 1 && ts.isStringLiteral(args[1]) ? args[1].text : key;
-          keys[key] = value;
-        }
+      );
+    };
+
+    /**
+     * Extract from i18n.t() method calls
+     */
+    const extractFromI18nT = (node: ts.CallExpression): void => {
+      if (!isI18nTCall(node)) {
+        return;
+      }
+      extractFromTranslationCall(node.arguments);
+    };
+
+    /**
+     * Check if node is useTranslation().t() call
+     */
+    const isUseTranslationTCall = (node: ts.CallExpression): boolean => {
+      if (!ts.isPropertyAccessExpression(node.expression)) {
+        return false;
       }
 
-      // Look for useTranslation hook usage
-      if (
+      const propertyAccess = node.expression;
+      if (!ts.isCallExpression(propertyAccess.expression)) {
+        return false;
+      }
+
+      const innerCall = propertyAccess.expression;
+      return (
+        ts.isIdentifier(innerCall.expression) &&
+        innerCall.expression.text === 'useTranslation' &&
+        ts.isIdentifier(propertyAccess.name) &&
+        propertyAccess.name.text === 't'
+      );
+    };
+
+    /**
+     * Extract from useTranslation().t() calls
+     */
+    const extractFromUseTranslationT = (node: ts.CallExpression): void => {
+      if (!isUseTranslationTCall(node)) {
+        return;
+      }
+      extractFromTranslationCall(node.arguments);
+    };
+
+    /**
+     * Extract from JSX Trans component
+     */
+    const extractFromJsxTrans = (
+      node: ts.JsxElement | ts.JsxSelfClosingElement,
+    ): void => {
+      const tagName = ts.isJsxElement(node)
+        ? node.openingElement.tagName
+        : node.tagName;
+
+      if (!ts.isIdentifier(tagName) || tagName.text !== 'Trans') {
+        return;
+      }
+
+      const attributes = ts.isJsxElement(node)
+        ? node.openingElement.attributes
+        : node.attributes;
+
+      if (!ts.isJsxAttributes(attributes)) {
+        return;
+      }
+
+      attributes.properties.forEach((attr: any) => {
+        if (
+          ts.isJsxAttribute(attr) &&
+          ts.isIdentifier(attr.name) &&
+          attr.name.text === 'i18nKey' &&
+          attr.initializer &&
+          ts.isStringLiteral(attr.initializer)
+        ) {
+          const key = attr.initializer.text;
+          keys[key] = key;
+        }
+      });
+    };
+
+    /**
+     * Check if node is a call expression with specific function name
+     */
+    const isCallExpressionWithName = (
+      node: ts.Node,
+      functionName: string,
+    ): node is ts.CallExpression => {
+      return (
         ts.isCallExpression(node) &&
-        ts.isPropertyAccessExpression(node.expression) &&
-        ts.isCallExpression(node.expression.expression) &&
-        ts.isIdentifier(node.expression.expression.expression) &&
-        node.expression.expression.expression.text === 'useTranslation' &&
-        ts.isIdentifier(node.expression.name) &&
-        node.expression.name.text === 't'
-      ) {
-        const args = node.arguments;
-        if (args.length > 0 && ts.isStringLiteral(args[0])) {
-          const key = args[0].text;
-          const value =
-            args.length > 1 && ts.isStringLiteral(args[1]) ? args[1].text : key;
-          keys[key] = value;
-        }
-      }
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === functionName
+      );
+    };
 
-      // Look for translation key patterns in JSX
-      if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
-        const tagName = ts.isJsxElement(node)
-          ? node.openingElement.tagName
-          : node.tagName;
-        if (ts.isIdentifier(tagName) && tagName.text === 'Trans') {
-          // Handle react-i18next Trans component
-          const attributes = ts.isJsxElement(node)
-            ? node.openingElement.attributes
-            : node.attributes;
-          if (ts.isJsxAttributes(attributes)) {
-            attributes.properties.forEach((attr: any) => {
-              if (
-                ts.isJsxAttribute(attr) &&
-                ts.isIdentifier(attr.name) &&
-                attr.name.text === 'i18nKey' &&
-                attr.initializer &&
-                ts.isStringLiteral(attr.initializer)
-              ) {
-                const key = attr.initializer.text;
-                keys[key] = key; // Default value is the key itself
-              }
-            });
-          }
-        }
+    // Visit all nodes in the AST
+    const visit = (node: ts.Node) => {
+      if (isCallExpressionWithName(node, 'createTranslationRef')) {
+        extractFromCreateTranslationRef(node);
+      } else if (isCallExpressionWithName(node, 'createTranslationResource')) {
+        extractFromCreateTranslationResource(node);
+      } else if (isCallExpressionWithName(node, 'createTranslationMessages')) {
+        extractFromCreateTranslationMessages(node);
+      } else if (ts.isVariableStatement(node)) {
+        extractFromVariableStatement(node);
+      } else if (isCallExpressionWithName(node, 't')) {
+        extractFromTFunction(node);
+      } else if (ts.isCallExpression(node) && isI18nTCall(node)) {
+        extractFromI18nT(node);
+      } else if (ts.isCallExpression(node) && isUseTranslationTCall(node)) {
+        extractFromUseTranslationT(node);
+      } else if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
+        extractFromJsxTrans(node);
       }
 
       // Recursively visit child nodes
@@ -304,15 +395,22 @@ function extractKeysWithRegex(content: string): Record<string, string> {
   // Common patterns for translation keys
   // Note: createTranslationMessages pattern is handled by AST parser above
   // This regex fallback is for non-TypeScript files or when AST parsing fails
+  // Split patterns to avoid nested optional groups that cause ReDoS vulnerabilities
   const patterns = [
-    // t('key', 'value')
-    /t\s*\(\s*['"`]([^'"`]+)['"`]\s*(?:,\s*['"`]([^'"`]*)['"`])?\s*\)/g,
-    // i18n.t('key', 'value')
-    /i18n\s*\.\s*t\s*\(\s*['"`]([^'"`]+)['"`]\s*(?:,\s*['"`]([^'"`]*)['"`])?\s*\)/g,
-    // useTranslation().t('key', 'value')
-    /useTranslation\s*\(\s*\)\s*\.\s*t\s*\(\s*['"`]([^'"`]+)['"`]\s*(?:,\s*['"`]([^'"`]*)['"`])?\s*\)/g,
+    // t('key', 'value') - with second parameter
+    /t\s*\(\s*['"`]([^'"`]+?)['"`]\s*,\s*['"`]([^'"`]*?)['"`]\s*\)/g,
+    // t('key') - without second parameter
+    /t\s*\(\s*['"`]([^'"`]+?)['"`]\s*\)/g,
+    // i18n.t('key', 'value') - with second parameter
+    /i18n\s*\.\s*t\s*\(\s*['"`]([^'"`]+?)['"`]\s*,\s*['"`]([^'"`]*?)['"`]\s*\)/g,
+    // i18n.t('key') - without second parameter
+    /i18n\s*\.\s*t\s*\(\s*['"`]([^'"`]+?)['"`]\s*\)/g,
+    // useTranslation().t('key', 'value') - with second parameter
+    /useTranslation\s*\(\s*\)\s*\.\s*t\s*\(\s*['"`]([^'"`]+?)['"`]\s*,\s*['"`]([^'"`]*?)['"`]\s*\)/g,
+    // useTranslation().t('key') - without second parameter
+    /useTranslation\s*\(\s*\)\s*\.\s*t\s*\(\s*['"`]([^'"`]+?)['"`]\s*\)/g,
     // Trans i18nKey="key"
-    /i18nKey\s*=\s*['"`]([^'"`]+)['"`]/g,
+    /i18nKey\s*=\s*['"`]([^'"`]+?)['"`]/g,
   ];
 
   for (const pattern of patterns) {

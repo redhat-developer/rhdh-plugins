@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { createHash } from 'crypto';
-import path from 'path';
+import { createHash } from 'node:crypto';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -42,7 +42,7 @@ function getCacheDir(): string {
 function getCacheFilePath(projectId: string, tmsUrl: string): string {
   const cacheDir = getCacheDir();
   // Create a safe filename from projectId and URL
-  const safeProjectId = projectId.replace(/[^a-zA-Z0-9]/g, '_');
+  const safeProjectId = projectId.replaceAll(/[^a-zA-Z0-9]/g, '_');
   const urlHash = createHash('md5')
     .update(tmsUrl)
     .digest('hex')

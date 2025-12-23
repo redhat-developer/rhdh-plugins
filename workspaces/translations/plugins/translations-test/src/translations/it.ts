@@ -18,7 +18,7 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsTestTranslationRef } from './ref';
 
 /**
- * Italian translation for plugin.translations-test.
+ * Italian translation for translations-test.
  * @public
  */
 const quickstartTranslationIt = createTranslationMessages({

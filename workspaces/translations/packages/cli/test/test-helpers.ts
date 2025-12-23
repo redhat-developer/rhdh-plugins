@@ -15,8 +15,8 @@
  */
 
 import fs from 'fs-extra';
-import path from 'path';
-import { execSync } from 'child_process';
+import path from 'node:path';
+import { spawnSync } from 'child_process';
 
 export interface TestFixture {
   path: string;
@@ -87,6 +87,7 @@ export default createTranslationMessages({
 
 /**
  * Run CLI command and return output
+ * Uses spawnSync with separate command and args to prevent command injection
  */
 export function runCLI(
   command: string,
@@ -98,13 +99,32 @@ export function runCLI(
 } {
   try {
     const binPath = path.join(process.cwd(), 'bin', 'translations-cli');
-    const fullCommand = `${binPath} ${command}`;
-    const stdout = execSync(fullCommand, {
+    // Parse command string into arguments array
+    // Split by spaces but preserve quoted strings
+    const args =
+      command
+        .match(/(?:[^\s"]+|"[^"]*")+/g)
+        ?.map(arg => arg.replaceAll(/^"|"$/g, '')) || [];
+
+    const result = spawnSync(binPath, args, {
       cwd: cwd || process.cwd(),
       encoding: 'utf-8',
       stdio: 'pipe',
     });
-    return { stdout, stderr: '', exitCode: 0 };
+
+    const stdout = (result.stdout?.toString() || '').trim();
+    const stderr = (result.stderr?.toString() || '').trim();
+    const exitCode = result.status || 0;
+
+    if (exitCode !== 0) {
+      return {
+        stdout,
+        stderr,
+        exitCode,
+      };
+    }
+
+    return { stdout, stderr, exitCode };
   } catch (error: any) {
     return {
       stdout: error.stdout?.toString() || '',

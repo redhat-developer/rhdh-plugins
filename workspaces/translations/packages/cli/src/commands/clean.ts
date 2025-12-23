@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import chalk from 'chalk';
 import { OptionValues } from 'commander';
@@ -49,34 +49,40 @@ async function collectCleanupTasks(
   cacheDir: string,
   backupDir: string,
 ): Promise<CleanupTask[]> {
-  const cleanupTasks: CleanupTask[] = [];
+  const [i18nTempFiles, cacheExists, backupExists] = await Promise.all([
+    findI18nTempFiles(i18nDir),
+    fs.pathExists(cacheDir),
+    fs.pathExists(backupDir),
+  ]);
 
-  const i18nTempFiles = await findI18nTempFiles(i18nDir);
-  if (i18nTempFiles.length > 0) {
-    cleanupTasks.push({
-      name: 'i18n directory',
-      path: i18nDir,
-      files: i18nTempFiles,
-    });
-  }
+  const taskPromises: Promise<CleanupTask | null>[] = [
+    Promise.resolve(
+      i18nTempFiles.length > 0
+        ? {
+            name: 'i18n directory',
+            path: i18nDir,
+            files: i18nTempFiles,
+          }
+        : null,
+    ),
+    cacheExists
+      ? fs.readdir(cacheDir).then(files => ({
+          name: 'cache directory',
+          path: cacheDir,
+          files,
+        }))
+      : Promise.resolve(null),
+    backupExists
+      ? fs.readdir(backupDir).then(files => ({
+          name: 'backup directory',
+          path: backupDir,
+          files,
+        }))
+      : Promise.resolve(null),
+  ];
 
-  if (await fs.pathExists(cacheDir)) {
-    cleanupTasks.push({
-      name: 'cache directory',
-      path: cacheDir,
-      files: await fs.readdir(cacheDir),
-    });
-  }
-
-  if (await fs.pathExists(backupDir)) {
-    cleanupTasks.push({
-      name: 'backup directory',
-      path: backupDir,
-      files: await fs.readdir(backupDir),
-    });
-  }
-
-  return cleanupTasks;
+  const tasks = await Promise.all(taskPromises);
+  return tasks.filter((task): task is CleanupTask => task !== null);
 }
 
 /**
@@ -173,17 +179,16 @@ export async function cleanCommand(opts: OptionValues): Promise<void> {
 
     displayCleanupPreview(cleanupTasks);
 
-    if (!force) {
+    if (force) {
+      const totalCleaned = await performCleanup(cleanupTasks);
+      await removeEmptyDirectories(cleanupTasks);
+      displaySummary(totalCleaned, cleanupTasks.length);
+    } else {
       console.log(
         chalk.yellow('⚠️  This will permanently delete the above files.'),
       );
       console.log(chalk.yellow('   Use --force to skip this confirmation.'));
-      return;
     }
-
-    const totalCleaned = await performCleanup(cleanupTasks);
-    await removeEmptyDirectories(cleanupTasks);
-    displaySummary(totalCleaned, cleanupTasks.length);
   } catch (error) {
     console.error(chalk.red('❌ Error during cleanup:'), error);
     throw error;

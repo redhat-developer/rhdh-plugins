@@ -40,7 +40,8 @@ export function exitWithError(error: Error): never {
     process.stderr.write(`\n${chalk.red(error.message)}\n\n`);
     process.exit(error.code);
   } else {
-    process.stderr.write(`\n${chalk.red(`${error}`)}\n\n`);
+    const errorMessage = String(error);
+    process.stderr.write(`\n${chalk.red(errorMessage)}\n\n`);
     process.exit(1);
   }
 }

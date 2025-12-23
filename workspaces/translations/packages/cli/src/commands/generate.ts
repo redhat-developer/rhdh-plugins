@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
@@ -39,12 +39,327 @@ function isNestedStructure(
   );
 }
 
+/**
+ * Language codes to exclude from reference files
+ */
+const LANGUAGE_CODES = [
+  'de',
+  'es',
+  'fr',
+  'it',
+  'ja',
+  'ko',
+  'pt',
+  'zh',
+  'ru',
+  'ar',
+  'hi',
+  'nl',
+  'pl',
+  'sv',
+  'tr',
+  'uk',
+  'vi',
+] as const;
+
+/**
+ * Check if a file is a language file (non-English)
+ */
+function isLanguageFile(fileName: string): boolean {
+  const isNonEnglishLanguage = LANGUAGE_CODES.some(code => {
+    if (fileName === code) return true;
+    if (fileName.endsWith(`-${code}`)) return true;
+    if (fileName.includes(`.${code}.`) || fileName.includes(`-${code}-`)) {
+      return true;
+    }
+    return false;
+  });
+
+  return isNonEnglishLanguage && !fileName.includes('-en') && fileName !== 'en';
+}
+
+/**
+ * Check if a file is an English reference file
+ */
+function isEnglishReferenceFile(filePath: string, content: string): boolean {
+  const fileName = path.basename(filePath, path.extname(filePath));
+  const fullFileName = path.basename(filePath);
+
+  // Check if it's a language file (exclude non-English)
+  if (isLanguageFile(fileName)) {
+    return false;
+  }
+
+  // Check if file contains createTranslationRef (defines new translation keys)
+  const hasCreateTranslationRef =
+    content.includes('createTranslationRef') &&
+    (content.includes("from '@backstage/core-plugin-api/alpha'") ||
+      content.includes("from '@backstage/frontend-plugin-api'"));
+
+  // Check if it's an English file with createTranslationMessages that has a ref
+  const isEnglishFile =
+    fullFileName.endsWith('-en.ts') ||
+    fullFileName.endsWith('-en.tsx') ||
+    fullFileName === 'en.ts' ||
+    fullFileName === 'en.tsx' ||
+    fileName.endsWith('-en') ||
+    fileName === 'en';
+
+  const hasCreateTranslationMessagesWithRef =
+    isEnglishFile &&
+    content.includes('createTranslationMessages') &&
+    content.includes('ref:') &&
+    (content.includes("from '@backstage/core-plugin-api/alpha'") ||
+      content.includes("from '@backstage/frontend-plugin-api'"));
+
+  return hasCreateTranslationRef || hasCreateTranslationMessagesWithRef;
+}
+
+/**
+ * Find all English reference files
+ */
+async function findEnglishReferenceFiles(
+  sourceDir: string,
+  includePattern: string,
+  excludePattern: string,
+): Promise<string[]> {
+  const allSourceFiles = glob.sync(includePattern, {
+    cwd: sourceDir,
+    ignore: excludePattern,
+    absolute: true,
+  });
+
+  const sourceFiles: string[] = [];
+
+  for (const filePath of allSourceFiles) {
+    try {
+      const content = await fs.readFile(filePath, 'utf-8');
+      if (isEnglishReferenceFile(filePath, content)) {
+        sourceFiles.push(filePath);
+      }
+    } catch {
+      // Skip files that can't be read
+      continue;
+    }
+  }
+
+  return sourceFiles;
+}
+
+/**
+ * Detect plugin name from file path
+ */
+function detectPluginName(filePath: string): string | null {
+  // Pattern 1: workspaces/{workspace}/plugins/{plugin}/...
+  const workspaceRegex = /workspaces\/([^/]+)\/plugins\/([^/]+)/;
+  const workspaceMatch = workspaceRegex.exec(filePath);
+  if (workspaceMatch) {
+    return workspaceMatch[2];
+  }
+
+  // Pattern 2: .../translations/{plugin}/ref.ts
+  const translationsRegex = /translations\/([^/]+)\//;
+  const translationsMatch = translationsRegex.exec(filePath);
+  if (translationsMatch) {
+    return translationsMatch[1];
+  }
+
+  // Pattern 3: Fallback - use parent directory name
+  const dirName = path.dirname(filePath);
+  const parentDir = path.basename(dirName);
+  if (parentDir === 'translations' || parentDir.includes('translation')) {
+    const grandParentDir = path.basename(path.dirname(dirName));
+    return grandParentDir;
+  }
+
+  return parentDir;
+}
+
+/**
+ * Invalid plugin names to filter out
+ */
+const INVALID_PLUGIN_NAMES = new Set([
+  'dist',
+  'build',
+  'node_modules',
+  'packages',
+  'src',
+  'lib',
+  'components',
+  'utils',
+]);
+
+/**
+ * Extract translation keys and group by plugin
+ */
+async function extractAndGroupKeys(
+  sourceFiles: string[],
+): Promise<Record<string, { en: Record<string, string> }>> {
+  const pluginGroups: Record<string, Record<string, string>> = {};
+
+  for (const filePath of sourceFiles) {
+    try {
+      const content = await fs.readFile(filePath, 'utf-8');
+      const keys = extractTranslationKeys(content, filePath);
+
+      const pluginName = detectPluginName(filePath);
+
+      if (!pluginName) {
+        console.warn(
+          chalk.yellow(
+            `⚠️  Warning: Could not determine plugin name for ${path.relative(
+              process.cwd(),
+              filePath,
+            )}, skipping`,
+          ),
+        );
+        continue;
+      }
+
+      if (INVALID_PLUGIN_NAMES.has(pluginName.toLowerCase())) {
+        console.warn(
+          chalk.yellow(
+            `⚠️  Warning: Skipping invalid plugin name "${pluginName}" from ${path.relative(
+              process.cwd(),
+              filePath,
+            )}`,
+          ),
+        );
+        continue;
+      }
+
+      if (!pluginGroups[pluginName]) {
+        pluginGroups[pluginName] = {};
+      }
+
+      // Merge keys into plugin group (warn about overwrites)
+      const overwrittenKeys: string[] = [];
+      for (const [key, value] of Object.entries(keys)) {
+        if (
+          pluginGroups[pluginName][key] &&
+          pluginGroups[pluginName][key] !== value
+        ) {
+          overwrittenKeys.push(key);
+        }
+        pluginGroups[pluginName][key] = value;
+      }
+
+      if (overwrittenKeys.length > 0) {
+        console.warn(
+          chalk.yellow(
+            `⚠️  Warning: ${
+              overwrittenKeys.length
+            } keys were overwritten in plugin "${pluginName}" from ${path.relative(
+              process.cwd(),
+              filePath,
+            )}`,
+          ),
+        );
+      }
+    } catch (error) {
+      console.warn(
+        chalk.yellow(`⚠️  Warning: Could not process ${filePath}: ${error}`),
+      );
+    }
+  }
+
+  // Convert to nested structure: { plugin: { en: { keys } } }
+  const structuredData: Record<string, { en: Record<string, string> }> = {};
+  for (const [pluginName, keys] of Object.entries(pluginGroups)) {
+    structuredData[pluginName] = { en: keys };
+  }
+
+  return structuredData;
+}
+
+/**
+ * Generate or merge translation files
+ */
+async function generateOrMergeFiles(
+  translationKeys:
+    | Record<string, string>
+    | Record<string, { en: Record<string, string> }>,
+  outputPath: string,
+  formatStr: string,
+  mergeExisting: boolean,
+): Promise<void> {
+  if (mergeExisting && (await fs.pathExists(outputPath))) {
+    console.log(chalk.yellow(`🔄 Merging with existing ${outputPath}...`));
+    await mergeTranslationFiles(translationKeys, outputPath, formatStr);
+  } else {
+    console.log(chalk.yellow(`📝 Generating ${outputPath}...`));
+    await generateTranslationFiles(translationKeys, outputPath, formatStr);
+  }
+}
+
+/**
+ * Validate generated file
+ */
+async function validateGeneratedFile(
+  outputPath: string,
+  formatStr: string,
+): Promise<void> {
+  if (formatStr !== 'json') {
+    return;
+  }
+
+  console.log(chalk.yellow(`🔍 Validating generated file...`));
+  const { validateTranslationFile } = await import('../lib/i18n/validateFile');
+  const isValid = await validateTranslationFile(outputPath);
+  if (!isValid) {
+    throw new Error(`Generated file failed validation: ${outputPath}`);
+  }
+  console.log(chalk.green(`✅ Generated file is valid`));
+}
+
+/**
+ * Display summary of included plugins
+ */
+function displaySummary(
+  translationKeys: Record<string, { en: Record<string, string> }>,
+): void {
+  console.log(chalk.blue('\n📋 Included Plugins Summary:'));
+  console.log(chalk.gray('─'.repeat(60)));
+
+  const plugins = Object.entries(translationKeys)
+    .map(([pluginName, pluginData]) => ({
+      name: pluginName,
+      keyCount: Object.keys(pluginData.en || {}).length,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  let totalKeys = 0;
+  for (const plugin of plugins) {
+    const keyLabel = plugin.keyCount === 1 ? 'key' : 'keys';
+    console.log(
+      chalk.cyan(
+        `  • ${plugin.name.padEnd(35)} ${chalk.yellow(
+          plugin.keyCount.toString().padStart(4),
+        )} ${keyLabel}`,
+      ),
+    );
+    totalKeys += plugin.keyCount;
+  }
+
+  console.log(chalk.gray('─'.repeat(60)));
+  const pluginLabel = plugins.length === 1 ? 'plugin' : 'plugins';
+  const totalKeyLabel = totalKeys === 1 ? 'key' : 'keys';
+  console.log(
+    chalk.cyan(
+      `  Total: ${chalk.yellow(
+        plugins.length.toString(),
+      )} ${pluginLabel}, ${chalk.yellow(
+        totalKeys.toString(),
+      )} ${totalKeyLabel}`,
+    ),
+  );
+  console.log('');
+}
+
 export async function generateCommand(opts: OptionValues): Promise<void> {
   console.log(chalk.blue('🌍 Generating translation reference files...'));
 
-  // Load config and merge with options
   const config = await loadI18nConfig();
-  // mergeConfigWithOptions is async (may generate token), so we await it
   const mergedOpts = await mergeConfigWithOptions(config, opts);
 
   const {
@@ -66,10 +381,8 @@ export async function generateCommand(opts: OptionValues): Promise<void> {
   };
 
   try {
-    // Ensure output directory exists
     await fs.ensureDir(outputDir);
 
-    // Can be either flat structure (legacy) or nested structure (new)
     const translationKeys:
       | Record<string, string>
       | Record<string, { en: Record<string, string> }> = {};
@@ -79,100 +392,17 @@ export async function generateCommand(opts: OptionValues): Promise<void> {
         chalk.yellow(`📁 Scanning ${sourceDir} for translation keys...`),
       );
 
-      // Find all source files matching the pattern
-      const allSourceFiles = glob.sync(
-        String(includePattern || '**/*.{ts,tsx,js,jsx}'),
-        {
-          cwd: String(sourceDir || 'src'),
-          ignore: String(excludePattern || '**/node_modules/**'),
-          absolute: true,
-        },
+      const allSourceFiles = glob.sync(includePattern, {
+        cwd: sourceDir,
+        ignore: excludePattern,
+        absolute: true,
+      });
+
+      const sourceFiles = await findEnglishReferenceFiles(
+        sourceDir,
+        includePattern,
+        excludePattern,
       );
-
-      // Filter to only English reference files:
-      // 1. Files with createTranslationRef (defines new translation keys)
-      // 2. Files with createTranslationMessages that are English (overrides/extends existing keys)
-      // 3. Files with createTranslationResource (sets up translation resources - may contain keys)
-      //    - Exclude language files (de.ts, es.ts, fr.ts, it.ts, etc.)
-      const sourceFiles: string[] = [];
-      const languageCodes = [
-        'de',
-        'es',
-        'fr',
-        'it',
-        'ja',
-        'ko',
-        'pt',
-        'zh',
-        'ru',
-        'ar',
-        'hi',
-        'nl',
-        'pl',
-        'sv',
-        'tr',
-        'uk',
-        'vi',
-      ];
-
-      for (const filePath of allSourceFiles) {
-        try {
-          const content = await fs.readFile(filePath, 'utf-8');
-          const fileName = path.basename(filePath, path.extname(filePath));
-
-          // Check if it's a language file:
-          // 1. Filename is exactly a language code (e.g., "es.ts", "fr.ts")
-          // 2. Filename ends with language code (e.g., "something-es.ts", "something-fr.ts")
-          // 3. Filename contains language code with separators (e.g., "something.de.ts")
-          // Exclude if it's explicitly English (e.g., "something-en.ts", "en.ts")
-          const isLanguageFile =
-            languageCodes.some(code => {
-              if (fileName === code) return true; // Exact match: "es.ts"
-              if (fileName.endsWith(`-${code}`)) return true; // Ends with: "something-es.ts"
-              if (
-                fileName.includes(`.${code}.`) ||
-                fileName.includes(`-${code}-`)
-              )
-                return true; // Contains: "something.de.ts"
-              return false;
-            }) &&
-            !fileName.includes('-en') &&
-            fileName !== 'en';
-
-          // Check if file contains createTranslationRef import (defines new translation keys)
-          // This is the primary source for English reference keys
-          const hasCreateTranslationRef =
-            content.includes('createTranslationRef') &&
-            (content.includes("from '@backstage/core-plugin-api/alpha'") ||
-              content.includes("from '@backstage/frontend-plugin-api'"));
-
-          // Also include English files with createTranslationMessages that have a ref
-          // These are English overrides/extensions of existing translations
-          // Only include -en.ts files to avoid non-English translations
-          const fullFileName = path.basename(filePath);
-          const isEnglishFile =
-            fullFileName.endsWith('-en.ts') ||
-            fullFileName.endsWith('-en.tsx') ||
-            fullFileName === 'en.ts' ||
-            fullFileName === 'en.tsx' ||
-            fileName.endsWith('-en') ||
-            fileName === 'en';
-          const hasCreateTranslationMessagesWithRef =
-            isEnglishFile &&
-            content.includes('createTranslationMessages') &&
-            content.includes('ref:') &&
-            (content.includes("from '@backstage/core-plugin-api/alpha'") ||
-              content.includes("from '@backstage/frontend-plugin-api'"));
-
-          // Include files that define new translation keys OR English overrides
-          if (hasCreateTranslationRef || hasCreateTranslationMessagesWithRef) {
-            sourceFiles.push(filePath);
-          }
-        } catch {
-          // Skip files that can't be read
-          continue;
-        }
-      }
 
       console.log(
         chalk.gray(
@@ -180,218 +410,42 @@ export async function generateCommand(opts: OptionValues): Promise<void> {
         ),
       );
 
-      // Structure: { pluginName: { en: { key: value } } }
-      const pluginGroups: Record<string, Record<string, string>> = {};
+      const structuredData = await extractAndGroupKeys(sourceFiles);
 
-      // Extract translation keys from each reference file and group by plugin
-      for (const filePath of sourceFiles) {
-        try {
-          const content = await fs.readFile(filePath, 'utf-8');
-          const keys = extractTranslationKeys(content, filePath);
-
-          // Detect plugin name from file path
-          let pluginName: string | null = null;
-
-          // Pattern 1: workspaces/{workspace}/plugins/{plugin}/...
-          const workspaceMatch = filePath.match(
-            /workspaces\/([^/]+)\/plugins\/([^/]+)/,
-          );
-          if (workspaceMatch) {
-            // Use plugin name (not workspace.plugin)
-            pluginName = workspaceMatch[2];
-          } else {
-            // Pattern 2: .../translations/{plugin}/ref.ts or .../translations/{plugin}/translation.ts
-            // Look for a folder named "translations" and use the next folder as plugin name
-            const translationsMatch = filePath.match(/translations\/([^/]+)\//);
-            if (translationsMatch) {
-              pluginName = translationsMatch[1];
-            } else {
-              // Pattern 3: Fallback - use parent directory name if file is in a translations folder
-              const dirName = path.dirname(filePath);
-              const parentDir = path.basename(dirName);
-              if (
-                parentDir === 'translations' ||
-                parentDir.includes('translation')
-              ) {
-                const grandParentDir = path.basename(path.dirname(dirName));
-                pluginName = grandParentDir;
-              } else {
-                // Last resort: use the directory containing the file
-                pluginName = parentDir;
-              }
-            }
-          }
-
-          if (!pluginName) {
-            console.warn(
-              chalk.yellow(
-                `⚠️  Warning: Could not determine plugin name for ${path.relative(
-                  process.cwd(),
-                  filePath,
-                )}, skipping`,
-              ),
-            );
-            continue;
-          }
-
-          // Filter out invalid plugin names (common directory names that shouldn't be plugins)
-          const invalidPluginNames = [
-            'dist',
-            'build',
-            'node_modules',
-            'packages',
-            'src',
-            'lib',
-            'components',
-            'utils',
-          ];
-          if (invalidPluginNames.includes(pluginName.toLowerCase())) {
-            console.warn(
-              chalk.yellow(
-                `⚠️  Warning: Skipping invalid plugin name "${pluginName}" from ${path.relative(
-                  process.cwd(),
-                  filePath,
-                )}`,
-              ),
-            );
-            continue;
-          }
-
-          // Initialize plugin group if it doesn't exist
-          if (!pluginGroups[pluginName]) {
-            pluginGroups[pluginName] = {};
-          }
-
-          // Merge keys into plugin group (warn about overwrites)
-          const overwrittenKeys: string[] = [];
-          for (const [key, value] of Object.entries(keys)) {
-            if (
-              pluginGroups[pluginName][key] &&
-              pluginGroups[pluginName][key] !== value
-            ) {
-              overwrittenKeys.push(key);
-            }
-            pluginGroups[pluginName][key] = value;
-          }
-
-          if (overwrittenKeys.length > 0) {
-            console.warn(
-              chalk.yellow(
-                `⚠️  Warning: ${
-                  overwrittenKeys.length
-                } keys were overwritten in plugin "${pluginName}" from ${path.relative(
-                  process.cwd(),
-                  filePath,
-                )}`,
-              ),
-            );
-          }
-        } catch (error) {
-          console.warn(
-            chalk.yellow(
-              `⚠️  Warning: Could not process ${filePath}: ${error}`,
-            ),
-          );
-        }
-      }
-
-      // Convert plugin groups to the final structure: { plugin: { en: { keys } } }
-      const structuredData: Record<string, { en: Record<string, string> }> = {};
-      for (const [pluginName, keys] of Object.entries(pluginGroups)) {
-        structuredData[pluginName] = { en: keys };
-      }
-
-      const totalKeys = Object.values(pluginGroups).reduce(
-        (sum, keys) => sum + Object.keys(keys).length,
+      const totalKeys = Object.values(structuredData).reduce(
+        (sum, pluginData) => sum + Object.keys(pluginData.en || {}).length,
         0,
       );
       console.log(
         chalk.green(
           `✅ Extracted ${totalKeys} translation keys from ${
-            Object.keys(pluginGroups).length
+            Object.keys(structuredData).length
           } plugins`,
         ),
       );
 
-      // Store structured data in translationKeys (will be passed to generateTranslationFiles)
       Object.assign(translationKeys, structuredData);
     }
 
-    // Generate translation files
     const formatStr = String(format || 'json');
     const outputPath = path.join(
       String(outputDir || 'i18n'),
       `reference.${formatStr}`,
     );
 
-    if (mergeExisting && (await fs.pathExists(outputPath))) {
-      console.log(chalk.yellow(`🔄 Merging with existing ${outputPath}...`));
-      // mergeTranslationFiles now accepts both structures
-      await mergeTranslationFiles(
-        translationKeys as
-          | Record<string, string>
-          | Record<string, { en: Record<string, string> }>,
-        outputPath,
-        formatStr,
-      );
-    } else {
-      console.log(chalk.yellow(`📝 Generating ${outputPath}...`));
-      await generateTranslationFiles(translationKeys, outputPath, formatStr);
-    }
+    await generateOrMergeFiles(
+      translationKeys,
+      outputPath,
+      formatStr,
+      mergeExisting,
+    );
 
-    // Validate the generated file
-    if (formatStr === 'json') {
-      console.log(chalk.yellow(`🔍 Validating generated file...`));
-      const { validateTranslationFile } = await import(
-        '../lib/i18n/validateFile'
-      );
-      const isValid = await validateTranslationFile(outputPath);
-      if (!isValid) {
-        throw new Error(`Generated file failed validation: ${outputPath}`);
-      }
-      console.log(chalk.green(`✅ Generated file is valid`));
-    }
+    await validateGeneratedFile(outputPath, formatStr);
 
-    // Print summary of included plugins
     if (extractKeys && isNestedStructure(translationKeys)) {
-      console.log(chalk.blue('\n📋 Included Plugins Summary:'));
-      console.log(chalk.gray('─'.repeat(60)));
-
-      const plugins = Object.entries(
+      displaySummary(
         translationKeys as Record<string, { en: Record<string, string> }>,
-      )
-        .map(([pluginName, pluginData]) => ({
-          name: pluginName,
-          keyCount: Object.keys(pluginData.en || {}).length,
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
-
-      let totalKeys = 0;
-      for (const plugin of plugins) {
-        const keyLabel = plugin.keyCount === 1 ? 'key' : 'keys';
-        console.log(
-          chalk.cyan(
-            `  • ${plugin.name.padEnd(35)} ${chalk.yellow(
-              plugin.keyCount.toString().padStart(4),
-            )} ${keyLabel}`,
-          ),
-        );
-        totalKeys += plugin.keyCount;
-      }
-
-      console.log(chalk.gray('─'.repeat(60)));
-      const pluginLabel = plugins.length === 1 ? 'plugin' : 'plugins';
-      const totalKeyLabel = totalKeys === 1 ? 'key' : 'keys';
-      console.log(
-        chalk.cyan(
-          `  Total: ${chalk.yellow(
-            plugins.length.toString(),
-          )} ${pluginLabel}, ${chalk.yellow(
-            totalKeys.toString(),
-          )} ${totalKeyLabel}`,
-        ),
       );
-      console.log('');
     }
 
     console.log(

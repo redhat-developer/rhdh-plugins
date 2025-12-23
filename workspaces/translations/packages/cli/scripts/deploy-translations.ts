@@ -16,7 +16,7 @@
  */
 
 import fs from 'fs-extra';
-import path from 'path';
+import path from 'node:path';
 import chalk from 'chalk';
 
 interface TranslationData {
@@ -63,7 +63,7 @@ function extractRefInfo(filePath: string): {
     // Extract ref import: import { xxxTranslationRef } from './ref' or from '@backstage/...'
     // Match both local and external imports
     const refImportMatch = content.match(
-      /import\s*{\s*([a-zA-Z0-9_]+TranslationRef)\s*}\s*from\s*['"]([^'"]+)['"]/,
+      /import\s*{\s*(\w+TranslationRef)\s*}\s*from\s*['"]([^'"]+)['"]/,
     );
     if (!refImportMatch) {
       return null;
@@ -88,7 +88,7 @@ function extractRefInfo(filePath: string): {
     // Extract variable name: const xxxTranslationIt = ... or const de = ...
     // Try full pattern first
     let variableMatch = content.match(
-      /const\s+([a-zA-Z0-9_]+Translation(?:It|Ja|De|Fr|Es))\s*=/,
+      /const\s+(\w+Translation(?:It|Ja|De|Fr|Es))\s*=/,
     );
 
     // If not found, try simple pattern (like const de = ...)
@@ -199,6 +199,77 @@ function detectRepoType(
 }
 
 /**
+ * Find plugin translation directory in workspace-based repos (rhdh-plugins, community-plugins)
+ */
+function findPluginInWorkspaces(
+  pluginName: string,
+  repoRoot: string,
+): string | null {
+  const workspacesDir = path.join(repoRoot, 'workspaces');
+  if (!fs.existsSync(workspacesDir)) {
+    return null;
+  }
+
+  const workspaceDirs = fs.readdirSync(workspacesDir);
+  for (const workspace of workspaceDirs) {
+    const pluginsDir = path.join(
+      workspacesDir,
+      workspace,
+      'plugins',
+      pluginName,
+      'src',
+      'translations',
+    );
+
+    if (fs.existsSync(pluginsDir)) {
+      return pluginsDir;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Find plugin translation directory in rhdh repo structure
+ */
+function findPluginInRhdh(pluginName: string, repoRoot: string): string | null {
+  // Try: packages/app/src/translations/{plugin}/
+  const pluginDir = path.join(
+    repoRoot,
+    'packages',
+    'app',
+    'src',
+    'translations',
+    pluginName,
+  );
+
+  if (fs.existsSync(pluginDir)) {
+    return pluginDir;
+  }
+
+  // Try: packages/app/src/translations/ (flat structure with {plugin}-{lang}.ts files)
+  const translationsDir = path.join(
+    repoRoot,
+    'packages',
+    'app',
+    'src',
+    'translations',
+  );
+
+  if (!fs.existsSync(translationsDir)) {
+    return null;
+  }
+
+  // Check if there are files like {plugin}-{lang}.ts
+  const files = fs.readdirSync(translationsDir);
+  const hasPluginFiles = files.some(
+    f => f.startsWith(`${pluginName}-`) && f.endsWith('.ts'),
+  );
+
+  return hasPluginFiles ? translationsDir : null;
+}
+
+/**
  * Find plugin translation directory (supports multiple repo structures)
  */
 function findPluginTranslationDir(
@@ -207,66 +278,12 @@ function findPluginTranslationDir(
 ): string | null {
   const repoType = detectRepoType(repoRoot);
 
-  // Structure 1: workspaces/*/plugins/*/src/translations (rhdh-plugins, community-plugins)
   if (repoType === 'rhdh-plugins' || repoType === 'community-plugins') {
-    const workspacesDir = path.join(repoRoot, 'workspaces');
-
-    if (fs.existsSync(workspacesDir)) {
-      const workspaceDirs = fs.readdirSync(workspacesDir);
-
-      for (const workspace of workspaceDirs) {
-        const pluginsDir = path.join(
-          workspacesDir,
-          workspace,
-          'plugins',
-          pluginName,
-          'src',
-          'translations',
-        );
-
-        if (fs.existsSync(pluginsDir)) {
-          return pluginsDir;
-        }
-      }
-    }
+    return findPluginInWorkspaces(pluginName, repoRoot);
   }
 
-  // Structure 2: packages/app/src/translations/{plugin}/ (rhdh)
   if (repoType === 'rhdh') {
-    // Try: packages/app/src/translations/{plugin}/
-    const pluginDir = path.join(
-      repoRoot,
-      'packages',
-      'app',
-      'src',
-      'translations',
-      pluginName,
-    );
-
-    if (fs.existsSync(pluginDir)) {
-      return pluginDir;
-    }
-
-    // Try: packages/app/src/translations/ (flat structure with {plugin}-{lang}.ts files)
-    const translationsDir = path.join(
-      repoRoot,
-      'packages',
-      'app',
-      'src',
-      'translations',
-    );
-
-    if (fs.existsSync(translationsDir)) {
-      // Check if there are files like {plugin}-{lang}.ts
-      const files = fs.readdirSync(translationsDir);
-      const hasPluginFiles = files.some(
-        f => f.startsWith(`${pluginName}-`) && f.endsWith('.ts'),
-      );
-
-      if (hasPluginFiles) {
-        return translationsDir;
-      }
-    }
+    return findPluginInRhdh(pluginName, repoRoot);
   }
 
   return null;
@@ -296,9 +313,9 @@ function generateTranslationFile(
     .map(([key, value]) => {
       // Escape single quotes and backslashes in values
       const escapedValue = value
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, "\\'")
-        .replace(/\n/g, '\\n');
+        .replaceAll(/\\/g, '\\\\')
+        .replaceAll(/'/g, "\\'")
+        .replaceAll(/\n/g, '\\n');
       return `    '${key}': '${escapedValue}',`;
     })
     .join('\n');
@@ -382,6 +399,297 @@ function detectDownloadedFiles(
 }
 
 /**
+ * Determine target file path for translation file
+ */
+function determineTargetFile(
+  pluginName: string,
+  lang: string,
+  repoType: string,
+  translationDir: string,
+): string {
+  if (repoType === 'rhdh') {
+    const pluginLangFile = path.join(
+      translationDir,
+      `${pluginName}-${lang}.ts`,
+    );
+    const langFile = path.join(translationDir, `${lang}.ts`);
+
+    if (fs.existsSync(pluginLangFile)) {
+      return pluginLangFile;
+    }
+    if (fs.existsSync(langFile)) {
+      return langFile;
+    }
+    return langFile; // Default to {lang}.ts for new files
+  }
+
+  return path.join(translationDir, `${lang}.ts`);
+}
+
+/**
+ * Get list of other language files in the translation directory
+ */
+function getOtherLanguageFiles(
+  lang: string,
+  repoType: string,
+  pluginName: string,
+  translationDir: string,
+): string[] {
+  const otherLangs = ['it', 'ja', 'de', 'fr', 'es', 'en'].filter(
+    l => l !== lang,
+  );
+
+  if (repoType === 'rhdh') {
+    return otherLangs.flatMap(l => {
+      const pluginLangFile = path.join(translationDir, `${pluginName}-${l}.ts`);
+      const langFile = path.join(translationDir, `${l}.ts`);
+      const files: string[] = [];
+      if (fs.existsSync(pluginLangFile)) files.push(pluginLangFile);
+      if (fs.existsSync(langFile)) files.push(langFile);
+      return files;
+    });
+  }
+
+  return otherLangs
+    .map(l => path.join(translationDir, `${l}.ts`))
+    .filter(f => fs.existsSync(f));
+}
+
+/**
+ * Transform variable name for target language
+ */
+function transformVariableName(variableName: string, lang: string): string {
+  const langCapitalized = lang.charAt(0).toUpperCase() + lang.slice(1);
+
+  if (variableName.match(/Translation(It|Ja|De|Fr|Es)$/)) {
+    return variableName.replaceAll(
+      /Translation(It|Ja|De|Fr|Es)$/g,
+      `Translation${langCapitalized}`,
+    );
+  }
+
+  return lang;
+}
+
+/**
+ * Verify and fix import path if needed
+ */
+function verifyImportPath(
+  refInfo: { refImportPath: string },
+  translationDir: string,
+): void {
+  if (!refInfo.refImportPath.startsWith('./')) {
+    return;
+  }
+
+  const expectedFile = path.join(
+    translationDir,
+    `${refInfo.refImportPath.replace('./', '')}.ts`,
+  );
+
+  if (!fs.existsSync(expectedFile)) {
+    refInfo.refImportPath = findRefImportPath(translationDir);
+  }
+}
+
+/**
+ * Extract ref info from other language files
+ */
+function extractRefInfoFromOtherFiles(
+  otherLangFiles: string[],
+  repoType: string,
+  lang: string,
+  translationDir: string,
+): {
+  refImportName: string;
+  refImportPath: string;
+  variableName: string;
+} | null {
+  for (const otherFile of otherLangFiles) {
+    const otherRefInfo = extractRefInfo(otherFile);
+    if (!otherRefInfo) {
+      continue;
+    }
+
+    verifyImportPath(otherRefInfo, translationDir);
+
+    // Prioritize external package imports for rhdh
+    const isExternalImport = !otherRefInfo.refImportPath.startsWith('./');
+    const shouldUseForRhdh = repoType === 'rhdh' && isExternalImport;
+    const shouldUseForOthers = repoType !== 'rhdh' || !isExternalImport;
+
+    if (shouldUseForRhdh || shouldUseForOthers) {
+      return {
+        refImportName: otherRefInfo.refImportName,
+        refImportPath: otherRefInfo.refImportPath,
+        variableName: transformVariableName(otherRefInfo.variableName, lang),
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Get ref info for a plugin translation file
+ */
+function getRefInfoForPlugin(
+  pluginName: string,
+  lang: string,
+  repoType: string,
+  translationDir: string,
+  targetFile: string,
+  exists: boolean,
+): {
+  refImportName: string;
+  refImportPath: string;
+  variableName: string;
+} {
+  const otherLangFiles = getOtherLanguageFiles(
+    lang,
+    repoType,
+    pluginName,
+    translationDir,
+  );
+
+  // Try to extract from other language files first
+  const refInfoFromOthers = extractRefInfoFromOtherFiles(
+    otherLangFiles,
+    repoType,
+    lang,
+    translationDir,
+  );
+
+  if (refInfoFromOthers) {
+    return refInfoFromOthers;
+  }
+
+  // Try existing file
+  if (exists) {
+    const existingRefInfo = extractRefInfo(targetFile);
+    if (existingRefInfo) {
+      return existingRefInfo;
+    }
+  }
+
+  // Try any other language file as fallback
+  const anyOtherFile = otherLangFiles.find(f => fs.existsSync(f));
+  if (anyOtherFile) {
+    const otherRefInfo = extractRefInfo(anyOtherFile);
+    if (otherRefInfo) {
+      verifyImportPath(otherRefInfo, translationDir);
+      return {
+        refImportName: otherRefInfo.refImportName,
+        refImportPath: otherRefInfo.refImportPath,
+        variableName: transformVariableName(otherRefInfo.variableName, lang),
+      };
+    }
+  }
+
+  // Last resort: infer from plugin name
+  return inferRefInfo(pluginName, lang, repoType, translationDir);
+}
+
+/**
+ * Process translation for a single plugin
+ */
+function processPluginTranslation(
+  pluginName: string,
+  translations: { [key: string]: string },
+  lang: string,
+  repoType: string,
+  repoRoot: string,
+): { updated: boolean; created: boolean } | null {
+  const translationDir = findPluginTranslationDir(pluginName, repoRoot);
+
+  if (!translationDir) {
+    console.warn(
+      chalk.yellow(`    ⚠️  Plugin "${pluginName}" not found, skipping...`),
+    );
+    return null;
+  }
+
+  const targetFile = determineTargetFile(
+    pluginName,
+    lang,
+    repoType,
+    translationDir,
+  );
+  const exists = fs.existsSync(targetFile);
+
+  const refInfo = getRefInfoForPlugin(
+    pluginName,
+    lang,
+    repoType,
+    translationDir,
+    targetFile,
+    exists,
+  );
+
+  const content = generateTranslationFile(
+    pluginName,
+    lang,
+    translations,
+    refInfo.refImportName,
+    refInfo.refImportPath,
+    refInfo.variableName,
+  );
+
+  fs.writeFileSync(targetFile, content, 'utf-8');
+
+  const relativePath = path.relative(repoRoot, targetFile);
+  const keyCount = Object.keys(translations).length;
+
+  if (exists) {
+    console.log(
+      chalk.green(`    ✅ Updated: ${relativePath} (${keyCount} keys)`),
+    );
+    return { updated: true, created: false };
+  }
+
+  console.log(
+    chalk.green(`    ✨ Created: ${relativePath} (${keyCount} keys)`),
+  );
+  return { updated: false, created: true };
+}
+
+/**
+ * Process all plugin translations for a language
+ */
+function processLanguageTranslations(
+  data: TranslationData,
+  lang: string,
+  repoType: string,
+  repoRoot: string,
+): { updated: number; created: number } {
+  let updated = 0;
+  let created = 0;
+
+  for (const [pluginName, pluginData] of Object.entries(data)) {
+    const translations = pluginData.en || {};
+
+    if (Object.keys(translations).length === 0) {
+      continue;
+    }
+
+    const result = processPluginTranslation(
+      pluginName,
+      translations,
+      lang,
+      repoType,
+      repoRoot,
+    );
+
+    if (result) {
+      if (result.updated) updated++;
+      if (result.created) created++;
+    }
+  }
+
+  return { updated, created };
+}
+
+/**
  * Deploy translations from downloaded JSON files
  */
 async function deployTranslations(
@@ -390,7 +698,6 @@ async function deployTranslations(
 ): Promise<void> {
   console.log(chalk.blue('🚀 Deploying translations...\n'));
 
-  // Detect repository type
   const repoType = detectRepoType(repoRoot);
   console.log(chalk.cyan(`📦 Detected repository: ${repoType}\n`));
 
@@ -400,7 +707,6 @@ async function deployTranslations(
     );
   }
 
-  // Auto-detect downloaded files for this repo
   const repoFiles = detectDownloadedFiles(downloadDir, repoType);
 
   if (Object.keys(repoFiles).length === 0) {
@@ -442,237 +748,15 @@ async function deployTranslations(
 
     console.log(chalk.cyan(`\n  🌍 Language: ${lang.toUpperCase()}`));
 
-    for (const [pluginName, pluginData] of Object.entries(data)) {
-      const translations = pluginData.en || {};
+    const { updated, created } = processLanguageTranslations(
+      data,
+      lang,
+      repoType,
+      repoRoot,
+    );
 
-      if (Object.keys(translations).length === 0) {
-        continue;
-      }
-
-      // Find plugin translation directory
-      const translationDir = findPluginTranslationDir(pluginName, repoRoot);
-
-      if (!translationDir) {
-        console.warn(
-          chalk.yellow(`    ⚠️  Plugin "${pluginName}" not found, skipping...`),
-        );
-        continue;
-      }
-
-      // For rhdh repo, files might be named {plugin}-{lang}.ts instead of {lang}.ts
-      let targetFile: string;
-      if (repoType === 'rhdh') {
-        // Check if files use {plugin}-{lang}.ts format
-        const pluginLangFile = path.join(
-          translationDir,
-          `${pluginName}-${lang}.ts`,
-        );
-        const langFile = path.join(translationDir, `${lang}.ts`);
-
-        // Prefer existing file format, or default to {lang}.ts
-        if (fs.existsSync(pluginLangFile)) {
-          targetFile = pluginLangFile;
-        } else if (fs.existsSync(langFile)) {
-          targetFile = langFile;
-        } else {
-          // Default to {lang}.ts for new files
-          targetFile = langFile;
-        }
-      } else {
-        targetFile = path.join(translationDir, `${lang}.ts`);
-      }
-
-      const exists = fs.existsSync(targetFile);
-
-      // Get ref info from existing file or infer
-      // Strategy: Always check other existing files first to get correct import path,
-      // then fall back to existing file or inference
-      let refInfo: {
-        refImportName: string;
-        refImportPath: string;
-        variableName: string;
-      };
-
-      // First, try to get from another language file in same directory (prioritize these)
-      // For rhdh, check both naming conventions: {plugin}-{lang}.ts and {lang}.ts
-      const otherLangFiles = ['it', 'ja', 'de', 'fr', 'es', 'en']
-        .filter(l => l !== lang)
-        .flatMap(l => {
-          if (repoType === 'rhdh') {
-            // Check both naming patterns
-            const pluginLangFile = path.join(
-              translationDir,
-              `${pluginName}-${l}.ts`,
-            );
-            const langFile = path.join(translationDir, `${l}.ts`);
-            const files = [];
-            if (fs.existsSync(pluginLangFile)) files.push(pluginLangFile);
-            if (fs.existsSync(langFile)) files.push(langFile);
-            return files;
-          }
-          const langFile = path.join(translationDir, `${l}.ts`);
-          return fs.existsSync(langFile) ? [langFile] : [];
-        });
-
-      // Try to extract from other language files first (they likely have correct imports)
-      let foundRefInfo = false;
-      for (const otherFile of otherLangFiles) {
-        const otherRefInfo = extractRefInfo(otherFile);
-        if (otherRefInfo) {
-          // Verify the import path is valid (file exists)
-          if (otherRefInfo.refImportPath.startsWith('./')) {
-            const expectedFile = path.join(
-              translationDir,
-              `${otherRefInfo.refImportPath.replace('./', '')}.ts`,
-            );
-            if (!fs.existsSync(expectedFile)) {
-              // Import path is invalid, try to find correct one
-              otherRefInfo.refImportPath = findRefImportPath(translationDir);
-            }
-          }
-
-          // Use this ref info (prioritize external package imports for rhdh)
-          if (
-            repoType === 'rhdh' &&
-            !otherRefInfo.refImportPath.startsWith('./')
-          ) {
-            // Found a file with external package import - use it
-            const langCapitalized =
-              lang.charAt(0).toUpperCase() + lang.slice(1);
-            // For variable name, try to match pattern or use simple lang code
-            let variableName = otherRefInfo.variableName;
-            if (variableName.match(/Translation(It|Ja|De|Fr|Es)$/)) {
-              variableName = variableName.replace(
-                /Translation(It|Ja|De|Fr|Es)$/,
-                `Translation${langCapitalized}`,
-              );
-            } else {
-              // Simple pattern like "const de = ..."
-              variableName = lang;
-            }
-            refInfo = {
-              refImportName: otherRefInfo.refImportName,
-              refImportPath: otherRefInfo.refImportPath,
-              variableName,
-            };
-            foundRefInfo = true;
-            break;
-          } else if (
-            repoType !== 'rhdh' ||
-            otherRefInfo.refImportPath.startsWith('./')
-          ) {
-            // For non-rhdh repos, or local imports, use it
-            const langCapitalized =
-              lang.charAt(0).toUpperCase() + lang.slice(1);
-            let variableName = otherRefInfo.variableName;
-            if (variableName.match(/Translation(It|Ja|De|Fr|Es)$/)) {
-              variableName = variableName.replace(
-                /Translation(It|Ja|De|Fr|Es)$/,
-                `Translation${langCapitalized}`,
-              );
-            } else {
-              variableName = lang;
-            }
-            refInfo = {
-              refImportName: otherRefInfo.refImportName,
-              refImportPath: otherRefInfo.refImportPath,
-              variableName,
-            };
-            foundRefInfo = true;
-            break;
-          }
-        }
-      }
-
-      if (!foundRefInfo) {
-        // If no good import found in other files, try existing file or infer
-        if (exists) {
-          const existingRefInfo = extractRefInfo(targetFile);
-          if (existingRefInfo) {
-            refInfo = existingRefInfo;
-            foundRefInfo = true;
-          }
-        }
-
-        if (!foundRefInfo) {
-          // Try any other language file (even with ./ref or ./translations)
-          const anyOtherFile = otherLangFiles.find(f => fs.existsSync(f));
-          if (anyOtherFile) {
-            const otherRefInfo = extractRefInfo(anyOtherFile);
-            if (otherRefInfo) {
-              // Verify and fix import path if needed
-              if (otherRefInfo.refImportPath.startsWith('./')) {
-                const expectedFile = path.join(
-                  translationDir,
-                  `${otherRefInfo.refImportPath.replace('./', '')}.ts`,
-                );
-                if (!fs.existsSync(expectedFile)) {
-                  otherRefInfo.refImportPath =
-                    findRefImportPath(translationDir);
-                }
-              }
-
-              const langCapitalized =
-                lang.charAt(0).toUpperCase() + lang.slice(1);
-              let variableName = otherRefInfo.variableName;
-              if (variableName.match(/Translation(It|Ja|De|Fr|Es)$/)) {
-                variableName = variableName.replace(
-                  /Translation(It|Ja|De|Fr|Es)$/,
-                  `Translation${langCapitalized}`,
-                );
-              } else {
-                variableName = lang;
-              }
-              refInfo = {
-                refImportName: otherRefInfo.refImportName,
-                refImportPath: otherRefInfo.refImportPath,
-                variableName,
-              };
-              foundRefInfo = true;
-            }
-          }
-        }
-
-        if (!foundRefInfo) {
-          // Last resort: infer from plugin name
-          refInfo = inferRefInfo(pluginName, lang, repoType, translationDir);
-        }
-      }
-
-      // Generate file content
-      const content = generateTranslationFile(
-        pluginName,
-        lang,
-        translations,
-        refInfo.refImportName,
-        refInfo.refImportPath,
-        refInfo.variableName,
-      );
-
-      // Write file
-      fs.writeFileSync(targetFile, content, 'utf-8');
-
-      const relativePath = path.relative(repoRoot, targetFile);
-      if (exists) {
-        console.log(
-          chalk.green(
-            `    ✅ Updated: ${relativePath} (${
-              Object.keys(translations).length
-            } keys)`,
-          ),
-        );
-        totalUpdated++;
-      } else {
-        console.log(
-          chalk.green(
-            `    ✨ Created: ${relativePath} (${
-              Object.keys(translations).length
-            } keys)`,
-          ),
-        );
-        totalCreated++;
-      }
-    }
+    totalUpdated += updated;
+    totalCreated += created;
   }
 
   console.log(chalk.blue(`\n\n📊 Summary:`));
@@ -685,7 +769,9 @@ async function deployTranslations(
 const downloadDir = process.argv[2] || 'workspaces/i18n/downloads';
 const repoRoot = process.cwd();
 
-deployTranslations(downloadDir, repoRoot).catch(error => {
+try {
+  await deployTranslations(downloadDir, repoRoot);
+} catch (error) {
   console.error(chalk.red('❌ Error:'), error);
   process.exit(1);
-});
+}
