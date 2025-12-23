@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-bcc-test
 
+## 0.2.0
+
+### Minor Changes
+
+- f66ba99: Backstage version bump to v1.45.3
+
 ## 0.1.0
 
 ### Minor Changes
