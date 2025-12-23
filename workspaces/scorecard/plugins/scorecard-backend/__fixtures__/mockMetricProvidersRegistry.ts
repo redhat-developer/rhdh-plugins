@@ -42,7 +42,12 @@ export const buildMockMetricProvidersRegistry = ({
     ? jest.fn().mockReturnValue(provider)
     : jest.fn();
   const listMetrics = metricsList
-    ? jest.fn().mockReturnValue(metricsList)
+    ? jest.fn().mockImplementation((metricIds?: string[]) => {
+        if (metricIds && metricIds.length !== 0) {
+          return metricsList.filter(metric => metricIds.includes(metric.id));
+        }
+        return metricsList;
+      })
     : jest.fn();
 
   return {
