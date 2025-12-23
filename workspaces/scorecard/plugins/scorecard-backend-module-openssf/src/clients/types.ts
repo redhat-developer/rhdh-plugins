@@ -22,7 +22,7 @@ export interface OpenSSFCheckDocumentation {
 export interface OpenSSFCheck {
   name: string;
   score: number;
-  reason: string;
+  reason: string | null;
   details: string[] | null;
   documentation: OpenSSFCheckDocumentation;
 }

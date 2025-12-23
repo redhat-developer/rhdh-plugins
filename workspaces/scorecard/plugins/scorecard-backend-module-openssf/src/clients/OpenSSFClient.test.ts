@@ -65,24 +65,6 @@ describe('OpenSSFClient', () => {
       );
     });
 
-    it('should throw an error if the score is not a number', async () => {
-      // mock response from the API
-      const responseWithoutScore = {
-        ...mockOpenSSFResponse,
-        score: 'not a number',
-      };
-
-      // mocked fetch behaviour for the test
-      (globalThis.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(responseWithoutScore),
-      });
-
-      await expect(client.getScorecard('owner', 'test')).rejects.toThrow(
-        'Invalid response from OpenSSF API: score is not a number',
-      );
-    });
-
     it('should throw an error if API request fails', async () => {
       // mocked fetch behaviour for the test
       (globalThis.fetch as jest.Mock).mockRejectedValue(

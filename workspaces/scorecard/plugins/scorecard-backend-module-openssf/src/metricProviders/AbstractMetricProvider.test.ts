@@ -229,8 +229,9 @@ describe('AbstractMetricProvider', () => {
     it('should throw error when metric score is less than 0', async () => {
       const entity = createMockEntity('owner/test');
       mockOpenSSFResponse.checks[0].score = -1;
+      mockOpenSSFResponse.checks[0].reason = 'Repository not found.';
       await expect(provider.calculateMetric(entity)).rejects.toThrow(
-        "OpenSSF check 'Test-Metric' has invalid score -1 for owner/test",
+        "OpenSSF check 'Test-Metric' has invalid score -1 for owner/test. Reason: Repository not found.",
       );
     });
 

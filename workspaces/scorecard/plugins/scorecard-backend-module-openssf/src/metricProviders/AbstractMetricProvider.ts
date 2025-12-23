@@ -101,7 +101,11 @@ export abstract class AbstractMetricProvider
       );
     } else if (metric.score < 0 || metric.score > 10) {
       throw new Error(
-        `OpenSSF check '${metricName}' has invalid score ${metric.score} for ${owner}/${repo}`,
+        `OpenSSF check '${metricName}' has invalid score ${
+          metric.score
+        } for ${owner}/${repo}. Reason: ${
+          metric.reason ?? 'No reason provided'
+        }`,
       );
     }
     return metric.score;

@@ -46,12 +46,6 @@ export class OpenSSFClient {
 
     const data: OpenSSFResponse = await response.json();
 
-    if (typeof data.score !== 'number') {
-      throw new Error(
-        `Invalid response from OpenSSF API: score is not a number`,
-      );
-    }
-
     return data;
   }
 }
