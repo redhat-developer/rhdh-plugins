@@ -64,6 +64,7 @@ import {
   getPluginActionTooltipMessage,
   isPluginInstalled,
 } from '../utils';
+import { Permission } from '../types';
 
 import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
 import {
@@ -301,7 +302,7 @@ export const MarketplacePluginInstallContent = ({
   const isInstallDisabled =
     isProductionEnvironment ||
     installationError ||
-    pluginConfigPermissions.data?.write !== 'ALLOW' ||
+    pluginConfigPermissions.data?.write !== Permission.ALLOW ||
     (pluginConfig.data as any)?.error ||
     !extensionsConfig?.data?.enabled ||
     isSubmitting ||
@@ -310,8 +311,8 @@ export const MarketplacePluginInstallContent = ({
   const installTooltip = getPluginActionTooltipMessage(
     isProductionEnvironment,
     {
-      read: pluginConfigPermissions.data?.read ?? 'DENY',
-      write: pluginConfigPermissions.data?.write ?? 'DENY',
+      read: pluginConfigPermissions.data?.read ?? Permission.DENY,
+      write: pluginConfigPermissions.data?.write ?? Permission.DENY,
     },
     t,
     !extensionsConfig?.data?.enabled,
@@ -564,8 +565,8 @@ export const MarketplacePluginInstallContent = ({
           >
             {isInstallDisabled ? t('install.back') : t('install.cancel')}
           </Button>
-          {(pluginConfigPermissions.data?.write === 'ALLOW' ||
-            pluginConfigPermissions.data?.read === 'ALLOW') && (
+          {(pluginConfigPermissions.data?.write === Permission.ALLOW ||
+            pluginConfigPermissions.data?.read === Permission.ALLOW) && (
             <Button
               variant="text"
               color="primary"
