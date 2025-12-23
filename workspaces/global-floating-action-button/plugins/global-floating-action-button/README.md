@@ -247,22 +247,146 @@ The sections below are relevant for static plugins. If the plugin is expected to
 
 #### Floating Action Button Parameters
 
-| Name               | Type                                                                                                              | Description                                                                                                                                                                                                       | Notes                                          |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| **slot**           | `enum`                                                                                                            | The position where the fab will be placed. Valid values: `PAGE_END`, `BOTTOM_LEFT`.                                                                                                                               | [optional] default to `PAGE_END`.              |
-| **label**          | `String`                                                                                                          | A name for your action button.                                                                                                                                                                                    | required                                       |
-| **labelKey**       | `String`                                                                                                          | Translation key for the label. If provided, will be used instead of label when translations are available.                                                                                                        | optional                                       |
-| **icon**           | `String`<br>`React.ReactElement`<br>`SVG image icon`<br>`HTML image icon`                                         | An icon for your floating button. Recommended to use **filled** icons from the [Material Design library](https://fonts.google.com/icons)                                                                          | optional                                       |
-| **showLabel**      | `Boolean`                                                                                                         | To display the label next to your icon.                                                                                                                                                                           | optional                                       |
-| **size**           | `'small'`<br>`'medium'`<br>`'large'`                                                                              | A name for your action button.                                                                                                                                                                                    | [optional] default to `'medium'`               |
-| **color**          | `'default'`<br>`'error'`<br>`'info'`<br>`'inherit'`<br>`'primary'`<br>`'secondary'`<br>`'success'`<br>`'warning'` | The color of the component. It supports both default and custom theme colors, which can be added as shown in the [palette customization guide](https://mui.com/material-ui/customization/palette/#custom-colors). | [optional] default to `'default'`.             |
-| **onClick**        | `React.MouseEventHandler`                                                                                         | the action to be performed on `onClick`.                                                                                                                                                                          | optional                                       |
-| **to**             | `String`                                                                                                          | Specify an href if the action button should open a internal/external link.                                                                                                                                        | optional                                       |
-| **toolTip**        | `String`                                                                                                          | The text to appear on hover.                                                                                                                                                                                      | optional                                       |
-| **toolTipKey**     | `String`                                                                                                          | Translation key for the tooltip. If provided, will be used instead of toolTip when translations are available.                                                                                                    | optional                                       |
-| **priority**       | `number`                                                                                                          | When multiple sub-menu actions are displayed, the button can be prioritized to position either at the top or the bottom.                                                                                          | optional                                       |
-| **visibleOnPaths** | `string[]`                                                                                                        | The action button will appear only on the specified paths and will remain hidden on all other paths.                                                                                                              | [optional] default to displaying on all paths. |
-| **excludeOnPaths** | `string[]`                                                                                                        | The action button will be hidden only on the specified paths and will appear on all other paths.                                                                                                                  | [optional] default to displaying on all paths. |
+| Name                   | Type                                                                                                              | Description                                                                                                                                                                                                       | Notes                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **slot**               | `enum`                                                                                                            | The position where the fab will be placed. Valid values: `PAGE_END`, `BOTTOM_LEFT`.                                                                                                                               | [optional] default to `PAGE_END`.              |
+| **label**              | `String`                                                                                                          | A name for your action button.                                                                                                                                                                                    | required                                       |
+| **labelKey**           | `String`                                                                                                          | Translation key for the label. If provided, will be used instead of label when translations are available.                                                                                                        | optional                                       |
+| **icon**               | `String`<br>`React.ReactElement`<br>`SVG image icon`<br>`HTML image icon`                                         | An icon for your floating button. Recommended to use **filled** icons from the [Material Design library](https://fonts.google.com/icons)                                                                          | optional                                       |
+| **showLabel**          | `Boolean`                                                                                                         | To display the label next to your icon.                                                                                                                                                                           | optional                                       |
+| **size**               | `'small'`<br>`'medium'`<br>`'large'`                                                                              | A name for your action button.                                                                                                                                                                                    | [optional] default to `'medium'`               |
+| **color**              | `'default'`<br>`'error'`<br>`'info'`<br>`'inherit'`<br>`'primary'`<br>`'secondary'`<br>`'success'`<br>`'warning'` | The color of the component. It supports both default and custom theme colors, which can be added as shown in the [palette customization guide](https://mui.com/material-ui/customization/palette/#custom-colors). | [optional] default to `'default'`.             |
+| **onClick**            | `React.MouseEventHandler`                                                                                         | the action to be performed on `onClick`.                                                                                                                                                                          | optional                                       |
+| **to**                 | `String`                                                                                                          | Specify an href if the action button should open a internal/external link.                                                                                                                                        | optional                                       |
+| **toolTip**            | `String`                                                                                                          | The text to appear on hover.                                                                                                                                                                                      | optional                                       |
+| **toolTipKey**         | `String`                                                                                                          | Translation key for the tooltip. If provided, will be used instead of toolTip when translations are available.                                                                                                    | optional                                       |
+| **priority**           | `number`                                                                                                          | When multiple sub-menu actions are displayed, the button can be prioritized to position either at the top or the bottom.                                                                                          | optional                                       |
+| **visibleOnPaths**     | `string[]`                                                                                                        | The action button will appear only on the specified paths and will remain hidden on all other paths.                                                                                                              | [optional] default to displaying on all paths. |
+| **excludeOnPaths**     | `string[]`                                                                                                        | The action button will be hidden only on the specified paths and will appear on all other paths.                                                                                                                  | [optional] default to displaying on all paths. |
+| **isDisabled**         | `Boolean`                                                                                                         | Whether the FAB is disabled.                                                                                                                                                                                      | optional                                       |
+| **disabledToolTip**    | `String`                                                                                                          | Tooltip to display when the FAB is disabled.                                                                                                                                                                      | optional                                       |
+| **disabledToolTipKey** | `String`                                                                                                          | Translation key for the disabled tooltip.                                                                                                                                                                         | optional                                       |
+| **Component**          | `ComponentType<any>`                                                                                              | Custom component to render as the FAB item. When provided, this takes priority over icon, tooltip, and onClick.                                                                                                   | optional                                       |
+
+### Custom FAB Components
+
+You can provide a custom React component to render as a FAB item. This is useful when you need full control over the FAB's behavior, such as managing state through context or implementing complex interactions.
+
+#### Using Custom Components in Static Configuration
+
+```tsx title="packages/app/src/components/Root/Root.tsx"
+import { useState, createContext, useContext, useCallback, PropsWithChildren } from 'react';
+import Fab from '@mui/material/Fab';
+import Tooltip from '@mui/material/Tooltip';
+import ChatIcon from '@mui/icons-material/Chat';
+import CloseIcon from '@mui/icons-material/Close';
+import {
+  GlobalFloatingActionButton,
+} from '@red-hat-developer-hub/backstage-plugin-global-floating-action-button';
+
+// Create a context for managing state
+interface ChatPanelContextType {
+  isOpen: boolean;
+  togglePanel: () => void;
+}
+
+const ChatPanelContext = createContext<ChatPanelContextType | undefined>(undefined);
+
+const useChatPanel = () => {
+  const context = useContext(ChatPanelContext);
+  if (!context) {
+    throw new Error('useChatPanel must be used within ChatPanelProvider');
+  }
+  return context;
+};
+
+// Provider component to wrap your app
+const ChatPanelProvider = ({ children }: PropsWithChildren<{}>) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const togglePanel = useCallback(() => setIsOpen(prev => !prev), []);
+
+  return (
+    <ChatPanelContext.Provider value={{ isOpen, togglePanel }}>
+      {children}
+      {isOpen && (
+        <div style={{ position: 'fixed', bottom: '80px', right: '24px', /* ... */ }}>
+          {/* Your panel content */}
+        </div>
+      )}
+    </ChatPanelContext.Provider>
+  );
+};
+
+// Custom FAB Component
+const ChatFABComponent = () => {
+  const { isOpen, togglePanel } = useChatPanel();
+
+  return (
+    <Tooltip title={isOpen ? 'Close Chat' : 'Open Chat'} placement="left">
+      <Fab
+        size="small"
+        color={isOpen ? 'default' : 'primary'}
+        onClick={togglePanel}
+        aria-label={isOpen ? 'Close chat' : 'Open chat'}
+      >
+        {isOpen ? <CloseIcon /> : <ChatIcon />}
+      </Fab>
+    </Tooltip>
+  );
+};
+
+// Use the custom component in Root
+export const Root = ({ children }: PropsWithChildren<{}>) => (
+  <ChatPanelProvider>
+    <SidebarPage>
+      <GlobalFloatingActionButton
+        floatingButtons={[
+          {
+            label: 'Chat',
+            toolTip: 'Chat Panel',
+            Component: ChatFABComponent
+            priority: -1,
+          },
+          // ... other FABs
+        ]}
+      />
+      {children}
+    </SidebarPage>
+  </ChatPanelProvider>
+);
+```
+
+**Key Points:**
+
+- The `Component` can have it's own `icon`, `toolTip`, and `onClick` action. The Custom components have full control over their rendering, state, and behavior
+- Use a context provider pattern when the FAB needs to manage shared state (e.g., opening panels, modals)
+- The custom component should render its own `Fab` element from MUI
+
+### Disabled FAB State
+
+You can disable a FAB and show a custom tooltip when it's disabled:
+
+```tsx title="packages/app/src/components/Root/Root.tsx"
+<GlobalFloatingActionButton
+  floatingButtons={[
+    {
+      icon: <CreateComponentIcon />,
+      label: 'Create',
+      toolTip: 'Create entity',
+      to: '/create',
+      isDisabled: true,
+      disabledToolTip: 'Creation is currently unavailable',
+      disabledToolTipKey: 'fab.create.disabled.tooltip',
+    },
+  ]}
+/>
+```
+
+When `isDisabled` is `true`:
+
+- The FAB will be visually disabled and non-interactive
+- The `disabledToolTip` (or `disabledToolTipKey` translation) will be shown instead of the regular tooltip
+- The `onClick` handler will not be triggered
 
 ### Translation Support
 
