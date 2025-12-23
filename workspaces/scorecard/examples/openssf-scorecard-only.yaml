@@ -5,9 +5,9 @@ kind: Component
 metadata:
   name: rhdh-plugins
   annotations:
-    github.com/project-slug: redhat-developer/rhdh-plugins
-    openssf/project: redhat-developer/rhdh-plugins
-    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
+    github.com/project-slug: backstage/backstage
+    openssf/project:  backstage/backstage
+    backstage.io/source-location: url:https://github.com/backstage/backstage
 spec:
   type: service
   owner: guests
