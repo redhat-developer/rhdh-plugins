@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { defineConfig } from 'vitest/config';
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-
-import { translationsTestTranslationRef } from './ref';
-
-/**
- * @public
- */
-export const translationsTestTranslations = createTranslationResource({
-  ref: translationsTestTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    fr: () => import('./fr'),
-    ja: () => import('./ja'),
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['test/**/*.test.ts', 'src/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'dist/', 'test/'],
+    },
   },
 });
-
-export { translationsTestTranslationRef };

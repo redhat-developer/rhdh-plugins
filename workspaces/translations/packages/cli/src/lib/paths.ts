@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import path from 'node:path';
+import { fileURLToPath } from 'url';
 
-import { translationsTestTranslationRef } from './ref';
+const __filename = fileURLToPath(import.meta.url);
+// eslint-disable-next-line no-restricted-syntax
+const __dirname = path.dirname(__filename);
 
-/**
- * @public
- */
-export const translationsTestTranslations = createTranslationResource({
-  ref: translationsTestTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    fr: () => import('./fr'),
-    ja: () => import('./ja'),
-  },
-});
-
-export { translationsTestTranslationRef };
+// Simplified paths for translations-cli
+export const paths = {
+  targetDir: process.cwd(),
+  resolveOwn: (relativePath: string) =>
+    path.resolve(
+      // eslint-disable-next-line no-restricted-syntax
+      __dirname,
+      '..',
+      '..',
+      relativePath,
+    ),
+};

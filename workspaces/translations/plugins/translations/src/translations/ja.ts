@@ -18,28 +18,28 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsPluginTranslationRef } from './ref';
 
 /**
- * Italian translation for translations.
+ * Japanese translation for translations.
  * @public
  */
-const translationsTranslationIt = createTranslationMessages({
+const translationsTranslationJa = createTranslationMessages({
   ref: translationsPluginTranslationRef,
   messages: {
-    'page.title': 'Traduzioni',
-    'page.subtitle': 'Gestione e visualizzazione delle traduzioni caricate',
-    'table.title': 'Traduzioni caricate ({{count}})',
-    'table.headers.refId': 'ID di riferimento',
-    'table.headers.key': 'Chiave',
-    'table.options.pageSize': 'Elementi per pagina',
-    'table.options.pageSizeOptions': 'Mostra {{count}} elementi',
-    'export.title': 'Traduzioni',
-    'export.downloadButton': 'Scarica le traduzioni predefinite (italiano)',
+    'page.title': '翻訳',
+    'page.subtitle': '読み込まれた翻訳の管理および表示',
+    'table.title': '読み込まれた翻訳 ({{count}})',
+    'table.headers.refId': '参照 ID',
+    'table.headers.key': 'キー',
+    'table.options.pageSize': '1 ページの項目数',
+    'table.options.pageSizeOptions': '{{count}} 件の項目を表示',
+    'export.title': '翻訳',
+    'export.downloadButton': 'デフォルトの翻訳のダウンロード (英語)',
     'export.filename': 'translations-{{timestamp}}.json',
-    'common.loading': 'Caricamento...',
-    'common.error': 'Si è verificato un errore',
-    'common.noData': 'Nessun dato disponibile',
-    'common.refresh': 'Aggiorna',
+    'common.loading': '読み込み中...',
+    'common.error': 'エラーが発生しました',
+    'common.noData': '利用可能なデータはありません',
+    'common.refresh': '更新',
     'language.displayFormat': '{{displayName}} ({{code}})',
   },
 });
 
-export default translationsTranslationIt;
+export default translationsTranslationJa;
