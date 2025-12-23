@@ -15,20 +15,23 @@
  */
 
 import { PropsWithChildren } from 'react';
-import { useTestDrawerContext } from './TestDrawerContext';
-import { ResizableDrawer } from '../../../../packages/app/src/components/Root/ResizableDrawer';
+
+import { ChatbotDisplayMode } from '@patternfly/chatbot';
+
+// eslint-disable-next-line @backstage/no-relative-monorepo-imports
+import { CustomDrawer } from '../../../../packages/app/src/components/Root/CustomDrawer';
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 
 export const DrawerComponent = ({ children }: PropsWithChildren) => {
-  const { isDrawerOpen, drawerWidth, setDrawerWidth } = useTestDrawerContext();
-
+  const { displayMode, drawerWidth, setDrawerWidth } =
+    useLightspeedDrawerContext();
   return (
-    <ResizableDrawer
-      isDrawerOpen={isDrawerOpen}
+    <CustomDrawer
+      isDrawerOpen={displayMode === ChatbotDisplayMode.docked}
       drawerWidth={drawerWidth}
       onWidthChange={setDrawerWidth}
-      isResizable
     >
       {children}
-    </ResizableDrawer>
+    </CustomDrawer>
   );
 };

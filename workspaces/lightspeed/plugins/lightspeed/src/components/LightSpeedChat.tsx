@@ -30,7 +30,6 @@ import {
   ChatbotHeaderMain,
   ChatbotHeaderMenu,
   ChatbotHeaderTitle,
-  ChatbotModal,
   FileDropZone,
   MessageBar,
   MessageProps,
@@ -66,7 +65,6 @@ import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 import { RenameConversationModal } from './RenameConversationModal';
-import { ResizableDrawer } from './ResizableDrawer';
 
 const useStyles = makeStyles(theme => ({
   body: {
@@ -148,8 +146,6 @@ export const LightspeedChat = ({
   const {
     displayMode,
     setDisplayMode,
-    drawerWidth,
-    setDrawerWidth,
     currentConversationId: routeConversationId,
     setCurrentConversationId,
   } = useLightspeedDrawerContext();
@@ -541,7 +537,10 @@ export const LightspeedChat = ({
 
   const onAttachRejected = (data: FileRejection[]) => {
     data.forEach(attachment => {
-      if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
+      const hasInvalidTypeError = attachment.errors.some(
+        e => e.code === 'file-invalid-type',
+      );
+      if (hasInvalidTypeError) {
         setShowAlert(true);
         setUploadError({
           message: t('file.upload.error.unsupportedType'),
@@ -573,9 +572,9 @@ export const LightspeedChat = ({
         <LightspeedChatBoxHeader
           selectedModel={selectedModel}
           handleSelectedModel={item => {
-              onNewChat();
-              handleSelectedModel(item);
-            }}
+            onNewChat();
+            handleSelectedModel(item);
+          }}
           models={models}
           isPinningChatsEnabled={isPinningChatsEnabled}
           onPinnedChatsToggle={setIsPinningChatsEnabled}
@@ -704,35 +703,6 @@ export const LightspeedChat = ({
     </Chatbot>
   );
 
-  const getChatDisplay = () => {
-    if (displayMode === ChatbotDisplayMode.docked) {
-      return (
-        <ResizableDrawer
-          isDrawerOpen
-          drawerWidth={drawerWidth}
-          onWidthChange={setDrawerWidth}
-        >
-          {chatbot}
-        </ResizableDrawer>
-      );
-    }
-    if (displayMode === ChatbotDisplayMode.default) {
-      return (
-        <ChatbotModal
-          isOpen
-          displayMode={displayMode}
-          onClose={() => {}}
-          ouiaId="LightspeedChatbotModal"
-          aria-labelledby="lightspeed-chatpopup-modal"
-        >
-          {chatbot}
-        </ChatbotModal>
-      );
-    }
-
-    return chatbot;
-  };
-
   return (
     <>
       {isDeleteModalOpen && (
@@ -750,7 +720,7 @@ export const LightspeedChat = ({
           conversationId={targetConversationId}
         />
       )}
-      {getChatDisplay()}
+      {chatbot}
       <Attachment />
     </>
   );

@@ -84,3 +84,52 @@ export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren> =
       },
     }),
   );
+
+/**
+ * Lightspeed FAB for global floating action button fot LightspeedAI
+ *
+ * @public
+ */
+export const LightspeedFAB: React.ComponentType = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedFAB',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedFAB').then(m => m.LightspeedFAB),
+    },
+  }),
+);
+
+/**
+ * Lightspeed Drawer State Exposer exposes its drawer state
+ *
+ * @public
+ */
+export const LightspeedDrawerStateExposer = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedDrawerStateExposer',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedDrawerStateExposer').then(
+          m => m.LightspeedDrawerStateExposer,
+        ),
+    },
+  }),
+);
+
+/**
+ * Lightspeed Chat Container component extension
+ *
+ * @public
+ */
+export const LightspeedChatContainer = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedChatContainer',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedChatContainer').then(
+          m => m.LightspeedChatContainer,
+        ),
+    },
+  }),
+);

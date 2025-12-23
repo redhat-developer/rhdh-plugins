@@ -52,7 +52,6 @@ type DrawerContentType = {
   id: string;
   Component: ComponentType<any>;
   priority?: number;
-  resizable?: boolean;
 };
 
 /**

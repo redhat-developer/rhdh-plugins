@@ -114,17 +114,23 @@ global:
                 - importName: lightspeedTranslations
                   module: Alpha
                   ref: lightspeedTranslationRef
-              appIcons:
-                - name: LightspeedIcon
-                  module: LightspeedPlugin
-                  importName: LightspeedIcon
               dynamicRoutes:
                 - path: /lightspeed
                   importName: LightspeedPage
-                  module: LightspeedPlugin
-                  menuItem:
-                    icon: LightspeedIcon
-                    text: Lightspeed
+                - path: /lightspeed/conversation/:id
+                  importName: LightspeedPage
+              mountPoints:
+                - mountPoint: application/listener
+                  importName: LightspeedFAB
+                - mountPoint: application/provider
+                  importName: LightspeedDrawerProvider
+                - mountPoint: application/drawer-state
+                  importName: LightspeedDrawerStateExposer
+                - mountPoint: application/drawer-content
+                  importName: LightspeedChatContainer
+                  config:
+                    id: lightspeed
+                    priority: 100
 ```
 
 - add the lightspeed configuration in the `app-config.yaml`
@@ -153,8 +159,7 @@ Follow the below steps -
 
 - Add the extension point inside the `app-config.yaml` or `app-config.local.yaml` file.
 
-```
-
+```yaml
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-lightspeed:
@@ -162,16 +167,21 @@ dynamicPlugins:
         - importName: lightspeedTranslations
           module: Alpha
           ref: lightspeedTranslationRef
-      appIcons:
-        - name: LightspeedIcon
-          module: LightspeedPlugin
-          importName: LightspeedIcon
       dynamicRoutes:
         - path: /lightspeed
           importName: LightspeedPage
-          module: LightspeedPlugin
-          menuItem:
-            icon: LightspeedIcon
-            text: Lightspeed
-
+        - path: /lightspeed/conversation/:id
+          importName: LightspeedPage
+      mountPoints:
+        - mountPoint: application/listener
+          importName: LightspeedFAB
+        - mountPoint: application/provider
+          importName: LightspeedDrawerProvider
+        - mountPoint: application/drawer-state
+          importName: LightspeedDrawerStateExposer
+        - mountPoint: application/drawer-content
+          importName: LightspeedChatContainer
+          config:
+            id: lightspeed
+            priority: 100
 ```

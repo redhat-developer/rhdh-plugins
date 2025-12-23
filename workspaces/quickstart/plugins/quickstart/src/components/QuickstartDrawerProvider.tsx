@@ -28,8 +28,6 @@ import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 import { useQuickstartRole } from '../hooks/useQuickstartRole';
 
-const DRAWER_ID = 'quickstart';
-
 /**
  * Provider component for the Quickstart Drawer functionality
  * @public
@@ -172,7 +170,6 @@ export const QuickstartDrawerProvider = ({ children }: PropsWithChildren) => {
   return (
     <QuickstartDrawerContext.Provider
       value={{
-        id: DRAWER_ID,
         isDrawerOpen,
         openDrawer,
         closeDrawer,

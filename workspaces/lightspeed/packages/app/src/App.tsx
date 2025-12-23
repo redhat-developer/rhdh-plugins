@@ -53,7 +53,10 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { lightspeedTranslations } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
-import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+import {
+  LightspeedPage,
+  LightspeedDrawerProvider,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
 const githubProvider = {
   id: 'github-auth-provider',

@@ -23,7 +23,6 @@ import { UserRole } from '../types';
  *  @public
  */
 export interface QuickstartDrawerContextType {
-  id: string;
   /**
    * The prop to check if the drawer is open
    */

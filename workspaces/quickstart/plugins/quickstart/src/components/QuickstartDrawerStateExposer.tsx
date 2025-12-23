@@ -52,17 +52,17 @@ export type DrawerStateExposerProps = {
 export const QuickstartDrawerStateExposer = ({
   onStateChange,
 }: DrawerStateExposerProps) => {
-  const { id, isDrawerOpen, drawerWidth, setDrawerWidth } =
+  const { isDrawerOpen, drawerWidth, setDrawerWidth } =
     useQuickstartDrawerContext();
 
   useEffect(() => {
     onStateChange({
-      id,
+      id: 'quickstart',
       isDrawerOpen,
       drawerWidth,
       setDrawerWidth,
     });
-  }, [id, isDrawerOpen, drawerWidth, onStateChange, setDrawerWidth]);
+  }, [isDrawerOpen, drawerWidth, onStateChange, setDrawerWidth]);
 
   return null;
 };

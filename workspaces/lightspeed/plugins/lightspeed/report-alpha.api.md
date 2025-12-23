@@ -80,6 +80,7 @@ readonly "aria.options.label": string;
 readonly "aria.scroll.down": string;
 readonly "aria.scroll.up": string;
 readonly "aria.settings.label": string;
+readonly "aria.close": string;
 readonly "modal.edit": string;
 readonly "modal.save": string;
 readonly "modal.close": string;
@@ -101,6 +102,7 @@ readonly "tooltip.responseRecorded": string;
 readonly "tooltip.backToTop": string;
 readonly "tooltip.backToBottom": string;
 readonly "tooltip.settings": string;
+readonly "tooltip.close": string;
 readonly "modal.title.preview": string;
 readonly "modal.title.edit": string;
 readonly "icon.lightspeed.alt": string;
@@ -147,6 +149,10 @@ readonly "toolCall.executing": string;
 readonly "toolCall.copyResponse": string;
 readonly "toolCall.summary": string;
 readonly "toolCall.mcpServer": string;
+readonly "settings.displayMode.label": string;
+readonly "settings.displayMode.overlay": string;
+readonly "settings.displayMode.docked": string;
+readonly "settings.displayMode.fullscreen": string;
 }>;
 
 // @alpha

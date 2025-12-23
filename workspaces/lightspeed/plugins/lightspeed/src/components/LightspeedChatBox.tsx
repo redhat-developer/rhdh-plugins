@@ -161,13 +161,21 @@ export const LightspeedChatBox = forwardRef(
 
     const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
     const isEmbeddedMode = displayMode === ChatbotDisplayMode.embedded;
+
+    const getMessageBoxClassName = () => {
+      if (!welcomePrompts.length) {
+        return messageBoxClasses;
+      }
+      const baseClasses = `${messageBoxClasses} ${classes.prompt}`;
+      if (isEmbeddedMode) {
+        return baseClasses;
+      }
+      return `${baseClasses} ${classes.promptSuggestions}`;
+    };
+
     return (
       <MessageBox
-        className={
-          welcomePrompts.length
-            ? `${messageBoxClasses} ${classes.prompt}${!isEmbeddedMode ? ` ${classes.promptSuggestions}` : ''}`
-            : messageBoxClasses
-        }
+        className={getMessageBoxClassName()}
         announcement={announcement}
         ref={containerRef}
         onScrollToTopClick={scrollToTop}

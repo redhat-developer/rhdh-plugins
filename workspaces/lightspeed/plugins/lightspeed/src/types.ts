@@ -29,17 +29,38 @@ export type Conversations = {
   };
 };
 
+/**
+ * @public
+ * Referenced document metadata
+ */
 export type ReferencedDocument = {
   doc_title: string;
   doc_url: string;
   doc_description?: string;
 };
 
+/**
+ * @public
+ * List of referenced documents
+ */
 export type ReferencedDocuments = ReferencedDocument[];
 
+/**
+ * @public
+ * LCS model type - embedding or llm
+ */
 export type LCSModelType = 'embedding' | 'llm';
+
+/**
+ * @public
+ * LCS model API model type
+ */
 export type LCSModelApiModelType = 'embedding' | 'llm';
 
+/**
+ * @public
+ * LCS Model interface
+ */
 export interface LCSModel {
   identifier: string;
   metadata: {
@@ -67,6 +88,11 @@ export interface LCSShield {
   params: {};
   provider_resource_id: string;
 }
+
+/**
+ * @public
+ * Base message interface for chat messages
+ */
 export interface BaseMessage {
   name: string;
   type: string;
@@ -78,6 +104,11 @@ export interface BaseMessage {
   referenced_documents?: ReferencedDocuments;
   error?: AlertProps;
 }
+
+/**
+ * @public
+ * Conversation summary type
+ */
 export type ConversationSummary = {
   conversation_id: string;
   last_message_timestamp: number;
@@ -95,12 +126,20 @@ export interface FileContent {
   name: string;
 }
 
+/**
+ * @public
+ * Attachment type for file attachments in chat messages
+ */
 export type Attachment = {
   attachment_type: string;
   content_type: string;
   content: string;
 };
 
+/**
+ * @public
+ * List of conversation summaries
+ */
 export type ConversationList = ConversationSummary[];
 
 export type SamplePrompt =
@@ -115,6 +154,10 @@ export type SamplePrompt =
 
 export type SamplePrompts = SamplePrompt[];
 
+/**
+ * @public
+ * Feedback capture payload for user feedback on AI responses
+ */
 export type CaptureFeedback = {
   conversation_id: string;
   user_question: string;

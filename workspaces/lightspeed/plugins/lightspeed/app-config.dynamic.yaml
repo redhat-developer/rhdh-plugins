@@ -1,0 +1,24 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-lightspeed:
+      translationResources:
+        - importName: lightspeedTranslations
+          module: Alpha
+          ref: lightspeedTranslationRef
+      dynamicRoutes:
+        - path: /lightspeed
+          importName: LightspeedPage
+        - path: /lightspeed/conversation/:id
+          importName: LightspeedPage
+      mountPoints:
+        - mountPoint: application/listener
+          importName: LightspeedFAB
+        - mountPoint: application/provider
+          importName: LightspeedDrawerProvider
+        - mountPoint: application/drawer-state
+          importName: LightspeedDrawerStateExposer
+        - mountPoint: application/drawer-content
+          importName: LightspeedChatContainer
+          config:
+            id: lightspeed
+            priority: 100

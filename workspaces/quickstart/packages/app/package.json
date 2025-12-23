@@ -49,7 +49,6 @@
     "@material-ui/icons": "^4.9.1",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-application-drawer": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-global-header": "^1.17.1",
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",

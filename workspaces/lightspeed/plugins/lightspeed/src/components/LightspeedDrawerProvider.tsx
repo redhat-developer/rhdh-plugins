@@ -14,53 +14,49 @@
  * limitations under the License.
  */
 
-import { PropsWithChildren, useCallback, useEffect, useState } from 'react';
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { identityApiRef, useApi } from '@backstage/core-plugin-api';
-
-import { ChatbotDisplayMode } from '@patternfly/chatbot';
+import { makeStyles } from '@mui/styles';
+import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
 
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
+
+const useStyles = makeStyles(() => ({
+  chatbotModal: {
+    // When docked drawer is open, adjust modal position
+    'body.docked-drawer-open &': {
+      transition: 'margin-right 0.3s ease',
+      marginRight: 'var(--docked-drawer-width, 500px)',
+    },
+  },
+}));
 
 /**
  * @public
  */
 export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
+  const classes = useStyles();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [displayMode, setDisplayModeState] = useState<ChatbotDisplayMode>(
+  const [displayModeState, setDisplayModeState] = useState<ChatbotDisplayMode>(
     ChatbotDisplayMode.default,
   );
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [drawerWidth, setDrawerWidth] = useState<number>(400);
-  const [userKey, setUserKey] = useState<string>('guest');
-  const [currentConversationId, setCurrentConversationIdState] = useState<
+  const [currentConversationIdState, setCurrentConversationIdState] = useState<
     string | undefined
   >(undefined);
 
-  const identityApi = useApi(identityApiRef);
-
   const isLightspeedRoute = location.pathname.startsWith('/lightspeed');
-
-  // Resolve the current user's identity to scope localStorage keys per user
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const identity = await identityApi.getBackstageIdentity();
-        const ref = identity?.userEntityRef?.toLowerCase() || 'guest';
-        if (!cancelled) setUserKey(ref);
-      } catch (e) {
-        if (!cancelled) setUserKey('guest');
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [identityApi]);
 
   useEffect(() => {
     if (isLightspeedRoute) {
@@ -72,52 +68,12 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       }
       setDisplayModeState(ChatbotDisplayMode.embedded);
       setIsOpen(true);
+    } else if (displayModeState === ChatbotDisplayMode.embedded) {
+      setDisplayModeState(ChatbotDisplayMode.default);
     }
-  }, [isLightspeedRoute, location.pathname]);
+  }, [isLightspeedRoute, location.pathname, displayModeState]);
 
-  // Load drawer width from localStorage on mount
-  useEffect(() => {
-    if (!userKey) return;
-
-    const drawerWidthKey = `lightspeed-drawer-width:${userKey}`;
-    const savedDrawerWidth = localStorage.getItem(drawerWidthKey);
-
-    if (savedDrawerWidth) {
-      const width = parseInt(savedDrawerWidth, 10);
-      if (!Number.isNaN(width) && width > 0) {
-        setDrawerWidth(width);
-      }
-    }
-  }, [userKey]);
-
-  // Save drawer width to localStorage
-  useEffect(() => {
-    if (!userKey) return;
-
-    const drawerWidthKey = `lightspeed-drawer-width:${userKey}`;
-    localStorage.setItem(drawerWidthKey, drawerWidth.toString());
-  }, [drawerWidth, userKey]);
-
-  // Set CSS variables for drawer width when drawer is open in docked mode
-  useEffect(() => {
-    if (isOpen && displayMode === ChatbotDisplayMode.docked) {
-      document.body.classList.add('lightspeed-drawer-open');
-      document.body.style.setProperty(
-        '--lightspeed-drawer-width',
-        `${drawerWidth}px`,
-      );
-    } else {
-      document.body.classList.remove('lightspeed-drawer-open');
-      document.body.style.removeProperty('--lightspeed-drawer-width');
-    }
-
-    return () => {
-      document.body.classList.remove('lightspeed-drawer-open');
-      document.body.style.removeProperty('--lightspeed-drawer-width');
-    };
-  }, [isOpen, drawerWidth, displayMode]);
-
-  // Open chatbot in overlay mode (no route change)
+  // Open chatbot in overlay mode
   const openChatbot = useCallback(() => {
     setDisplayModeState(ChatbotDisplayMode.default);
     setIsOpen(true);
@@ -126,12 +82,12 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   // Close chatbot
   const closeChatbot = useCallback(() => {
     // If in embedded mode on the lightspeed route, navigate back
-    if (displayMode === ChatbotDisplayMode.embedded && isLightspeedRoute) {
+    if (displayModeState === ChatbotDisplayMode.embedded && isLightspeedRoute) {
       navigate(-1);
     }
     setIsOpen(false);
     setDisplayModeState(ChatbotDisplayMode.default);
-  }, [displayMode, isLightspeedRoute, navigate]);
+  }, [displayModeState, isLightspeedRoute, navigate]);
 
   const toggleChatbot = useCallback(() => {
     if (isOpen) {
@@ -146,12 +102,15 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       setCurrentConversationIdState(id);
 
       // Update route if in embedded mode
-      if (displayMode === ChatbotDisplayMode.embedded && isLightspeedRoute) {
+      if (
+        displayModeState === ChatbotDisplayMode.embedded &&
+        isLightspeedRoute
+      ) {
         const path = id ? `/lightspeed/conversation/${id}` : '/lightspeed';
         navigate(path, { replace: true });
       }
     },
-    [displayMode, isLightspeedRoute, navigate],
+    [displayModeState, isLightspeedRoute, navigate],
   );
 
   // Set display mode with route handling for embedded/fullscreen
@@ -161,49 +120,68 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
 
       // Navigate to fullscreen route with conversation ID if available
       if (mode === ChatbotDisplayMode.embedded) {
-        const convId = conversationId ?? currentConversationId;
+        const convId = conversationId ?? currentConversationIdState;
         const path = convId
           ? `/lightspeed/conversation/${convId}`
           : '/lightspeed';
         navigate(path);
         setIsOpen(true);
-      } else if (mode === ChatbotDisplayMode.docked) {
-        // If we were on the lightspeed route, navigate back
-        if (isLightspeedRoute) {
-          navigate(-1);
-        }
-        setIsOpen(true);
       } else {
-        // Default Overlay mode
-        // If we were on the lightspeed route, navigate back
         if (isLightspeedRoute) {
           navigate(-1);
         }
         setIsOpen(true);
       }
     },
-    [navigate, isLightspeedRoute, currentConversationId],
+    [navigate, isLightspeedRoute, currentConversationIdState],
   );
 
-  // Only render for overlay and docked modes (embedded is handled by the route)
-  const shouldRenderChat =
-    isOpen && displayMode !== ChatbotDisplayMode.embedded && !isLightspeedRoute;
+  // Only render ChatbotModal for overlay mode
+  // Docked mode is handled by ApplicationDrawer in Root
+  // Embedded mode is handled by LightspeedPage route
+  const shouldRenderOverlayModal =
+    isOpen &&
+    displayModeState === ChatbotDisplayMode.default &&
+    !isLightspeedRoute;
+
+  const contextValue = useMemo(
+    () => ({
+      isChatbotActive: isOpen,
+      toggleChatbot,
+      displayMode: displayModeState,
+      setDisplayMode,
+      drawerWidth,
+      setDrawerWidth,
+      currentConversationId: currentConversationIdState,
+      setCurrentConversationId,
+    }),
+    [
+      isOpen,
+      toggleChatbot,
+      displayModeState,
+      setDisplayMode,
+      drawerWidth,
+      setDrawerWidth,
+      currentConversationIdState,
+      setCurrentConversationId,
+    ],
+  );
 
   return (
-    <LightspeedDrawerContext.Provider
-      value={{
-        isChatbotActive: isOpen,
-        toggleChatbot,
-        displayMode,
-        setDisplayMode,
-        drawerWidth,
-        setDrawerWidth,
-        currentConversationId,
-        setCurrentConversationId,
-      }}
-    >
+    <LightspeedDrawerContext.Provider value={contextValue}>
       {children}
-      {shouldRenderChat && <LightspeedChatContainer />}
+      {shouldRenderOverlayModal && (
+        <ChatbotModal
+          isOpen
+          displayMode={displayModeState}
+          onClose={closeChatbot}
+          ouiaId="LightspeedChatbotModal"
+          aria-labelledby="lightspeed-chatpopup-modal"
+          className={classes.chatbotModal}
+        >
+          <LightspeedChatContainer />
+        </ChatbotModal>
+      )}
     </LightspeedDrawerContext.Provider>
   );
 };

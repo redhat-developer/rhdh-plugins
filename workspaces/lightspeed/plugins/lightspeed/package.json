@@ -57,6 +57,7 @@
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "^6.1.8",
     "@mui/material": "^5.12.2",
+    "@mui/styles": "5.18.0",
     "@patternfly/chatbot": "6.4.1",
     "@patternfly/react-core": "6.4.0",
     "@patternfly/react-icons": "^6.3.1",
@@ -116,7 +117,8 @@
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "maintainers": [
     "@karthikjeeyar",
-    "@rohitkrai03"
+    "@rohitkrai03",
+    "@debsmita1"
   ],
   "author": "Red Hat"
 }

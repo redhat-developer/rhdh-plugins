@@ -27,6 +27,10 @@ export * from './plugin';
 export { useQuickstartDrawerContext } from './hooks/useQuickstartDrawerContext';
 export type { QuickstartDrawerContextType } from './components/QuickstartDrawerContext';
 export { QuickstartDrawerStateExposer } from './components/QuickstartDrawerStateExposer';
+export type {
+  DrawerStateExposerProps,
+  DrawerPartialState,
+} from './components/QuickstartDrawerStateExposer';
 /**
  * @public
  */

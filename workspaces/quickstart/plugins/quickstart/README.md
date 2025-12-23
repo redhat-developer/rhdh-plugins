@@ -13,6 +13,41 @@ The Quickstart plugin provides a guided onboarding experience for new users of R
 
 ## Installation
 
+### Installing as a dynamic plugin
+
+If you want to install the plugin as a dynamic plugin in Red Hat Developer Hub:
+
+- Follow the [Installing plugins guide](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/installing-plugins.md)
+- Add the content of `app-config.dynamic.yaml` into your `app-config.local.yaml`
+
+#### Dynamic plugin configuration
+
+Add the extension point inside your `app-config.yaml` or `app-config.local.yaml` file:
+
+```yaml
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-quickstart:
+      translationResources:
+        - importName: quickstartTranslations
+          ref: quickstartTranslationRef
+      mountPoints:
+        - mountPoint: application/provider
+          importName: QuickstartDrawerProvider
+        - mountPoint: application/drawer-state
+          importName: QuickstartDrawerStateExposer
+        - mountPoint: application/drawer-content
+          importName: QuickstartDrawerContent
+          config:
+            id: quickstart
+        - mountPoint: global.header/help
+          importName: QuickstartButton
+          config:
+            priority: 100
+```
+
+### Static Installation
+
 1. Install the plugin package:
 
 ```bash
