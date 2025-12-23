@@ -55,7 +55,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
-    "isolated-vm": "6.0.2"
+    "isolated-vm": "6.0.2",
+    "pino": "^10.1.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {
