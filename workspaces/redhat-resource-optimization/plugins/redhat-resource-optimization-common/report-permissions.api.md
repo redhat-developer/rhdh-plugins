@@ -6,6 +6,12 @@
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
 // @public (undocumented)
+export const costPluginPermissions: BasicPermission[];
+
+// @public (undocumented)
+export const costPluginReadPermission: BasicPermission;
+
+// @public (undocumented)
 export const rosClusterProjectPermission: (
   clusterName: string,
   projectName: string,

@@ -21,6 +21,7 @@ import { getToken } from '../routes/token';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import { rosPluginPermissions } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
 import { getAccess } from '../routes/access';
+import { getCostManagementAccess } from '../routes/costManagementAccess';
 
 /** @public */
 export async function createRouter(
@@ -40,6 +41,8 @@ export async function createRouter(
   router.get('/token', getToken(options));
 
   router.get('/access', getAccess(options));
+
+  router.get('/access/cost-management', getCostManagementAccess(options));
 
   return router;
 }

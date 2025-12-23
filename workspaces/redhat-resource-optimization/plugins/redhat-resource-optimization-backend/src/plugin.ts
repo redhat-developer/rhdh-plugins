@@ -70,6 +70,10 @@ export const resourceOptimizationPlugin = createBackendPlugin({
           path: '/access',
           allow: 'user-cookie',
         });
+        httpRouter.addAuthPolicy({
+          path: '/access/cost-management',
+          allow: 'user-cookie',
+        });
       },
     });
   },
