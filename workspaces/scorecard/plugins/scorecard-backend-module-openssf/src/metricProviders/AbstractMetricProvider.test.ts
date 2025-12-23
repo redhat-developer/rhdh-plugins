@@ -225,5 +225,21 @@ describe('AbstractMetricProvider', () => {
         "Invalid format of 'openssf/project'",
       );
     });
+
+    it('should throw error when metric score is less than 0', async () => {
+      const entity = createMockEntity('owner/test');
+      mockOpenSSFResponse.checks[0].score = -1;
+      await expect(provider.calculateMetric(entity)).rejects.toThrow(
+        "OpenSSF check 'Test-Metric' has invalid score -1 for owner/test",
+      );
+    });
+
+    it('should throw error when metric score is greater than 10', async () => {
+      const entity = createMockEntity('owner/test');
+      mockOpenSSFResponse.checks[0].score = 11;
+      await expect(provider.calculateMetric(entity)).rejects.toThrow(
+        "OpenSSF check 'Test-Metric' has invalid score 11 for owner/test",
+      );
+    });
   });
 });

@@ -99,8 +99,11 @@ export abstract class AbstractMetricProvider
       throw new Error(
         `OpenSSF check '${metricName}' not found in scorecard for ${owner}/${repo}`,
       );
+    } else if (metric.score < 0 || metric.score > 10) {
+      throw new Error(
+        `OpenSSF check '${metricName}' has invalid score ${metric.score} for ${owner}/${repo}`,
+      );
     }
-
     return metric.score;
   }
 }

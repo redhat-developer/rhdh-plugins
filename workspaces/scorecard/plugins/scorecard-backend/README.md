@@ -75,15 +75,17 @@ The Scorecard plugin collects metrics from third-party data sources using metric
 
 The following metric providers are available:
 
-| Provider   | Metric ID          | Title            | Description                           | Type   |
-| ---------- | ------------------ | ---------------- | ------------------------------------- | ------ |
-| **GitHub** | `github.open_prs`  | GitHub open PRs  | Count of open Pull Requests in GitHub | number |
-| **Jira**   | `jira.open_issues` | Jira open issues | The number of opened issues in Jira   | number |
+| Provider    | Metric ID          | Title                       | Description                                                                                                                      | Type   |
+| ----------- | ------------------ | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **GitHub**  | `github.open_prs`  | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                            | number |
+| **Jira**    | `jira.open_issues` | Jira open issues            | The number of opened issues in Jira                                                                                              | number |
+| **OpenSSF** | `openssf.*`        | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.code_review`, `openssf.maintained`). Each returns a score from 0-10. | number |
 
 To use these providers, install the corresponding backend modules:
 
 - GitHub: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github`](../scorecard-backend-module-github/README.md)
 - Jira: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira`](../scorecard-backend-module-jira/README.md)
+- OpenSSF: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf`](../scorecard-backend-module-openssf/README.md)
 
 ## Thresholds
 
