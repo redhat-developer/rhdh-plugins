@@ -38,8 +38,8 @@ export interface TMSDownloadOptions {
 }
 
 export class TMSClient {
-  private client: AxiosInstance;
-  private baseUrl: string;
+  private readonly client: AxiosInstance;
+  private readonly baseUrl: string;
   // private token: string;
 
   constructor(baseUrl: string, token: string) {
@@ -55,12 +55,14 @@ export class TMSClient {
       normalizedUrl.includes('/project/')
     ) {
       // Extract base URL (e.g., https://cloud.memsource.com/web)
-      const urlMatch = normalizedUrl.match(/^(https?:\/\/[^\/]+\/web)/);
+      const urlRegex = /^(https?:\/\/[^/]+\/web)/;
+      const urlMatch = urlRegex.exec(normalizedUrl);
       if (urlMatch) {
         normalizedUrl = `${urlMatch[1]}/api2`; // Memsource uses /api2
       } else {
         // Fallback: try to extract domain and use /web/api2
-        const domainMatch = normalizedUrl.match(/^(https?:\/\/[^\/]+)/);
+        const domainRegex = /^(https?:\/\/[^/]+)/;
+        const domainMatch = domainRegex.exec(normalizedUrl);
         if (domainMatch) {
           normalizedUrl = `${domainMatch[1]}/web/api2`;
         }
@@ -102,7 +104,7 @@ export class TMSClient {
     // Memsource API doesn't have a standard /health endpoint
     // Connection will be tested when we actually make API calls
     // This is a no-op for now - actual connection test happens in API calls
-    return Promise.resolve();
+    return;
   }
 
   /**

@@ -26,6 +26,7 @@ export const translationsTestTranslations = createTranslationResource({
   translations: {
     de: () => import('./de'),
     fr: () => import('./fr'),
+    ja: () => import('./ja'),
   },
 });
 
