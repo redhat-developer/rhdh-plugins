@@ -15,6 +15,8 @@
  */
 
 import {
+  AggregatedMetricResult,
+  AggregatedMetricValue,
   MetricResult,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -30,13 +32,19 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
+import { aggregateMetricsByStatus } from '../utils/aggregateMetricsByStatus';
 
-export type CatalogMetricServiceOptions = {
+type CatalogMetricServiceOptions = {
   catalog: CatalogService;
   auth: AuthService;
   registry: MetricProvidersRegistry;
   database: DatabaseMetricValues;
 };
+
+export type AggregatedMetricsByStatus = Record<
+  string,
+  { values: { success: number; warning: number; error: number }; total: number }
+>;
 
 export class CatalogMetricService {
   private readonly catalog: CatalogService;
@@ -49,6 +57,15 @@ export class CatalogMetricService {
     this.auth = options.auth;
     this.registry = options.registry;
     this.database = options.database;
+  }
+
+  /**
+   * Get the catalog service
+   *
+   * @returns CatalogService
+   */
+  getCatalogService(): CatalogService {
+    return this.catalog;
   }
 
   /**
@@ -74,9 +91,7 @@ export class CatalogMetricService {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const metricsToFetch = providerIds
-      ? this.registry.listMetrics().filter(m => providerIds.includes(m.id))
-      : this.registry.listMetrics();
+    const metricsToFetch = this.registry.listMetrics(providerIds);
 
     const authorizedMetricsToFetch = filterAuthorizedMetrics(
       metricsToFetch,
@@ -135,5 +150,56 @@ export class CatalogMetricService {
         };
       },
     );
+  }
+
+  /**
+   * Get aggregated metrics for multiple entities and metrics
+   *
+   * @param entityRefs - Array of entity references in format "kind:namespace/name"
+   * @param metricIds - Optional array of metric IDs to get aggregated metrics of.
+   *                    If not provided, gets all available aggregated metrics.
+   * @returns Aggregated metric results
+   */
+  async getAggregatedMetricsByEntityRefs(
+    entityRefs: string[],
+    metricIds?: string[],
+  ): Promise<AggregatedMetricResult[]> {
+    const metricsToFetch = this.registry.listMetrics(metricIds);
+
+    const metricResults =
+      await this.database.readLatestEntityMetricValuesByEntityRefs(
+        entityRefs,
+        metricsToFetch.map(m => m.id),
+      );
+
+    const aggregatedMetrics = aggregateMetricsByStatus(metricResults);
+
+    return Object.entries(aggregatedMetrics).map(([metricId, metricData]) => {
+      const values: AggregatedMetricValue[] = [];
+
+      for (const [key, count] of Object.entries(metricData.values)) {
+        const name = key as 'success' | 'warning' | 'error';
+        values.push({ count, name });
+      }
+
+      const provider = this.registry.getProvider(metricId);
+      const metric = provider.getMetric();
+
+      return {
+        id: metricId,
+        status: 'success',
+        metadata: {
+          title: metric.title,
+          description: metric.description,
+          type: metric.type,
+          history: metric.history,
+        },
+        result: {
+          values,
+          total: metricData.total,
+          timestamp: new Date(metricResults[0].timestamp).toISOString(),
+        },
+      };
+    });
   }
 }

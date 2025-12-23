@@ -32,6 +32,7 @@ const metricValues: Omit<DbMetricValue, 'id'>[] = [
     value: 41,
     timestamp: new Date('2023-01-01T00:00:00Z'),
     error_message: undefined,
+    status: 'success',
   },
   {
     catalog_entity_ref: 'component:default/another-service',
@@ -39,6 +40,7 @@ const metricValues: Omit<DbMetricValue, 'id'>[] = [
     value: 25,
     timestamp: new Date('2023-01-01T00:00:00Z'),
     error_message: undefined,
+    status: 'success',
   },
   {
     catalog_entity_ref: 'component:default/another-service',
@@ -188,6 +190,71 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toBe(1);
+      },
+    );
+  });
+
+  describe('readLatestEntityMetricValuesByEntityRefs', () => {
+    it.each(databases.eachSupportedId())(
+      'should return latest metric values for multiple entities and metrics - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const baseTime = new Date('2023-01-01T00:00:00Z');
+        const laterTime = new Date('2023-01-01T01:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            ...metricValues[0],
+            timestamp: baseTime,
+          },
+          {
+            ...metricValues[1],
+            timestamp: baseTime,
+          },
+          {
+            ...metricValues[2],
+            timestamp: laterTime,
+          },
+          {
+            ...metricValues[2],
+            timestamp: laterTime,
+            value: 10,
+            error_message: undefined,
+            status: 'success',
+          },
+        ]);
+
+        const result = await db.readLatestEntityMetricValuesByEntityRefs(
+          [
+            'component:default/test-service',
+            'component:default/another-service',
+          ],
+          ['github.metric1', 'github.metric2'],
+        );
+
+        expect(result).toHaveLength(3);
+
+        const testServiceMetric1 = result.find(
+          r =>
+            r.metric_id === 'github.metric1' &&
+            r.catalog_entity_ref === 'component:default/test-service',
+        );
+        const anotherServiceMetric1 = result.find(
+          r =>
+            r.metric_id === 'github.metric1' &&
+            r.catalog_entity_ref === 'component:default/another-service',
+        );
+
+        const anotherServiceMetric2 = result.find(
+          r =>
+            r.metric_id === 'github.metric2' &&
+            r.catalog_entity_ref === 'component:default/another-service',
+        );
+
+        expect(testServiceMetric1?.value).toBe(41);
+        expect(anotherServiceMetric1?.value).toBe(25);
+        expect(anotherServiceMetric2?.value).toBe(10);
       },
     );
   });

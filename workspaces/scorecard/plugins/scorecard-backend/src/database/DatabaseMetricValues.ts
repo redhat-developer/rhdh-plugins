@@ -58,4 +58,23 @@ export class DatabaseMetricValues {
       .where('timestamp', '<', olderThan)
       .del();
   }
+
+  /**
+   * Get the latest metric values for multiple entities and metrics
+   */
+  async readLatestEntityMetricValuesByEntityRefs(
+    catalog_entity_refs: string[],
+    metric_ids: string[],
+  ): Promise<DbMetricValue[]> {
+    return await this.dbClient(this.tableName)
+      .select('*')
+      .whereIn(
+        'id',
+        this.dbClient(this.tableName)
+          .max('id')
+          .whereIn('metric_id', metric_ids)
+          .whereIn('catalog_entity_ref', catalog_entity_refs)
+          .groupBy('metric_id', 'catalog_entity_ref'),
+      );
+  }
 }

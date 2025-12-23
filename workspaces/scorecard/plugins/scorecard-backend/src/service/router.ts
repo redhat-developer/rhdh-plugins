@@ -35,6 +35,9 @@ import {
   checkEntityAccess,
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
+import { validateCatalogMetricsSchema } from '../validation/validateCatalogMetricsSchema';
+import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
+import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
@@ -124,23 +127,17 @@ export async function createRouter({
     const { kind, namespace, name } = req.params;
     const { metricIds } = req.query;
 
-    const catalogMetricsSchema = z.object({
-      metricIds: z.string().min(1).optional(),
-    });
-
-    const parsed = catalogMetricsSchema.safeParse(req.query);
-    if (!parsed.success) {
-      throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
-    }
+    validateCatalogMetricsSchema(req.query);
 
     const entityRef = stringifyEntityRef({ kind, namespace, name });
 
     // Check if user has permission to read this specific catalog entity
     await checkEntityAccess(entityRef, req, permissions, httpAuth);
 
-    const metricIdArray = metricIds
-      ? (metricIds as string).split(',').map(id => id.trim())
-      : undefined;
+    const metricIdArray =
+      typeof metricIds === 'string'
+        ? parseCommaSeparatedString(metricIds)
+        : undefined;
 
     const results = await catalogMetricService.getLatestEntityMetrics(
       entityRef,
@@ -148,6 +145,48 @@ export async function createRouter({
       conditions,
     );
     res.json(results);
+  });
+
+  router.get('/metrics/catalog/aggregated', async (req, res) => {
+    const { metricIds } = req.query;
+
+    await authorizeConditional(req, scorecardMetricReadPermission);
+
+    validateCatalogMetricsSchema(req.query);
+
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const userEntityRef = credentials?.principal?.userEntityRef;
+
+    if (!userEntityRef) {
+      throw new NotAllowedError('User entity reference not found');
+    }
+
+    const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
+      catalog: catalogMetricService.getCatalogService(),
+      credentials,
+    });
+
+    if (entitiesOwnedByAUser.length === 0) {
+      res.json([]);
+      return;
+    }
+
+    for (const entityRef of entitiesOwnedByAUser) {
+      await checkEntityAccess(entityRef, req, permissions, httpAuth);
+    }
+
+    const metricIdsParsed =
+      typeof metricIds === 'string'
+        ? parseCommaSeparatedString(metricIds)
+        : undefined;
+
+    const aggregatedMetrics =
+      await catalogMetricService.getAggregatedMetricsByEntityRefs(
+        entitiesOwnedByAUser,
+        metricIdsParsed,
+      );
+
+    res.json(aggregatedMetrics);
   });
 
   return router;
