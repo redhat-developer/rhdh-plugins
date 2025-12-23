@@ -55,7 +55,7 @@
     "@types/json-schema": "7.0.15",
     "@types/lodash": "^4.14.151",
     "@types/react": "^18.2.58",
-    "prettier": "3.6.2",
+    "prettier": "3.7.4",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-router-dom": "^6.3.0"
