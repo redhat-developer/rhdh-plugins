@@ -15,9 +15,20 @@
  */
 
 /**
+<<<<<<<< HEAD:workspaces/scorecard/plugins/scorecard-backend-module-openssf/src/index.ts
  * The openssf backend module for the scorecard plugin.
  *
  * @packageDocumentation
  */
 
 export { scorecardOpenSFFModule as default } from './module';
+========
+ * Parse a comma separated string into an array of strings
+ *
+ * @param value - The comma separated string to parse
+ * @returns The array of strings
+ */
+export function parseCommaSeparatedString(value: string): string[] {
+  return value.split(',').map(id => id.trim());
+}
+>>>>>>>> 84afdf20 (feat(scorecard): implement endpoint to aggregate metrics for scorecard):workspaces/scorecard/plugins/scorecard-backend/src/utils/parseCommaSeparatedString.ts

@@ -40,6 +40,7 @@ import {
 
 jest.mock('../utils/mergeEntityAndProviderThresholds');
 jest.mock('../permissions/permissionUtils');
+jest.mock('../utils/aggregateMetricsByStatus');
 
 const provider = new MockNumberProvider('github.important_metric', 'github');
 
@@ -87,6 +88,9 @@ describe('CatalogMetricService', () => {
   let mockedRegistry: jest.Mocked<MetricProvidersRegistry>;
   let mockedDatabase: jest.Mocked<typeof mockDatabaseMetricValues>;
   let service: CatalogMetricService;
+  let aggregateMetricsByStatusSpy: jest.SpyInstance;
+
+  const mockEntity = new MockEntityBuilder().build();
 
   const mockEntity = new MockEntityBuilder().build();
 
@@ -120,6 +124,19 @@ describe('CatalogMetricService', () => {
       rules: mockThresholdRules,
     });
 
+    aggregateMetricsByStatusSpy = jest
+      .spyOn(aggregateMetricsByStatusModule, 'aggregateMetricsByStatus')
+      .mockReturnValue({
+        'github.important_metric': {
+          values: {
+            success: 1,
+            warning: 1,
+            error: 0,
+          },
+          total: 2,
+        },
+      });
+
     service = new CatalogMetricService({
       catalog: mockedCatalog,
       auth: mockedAuth,
@@ -140,6 +157,12 @@ describe('CatalogMetricService', () => {
       expect((service as any).auth).toBe(mockedAuth);
       expect((service as any).registry).toBe(mockedRegistry);
       expect((service as any).database).toBe(mockedDatabase);
+    });
+  });
+
+  describe('getCatalogService', () => {
+    it('should return the catalog service', () => {
+      expect(service.getCatalogService()).toBe(mockedCatalog);
     });
   });
 
