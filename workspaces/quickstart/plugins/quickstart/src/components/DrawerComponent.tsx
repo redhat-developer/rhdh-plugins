@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
+import { PropsWithChildren, useMemo } from 'react';
 import Drawer from '@mui/material/Drawer';
 import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
-import { Quickstart } from './Quickstart';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
 import { filterQuickstartItemsByRole } from '../utils';
 // Role is now provided through context to avoid re-fetching on drawer open/close
-import { useMemo } from 'react';
 
-export const QuickstartDrawer = () => {
-  const { isDrawerOpen, closeDrawer, drawerWidth, userRole, roleLoading } =
+export const DrawerComponent = ({ children }: PropsWithChildren) => {
+  const { isDrawerOpen, drawerWidth, userRole, roleLoading } =
     useQuickstartDrawerContext();
 
   const apiHolder = useApiHolder();
@@ -42,11 +41,6 @@ export const QuickstartDrawer = () => {
       ? filterQuickstartItemsByRole(quickstartItems, userRole)
       : [];
   }, [roleLoading, userRole, quickstartItems]);
-
-  // Only expose items to the body when drawer is open to avoid re-renders during close
-  const filteredItems = useMemo(() => {
-    return isDrawerOpen ? eligibleItems : [];
-  }, [isDrawerOpen, eligibleItems]);
 
   // No auto-open logic here; the provider initializes per user (visited/open)
 
@@ -87,11 +81,7 @@ export const QuickstartDrawer = () => {
       anchor="right"
       open={isDrawerOpen}
     >
-      <Quickstart
-        quickstartItems={filteredItems}
-        handleDrawerClose={closeDrawer}
-        isLoading={roleLoading}
-      />
+      {children}
     </Drawer>
   );
 };
