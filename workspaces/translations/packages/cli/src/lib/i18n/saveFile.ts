@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import path from 'path';
+import path from 'node:path';
 
 import fs from 'fs-extra';
 
@@ -76,9 +76,9 @@ async function savePoFile(
   // PO file header
   lines.push('msgid ""');
   lines.push('msgstr ""');
-  lines.push('"Content-Type: text/plain; charset=UTF-8\\n"');
-  lines.push(`"Generated: ${new Date().toISOString()}\\n"`);
-  lines.push(`"Total-Keys: ${Object.keys(data).length}\\n"`);
+  lines.push(String.raw`"Content-Type: text/plain; charset=UTF-8\n"`);
+  lines.push(String.raw`"Generated: ${new Date().toISOString()}\n"`);
+  lines.push(String.raw`"Total-Keys: ${Object.keys(data).length}\n"`);
   lines.push('');
 
   // Translation entries
@@ -96,9 +96,9 @@ async function savePoFile(
  */
 function escapePoString(str: string): string {
   return str
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r')
-    .replace(/\t/g, '\\t');
+    .replaceAll(/\\/g, '\\\\')
+    .replaceAll(/"/g, '\\"')
+    .replaceAll(/\n/g, '\\n')
+    .replaceAll(/\r/g, '\\r')
+    .replaceAll(/\t/g, '\\t');
 }
