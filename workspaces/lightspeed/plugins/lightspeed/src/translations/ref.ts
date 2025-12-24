@@ -134,6 +134,7 @@ export const lightspeedMessages = {
   'aria.scroll.down': 'Back to bottom',
   'aria.scroll.up': 'Back to top',
   'aria.settings.label': 'Chatbot options',
+  'aria.close': 'Close chatbot',
 
   // Modal actions
   'modal.edit': 'Edit',
@@ -164,6 +165,7 @@ export const lightspeedMessages = {
   'tooltip.backToTop': 'Back to top',
   'tooltip.backToBottom': 'Back to bottom',
   'tooltip.settings': 'Chatbot options',
+  'tooltip.close': 'Close',
 
   // Modal titles
   'modal.title.preview': 'Preview attachment',
@@ -218,6 +220,12 @@ export const lightspeedMessages = {
   'settings.pinned.disable': 'Disable pinned chats',
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
+
+  // Display modes
+  'settings.displayMode.label': 'Display mode',
+  'settings.displayMode.overlay': 'Overlay',
+  'settings.displayMode.docked': 'Dock to window',
+  'settings.displayMode.fullscreen': 'Fullscreen',
 };
 
 /**
