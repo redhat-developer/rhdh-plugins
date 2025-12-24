@@ -69,10 +69,16 @@ export const ActiveTextInput: Widget<
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
+  const staticDefault = uiProps['fetch:response:default'];
+  const staticDefaultValue =
+    typeof staticDefault === 'string' ? staticDefault : undefined;
+  const hasFetchUrl = !!uiProps['fetch:url'];
 
+  // If fetch:url is configured, either fetch:response:value OR fetch:response:default should be set
+  // to provide meaningful behavior. Without fetch:url, the widget works as a plain text input.
   const [localError] = useState<string | undefined>(
-    !defaultValueSelector
-      ? `The fetch:response:value needs to be set for ${props.id}.`
+    hasFetchUrl && !defaultValueSelector && !staticDefaultValue
+      ? `When fetch:url is configured, either fetch:response:value or fetch:response:default should be set for ${props.id}.`
       : undefined,
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
@@ -107,27 +113,30 @@ export const ActiveTextInput: Widget<
     [onChange, id, setIsChangedByUser],
   );
 
+  // Process fetch results - only override if fetch returns a non-empty value
+  // Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
-    if (!data || !defaultValueSelector) {
+    if (!data) {
       return;
     }
 
     const doItAsync = async () => {
       await wrapProcessing(async () => {
-        if (!isChangedByUser) {
-          // loading default so replace the value unless the user touched the field
-          const defaultValue = await applySelectorString(
+        // Only apply fetched value if user hasn't changed the field
+        if (!isChangedByUser && defaultValueSelector) {
+          const fetchedValue = await applySelectorString(
             data,
             defaultValueSelector,
           );
 
+          // Only override if fetch returns a non-empty value
+          // This ensures static default remains as fallback when fetch returns empty
           if (
-            value !== defaultValue &&
-            defaultValue &&
-            defaultValue !== null &&
-            defaultValue !== 'null'
+            fetchedValue &&
+            fetchedValue !== 'null' &&
+            value !== fetchedValue
           ) {
-            handleChange(defaultValue, false);
+            handleChange(fetchedValue, false);
           }
         }
 
@@ -157,7 +166,9 @@ export const ActiveTextInput: Widget<
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (completeLoading) {
+  // Show loading only if we don't have a static default value to display
+  // This ensures the default is shown instantly while fetch happens in background
+  if (completeLoading && !staticDefaultValue) {
     return <CircularProgress size={20} />;
   }
 
