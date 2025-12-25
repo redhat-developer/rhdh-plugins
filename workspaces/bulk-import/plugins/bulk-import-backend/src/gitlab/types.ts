@@ -86,8 +86,7 @@ export type GitlabRepositoryResponse = {
 
 export type ExtendedGitlabCredentials = GitlabCredentials;
 
-export interface ExtendedGitlabCredentialsProvider
-  extends GitlabCredentialsProvider {
+export interface ExtendedGitlabCredentialsProvider extends GitlabCredentialsProvider {
   getAllCredentials: (options: {
     host: string;
   }) => Promise<ExtendedGitlabCredentials[]>;

@@ -17,9 +17,7 @@
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
 import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
 
-export class ScaffolderBulkImportBackendClientPathProvider
-  implements IBulkImportRESTPathProvider
-{
+export class ScaffolderBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
   getCreateImportJobsPath(dryRun?: boolean): string | undefined {
     return dryRun === true ? undefined : `/api/bulk-import/task-imports`;
   }

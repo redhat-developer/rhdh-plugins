@@ -325,9 +325,7 @@ export class GithubAppsCredentialManager {
   }
 }
 
-export class CustomSingleInstanceGithubCredentialsProvider
-  implements ExtendedGithubCredentialsProvider
-{
+export class CustomSingleInstanceGithubCredentialsProvider implements ExtendedGithubCredentialsProvider {
   static readonly create: (
     config: GithubIntegrationConfig,
   ) => ExtendedGithubCredentialsProvider = config => {
@@ -456,9 +454,7 @@ export class CustomSingleInstanceGithubCredentialsProvider
   }
 }
 
-export class CustomGithubCredentialsProvider
-  implements ExtendedGithubCredentialsProvider
-{
+export class CustomGithubCredentialsProvider implements ExtendedGithubCredentialsProvider {
   static fromIntegrations(integrations: ScmIntegrationRegistry) {
     const credentialsProviders: Map<string, ExtendedGithubCredentialsProvider> =
       new Map<string, ExtendedGithubCredentialsProvider>();

@@ -17,9 +17,7 @@
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
 import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
 
-export class PRBulkImportBackendClientPathProvider
-  implements IBulkImportRESTPathProvider
-{
+export class PRBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
   getCreateImportJobsPath(dryRun?: boolean): string {
     return dryRun
       ? `/api/bulk-import/imports?dryRun=true`
