@@ -60,6 +60,8 @@ const bulkImportTranslationEs = createTranslationMessages({
     'repositories.repositoryText': 'repositorio',
     'repositories.removeRepositoryWarningScaffolder':
       'Eliminar un repositorio también eliminará toda la información de tareas del scaffolder asociada.',
+    'repositories.removeRepositoryWarningOrchestrator':
+      'Eliminar repositorio e información de flujo de trabajo del orquestador asociada.',
     'repositories.removeRepositoryWarning':
       'Eliminar un repositorio borra toda la información asociada de la página del Catálogo.',
     'repositories.removeRepositoryWarningGitlab':
@@ -72,6 +74,8 @@ const bulkImportTranslationEs = createTranslationMessages({
       'Este repositorio se agregó al archivo app-config. Para eliminarlo, modifique el archivo directamente.',
     'repositories.removeTooltipRepositoryScaffolder':
       'Eliminar repositorio e información de tareas del scaffolder asociada.',
+    'repositories.removeTooltipRepositoryOrchestrator':
+      'Eliminar repositorio e información de flujo de trabajo del orquestador asociada',
     'repositories.errorOccuredWhileFetching':
       'Error al obtener la pull request',
     'repositories.failedToCreatePullRequest': 'Error al crear la pull request',
@@ -271,14 +275,31 @@ const bulkImportTranslationEs = createTranslationMessages({
     'tasks.taskId': 'ID de tarea',
     'tasks.taskLink': 'Enlace de tarea',
     'tasks.viewTask': 'Ver tarea',
-    'tasks.loading': 'Cargando...',
-    'tasks.errorFetchingData': 'Error al obtener los datos',
     'tasks.taskCancelled': 'Cancelada',
     'tasks.taskCompleted': 'Completada',
     'tasks.taskFailed': 'Fallida',
     'tasks.taskOpen': 'Abierta',
     'tasks.taskProcessing': 'Procesando',
     'tasks.taskSkipped': 'Omitida',
+
+    // Workflows
+    'workflows.workflowsFor': 'Flujos de trabajo para {{importJobStatusId}}',
+    'workflows.workflowId': 'ID de flujo de trabajo',
+    'workflows.workflowLink': 'Enlace de flujo de trabajo',
+    'workflows.viewWorkflow': 'Ver flujo de trabajo',
+    'workflows.workflowPending': 'Pendiente',
+    'workflows.workflowActive': 'Activo',
+    'workflows.workflowCompleted': 'Completado',
+    'workflows.workflowAborted': 'Abortado',
+    'workflows.workflowError': 'Error',
+    'workflows.workflowSuspended': 'Suspendido',
+    'workflows.workflowFetchError': 'Error de obtención de flujo de trabajo',
+
+    // Import Actions
+    'importActions.loading': 'Cargando...',
+    'importActions.errorFetchingData': 'Error al obtener los datos',
+    'importActions.noActions':
+      'No se encontraron acciones de importación para este repositorio.',
   },
 });
 

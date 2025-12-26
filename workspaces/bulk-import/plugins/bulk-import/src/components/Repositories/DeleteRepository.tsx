@@ -39,6 +39,9 @@ const DeleteRepository = ({ data }: { data: AddRepositoryData }) => {
   if (importFlow === ImportFlow.Scaffolder) {
     tooltipMessage = t('repositories.removeTooltipRepositoryScaffolder');
     delDisabled = false;
+  } else if (importFlow === ImportFlow.Orchestrator) {
+    tooltipMessage = t('repositories.removeTooltipRepositoryOrchestrator');
+    delDisabled = false;
   } else {
     tooltipMessage =
       data.source === 'location'

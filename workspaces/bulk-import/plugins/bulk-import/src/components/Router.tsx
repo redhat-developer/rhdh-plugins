@@ -18,9 +18,9 @@ import { Route, Routes } from 'react-router-dom';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { addRepositoriesRouteRef, tasksRouteRef } from '../routes';
+import { addRepositoriesRouteRef, importHistoryRouteRef } from '../routes';
 import { AddRepositoriesPage } from './AddRepositories/AddRepositoriesPage';
-import { TasksPage } from './Repositories/TasksPage';
+import { ImportHistoryPage } from './Repositories/ImportHistoryPage';
 
 const queryClient = new QueryClient();
 
@@ -37,7 +37,10 @@ export const Router = () => (
         path={addRepositoriesRouteRef.path}
         element={<AddRepositoriesPage />}
       />
-      <Route path={tasksRouteRef.path} element={<TasksPage />} />
+      <Route
+        path={importHistoryRouteRef.path}
+        element={<ImportHistoryPage />}
+      />
     </Routes>
   </QueryClientProvider>
 );

@@ -11,6 +11,13 @@ backend:
   # information on the format
   auth:
     dangerouslyDisableDefaultAuthPolicy: true
+    externalAccess:
+      - type: static
+        options:
+          # notsecret
+          # echo mycurlpasswd | base64
+          token: bXljdXJscGFzc3dkCg==
+          subject: my-external-feed
     # keys:
     #   - secret: ${BACKEND_SECRET}
   baseUrl: http://localhost:7007
