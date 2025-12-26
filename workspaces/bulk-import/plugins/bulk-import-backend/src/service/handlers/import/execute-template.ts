@@ -33,6 +33,7 @@ import {
 import { Components } from '../../../generated/openapi';
 import { GithubApiService } from '../../../github';
 import { HandlerResponse } from '../handlers';
+import { sortImports } from './bulkImports';
 
 interface ScaffolderEvent {
   id: number;
@@ -161,7 +162,7 @@ const handlePullRequestUpdate = async (
   } catch (err) {
     logger.error(`Failed to update pull request ${prUrl}`, err);
     result.status = 'PR_ERROR';
-    result.errors = [err];
+    result.errors = [(err as Error).message];
     return result;
   }
 
@@ -175,14 +176,12 @@ export const createTaskImportJobs = async (
   logger: LoggerService,
   auth: AuthService,
   config: Config,
-  repositoryDao: RepositoryDao,
+  repositoryDao: RepositoryDao<'repositories'>,
   taskDao: ScaffolderTaskDao,
   taskLocationsDao: TaskLocationsDao,
   importRequests: Components.Schemas.ImportRequest[],
   githubApiService: GithubApiService,
-): Promise<
-  HandlerResponse<Components.Schemas.Import[] | { errors: string[] }>
-> => {
+): Promise<HandlerResponse<Components.Schemas.Import[]>> => {
   if (importRequests.length === 0) {
     logger.debug('Missing import requests from request body');
     return {
@@ -312,12 +311,7 @@ export const createTaskImportJobs = async (
     }
   }
 
-  if (result.some(r => r.errors)) {
-    return {
-      statusCode: 202,
-      responseBody: { errors: result.flatMap(r => r.errors || []) },
-    };
-  }
+  sortImports(result);
 
   return {
     statusCode: 202,

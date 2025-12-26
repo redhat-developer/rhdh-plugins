@@ -21,8 +21,14 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
+import { NotFoundError } from '@backstage/errors';
 
 import gitUrlParse from 'git-url-parse';
+
+import {
+  Configuration,
+  DefaultApi,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
 import type { CatalogInfoGenerator } from '../../../catalog/catalogInfoGenerator';
@@ -31,7 +37,10 @@ import {
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
 import {
+  OrchestratorWorkflow,
+  OrchestratorWorkflowDao,
   RepositoryDao,
+  RepositoryName,
   ScaffolderTaskDao,
   TaskLocationsDao,
 } from '../../../database/repositoryDao';
@@ -539,9 +548,7 @@ export async function createImportJobs(
     importRequests: Paths.CreateImportJobs.RequestBody;
     dryRun?: boolean;
   },
-): Promise<
-  HandlerResponse<Components.Schemas.Import[] | { errors: string[] }>
-> {
+): Promise<HandlerResponse<Components.Schemas.Import[]>> {
   const dryRun = reqParams.dryRun ?? false;
   const importRequests = reqParams.importRequests;
   deps.logger.debug(
@@ -861,7 +868,7 @@ export async function findTaskImportStatusByRepo(
     githubApiService: GithubApiService;
     gitlabApiService: GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
-    repositoryDao: RepositoryDao;
+    repositoryDao: RepositoryDao<'repositories'>;
     taskDao: ScaffolderTaskDao;
     taskLocationsDao: TaskLocationsDao;
     discovery: DiscoveryService;
@@ -870,7 +877,7 @@ export async function findTaskImportStatusByRepo(
   repoUrl: string,
   skipTasks?: boolean,
 ): Promise<HandlerResponse<Components.Schemas.Import>> {
-  deps.logger.debug(`Getting bulk import job status for ${repoUrl}..`);
+  deps.logger.debug(`Getting bulk import job status for ${repoUrl}.`);
 
   const gitUrl = gitUrlParse(repoUrl);
 
@@ -883,83 +890,179 @@ export async function findTaskImportStatusByRepo(
       organization: gitUrl.organization,
       id: `${gitUrl.organization}/${gitUrl.name}`,
     },
-    approvalTool: 'GIT',
   };
   try {
     const repository = await deps.repositoryDao.findRepositoryByUrl(repoUrl);
-    if (repository?.id) {
-      const task = await deps.taskDao.lastExecutedTaskByRepoId(repository?.id);
-      if (!task) {
-        throw new Error(
-          `Unable to find scaffolder task for repository: ${repository?.id}`,
-        );
+    if (!repository) {
+      throw new NotFoundError(`Repository ${repoUrl} info was not found`);
+    }
+
+    const task = await deps.taskDao.lastExecutedTaskByRepoId(repository?.id);
+    if (!task) {
+      throw new NotFoundError(
+        `Unable to find scaffolder task for repository: ${repository?.id}`,
+      );
+    }
+
+    const scaffolderUrl = await deps.discovery.getBaseUrl('scaffolder');
+    const { token } = await deps.auth.getPluginRequestToken({
+      onBehalfOf: await deps.auth.getOwnServiceCredentials(),
+      targetPluginId: 'scaffolder',
+    });
+
+    const response = await fetch(`${scaffolderUrl}/v2/tasks/${task.taskId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!skipTasks) {
+      const tasks = await deps.taskDao.findTasksByRepositoryId(repository.id);
+      const tasksWithLocations = await Promise.all(
+        tasks.map(async taskItem => {
+          const locations = await deps.taskLocationsDao.findLocationsByTaskId(
+            taskItem.taskId,
+          );
+          const taskLocations = locations.map(location => location.location);
+          return {
+            ...taskItem,
+            locations: taskLocations,
+          };
+        }),
+      );
+      result.tasks = tasksWithLocations;
+    }
+
+    result.task = { taskId: task.taskId };
+    let data;
+    if (response.ok) {
+      data = await response.json();
+      result.lastUpdate = data.lastHeartbeatAt;
+
+      const approvalTool =
+        repository.approvalTool as unknown as Components.Schemas.ApprovalTool;
+      const pullRequest = await parsePullOrMergeRequestInfo(
+        data.state?.checkpoints,
+        deps.gitlabApiService,
+        deps.githubApiService,
+        approvalTool,
+        deps.logger,
+        repoUrl,
+      );
+      if (pullRequest && approvalTool === 'GITLAB') {
+        result.gitlab = { pullRequest };
+      }
+      if (pullRequest && approvalTool === 'GIT') {
+        result.github = { pullRequest };
       }
 
-      const scaffolderUrl = await deps.discovery.getBaseUrl('scaffolder');
-      const { token } = await deps.auth.getPluginRequestToken({
-        onBehalfOf: await deps.auth.getOwnServiceCredentials(),
-        targetPluginId: 'scaffolder',
-      });
-
-      const response = await fetch(`${scaffolderUrl}/v2/tasks/${task.taskId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!skipTasks) {
-        const tasks = await deps.taskDao.findTasksByRepositoryId(repository.id);
-        const tasksWithLocations = await Promise.all(
-          tasks.map(async taskItem => {
-            const locations = await deps.taskLocationsDao.findLocationsByTaskId(
-              taskItem.taskId,
-            );
-            const taskLocations = locations.map(location => location.location);
-            return {
-              ...taskItem,
-              locations: taskLocations,
-            };
-          }),
-        );
-        result.tasks = tasksWithLocations;
-      }
-
-      result.task = { taskId: task.taskId };
-      let data;
-      if (response.ok) {
-        data = await response.json();
-        result.lastUpdate = data.lastHeartbeatAt;
-
-        const approvalTool =
-          repository.approvalTool as unknown as Components.Schemas.ApprovalTool;
-        const pullRequest = await parsePullOrMergeRequestInfo(
-          data.state?.checkpoints,
-          deps.gitlabApiService,
-          deps.githubApiService,
-          approvalTool,
-          deps.logger,
-          repoUrl,
-        );
-        if (pullRequest && approvalTool === 'GITLAB') {
-          result.gitlab = { pullRequest };
-        }
-        if (pullRequest && approvalTool === 'GIT') {
-          result.github = { pullRequest };
-        }
-
-        result.status =
-          `TASK_${(data.status as string)?.toLocaleUpperCase()}` as Components.Schemas.TaskImportStatus;
-      } else {
-        const errMsg =
-          (await response.text()) ??
-          `Failed to fetch task ${task.taskId}. Response status: ${response.status}`;
-        throw new Error(errMsg);
-      }
+      result.status =
+        `TASK_${(data.status as string)?.toLocaleUpperCase()}` as Components.Schemas.TaskImportStatus;
+    } else {
+      const errMsg =
+        (await response.text()) ??
+        `Failed to fetch task ${task.taskId}. Response status: ${response.status}`;
+      throw new Error(errMsg);
     }
   } catch (error: any) {
     errors.push(error.message);
     result.errors = errors;
     result.status = 'TASK_FETCH_FAILED';
-    if (error.message?.includes('Not Found')) {
+    if (error.name?.includes('NotFoundError')) {
+      return {
+        statusCode: 404,
+        responseBody: result,
+      };
+    }
+  }
+
+  return {
+    statusCode: 200,
+    responseBody: result,
+  };
+}
+
+export async function findOrchestratorImportStatusByRepo(
+  deps: {
+    logger: LoggerService;
+    orchestratorRepositoryDao: RepositoryDao<'orchestrator_repositories'>;
+    orchestratorWorkflowDao: OrchestratorWorkflowDao;
+    discovery: DiscoveryService;
+  },
+  repoUrl: string,
+  token: string,
+  skipWorkflows?: boolean,
+): Promise<HandlerResponse<Components.Schemas.Import>> {
+  deps.logger.debug(
+    `Getting orchestrator workflow import job status for ${repoUrl}.`,
+  );
+
+  const gitUrl = gitUrlParse(repoUrl);
+
+  const errors: string[] = [];
+  const result: Components.Schemas.Import = {
+    id: repoUrl,
+    repository: {
+      url: repoUrl,
+      name: gitUrl.name,
+      organization: gitUrl.organization,
+      id: `${gitUrl.organization}/${gitUrl.name}`,
+    },
+  };
+  try {
+    const repository =
+      await deps.orchestratorRepositoryDao.findRepositoryByUrl(repoUrl);
+    if (repository) {
+      const workflow =
+        await deps.orchestratorWorkflowDao.lastExecutedWorkflowByRepoId(
+          repository.id,
+        );
+      if (!workflow) {
+        throw new NotFoundError(
+          `Workflow for repository ${repoUrl} was not found`,
+        );
+      }
+      if (workflow.instanceId) {
+        const baseUrl = await deps.discovery.getBaseUrl('orchestrator');
+        const orchestratorApi = new DefaultApi(new Configuration(), baseUrl);
+        const response = await orchestratorApi.getInstanceById(
+          workflow.instanceId,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+
+        const instance = response.data;
+        if (instance) {
+          result.workflow = {
+            workflowId: instance.id,
+          };
+          if (!skipWorkflows) {
+            const workflows =
+              await deps.orchestratorWorkflowDao.findWorkflowsByRepositoryId(
+                repository.id,
+              );
+            result.workflows = workflows.map((w: OrchestratorWorkflow) => ({
+              workflowId: w.instanceId,
+            }));
+          }
+
+          result.approvalTool =
+            repository.approvalTool as unknown as Components.Schemas.ApprovalTool;
+          result.lastUpdate = instance.end;
+          const status =
+            `WORKFLOW_${(instance.state as string)?.toLocaleUpperCase()}` as Components.Schemas.WorkflowImportStatus;
+          result.status = status;
+        }
+      }
+    }
+  } catch (error: any) {
+    errors.push(error.message);
+    result.errors = errors;
+    result.status = 'WORKFLOW_FETCH_FAILED';
+    if (error.name?.includes('NotFoundError')) {
       return {
         statusCode: 404,
         responseBody: result,
@@ -1093,10 +1196,12 @@ export async function deleteImportByRepo(
   };
 }
 
-export async function deleteTaskImportByRepo(
+export async function deleteRepositoryRecord<
+  DAO extends RepositoryDao<RepositoryName>,
+>(
   deps: {
     logger: LoggerService;
-    dao: RepositoryDao;
+    dao: DAO;
   },
   repoUrl: string,
 ): Promise<HandlerResponse<void>> {

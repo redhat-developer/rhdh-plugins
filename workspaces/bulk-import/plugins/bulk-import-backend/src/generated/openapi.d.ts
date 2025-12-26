@@ -46,12 +46,20 @@ declare namespace Components {
     export interface Import {
       id?: string;
       status?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+      | ImportStatus
+        | /* Import Job status */ TaskImportStatus
+        | /* Import Job status */ WorkflowImportStatus;
       task?: {
         taskId?: string;
       };
+      workflow?: {
+        workflowId?: string;
+      };
       tasks?: {
         taskId?: string;
+      }[];
+      workflows?: {
+        workflowId?: string;
       }[];
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
@@ -216,7 +224,9 @@ declare namespace Components {
        */
       organization?: string;
       importStatus?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+      | ImportStatus
+        | /* Import Job status */ TaskImportStatus
+        | /* Import Job status */ WorkflowImportStatus;
       /**
        * default branch
        */
@@ -257,12 +267,20 @@ declare namespace Components {
     export interface SourceImport {
       id?: string;
       status?: /* Import Job status */
-      ImportStatus | /* Import Job status */ TaskImportStatus;
+      | ImportStatus
+        | /* Import Job status */ TaskImportStatus
+        | /* Import Job status */ WorkflowImportStatus;
       task?: {
         taskId?: string;
       };
+      workflow?: {
+        workflowId?: string;
+      };
       tasks?: {
         taskId?: string;
+      }[];
+      workflows?: {
+        workflowId?: string;
       }[];
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
@@ -305,6 +323,17 @@ declare namespace Components {
       | 'TASK_PROCESSING'
       | 'TASK_SKIPPED'
       | 'TASK_FETCH_FAILED';
+    /**
+     * Import Job status
+     */
+    export type WorkflowImportStatus =
+      | 'WORKFLOW_ACTIVE'
+      | 'WORKFLOW_COMPLETED'
+      | 'WORKFLOW_ABORTED'
+      | 'WORKFLOW_SUSPENDED'
+      | 'WORKFLOW_ERROR'
+      | 'WORKFLOW_PENDING'
+      | 'WORKFLOW_FETCH_FAILED';
   }
 }
 declare namespace Paths {
@@ -319,6 +348,13 @@ declare namespace Paths {
       /* Import Job request */ Components.Schemas.ImportRequest[];
     namespace Responses {
       export type $202 = /* Import Job */ Components.Schemas.Import[];
+    }
+  }
+  namespace CreateOrchestratorWorkflowJobs {
+    export type RequestBody =
+      /* Import Job request */ Components.Schemas.ImportRequest[];
+    namespace Responses {
+      export interface $200 {}
     }
   }
   namespace CreateTaskImportJobs {
@@ -337,6 +373,20 @@ declare namespace Paths {
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export interface $204 {}
+      export interface $500 {}
+    }
+  }
+  namespace DeleteOrchestratorImportByRepo {
+    namespace Parameters {
+      export type ApprovalTool = string;
+      export type Repo = string;
+    }
+    export interface QueryParameters {
+      repo?: Parameters.Repo;
       approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
@@ -387,6 +437,44 @@ declare namespace Paths {
       sortColumn?: Parameters.SortColumn;
       search?: Parameters.Search;
       approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export type $200 =
+        /* Import Job with source it originates from */
+        | Components.Schemas.SourceImport[]
+        | /* Import Job List */ Components.Schemas.ImportJobListV2;
+      export type $500 =
+        | string
+        | /* Import Job List */ Components.Schemas.ImportJobListV2;
+    }
+  }
+  namespace FindAllOrchestratorWorkflowImports {
+    export interface HeaderParameters {
+      'api-version'?: Parameters.ApiVersion;
+    }
+    namespace Parameters {
+      export type ApiVersion = 'v1' | 'v2';
+      export type Page = number;
+      export type PagePerIntegration = number;
+      export type Search = string;
+      export type Size = number;
+      export type SizePerIntegration = number;
+      export type SortColumn =
+        | 'repository.name'
+        | 'repository.organization'
+        | 'repository.url'
+        | 'lastUpdate'
+        | 'status';
+      export type SortOrder = 'asc' | 'desc';
+    }
+    export interface QueryParameters {
+      pagePerIntegration?: Parameters.PagePerIntegration;
+      sizePerIntegration?: Parameters.SizePerIntegration;
+      page?: Parameters.Page;
+      size?: Parameters.Size;
+      sortOrder?: Parameters.SortOrder;
+      sortColumn?: Parameters.SortColumn;
+      search?: Parameters.Search;
     }
     namespace Responses {
       export type $200 =
@@ -487,6 +575,20 @@ declare namespace Paths {
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export type $200 = /* Import Job */ Components.Schemas.Import;
+      export interface $500 {}
+    }
+  }
+  namespace FindOrchestratorImportStatusByRepo {
+    namespace Parameters {
+      export type ApprovalTool = string;
+      export type Repo = string;
+    }
+    export interface QueryParameters {
+      repo?: Parameters.Repo;
       approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
@@ -620,6 +722,25 @@ export interface OperationMethods {
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
   /**
+   * findAllOrchestratorWorkflowImports - Fetch Import Jobs
+   */
+  'findAllOrchestratorWorkflowImports'(
+    parameters?: Parameters<
+      Paths.FindAllOrchestratorWorkflowImports.QueryParameters &
+        Paths.FindAllOrchestratorWorkflowImports.HeaderParameters
+    > | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.FindAllOrchestratorWorkflowImports.Responses.$200>;
+  /**
+   * createOrchestratorWorkflowJobs - Execute an orchestrator workflow
+   */
+  'createOrchestratorWorkflowJobs'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: Paths.CreateOrchestratorWorkflowJobs.RequestBody,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.CreateOrchestratorWorkflowJobs.Responses.$200>;
+  /**
    * findTaskImportStatusByRepo - Get Import Status by repository
    */
   'findTaskImportStatusByRepo'(
@@ -635,6 +756,22 @@ export interface OperationMethods {
     data?: any,
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.DeleteTaskImportByRepo.Responses.$204>;
+  /**
+   * findOrchestratorImportStatusByRepo - Get Import Status by repository
+   */
+  'findOrchestratorImportStatusByRepo'(
+    parameters?: Parameters<Paths.FindOrchestratorImportStatusByRepo.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.FindOrchestratorImportStatusByRepo.Responses.$200>;
+  /**
+   * deleteOrchestratorImportByRepo - Delete stored orchestrator workflow records for a specific repository
+   */
+  'deleteOrchestratorImportByRepo'(
+    parameters?: Parameters<Paths.DeleteOrchestratorImportByRepo.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.DeleteOrchestratorImportByRepo.Responses.$204>;
   /**
    * findImportStatusByRepo - Get Import Status by repository
    */
@@ -739,6 +876,27 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
   };
+  ['/orchestrator-workflows']: {
+    /**
+     * findAllOrchestratorWorkflowImports - Fetch Import Jobs
+     */
+    'get'(
+      parameters?: Parameters<
+        Paths.FindAllOrchestratorWorkflowImports.QueryParameters &
+          Paths.FindAllOrchestratorWorkflowImports.HeaderParameters
+      > | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.FindAllOrchestratorWorkflowImports.Responses.$200>;
+    /**
+     * createOrchestratorWorkflowJobs - Execute an orchestrator workflow
+     */
+    'post'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: Paths.CreateOrchestratorWorkflowJobs.RequestBody,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.CreateOrchestratorWorkflowJobs.Responses.$200>;
+  };
   ['/task-import/by-repo']: {
     /**
      * findTaskImportStatusByRepo - Get Import Status by repository
@@ -756,6 +914,24 @@ export interface PathsDictionary {
       data?: any,
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.DeleteTaskImportByRepo.Responses.$204>;
+  };
+  ['/orchestrator-import/by-repo']: {
+    /**
+     * findOrchestratorImportStatusByRepo - Get Import Status by repository
+     */
+    'get'(
+      parameters?: Parameters<Paths.FindOrchestratorImportStatusByRepo.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.FindOrchestratorImportStatusByRepo.Responses.$200>;
+    /**
+     * deleteOrchestratorImportByRepo - Delete stored orchestrator workflow records for a specific repository
+     */
+    'delete'(
+      parameters?: Parameters<Paths.DeleteOrchestratorImportByRepo.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.DeleteOrchestratorImportByRepo.Responses.$204>;
   };
   ['/import/by-repo']: {
     /**
@@ -793,3 +969,4 @@ export type ScaffolderTask = Components.Schemas.ScaffolderTask;
 export type Source = Components.Schemas.Source;
 export type SourceImport = Components.Schemas.SourceImport;
 export type TaskImportStatus = Components.Schemas.TaskImportStatus;
+export type WorkflowImportStatus = Components.Schemas.WorkflowImportStatus;

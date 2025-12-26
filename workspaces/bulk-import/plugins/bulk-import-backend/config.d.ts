@@ -17,9 +17,14 @@
 export interface Config {
   bulkImport?: {
     /**
-     * The name of the scaffolder template to execute for importing a repository.
+     * The name of the scaffolder template or entity reference to execute for importing a repository.
      * @visibility backend
      */
     importTemplate?: string;
+    /**
+     * The orchestrator workflow id to execute for importing a repository.
+     * @visibility backend
+     */
+    orchestratorWorkflow?: string;
   };
 }

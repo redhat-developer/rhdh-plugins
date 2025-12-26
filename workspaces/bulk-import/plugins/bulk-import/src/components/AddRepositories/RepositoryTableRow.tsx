@@ -32,6 +32,7 @@ import {
   ImportJobStatus,
   RepositoryStatus,
   TaskStatus,
+  WorkflowStatus,
 } from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
 import { CatalogInfoStatus } from './CatalogInfoStatus';
@@ -83,6 +84,15 @@ export const RepositoryTableRow = ({
     },
   );
 
+  const importStatus = value as ImportJobStatus;
+  let importId = '';
+  if (importStatus?.task) {
+    importId = importStatus.task.taskId;
+  }
+  if (importStatus?.workflow) {
+    importId = importStatus.workflow.workflowId;
+  }
+
   return (
     <TableRow
       hover
@@ -104,7 +114,11 @@ export const RepositoryTableRow = ({
             value?.status === RepositoryStatus.ADDED ||
             value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
             value?.status === TaskStatus.Processing ||
-            value?.status === TaskStatus.Completed
+            value?.status === TaskStatus.Completed ||
+            value?.status === WorkflowStatus.Active ||
+            value?.status === WorkflowStatus.Pending ||
+            value?.status === WorkflowStatus.Completed ||
+            value?.status === WorkflowStatus.Suspended
               ? true
               : isItemSelected
           }
@@ -113,7 +127,11 @@ export const RepositoryTableRow = ({
             value?.status === RepositoryStatus.ADDED ||
             value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
             value?.status === TaskStatus.Processing ||
-            value?.status === TaskStatus.Completed
+            value?.status === TaskStatus.Completed ||
+            value?.status === WorkflowStatus.Active ||
+            value?.status === WorkflowStatus.Pending ||
+            value?.status === WorkflowStatus.Completed ||
+            value?.status === WorkflowStatus.Suspended
           }
           onClick={event => handleClick(event, data)}
           style={{ padding: '0 12px' }}
@@ -154,7 +172,7 @@ export const RepositoryTableRow = ({
           isLoading={loading}
           isItemSelected={isItemSelected}
           isDrawer={isDrawer}
-          taskId={(value as ImportJobStatus)?.task?.taskId}
+          taskOrWorkflowId={importId}
           prUrl={
             (value as ImportJobStatus)?.github?.pullRequest?.url ||
             (value as ImportJobStatus)?.gitlab?.pullRequest?.url
