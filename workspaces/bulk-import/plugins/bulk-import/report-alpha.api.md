@@ -182,8 +182,6 @@ readonly "tasks.tasksFor": string;
 readonly "tasks.taskId": string;
 readonly "tasks.taskLink": string;
 readonly "tasks.viewTask": string;
-readonly "tasks.loading": string;
-readonly "tasks.errorFetchingData": string;
 readonly "tasks.taskCancelled": string;
 readonly "tasks.taskCompleted": string;
 readonly "tasks.taskFailed": string;
