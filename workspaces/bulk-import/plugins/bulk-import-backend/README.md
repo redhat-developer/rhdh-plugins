@@ -103,10 +103,11 @@ bulkImport:
   importAPI: 'scaffolder'
 ```
 
-importAPI: This field defines the import workflow. It currently supports two options:
+importAPI: This field defines the import workflow. It currently supports three options:
 
 - open-pull-requests: This is the default import workflow, which includes the logic for creating pull requests for every selected repository.
 - scaffolder: This workflow uses an import scenario defined in the scaffolder template. The import steps depend on the template's content, allowing for various scenarios. These can include importing existing catalog entities from a repository, creating pull requests, calling webhooks, and more. This method offers greater flexibility.
+- orchestrator: This workflow uses the Orchestrator plugin to execute workflows for bulk import operations. This mode provides advanced workflow orchestration capabilities and integrates with the Backstage Orchestrator plugin.
 
 > Important Note
 > The scaffolder template must be generic and not specific to a single repository to be successfully executed for every repository in the bulk list.
@@ -175,6 +176,119 @@ parameters:
         type: string
         title: Git provider host
 ```
+
+#### Orchestrator Workflow Execution
+
+The Bulk Import plugin supports using the Orchestrator plugin to execute workflows for bulk import operations. This mode leverages the Orchestrator's workflow engine to provide advanced orchestration capabilities for importing repositories.
+
+##### Plugin Configuration
+
+To use the orchestrator mode, configure the Bulk Import plugin as follows:
+
+```yaml
+bulkImport:
+  orchestratorWorkflow: your-workflow-id
+  importAPI: 'orchestrator'
+```
+
+**Configuration Parameters:**
+
+- **`orchestratorWorkflow`** (required): The ID of the orchestrator workflow to execute for each repository. This workflow must be registered in the Orchestrator plugin.
+- **`importAPI`**: Set to `'orchestrator'` to enable orchestrator workflow execution mode.
+
+> **Important Notes:**
+>
+> - The Orchestrator plugin must be installed and configured in your Backstage instance.
+> - The specified workflow must be available in the Orchestrator plugin.
+> - The workflow must be generic and able to handle different repositories, as it will be executed for each repository in the bulk import list.
+
+##### Orchestrator Workflow Input Parameters
+
+When executing an orchestrator workflow, the Bulk Import plugin provides the following input data to the workflow:
+
+- **`owner`** – Repository owner (organization or user name).
+  **Example:** For `https://github.com/redhat-developer/rhdh-plugins`, `owner` will be `redhat-developer`.
+
+- **`repo`** – Repository name.
+  **Example:** For `https://github.com/redhat-developer/rhdh-plugins`, `repo` will be `rhdh-plugins`.
+
+- **`baseBranch`** – Default branch of the Git repository (e.g., `main`, `master`).
+
+- **`targetBranch`** – Target branch for the import operation. By default, this is set to `bulk-import-orchestrator`.
+
+Additionally, the plugin automatically provides authentication tokens for the Git provider:
+
+- **`authTokens`** – Array of authentication tokens for the Git provider:
+  - For GitHub repositories (`approvalTool: 'GIT'`): `{ token: <github-token>, provider: 'github' }`
+  - For GitLab repositories (`approvalTool: 'GITLAB'`): `{ token: <gitlab-token>, provider: 'gitlab' }`
+
+The tokens are obtained from the configured GitHub/GitLab integrations in your Backstage instance.
+
+##### How Orchestrator Mode Works
+
+1. **Workflow Execution**: When you submit a bulk import request with `importAPI: 'orchestrator'`, the plugin:
+   - Iterates through each repository in the request
+   - Retrieves the appropriate Git provider credentials (GitHub or GitLab)
+   - Executes the specified orchestrator workflow for each repository
+   - Passes the repository information and authentication tokens as input data
+
+2. **Workflow Tracking**: The plugin:
+   - Stores workflow instance IDs in the database
+   - Associates each workflow instance with its repository
+   - Tracks workflow execution status by querying the Orchestrator API
+
+3. **Status Monitoring**: You can check the status of orchestrator workflows:
+   - The workflow status is mapped from Orchestrator states to Bulk Import statuses (e.g., `WORKFLOW_ACTIVE`, `WORKFLOW_COMPLETED`, `WORKFLOW_ERROR`)
+   - Status information includes the workflow instance ID, which can be used to view detailed workflow execution in the Orchestrator UI
+
+##### API Endpoints for Orchestrator Mode
+
+When using `importAPI: 'orchestrator'`, the following API endpoints are used:
+
+- **`POST /api/bulk-import/orchestrator-workflows`** – Create orchestrator workflow import jobs
+- **`GET /api/bulk-import/orchestrator-workflows`** – List all orchestrator workflow import jobs
+- **`GET /api/bulk-import/orchestrator-import/by-repo`** – Get orchestrator workflow import status for a specific repository
+- **`DELETE /api/bulk-import/orchestrator-import/by-repo`** – Delete orchestrator workflow records for a specific repository
+
+##### Example Orchestrator Workflow
+
+Your orchestrator workflow should accept the input parameters described above. Here's an example of how the workflow input data structure looks:
+
+```json
+{
+  "inputData": {
+    "owner": "redhat-developer",
+    "repo": "rhdh-plugins",
+    "baseBranch": "main",
+    "targetBranch": "bulk-import-orchestrator"
+  },
+  "authTokens": [
+    {
+      "token": "<github-token>",
+      "provider": "github"
+    }
+  ]
+}
+```
+
+The workflow can then use these parameters to perform operations such as:
+
+- Creating catalog entities
+- Generating pull requests
+- Calling external APIs
+- Performing custom import logic
+
+##### Workflow Status Mapping
+
+The plugin maps Orchestrator workflow states to Bulk Import status values:
+
+- Orchestrator `ACTIVE` → `WORKFLOW_ACTIVE`
+- Orchestrator `COMPLETED` → `WORKFLOW_COMPLETED`
+- Orchestrator `ERROR` → `WORKFLOW_ERROR`
+- Orchestrator `ABORTED` → `WORKFLOW_ABORTED`
+- Other states are prefixed with `WORKFLOW_` and uppercased
+
+If workflow status cannot be retrieved, the status is set to `WORKFLOW_FETCH_FAILED`.
 
 ### Audit Logging
 

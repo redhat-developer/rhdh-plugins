@@ -60,6 +60,8 @@ const bulkImportTranslationDe = createTranslationMessages({
     'repositories.repositoryText': 'Repository',
     'repositories.removeRepositoryWarningScaffolder':
       'Das Entfernen eines Repositorys entfernt auch alle zugehörigen Scaffolder-Task-Informationen.',
+    'repositories.removeRepositoryWarningOrchestrator':
+      'Repository und zugehörige Orchestrator-Workflow-Informationen löschen.',
     'repositories.removeRepositoryWarning':
       'Das Entfernen eines Repositorys löscht alle zugehörigen Informationen von der Katalogseite.',
     'repositories.removeRepositoryWarningGitlab':
@@ -72,6 +74,8 @@ const bulkImportTranslationDe = createTranslationMessages({
       'Dieses Repository wurde zur app-config-Datei hinzugefügt. Um es zu entfernen, ändern Sie die Datei direkt.',
     'repositories.removeTooltipRepositoryScaffolder':
       'Repository und zugehörige Scaffolder-Task-Informationen löschen',
+    'repositories.removeTooltipRepositoryOrchestrator':
+      'Repository und zugehörige Orchestrator-Workflow-Informationen löschen',
     'repositories.errorOccuredWhileFetching':
       'Fehler beim Abrufen der Pull-Request aufgetreten',
     'repositories.failedToCreatePullRequest':
@@ -272,14 +276,31 @@ const bulkImportTranslationDe = createTranslationMessages({
     'tasks.taskId': 'Aufgaben-ID',
     'tasks.taskLink': 'Aufgabenlink',
     'tasks.viewTask': 'Aufgabe anzeigen',
-    'tasks.loading': 'Wird geladen...',
-    'tasks.errorFetchingData': 'Fehler beim Abrufen der Daten',
     'tasks.taskCancelled': 'Abgebrochen',
     'tasks.taskCompleted': 'Abgeschlossen',
     'tasks.taskFailed': 'Fehlgeschlagen',
     'tasks.taskOpen': 'Offen',
     'tasks.taskProcessing': 'Verarbeitung',
     'tasks.taskSkipped': 'Übersprungen',
+
+    // Workflows
+    'workflows.workflowsFor': 'Workflows für {{importJobStatusId}}',
+    'workflows.workflowId': 'Workflow-ID',
+    'workflows.workflowLink': 'Workflow-Link',
+    'workflows.viewWorkflow': 'Workflow anzeigen',
+    'workflows.workflowPending': 'Ausstehend',
+    'workflows.workflowActive': 'Aktiv',
+    'workflows.workflowCompleted': 'Abgeschlossen',
+    'workflows.workflowAborted': 'Abgebrochen',
+    'workflows.workflowError': 'Fehler',
+    'workflows.workflowSuspended': 'Ausgesetzt',
+    'workflows.workflowFetchError': 'Workflow-Abruffehler',
+
+    // Import Actions
+    'importActions.loading': 'Wird geladen...',
+    'importActions.errorFetchingData': 'Fehler beim Abrufen der Daten',
+    'importActions.noActions':
+      'Für dieses Repository wurden keine Importaktionen gefunden.',
   },
 });
 

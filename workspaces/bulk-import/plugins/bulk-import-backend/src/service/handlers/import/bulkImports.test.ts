@@ -17,15 +17,34 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { mockServices } from '@backstage/backend-test-utils';
 import type { CatalogClient } from '@backstage/catalog-client';
+import { NotFoundError } from '@backstage/errors';
 
 import gitUrlParse from 'git-url-parse';
 
+import { DefaultApi } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import { CatalogHttpClient } from '../../../catalog/catalogHttpClient';
 import { CatalogLocation } from '../../../catalog/types';
-import { Paths } from '../../../generated/openapi';
+import { Components, Paths } from '../../../generated/openapi';
 import { GithubApiService } from '../../../github';
 import { GitlabApiService } from '../../../gitlab';
-import { deleteImportByRepo, findAllImports } from './bulkImports';
+import {
+  deleteImportByRepo,
+  deleteRepositoryRecord,
+  findAllImports,
+  findOrchestratorImportStatusByRepo,
+  findTaskImportStatusByRepo,
+  sortImports,
+} from './bulkImports';
+
+jest.mock('@red-hat-developer-hub/backstage-plugin-orchestrator-common', () => {
+  return {
+    ...jest.requireActual(
+      '@red-hat-developer-hub/backstage-plugin-orchestrator-common',
+    ),
+    DefaultApi: jest.fn(),
+  };
+});
 
 const config = mockServices.rootConfig({
   data: {
@@ -1331,6 +1350,547 @@ describe('bulkimports.ts unit tests', () => {
       expect(
         mockCatalogHttpClient.deleteCatalogLocationById,
       ).toHaveBeenCalledWith('location-id-11');
+    });
+  });
+
+  describe('sortImports', () => {
+    it('should sort imports by repository name in ascending order by default', () => {
+      const imports = [
+        {
+          repository: { name: 'z-repo', organization: 'org' },
+        },
+        {
+          repository: { name: 'a-repo', organization: 'org' },
+        },
+        {
+          repository: { name: 'm-repo', organization: 'org' },
+        },
+      ] as Components.Schemas.Import[];
+
+      sortImports(imports);
+
+      expect(imports[0].repository?.name).toBe('a-repo');
+      expect(imports[1].repository?.name).toBe('m-repo');
+      expect(imports[2].repository?.name).toBe('z-repo');
+    });
+
+    it('should sort imports by repository name in descending order', () => {
+      const imports = [
+        {
+          repository: { name: 'a-repo', organization: 'org' },
+        },
+        {
+          repository: { name: 'z-repo', organization: 'org' },
+        },
+        {
+          repository: { name: 'm-repo', organization: 'org' },
+        },
+      ] as Components.Schemas.Import[];
+
+      sortImports(imports, 'repository.name', 'desc');
+
+      expect(imports[0].repository?.name).toBe('z-repo');
+      expect(imports[1].repository?.name).toBe('m-repo');
+      expect(imports[2].repository?.name).toBe('a-repo');
+    });
+
+    it('should sort imports by lastUpdate in ascending order', () => {
+      const imports = [
+        {
+          repository: { name: 'repo1', organization: 'org' },
+          lastUpdate: '2024-01-03T00:00:00Z',
+        },
+        {
+          repository: { name: 'repo2', organization: 'org' },
+          lastUpdate: '2024-01-01T00:00:00Z',
+        },
+        {
+          repository: { name: 'repo3', organization: 'org' },
+          lastUpdate: '2024-01-02T00:00:00Z',
+        },
+      ] as Components.Schemas.Import[];
+
+      sortImports(imports, 'lastUpdate', 'asc');
+
+      expect(imports[0].lastUpdate).toBe('2024-01-03T00:00:00Z');
+      expect(imports[1].lastUpdate).toBe('2024-01-02T00:00:00Z');
+      expect(imports[2].lastUpdate).toBe('2024-01-01T00:00:00Z');
+    });
+
+    it('should sort by organization when specified', () => {
+      const imports = [
+        {
+          repository: { name: 'repo1', organization: 'z-org' },
+        },
+        {
+          repository: { name: 'repo2', organization: 'a-org' },
+        },
+        {
+          repository: { name: 'repo3', organization: 'm-org' },
+        },
+      ] as Components.Schemas.Import[];
+
+      sortImports(imports, 'repository.organization', 'asc');
+
+      expect(imports[0].repository?.organization).toBe('a-org');
+      expect(imports[1].repository?.organization).toBe('m-org');
+      expect(imports[2].repository?.organization).toBe('z-org');
+    });
+  });
+
+  describe('deleteRepositoryRecord', () => {
+    it('should delete repository record successfully', async () => {
+      const mockDao = {
+        deleteRepository: jest.fn().mockResolvedValue(undefined),
+      } as any;
+
+      const result = await deleteRepositoryRecord(
+        {
+          logger,
+          dao: mockDao,
+        },
+        'https://github.com/test-org/test-repo',
+      );
+
+      expect(result.statusCode).toBe(204);
+      expect(result.responseBody).toBeUndefined();
+      expect(mockDao.deleteRepository).toHaveBeenCalledWith(
+        'https://github.com/test-org/test-repo',
+      );
+    });
+
+    it('should handle errors when deleting repository record', async () => {
+      const mockDao = {
+        deleteRepository: jest
+          .fn()
+          .mockRejectedValue(new Error('Database error')),
+      } as any;
+
+      const result = await deleteRepositoryRecord(
+        {
+          logger,
+          dao: mockDao,
+        },
+        'https://github.com/test-org/test-repo',
+      );
+
+      expect(result.statusCode).toBe(500);
+      expect(logger.error).toHaveBeenCalledWith(
+        'Failed to delete repository from database by url https://github.com/test-org/test-repo',
+        expect.any(Error),
+      );
+    });
+  });
+
+  describe('findTaskImportStatusByRepo', () => {
+    it('should return task status when repository and task exist', async () => {
+      const mockRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue({
+          id: 1,
+          url: 'https://github.com/test-org/test-repo',
+          approvalTool: 'GIT',
+        }),
+      } as any;
+
+      const mockTaskDao = {
+        lastExecutedTaskByRepoId: jest.fn().mockResolvedValue({
+          taskId: 'task-123',
+          repositoryId: 1,
+        }),
+        findTasksByRepositoryId: jest.fn().mockResolvedValue([]),
+      } as any;
+
+      const mockTaskLocationsDao = {
+        findLocationsByTaskId: jest.fn().mockResolvedValue([]),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest
+          .fn()
+          .mockResolvedValue('https://scaffolder.example.com'),
+      } as any;
+
+      const mockAuth = {
+        getPluginRequestToken: jest.fn().mockResolvedValue({
+          token: 'scaffolder-token',
+        }),
+        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+      } as any;
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          id: 'task-123',
+          status: 'completed',
+          lastHeartbeatAt: '2024-01-01T00:00:00Z',
+          state: {},
+        }),
+      });
+
+      const result = await findTaskImportStatusByRepo(
+        {
+          logger,
+          config,
+          githubApiService: mockGithubApiService,
+          gitlabApiService: mockGitlabApiService,
+          catalogHttpClient: mockCatalogHttpClient,
+          repositoryDao: mockRepositoryDao,
+          taskDao: mockTaskDao,
+          taskLocationsDao: mockTaskLocationsDao,
+          discovery: mockDiscovery,
+          auth: mockAuth,
+        },
+        'https://github.com/test-org/test-repo',
+      );
+
+      expect(result.statusCode).toBe(200);
+      expect(result.responseBody?.task?.taskId).toBe('task-123');
+      expect(result.responseBody?.status).toBe('TASK_COMPLETED');
+    });
+
+    it('should return 404 when repository is not found', async () => {
+      const mockRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue(null),
+      } as any;
+
+      const mockTaskDao = {
+        lastExecutedTaskByRepoId: jest.fn(),
+      } as any;
+
+      const mockTaskLocationsDao = {
+        findLocationsByTaskId: jest.fn(),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest.fn(),
+      } as any;
+
+      const mockAuth = {
+        getPluginRequestToken: jest.fn(),
+        getOwnServiceCredentials: jest.fn(),
+      } as any;
+
+      const result = await findTaskImportStatusByRepo(
+        {
+          logger,
+          config,
+          githubApiService: mockGithubApiService,
+          gitlabApiService: mockGitlabApiService,
+          catalogHttpClient: mockCatalogHttpClient,
+          repositoryDao: mockRepositoryDao,
+          taskDao: mockTaskDao,
+          taskLocationsDao: mockTaskLocationsDao,
+          discovery: mockDiscovery,
+          auth: mockAuth,
+        },
+        'https://github.com/test-org/test-repo',
+      );
+
+      expect(result.statusCode).toBe(404);
+      expect(result.responseBody?.status).toBe('TASK_FETCH_FAILED');
+    });
+
+    it('should return TASK_FETCH_FAILED when error occurs', async () => {
+      const mockRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue({
+          id: 1,
+          url: 'https://github.com/test-org/test-repo',
+          approvalTool: 'GIT',
+        }),
+      } as any;
+
+      const mockTaskDao = {
+        lastExecutedTaskByRepoId: jest.fn().mockResolvedValue({
+          taskId: 'task-123',
+          repositoryId: 1,
+        }),
+      } as any;
+
+      const mockTaskLocationsDao = {
+        findLocationsByTaskId: jest.fn(),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest
+          .fn()
+          .mockRejectedValue(new Error('Discovery service error')),
+      } as any;
+
+      const mockAuth = {
+        getPluginRequestToken: jest.fn(),
+        getOwnServiceCredentials: jest.fn(),
+      } as any;
+
+      const result = await findTaskImportStatusByRepo(
+        {
+          logger,
+          config,
+          githubApiService: mockGithubApiService,
+          gitlabApiService: mockGitlabApiService,
+          catalogHttpClient: mockCatalogHttpClient,
+          repositoryDao: mockRepositoryDao,
+          taskDao: mockTaskDao,
+          taskLocationsDao: mockTaskLocationsDao,
+          discovery: mockDiscovery,
+          auth: mockAuth,
+        },
+        'https://github.com/test-org/test-repo',
+      );
+
+      expect(result.statusCode).toBe(200);
+      expect(result.responseBody?.status).toBe('TASK_FETCH_FAILED');
+      expect(result.responseBody?.errors).toBeDefined();
+    });
+
+    it('should skip tasks when skipTasks is true', async () => {
+      const mockRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue({
+          id: 1,
+          url: 'https://github.com/test-org/test-repo',
+          approvalTool: 'GIT',
+        }),
+      } as any;
+
+      const mockTaskDao = {
+        lastExecutedTaskByRepoId: jest.fn().mockResolvedValue({
+          taskId: 'task-123',
+          repositoryId: 1,
+        }),
+        findTasksByRepositoryId: jest.fn(),
+      } as any;
+
+      const mockTaskLocationsDao = {
+        findLocationsByTaskId: jest.fn(),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest
+          .fn()
+          .mockResolvedValue('https://scaffolder.example.com'),
+      } as any;
+
+      const mockAuth = {
+        getPluginRequestToken: jest.fn().mockResolvedValue({
+          token: 'scaffolder-token',
+        }),
+        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+      } as any;
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          id: 'task-123',
+          status: 'completed',
+          lastHeartbeatAt: '2024-01-01T00:00:00Z',
+          state: {},
+        }),
+      });
+
+      const result = await findTaskImportStatusByRepo(
+        {
+          logger,
+          config,
+          githubApiService: mockGithubApiService,
+          gitlabApiService: mockGitlabApiService,
+          catalogHttpClient: mockCatalogHttpClient,
+          repositoryDao: mockRepositoryDao,
+          taskDao: mockTaskDao,
+          taskLocationsDao: mockTaskLocationsDao,
+          discovery: mockDiscovery,
+          auth: mockAuth,
+        },
+        'https://github.com/test-org/test-repo',
+        true,
+      );
+
+      expect(result.statusCode).toBe(200);
+      expect(mockTaskDao.findTasksByRepositoryId).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('findOrchestratorImportStatusByRepo', () => {
+    it('should return workflow status when repository and workflow exist', async () => {
+      const mockOrchestratorRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue({
+          id: 1,
+          url: 'https://github.com/test-org/test-repo',
+          approvalTool: 'GIT',
+        }),
+      } as any;
+
+      const mockOrchestratorWorkflowDao = {
+        lastExecutedWorkflowByRepoId: jest.fn().mockResolvedValue({
+          id: 1,
+          instanceId: 'workflow-instance-123',
+          repositoryId: 1,
+        }),
+        findWorkflowsByRepositoryId: jest.fn().mockResolvedValue([]),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest
+          .fn()
+          .mockResolvedValue('https://orchestrator.example.com'),
+      } as any;
+
+      const mockOrchestratorApi = {
+        getInstanceById: jest.fn().mockResolvedValue({
+          data: {
+            id: 'workflow-instance-123',
+            state: 'completed',
+            end: '2024-01-01T00:00:00Z',
+          },
+        }),
+      };
+
+      (DefaultApi as jest.Mock).mockImplementation(() => mockOrchestratorApi);
+
+      const result = await findOrchestratorImportStatusByRepo(
+        {
+          logger,
+          orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
+          orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
+          discovery: mockDiscovery,
+        },
+        'https://github.com/test-org/test-repo',
+        'token',
+      );
+
+      expect(result.statusCode).toBe(200);
+      expect(result.responseBody?.workflow?.workflowId).toBe(
+        'workflow-instance-123',
+      );
+      expect(result.responseBody?.status).toBe('WORKFLOW_COMPLETED');
+    });
+
+    it('should return 404 when workflow is not found', async () => {
+      const mockOrchestratorRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue({
+          id: 1,
+          url: 'https://github.com/test-org/test-repo',
+          approvalTool: 'GIT',
+        }),
+      } as any;
+
+      const mockOrchestratorWorkflowDao = {
+        lastExecutedWorkflowByRepoId: jest
+          .fn()
+          .mockRejectedValue(
+            new NotFoundError('Workflow for repository was not found'),
+          ),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest.fn(),
+      } as any;
+
+      const result = await findOrchestratorImportStatusByRepo(
+        {
+          logger,
+          orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
+          orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
+          discovery: mockDiscovery,
+        },
+        'https://github.com/test-org/test-repo',
+        'token',
+      );
+
+      expect(result.statusCode).toBe(404);
+      expect(result.responseBody?.status).toBe('WORKFLOW_FETCH_FAILED');
+      expect(result.responseBody?.errors).toBeDefined();
+    });
+
+    it('should return WORKFLOW_FETCH_FAILED when error occurs', async () => {
+      const mockOrchestratorRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue({
+          id: 1,
+          url: 'https://github.com/test-org/test-repo',
+          approvalTool: 'GIT',
+        }),
+      } as any;
+
+      const mockOrchestratorWorkflowDao = {
+        lastExecutedWorkflowByRepoId: jest.fn().mockResolvedValue({
+          id: 1,
+          instanceId: 'workflow-instance-123',
+          repositoryId: 1,
+        }),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest
+          .fn()
+          .mockRejectedValue(new Error('Discovery service error')),
+      } as any;
+
+      const result = await findOrchestratorImportStatusByRepo(
+        {
+          logger,
+          orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
+          orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
+          discovery: mockDiscovery,
+        },
+        'https://github.com/test-org/test-repo',
+        'token',
+      );
+
+      expect(result.statusCode).toBe(200);
+      expect(result.responseBody?.status).toBe('WORKFLOW_FETCH_FAILED');
+      expect(result.responseBody?.errors).toBeDefined();
+    });
+
+    it('should skip workflows when skipWorkflows is true', async () => {
+      const mockOrchestratorRepositoryDao = {
+        findRepositoryByUrl: jest.fn().mockResolvedValue({
+          id: 1,
+          url: 'https://github.com/test-org/test-repo',
+          approvalTool: 'GIT',
+        }),
+      } as any;
+
+      const mockOrchestratorWorkflowDao = {
+        lastExecutedWorkflowByRepoId: jest.fn().mockResolvedValue({
+          id: 1,
+          instanceId: 'workflow-instance-123',
+          repositoryId: 1,
+        }),
+        findWorkflowsByRepositoryId: jest.fn(),
+      } as any;
+
+      const mockDiscovery = {
+        getBaseUrl: jest
+          .fn()
+          .mockResolvedValue('https://orchestrator.example.com'),
+      } as any;
+
+      const mockOrchestratorApi = {
+        getInstanceById: jest.fn().mockResolvedValue({
+          data: {
+            id: 'workflow-instance-123',
+            state: 'completed',
+            end: '2024-01-01T00:00:00Z',
+          },
+        }),
+      };
+
+      (DefaultApi as jest.Mock).mockImplementation(() => mockOrchestratorApi);
+
+      const result = await findOrchestratorImportStatusByRepo(
+        {
+          logger,
+          orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
+          orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
+          discovery: mockDiscovery,
+        },
+        'https://github.com/test-org/test-repo',
+        'token',
+        true,
+      );
+
+      expect(result.statusCode).toBe(200);
+      expect(
+        mockOrchestratorWorkflowDao.findWorkflowsByRepositoryId,
+      ).not.toHaveBeenCalled();
     });
   });
 });

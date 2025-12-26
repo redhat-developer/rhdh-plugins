@@ -43,7 +43,7 @@ export const CatalogInfoStatus = ({
   isLoading,
   isDrawer,
   importStatus,
-  taskId,
+  taskOrWorkflowId,
   prUrl,
 }: {
   data: AddRepositoryData;
@@ -52,7 +52,7 @@ export const CatalogInfoStatus = ({
   isItemSelected?: boolean;
   isDrawer?: boolean;
   importStatus?: string;
-  taskId?: string;
+  taskOrWorkflowId?: string;
   prUrl?: string;
 }) => {
   const { t } = useTranslation();
@@ -88,6 +88,7 @@ export const CatalogInfoStatus = ({
 
   if (
     importFlow !== ImportFlow.Scaffolder &&
+    importFlow !== ImportFlow.Orchestrator &&
     !isDrawer &&
     (isSelected ||
       (data?.totalReposInOrg && data.totalReposInOrg > 0 && allSelected))
@@ -116,7 +117,7 @@ export const CatalogInfoStatus = ({
           (key: string) => t(key as any, {}),
           true,
           prUrl,
-          taskId,
+          taskOrWorkflowId,
         )}
       </Typography>
     );

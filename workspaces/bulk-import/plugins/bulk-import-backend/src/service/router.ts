@@ -27,6 +27,7 @@ import type {
 } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
+import { InputError } from '@backstage/errors';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
@@ -45,6 +46,7 @@ import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
 import { migrate } from '../database/migration';
 import {
+  OrchestratorWorkflowDao,
   RepositoryDao,
   ScaffolderTaskDao,
   TaskLocationsDao,
@@ -62,12 +64,14 @@ import { auditCreateEvent } from '../helpers/auditorUtils';
 import {
   createImportJobs,
   deleteImportByRepo,
-  deleteTaskImportByRepo,
+  deleteRepositoryRecord,
   findAllImports,
   findImportStatusByRepo,
+  findOrchestratorImportStatusByRepo,
   findTaskImportStatusByRepo,
   sortImports,
 } from './handlers/import';
+import { createWorkflowImportJobs } from './handlers/import/execute-orchestrator-workflow';
 import { createTaskImportJobs } from './handlers/import/execute-template';
 import { findAllOrganizations } from './handlers/organization';
 import { ping } from './handlers/ping';
@@ -103,15 +107,23 @@ namespace Operations {
 
   export const FIND_ALL_IMPORTS = 'findAllImports';
   export const FIND_ALL_TASK_IMPORTS = 'findAllTaskImports';
+  export const FIND_ALL_ORCHESTRATOR_WORKFLOW_IMPORTS =
+    'findAllOrchestratorWorkflowImports';
 
   export const CREATE_IMPORT_JOBS = 'createImportJobs';
   export const CREATE_TASK_IMPORT_JOBS = 'createTaskImportJobs';
+  export const CREATE_ORCHESTRATOR_WORKFLOW_JOBS =
+    'createOrchestratorWorkflowJobs';
 
   export const FIND_IMPORT_STATUS_BY_REPO = 'findImportStatusByRepo';
   export const FIND_TASK_IMPORT_STATUS_BY_REPO = 'findTaskImportStatusByRepo';
+  export const FIND_ORCHESTRATOR_IMPORT_STATUS_BY_REPO =
+    'findOrchestratorImportStatusByRepo';
 
   export const DELETE_IMPORT_BY_REPO = 'deleteImportByRepo';
   export const DELETE_TASK_IMPORT_BY_REPO = 'deleteTaskImportByRepo';
+  export const DELETE_ORCHESTRATOR_IMPORT_BY_REPO =
+    'deleteOrchestratorImportByRepo';
 }
 
 /**
@@ -135,9 +147,15 @@ export async function createRouter(
   } = options;
 
   const knex = await migrate(database);
-  const repositoryDao = new RepositoryDao(knex, logger);
+  const repositoryDao = new RepositoryDao(knex, logger, 'repositories');
   const taskDao = new ScaffolderTaskDao(knex);
   const taskLocationsDao = new TaskLocationsDao(knex);
+  const orchestratorRepositoryDao = new RepositoryDao(
+    knex,
+    logger,
+    'orchestrator_repositories',
+  );
+  const orchestratorWorkflowDao = new OrchestratorWorkflowDao(knex);
   // This should probably be sometype of object that holds all the scm API service objects
   const githubApiService = new GithubApiService(logger, config, cache);
   const gitlabApiService = new GitlabApiService(logger, config, cache);
@@ -178,6 +196,10 @@ export async function createRouter(
   if (templateRef) {
     finalTemplateRef = getImportTemplateRef(templateRef);
   }
+
+  const orchestratorWorkflowId = config.getOptionalString(
+    'bulkImport.orchestratorWorkflow',
+  );
 
   await api.init();
 
@@ -371,6 +393,50 @@ export async function createRouter(
   );
 
   api.register(
+    Operations.FIND_ALL_ORCHESTRATOR_WORKFLOW_IMPORTS,
+    async (c: Context, req: Request, res: Response) => {
+      const { pageNumber, pageSize, search, sortColumn, sortOrder } =
+        getFindImportsParams(c);
+      const imports: SourceImport[] = [];
+      const repositories = await orchestratorRepositoryDao.findRepositories(
+        pageNumber,
+        pageSize,
+        search,
+      );
+
+      const token = getBearerTokenFromReq(req);
+
+      for (const repo of repositories.data) {
+        const response = await findOrchestratorImportStatusByRepo(
+          {
+            logger,
+            orchestratorRepositoryDao,
+            orchestratorWorkflowDao,
+            discovery,
+          },
+          repo.url,
+          token,
+          true,
+        );
+        if (response.responseBody) {
+          imports.push(response.responseBody);
+        }
+      }
+
+      sortImports(imports, sortColumn, sortOrder);
+
+      const responseBody: Components.Schemas.ImportJobListV2 = {
+        imports,
+        totalCount: repositories.total,
+        page: pageNumber || 1,
+        size: pageSize || 5,
+      };
+
+      return res.status(200).json(responseBody);
+    },
+  );
+
+  api.register(
     Operations.CREATE_IMPORT_JOBS,
     async (
       c: Context<Paths.CreateImportJobs.RequestBody>,
@@ -431,6 +497,36 @@ export async function createRouter(
   );
 
   api.register(
+    Operations.CREATE_ORCHESTRATOR_WORKFLOW_JOBS,
+    async (
+      c: Context<Paths.CreateImportJobs.RequestBody>,
+      req: Request,
+      res: Response,
+    ) => {
+      if (!orchestratorWorkflowId) {
+        throw new Error(
+          `Missing required config value: 'bulkImport.orchestratorWorkflow'`,
+        );
+      }
+
+      const token = getBearerTokenFromReq(req);
+
+      const response = await createWorkflowImportJobs({
+        orchestratorWorkflowId,
+        discovery,
+        token,
+        requestBody: c.request.requestBody,
+        orchestratorWorkflowDao,
+        orchestratorRepositoryDao,
+        githubApiService,
+        gitlabApiService,
+      });
+
+      res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
     Operations.FIND_TASK_IMPORT_STATUS_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindImportStatusByRepo.QueryParameters = {
@@ -485,6 +581,30 @@ export async function createRouter(
   );
 
   api.register(
+    Operations.FIND_ORCHESTRATOR_IMPORT_STATUS_BY_REPO,
+    async (c: Context, req: Request, res: Response) => {
+      const q: Paths.FindImportStatusByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank parameter');
+      }
+      const token = getBearerTokenFromReq(req);
+      const response = await findOrchestratorImportStatusByRepo(
+        {
+          logger,
+          orchestratorRepositoryDao,
+          orchestratorWorkflowDao,
+          discovery,
+        },
+        q.repo,
+        token,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
     Operations.DELETE_TASK_IMPORT_BY_REPO,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.DeleteImportByRepo.QueryParameters = {
@@ -493,7 +613,7 @@ export async function createRouter(
       if (!q.repo?.trim()) {
         throw new Error('missing or blank "repo" parameter');
       }
-      const response = await deleteTaskImportByRepo(
+      const response = await deleteRepositoryRecord(
         {
           logger,
           dao: repositoryDao,
@@ -525,6 +645,26 @@ export async function createRouter(
         },
         q.repo,
         q.defaultBranch,
+      );
+      return res.status(response.statusCode).json(response.responseBody);
+    },
+  );
+
+  api.register(
+    Operations.DELETE_ORCHESTRATOR_IMPORT_BY_REPO,
+    async (c: Context, _req: Request, res: Response) => {
+      const q: Paths.DeleteImportByRepo.QueryParameters = {
+        ...c.request.query,
+      };
+      if (!q.repo?.trim()) {
+        throw new Error('missing or blank "repo" parameter');
+      }
+      const response = await deleteRepositoryRecord(
+        {
+          logger,
+          dao: orchestratorRepositoryDao,
+        },
+        q.repo,
       );
       return res.status(response.statusCode).json(response.responseBody);
     },
@@ -608,6 +748,7 @@ async function createAuditorEventByOperationId(
     }
     case Operations.FIND_ALL_IMPORTS:
     case Operations.FIND_ALL_TASK_IMPORTS:
+    case Operations.FIND_ALL_ORCHESTRATOR_WORKFLOW_IMPORTS:
       auditorEvent = await auditCreateEvent(auditor, 'import-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',
         search: req.query.search,
@@ -615,19 +756,14 @@ async function createAuditorEventByOperationId(
       break;
     case Operations.CREATE_IMPORT_JOBS:
     case Operations.CREATE_TASK_IMPORT_JOBS:
+    case Operations.CREATE_ORCHESTRATOR_WORKFLOW_JOBS:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'create',
       });
       break;
     case Operations.FIND_IMPORT_STATUS_BY_REPO:
-      auditorEvent = await auditCreateEvent(
-        auditor,
-        'import-status-read',
-        req,
-        { queryType: 'by-query', repo: req.query.repo },
-      );
-      break;
     case Operations.FIND_TASK_IMPORT_STATUS_BY_REPO:
+    case Operations.FIND_ORCHESTRATOR_IMPORT_STATUS_BY_REPO:
       auditorEvent = await auditCreateEvent(
         auditor,
         'import-status-read',
@@ -637,6 +773,7 @@ async function createAuditorEventByOperationId(
       break;
     case Operations.DELETE_IMPORT_BY_REPO:
     case Operations.DELETE_TASK_IMPORT_BY_REPO:
+    case Operations.DELETE_ORCHESTRATOR_IMPORT_BY_REPO:
       auditorEvent = await auditCreateEvent(auditor, 'import-write', req, {
         actionType: 'delete',
         repository: req.query.repo,
@@ -697,4 +834,12 @@ function getFindImportsParams(c: Context<any, any, any, any, any, Document>): {
     sortColumn: q.sortColumn,
     sortOrder: q.sortOrder,
   };
+}
+
+function getBearerTokenFromReq(req: express.Request): string {
+  const header = req.header('authorization') ?? req.headers.authorization;
+  if (header && header.startsWith(`Bearer `)) {
+    return header.replace('Bearer ', '');
+  }
+  throw new InputError(`Request provided without token`);
 }

@@ -48,15 +48,20 @@ const useStyles = makeStyles(() => ({
 const ImportStatusComponent = ({ data }: { data: AddRepositoryData }) => {
   const { t } = useTranslation();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
+
   const status =
     (values.repositories?.[data.id]?.catalogInfoYaml?.status as string) ??
-    (values.repositories?.[data.id]?.task?.status as string);
+    (values.repositories?.[data.id]?.task?.status as string) ??
+    (values.repositories?.[data.id]?.workflow?.status as string);
+  const taskOrWorkflowId =
+    values.repositories?.[data.id]?.workflow?.id ??
+    values.repositories?.[data.id]?.task?.id;
   return getImportStatus(
     status,
     (key: string) => t(key as any, {}),
     true,
     values.repositories?.[data.id]?.catalogInfoYaml?.pullRequest as string,
-    values.repositories?.[data.id]?.task?.id,
+    taskOrWorkflowId,
   );
 };
 
@@ -78,12 +83,14 @@ export const AddedRepositoryTableRow = ({
 }) => {
   const classes = useStyles();
   const importFlow = useImportFlow();
+
   return (
     <TableRow hover>
       <TableCell component="th" scope="row" className={classes.tableCellStyle}>
-        {importFlow === ImportFlow.Scaffolder ? (
+        {importFlow === ImportFlow.Scaffolder ||
+        importFlow === ImportFlow.Orchestrator ? (
           <Link
-            to={`/bulk-import/repositories/tasks/${encodeURIComponent(
+            to={`/bulk-import/repositories/import-history/${encodeURIComponent(
               data.repoUrl || '',
             )}`}
           >
