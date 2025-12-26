@@ -17,7 +17,7 @@
 import {
   MarketplaceApi,
   MarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { DEFAULT_NAMESPACE } from '@backstage/catalog-model';
 import {
   FileInstallationStorage,

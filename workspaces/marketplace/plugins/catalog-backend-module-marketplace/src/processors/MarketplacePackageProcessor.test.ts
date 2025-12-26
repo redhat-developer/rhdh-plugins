@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePackage } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { MarketplacePackageProcessor } from './MarketplacePackageProcessor';
 

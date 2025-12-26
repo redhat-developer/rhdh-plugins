@@ -15,7 +15,7 @@
  */
 
 import { CatalogProcessorCache } from '@backstage/plugin-catalog-node';
-import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { DynamicPackageInstallStatusProcessor } from './DynamicPackageInstallStatusProcessor';
 import { DynamicPluginManager } from '@backstage/backend-dynamic-feature-service';
@@ -140,16 +140,15 @@ describe('DynamicPackageInstallStatusProcessor', () => {
     it.each([
       {
         description: 'frontend wrapper name',
-        packageName: 'red-hat-developer-hub-backstage-plugin-marketplace',
-        entityPackageName:
-          '@red-hat-developer-hub/backstage-plugin-marketplace',
+        packageName: 'red-hat-developer-hub-backstage-plugin-extensions',
+        entityPackageName: '@red-hat-developer-hub/backstage-plugin-extensions',
       },
       {
         description: 'backend wrapper name',
         packageName:
-          'red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic',
+          'red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic',
         entityPackageName:
-          '@red-hat-developer-hub/backstage-plugin-marketplace-backend',
+          '@red-hat-developer-hub/backstage-plugin-extensions-backend',
       },
       {
         description: 'frontend export-dynamic-plugin name',

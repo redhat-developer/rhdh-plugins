@@ -22,7 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   MarketplaceAnnotation,
   MarketplaceSupportLevel,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 import { CustomSelectItem } from '../shared-components/CustomSelectFilter';

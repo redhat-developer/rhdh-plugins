@@ -26,7 +26,7 @@ import {
   MarketplacePackage,
   MarketplacePackageInstallStatus,
   isMarketplacePackage,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-service';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import semver from 'semver';

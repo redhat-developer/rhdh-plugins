@@ -1,6 +1,6 @@
 # Marketplace CLI
 
-The Marketplace CLI (`@red-hat-developer-hub/marketplace-cli`) is a command-line tool for managing Marketplace plugin and package entities. It provides utilities to initialize, generate, verify, and export marketplace entities.
+The Marketplace CLI (`@red-hat-developer-hub/extensions-cli`) is a command-line tool for managing Marketplace plugin and package entities. It provides utilities to initialize, generate, verify, and export marketplace entities.
 
 ## Installation
 
@@ -8,16 +8,16 @@ Install the CLI globally or use it via `npx`:
 
 ```bash
 # Using npx (recommended)
-npx @red-hat-developer-hub/marketplace-cli [command]
+npx @red-hat-developer-hub/extensions-cli [command]
 
 # Or install globally
-npm install -g @red-hat-developer-hub/marketplace-cli
+npm install -g @red-hat-developer-hub/extensions-cli
 ```
 
 ## Usage
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli [command] [options]
+npx @red-hat-developer-hub/extensions-cli [command] [options]
 ```
 
 ## Commands
@@ -36,7 +36,7 @@ Interactive command to initialize marketplace entities (Plugin and Package) for 
 ### Synopsis
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli init
+npx @red-hat-developer-hub/extensions-cli init
 ```
 
 ### Description
@@ -58,7 +58,7 @@ The `init` command provides an interactive wizard to create marketplace entities
 
 ```bash
 cd my-backstage-plugin
-npx @red-hat-developer-hub/marketplace-cli init
+npx @red-hat-developer-hub/extensions-cli init
 ```
 
 **Sample output:**
@@ -97,7 +97,7 @@ Generate Package entities for the marketplace from a dynamic plugins configurati
 ### Synopsis
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli generate [options]
+npx @red-hat-developer-hub/extensions-cli generate [options]
 ```
 
 ### Options
@@ -126,14 +126,14 @@ The `generate` command reads a dynamic plugins configuration file and generates 
 **Generate to stdout:**
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli generate \
+npx @red-hat-developer-hub/extensions-cli generate \
   -p /path/to/rhdh/dynamic-plugins.default.yaml
 ```
 
 **Generate to directory with namespace:**
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli generate \
+npx @red-hat-developer-hub/extensions-cli generate \
   -p /path/to/rhdh/dynamic-plugins.default.yaml \
   -o ./generated-packages \
   --namespace rhdh \
@@ -161,7 +161,7 @@ Verify a set of marketplace entities for consistency and completeness.
 ### Synopsis
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli verify
+npx @red-hat-developer-hub/extensions-cli verify
 ```
 
 ### Description
@@ -183,7 +183,7 @@ The `verify` command scans the current directory for YAML files and validates ma
 
 ```bash
 cd /path/to/marketplace-entities
-npx @red-hat-developer-hub/marketplace-cli verify
+npx @red-hat-developer-hub/extensions-cli verify
 ```
 
 **Sample output:**
@@ -205,7 +205,7 @@ Export marketplace plugin and package entities to CSV files for analysis or repo
 ### Synopsis
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli export-csv [options]
+npx @red-hat-developer-hub/extensions-cli export-csv [options]
 ```
 
 ### Options
@@ -237,14 +237,14 @@ The `export-csv` command parses marketplace YAML files and generates CSV reports
 **Export all entities to stdout:**
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli export-csv \
+npx @red-hat-developer-hub/extensions-cli export-csv \
   -p ./examples/plugins,./examples/packages
 ```
 
 **Export plugins to files with recursive search:**
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli export-csv \
+npx @red-hat-developer-hub/extensions-cli export-csv \
   -p ./examples \
   -o ./reports/marketplace \
   -r \
@@ -262,7 +262,7 @@ reports/
 **Export only packages:**
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli export-csv \
+npx @red-hat-developer-hub/extensions-cli export-csv \
   -p ./examples/packages \
   -o ./reports/packages-inventory \
   -t package
@@ -331,21 +331,21 @@ spec:
 ### Creating a New Plugin Entry
 
 1. Navigate to your plugin directory
-2. Run `npx @red-hat-developer-hub/marketplace-cli init` to generate base entities
+2. Run `npx @red-hat-developer-hub/extensions-cli init` to generate base entities
 3. Edit the generated YAML to add documentation, categories, etc.
-4. Run `npx @red-hat-developer-hub/marketplace-cli verify` to validate
+4. Run `npx @red-hat-developer-hub/extensions-cli verify` to validate
 
 ### Generating Entries from RHDH
 
 1. Locate your `dynamic-plugins.default.yaml`
-2. Run `npx @red-hat-developer-hub/marketplace-cli generate -p <path> -o ./entities --namespace rhdh`
+2. Run `npx @red-hat-developer-hub/extensions-cli generate -p <path> -o ./entities --namespace rhdh`
 3. Review and enhance generated entities
-4. Run `npx @red-hat-developer-hub/marketplace-cli verify` to validate
+4. Run `npx @red-hat-developer-hub/extensions-cli verify` to validate
 
 ### Auditing Existing Plugins
 
 ```bash
-npx @red-hat-developer-hub/marketplace-cli export-csv \
+npx @red-hat-developer-hub/extensions-cli export-csv \
   -p ./plugins,./packages \
   -r \
   -o ./audit/marketplace-inventory

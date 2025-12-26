@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
+# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
 ## 0.13.2
 

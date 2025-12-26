@@ -17,7 +17,7 @@
 import CardMedia from '@mui/material/CardMedia';
 import NoIconIcon from '@mui/icons-material/PowerOutlined';
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 export const PluginIcon = ({
   plugin,

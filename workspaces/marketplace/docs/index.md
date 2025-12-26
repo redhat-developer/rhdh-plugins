@@ -53,20 +53,20 @@ g, user:default/<login-id/user-name>, role:default/team_a
 1. Install the marketplace plugins:
 
    ```bash
-   yarn add @red-hat-developer-hub/backstage-plugin-marketplace
-   yarn add @red-hat-developer-hub/backstage-plugin-marketplace-backend
-   yarn add @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
+   yarn add @red-hat-developer-hub/backstage-plugin-extensions
+   yarn add @red-hat-developer-hub/backstage-plugin-extensions-backend
+   yarn add @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
    ```
 
 2. Add the backend plugin to your `packages/backend/src/index.ts`:
 
    ```typescript
    backend.add(
-     import('@red-hat-developer-hub/backstage-plugin-marketplace-backend'),
+     import('@red-hat-developer-hub/backstage-plugin-extensions-backend'),
    );
    backend.add(
      import(
-       '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace'
+       '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions'
      ),
    );
    ```

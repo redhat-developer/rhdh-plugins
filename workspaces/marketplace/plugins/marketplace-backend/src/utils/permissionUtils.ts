@@ -20,7 +20,7 @@ import {
   PermissionRuleParams,
 } from '@backstage/plugin-permission-common';
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { ExtensionParams, rules as extensionRules } from '../permissions/rules';
 

@@ -27,7 +27,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Switch from '@mui/material/Switch';
 import Box from '@mui/material/Box';
 
-import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { packageInstallRouteRef, packageRouteRef } from '../../routes';

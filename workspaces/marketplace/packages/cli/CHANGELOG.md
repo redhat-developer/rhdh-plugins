@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/marketplace-cli
+# @red-hat-developer-hub/extensions-cli
 
 ## 0.13.2
 

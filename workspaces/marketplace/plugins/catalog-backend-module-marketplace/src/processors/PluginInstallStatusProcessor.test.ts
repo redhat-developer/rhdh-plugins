@@ -19,7 +19,7 @@ import {
   MarketplacePackage,
   MarketplacePackageInstallStatus,
   MarketplacePluginInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import {
   pluginEntity,
   locationSpec,

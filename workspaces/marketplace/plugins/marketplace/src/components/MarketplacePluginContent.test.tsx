@@ -25,7 +25,7 @@ import { marketplaceApiRef } from '../api';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
-import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
 import { errorApiRef } from '@backstage/core-plugin-api';

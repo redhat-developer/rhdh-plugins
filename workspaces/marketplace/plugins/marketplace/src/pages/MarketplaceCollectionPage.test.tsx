@@ -16,7 +16,7 @@
 
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
-import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { MarketplaceCollectionPage } from './MarketplaceCollectionPage';
 import { marketplaceApiRef } from '../api';

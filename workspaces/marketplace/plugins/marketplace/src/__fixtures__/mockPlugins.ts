@@ -18,7 +18,7 @@ import {
   EXTENSIONS_API_VERSION,
   MarketplacePlugin,
   MarketplaceKind,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 export const mockPlugins: MarketplacePlugin[] = [
   {

@@ -40,7 +40,7 @@ import {
   MarketplacePlugin,
   RESOURCE_TYPE_EXTENSIONS_PLUGIN,
   extensionsPermissions,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import { createSearchParams } from './utils/createSearchParams';
 import { removeVerboseSpecContent } from './utils/removeVerboseSpecContent';

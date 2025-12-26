@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { MarketplacePluginProcessor } from './MarketplacePluginProcessor';
 

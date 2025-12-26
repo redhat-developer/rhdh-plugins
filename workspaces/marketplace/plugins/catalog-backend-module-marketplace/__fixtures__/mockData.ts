@@ -17,7 +17,7 @@
 import {
   MarketplacePackage,
   MarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 export const packageEntity: MarketplacePackage = {
   apiVersion: 'extensions.backstage.io/v1alpha1',
@@ -58,11 +58,11 @@ export const mockTopologyPackage = {
 export const mockMarketplacePackage = {
   ...packageEntity,
   metadata: {
-    name: 'red-hat-developer-hub-backstage-plugin-marketplace',
+    name: 'red-hat-developer-hub-backstage-plugin-extensions',
     namespace: 'marketplace-plugin-demo',
   },
   spec: {
-    packageName: '@red-hat-developer-hub/backstage-plugin-marketplace',
+    packageName: '@red-hat-developer-hub/backstage-plugin-extensions',
     dynamicArtifact:
       './dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-catalog-backend-module-marketplace-dynamic',
   },
@@ -71,7 +71,7 @@ export const mockMarketplacePackage = {
 export const mockMarketplaceBackendPackage = {
   ...packageEntity,
   metadata: {
-    name: 'red-hat-developer-hub-backstage-plugin-marketplace-backend',
+    name: 'red-hat-developer-hub-backstage-plugin-extensions-backend',
     namespace: 'marketplace-plugin-demo',
   },
   spec: {

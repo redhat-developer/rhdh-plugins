@@ -24,7 +24,7 @@ import {
   isMarketplacePlugin,
   MarketplacePackage,
   MarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 const packages: Record<string, MarketplacePackage> = {};
 const plugins: Record<string, MarketplacePlugin> = {};

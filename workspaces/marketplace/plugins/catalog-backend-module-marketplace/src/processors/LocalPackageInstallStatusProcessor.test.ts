@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePackageInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { packageEntity } from '../../__fixtures__/mockData';
 
 import { LocalPackageInstallStatusProcessor } from './LocalPackageInstallStatusProcessor';

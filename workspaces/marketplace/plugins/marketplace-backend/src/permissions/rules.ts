@@ -22,7 +22,7 @@ import { z } from 'zod';
 import {
   MarketplacePlugin,
   RESOURCE_TYPE_EXTENSIONS_PLUGIN,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 export type ExtentionFilter = {
   key: string;

@@ -63,7 +63,7 @@ const marketplaceTranslationIt = createTranslationMessages({
     'emptyState.noPluginsDescription':
       'Si è verificato un errore durante il caricamento dei plugin. Controlla la tua configurazione o consulta la documentazione del plugin per risolvere. Puoi anche esplorare altri plugin disponibili.',
     'emptyState.configureBackend':
-      "Configura il plugin '@red-hat-developer-hub/backstage-plugin-marketplace-backend'.",
+      "Configura il plugin '@red-hat-developer-hub/backstage-plugin-extensions-backend'.",
 
     // Alerts and warnings
     'alert.productionDisabled':

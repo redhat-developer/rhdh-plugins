@@ -23,7 +23,7 @@ import {
   MarketplaceKind,
   MarketplacePackage,
   MarketplacePackageSpecAppConfigExample,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { EntityLink, LocationEntityV1alpha1 } from '@backstage/catalog-model';
 import {
   DynamicPluginsConfig,

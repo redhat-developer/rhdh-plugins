@@ -63,7 +63,7 @@ const marketplaceTranslationDe = createTranslationMessages({
     'emptyState.noPluginsDescription':
       'Beim Laden der Plugins ist ein Fehler aufgetreten. Überprüfen Sie Ihre Konfiguration oder lesen Sie die Plugin-Dokumentation. Sie können auch andere verfügbare Plugins erkunden.',
     'emptyState.configureBackend':
-      "Konfigurieren Sie das '@red-hat-developer-hub/backstage-plugin-marketplace-backend' Plugin.",
+      "Konfigurieren Sie das '@red-hat-developer-hub/backstage-plugin-extensions-backend' Plugin.",
 
     // Alerts and warnings
     'alert.productionDisabled':

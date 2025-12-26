@@ -17,7 +17,7 @@
 import type { PropsWithChildren } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 
-import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceApi } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 

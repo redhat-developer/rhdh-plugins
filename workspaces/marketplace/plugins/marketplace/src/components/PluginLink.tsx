@@ -17,7 +17,7 @@
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { Link } from '@backstage/core-components';
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { pluginRouteRef } from '../routes';
 

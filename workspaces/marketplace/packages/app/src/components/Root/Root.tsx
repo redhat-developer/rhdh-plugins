@@ -46,7 +46,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
 
-import { MarketplaceIcon } from '@red-hat-developer-hub/backstage-plugin-marketplace';
+import { MarketplaceIcon } from '@red-hat-developer-hub/backstage-plugin-extensions';
 
 const useSidebarLogoStyles = makeStyles({
   root: {

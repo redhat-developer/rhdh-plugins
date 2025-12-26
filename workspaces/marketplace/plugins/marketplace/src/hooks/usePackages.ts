@@ -16,7 +16,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { GetEntitiesRequest } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { GetEntitiesRequest } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 

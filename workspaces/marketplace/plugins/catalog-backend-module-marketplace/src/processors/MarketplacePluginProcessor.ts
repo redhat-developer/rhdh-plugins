@@ -35,7 +35,7 @@ import {
   MarketplacePlugin,
   MarketplaceKind,
   isMarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 // eslint-disable-next-line @backstage/no-relative-monorepo-imports
 import pluginJsonSchema from '../../../../json-schema/plugins.json';

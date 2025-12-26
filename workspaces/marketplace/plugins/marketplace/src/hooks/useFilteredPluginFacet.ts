@@ -17,7 +17,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 
-import { MarketplaceAnnotation } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceAnnotation } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 

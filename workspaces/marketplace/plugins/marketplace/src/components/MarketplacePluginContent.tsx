@@ -50,7 +50,7 @@ import {
   MarketplacePackage,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import {
   mapBackstageRoleToLabel,

@@ -31,7 +31,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import {
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { rootRouteRef, pluginRouteRef } from '../routes';
 import { BadgeTriange } from './Badges';

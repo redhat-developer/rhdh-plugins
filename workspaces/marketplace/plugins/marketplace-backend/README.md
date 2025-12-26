@@ -4,11 +4,11 @@ This plugin backend was templated using the Backstage CLI. You should replace th
 
 ## Installation
 
-This plugin is installed via the `@red-hat-developer-hub/backstage-plugin-marketplace-backend` package. To install it to your backend package, run the following command:
+This plugin is installed via the `@red-hat-developer-hub/backstage-plugin-extensions-backend` package. To install it to your backend package, run the following command:
 
 ```bash
 # From your root directory
-yarn --cwd packages/backend add @red-hat-developer-hub/backstage-plugin-marketplace-backend
+yarn --cwd packages/backend add @red-hat-developer-hub/backstage-plugin-extensions-backend
 ```
 
 Then add the plugin to your backend in `packages/backend/src/index.ts`:
@@ -17,7 +17,7 @@ Then add the plugin to your backend in `packages/backend/src/index.ts`:
 const backend = createBackend();
 // ...
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-marketplace-backend'),
+  import('@red-hat-developer-hub/backstage-plugin-extensions-backend'),
 );
 ```
 

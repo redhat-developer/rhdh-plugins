@@ -33,7 +33,7 @@ import {
   MarketplacePackageSpec,
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ExtensionsPackageAppConfigExamples } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { ExtensionsPackageAppConfigExamples } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { JsonObject } from '@backstage/types';
 
 import { alertApiRef, useApi } from '@backstage/core-plugin-api';

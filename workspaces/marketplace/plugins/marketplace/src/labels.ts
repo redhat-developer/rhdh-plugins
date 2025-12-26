@@ -17,7 +17,7 @@
 import {
   MarketplacePluginInstallStatus,
   MarketplacePackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { marketplaceTranslationRef } from './translations';
 

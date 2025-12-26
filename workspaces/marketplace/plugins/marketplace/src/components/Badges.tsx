@@ -22,7 +22,7 @@ import {
   MarketplacePlugin,
   MarketplacePackage,
   MarketplaceSupportLevel,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { colors } from '../consts';
 
 import { useTranslation } from '../hooks/useTranslation';

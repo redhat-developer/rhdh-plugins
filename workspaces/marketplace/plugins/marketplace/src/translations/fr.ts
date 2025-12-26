@@ -121,7 +121,7 @@ const marketplaceTranslationFr = createTranslationMessages({
     'dialog.pluginRestartMessage':
       'Pour terminer les modifications du plugin, redémarrez votre système backend.',
     'emptyState.configureBackend':
-      "Configurez le plugin '@red-hat-developer-hub/backstage-plugin-marketplace-backend'.",
+      "Configurez le plugin '@red-hat-developer-hub/backstage-plugin-extensions-backend'.",
     'emptyState.mustEnableBackend': 'Doit activer le plugin backend Extensions',
     'emptyState.noPluginsDescription':
       "Une erreur s'est produite lors du chargement des plugins. Vérifiez votre configuration ou consultez la documentation du plugin pour résoudre le problème. Vous pouvez également explorer d’autres plugins disponibles.",

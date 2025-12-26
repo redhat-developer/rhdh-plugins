@@ -24,7 +24,7 @@ import {
   MarketplaceKind,
   MarketplacePackage,
   MarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 export default async function init() {
   const pluginFolders = await glob.glob('plugins/*/package.json/../');

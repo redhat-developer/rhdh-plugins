@@ -25,7 +25,7 @@ import {
   MarketplaceCollection,
   MarketplacePackage,
   MarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 export const Links = ({
   entity,

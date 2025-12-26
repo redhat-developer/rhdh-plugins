@@ -1,6 +1,6 @@
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-marketplace:
+    red-hat-developer-hub.backstage-plugin-extensions:
       translationResources:
         - importName: marketplaceTranslations
           ref: marketplaceTranslationRef

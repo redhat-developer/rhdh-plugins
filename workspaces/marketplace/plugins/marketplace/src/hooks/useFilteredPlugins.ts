@@ -21,7 +21,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   GetEntitiesRequest,
   MarketplaceAnnotation,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useMarketplaceApi } from './useMarketplaceApi';
 

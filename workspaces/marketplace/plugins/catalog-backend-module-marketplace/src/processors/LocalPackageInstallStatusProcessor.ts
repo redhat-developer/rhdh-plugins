@@ -22,7 +22,7 @@ import {
   isMarketplacePackage,
   MarketplacePackage,
   MarketplacePackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 /**
  * @public

@@ -72,7 +72,7 @@ export const marketplaceMessages = {
     noPluginsDescription:
       'There was an error with loading plugins. Check your configuration or review plugin documentation to resolve. You can also explore other available plugins.',
     configureBackend:
-      "Configure the '@red-hat-developer-hub/backstage-plugin-marketplace-backend' plugin.",
+      "Configure the '@red-hat-developer-hub/backstage-plugin-extensions-backend' plugin.",
   },
 
   // Alerts and warnings

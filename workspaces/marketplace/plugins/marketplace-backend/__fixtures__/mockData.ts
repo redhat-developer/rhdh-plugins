@@ -16,7 +16,7 @@
 import {
   MarketplaceApi,
   MarketplaceKind,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { FileInstallationStorage } from '../src/installation/FileInstallationStorage';
 import { type JsonObject } from '@backstage/types';
 import { stringify } from 'yaml';

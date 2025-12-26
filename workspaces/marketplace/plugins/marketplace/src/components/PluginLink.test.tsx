@@ -19,7 +19,7 @@ import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import {
   MarketplaceApi,
   MarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { marketplaceApiRef } from '../api';
 import { rootRouteRef } from '../routes';

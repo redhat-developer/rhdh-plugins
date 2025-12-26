@@ -21,7 +21,7 @@ import { TestApiProvider } from '@backstage/test-utils';
 import {
   MarketplacePlugin,
   MarketplacePluginInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { PluginCard } from './PluginCard';
 import { rootRouteRef, pluginRouteRef } from '../routes';

@@ -33,7 +33,7 @@ import {
   MarketplacePluginInstallStatus,
   isMarketplacePackage,
   isMarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import type {
   CatalogApi,
   GetEntitiesByRefsResponse,

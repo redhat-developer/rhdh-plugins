@@ -16,7 +16,7 @@
 
 import { render } from '@testing-library/react';
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { PluginIcon } from './PluginIcon';
 

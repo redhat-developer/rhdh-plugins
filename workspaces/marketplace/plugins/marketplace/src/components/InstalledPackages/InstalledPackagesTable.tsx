@@ -30,7 +30,7 @@ import Box from '@mui/material/Box';
 import {
   MarketplacePackage,
   MarketplacePackageInstallStatus,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useMarketplaceApi } from '../../hooks/useMarketplaceApi';
 import { getReadableName } from '../../utils/pluginProcessing';

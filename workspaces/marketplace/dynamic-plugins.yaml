@@ -16,12 +16,12 @@ plugins:
                 menuItem:
                   icon: bulkImportIcon
                   text: Bulk import
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
     disabled: false # DEBSMITA TEST
     pluginConfig:
       dynamicPlugins:
         frontend:
-          red-hat-developer-hub.backstage-plugin-marketplace:
+          red-hat-developer-hub.backstage-plugin-extensions:
             appIcons:
               - name: marketplace
                 importName: MarketplaceIcon1
@@ -34,7 +34,7 @@ plugins:
                 config:
                   path: marketplace
                   title: Catalog
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-marketplace-backend-dynamic
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
     disabled: false
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     disabled: false

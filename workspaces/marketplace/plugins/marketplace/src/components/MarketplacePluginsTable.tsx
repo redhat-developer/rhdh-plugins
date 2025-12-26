@@ -16,7 +16,7 @@
 
 import { ErrorPanel, Table, TableColumn } from '@backstage/core-components';
 
-import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useQueryTableOptions } from '../hooks/useQueryTableOptions';
 import { usePlugins } from '../hooks/usePlugins';

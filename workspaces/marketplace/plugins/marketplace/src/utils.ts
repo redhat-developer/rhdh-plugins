@@ -16,7 +16,7 @@
 
 import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
-import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplacePluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { marketplaceTranslationRef } from './translations';
 import { PluginPermissions, Permission } from './types';

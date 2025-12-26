@@ -29,7 +29,7 @@ import {
 import MUIMarketplaceIcon from '@mui/icons-material/ShoppingBasketOutlined';
 import MUIPluginsIcon from '@mui/icons-material/PowerOutlined';
 
-import { MarketplaceBackendClient } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceBackendClient } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { marketplaceApiRef, dynamicPluginsInfoApiRef } from './api';
 import { DynamicPluginsInfoClient } from './api/DynamicPluginsInfoClient';

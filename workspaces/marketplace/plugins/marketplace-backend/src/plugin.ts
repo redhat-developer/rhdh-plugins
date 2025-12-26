@@ -24,7 +24,7 @@ import { dynamicPluginsServiceRef } from '@backstage/backend-dynamic-feature-ser
 import {
   MarketplaceApi,
   MarketplaceCatalogClient,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { createRouter } from './router';
 import { InstallationDataService } from './installation/InstallationDataService';

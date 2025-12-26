@@ -17,7 +17,7 @@
 import {
   MarketplaceCollection,
   MarketplaceKind,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { MarketplaceCollectionProcessor } from './MarketplaceCollectionProcessor';
 

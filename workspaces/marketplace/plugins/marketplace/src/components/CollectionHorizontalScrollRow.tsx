@@ -21,7 +21,7 @@ import Stack from '@mui/material/Stack';
 import Skeleton from '@mui/material/Skeleton';
 import Typography from '@mui/material/Typography';
 
-import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+import { MarketplaceCollection } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
 import { PluginCard, PluginCardSkeleton } from './PluginCard';

@@ -16,7 +16,7 @@
 import {
   MarketplaceKind,
   MarketplacePackage,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { BaseEntityProvider } from './BaseEntityProvider';
 
 /**

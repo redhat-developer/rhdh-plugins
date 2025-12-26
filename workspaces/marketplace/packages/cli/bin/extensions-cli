@@ -27,3 +27,4 @@ if (!isLocal) {
   require('@backstage/cli/config/nodeTransform.cjs');
   require('../src');
 }
+

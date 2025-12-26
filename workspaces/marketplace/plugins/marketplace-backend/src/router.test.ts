@@ -40,7 +40,7 @@ import {
   MarketplaceKind,
   MarketplacePackage,
   MarketplacePlugin,
-} from '@red-hat-developer-hub/backstage-plugin-marketplace-common';
+} from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import {
   mockCollections,
   mockDynamicPackage11,
@@ -90,7 +90,7 @@ const mockDynamicPluginsData: BaseDynamicPlugin[] = [
     platform: 'web',
   },
   {
-    name: '@red-hat-developer-hub/backstage-plugin-marketplace',
+    name: '@red-hat-developer-hub/backstage-plugin-extensions',
     version: '1.0.0',
     role: 'frontend',
     platform: 'web',

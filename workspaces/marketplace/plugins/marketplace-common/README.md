@@ -1,5 +1,5 @@
-# @red-hat-developer-hub/backstage-plugin-marketplace-common
+# @red-hat-developer-hub/backstage-plugin-extensions-common
 
-Welcome to the common package for the marketplace plugin!
+Welcome to the common package for the extensions plugin!
 
 _This plugin was created through the Backstage CLI_
