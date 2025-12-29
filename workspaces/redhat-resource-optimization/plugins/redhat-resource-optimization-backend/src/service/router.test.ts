@@ -32,13 +32,6 @@ describe('createRouter', () => {
       optimizationApi: {
         getRecommendationList: jest.fn(),
         getRecommendationById: jest.fn(),
-        getCostManagementReport: jest.fn(),
-        downloadCostManagementReport: jest.fn(),
-        searchOpenShiftProjects: jest.fn(),
-        searchOpenShiftClusters: jest.fn(),
-        searchOpenShiftNodes: jest.fn(),
-        getOpenShiftTags: jest.fn(),
-        getOpenShiftTagValues: jest.fn(),
       },
     });
     app = express().use(router);

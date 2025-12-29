@@ -22,7 +22,7 @@ import { useBaseFiltersStyles } from '../../../components/filtersStyles';
 import { SelectComponent } from './SelectComponent';
 import { AutocompleteComponent } from './AutocompleteComponent';
 import { useApi } from '@backstage/core-plugin-api';
-import { optimizationsApiRef } from '../../../apis';
+import { costManagementSlimApiRef } from '../../../apis';
 import useAsync from 'react-use/lib/useAsync';
 import debounce from 'lodash/debounce';
 import { useThemeBackgroundColor } from '../../../hooks/useThemeBackgroundColor';
@@ -101,7 +101,7 @@ export function Filters(props: FiltersProps) {
   } = props;
   const baseClasses = useBaseFiltersStyles();
   const classes = useFiltersStyles();
-  const api = useApi(optimizationsApiRef);
+  const api = useApi(costManagementSlimApiRef);
 
   const { filterTableBackgroundColor } = useThemeBackgroundColor();
   // State for search input and debounced search

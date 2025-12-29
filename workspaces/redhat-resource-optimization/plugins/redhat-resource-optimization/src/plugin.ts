@@ -25,8 +25,13 @@ import {
 import {
   OptimizationsClient,
   OrchestratorSlimClient,
+  CostManagementSlimClient,
 } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
-import { optimizationsApiRef, orchestratorSlimApiRef } from './apis';
+import {
+  optimizationsApiRef,
+  orchestratorSlimApiRef,
+  costManagementSlimApiRef,
+} from './apis';
 import { optimizationsBreakdownRouteRef, rootRouteRef } from './routes';
 
 /** @public */
@@ -58,6 +63,19 @@ export const resourceOptimizationPlugin = createPlugin({
           discoveryApi,
           fetchApi,
           identityApi,
+        });
+      },
+    }),
+    createApiFactory({
+      api: costManagementSlimApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory({ discoveryApi, fetchApi }) {
+        return new CostManagementSlimClient({
+          discoveryApi,
+          fetchApi,
         });
       },
     }),

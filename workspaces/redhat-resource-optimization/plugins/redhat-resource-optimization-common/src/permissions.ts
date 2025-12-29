@@ -40,4 +40,13 @@ export const rosClusterProjectPermission = (
   });
 
 /** @public */
+export const costPluginReadPermission = createPermission({
+  name: 'cost.plugin',
+  attributes: { action: 'read' },
+});
+
+/** @public */
+export const costPluginPermissions = [costPluginReadPermission];
+
+/** @public */
 export const rosPluginPermissions = [rosPluginReadPermission];
