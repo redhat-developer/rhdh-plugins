@@ -62,4 +62,7 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-lightspeed-backend'),
 );
 
+// GitHub auth
+backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
+
 backend.start();

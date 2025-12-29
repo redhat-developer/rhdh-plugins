@@ -53,7 +53,14 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { lightspeedTranslations } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
 import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
 const app = createApp({
   apis,
   __experimentalTranslations: {
@@ -78,7 +85,9 @@ const app = createApp({
     });
   },
   components: {
-    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
+    SignInPage: props => (
+      <SignInPage {...props} auto providers={['guest', githubProvider]} />
+    ),
   },
 });
 
