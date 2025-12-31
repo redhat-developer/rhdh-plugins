@@ -19,26 +19,17 @@ import { useState } from 'react';
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { useTheme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import { useNumberOfApprovalTools } from '../../hooks';
-import { useImportFlow } from '../../hooks/useImportFlow';
 import { useTranslation } from '../../hooks/useTranslation';
-import { ImportFlow } from '../../types';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
-import { Illustrations } from './Illustrations';
+import { ConfigurableInstructions } from './ConfigurableInstructions';
 
 export const AddRepositoriesPage = () => {
-  const theme = useTheme();
   const { t } = useTranslation();
   const [formError, setFormError] = useState<any>(null);
 
@@ -48,12 +39,10 @@ export const AddRepositoriesPage = () => {
   });
 
   const { numberOfApprovalTools } = useNumberOfApprovalTools();
-  const importFlow = useImportFlow();
 
-  // Show instructions section only for pull request flow, hide for scaffolder flow
-  // Also hide if no integrations are configured (missing configurations)
-  const showInstructionsSection =
-    importFlow === ImportFlow.OpenPullRequests && numberOfApprovalTools > 0;
+  // Show instructions section for all flows now that it's customizable
+  // Only hide if no integrations are configured (missing configurations)
+  const showInstructionsSection = numberOfApprovalTools > 0;
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
@@ -63,69 +52,7 @@ export const AddRepositoriesPage = () => {
       return (
         <>
           {showInstructionsSection && !formError && (
-            <div style={{ padding: '24px' }}>
-              <Accordion defaultExpanded>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  id="add-repository-summary"
-                >
-                  <Typography variant="h5">
-                    {t('page.importEntitiesSubtitle')}
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails
-                  sx={{
-                    flexDirection: 'row',
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    overflow: 'auto',
-                  }}
-                >
-                  {numberOfApprovalTools > 1 && (
-                    <Illustrations
-                      iconClassname={
-                        theme.palette.mode === 'dark'
-                          ? 'icon-approval-tool-white'
-                          : 'icon-approval-tool-black'
-                      }
-                      iconText={t('steps.chooseApprovalTool')}
-                    />
-                  )}
-                  <Illustrations
-                    iconClassname={
-                      theme.palette.mode === 'dark'
-                        ? 'icon-choose-repositories-white'
-                        : 'icon-choose-repositories-black'
-                    }
-                    iconText={t('steps.chooseRepositories')}
-                  />
-                  <Illustrations
-                    iconClassname={
-                      theme.palette.mode === 'dark'
-                        ? 'icon-generate-cataloginfo-white'
-                        : 'icon-generate-cataloginfo-black'
-                    }
-                    iconText={t('steps.generateCatalogInfo')}
-                  />
-                  <Illustrations
-                    iconClassname={
-                      theme.palette.mode === 'dark'
-                        ? 'icon-edit-pullrequest-white'
-                        : 'icon-edit-pullrequest-black'
-                    }
-                    iconText={t('steps.editPullRequest')}
-                  />
-                  <Illustrations
-                    iconClassname={
-                      theme.palette.mode === 'dark'
-                        ? 'icon-track-status-white'
-                        : 'icon-track-status-black'
-                    }
-                    iconText={t('steps.trackStatus')}
-                  />
-                </AccordionDetails>
-              </Accordion>
-            </div>
+            <ConfigurableInstructions />
           )}
           <AddRepositoriesForm onErrorChange={setFormError} />
         </>

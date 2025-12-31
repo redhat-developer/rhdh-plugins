@@ -27,5 +27,65 @@ export interface Config {
      * @visibility frontend
      */
     importAPI?: 'open-pull-requests' | 'scaffolder';
+
+    /**
+     * The name of the scaffolder template to execute for importing a repository.
+     * @visibility backend
+     */
+    importTemplate?: string;
+
+    /**
+     * Whether to show the instructions section
+     * @default true
+     * @visibility frontend
+     */
+    instructionsEnabled?: boolean;
+
+    /**
+     * Whether the section should be expanded by default
+     * @default true
+     * @visibility frontend
+     */
+    instructionsDefaultExpanded?: boolean;
+
+    /**
+     * Array of steps to display in the instructions section
+     * If not provided, uses the default built-in steps
+     * Users can define any number of custom steps
+     * @visibility frontend
+     * @deepVisibility frontend
+     */
+    instructionsSteps?: Array<{
+      /**
+       * Unique identifier for the step
+       * @visibility frontend
+       */
+      id: string;
+
+      /**
+       * Display text for the step
+       * @visibility frontend
+       */
+      text: string;
+
+      /**
+       * Icon configuration
+       * @visibility frontend
+       */
+      icon?: {
+        /**
+         * Icon type: 'builtin' for predefined icons, 'url' for custom images
+         * @visibility frontend
+         */
+        type: 'builtin' | 'url';
+
+        /**
+         * For builtin: icon name (e.g., 'approval-tool', 'choose-repositories', 'generate-cataloginfo', 'edit-pullrequest', 'track-status')
+         * For url: full URL to the icon image
+         * @visibility frontend
+         */
+        source: string;
+      };
+    }>;
   };
 }
