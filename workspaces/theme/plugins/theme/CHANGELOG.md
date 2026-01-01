@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.12.0
+
+### Minor Changes
+
+- f66ba99: Backstage version bump to v1.45.3
+
 ## 0.11.0
 
 ### Minor Changes
