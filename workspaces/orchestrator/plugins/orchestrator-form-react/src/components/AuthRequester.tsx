@@ -15,7 +15,7 @@
  */
 import { useEffect } from 'react';
 
-import { JsonObject } from '@backstage/types/index';
+import { JsonObject } from '@backstage/types';
 
 import { Widget } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';

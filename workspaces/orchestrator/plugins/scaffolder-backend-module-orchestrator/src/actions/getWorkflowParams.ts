@@ -16,7 +16,7 @@
 import { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import { JsonObject } from '@backstage/types/index';
+import { JsonObject } from '@backstage/types';
 
 import { isAxiosError } from 'axios';
 import { dump } from 'js-yaml';
