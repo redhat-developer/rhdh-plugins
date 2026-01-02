@@ -33,6 +33,14 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 /**
  * @public
  */
+export type AggregatedMetricValue = {
+  count: number;
+  name: 'success' | 'warning' | 'error';
+};
+
+/**
+ * @public
+ */
 export type Metric<T extends MetricType = MetricType> = {
   id: string;
   title: string;
@@ -59,4 +67,23 @@ export type MetricResult = {
     thresholdResult: ThresholdResult;
   };
   error?: string;
+};
+
+/*
+ * @public
+ */
+export type AggregatedMetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result: {
+    values?: AggregatedMetricValue[];
+    total: number;
+    timestamp: string;
+  };
 };

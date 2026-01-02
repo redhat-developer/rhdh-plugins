@@ -24,10 +24,12 @@ import {
   MockNumberProvider,
   MockBooleanProvider,
 } from '../../__fixtures__/mockProviders';
-import { mockEntity } from '../../__fixtures__/mockEntities';
+import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 
 describe('MetricProvidersRegistry', () => {
   let registry: MetricProvidersRegistry;
+
+  const mockEntity = new MockEntityBuilder().build();
 
   beforeEach(() => {
     registry = new MetricProvidersRegistry();
