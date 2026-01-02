@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { JsonObject } from '@backstage/types/index';
+import { JsonObject } from '@backstage/types';
 
 import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 

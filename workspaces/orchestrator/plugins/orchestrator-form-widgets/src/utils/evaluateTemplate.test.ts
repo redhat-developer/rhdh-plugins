@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { JsonValue } from '@backstage/types/index';
+import { JsonValue } from '@backstage/types';
 import { evaluateTemplate, evaluateTemplateProps } from './evaluateTemplate';
 import get from 'lodash/get';
 

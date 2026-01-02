@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { JsonObject } from '@backstage/types/index';
+import { JsonObject } from '@backstage/types';
 import React, { useState, useEffect } from 'react';
 import { UiProps } from '../uiPropTypes';
 import { getErrorMessage } from './errorUtils';
