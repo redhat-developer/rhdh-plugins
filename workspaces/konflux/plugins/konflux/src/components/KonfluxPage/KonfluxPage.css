@@ -1,0 +1,4 @@
+.divider {
+  margin-top: var(--pf-t--global--spacer--lg);
+  margin-bottom: var(--pf-t--global--spacer--lg);
+}
