@@ -1,9 +1,18 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-quickstart:
+      translationResources:
+        - importName: quickstartTranslations
+          ref: quickstartTranslationRef
       mountPoints:
         - mountPoint: application/provider
           importName: QuickstartDrawerProvider
+        - mountPoint: application/drawer-state
+          importName: QuickstartDrawerStateExposer
+        - mountPoint: application/drawer-content
+          importName: QuickstartDrawerContent
+          config:
+            id: quickstart
         - mountPoint: global.header/help
           importName: QuickstartButton
           config:

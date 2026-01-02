@@ -141,6 +141,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'aria.scroll.down': 'Retour en bas',
     'aria.scroll.up': 'Retour en haut',
     'aria.settings.label': 'Options du chatbot',
+    'aria.close': 'Fermer le chatbot',
 
     // Modal actions
     'modal.edit': 'Modifier',
@@ -171,6 +172,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.backToTop': 'Retour en haut',
     'tooltip.backToBottom': 'Retour en bas',
     'tooltip.settings': 'Options du chatbot',
+    'tooltip.close': 'Fermer',
 
     // Modal titles
     'modal.title.preview': 'Aperçu de la pièce jointe',
@@ -231,6 +233,12 @@ const lightspeedTranslationFr = createTranslationMessages({
       'Les chats épinglés sont actuellement activés',
     'settings.pinned.disabled.description':
       'Les chats épinglés sont actuellement désactivés',
+
+    // Display modes
+    'settings.displayMode.label': "Mode d'affichage",
+    'settings.displayMode.overlay': 'Superposition',
+    'settings.displayMode.docked': 'Ancrer à la fenêtre',
+    'settings.displayMode.fullscreen': 'Plein écran',
   },
 });
 

@@ -19,12 +19,13 @@ import { Ref, useMemo, useState } from 'react';
 import { createStyles, makeStyles } from '@material-ui/core';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
+import Divider from '@mui/material/Divider';
 import {
+  ChatbotDisplayMode,
   ChatbotHeaderActions,
   ChatbotHeaderOptionsDropdown,
 } from '@patternfly/chatbot';
 import {
-  Divider,
   Dropdown,
   DropdownGroup,
   DropdownItem,
@@ -32,15 +33,22 @@ import {
   MenuToggle,
   MenuToggleElement,
 } from '@patternfly/react-core';
+import {
+  ExpandIcon,
+  OpenDrawerRightIcon,
+  OutlinedWindowRestoreIcon,
+} from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 
 type LightspeedChatBoxHeaderProps = {
+  displayMode: ChatbotDisplayMode;
   selectedModel: string;
   handleSelectedModel: (item: string) => void;
   models: { label: string; value: string; provider: string }[];
   isPinningChatsEnabled: boolean;
   onPinnedChatsToggle: (state: boolean) => void;
+  setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
 const useStyles = makeStyles(() =>
@@ -64,10 +72,12 @@ const useStyles = makeStyles(() =>
 
 export const LightspeedChatBoxHeader = ({
   selectedModel,
+  displayMode,
   handleSelectedModel,
   models,
   isPinningChatsEnabled,
   onPinnedChatsToggle,
+  setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const { t } = useTranslation();
@@ -105,6 +115,18 @@ export const LightspeedChatBoxHeader = ({
 
   const handlePinningChatsToggle = (state: boolean) => {
     onPinnedChatsToggle(state);
+  };
+
+  const handleDockedToWindow = () => {
+    setDisplayMode(ChatbotDisplayMode.docked);
+  };
+
+  const handleFullscreen = () => {
+    setDisplayMode(ChatbotDisplayMode.embedded);
+  };
+
+  const handleOverlay = () => {
+    setDisplayMode(ChatbotDisplayMode.default);
   };
 
   return (
@@ -156,6 +178,41 @@ export const LightspeedChatBoxHeader = ({
           content: t('tooltip.settings'),
         }}
       >
+        <DropdownGroup>
+          <DropdownList>
+            <DropdownItem key="displayModeLabel" isDisabled>
+              {t('settings.displayMode.label')}
+            </DropdownItem>
+            <DropdownItem
+              value={ChatbotDisplayMode.default}
+              key="switchDisplayOverlay"
+              icon={<OutlinedWindowRestoreIcon />}
+              onClick={handleOverlay}
+              isSelected={displayMode === ChatbotDisplayMode.default}
+            >
+              {t('settings.displayMode.overlay')}
+            </DropdownItem>
+            <DropdownItem
+              value={ChatbotDisplayMode.docked}
+              key="switchDisplayDock"
+              icon={<OpenDrawerRightIcon />}
+              onClick={handleDockedToWindow}
+              isSelected={displayMode === ChatbotDisplayMode.docked}
+            >
+              {t('settings.displayMode.docked')}
+            </DropdownItem>
+            <DropdownItem
+              value={ChatbotDisplayMode.embedded}
+              key="switchDisplayFullscreen"
+              icon={<ExpandIcon />}
+              onClick={handleFullscreen}
+              isSelected={displayMode === ChatbotDisplayMode.embedded}
+            >
+              {t('settings.displayMode.fullscreen')}
+            </DropdownItem>
+          </DropdownList>
+        </DropdownGroup>
+        <Divider />
         <DropdownGroup>
           <DropdownList>
             {isPinningChatsEnabled ? (

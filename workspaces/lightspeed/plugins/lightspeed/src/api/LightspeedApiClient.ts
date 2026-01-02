@@ -23,10 +23,20 @@ import {
 import { Attachment, CaptureFeedback } from '../types';
 import { LightspeedAPI } from './api';
 
+/**
+ * @public
+ * Lightspeed API client options
+ */
+
 export type Options = {
   configApi: ConfigApi;
   fetchApi: FetchApi;
 };
+
+/**
+ * @public
+ * Lightspeed API client implementation
+ */
 
 export class LightspeedApiClient implements LightspeedAPI {
   private readonly configApi: ConfigApi;

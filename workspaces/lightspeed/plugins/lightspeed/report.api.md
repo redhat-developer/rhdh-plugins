@@ -4,9 +4,183 @@
 
 ```ts
 
+/// <reference types="react" />
+
+import { AlertProps } from '@patternfly/react-core';
+import { ApiRef } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { ChatbotDisplayMode } from '@patternfly/chatbot';
+import { ConfigApi } from '@backstage/core-plugin-api';
+import { FetchApi } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { PropsWithChildren } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { SourcesCardProps } from '@patternfly/chatbot';
+
+// @public
+export type Attachment = {
+    attachment_type: string;
+    content_type: string;
+    content: string;
+};
+
+// @public
+export interface BaseMessage {
+    // (undocumented)
+    content: string;
+    // (undocumented)
+    error?: AlertProps;
+    // (undocumented)
+    id: number;
+    // (undocumented)
+    model: string;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    referenced_documents?: ReferencedDocuments;
+    // (undocumented)
+    sources?: SourcesCardProps;
+    // (undocumented)
+    timestamp: string;
+    // (undocumented)
+    type: string;
+}
+
+// @public
+export type CaptureFeedback = {
+    conversation_id: string;
+    user_question: string;
+    llm_response: string;
+    user_feedback: string;
+    sentiment: number;
+};
+
+// @public
+export type ConversationList = ConversationSummary[];
+
+// @public
+export type ConversationSummary = {
+    conversation_id: string;
+    last_message_timestamp: number;
+    topic_summary: string;
+};
+
+// @public
+export type DrawerState = {
+    id: string;
+    isDrawerOpen: boolean;
+    drawerWidth: number;
+    setDrawerWidth: (width: number) => void;
+};
+
+// @public
+export type DrawerStateExposerProps = {
+    onStateChange: (state: DrawerState) => void;
+};
+
+// @public
+export interface LCSModel {
+    // (undocumented)
+    api_model_type: LCSModelApiModelType;
+    // (undocumented)
+    identifier: string;
+    // (undocumented)
+    metadata: {
+        embedding_dimension: number;
+    };
+    // (undocumented)
+    model_type: LCSModelType;
+    // (undocumented)
+    provider_id: string;
+    // (undocumented)
+    provider_resource_id: string;
+    // (undocumented)
+    type: 'model';
+}
+
+// @public
+export type LCSModelApiModelType = 'embedding' | 'llm';
+
+// @public
+export type LCSModelType = 'embedding' | 'llm';
+
+// @public
+export type LightspeedAPI = {
+    getAllModels: () => Promise<LCSModel[]>;
+    getConversationMessages: (conversation_id: string) => Promise<BaseMessage[]>;
+    createMessage: (prompt: string, selectedModel: string, selectedProvider: string, conversation_id: string, attachments: Attachment[]) => Promise<ReadableStreamDefaultReader>;
+    deleteConversation: (conversation_id: string) => Promise<{
+        success: boolean;
+    }>;
+    renameConversation: (conversation_id: string, newName: string) => Promise<{
+        success: boolean;
+    }>;
+    getConversations: () => Promise<ConversationList>;
+    getFeedbackStatus: () => Promise<boolean>;
+    captureFeedback: (payload: CaptureFeedback) => Promise<{
+        response: string;
+    }>;
+    isTopicRestrictionEnabled: () => Promise<boolean>;
+};
+
+// @public
+export class LightspeedApiClient implements LightspeedAPI {
+    constructor(options: Options);
+    // (undocumented)
+    captureFeedback: (payload: CaptureFeedback) => Promise<any>;
+    // (undocumented)
+    createMessage(prompt: string, selectedModel: string, selectedProvider: string, conversation_id: string, attachments: Attachment[]): Promise<ReadableStreamDefaultReader<Uint8Array>>;
+    // (undocumented)
+    deleteConversation(conversation_id: string): Promise<{
+        success: boolean;
+    }>;
+    // (undocumented)
+    getAllModels(): Promise<any>;
+    // (undocumented)
+    getBaseUrl(): Promise<string>;
+    // (undocumented)
+    getConversationMessages(conversation_id: string): Promise<any>;
+    // (undocumented)
+    getConversations(): Promise<any>;
+    // (undocumented)
+    getFeedbackStatus: () => Promise<any>;
+    // (undocumented)
+    isTopicRestrictionEnabled(): Promise<any>;
+    // (undocumented)
+    renameConversation(conversation_id: string, newName: string): Promise<{
+        success: boolean;
+    }>;
+}
+
+// @public
+export const lightspeedApiRef: ApiRef<LightspeedAPI>;
+
+// @public (undocumented)
+export const LightspeedChatContainer: () => JSX_2.Element;
+
+// @public
+export interface LightspeedDrawerContextType {
+    currentConversationId?: string;
+    displayMode: ChatbotDisplayMode;
+    drawerWidth: number;
+    isChatbotActive: boolean;
+    setCurrentConversationId: (id: string | undefined) => void;
+    setDisplayMode: (mode: ChatbotDisplayMode) => void;
+    setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
+    toggleChatbot: () => void;
+}
+
+// @public
+export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren>;
+
+// @public
+export const LightspeedDrawerStateExposer: ({ onStateChange, }: DrawerStateExposerProps) => null;
+
+// @public
+export const LightspeedFAB: () => JSX_2.Element | null;
+
+// @public
+export const LightspeedFABIcon: () => JSX_2.Element;
 
 // @public
 export const LightspeedIcon: () => JSX_2.Element;
@@ -18,6 +192,25 @@ export const LightspeedPage: () => JSX_2.Element;
 export const lightspeedPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
+
+// @public
+export type Options = {
+    configApi: ConfigApi;
+    fetchApi: FetchApi;
+};
+
+// @public
+export type ReferencedDocument = {
+    doc_title: string;
+    doc_url: string;
+    doc_description?: string;
+};
+
+// @public
+export type ReferencedDocuments = ReferencedDocument[];
+
+// @public
+export const useLightspeedDrawerContext: () => LightspeedDrawerContextType;
 
 // (No @packageDocumentation comment for this package)
 

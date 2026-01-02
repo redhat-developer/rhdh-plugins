@@ -142,6 +142,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'aria.scroll.down': 'Volver abajo',
     'aria.scroll.up': 'Volver arriba',
     'aria.settings.label': 'Opciones del chatbot',
+    'aria.close': 'Cerrar chatbot',
 
     // Modal actions
     'modal.edit': 'Editar',
@@ -172,6 +173,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tooltip.backToTop': 'Volver arriba',
     'tooltip.backToBottom': 'Volver abajo',
     'tooltip.settings': 'Opciones del chatbot',
+    'tooltip.close': 'Cerrar',
 
     // Modal titles
     'modal.title.preview': 'Vista previa del adjunto',
@@ -230,6 +232,12 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Los chats fijados están actualmente habilitados',
     'settings.pinned.disabled.description':
       'Los chats fijados están actualmente deshabilitados',
+
+    // Display modes
+    'settings.displayMode.label': 'Modo de visualización',
+    'settings.displayMode.overlay': 'Superposición',
+    'settings.displayMode.docked': 'Acoplar a ventana',
+    'settings.displayMode.fullscreen': 'Pantalla completa',
   },
 });
 

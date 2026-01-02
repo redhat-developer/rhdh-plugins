@@ -17,9 +17,12 @@
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/chatbot/dist/css/main.css';
 
+import { PropsWithChildren } from 'react';
+
 import {
   configApiRef,
   createApiFactory,
+  createComponentExtension,
   createPlugin,
   createRoutableExtension,
   fetchApiRef,
@@ -61,5 +64,72 @@ export const LightspeedPage = lightspeedPlugin.provide(
     component: () =>
       import('./components/LightspeedPage').then(m => m.LightspeedPage),
     mountPoint: rootRouteRef,
+  }),
+);
+
+/**
+ * Lightspeed Drawer Provider
+ *
+ * @public
+ */
+export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren> =
+  lightspeedPlugin.provide(
+    createComponentExtension({
+      name: 'LightspeedDrawerProvider',
+      component: {
+        lazy: () =>
+          import('./components/LightspeedDrawerProvider').then(
+            m => m.LightspeedDrawerProvider,
+          ),
+      },
+    }),
+  );
+
+/**
+ * Lightspeed FAB for global floating action button fot LightspeedAI
+ *
+ * @public
+ */
+export const LightspeedFAB: React.ComponentType = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedFAB',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedFAB').then(m => m.LightspeedFAB),
+    },
+  }),
+);
+
+/**
+ * Lightspeed Drawer State Exposer exposes its drawer state
+ *
+ * @public
+ */
+export const LightspeedDrawerStateExposer = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedDrawerStateExposer',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedDrawerStateExposer').then(
+          m => m.LightspeedDrawerStateExposer,
+        ),
+    },
+  }),
+);
+
+/**
+ * Lightspeed Chat Container component extension
+ *
+ * @public
+ */
+export const LightspeedChatContainer = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedChatContainer',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedChatContainer').then(
+          m => m.LightspeedChatContainer,
+        ),
+    },
   }),
 );
