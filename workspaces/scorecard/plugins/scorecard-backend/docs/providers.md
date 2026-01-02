@@ -179,3 +179,4 @@ The following are examples of existing metric providers that you can reference:
 
 - **GitHub Datasource**: [GithubOpenPRsProvider](../../scorecard-backend-module-github/src/metricProviders/GithubOpenPRsProvider.ts)
 - **Jira Datasource**: [JiraOpenIssuesProvider](../../scorecard-backend-module-jira/src/metricProviders/JiraOpenIssuesProvider.ts)
+- **OpenSSF Datasource**: [DefaultOpenSSFMetricProvider](../../scorecard-backend-module-openssf/src/metricProviders/DefaultOpenSSFMetricProvider.ts)
