@@ -12726,6 +12726,7 @@ __metadata:
     "@backstage/types": ^1.2.2
     "@openapitools/openapi-generator-cli": 2.25.2
     "@serverlessworkflow/sdk-typescript": ^0.8.4
+    "@types/js-yaml": ^4.0.0
     "@types/json-schema": 7.0.15
     axios: ^1.11.0
     js-yaml: ^4.1.0
@@ -12859,6 +12860,9 @@ __metadata:
     lodash: ^4.17.21
     luxon: ^3.7.2
     prettier: 3.6.2
+    react: ^18.0.0
+    react-dom: ^18.0.0
+    react-router-dom: ^6.3.0
     react-use: ^17.4.0
     swr: ^2.0.0
     tss-react: ^4.9.18
@@ -12887,6 +12891,7 @@ __metadata:
     "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
+    "@types/js-yaml": ^4.0.0
     axios: ^1.11.0
     js-yaml: ^4.1.0
   languageName: unknown
@@ -16038,7 +16043,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-yaml@npm:^4.0.1":
+"@types/js-yaml@npm:^4.0.0, @types/js-yaml@npm:^4.0.1":
   version: 4.0.9
   resolution: "@types/js-yaml@npm:4.0.9"
   checksum: e5e5e49b5789a29fdb1f7d204f82de11cb9e8f6cb24ab064c616da5d6e1b3ccfbf95aa5d1498a9fbd3b9e745564e69b4a20b6c530b5a8bbb2d4eb830cda9bc69
