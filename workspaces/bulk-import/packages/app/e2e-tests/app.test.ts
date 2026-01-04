@@ -91,10 +91,11 @@ test.describe('Bulk Import', () => {
 
         found = true;
         break; // nice catalog loaded
-      } catch (e) {
+      } catch (error) {
         if (attempt === maxRetries) {
+          const html = await sharedPage.content();
           throw new Error(
-            `Catalog components not found after ${maxRetries} reloads`,
+            `Catalog not loaded after ${maxRetries} retries. Error: ${error}. HTML snapshot: ${html}`,
           );
         }
 
