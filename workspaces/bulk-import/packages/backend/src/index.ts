@@ -57,6 +57,7 @@ backend.add(
 );
 
 // permission plugin
+backend.add(import('@backstage/plugin-permission-backend'));
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 
 // orchestrator

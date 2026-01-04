@@ -50,6 +50,13 @@ test.describe('Bulk Import', () => {
   test.beforeAll(async ({ browser }) => {
     context = await browser.newContext();
     sharedPage = await context.newPage();
+
+    // Handle guest authentication dialog
+    // TODO - Remove it after https://issues.redhat.com/browse/RHIDP-2043
+    sharedPage.on('dialog', async dialog => {
+      await dialog.accept();
+    });
+
     await mockBulkImportRepositoriesResponse(sharedPage, mockRepositoriesData);
     await sharedPage.goto('/');
 
@@ -57,15 +64,49 @@ test.describe('Bulk Import', () => {
     await expect(enterButton).toBeVisible();
     await enterButton.click();
 
+    // Wait for authentication to complete - wait for sidebar or main content to appear
+    await sharedPage.waitForLoadState('networkidle');
+    // Additional wait to ensure auth state is fully initialized
+    await sharedPage.waitForTimeout(500);
+
     const currentLocale = await sharedPage.evaluate(
       () => globalThis.navigator.language,
     );
 
+    // Wait for catalog to load BEFORE switching locale
+    // This ensures catalog is loaded in English, then we switch locale
+    const maxRetries = 3;
+    const waitTimeout = 5000;
+
+    let found = false;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Wait for the sidebar to be visible before navigating
+        await expect(sharedPage.getByText('My Company Catalog')).toBeVisible();
+        // Wait for catalog to load - use English text since we haven't switched locale yet
+        await expect(sharedPage.getByText('All Components (1)')).toBeVisible({
+          timeout: waitTimeout,
+        });
+
+        found = true;
+        break; // nice catalog loaded
+      } catch (e) {
+        if (attempt === maxRetries) {
+          throw new Error(
+            `Catalog components not found after ${maxRetries} reloads`,
+          );
+        }
+
+        await sharedPage.reload();
+        await sharedPage.waitForLoadState('networkidle');
+      }
+    }
+
+    // Now switch locale AFTER catalog is loaded
     await switchToLocale(sharedPage, currentLocale);
     translations = getTranslations(currentLocale);
     previewSidebarSnapshots = getPreviewSidebarSnapshots(translations);
-
-    await expect(sharedPage.getByText('My Company Catalog')).toBeVisible();
 
     await expect(
       sharedPage.getByRole('link', { name: translations.sidebar.bulkImport }),
@@ -152,6 +193,9 @@ test.describe('Bulk Import', () => {
       sharedPage.getByText(translations.status.readyToImport).first(),
     ).toBeVisible();
     await sharedPage.getByTestId('preview-file').first().click();
+
+    // Wait for sidebar to be fully visible and loaded
+    await expect(sidebar).toBeVisible();
     await expect(sidebar.locator('h5')).toContainText('backend-service');
     await expect(sidebar).toMatchAriaSnapshot(`
       - button "${translations.common.save}"
@@ -220,7 +264,6 @@ test.describe('Bulk Import', () => {
       .getByTestId('add-repository-footer')
       .getByRole('button', { name: translations.common.import })
       .click();
-    await sharedPage.waitForTimeout(2000);
     await expect(
       sharedPage.getByText(translations.status.imported),
     ).toBeVisible();
