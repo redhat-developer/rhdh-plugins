@@ -67,10 +67,12 @@ auth:
   providers:
     # See https://backstage.io/docs/auth/guest/provider
     guest: {}
+    # Uncomment if using GitHub provider
+    # See https://backstage.io/docs/auth/github/provider#configuration
     # github:
     #   development:
-    #     clientId: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    #     clientSecret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    #     clientId: ${AUTH_GITHUB_CLIENT_ID}
+    #     clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
     #     signIn:
     #       resolvers:
     #         - resolver: usernameMatchingUserEntityName
