@@ -70,12 +70,12 @@ export const getCostManagementAccess: (
   } else {
     // Fetch clusters from Cost Management API
     try {
-      // token
       const token = await getTokenFromApi(options);
 
-      const [clustersResponse] = await Promise.all([
-        costManagementApi.searchOpenShiftClusters('', { token }),
-      ]);
+      const clustersResponse = await costManagementApi.searchOpenShiftClusters(
+        '',
+        { token },
+      );
 
       const clustersData = await clustersResponse.json();
 
