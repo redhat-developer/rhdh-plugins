@@ -1,5 +1,68 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.6.0
+
+### Minor Changes
+
+- c35d07c: Add fetch:error:ignoreUnready and fetch:response:default options for form widgets
+
+  **Feature 1: fetch:error:ignoreUnready**
+
+  When using widgets with `fetch:retrigger` dependencies, the initial fetch often fails because dependent fields don't have values yet. This results in HTTP errors being displayed during initial load.
+  - Add `fetch:error:ignoreUnready` option to suppress fetch error display until all `fetch:retrigger` dependencies have non-empty values
+  - Errors are only suppressed when dependencies are empty; once filled, real errors are shown
+  - Supported by: ActiveTextInput, ActiveDropdown, ActiveMultiSelect, SchemaUpdater
+
+  **Feature 2: fetch:response:default**
+
+  Widgets previously required `fetch:response:value` for defaults, meaning fetch must succeed. This adds static fallback defaults.
+  - Add `fetch:response:default` option for static default values applied immediately on form initialization
+  - Defaults are applied at form initialization level in `OrchestratorForm`, ensuring controlled components work correctly
+  - Static defaults act as fallback when fetch fails, hasn't completed, or returns empty
+  - Fetched values only override defaults when non-empty
+  - Supported by: ActiveTextInput (string), ActiveDropdown (string), ActiveMultiSelect (string[])
+
+  **Usage Examples:**
+
+  ```json
+  {
+    "action": {
+      "ui:widget": "ActiveTextInput",
+      "ui:props": {
+        "fetch:url": "...",
+        "fetch:retrigger": ["current.appName"],
+        "fetch:error:ignoreUnready": true,
+        "fetch:response:default": "create"
+      }
+    }
+  }
+  ```
+
+- 5c9f044: Add object type support in ui:props for fetch:response:\* properties (RHIDP-11054)
+
+  **Type System Enhancement:**
+  - Updated `UiProps` type to accept `JsonValue` instead of `string` for `fetch:response:*` properties
+  - Enables using objects, arrays, and other JSON types in ui:props, not just strings
+  - Maintains full backward compatibility with existing string-based selectors
+
+  **Runtime Safety:**
+  - Added runtime validation in `useTemplateUnitEvaluator` to ensure selectors are strings when evaluated as JSONata expressions
+  - Provides clear error messages when invalid types are used
+
+  **Documentation:**
+  - Updated `orchestratorFormWidgets.md` to document object type support
+  - Added examples showing flexible ui:props configurations
+
+  This change allows users to reference object attributes more easily in ui:props while maintaining type safety and backward compatibility.
+
+### Patch Changes
+
+- 8524940: Fix TypeScript compilation errors in orchestrator plugins
+- Updated dependencies [8524940]
+- Updated dependencies [d91ef65]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.1
+
 ## 1.5.0
 
 ### Minor Changes

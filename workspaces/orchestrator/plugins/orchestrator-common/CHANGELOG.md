@@ -1,5 +1,13 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.3.1
+
+### Patch Changes
+
+- 8524940: Fix TypeScript compilation errors in orchestrator plugins
+- d91ef65: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@openapitools/openapi-generator-cli` to `2.25.2`.
+
 ## 3.3.0
 
 ### Minor Changes
