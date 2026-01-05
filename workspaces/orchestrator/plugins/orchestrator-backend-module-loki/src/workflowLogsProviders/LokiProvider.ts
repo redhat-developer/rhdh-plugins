@@ -90,6 +90,7 @@ export class LokiProvider implements WorkflowLogProvider {
               id: innerCurr[0],
               log: innerCurr[1],
             });
+            return;
           }, acc);
           return acc;
         },
