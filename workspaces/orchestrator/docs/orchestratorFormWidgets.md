@@ -216,7 +216,7 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
-- fetch:error:skip
+- fetch:error:ignoreUnready
 - fetch:response:value
 - fetch:response:mandatory
 
@@ -299,7 +299,7 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
-- fetch:error:skip
+- fetch:error:ignoreUnready
 - fetch:response:value
 - fetch:response:default
 - fetch:response:autocomplete
@@ -339,7 +339,7 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
-- fetch:error:skip
+- fetch:error:ignoreUnready
 - fetch:response:value
 - fetch:response:default
 - fetch:response:label
@@ -388,7 +388,7 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
-- fetch:error:skip
+- fetch:error:ignoreUnready
 - fetch:response:autocomplete
 - fetch:response:mandatory
 - fetch:response:value
@@ -526,7 +526,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |        fetch:method         |                                                                                                                                                                                                              HTTP method to use. The default is GET.                                                                                                                                                                                                               |                   GET, POST (So far no identified use-case for PUT or DELETE)                   |
 |         fetch:body          |                                                                                                                                                 An object representing the body of an HTTP POST request. Not used with the GET method. Property value can be a string template or an array of strings. templates.                                                                                                                                                  | `{“foo”: “bar $${{identityApi.token}}”, "myArray": ["constant", "$${{current.solutionName}}"]}` |
 |       fetch:retrigger       |                                                                                                                                                An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                |                      `["current.solutionName", "identityApi.profileName"]`                      |
-|      fetch:error:skip       |                                                                                                 When set to `true`, suppresses fetch error display until all `fetch:retrigger` dependencies have non-empty values. This is useful when fetch depends on other fields that are not filled yet, preventing expected errors from being displayed during initial load.                                                                                                 |                               `true`, `false` (default: `false`)                                |
+|  fetch:error:ignoreUnready  |                                                                                                 When set to `true`, suppresses fetch error display until all `fetch:retrigger` dependencies have non-empty values. This is useful when fetch depends on other fields that are not filled yet, preventing expected errors from being displayed during initial load.                                                                                                 |                               `true`, `false` (default: `false`)                                |
 |   fetch:response:default    |                                                                   A static default value that is applied immediately when the widget mounts, before any fetch completes. Acts as a fallback when fetch fails or has not completed yet. Gets overridden by `fetch:response:value` once fetch succeeds. For ActiveTextInput/ActiveDropdown use a string, for ActiveMultiSelect use a string array.                                                                   |                        `"create"` (string) or `["tag1", "tag2"]` (array)                        |
 | fetch:response:\[YOUR_KEY\] |                                                                                            A JSONata selector (string) or object value for extracting data from the fetch response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records. Supports both string selectors and object type values.                                                                                             |                                 Account.Order.Product.ProductID                                 |
 |    fetch:response:label     |                                                                                                                                                                         Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                         |                                                                                                 |

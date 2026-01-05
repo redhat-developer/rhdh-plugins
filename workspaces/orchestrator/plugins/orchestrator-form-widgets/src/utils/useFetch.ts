@@ -54,7 +54,7 @@ export const useFetch = (
   const [data, setData] = useState<JsonObject>();
 
   const fetchUrl = uiProps['fetch:url'];
-  const skipErrorWhenDepsEmpty = uiProps['fetch:error:skip'] === true;
+  const skipErrorWhenDepsEmpty = uiProps['fetch:error:ignoreUnready'] === true;
   const evaluatedRequestInit = useRequestInit({
     uiProps,
     prefix: 'fetch',
@@ -139,7 +139,7 @@ export const useFetch = (
     ],
   );
 
-  // If fetch:error:skip is enabled and retrigger dependencies are not satisfied,
+  // If fetch:error:ignoreUnready is enabled and retrigger dependencies are not satisfied,
   // suppress the error. This handles the case where initial fetch fails because
   // dependent fields don't have values yet.
   const shouldSkipError =

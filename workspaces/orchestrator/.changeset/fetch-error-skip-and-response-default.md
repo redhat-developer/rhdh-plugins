@@ -3,13 +3,13 @@
 '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets': minor
 ---
 
-Add fetch:error:skip and fetch:response:default options for form widgets
+Add fetch:error:ignoreUnready and fetch:response:default options for form widgets
 
-**Feature 1: fetch:error:skip**
+**Feature 1: fetch:error:ignoreUnready**
 
 When using widgets with `fetch:retrigger` dependencies, the initial fetch often fails because dependent fields don't have values yet. This results in HTTP errors being displayed during initial load.
 
-- Add `fetch:error:skip` option to suppress fetch error display until all `fetch:retrigger` dependencies have non-empty values
+- Add `fetch:error:ignoreUnready` option to suppress fetch error display until all `fetch:retrigger` dependencies have non-empty values
 - Errors are only suppressed when dependencies are empty; once filled, real errors are shown
 - Supported by: ActiveTextInput, ActiveDropdown, ActiveMultiSelect, SchemaUpdater
 
@@ -32,7 +32,7 @@ Widgets previously required `fetch:response:value` for defaults, meaning fetch m
     "ui:props": {
       "fetch:url": "...",
       "fetch:retrigger": ["current.appName"],
-      "fetch:error:skip": true,
+      "fetch:error:ignoreUnready": true,
       "fetch:response:default": "create"
     }
   }
