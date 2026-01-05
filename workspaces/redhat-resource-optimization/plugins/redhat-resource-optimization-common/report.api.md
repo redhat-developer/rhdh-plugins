@@ -107,10 +107,16 @@ export interface CostManagementSlimApi {
     }>
   >;
   // (undocumented)
-  searchOpenShiftClusters(search?: string): Promise<
+  searchOpenShiftClusters(
+    search?: string,
+    options?: {
+      token?: string;
+    },
+  ): Promise<
     TypedResponse<{
       data: Array<{
         value: string;
+        cluster_alias: string;
       }>;
       meta?: any;
       links?: any;
@@ -127,7 +133,12 @@ export interface CostManagementSlimApi {
     }>
   >;
   // (undocumented)
-  searchOpenShiftProjects(search?: string): Promise<
+  searchOpenShiftProjects(
+    search?: string,
+    options?: {
+      token?: string;
+    },
+  ): Promise<
     TypedResponse<{
       data: Array<{
         value: string;
@@ -140,7 +151,7 @@ export interface CostManagementSlimApi {
 
 // @public (undocumented)
 export class CostManagementSlimClient implements CostManagementSlimApi {
-  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi });
+  constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi });
   // (undocumented)
   downloadCostManagementReport(
     request: DownloadCostManagementRequest,
@@ -170,10 +181,16 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   >;
-  searchOpenShiftClusters(search?: string): Promise<
+  searchOpenShiftClusters(
+    search?: string,
+    options?: {
+      token?: string;
+    },
+  ): Promise<
     TypedResponse<{
       data: Array<{
         value: string;
+        cluster_alias: string;
       }>;
       meta?: any;
       links?: any;
@@ -188,7 +205,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   >;
-  searchOpenShiftProjects(search?: string): Promise<
+  searchOpenShiftProjects(
+    search?: string,
+    options?: {
+      token?: string;
+    },
+  ): Promise<
     TypedResponse<{
       data: Array<{
         value: string;
@@ -523,6 +545,16 @@ export interface GetAccessResponse {
   decision: string;
 }
 
+// @public
+export interface GetCostManagementAccessResponse {
+  // (undocumented)
+  authorizedClusterNames: string[];
+  // (undocumented)
+  authorizeProjects: string[];
+  // (undocumented)
+  decision: string;
+}
+
 // @public (undocumented)
 export interface GetCostManagementRequest {
   // (undocumented)
@@ -534,6 +566,7 @@ export interface GetCostManagementRequest {
     'filter[resolution]'?: 'daily' | 'monthly';
     'filter[time_scope_units]'?: 'day' | 'month';
     'filter[time_scope_value]'?: number;
+    'filter[exact:cluster]'?: string;
     'group_by[project]'?: '*' | string;
     'group_by[cluster]'?: '*' | string;
     'group_by[node]'?: '*' | string;
