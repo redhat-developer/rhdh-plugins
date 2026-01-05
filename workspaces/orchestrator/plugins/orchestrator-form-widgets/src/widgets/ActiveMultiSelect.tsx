@@ -73,6 +73,11 @@ export const ActiveMultiSelect: Widget<
   const mandatorySelector = uiProps['fetch:response:mandatory']?.toString();
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const allowNewItems = uiProps['ui:allowNewItems'] === true;
+  const staticDefault = uiProps['fetch:response:default'];
+  const staticDefaultValues = Array.isArray(staticDefault)
+    ? (staticDefault as string[])
+    : undefined;
+
   const [localError] = useState<string | undefined>(
     autocompleteSelector
       ? undefined
@@ -83,12 +88,32 @@ export const ActiveMultiSelect: Widget<
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
 
+  // Compute all options: fetched options + in-progress item + static defaults as fallback
   const allOptions: string[] = useMemo(() => {
+    const baseOptions = autocompleteOptions ?? [];
+    const hasOptions = baseOptions.length > 0;
+
+    // Start with fetched options or static defaults as fallback
+    let options = hasOptions ? baseOptions : (staticDefaultValues ?? []);
+
+    // Add in-progress item if allowed
     if (allowNewItems && inProgressItem) {
-      return [...new Set([inProgressItem, ...(autocompleteOptions ?? [])])];
+      options = [...new Set([inProgressItem, ...options])];
     }
-    return autocompleteOptions || [];
-  }, [inProgressItem, autocompleteOptions, allowNewItems]);
+
+    // Also include current values so they appear as options
+    if (value && value.length > 0) {
+      options = [...new Set([...options, ...value])];
+    }
+
+    return options;
+  }, [
+    inProgressItem,
+    autocompleteOptions,
+    allowNewItems,
+    staticDefaultValues,
+    value,
+  ]);
 
   const handleFetchStarted = formContext?.handleFetchStarted;
   const handleFetchEnded = formContext?.handleFetchEnded;
@@ -109,6 +134,8 @@ export const ActiveMultiSelect: Widget<
     handleFetchEnded,
   );
 
+  // Process fetch results
+  // Note: Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
     if (!data) {
       return;
@@ -205,11 +232,17 @@ export const ActiveMultiSelect: Widget<
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (completeLoading) {
+  // Show spinner only if loading AND we don't have static defaults to show
+  const hasStaticDefaults =
+    staticDefaultValues && staticDefaultValues.length > 0;
+  if (completeLoading && !hasStaticDefaults) {
     return <CircularProgress size={20} />;
   }
 
-  if (autocompleteOptions) {
+  // Render if we have fetched options, static defaults, or current values
+  const hasOptionsToShow =
+    allOptions.length > 0 || autocompleteOptions !== undefined;
+  if (hasOptionsToShow) {
     return (
       <Box>
         <FormControl variant="outlined" fullWidth>
