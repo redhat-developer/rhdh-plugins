@@ -82,7 +82,13 @@ export class LokiProvider implements WorkflowLogProvider {
           ]
         }
       */
-      // flatMap Instead?
+      // flatMap and map the results to an array like this:
+      /**
+       * {
+       *   id: '123456',
+       *   log: '2025-11-14 14:08:52,645 d5932f2cb566 INFO [org.kie.kogito.serverless.workflow.devservices.De....'
+       * }
+       */
       allResults = jsonResponse.data.result
         .flatMap((val: any[]) => {
           return val.values;
@@ -93,21 +99,6 @@ export class LokiProvider implements WorkflowLogProvider {
             log: val[1],
           };
         });
-      // Reduce the results into another array
-      // allResults = jsonResponse.data.result.reduce(
-      //   (acc: any[], curr: { values: any[] }) => {
-      //     const innerCurrValues = curr.values.reduce((innerAcc: any, innerCurr: any) => {
-      //       acc.push({
-      //         id: innerCurr[0],
-      //         log: innerCurr[1],
-      //       });
-      //       return innerAcc;
-      //     }, []);
-      //     // acc.concat(innerCurrValues);
-      //     return acc;
-      //   },
-      //   [],
-      // );
     }
 
     const workflowLogsResponse: WorkflowLogsResponse = {
