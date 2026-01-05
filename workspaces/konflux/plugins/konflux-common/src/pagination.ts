@@ -16,7 +16,4 @@
 
 export const PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 25,
-  MIN_PAGE_SIZE: 10,
-  MAX_PAGE_SIZE: 500,
-  PAGE_SIZE_OPTIONS: [25, 50, 100, 200],
 } as const;
