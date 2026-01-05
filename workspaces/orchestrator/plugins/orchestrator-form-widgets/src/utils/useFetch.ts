@@ -25,6 +25,23 @@ import { useRetriggerEvaluate } from './useRetriggerEvaluate';
 import { useDebounce } from 'react-use';
 import { DEFAULT_DEBOUNCE_LIMIT } from '../widgets/constants';
 
+/**
+ * Checks if all fetch:retrigger dependencies have non-empty values.
+ * Used to determine if a fetch error should be shown or suppressed.
+ */
+const areRetriggerDependenciesSatisfied = (
+  retrigger: ReturnType<typeof useRetriggerEvaluate>,
+): boolean => {
+  // If no retrigger conditions, dependencies are satisfied
+  if (!retrigger || retrigger.length === 0) {
+    return true;
+  }
+  // All values must be non-empty
+  return retrigger.every(
+    value => value !== undefined && value !== null && value !== '',
+  );
+};
+
 export const useFetch = (
   formData: JsonObject,
   uiProps: UiProps,
@@ -37,6 +54,7 @@ export const useFetch = (
   const [data, setData] = useState<JsonObject>();
 
   const fetchUrl = uiProps['fetch:url'];
+  const skipErrorWhenDepsEmpty = uiProps['fetch:error:ignoreUnready'] === true;
   const evaluatedRequestInit = useRequestInit({
     uiProps,
     prefix: 'fetch',
@@ -121,5 +139,12 @@ export const useFetch = (
     ],
   );
 
-  return { data, error, loading };
+  // If fetch:error:ignoreUnready is enabled and retrigger dependencies are not satisfied,
+  // suppress the error. This handles the case where initial fetch fails because
+  // dependent fields don't have values yet.
+  const shouldSkipError =
+    skipErrorWhenDepsEmpty && !areRetriggerDependenciesSatisfied(retrigger);
+  const effectiveError = shouldSkipError ? undefined : error;
+
+  return { data, error: effectiveError, loading };
 };

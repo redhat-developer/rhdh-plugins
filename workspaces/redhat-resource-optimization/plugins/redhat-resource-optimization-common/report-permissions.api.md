@@ -6,6 +6,11 @@
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
 // @public (undocumented)
+export const costClusterSpecificPermission: (
+  clusterName: string,
+) => BasicPermission;
+
+// @public (undocumented)
 export const costPluginPermissions: BasicPermission[];
 
 // @public (undocumented)
