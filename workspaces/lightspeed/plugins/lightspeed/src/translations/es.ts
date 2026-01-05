@@ -230,6 +230,13 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Los chats fijados están actualmente habilitados',
     'settings.pinned.disabled.description':
       'Los chats fijados están actualmente deshabilitados',
+
+    // Sort options
+    'sort.label': 'Ordenar conversaciones',
+    'sort.newest': 'Fecha (más reciente primero)',
+    'sort.oldest': 'Fecha (más antiguo primero)',
+    'sort.alphabeticalAsc': 'Nombre (A-Z)',
+    'sort.alphabeticalDesc': 'Nombre (Z-A)',
   },
 });
 

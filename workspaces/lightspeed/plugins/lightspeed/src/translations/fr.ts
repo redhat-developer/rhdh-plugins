@@ -231,6 +231,13 @@ const lightspeedTranslationFr = createTranslationMessages({
       'Les chats épinglés sont actuellement activés',
     'settings.pinned.disabled.description':
       'Les chats épinglés sont actuellement désactivés',
+
+    // Sort options
+    'sort.label': 'Trier les conversations',
+    'sort.newest': 'Date (plus récent en premier)',
+    'sort.oldest': 'Date (plus ancien en premier)',
+    'sort.alphabeticalAsc': 'Nom (A-Z)',
+    'sort.alphabeticalDesc': 'Nom (Z-A)',
   },
 });
 

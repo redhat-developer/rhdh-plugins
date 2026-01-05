@@ -218,6 +218,13 @@ export const lightspeedMessages = {
   'settings.pinned.disable': 'Disable pinned chats',
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
+
+  // Sort options
+  'sort.label': 'Sort conversations',
+  'sort.newest': 'Date (newest first)',
+  'sort.oldest': 'Date (oldest first)',
+  'sort.alphabeticalAsc': 'Name (A-Z)',
+  'sort.alphabeticalDesc': 'Name (Z-A)',
 };
 
 /**

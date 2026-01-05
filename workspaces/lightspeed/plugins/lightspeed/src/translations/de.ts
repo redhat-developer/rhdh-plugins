@@ -227,6 +227,13 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Angeheftete Chats sind derzeit aktiviert',
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert',
+
+    // Sort options
+    'sort.label': 'Konversationen sortieren',
+    'sort.newest': 'Datum (neueste zuerst)',
+    'sort.oldest': 'Datum (älteste zuerst)',
+    'sort.alphabeticalAsc': 'Name (A-Z)',
+    'sort.alphabeticalDesc': 'Name (Z-A)',
   },
 });
 
