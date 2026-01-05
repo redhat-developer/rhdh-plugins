@@ -113,7 +113,7 @@ export class CatalogMetricService {
         try {
           thresholds = mergeEntityAndProviderThresholds(entity, provider);
 
-          if (value === undefined) {
+          if (value === null) {
             thresholdError =
               'Unable to evaluate thresholds, metric value is missing';
           }
@@ -121,7 +121,7 @@ export class CatalogMetricService {
           thresholdError = stringifyError(error);
         }
 
-        const isMetricCalcError = error_message || value === undefined;
+        const isMetricCalcError = error_message || value === null;
 
         return {
           id: metric.id,
@@ -163,13 +163,21 @@ export class CatalogMetricService {
   async getAggregatedMetricsByEntityRefs(
     entityRefs: string[],
     metricIds?: string[],
+    filter?: PermissionCriteria<
+      PermissionCondition<string, PermissionRuleParams>
+    >,
   ): Promise<AggregatedMetricResult[]> {
     const metricsToFetch = this.registry.listMetrics(metricIds);
+
+    const authorizedMetricsToFetch = filterAuthorizedMetrics(
+      metricsToFetch,
+      filter,
+    );
 
     const metricResults =
       await this.database.readLatestEntityMetricValuesByEntityRefs(
         entityRefs,
-        metricsToFetch.map(m => m.id),
+        authorizedMetricsToFetch.map(m => m.id),
       );
 
     const aggregatedMetrics = aggregateMetricsByStatus(metricResults);

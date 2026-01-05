@@ -20,18 +20,17 @@ import {
   TestDatabases,
 } from '@backstage/backend-test-utils';
 import { DatabaseMetricValues } from './DatabaseMetricValues';
-import { DbMetricValue } from './types';
+import { DbMetricValueCreate } from './types';
 import { migrate } from './migration';
 
 jest.setTimeout(60000);
 
-const metricValues: Omit<DbMetricValue, 'id'>[] = [
+const metricValues: Omit<DbMetricValueCreate, 'id'>[] = [
   {
     catalog_entity_ref: 'component:default/test-service',
     metric_id: 'github.metric1',
     value: 41,
     timestamp: new Date('2023-01-01T00:00:00Z'),
-    error_message: undefined,
     status: 'success',
   },
   {
@@ -39,13 +38,11 @@ const metricValues: Omit<DbMetricValue, 'id'>[] = [
     metric_id: 'github.metric1',
     value: 25,
     timestamp: new Date('2023-01-01T00:00:00Z'),
-    error_message: undefined,
     status: 'success',
   },
   {
     catalog_entity_ref: 'component:default/another-service',
     metric_id: 'github.metric2',
-    value: undefined,
     timestamp: new Date('2023-01-01T00:00:00Z'),
     error_message: 'Failed to fetch metric',
   },
@@ -220,7 +217,7 @@ describe('DatabaseMetricValues', () => {
             ...metricValues[2],
             timestamp: laterTime,
             value: 10,
-            error_message: undefined,
+            error_message: null,
             status: 'success',
           },
         ]);

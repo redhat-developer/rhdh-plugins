@@ -15,19 +15,21 @@
  */
 
 import { aggregateMetricsByStatus } from './aggregateMetricsByStatus';
-import { DbMetricValue } from '../database/types';
+import { DbMetricValue, DbMetricValueStatus } from '../database/types';
+import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 describe('aggregateMetricsByStatus', () => {
   const createMetric = (
     metricId: string,
-    status: 'success' | 'warning' | 'error',
-    value: any = { count: 1 },
+    status: DbMetricValueStatus | null = null,
+    value: MetricValue | null = null,
   ): DbMetricValue => ({
     id: 1,
     catalog_entity_ref: 'component:default/test',
     metric_id: metricId,
     value,
     timestamp: new Date(),
+    error_message: null,
     status,
   });
 
@@ -38,7 +40,7 @@ describe('aggregateMetricsByStatus', () => {
 
   describe('when metrics have valid status and value', () => {
     it('should aggregate single success metric', () => {
-      const metrics = [createMetric('metric1', 'success')];
+      const metrics = [createMetric('metric1', 'success', 98)];
       const result = aggregateMetricsByStatus(metrics);
 
       expect(result).toEqual({
@@ -54,7 +56,7 @@ describe('aggregateMetricsByStatus', () => {
     });
 
     it('should aggregate single warning metric', () => {
-      const metrics = [createMetric('metric1', 'warning')];
+      const metrics = [createMetric('metric1', 'warning', 88)];
       const result = aggregateMetricsByStatus(metrics);
 
       expect(result).toEqual({
@@ -70,7 +72,7 @@ describe('aggregateMetricsByStatus', () => {
     });
 
     it('should aggregate single error metric', () => {
-      const metrics = [createMetric('metric1', 'error')];
+      const metrics = [createMetric('metric1', 'error', 77)];
       const result = aggregateMetricsByStatus(metrics);
 
       expect(result).toEqual({
@@ -87,10 +89,10 @@ describe('aggregateMetricsByStatus', () => {
 
     it('should aggregate multiple metrics with same metric_id', () => {
       const metrics = [
-        createMetric('metric1', 'success'),
-        createMetric('metric1', 'success'),
-        createMetric('metric1', 'warning'),
-        createMetric('metric1', 'error'),
+        createMetric('metric1', 'success', 66),
+        createMetric('metric1', 'success', 16),
+        createMetric('metric1', 'warning', 55),
+        createMetric('metric1', 'error', 44),
       ];
       const result = aggregateMetricsByStatus(metrics);
 
@@ -106,51 +108,15 @@ describe('aggregateMetricsByStatus', () => {
       });
     });
 
-    it('should aggregate multiple metrics with different metric_ids', () => {
-      const metrics = [
-        createMetric('metric1', 'success'),
-        createMetric('metric2', 'warning'),
-        createMetric('metric3', 'error'),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
-
-      expect(result).toEqual({
-        metric1: {
-          values: {
-            success: 1,
-            warning: 0,
-            error: 0,
-          },
-          total: 1,
-        },
-        metric2: {
-          values: {
-            success: 0,
-            warning: 1,
-            error: 0,
-          },
-          total: 1,
-        },
-        metric3: {
-          values: {
-            success: 0,
-            warning: 0,
-            error: 1,
-          },
-          total: 1,
-        },
-      });
-    });
-
     it('should aggregate complex scenario with multiple metric_ids and statuses', () => {
       const metrics = [
-        createMetric('metric1', 'success'),
-        createMetric('metric1', 'success'),
-        createMetric('metric1', 'warning'),
-        createMetric('metric2', 'error'),
-        createMetric('metric2', 'error'),
-        createMetric('metric2', 'success'),
-        createMetric('metric3', 'warning'),
+        createMetric('metric1', 'success', 16),
+        createMetric('metric1', 'success', 26),
+        createMetric('metric1', 'warning', 26),
+        createMetric('metric2', 'error', 36),
+        createMetric('metric2', 'error', 46),
+        createMetric('metric2', 'success', 56),
+        createMetric('metric3', 'warning', 66),
       ];
       const result = aggregateMetricsByStatus(metrics);
 
@@ -183,149 +149,87 @@ describe('aggregateMetricsByStatus', () => {
     });
   });
 
-  describe('when metrics have invalid status or value', () => {
-    it('should skip metrics with null value', () => {
-      const metrics: DbMetricValue[] = [
-        createMetric('metric1', 'success', null),
-        createMetric('metric1', 'warning', { count: 1 }),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
+  it('should skip metrics when value is null', () => {
+    const metrics: DbMetricValue[] = [
+      createMetric('metric1', 'success'),
+      createMetric('metric1', 'warning', 1),
+    ];
+    const result = aggregateMetricsByStatus(metrics);
 
-      expect(result).toEqual({
-        metric1: {
-          values: {
-            success: 0,
-            warning: 1,
-            error: 0,
-          },
-          total: 1,
+    expect(result).toEqual({
+      metric1: {
+        values: {
+          success: 0,
+          warning: 1,
+          error: 0,
         },
-      });
-    });
-
-    it('should skip metrics without status', () => {
-      const metrics: DbMetricValue[] = [
-        // @ts-expect-error - for testing
-        createMetric('metric1', undefined, { count: 1 }),
-        createMetric('metric1', 'success'),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
-
-      expect(result).toEqual({
-        metric1: {
-          values: {
-            success: 1,
-            warning: 0,
-            error: 0,
-          },
-          total: 1,
-        },
-      });
-    });
-
-    it('should skip metrics with both null value and no status', () => {
-      const metrics: DbMetricValue[] = [
-        {
-          id: 1,
-          catalog_entity_ref: 'component:default/test',
-          metric_id: 'metric1',
-          value: undefined,
-          timestamp: new Date(),
-        },
-        createMetric('metric1', 'success'),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
-
-      expect(result).toEqual({
-        metric1: {
-          values: {
-            success: 1,
-            warning: 0,
-            error: 0,
-          },
-          total: 1,
-        },
-      });
-    });
-
-    it('should handle undefined value as valid (not null)', () => {
-      const metrics: DbMetricValue[] = [
-        createMetric('metric1', 'success', undefined),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
-
-      // undefined !== null, so it should be included
-      expect(result).toEqual({
-        metric1: {
-          values: {
-            success: 1,
-            warning: 0,
-            error: 0,
-          },
-          total: 1,
-        },
-      });
-    });
-
-    it('should handle mixed valid and invalid metrics', () => {
-      const metrics: DbMetricValue[] = [
-        createMetric('metric1', 'success'),
-        createMetric('metric1', 'warning', null),
-        // @ts-expect-error - for testing
-        createMetric('metric1', undefined, { count: 1 }),
-        createMetric('metric1', 'error'),
-        createMetric('metric2', 'success', null),
-        createMetric('metric2', 'warning'),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
-
-      expect(result).toEqual({
-        metric1: {
-          values: {
-            success: 1,
-            warning: 0,
-            error: 1,
-          },
-          total: 2,
-        },
-        metric2: {
-          values: {
-            success: 0,
-            warning: 1,
-            error: 0,
-          },
-          total: 1,
-        },
-      });
+        total: 1,
+      },
     });
   });
 
-  describe('when all metrics are invalid', () => {
-    it('should return empty object when all metrics have null value', () => {
-      const metrics: DbMetricValue[] = [
-        createMetric('metric1', 'success', null),
-        createMetric('metric2', 'warning', null),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
+  it('should skip metrics when status is null', () => {
+    const metrics: DbMetricValue[] = [
+      createMetric('metric1', null, 1),
+      createMetric('metric1', 'success', 4),
+    ];
+    const result = aggregateMetricsByStatus(metrics);
 
-      expect(result).toEqual({});
+    expect(result).toEqual({
+      metric1: {
+        values: {
+          success: 1,
+          warning: 0,
+          error: 0,
+        },
+        total: 1,
+      },
     });
+  });
 
-    it('should return empty object when all metrics have no status', () => {
-      const metrics: DbMetricValue[] = [
-        // @ts-expect-error - for testing
-        createMetric('metric2', undefined, { count: 2 }),
-        // @ts-expect-error - for testing
-        createMetric('metric2', undefined, { count: 2 }),
-      ];
-      const result = aggregateMetricsByStatus(metrics);
+  it('should handle mixed valid and invalid metrics', () => {
+    const metrics: DbMetricValue[] = [
+      createMetric('metric1', 'success', 1),
+      createMetric('metric1', 'warning'),
+      createMetric('metric1', null, 2),
+      createMetric('metric1', 'error', 3),
+      createMetric('metric2', 'success'),
+      createMetric('metric2', 'warning', 4),
+    ];
+    const result = aggregateMetricsByStatus(metrics);
 
-      expect(result).toEqual({});
+    expect(result).toEqual({
+      metric1: {
+        values: {
+          success: 1,
+          warning: 0,
+          error: 1,
+        },
+        total: 2,
+      },
+      metric2: {
+        values: {
+          success: 0,
+          warning: 1,
+          error: 0,
+        },
+        total: 1,
+      },
     });
+  });
+
+  it('should return empty object when all metrics are invalid', () => {
+    const metrics: DbMetricValue[] = [
+      createMetric('metric1', 'success'),
+      createMetric('metric2', null, 11),
+    ];
+    const result = aggregateMetricsByStatus(metrics);
+
+    expect(result).toEqual({});
   });
 
   describe('edge cases', () => {
-    it('should handle zero value as valid (not null)', () => {
+    it('should handle zero value', () => {
       const metrics: DbMetricValue[] = [createMetric('metric1', 'success', 0)];
       const result = aggregateMetricsByStatus(metrics);
 
@@ -341,23 +245,7 @@ describe('aggregateMetricsByStatus', () => {
       });
     });
 
-    it('should handle empty string value as valid (not null)', () => {
-      const metrics: DbMetricValue[] = [createMetric('metric1', 'success', '')];
-      const result = aggregateMetricsByStatus(metrics);
-
-      expect(result).toEqual({
-        metric1: {
-          values: {
-            success: 1,
-            warning: 0,
-            error: 0,
-          },
-          total: 1,
-        },
-      });
-    });
-
-    it('should handle false value as valid (not null)', () => {
+    it('should handle false value', () => {
       const metrics: DbMetricValue[] = [
         createMetric('metric1', 'success', false),
       ];

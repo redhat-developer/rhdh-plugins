@@ -150,7 +150,10 @@ export async function createRouter({
   router.get('/metrics/catalog/aggregated', async (req, res) => {
     const { metricIds } = req.query;
 
-    await authorizeConditional(req, scorecardMetricReadPermission);
+    const { conditions } = await authorizeConditional(
+      req,
+      scorecardMetricReadPermission,
+    );
 
     validateCatalogMetricsSchema(req.query);
 
@@ -184,6 +187,7 @@ export async function createRouter({
       await catalogMetricService.getAggregatedMetricsByEntityRefs(
         entitiesOwnedByAUser,
         metricIdsParsed,
+        conditions,
       );
 
     res.json(aggregatedMetrics);

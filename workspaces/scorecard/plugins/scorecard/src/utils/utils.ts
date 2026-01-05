@@ -39,7 +39,7 @@ export const getStatusConfig = ({
   thresholdStatus,
   metricStatus,
 }: {
-  evaluation: string | undefined;
+  evaluation: string | null;
   thresholdStatus?: 'success' | 'error';
   metricStatus?: 'success' | 'error';
 }): StatusConfig => {

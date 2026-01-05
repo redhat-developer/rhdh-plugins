@@ -62,14 +62,14 @@ export type MetricResult = {
     history?: boolean;
   };
   result: {
-    value?: MetricValue;
+    value: MetricValue | null;
     timestamp: string;
     thresholdResult: ThresholdResult;
   };
   error?: string;
 };
 
-/*
+/**
  * @public
  */
 export type AggregatedMetricResult = {
@@ -82,7 +82,7 @@ export type AggregatedMetricResult = {
     history?: boolean;
   };
   result: {
-    values?: AggregatedMetricValue[];
+    values: AggregatedMetricValue[];
     total: number;
     timestamp: string;
   };

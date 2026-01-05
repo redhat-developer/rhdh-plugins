@@ -33,6 +33,9 @@ import { DbMetricValue } from '../database/types';
 import { mockThresholdRules } from '../../__fixtures__/mockThresholdRules';
 import * as aggregateMetricsByStatusModule from '../utils/aggregateMetricsByStatus';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
+import { PermissionCriteria } from '@backstage/plugin-permission-common';
+import { PermissionCondition } from '@backstage/plugin-permission-common';
+import { PermissionRuleParams } from '@backstage/plugin-permission-common';
 
 jest.mock('../utils/mergeEntityAndProviderThresholds');
 jest.mock('../permissions/permissionUtils');
@@ -47,7 +50,7 @@ const latestEntityMetric = [
     metric_id: 'github.important_metric',
     value: 42,
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
-    error_message: undefined,
+    error_message: null,
     status: 'success',
   } as DbMetricValue,
 ] as DbMetricValue[];
@@ -59,7 +62,7 @@ const latestAggregatedEntityMetric = [
     metric_id: 'github.important_metric',
     value: 42,
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
-    error_message: undefined,
+    error_message: null,
     status: 'success',
   } as DbMetricValue,
   {
@@ -68,7 +71,7 @@ const latestAggregatedEntityMetric = [
     metric_id: 'github.important_metric',
     value: 11,
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
-    error_message: undefined,
+    error_message: null,
     status: 'warning',
   } as DbMetricValue,
 ] as DbMetricValue[];
@@ -77,6 +80,16 @@ const metricsList = [
   { id: 'github.important_metric' },
   { id: 'github.number_metric' },
 ] as Metric[];
+
+const permissionsFilter = {
+  anyOf: [
+    {
+      rule: 'HAS_METRIC_ID',
+      resourceType: 'scorecard-metric',
+      params: { metricIds: ['github.important_metric'] },
+    },
+  ],
+} as PermissionCriteria<PermissionCondition<string, PermissionRuleParams>>;
 
 describe('CatalogMetricService', () => {
   let mockedCatalog: ReturnType<typeof catalogServiceMock.mock>;
@@ -229,28 +242,12 @@ describe('CatalogMetricService', () => {
       await service.getLatestEntityMetrics(
         'component:default/test-component',
         ['github.important_metric'],
-        {
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        },
+        permissionsFilter,
       );
 
       expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
         [{ id: 'github.important_metric' }],
-        expect.objectContaining({
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        }),
+        permissionsFilter,
       );
     });
 
@@ -258,28 +255,12 @@ describe('CatalogMetricService', () => {
       await service.getLatestEntityMetrics(
         'component:default/test-component',
         undefined,
-        {
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        },
+        permissionsFilter,
       );
 
       expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
         [{ id: 'github.important_metric' }, { id: 'github.number_metric' }],
-        expect.objectContaining({
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        }),
+        permissionsFilter,
       );
     });
 
@@ -420,7 +401,7 @@ describe('CatalogMetricService', () => {
       mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
         {
           ...latestEntityMetric[0],
-          value: undefined,
+          value: null,
         },
       ]);
 
@@ -437,7 +418,7 @@ describe('CatalogMetricService', () => {
       mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
         {
           ...latestEntityMetric[0],
-          value: undefined,
+          value: null,
         },
       ]);
 
@@ -499,6 +480,22 @@ describe('CatalogMetricService', () => {
       expect(mockedRegistry.listMetrics).toHaveBeenCalledWith([
         'github.important_metric',
       ]);
+    });
+
+    it('should filter authorized metrics for specific provider IDs', async () => {
+      await service.getAggregatedMetricsByEntityRefs(
+        [
+          'component:default/test-component',
+          'component:default/test-component-2',
+        ],
+        ['github.important_metric', 'github.number_metric'],
+        permissionsFilter,
+      );
+
+      expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
+        [{ id: 'github.important_metric' }, { id: 'github.number_metric' }],
+        permissionsFilter,
+      );
     });
 
     it('should read latest entity metric values by entity refs', async () => {

@@ -28,7 +28,7 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
 import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
-import { DbMetricValue } from '../../database/types';
+import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
 
@@ -156,7 +156,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 value,
                 timestamp: new Date(),
                 status,
-              } as Omit<DbMetricValue, 'id'>;
+              } as Omit<DbMetricValueCreate, 'id'>;
             } catch (error) {
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
@@ -164,7 +164,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),
-              } as Omit<DbMetricValue, 'id'>;
+              } as Omit<DbMetricValueCreate, 'id'>;
             }
           }),
         ).then(promises =>
@@ -173,7 +173,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               return [...acc, curr.value];
             }
             return acc;
-          }, [] as Omit<DbMetricValue, 'id'>[]),
+          }, [] as Omit<DbMetricValueCreate, 'id'>[]),
         );
 
         await this.database.createMetricValues(batchResults);

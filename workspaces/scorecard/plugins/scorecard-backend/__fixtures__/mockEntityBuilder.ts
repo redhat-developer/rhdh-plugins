@@ -26,17 +26,17 @@ export class MockEntityBuilder {
     owner: 'guests',
   };
 
-  withKind(kind: string): MockEntityBuilder {
+  withKind(kind: string): this {
     this.kind = kind;
     return this;
   }
 
-  withMetadata(metadata: Entity['metadata']): MockEntityBuilder {
+  withMetadata(metadata: Entity['metadata']): this {
     this.metadata = metadata;
     return this;
   }
 
-  withSpec(spec: Entity['spec']): MockEntityBuilder {
+  withSpec(spec: Entity['spec']): this {
     this.spec = spec;
     return this;
   }

@@ -15,7 +15,7 @@
  */
 
 import { Knex } from 'knex';
-import { DbMetricValue } from './types';
+import { DbMetricValueCreate, DbMetricValue } from './types';
 
 export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
@@ -26,7 +26,7 @@ export class DatabaseMetricValues {
    * Insert multiple metric values
    */
   async createMetricValues(
-    metricValues: Omit<DbMetricValue, 'id'>[],
+    metricValues: Omit<DbMetricValueCreate, 'id'>[],
   ): Promise<void> {
     await this.dbClient(this.tableName).insert(metricValues);
   }

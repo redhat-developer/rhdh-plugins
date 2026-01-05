@@ -16,12 +16,24 @@
 
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type DbMetricValue = {
+export type DbMetricValueStatus = 'success' | 'warning' | 'error';
+
+export type DbMetricValueCreate = {
   id: number;
   catalog_entity_ref: string;
   metric_id: string;
   value?: MetricValue;
   timestamp: Date;
   error_message?: string;
-  status?: 'success' | 'warning' | 'error';
+  status?: DbMetricValueStatus;
+};
+
+export type DbMetricValue = {
+  id: number;
+  catalog_entity_ref: string;
+  metric_id: string;
+  value: MetricValue | null;
+  timestamp: Date;
+  error_message: string | null;
+  status: DbMetricValueStatus | null;
 };

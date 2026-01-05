@@ -482,6 +482,7 @@ describe('createRouter', () => {
       ).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
         ['github.open_prs', 'jira.open_issues'],
+        undefined,
       );
       expect(response.body).toEqual(mockAggregatedMetricResults);
     });
@@ -497,6 +498,7 @@ describe('createRouter', () => {
       ).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
         ['github.open_prs'],
+        undefined,
       );
       expect(response.body).toEqual(mockAggregatedMetricResults);
     });
@@ -541,6 +543,7 @@ describe('createRouter', () => {
       ).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
         ['github.open_prs', 'jira.open_issues'],
+        undefined,
       );
     });
 
@@ -554,6 +557,7 @@ describe('createRouter', () => {
         catalogMetricService.getAggregatedMetricsByEntityRefs,
       ).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
+        undefined,
         undefined,
       );
     });
