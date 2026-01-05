@@ -46,6 +46,13 @@ export const costPluginReadPermission = createPermission({
 });
 
 /** @public */
+export const costClusterSpecificPermission = (clusterName: string) =>
+  createPermission({
+    name: `cost.${clusterName}`,
+    attributes: { action: 'read' },
+  });
+
+/** @public */
 export const costPluginPermissions = [costPluginReadPermission];
 
 /** @public */

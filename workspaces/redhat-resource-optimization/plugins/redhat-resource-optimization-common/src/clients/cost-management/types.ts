@@ -58,6 +58,7 @@ export interface GetCostManagementRequest {
     'filter[resolution]'?: 'daily' | 'monthly';
     'filter[time_scope_units]'?: 'day' | 'month';
     'filter[time_scope_value]'?: number;
+    'filter[exact:cluster]'?: string;
     'group_by[project]'?: '*' | string;
     'group_by[cluster]'?: '*' | string;
     'group_by[node]'?: '*' | string;
