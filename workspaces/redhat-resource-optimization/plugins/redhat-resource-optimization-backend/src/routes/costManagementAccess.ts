@@ -16,18 +16,26 @@
 
 import type { RequestHandler } from 'express';
 import type { RouterOptions } from '../models/RouterOptions';
-import { authorize } from '../util/checkPermissions';
+import {
+  authorize,
+  filterAuthorizedClusterIds,
+} from '../util/checkPermissions';
 import { costPluginPermissions } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { getTokenFromApi } from '../util/tokenUtil';
+
+// Cache keys for cost management clusters
+const COST_CLUSTERS_CACHE_KEY = 'cost_clusters';
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
 export const getCostManagementAccess: (
   options: RouterOptions,
 ) => RequestHandler = options => async (_, response) => {
-  const { logger, permissions, httpAuth } = options;
+  const { logger, permissions, httpAuth, cache, costManagementApi } = options;
   let finalDecision = AuthorizeResult.DENY;
 
-  // Check for cost.plugin permisssion
-  // if user has ros.plugin permission, allow access to all the data
+  // Check for cost.plugin permission
+  // If user has cost.plugin permission, allow access to all data
   const costPluginDecision = await authorize(
     _,
     costPluginPermissions,
@@ -35,22 +43,80 @@ export const getCostManagementAccess: (
     httpAuth,
   );
 
-  logger.info(`Checking decision:`, costPluginDecision);
+  logger.info(`Checking cost.plugin permission:`, costPluginDecision);
 
   if (costPluginDecision.result === AuthorizeResult.ALLOW) {
     finalDecision = AuthorizeResult.ALLOW;
 
     const body = {
       decision: finalDecision,
-      authorizeClusterIds: [],
+      authorizedClusterNames: [],
       authorizeProjects: [],
     };
     return response.json(body);
   }
 
+  // RBAC Filtering logic for Cluster using cost.{clusterName} permissions
+  let clusterDataMap: Record<string, string> = {};
+
+  // Check the cluster & project data in the cache first
+  const clustersFromCache = (await cache.get(COST_CLUSTERS_CACHE_KEY)) as
+    | Record<string, string>
+    | undefined;
+
+  if (clustersFromCache) {
+    clusterDataMap = clustersFromCache;
+    logger.info(`Using cached data: ${clusterDataMap.length} clusters`);
+  } else {
+    // Fetch clusters from Cost Management API
+    try {
+      const token = await getTokenFromApi(options);
+
+      const clustersResponse = await costManagementApi.searchOpenShiftClusters(
+        '',
+        { token },
+      );
+
+      const clustersData = await clustersResponse.json();
+
+      // Extract cluster names from response
+      clustersData.data?.map(
+        (cluster: { value: string; cluster_alias: string }) => {
+          if (cluster.cluster_alias && cluster.value)
+            logger.info(
+              `Cluster: ${cluster.cluster_alias} -> ${cluster.value}`,
+            );
+          clusterDataMap[cluster.cluster_alias] = cluster.value;
+        },
+      );
+
+      // Store in cache
+      await cache.set(COST_CLUSTERS_CACHE_KEY, clusterDataMap, {
+        ttl: CACHE_TTL,
+      });
+    } catch (error) {
+      logger.error(`Failed to fetch clusters from Cost Management API`, error);
+      throw error;
+    }
+  }
+
+  // Filter clusters based on cost.{clusterName} permissions
+  const authorizedClusterNames: string[] = await filterAuthorizedClusterIds(
+    _,
+    permissions,
+    httpAuth,
+    clusterDataMap,
+    'cost',
+  );
+
+  // If user has access to at least one cluster, allow access
+  if (authorizedClusterNames.length > 0) {
+    finalDecision = AuthorizeResult.ALLOW;
+  }
+
   const body = {
     decision: finalDecision,
-    authorizeClusterIds: [],
+    authorizedClusterNames,
     authorizeProjects: [],
   };
 
