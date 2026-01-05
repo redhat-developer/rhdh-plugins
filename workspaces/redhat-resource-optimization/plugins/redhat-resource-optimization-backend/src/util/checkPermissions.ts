@@ -28,7 +28,11 @@ import {
 import {
   rosClusterProjectPermission,
   rosClusterSpecificPermission,
+  costClusterSpecificPermission,
 } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
+
+/** Permission type for cluster-level access */
+export type ClusterPermissionType = 'ros' | 'cost';
 
 export interface ClusterProjectResult {
   cluster: string;
@@ -63,18 +67,34 @@ export const authorize = async (
   );
 };
 
+/**
+ * Filters cluster IDs based on cluster-specific permissions.
+ * @param request - The HTTP request
+ * @param permissionsSvc - The permissions service
+ * @param httpAuth - The HTTP auth service
+ * @param clusterDataMap - Map of clusterName → clusterId
+ * @param permissionType - 'ros' for ros.{clusterName} or 'cost' for cost.{clusterName} (defaults to 'ros')
+ * @returns Array of authorized cluster IDs
+ */
 export const filterAuthorizedClusterIds = async (
   request: HttpRequest,
   permissionsSvc: PermissionsService,
   httpAuth: HttpAuthService,
   clusterDataMap: Record<string, string>,
+  permissionType: ClusterPermissionType = 'ros',
 ): Promise<string[]> => {
   const credentials = await httpAuth.credentials(request);
   const allClusterNames: string[] = Object.keys(clusterDataMap);
 
+  // Select the appropriate permission function based on type
+  const getClusterPermission =
+    permissionType === 'cost'
+      ? costClusterSpecificPermission
+      : rosClusterSpecificPermission;
+
   const specificClusterRequests: AuthorizePermissionRequest[] =
     allClusterNames.map(clusterName => ({
-      permission: rosClusterSpecificPermission(clusterName),
+      permission: getClusterPermission(clusterName),
     }));
 
   const decisions = await permissionsSvc.authorize(specificClusterRequests, {
@@ -89,7 +109,9 @@ export const filterAuthorizedClusterIds = async (
     clusterName => clusterDataMap[clusterName],
   );
 
-  return authorizedClusterIds;
+  return permissionType === 'cost'
+    ? authorizeClusterNames
+    : authorizedClusterIds;
 };
 
 export const filterAuthorizedClusterProjectIds = async (
