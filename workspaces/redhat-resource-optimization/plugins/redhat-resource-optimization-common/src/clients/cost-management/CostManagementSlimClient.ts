@@ -27,7 +27,7 @@ import type { CostManagementSlimApi } from './CostManagementSlimApi';
 import { UnauthorizedError } from '@backstage-community/plugin-rbac-common';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type {
-  GetAccessResponse,
+  GetCostManagementAccessResponse,
   GetTokenResponse,
 } from '../optimizations/types';
 
@@ -37,7 +37,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   private readonly fetchApi: FetchApi;
   private token?: string;
 
-  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi }) {
+  constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi }) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi ?? { fetch: crossFetch };
   }
@@ -45,7 +45,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>> {
-    // Get access permission
+    // Get access permission and authorized clusters
     const accessAPIResponse = await this.getAccess();
 
     if (accessAPIResponse.decision === AuthorizeResult.DENY) {
@@ -62,7 +62,20 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
     const uri = '/cost-management/v1/reports/openshift/costs/';
 
+    // Build query params from the original request
     const queryParams = this.buildCostManagementQueryParams(request);
+
+    // Add cluster filters based on authorized clusters
+    // Empty array means full access (no filtering needed)
+    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
+    if (authorizedClusters.length > 0) {
+      // Add each authorized cluster as a filter parameter
+      // Cost Management API accepts multiple filter[exact:cluster] params
+      authorizedClusters.forEach(clusterName => {
+        queryParams.append('filter[exact:cluster]', clusterName);
+      });
+    }
+
     const queryString = queryParams.toString();
     const queryPart = queryString ? `?${queryString}` : '';
     const url = `${baseUrl}${uri}${queryPart}`;
@@ -73,7 +86,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async downloadCostManagementReport(
     request: DownloadCostManagementRequest,
   ): Promise<void> {
-    // Get access permission
+    // Get access permission and authorized clusters
     const accessAPIResponse = await this.getAccess();
 
     if (accessAPIResponse.decision === AuthorizeResult.DENY) {
@@ -101,6 +114,16 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     delete downloadRequest.query['filter[offset]'];
 
     const queryParams = this.buildCostManagementQueryParams(downloadRequest);
+
+    // Add cluster filters based on authorized clusters
+    // Empty array means full access (no filtering needed)
+    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
+    if (authorizedClusters.length > 0) {
+      authorizedClusters.forEach(clusterName => {
+        queryParams.append('filter[exact:cluster]', clusterName);
+      });
+    }
+
     const queryString = queryParams.toString();
     const queryPart = queryString ? `?${queryString}` : '';
     const url = `${baseUrl}${uri}${queryPart}`;
@@ -309,6 +332,10 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
         paramName: 'filter[time_scope_value]',
         needsStringConversion: true,
       },
+      {
+        key: 'filter[exact:cluster]',
+        paramName: 'filter[exact:cluster]',
+      },
     ];
 
     for (const { key, paramName, needsStringConversion } of basicParams) {
@@ -392,6 +419,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
    */
   public async searchOpenShiftProjects(
     search: string = '',
+    options?: { token?: string },
   ): Promise<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   > {
@@ -399,6 +427,32 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
     const url = `${baseUrl}/cost-management/v1/resource-types/openshift-projects/${searchParam}`;
 
+    // If token provided externally (backend use), use it directly
+    if (options?.token) {
+      const response = await this.fetchApi.fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${options.token}`,
+        },
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      return {
+        ok: response.ok,
+        status: response.status,
+        json: async () => response.json(),
+      } as TypedResponse<{
+        data: Array<{ value: string }>;
+        meta?: any;
+        links?: any;
+      }>;
+    }
+
+    // If no external token, use internal token retrieval
     return await this.fetchResourceType(url);
   }
 
@@ -408,12 +462,44 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
    */
   public async searchOpenShiftClusters(
     search: string = '',
+    options?: { token?: string },
   ): Promise<
-    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+    TypedResponse<{
+      data: Array<{ value: string; cluster_alias: string }>;
+      meta?: any;
+      links?: any;
+    }>
   > {
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
     const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
     const url = `${baseUrl}/cost-management/v1/resource-types/openshift-clusters/${searchParam}`;
+
+    // If token provided externally (backend use), use it directly
+    if (options?.token) {
+      const response = await this.fetchApi.fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${options.token}`,
+        },
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      return {
+        ok: response.ok,
+        status: response.status,
+        json: async () => response.json(),
+      } as TypedResponse<{
+        data: Array<{ value: string; cluster_alias: string }>;
+        meta?: any;
+        links?: any;
+      }>;
+    }
+
+    // If no external token, use internal token retrieval
 
     return await this.fetchResourceType(url);
   }
@@ -509,15 +595,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   private async fetchResourceType(
     url: string,
   ): Promise<
-    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
+    TypedResponse<{
+      data: Array<{ value: string; cluster_alias: string }>;
+      meta?: any;
+      links?: any;
+    }>
   > {
-    // Get access permission
-    const accessAPIResponse = await this.getAccess();
-
-    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
-      throw new UnauthorizedError();
-    }
-
     // Get or refresh token
     if (!this.token) {
       const { accessToken } = await this.getNewToken();
@@ -525,7 +608,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     }
 
     return await this.fetchWithTokenAndRetry<{
-      data: Array<{ value: string }>;
+      data: Array<{ value: string; cluster_alias: string }>;
       meta?: any;
       links?: any;
     }>(url);
@@ -575,12 +658,12 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     };
   }
 
-  private async getAccess(): Promise<GetAccessResponse> {
+  private async getAccess(): Promise<GetCostManagementAccessResponse> {
     const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
     const response = await this.fetchApi.fetch(
       `${baseUrl}/access/cost-management`,
     );
-    const data = (await response.json()) as GetAccessResponse;
+    const data = (await response.json()) as GetCostManagementAccessResponse;
     return data;
   }
 
