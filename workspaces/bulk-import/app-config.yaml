@@ -141,7 +141,7 @@ orchestrator:
     # runtime: podman
     baseUrl: http://localhost
     port: 8899
-    autoStart: true
+    autoStart: false
     # If you're using a MacBook with M-series chips, uncomment the line below to use ARM images.
     # To pull the image, you'll first need to authenticate with the registry.
     # For more information, visit: https://red.ht/410mMNU.
