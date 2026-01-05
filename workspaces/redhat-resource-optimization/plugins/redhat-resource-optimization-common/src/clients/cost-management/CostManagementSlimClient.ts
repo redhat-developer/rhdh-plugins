@@ -592,9 +592,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     }>(url);
   }
 
-  private async fetchResourceType(
-    url: string,
-  ): Promise<
+  private async fetchResourceType(url: string): Promise<
     TypedResponse<{
       data: Array<{ value: string; cluster_alias: string }>;
       meta?: any;
