@@ -29,8 +29,13 @@ import { getReleaseOverviewPath } from '../../../utils/url-paths';
 type ReleaseInfoProps = {
   release: ReleaseResource | null;
   text: string;
+  customLinkColor?: string;
 };
-export const ReleaseInfo = ({ release, text }: ReleaseInfoProps) => {
+export const ReleaseInfo = ({
+  release,
+  text,
+  customLinkColor,
+}: ReleaseInfoProps) => {
   const applicationName = getApplicationFromResource(release);
 
   if (!release) return null;
@@ -50,6 +55,7 @@ export const ReleaseInfo = ({ release, text }: ReleaseInfoProps) => {
           release.metadata?.name || '',
         )}
         label={text}
+        customColor={customLinkColor}
       />
     </div>
   );

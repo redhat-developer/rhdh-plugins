@@ -14,21 +14,10 @@
  * limitations under the License.
  */
 
-import { Link } from '@backstage/core-components';
-import { ExternalLinkAltIcon } from '@patternfly/react-icons/dist/esm/icons/external-link-alt-icon';
+import { useTheme } from '@material-ui/core/styles';
 
-import './ExternalLink.css';
+export const useIsDarkMode = (): boolean => {
+  const theme = useTheme();
 
-type Props = {
-  to: string;
-  label: string;
-  customColor?: string;
-};
-
-export const ExternalLink = ({ to, label, customColor }: Props) => {
-  return (
-    <Link to={to} style={{ color: customColor }}>
-      {label} <ExternalLinkAltIcon className="external-link-icon" />
-    </Link>
-  );
+  return theme.palette.type === 'dark';
 };

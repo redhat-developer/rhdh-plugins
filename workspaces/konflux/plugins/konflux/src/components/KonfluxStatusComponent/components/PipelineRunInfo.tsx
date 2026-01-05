@@ -30,11 +30,13 @@ import { getPipelineRunOverviewPath } from '../../../utils/url-paths';
 type PipelineRunInfoProps = {
   pipelineRun: PipelineRunResource | null;
   text: string;
+  customLinkColor?: string;
 };
 
 export const PipelineRunInfo = ({
   pipelineRun,
   text,
+  customLinkColor,
 }: PipelineRunInfoProps) => {
   const applicationName = getApplicationFromResource(pipelineRun);
 
@@ -55,6 +57,7 @@ export const PipelineRunInfo = ({
           pipelineRun.metadata?.name || '',
         )}
         label={text}
+        customColor={customLinkColor}
       />
     </div>
   );

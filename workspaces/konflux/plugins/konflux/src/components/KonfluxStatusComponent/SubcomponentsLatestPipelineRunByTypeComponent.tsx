@@ -35,6 +35,7 @@ import './KonfluxStatusComponent.css';
 import './SubcomponentsLatestPipelineRunByTypeComponent.css';
 import { Entity } from '@backstage/catalog-model';
 import { getEntityDisplayName } from '../../utils/entities';
+import { useIsDarkMode } from '../../hooks/useIsDarkMode';
 
 type Props = {
   isLoading: boolean;
@@ -42,23 +43,32 @@ type Props = {
   entities: Entity[];
 };
 
+const DARK_THEME_LINK_COLOR = '#3366CC';
+
 type LatestPipelineRunsByTypeProps = {
   latestPipelineRunsByType: LatestPipelineRunByType;
 };
 const LatestPipelineRunByTypeComponent = ({
   latestPipelineRunsByType,
 }: LatestPipelineRunsByTypeProps) => {
+  const isDarkMode = useIsDarkMode();
   return (
     <Flex direction={{ default: 'column' }} gap={{ default: 'gapNone' }}>
       <PipelineRunInfo
         pipelineRun={latestPipelineRunsByType.build}
         text="Build"
+        customLinkColor={isDarkMode ? DARK_THEME_LINK_COLOR : undefined}
       />
       <PipelineRunInfo
         pipelineRun={latestPipelineRunsByType.test}
         text="Test"
+        customLinkColor={isDarkMode ? DARK_THEME_LINK_COLOR : undefined}
       />
-      <ReleaseInfo release={latestPipelineRunsByType.release} text="Release" />
+      <ReleaseInfo
+        release={latestPipelineRunsByType.release}
+        text="Release"
+        customLinkColor={isDarkMode ? DARK_THEME_LINK_COLOR : undefined}
+      />
     </Flex>
   );
 };
