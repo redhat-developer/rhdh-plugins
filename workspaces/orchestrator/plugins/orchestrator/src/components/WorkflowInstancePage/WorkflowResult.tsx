@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ReactNode, useCallback, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useReducer, useState } from 'react';
 
 import {
   InfoCard,
@@ -28,7 +28,9 @@ import { AboutField } from '@backstage/plugin-catalog';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -44,6 +46,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
+import { useLogsEnabled } from '../../hooks/useLogsEnabled';
 import { useTranslation } from '../../hooks/useTranslation';
 import { executeWorkflowRouteRef } from '../../routes';
 import { buildUrl } from '../../utils/UrlUtils';
@@ -52,6 +55,7 @@ import {
   WorkflowDescriptionModal,
   WorkflowDescriptionModalProps,
 } from './WorkflowDescriptionModal';
+import { WorkflowLogsDialog } from './WorkflowLogsDialog';
 
 const useStyles = makeStyles()(theme => ({
   outputGrid: {
@@ -407,30 +411,64 @@ export const WorkflowResult: React.FC<{
 }> = ({ instance, className, cardClassName }) => {
   const { t } = useTranslation();
   const result = instance.workflowdata?.result;
+  const [isLogsDialogOpen, toggleLogsDialog] = useReducer(
+    state => !state,
+    false,
+  );
+  const logsEnabled = useLogsEnabled();
 
   return (
-    <InfoCard
-      title={t('run.results')}
-      subheader={
-        <ResultMessage
-          status={instance.state}
-          error={instance.error}
-          resultMessage={result?.message}
-          executionSummary={instance.executionSummary}
-        />
-      }
-      divider={false}
-      className={className}
-      cardClassName={cardClassName}
-    >
-      <Grid container alignContent="flex-start" spacing="1rem">
-        <NextWorkflows
-          instanceId={instance.id}
-          nextWorkflows={result?.nextWorkflows}
-        />
-        <WorkflowOutputs outputs={result?.outputs} />
-      </Grid>
-    </InfoCard>
+    <>
+      <InfoCard
+        title={t('run.results')}
+        subheader={
+          <ResultMessage
+            status={instance.state}
+            error={instance.error}
+            resultMessage={result?.message}
+            executionSummary={instance.executionSummary}
+          />
+        }
+        divider={false}
+        className={className}
+        cardClassName={cardClassName}
+      >
+        <Divider sx={{ mb: 2 }} />
+        {logsEnabled && (
+          <>
+            <Box sx={{ ml: 2 }}>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={toggleLogsDialog}
+                disableRipple
+                sx={{
+                  textTransform: 'none',
+                  padding: 0,
+                  minWidth: 'auto',
+                  '&:hover': { backgroundColor: 'transparent' },
+                }}
+              >
+                {t('run.logs.viewLogs')}
+              </Button>
+            </Box>
+            <Divider sx={{ mt: 2, mb: 2 }} />
+          </>
+        )}
+        <Grid container alignContent="flex-start" spacing="1rem">
+          <NextWorkflows
+            instanceId={instance.id}
+            nextWorkflows={result?.nextWorkflows}
+          />
+          <WorkflowOutputs outputs={result?.outputs} />
+        </Grid>
+      </InfoCard>
+      <WorkflowLogsDialog
+        open={isLogsDialogOpen}
+        onClose={toggleLogsDialog}
+        instanceId={instance.id}
+      />
+    </>
   );
 };
 

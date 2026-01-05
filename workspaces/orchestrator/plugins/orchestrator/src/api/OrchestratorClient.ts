@@ -37,6 +37,7 @@ import {
   ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
   RetriggerInstanceRequestDTO,
+  WorkflowInstanceLogsDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -285,6 +286,22 @@ export class OrchestratorClient implements OrchestratorApi {
     try {
       return await defaultApi.getWorkflowOverviewById(
         workflowId,
+        reqConfigOption,
+      );
+    } catch (err) {
+      throw getError(err);
+    }
+  }
+
+  async getInstanceLogs(
+    instanceId: string,
+  ): Promise<AxiosResponse<WorkflowInstanceLogsDTO>> {
+    const baseUrl = await this.getBaseUrl();
+    const reqConfigOption: AxiosRequestConfig =
+      await this.getDefaultReqConfig();
+    try {
+      return await axios.get<WorkflowInstanceLogsDTO>(
+        `${baseUrl}/v2/workflows/instances/${instanceId}/logs`,
         reqConfigOption,
       );
     } catch (err) {
