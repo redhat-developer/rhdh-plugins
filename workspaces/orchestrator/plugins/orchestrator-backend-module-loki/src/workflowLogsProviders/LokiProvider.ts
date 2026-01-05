@@ -82,20 +82,32 @@ export class LokiProvider implements WorkflowLogProvider {
           ]
         }
       */
+      // flatMap Instead?
+      allResults = jsonResponse.data.result
+        .flatMap((val: any[]) => {
+          return val.values;
+        })
+        .map((val: any[]) => {
+          return {
+            id: val[0],
+            log: val[1],
+          };
+        });
       // Reduce the results into another array
-      allResults = jsonResponse.data.result.reduce(
-        (acc: any[], curr: { values: any[] }) => {
-          curr.values.reduce((_: any, innerCurr: any) => {
-            acc.push({
-              id: innerCurr[0],
-              log: innerCurr[1],
-            });
-            return;
-          }, acc);
-          return acc;
-        },
-        [],
-      );
+      // allResults = jsonResponse.data.result.reduce(
+      //   (acc: any[], curr: { values: any[] }) => {
+      //     const innerCurrValues = curr.values.reduce((innerAcc: any, innerCurr: any) => {
+      //       acc.push({
+      //         id: innerCurr[0],
+      //         log: innerCurr[1],
+      //       });
+      //       return innerAcc;
+      //     }, []);
+      //     // acc.concat(innerCurrValues);
+      //     return acc;
+      //   },
+      //   [],
+      // );
     }
 
     const workflowLogsResponse: WorkflowLogsResponse = {
