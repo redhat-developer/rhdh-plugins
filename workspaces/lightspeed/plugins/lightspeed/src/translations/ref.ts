@@ -239,6 +239,13 @@ export const lightspeedMessages = {
   'settings.displayMode.overlay': 'Overlay',
   'settings.displayMode.docked': 'Dock to window',
   'settings.displayMode.fullscreen': 'Fullscreen',
+  
+  // Sort options
+  'sort.label': 'Sort conversations',
+  'sort.newest': 'Date (newest first)',
+  'sort.oldest': 'Date (oldest first)',
+  'sort.alphabeticalAsc': 'Name (A-Z)',
+  'sort.alphabeticalDesc': 'Name (Z-A)',
 };
 
 /**
