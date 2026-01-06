@@ -15591,8 +15591,6 @@ __metadata:
     "@backstage/ui": ^0.8.2
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
-    "@mui/material": ^5.12.2
-    "@monaco-editor/react": ^4.6.0
     "@playwright/test": 1.57.0
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "*"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
@@ -15602,7 +15600,6 @@ __metadata:
     "@testing-library/user-event": ^14.0.0
     "@types/react-dom": "*"
     cross-env: ^7.0.0
-    monaco-editor: ^0.52.0
     react: ^18.0.2
     react-dom: ^18.0.2
     react-router: ^6.30.2
