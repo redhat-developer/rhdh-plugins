@@ -48,7 +48,8 @@
     "@backstage/config": "^1.3.6"
   },
   "files": [
-    "dist"
+    "dist",
+    "config.d.ts"
   ],
   "repository": {
     "type": "git",
