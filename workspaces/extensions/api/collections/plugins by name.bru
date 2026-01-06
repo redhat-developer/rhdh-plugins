@@ -1,0 +1,15 @@
+meta {
+  name: plugins by name
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseURL}}/api/extensions/collection/default/featured-plugins/plugins
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

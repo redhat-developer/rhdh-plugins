@@ -1,0 +1,56 @@
+plugins:
+  # - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
+  #   disabled: false
+  # - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
+  #   disabled: true
+  #   pluginConfig:
+  #     dynamicPlugins:
+  #       frontend:
+  #         red-hat-developer-hub.backstage-plugin-bulk-import:
+  #           appIcons:
+  #             - name: bulkImportIcon3
+  #               importName: BulkImportIcon3
+  #           dynamicRoutes:
+  #             - path: /bulk-import/repositories
+  #               importName: BulkImportPage
+  #               menuItem:
+  #                 icon: bulkImportIcon
+  #                 text: Bulk import
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions
+    disabled: false
+    pluginConfig:
+      dynamicPlugins:
+        frontend:
+          red-hat-developer-hub.backstage-plugin-extensions:
+            appIcons:
+              - name: extensions
+                importName: ExtensionsIcon
+            dynamicRoutes:
+              - path: /extensions
+                importName: DynamicExtensionsPluginRouter
+            mountPoints:
+              - mountPoint: internal.plugins/tab
+                importName: DynamicExtensionsPluginContent
+                config:
+                  path: extensions
+                  title: Catalog
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic
+    disabled: false
+  # - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
+  #   disabled: false
+  #   # TODO: enable
+  #   pluginConfig:
+  #     dynamicPlugins:
+  #       frontend:
+  #         backstage-community.plugin-quay:
+  #           mountPoints:
+  #             - mountPoint: entity.page.image-registry/cards
+  #               importName: QuayPage
+  #               config:
+  #                 layout:
+  #                   gridColumn: 1 / -1
+  #                 if:
+  #                   anyOf:
+  #                     - isQuayAvailable
+  # - package: ./dynamic-plugins/dist/backstage-community-plugin-topology
+  #   disabled: false
