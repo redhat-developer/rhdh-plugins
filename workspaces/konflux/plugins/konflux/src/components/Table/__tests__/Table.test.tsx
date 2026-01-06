@@ -196,7 +196,9 @@ describe('Table', () => {
     await waitFor(() => {
       expect(screen.getByText('Load More')).toBeInTheDocument();
       expect(
-        screen.getByText('Fetches next page from clusters'),
+        screen.getByText(
+          'Fetches 25 items per namespace, then filters by configured applications. The number of items shown may vary depending on how many match your configuration.',
+        ),
       ).toBeInTheDocument();
     });
   });

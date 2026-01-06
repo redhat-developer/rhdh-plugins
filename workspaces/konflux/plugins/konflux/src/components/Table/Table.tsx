@@ -136,7 +136,9 @@ export const Table = <T extends ItemWithKey>({
           </FlexItem>
           <FlexItem>
             <Typography variant="caption" color="textSecondary">
-              Fetches next page from clusters
+              Fetches 25 items per namespace, then filters by configured
+              applications. The number of items shown may vary depending on how
+              many match your configuration.
             </Typography>
           </FlexItem>
         </Flex>
