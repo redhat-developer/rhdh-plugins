@@ -84,64 +84,6 @@ export const encodeGetEntityFacetsRequest: (request: GetEntityFacetsRequest) => 
 export const EXTENSIONS_API_VERSION = "extensions.backstage.io/v1alpha1";
 
 // @public (undocumented)
-export interface ExtensionsPackageAppConfigExamples {
-    // (undocumented)
-    [key: string]: ExtensionsPackageSpecAppConfigExample[];
-}
-
-// @public (undocumented)
-export const extensionsPermissions: ResourcePermission<"extensions-plugin">[];
-
-// @public
-export const extensionsPluginDeletePermission: ResourcePermission<"extensions-plugin">;
-
-// @public
-export type ExtensionsPluginPermission = ResourcePermission<typeof RESOURCE_TYPE_EXTENSIONS_PLUGIN>;
-
-// @public
-export const extensionsPluginReadPermission: ResourcePermission<"extensions-plugin">;
-
-// @public
-export const extensionsPluginWritePermission: ResourcePermission<"extensions-plugin">;
-
-// @public (undocumented)
-export type FetchApi = {
-    fetch: typeof fetch;
-};
-
-// @public (undocumented)
-export type GetEntitiesRequest = QueryEntitiesInitialRequest;
-
-// @public (undocumented)
-export interface GetEntitiesResponse<T> {
-    // (undocumented)
-    items: T[];
-    // (undocumented)
-    pageInfo: {
-        nextCursor?: string;
-        prevCursor?: string;
-    };
-    // (undocumented)
-    totalItems: number;
-}
-
-// @public (undocumented)
-export type IdentityApi = {
-    getCredentials(): Promise<{
-        token?: string;
-    }>;
-};
-
-// @public (undocumented)
-export function isExtensionsCollection(entity?: Entity): entity is ExtensionsCollection;
-
-// @public (undocumented)
-export function isExtensionsPackage(entity?: Entity): entity is ExtensionsPackage;
-
-// @public (undocumented)
-export function isExtensionsPlugin(entity?: Entity): entity is ExtensionsPlugin;
-
-// @public (undocumented)
 export enum ExtensionsAnnotation {
     // (undocumented)
     CERTIFIED_BY = "extensions.backstage.io/certified-by",
@@ -352,6 +294,12 @@ export interface ExtensionsPackage extends Entity {
 }
 
 // @public (undocumented)
+export interface ExtensionsPackageAppConfigExamples {
+    // (undocumented)
+    [key: string]: ExtensionsPackageSpecAppConfigExample[];
+}
+
+// @public (undocumented)
 export interface ExtensionsPackageBackstage extends JsonObject {
     // (undocumented)
     role?: string;
@@ -412,10 +360,16 @@ export interface ExtensionsPackageSpecAppConfigExample extends JsonObject {
 }
 
 // @public (undocumented)
+export const extensionsPermissions: ResourcePermission<"extensions-plugin">[];
+
+// @public (undocumented)
 export interface ExtensionsPlugin extends Entity {
     // (undocumented)
     spec?: ExtensionsPluginSpec;
 }
+
+// @public
+export const extensionsPluginDeletePermission: ResourcePermission<"extensions-plugin">;
 
 // @public (undocumented)
 export enum ExtensionsPluginInstallStatus {
@@ -430,6 +384,12 @@ export enum ExtensionsPluginInstallStatus {
     // (undocumented)
     UpdateAvailable = "UpdateAvailable"
 }
+
+// @public
+export type ExtensionsPluginPermission = ResourcePermission<typeof RESOURCE_TYPE_EXTENSIONS_PLUGIN>;
+
+// @public
+export const extensionsPluginReadPermission: ResourcePermission<"extensions-plugin">;
 
 // @public (undocumented)
 export interface ExtensionsPluginSpec extends JsonObject {
@@ -461,6 +421,9 @@ export interface ExtensionsPluginSpec extends JsonObject {
     support?: ExtensionsSupport;
 }
 
+// @public
+export const extensionsPluginWritePermission: ResourcePermission<"extensions-plugin">;
+
 // @public (undocumented)
 export type ExtensionsSupport = {
     provider?: string;
@@ -480,6 +443,46 @@ export enum ExtensionsSupportLevel {
     // (undocumented)
     TECH_PREVIEW = "tech-preview"
 }
+
+// @public (undocumented)
+export type FetchApi = {
+    fetch: typeof fetch;
+};
+
+// @public (undocumented)
+export type GetEntitiesRequest = QueryEntitiesInitialRequest;
+
+// @public (undocumented)
+export interface GetEntitiesResponse<T> {
+    // (undocumented)
+    items: T[];
+    // (undocumented)
+    pageInfo: {
+        nextCursor?: string;
+        prevCursor?: string;
+    };
+    // (undocumented)
+    totalItems: number;
+}
+
+// @public (undocumented)
+export type IdentityApi = {
+    getCredentials(): Promise<{
+        token?: string;
+    }>;
+};
+
+// @public (undocumented)
+export function isExtensionsCollection(entity?: Entity): entity is ExtensionsCollection;
+
+// @public (undocumented)
+export function isExtensionsPackage(entity?: Entity): entity is ExtensionsPackage;
+
+// @public (undocumented)
+export function isExtensionsPlugin(entity?: Entity): entity is ExtensionsPlugin;
+
+// @public @deprecated (undocumented)
+export const isMarketplacePlugin: typeof isExtensionsPlugin;
 
 // @public (undocumented)
 export type NodeEnvironmentType = 'production' | 'development' | 'test';

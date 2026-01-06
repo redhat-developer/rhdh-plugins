@@ -17,7 +17,10 @@
 import type { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
-import { EXTENSIONS_API_VERSION } from '../consts';
+import {
+  DEPRECATED_EXTENSIONS_API_VERSION,
+  EXTENSIONS_API_VERSION,
+} from '../consts';
 
 import { ExtensionsKind } from './ExtensionsKind';
 
@@ -28,12 +31,6 @@ export interface ExtensionsCollection extends Entity {
   spec?: ExtensionsCollectionSpec;
 }
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsCollection instead
-//  */
-// export type ExtensionsCollection = ExtensionsCollection;
-
 /**
  * @public
  */
@@ -41,12 +38,6 @@ export interface ExtensionsCollectionSpec extends JsonObject {
   type?: 'curated';
   plugins?: string[];
 }
-
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsCollectionSpec instead
-//  */
-// export type ExtensionsCollectionSpec = ExtensionsCollectionSpec;
 
 /**
  * @public
@@ -57,13 +48,7 @@ export function isExtensionsCollection(
   return (
     !!entity &&
     (entity.apiVersion === EXTENSIONS_API_VERSION ||
-      entity.apiVersion === 'marketplace.backstage.io/v1alpha1') &&
+      entity.apiVersion === DEPRECATED_EXTENSIONS_API_VERSION) &&
     entity.kind === ExtensionsKind.Collection
   );
 }
-
-/**
- * @public
- * @deprecated Use isExtensionsCollection instead
- */
-// export const isExtensionsCollection = isExtensionsCollection;

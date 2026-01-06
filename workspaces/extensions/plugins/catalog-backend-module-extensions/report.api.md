@@ -15,11 +15,11 @@ import { DynamicPluginProvider } from '@backstage/backend-dynamic-feature-servic
 import { Entity } from '@backstage/catalog-model';
 import { EntityProvider } from '@backstage/plugin-catalog-node';
 import { EntityProviderConnection } from '@backstage/plugin-catalog-node';
-import { LocationSpec } from '@backstage/plugin-catalog-common';
-import { LoggerService } from '@backstage/backend-plugin-api';
 import { ExtensionsCollection } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { ExtensionsPackage } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { ExtensionsPlugin } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
+import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { LoggerService } from '@backstage/backend-plugin-api';
 import type { SchedulerService } from '@backstage/backend-plugin-api';
 import { SchedulerServiceTaskRunner } from '@backstage/backend-plugin-api';
 
@@ -46,6 +46,7 @@ export type CachedData = {
 
 // @public (undocumented)
 const catalogModuleExtensions: BackendFeature;
+export { catalogModuleExtensions }
 export default catalogModuleExtensions;
 
 // @public (undocumented)
@@ -60,23 +61,6 @@ export class DynamicPackageInstallStatusProcessor implements CatalogProcessor {
     getProcessorName(): string;
     // (undocumented)
     preProcessEntity(entity: Entity, _location: LocationSpec, _emit: CatalogProcessorEmit, _originLocation: LocationSpec, cache: CatalogProcessorCache): Promise<Entity>;
-}
-
-// @public (undocumented)
-export type JsonFileData<T> = {
-    filePath: string;
-    content: T;
-};
-
-// @public (undocumented)
-export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
-    constructor(paths?: string[]);
-    // (undocumented)
-    findWorkspacesPath(startPath?: string): string;
-    // (undocumented)
-    getProcessorName(): string;
-    // (undocumented)
-    preProcessEntity(entity: ExtensionsPackage): Promise<ExtensionsPackage>;
 }
 
 // @public (undocumented)
@@ -132,6 +116,41 @@ export class ExtensionsPluginProvider extends BaseEntityProvider<ExtensionsPlugi
     // (undocumented)
     getProviderName(): string;
 }
+
+// @public (undocumented)
+export type JsonFileData<T> = {
+    filePath: string;
+    content: T;
+};
+
+// @public (undocumented)
+export class LocalPackageInstallStatusProcessor implements CatalogProcessor {
+    constructor(paths?: string[]);
+    // (undocumented)
+    findWorkspacesPath(startPath?: string): string;
+    // (undocumented)
+    getProcessorName(): string;
+    // (undocumented)
+    preProcessEntity(entity: ExtensionsPackage): Promise<ExtensionsPackage>;
+}
+
+// @public @deprecated (undocumented)
+export const MarketplaceCollectionProcessor: typeof ExtensionsCollectionProcessor;
+
+// @public @deprecated (undocumented)
+export const MarketplaceCollectionProvider: typeof ExtensionsCollectionProvider;
+
+// @public @deprecated (undocumented)
+export const MarketplacePackageProcessor: typeof ExtensionsPackageProcessor;
+
+// @public @deprecated (undocumented)
+export const MarketplacePackageProvider: typeof ExtensionsPackageProvider;
+
+// @public @deprecated (undocumented)
+export const MarketplacePluginProcessor: typeof ExtensionsPluginProcessor;
+
+// @public @deprecated (undocumented)
+export const MarketplacePluginProvider: typeof ExtensionsPluginProvider;
 
 // @public (undocumented)
 export class PluginInstallStatusProcessor implements CatalogProcessor {

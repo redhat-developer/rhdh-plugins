@@ -18,3 +18,10 @@
  * @public
  */
 export const EXTENSIONS_API_VERSION = 'extensions.backstage.io/v1alpha1';
+
+/**
+ * @public
+ * @deprecated Use EXTENSIONS_API_VERSION instead
+ */
+export const DEPRECATED_EXTENSIONS_API_VERSION =
+  'marketplace.backstage.io/v1alpha1';

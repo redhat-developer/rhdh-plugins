@@ -71,12 +71,6 @@ export type ExtensionsBackendClientOptions = {
   configApi: ConfigApi;
 };
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsBackendClientOptions instead
-//  */
-// export type ExtensionsBackendClientOptions = ExtensionsBackendClientOptions;
-
 /**
  * @public
  */
@@ -320,9 +314,3 @@ export class ExtensionsBackendClient implements ExtensionsApi {
     );
   }
 }
-
-/**
- * @public
- * @deprecated Use ExtensionsBackendClient instead
- */
-// export const ExtensionsBackendClient = ExtensionsBackendClient;

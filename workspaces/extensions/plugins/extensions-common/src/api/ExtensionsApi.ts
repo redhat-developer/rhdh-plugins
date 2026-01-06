@@ -140,9 +140,3 @@ export interface ExtensionsApi {
     name: string,
   ): Promise<ExtensionsPlugin[]>;
 }
-
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsApi instead
-//  */
-// export type ExtensionsApi = ExtensionsApi;

@@ -121,11 +121,11 @@ export const ExtensionsTabbedPageRouter = extensionsPlugin.provide(
   }),
 );
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsTabbedPageRouter instead
-//  */
-// export const ExtensionsTabbedPageRouter = ExtensionsTabbedPageRouter;
+/**
+ * @public
+ * @deprecated Use ExtensionsTabbedPageRouter instead
+ */
+export const MarketplaceTabbedPageRouter = ExtensionsTabbedPageRouter;
 
 /**
  * Main extensions plugin router with tabs and sub-routes.
@@ -146,7 +146,7 @@ export const DynamicExtensionsPluginRouter = extensionsPlugin.provide(
  * @public
  * @deprecated Use DynamicExtensionsPluginRouter instead
  */
-// export const DynamicExtensionsPluginRouter = DynamicExtensionsPluginRouter;
+export const DynamicMarketplacePluginRouter = DynamicExtensionsPluginRouter;
 
 /**
  * @public
@@ -167,18 +167,18 @@ export const DynamicExtensionsPluginContent = extensionsPlugin.provide(
  * @public
  * @deprecated Use DynamicExtensionsPluginContent instead
  */
-// export const DynamicExtensionsPluginContent = DynamicExtensionsPluginContent;
+export const DynamicMarketplacePluginContent = DynamicExtensionsPluginContent;
 
 /**
  * @public
  */
 export const ExtensionsIcon: IconComponent = MUIExtensionsIcon;
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsIcon instead
-//  */
-// export const ExtensionsIcon = ExtensionsIcon;
+/**
+ * @public
+ * @deprecated Use ExtensionsIcon instead
+ */
+export const MarketplaceIcon = ExtensionsIcon;
 
 /**
  * @public

@@ -22,9 +22,3 @@ export enum ExtensionsKind {
   Collection = 'PluginCollection',
   Package = 'Package',
 }
-
-/**
- * @public
- * @deprecated Use ExtensionsKind instead
- */
-// export const ExtensionsKind = ExtensionsKind;

@@ -21,9 +21,3 @@ export type ExtensionsAuthor = {
   name: string;
   url?: string;
 };
-
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsAuthor instead
-//  */
-// export type ExtensionsAuthor = ExtensionsAuthor;

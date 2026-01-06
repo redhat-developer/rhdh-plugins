@@ -399,15 +399,3 @@ export const extensionsTranslationRef = createTranslationRef({
   id: 'plugin.extensions',
   messages: extensionsMessages,
 });
-
-/**
- * @public
- * @deprecated Use {@link extensionsMessages} instead.
- */
-export const marketplaceMessages = extensionsMessages;
-
-/**
- * @public
- * @deprecated Use {@link extensionsTranslationRef} instead.
- */
-export const marketplaceTranslationRef = extensionsTranslationRef;

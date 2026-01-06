@@ -17,7 +17,10 @@
 import type { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
-import { EXTENSIONS_API_VERSION } from '../consts';
+import {
+  DEPRECATED_EXTENSIONS_API_VERSION,
+  EXTENSIONS_API_VERSION,
+} from '../consts';
 
 import { ExtensionsKind } from './ExtensionsKind';
 import { ExtensionsAuthor } from './ExtensionsAuthor';
@@ -29,12 +32,6 @@ import { ExtensionsSupport } from './ExtensionsSupport';
 export interface ExtensionsPlugin extends Entity {
   spec?: ExtensionsPluginSpec;
 }
-
-/**
- * @public
- * @deprecated Use ExtensionsPlugin instead
- */
-// export type ExtensionsPlugin = ExtensionsPlugin;
 
 /**
  * @public
@@ -87,12 +84,6 @@ export enum ExtensionsPluginInstallStatus {
 
 /**
  * @public
- * @deprecated Use ExtensionsPluginInstallStatus instead
- */
-// export const ExtensionsPluginInstallStatus = ExtensionsPluginInstallStatus;
-
-/**
- * @public
  */
 export interface ExtensionsPluginSpec extends JsonObject {
   icon?: string;
@@ -117,12 +108,6 @@ export interface ExtensionsPluginSpec extends JsonObject {
   installStatus?: ExtensionsPluginInstallStatus;
 }
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsPluginSpec instead
-//  */
-// export type ExtensionsPluginSpec = ExtensionsPluginSpec;
-
 /**
  * @public
  */
@@ -132,7 +117,7 @@ export function isExtensionsPlugin(
   return (
     !!entity &&
     (entity.apiVersion === EXTENSIONS_API_VERSION ||
-      entity.apiVersion === 'marketplace.backstage.io/v1alpha1') &&
+      entity.apiVersion === DEPRECATED_EXTENSIONS_API_VERSION) &&
     entity.kind === ExtensionsKind.Plugin
   );
 }

@@ -4,7 +4,10 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { FunctionComponent } from 'react';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 
@@ -17,7 +20,7 @@ export const DynamicExtensionsPluginRouter: () => JSX_2.Element;
 // @public @deprecated (undocumented)
 export const DynamicMarketplacePluginContent: () => JSX_2.Element;
 
-// @public @deprecated
+// @public @deprecated (undocumented)
 export const DynamicMarketplacePluginRouter: () => JSX_2.Element;
 
 // @public
@@ -35,16 +38,12 @@ export const ExtensionsTabbedPageRouter: () => JSX_2.Element;
 // @public @deprecated (undocumented)
 export const InstallationContextProvider: () => null;
 
-// @public @deprecated
-export const MarketplaceFullPageRouter: () => JSX_2.Element;
+// @public @deprecated (undocumented)
+export const MarketplaceIcon: FunctionComponent<    {
+fontSize?: "small" | "medium" | "inherit" | "large" | undefined;
+}>;
 
 // @public @deprecated (undocumented)
-export const MarketplaceIcon: IconComponent;
-
-// @public @deprecated
-export const marketplacePlugin: BackstagePlugin<    {}, {}, {}>;
-
-// @public @deprecated
 export const MarketplaceTabbedPageRouter: () => JSX_2.Element;
 
 // @public (undocumented)

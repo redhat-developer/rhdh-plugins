@@ -88,8 +88,8 @@ export const extensionsPlugin = createBackendPlugin({
   },
 });
 
-// /**
-//  * @public
-//  * @deprecated Use extensionsPlugin instead
-//  */
-// export const extensionsPlugin = extensionsPlugin;
+/**
+ * @public
+ * @deprecated Use extensionsPlugin instead
+ */
+export const markerplacePlugin = extensionsPlugin;

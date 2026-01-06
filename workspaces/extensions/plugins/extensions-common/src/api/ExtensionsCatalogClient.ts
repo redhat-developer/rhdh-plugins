@@ -49,12 +49,6 @@ export type ExtensionsCatalogClientOptions = {
   catalogApi: CatalogApi;
 };
 
-/**
- * @public
- * @deprecated Use ExtensionsCatalogClientOptions instead
- */
-// export type ExtensionsCatalogClientOptions = ExtensionsCatalogClientOptions;
-
 const enforceKindFilter = <
   T extends GetEntitiesRequest | GetEntityFacetsRequest,
 >(
@@ -269,9 +263,3 @@ export class ExtensionsCatalogClient implements ExtensionsApi {
     return result.items;
   }
 }
-
-/**
- * @public
- * @deprecated Use ExtensionsCatalogClient instead
- */
-// export const ExtensionsCatalogClient = ExtensionsCatalogClient;

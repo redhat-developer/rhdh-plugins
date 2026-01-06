@@ -31,7 +31,4 @@ export const extensionsTranslations = createTranslationResource({
   },
 });
 
-export {
-  extensionsTranslationRef as marketplaceTranslationRef,
-  extensionsTranslationRef,
-} from './ref';
+export { extensionsTranslationRef } from './ref';

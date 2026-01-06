@@ -27,12 +27,6 @@ export enum ExtensionsSupportLevel {
 
 /**
  * @public
- * @deprecated Use ExtensionsSupportLevel instead
- */
-// export const ExtensionsSupportLevel = ExtensionsSupportLevel;
-
-/**
- * @public
  */
 export type ExtensionsSupport = {
   // Technically both attributes are required, but we expecting undefined anyway
@@ -40,9 +34,3 @@ export type ExtensionsSupport = {
   // Technically both attributes are required, but we expecting undefined anyway
   level?: ExtensionsSupportLevel;
 };
-
-/**
- * @public
- * @deprecated Use ExtensionsSupport instead
- */
-// export type ExtensionsSupport = ExtensionsSupport;

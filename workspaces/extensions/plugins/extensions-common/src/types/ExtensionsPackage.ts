@@ -17,7 +17,10 @@
 import type { Entity } from '@backstage/catalog-model';
 import { JsonObject } from '@backstage/types';
 
-import { EXTENSIONS_API_VERSION } from '../consts';
+import {
+  DEPRECATED_EXTENSIONS_API_VERSION,
+  EXTENSIONS_API_VERSION,
+} from '../consts';
 
 import { ExtensionsKind } from './ExtensionsKind';
 import { ExtensionsSupport } from './ExtensionsSupport';
@@ -29,12 +32,6 @@ export interface ExtensionsPackage extends Entity {
   spec?: ExtensionsPackageSpec;
 }
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsPackage instead
-//  */
-// export type ExtensionsPackage = ExtensionsPackage;
-
 /**
  * @public
  */
@@ -44,12 +41,6 @@ export enum ExtensionsPackageInstallStatus {
   Disabled = 'Disabled',
   UpdateAvailable = 'UpdateAvailable',
 }
-
-/**
- * @public
- * @deprecated Use ExtensionsPackageInstallStatus instead
- */
-// export const ExtensionsPackageInstallStatus = ExtensionsPackageInstallStatus;
 
 /**
  * @public
@@ -75,12 +66,6 @@ export interface ExtensionsPackageSpec extends JsonObject {
   installStatus?: ExtensionsPackageInstallStatus;
 }
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsPackageSpec instead
-//  */
-// export type ExtensionsPackageSpec = ExtensionsPackageSpec;
-
 /**
  * @public
  */
@@ -88,12 +73,6 @@ export interface ExtensionsPackageSpecAppConfigExample extends JsonObject {
   title: string;
   content: string | JsonObject;
 }
-
-/**
- * @public
- * @deprecated Use ExtensionsPackageSpecAppConfigExample instead
- */
-// export type ExtensionsPackageSpecAppConfigExample = ExtensionsPackageSpecAppConfigExample;
 
 /**
  * @public
@@ -110,12 +89,6 @@ export interface ExtensionsPackageBackstage extends JsonObject {
   supportedVersions?: string;
 }
 
-// /**
-//  * @public
-//  * @deprecated Use ExtensionsPackageBackstage instead
-//  */
-// export type ExtensionsPackageBackstage = ExtensionsPackageBackstage;
-
 /**
  * @public
  */
@@ -125,13 +98,7 @@ export function isExtensionsPackage(
   return (
     !!entity &&
     (entity.apiVersion === EXTENSIONS_API_VERSION ||
-      entity.apiVersion === 'marketplace.backstage.io/v1alpha1') &&
+      entity.apiVersion === DEPRECATED_EXTENSIONS_API_VERSION) &&
     entity.kind === ExtensionsKind.Package
   );
 }
-
-// /**
-//  * @public
-//  * @deprecated Use isExtensionsPackage instead
-//  */
-// // export const isExtensionsPackage = isExtensionsPackage;
