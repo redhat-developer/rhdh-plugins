@@ -49,6 +49,7 @@ import {
 import {
   PlusIcon,
   SearchIcon,
+  SortAmountDownAltIcon,
   SortAmountDownIcon,
 } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -538,7 +539,12 @@ export const LightspeedChat = ({
               onClick={onSortToggle}
               isExpanded={isSortSelectOpen}
             >
-              <SortAmountDownIcon />
+              {selectedSort === 'oldest' ||
+              selectedSort === 'alphabeticalDesc' ? (
+                <SortAmountDownAltIcon />
+              ) : (
+                <SortAmountDownIcon />
+              )}
             </MenuToggle>
           </Tooltip>
         )}
