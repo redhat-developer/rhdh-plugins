@@ -51,7 +51,6 @@ import {
   orchestratorWorkflowSpecificPermission,
   orchestratorWorkflowUsePermission,
   orchestratorWorkflowUseSpecificPermission,
-  ProcessInstanceDTO,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
@@ -100,23 +99,6 @@ const authorize = async (
       result: AuthorizeResult.DENY,
     }
   );
-};
-
-const enforceInitiatorEntityCheck = (
-  isUserAuthorizedForInstanceAdminView: boolean,
-  instance: ProcessInstanceDTO,
-  initiatorEntity: string,
-  instanceId: string,
-) => {
-  // If not an admin, enforce initiatorEntity check
-  if (!isUserAuthorizedForInstanceAdminView) {
-    const instanceInitiatorEntity = instance.initiatorEntity;
-    if (instanceInitiatorEntity !== initiatorEntity) {
-      throw new Error(
-        `Unauthorized to access instance ${instanceId} not initiated by user.`,
-      );
-    }
-  }
 };
 
 const isUserAuthorizedForInstanceAdminViewPermission = async (
@@ -961,12 +943,14 @@ function setupInternalRoutes(
           );
 
         // If not an admin, enforce initiatorEntity check
-        enforceInitiatorEntityCheck(
-          isUserAuthorizedForInstanceAdminView,
-          instance,
-          initiatorEntity,
-          instanceId,
-        );
+        if (!isUserAuthorizedForInstanceAdminView) {
+          const instanceInitiatorEntity = instance.initiatorEntity;
+          if (instanceInitiatorEntity !== initiatorEntity) {
+            throw new Error(
+              `Unauthorized to access instance ${instanceId} not initiated by user.`,
+            );
+          }
+        }
 
         auditEvent.success();
         res.status(200).json(instance);
@@ -1027,12 +1011,14 @@ function setupInternalRoutes(
           );
 
         // If not an admin, enforce initiatorEntity check
-        enforceInitiatorEntityCheck(
-          isUserAuthorizedForInstanceAdminView,
-          instance,
-          initiatorEntity,
-          instanceId,
-        );
+        if (!isUserAuthorizedForInstanceAdminView) {
+          const instanceInitiatorEntity = instance.initiatorEntity;
+          if (instanceInitiatorEntity !== initiatorEntity) {
+            throw new Error(
+              `Unauthorized to access instance ${instanceId} not initiated by user.`,
+            );
+          }
+        }
 
         const logs = await routerApi.v2.getInstanceLogsByInstance(instance);
 
