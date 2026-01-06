@@ -102,6 +102,13 @@ export const descendingComparator = (
     value1 = order[(value1 as ImportStatus) || RepositoryStatus.NotGenerated];
     value2 = order[(value2 as ImportStatus) || RepositoryStatus.NotGenerated];
   }
+
+  // Convert strings to lowercase for case-insensitive comparison
+  if (typeof value1 === 'string' && typeof value2 === 'string') {
+    value1 = value1.toLowerCase();
+    value2 = value2.toLowerCase();
+  }
+
   if (value2 < value1) {
     return -1;
   }
