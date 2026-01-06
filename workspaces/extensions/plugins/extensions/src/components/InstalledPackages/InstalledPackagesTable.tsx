@@ -229,7 +229,7 @@ export const InstalledPackagesTable = () => {
             ? (entity.metadata?.title as string) ||
               (entity.metadata?.name as string)
             : getReadableName(p.name);
-          const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, '');
+          const cleanedName = rawName.replace(/\s+(frontend|backend)$/i, ''); // NOSONAR
           return {
             displayName: cleanedName,
             // Show the npm package name directly from dynamic-plugins-info record

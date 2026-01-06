@@ -37,18 +37,20 @@ import { useTheme } from '@mui/material/styles';
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
 import type MonacoEditor from 'monaco-editor';
 
-// Configure monaco-editor to load lazily from CDN or via dynamic import
-// This prevents the 4.8MB monaco bundle from being included in the main chunk
+// Import all Monaco Editor CSS files in the correct dependency order
+// This ensures all CSS is loaded statically before Monaco Editor initializes,
+// preventing CSS ordering conflicts during build (especially in CI)
+import './monaco-css-imports';
+
+// Configure monaco-editor to load lazily using ESM paths to reduce bundle size
 let monacoConfigured = false;
 const configureMonaco = async () => {
   if (monacoConfigured) return;
   monacoConfigured = true;
 
-  // Dynamically import monaco-editor only when needed
-  const [monacoEditor] = await Promise.all([
-    import('monaco-editor/esm/vs/editor/editor.api'),
-    import('monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution'),
-  ]);
+  // Use ESM path to import only the editor API, not the entire package
+  const monacoEditor = await import('monaco-editor/esm/vs/editor/editor.api');
+  await import('monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution');
 
   loader.config({ monaco: monacoEditor });
 };
@@ -146,7 +148,6 @@ export const CodeEditor = ({
   const [copied, setCopied] = useState(false);
   const [monacoReady, setMonacoReady] = useState(monacoConfigured);
 
-  // Lazy load monaco-editor when the component mounts
   useEffect(() => {
     if (!monacoReady) {
       configureMonaco().then(() => setMonacoReady(true));
@@ -170,7 +171,6 @@ export const CodeEditor = ({
     }
   };
 
-  // Show loading while monaco is being lazy-loaded
   if (!monacoReady) {
     return (
       <Box
@@ -178,11 +178,13 @@ export const CodeEditor = ({
           width: '100%',
           height: '100%',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'start',
           justifyContent: 'center',
         }}
       >
-        <Progress />
+        <div style={{ width: '100%', height: '100px' }}>
+          <Progress />
+        </div>
       </Box>
     );
   }

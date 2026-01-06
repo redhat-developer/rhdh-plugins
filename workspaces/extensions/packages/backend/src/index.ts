@@ -70,7 +70,9 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-extensions-backend'),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions'
+  ),
 );
 
 backend.start();

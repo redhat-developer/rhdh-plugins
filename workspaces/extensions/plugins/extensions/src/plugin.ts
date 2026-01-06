@@ -83,7 +83,7 @@ export const extensionsPlugin = createPlugin({
  * @public
  * @deprecated Use extensionsPlugin instead
  */
-// export const extensionsPlugin = extensionsPlugin;
+export const marketplacePlugin = extensionsPlugin;
 
 /**
  * Extensions page with routes for different pages.
@@ -104,7 +104,7 @@ export const ExtensionsFullPageRouter = extensionsPlugin.provide(
  * @public
  * @deprecated Use ExtensionsFullPageRouter instead
  */
-// export const ExtensionsFullPageRouter = ExtensionsFullPageRouter;
+export const MarketplaceFullPageRouter = ExtensionsFullPageRouter;
 
 /**
  * Extensions page with header and tabs.

@@ -56,4 +56,3 @@ spec:
         dynamicPlugins:
           frontend:
             red-hat-developer-hub.backstage-plugin-extensions: {}
-

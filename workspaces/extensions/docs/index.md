@@ -65,7 +65,9 @@ g, user:default/<login-id/user-name>, role:default/team_a
      import('@red-hat-developer-hub/backstage-plugin-extensions-backend'),
    );
    backend.add(
-     import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions'),
+     import(
+       '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions'
+     ),
    );
    ```
 

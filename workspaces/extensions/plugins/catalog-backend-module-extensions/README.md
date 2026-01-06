@@ -19,7 +19,9 @@ yarn --cwd packages/backend add @red-hat-developer-hub/backstage-plugin-catalog-
 
 ```typescript
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions'),
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions'
+  ),
 );
 ```
 

@@ -45,6 +45,9 @@ export const decodeGetEntitiesRequest: (searchParams: URLSearchParams) => GetEnt
 // @public (undocumented)
 export const decodeGetEntityFacetsRequest: (searchParams: URLSearchParams) => GetEntityFacetsRequest;
 
+// @public @deprecated (undocumented)
+export const DEPRECATED_EXTENSIONS_API_VERSION = "marketplace.backstage.io/v1alpha1";
+
 // @public (undocumented)
 export type DiscoveryApi = {
     getBaseUrl(pluginId: string): Promise<string>;

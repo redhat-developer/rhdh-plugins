@@ -41,6 +41,7 @@
 ### Patch Changes
 
 - 2cd673e: Integrate search query with filter dropdown counts for dynamic filtering
+
   - Ensure filter dropdowns show only relevant options after search is applied
   - Maintain AND logic across search + category + author + support filters
 
@@ -106,27 +107,32 @@
 
 - fdda9a1: Add internationalization (i18n) support with German, French and Spanish translations in marketplace.
 - cbe1174: ### Plugin List Improvements
+
   - Introduced **"Generally Available"** badge with tooltip
   - Added tooltips for other badges
   - Removed **Verified** badge
 
   ### Plugin Details Enhancements
+
   - Added status badges for all support levels: GA, Dev Preview, Tech Preview, Community, Custom
   - Added **Publisher**, **Author**, and **Supported By** metadata
   - Renamed **Supported version** → **Backstage compatibility version**
   - Removed **Verified** status
 
   ### Enhanced Filtering System
+
   - Introduced new filters: **Generally Available**, **Dev Preview**, **Tech Preview**, **Community Plugins**
   - Added visual badges with color coding and helper text for filters
 
 - dad9806: Integrate plugins-info plugin and add `Installed packages` tab with enhanced UI.
 
   BREAKING: The deprecated `InstallationContextProvider` export behavior changed.
+
   - We now export a null component `InstallationContextProvider` from `plugin.ts` solely for backward compatibility. It no longer provides context and will be removed in a future release.
   - Migration: There is no replacement API; this was internal-only. Please upgrade to the latest RHDH where features no longer rely on this provider.
 
   Also:
+
   - New `Installed packages` tab with dual-source mapping and client-side filtering/pagination.
 
 ### Patch Changes

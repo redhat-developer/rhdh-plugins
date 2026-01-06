@@ -30,9 +30,9 @@ import { JsonFileData } from '../types';
 /**
  * @public
  */
-export abstract class BaseEntityProvider<
-  T extends Entity,
-> implements EntityProvider {
+export abstract class BaseEntityProvider<T extends Entity>
+  implements EntityProvider
+{
   private connection?: EntityProviderConnection;
   private taskRunner: SchedulerServiceTaskRunner;
 
@@ -77,7 +77,9 @@ export abstract class BaseEntityProvider<
       throw new Error('Not initialized');
     }
 
-    const extensionsFilePath = findTopmostFolder('extensions');
+    // Try 'extensions' first, then fallback to 'marketplace' for backward compatibility
+    const extensionsFilePath =
+      findTopmostFolder('extensions') || findTopmostFolder('marketplace');
 
     let yamlData: JsonFileData<T>[] = [];
     if (extensionsFilePath) {

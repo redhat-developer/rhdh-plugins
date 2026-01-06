@@ -39,9 +39,15 @@ export const ExtensionsTabbedPageRouter: () => JSX_2.Element;
 export const InstallationContextProvider: () => null;
 
 // @public @deprecated (undocumented)
+export const MarketplaceFullPageRouter: () => JSX_2.Element;
+
+// @public @deprecated (undocumented)
 export const MarketplaceIcon: FunctionComponent<    {
 fontSize?: "small" | "medium" | "inherit" | "large" | undefined;
 }>;
+
+// @public @deprecated (undocumented)
+export const marketplacePlugin: BackstagePlugin<    {}, {}, {}>;
 
 // @public @deprecated (undocumented)
 export const MarketplaceTabbedPageRouter: () => JSX_2.Element;

@@ -230,7 +230,7 @@ export const ExtensionsPackageEditContent = ({
       // Finalize single-map YAML
       const packageYamlString = pkgLines
         .join('\n')
-        .replace(/^\s*[-]\s*/m, '')
+        .replace(/^\s*[-]\s*/m, '') // NOSONAR
         .replace(/\r/g, '')
         .replace(/^\s*$/gm, '')
         .trim();
