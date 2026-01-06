@@ -31,7 +31,6 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
-import { aggregateMetricsByStatus } from '../utils/aggregateMetricsByStatus';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;

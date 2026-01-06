@@ -73,7 +73,7 @@ const PermissionRequiredState = () => {
           <Button
             variant="outlined"
             target="_blank"
-            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/scorecard/plugins/scorecard/README.md#permission-framework-support"
+            href="https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html-single/understand_and_visualize_red_hat_developer_hub_project_health_using_scorecards/index#proc-authenticating-and-managing-scorecard-plugins_assembly-setting-up-scorecards-to-monitor-your-rhdh-health"
             sx={theme => ({
               color: theme.palette.primary.main,
             })}

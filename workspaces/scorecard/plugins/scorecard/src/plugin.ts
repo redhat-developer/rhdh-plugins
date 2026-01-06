@@ -69,13 +69,29 @@ export const EntityScorecardContent = scorecardPlugin.provide(
  * Scorecard homepage section.
  * @public
  */
-export const ScorecardHomepageSection = scorecardPlugin.provide(
+export const ScorecardJiraHomepageCard = scorecardPlugin.provide(
   createComponentExtension({
-    name: 'ScorecardHomepageSection',
+    name: 'ScorecardJiraHomepageSection',
     component: {
       lazy: () =>
         import('./components/ScorecardHomepageSection').then(
-          m => m.ScorecardHomepageSection,
+          m => m.ScorecardJiraHomepageCard,
+        ),
+    },
+  }),
+);
+
+/**
+ * Scorecard GitHub homepage card.
+ * @public
+ */
+export const ScorecardGitHubHomepageCard = scorecardPlugin.provide(
+  createComponentExtension({
+    name: 'ScorecardGitHubHomepageCard',
+    component: {
+      lazy: () =>
+        import('./components/ScorecardHomepageSection').then(
+          m => m.ScorecardGitHubHomepageCard,
         ),
     },
   }),

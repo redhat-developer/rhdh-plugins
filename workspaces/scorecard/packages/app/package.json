@@ -49,7 +49,7 @@
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@openshift/dynamic-plugin-sdk": "^5.0.1",
-    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "^1.9.2",
+    "@red-hat-developer-hub/backstage-plugin-dynamic-home-page": "^1.10.2",
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@roadiehq/backstage-plugin-github-pull-requests": "^3.5.1",

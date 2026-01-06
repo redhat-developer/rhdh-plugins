@@ -57,3 +57,16 @@ export const getStatusConfig = ({
       return { color: 'success.main', icon: CheckCircleOutlineIcon };
   }
 };
+
+export const getRingColor = (
+  theme: any,
+  statusColor: string,
+  isError: boolean,
+) => {
+  if (isError) {
+    return theme.palette.rhdh.general.cardBorderColor;
+  }
+
+  const [paletteKey, shade] = statusColor.split('.');
+  return theme.palette?.[paletteKey]?.[shade] ?? statusColor;
+};

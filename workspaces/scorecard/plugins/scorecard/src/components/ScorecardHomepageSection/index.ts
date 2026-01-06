@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
-export { ScorecardHomepageSection } from './ScorecardHomepageSection';
+export {
+  ScorecardJiraHomepageCard,
+  ScorecardGitHubHomepageCard,
+} from './ScorecardHomepageSection';

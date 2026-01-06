@@ -54,14 +54,16 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { ScorecardHomepageSection } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import {
+  ScorecardJiraHomepageCard,
+  ScorecardGitHubHomepageCard,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import {
   DynamicCustomizableHomePage,
   OnboardingSection,
-  defaultLayouts,
   HomePageCardMountPoint,
   homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
@@ -70,20 +72,22 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: OnboardingSection,
     config: {
-      layouts: defaultLayouts.onboarding,
+      id: 'onboarding-section',
+      title: 'Onboarding section',
     },
   },
   {
-    Component: ScorecardHomepageSection,
+    Component: ScorecardJiraHomepageCard,
     config: {
-      layouts: {
-        xl: { w: 12, h: 6 },
-        lg: { w: 12, h: 6 },
-        md: { w: 12, h: 7 },
-        sm: { w: 12, h: 8 },
-        xs: { w: 12, h: 9 },
-        xxs: { w: 12, h: 10 },
-      },
+      id: 'scorecard-jira-homepage-section',
+      title: 'Scorecard Jira homepage section',
+    },
+  },
+  {
+    Component: ScorecardGitHubHomepageCard,
+    config: {
+      id: 'scorecard-github-homepage-section',
+      title: 'Scorecard GitHub homepage section',
     },
   },
 ];

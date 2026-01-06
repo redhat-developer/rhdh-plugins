@@ -16,30 +16,30 @@
 
 import { useState } from 'react';
 
-import {
-  PieChart,
-  Pie,
-  ResponsiveContainer,
-  Cell,
-  Tooltip,
-  Legend,
-} from 'recharts';
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
 import CustomLegend from './CustomLegend';
 import type { PieData } from '../../utils/utils';
-import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { useTranslation } from '../../hooks/useTranslation';
+import { ResponsivePieChart } from './ResponsivePieChart';
 
 export const ScorecardHomepageCard = ({
   scorecard,
+  cardTitle,
+  description,
 }: {
   scorecard: AggregatedMetricResult;
+  cardTitle: string;
+  description: string;
 }) => {
   const theme = useTheme();
+  const { t } = useTranslation();
+
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -60,22 +60,15 @@ export const ScorecardHomepageCard = ({
 
   return (
     <CardWrapper
-      title={scorecard.metadata.title}
-      subtitle={`${scorecard.result.total} entities`}
+      title={cardTitle}
+      subheader={t('thresholds.entities', { count: scorecard.result.total })}
+      description={description}
     >
-      <Box sx={{ pb: 2 }}>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          sx={{ fontSize: '1rem', fontWeight: 400 }}
-        >
-          {scorecard.metadata.description}
-        </Typography>
-      </Box>
-
       <Box
         width="100%"
-        height={160}
+        minWidth={311}
+        minHeight={174}
+        height="100%"
         data-chart-container
         position="relative"
         sx={{
@@ -88,63 +81,21 @@ export const ScorecardHomepageCard = ({
           },
         }}
       >
-        <ResponsiveContainer
-          width="100%"
-          height={160}
-          style={{
-            outline: 'none',
-          }}
-        >
-          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              cx="22%"
-              cy="50%"
-              innerRadius={64}
-              outerRadius={74}
-              startAngle={90}
-              endAngle={-270}
-              stroke="none"
-              cursor="pointer"
-              isAnimationActive={false}
-              style={{
-                outline: 'none',
-              }}
-            >
-              {pieData.map(category => (
-                <Cell key={category.name} fill={category.color} />
-              ))}
-            </Pie>
-
-            <Legend
-              layout="vertical"
-              align="center"
-              verticalAlign="middle"
-              wrapperStyle={{
-                position: 'absolute',
-                left: '160px',
-                top: '42px',
-              }}
-              content={props => (
-                <CustomLegend
-                  {...props}
-                  activeIndex={activeIndex}
-                  setActiveIndex={setActiveIndex}
-                  setTooltipPosition={setTooltipPosition}
-                  pieData={pieData}
-                />
-              )}
+        <ResponsivePieChart
+          pieData={pieData}
+          legendContent={props => (
+            <CustomLegend
+              {...props}
+              activeIndex={activeIndex}
+              setActiveIndex={setActiveIndex}
+              setTooltipPosition={setTooltipPosition}
+              pieData={pieData}
             />
-
-            <Tooltip
-              content={props => (
-                <CustomTooltip payload={props.payload} pieData={pieData} />
-              )}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+          )}
+          tooltipContent={(props: any) => (
+            <CustomTooltip payload={props?.payload} pieData={pieData} />
+          )}
+        />
 
         {activeIndex !== null && tooltipPosition && (
           <Box

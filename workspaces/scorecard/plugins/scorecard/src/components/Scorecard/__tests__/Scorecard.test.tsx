@@ -22,6 +22,22 @@ import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 
 import Scorecard from '../Scorecard';
 
+jest.mock('recharts', () => ({
+  ResponsiveContainer: ({ children }: any) => (
+    <div style={{ width: 400, height: 400 }}>{children}</div>
+  ),
+
+  PieChart: ({ children }: any) => <div>{children}</div>,
+
+  Pie: ({ label }: any) => <svg>{label?.({ cx: 0, cy: 0 })}</svg>,
+
+  Cell: () => null,
+
+  Legend: ({ content }: any) => <div>{content?.({})}</div>,
+
+  Tooltip: () => null,
+}));
+
 // Create a test theme to provide proper palette colors
 const testTheme = createTheme({
   palette: {
@@ -40,7 +56,6 @@ describe('Scorecard Component', () => {
     cardTitle: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
-    loading: false,
     statusColor: 'success',
     StatusIcon: CheckCircleOutlineIcon,
     value: 8,
@@ -105,17 +120,6 @@ describe('Scorecard Component', () => {
       '[data-testid="CheckCircleOutlineIcon"]',
     );
     expect(iconElement).toBeInTheDocument();
-  });
-
-  it('should show loading spinner when loading is true', () => {
-    render(
-      <TestWrapper>
-        <Scorecard {...defaultProps} loading />
-      </TestWrapper>,
-    );
-
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    expect(screen.queryByTestId('8')).not.toBeInTheDocument();
   });
 
   it('should handle zero value correctly', () => {
@@ -205,8 +209,7 @@ describe('Scorecard Component', () => {
     render(<Scorecard {...emptyThresholdsProps} />);
 
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.getByText('8')).toBeInTheDocument();
-    expect(screen.queryByText('Error')).not.toBeInTheDocument();
+    expect(screen.getByText('--')).toBeInTheDocument();
   });
 
   it('should render correctly with different card titles', () => {

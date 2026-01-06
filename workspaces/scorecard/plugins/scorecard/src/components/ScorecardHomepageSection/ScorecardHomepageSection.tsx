@@ -14,20 +14,31 @@
  * limitations under the License.
  */
 
-import { ResponseErrorPanel } from '@backstage/core-components';
+import { Fragment } from 'react';
 
-import Grid from '@mui/material/Grid';
+import { ResponseErrorPanel } from '@backstage/core-components';
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { ScorecardHomepageCard } from './ScorecardHomepageCard';
-import PermissionRequiredState from '../Common/PermissionRequiredState';
-import { useAggregatedScorecards } from '../../hooks/useAggregatedScorecards';
-import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { PermissionRequiredHomepageCard } from './PermissionRequiredHomepageCard';
+import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
+import { useTranslation } from '../../hooks/useTranslation';
 
-export const ScorecardHomepageSection = () => {
-  const { aggregatedScorecards, loadingData, error } =
-    useAggregatedScorecards();
+interface ScorecardHomepageWrapperProps {
+  metricId: string;
+}
+
+const ScorecardHomepageWrapper = ({
+  metricId,
+}: ScorecardHomepageWrapperProps) => {
+  const { t } = useTranslation();
+
+  const { aggregatedScorecard, loadingData, error } = useAggregatedScorecard({
+    metricId,
+  });
 
   if (loadingData) {
     return (
@@ -44,22 +55,45 @@ export const ScorecardHomepageSection = () => {
 
   if (error) {
     if (error.message?.includes('NotAllowedError')) {
-      return <PermissionRequiredState />;
+      return <PermissionRequiredHomepageCard metricId={metricId} />;
     }
     return <ResponseErrorPanel error={error} />;
   }
 
   return (
-    <Box sx={{ padding: '8px 8px 8px 0' }}>
-      <Grid container spacing={2}>
-        {aggregatedScorecards
-          ?.slice(0, 2)
-          .map((scorecard: AggregatedMetricResult) => (
-            <Grid item key={scorecard.id}>
-              <ScorecardHomepageCard scorecard={scorecard} />
-            </Grid>
-          ))}
-      </Grid>
-    </Box>
+    <Fragment>
+      {aggregatedScorecard
+        ?.slice(0, 1)
+        .map((metric: AggregatedMetricResult) => {
+          const titleKey = `metric.${metric.id}.title`;
+          const descriptionKey = `metric.${metric.id}.description`;
+
+          const title = t(titleKey as any, {});
+          const description = t(descriptionKey as any, {});
+
+          const finalTitle = title === titleKey ? metric.metadata.title : title;
+          const finalDescription =
+            description === descriptionKey
+              ? metric.metadata.description
+              : description;
+
+          return (
+            <ScorecardHomepageCard
+              key={metric.id}
+              cardTitle={finalTitle}
+              description={finalDescription}
+              scorecard={metric}
+            />
+          );
+        })}
+    </Fragment>
   );
 };
+
+export const ScorecardJiraHomepageCard = () => (
+  <ScorecardHomepageWrapper metricId="jira.open_issues" />
+);
+
+export const ScorecardGitHubHomepageCard = () => (
+  <ScorecardHomepageWrapper metricId="github.open_prs" />
+);

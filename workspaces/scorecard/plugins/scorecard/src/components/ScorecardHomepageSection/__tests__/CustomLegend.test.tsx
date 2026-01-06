@@ -17,35 +17,42 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 
 import CustomLegend from '../CustomLegend';
-import { CustomTooltip } from '../CustomTooltip';
 
-describe('CustomLegend Component', () => {
-  it('should render with the correct number of legend items', () => {
-    const pieData = [
-      { name: 'test1', value: 10, color: 'red' },
-      { name: 'test2', value: 20, color: 'blue' },
-      { name: 'test3', value: 30, color: 'green' },
-    ];
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
 
+describe('CustomLegend', () => {
+  const pieData = [
+    { name: 'success', value: 10, color: 'red' },
+    { name: 'warning', value: 20, color: 'blue' },
+    { name: 'error', value: 30, color: 'green' },
+  ];
+
+  it('should render correct number of legend items', () => {
     render(
-      <CustomLegend
-        pieData={pieData}
-        activeIndex={null}
-        setActiveIndex={jest.fn()}
-        setTooltipPosition={jest.fn()}
-      />,
+      <div data-chart-container>
+        <CustomLegend
+          pieData={pieData}
+          activeIndex={null}
+          setActiveIndex={jest.fn()}
+          setTooltipPosition={jest.fn()}
+        />
+      </div>,
     );
 
-    const legendItems = screen.getAllByText(/Test[1-3]/i);
-    expect(legendItems).toHaveLength(3);
+    expect(screen.getByText('Success')).toBeInTheDocument();
+    expect(screen.getByText('Warning')).toBeInTheDocument();
+    expect(screen.getByText('Error')).toBeInTheDocument();
   });
 
-  it('should show correct value in tooltip on hover', () => {
+  it('should call setActiveIndex and setTooltipPosition on mouse enter', () => {
     const setActiveIndex = jest.fn();
     const setTooltipPosition = jest.fn();
-    const pieData = [{ name: 'Test', value: 10, color: 'red' }];
 
-    const { rerender } = render(
+    render(
       <div data-chart-container>
         <CustomLegend
           pieData={pieData}
@@ -56,24 +63,58 @@ describe('CustomLegend Component', () => {
       </div>,
     );
 
-    const legendItem = screen.getByText('Test');
-    fireEvent.mouseEnter(legendItem);
+    const successItem = screen.getByText('Success');
+
+    fireEvent.mouseEnter(successItem);
 
     expect(setActiveIndex).toHaveBeenCalledWith(0);
+    expect(setTooltipPosition).toHaveBeenCalledWith(
+      expect.objectContaining({
+        x: expect.any(Number),
+        y: expect.any(Number),
+      }),
+    );
+  });
 
-    rerender(
-      <CustomTooltip
-        payload={[
-          {
-            name: pieData[0].name,
-            value: pieData[0].value,
-            payload: pieData[0],
-          },
-        ]}
-        pieData={pieData}
+  it('should clear active index and tooltip on mouse leave of legend container', () => {
+    const setActiveIndex = jest.fn();
+    const setTooltipPosition = jest.fn();
+
+    const { getByText } = render(
+      <div data-chart-container>
+        <CustomLegend
+          pieData={pieData}
+          activeIndex={0}
+          setActiveIndex={setActiveIndex}
+          setTooltipPosition={setTooltipPosition}
+        />
+      </div>,
+    );
+
+    const legendItem = getByText('Success');
+
+    const legendContainer = legendItem.parentElement?.parentElement;
+
+    expect(legendContainer).toBeTruthy();
+
+    fireEvent.mouseLeave(legendContainer as Element, {
+      relatedTarget: null,
+    });
+
+    expect(setActiveIndex).toHaveBeenCalledWith(null);
+    expect(setTooltipPosition).toHaveBeenCalledWith(null);
+  });
+
+  it('should return null when pieData is empty', () => {
+    const { container } = render(
+      <CustomLegend
+        pieData={[]}
+        activeIndex={null}
+        setActiveIndex={jest.fn()}
+        setTooltipPosition={jest.fn()}
       />,
     );
 
-    expect(screen.getByText('10 entities')).toBeInTheDocument();
+    expect(container.firstChild).toBeNull();
   });
 });
