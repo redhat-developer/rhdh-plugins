@@ -88,13 +88,13 @@ export class LokiProvider implements WorkflowLogProvider {
 
     const urlToFetch = `${this.baseURL}${lokiApiEndpoint}?${params.toString()}`;
 
-    const response = await fetch(urlToFetch);
-
     let allResults;
-    if (response.status > 399) {
-      // TODO: These are errors, throw something here
-      console.log('Error', response.statusText, response);
-    } else {
+    try {
+      const response = await fetch(urlToFetch);
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
       const jsonResponse = await response.json();
 
       /**
@@ -127,6 +127,8 @@ export class LokiProvider implements WorkflowLogProvider {
             log: val[1],
           };
         });
+    } catch (error) {
+      throw new Error(`Problem fetching loki logs: ${error.message}`);
     }
 
     const workflowLogsResponse: WorkflowLogsResponse = {
