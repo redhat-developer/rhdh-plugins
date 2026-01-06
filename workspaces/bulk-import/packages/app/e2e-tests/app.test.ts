@@ -110,13 +110,10 @@ test.describe('Bulk Import', () => {
           - row "select all repositories ${translations.table.headers.name} ${translations.table.headers.url} ${translations.table.headers.organization} ${translations.table.headers.status}":
             - columnheader "select all repositories ${translations.table.headers.name}":
               - checkbox "select all repositories"
-              - button "${translations.table.headers.name}"
-            - columnheader "${translations.table.headers.url}":
-              - button "${translations.table.headers.url}"
-            - columnheader "${translations.table.headers.organization}":
-              - button "${translations.table.headers.organization}"
-            - columnheader "${translations.table.headers.status}":
-              - button "${translations.table.headers.status}"
+              - text: ${translations.table.headers.name}
+            - columnheader "${translations.table.headers.url}"
+            - columnheader "${translations.table.headers.organization}"
+            - columnheader "${translations.table.headers.status}"
       `);
 
     await runAccessibilityTests(sharedPage, testInfo);
