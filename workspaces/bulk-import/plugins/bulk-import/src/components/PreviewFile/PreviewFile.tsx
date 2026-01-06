@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-import { Link } from '@backstage/core-components';
+import { Link, StatusOK } from '@backstage/core-components';
 
-import ReadyIcon from '@mui/icons-material/CheckOutlined';
 import FailIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import { useGitlabConfigured } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   ErrorType,
   RepositorySelection,
-  RepositoryStatus,
 } from '../../types';
 import { getCustomisedErrorMessage } from '../../utils/repository-utils';
 import { useDrawer } from '../DrawerContext';
@@ -52,8 +49,6 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
     setOpenDrawer(true);
   };
 
-  const gitlabConfigured = useGitlabConfigured();
-
   return (
     <>
       {Object.keys(statusErrors).length > 0 &&
@@ -71,15 +66,18 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
                 : t('previewFile.prCreationUnsuccessful')
             }
           >
-            <FailIcon
-              color="error"
-              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-            />
+            <Typography component="span">
+              <FailIcon
+                color="error"
+                style={{ verticalAlign: 'sub', paddingTop: '7px' }}
+              />
+              <Typography component="span" data-testid="failed">
+                {' '}
+                {t('previewFile.failedToCreatePR')}{' '}
+              </Typography>
+            </Typography>
           </Tooltip>
-          <Typography component="span" data-testid="failed">
-            {' '}
-            {t('previewFile.failedToCreatePR')}{' '}
-          </Typography>
+
           <Link
             to={errorMessage.showRepositoryLink ? data.repoUrl || '' : ''}
             onClick={() =>
@@ -100,16 +98,15 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
           </Link>
         </>
       ) : (
-        <>
-          <ReadyIcon
-            color="success"
-            style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-          />
-          {gitlabConfigured
-            ? t('previewFile.readyToImport')
-            : RepositoryStatus.Ready}{' '}
+        <Typography
+          component="span"
+          style={{ display: 'flex', alignItems: 'baseline' }}
+        >
+          <StatusOK />
+          {t('status.readyToImport')}
           <Link
             to=""
+            style={{ marginLeft: '4px' }}
             onClick={() => openDrawer(data)}
             data-testid={
               Object.keys(data?.selectedRepositories || []).length > 1
@@ -121,7 +118,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
               ? t('previewFile.previewFiles')
               : t('previewFile.previewFile')}
           </Link>
-        </>
+        </Typography>
       )}
     </>
   );

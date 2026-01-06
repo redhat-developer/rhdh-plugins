@@ -29,13 +29,23 @@ jest.mock('./AddRepositories/AddRepositoriesPage', () => ({
 }));
 
 describe('Router component', () => {
-  it('renders BulkImportPage when path is "/"', () => {
+  it('renders AddRepositoriesPage when path is "/"', () => {
     render(
       <MemoryRouter initialEntries={['/']}>
         <Router />
       </MemoryRouter>,
     );
-    expect(screen.queryByText('Bulk Import')).toBeInTheDocument();
+    expect(screen.queryByText('Add Repositories')).toBeInTheDocument();
+  });
+
+  it('renders AddRepositoriesPage when path is "/repositories"', () => {
+    render(
+      <MemoryRouter initialEntries={['/repositories']}>
+        <Router />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('Add Repositories')).toBeInTheDocument();
   });
 
   it('renders Add repositories page when path matches addRepositoriesRouteRef', () => {

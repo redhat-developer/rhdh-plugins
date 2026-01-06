@@ -215,9 +215,10 @@ The widget supports following `ui:props`:
 - fetch:headers
 - fetch:method
 - fetch:body
+- fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:value
 - fetch:response:mandatory
-- fetch:retrigger
 
 [Check mode details](#content-of-uiprops)
 
@@ -298,7 +299,9 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:value
+- fetch:response:default
 - fetch:response:autocomplete
 - validate:url
 - validate:method
@@ -336,7 +339,9 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:value
+- fetch:response:default
 - fetch:response:label
 - validate:url
 - validate:method
@@ -383,9 +388,11 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:autocomplete
 - fetch:response:mandatory
 - fetch:response:value
+- fetch:response:default
 - validate:url
 - validate:method
 - validate:headers
@@ -519,6 +526,8 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |        fetch:method         |                                                                                                                                                                                                              HTTP method to use. The default is GET.                                                                                                                                                                                                               |                   GET, POST (So far no identified use-case for PUT or DELETE)                   |
 |         fetch:body          |                                                                                                                                                 An object representing the body of an HTTP POST request. Not used with the GET method. Property value can be a string template or an array of strings. templates.                                                                                                                                                  | `{“foo”: “bar $${{identityApi.token}}”, "myArray": ["constant", "$${{current.solutionName}}"]}` |
 |       fetch:retrigger       |                                                                                                                                                An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                |                      `["current.solutionName", "identityApi.profileName"]`                      |
+|  fetch:error:ignoreUnready  |                                                                                                 When set to `true`, suppresses fetch error display until all `fetch:retrigger` dependencies have non-empty values. This is useful when fetch depends on other fields that are not filled yet, preventing expected errors from being displayed during initial load.                                                                                                 |                               `true`, `false` (default: `false`)                                |
+|   fetch:response:default    |                                                                   A static default value that is applied immediately when the widget mounts, before any fetch completes. Acts as a fallback when fetch fails or has not completed yet. Gets overridden by `fetch:response:value` once fetch succeeds. For ActiveTextInput/ActiveDropdown use a string, for ActiveMultiSelect use a string array.                                                                   |                        `"create"` (string) or `["tag1", "tag2"]` (array)                        |
 | fetch:response:\[YOUR_KEY\] |                                                                                            A JSONata selector (string) or object value for extracting data from the fetch response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records. Supports both string selectors and object type values.                                                                                             |                                 Account.Order.Product.ProductID                                 |
 |    fetch:response:label     |                                                                                                                                                                         Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                         |                                                                                                 |
 |    fetch:response:value     |                                                                                                                                                                Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                 |                                                                                                 |
@@ -689,11 +698,13 @@ In the future, new widgets wrapping such explicit use case can be added.
 
 ## Hiding Fields
 
-Fields can be hidden from the form display while still maintaining their widget functionality and participating in form submission using the `"ui:hidden": true` property.
+Fields can be hidden from the form display while still maintaining their widget functionality and participating in form submission using the `ui:hidden` property. The `ui:hidden` property supports two modes: **static** and **conditional (dynamic)** hiding.
 
-This is different from `"ui:widget": "hidden"` which changes the widget type itself. With `"ui:hidden": true`, the field keeps its original widget type (like `ActiveText`, `ActiveTextInput`, etc.) but is visually hidden from the user.
+This is different from `"ui:widget": "hidden"` which changes the widget type itself. With `ui:hidden`, the field keeps its original widget type (like `ActiveText`, `ActiveTextInput`, etc.) but is visually hidden from the user.
 
-### Example Usage
+### Static Hiding
+
+Hide a field permanently using a boolean value:
 
 ```json
 {
@@ -705,34 +716,240 @@ This is different from `"ui:widget": "hidden"` which changes the widget type its
     "ui:props": {
       "ui:text": "This text is hidden but still rendered"
     }
-  },
-  "hiddenInput": {
-    "type": "string",
-    "title": "Hidden Input",
-    "ui:hidden": true,
-    "default": "secret-value"
   }
 }
 ```
 
-**Key differences:**
+### Conditional (Dynamic) Hiding
+
+Hide fields based on the values of other form fields using condition objects:
+
+#### Basic Conditions
+
+```json
+{
+  "deploymentType": {
+    "type": "string",
+    "title": "Deployment Type",
+    "enum": ["simple", "advanced", "custom", "managed"]
+  },
+  "advancedConfig": {
+    "type": "string",
+    "title": "Advanced Configuration",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "isNot": ["advanced", "custom"]
+    }
+  }
+}
+```
+
+In this example, `advancedConfig` is hidden unless `deploymentType` is `"advanced"` or `"custom"`.
+
+#### Supported Condition Patterns
+
+**1. Hide when field equals value(s) (`is`)**
+
+```json
+{
+  "debugMode": {
+    "type": "boolean",
+    "title": "Enable Debug Mode",
+    "ui:hidden": {
+      "when": "environment",
+      "is": "production"
+    }
+  }
+}
+```
+
+Use an array for multiple values (OR logic):
+
+```json
+{
+  "basicOptions": {
+    "type": "object",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "is": ["simple", "managed"]
+    }
+  }
+}
+```
+
+**2. Hide when field does NOT equal value(s) (`isNot`)**
+
+```json
+{
+  "customScript": {
+    "type": "string",
+    "title": "Custom Deployment Script",
+    "ui:widget": "textarea",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "isNot": "custom"
+    }
+  }
+}
+```
+
+**3. Hide when field is empty (`isEmpty`)**
+
+```json
+{
+  "childConfig": {
+    "type": "object",
+    "ui:hidden": {
+      "when": "parentField",
+      "isEmpty": true
+    }
+  }
+}
+```
+
+**4. Multiple conditions with AND logic (`allOf`)**
+
+```json
+{
+  "productionApprover": {
+    "type": "string",
+    "title": "Production Approver",
+    "ui:hidden": {
+      "allOf": [
+        { "when": "environment", "is": "production" },
+        { "when": "requiresApproval", "is": true }
+      ]
+    }
+  }
+}
+```
+
+**5. Multiple conditions with OR logic (`anyOf`)**
+
+```json
+{
+  "skipValidation": {
+    "type": "boolean",
+    "ui:hidden": {
+      "anyOf": [
+        { "when": "environment", "is": "development" },
+        { "when": "quickDeploy", "is": true }
+      ]
+    }
+  }
+}
+```
+
+#### Nested Field Paths
+
+You can reference nested fields using dot notation:
+
+```json
+{
+  "advancedPort": {
+    "type": "integer",
+    "ui:hidden": {
+      "when": "config.server.useDefaultPort",
+      "is": true
+    }
+  }
+}
+```
+
+### Complete Example
+
+```json
+{
+  "title": "Deployment Configuration",
+  "type": "object",
+  "properties": {
+    "deploymentType": {
+      "type": "string",
+      "title": "Deployment Type",
+      "enum": ["simple", "advanced", "custom", "managed"],
+      "default": "simple"
+    },
+    "environment": {
+      "type": "string",
+      "title": "Environment",
+      "enum": ["development", "staging", "production"],
+      "default": "development"
+    },
+    "replicas": {
+      "type": "integer",
+      "title": "Number of Replicas",
+      "default": 1,
+      "ui:hidden": {
+        "when": "deploymentType",
+        "is": "simple"
+      }
+    },
+    "customScript": {
+      "type": "string",
+      "title": "Custom Deployment Script",
+      "ui:widget": "textarea",
+      "ui:hidden": {
+        "when": "deploymentType",
+        "isNot": "custom"
+      }
+    },
+    "productionApprover": {
+      "type": "string",
+      "title": "Production Approver Email",
+      "ui:hidden": {
+        "anyOf": [
+          { "when": "environment", "isNot": "production" },
+          { "when": "deploymentType", "is": "simple" }
+        ]
+      }
+    },
+    "advancedSettings": {
+      "type": "object",
+      "title": "Advanced Settings",
+      "ui:hidden": {
+        "when": "deploymentType",
+        "is": ["simple", "managed"]
+      },
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "title": "CPU Limit"
+        },
+        "memory": {
+          "type": "string",
+          "title": "Memory Limit"
+        }
+      }
+    }
+  }
+}
+```
+
+### Key Differences
 
 | Property                | Behavior                                    | Use Case                                                                               |
 | ----------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `"ui:widget": "hidden"` | Changes widget type to hidden input         | Simple hidden form values                                                              |
 | `"ui:hidden": true`     | Keeps original widget but hides it visually | Hide widgets while preserving their functionality (e.g., ActiveText that fetches data) |
+| `"ui:hidden": {...}`    | Conditionally hides based on form data      | Dynamic forms that adapt to user input                                                 |
 
-Hidden fields:
+### Behavior of Hidden Fields
 
-- Are not displayed in the form
-- Are not shown in the wizard stepper navigation (multi-step forms)
-- Still participate in form validation
-- Are included in form submission
-- Are excluded from the review page
-- Maintain their widget functionality (fetching, validation, etc.)
+Hidden fields (regardless of hiding method):
 
-**Automatic Step Hiding:**
-If all inputs within a multi-step form's step are marked with `"ui:hidden": true`, the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
+- **Are not displayed** in the form
+- **Are not shown** in the wizard stepper navigation (multi-step forms)
+- **Still participate** in form validation
+- **Are included** in form submission
+- **Are excluded** from the review page (but will still be part of the request payload)
+- **Maintain their widget functionality** (fetching, validation, etc.)
+- **Update in real-time** when form data changes (for conditional hiding)
+
+> **Note:** Hidden fields are not displayed on the review page for clarity, but they are still included in the workflow execution request. If you need to completely exclude fields from the request payload, you can use the [`SchemaUpdater` API](./extensibleForm.md#schema-updater) to dynamically modify the schema.
+
+### Automatic Step Hiding
+
+If all inputs within a multi-step form's step are marked with `ui:hidden` (either statically or dynamically), the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
 
 ## Customization
 

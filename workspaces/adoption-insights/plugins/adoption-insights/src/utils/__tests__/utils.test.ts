@@ -181,11 +181,11 @@ describe('getXAxisformat', () => {
   });
 
   it('should format daily dates correctly', () => {
-    expect(getXAxisformat('2025-03-01', 'daily')).toMatch(/Mar \d{1,2}, \d{2}/);
+    expect(getXAxisformat('2025-03-01', 'daily')).toMatch(/Mar \d{1,2}, \d{4}/);
   });
 
   it('should format weekly dates correctly', () => {
-    expect(getXAxisformat('2025-03-02', 'daily')).toMatch(/Mar \d{1,2}, \d{2}/);
+    expect(getXAxisformat('2025-03-02', 'daily')).toMatch(/Mar \d{1,2}, \d{4}/);
   });
 
   it('should format monthly dates correctly', () => {
@@ -199,12 +199,12 @@ describe('getXAxisformat', () => {
   // Test cases for the +00 timezone format fix
   it('should handle +00 timezone format correctly for daily grouping', () => {
     const result = getXAxisformat('2025-09-29T00:00:00+00', 'daily');
-    expect(result).toMatch(/Sep \d{1,2}, \d{2}/);
+    expect(result).toMatch(/Sep \d{1,2}, \d{4}/);
   });
 
   it('should handle +00 timezone format correctly for weekly grouping', () => {
     const result = getXAxisformat('2025-09-29T00:00:00+00', 'weekly');
-    expect(result).toMatch(/Sep \d{1,2}, \d{2}/);
+    expect(result).toMatch(/Sep \d{1,2}, \d{4}/);
   });
 
   it('should handle +00 timezone format correctly for monthly grouping', () => {
@@ -219,7 +219,7 @@ describe('getXAxisformat', () => {
 
   it('should handle Z timezone format (should still work)', () => {
     const result = getXAxisformat('2025-10-01T03:43:36.535Z', 'daily');
-    expect(result).toMatch(/Oct \d{1,2}, \d{2}/);
+    expect(result).toMatch(/Oct \d{1,2}, \d{4}/);
   });
 });
 
@@ -236,14 +236,14 @@ describe('getLastUsedDay', () => {
 
   it('should return formatted date for older dates', () => {
     expect(getLastUsedDay('2025-02-15T00:00:00Z')).toMatch(
-      /Feb \d{1,2}, \d{2}/,
+      /Feb \d{1,2}, \d{4}/,
     );
   });
 
   // Test cases for the +00 timezone format fix
   it('should handle +00 timezone format correctly for older dates', () => {
     const result = getLastUsedDay('2025-02-15T00:00:00+00');
-    expect(result).toMatch(/Feb \d{1,2}, \d{2}/);
+    expect(result).toMatch(/Feb \d{1,2}, \d{4}/);
   });
 
   it('should handle +00 timezone format correctly for recent dates', () => {
@@ -253,13 +253,13 @@ describe('getLastUsedDay', () => {
     const pastDateString = pastDate.toISOString().replace('Z', '+00');
 
     const result = getLastUsedDay(pastDateString);
-    expect(result).toMatch(/\w{3} \d{1,2}, \d{2}/);
+    expect(result).toMatch(/\w{3} \d{1,2}, \d{4}/);
   });
 
   it('should handle Z timezone format (should still work)', () => {
     // Use a date that's definitely in the past to avoid "Today" logic
     const result = getLastUsedDay('2025-02-15T03:43:36.535Z');
-    expect(result).toMatch(/Feb \d{1,2}, \d{2}/);
+    expect(result).toMatch(/Feb \d{1,2}, \d{4}/);
   });
 });
 
