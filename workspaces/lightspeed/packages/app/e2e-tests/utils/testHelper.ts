@@ -26,9 +26,7 @@ export const switchToLocale = async (page: Page, locale: string) => {
 };
 
 export const openLightspeed = async (page: Page) => {
-  const navLink = page.getByRole('link', { name: 'Lightspeed' });
-  await navLink.click();
-
+  await page.goto('/lightspeed');
   await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
 };
 
