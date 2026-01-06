@@ -135,6 +135,11 @@ readonly "settings.pinned.enable": string;
 readonly "settings.pinned.disable": string;
 readonly "settings.pinned.enabled.description": string;
 readonly "settings.pinned.disabled.description": string;
+readonly "sort.label": string;
+readonly "sort.newest": string;
+readonly "sort.oldest": string;
+readonly "sort.alphabeticalAsc": string;
+readonly "sort.alphabeticalDesc": string;
 }>;
 
 // @alpha
