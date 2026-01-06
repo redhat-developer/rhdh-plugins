@@ -52,7 +52,10 @@ export const WrappedContent = () => {
     }, [plrs, subcomponentNames, releases]);
 
   return (
-    <InfoCard title="Konflux Status">
+    <InfoCard
+      title="Konflux Status"
+      subheader="Latest Build, Test, and Release builds across all namespace and application combinations"
+    >
       <SubcomponentsLatestPipelineRunByTypeComponent
         subcomponentsLatestPipelineRunByType={
           subcomponentsLatestPipelineRunByType

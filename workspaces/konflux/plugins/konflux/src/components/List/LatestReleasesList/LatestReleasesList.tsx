@@ -139,7 +139,10 @@ export const LatestReleasesList = () => {
 
   if (loaded && error) {
     return (
-      <InfoCard title="Konflux Latest Releases">
+      <InfoCard
+        title="Konflux Latest Releases"
+        subheader="Latest release for each subcomponent, cluster, and namespace combination"
+      >
         <ResponseErrorPanel
           error={new Error(error)}
           title="Failed to fetch releases"
@@ -156,7 +159,10 @@ export const LatestReleasesList = () => {
     clusterErrors.length > 0;
 
   return (
-    <InfoCard title="Konflux Latest Releases">
+    <InfoCard
+      title="Konflux Latest Releases"
+      subheader="Latest release for each subcomponent, cluster, and namespace combination"
+    >
       <ResourceListContent
         loaded={loaded && !loading}
         allClustersFailed={!!allClustersFailed}
