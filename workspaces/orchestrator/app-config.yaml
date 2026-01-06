@@ -149,10 +149,15 @@ catalog:
 dynamicPlugins:
   frontend: {}
 orchestrator:
-  # Does more that one at a time make sense?
+  # Does more than one at a time make sense?
   workflowLogProvider:
     loki:
       baseUrl: http://localhost:3100
+      # logStreamSelectors:
+      #   - label: 'selector'
+      #     value: 'value'
+      #   - label: 'selector-2'
+      #     value: 'value'
   sonataFlowService:
     # uncomment the next line to use podman instead of docker
     runtime: podman

@@ -45,6 +45,44 @@ describe('LokiProvider', () => {
       );
       // Test the providerId
       expect(provider.getProviderId()).toEqual('loki');
+
+      // Test the selectors passed in
+      // Should be an empty array when nothing is passed in
+      expect(provider.getSelectors()).toEqual([]);
+    });
+    it('should create a provider with custom selectors', () => {
+      const lokiAppConfig = {
+        orchestrator: {
+          workflowLogProvider: {
+            loki: {
+              baseUrl: 'http://localhost:3100',
+              logStreamSelectors: [
+                {
+                  label: 'custom-selector',
+                  value: '=~".+"',
+                },
+                {
+                  label: 'custom-selector1',
+                  value: '=~".+"',
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const lokiConfig = new ConfigReader(lokiAppConfig);
+      const provider = LokiProvider.fromConfig(lokiConfig);
+
+      // Test the selectors passed in
+      expect(provider.getSelectors()[0]).toEqual(
+        lokiAppConfig.orchestrator.workflowLogProvider.loki
+          .logStreamSelectors[0],
+      );
+      expect(provider.getSelectors()[1]).toEqual(
+        lokiAppConfig.orchestrator.workflowLogProvider.loki
+          .logStreamSelectors[1],
+      );
     });
   });
   describe('fetchWorkflowLogsByIntance', () => {
@@ -54,7 +92,7 @@ describe('LokiProvider', () => {
     it('should be somthing wrong', async () => {
       // TODO
     });
-    it('should something good', async () => {
+    it('should pass with defaults', async () => {
       const mockResponse: Partial<Response> = {
         ok: true,
         status: 200,
@@ -106,6 +144,107 @@ describe('LokiProvider', () => {
       expect(workflowLogs.logs[0]).toHaveProperty('log');
       // Sorted correctly, this id is the last in the mockdata and should be first when returned
       expect(workflowLogs.logs[0].id).toEqual('1764952546327102000');
+    });
+
+    it('should have a custom log selector and filter', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockWorkflowLog),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+
+      const lokiAppConfig = {
+        orchestrator: {
+          workflowLogProvider: {
+            loki: {
+              baseUrl: 'http://localhost:3100',
+              logStreamSelectors: [
+                {
+                  label: 'custom-selector',
+                  value: '=~".+"',
+                },
+                {
+                  label: 'custom-selector1',
+                  value: '=~".+"',
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const lokiConfig = new ConfigReader(lokiAppConfig);
+      const provider = LokiProvider.fromConfig(lokiConfig);
+      const workflowInstance: ProcessInstanceDTO = {
+        id: '12345',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '',
+        nodes: [],
+      };
+
+      const urlToFetch =
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=';
+
+      await provider.fetchWorkflowLogsByIntance(workflowInstance);
+
+      const parsedURLToFetch = new URL(urlToFetch);
+      expect(fetch).toHaveBeenCalledWith(urlToFetch);
+      expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
+      expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
+      expect(parsedURLToFetch.searchParams.get('query')).toEqual(
+        `{custom-selector=~".+",custom-selector1=~".+"} |="${workflowInstance.id}"`,
+      );
+    });
+
+    it('should have a custom log selector and filter, no label and no value, use defaults', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockWorkflowLog),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+
+      const lokiAppConfig = {
+        orchestrator: {
+          workflowLogProvider: {
+            loki: {
+              baseUrl: 'http://localhost:3100',
+              logStreamSelectors: [
+                {
+                  value: '=~".+"',
+                },
+                {
+                  label: 'custom-selector1',
+                },
+              ],
+            },
+          },
+        },
+      };
+
+      const lokiConfig = new ConfigReader(lokiAppConfig);
+      const provider = LokiProvider.fromConfig(lokiConfig);
+      const workflowInstance: ProcessInstanceDTO = {
+        id: '12345',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '',
+        nodes: [],
+      };
+
+      const urlToFetch =
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=';
+
+      await provider.fetchWorkflowLogsByIntance(workflowInstance);
+      const parsedURLToFetch = new URL(urlToFetch);
+      expect(fetch).toHaveBeenCalledWith(urlToFetch);
+      expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
+      expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
+      expect(parsedURLToFetch.searchParams.get('query')).toEqual(
+        `{service_name=~".+",custom-selector1=~".+"} |="${workflowInstance.id}"`,
+      );
     });
   });
 });

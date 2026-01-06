@@ -24,10 +24,12 @@ import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orc
 
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
+  private readonly selectors: any;
   private constructor(config: Config) {
     // TODO: will probably also need information regarding auth tokens and stuff for loki
     // Might Also make sense to separate out the loki http stuff to its own "client"
     this.baseURL = config.getString('baseUrl');
+    this.selectors = config.getOptional('logStreamSelectors') || [];
   }
   getBaseURL(): string {
     return this.baseURL;
@@ -35,6 +37,10 @@ export class LokiProvider implements WorkflowLogProvider {
 
   getProviderId() {
     return 'loki';
+  }
+
+  getSelectors() {
+    return this.selectors;
   }
 
   async fetchWorkflowLogsByIntance(
@@ -52,8 +58,30 @@ export class LokiProvider implements WorkflowLogProvider {
           .toISO()
       : '';
     const lokiApiEndpoint = '/loki/api/v1/query_range';
+    // Query is created with a log stream selector and then a log pipeline for more filtering
+    // format looks like this: {stream-selector=expression} | log pipeline/log filter expression
+    // The log stream selector part of the query here is getting all service names
+    // This might need to be configurable, based on https://grafana.com/docs/loki/latest/query/log_queries/#log-stream-selector
+    // Log pipeline part looks for the workflow instance id in those logs
+    // Create the streamSelector
+    let streamSelector: string = '';
+    if (this.selectors.length < 1) {
+      streamSelector = 'service_name=~".+"';
+    } else {
+      this.selectors.forEach(
+        (
+          entry: { label: any; value: any },
+          index: number,
+          arr: string | any[],
+        ) => {
+          // somehting about that last comma
+          streamSelector += `${entry.label || 'service_name'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
+        },
+      );
+    }
+    const logPipelineFilter = `|="${instance.id}"`;
     const params = new URLSearchParams({
-      query: `{service_name=~".+"} |="${instance.id}"`,
+      query: `{${streamSelector}} ${logPipelineFilter}`,
       start: startTime as string,
       end: endTime as string,
     });
