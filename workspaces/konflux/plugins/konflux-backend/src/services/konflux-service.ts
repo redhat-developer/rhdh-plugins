@@ -482,6 +482,7 @@ export class KonfluxService {
       reason: errorDetails.reason,
       resourcePath: errorDetails.resourcePath,
       source: errorDetails.source,
+      resourceType: resource,
     };
   }
 

@@ -614,6 +614,7 @@ describe('KonfluxService', () => {
         namespace: 'namespace2',
         message: 'Cluster error',
         source: 'kubernetes',
+        resourceType: resource,
       });
 
       expect(result.clusterErrors?.[0]).toHaveProperty('resourcePath');
