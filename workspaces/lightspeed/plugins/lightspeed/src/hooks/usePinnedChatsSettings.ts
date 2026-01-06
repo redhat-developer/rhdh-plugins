@@ -95,7 +95,7 @@ export const usePinnedChatsSettings = (
         const enabledSnapshot =
           bucket.snapshot<UserSettings>(PINNED_ENABLED_KEY);
         // Create a copy to avoid mutating the read-only snapshot
-        const enabledData = { ...(enabledSnapshot.value ?? {}) };
+        const enabledData = { ...enabledSnapshot.value };
         enabledData[user] = enabled;
         bucket.set(PINNED_ENABLED_KEY, enabledData);
 
@@ -104,7 +104,7 @@ export const usePinnedChatsSettings = (
           setPinnedChats([]);
           const chatsSnapshot = bucket.snapshot<UserSettings>(PINNED_CHATS_KEY);
           // Create a copy to avoid mutating the read-only snapshot
-          const chatsData = { ...(chatsSnapshot.value ?? {}) };
+          const chatsData = { ...chatsSnapshot.value };
           chatsData[user] = [];
           bucket.set(PINNED_CHATS_KEY, chatsData);
         }
@@ -127,7 +127,7 @@ export const usePinnedChatsSettings = (
         try {
           const chatsSnapshot = bucket.snapshot<UserSettings>(PINNED_CHATS_KEY);
           // Create a copy to avoid mutating the read-only snapshot
-          const chatsData = { ...(chatsSnapshot.value ?? {}) };
+          const chatsData = { ...chatsSnapshot.value };
           chatsData[user] = updated;
           bucket.set(PINNED_CHATS_KEY, chatsData);
         } catch (error) {
@@ -152,7 +152,7 @@ export const usePinnedChatsSettings = (
         try {
           const chatsSnapshot = bucket.snapshot<UserSettings>(PINNED_CHATS_KEY);
           // Create a copy to avoid mutating the read-only snapshot
-          const chatsData = { ...(chatsSnapshot.value ?? {}) };
+          const chatsData = { ...chatsSnapshot.value };
           chatsData[user] = updated;
           bucket.set(PINNED_CHATS_KEY, chatsData);
         } catch (error) {
@@ -176,7 +176,7 @@ export const usePinnedChatsSettings = (
       try {
         const sortSnapshot = bucket.snapshot<UserSettings>(SORT_ORDER_KEY);
         // Create a copy to avoid mutating the read-only snapshot
-        const sortData = { ...(sortSnapshot.value ?? {}) };
+        const sortData = { ...sortSnapshot.value };
         sortData[user] = sortOption;
         bucket.set(SORT_ORDER_KEY, sortData);
       } catch (error) {
