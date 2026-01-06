@@ -1,8 +1,6 @@
 app:
   title: RHDH Plugins
-  baseUrl: http://localhost:3001
-listen:
-  port: 3001
+  baseUrl: http://localhost:3000
 
 organization:
   name: Red Hat
@@ -25,7 +23,6 @@ backend:
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
   cors:
-    origin: http://localhost:3001
     methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
     credentials: true
   # This is for local development only, it is not recommended to use this in production
@@ -149,18 +146,17 @@ catalog:
 dynamicPlugins:
   frontend: {}
 orchestrator:
-  # Does more than one at a time make sense?
-  workflowLogProvider:
-    loki:
-      baseUrl: http://localhost:3100
+  # Uncomment and configure to use the log viewer
+  # workflowLogProvider:
+  #   loki:
+  #     baseUrl: http://localhost:3100
+    # Uncomment if using a custom log stream selector
       # logStreamSelectors:
       #   - label: 'selector'
       #     value: 'value'
-      #   - label: 'selector-2'
-      #     value: 'value'
   sonataFlowService:
     # uncomment the next line to use podman instead of docker
-    runtime: podman
+    # runtime: podman
     baseUrl: http://localhost
     port: 8899
     autoStart: true
@@ -170,9 +166,9 @@ orchestrator:
     # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.35.0
     # notsecret
     notificationsBearerToken: bXljdXJscGFzc3dkCg==
-    # notificationsUrl: http://host.docker.internal:7007
+    notificationsUrl: http://host.docker.internal:7007
     # uncomment the next line if you are using podman:
-    notificationsUrl: http://host.containers.internal:7007
+    # notificationsUrl: http://host.containers.internal:7007
     # By default the Dev Mode workflows are Ephemeral. If you want to persist the data across restarts,
     # uncomment the next two lines, read more: https://www.rhdhorchestrator.io/blog/devmode-vs-prodmode/
     # persistence:
