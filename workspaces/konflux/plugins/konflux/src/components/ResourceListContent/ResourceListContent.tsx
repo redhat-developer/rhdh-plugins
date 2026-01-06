@@ -60,14 +60,19 @@ export const ResourceListContent = <T extends ItemWithKey>({
     );
   }
   return (
-    <Table
-      isFetching={isFetching}
-      columns={columns}
-      data={data}
-      ItemRow={ItemRow}
-      pagination={pagination}
-      onLoadMore={onLoadMore}
-      hasMore={hasMore}
-    />
+    <>
+      <Table
+        isFetching={isFetching}
+        columns={columns}
+        data={data}
+        ItemRow={ItemRow}
+        pagination={pagination}
+        onLoadMore={onLoadMore}
+        hasMore={hasMore}
+      />
+      {clusterErrors && clusterErrors.length > 0 && !allClustersFailed && (
+        <ClusterErrorPanel errors={clusterErrors} allClustersFailed={false} />
+      )}
+    </>
   );
 };

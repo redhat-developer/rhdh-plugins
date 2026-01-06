@@ -293,6 +293,68 @@ describe('LatestReleasesList', () => {
     });
   });
 
+  it('should show cluster error panel when there are partial errors (some clusters succeeded)', async () => {
+    const mockClusterErrors = [
+      {
+        cluster: 'cluster1',
+        namespace: 'namespace1',
+        errorType: 'Forbidden',
+        message: 'Access denied',
+        statusCode: 403,
+        resourceType: 'releases',
+      },
+    ];
+
+    const mockReleases: ReleaseResource[] = [
+      {
+        kind: 'Release',
+        apiVersion: 'v1',
+        application: 'app1',
+        subcomponent: { name: 'test-entity' },
+        cluster: { name: 'cluster1', konfluxUI: 'https://example.com' },
+        metadata: {
+          name: 'my-release',
+          uid: 'id1',
+          namespace: 'default',
+          creationTimestamp: '2024-01-01T00:00:00Z',
+          labels: {
+            [PipelineRunLabel.APPLICATION]: 'app1',
+          },
+        },
+      },
+    ];
+
+    mockUseReleases.mockReturnValue({
+      data: mockReleases,
+      loaded: true,
+      isFetching: false,
+      error: undefined,
+      clusterErrors: mockClusterErrors,
+      refetch: jest.fn(),
+      loadMore: jest.fn(),
+      hasMore: false,
+    });
+
+    mockUseEntitySubcomponents.mockReturnValue({
+      subcomponentNames: ['test-entity'],
+      subcomponentEntities: [mockEntity],
+      loading: false,
+      error: undefined,
+    });
+
+    await renderLatestReleasesList();
+
+    await waitFor(() => {
+      // should show the table with data (release from cluster1/default succeeded)
+      expect(screen.getByText('app1')).toBeInTheDocument();
+      // should also show error panel for partial failures (cluster1/namespace1 failed)
+      expect(
+        screen.getByText('Warning: Failed to retrieve resources'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Access denied')).toBeInTheDocument();
+    });
+  });
+
   it('should show empty state when no data matches filters', async () => {
     mockUseReleases.mockReturnValue({
       data: [],

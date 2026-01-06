@@ -26,10 +26,36 @@ import { SubcomponentLatestPipelineRunByType } from './types';
 import { getLatestPLRs } from './utils';
 import { SubcomponentsLatestPipelineRunByTypeComponent } from './SubcomponentsLatestPipelineRunByTypeComponent';
 import { KonfluxQueryProvider } from '../../api';
+import { useAllClustersFailed } from '../../hooks/useAllClustersFailed';
+import { ClusterErrorPanel } from '../common';
+import { ClusterError } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 export const WrappedContent = () => {
-  const { data: plrs, loaded } = usePipelineruns();
-  const { data: releases, loaded: loadedReleases } = useReleases();
+  const { data: plrs, loaded, clusterErrors } = usePipelineruns();
+  const {
+    data: releases,
+    loaded: loadedReleases,
+    clusterErrors: clusterErrorsReleases,
+  } = useReleases();
+
+  const allClustersFailedForPLRsFetch = useAllClustersFailed(
+    loaded,
+    plrs,
+    clusterErrors,
+  );
+
+  const allClustersFailedForReleasesFetch = useAllClustersFailed(
+    loadedReleases,
+    releases,
+    clusterErrorsReleases,
+  );
+
+  const allClusterErrors = useMemo<ClusterError[] | undefined>(() => {
+    const errors = [clusterErrors, clusterErrorsReleases]
+      .filter((e): e is ClusterError[] => !!e)
+      .flat();
+    return errors.length > 0 ? errors : undefined;
+  }, [clusterErrors, clusterErrorsReleases]);
 
   const { entity } = useEntity();
   const {
@@ -63,6 +89,14 @@ export const WrappedContent = () => {
         isLoading={!loaded || !loadedReleases || entitySubcomponentsLoading}
         entities={subcomponentEntities}
       />
+      {allClusterErrors && (
+        <ClusterErrorPanel
+          errors={allClusterErrors}
+          allClustersFailed={
+            allClustersFailedForPLRsFetch && allClustersFailedForReleasesFetch
+          }
+        />
+      )}
     </InfoCard>
   );
 };

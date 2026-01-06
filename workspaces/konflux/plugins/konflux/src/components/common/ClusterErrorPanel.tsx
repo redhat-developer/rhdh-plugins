@@ -21,9 +21,13 @@ import { Typography } from '@material-ui/core';
 
 type ClusterErrorPanelProps = {
   errors: ClusterError[];
+  allClustersFailed?: boolean;
 };
 
-export const ClusterErrorPanel = ({ errors }: ClusterErrorPanelProps) => {
+export const ClusterErrorPanel = ({
+  errors,
+  allClustersFailed = true,
+}: ClusterErrorPanelProps) => {
   const {
     entity: {
       metadata: { name: entityName },
@@ -36,8 +40,16 @@ export const ClusterErrorPanel = ({ errors }: ClusterErrorPanelProps) => {
 
   return (
     <WarningPanel
-      title="Failed to retrieve resources from all clusters"
-      message={`Unable to fetch resources for entity: ${entityName}. All cluster requests failed.`}
+      title={
+        allClustersFailed
+          ? 'Failed to retrieve resources from all clusters'
+          : 'Failed to retrieve resources'
+      }
+      message={
+        allClustersFailed
+          ? `Unable to fetch resources for entity: ${entityName}. All cluster requests failed.`
+          : `Unable to fetch some resources. Some cluster requests failed.`
+      }
     >
       <div>
         <Typography variant="body2" style={{ marginBottom: '8px' }}>
@@ -48,6 +60,7 @@ export const ClusterErrorPanel = ({ errors }: ClusterErrorPanelProps) => {
           const errorDetails = [
             err.cluster && `Cluster: ${err.cluster}`,
             err.namespace && `Namespace: ${err.namespace}`,
+            err.resourceType && `Resource: ${err.resourceType}`,
             err.errorType && `Type: ${err.errorType}`,
             err.statusCode && `Status: ${err.statusCode}`,
             err.source && `Source: ${err.source}`,
@@ -58,12 +71,14 @@ export const ClusterErrorPanel = ({ errors }: ClusterErrorPanelProps) => {
           return (
             <Typography
               variant="body2"
+              component="div"
               key={`${err.cluster}-${err.namespace}-${index}`}
               style={{ marginBottom: '4px' }}
             >
               <strong>{errorMessage}</strong>
               {errorDetails && (
                 <Typography
+                  component="div"
                   style={{
                     display: 'block',
                     fontSize: '0.875rem',

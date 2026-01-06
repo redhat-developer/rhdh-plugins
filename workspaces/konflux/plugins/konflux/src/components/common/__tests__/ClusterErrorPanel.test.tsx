@@ -123,6 +123,7 @@ describe('ClusterErrorPanel', () => {
         errorType: 'Forbidden',
         statusCode: 403,
         source: 'kubernetes',
+        resourceType: 'pipelineruns',
       },
     ];
 
@@ -133,7 +134,7 @@ describe('ClusterErrorPanel', () => {
       expect(screen.getByText('Access denied')).toBeInTheDocument();
       expect(
         screen.getByText(
-          'Cluster: cluster1 | Namespace: namespace1 | Type: Forbidden | Status: 403 | Source: kubernetes',
+          'Cluster: cluster1 | Namespace: namespace1 | Resource: pipelineruns | Type: Forbidden | Status: 403 | Source: kubernetes',
         ),
       ).toBeInTheDocument();
     });
@@ -218,6 +219,7 @@ describe('ClusterErrorPanel', () => {
         errorType: 'InternalServerError',
         statusCode: 500,
         source: 'kubearchive',
+        resourceType: 'releases',
       },
     ];
 
@@ -226,7 +228,7 @@ describe('ClusterErrorPanel', () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          'Cluster: cluster1 | Namespace: namespace1 | Type: InternalServerError | Status: 500 | Source: kubearchive',
+          'Cluster: cluster1 | Namespace: namespace1 | Resource: releases | Type: InternalServerError | Status: 500 | Source: kubearchive',
         ),
       ).toBeInTheDocument();
     });

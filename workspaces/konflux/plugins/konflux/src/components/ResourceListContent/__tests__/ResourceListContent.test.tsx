@@ -241,6 +241,75 @@ describe('ResourceListContent', () => {
     });
   });
 
+  describe('Partial error state (errors with data)', () => {
+    it('should render ClusterErrorPanel below Table when clusterErrors exist but not all clusters failed', async () => {
+      await renderResourceListContent({
+        allClustersFailed: false,
+        clusterErrors: mockClusterErrors,
+        data: mockData,
+      });
+
+      await waitFor(() => {
+        // table should be rendered
+        expect(screen.getByText('Name')).toBeInTheDocument();
+        expect(screen.getByText('Item 1')).toBeInTheDocument();
+        // error panel should also be rendered
+        expect(
+          screen.getByText('Warning: Failed to retrieve resources'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Cluster Errors:')).toBeInTheDocument();
+        expect(screen.getByText('Test error')).toBeInTheDocument();
+      });
+    });
+
+    it('should show "Failed to retrieve resources" message when not all clusters failed', async () => {
+      await renderResourceListContent({
+        allClustersFailed: false,
+        clusterErrors: mockClusterErrors,
+        data: mockData,
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Warning: Failed to retrieve resources'),
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByText('Failed to retrieve resources from all clusters'),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should not render ClusterErrorPanel when clusterErrors is empty', async () => {
+      await renderResourceListContent({
+        allClustersFailed: false,
+        clusterErrors: [],
+        data: mockData,
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Name')).toBeInTheDocument();
+        expect(
+          screen.queryByText('Failed to retrieve resources'),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('should not render ClusterErrorPanel when clusterErrors is undefined', async () => {
+      await renderResourceListContent({
+        allClustersFailed: false,
+        clusterErrors: undefined,
+        data: mockData,
+      });
+
+      await waitFor(() => {
+        expect(screen.getByText('Name')).toBeInTheDocument();
+        expect(
+          screen.queryByText('Failed to retrieve resources'),
+        ).not.toBeInTheDocument();
+      });
+    });
+  });
+
   describe('Success state (Table)', () => {
     it('should render Table when data is present', async () => {
       await renderResourceListContent({});

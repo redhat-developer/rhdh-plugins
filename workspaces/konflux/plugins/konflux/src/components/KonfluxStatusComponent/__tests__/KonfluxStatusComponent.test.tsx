@@ -228,4 +228,141 @@ describe('KonfluxStatusComponent', () => {
     // Verify getLatestPLRs was called with correct parameters
     expect(mockGetLatestPLRs).toHaveBeenCalledWith('test-entity', [], []);
   });
+
+  it('should show cluster error panel when there are errors from pipelineruns', async () => {
+    const mockClusterErrors = [
+      {
+        cluster: 'cluster1',
+        namespace: 'namespace1',
+        errorType: 'Forbidden',
+        message: 'Access denied',
+        statusCode: 403,
+        resourceType: 'pipelineruns',
+      },
+    ];
+
+    mockUsePipelineruns.mockReturnValue({
+      data: [],
+      loaded: true,
+      isFetching: false,
+      error: undefined,
+      clusterErrors: mockClusterErrors,
+      refetch: jest.fn(),
+      loadMore: jest.fn(),
+      hasMore: false,
+    });
+
+    await renderKonfluxStatusComponent();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Warning: Failed to retrieve resources'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Access denied')).toBeInTheDocument();
+    });
+  });
+
+  it('should show cluster error panel when there are errors from releases', async () => {
+    const mockClusterErrors = [
+      {
+        cluster: 'cluster1',
+        namespace: 'namespace1',
+        errorType: 'Forbidden',
+        message: 'Access denied',
+        statusCode: 403,
+        resourceType: 'releases',
+      },
+    ];
+
+    mockUseReleases.mockReturnValue({
+      data: [],
+      loaded: true,
+      isFetching: false,
+      error: undefined,
+      clusterErrors: mockClusterErrors,
+      refetch: jest.fn(),
+      loadMore: jest.fn(),
+      hasMore: false,
+    });
+
+    await renderKonfluxStatusComponent();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('Warning: Failed to retrieve resources'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Access denied')).toBeInTheDocument();
+    });
+  });
+
+  it('should combine errors from both pipelineruns and releases', async () => {
+    const mockPLRErrors = [
+      {
+        cluster: 'cluster1',
+        namespace: 'namespace1',
+        errorType: 'Forbidden',
+        message: 'PLR access denied',
+        statusCode: 403,
+        resourceType: 'pipelineruns',
+      },
+    ];
+
+    const mockReleaseErrors = [
+      {
+        cluster: 'cluster2',
+        namespace: 'namespace2',
+        errorType: 'NotFound',
+        message: 'Release not found',
+        statusCode: 404,
+        resourceType: 'releases',
+      },
+    ];
+
+    mockUsePipelineruns.mockReturnValue({
+      data: [],
+      loaded: true,
+      isFetching: false,
+      error: undefined,
+      clusterErrors: mockPLRErrors,
+      refetch: jest.fn(),
+      loadMore: jest.fn(),
+      hasMore: false,
+    });
+
+    mockUseReleases.mockReturnValue({
+      data: [],
+      loaded: true,
+      isFetching: false,
+      error: undefined,
+      clusterErrors: mockReleaseErrors,
+      refetch: jest.fn(),
+      loadMore: jest.fn(),
+      hasMore: false,
+    });
+
+    await renderKonfluxStatusComponent();
+
+    await waitFor(() => {
+      // when both sources have no data and errors, all clusters failed
+      expect(
+        screen.getByText(
+          'Warning: Failed to retrieve resources from all clusters',
+        ),
+      ).toBeInTheDocument();
+      // verify both errors are shown
+      expect(screen.getByText('PLR access denied')).toBeInTheDocument();
+      expect(screen.getByText('Release not found')).toBeInTheDocument();
+    });
+  });
+
+  it('should not show error panel when there are no errors', async () => {
+    await renderKonfluxStatusComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Konflux Status')).toBeInTheDocument();
+      expect(
+        screen.queryByText('Failed to retrieve resources'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });

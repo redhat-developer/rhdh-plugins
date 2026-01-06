@@ -309,6 +309,64 @@ describe('PipelineRunsList', () => {
     });
   });
 
+  it('should show cluster error panel when there are partial errors (some clusters succeeded)', async () => {
+    const mockClusterErrors = [
+      {
+        cluster: 'cluster1',
+        namespace: 'namespace1',
+        errorType: 'Forbidden',
+        message: 'Access denied',
+        statusCode: 403,
+        resourceType: 'pipelineruns',
+      },
+    ];
+
+    const mockPipelineRuns: PipelineRunResource[] = [
+      {
+        kind: 'PipelineRun',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'pipeline-run-1',
+          uid: 'id1',
+          namespace: 'default',
+          creationTimestamp: '2024-01-01T00:00:00Z',
+        },
+        subcomponent: { name: 'test-entity' },
+        cluster: { name: 'cluster2' },
+      },
+    ];
+
+    mockUsePipelineruns.mockReturnValue({
+      data: mockPipelineRuns,
+      loaded: true,
+      isFetching: false,
+      error: undefined,
+      clusterErrors: mockClusterErrors,
+      refetch: jest.fn(),
+      loadMore: jest.fn(),
+      hasMore: false,
+    });
+
+    mockUseFilteredPaginatedData.mockReturnValue({
+      filteredData: mockPipelineRuns,
+      paginatedData: mockPipelineRuns,
+      totalCount: 1,
+      totalPages: 1,
+    });
+
+    await renderPIpelineRunsList(false);
+
+    await waitFor(() => {
+      // should show the table with data
+      expect(screen.getByText('pipeline-run-1')).toBeInTheDocument();
+      // should also show error panel for partial failures
+      expect(
+        screen.getByText('Warning: Failed to retrieve resources'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Access denied')).toBeInTheDocument();
+    });
+  });
+
   it('should show empty state when no data matches filters', async () => {
     mockUsePipelineruns.mockReturnValue({
       data: [],
