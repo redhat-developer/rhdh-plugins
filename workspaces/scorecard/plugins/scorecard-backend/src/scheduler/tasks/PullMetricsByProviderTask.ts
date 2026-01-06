@@ -31,6 +31,7 @@ import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
+import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 type Options = Pick<
   SchedulerOptions,
@@ -138,12 +139,16 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 
         const batchResults = await Promise.allSettled(
           entitiesResponse.items.map(async entity => {
+            let value: MetricValue | undefined;
+
             try {
+              value = await provider.calculateMetric(entity);
+
               const thresholds = mergeEntityAndProviderThresholds(
                 entity,
                 provider,
               );
-              const value = await provider.calculateMetric(entity);
+
               const status = this.thresholdEvaluator.getFirstMatchingThreshold(
                 value,
                 metricType,
@@ -161,6 +166,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
+                value,
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),

@@ -33,9 +33,11 @@ import { DbMetricValue } from '../database/types';
 import { mockThresholdRules } from '../../__fixtures__/mockThresholdRules';
 import * as aggregateMetricsByStatusModule from '../utils/aggregateMetricsByStatus';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
-import { PermissionCriteria } from '@backstage/plugin-permission-common';
-import { PermissionCondition } from '@backstage/plugin-permission-common';
-import { PermissionRuleParams } from '@backstage/plugin-permission-common';
+import {
+  PermissionCriteria,
+  PermissionCondition,
+  PermissionRuleParams,
+} from '@backstage/plugin-permission-common';
 
 jest.mock('../utils/mergeEntityAndProviderThresholds');
 jest.mock('../permissions/permissionUtils');
@@ -341,6 +343,51 @@ describe('CatalogMetricService', () => {
       expect(thresholdResult.error).toBe('Error: Merge thresholds failed');
     });
 
+    it('should set threshold error when value is null', async () => {
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
+        {
+          ...latestEntityMetric[0],
+          value: null,
+          error_message: 'Error message during metric calculation',
+        },
+      ]);
+
+      const newResult = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.important_metric'],
+      );
+
+      expect(newResult[0].status).toBe('error');
+      expect(newResult[0].error).toBe(
+        'Error message during metric calculation',
+      );
+      expect(newResult[0].result.thresholdResult.status).toBe('error');
+      expect(newResult[0].result.thresholdResult.error).toBe(
+        'Unable to evaluate thresholds, metric value is missing',
+      );
+    });
+
+    it('should set threshold error when value is not null and error message exist', async () => {
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
+        {
+          ...latestEntityMetric[0],
+          error_message: 'Threshold error message during metric calculation',
+        },
+      ]);
+
+      const newResult = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.important_metric'],
+      );
+
+      expect(newResult[0].status).toBe('success');
+      expect(newResult[0].error).toBeUndefined();
+      expect(newResult[0].result.thresholdResult.status).toBe('error');
+      expect(newResult[0].result.thresholdResult.error).toBe(
+        'Threshold error message during metric calculation',
+      );
+    });
+
     it('should return metric result', async () => {
       const result = await service.getLatestEntityMetrics(
         'component:default/test-component',
@@ -378,40 +425,6 @@ describe('CatalogMetricService', () => {
           }),
         }),
       );
-    });
-
-    it('should set status to error when error message is presented', async () => {
-      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
-        {
-          ...latestEntityMetric[0],
-          error_message: 'Error message',
-        },
-      ]);
-
-      const newResult = await service.getLatestEntityMetrics(
-        'component:default/test-component',
-        ['github.important_metric'],
-      );
-
-      expect(newResult[0].status).toBe('error');
-      expect(newResult[0].error).toBe('Error message');
-    });
-
-    it('should set status to error when metric value is undefined', async () => {
-      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
-        {
-          ...latestEntityMetric[0],
-          value: null,
-        },
-      ]);
-
-      const newResult = await service.getLatestEntityMetrics(
-        'component:default/test-component',
-        ['github.important_metric'],
-      );
-
-      expect(newResult[0].status).toBe('error');
-      expect(newResult[0].error).toBe("Error: Metric value is 'undefined'");
     });
 
     it('should set threshold result status to error when metric value is missing', async () => {

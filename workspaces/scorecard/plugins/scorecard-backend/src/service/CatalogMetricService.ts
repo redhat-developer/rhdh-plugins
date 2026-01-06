@@ -116,12 +116,14 @@ export class CatalogMetricService {
           if (value === null) {
             thresholdError =
               'Unable to evaluate thresholds, metric value is missing';
+          } else if (error_message) {
+            thresholdError = error_message;
           }
         } catch (error) {
           thresholdError = stringifyError(error);
         }
 
-        const isMetricCalcError = error_message || value === null;
+        const isMetricCalcError = error_message !== null && value === null;
 
         return {
           id: metric.id,
