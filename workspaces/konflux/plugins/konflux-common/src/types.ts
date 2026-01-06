@@ -37,6 +37,7 @@ export type ClusterError = {
   statusCode?: number;
   reason?: string;
   source?: 'kubernetes' | 'kubearchive';
+  resourceType?: string;
 };
 
 export type ClusterErrors = ClusterError[];
