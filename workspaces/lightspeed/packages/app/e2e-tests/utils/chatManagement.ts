@@ -443,15 +443,6 @@ export const verifyConversationsSortedAlphabetically = async (
   expect(conversationNames).toEqual(sortedNames);
 };
 
-export const verifyConversationsOrder = async (
-  page: Page,
-  translations: LightspeedMessages,
-  expectedOrder: string[],
-) => {
-  const conversationNames = await getConversationNames(page, translations);
-  expect(conversationNames).toEqual(expectedOrder);
-};
-
 export const verifySortDropdownVisible = async (
   page: Page,
   translations: LightspeedMessages,
