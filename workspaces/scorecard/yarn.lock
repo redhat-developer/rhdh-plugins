@@ -11089,6 +11089,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf@workspace:plugins/scorecard-backend-module-openssf":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf@workspace:plugins/scorecard-backend-module-openssf"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.5.0
+    "@backstage/backend-test-utils": ^1.10.0
+    "@backstage/catalog-client": ^1.12.1
+    "@backstage/catalog-model": ^1.7.6
+    "@backstage/cli": ^0.34.5
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend"
@@ -16454,6 +16468,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^"
     app: "link:../app"
     better-sqlite3: ^9.0.0
     node-gyp: ^10.0.0
