@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 6.9.1
+
+### Patch Changes
+
+- 86a9000: Remove interactive column sorting and fix case-insensitive sort ordering.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.9.1
+
 ## 6.9.0
 
 ### Minor Changes

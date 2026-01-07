@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.6.1
+
+### Patch Changes
+
+- 2e866af: Updated to 4-digit year format for all dates
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.6.1
+
 ## 0.6.0
 
 ### Minor Changes
