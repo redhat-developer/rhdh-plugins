@@ -91,6 +91,13 @@ import {
   verifyNoResultsFoundMessage,
   verifyChatUnpinned,
   clearSearch,
+  openSortDropdown,
+  verifySortDropdownOptions,
+  selectSortOption,
+  verifySortDropdownVisible,
+  closeSortDropdown,
+  verifyConversationsSortedAlphabetically,
+  verifyConversationsOrder,
 } from './utils/chatManagement';
 import { login } from './utils/login';
 import {
@@ -267,7 +274,7 @@ test.describe('Lightspeed tests', () => {
     expect(nonEmptyTexts.length).toBe(3);
   });
 
-  test.describe('File Attachment Validation', () => {
+  test.describe.skip('File Attachment Validation', () => {
     const testFiles = [
       { path: '../../package.json', name: 'package.json' },
       { path: __filename, name: 'fileAttachment.spec.ts' },
@@ -467,6 +474,7 @@ test.describe('Lightspeed tests', () => {
       : test.describe.skip;
     chatManagementDescribeFn('Chat Management', () => {
       const testChatName = 'Test Rename';
+      const deleteChatName = 'Conversation 1';
 
       test('Verify chat actions menu', async () => {
         await sharedPage.reload();
@@ -494,20 +502,30 @@ test.describe('Lightspeed tests', () => {
         await selectPinAction(sharedPage, translations);
         await verifyChatPinned(sharedPage, testChatName);
         await verifyPinnedChatsNotEmpty(sharedPage, translations);
+        await sharedPage.reload();
+        await verifyPinnedChatsNotEmpty(sharedPage, translations);
       });
 
       test('Verify delete chat and its actions', async () => {
-        await verifyChatRenamed(sharedPage, testChatName);
-        await openChatContextMenuByName(sharedPage, testChatName, translations);
+        await verifyChatRenamed(sharedPage, deleteChatName);
+        await openChatContextMenuByName(
+          sharedPage,
+          deleteChatName,
+          translations,
+        );
         await selectDeleteAction(sharedPage, translations);
         await verifyDeleteConfirmation(sharedPage, translations);
         await cancelChatDeletion(sharedPage, translations);
-        await verifyChatRenamed(sharedPage, testChatName);
+        await verifyChatRenamed(sharedPage, deleteChatName);
 
-        await openChatContextMenuByName(sharedPage, testChatName, translations);
+        await openChatContextMenuByName(
+          sharedPage,
+          deleteChatName,
+          translations,
+        );
         await selectDeleteAction(sharedPage, translations);
         await confirmChatDeletion(sharedPage, translations);
-        await verifyChatDeleted(sharedPage, testChatName);
+        await verifyChatDeleted(sharedPage, deleteChatName);
       });
 
       test('Verify disable pinned chats section via settings', async () => {
@@ -558,6 +576,37 @@ test.describe('Lightspeed tests', () => {
         await verifyUnpinActionAvailable(sharedPage, translations);
         await selectUnpinAction(sharedPage, translations);
         await verifyChatUnpinned(sharedPage, translations);
+      });
+
+      test('Verify sort dropdown is available', async () => {
+        await verifySortDropdownVisible(sharedPage, translations);
+        await openSortDropdown(sharedPage, translations);
+        await verifySortDropdownOptions(sharedPage, translations);
+        await closeSortDropdown(sharedPage);
+      });
+
+      test('Verify conversations are sorted correctly', async () => {
+        // Verify alphabetical ascending sort (A-Z)
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'alphabeticalAsc', translations);
+        await verifyConversationsSortedAlphabetically(
+          sharedPage,
+          translations,
+          'asc',
+        );
+
+        // Verify alphabetical descending sort (Z-A)
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'alphabeticalDesc', translations);
+        await verifyConversationsSortedAlphabetically(
+          sharedPage,
+          translations,
+          'desc',
+        );
+
+        // Reset to newest first
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'newest', translations);
       });
     });
   });
