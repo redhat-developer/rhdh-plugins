@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
 
+## 0.6.1
+
+### Patch Changes
+
+- 3cf4c58: Mark the app-config `app.analytics.adoptionInsights` option as optional. It was already read with getOptional<Number/Boolean> so there is no code change or configuration change needed, this just reflect the status quo better.
+
 ## 0.6.0
 
 ### Minor Changes
