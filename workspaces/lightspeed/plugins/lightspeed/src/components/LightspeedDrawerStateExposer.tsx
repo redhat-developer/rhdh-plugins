@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
@@ -29,6 +29,7 @@ export type DrawerState = {
   isDrawerOpen: boolean;
   drawerWidth: number;
   setDrawerWidth: (width: number) => void;
+  closeDrawer: () => void;
 };
 
 /**
@@ -53,15 +54,27 @@ export type DrawerStateExposerProps = {
 export const LightspeedDrawerStateExposer = ({
   onStateChange,
 }: DrawerStateExposerProps) => {
-  const { displayMode, drawerWidth, setDrawerWidth } =
+  const { displayMode, drawerWidth, setDrawerWidth, toggleChatbot } =
     useLightspeedDrawerContext();
+
+  const isDrawerOpen = displayMode === ChatbotDisplayMode.docked;
+
+  const toggleChatbotRef = useRef(toggleChatbot);
+  toggleChatbotRef.current = toggleChatbot;
+
+  const closeDrawer = useCallback(() => {
+    toggleChatbotRef.current();
+  }, []);
+
   useEffect(() => {
     onStateChange({
       id: 'lightspeed',
-      isDrawerOpen: displayMode === ChatbotDisplayMode.docked,
+      isDrawerOpen,
       drawerWidth,
       setDrawerWidth,
+      closeDrawer,
     });
-  }, [displayMode, drawerWidth, onStateChange, setDrawerWidth]);
+  }, [isDrawerOpen, drawerWidth, setDrawerWidth, closeDrawer, onStateChange]);
+
   return null;
 };

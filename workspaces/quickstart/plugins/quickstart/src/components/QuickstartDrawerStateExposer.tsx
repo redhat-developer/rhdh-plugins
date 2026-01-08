@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 
 /**
@@ -27,6 +27,7 @@ export type DrawerPartialState = {
   isDrawerOpen: boolean;
   drawerWidth: number;
   setDrawerWidth: (width: number) => void;
+  closeDrawer: () => void;
 };
 
 /**
@@ -52,8 +53,15 @@ export type DrawerStateExposerProps = {
 export const QuickstartDrawerStateExposer = ({
   onStateChange,
 }: DrawerStateExposerProps) => {
-  const { isDrawerOpen, drawerWidth, setDrawerWidth } =
+  const { isDrawerOpen, drawerWidth, setDrawerWidth, closeDrawer } =
     useQuickstartDrawerContext();
+
+  const closeDrawerRef = useRef(closeDrawer);
+  closeDrawerRef.current = closeDrawer;
+
+  const closeQuickstart = useCallback(() => {
+    closeDrawerRef.current();
+  }, []);
 
   useEffect(() => {
     onStateChange({
@@ -61,8 +69,15 @@ export const QuickstartDrawerStateExposer = ({
       isDrawerOpen,
       drawerWidth,
       setDrawerWidth,
+      closeDrawer: closeQuickstart,
     });
-  }, [isDrawerOpen, drawerWidth, onStateChange, setDrawerWidth]);
+  }, [
+    isDrawerOpen,
+    drawerWidth,
+    setDrawerWidth,
+    onStateChange,
+    closeQuickstart,
+  ]);
 
   return null;
 };

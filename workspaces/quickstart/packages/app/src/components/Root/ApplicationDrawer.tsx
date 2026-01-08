@@ -20,6 +20,7 @@ import {
   useCallback,
   useMemo,
   useEffect,
+  useRef,
 } from 'react';
 import { CustomDrawer } from './CustomDrawer';
 
@@ -33,6 +34,7 @@ export interface DrawerPartialState {
   isDrawerOpen: boolean;
   drawerWidth: number;
   setDrawerWidth: (width: number) => void;
+  closeDrawer: () => void;
 }
 
 /**
@@ -52,7 +54,6 @@ type DrawerContentType = {
   id: string;
   Component: ComponentType<any>;
   priority?: number;
-  resizable?: boolean;
 };
 
 /**
@@ -70,12 +71,12 @@ export interface ApplicationDrawerProps {
   drawerContents: DrawerContentType[];
   /**
    * Array of state exposer components from drawer plugins
-   * These are typically mounted via `application/drawer-state` mount point
+   * These are typically mounted via `application/internal/drawer-state` mount point
    *
    * In RHDH dynamic plugins, this would come from:
    * ```yaml
    * mountPoints:
-   *   - mountPoint: application/drawer-state
+   *   - mountPoint: application/internal/drawer-state
    *     importName: TestDrawerStateExposer
    * ```
    */
@@ -86,55 +87,85 @@ export const ApplicationDrawer = ({
   drawerContents,
   stateExposers = [],
 }: ApplicationDrawerProps) => {
-  // Collect drawer states from all state exposers
-  const [drawerStates, setDrawerStates] = useState<
-    Record<string, DrawerPartialState>
-  >({});
+  const drawerStatesRef = useRef<Map<string, DrawerPartialState>>(new Map());
+  const [, forceUpdate] = useState({});
+  const [activeDrawerId, setActiveDrawerId] = useState<string | null>(null);
 
-  // Callback for state exposers to report their state
-  const handleStateChange = useCallback((state: DrawerPartialState) => {
-    setDrawerStates(prev => {
-      // Only update if something actually changed
-      const existing = prev[state.id];
-      if (
-        existing &&
-        existing.isDrawerOpen === state.isDrawerOpen &&
-        existing.drawerWidth === state.drawerWidth &&
-        existing.setDrawerWidth === state.setDrawerWidth
-      ) {
-        return prev;
+  const handleStateChange = useCallback(
+    (state: DrawerPartialState) => {
+      const prev = drawerStatesRef.current.get(state.id);
+      const hasChanged =
+        !prev ||
+        prev.isDrawerOpen !== state.isDrawerOpen ||
+        prev.drawerWidth !== state.drawerWidth ||
+        prev.setDrawerWidth !== state.setDrawerWidth;
+
+      // If drawer just opened then make it the active drawer
+      if (!prev?.isDrawerOpen && state.isDrawerOpen) {
+        setActiveDrawerId(state.id);
       }
-      return { ...prev, [state.id]: state };
-    });
-  }, []);
+      // If drawer just closed and it was the active one, clear active drawer
+      else if (
+        prev?.isDrawerOpen &&
+        !state.isDrawerOpen &&
+        state.id === activeDrawerId
+      ) {
+        setActiveDrawerId(null);
+      }
 
-  // Convert states record to array
-  const statesArray = useMemo(
-    () => Object.values(drawerStates),
-    [drawerStates],
+      drawerStatesRef.current.set(state.id, state);
+
+      if (hasChanged) {
+        forceUpdate({});
+      }
+    },
+    [activeDrawerId],
   );
 
-  // Get active drawer - find the open drawer with highest priority
-  const activeDrawer = useMemo(() => {
-    return statesArray
-      .filter(state => state.isDrawerOpen)
-      .map(state => {
-        const content = drawerContents.find(c => c.id === state.id);
-        if (!content) return null;
-        return { ...state, ...content };
-      })
-      .filter(Boolean)
-      .sort((a, b) => (b?.priority ?? -1) - (a?.priority ?? -1))[0];
-  }, [statesArray, drawerContents]);
+  const drawerStates = Array.from(drawerStatesRef.current.values());
+
+  const allDrawers = useMemo(
+    () =>
+      drawerStates
+        .map(state => {
+          const content = drawerContents.find(c => c.id === state.id);
+          if (!content) return null;
+
+          return {
+            state,
+            Component: content.Component,
+            priority: content.priority,
+          };
+        })
+        .filter(Boolean),
+    [drawerStates, drawerContents],
+  );
+
+  const activeDrawer =
+    allDrawers.find(d => d?.state.id === activeDrawerId) || null;
+
+  // Close all other drawers when one becomes active
+  useEffect(() => {
+    if (activeDrawerId) {
+      drawerStates.forEach(state => {
+        if (state.id !== activeDrawerId && state.isDrawerOpen) {
+          state.closeDrawer();
+        }
+      });
+    }
+  }, [activeDrawerId, drawerStates]);
 
   // Manage CSS classes and variables for layout adjustments
   useEffect(() => {
     if (activeDrawer) {
-      const className = `docked-drawer-open`;
-      const cssVar = `--docked-drawer-width`;
+      const className = 'docked-drawer-open';
+      const cssVar = '--docked-drawer-width';
 
       document.body.classList.add(className);
-      document.body.style.setProperty(cssVar, `${activeDrawer.drawerWidth}px`);
+      document.body.style.setProperty(
+        cssVar,
+        `${activeDrawer.state.drawerWidth}px`,
+      );
 
       return () => {
         document.body.classList.remove(className);
@@ -143,22 +174,14 @@ export const ApplicationDrawer = ({
     }
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeDrawer?.id, activeDrawer?.drawerWidth]);
-
-  // Wrapper to handle the width change callback type
-  const handleWidthChange = useCallback(
-    (width: number) => {
-      activeDrawer?.setDrawerWidth(width);
-    },
-    [activeDrawer],
-  );
+  }, [activeDrawer?.state.id, activeDrawer?.state.drawerWidth]);
 
   return (
     <>
       {/* Render all state exposers - they return null but report their state */}
       {stateExposers.map(({ Component }, index) => (
         <Component
-          key={`${index}-${Component.displayName}`}
+          key={`drawer-${Component.displayName || index}`}
           onStateChange={handleStateChange}
         />
       ))}
@@ -166,9 +189,9 @@ export const ApplicationDrawer = ({
       {/* Render the active drawer */}
       {activeDrawer && (
         <CustomDrawer
-          isDrawerOpen
-          drawerWidth={activeDrawer.drawerWidth}
-          onWidthChange={handleWidthChange}
+          isDrawerOpen={activeDrawer.state.isDrawerOpen}
+          drawerWidth={activeDrawer.state.drawerWidth}
+          onWidthChange={activeDrawer.state.setDrawerWidth}
         >
           <activeDrawer.Component />
         </CustomDrawer>

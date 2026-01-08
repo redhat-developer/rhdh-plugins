@@ -66,12 +66,24 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       } else {
         setCurrentConversationIdState(undefined);
       }
-      setDisplayModeState(ChatbotDisplayMode.embedded);
+      // Update this to fullscreen only when it is not already in the docked mode
+      setDisplayModeState(prev => {
+        if (prev === ChatbotDisplayMode.docked) {
+          return prev; // Don't override docked mode
+        }
+        return ChatbotDisplayMode.embedded;
+      });
       setIsOpen(true);
-    } else if (displayModeState === ChatbotDisplayMode.embedded) {
-      setDisplayModeState(ChatbotDisplayMode.default);
+    } else {
+      // When leaving lightspeed route, update this only when the current mode is fullscreen
+      setDisplayModeState(prev => {
+        if (prev === ChatbotDisplayMode.embedded) {
+          return ChatbotDisplayMode.default;
+        }
+        return prev;
+      });
     }
-  }, [isLightspeedRoute, location.pathname, displayModeState]);
+  }, [isLightspeedRoute, location.pathname]);
 
   // Open chatbot in overlay mode
   const openChatbot = useCallback(() => {

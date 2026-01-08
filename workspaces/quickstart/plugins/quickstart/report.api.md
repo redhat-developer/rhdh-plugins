@@ -18,6 +18,7 @@ export type DrawerPartialState = {
   isDrawerOpen: boolean;
   drawerWidth: number;
   setDrawerWidth: (width: number) => void;
+  closeDrawer: () => void;
 };
 
 // @public

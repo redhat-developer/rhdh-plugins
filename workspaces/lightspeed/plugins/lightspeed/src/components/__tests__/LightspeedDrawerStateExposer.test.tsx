@@ -26,10 +26,11 @@ import {
 describe('LightspeedDrawerStateExposer', () => {
   const mockSetDrawerWidth = jest.fn();
   const mockOnStateChange = jest.fn();
+  const mockToggleChatbot = jest.fn();
 
   const createContextValue = (overrides = {}) => ({
     isChatbotActive: false,
-    toggleChatbot: jest.fn(),
+    toggleChatbot: mockToggleChatbot,
     displayMode: ChatbotDisplayMode.default,
     setDisplayMode: jest.fn(),
     drawerWidth: 500,
@@ -62,6 +63,7 @@ describe('LightspeedDrawerStateExposer', () => {
         isDrawerOpen: false,
         drawerWidth: 500,
         setDrawerWidth: mockSetDrawerWidth,
+        closeDrawer: expect.any(Function),
       });
     });
   });
@@ -214,6 +216,16 @@ describe('LightspeedDrawerStateExposer', () => {
     await waitFor(() => {
       const callArg = mockOnStateChange.mock.calls[0][0] as DrawerState;
       expect(callArg.setDrawerWidth).toBe(mockSetDrawerWidth);
+    });
+  });
+
+  it('should call toggleChatbot when closeDrawer is invoked', async () => {
+    renderWithContext(createContextValue());
+
+    await waitFor(() => {
+      const callArg = mockOnStateChange.mock.calls[0][0] as DrawerState;
+      callArg.closeDrawer();
+      expect(mockToggleChatbot).toHaveBeenCalledTimes(1);
     });
   });
 });
