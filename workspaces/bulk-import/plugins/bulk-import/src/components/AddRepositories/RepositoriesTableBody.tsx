@@ -126,7 +126,11 @@ export const RepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            {t('repositories.noRecordsFound')}
+            {t(
+              isApprovalToolGitlab
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         </td>
       </tr>

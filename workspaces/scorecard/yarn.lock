@@ -11089,6 +11089,20 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf@workspace:plugins/scorecard-backend-module-openssf":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf@workspace:plugins/scorecard-backend-module-openssf"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.5.0
+    "@backstage/backend-test-utils": ^1.10.0
+    "@backstage/catalog-client": ^1.12.1
+    "@backstage/catalog-model": ^1.7.6
+    "@backstage/cli": ^0.34.5
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend@workspace:plugins/scorecard-backend"
@@ -11954,6 +11968,30 @@ __metadata:
     "@openshift/dynamic-plugin-sdk": ^5.0.1
     tslib: ^2.6.2
   checksum: 31d1d376c795d47cfc7c4cf84d262989f7a62e3c536aedff03cfa6e23bf969713f70f0e3c9035fe46b280a5133c85c416f1cd2b46c98f9822080ac9d7c752819
+  languageName: node
+  linkType: hard
+
+"@scalprum/core@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "@scalprum/core@npm:0.9.0"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    tslib: ^2.6.2
+  checksum: 302d3df87fda872c05a95d8c6b86809f46854f46af8a44b7faa0250de9a0b0ebeaccdcdc69f9767c858fcef2c34c121b3e1087d0781fa1bcd7eee98d244db72b
+  languageName: node
+  linkType: hard
+
+"@scalprum/react-core@npm:0.11.1":
+  version: 0.11.1
+  resolution: "@scalprum/react-core@npm:0.11.1"
+  dependencies:
+    "@openshift/dynamic-plugin-sdk": ^5.0.1
+    "@scalprum/core": ^0.9.0
+    lodash: ^4.17.0
+  peerDependencies:
+    react: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+    react-dom: ">=16.8.0 || >=17.0.0 || ^18.0.0"
+  checksum: 2eac484690307aa80ebbaf482f7a9d6b756476bfe4da8722a4be05925c32c3fa5ac31614978cc5197598f19afdf6dbc80cc6f13e6f1b00cdb2a03f61ba6b4ed0
   languageName: node
   linkType: hard
 
@@ -15768,7 +15806,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@roadiehq/backstage-plugin-github-pull-requests": ^3.5.1
     "@roadiehq/backstage-plugin-jira": ^2.13.1
-    "@scalprum/react-core": 0.9.5
+    "@scalprum/react-core": 0.11.1
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
     "@testing-library/react": ^14.0.0
@@ -16430,6 +16468,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^"
     app: "link:../app"
     better-sqlite3: ^9.0.0
     node-gyp: ^10.0.0

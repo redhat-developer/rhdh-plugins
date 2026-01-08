@@ -32,6 +32,8 @@ describe('createRouter', () => {
       optimizationApi: {
         getRecommendationList: jest.fn(),
         getRecommendationById: jest.fn(),
+      },
+      costManagementApi: {
         getCostManagementReport: jest.fn(),
         downloadCostManagementReport: jest.fn(),
         searchOpenShiftProjects: jest.fn(),

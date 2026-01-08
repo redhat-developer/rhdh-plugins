@@ -48,7 +48,9 @@ const bulkImportTranslationDe = createTranslationMessages({
     'repositories.addedRepositoriesCount':
       'Hinzugefügte Repositories ({{count}})',
     'repositories.importedEntitiesCount': 'Importierte Entitäten ({{count}})',
-    'repositories.noRecordsFound': 'Keine Datensätze gefunden',
+    'repositories.noRecordsFound':
+      'Keine Repositories zum Importieren verfügbar.',
+    'repositories.noProjectsFound': 'Keine Projekte zum Importieren verfügbar.',
     'repositories.refresh': 'Aktualisieren',
     'repositories.import': 'Importieren',
     'repositories.removing': 'Wird entfernt...',
@@ -85,6 +87,11 @@ const bulkImportTranslationDe = createTranslationMessages({
     'status.added': 'Hinzugefügt',
     'status.waitingForApproval': 'Warten auf Genehmigung',
     'status.imported': 'Importiert',
+    'status.readyToImport': 'Bereit zum Importieren',
+    'status.waitingForPullRequestToStart': 'Warten auf Start der Pull-Request',
+    'status.missingConfigurations': 'Fehlende Konfigurationen',
+    'status.failedCreatingPR': 'Fehler beim Erstellen der PR',
+    'status.pullRequestRejected': 'Pull-Request abgelehnt',
 
     // Table headers
     'table.headers.name': 'Name',
@@ -94,29 +101,30 @@ const bulkImportTranslationDe = createTranslationMessages({
     'table.headers.organizationGroup': 'Organisation/Gruppe',
     'table.headers.group': 'Gruppe',
     'table.headers.status': 'Status',
+    'table.headers.taskStatus': 'Aufgabenstatus',
     'table.headers.lastUpdated': 'Zuletzt aktualisiert',
     'table.headers.actions': 'Aktionen',
     'table.headers.catalogInfoYaml': 'catalog-info.yaml',
 
     // Steps
     'steps.chooseApprovalTool':
-      'Genehmigungstool (GitHub/GitLab) für PR-Erstellung auswählen',
+      'Ein Quellcode-Verwaltungstool für die Pull-Request-Erstellung auswählen',
     'steps.chooseRepositories':
-      'Repositories auswählen, die Sie hinzufügen möchten',
+      'Elemente auswählen, die Sie importieren möchten',
     'steps.chooseItems': 'Elemente auswählen, die Sie importieren möchten',
     'steps.generateCatalogInfo':
-      'Eine catalog-info.yaml-Datei für jedes Repository generieren',
+      'Eine catalog-info.yaml-Datei für jedes ausgewählte Element generieren',
     'steps.generateCatalogInfoItems':
       'Eine catalog-info.yaml-Datei für jedes ausgewählte Element generieren',
-    'steps.editPullRequest': 'Pull-Request-Details bei Bedarf bearbeiten',
+    'steps.editPullRequest': 'Die Pull/Merge-Request-Details anzeigen',
     'steps.trackStatus': 'Genehmigungsstatus verfolgen',
 
     // Add repositories
-    'addRepositories.approvalTool.title': 'Genehmigungstool',
+    'addRepositories.approvalTool.title': 'Quellcodeverwaltungstool',
     'addRepositories.approvalTool.description':
-      'Genehmigungstool für PR-Erstellung auswählen',
+      'Quellcodeverwaltungstool für PR-Erstellung auswählen',
     'addRepositories.approvalTool.tooltip':
-      'Der Import erfordert eine Genehmigung. Nach der Genehmigung der Pull-/Merge-Anfrage werden die Repositories/Projekte auf die Katalogseite importiert.',
+      'Der Import erfordert eine Genehmigung. Nach der Genehmigung der Pull-Anfrage werden die Repositories auf die Katalogseite importiert.',
     'addRepositories.approvalTool.github': 'GitHub',
     'addRepositories.approvalTool.gitlab': 'GitLab',
     'addRepositories.repositoryType.title': 'Repository-Typ',
@@ -142,7 +150,6 @@ const bulkImportTranslationDe = createTranslationMessages({
 
     // Catalog info status
     'catalogInfo.status.generating': 'Generierung',
-    'catalogInfo.status.notGenerated': 'Nicht generiert',
 
     // Preview file
 
@@ -151,6 +158,7 @@ const bulkImportTranslationDe = createTranslationMessages({
     'common.cancel': 'Abbrechen',
     'common.close': 'Schließen',
     'common.delete': 'Löschen',
+    'common.documentation': 'Dokumentation',
     'common.edit': 'Bearbeiten',
     'common.filter': 'Filtern',
     'common.import': 'Importieren',
@@ -167,7 +175,6 @@ const bulkImportTranslationDe = createTranslationMessages({
     'time.secondsAgo': 'vor {{count}} Sekunde(n)',
 
     // Preview File
-    'previewFile.readyToImport': 'Bereit zum Import',
     'previewFile.previewFile': 'Datei-Vorschau',
     'previewFile.previewFiles': 'Dateien-Vorschau',
     'previewFile.failedToCreatePR': 'PR-Erstellung fehlgeschlagen',
@@ -218,6 +225,10 @@ const bulkImportTranslationDe = createTranslationMessages({
     'errors.errorOccurred': 'Fehler aufgetreten',
     'errors.failedToCreatePullRequest':
       'Pull-Request konnte nicht erstellt werden',
+    'errors.noIntegrationsConfigured':
+      'Keine GitHub- oder GitLab-Integrationen sind konfiguriert. Bitte fügen Sie mindestens eine Integration hinzu, um die Bulk-Import-Funktion zu verwenden.',
+    'errors.addIntegrationsToConfig':
+      'Um dieses Problem zu lösen, stellen Sie sicher, dass die Integrationen zu Ihrer Backstage-Konfigurationsdatei (app-config.yaml) hinzugefügt werden.',
     'errors.prErrorPermissions':
       'Sie haben keine Berechtigung, einen Pull-Request zu erstellen',
     'errors.catalogInfoExists': 'catalog-info.yaml existiert bereits',
@@ -231,6 +242,8 @@ const bulkImportTranslationDe = createTranslationMessages({
     'forms.footer.createServiceNowTickets': 'ServiceNow-Tickets erstellen',
     'forms.footer.createPullRequest': 'Pull-Request erstellen',
     'forms.footer.createPullRequests': 'Pull-Requests erstellen',
+    'forms.footer.selectRepositoryTooltip':
+      'Wählen Sie ein Repository zum Importieren aus.',
     'forms.footer.serviceNowTooltip':
       'Catalog-info.yaml-Dateien müssen vor der Erstellung eines ServiceNow-Tickets generiert werden',
     'forms.footer.importTooltip':
@@ -261,12 +274,12 @@ const bulkImportTranslationDe = createTranslationMessages({
     'tasks.viewTask': 'Aufgabe anzeigen',
     'tasks.loading': 'Wird geladen...',
     'tasks.errorFetchingData': 'Fehler beim Abrufen der Daten',
-    'tasks.taskCancelled': 'Task cancelled',
-    'tasks.taskCompleted': 'Task completed',
-    'tasks.taskFailed': 'Task failed',
-    'tasks.taskOpen': 'Task open',
-    'tasks.taskProcessing': 'Task processing',
-    'tasks.taskSkipped': 'Task skipped',
+    'tasks.taskCancelled': 'Abgebrochen',
+    'tasks.taskCompleted': 'Abgeschlossen',
+    'tasks.taskFailed': 'Fehlgeschlagen',
+    'tasks.taskOpen': 'Offen',
+    'tasks.taskProcessing': 'Verarbeitung',
+    'tasks.taskSkipped': 'Übersprungen',
   },
 });
 

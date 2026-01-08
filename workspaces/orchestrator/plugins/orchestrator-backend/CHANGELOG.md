@@ -1,5 +1,15 @@
 ### Dependencies
 
+## 8.5.1
+
+### Patch Changes
+
+- d91ef65: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@openapitools/openapi-generator-cli` to `2.25.2`.
+- Updated dependencies [8524940]
+- Updated dependencies [d91ef65]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.1
+
 ## 8.5.0
 
 ### Minor Changes

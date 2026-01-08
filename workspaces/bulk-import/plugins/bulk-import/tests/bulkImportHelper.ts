@@ -58,7 +58,7 @@ export class Common {
       await dialog.accept();
     });
 
-    await this.verifyHeading('Select a sign-in method');
+    await this.verifyHeading('Scaffolded Backstage App');
     await this.clickButton('Enter');
     await this.waitForSideBarVisible();
   }

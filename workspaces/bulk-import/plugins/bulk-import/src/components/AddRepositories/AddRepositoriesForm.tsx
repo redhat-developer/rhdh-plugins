@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Formik, FormikHelpers } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useNumberOfApprovalTools } from '../../hooks';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
@@ -36,14 +37,29 @@ import {
 import { DrawerContextProvider } from '../DrawerContext';
 import { AddRepositories } from './AddRepositories';
 
-export const AddRepositoriesForm = () => {
+export const AddRepositoriesForm = ({
+  onErrorChange,
+}: {
+  onErrorChange?: (error: any) => void;
+}) => {
   const bulkImportApi = useApi(bulkImportApiRef);
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { numberOfApprovalTools, gitlabConfigured } =
+    useNumberOfApprovalTools();
+
+  // Set default approval tool based on configuration
+  const getDefaultApprovalTool = () => {
+    if (numberOfApprovalTools === 1) {
+      return gitlabConfigured ? ApprovalTool.Gitlab : ApprovalTool.Git;
+    }
+    return ApprovalTool.Git; // Default to GitHub when both are configured
+  };
+
   const initialValues: AddRepositoriesFormValues = {
     repositoryType: RepositorySelection.Repository,
     repositories: {},
     excludedRepositories: {},
-    approvalTool: ApprovalTool.Git,
+    approvalTool: getDefaultApprovalTool(),
   };
 
   const createImportJobs = (importOptions: {
@@ -56,6 +72,11 @@ export const AddRepositoriesForm = () => {
     );
 
   const mutationCreate = useMutation(createImportJobs);
+
+  // Notify parent component when error changes
+  useEffect(() => {
+    onErrorChange?.(mutationCreate.error);
+  }, [mutationCreate.error, onErrorChange]);
 
   const handleSubmit = async (
     values: AddRepositoriesFormValues,
@@ -87,7 +108,23 @@ export const AddRepositoriesForm = () => {
         if (Object.keys(createJobErrors?.errors || {}).length > 0) {
           formikHelpers.setStatus(createJobErrors);
         } else {
-          navigate(`..`);
+          // Successfully imported - stay on the same page
+          // Clear the selected repositories to reset the form
+          formikHelpers.setFieldValue('repositories', {});
+
+          // Invalidate repository list queries to refresh data
+          queryClient.invalidateQueries(['repositories']);
+          queryClient.invalidateQueries(['organizations']);
+
+          // Invalidate specific importAction queries for each imported repository
+          importRepositories.forEach(repo => {
+            queryClient.invalidateQueries([
+              'importAction',
+              repo.repository.url,
+              repo.repository.defaultBranch,
+              repo.approvalTool,
+            ]);
+          });
         }
       }
     }

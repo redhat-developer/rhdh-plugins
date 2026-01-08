@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { MouseEvent } from 'react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Table } from '@backstage/core-components';
@@ -45,8 +44,6 @@ export const RepositoriesList = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const { t } = useTranslation();
-  const [order, setOrder] = useState<SortingOrderEnum>(SortingOrderEnum.Asc);
-  const [orderBy, setOrderBy] = useState<string>('repoName');
   const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const [pageNumber, setPageNumber] = useState(0);
@@ -54,11 +51,6 @@ export const RepositoriesList = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const gitlabConfigured = useGitlabConfigured();
 
-  const orderByColumn = useMemo(() => {
-    return orderBy?.replace(/\.([a-zA-Z])/g, (_, char) =>
-      char.toUpperCase('en-US'),
-    ) as keyof typeof AddedRepositoryColumnNameEnum;
-  }, [orderBy]);
   const {
     data: importJobs,
     error: errJobs,
@@ -68,8 +60,8 @@ export const RepositoriesList = () => {
     pageNumber + 1,
     rowsPerPage,
     debouncedSearch,
-    AddedRepositoryColumnNameEnum[orderByColumn],
-    order,
+    AddedRepositoryColumnNameEnum.repoName,
+    SortingOrderEnum.Asc,
   );
 
   const closeDialog = () => {
@@ -85,12 +77,6 @@ export const RepositoriesList = () => {
       search: `?${queryParams.toString()}`,
     });
     setOpenDrawer(false);
-  };
-
-  const handleRequestSort = (_event: MouseEvent<unknown>, property: string) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? SortingOrderEnum.Desc : SortingOrderEnum.Asc);
-    setOrderBy(property);
   };
 
   // Avoid a layout jump when reaching the last page with empty rows.
@@ -135,14 +121,7 @@ export const RepositoriesList = () => {
           },
         }}
         components={{
-          Header: () => (
-            <RepositoriesHeader
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-              showImportJobs
-            />
-          ),
+          Header: () => <RepositoriesHeader showImportJobs />,
           Body: () => (
             <AddedRepositoriesTableBody
               error={errJobs}
@@ -184,7 +163,11 @@ export const RepositoriesList = () => {
               justifyContent: 'center',
             }}
           >
-            {t('repositories.noRecordsFound')}
+            {t(
+              gitlabConfigured
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         }
       />

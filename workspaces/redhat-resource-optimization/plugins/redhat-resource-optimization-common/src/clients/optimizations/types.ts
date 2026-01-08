@@ -15,83 +15,12 @@
  */
 
 import { DefaultApiClient } from '../../generated/apis/DefaultApi.client';
-import type { TypedResponse } from '../../generated/apis/DefaultApi.client';
-import type {
-  CostManagementReport,
-  CurrencyCode,
-} from '../types/cost-management';
-
-/** @public */
-export interface GetCostManagementRequest {
-  query: {
-    currency?: CurrencyCode;
-    delta?: string;
-    'filter[limit]'?: number;
-    'filter[offset]'?: number;
-    'filter[resolution]'?: 'daily' | 'monthly';
-    'filter[time_scope_units]'?: 'day' | 'month';
-    'filter[time_scope_value]'?: number;
-    'group_by[project]'?: '*' | string;
-    'group_by[cluster]'?: '*' | string;
-    'group_by[node]'?: '*' | string;
-    'group_by[tag]'?: '*' | string;
-    'order_by[cost]'?: 'asc' | 'desc';
-    'order_by[distributed_cost]'?: 'asc' | 'desc';
-    'order_by[markup_cost]'?: 'asc' | 'desc';
-    'order_by[raw_cost]'?: 'asc' | 'desc';
-    [key: string]: string | number | undefined;
-  };
-}
-
-/** @public */
-export type ExportFormat = 'csv' | 'json';
-
-/** @public */
-export interface DownloadCostManagementRequest
-  extends GetCostManagementRequest {
-  format: ExportFormat;
-}
 
 /** @public */
 export type OptimizationsApi = Omit<
   InstanceType<typeof DefaultApiClient>,
   'fetchApi' | 'discoveryApi'
-> & {
-  getCostManagementReport(
-    request: GetCostManagementRequest,
-  ): Promise<TypedResponse<CostManagementReport>>;
-  downloadCostManagementReport(
-    request: DownloadCostManagementRequest,
-  ): Promise<void>;
-  searchOpenShiftProjects(
-    search?: string,
-  ): Promise<
-    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
-  >;
-  searchOpenShiftClusters(
-    search?: string,
-  ): Promise<
-    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
-  >;
-  searchOpenShiftNodes(
-    search?: string,
-  ): Promise<
-    TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
-  >;
-  getOpenShiftTags(
-    timeScopeValue?: number,
-  ): Promise<TypedResponse<{ data: string[]; meta?: any; links?: any }>>;
-  getOpenShiftTagValues(
-    tagKey: string,
-    timeScopeValue?: number,
-  ): Promise<
-    TypedResponse<{
-      data: Array<{ key: string; values: string[]; enabled: boolean }>;
-      meta?: any;
-      links?: any;
-    }>
-  >;
-};
+>;
 
 /**
  * This is a copy of GetTokenResponse, to avoid importing redhat-resource-optimization-backend.
@@ -110,6 +39,16 @@ export interface GetTokenResponse {
 export interface GetAccessResponse {
   decision: string;
   authorizeClusterIds: string[];
+  authorizeProjects: string[];
+}
+
+/**
+ * Response from cost management access endpoint
+ * @public
+ */
+export interface GetCostManagementAccessResponse {
+  decision: string;
+  authorizedClusterNames: string[];
   authorizeProjects: string[];
 }
 

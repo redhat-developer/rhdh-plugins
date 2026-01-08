@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-common
 
+## 0.6.1
+
 ## 0.6.0
 
 ### Minor Changes
