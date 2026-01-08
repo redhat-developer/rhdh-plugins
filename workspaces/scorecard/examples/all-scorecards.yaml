@@ -10,5 +10,5 @@ metadata:
     jira/project-key: RSPT
 spec:
   type: service
-  owner: janus-authors
+  owner: user:development/guest
   lifecycle: production

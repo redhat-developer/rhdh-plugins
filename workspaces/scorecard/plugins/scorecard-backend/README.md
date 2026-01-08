@@ -97,6 +97,20 @@ Thresholds are evaluated in order, and the first matching rule determines the ca
 
 For comprehensive threshold configuration guide, examples, and best practices, see [thresholds.md](./docs/thresholds.md).
 
+## Entity Aggregation
+
+The Scorecard plugin provides aggregation endpoints that return metrics for all entities owned by the authenticated user. This includes:
+
+- Entities directly owned by the user
+- Entities owned by groups the user is a direct member of (Only direct parent groups are considered)
+
+### Available Endpoints
+
+- **`GET /metrics/catalog/aggregates`**: Returns aggregated metrics for all available metrics (optionally filtered by `metricIds` query parameter)
+- **`GET /metrics/:metricId/catalog/aggregation`**: Returns aggregated metrics for a specific metric, with explicit access validation (returns `403` if the user doesn't have access to the metric)
+
+For comprehensive documentation on how entity aggregation works, API details, examples, and best practices, see [aggregation.md](./docs/aggregation.md).
+
 ## Configuration cleanup Job
 
 The plugin has a predefined job that runs every day to check and clean old metrics. By default, metrics are saved for **365 days**, however, this period can be changed in the `app-config.yaml` file. Here is an example of how to do that:

@@ -196,5 +196,51 @@ export async function createRouter({
     res.json(aggregatedMetrics);
   });
 
+  router.get('/metrics/:metricId/catalog/aggregation', async (req, res) => {
+    const { metricId } = req.params;
+
+    const { conditions } = await authorizeConditional(
+      req,
+      scorecardMetricReadPermission,
+    );
+
+    const metric = metricProvidersRegistry.getMetric(metricId);
+    const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+
+    if (authorizedMetrics.length === 0) {
+      throw new NotAllowedError(`Access to metric "${metricId}" denied`);
+    }
+
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const userEntityRef = credentials?.principal?.userEntityRef;
+
+    if (!userEntityRef) {
+      throw new NotAllowedError('User entity reference not found');
+    }
+
+    const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
+      catalog,
+      credentials,
+    });
+
+    if (entitiesOwnedByAUser.length === 0) {
+      res.json([]);
+      return;
+    }
+
+    for (const entityRef of entitiesOwnedByAUser) {
+      await checkEntityAccess(entityRef, req, permissions, httpAuth);
+    }
+
+    const aggregatedMetrics =
+      await catalogMetricService.getAggregatedMetricsByEntityRefs(
+        entitiesOwnedByAUser,
+        [metricId],
+        conditions,
+      );
+
+    res.json(aggregatedMetrics);
+  });
+
   return router;
 }
