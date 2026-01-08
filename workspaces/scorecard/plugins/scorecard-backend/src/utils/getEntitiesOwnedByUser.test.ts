@@ -340,27 +340,5 @@ describe('getEntitiesOwnedByUser', () => {
       expect(result).toEqual([]);
       expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
     });
-
-    // it('should call queryEntities with cursor', async () => {
-    //   mockedCatalog.queryEntities.mockResolvedValue({ items: [userOwnedEntity], pageInfo: { nextCursor: 'cursor1' }, totalItems: 1 });
-    //   mockedCatalog.queryEntities.mockResolvedValue({ items: [groupOwnedEntity], pageInfo: { nextCursor: undefined }, totalItems: 1 });
-
-    //   await getEntitiesOwnedByUser('user:development/test-user', {
-    //     catalog: mockedCatalog,
-    //     credentials: mockCredentials,
-    //   });
-
-    //   expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
-    //   expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
-    //     1,
-    //     { cursor: 'cursor1' },
-    //     { credentials: mockCredentials },
-    //   );
-    //   expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
-    //     2,
-    //     { cursor: 'cursor2' },
-    //     { credentials: mockCredentials },
-    //   );
-    // });
   });
 });

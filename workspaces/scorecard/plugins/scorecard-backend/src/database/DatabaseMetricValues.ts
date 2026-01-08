@@ -74,7 +74,7 @@ export class DatabaseMetricValues {
       .whereIn('catalog_entity_ref', catalog_entity_refs)
       .groupBy('metric_id', 'catalog_entity_ref');
 
-    return await this.dbClient(this.tableName)
+    const results = await this.dbClient(this.tableName)
       .select('metric_id')
       .count('* as total')
       .max('timestamp as max_timestamp')
@@ -97,5 +97,31 @@ export class DatabaseMetricValues {
       .whereNotNull('status')
       .whereNotNull('value')
       .groupBy('metric_id');
+
+    // Normalize types for cross-database compatibility
+    // PostgreSQL returns COUNT/SUM as strings, SQLite returns numbers
+    // PostgreSQL returns MAX(timestamp) as Date, SQLite returns number (milliseconds)
+    return results.map(row => {
+      let maxTimestamp: Date;
+      if (row.max_timestamp instanceof Date) {
+        maxTimestamp = row.max_timestamp;
+      } else if (
+        typeof row.max_timestamp === 'number' ||
+        typeof row.max_timestamp === 'string'
+      ) {
+        maxTimestamp = new Date(row.max_timestamp as string | number);
+      } else {
+        maxTimestamp = new Date();
+      }
+
+      return {
+        metric_id: row.metric_id,
+        total: Number(row.total),
+        max_timestamp: maxTimestamp,
+        success: Number(row.success),
+        warning: Number(row.warning),
+        error: Number(row.error),
+      };
+    });
   }
 }

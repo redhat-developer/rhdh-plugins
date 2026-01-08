@@ -172,7 +172,7 @@ export class CatalogMetricService {
       );
 
     return aggregatedMetrics.map(row => {
-      const metricId = row.metric_id as string;
+      const metricId = row.metric_id;
       const success = row.success || 0;
       const warning = row.warning || 0;
       const error = row.error || 0;
