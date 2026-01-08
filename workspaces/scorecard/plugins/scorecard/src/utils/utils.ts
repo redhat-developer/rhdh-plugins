@@ -57,25 +57,3 @@ export const getStatusConfig = ({
       return { color: 'success.main', icon: CheckCircleOutlineIcon };
   }
 };
-
-export type AggregatedMetricValue = {
-  count: number;
-  name: 'success' | 'warning' | 'error';
-};
-
-export type AggregatedMetricResult = {
-  id: string;
-  status: 'success' | 'error';
-  metadata: {
-    title: string;
-    description: string;
-    type: 'object';
-    history?: boolean;
-  };
-  result: {
-    values?: AggregatedMetricValue[];
-    total: number;
-    timestamp: string;
-    lastUpdated: string;
-  };
-};
