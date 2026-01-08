@@ -15295,7 +15295,6 @@ __metadata:
     "@mui/lab": 5.0.0-alpha.177
     "@mui/material": 5.18.0
     "@mui/styles": 5.18.0
-    "@playwright/test": 1.57.0
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@testing-library/dom": ^9.0.0
