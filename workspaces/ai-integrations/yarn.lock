@@ -11243,6 +11243,7 @@ __metadata:
     xml2js: ^0.6.2
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
   languageName: unknown
   linkType: soft
 
@@ -31859,14 +31860,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"set-cookie-parser@npm:^2.4.6":
-  version: 2.7.1
-  resolution: "set-cookie-parser@npm:2.7.1"
-  checksum: 2ef8b351094712f8f7df6d63ed4b10350b24a5b515772690e7dec227df85fcef5bc451c7765f484fd9f36694ece5438d1456407d017f237d0d3351d7dbbd3587
-  languageName: node
-  linkType: hard
-
-"set-cookie-parser@npm:^2.6.0":
+"set-cookie-parser@npm:^2.4.6, set-cookie-parser@npm:^2.6.0":
   version: 2.7.2
   resolution: "set-cookie-parser@npm:2.7.2"
   checksum: 9e1b09e7184079c81f9ba4d2db3222854adf4e6e4fe73982388367649386a93e7f9b979333ddeba22610706def93c2478f34c3324fe223528cb2c4c879a2c2d3
