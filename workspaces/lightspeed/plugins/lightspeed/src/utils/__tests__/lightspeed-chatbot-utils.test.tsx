@@ -26,6 +26,7 @@ import {
   getCategorizeMessages,
   getTimestamp,
   getTimestampVariablesString,
+  SortOption,
   splitJsonStrings,
   transformDocumentsToSources,
 } from '../lightspeed-chatbox-utils';
@@ -409,5 +410,216 @@ describe('getCategorizeMessages', () => {
     expect(result.Fijados).toBeDefined();
     expect(result.Recientes).toBeDefined();
     expect(result.Recientes[0].label).toBe('Opciones');
+  });
+
+  describe('sorting functionality', () => {
+    const sortTestMessages: ConversationList = [
+      {
+        conversation_id: 'a',
+        last_message_timestamp: 1000,
+        topic_summary: 'Zeta Chat',
+      },
+      {
+        conversation_id: 'b',
+        last_message_timestamp: 3000,
+        topic_summary: 'Alpha Chat',
+      },
+      {
+        conversation_id: 'c',
+        last_message_timestamp: 2000,
+        topic_summary: 'Beta Chat',
+      },
+    ];
+
+    it('sorts messages by newest first (default)', () => {
+      const result = getCategorizeMessages(
+        sortTestMessages,
+        [],
+        addProps,
+        undefined,
+        'newest',
+      );
+
+      expect(result.Recent[0].id).toBe('b'); // timestamp 3000
+      expect(result.Recent[1].id).toBe('c'); // timestamp 2000
+      expect(result.Recent[2].id).toBe('a'); // timestamp 1000
+    });
+
+    it('sorts messages by oldest first', () => {
+      const result = getCategorizeMessages(
+        sortTestMessages,
+        [],
+        addProps,
+        undefined,
+        'oldest',
+      );
+
+      expect(result.Recent[0].id).toBe('a'); // timestamp 1000
+      expect(result.Recent[1].id).toBe('c'); // timestamp 2000
+      expect(result.Recent[2].id).toBe('b'); // timestamp 3000
+    });
+
+    it('sorts messages alphabetically ascending (A-Z)', () => {
+      const result = getCategorizeMessages(
+        sortTestMessages,
+        [],
+        addProps,
+        undefined,
+        'alphabeticalAsc',
+      );
+
+      expect(result.Recent[0].text).toBe('Alpha Chat');
+      expect(result.Recent[1].text).toBe('Beta Chat');
+      expect(result.Recent[2].text).toBe('Zeta Chat');
+    });
+
+    it('sorts messages alphabetically descending (Z-A)', () => {
+      const result = getCategorizeMessages(
+        sortTestMessages,
+        [],
+        addProps,
+        undefined,
+        'alphabeticalDesc',
+      );
+
+      expect(result.Recent[0].text).toBe('Zeta Chat');
+      expect(result.Recent[1].text).toBe('Beta Chat');
+      expect(result.Recent[2].text).toBe('Alpha Chat');
+    });
+
+    it('applies sorting to both pinned and recent sections', () => {
+      const result = getCategorizeMessages(
+        sortTestMessages,
+        ['a', 'c'],
+        addProps,
+        undefined,
+        'alphabeticalAsc',
+      );
+
+      // Pinned section should be sorted alphabetically
+      expect(result.Pinned[0].text).toBe('Beta Chat'); // 'c'
+      expect(result.Pinned[1].text).toBe('Zeta Chat'); // 'a'
+
+      // Recent section should also be sorted
+      expect(result.Recent[0].text).toBe('Alpha Chat'); // 'b'
+    });
+
+    it('uses newest as default when sort option is not provided', () => {
+      const result = getCategorizeMessages(sortTestMessages, [], addProps);
+
+      expect(result.Recent[0].id).toBe('b'); // timestamp 3000 (newest)
+      expect(result.Recent[2].id).toBe('a'); // timestamp 1000 (oldest)
+    });
+
+    it('handles case-insensitive alphabetical sorting', () => {
+      const mixedCaseMessages: ConversationList = [
+        {
+          conversation_id: '1',
+          last_message_timestamp: 1000,
+          topic_summary: 'apple',
+        },
+        {
+          conversation_id: '2',
+          last_message_timestamp: 2000,
+          topic_summary: 'Banana',
+        },
+        {
+          conversation_id: '3',
+          last_message_timestamp: 3000,
+          topic_summary: 'CHERRY',
+        },
+      ];
+
+      const result = getCategorizeMessages(
+        mixedCaseMessages,
+        [],
+        addProps,
+        undefined,
+        'alphabeticalAsc',
+      );
+
+      expect(result.Recent[0].text).toBe('apple');
+      expect(result.Recent[1].text).toBe('Banana');
+      expect(result.Recent[2].text).toBe('CHERRY');
+    });
+
+    it('handles empty messages array', () => {
+      const result = getCategorizeMessages(
+        [],
+        [],
+        addProps,
+        undefined,
+        'newest',
+      );
+
+      expect(result.Pinned).toEqual([]);
+      expect(result.Recent).toEqual([]);
+    });
+
+    it('handles single message', () => {
+      const singleMessage: ConversationList = [
+        {
+          conversation_id: '1',
+          last_message_timestamp: 1000,
+          topic_summary: 'Single Chat',
+        },
+      ];
+
+      const result = getCategorizeMessages(
+        singleMessage,
+        [],
+        addProps,
+        undefined,
+        'newest',
+      );
+
+      expect(result.Recent).toHaveLength(1);
+      expect(result.Recent[0].text).toBe('Single Chat');
+    });
+
+    it('maintains sort order with same timestamps', () => {
+      const sameTimestampMessages: ConversationList = [
+        {
+          conversation_id: '1',
+          last_message_timestamp: 1000,
+          topic_summary: 'First Chat',
+        },
+        {
+          conversation_id: '2',
+          last_message_timestamp: 1000,
+          topic_summary: 'Second Chat',
+        },
+      ];
+
+      const result = getCategorizeMessages(
+        sameTimestampMessages,
+        [],
+        addProps,
+        undefined,
+        'alphabeticalAsc',
+      );
+
+      expect(result.Recent[0].text).toBe('First Chat');
+      expect(result.Recent[1].text).toBe('Second Chat');
+    });
+  });
+});
+
+describe('SortOption type', () => {
+  it('should accept valid sort options', () => {
+    const validOptions: SortOption[] = [
+      'newest',
+      'oldest',
+      'alphabeticalAsc',
+      'alphabeticalDesc',
+    ];
+
+    validOptions.forEach(option => {
+      expect(
+        ['newest', 'oldest', 'alphabeticalAsc', 'alphabeticalDesc'].includes(
+          option,
+        ),
+      ).toBe(true);
+    });
   });
 });
