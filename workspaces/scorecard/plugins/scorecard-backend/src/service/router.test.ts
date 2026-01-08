@@ -91,8 +91,9 @@ describe('createRouter', () => {
 
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
+    const catalog = catalogServiceMock.mock();
     catalogMetricService = new CatalogMetricService({
-      catalog: catalogServiceMock.mock(),
+      catalog,
       registry: metricProvidersRegistry,
       auth: mockServices.auth(),
       database: mockDatabaseMetricValues,
@@ -117,6 +118,7 @@ describe('createRouter', () => {
     const router = await createRouter({
       metricProvidersRegistry,
       catalogMetricService,
+      catalog,
       httpAuth: httpAuthMock,
       permissions: permissionsMock,
     });
@@ -372,7 +374,7 @@ describe('createRouter', () => {
     });
   });
 
-  describe('GET /metrics/catalog/aggregated', () => {
+  describe('GET /metrics/catalog/aggregates', () => {
     const mockAggregatedMetricResults: AggregatedMetricResult[] = [
       {
         id: 'github.open_prs',
@@ -398,8 +400,9 @@ describe('createRouter', () => {
     let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
     let getEntitiesOwnedByUserSpy: jest.SpyInstance;
     let checkEntityAccessSpy: jest.SpyInstance;
+    let aggregatesApp: express.Express;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       const githubProvider = new MockNumberProvider(
         'github.open_prs',
         'github',
@@ -428,10 +431,6 @@ describe('createRouter', () => {
       mockCatalog.getEntities.mockResolvedValue({ items: [componentEntity] });
 
       jest
-        .spyOn(catalogMetricService, 'getCatalogService')
-        .mockReturnValue(mockCatalog);
-
-      jest
         .spyOn(catalogMetricService, 'getAggregatedMetricsByEntityRefs')
         .mockResolvedValue(mockAggregatedMetricResults);
 
@@ -446,6 +445,17 @@ describe('createRouter', () => {
         permissionUtilsModule,
         'checkEntityAccess',
       );
+
+      const router = await createRouter({
+        metricProvidersRegistry,
+        catalogMetricService,
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+      });
+      aggregatesApp = express();
+      aggregatesApp.use(router);
+      aggregatesApp.use(mockErrorHandler());
     });
 
     afterEach(() => {
@@ -456,7 +466,9 @@ describe('createRouter', () => {
       permissionsMock.authorizeConditional.mockResolvedValue([
         { result: AuthorizeResult.DENY },
       ]);
-      const result = await request(app).get('/metrics/catalog/aggregated');
+      const result = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates',
+      );
 
       expect(result.statusCode).toBe(403);
       expect(result.body.error.name).toEqual('NotAllowedError');
@@ -464,7 +476,9 @@ describe('createRouter', () => {
 
     it('should return 403 NotAllowedError when user entity reference is not found', async () => {
       httpAuthMock.credentials.mockResolvedValue(undefined as any);
-      const result = await request(app).get('/metrics/catalog/aggregated');
+      const result = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates',
+      );
 
       console.log(result.body);
       expect(result.statusCode).toBe(403);
@@ -472,8 +486,8 @@ describe('createRouter', () => {
     });
 
     it('should handle multiple metricIds parameter', async () => {
-      const response = await request(app).get(
-        '/metrics/catalog/aggregated?metricIds=github.open_prs,jira.open_issues',
+      const response = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates?metricIds=github.open_prs,jira.open_issues',
       );
 
       expect(response.status).toBe(200);
@@ -488,8 +502,8 @@ describe('createRouter', () => {
     });
 
     it('should handle single metricIds parameter', async () => {
-      const response = await request(app).get(
-        '/metrics/catalog/aggregated?metricIds=github.open_prs',
+      const response = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates?metricIds=github.open_prs',
       );
 
       expect(response.status).toBe(200);
@@ -504,7 +518,9 @@ describe('createRouter', () => {
     });
 
     it('should get entities owned by user', async () => {
-      const response = await request(app).get('/metrics/catalog/aggregated');
+      const response = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates',
+      );
 
       expect(response.status).toBe(200);
       expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledWith(
@@ -518,14 +534,18 @@ describe('createRouter', () => {
 
     it('should return empty array when user owns no entities', async () => {
       getEntitiesOwnedByUserSpy.mockResolvedValue([]);
-      const response = await request(app).get('/metrics/catalog/aggregated');
+      const response = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates',
+      );
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual([]);
     });
 
     it('should check entity access for each entity owned by user', async () => {
-      const response = await request(app).get('/metrics/catalog/aggregated');
+      const response = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates',
+      );
 
       expect(checkEntityAccessSpy).toHaveBeenCalledTimes(2);
       expect(response.status).toBe(200);
@@ -533,8 +553,8 @@ describe('createRouter', () => {
     });
 
     it('should parse metricIds parameter correctly', async () => {
-      const response = await request(app).get(
-        '/metrics/catalog/aggregated?metricIds=github.open_prs,jira.open_issues',
+      const response = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates?metricIds=github.open_prs,jira.open_issues',
       );
 
       expect(response.status).toBe(200);
@@ -548,8 +568,8 @@ describe('createRouter', () => {
     });
 
     it('should set parsed metricIds to undefined when metricIds parameter is not string', async () => {
-      const response = await request(app).get(
-        '/metrics/catalog/aggregated?anotherParameter=value',
+      const response = await request(aggregatesApp).get(
+        '/metrics/catalog/aggregates?anotherParameter=value',
       );
 
       expect(response.status).toBe(200);

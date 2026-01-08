@@ -15,27 +15,27 @@
  */
 
 import { DatabaseMetricValues } from '../src/database/DatabaseMetricValues';
-import { DbMetricValue } from '../src/database/types';
+import { DbMetricValue, DbAggregatedMetric } from '../src/database/types';
 
 type BuildMockDatabaseMetricValuesParams = {
   metricValues?: DbMetricValue[];
   latestEntityMetric?: DbMetricValue[];
   countOfExpiredMetrics?: number;
-  latestAggregatedEntityMetric?: DbMetricValue[];
+  aggregatedMetrics?: DbAggregatedMetric[];
 };
 
 export const mockDatabaseMetricValues = {
   createMetricValues: jest.fn(),
   readLatestEntityMetricValues: jest.fn(),
   cleanupExpiredMetrics: jest.fn(),
-  readLatestEntityMetricValuesByEntityRefs: jest.fn(),
+  readAggregatedMetricsByEntityRefs: jest.fn(),
 } as unknown as jest.Mocked<DatabaseMetricValues>;
 
 export const buildMockDatabaseMetricValues = ({
   metricValues,
   latestEntityMetric,
   countOfExpiredMetrics,
-  latestAggregatedEntityMetric,
+  aggregatedMetrics,
 }: BuildMockDatabaseMetricValuesParams) => {
   const createMetricValues = metricValues
     ? jest.fn().mockResolvedValue(metricValues)
@@ -49,14 +49,14 @@ export const buildMockDatabaseMetricValues = ({
     ? jest.fn().mockResolvedValue(countOfExpiredMetrics)
     : mockDatabaseMetricValues.cleanupExpiredMetrics;
 
-  const readLatestEntityMetricValuesByEntityRefs = latestAggregatedEntityMetric
-    ? jest.fn().mockResolvedValue(latestAggregatedEntityMetric)
-    : mockDatabaseMetricValues.readLatestEntityMetricValuesByEntityRefs;
+  const readAggregatedMetricsByEntityRefs = aggregatedMetrics
+    ? jest.fn().mockResolvedValue(aggregatedMetrics)
+    : mockDatabaseMetricValues.readAggregatedMetricsByEntityRefs;
 
   return {
     createMetricValues,
     readLatestEntityMetricValues,
     cleanupExpiredMetrics,
-    readLatestEntityMetricValuesByEntityRefs,
+    readAggregatedMetricsByEntityRefs,
   } as unknown as jest.Mocked<DatabaseMetricValues>;
 };

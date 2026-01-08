@@ -161,7 +161,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 value,
                 timestamp: new Date(),
                 status,
-              } as Omit<DbMetricValueCreate, 'id'>;
+              } as DbMetricValueCreate;
             } catch (error) {
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
@@ -170,7 +170,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),
-              } as Omit<DbMetricValueCreate, 'id'>;
+              } as DbMetricValueCreate;
             }
           }),
         ).then(promises =>
@@ -179,7 +179,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               return [...acc, curr.value];
             }
             return acc;
-          }, [] as Omit<DbMetricValueCreate, 'id'>[]),
+          }, [] as DbMetricValueCreate[]),
         );
 
         await this.database.createMetricValues(batchResults);

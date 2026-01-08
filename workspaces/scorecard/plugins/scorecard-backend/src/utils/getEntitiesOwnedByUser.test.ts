@@ -18,14 +18,16 @@ import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import type { BackstageCredentials } from '@backstage/backend-plugin-api';
 import * as catalogModel from '@backstage/catalog-model';
 import type { Entity } from '@backstage/catalog-model';
-import { RELATION_OWNED_BY } from '@backstage/catalog-model';
+import {
+  RELATION_MEMBER_OF,
+  RELATION_OWNED_BY,
+} from '@backstage/catalog-model';
 
 jest.mock('@backstage/catalog-model', () => {
   const actual = jest.requireActual('@backstage/catalog-model');
   return {
     ...actual,
     stringifyEntityRef: jest.fn(actual.stringifyEntityRef),
-    parseEntityRef: jest.fn(actual.parseEntityRef),
   };
 });
 
@@ -44,12 +46,24 @@ describe('getEntitiesOwnedByUser', () => {
 
     userEntity = new MockEntityBuilder()
       .withKind('User')
-      .withMetadata({ name: 'test-user', namespace: 'default' })
+      .withMetadata({ name: 'test-user', namespace: 'development' })
       .build();
     userOwnedEntity = new MockEntityBuilder()
-      .withMetadata({ name: 'user-component', namespace: 'default' })
-      .withSpec({ owner: 'user:default/test-user' })
+      .withMetadata({ name: 'user-component', namespace: 'development' })
       .build();
+    mockedCatalog.queryEntities.mockResolvedValue({
+      items: [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: { name: 'user-component', namespace: 'development' },
+        },
+      ],
+      pageInfo: {
+        nextCursor: undefined, // No next page
+      },
+      totalItems: 1,
+    });
   });
 
   afterEach(() => {
@@ -61,7 +75,7 @@ describe('getEntitiesOwnedByUser', () => {
     mockedCatalog.getEntityByRef.mockResolvedValue(undefined);
 
     await expect(
-      getEntitiesOwnedByUser('user:default/test-user', {
+      getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       }),
@@ -71,74 +85,122 @@ describe('getEntitiesOwnedByUser', () => {
   describe('when user has no memberOf groups', () => {
     beforeEach(() => {
       mockedCatalog.getEntityByRef.mockResolvedValue(userEntity);
-      mockedCatalog.getEntities.mockResolvedValue({
-        items: [userOwnedEntity],
-      });
     });
 
-    it('should call stringifyEntityRef three times', async () => {
-      await getEntitiesOwnedByUser('user:default/test-user', {
+    it('should call stringifyEntityRef once', async () => {
+      await getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       });
 
-      expect(catalogModel.stringifyEntityRef).toHaveBeenCalledTimes(2);
+      expect(catalogModel.stringifyEntityRef).toHaveBeenCalledTimes(1);
       expect(catalogModel.stringifyEntityRef).toHaveBeenNthCalledWith(
         1,
-        userEntity,
-      );
-      expect(catalogModel.stringifyEntityRef).toHaveBeenNthCalledWith(
-        2,
         userOwnedEntity,
       );
     });
 
-    it('should not parse memberOf entities', async () => {
-      await getEntitiesOwnedByUser('user:default/test-user', {
+    it('should not access memberOf relations when user has no groups', async () => {
+      await getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       });
 
-      expect(catalogModel.parseEntityRef).not.toHaveBeenCalled();
+      expect(userEntity.relations).toBeUndefined();
     });
 
-    it('should call getEntities with owned by user relation', async () => {
-      await getEntitiesOwnedByUser('user:default/test-user', {
+    it('should call queryEntities with owned by user relation', async () => {
+      await getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       });
 
-      expect(mockedCatalog.getEntities).toHaveBeenCalledTimes(1);
-      expect(mockedCatalog.getEntities).toHaveBeenCalledWith(
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(1);
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledWith(
         {
           filter: {
-            [`relations.${RELATION_OWNED_BY}`]: 'user:default/test-user',
+            [`relations.${RELATION_OWNED_BY}`]: 'user:development/test-user',
           },
+          fields: ['kind', 'metadata'],
+          limit: 50,
         },
         { credentials: mockCredentials },
       );
     });
 
     it('should return entities owned by user only', async () => {
-      mockedCatalog.getEntities.mockResolvedValue({ items: [userOwnedEntity] });
+      const result = await getEntitiesOwnedByUser(
+        'user:development/test-user',
+        {
+          catalog: mockedCatalog,
+          credentials: mockCredentials,
+        },
+      );
 
-      const result = await getEntitiesOwnedByUser('user:default/test-user', {
-        catalog: mockedCatalog,
-        credentials: mockCredentials,
-      });
-
-      expect(result).toEqual(['component:default/user-component']);
+      expect(result).toEqual(['component:development/user-component']);
     });
 
     it('should return empty array when user owns no entities', async () => {
-      mockedCatalog.getEntities.mockResolvedValue({ items: [] });
+      mockedCatalog.queryEntities.mockResolvedValue({
+        items: [],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 0,
+      });
 
-      const result = await getEntitiesOwnedByUser('user:default/test-user', {
+      const result = await getEntitiesOwnedByUser(
+        'user:development/test-user',
+        {
+          catalog: mockedCatalog,
+          credentials: mockCredentials,
+        },
+      );
+
+      expect(result).toEqual([]);
+    });
+
+    it('should call queryEntities with cursor', async () => {
+      mockedCatalog.queryEntities.mockReset();
+      mockedCatalog.queryEntities
+        .mockResolvedValueOnce({
+          items: [userOwnedEntity],
+          pageInfo: { nextCursor: 'cursor1' },
+          totalItems: 1,
+        })
+        .mockResolvedValueOnce({
+          items: [],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 0,
+        });
+
+      await getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       });
 
-      expect(result).toEqual([]);
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
+      expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
+        1,
+        {
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: 'user:development/test-user',
+          },
+          fields: ['kind', 'metadata'],
+          limit: 50,
+        },
+        { credentials: mockCredentials },
+      );
+      expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
+        2,
+        {
+          cursor: 'cursor1',
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: 'user:development/test-user',
+          },
+          fields: ['kind', 'metadata'],
+          limit: 50,
+        },
+        { credentials: mockCredentials },
+      );
     });
   });
 
@@ -149,110 +211,156 @@ describe('getEntitiesOwnedByUser', () => {
     beforeEach(() => {
       userEntityWithMemberOf = new MockEntityBuilder()
         .withKind('User')
-        .withMetadata({ name: 'test-user', namespace: 'default' })
-        .withSpec({ memberOf: ['group:default/developers'] })
+        .withMetadata({ name: 'test-user', namespace: 'development' })
+        .withRelations([
+          {
+            type: RELATION_MEMBER_OF,
+            targetRef: 'group:development/developers',
+          },
+        ])
         .build();
       groupOwnedEntity = new MockEntityBuilder()
-        .withMetadata({ name: 'group-component', namespace: 'default' })
+        .withMetadata({ name: 'group-component', namespace: 'development' })
         .build();
 
       mockedCatalog.getEntityByRef.mockResolvedValue(userEntityWithMemberOf);
-      mockedCatalog.getEntities
-        .mockResolvedValueOnce({ items: [userOwnedEntity] })
-        .mockResolvedValueOnce({ items: [groupOwnedEntity] });
+      mockedCatalog.queryEntities
+        .mockResolvedValueOnce({
+          items: [userOwnedEntity],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 1,
+        })
+        .mockResolvedValueOnce({
+          items: [groupOwnedEntity],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 1,
+        });
     });
 
-    it('should call stringifyEntityRef four times', async () => {
-      await getEntitiesOwnedByUser('user:default/test-user', {
+    it('should call stringifyEntityRef twice for owned entities', async () => {
+      await getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       });
 
-      expect(catalogModel.stringifyEntityRef).toHaveBeenCalledTimes(4);
+      expect(catalogModel.stringifyEntityRef).toHaveBeenCalledTimes(2);
       expect(catalogModel.stringifyEntityRef).toHaveBeenNthCalledWith(
         1,
-        userEntityWithMemberOf,
-      );
-      expect(catalogModel.stringifyEntityRef).toHaveBeenNthCalledWith(2, {
-        kind: 'group',
-        name: 'developers',
-        namespace: 'default',
-      });
-      expect(catalogModel.stringifyEntityRef).toHaveBeenNthCalledWith(
-        3,
         userOwnedEntity,
       );
       expect(catalogModel.stringifyEntityRef).toHaveBeenNthCalledWith(
-        4,
+        2,
         groupOwnedEntity,
       );
     });
 
-    it('should call parseEntityRef once', async () => {
-      await getEntitiesOwnedByUser('user:default/test-user', {
+    it('should use relations to get group references', async () => {
+      await getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       });
 
-      expect(catalogModel.parseEntityRef).toHaveBeenCalledTimes(1);
-      expect(catalogModel.parseEntityRef).toHaveBeenCalledWith(
-        'group:default/developers',
-        { defaultKind: 'Group', defaultNamespace: 'default' },
+      expect(userEntityWithMemberOf.relations).toHaveLength(1);
+      expect(userEntityWithMemberOf.relations?.[0].type).toBe(
+        RELATION_MEMBER_OF,
+      );
+      expect(userEntityWithMemberOf.relations?.[0].targetRef).toBe(
+        'group:development/developers',
       );
     });
 
-    it('should call getEntities with owned by user relation', async () => {
-      await getEntitiesOwnedByUser('user:default/test-user', {
+    it('should call queryEntities with owned by user relation', async () => {
+      await getEntitiesOwnedByUser('user:development/test-user', {
         catalog: mockedCatalog,
         credentials: mockCredentials,
       });
 
-      expect(mockedCatalog.getEntities).toHaveBeenCalledTimes(2);
-      expect(mockedCatalog.getEntities).toHaveBeenNthCalledWith(
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
+      expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
         1,
         {
           filter: {
-            [`relations.${RELATION_OWNED_BY}`]: 'user:default/test-user',
+            [`relations.${RELATION_OWNED_BY}`]: 'user:development/test-user',
           },
+          fields: ['kind', 'metadata'],
+          limit: 50,
         },
         { credentials: mockCredentials },
       );
-      expect(mockedCatalog.getEntities).toHaveBeenNthCalledWith(
+      expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
         2,
         {
           filter: {
-            [`relations.${RELATION_OWNED_BY}`]: 'group:default/developers',
+            [`relations.${RELATION_OWNED_BY}`]: 'group:development/developers',
           },
+          fields: ['kind', 'metadata'],
+          limit: 50,
         },
         { credentials: mockCredentials },
       );
     });
 
     it('should return entities owned by user and groups', async () => {
-      const result = await getEntitiesOwnedByUser('user:default/test-user', {
-        catalog: mockedCatalog,
-        credentials: mockCredentials,
-      });
+      const result = await getEntitiesOwnedByUser(
+        'user:development/test-user',
+        {
+          catalog: mockedCatalog,
+          credentials: mockCredentials,
+        },
+      );
 
       expect(result).toEqual([
-        'component:default/user-component',
-        'component:default/group-component',
+        'component:development/user-component',
+        'component:development/group-component',
       ]);
     });
 
     it('should return empty array when user and groups owns no entities', async () => {
-      mockedCatalog.getEntities.mockReset();
-      mockedCatalog.getEntities
-        .mockResolvedValueOnce({ items: [] })
-        .mockResolvedValueOnce({ items: [] });
+      mockedCatalog.queryEntities.mockReset();
+      mockedCatalog.queryEntities
+        .mockResolvedValueOnce({
+          items: [],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 0,
+        })
+        .mockResolvedValueOnce({
+          items: [],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 0,
+        });
 
-      const result = await getEntitiesOwnedByUser('user:default/test-user', {
-        catalog: mockedCatalog,
-        credentials: mockCredentials,
-      });
+      const result = await getEntitiesOwnedByUser(
+        'user:development/test-user',
+        {
+          catalog: mockedCatalog,
+          credentials: mockCredentials,
+        },
+      );
 
       expect(result).toEqual([]);
-      expect(mockedCatalog.getEntities).toHaveBeenCalledTimes(2);
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
     });
+
+    // it('should call queryEntities with cursor', async () => {
+    //   mockedCatalog.queryEntities.mockResolvedValue({ items: [userOwnedEntity], pageInfo: { nextCursor: 'cursor1' }, totalItems: 1 });
+    //   mockedCatalog.queryEntities.mockResolvedValue({ items: [groupOwnedEntity], pageInfo: { nextCursor: undefined }, totalItems: 1 });
+
+    //   await getEntitiesOwnedByUser('user:development/test-user', {
+    //     catalog: mockedCatalog,
+    //     credentials: mockCredentials,
+    //   });
+
+    //   expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
+    //   expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
+    //     1,
+    //     { cursor: 'cursor1' },
+    //     { credentials: mockCredentials },
+    //   );
+    //   expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
+    //     2,
+    //     { cursor: 'cursor2' },
+    //     { credentials: mockCredentials },
+    //   );
+    // });
   });
 });

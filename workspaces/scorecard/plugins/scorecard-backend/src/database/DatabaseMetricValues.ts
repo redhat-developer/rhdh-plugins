@@ -15,7 +15,11 @@
  */
 
 import { Knex } from 'knex';
-import { DbMetricValueCreate, DbMetricValue } from './types';
+import {
+  DbMetricValueCreate,
+  DbMetricValue,
+  DbAggregatedMetric,
+} from './types';
 
 export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
@@ -25,9 +29,7 @@ export class DatabaseMetricValues {
   /**
    * Insert multiple metric values
    */
-  async createMetricValues(
-    metricValues: Omit<DbMetricValueCreate, 'id'>[],
-  ): Promise<void> {
+  async createMetricValues(metricValues: DbMetricValueCreate[]): Promise<void> {
     await this.dbClient(this.tableName).insert(metricValues);
   }
 
@@ -60,21 +62,40 @@ export class DatabaseMetricValues {
   }
 
   /**
-   * Get the latest metric values for multiple entities and metrics
+   * Get aggregated metrics by status for multiple entities and metrics.
    */
-  async readLatestEntityMetricValuesByEntityRefs(
+  async readAggregatedMetricsByEntityRefs(
     catalog_entity_refs: string[],
     metric_ids: string[],
-  ): Promise<DbMetricValue[]> {
+  ): Promise<DbAggregatedMetric[]> {
+    const latestIdsSubquery = this.dbClient(this.tableName)
+      .max('id')
+      .whereIn('metric_id', metric_ids)
+      .whereIn('catalog_entity_ref', catalog_entity_refs)
+      .groupBy('metric_id', 'catalog_entity_ref');
+
     return await this.dbClient(this.tableName)
-      .select('*')
-      .whereIn(
-        'id',
-        this.dbClient(this.tableName)
-          .max('id')
-          .whereIn('metric_id', metric_ids)
-          .whereIn('catalog_entity_ref', catalog_entity_refs)
-          .groupBy('metric_id', 'catalog_entity_ref'),
-      );
+      .select('metric_id')
+      .count('* as total')
+      .max('timestamp as max_timestamp')
+      .select(
+        this.dbClient.raw(
+          "SUM(CASE WHEN status = 'success' AND value IS NOT NULL THEN 1 ELSE 0 END) as success",
+        ),
+      )
+      .select(
+        this.dbClient.raw(
+          "SUM(CASE WHEN status = 'warning' AND value IS NOT NULL THEN 1 ELSE 0 END) as warning",
+        ),
+      )
+      .select(
+        this.dbClient.raw(
+          "SUM(CASE WHEN status = 'error' AND value IS NOT NULL THEN 1 ELSE 0 END) as error",
+        ),
+      )
+      .whereIn('id', latestIdsSubquery)
+      .whereNotNull('status')
+      .whereNotNull('value')
+      .groupBy('metric_id');
   }
 }

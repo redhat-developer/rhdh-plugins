@@ -18,10 +18,12 @@ import { NotFoundError } from '@backstage/errors';
 import { BackstageCredentials } from '@backstage/backend-plugin-api';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import {
-  parseEntityRef,
+  RELATION_MEMBER_OF,
   RELATION_OWNED_BY,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
+
+const QUERY_ENTITIES_BATCH_SIZE = 50;
 
 export async function getEntitiesOwnedByUser(
   userEntityRef: string,
@@ -38,36 +40,44 @@ export async function getEntitiesOwnedByUser(
     throw new NotFoundError('User entity not found in catalog');
   }
 
-  const entitiesOwnedByUser: string[] = [stringifyEntityRef(userEntity)];
+  const ownerRefs: string[] = [userEntityRef];
 
-  const memberOf = userEntity.spec?.memberOf;
-  if (Array.isArray(memberOf) && memberOf.length > 0) {
-    for (const entityRef of memberOf) {
-      if (typeof entityRef === 'string') {
-        const parsedEntityRef = parseEntityRef(entityRef, {
-          defaultKind: 'Group',
-          defaultNamespace: userEntity.metadata.namespace,
-        });
+  const memberOfRelations =
+    userEntity.relations?.filter(
+      relation => relation.type === RELATION_MEMBER_OF,
+    ) ?? [];
 
-        entitiesOwnedByUser.push(stringifyEntityRef(parsedEntityRef));
-      }
+  if (memberOfRelations.length > 0) {
+    for (const relation of memberOfRelations) {
+      ownerRefs.push(relation.targetRef);
     }
   }
 
   const entitiesOwnedByUserAndGroups: string[] = [];
 
-  for (const entityRef of entitiesOwnedByUser) {
-    const entities = await options.catalog.getEntities(
-      {
-        filter: {
-          [`relations.${RELATION_OWNED_BY}`]: entityRef,
-        },
-      },
-      { credentials: options.credentials },
-    );
+  for (const ownerRef of ownerRefs) {
+    let cursor: string | undefined = undefined;
 
-    const entityRefs = entities.items.map(entity => stringifyEntityRef(entity));
-    entitiesOwnedByUserAndGroups.push(...entityRefs);
+    do {
+      const entities = await options.catalog.queryEntities(
+        {
+          filter: {
+            [`relations.${RELATION_OWNED_BY}`]: ownerRef,
+          },
+          fields: ['kind', 'metadata'],
+          limit: QUERY_ENTITIES_BATCH_SIZE,
+          ...(cursor ? { cursor } : {}),
+        },
+        { credentials: options.credentials },
+      );
+
+      cursor = entities.pageInfo.nextCursor;
+
+      const entityRefs = entities.items.map(entity =>
+        stringifyEntityRef(entity),
+      );
+      entitiesOwnedByUserAndGroups.push(...entityRefs);
+    } while (cursor !== undefined);
   }
 
   return entitiesOwnedByUserAndGroups;

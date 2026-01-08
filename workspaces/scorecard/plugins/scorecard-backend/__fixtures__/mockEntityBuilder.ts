@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { Entity } from '@backstage/catalog-model';
+import type { Entity, EntityRelation } from '@backstage/catalog-model';
 
 export class MockEntityBuilder {
   private kind: string = 'Component';
@@ -22,9 +22,8 @@ export class MockEntityBuilder {
     name: 'default-component',
     namespace: 'default',
   };
-  private spec: Entity['spec'] = {
-    owner: 'guests',
-  };
+  private spec: Entity['spec'] | undefined = undefined;
+  private relations: EntityRelation[] | undefined = undefined;
 
   withKind(kind: string): this {
     this.kind = kind;
@@ -41,12 +40,18 @@ export class MockEntityBuilder {
     return this;
   }
 
+  withRelations(relations: EntityRelation[]): this {
+    this.relations = relations;
+    return this;
+  }
+
   build(): Entity {
     return {
       apiVersion: 'backstage.io/v1alpha1',
       kind: this.kind,
       metadata: this.metadata,
       spec: this.spec,
+      relations: this.relations,
     };
   }
 }

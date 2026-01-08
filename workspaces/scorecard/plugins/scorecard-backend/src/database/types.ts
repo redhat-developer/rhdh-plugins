@@ -19,7 +19,6 @@ import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-c
 export type DbMetricValueStatus = 'success' | 'warning' | 'error';
 
 export type DbMetricValueCreate = {
-  id: number;
   catalog_entity_ref: string;
   metric_id: string;
   value?: MetricValue;
@@ -36,4 +35,13 @@ export type DbMetricValue = {
   timestamp: Date;
   error_message: string | null;
   status: DbMetricValueStatus | null;
+};
+
+export type DbAggregatedMetric = {
+  metric_id: string;
+  total: number;
+  max_timestamp: Date;
+  success: number;
+  warning: number;
+  error: number;
 };

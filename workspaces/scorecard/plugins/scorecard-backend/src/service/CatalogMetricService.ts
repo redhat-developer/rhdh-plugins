@@ -16,7 +16,6 @@
 
 import {
   AggregatedMetricResult,
-  AggregatedMetricValue,
   MetricResult,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -32,7 +31,6 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
-import { aggregateMetricsByStatus } from '../utils/aggregateMetricsByStatus';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -57,15 +55,6 @@ export class CatalogMetricService {
     this.auth = options.auth;
     this.registry = options.registry;
     this.database = options.database;
-  }
-
-  /**
-   * Get the catalog service
-   *
-   * @returns CatalogService
-   */
-  getCatalogService(): CatalogService {
-    return this.catalog;
   }
 
   /**
@@ -176,21 +165,21 @@ export class CatalogMetricService {
       filter,
     );
 
-    const metricResults =
-      await this.database.readLatestEntityMetricValuesByEntityRefs(
+    const aggregatedMetrics =
+      await this.database.readAggregatedMetricsByEntityRefs(
         entityRefs,
         authorizedMetricsToFetch.map(m => m.id),
       );
 
-    const aggregatedMetrics = aggregateMetricsByStatus(metricResults);
-
-    return Object.entries(aggregatedMetrics).map(([metricId, metricData]) => {
-      const values: AggregatedMetricValue[] = [];
-
-      for (const [key, count] of Object.entries(metricData.values)) {
-        const name = key as 'success' | 'warning' | 'error';
-        values.push({ count, name });
-      }
+    return aggregatedMetrics.map(row => {
+      const metricId = row.metric_id as string;
+      const success = row.success || 0;
+      const warning = row.warning || 0;
+      const error = row.error || 0;
+      const total = row.total || 0;
+      const timestamp = row.max_timestamp
+        ? new Date(row.max_timestamp).toISOString()
+        : new Date().toISOString();
 
       const provider = this.registry.getProvider(metricId);
       const metric = provider.getMetric();
@@ -205,9 +194,13 @@ export class CatalogMetricService {
           history: metric.history,
         },
         result: {
-          values,
-          total: metricData.total,
-          timestamp: new Date(metricResults[0].timestamp).toISOString(),
+          values: [
+            { count: success, name: 'success' },
+            { count: warning, name: 'warning' },
+            { count: error, name: 'error' },
+          ],
+          total,
+          timestamp,
         },
       };
     });

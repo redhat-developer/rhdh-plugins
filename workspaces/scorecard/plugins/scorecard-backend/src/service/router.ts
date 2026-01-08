@@ -23,6 +23,7 @@ import {
   type HttpAuthService,
   type PermissionsService,
 } from '@backstage/backend-plugin-api';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 import {
   AuthorizeResult,
   BasicPermission,
@@ -42,6 +43,7 @@ import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
   catalogMetricService: CatalogMetricService;
+  catalog: CatalogService;
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
 };
@@ -49,6 +51,7 @@ export type ScorecardRouterOptions = {
 export async function createRouter({
   metricProvidersRegistry,
   catalogMetricService,
+  catalog,
   httpAuth,
   permissions,
 }: ScorecardRouterOptions): Promise<express.Router> {
@@ -147,7 +150,7 @@ export async function createRouter({
     res.json(results);
   });
 
-  router.get('/metrics/catalog/aggregated', async (req, res) => {
+  router.get('/metrics/catalog/aggregates', async (req, res) => {
     const { metricIds } = req.query;
 
     const { conditions } = await authorizeConditional(
@@ -165,7 +168,7 @@ export async function createRouter({
     }
 
     const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
-      catalog: catalogMetricService.getCatalogService(),
+      catalog,
       credentials,
     });
 

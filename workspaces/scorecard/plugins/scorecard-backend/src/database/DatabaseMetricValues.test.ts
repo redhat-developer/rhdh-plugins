@@ -25,7 +25,7 @@ import { migrate } from './migration';
 
 jest.setTimeout(60000);
 
-const metricValues: Omit<DbMetricValueCreate, 'id'>[] = [
+const metricValues: DbMetricValueCreate[] = [
   {
     catalog_entity_ref: 'component:default/test-service',
     metric_id: 'github.metric1',
@@ -191,9 +191,9 @@ describe('DatabaseMetricValues', () => {
     );
   });
 
-  describe('readLatestEntityMetricValuesByEntityRefs', () => {
+  describe('readAggregatedMetricsByEntityRefs', () => {
     it.each(databases.eachSupportedId())(
-      'should return latest metric values for multiple entities and metrics - %p',
+      'should return aggregated metrics by status for multiple entities and metrics - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
@@ -204,25 +204,30 @@ describe('DatabaseMetricValues', () => {
           {
             ...metricValues[0],
             timestamp: baseTime,
+            status: 'success',
           },
           {
             ...metricValues[1],
             timestamp: baseTime,
-          },
-          {
-            ...metricValues[2],
-            timestamp: laterTime,
-          },
-          {
-            ...metricValues[2],
-            timestamp: laterTime,
-            value: 10,
-            error_message: null,
             status: 'success',
+          },
+          {
+            ...metricValues[2],
+            timestamp: laterTime,
+            status: 'warning',
+            value: 10,
+          },
+          {
+            catalog_entity_ref: 'component:default/test-service',
+            metric_id: 'github.metric2',
+            timestamp: laterTime,
+            value: 20,
+            error_message: null,
+            status: 'error',
           },
         ]);
 
-        const result = await db.readLatestEntityMetricValuesByEntityRefs(
+        const result = await db.readAggregatedMetricsByEntityRefs(
           [
             'component:default/test-service',
             'component:default/another-service',
@@ -230,28 +235,26 @@ describe('DatabaseMetricValues', () => {
           ['github.metric1', 'github.metric2'],
         );
 
-        expect(result).toHaveLength(3);
+        expect(result).toHaveLength(2);
 
-        const testServiceMetric1 = result.find(
-          r =>
-            r.metric_id === 'github.metric1' &&
-            r.catalog_entity_ref === 'component:default/test-service',
+        const metric1Result = result.find(
+          r => r.metric_id === 'github.metric1',
         );
-        const anotherServiceMetric1 = result.find(
-          r =>
-            r.metric_id === 'github.metric1' &&
-            r.catalog_entity_ref === 'component:default/another-service',
+        const metric2Result = result.find(
+          r => r.metric_id === 'github.metric2',
         );
 
-        const anotherServiceMetric2 = result.find(
-          r =>
-            r.metric_id === 'github.metric2' &&
-            r.catalog_entity_ref === 'component:default/another-service',
-        );
+        expect(metric1Result).toBeDefined();
+        expect(metric1Result?.total).toBe(2);
+        expect(metric1Result?.success).toBe(2);
+        expect(metric1Result?.warning).toBe(0);
+        expect(metric1Result?.error).toBe(0);
 
-        expect(testServiceMetric1?.value).toBe(41);
-        expect(anotherServiceMetric1?.value).toBe(25);
-        expect(anotherServiceMetric2?.value).toBe(10);
+        expect(metric2Result).toBeDefined();
+        expect(metric2Result?.total).toBe(2);
+        expect(metric2Result?.success).toBe(0);
+        expect(metric2Result?.warning).toBe(1);
+        expect(metric2Result?.error).toBe(1);
       },
     );
   });
