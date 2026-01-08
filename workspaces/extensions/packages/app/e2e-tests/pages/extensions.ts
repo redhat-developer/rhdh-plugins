@@ -86,6 +86,7 @@ export class Extensions {
     await navLink.dispatchEvent('click');
     await this.page
       .getByRole('heading', { name: navText })
+      .first()
       .waitFor({ state: 'visible' });
   }
 
@@ -168,6 +169,7 @@ export class Extensions {
       for (const heading of this.getCommonHeadingsExtensions()) {
         await this.page
           .getByRole('heading', { name: heading })
+          .first()
           .waitFor({ state: 'visible' });
       }
     }

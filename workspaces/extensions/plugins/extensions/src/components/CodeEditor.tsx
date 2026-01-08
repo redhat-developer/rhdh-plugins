@@ -23,7 +23,6 @@ import {
   useContext,
   useState,
   useCallback,
-  useEffect,
 } from 'react';
 
 import { Progress } from '@backstage/core-components';
@@ -35,25 +34,15 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
 import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
+
+// TODO: Load the CodeEditor or the pages that uses the CodeEditor lazy!
+// Currently manaco is loaded when the main extensions page is opened.
+import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution';
+// @ts-ignore
+import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 import type MonacoEditor from 'monaco-editor';
 
-// Import all Monaco Editor CSS files in the correct dependency order
-// This ensures all CSS is loaded statically before Monaco Editor initializes,
-// preventing CSS ordering conflicts during build (especially in CI)
-import './monaco-css-imports';
-
-// Configure monaco-editor to load lazily using ESM paths to reduce bundle size
-let monacoConfigured = false;
-const configureMonaco = async () => {
-  if (monacoConfigured) return;
-  monacoConfigured = true;
-
-  // Use ESM path to import only the editor API, not the entire package
-  const monacoEditor = await import('monaco-editor/esm/vs/editor/editor.api');
-  await import('monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution');
-
-  loader.config({ monaco: monacoEditor });
-};
+loader.config({ monaco: monacoEditor });
 
 const defaultOptions: MonacoEditor.editor.IEditorConstructionOptions = {
   minimap: { enabled: false },
@@ -146,13 +135,6 @@ export const CodeEditor = ({
 
   const codeEditor = useCodeEditor();
   const [copied, setCopied] = useState(false);
-  const [monacoReady, setMonacoReady] = useState(monacoConfigured);
-
-  useEffect(() => {
-    if (!monacoReady) {
-      configureMonaco().then(() => setMonacoReady(true));
-    }
-  }, [monacoReady]);
 
   const onMount = useCallback<OnMount>(
     (editor, _monaco) => {
@@ -170,24 +152,6 @@ export const CodeEditor = ({
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
-  if (!monacoReady) {
-    return (
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'start',
-          justifyContent: 'center',
-        }}
-      >
-        <div style={{ width: '100%', height: '100px' }}>
-          <Progress />
-        </div>
-      </Box>
-    );
-  }
 
   return (
     <Box position="relative" sx={{ width: '100%', height: '100%' }}>
