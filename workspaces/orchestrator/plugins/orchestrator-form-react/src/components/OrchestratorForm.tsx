@@ -26,6 +26,7 @@ import get from 'lodash/get';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
 import { TranslationFunction } from '../hooks/useTranslation';
+import extractStaticDefaults from '../utils/extractStaticDefaults';
 import generateUiSchema from '../utils/generateUiSchema';
 import { pruneFormData } from '../utils/pruneFormData';
 import { StepperContextProvider } from '../utils/StepperContext';
@@ -110,10 +111,15 @@ const OrchestratorForm = ({
   setAuthTokenDescriptors,
   t,
 }: OrchestratorFormProps) => {
+  // Extract static defaults from fetch:response:default in schema and merge with initialFormData
+  // This ensures defaults are available before widgets render
+  const initialDataWithDefaults = useMemo(() => {
+    const base = initialFormData ? structuredClone(initialFormData) : {};
+    return extractStaticDefaults(rawSchema, base);
+  }, [rawSchema, initialFormData]);
+
   // make the form a controlled component so the state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
-  const [formData, setFormData] = useState<JsonObject>(
-    initialFormData ? () => structuredClone(initialFormData) : {},
-  );
+  const [formData, setFormData] = useState<JsonObject>(initialDataWithDefaults);
 
   const [changedByUserMap, setChangedByUserMap] = useState<
     Record<string, boolean>

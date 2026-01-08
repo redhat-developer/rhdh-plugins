@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { OptimizationsApi } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common';
+import {
+  CostManagementSlimApi,
+  OptimizationsApi,
+} from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common';
 import type {
   LoggerService,
   RootConfigService,
@@ -31,4 +34,5 @@ export interface RouterOptions {
   permissions: PermissionsService;
   cache: CacheService;
   optimizationApi: OptimizationsApi;
+  costManagementApi: CostManagementSlimApi;
 }

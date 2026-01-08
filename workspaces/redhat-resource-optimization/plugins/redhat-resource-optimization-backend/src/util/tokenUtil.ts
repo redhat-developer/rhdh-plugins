@@ -16,8 +16,7 @@
 
 import assert from 'assert';
 import { RouterOptions } from '../models/RouterOptions';
-
-const DEFAULT_SSO_BASE_URL = 'https://sso.redhat.com';
+import { DEFAULT_SSO_BASE_URL } from './constant';
 
 export const getTokenFromApi = async (options: RouterOptions) => {
   const { logger, config } = options;

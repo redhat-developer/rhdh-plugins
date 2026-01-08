@@ -15,7 +15,6 @@
  */
 
 import type { MouseEvent } from 'react';
-import { useAsync } from 'react-use';
 
 import { Link } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
@@ -25,12 +24,14 @@ import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import { makeStyles } from '@mui/styles';
+import { useQuery } from '@tanstack/react-query';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
 import {
   AddRepositoryData,
   ImportJobStatus,
   RepositoryStatus,
+  TaskStatus,
 } from '../../types';
 import { urlHelper } from '../../utils/repository-utils';
 import { CatalogInfoStatus } from './CatalogInfoStatus';
@@ -56,17 +57,31 @@ export const RepositoryTableRow = ({
 }) => {
   const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
-  const { value, loading } = useAsync(async () => {
-    if (data.repoUrl) {
-      const result = await bulkImportApi.getImportAction(
-        data.repoUrl,
-        data?.defaultBranch || 'main',
-        data && (data as ImportJobStatus).approvalTool,
-      );
-      return result;
-    }
-    return null;
-  }, [data.repoUrl]);
+
+  const { data: value, isLoading: loading } = useQuery(
+    [
+      'importAction',
+      data.repoUrl,
+      data?.defaultBranch,
+      data && (data as ImportJobStatus).approvalTool,
+    ],
+    async () => {
+      if (data.repoUrl) {
+        const result = await bulkImportApi.getImportAction(
+          data.repoUrl,
+          data?.defaultBranch || 'main',
+          data && (data as ImportJobStatus).approvalTool,
+        );
+        return result;
+      }
+      return null;
+    },
+    {
+      enabled: !!data.repoUrl,
+      staleTime: 30000, // Consider data fresh for 30 seconds
+      refetchInterval: 60000, // Auto-refetch every minute
+    },
+  );
 
   return (
     <TableRow
@@ -86,9 +101,20 @@ export const RepositoryTableRow = ({
           disableRipple
           color="primary"
           checked={
-            value?.status === RepositoryStatus.ADDED ? true : isItemSelected
+            value?.status === RepositoryStatus.ADDED ||
+            value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
+            value?.status === TaskStatus.Processing ||
+            value?.status === TaskStatus.Completed
+              ? true
+              : isItemSelected
           }
-          disabled={loading || value?.status === RepositoryStatus.ADDED}
+          disabled={
+            loading ||
+            value?.status === RepositoryStatus.ADDED ||
+            value?.status === RepositoryStatus.WAIT_PR_APPROVAL ||
+            value?.status === TaskStatus.Processing ||
+            value?.status === TaskStatus.Completed
+          }
           onClick={event => handleClick(event, data)}
           style={{ padding: '0 12px' }}
         />
@@ -129,6 +155,10 @@ export const RepositoryTableRow = ({
           isItemSelected={isItemSelected}
           isDrawer={isDrawer}
           taskId={(value as ImportJobStatus)?.task?.taskId}
+          prUrl={
+            (value as ImportJobStatus)?.github?.pullRequest?.url ||
+            (value as ImportJobStatus)?.gitlab?.pullRequest?.url
+          }
         />
       </TableCell>
     </TableRow>

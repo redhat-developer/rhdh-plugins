@@ -1104,6 +1104,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@axe-core/playwright@npm:^4.11.0":
+  version: 4.11.0
+  resolution: "@axe-core/playwright@npm:4.11.0"
+  dependencies:
+    axe-core: ~4.11.0
+  peerDependencies:
+    playwright-core: ">= 1.0.0"
+  checksum: 036d13cb73f9c3bdcff039caa8a3f4ae9c2fffeb41855053dd78f72d98d1635b0d7eec38ff5087beaa5e15c99e060a771d1b449f08df58694f02781d54aa155c
+  languageName: node
+  linkType: hard
+
 "@azure/abort-controller@npm:^2.0.0, @azure/abort-controller@npm:^2.1.2":
   version: 2.1.2
   resolution: "@azure/abort-controller@npm:2.1.2"
@@ -5605,11 +5616,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@internal/bulk-import@workspace:."
   dependencies:
+    "@axe-core/playwright": ^4.11.0
     "@backstage/cli": ^0.34.5
     "@backstage/e2e-test-utils": ^0.1.1
     "@backstage/repo-tools": ^0.16.0
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.3.1
+    "@playwright/test": 1.56.1
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -8454,6 +8467,17 @@ __metadata:
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
   checksum: 6ad6a00fc4f2f2cfc6bff76fb1d88b8ee20bc0601e18ebb01b6d4be583733a860239a521a7fbca73b612e66705078809483549d2b18f370eb346c5155c8e4a0f
+  languageName: node
+  linkType: hard
+
+"@playwright/test@npm:1.56.1":
+  version: 1.56.1
+  resolution: "@playwright/test@npm:1.56.1"
+  dependencies:
+    playwright: 1.56.1
+  bin:
+    playwright: cli.js
+  checksum: 109544665800de973987893adffa17d1e563fb99d3485d6399784e8c8a9269081cae9a00e09ca308aa140e932a4e862dca0b3de07a21e2dfbf8cfcc3b2b6b4f3
   languageName: node
   linkType: hard
 
@@ -15270,7 +15294,6 @@ __metadata:
     "@mui/lab": 5.0.0-alpha.177
     "@mui/material": 5.18.0
     "@mui/styles": 5.18.0
-    "@playwright/test": 1.57.0
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@testing-library/dom": ^9.0.0
@@ -15757,10 +15780,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axe-core@npm:^4.10.0":
-  version: 4.10.2
-  resolution: "axe-core@npm:4.10.2"
-  checksum: 2b9b1c93ea73ea9f206604e4e17bd771d2d835f077bde54517d73028b8865c69b209460e73d5b109968cbdb39ab3d28943efa5695189bd79e16421ce1706719e
+"axe-core@npm:^4.10.0, axe-core@npm:~4.11.0":
+  version: 4.11.0
+  resolution: "axe-core@npm:4.11.0"
+  checksum: 57b0d7206d4dd63a1127b8ad6e173417857a3de43717cbb03561e75e2ff85765a228a7588fde4c828dbf179ef25f263ad98535656701e78def8f29a9524be866
   languageName: node
   linkType: hard
 
@@ -29555,12 +29578,36 @@ __metadata:
   languageName: node
   linkType: hard
 
+"playwright-core@npm:1.56.1":
+  version: 1.56.1
+  resolution: "playwright-core@npm:1.56.1"
+  bin:
+    playwright-core: cli.js
+  checksum: 170dff398b47da140182631ae025190248dabde7a5264335f54e238546a478f522ac9a620b31462e6e31c883273223bff8e883b502a699da490abe9741fb3b71
+  languageName: node
+  linkType: hard
+
 "playwright-core@npm:1.57.0":
   version: 1.57.0
   resolution: "playwright-core@npm:1.57.0"
   bin:
     playwright-core: cli.js
   checksum: 960e80d6ec06305b11a3ca9e78e8e4201cc17f37dd37279cb6fece4df43d74bf589833f4f94535fadd284b427f98c5f1cf09368e22f0f00b6a9477571ce6b03b
+  languageName: node
+  linkType: hard
+
+"playwright@npm:1.56.1":
+  version: 1.56.1
+  resolution: "playwright@npm:1.56.1"
+  dependencies:
+    fsevents: 2.3.2
+    playwright-core: 1.56.1
+  dependenciesMeta:
+    fsevents:
+      optional: true
+  bin:
+    playwright: cli.js
+  checksum: e7537e7d5048a1a8544d7675b005196ba9db919edc3b6d46b92273ee6f20e37ada8991774c5df9ef5123ea4610978d582feb141c8a02f4cf256a6c0b224b8793
   languageName: node
   linkType: hard
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { JsonValue } from '@backstage/types/index';
+import { JsonValue } from '@backstage/types';
 import { TypographyVariant } from '@mui/material/styles';
 
 export type UiProps = {
@@ -25,6 +25,7 @@ export type UiProps = {
   'fetch:headers'?: Record<string, string>;
   'fetch:body'?: Record<string, JsonValue>;
   'fetch:retrigger'?: string[];
+  'fetch:error:ignoreUnready'?: boolean;
   [key: `fetch:response:${string}`]: JsonValue;
 };
 

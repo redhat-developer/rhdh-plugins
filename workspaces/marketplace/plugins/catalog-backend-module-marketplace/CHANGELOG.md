@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace
 
+## 0.13.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-marketplace-common@0.13.2
+
 ## 0.13.1
 
 ### Patch Changes

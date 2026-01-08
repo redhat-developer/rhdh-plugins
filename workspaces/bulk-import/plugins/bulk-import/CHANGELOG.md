@@ -1,5 +1,34 @@
 ### Dependencies
 
+## 6.9.1
+
+### Patch Changes
+
+- 86a9000: Remove interactive column sorting and fix case-insensitive sort ordering.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.9.1
+
+## 6.9.0
+
+### Minor Changes
+
+- b88e8dd: Improve bulk import UI consistency and user experience
+  - Ensure "Bulk import" navigation in left sidebar takes users directly to Import page
+  - Hide source control tool radio buttons when only one provider is configured
+  - Remove Repository/Organization toggle buttons from Import page
+  - Update empty state message for better user guidance
+  - Show "Import to Red Hat Developer Hub" info bar for pull request flow, hide for scaffolder flow
+  - Show "Choose a source control tool" step only when multiple approval tools are configured
+  - Added "Missing Configuration" page that displays when no GitHub or GitLab integrations are configured
+  - Show "Ready to import" instead of "Not generated" status in scaffolder flow
+  - Remove "Preview file" button for selected repositories in scaffolder flow
+  - Fix task status display to show status text + separate "View task" button
+
+### Patch Changes
+
+- 1a99b9f: Updated dependency `@playwright/test` to `1.57.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.9.0
+
 ## 6.8.0
 
 ### Minor Changes
