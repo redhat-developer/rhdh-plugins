@@ -88,6 +88,10 @@ const orchestratorTranslationEs = createTranslationMessages({
     'run.inputs': 'Entradas',
     'run.pageTitle': '{{processName}} ejecución',
     'run.results': 'Resultados',
+    'run.logs.viewLogs': 'Ver registros',
+    'run.logs.title': 'Registros de ejecución',
+    'run.logs.noLogsAvailable':
+      'No hay registros disponibles para esta ejecución del flujo de trabajo.',
     'run.abort.title': '¿Abortar la ejecución del flujo de trabajo?',
     'run.abort.button': 'Abortar',
     'run.abort.warning':

@@ -109,6 +109,9 @@ readonly "run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete": string;
 readonly "run.pageTitle": string;
 readonly "run.variables": string;
 readonly "run.inputs": string;
+readonly "run.logs.title": string;
+readonly "run.logs.viewLogs": string;
+readonly "run.logs.noLogsAvailable": string;
 readonly "run.abort.button": string;
 readonly "run.abort.title": string;
 readonly "run.abort.completed.title": string;
@@ -175,7 +178,7 @@ export const orchestratorTranslations: TranslationResource<"plugin.orchestrator"
 // src/components/catalogComponents/CatalogTab.d.ts:1:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
 // src/components/catalogComponents/CatalogTab.d.ts:2:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
 // src/translations/index.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorTranslations".
-// src/translations/ref.d.ts:186:22 - (ae-undocumented) Missing documentation for "orchestratorTranslationRef".
+// src/translations/ref.d.ts:191:22 - (ae-undocumented) Missing documentation for "orchestratorTranslationRef".
 
 // (No @packageDocumentation comment for this package)
 

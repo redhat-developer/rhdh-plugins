@@ -129,3 +129,13 @@ export interface Node {
   uniqueId?: string;
   nodeDefinitionId?: string;
 }
+
+export interface WorkflowLogEntry {
+  id: string;
+  log: string;
+}
+
+export interface WorkflowInstanceLogsDTO {
+  instanceId: string;
+  logs: WorkflowLogEntry[];
+}

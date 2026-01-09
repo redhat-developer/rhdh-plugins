@@ -13,25 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { TextCodeBlock } from './TextCodeBlock';
+export function useLogsEnabled(): boolean {
+  const config = useApi(configApiRef);
 
-export const JsonCodeBlock = ({
-  value,
-  isDarkMode,
-  maxHeight,
-}: {
-  value: object;
-  isDarkMode: boolean;
-  maxHeight?: number;
-}) => {
-  const jsonString = JSON.stringify(value, null, 2);
-
-  return (
-    <TextCodeBlock
-      value={jsonString}
-      isDarkMode={isDarkMode}
-      maxHeight={maxHeight}
-    />
+  const workflowLogProvider = config.getOptionalConfig(
+    'orchestrator.workflowLogProvider',
   );
-};
+
+  return !!workflowLogProvider;
+}

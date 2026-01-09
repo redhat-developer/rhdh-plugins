@@ -87,6 +87,10 @@ const orchestratorTranslationFr = createTranslationMessages({
     'run.variables': "Variables d'exécution",
     'run.inputs': 'Entrées',
     'run.results': 'Résultats',
+    'run.logs.viewLogs': 'Voir les journaux',
+    'run.logs.title': "Journaux d'exécution",
+    'run.logs.noLogsAvailable':
+      'Aucun journal disponible pour cette exécution de workflow.',
     'run.abort.title': "Interrompre l'exécution du workflow ?",
     'run.abort.button': 'Interrompre',
     'run.abort.warning':
