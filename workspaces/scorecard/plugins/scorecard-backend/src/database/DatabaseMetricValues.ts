@@ -15,7 +15,11 @@
  */
 
 import { Knex } from 'knex';
-import { DbMetricValue } from './types';
+import {
+  DbMetricValueCreate,
+  DbMetricValue,
+  DbAggregatedMetric,
+} from './types';
 
 export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
@@ -25,9 +29,7 @@ export class DatabaseMetricValues {
   /**
    * Insert multiple metric values
    */
-  async createMetricValues(
-    metricValues: Omit<DbMetricValue, 'id'>[],
-  ): Promise<void> {
+  async createMetricValues(metricValues: DbMetricValueCreate[]): Promise<void> {
     await this.dbClient(this.tableName).insert(metricValues);
   }
 
@@ -57,5 +59,69 @@ export class DatabaseMetricValues {
     return await this.dbClient(this.tableName)
       .where('timestamp', '<', olderThan)
       .del();
+  }
+
+  /**
+   * Get aggregated metrics by status for multiple entities and metrics.
+   */
+  async readAggregatedMetricsByEntityRefs(
+    catalog_entity_refs: string[],
+    metric_ids: string[],
+  ): Promise<DbAggregatedMetric[]> {
+    const latestIdsSubquery = this.dbClient(this.tableName)
+      .max('id')
+      .whereIn('metric_id', metric_ids)
+      .whereIn('catalog_entity_ref', catalog_entity_refs)
+      .groupBy('metric_id', 'catalog_entity_ref');
+
+    const results = await this.dbClient(this.tableName)
+      .select('metric_id')
+      .count('* as total')
+      .max('timestamp as max_timestamp')
+      .select(
+        this.dbClient.raw(
+          "SUM(CASE WHEN status = 'success' AND value IS NOT NULL THEN 1 ELSE 0 END) as success",
+        ),
+      )
+      .select(
+        this.dbClient.raw(
+          "SUM(CASE WHEN status = 'warning' AND value IS NOT NULL THEN 1 ELSE 0 END) as warning",
+        ),
+      )
+      .select(
+        this.dbClient.raw(
+          "SUM(CASE WHEN status = 'error' AND value IS NOT NULL THEN 1 ELSE 0 END) as error",
+        ),
+      )
+      .whereIn('id', latestIdsSubquery)
+      .whereNotNull('status')
+      .whereNotNull('value')
+      .groupBy('metric_id');
+
+    // Normalize types for cross-database compatibility
+    // PostgreSQL returns COUNT/SUM as strings, SQLite returns numbers
+    // PostgreSQL returns MAX(timestamp) as Date, SQLite returns number (milliseconds)
+    return results.map(row => {
+      let maxTimestamp: Date;
+      if (row.max_timestamp instanceof Date) {
+        maxTimestamp = row.max_timestamp;
+      } else if (
+        typeof row.max_timestamp === 'number' ||
+        typeof row.max_timestamp === 'string'
+      ) {
+        maxTimestamp = new Date(row.max_timestamp as string | number);
+      } else {
+        maxTimestamp = new Date();
+      }
+
+      return {
+        metric_id: row.metric_id,
+        total: Number(row.total),
+        max_timestamp: maxTimestamp,
+        success: Number(row.success),
+        warning: Number(row.warning),
+        error: Number(row.error),
+      };
+    });
   }
 }

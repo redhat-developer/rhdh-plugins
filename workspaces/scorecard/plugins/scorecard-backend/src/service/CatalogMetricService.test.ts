@@ -20,7 +20,6 @@ import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { MockNumberProvider } from '../../__fixtures__/mockProviders';
-import { mockEntity } from '../../__fixtures__/mockEntities';
 import {
   buildMockDatabaseMetricValues,
   mockDatabaseMetricValues,
@@ -30,8 +29,14 @@ import { AuthService } from '@backstage/backend-plugin-api';
 import * as permissionUtils from '../permissions/permissionUtils';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import * as thresholdUtils from '../utils/mergeEntityAndProviderThresholds';
-import { DbMetricValue } from '../database/types';
+import { DbMetricValue, DbAggregatedMetric } from '../database/types';
 import { mockThresholdRules } from '../../__fixtures__/mockThresholdRules';
+import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
+import {
+  PermissionCriteria,
+  PermissionCondition,
+  PermissionRuleParams,
+} from '@backstage/plugin-permission-common';
 
 jest.mock('../utils/mergeEntityAndProviderThresholds');
 jest.mock('../permissions/permissionUtils');
@@ -45,15 +50,36 @@ const latestEntityMetric = [
     metric_id: 'github.important_metric',
     value: 42,
     timestamp: new Date('2024-01-15T12:00:00.000Z'),
-    error_message: undefined,
+    error_message: null,
     status: 'success',
   } as DbMetricValue,
 ] as DbMetricValue[];
+
+const aggregatedMetrics: DbAggregatedMetric[] = [
+  {
+    metric_id: 'github.important_metric',
+    total: 2,
+    max_timestamp: new Date('2024-01-15T12:00:00.000Z'),
+    success: 1,
+    warning: 1,
+    error: 0,
+  },
+];
 
 const metricsList = [
   { id: 'github.important_metric' },
   { id: 'github.number_metric' },
 ] as Metric[];
+
+const permissionsFilter = {
+  anyOf: [
+    {
+      rule: 'HAS_METRIC_ID',
+      resourceType: 'scorecard-metric',
+      params: { metricIds: ['github.important_metric'] },
+    },
+  ],
+} as PermissionCriteria<PermissionCondition<string, PermissionRuleParams>>;
 
 describe('CatalogMetricService', () => {
   let mockedCatalog: ReturnType<typeof catalogServiceMock.mock>;
@@ -61,6 +87,8 @@ describe('CatalogMetricService', () => {
   let mockedRegistry: jest.Mocked<MetricProvidersRegistry>;
   let mockedDatabase: jest.Mocked<typeof mockDatabaseMetricValues>;
   let service: CatalogMetricService;
+
+  const mockEntity = new MockEntityBuilder().build();
 
   beforeEach(() => {
     mockedCatalog = catalogServiceMock.mock();
@@ -77,7 +105,10 @@ describe('CatalogMetricService', () => {
       metricsList,
     });
 
-    mockedDatabase = buildMockDatabaseMetricValues({ latestEntityMetric });
+    mockedDatabase = buildMockDatabaseMetricValues({
+      latestEntityMetric,
+      aggregatedMetrics,
+    });
 
     (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
       { id: 'github.important_metric' },
@@ -181,28 +212,12 @@ describe('CatalogMetricService', () => {
       await service.getLatestEntityMetrics(
         'component:default/test-component',
         ['github.important_metric'],
-        {
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        },
+        permissionsFilter,
       );
 
       expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
         [{ id: 'github.important_metric' }],
-        expect.objectContaining({
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        }),
+        permissionsFilter,
       );
     });
 
@@ -210,28 +225,12 @@ describe('CatalogMetricService', () => {
       await service.getLatestEntityMetrics(
         'component:default/test-component',
         undefined,
-        {
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        },
+        permissionsFilter,
       );
 
       expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
         [{ id: 'github.important_metric' }, { id: 'github.number_metric' }],
-        expect.objectContaining({
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.important_metric'] },
-            },
-          ],
-        }),
+        permissionsFilter,
       );
     });
 
@@ -312,6 +311,51 @@ describe('CatalogMetricService', () => {
       expect(thresholdResult.error).toBe('Error: Merge thresholds failed');
     });
 
+    it('should set threshold error when value is null', async () => {
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
+        {
+          ...latestEntityMetric[0],
+          value: null,
+          error_message: 'Error message during metric calculation',
+        },
+      ]);
+
+      const newResult = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.important_metric'],
+      );
+
+      expect(newResult[0].status).toBe('error');
+      expect(newResult[0].error).toBe(
+        'Error message during metric calculation',
+      );
+      expect(newResult[0].result.thresholdResult.status).toBe('error');
+      expect(newResult[0].result.thresholdResult.error).toBe(
+        'Unable to evaluate thresholds, metric value is missing',
+      );
+    });
+
+    it('should set threshold error when value is not null and error message exist', async () => {
+      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
+        {
+          ...latestEntityMetric[0],
+          error_message: 'Threshold error message during metric calculation',
+        },
+      ]);
+
+      const newResult = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+        ['github.important_metric'],
+      );
+
+      expect(newResult[0].status).toBe('success');
+      expect(newResult[0].error).toBeUndefined();
+      expect(newResult[0].result.thresholdResult.status).toBe('error');
+      expect(newResult[0].result.thresholdResult.error).toBe(
+        'Threshold error message during metric calculation',
+      );
+    });
+
     it('should return metric result', async () => {
       const result = await service.getLatestEntityMetrics(
         'component:default/test-component',
@@ -351,45 +395,11 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should set status to error when error message is presented', async () => {
-      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
-        {
-          ...latestEntityMetric[0],
-          error_message: 'Error message',
-        },
-      ]);
-
-      const newResult = await service.getLatestEntityMetrics(
-        'component:default/test-component',
-        ['github.important_metric'],
-      );
-
-      expect(newResult[0].status).toBe('error');
-      expect(newResult[0].error).toBe('Error message');
-    });
-
-    it('should set status to error when metric value is undefined', async () => {
-      mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
-        {
-          ...latestEntityMetric[0],
-          value: undefined,
-        },
-      ]);
-
-      const newResult = await service.getLatestEntityMetrics(
-        'component:default/test-component',
-        ['github.important_metric'],
-      );
-
-      expect(newResult[0].status).toBe('error');
-      expect(newResult[0].error).toBe("Error: Metric value is 'undefined'");
-    });
-
     it('should set threshold result status to error when metric value is missing', async () => {
       mockedDatabase.readLatestEntityMetricValues.mockResolvedValue([
         {
           ...latestEntityMetric[0],
-          value: undefined,
+          value: null,
         },
       ]);
 
@@ -402,6 +412,90 @@ describe('CatalogMetricService', () => {
       expect(thresholdResult.status).toBe('error');
       expect(thresholdResult.error).toBe(
         'Unable to evaluate thresholds, metric value is missing',
+      );
+    });
+  });
+
+  describe('getAggregatedMetricsByEntityRefs', () => {
+    it('should return aggregated metrics for multiple entities and metrics', async () => {
+      const result = await service.getAggregatedMetricsByEntityRefs(
+        [
+          'component:default/test-component',
+          'component:default/test-component-2',
+        ],
+        ['github.important_metric'],
+      );
+
+      expect(result).toEqual([
+        {
+          id: 'github.important_metric',
+          status: 'success',
+          metadata: {
+            title: 'Mock Number Metric',
+            description: 'Mock number description.',
+            type: 'number',
+            history: undefined,
+          },
+          result: {
+            values: [
+              { count: 1, name: 'success' },
+              { count: 1, name: 'warning' },
+              { count: 0, name: 'error' },
+            ],
+            total: 2,
+            timestamp: '2024-01-15T12:00:00.000Z',
+          },
+        },
+      ]);
+    });
+
+    it('should get list of metrics from registry', async () => {
+      await service.getAggregatedMetricsByEntityRefs(
+        [
+          'component:default/test-component',
+          'component:default/test-component-2',
+        ],
+        ['github.important_metric'],
+      );
+
+      expect(mockedRegistry.listMetrics).toHaveBeenCalledWith([
+        'github.important_metric',
+      ]);
+    });
+
+    it('should filter authorized metrics for specific provider IDs', async () => {
+      await service.getAggregatedMetricsByEntityRefs(
+        [
+          'component:default/test-component',
+          'component:default/test-component-2',
+        ],
+        ['github.important_metric', 'github.number_metric'],
+        permissionsFilter,
+      );
+
+      expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
+        [{ id: 'github.important_metric' }, { id: 'github.number_metric' }],
+        permissionsFilter,
+      );
+    });
+
+    it('should read aggregated metrics by entity refs', async () => {
+      await service.getAggregatedMetricsByEntityRefs(
+        [
+          'component:default/test-component',
+          'component:default/test-component-2',
+        ],
+        ['github.important_metric'],
+      );
+
+      expect(
+        mockedDatabase.readAggregatedMetricsByEntityRefs,
+      ).toHaveBeenCalledWith(
+        [
+          'component:default/test-component',
+          'component:default/test-component-2',
+        ],
+        ['github.important_metric'],
       );
     });
   });

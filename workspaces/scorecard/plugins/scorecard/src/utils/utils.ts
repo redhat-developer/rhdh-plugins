@@ -39,7 +39,7 @@ export const getStatusConfig = ({
   thresholdStatus,
   metricStatus,
 }: {
-  evaluation: string | undefined;
+  evaluation: string | null;
   thresholdStatus?: 'success' | 'error';
   metricStatus?: 'success' | 'error';
 }): StatusConfig => {
@@ -56,26 +56,4 @@ export const getStatusConfig = ({
     default:
       return { color: 'success.main', icon: CheckCircleOutlineIcon };
   }
-};
-
-export type AggregatedMetricValue = {
-  count: number;
-  name: 'success' | 'warning' | 'error';
-};
-
-export type AggregatedMetricResult = {
-  id: string;
-  status: 'success' | 'error';
-  metadata: {
-    title: string;
-    description: string;
-    type: 'object';
-    history?: boolean;
-  };
-  result: {
-    values?: AggregatedMetricValue[];
-    total: number;
-    timestamp: string;
-    lastUpdated: string;
-  };
 };

@@ -20,9 +20,11 @@ import {
   DiscoveryApi,
 } from '@backstage/core-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
-import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  MetricResult,
+  AggregatedMetricResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { mockAggregatedScorecardSuccessData } from '../../__fixtures__/aggregatedScorecardData';
-import type { AggregatedMetricResult } from '../utils/utils';
 
 export interface ScorecardApi {
   /**

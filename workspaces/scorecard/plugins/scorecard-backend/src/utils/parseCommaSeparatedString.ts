@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { Entity } from '@backstage/catalog-model';
 
-export const mockEntity: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: {
-    name: 'test-component',
-  },
-  spec: {
-    owner: 'guests',
-  },
-};
+/**
+ * Parse a comma separated string into an array of strings
+ *
+ * @param value - The comma separated string to parse
+ * @returns The array of strings
+ */
+export function parseCommaSeparatedString(value: string): string[] {
+  return value.split(',').map(id => id.trim());
+}

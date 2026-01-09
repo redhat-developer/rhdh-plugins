@@ -83,7 +83,7 @@ export const mockScorecardErrorData = [
       history: true,
     },
     result: {
-      value: undefined,
+      value: null,
       timestamp: '2025-08-08T10:00:00Z',
       thresholdResult: {
         definition: {

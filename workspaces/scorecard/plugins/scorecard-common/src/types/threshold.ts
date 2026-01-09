@@ -37,7 +37,7 @@ export type ThresholdConfig = {
 export type ThresholdResult = {
   status: 'success' | 'error';
   definition: ThresholdConfig | undefined;
-  evaluation: string | undefined; // threshold key the expression evaluated to
+  evaluation: string | null; // threshold key the expression evaluated to
   error?: string;
 };
 
