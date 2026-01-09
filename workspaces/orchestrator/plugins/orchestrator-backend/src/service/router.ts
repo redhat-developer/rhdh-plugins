@@ -60,7 +60,10 @@ import { V2 } from './api/v2';
 import { DataIndexService } from './DataIndexService';
 import { DataInputSchemaService } from './DataInputSchemaService';
 import { OrchestratorService } from './OrchestratorService';
-import { SonataFlowService } from './SonataFlowService';
+import {
+  OrchestratorKafkaService,
+  SonataFlowService,
+} from './SonataFlowService';
 import { WorkflowCacheService } from './WorkflowCacheService';
 
 interface PublicServices {
@@ -250,8 +253,15 @@ function initPublicServices(
   scheduler: SchedulerService,
 ): PublicServices {
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
+  // TODO: what happens when this isn't there?
+  const orchestratorKafka: OrchestratorKafkaService =
+    config.get('orchestrator.kafka');
   const dataIndexService = new DataIndexService(dataIndexUrl, logger);
-  const sonataFlowService = new SonataFlowService(dataIndexService, logger);
+  const sonataFlowService = new SonataFlowService(
+    dataIndexService,
+    logger,
+    orchestratorKafka,
+  );
 
   const workflowCacheService = new WorkflowCacheService(
     logger,

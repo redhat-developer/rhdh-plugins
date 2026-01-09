@@ -51,6 +51,7 @@ import {
   entityInstanceRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
+  workflowRunsRouteRef,
 } from '../../routes';
 import { getErrorObject } from '../../utils/ErrorUtils';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
@@ -70,6 +71,7 @@ export const ExecuteWorkflowPage = () => {
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
   const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
+  const workflowRunsLink = useRouteRef(workflowRunsRouteRef);
   const {
     value,
     loading,
@@ -108,7 +110,10 @@ export const ExecuteWorkflowPage = () => {
 
   const [kind, namespace, name] = targetEntity?.split(/[:\/]/) || [];
 
+  // The Kafka triggered workflows might not be available for a period of time, so it would be good to just go to that workflows runs page
+  // the return value would have to have some identifier that it is not an error, but no workflow instance run id yet
   const handleExecute = useCallback(
+    // eslint-disable-next-line consistent-return
     async (parameters: JsonObject) => {
       setUpdateError(undefined);
       try {
@@ -120,6 +125,12 @@ export const ExecuteWorkflowPage = () => {
           authTokens,
           targetEntity: targetEntity ?? undefined,
         });
+
+        // Response Data id will be "kafkaEvent" if this was run as a CloudEvent and the workflow isnt ready yet
+        // If this happens, just navigate to the main workflow runs page.
+        if (response.data.id === 'kafkaEvent') {
+          return navigate(workflowRunsLink({ workflowId: workflowId }));
+        }
         const url = targetEntity
           ? entityInstanceLink({
               namespace,
@@ -148,6 +159,7 @@ export const ExecuteWorkflowPage = () => {
       kind,
       namespace,
       name,
+      workflowRunsLink,
     ],
   );
 

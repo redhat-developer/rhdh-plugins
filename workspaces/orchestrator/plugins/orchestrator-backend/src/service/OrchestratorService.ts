@@ -139,6 +139,19 @@ export class OrchestratorService {
     });
   }
 
+  // TODO: Execute as CE
+  public async executeWorkflowAsCloudEvent(args: {
+    definitionId: string;
+    workflowSource: string;
+    workflowEventType: string;
+    contextAttribute: string;
+    inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string | undefined;
+  }) {
+    return await this.sonataFlowService.executeWorkflowAsCloudEvent(args);
+  }
+
   public async executeWorkflow(args: {
     definitionId: string;
     serviceUrl: string;

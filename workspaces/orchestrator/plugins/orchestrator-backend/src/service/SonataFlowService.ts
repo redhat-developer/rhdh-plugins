@@ -16,6 +16,8 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import { CloudEvent, Kafka as KafkaCE } from 'cloudevents';
+import { Kafka, logLevel } from 'kafkajs';
 import capitalize from 'lodash/capitalize';
 
 import {
@@ -31,13 +33,22 @@ import {
   WorkflowOverview,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { randomUUID } from 'node:crypto';
+
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
+
+export type OrchestratorKafkaService = {
+  clientId: string;
+  brokers: string[];
+  logLevel?: string;
+};
 
 export class SonataFlowService {
   constructor(
     private readonly dataIndexService: DataIndexService,
     private readonly logger: LoggerService,
+    private readonly kafkaService: OrchestratorKafkaService,
   ) {}
 
   public async fetchWorkflowInfoOnService(args: {
@@ -101,6 +112,72 @@ export class SonataFlowService {
         ),
     );
     return items.filter((item): item is WorkflowOverview => !!item);
+  }
+
+  public async executeWorkflowAsCloudEvent(args: {
+    definitionId: string;
+    workflowSource: string;
+    workflowEventType: string;
+    contextAttribute: string;
+    inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string | undefined;
+  }): Promise<WorkflowExecutionResponse | undefined> {
+    const contextAttributeId = randomUUID();
+    // TODO: something about adding a header as an extension
+    const triggeringCloudEvent = new CloudEvent({
+      datacontenttype: 'application/json',
+      type: args.workflowEventType,
+      source: args.workflowSource,
+      [args.contextAttribute]: contextAttributeId,
+      data: {
+        ...args.inputData,
+        [args.contextAttribute]: contextAttributeId, // Need to be able to correlate the workflow run somehow
+      },
+    });
+
+    // Put the CE in the format needed to send as a Kafka message
+    const lockEventBinding = KafkaCE.binary(triggeringCloudEvent);
+    // Create the message event that will be sent to the kafka topic
+    const messageEvent = {
+      key: '',
+      value: JSON.stringify(KafkaCE.toEvent(lockEventBinding)),
+    };
+
+    // TODO: look at the community plugins kafka backend plugin to see how to do the ssl type stuff
+    // It looks like that plugin just passes the whole options from the app-config to the kafkajs constructor
+    const kafkaConnectionBinding = {
+      logLevel: logLevel.DEBUG, // TODO: need to figure out this with Typing
+      brokers: this.kafkaService.brokers,
+      clientId: this.kafkaService.clientId,
+    };
+
+    const kfk = new Kafka(kafkaConnectionBinding);
+
+    try {
+      const producer = kfk.producer();
+      // Connect the producer
+      await producer.connect();
+
+      // Send the message
+      await producer.send({
+        topic: args.workflowEventType,
+        messages: [messageEvent],
+      });
+
+      // Disconnect the producer
+      await producer.disconnect();
+    } catch (error) {
+      throw new Error(
+        `Error with Kafka client with connection options: ${kafkaConnectionBinding}`,
+      );
+    }
+
+    // Since sending to kafka doesn't return anything, send back the contextAttributeId here
+    // Then we will query the workflow instances to see if it showed up yet
+    return {
+      id: contextAttributeId,
+    };
   }
 
   public async executeWorkflow(args: {
