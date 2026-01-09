@@ -79,6 +79,7 @@ const bulkImportTranslationIt = createTranslationMessages({
     'status.added': 'Aggiunta',
     'status.waitingForApproval': 'In attesa di approvazione',
     'status.imported': 'Importata',
+    'status.readyToImport': "Pronto per l'importazione",
     'errors.prErrorPermissions':
       "Impossibile creare una nuova richiesta pull a causa di autorizzazioni insufficienti. Contattare l'amministratore.",
     'errors.catalogInfoExists':
@@ -155,7 +156,6 @@ const bulkImportTranslationIt = createTranslationMessages({
     'addRepositories.editPullRequest': 'Modifica richiesta pull',
     'addRepositories.preview': 'Anteprima',
     'catalogInfo.status.generating': 'Generazione',
-    'catalogInfo.status.notGenerated': 'Non generato',
     'common.add': 'Aggiungi',
     'common.cancel': 'Cancella',
     'common.close': 'Chiudi',
@@ -172,7 +172,6 @@ const bulkImportTranslationIt = createTranslationMessages({
     'time.hoursAgo': '{{count}} ora/e fa',
     'time.minutesAgo': '{{count}} minuto/i fa',
     'time.secondsAgo': '{{count}} secondi fa',
-    'previewFile.readyToImport': "Pronto per l'importazione",
     'previewFile.previewFile': 'Anteprima del file',
     'previewFile.previewFiles': 'Anteprima dei file',
     'previewFile.failedToCreatePR': 'Impossibile creare la richiesta pull',

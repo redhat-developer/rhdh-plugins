@@ -95,6 +95,9 @@ const orchestratorTranslationJa = createTranslationMessages({
     'run.variables': '実行変数',
     'run.inputs': '入力',
     'run.results': '結果',
+    'run.logs.viewLogs': 'ログを表示',
+    'run.logs.title': '実行ログ',
+    'run.logs.noLogsAvailable': 'このワークフロー実行のログは利用できません。',
     'run.abort.title': 'ワークフローの実行を中止しますか?',
     'run.abort.button': '中止',
     'run.abort.warning':

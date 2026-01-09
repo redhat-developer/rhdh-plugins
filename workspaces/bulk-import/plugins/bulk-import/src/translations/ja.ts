@@ -80,6 +80,7 @@ const bulkImportTranslationJa = createTranslationMessages({
     'status.added': '追加済み',
     'status.waitingForApproval': '承認待ち',
     'status.imported': 'インポート',
+    'status.readyToImport': 'インポート準備完了',
     'errors.prErrorPermissions':
       '権限が不十分なため、新しい PR を作成できませんでした。管理者に問い合わせてください。',
     'errors.catalogInfoExists':
@@ -153,7 +154,6 @@ const bulkImportTranslationJa = createTranslationMessages({
     'addRepositories.editPullRequest': 'プルリクエストの編集',
     'addRepositories.preview': 'プレビュー',
     'catalogInfo.status.generating': '生成中',
-    'catalogInfo.status.notGenerated': '生成されませんでした',
     'common.add': '追加',
     'common.cancel': 'キャンセル',
     'common.close': '閉じる',
@@ -170,7 +170,6 @@ const bulkImportTranslationJa = createTranslationMessages({
     'time.hoursAgo': '{{count}} 時間前',
     'time.minutesAgo': '{{count}} 分前',
     'time.secondsAgo': '{{count}} 秒前',
-    'previewFile.readyToImport': 'インポート準備完了',
     'previewFile.previewFile': 'ファイルのプレビュー',
     'previewFile.previewFiles': 'ファイルのプレビュー',
     'previewFile.failedToCreatePR': 'PR の作成に失敗しました',

@@ -79,6 +79,7 @@ const bulkImportTranslationFr = createTranslationMessages({
     'status.added': 'Ajouté',
     'status.waitingForApproval': "En attente d'approbation",
     'status.imported': 'Importé',
+    'status.readyToImport': 'Prêt à importer',
     'errors.prErrorPermissions':
       "Impossible de créer un nouveau PR en raison d'autorisations insuffisantes. Contactez votre administrateur.",
     'errors.catalogInfoExists':
@@ -156,7 +157,6 @@ const bulkImportTranslationFr = createTranslationMessages({
     'addRepositories.editPullRequest': "Modifier la demande d'extraction",
     'addRepositories.preview': 'Aperçu',
     'catalogInfo.status.generating': 'Générateur',
-    'catalogInfo.status.notGenerated': 'Non généré',
     'common.add': 'Ajouter',
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
@@ -173,7 +173,6 @@ const bulkImportTranslationFr = createTranslationMessages({
     'time.hoursAgo': 'Il y a {{count}} heure(s)',
     'time.minutesAgo': 'Il y a {{count}} minute(s)',
     'time.secondsAgo': 'Il y a {{count}} seconde(s)',
-    'previewFile.readyToImport': 'Prêt à importer',
     'previewFile.previewFile': "Fichier d'aperçu",
     'previewFile.previewFiles': 'Aperçu des fichiers',
     'previewFile.failedToCreatePR': 'Échec de la création du PR',
