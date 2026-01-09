@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-translations-backend
 
+## 0.2.0
+
+### Minor Changes
+
+- a698bf0: Backstage version bump to v1.45.3
+
+### Patch Changes
+
+- 13c0b59: Updated dependency `express` to `4.22.1`.
+- 308f61c: Use caret notation for express dependency
+
 ## 0.1.0
 
 ### Minor Changes
