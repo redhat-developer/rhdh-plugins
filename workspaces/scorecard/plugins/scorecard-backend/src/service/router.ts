@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InputError, NotAllowedError } from '@backstage/errors';
+import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import { z } from 'zod';
 import express, { Request } from 'express';
 import Router from 'express-promise-router';
@@ -162,14 +162,16 @@ export async function createRouter({
     const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
 
     if (authorizedMetrics.length === 0) {
-      throw new NotAllowedError(`Access to metric "${metricId}" denied`);
+      throw new NotAllowedError(
+        `To view the scorecard metrics, your administrator must grant you the required permission.`,
+      );
     }
 
     const credentials = await httpAuth.credentials(req, { allow: ['user'] });
     const userEntityRef = credentials?.principal?.userEntityRef;
 
     if (!userEntityRef) {
-      throw new NotAllowedError('User entity reference not found');
+      throw new NotFoundError('User entity reference not found');
     }
 
     const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {

@@ -474,7 +474,7 @@ describe('createRouter', () => {
       expect(result.body.error.name).toEqual('NotAllowedError');
     });
 
-    it('should return 403 NotAllowedError when user entity reference is not found', async () => {
+    it('should return 404 NotFoundError when user entity reference is not found', async () => {
       httpAuthMock.credentials.mockResolvedValue({
         principal: {},
       } as any);
@@ -482,8 +482,8 @@ describe('createRouter', () => {
         '/metrics/github.open_prs/catalog/aggregation',
       );
 
-      expect(result.statusCode).toBe(403);
-      expect(result.body.error.name).toEqual('NotAllowedError');
+      expect(result.statusCode).toBe(404);
+      expect(result.body.error.name).toEqual('NotFoundError');
       expect(result.body.error.message).toContain(
         'User entity reference not found',
       );
@@ -500,7 +500,7 @@ describe('createRouter', () => {
       expect(result.statusCode).toBe(403);
       expect(result.body.error.name).toEqual('NotAllowedError');
       expect(result.body.error.message).toContain(
-        'Access to metric "jira.open_issues" denied',
+        'To view the scorecard metrics, your administrator must grant you the required permission.',
       );
     });
 
