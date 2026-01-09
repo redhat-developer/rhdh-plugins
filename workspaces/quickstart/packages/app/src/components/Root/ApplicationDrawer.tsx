@@ -88,17 +88,11 @@ export const ApplicationDrawer = ({
   stateExposers = [],
 }: ApplicationDrawerProps) => {
   const drawerStatesRef = useRef<Map<string, DrawerPartialState>>(new Map());
-  const [, forceUpdate] = useState({});
   const [activeDrawerId, setActiveDrawerId] = useState<string | null>(null);
 
   const handleStateChange = useCallback(
     (state: DrawerPartialState) => {
       const prev = drawerStatesRef.current.get(state.id);
-      const hasChanged =
-        !prev ||
-        prev.isDrawerOpen !== state.isDrawerOpen ||
-        prev.drawerWidth !== state.drawerWidth ||
-        prev.setDrawerWidth !== state.setDrawerWidth;
 
       // If drawer just opened then make it the active drawer
       if (!prev?.isDrawerOpen && state.isDrawerOpen) {
@@ -114,10 +108,6 @@ export const ApplicationDrawer = ({
       }
 
       drawerStatesRef.current.set(state.id, state);
-
-      if (hasChanged) {
-        forceUpdate({});
-      }
     },
     [activeDrawerId],
   );

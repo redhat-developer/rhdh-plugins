@@ -507,10 +507,21 @@ export const LightspeedChat = ({
     (c: ConversationSummary) => c.conversation_id === conversationId,
   );
 
+  const getMaxPrompts = () => {
+    if (displayMode === ChatbotDisplayMode.embedded) {
+      return samplePrompts?.length; // In the Fullscreen mode, show all prompts
+    }
+    if (displayMode === ChatbotDisplayMode.docked) {
+      return 2; // In the docked mode, show 2 prompts
+    }
+    return 1; // In the overlay mode, show 1 prompt
+  };
+  const maxPrompts = getMaxPrompts();
+
   const welcomePrompts =
     (newChatCreated && conversationMessages.length === 0) ||
     (!conversationFound && conversationMessages.length === 0)
-      ? samplePrompts?.map(prompt => {
+      ? samplePrompts?.slice(0, maxPrompts).map(prompt => {
           const p = prompt as { title: string; message: string };
           return {
             title: p.title,

@@ -29,8 +29,12 @@ import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   chatbotModal: {
+    boxShadow:
+      '0 14px 20px -7px rgba(0, 0, 0, 0.22), 0 32px 50px 6px rgba(0, 0, 0, 0.16), 0 12px 60px 12px rgba(0, 0, 0, 0.14) !important',
+    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 5em)`,
+    right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
     // When docked drawer is open, adjust modal position
     'body.docked-drawer-open &': {
       transition: 'margin-right 0.3s ease',
@@ -128,6 +132,10 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   // Set display mode with route handling for embedded/fullscreen
   const setDisplayMode = useCallback(
     (mode: ChatbotDisplayMode, conversationId?: string) => {
+      if (mode === displayModeState) {
+        return;
+      }
+
       setDisplayModeState(mode);
 
       // Navigate to fullscreen route with conversation ID if available
@@ -145,7 +153,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         setIsOpen(true);
       }
     },
-    [navigate, isLightspeedRoute, currentConversationIdState],
+    [navigate, isLightspeedRoute, currentConversationIdState, displayModeState],
   );
 
   // Only render ChatbotModal for overlay mode

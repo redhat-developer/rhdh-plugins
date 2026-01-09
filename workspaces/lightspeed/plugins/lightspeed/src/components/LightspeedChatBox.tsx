@@ -207,6 +207,7 @@ export const LightspeedChatBox = forwardRef(
             })}
             description={t('chatbox.welcome.description')}
             prompts={welcomePrompts}
+            style={{ paddingBottom: '0' }}
           />
         ) : (
           <br />
