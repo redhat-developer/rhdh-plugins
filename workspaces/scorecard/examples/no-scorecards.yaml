@@ -6,5 +6,5 @@ metadata:
   name: no-scorecards-service
 spec:
   type: service
-  owner: janus-authors
+  owner: group:development/guests
   lifecycle: production

@@ -19,7 +19,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
 import { mockAggregatedScorecardSuccessData } from '../../../../__fixtures__/aggregatedScorecardData';
-import type { AggregatedMetricResult } from '../../../utils/utils';
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // Mock the child components
 jest.mock('../../Common/CardWrapper', () => ({
@@ -194,7 +194,7 @@ describe('ScorecardHomepageCard Component', () => {
       ...mockAggregatedScorecardSuccessData[0],
       result: {
         ...mockAggregatedScorecardSuccessData[0].result,
-        values: undefined,
+        values: [],
         total: 0,
       },
     };

@@ -187,7 +187,11 @@ describe('permissionUtils', () => {
           mockPermissionsService,
           mockHttpAuthService,
         ),
-      ).rejects.toThrow(new NotAllowedError('Access to entity metrics denied'));
+      ).rejects.toThrow(
+        new NotAllowedError(
+          'Access to "component:default/my-service" entity metrics denied',
+        ),
+      );
 
       expect(mockPermissionsService.authorize).toHaveBeenCalledWith(
         [

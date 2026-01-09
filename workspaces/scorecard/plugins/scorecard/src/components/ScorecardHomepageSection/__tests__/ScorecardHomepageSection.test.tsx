@@ -19,7 +19,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { ScorecardHomepageSection } from '../ScorecardHomepageSection';
 import { mockAggregatedScorecardSuccessData } from '../../../../__fixtures__/aggregatedScorecardData';
-import type { AggregatedMetricResult } from '../../../utils/utils';
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // Mock the child components
 jest.mock('../../Common/PermissionRequiredState', () => {
@@ -130,14 +130,13 @@ describe('ScorecardHomepageSection Component', () => {
         metadata: {
           title: 'Third Scorecard',
           description: 'Third description',
-          type: 'object',
+          type: 'number',
           history: true,
         },
         result: {
           values: [{ count: 5, name: 'success' }],
           total: 5,
           timestamp: '2024-01-15T10:30:00Z',
-          lastUpdated: '2024-01-15T10:30:00Z',
         },
       },
     ];

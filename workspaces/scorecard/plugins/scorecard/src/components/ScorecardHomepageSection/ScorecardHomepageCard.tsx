@@ -31,7 +31,8 @@ import { useTheme } from '@mui/material/styles';
 import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
 import CustomLegend from './CustomLegend';
-import type { AggregatedMetricResult, PieData } from '../../utils/utils';
+import type { PieData } from '../../utils/utils';
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const ScorecardHomepageCard = ({
   scorecard,
