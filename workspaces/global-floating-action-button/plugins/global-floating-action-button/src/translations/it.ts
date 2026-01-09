@@ -18,26 +18,26 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { globalFloatingActionButtonTranslationRef } from './ref';
 
 /**
- * fr translation for plugin.global-floating-action-button.
+ * Italian translation for plugin.global-floating-action-button.
  * @public
  */
-const globalFloatingActionButtonTranslationFr = createTranslationMessages({
+const globalFloatingActionButtonTranslationIt = createTranslationMessages({
   ref: globalFloatingActionButtonTranslationRef,
   messages: {
-    'fab.create.label': 'Créer',
-    'fab.create.tooltip': "Créer l'entité",
-    'fab.docs.label': 'Docs',
-    'fab.docs.tooltip': 'Documentation',
-    'fab.apis.label': 'APIs',
-    'fab.apis.tooltip': 'Documentation API',
+    'fab.create.label': 'Crea',
+    'fab.create.tooltip': 'Crea entità',
+    'fab.docs.label': 'Documenti',
+    'fab.docs.tooltip': 'Documentazione',
+    'fab.apis.label': 'API',
+    'fab.apis.tooltip': 'Documentazione API',
     'fab.github.label': 'GitHub',
-    'fab.github.tooltip': 'Référentiel GitHub',
-    'fab.bulkImport.label': 'Importation en masse',
-    'fab.bulkImport.tooltip': 'Enregistrer plusieurs référentiel en masse',
+    'fab.github.tooltip': 'Repository GitHub',
+    'fab.bulkImport.label': 'Importazione in blocco',
+    'fab.bulkImport.tooltip': 'Registra più repository in blocco',
     'fab.quay.label': 'Quay',
-    'fab.quay.tooltip': 'Quay Container Registry',
+    'fab.quay.tooltip': 'Registro dei container di Quay',
     'fab.menu.tooltip': 'Menu',
   },
 });
 
-export default globalFloatingActionButtonTranslationFr;
+export default globalFloatingActionButtonTranslationIt;

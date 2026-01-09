@@ -19,218 +19,173 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { lightspeedTranslationRef } from './ref';
 
 /**
- * French translation for Developer Lightspeed.
+ * fr translation for plugin.lightspeed.
  * @public
  */
 const lightspeedTranslationFr = createTranslationMessages({
   ref: lightspeedTranslationRef,
   messages: {
-    // Page titles and headers
     'page.title': 'Lightspeed',
-    'page.subtitle': "Assistant de développement alimenté par l'IA",
-
-    // Sample prompts - General Development
-    'prompts.codeReadability.title':
-      "Obtenir de l'aide sur la lisibilité du code",
+    'page.subtitle': 'Assistant de développement AI-POWERED',
+    'prompts.codeReadability.title': 'Obtenir de l’aide pour Décrypter le Code',
     'prompts.codeReadability.message':
-      'Pouvez-vous suggérer des techniques que je peux utiliser pour rendre mon code plus lisible et maintenable ?',
-    'prompts.debugging.title': "Obtenir de l'aide pour le débogage",
+      'Pourriez-vous me suggérer des techniques qui puissent rendre mon code plus lisible et facile d’entretien?',
+    'prompts.debugging.title': 'Aide Débogage',
     'prompts.debugging.message':
-      "Mon application lance une erreur lors de la tentative de connexion à la base de données. Pouvez-vous m'aider à identifier le problème ?",
-    'prompts.developmentConcept.title': 'Expliquer un concept de développement',
+      'Mon application me renvoie une erreur lorsque j’essaie de me connecter à la base de données. Pouvez-vous m’aider à identifier le problème?',
+    'prompts.developmentConcept.title': 'Expliquer un Concept de développement',
     'prompts.developmentConcept.message':
-      "Pouvez-vous expliquer comment fonctionne l'architecture des microservices et ses avantages par rapport à une conception monolithique ?",
-    'prompts.codeOptimization.title': 'Suggérer des optimisations de code',
+      'Pourriez-vous m’expliquer comment l’architecture des microservices fonctionne et quels sont ses avantages par rapport à un design monolithic ?',
+    'prompts.codeOptimization.title': 'Suggestions d’Optmisation de Code',
     'prompts.codeOptimization.message':
-      "Pouvez-vous suggérer des moyens courants d'optimiser le code pour obtenir de meilleures performances ?",
-    'prompts.documentation.title': 'Résumé de la documentation',
+      'Pourriez-vous me suggérer les façons d’optimiser le code pour le rendre plus performant ?',
+    'prompts.documentation.title': 'Récapitulatif de la documentation',
     'prompts.documentation.message':
-      "Pouvez-vous résumer la documentation pour implémenter l'authentification OAuth 2.0 dans une application web ?",
-    'prompts.gitWorkflows.title': 'Flux de travail avec Git',
+      'Pourriez-vous résumer la documentation d’implémentation de l’authentification 2.0 dans un app web ?',
+    'prompts.gitWorkflows.title': 'Flux de travail dans Git',
     'prompts.gitWorkflows.message':
-      'Je veux apporter des modifications au code sur une autre branche sans perdre mon travail existant. Quelle est la procédure pour faire cela en utilisant Git ?',
-    'prompts.testingStrategies.title': 'Suggérer des stratégies de test',
+      'Je souhaite changer le code sur une autre branche sans perdre mon travail existant. Quelle est la procédure pour ce faire sans utiliser Git ?',
+    'prompts.testingStrategies.title': 'Suggestions de Stratégies pour Tester',
     'prompts.testingStrategies.message':
-      'Pouvez-vous recommander des stratégies de test courantes qui rendront mon application robuste et sans erreur ?',
-    'prompts.sortingAlgorithms.title': 'Démystifier les algorithmes de tri',
+      'Pourriez-vous me conseiller des stratégies communes pour tester qui puissent rendre mon application robuste et sans erreurs?',
+    'prompts.sortingAlgorithms.title':
+      'Démystification les Algorithmes de triage',
     'prompts.sortingAlgorithms.message':
-      'Pouvez-vous expliquer la différence entre un algorithme de tri rapide et un algorithme de tri par fusion, et quand utiliser chacun ?',
-    'prompts.eventDriven.title':
-      "Comprendre l'architecture orientée événements",
+      'Pourriez-vous m’expliquer quelle est la différence entre un triage rapide (quicksort) et un triage de regroupement (mergesort), et quand utiliser quoi?',
+    'prompts.eventDriven.title': 'Comprendre l’Architecture basée-événement',
     'prompts.eventDriven.message':
-      "Pouvez-vous expliquer ce qu'est l'architecture orientée événements et quand il est bénéfique de l'utiliser dans le développement de logiciels ?",
-
-    // Sample prompts - RHDH Specific
+      'Pourriez-vous m’expliquer l’architecture basée-événement et quand il faut l’utiliser pour le développement des logiciels?',
     'prompts.tekton.title': 'Déployer avec Tekton',
     'prompts.tekton.message':
-      "Pouvez-vous m'aider à automatiser le déploiement de mon application en utilisant des pipelines Tekton ?",
-    'prompts.openshift.title': 'Créer un déploiement OpenShift',
+      'Pourriez-vous m’aider à automatiser le déploiement de mon application en utilisant les pipelines Tekton ?',
+    'prompts.openshift.title': 'Créer un Déploiement Openshift',
     'prompts.openshift.message':
-      "Pouvez-vous me guider à travers la création d'un nouveau déploiement dans OpenShift pour une application conteneurisée ?",
-    'prompts.rhdh.title': 'Commencer avec Red Hat Developer Hub',
+      'Pourriez-vous me guider sur la façon de créer un nouveau développement Openshift pour une application conteneurisée ?',
+    'prompts.rhdh.title': 'Guide de Démarrage de Red Hat Developer Hub',
     'prompts.rhdh.message':
-      'Pouvez-vous me guider à travers les premières étapes pour commencer à utiliser Developer Hub en tant que développeur, comme explorer le Catalogue de Logiciels et ajouter mon service ?',
-
-    // Conversation history
-    'conversation.delete.confirm.title': 'Supprimer le chat ?',
+      'Pourriez-vous me guider pour les premières étapes de démarrage avec Developer Hub en tant que développeur, comme explorer le Software Catalog et ajouter mon service ?',
+    'conversation.delete.confirm.title': 'Supprimer cette conversation ?',
     'conversation.delete.confirm.message':
-      "Vous ne verrez plus ce chat ici. Cela supprimera également l'activité connexe comme les invites, les réponses et les commentaires de votre Activité Lightspeed.",
+      'Vous ne verrez plus cette conversation ici. Cela supprimera également les activités associées comme les prompts, réponses, et commentaires de votre activité Lightspeed.',
     'conversation.delete.confirm.action': 'Supprimer',
-    'conversation.rename.confirm.title': 'Renommer le chat ?',
+    'conversation.rename.confirm.title': 'Renommer la conversation ?',
     'conversation.rename.confirm.action': 'Renommer',
-    'conversation.rename.placeholder': 'Nom du chat',
-    'conversation.action.error': 'Erreur survenue : {{error}}',
-
-    // Permissions
-    'permission.required.title': 'Permissions manquantes',
+    'conversation.rename.placeholder': 'Nom de la conversation',
+    'conversation.action.error': 'Erreur: {{error}}',
+    'permission.required.title': 'Autorisations manquantes',
     'permission.required.description':
-      "Pour voir le plugin lightspeed, contactez votre administrateur pour qu'il vous donne les permissions <b>lightspeed.chat.read</b> et <b>lightspeed.chat.create</b>.",
-
-    // Disclaimers
+      'Pour afficher le plugin lightspeed, veuillez contacter votre administrateur pour qu’il vous donne les permissions<b>lightspeed.chat.read</b> et <b>lightspeed.chat.create</b> .',
     'disclaimer.withValidation':
-      "Cette fonctionnalité utilise la technologie IA. N'incluez pas d'informations personnelles ou d'autres informations sensibles dans votre saisie. Les interactions peuvent être utilisées pour améliorer les produits ou services de Red Hat.",
+      'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
     'disclaimer.withoutValidation':
-      "Cette fonctionnalité utilise la technologie IA. N'incluez pas d'informations personnelles ou d'autres informations sensibles dans votre saisie. Les interactions peuvent être utilisées pour améliorer les produits ou services de Red Hat.",
-
-    // Footer and feedback
+      'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
     'footer.accuracy.label':
-      "Toujours examiner le contenu généré par l'IA avant utilisation.",
-    'footer.accuracy.popover.title': "Vérifier l'exactitude",
+      'Toujours vérifier le contenu AI généré avant utilisation.',
+    'footer.accuracy.popover.title': 'Vérifier l’exactitude',
     'footer.accuracy.popover.description':
-      "Bien que Developer Lightspeed s'efforce d'être exact, il y a toujours une possibilité d'erreurs. C'est une bonne pratique de vérifier les informations critiques auprès de sources fiables, surtout si c'est crucial pour la prise de décision ou les actions.",
+      'Bien que Developer Lightspeed soit orienté sur l’exactitude, il y a toujours possibilité d’erreurs. Il est toujours bon de vérifier les informations critiques à partir de sources de confiance, surtout si c’est crucial pour prendre des décisions ou entreprendre des actions.',
     'footer.accuracy.popover.image.alt':
-      "Image d'exemple pour le popover de note de bas de page",
-    'footer.accuracy.popover.cta.label': 'Compris',
+      'Exemple d’image de note de bas de page popover',
+    'footer.accuracy.popover.cta.label': "J'ai compris!",
     'footer.accuracy.popover.link.label': 'En savoir plus',
-
-    // Common actions
     'common.cancel': 'Annuler',
     'common.close': 'Fermer',
     'common.readMore': 'En savoir plus',
-    'common.noSearchResults': 'Aucun résultat ne correspond à la recherche',
-
-    // Menu items
-    'menu.newConversation': 'Nouveau Chat',
-
-    // Chat-specific UI elements
+    'common.noSearchResults': 'Aucun résultat ne correspond à cette demande',
+    'menu.newConversation': 'Nouvelle Conversation',
     'chatbox.header.title': 'Developer Lightspeed',
-    'chatbox.search.placeholder': 'Rechercher',
+    'chatbox.search.placeholder': 'Recherche',
     'chatbox.provider.other': 'Autre',
-    'chatbox.emptyState.noPinnedChats': 'Aucun chat épinglé',
-    'chatbox.emptyState.noRecentChats': 'Aucun chat récent',
+    'chatbox.emptyState.noPinnedChats': 'Aucune conversation épinglée',
+    'chatbox.emptyState.noRecentChats': 'Aucune conversation récente',
     'chatbox.emptyState.noResults.title': 'Aucun résultat trouvé',
     'chatbox.emptyState.noResults.body':
-      'Ajustez votre requête de recherche et réessayez. Vérifiez votre orthographe ou essayez un terme plus général.',
-    'chatbox.welcome.greeting': 'Bonjour, {{userName}}',
-    'chatbox.welcome.description': "Comment puis-je vous aider aujourd'hui ?",
+      'Ajuster votre recherche et essayer à nouveau. Vérifier votre orthographe et essayez un terme plus général.',
+    'chatbox.welcome.greeting': 'Hello, {{userName}}',
+    'chatbox.welcome.description': 'Comment puis-je vous aider ?',
     'chatbox.message.placeholder':
-      'Envoyez un message et téléchargez optionnellement un fichier JSON, YAML, ou TXT...',
-    'chatbox.fileUpload.failed': 'Le téléchargement du fichier a échoué',
+      'Envoyer un message et télécharger un fichier JSON, YAML, ou TXT...',
+    'chatbox.fileUpload.failed': 'Le chargement de fichiers a échoué',
     'chatbox.fileUpload.infoText':
-      'Les types de fichiers pris en charge sont : .txt, .yaml, et .json. La taille maximale du fichier est de 25 Mo.',
-
-    // Accessibility and ARIA labels
-    'aria.chatbotSelector': 'Sélecteur de chatbot',
+      'Types de fichiers pris en charge: .txt, .yaml, and .json. La taille maximale est de 25 MB.',
+    'aria.chatbotSelector': 'Sélecteur Chatbot',
     'aria.important': 'Important',
-    'aria.chatHistoryMenu': 'Menu historique des chats',
-    'aria.closeDrawerPanel': 'Fermer le panneau latéral',
-    'aria.search.placeholder': 'Rechercher',
-    'aria.searchPreviousConversations': 'Rechercher dans les chats précédents',
-    'aria.resize': 'Redimensionner',
+    'aria.chatHistoryMenu': 'Menu de l’historique de conversations',
+    'aria.closeDrawerPanel': 'Fermer le panneau de tiroirs',
+    'aria.search.placeholder': 'Recherche',
+    'aria.searchPreviousConversations': 'Recherche des anciennes conversations',
+    'aria.resize': 'Redimensionnement',
     'aria.options.label': 'Options',
-    'aria.scroll.down': 'Retour en bas',
-    'aria.scroll.up': 'Retour en haut',
-    'aria.settings.label': 'Options du chatbot',
-
-    // Modal actions
+    'aria.scroll.down': 'De haut en bas',
+    'aria.scroll.up': 'De bas en haut',
+    'aria.settings.label': 'Options Chatbot',
     'modal.edit': 'Modifier',
-    'modal.save': 'Enregistrer',
+    'modal.save': 'Sauvegarder',
     'modal.close': 'Fermer',
     'modal.cancel': 'Annuler',
-
-    // Conversation actions
     'conversation.delete': 'Supprimer',
     'conversation.rename': 'Renommer',
     'conversation.addToPinnedChats': 'Épingler',
-    'conversation.removeFromPinnedChats': 'Désépingler',
+    'conversation.removeFromPinnedChats': 'Détacher',
     'conversation.announcement.userMessage':
-      "Message de l'utilisateur : {{prompt}}. Le message du bot se charge.",
-
-    // User states
+      'Message en provenance de l’utilisateur: {{prompt}}. Message en provenance du Bot en cours de chargement.',
     'user.guest': 'Invité',
     'user.loading': '...',
-
-    // Button tooltips and labels
-    'tooltip.attach': 'Joindre',
+    'tooltip.attach': 'Attacher',
     'tooltip.send': 'Envoyer',
-    'tooltip.microphone.active': "Arrêter d'écouter",
-    'tooltip.microphone.inactive': 'Utiliser le microphone',
-    'button.newChat': 'Nouveau chat',
-    'tooltip.chatHistoryMenu': 'Menu historique des chats',
+    'tooltip.microphone.active': 'Cessez d’écouter',
+    'tooltip.microphone.inactive': 'Utilisez le micro',
+    'button.newChat': 'Nouvelle Conversation',
+    'tooltip.chatHistoryMenu': 'Menu de l’historique de conversations',
     'tooltip.responseRecorded': 'Réponse enregistrée',
-    'tooltip.backToTop': 'Retour en haut',
-    'tooltip.backToBottom': 'Retour en bas',
-    'tooltip.settings': 'Options du chatbot',
-
-    // Modal titles
+    'tooltip.backToTop': 'De bas en haut',
+    'tooltip.backToBottom': 'De haut en bas',
+    'tooltip.settings': 'Options Chatbot',
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',
-
-    // Alt texts for icons
-    'icon.lightspeed.alt': 'icône lightspeed',
-    'icon.permissionRequired.alt': 'icône de permission requise',
-
-    // Message utilities
+    'icon.lightspeed.alt': 'Icône Lightspeed',
+    'icon.permissionRequired.alt': 'icône d’autorisation requise',
     'message.options.label': 'Options',
-
-    // File attachment errors
-    'file.upload.error.alreadyExists': 'Le fichier existe déjà.',
-    'file.upload.error.multipleFiles': "Plus d'un fichier a été téléchargé.",
+    'file.upload.error.alreadyExists': 'Le fichier existe déjà',
+    'file.upload.error.multipleFiles': 'Télécharger plus d’un fichier.',
     'file.upload.error.unsupportedType':
-      'Type de fichier non pris en charge. Les types pris en charge sont : .txt, .yaml, et .json.',
+      'Type de fichier non pris en charge. Types de fichiers pris en charge: .txt, .yaml, and .json.',
     'file.upload.error.fileTooLarge':
-      'La taille de votre fichier est trop importante. Veuillez vous assurer que votre fichier fait moins de 25 Mo.',
+      'Votre taille de fichier est trop grande. Veuillez vous assurer que votre fichier soit inférieur à 25MB.',
     'file.upload.error.readFailed':
-      'Échec de la lecture du fichier : {{errorMessage}}',
-
-    // Developer error messages
+      'Impossible de lire le fichier : {{errorMessage}}',
     'error.context.fileAttachment':
       'useFileAttachmentContext doit être dans un FileAttachmentContextProvider',
-
-    // Feedback actions
-    'feedback.form.title': 'Pourquoi avez-vous choisi cette évaluation ?',
+    'feedback.form.title': 'Pourquoi avez-vous sélectionnée cette estimation ?',
     'feedback.form.textAreaPlaceholder':
-      'Fournissez des commentaires supplémentaires optionnels',
+      'Veuillez-nous offrir des commentaires supplémentaires ?',
     'feedback.form.submitWord': 'Soumettre',
-    'feedback.tooltips.goodResponse': 'Bonne Réponse',
-    'feedback.tooltips.badResponse': 'Mauvaise Réponse',
+    'feedback.tooltips.goodResponse': 'Bonne réponse',
+    'feedback.tooltips.badResponse': 'Mauvaise réponse',
     'feedback.tooltips.copied': 'Copié',
     'feedback.tooltips.copy': 'Copier',
-    'feedback.tooltips.listening': 'Écoute',
+    'feedback.tooltips.listening': 'En cours d’écoute',
     'feedback.tooltips.listen': 'Écouter',
-    'feedback.quickResponses.positive.helpful': 'Informations utiles',
+    'feedback.quickResponses.positive.helpful': 'Information utile',
     'feedback.quickResponses.positive.easyToUnderstand': 'Facile à comprendre',
-    'feedback.quickResponses.positive.resolvedIssue': 'A résolu mon problème',
+    'feedback.quickResponses.positive.resolvedIssue':
+      'A pu résoudre mon problème',
     'feedback.quickResponses.negative.didntAnswer':
-      "N'a pas répondu à ma question",
+      'N’a pas répondu à ma question',
     'feedback.quickResponses.negative.hardToUnderstand':
       'Difficile à comprendre',
-    'feedback.quickResponses.negative.notHelpful': 'Pas utile',
-    'feedback.completion.title': 'Feedback soumis',
+    'feedback.quickResponses.negative.notHelpful': 'Peu utile',
+    'feedback.completion.title': 'Commentaire soumis',
     'feedback.completion.body':
-      'Nous avons reçu votre réponse. Merci de partager votre feedback !',
-
-    // Conversation categorization
-    'conversation.category.pinnedChats': 'Épinglés',
+      'Nous avons reçu votre réponse. Merci de partager vos commentaires avec nous !',
+    'conversation.category.pinnedChats': 'Épinglé',
     'conversation.category.recent': 'Récent',
-
-    // lightspeed settings
-    'settings.pinned.enable': 'Activer les chats épinglés',
-    'settings.pinned.disable': 'Désactiver les chats épinglés',
+    'settings.pinned.enable': 'Activer les conversations épinglées',
+    'settings.pinned.disable': 'Désactiver les conversations épinglées',
     'settings.pinned.enabled.description':
-      'Les chats épinglés sont actuellement activés',
+      'Les conversation épinglées sont actuellement activées',
     'settings.pinned.disabled.description':
-      'Les chats épinglés sont actuellement désactivés',
+      'Les conversations épinglées sont actuellement désactivées',
   },
 });
 

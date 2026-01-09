@@ -18,26 +18,26 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { globalFloatingActionButtonTranslationRef } from './ref';
 
 /**
- * fr translation for plugin.global-floating-action-button.
+ * Japanese translation for plugin.global-floating-action-button.
  * @public
  */
-const globalFloatingActionButtonTranslationFr = createTranslationMessages({
+const globalFloatingActionButtonTranslationJa = createTranslationMessages({
   ref: globalFloatingActionButtonTranslationRef,
   messages: {
-    'fab.create.label': 'Créer',
-    'fab.create.tooltip': "Créer l'entité",
-    'fab.docs.label': 'Docs',
-    'fab.docs.tooltip': 'Documentation',
-    'fab.apis.label': 'APIs',
-    'fab.apis.tooltip': 'Documentation API',
+    'fab.create.label': '作成',
+    'fab.create.tooltip': 'エンティティーの作成',
+    'fab.docs.label': 'ドキュメント',
+    'fab.docs.tooltip': 'ドキュメント',
+    'fab.apis.label': 'API',
+    'fab.apis.tooltip': 'API ドキュメント',
     'fab.github.label': 'GitHub',
-    'fab.github.tooltip': 'Référentiel GitHub',
-    'fab.bulkImport.label': 'Importation en masse',
-    'fab.bulkImport.tooltip': 'Enregistrer plusieurs référentiel en masse',
+    'fab.github.tooltip': 'GitHub リポジトリー',
+    'fab.bulkImport.label': '一括インポート',
+    'fab.bulkImport.tooltip': '複数のリポジトリーを一括登録する',
     'fab.quay.label': 'Quay',
-    'fab.quay.tooltip': 'Quay Container Registry',
-    'fab.menu.tooltip': 'Menu',
+    'fab.quay.tooltip': 'Quay コンテナーレジストリー',
+    'fab.menu.tooltip': 'メニュー',
   },
 });
 
-export default globalFloatingActionButtonTranslationFr;
+export default globalFloatingActionButtonTranslationJa;
