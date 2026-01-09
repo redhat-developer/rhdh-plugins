@@ -106,10 +106,9 @@ The Scorecard plugin provides aggregation endpoints that return metrics for all 
 - Entities directly owned by the user
 - Entities owned by groups the user is a direct member of (Only direct parent groups are considered)
 
-### Available Endpoints
+### Available Endpoint
 
-- **`GET /metrics/catalog/aggregates`**: Returns aggregated metrics for all available metrics (optionally filtered by `metricIds` query parameter)
-- **`GET /metrics/:metricId/catalog/aggregation`**: Returns aggregated metrics for a specific metric, with explicit access validation (returns `403` if the user doesn't have access to the metric)
+- **`GET /metrics/:metricId/catalog/aggregations`**: Returns aggregated metrics for a specific metric across all entities owned by the authenticated user, with explicit access validation (returns `403` if the user doesn't have access to the metric)
 
 For comprehensive documentation on how entity aggregation works, API details, examples, and best practices, see [aggregation.md](./docs/aggregation.md).
 

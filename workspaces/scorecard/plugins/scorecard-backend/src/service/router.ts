@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
-import { z } from 'zod';
+import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import express, { Request } from 'express';
 import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
@@ -93,32 +92,17 @@ export async function createRouter({
   };
 
   router.get('/metrics', async (req, res) => {
-    const { conditions } = await authorizeConditional(
-      req,
-      scorecardMetricReadPermission,
-    );
+    const { metricIds } = validateCatalogMetricsSchema(req.query);
 
-    const metricsSchema = z.object({
-      datasource: z.string().min(1).optional(),
-    });
-
-    const parsed = metricsSchema.safeParse(req.query);
-    if (!parsed.success) {
-      throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
+    if (metricIds) {
+      return res.json({
+        metrics: metricProvidersRegistry.listMetrics(
+          parseCommaSeparatedString(metricIds),
+        ),
+      });
     }
 
-    const { datasource } = parsed.data;
-
-    let metrics;
-    if (datasource) {
-      metrics = metricProvidersRegistry.listMetricsByDatasource(datasource);
-    } else {
-      metrics = metricProvidersRegistry.listMetrics();
-    }
-
-    res.json({
-      metrics: filterAuthorizedMetrics(metrics, conditions),
-    });
+    return res.json({ metrics: metricProvidersRegistry.listMetrics() });
   });
 
   router.get('/metrics/catalog/:kind/:namespace/:name', async (req, res) => {
@@ -128,19 +112,17 @@ export async function createRouter({
     );
 
     const { kind, namespace, name } = req.params;
-    const { metricIds } = req.query;
 
-    validateCatalogMetricsSchema(req.query);
+    const { metricIds } = validateCatalogMetricsSchema(req.query);
 
     const entityRef = stringifyEntityRef({ kind, namespace, name });
 
     // Check if user has permission to read this specific catalog entity
     await checkEntityAccess(entityRef, req, permissions, httpAuth);
 
-    const metricIdArray =
-      typeof metricIds === 'string'
-        ? parseCommaSeparatedString(metricIds)
-        : undefined;
+    const metricIdArray = metricIds
+      ? parseCommaSeparatedString(metricIds)
+      : undefined;
 
     const results = await catalogMetricService.getLatestEntityMetrics(
       entityRef,
@@ -150,7 +132,7 @@ export async function createRouter({
     res.json(results);
   });
 
-  router.get('/metrics/:metricId/catalog/aggregation', async (req, res) => {
+  router.get('/metrics/:metricId/catalog/aggregations', async (req, res) => {
     const { metricId } = req.params;
 
     const { conditions } = await authorizeConditional(

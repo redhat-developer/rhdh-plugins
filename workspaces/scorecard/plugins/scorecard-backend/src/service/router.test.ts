@@ -150,19 +150,8 @@ describe('createRouter', () => {
       metricProvidersRegistry.register(sonarProvider);
     });
 
-    it('should return 403 Unauthorized when DENY permissions', async () => {
-      permissionsMock.authorizeConditional.mockResolvedValue([
-        { result: AuthorizeResult.DENY },
-      ]);
+    it('should return all metrics when no metricIds parameter', async () => {
       const response = await request(app).get('/metrics');
-
-      expect(response.statusCode).toBe(403);
-      expect(response.body.error.name).toEqual('NotAllowedError');
-    });
-
-    it('should return all metrics', async () => {
-      const response = await request(app).get('/metrics');
-      console.log('response', response.body);
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('metrics');
@@ -174,8 +163,23 @@ describe('createRouter', () => {
       expect(metricIds).toContain('sonar.quality');
     });
 
-    it('should return metrics filtered by datasource', async () => {
-      const response = await request(app).get('/metrics?datasource=github');
+    it('should return metrics filtered by metricIds - single metric', async () => {
+      const response = await request(app).get(
+        '/metrics?metricIds=github.open_prs',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(1);
+
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).toContain('github.open_prs');
+    });
+
+    it('should return metrics filtered by metricIds - multiple metrics', async () => {
+      const response = await request(app).get(
+        '/metrics?metricIds=github.open_prs,github.open_issues',
+      );
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('metrics');
@@ -186,24 +190,38 @@ describe('createRouter', () => {
       expect(metricIds).toContain('github.open_issues');
     });
 
-    it('should filter authorized metrics when CONDITIONAL permission', async () => {
-      permissionsMock.authorizeConditional.mockResolvedValue([
-        CONDITIONAL_POLICY_DECISION,
-      ]);
-      const response = await request(app).get('/metrics');
+    it('should return metrics filtered by metricIds with whitespace', async () => {
+      const response = await request(app).get(
+        '/metrics?metricIds=github.open_prs, github.open_issues',
+      );
 
-      expect(response.statusCode).toBe(200);
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(2);
+
       const metricIds = response.body.metrics.map((m: Metric) => m.id);
       expect(metricIds).toContain('github.open_prs');
       expect(metricIds).toContain('github.open_issues');
     });
 
-    it('should return 400 InputError when invalid datasource parameter - empty string', async () => {
-      const response = await request(app).get('/metrics?datasource=');
+    it('should return 400 InputError when invalid metricIds parameter - empty string', async () => {
+      const response = await request(app).get('/metrics?metricIds=');
 
       expect(response.status).toEqual(400);
       expect(response.body.error.name).toEqual('InputError');
       expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+
+    it('should return only existing metrics when metricIds contains non-existent IDs', async () => {
+      const response = await request(app).get(
+        '/metrics?metricIds=github.open_prs,non.existent.metric',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(1);
+
+      expect(response.body.metrics[0].id).toBe('github.open_prs');
     });
   });
 
@@ -374,7 +392,7 @@ describe('createRouter', () => {
     });
   });
 
-  describe('GET /metrics/:metricId/catalog/aggregation', () => {
+  describe('GET /metrics/:metricId/catalog/aggregations', () => {
     const mockAggregatedMetricResults: AggregatedMetricResult[] = [
       {
         id: 'github.open_prs',
@@ -467,7 +485,7 @@ describe('createRouter', () => {
         { result: AuthorizeResult.DENY },
       ]);
       const result = await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregation',
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(result.statusCode).toBe(403);
@@ -479,7 +497,7 @@ describe('createRouter', () => {
         principal: {},
       } as any);
       const result = await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregation',
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(result.statusCode).toBe(404);
@@ -494,7 +512,7 @@ describe('createRouter', () => {
         CONDITIONAL_POLICY_DECISION,
       ]);
       const result = await request(aggregationApp).get(
-        '/metrics/jira.open_issues/catalog/aggregation',
+        '/metrics/jira.open_issues/catalog/aggregations',
       );
 
       expect(result.statusCode).toBe(403);
@@ -506,7 +524,7 @@ describe('createRouter', () => {
 
     it('should return aggregated metrics for a specific metric', async () => {
       const response = await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregation',
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(response.status).toBe(200);
@@ -522,7 +540,7 @@ describe('createRouter', () => {
 
     it('should get entities owned by user', async () => {
       const response = await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregation',
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(response.status).toBe(200);
@@ -538,7 +556,7 @@ describe('createRouter', () => {
     it('should return empty array when user owns no entities', async () => {
       getEntitiesOwnedByUserSpy.mockResolvedValue([]);
       const response = await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregation',
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(response.status).toBe(200);
@@ -550,7 +568,7 @@ describe('createRouter', () => {
 
     it('should check entity access for each entity owned by user', async () => {
       const response = await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregation',
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(checkEntityAccessSpy).toHaveBeenCalledTimes(2);
@@ -575,7 +593,7 @@ describe('createRouter', () => {
         CONDITIONAL_POLICY_DECISION,
       ]);
       const response = await request(aggregationApp).get(
-        '/metrics/github.open_prs/catalog/aggregation',
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(response.status).toBe(200);
@@ -598,7 +616,7 @@ describe('createRouter', () => {
 
     it('should return 404 NotFoundError when metric is not found', async () => {
       const result = await request(aggregationApp).get(
-        '/metrics/non.existent.metric/catalog/aggregation',
+        '/metrics/non.existent.metric/catalog/aggregations',
       );
 
       expect(result.statusCode).toBe(404);

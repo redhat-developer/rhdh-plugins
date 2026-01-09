@@ -1,10 +1,10 @@
 # Entity Aggregation
 
-The Scorecard plugin provides aggregation endpoints that return metrics aggregated across all entities owned by the authenticated user. This feature allows users to get a consolidated view of metrics across their entire portfolio of owned entities.
+The Scorecard plugin provides an aggregation endpoint that returns metrics aggregated across all entities owned by the authenticated user. This feature allows users to get a consolidated view of metrics across their entire portfolio of owned entities.
 
 ## Overview
 
-The aggregation endpoints (`/metrics/catalog/aggregates` and `/metrics/:metricId/catalog/aggregation`) aggregate metrics from multiple entities based on entity ownership. They collect metrics from:
+The aggregation endpoint (`/metrics/:metricId/catalog/aggregations`) aggregates metrics from multiple entities based on entity ownership. It collects metrics from:
 
 - Entities directly owned by the user
 - Entities owned by groups the user is a direct member of
@@ -28,39 +28,9 @@ In this case:
 - ✅ Entities owned by `group:default/developers` are included
 - ❌ Entities owned by `group:default/engineering` are **NOT** included
 
-## API Endpoints
+## API Endpoint
 
-### `GET /metrics/catalog/aggregates`
-
-Returns aggregated metrics for all entities owned by the authenticated user.
-
-#### Query Parameters
-
-| Parameter   | Type   | Required | Description                                                                                  |
-| ----------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
-| `metricIds` | string | No       | Comma-separated list of metric IDs to filter. If not provided, returns all available metrics |
-
-#### Authentication
-
-Requires user authentication. The endpoint uses the authenticated user's entity reference to determine which entities to aggregate.
-
-#### Permissions
-
-Requires `scorecard.metric.read` permission. Additionally, the user must have `catalog.entity.read` permission for each entity that will be included in the aggregation.
-
-#### Example Request
-
-```bash
-# Get all aggregated metrics
-curl -X GET "{{url}}/api/scorecard/metrics/catalog/aggregates" \
-  -H "Authorization: Bearer <token>"
-
-# Get specific metrics
-curl -X GET "{{url}}/api/scorecard/metrics/catalog/aggregates?metricIds=github.open_prs,jira.open_issues" \
-  -H "Authorization: Bearer <token>"
-```
-
-### `GET /metrics/:metricId/catalog/aggregation`
+### `GET /metrics/:metricId/catalog/aggregations`
 
 Returns aggregated metrics for a specific metric across all entities owned by the authenticated user. This endpoint is useful when you need to check access to a specific metric and get its aggregation without requiring the `metricIds` query parameter.
 
@@ -85,11 +55,11 @@ Requires `scorecard.metric.read` permission. Additionally:
 
 ```bash
 # Get aggregated metrics for a specific metric
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregation" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations" \
   -H "Authorization: Bearer <token>"
 ```
 
-#### Differences from `/metrics/catalog/aggregates`
+#### Key Features
 
 - **Metric Access Validation**: This endpoint explicitly validates that the user has access to the specified metric and returns `403 Forbidden` if access is denied
 - **Single Metric Only**: Returns aggregation for only the specified metric (no need for `metricIds` query parameter)
@@ -101,8 +71,8 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregation" 
 
 If the authenticated user doesn't have an entity reference in the catalog:
 
-- **Status Code**: `403 Forbidden`
-- **Error**: `NotAllowedError: User entity reference not found`
+- **Status Code**: `404 Not Found`
+- **Error**: `NotFoundError: User entity reference not found`
 
 ### Permission Denied
 
@@ -111,12 +81,12 @@ If the user doesn't have permission to read a specific entity:
 - **Status Code**: `403 Forbidden`
 - **Error**: Permission denied for the specific entity
 
-### Metric Access Denied (for `/metrics/:metricId/catalog/aggregation`)
+### Metric Access Denied (for `/metrics/:metricId/catalog/aggregations`)
 
 If the user doesn't have access to the specified metric:
 
 - **Status Code**: `403 Forbidden`
-- **Error**: `NotAllowedError: Access to metric "<metricId>" denied`
+- **Error**: `NotAllowedError: To view the scorecard metrics, your administrator must grant you the required permission.`
 
 ### Invalid Query Parameters
 
@@ -127,8 +97,8 @@ If invalid query parameters are provided:
 
 ## Best Practices
 
-1. **Use Metric Filtering**: When you only need specific metrics, use the `metricIds` parameter to reduce response size and improve performance
+1. **Handle Empty Results**: Always check for empty arrays when the user owns no entities
 
-2. **Handle Empty Results**: Always check for empty arrays when the user owns no entities
+2. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. If you need nested group aggregation, consider restructuring your groups or implementing custom logic
 
-3. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. If you need nested group aggregation, consider restructuring your groups or implementing custom logic
+3. **Metric Access**: This endpoint validates metric access upfront, so you'll get a clear `403 Forbidden` error if the user doesn't have permission to view the specified metric
