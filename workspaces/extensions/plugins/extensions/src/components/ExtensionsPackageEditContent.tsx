@@ -46,7 +46,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import { packageInstallRouteRef } from '../routes';
 
-import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
+import { CodeEditorContextProvider, useCodeEditor } from './CodeEditorContext';
 import { useInstallPackage } from '../hooks/useInstallPackage';
 import { usePackage } from '../hooks/usePackage';
 import { usePackageConfig } from '../hooks/usePackageConfig';

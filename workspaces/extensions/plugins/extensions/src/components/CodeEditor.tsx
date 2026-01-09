@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-import type { ReactNode } from 'react';
-
-import {
-  createContext,
-  useRef,
-  useMemo,
-  useContext,
-  useState,
-  useCallback,
-} from 'react';
+import { useState, useCallback } from 'react';
 
 import { Progress } from '@backstage/core-components';
 
@@ -33,82 +24,24 @@ import ContentCopyRoundedIcon from '@mui/icons-material/ContentCopyRounded';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 
-import Editor, { loader, OnChange, OnMount } from '@monaco-editor/react';
+import Editor, {
+  loader,
+  type OnChange,
+  type OnMount,
+} from '@monaco-editor/react';
 
-// TODO: Load the CodeEditor or the pages that uses the CodeEditor lazy!
-// Currently manaco is loaded when the main extensions page is opened.
+import type MonacoEditor from 'monaco-editor';
+import { useCodeEditor } from './CodeEditorContext';
+
+// Import Monaco Editor modules - CodeEditor is lazy-loaded via CodeEditorCard
 import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution';
 // @ts-ignore
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
-import type MonacoEditor from 'monaco-editor';
 
 loader.config({ monaco: monacoEditor });
 
 const defaultOptions: MonacoEditor.editor.IEditorConstructionOptions = {
   minimap: { enabled: false },
-};
-
-interface CodeEditorContextValue {
-  getEditor: () => MonacoEditor.editor.ICodeEditor | null;
-  setEditor: (editor: MonacoEditor.editor.ICodeEditor) => void;
-
-  getSelection: () => MonacoEditor.Selection | null;
-  setSelection: (editorSelection: MonacoEditor.Selection) => void;
-
-  getPosition: () => MonacoEditor.Position | null;
-  setPosition: (cursorPosition: MonacoEditor.Position) => void;
-  /** short for getEditor()?.getValue() */
-  getValue: () => string | undefined;
-  /** short for getEditor()?.setValue() and getEditor()?.focus() */
-  setValue: (value: string, autoFocus?: boolean) => void;
-}
-
-const CodeEditorContext = createContext<CodeEditorContextValue>(
-  undefined as any as CodeEditorContextValue,
-);
-
-export const CodeEditorContextProvider = (props: { children: ReactNode }) => {
-  const editorRef = useRef<MonacoEditor.editor.ICodeEditor | null>(null);
-  const contextValue = useMemo<CodeEditorContextValue>(
-    () => ({
-      getEditor: () => editorRef.current,
-      setEditor: (editor: MonacoEditor.editor.ICodeEditor) => {
-        editorRef.current = editor;
-      },
-      getPosition: () => editorRef.current?.getPosition() || null,
-      setPosition: (cursorPosition: MonacoEditor.Position) => {
-        editorRef.current?.setPosition(cursorPosition);
-      },
-      getSelection: () => editorRef.current?.getSelection() || null,
-      setSelection: (editorSelection: MonacoEditor.Selection) => {
-        editorRef.current?.setSelection(editorSelection);
-      },
-      getValue: () => editorRef.current?.getValue(),
-      setValue: (value: string, autoFocus = true) => {
-        editorRef.current?.setValue(value);
-        if (autoFocus) {
-          editorRef.current?.focus();
-        }
-      },
-    }),
-    [],
-  );
-
-  return (
-    <CodeEditorContext.Provider value={contextValue}>
-      {props.children}
-    </CodeEditorContext.Provider>
-  );
-};
-
-export const useCodeEditor = () => {
-  const contextValue = useContext(CodeEditorContext);
-  if (!contextValue) {
-    throw new Error(
-      'useCodeEditor must be used within a CodeEditorContextProvider',
-    );
-  }
-  return contextValue;
 };
 
 export interface CodeEditorProps {

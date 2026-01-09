@@ -51,8 +51,9 @@ jest.mock('../hooks/usePluginConfigurationPermissions', () => ({
   usePluginConfigurationPermissions: jest.fn(),
 }));
 
-jest.mock('./CodeEditor', () => ({
+jest.mock('./CodeEditorContext', () => ({
   useCodeEditor: jest.fn(),
+  CodeEditorContextProvider: ({ children }: any) => children,
 }));
 
 jest.mock('../hooks/useExtensionsConfiguration', () => ({
@@ -73,17 +74,21 @@ jest.mock('@backstage/core-plugin-api', () => {
 
 const mockCodeEditorSetValue = jest.fn();
 
-jest.mock('./CodeEditor', () => ({
-  CodeEditor: ({ onLoaded }: any) => {
-    useEffect(() => {
-      onLoaded?.();
-    }, [onLoaded]);
-    return <div>Code Editor Mock</div>;
-  },
+jest.mock('./CodeEditorContext', () => ({
   useCodeEditor: () => ({
     setValue: mockCodeEditorSetValue,
     getValue: jest.fn(),
   }),
+  CodeEditorContextProvider: ({ children }: any) => children,
+}));
+
+jest.mock('./CodeEditorCard', () => ({
+  CodeEditorCard: ({ onLoad }: any) => {
+    useEffect(() => {
+      onLoad?.();
+    }, [onLoad]);
+    return <div>Code Editor Card Mock</div>;
+  },
 }));
 
 beforeEach(() => {

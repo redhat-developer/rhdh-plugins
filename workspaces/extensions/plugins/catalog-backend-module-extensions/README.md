@@ -44,8 +44,10 @@ The module looks for extension YAML files in a directory. You can configure a cu
 **Priority order:**
 
 1. Configured directory (if specified in `extensions.directory`)
-2. `/extensions` directory (filesystem root)
-3. `/marketplace` directory (filesystem root)
+2. `opt/app-root/src/dynamic-plugins-root/extensions` directory
+3. `opt/app-root/src/dynamic-plugins-root/marketplace` directory
+4. `/extensions` directory (filesystem root)
+5. `/marketplace` directory (filesystem root)
 
 **Example configuration:**
 
@@ -53,7 +55,9 @@ The module looks for extension YAML files in a directory. You can configure a cu
 extensions:
   # Optional: Custom directory path for extension YAML files
   # Can be absolute path or relative to the working directory
-  # If not specified, falls back to '/extensions' or '/marketplace' directories (filesystem root)
+  # If not specified, falls back to:
+  #   - /extensions (filesystem root)
+  #   - /marketplace (filesystem root)
   directory: /path/to/custom/extensions
 ```
 

@@ -21,7 +21,7 @@ import { alertApiRef, useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { useCodeEditor } from './CodeEditor';
+import { useCodeEditor } from './CodeEditorContext';
 import { Markdown } from './Markdown';
 import { applyContent, getExampleAsMarkdown } from '../utils';
 import { useTranslation } from '../hooks/useTranslation';

@@ -6396,9 +6396,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@internal/marketplace@workspace:.":
+"@internal/extensions@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@internal/marketplace@workspace:."
+  resolution: "@internal/extensions@workspace:."
   dependencies:
     "@backstage/cli": ^0.34.5
     "@backstage/e2e-test-utils": ^0.1.1
@@ -11471,9 +11471,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@workspace:plugins/catalog-backend-module-marketplace":
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@workspace:plugins/catalog-backend-module-extensions":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace@workspace:plugins/catalog-backend-module-marketplace"
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions@workspace:plugins/catalog-backend-module-extensions"
   dependencies:
     "@backstage/backend-dynamic-feature-service": ^0.7.6
     "@backstage/backend-plugin-api": ^1.5.0
@@ -11486,7 +11486,7 @@ __metadata:
     "@backstage/plugin-catalog-common": ^1.1.7
     "@backstage/plugin-catalog-node": ^1.20.0
     "@backstage/types": ^1.2.2
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^"
     "@types/glob": ^8.1.0
     find-root: ^1.1.0
     glob: ^8.1.0
@@ -11495,9 +11495,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-marketplace-backend@workspace:plugins/marketplace-backend":
+"@red-hat-developer-hub/backstage-plugin-extensions-backend@workspace:^, @red-hat-developer-hub/backstage-plugin-extensions-backend@workspace:plugins/extensions-backend":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-backend@workspace:plugins/marketplace-backend"
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-backend@workspace:plugins/extensions-backend"
   dependencies:
     "@backstage/backend-defaults": ^0.13.1
     "@backstage/backend-dynamic-feature-service": ^0.7.6
@@ -11512,7 +11512,7 @@ __metadata:
     "@backstage/plugin-permission-common": ^0.9.3
     "@backstage/plugin-permission-node": ^0.10.6
     "@backstage/types": ^1.2.2
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^"
     "@types/express": "*"
     "@types/supertest": ^2.0.12
     express: ^4.17.1
@@ -11524,9 +11524,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-marketplace-common@workspace:^, @red-hat-developer-hub/backstage-plugin-marketplace-common@workspace:plugins/marketplace-common":
+"@red-hat-developer-hub/backstage-plugin-extensions-common@workspace:^, @red-hat-developer-hub/backstage-plugin-extensions-common@workspace:plugins/extensions-common":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace-common@workspace:plugins/marketplace-common"
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions-common@workspace:plugins/extensions-common"
   dependencies:
     "@backstage/backend-plugin-api": ^1.5.0
     "@backstage/backend-test-utils": ^1.10.0
@@ -11542,9 +11542,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-marketplace@workspace:^, @red-hat-developer-hub/backstage-plugin-marketplace@workspace:plugins/marketplace":
+"@red-hat-developer-hub/backstage-plugin-extensions@workspace:^, @red-hat-developer-hub/backstage-plugin-extensions@workspace:plugins/extensions":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-marketplace@workspace:plugins/marketplace"
+  resolution: "@red-hat-developer-hub/backstage-plugin-extensions@workspace:plugins/extensions"
   dependencies:
     "@backstage/catalog-client": ^1.12.1
     "@backstage/cli": ^0.34.5
@@ -11562,7 +11562,7 @@ __metadata:
     "@mui/icons-material": ^5.16.7
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@scalprum/react-core": 0.11.1
     "@tanstack/react-query": ^5.60.5
@@ -11597,15 +11597,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/marketplace-cli@workspace:packages/cli":
+"@red-hat-developer-hub/extensions-cli@workspace:packages/cli":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/marketplace-cli@workspace:packages/cli"
+  resolution: "@red-hat-developer-hub/extensions-cli@workspace:packages/cli"
   dependencies:
     "@backstage/catalog-model": ^1.7.6
     "@backstage/cli": ^0.34.5
     "@backstage/errors": ^1.2.7
     "@backstage/types": ^1.2.2
-    "@red-hat-developer-hub/backstage-plugin-marketplace-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^"
     "@types/fs-extra": ^11.0.4
     chalk: ^4.1.2
     commander: ^12.0.0
@@ -11614,7 +11614,7 @@ __metadata:
     inquirer: ^12.4.3
     yaml: ^2.7.0
   bin:
-    marketplace-cli: bin/marketplace-cli
+    extensions-cli: bin/extensions-cli
   languageName: unknown
   linkType: soft
 
@@ -15959,7 +15959,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@playwright/test": 1.57.0
-    "@red-hat-developer-hub/backstage-plugin-marketplace": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-extensions": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
@@ -16613,8 +16613,8 @@ __metadata:
     "@backstage/plugin-search-backend-module-techdocs": ^0.4.8
     "@backstage/plugin-search-backend-node": ^1.3.17
     "@backstage/plugin-techdocs-backend": ^2.1.2
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-marketplace": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-marketplace-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-extensions-backend": "workspace:^"
     app: "link:../app"
     better-sqlite3: ^9.0.0
     node-gyp: ^10.0.0

@@ -24,7 +24,6 @@ import {
   EntityProviderConnection,
 } from '@backstage/plugin-catalog-node';
 import { Config } from '@backstage/config';
-
 import { readYamlFiles } from '../utils/file-utils';
 import { JsonFileData } from '../types';
 import path from 'path';
@@ -100,7 +99,12 @@ export abstract class BaseEntityProvider<T extends Entity>
 
   /**
    * Gets the extensions directory path from config or falls back to hardcoded fallback directories
-   * Priority: configured directory (if specified) -> 'extensions' -> 'marketplace'
+   * Priority:
+   *   - configured directory (if specified)
+   *   - 'opt/app-root/src/dynamic-plugins-root/extensions'
+   *   - 'opt/app-root/src/dynamic-plugins-root/marketplace'
+   *   - '/extensions' (filesystem root)
+   *   - '/marketplace' (filesystem root)
    */
   private getExtensionsDirectory(): string | null {
     if (this.config) {
@@ -122,22 +126,21 @@ export abstract class BaseEntityProvider<T extends Entity>
       }
     }
 
-    const firstFallback = this.resolveAndValidateDirectory(
+    // Check fallback directories in priority order
+    const fallbackDirectories = [
       BaseEntityProvider.EXTENSIONS_DIRECTORY,
-    );
-    if (firstFallback) {
-      return firstFallback;
-    }
-
-    const secondFallback = this.resolveAndValidateDirectory(
       BaseEntityProvider.DEPRECATED_MARKETPLACE_DIRECTORY,
-    );
-    if (secondFallback) {
-      return secondFallback;
+    ];
+
+    for (const dir of fallbackDirectories) {
+      const resolvedDir = this.resolveAndValidateDirectory(dir);
+      if (resolvedDir) {
+        return resolvedDir;
+      }
     }
 
     console.warn(
-      `Extensions directory not found. Checked: configured directory, "${BaseEntityProvider.EXTENSIONS_DIRECTORY}", and "${BaseEntityProvider.DEPRECATED_MARKETPLACE_DIRECTORY}"`,
+      `Extensions directory not found. Checked: configured directory "${BaseEntityProvider.EXTENSIONS_DIRECTORY}" and "${BaseEntityProvider.DEPRECATED_MARKETPLACE_DIRECTORY}"`,
     );
     return null;
   }

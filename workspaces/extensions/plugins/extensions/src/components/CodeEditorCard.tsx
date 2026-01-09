@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
+import { lazy, Suspense } from 'react';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { CodeEditor } from './CodeEditor';
+import { Progress } from '@backstage/core-components';
+
+// Lazy load CodeEditor to avoid loading Monaco Editor until needed
+const CodeEditor = lazy(() =>
+  import('./CodeEditor').then(module => ({ default: module.CodeEditor })),
+);
 
 export const CodeEditorCard = ({ onLoad }: { onLoad: () => void }) => {
   return (
@@ -45,7 +51,25 @@ export const CodeEditorCard = ({ onLoad }: { onLoad: () => void }) => {
             scrollbarWidth: 'thin',
           }}
         >
-          <CodeEditor defaultLanguage="yaml" onLoaded={onLoad} />
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'start',
+                  justifyContent: 'center',
+                }}
+              >
+                <div style={{ width: '100%', height: '100px' }}>
+                  <Progress />
+                </div>
+              </div>
+            }
+          >
+            <CodeEditor defaultLanguage="yaml" onLoaded={onLoad} />
+          </Suspense>
         </CardContent>
       </Card>
     </Grid>

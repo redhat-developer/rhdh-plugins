@@ -64,7 +64,7 @@ import {
 } from '../utils';
 import { Permission } from '../types';
 
-import { CodeEditorContextProvider, useCodeEditor } from './CodeEditor';
+import { CodeEditorContextProvider, useCodeEditor } from './CodeEditorContext';
 import {
   InstallationType,
   useInstallationContext,
