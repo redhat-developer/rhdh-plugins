@@ -51,12 +51,6 @@ const scorecardTranslationFr = createTranslationMessages({
     'thresholds.success': 'Succès',
     'thresholds.warning': 'Attention',
     'thresholds.error': 'Erreur',
-    'metric.github.open-prs.title': 'GitHub ouvre des PR',
-    'metric.github.open-prs.description':
-      "Nombre actuel de requêtes d'extraction ouvertes pour un référentiel GitHub donné.",
-    'metric.jira.open-issues.title': 'Jira ouvre des tickets bloquants',
-    'metric.jira.open-issues.description':
-      'Met en évidence le nombre de problèmes critiques et bloquants actuellement ouverts dans Jira.',
   },
 });
 

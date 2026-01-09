@@ -118,9 +118,7 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     const end = DateTime.fromISO(processIntanceV1.end as string, {
       setZone: true,
     });
-    const duration = Duration.fromMillis(end.diff(start).toMillis())
-      .rescale()
-      .toHuman();
+    const duration = Duration.fromMillis(end.diff(start).toMillis()).toHuman();
     // Act
     const result = mapToProcessInstanceDTO(processIntanceV1);
 
