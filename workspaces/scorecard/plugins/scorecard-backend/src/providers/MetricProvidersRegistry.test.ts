@@ -301,15 +301,19 @@ describe('MetricProvidersRegistry', () => {
   });
 
   describe('listMetrics', () => {
+    beforeEach(() => {
+      registry.register(githubNumberProvider);
+      registry.register(jiraBooleanProvider);
+    });
+
     it('should return empty array when no providers registered', () => {
+      registry = new MetricProvidersRegistry();
+
       const metrics = registry.listMetrics();
       expect(metrics).toEqual([]);
     });
 
     it('should return all registered metrics', () => {
-      registry.register(githubNumberProvider);
-      registry.register(jiraBooleanProvider);
-
       const metrics = registry.listMetrics();
 
       expect(metrics).toHaveLength(2);
@@ -318,50 +322,32 @@ describe('MetricProvidersRegistry', () => {
     });
 
     it('should return filtered metrics', () => {
-      registry.register(githubNumberProvider);
-      registry.register(jiraBooleanProvider);
-
       const metrics = registry.listMetrics(['jira.boolean_metric']);
 
       expect(metrics).toHaveLength(1);
       expect(metrics[0].id).toBe('jira.boolean_metric');
     });
-  });
 
-  describe('listMetricsByDatasource', () => {
-    beforeEach(() => {
-      const githubProvider1 = new MockNumberProvider(
-        'github.open_prs',
-        'github',
-        'GitHub Open PRs',
-      );
-      const githubProvider2 = new MockNumberProvider(
-        'github.open_issues',
-        'github',
-        'GitHub Open Issues',
-      );
-      const sonarProvider = new MockBooleanProvider(
-        'sonar.code-quality',
-        'sonar',
-        'Code Quality',
-      );
+    it('should return empty array when all provider IDs are non-existent', () => {
+      const metrics = registry.listMetrics([
+        'non.existent.metric1',
+        'non.existent.metric2',
+      ]);
 
-      registry.register(githubProvider1);
-      registry.register(githubProvider2);
-      registry.register(sonarProvider);
-    });
-
-    it('should return empty array for non_existent datasource', () => {
-      const metrics = registry.listMetricsByDatasource('non_existent');
       expect(metrics).toEqual([]);
     });
 
-    it('should return metrics for specific datasource', () => {
-      const githubMetrics = registry.listMetricsByDatasource('github');
+    it('should return only existing metrics when mix of existing and non-existent IDs', () => {
+      const metrics = registry.listMetrics([
+        'github.number_metric',
+        'non.existent.metric',
+        'jira.boolean_metric',
+        'another.non.existent',
+      ]);
 
-      expect(githubMetrics).toHaveLength(2);
-      expect(githubMetrics[0].id).toBe('github.open_prs');
-      expect(githubMetrics[1].id).toBe('github.open_issues');
+      expect(metrics).toHaveLength(2);
+      expect(metrics[0].id).toBe('github.number_metric');
+      expect(metrics[1].id).toBe('jira.boolean_metric');
     });
   });
 });

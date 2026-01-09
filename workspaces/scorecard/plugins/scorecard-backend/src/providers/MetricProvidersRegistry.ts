@@ -27,7 +27,6 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
  */
 export class MetricProvidersRegistry {
   private readonly metricProviders = new Map<string, MetricProvider>();
-  private readonly datasourceIndex = new Map<string, Set<string>>();
 
   register(metricProvider: MetricProvider): void {
     const providerId = metricProvider.getProviderId();
@@ -64,12 +63,6 @@ export class MetricProvidersRegistry {
     }
 
     this.metricProviders.set(providerId, metricProvider);
-    let datasourceProviders = this.datasourceIndex.get(providerDatasource);
-    if (!datasourceProviders) {
-      datasourceProviders = new Set();
-      this.datasourceIndex.set(providerDatasource, datasourceProviders);
-    }
-    datasourceProviders.add(providerId);
   }
 
   getProvider(providerId: string): MetricProvider {
@@ -123,17 +116,5 @@ export class MetricProvidersRegistry {
     return [...this.metricProviders.values()].map(provider =>
       provider.getMetric(),
     );
-  }
-
-  listMetricsByDatasource(datasourceId: string): Metric[] {
-    const providerIdsOfDatasource = this.datasourceIndex.get(datasourceId);
-    if (!providerIdsOfDatasource) {
-      return [];
-    }
-
-    return Array.from(providerIdsOfDatasource)
-      .map(providerId => this.metricProviders.get(providerId))
-      .filter((provider): provider is MetricProvider => provider !== undefined)
-      .map(provider => provider.getMetric());
   }
 }

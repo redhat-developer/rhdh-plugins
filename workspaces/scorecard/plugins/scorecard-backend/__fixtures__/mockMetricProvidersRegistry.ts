@@ -26,7 +26,6 @@ export const mockMetricProvidersRegistry = {
   calculateMetrics: jest.fn(),
   listProviders: jest.fn().mockReturnValue([]),
   listMetrics: jest.fn().mockReturnValue([]),
-  listMetricsByDatasource: jest.fn().mockReturnValue([]),
 } as unknown as jest.Mocked<MetricProvidersRegistry>;
 
 type BuildMockMetricProvidersRegistryParams = {
