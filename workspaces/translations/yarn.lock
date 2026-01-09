@@ -10368,7 +10368,7 @@ __metadata:
     "@backstage/plugin-catalog-node": ^1.20.0
     "@types/express": ^4.17.6
     "@types/supertest": ^2.0.12
-    express: 4.22.1
+    express: ^4.22.1
     express-promise-router: ^4.1.0
     supertest: ^6.2.4
   languageName: unknown
@@ -19420,7 +19420,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express@npm:4.22.1, express@npm:^4.14.0, express@npm:^4.17.1, express@npm:^4.21.2":
+"express@npm:^4.14.0, express@npm:^4.17.1, express@npm:^4.21.2, express@npm:^4.22.1":
   version: 4.22.1
   resolution: "express@npm:4.22.1"
   dependencies:
