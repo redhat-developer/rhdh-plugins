@@ -23,9 +23,12 @@ import {
   EntityProvider,
   EntityProviderConnection,
 } from '@backstage/plugin-catalog-node';
+import { Config } from '@backstage/config';
 
-import { findTopmostFolder, readYamlFiles } from '../utils/file-utils';
+import { readYamlFiles } from '../utils/file-utils';
 import { JsonFileData } from '../types';
+import path from 'path';
+import fs from 'fs';
 
 /**
  * @public
@@ -35,9 +38,14 @@ export abstract class BaseEntityProvider<T extends Entity>
 {
   private connection?: EntityProviderConnection;
   private taskRunner: SchedulerServiceTaskRunner;
+  private config?: Config;
 
-  constructor(taskRunner: SchedulerServiceTaskRunner) {
+  private static readonly EXTENSIONS_DIRECTORY = '/extensions';
+  private static readonly DEPRECATED_MARKETPLACE_DIRECTORY = '/marketplace';
+
+  constructor(taskRunner: SchedulerServiceTaskRunner, config?: Config) {
     this.taskRunner = taskRunner;
+    this.config = config;
   }
 
   abstract getProviderName(): string;
@@ -72,14 +80,74 @@ export abstract class BaseEntityProvider<T extends Entity>
     });
   }
 
+  /**
+   * Resolves a directory path (absolute or relative to process.cwd())
+   * and checks if it exists and is a directory
+   */
+  private resolveAndValidateDirectory(dirPath: string): string | null {
+    const resolvedPath = path.isAbsolute(dirPath)
+      ? dirPath
+      : path.resolve(process.cwd(), dirPath);
+    if (
+      fs.existsSync(resolvedPath) &&
+      fs.statSync(resolvedPath).isDirectory()
+    ) {
+      return resolvedPath;
+    }
+
+    return null;
+  }
+
+  /**
+   * Gets the extensions directory path from config or falls back to hardcoded fallback directories
+   * Priority: configured directory (if specified) -> 'extensions' -> 'marketplace'
+   */
+  private getExtensionsDirectory(): string | null {
+    if (this.config) {
+      try {
+        const configuredDir = this.config.getOptionalString(
+          'extensions.directory',
+        );
+        if (configuredDir) {
+          const resolvedDir = this.resolveAndValidateDirectory(configuredDir);
+          if (resolvedDir) {
+            return resolvedDir;
+          }
+        }
+      } catch (error) {
+        console.warn(
+          'Failed to read extensions directory from config, falling back to hardcoded fallbacks',
+          error,
+        );
+      }
+    }
+
+    const firstFallback = this.resolveAndValidateDirectory(
+      BaseEntityProvider.EXTENSIONS_DIRECTORY,
+    );
+    if (firstFallback) {
+      return firstFallback;
+    }
+
+    const secondFallback = this.resolveAndValidateDirectory(
+      BaseEntityProvider.DEPRECATED_MARKETPLACE_DIRECTORY,
+    );
+    if (secondFallback) {
+      return secondFallback;
+    }
+
+    console.warn(
+      `Extensions directory not found. Checked: configured directory, "${BaseEntityProvider.EXTENSIONS_DIRECTORY}", and "${BaseEntityProvider.DEPRECATED_MARKETPLACE_DIRECTORY}"`,
+    );
+    return null;
+  }
+
   async run(): Promise<void> {
     if (!this.connection) {
       throw new Error('Not initialized');
     }
 
-    // Try 'extensions' first, then fallback to 'marketplace' for backward compatibility
-    const extensionsFilePath =
-      findTopmostFolder('extensions') || findTopmostFolder('marketplace');
+    const extensionsFilePath = this.getExtensionsDirectory();
 
     let yamlData: JsonFileData<T>[] = [];
     if (extensionsFilePath) {

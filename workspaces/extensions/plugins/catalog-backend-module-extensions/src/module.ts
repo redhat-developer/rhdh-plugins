@@ -47,6 +47,7 @@ export const catalogModuleExtensions = createBackendModule({
         pluginProvider: dynamicPluginsServiceRef,
         cache: coreServices.cache,
         scheduler: coreServices.scheduler,
+        config: coreServices.rootConfig,
       },
       async init({
         logger,
@@ -56,6 +57,7 @@ export const catalogModuleExtensions = createBackendModule({
         pluginProvider,
         cache,
         scheduler,
+        config,
       }) {
         logger.info('Adding Extensions providers and processors to catalog...');
         const taskRunner = scheduler.createScheduledTaskRunner({
@@ -70,13 +72,15 @@ export const catalogModuleExtensions = createBackendModule({
 
         const catalogApi = new CatalogClient({ discoveryApi: discovery });
 
-        catalog.addEntityProvider(new ExtensionsPackageProvider(taskRunner));
         catalog.addEntityProvider(
-          new ExtensionsPluginProvider(delayedTaskRunner),
+          new ExtensionsPackageProvider(taskRunner, config),
+        );
+        catalog.addEntityProvider(
+          new ExtensionsPluginProvider(delayedTaskRunner, config),
         );
         // Disabling the collection provider as collections/all.yaml is already commented in RHDH 1.5 image.
         // catalog.addEntityProvider(
-        //   new ExtensionsCollectionProvider(taskRunner),
+        //   new ExtensionsCollectionProvider(taskRunner, config),
         // );
         catalog.addProcessor(new ExtensionsPluginProcessor());
         catalog.addProcessor(new ExtensionsCollectionProcessor());

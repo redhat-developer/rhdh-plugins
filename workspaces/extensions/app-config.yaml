@@ -130,6 +130,7 @@ permission:
       - extensions
 
 extensions:
+  # directory: ../../examples # YAML files are in the examples directory
   ### Example for how to enable installation to a file.
   # installation:
   #   enabled: true

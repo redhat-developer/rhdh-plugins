@@ -35,6 +35,28 @@ catalog:
     - allow: [Component, System, API, Resource, Location, Plugin, PluginList]
 ```
 
+## Configuration
+
+### Extensions Directory Configuration
+
+The module looks for extension YAML files in a directory. You can configure a custom directory path, or the module will use fallback directories.
+
+**Priority order:**
+
+1. Configured directory (if specified in `extensions.directory`)
+2. `/extensions` directory (filesystem root)
+3. `/marketplace` directory (filesystem root)
+
+**Example configuration:**
+
+```yaml
+extensions:
+  # Optional: Custom directory path for extension YAML files
+  # Can be absolute path or relative to the working directory
+  # If not specified, falls back to '/extensions' or '/marketplace' directories (filesystem root)
+  directory: /path/to/custom/extensions
+```
+
 ## Plugin configuration YAML Guide:
 
 This YAML file is used to add extensions plugin to the Software catalog in your backstage application.

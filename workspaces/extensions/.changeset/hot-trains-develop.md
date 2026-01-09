@@ -10,4 +10,4 @@ Renamed plugins from marketplace to extensions
 
 - Renamed all packages from `backstage-plugin-marketplace-*` to `backstage-plugin-extensions-*`
 - Updated all internal references, exports, and API endpoints
-- Reduced frontend bundle size by lazy-loading Monaco editor
+- Made catalog entities directory path configurable via `extensions.directory` in app-config.yaml with fallback to `extensions` and `marketplace` directories
