@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import { validateCatalogMetricsSchema } from './validateCatalogMetricsSchema';
+import { validateMetricsSchema } from './validateMetricsSchema';
 import { InputError } from '@backstage/errors';
 
-describe('validateCatalogMetricsSchema', () => {
+describe('validateMetricsSchema', () => {
   describe('valid query parameters', () => {
     it('should validate empty object', () => {
-      expect(validateCatalogMetricsSchema({})).toEqual({});
+      expect(validateMetricsSchema({})).toEqual({});
     });
 
     it('should validate object with valid metricIds string', () => {
       expect(
-        validateCatalogMetricsSchema({
+        validateMetricsSchema({
           metricIds: 'github.open_prs',
         }),
       ).toEqual({ metricIds: 'github.open_prs' });
@@ -33,7 +33,7 @@ describe('validateCatalogMetricsSchema', () => {
 
     it('should validate object with valid metricIds containing comma-separated values', () => {
       expect(
-        validateCatalogMetricsSchema({
+        validateMetricsSchema({
           metricIds: 'github.open_prs,github.open_issues',
         }),
       ).toEqual({
@@ -41,25 +41,37 @@ describe('validateCatalogMetricsSchema', () => {
       });
     });
 
-    it('should validate object with undefined metricIds', () => {
-      expect(validateCatalogMetricsSchema({ metricIds: undefined })).toEqual(
-        {},
-      );
+    it('should validate object with valid datasource string', () => {
+      expect(
+        validateMetricsSchema({
+          datasource: 'github',
+        }),
+      ).toEqual({ datasource: 'github' });
     });
 
-    it('should validate when query has additional properties along with valid metricIds', () => {
+    it('should validate object with undefined metricIds', () => {
+      expect(validateMetricsSchema({ metricIds: undefined })).toEqual({});
+    });
+
+    it('should validate object with undefined datasource', () => {
+      expect(validateMetricsSchema({ datasource: undefined })).toEqual({});
+    });
+
+    it('should validate when query has additional properties along with valid parameters', () => {
       expect(
-        validateCatalogMetricsSchema({
+        validateMetricsSchema({
           metricIds: 'github.open_prs',
+          datasource: 'github',
           invalidProp: 'value',
         }),
-      ).toEqual({ metricIds: 'github.open_prs' });
+      ).toEqual({
+        metricIds: 'github.open_prs',
+        datasource: 'github',
+      });
     });
 
     it('should validate when query has only additional properties', () => {
-      expect(validateCatalogMetricsSchema({ invalidProp: 'value' })).toEqual(
-        {},
-      );
+      expect(validateMetricsSchema({ invalidProp: 'value' })).toEqual({});
     });
   });
 
@@ -74,10 +86,25 @@ describe('validateCatalogMetricsSchema', () => {
     ])(
       'should throw InputError when metricIds is $description',
       ({ metricIds }) => {
-        expect(() => validateCatalogMetricsSchema({ metricIds })).toThrow(
-          InputError,
+        expect(() => validateMetricsSchema({ metricIds })).toThrow(InputError);
+        expect(() => validateMetricsSchema({ metricIds })).toThrow(
+          'Invalid query parameters',
         );
-        expect(() => validateCatalogMetricsSchema({ metricIds })).toThrow(
+      },
+    );
+
+    it.each([
+      { datasource: '', description: 'empty string' },
+      { datasource: null, description: 'null' },
+      { datasource: 123, description: 'number' },
+      { datasource: true, description: 'boolean' },
+      { datasource: ['github'], description: 'array' },
+      { datasource: { id: 'test' }, description: 'object' },
+    ])(
+      'should throw InputError when datasource is $description',
+      ({ datasource }) => {
+        expect(() => validateMetricsSchema({ datasource })).toThrow(InputError);
+        expect(() => validateMetricsSchema({ datasource })).toThrow(
           'Invalid query parameters',
         );
       },
