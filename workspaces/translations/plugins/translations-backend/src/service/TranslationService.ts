@@ -60,7 +60,7 @@ export class TranslationService {
 
   /**
    * Finds the topmost folder with the given name by searching up the directory tree
-   * Similar to the approach used in marketplace plugin
+   * Similar to the approach used in extensions plugin
    */
   private findTopmostFolder(
     folderName: string,

@@ -308,7 +308,7 @@ When a Plugin Owner wants to upgrade their workspace(s) to the latest version of
 3. In the menu that appears use the following:
    1. For "Use workflow from" use the default "Branch: main"
    2. For "Release Line" use the default "main"
-   3. For "Workspace (this much be a JSON array)" you will enter the name(s) of the workspace(s). For example for a single workspace it would look like this: `["bulk-import"]` and for multiple workspaces it would look like this: `["lightspeed", "homepage", "marketplace"]`
+   3. For "Workspace (this much be a JSON array)" you will enter the name(s) of the workspace(s). For example for a single workspace it would look like this: `["bulk-import"]` and for multiple workspaces it would look like this: `["lightspeed", "homepage", "extensions"]`
    4. For "Specifies the type of version update to apply" use the default "minor"
 4. Now click the "Run workflow" button
 5. The workflow will then run and create a PR to upgrade each of the specified workspaces to the latest `main` release of Backstage
