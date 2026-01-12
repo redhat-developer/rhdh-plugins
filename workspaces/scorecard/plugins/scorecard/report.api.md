@@ -10,7 +10,10 @@ import { JSX as JSX_2 } from 'react/jsx-runtime';
 export const EntityScorecardContent: () => JSX_2.Element;
 
 // @public
-export const ScorecardHomepageSection: () => JSX_2.Element;
+export const ScorecardGitHubHomepageCard: () => JSX_2.Element;
+
+// @public
+export const ScorecardJiraHomepageCard: () => JSX_2.Element;
 
 // @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
