@@ -4,7 +4,7 @@
       "description": "all extensions minor updates",
       "matchFileNames": ["workspaces/extensions/**"],
       "extends": [
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Extensions)"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Marketplace)"
       ],
       "addLabels": ["team/rhdh", "extensions"]
     },
@@ -12,7 +12,7 @@
       "description": "all extensions patch updates",
       "matchFileNames": ["workspaces/extensions/**"],
       "extends": [
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Extensions)"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Marketplace)"
       ],
       "addLabels": ["team/rhdh", "extensions"]
     },
@@ -20,7 +20,7 @@
       "description": "all extensions dev dependency updates",
       "matchFileNames": ["workspaces/extensions/**"],
       "extends": [
-        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Extensions)"
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Marketplace)"
       ],
       "addLabels": ["team/rhdh", "extensions"]
     }
