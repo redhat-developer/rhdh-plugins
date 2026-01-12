@@ -20,42 +20,46 @@ import { InputError } from '@backstage/errors';
 describe('validateCatalogMetricsSchema', () => {
   describe('valid query parameters', () => {
     it('should validate empty object', () => {
-      expect(() => validateCatalogMetricsSchema({})).not.toThrow();
+      expect(validateCatalogMetricsSchema({})).toEqual({});
     });
 
     it('should validate object with valid metricIds string', () => {
-      expect(() =>
-        validateCatalogMetricsSchema({ metricIds: 'github.open_prs' }),
-      ).not.toThrow();
+      expect(
+        validateCatalogMetricsSchema({
+          metricIds: 'github.open_prs',
+        }),
+      ).toEqual({ metricIds: 'github.open_prs' });
     });
 
     it('should validate object with valid metricIds containing comma-separated values', () => {
-      expect(() =>
+      expect(
         validateCatalogMetricsSchema({
           metricIds: 'github.open_prs,github.open_issues',
         }),
-      ).not.toThrow();
+      ).toEqual({
+        metricIds: 'github.open_prs,github.open_issues',
+      });
     });
 
     it('should validate object with undefined metricIds', () => {
-      expect(() =>
-        validateCatalogMetricsSchema({ metricIds: undefined }),
-      ).not.toThrow();
+      expect(validateCatalogMetricsSchema({ metricIds: undefined })).toEqual(
+        {},
+      );
     });
 
     it('should validate when query has additional properties along with valid metricIds', () => {
-      expect(() =>
+      expect(
         validateCatalogMetricsSchema({
           metricIds: 'github.open_prs',
           invalidProp: 'value',
         }),
-      ).not.toThrow();
+      ).toEqual({ metricIds: 'github.open_prs' });
     });
 
     it('should validate when query has only additional properties', () => {
-      expect(() =>
-        validateCatalogMetricsSchema({ invalidProp: 'value' }),
-      ).not.toThrow();
+      expect(validateCatalogMetricsSchema({ invalidProp: 'value' })).toEqual(
+        {},
+      );
     });
   });
 

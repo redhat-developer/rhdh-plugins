@@ -64,6 +64,7 @@ export class MetricProvidersRegistry {
     }
 
     this.metricProviders.set(providerId, metricProvider);
+
     let datasourceProviders = this.datasourceIndex.get(providerDatasource);
     if (!datasourceProviders) {
       datasourceProviders = new Set();
@@ -127,6 +128,7 @@ export class MetricProvidersRegistry {
 
   listMetricsByDatasource(datasourceId: string): Metric[] {
     const providerIdsOfDatasource = this.datasourceIndex.get(datasourceId);
+
     if (!providerIdsOfDatasource) {
       return [];
     }
