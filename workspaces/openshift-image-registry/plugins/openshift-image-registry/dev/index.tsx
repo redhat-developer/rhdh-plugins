@@ -17,6 +17,9 @@
 import { createDevApp } from '@backstage/dev-utils';
 import { TestApiProvider } from '@backstage/test-utils';
 
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
+import '@backstage/ui/css/styles.css';
+
 import ExtensionIcon from '@mui/icons-material/Extension';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
