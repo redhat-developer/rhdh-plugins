@@ -26,93 +26,13 @@ import Typography from '@mui/material/Typography';
 
 import { useInstructionsConfig, useInstructionsPreference } from '../../hooks';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Illustrations } from './Illustrations';
-
-interface ConfigurableInstructionsProps {
-  // No props needed - everything comes from configuration
-}
-
-/**
- * Enhanced Illustrations component that supports custom URL icons
- */
-const ConfigurableIllustration = ({
-  iconClassname,
-  iconText,
-}: {
-  iconClassname: string;
-  iconText: string;
-}) => {
-  // If no icon is configured, show only text
-  if (!iconClassname) {
-    return (
-      <div>
-        {/* Empty space to maintain consistent layout with icon steps */}
-        <Typography
-          component="span"
-          style={{
-            justifyContent: 'center',
-            display: 'flex',
-            height: '100px',
-          }}
-        >
-          {/* Empty space where icon would be */}
-        </Typography>
-        <Typography
-          style={{
-            maxWidth: '150px',
-            textAlign: 'center',
-          }}
-        >
-          {iconText}
-        </Typography>
-      </div>
-    );
-  }
-
-  // Check if this is a custom URL icon
-  const isCustomUrl = iconClassname.startsWith('custom-url:');
-
-  if (isCustomUrl) {
-    const imageUrl = iconClassname.replace('custom-url:', '');
-    return (
-      <div>
-        <Typography
-          component="span"
-          style={{
-            justifyContent: 'center',
-            display: 'flex',
-          }}
-        >
-          <img
-            src={imageUrl}
-            alt={iconText}
-            height="100px"
-            style={{ objectFit: 'contain' }}
-          />
-        </Typography>
-        <Typography
-          style={{
-            maxWidth: '150px',
-            textAlign: 'center',
-          }}
-        >
-          {iconText}
-        </Typography>
-      </div>
-    );
-  }
-
-  // Use the existing Illustrations component for built-in icons
-  return <Illustrations iconClassname={iconClassname} iconText={iconText} />;
-};
+import { InstructionIcon } from './InstructionIcon';
 
 /**
  * Configurable instructions component that displays the "How does it work" section
  * based on configuration from app-config.yaml and user preferences
  */
-export const ConfigurableInstructions: React.FC<
-  ConfigurableInstructionsProps
-> = () => {
+export const ConfigurableInstructions = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   const config = useInstructionsConfig();
@@ -122,31 +42,12 @@ export const ConfigurableInstructions: React.FC<
 
   // Build the list of steps based on configuration from app-config.yaml
   const steps = useMemo(() => {
-    return config.steps.map(configStep => {
-      let iconClassname = '';
-
-      if (configStep.icon) {
-        if (configStep.icon.type === 'builtin') {
-          // For builtin icons, construct the classname based on theme
-          const iconName = configStep.icon.source;
-          iconClassname =
-            theme.palette.mode === 'dark'
-              ? `icon-${iconName}-white`
-              : `icon-${iconName}-black`;
-        } else if (configStep.icon.type === 'url') {
-          // For URL icons, we'll use the URL directly in a special way
-          iconClassname = `custom-url:${configStep.icon.source}`;
-        }
-      }
-      // No fallback - leave iconClassname empty if no icon is configured
-
-      return {
-        id: configStep.id,
-        text: configStep.text,
-        iconClassname,
-      };
-    });
-  }, [config.steps, theme.palette.mode]);
+    return config.steps.map(configStep => ({
+      id: configStep.id,
+      text: configStep.text,
+      icon: configStep.icon,
+    }));
+  }, [config.steps]);
 
   // Don't render if disabled or no steps configured
   if (!config.enabled || steps.length === 0) {
@@ -217,10 +118,7 @@ export const ConfigurableInstructions: React.FC<
                   justifyContent: 'flex-start',
                 }}
               >
-                <ConfigurableIllustration
-                  iconClassname={step.iconClassname}
-                  iconText={step.text}
-                />
+                <InstructionIcon icon={step.icon} text={step.text} />
               </Box>
             ))}
           </Box>

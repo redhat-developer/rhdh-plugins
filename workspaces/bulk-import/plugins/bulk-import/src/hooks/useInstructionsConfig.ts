@@ -19,10 +19,7 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 export interface InstructionsStep {
   id: string;
   text: string;
-  icon?: {
-    type: 'builtin' | 'url';
-    source: string;
-  };
+  icon?: string;
 }
 
 export interface InstructionsConfig {
@@ -100,10 +97,7 @@ export function useInstructionsConfig(): InstructionsConfig {
           id: stepConfig.getString('id'),
           text: stepConfig.getString('text'),
           icon: stepConfig.has('icon')
-            ? {
-                type: stepConfig.getString('icon.type') as 'builtin' | 'url',
-                source: stepConfig.getString('icon.source'),
-              }
+            ? stepConfig.getString('icon')
             : undefined,
         }))
       : []; // No fallback needed - config should work now

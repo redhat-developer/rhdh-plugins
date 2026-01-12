@@ -69,23 +69,15 @@ export interface Config {
       text: string;
 
       /**
-       * Icon configuration
+       * Icon configuration - supports multiple formats:
+       * - Backstage system icons: 'kind:component', 'kind:api', etc.
+       * - Material Design icons: 'settings', 'home', 'build', etc.
+       * - SVG strings: '<svg xmlns="http://www.w3.org/2000/svg">...</svg>'
+       * - URLs: 'https://example.com/icon.png', '/assets/icon.svg'
+       * - Data URIs: 'data:image/svg+xml;base64,...'
        * @visibility frontend
        */
-      icon?: {
-        /**
-         * Icon type: 'builtin' for predefined icons, 'url' for custom images
-         * @visibility frontend
-         */
-        type: 'builtin' | 'url';
-
-        /**
-         * For builtin: icon name (e.g., 'approval-tool', 'choose-repositories', 'generate-cataloginfo', 'edit-pullrequest', 'track-status')
-         * For url: full URL to the icon image
-         * @visibility frontend
-         */
-        source: string;
-      };
+      icon?: string;
     }>;
   };
 }
