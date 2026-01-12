@@ -22,13 +22,20 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { screen } from '@testing-library/react';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
-import { useNumberOfApprovalTools, useRepositories } from '../../hooks';
+import {
+  useInstructionsConfig,
+  useInstructionsPreference,
+  useNumberOfApprovalTools,
+  useRepositories,
+} from '../../hooks';
 import { useImportFlow } from '../../hooks/useImportFlow';
 import { AddRepositoriesPage } from './AddRepositoriesPage';
 
 jest.mock('../../hooks', () => ({
   useNumberOfApprovalTools: jest.fn(),
   useRepositories: jest.fn(),
+  useInstructionsConfig: jest.fn(),
+  useInstructionsPreference: jest.fn(),
 }));
 
 jest.mock('../../hooks/useImportFlow', () => ({
@@ -126,6 +133,31 @@ describe('AddRepositoriesPage', () => {
       data: [],
       error: null,
     });
+    (useInstructionsConfig as jest.Mock).mockReturnValue({
+      enabled: true,
+      defaultExpanded: true,
+      steps: [
+        {
+          id: 'step1',
+          text: 'Choose your source control platform',
+          icon: { type: 'builtin', source: 'approval-tool' },
+        },
+        {
+          id: 'step2',
+          text: 'Browse and select repositories',
+          icon: { type: 'builtin', source: 'choose-repositories' },
+        },
+        {
+          id: 'step5',
+          text: 'Review and edit pull requests',
+          icon: { type: 'builtin', source: 'edit-pullrequest' },
+        },
+      ],
+    });
+    (useInstructionsPreference as jest.Mock).mockReturnValue([
+      true, // isExpanded
+      jest.fn(), // setExpanded
+    ]);
   });
 
   it('should render page with correct title', async () => {
@@ -140,9 +172,7 @@ describe('AddRepositoriesPage', () => {
 
     // Instructions section should be shown for pull request flow
     expect(
-      screen.getByText(
-        'Choose a source control tool for pull request creation',
-      ),
+      screen.getByText('Choose your source control platform'),
     ).toBeInTheDocument();
   });
 
@@ -151,12 +181,10 @@ describe('AddRepositoriesPage', () => {
 
     // All steps should be shown for pull request flow (both GitHub and GitLab)
     expect(
-      screen.getByText(
-        'Choose a source control tool for pull request creation',
-      ),
+      screen.getByText('Choose your source control platform'),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('View the pull/merge request details'),
+      screen.getByText('Review and edit pull requests'),
     ).toBeInTheDocument();
   });
 
@@ -173,30 +201,23 @@ describe('AddRepositoriesPage', () => {
       screen.queryByText('Import to Red Hat Developer Hub'),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByText(
-        'Choose a source control tool for pull request creation',
-      ),
+      screen.queryByText('Choose your source control platform'),
     ).not.toBeInTheDocument();
 
     // Form should still be rendered (it will show missing configurations)
     expect(screen.getByTestId('add-repositories-form')).toBeInTheDocument();
   });
 
-  it('should hide instructions section for scaffolder flow', async () => {
+  it('should show instructions section for scaffolder flow', async () => {
     // Override default to test scaffolder flow
     (useImportFlow as jest.Mock).mockReturnValue('scaffolder');
 
     await renderWithProviders(<AddRepositoriesPage />);
 
-    // Instructions section should be hidden for scaffolder flow
+    // Instructions section should now be shown for scaffolder flow since it's customizable
     expect(
-      screen.queryByText('Import to Red Hat Developer Hub'),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(
-        'Choose a source control tool for pull request creation',
-      ),
-    ).not.toBeInTheDocument();
+      screen.getByText('Import to Red Hat Developer Hub'),
+    ).toBeInTheDocument();
 
     // Form should still be rendered
     expect(screen.getByTestId('add-repositories-form')).toBeInTheDocument();

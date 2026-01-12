@@ -17,7 +17,9 @@
 import { z } from 'zod';
 import { InputError } from '@backstage/errors';
 
-export function validateCatalogMetricsSchema(query: unknown): void {
+export function validateCatalogMetricsSchema(query: unknown): {
+  metricIds?: string;
+} {
   const catalogMetricsSchema = z.object({
     metricIds: z.string().min(1).optional(),
   });
@@ -27,4 +29,6 @@ export function validateCatalogMetricsSchema(query: unknown): void {
   if (!parsed.success) {
     throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
   }
+
+  return parsed.data;
 }

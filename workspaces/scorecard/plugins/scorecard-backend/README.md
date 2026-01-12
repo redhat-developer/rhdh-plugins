@@ -99,19 +99,104 @@ Thresholds are evaluated in order, and the first matching rule determines the ca
 
 For comprehensive threshold configuration guide, examples, and best practices, see [thresholds.md](./docs/thresholds.md).
 
-## Entity Aggregation
+## API Endpoints
 
-The Scorecard plugin provides aggregation endpoints that return metrics for all entities owned by the authenticated user. This includes:
+### `GET /metrics`
+
+Returns a list of available metrics. Supports filtering by metric IDs or datasource.
+
+#### Query Parameters
+
+| Parameter    | Type   | Required | Description                                                                                  |
+| ------------ | ------ | -------- | -------------------------------------------------------------------------------------------- |
+| `metricIds`  | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,github.open_issues`) |
+| `datasource` | string | No       | Filter metrics by datasource ID (e.g., `github`, `jira`, `sonar`)                            |
+
+#### Behavior
+
+- If `metricIds` is provided, returns only the specified metrics
+- If `datasource` is provided (and `metricIds` is not), returns all metrics from that datasource
+- If neither parameter is provided, returns all available metrics
+- **Note**: Providing both `metricIds` and `datasource` will result in a `400 Bad Request` error
+
+#### Example Requests
+
+```bash
+# Get all metrics
+curl -X GET "{{url}}/api/scorecard/metrics" \
+  -H "Authorization: Bearer <token>"
+
+# Get specific metrics by IDs
+curl -X GET "{{url}}/api/scorecard/metrics?metricIds=github.open_prs,github.open_issues" \
+  -H "Authorization: Bearer <token>"
+
+# Get all metrics from a specific datasource
+curl -X GET "{{url}}/api/scorecard/metrics?datasource=github" \
+  -H "Authorization: Bearer <token>"
+```
+
+### `GET /metrics/catalog/:kind/:namespace/:name`
+
+Returns the latest metric values for a specific catalog entity.
+
+#### Path Parameters
+
+| Parameter   | Type   | Required | Description                        |
+| ----------- | ------ | -------- | ---------------------------------- |
+| `kind`      | string | Yes      | Entity kind (e.g., `component`)    |
+| `namespace` | string | Yes      | Entity namespace (e.g., `default`) |
+| `name`      | string | Yes      | Entity name                        |
+
+#### Query Parameters
+
+| Parameter   | Type   | Required | Description                                                                                  |
+| ----------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
+| `metricIds` | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,github.open_issues`) |
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission and `catalog.entity.read` permission for the specific entity.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?metricIds=github.open_prs" \
+  -H "Authorization: Bearer <token>"
+```
+
+### `GET /metrics/:metricId/catalog/aggregations`
+
+Returns aggregated metrics for a specific metric across all entities owned by the authenticated user. This endpoint aggregates metrics from:
 
 - Entities directly owned by the user
-- Entities owned by groups the user is a direct member of (Only direct parent groups are considered)
+- Entities owned by groups the user is a direct member of (only direct parent groups are considered)
 
-### Available Endpoints
+#### Path Parameters
 
-- **`GET /metrics/catalog/aggregates`**: Returns aggregated metrics for all available metrics (optionally filtered by `metricIds` query parameter)
-- **`GET /metrics/:metricId/catalog/aggregation`**: Returns aggregated metrics for a specific metric, with explicit access validation (returns `403` if the user doesn't have access to the metric)
+| Parameter  | Type   | Required | Description                       |
+| ---------- | ------ | -------- | --------------------------------- |
+| `metricId` | string | Yes      | The ID of the metric to aggregate |
 
-For comprehensive documentation on how entity aggregation works, API details, examples, and best practices, see [aggregation.md](./docs/aggregation.md).
+#### Authentication
+
+Requires user authentication. The endpoint uses the authenticated user's entity reference to determine which entities to aggregate.
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission. Additionally:
+
+- The user must have access to the specific metric (returns `403 Forbidden` if access is denied)
+- The user must have `catalog.entity.read` permission for each entity that will be included in the aggregation
+
+#### Example Request
+
+```bash
+# Get aggregated metrics for a specific metric
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations" \
+  -H "Authorization: Bearer <token>"
+```
+
+For comprehensive documentation on how entity aggregation works, including details on transitive parent groups, error handling, and best practices, see [aggregation.md](./docs/aggregation.md).
 
 ## Configuration cleanup Job
 
