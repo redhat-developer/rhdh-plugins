@@ -53,7 +53,7 @@ permission:
    ```tsx title="packages/app/src/components/App.tsx"
    /* highlight-add-next-line */ import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
-   <Route path="/lightspeed" element={<LightspeedPage />} />;
+   <Route path="/lightspeed" element={<LightspeedPage />} />
    ```
 
 2. Enable **Lightspeed** page in `packages/app/src/components/Root/Root.tsx`:
@@ -65,7 +65,7 @@ permission:
      icon={LightspeedIcon as IconComponent}
      to="lightspeed"
      text="Lightspeed"
-   />;
+   />
    ```
 
 ## For users

@@ -55,7 +55,7 @@ permission:
    ```tsx
    import { AdoptionInsightsPage } from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
 
-   <Route path="/adoption-insights" element={<AdoptionInsightsPage />} />;
+   <Route path="/adoption-insights" element={<AdoptionInsightsPage />} />
    ```
 
 2. Add a navigation item to the Backstage sidebar by updating `packages/app/src/components/Root/Root.tsx`:
@@ -67,7 +67,7 @@ permission:
      icon={QueryStatsIcon}
      to="adoption-insights"
      text="Adoption Insights"
-   />;
+   />
    ```
 
 ## For Users

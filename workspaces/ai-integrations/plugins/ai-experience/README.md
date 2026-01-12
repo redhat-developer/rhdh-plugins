@@ -33,7 +33,7 @@ yarn workspace app add @red-hat-developer-hub/backstage-plugin-ai-experience
    ```tsx
    import { AiExperiencePage } from '@red-hat-developer-hub/backstage-plugin-ai-experience';
 
-   <Route path="/home" element={<AiExperiencePage />} />;
+   <Route path="/home" element={<AiExperiencePage />} />
    ```
 
 2. To add RSS Feeds for the AI News Page,add the following configuration to your `app-config.yaml` file:

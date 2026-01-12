@@ -99,7 +99,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
           to="lightspeed"
           text="Lightspeed"
         />
-        ;{/* End global nav */}
+        {/* End global nav */}
         <SidebarDivider />
         <SidebarScrollWrapper>
           {/* Items in this group will be scrollable if they run out of space */}
