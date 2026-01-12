@@ -71,7 +71,12 @@ const Scorecard = ({
   const pieData = [{ name: 'full', value: 100, color: ringColor }];
 
   return (
-    <CardWrapper title={cardTitle} description={description} width="371px">
+    <CardWrapper
+      role="article"
+      title={cardTitle}
+      description={description}
+      width="371px"
+    >
       <Box
         width="100%"
         height={160}

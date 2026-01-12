@@ -31,6 +31,7 @@ interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   width?: string;
   childrenWidth?: string | number;
   childrenHeight?: string | number;
+  role?: string;
 }
 
 export const CardWrapper = ({
@@ -41,6 +42,7 @@ export const CardWrapper = ({
   width,
   childrenWidth = '100%',
   childrenHeight = '100%',
+  role = 'article',
 }: CardWrapperProps) => {
   return (
     <Card
@@ -50,6 +52,7 @@ export const CardWrapper = ({
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
       }}
+      role={role}
     >
       <CardHeader
         title={title}
