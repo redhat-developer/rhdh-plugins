@@ -41,6 +41,7 @@ type LightspeedChatBoxHeaderProps = {
   models: { label: string; value: string; provider: string }[];
   isPinningChatsEnabled: boolean;
   onPinnedChatsToggle: (state: boolean) => void;
+  isModelSelectorDisabled?: boolean;
 };
 
 const useStyles = makeStyles(() =>
@@ -68,6 +69,7 @@ export const LightspeedChatBoxHeader = ({
   models,
   isPinningChatsEnabled,
   onPinnedChatsToggle,
+  isModelSelectorDisabled = false,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const { t } = useTranslation();
@@ -97,6 +99,7 @@ export const LightspeedChatBoxHeader = ({
       aria-label={t('aria.chatbotSelector')}
       ref={toggleRef}
       isExpanded={isOptionsMenuOpen}
+      isDisabled={isModelSelectorDisabled}
       onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}
     >
       {selectedModel}
