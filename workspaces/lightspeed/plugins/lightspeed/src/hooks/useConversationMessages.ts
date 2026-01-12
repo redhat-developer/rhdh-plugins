@@ -559,6 +559,16 @@ export const useConversationMessages = (
       // Swap temp conversation messages with new conversation
 
       if (currentConversation === TEMP_CONVERSATION_ID && newConversationId) {
+        // Migrate tool calls cache from temp to new conversation ID
+        Object.keys(toolCallsCache.current).forEach(key => {
+          if (key.startsWith(`${TEMP_CONVERSATION_ID}-`)) {
+            const messageIndex = key.replace(`${TEMP_CONVERSATION_ID}-`, '');
+            const newKey = `${newConversationId}-${messageIndex}`;
+            toolCallsCache.current[newKey] = toolCallsCache.current[key];
+            delete toolCallsCache.current[key];
+          }
+        });
+
         setConversations(prevConversations => {
           return {
             ...prevConversations,
