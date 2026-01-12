@@ -2242,9 +2242,9 @@ __metadata:
   linkType: hard
 
 "@babel/runtime@npm:^7.0.0, @babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.1, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.18.3, @babel/runtime@npm:^7.18.6, @babel/runtime@npm:^7.20.6, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.23.9, @babel/runtime@npm:^7.26.0, @babel/runtime@npm:^7.28.4, @babel/runtime@npm:^7.3.1, @babel/runtime@npm:^7.4.4, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.6.0, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.8.3, @babel/runtime@npm:^7.8.7, @babel/runtime@npm:^7.9.2":
-  version: 7.28.4
-  resolution: "@babel/runtime@npm:7.28.4"
-  checksum: 934b0a0460f7d06637d93fcd1a44ac49adc33518d17253b5a0b55ff4cb90a45d8fe78bf034b448911dbec7aff2a90b918697559f78d21c99ff8dbadae9565b55
+  version: 7.28.6
+  resolution: "@babel/runtime@npm:7.28.6"
+  checksum: 42d8a868c2fc2e9a77927945a6daa7ec03c7ea49e611e0d15442933cdabb12f20e3a6849c729259076c10a4247adec229331d1f94c2d0073ea0979d7853e29fd
   languageName: node
   linkType: hard
 
@@ -4816,7 +4816,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/ui@npm:^0.9.0":
+"@backstage/ui@npm:^0.9.0, @backstage/ui@npm:^0.9.1":
   version: 0.9.1
   resolution: "@backstage/ui@npm:0.9.1"
   dependencies:
@@ -6378,12 +6378,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@internationalized/date@npm:^3.10.0":
-  version: 3.10.0
-  resolution: "@internationalized/date@npm:3.10.0"
+"@internationalized/date@npm:^3.10.0, @internationalized/date@npm:^3.10.1":
+  version: 3.10.1
+  resolution: "@internationalized/date@npm:3.10.1"
   dependencies:
     "@swc/helpers": ^0.5.0
-  checksum: cb6a33622ad368e42fd2d05f9c9111644d0861ea6c9305d7d73b85ddb0cd9259c5af37087d8ed05a2a07d76b798b386c89fb85a2dd567b0f4b0cc19770e0d42b
+  checksum: ed71692398ec9dbb33a93e2f6c0952627f1af838078af471f6e982769ad33dbe19faf4ce659bb086ca442be5e7777d300398f076fecd93d1c32a4d4a8f1d7667
   languageName: node
   linkType: hard
 
@@ -9625,19 +9625,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-aria/focus@npm:^3.21.2":
-  version: 3.21.2
-  resolution: "@react-aria/focus@npm:3.21.2"
+"@react-aria/focus@npm:^3.21.2, @react-aria/focus@npm:^3.21.3":
+  version: 3.21.3
+  resolution: "@react-aria/focus@npm:3.21.3"
   dependencies:
-    "@react-aria/interactions": ^3.25.6
-    "@react-aria/utils": ^3.31.0
+    "@react-aria/interactions": ^3.26.0
+    "@react-aria/utils": ^3.32.0
     "@react-types/shared": ^3.32.1
     "@swc/helpers": ^0.5.0
     clsx: ^2.0.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: c6a773f2add800cafabae654dcb4aee51a7d205911de0fc7b0c9417cab5644ca7c8358749d92abe0295be2aa199f864b06071547def4c975e79fbc0dc1aec9da
+  checksum: 1b9c0d3ca82f3e3e74caa121a596da4f967a84bce8a12a9ecf3e5a4279948cf856cf7cd8932d3098a80664de35ef27d0e091624d5c5659e79b8f30fd4f14933e
   languageName: node
   linkType: hard
 
@@ -9702,38 +9702,38 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-aria/i18n@npm:^3.12.13":
-  version: 3.12.13
-  resolution: "@react-aria/i18n@npm:3.12.13"
+"@react-aria/i18n@npm:^3.12.13, @react-aria/i18n@npm:^3.12.14":
+  version: 3.12.14
+  resolution: "@react-aria/i18n@npm:3.12.14"
   dependencies:
-    "@internationalized/date": ^3.10.0
+    "@internationalized/date": ^3.10.1
     "@internationalized/message": ^3.1.8
     "@internationalized/number": ^3.6.5
     "@internationalized/string": ^3.2.7
     "@react-aria/ssr": ^3.9.10
-    "@react-aria/utils": ^3.31.0
+    "@react-aria/utils": ^3.32.0
     "@react-types/shared": ^3.32.1
     "@swc/helpers": ^0.5.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 4b0d8dd0f62702bc1e55793ef60825c6c1ad8d7fe33d6bd979ad50b47441ba98b2599565df997b5665092c3858d3e40a72e4dc74fb087a49b70593e72a7bf9e4
+  checksum: 42794577654660e2ce0e14590313d7b8bab409557ce7edb8631a29f790f70cb0d283bc0e350145e6309263af39858e5d081135f5f7f4da7c3fd52b72c96e0c47
   languageName: node
   linkType: hard
 
-"@react-aria/interactions@npm:^3.25.6":
-  version: 3.25.6
-  resolution: "@react-aria/interactions@npm:3.25.6"
+"@react-aria/interactions@npm:^3.25.6, @react-aria/interactions@npm:^3.26.0":
+  version: 3.26.0
+  resolution: "@react-aria/interactions@npm:3.26.0"
   dependencies:
     "@react-aria/ssr": ^3.9.10
-    "@react-aria/utils": ^3.31.0
+    "@react-aria/utils": ^3.32.0
     "@react-stately/flags": ^3.1.2
     "@react-types/shared": ^3.32.1
     "@swc/helpers": ^0.5.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: e3965a550b6e2caf7b4e0c7375fe93ca75ffd836e1c69130cdc234376f40ed91da963381e5a28b815f1d1be5901edb63e6eb80c31c8af8a0b3239b243c65a9bf
+  checksum: 3e174fc3eb332195bfa4904334aaad1253a0573dee8901a4170cb019b6ca00c90675dd86e3960f63cee3f7bfdddf5ae4864f24eb02ce5f88d08bbf1d6b53c518
   languageName: node
   linkType: hard
 
@@ -9874,16 +9874,16 @@ __metadata:
   linkType: hard
 
 "@react-aria/overlays@npm:^3.30.0":
-  version: 3.30.0
-  resolution: "@react-aria/overlays@npm:3.30.0"
+  version: 3.31.0
+  resolution: "@react-aria/overlays@npm:3.31.0"
   dependencies:
-    "@react-aria/focus": ^3.21.2
-    "@react-aria/i18n": ^3.12.13
-    "@react-aria/interactions": ^3.25.6
+    "@react-aria/focus": ^3.21.3
+    "@react-aria/i18n": ^3.12.14
+    "@react-aria/interactions": ^3.26.0
     "@react-aria/ssr": ^3.9.10
-    "@react-aria/utils": ^3.31.0
-    "@react-aria/visually-hidden": ^3.8.28
-    "@react-stately/overlays": ^3.6.20
+    "@react-aria/utils": ^3.32.0
+    "@react-aria/visually-hidden": ^3.8.29
+    "@react-stately/overlays": ^3.6.21
     "@react-types/button": ^3.14.1
     "@react-types/overlays": ^3.9.2
     "@react-types/shared": ^3.32.1
@@ -9891,7 +9891,7 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 93d5eae156ba0b52ca4ff52283290fb4e9f56ca7f4afe9914e0bd1471a13aa3ebce3d74c8a357c04c72119100e3045ae9bfbb09ac9a7452901c055d66610028f
+  checksum: 5dbda76594f5cc4b7a79ca7b3da28f7971cfe12c33e325f6195eeadc6f13c5709b563799098ac50ba1bd76c1eb9277e459e814b93381b379e9065360fe17572f
   languageName: node
   linkType: hard
 
@@ -10246,20 +10246,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-aria/utils@npm:^3.31.0":
-  version: 3.31.0
-  resolution: "@react-aria/utils@npm:3.31.0"
+"@react-aria/utils@npm:^3.31.0, @react-aria/utils@npm:^3.32.0":
+  version: 3.32.0
+  resolution: "@react-aria/utils@npm:3.32.0"
   dependencies:
     "@react-aria/ssr": ^3.9.10
     "@react-stately/flags": ^3.1.2
-    "@react-stately/utils": ^3.10.8
+    "@react-stately/utils": ^3.11.0
     "@react-types/shared": ^3.32.1
     "@swc/helpers": ^0.5.0
     clsx: ^2.0.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 21cdda60eb60509f943302972cd573a88c2ac968447b2bf6508aa392abca1ad5a21e2c826e1d68b3c991e328b8456d6d8d87a75f6c22a539e47c1441ba0e4bbe
+  checksum: f631012b146b428bca75377310e6d2e06a700da9c3325e82ad2ce8cc12b44bcada53840baf4b9782bd6f19bacf9d7fa5cebb9af66d7ad32a6d0b2c9b01a6f42f
   languageName: node
   linkType: hard
 
@@ -10280,18 +10280,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-aria/visually-hidden@npm:^3.8.28":
-  version: 3.8.28
-  resolution: "@react-aria/visually-hidden@npm:3.8.28"
+"@react-aria/visually-hidden@npm:^3.8.28, @react-aria/visually-hidden@npm:^3.8.29":
+  version: 3.8.29
+  resolution: "@react-aria/visually-hidden@npm:3.8.29"
   dependencies:
-    "@react-aria/interactions": ^3.25.6
-    "@react-aria/utils": ^3.31.0
+    "@react-aria/interactions": ^3.26.0
+    "@react-aria/utils": ^3.32.0
     "@react-types/shared": ^3.32.1
     "@swc/helpers": ^0.5.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
     react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 053d1950a8eb75bc3fb1a4b3e11c3db8ecdb23888d1053dafe6fbacc390200cec47a966522786c24889eae9aa273f8ff6ecf317e7a67b13fb494384069fb75dd
+  checksum: 5fe5efd37421c63787da8aab2ec93d65a77f47069f3feab06b802a0e5ccad7b6bbf00ab80cdd1527bf88701e687297602a1c73072b3051023db39cb87592c02c
   languageName: node
   linkType: hard
 
@@ -10563,16 +10563,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-stately/overlays@npm:^3.6.20":
-  version: 3.6.20
-  resolution: "@react-stately/overlays@npm:3.6.20"
+"@react-stately/overlays@npm:^3.6.20, @react-stately/overlays@npm:^3.6.21":
+  version: 3.6.21
+  resolution: "@react-stately/overlays@npm:3.6.21"
   dependencies:
-    "@react-stately/utils": ^3.10.8
+    "@react-stately/utils": ^3.11.0
     "@react-types/overlays": ^3.9.2
     "@swc/helpers": ^0.5.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 652a5d3207631e63acd4b9f1a093f7570cbdc33924a02bea4bea2ff3b5e3c3497e92b4b2a3a2fb52136fa06ddfb890db8580ec509387043e0243d801f5e911a8
+  checksum: 2edd3e5b63b628472c7d8ebe1b8ed3db204d678f0d5980018c3b388ee6469c7d1147e920ada1365623fc82147b2b9f46008ce7baee1b1f2796332a7baf5dd6bc
   languageName: node
   linkType: hard
 
@@ -10736,14 +10736,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-stately/utils@npm:^3.10.8":
-  version: 3.10.8
-  resolution: "@react-stately/utils@npm:3.10.8"
+"@react-stately/utils@npm:^3.10.8, @react-stately/utils@npm:^3.11.0":
+  version: 3.11.0
+  resolution: "@react-stately/utils@npm:3.11.0"
   dependencies:
     "@swc/helpers": ^0.5.0
   peerDependencies:
     react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-  checksum: 3d0ed0c1a73c06e50775a7037a4f88f12505313f6caa431d87c8ef20cfec63fedb60be294e6986d1ef5f5d85e5e7b1e2794f5971988561dc1ae78fc40e432c5c
+  checksum: a5232b6ad60f5171254fab1ca4e3f51328766d8c2868bc37fb052458580491dd466cfc71d88fb0c55c879d2621bd6d93543c6e361e2829e5fcb305bcb463ca2f
   languageName: node
   linkType: hard
 
@@ -11090,6 +11090,7 @@ __metadata:
     "@backstage/dev-utils": ^1.1.17
     "@backstage/test-utils": ^1.7.13
     "@backstage/theme": ^0.7.0
+    "@backstage/ui": ^0.9.1
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@mui/styled-engine": 5.18.0
@@ -11130,6 +11131,7 @@ __metadata:
     "@backstage/plugin-user-settings": ^0.8.29
     "@backstage/test-utils": ^1.7.13
     "@backstage/theme": ^0.7.0
+    "@backstage/ui": ^0.9.1
     "@mui/icons-material": 5.18.0
     "@mui/material": 5.18.0
     "@mui/styled-engine": 5.18.0
@@ -15735,6 +15737,7 @@ __metadata:
     "@backstage/plugin-user-settings": ^0.8.29
     "@backstage/test-utils": ^1.7.13
     "@backstage/theme": ^0.7.0
+    "@backstage/ui": ^0.9.1
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@mui/icons-material": 5.18.0

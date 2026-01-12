@@ -32,6 +32,9 @@ import {
   NotificationsClient,
 } from '@backstage/plugin-notifications';
 
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
+import '@backstage/ui/css/styles.css';
+
 import Button from '@mui/material/Button';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
