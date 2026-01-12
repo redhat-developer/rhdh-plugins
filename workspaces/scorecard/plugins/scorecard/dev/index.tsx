@@ -21,8 +21,10 @@ import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { TestApiProvider } from '@backstage/test-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import type { Entity } from '@backstage/catalog-model';
-import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { AggregatedMetricResult } from '../src/utils/utils';
+import type {
+  MetricResult,
+  AggregatedMetricResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';

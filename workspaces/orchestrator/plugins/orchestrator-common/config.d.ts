@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 export interface Config {
   /**
    * Configuration for the Orchestrator plugin.
@@ -76,6 +77,31 @@ export interface Config {
        * Example: http://localhost:8099
        */
       url: string;
+    };
+    /**
+     * Configuration for the workflow log provider.
+     * If configured, the "View Logs" button will be shown in the workflow instance results.
+     * @visibility frontend
+     */
+    workflowLogProvider?: {
+      /**
+       * Loki log provider configuration.
+       * @visibility frontend
+       */
+      loki?: {
+        /**
+         * Base URL of the Loki service.
+         * Example: http://localhost:3100
+         */
+        baseUrl: string;
+      };
+      /**
+       * Custom log stream selectors.
+       */
+      logStreamSelectors?: Array<{
+        label: string;
+        value: string;
+      }>;
     };
   };
 }

@@ -115,6 +115,7 @@ export const scorecardPlugin = createBackendPlugin({
           await createRouter({
             metricProvidersRegistry,
             catalogMetricService,
+            catalog,
             httpAuth,
             permissions,
           }),

@@ -5,6 +5,29 @@
 ```ts
 import { ResourcePermission } from '@backstage/plugin-permission-common';
 
+// @public (undocumented)
+export type AggregatedMetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result: {
+    values: AggregatedMetricValue[];
+    total: number;
+    timestamp: string;
+  };
+};
+
+// @public (undocumented)
+export type AggregatedMetricValue = {
+  count: number;
+  name: 'success' | 'warning' | 'error';
+};
+
 // @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
 
@@ -28,7 +51,7 @@ export type MetricResult = {
     history?: boolean;
   };
   result: {
-    value?: MetricValue;
+    value: MetricValue | null;
     timestamp: string;
     thresholdResult: ThresholdResult;
   };
@@ -68,7 +91,7 @@ export type ThresholdConfig = {
 export type ThresholdResult = {
   status: 'success' | 'error';
   definition: ThresholdConfig | undefined;
-  evaluation: string | undefined;
+  evaluation: string | null;
   error?: string;
 };
 

@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-import { TextCodeBlock } from './TextCodeBlock';
+import { z } from 'zod';
+import { InputError } from '@backstage/errors';
 
-export const JsonCodeBlock = ({
-  value,
-  isDarkMode,
-  maxHeight,
-}: {
-  value: object;
-  isDarkMode: boolean;
-  maxHeight?: number;
-}) => {
-  const jsonString = JSON.stringify(value, null, 2);
+export function validateCatalogMetricsSchema(query: unknown): void {
+  const catalogMetricsSchema = z.object({
+    metricIds: z.string().min(1).optional(),
+  });
 
-  return (
-    <TextCodeBlock
-      value={jsonString}
-      isDarkMode={isDarkMode}
-      maxHeight={maxHeight}
-    />
-  );
-};
+  const parsed = catalogMetricsSchema.safeParse(query);
+
+  if (!parsed.success) {
+    throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
+  }
+}

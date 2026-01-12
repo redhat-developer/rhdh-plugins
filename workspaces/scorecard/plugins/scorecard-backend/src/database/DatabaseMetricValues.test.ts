@@ -20,30 +20,29 @@ import {
   TestDatabases,
 } from '@backstage/backend-test-utils';
 import { DatabaseMetricValues } from './DatabaseMetricValues';
-import { DbMetricValue } from './types';
+import { DbMetricValueCreate } from './types';
 import { migrate } from './migration';
 
 jest.setTimeout(60000);
 
-const metricValues: Omit<DbMetricValue, 'id'>[] = [
+const metricValues: DbMetricValueCreate[] = [
   {
     catalog_entity_ref: 'component:default/test-service',
     metric_id: 'github.metric1',
     value: 41,
     timestamp: new Date('2023-01-01T00:00:00Z'),
-    error_message: undefined,
+    status: 'success',
   },
   {
     catalog_entity_ref: 'component:default/another-service',
     metric_id: 'github.metric1',
     value: 25,
     timestamp: new Date('2023-01-01T00:00:00Z'),
-    error_message: undefined,
+    status: 'success',
   },
   {
     catalog_entity_ref: 'component:default/another-service',
     metric_id: 'github.metric2',
-    value: undefined,
     timestamp: new Date('2023-01-01T00:00:00Z'),
     error_message: 'Failed to fetch metric',
   },
@@ -188,6 +187,74 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toBe(1);
+      },
+    );
+  });
+
+  describe('readAggregatedMetricsByEntityRefs', () => {
+    it.each(databases.eachSupportedId())(
+      'should return aggregated metrics by status for multiple entities and metrics - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const baseTime = new Date('2023-01-01T00:00:00Z');
+        const laterTime = new Date('2023-01-01T01:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            ...metricValues[0],
+            timestamp: baseTime,
+            status: 'success',
+          },
+          {
+            ...metricValues[1],
+            timestamp: baseTime,
+            status: 'success',
+          },
+          {
+            ...metricValues[2],
+            timestamp: laterTime,
+            status: 'warning',
+            value: 10,
+          },
+          {
+            catalog_entity_ref: 'component:default/test-service',
+            metric_id: 'github.metric2',
+            timestamp: laterTime,
+            value: 20,
+            error_message: null,
+            status: 'error',
+          },
+        ]);
+
+        const result = await db.readAggregatedMetricsByEntityRefs(
+          [
+            'component:default/test-service',
+            'component:default/another-service',
+          ],
+          ['github.metric1', 'github.metric2'],
+        );
+
+        expect(result).toHaveLength(2);
+
+        const metric1Result = result.find(
+          r => r.metric_id === 'github.metric1',
+        );
+        const metric2Result = result.find(
+          r => r.metric_id === 'github.metric2',
+        );
+
+        expect(metric1Result).toBeDefined();
+        expect(metric1Result?.total).toBe(2);
+        expect(metric1Result?.success).toBe(2);
+        expect(metric1Result?.warning).toBe(0);
+        expect(metric1Result?.error).toBe(0);
+
+        expect(metric2Result).toBeDefined();
+        expect(metric2Result?.total).toBe(2);
+        expect(metric2Result?.success).toBe(0);
+        expect(metric2Result?.warning).toBe(1);
+        expect(metric2Result?.error).toBe(1);
       },
     );
   });

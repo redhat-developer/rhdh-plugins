@@ -44,7 +44,7 @@ export const checkEntityAccess = async (
   );
 
   if (entityAccessDecision[0].result !== AuthorizeResult.ALLOW) {
-    throw new NotAllowedError('Access to entity metrics denied');
+    throw new NotAllowedError(`Access to "${entityRef}" entity metrics denied`);
   }
 };
 

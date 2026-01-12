@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InputError, NotAllowedError } from '@backstage/errors';
+import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import { z } from 'zod';
 import express, { Request } from 'express';
 import Router from 'express-promise-router';
@@ -23,6 +23,7 @@ import {
   type HttpAuthService,
   type PermissionsService,
 } from '@backstage/backend-plugin-api';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 import {
   AuthorizeResult,
   BasicPermission,
@@ -35,10 +36,14 @@ import {
   checkEntityAccess,
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
+import { validateCatalogMetricsSchema } from '../validation/validateCatalogMetricsSchema';
+import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
+import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
   catalogMetricService: CatalogMetricService;
+  catalog: CatalogService;
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
 };
@@ -46,6 +51,7 @@ export type ScorecardRouterOptions = {
 export async function createRouter({
   metricProvidersRegistry,
   catalogMetricService,
+  catalog,
   httpAuth,
   permissions,
 }: ScorecardRouterOptions): Promise<express.Router> {
@@ -124,23 +130,17 @@ export async function createRouter({
     const { kind, namespace, name } = req.params;
     const { metricIds } = req.query;
 
-    const catalogMetricsSchema = z.object({
-      metricIds: z.string().min(1).optional(),
-    });
-
-    const parsed = catalogMetricsSchema.safeParse(req.query);
-    if (!parsed.success) {
-      throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
-    }
+    validateCatalogMetricsSchema(req.query);
 
     const entityRef = stringifyEntityRef({ kind, namespace, name });
 
     // Check if user has permission to read this specific catalog entity
     await checkEntityAccess(entityRef, req, permissions, httpAuth);
 
-    const metricIdArray = metricIds
-      ? (metricIds as string).split(',').map(id => id.trim())
-      : undefined;
+    const metricIdArray =
+      typeof metricIds === 'string'
+        ? parseCommaSeparatedString(metricIds)
+        : undefined;
 
     const results = await catalogMetricService.getLatestEntityMetrics(
       entityRef,
@@ -148,6 +148,54 @@ export async function createRouter({
       conditions,
     );
     res.json(results);
+  });
+
+  router.get('/metrics/:metricId/catalog/aggregation', async (req, res) => {
+    const { metricId } = req.params;
+
+    const { conditions } = await authorizeConditional(
+      req,
+      scorecardMetricReadPermission,
+    );
+
+    const metric = metricProvidersRegistry.getMetric(metricId);
+    const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+
+    if (authorizedMetrics.length === 0) {
+      throw new NotAllowedError(
+        `To view the scorecard metrics, your administrator must grant you the required permission.`,
+      );
+    }
+
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const userEntityRef = credentials?.principal?.userEntityRef;
+
+    if (!userEntityRef) {
+      throw new NotFoundError('User entity reference not found');
+    }
+
+    const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
+      catalog,
+      credentials,
+    });
+
+    if (entitiesOwnedByAUser.length === 0) {
+      res.json([]);
+      return;
+    }
+
+    for (const entityRef of entitiesOwnedByAUser) {
+      await checkEntityAccess(entityRef, req, permissions, httpAuth);
+    }
+
+    const aggregatedMetrics =
+      await catalogMetricService.getAggregatedMetricsByEntityRefs(
+        entitiesOwnedByAUser,
+        [metricId],
+        conditions,
+      );
+
+    res.json(aggregatedMetrics);
   });
 
   return router;

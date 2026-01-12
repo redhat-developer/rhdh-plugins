@@ -37,7 +37,7 @@ interface ScorecardProps {
   loading: boolean;
   statusColor: string;
   StatusIcon: React.ElementType;
-  value?: MetricValue;
+  value: MetricValue | null;
   thresholds?: ThresholdResult;
   isMetricDataError?: boolean;
   metricDataError?: string;

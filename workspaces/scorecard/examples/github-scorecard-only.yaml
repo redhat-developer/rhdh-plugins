@@ -9,5 +9,5 @@ metadata:
     backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
 spec:
   type: service
-  owner: janus-authors
+  owner: group:development/guests
   lifecycle: production

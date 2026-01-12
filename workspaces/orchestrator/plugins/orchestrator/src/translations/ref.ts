@@ -115,6 +115,11 @@ export const orchestratorMessages = {
     variables: 'Run Variables',
     inputs: 'Inputs',
     results: 'Results',
+    logs: {
+      viewLogs: 'View logs',
+      title: 'Run logs',
+      noLogsAvailable: 'No logs available for this workflow run.',
+    },
     abort: {
       title: 'Abort workflow run?',
       button: 'Abort',

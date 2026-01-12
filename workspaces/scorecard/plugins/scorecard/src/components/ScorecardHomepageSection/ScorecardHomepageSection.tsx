@@ -23,7 +23,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ScorecardHomepageCard } from './ScorecardHomepageCard';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { useAggregatedScorecards } from '../../hooks/useAggregatedScorecards';
-import type { AggregatedMetricResult } from '../../utils/utils';
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const ScorecardHomepageSection = () => {
   const { aggregatedScorecards, loadingData, error } =

@@ -19,7 +19,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import useAsync from 'react-use/lib/useAsync';
 
 import { scorecardApiRef } from '../api';
-import { AggregatedMetricResult } from '../utils/utils';
+import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const useAggregatedScorecards = () => {
   const scorecardApi = useApi(scorecardApiRef);
