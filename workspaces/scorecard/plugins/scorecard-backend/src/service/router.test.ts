@@ -223,6 +223,59 @@ describe('createRouter', () => {
 
       expect(response.body.metrics[0].id).toBe('github.open_prs');
     });
+
+    it('should return metrics filtered by datasource', async () => {
+      const response = await request(app).get('/metrics?datasource=github');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(2);
+
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).toContain('github.open_prs');
+      expect(metricIds).toContain('github.open_issues');
+    });
+
+    it('should return metrics filtered by datasource - sonar', async () => {
+      const response = await request(app).get('/metrics?datasource=sonar');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(1);
+
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).toContain('sonar.quality');
+    });
+
+    it('should return empty array when datasource does not exist', async () => {
+      const response = await request(app).get(
+        '/metrics?datasource=nonexistent',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(0);
+    });
+
+    it('should return 400 InputError when invalid datasource parameter - empty string', async () => {
+      const response = await request(app).get('/metrics?datasource=');
+
+      expect(response.status).toEqual(400);
+      expect(response.body.error.name).toEqual('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+
+    it('should prioritize metricIds over datasource when both are provided', async () => {
+      const response = await request(app).get(
+        '/metrics?metricIds=sonar.quality&datasource=github',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('metrics');
+      expect(response.body.metrics).toHaveLength(1);
+
+      expect(response.body.metrics[0].id).toBe('sonar.quality');
+    });
   });
 
   describe('GET /metrics/catalog/:kind/:namespace/:name', () => {

@@ -350,4 +350,52 @@ describe('MetricProvidersRegistry', () => {
       expect(metrics[1].id).toBe('jira.boolean_metric');
     });
   });
+
+  describe('listMetricsByDatasource', () => {
+    beforeEach(() => {
+      registry.register(githubNumberProvider);
+      registry.register(jiraBooleanProvider);
+      registry.register(
+        new MockNumberProvider(
+          'github.open_issues',
+          'github',
+          'GitHub Open Issues',
+        ),
+      );
+    });
+
+    it('should return empty array when no providers registered', () => {
+      registry = new MetricProvidersRegistry();
+
+      const metrics = registry.listMetricsByDatasource('github');
+      expect(metrics).toEqual([]);
+    });
+
+    it('should return all metrics for a specific datasource', () => {
+      const metrics = registry.listMetricsByDatasource('github');
+
+      expect(metrics).toHaveLength(2);
+      expect(metrics[0].id).toBe('github.number_metric');
+      expect(metrics[1].id).toBe('github.open_issues');
+    });
+
+    it('should return metrics for jira datasource', () => {
+      const metrics = registry.listMetricsByDatasource('jira');
+
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].id).toBe('jira.boolean_metric');
+    });
+
+    it('should return empty array when datasource does not exist', () => {
+      const metrics = registry.listMetricsByDatasource('nonexistent');
+
+      expect(metrics).toEqual([]);
+    });
+
+    it('should return empty array when datasource is empty string', () => {
+      const metrics = registry.listMetricsByDatasource('');
+
+      expect(metrics).toEqual([]);
+    });
+  });
 });

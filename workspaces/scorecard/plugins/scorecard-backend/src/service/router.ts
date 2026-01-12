@@ -38,6 +38,7 @@ import { stringifyEntityRef } from '@backstage/catalog-model';
 import { validateCatalogMetricsSchema } from '../validation/validateCatalogMetricsSchema';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
+import { validateMetricsSchema } from '../validation/validateMetricsSchema';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
@@ -92,13 +93,19 @@ export async function createRouter({
   };
 
   router.get('/metrics', async (req, res) => {
-    const { metricIds } = validateCatalogMetricsSchema(req.query);
+    const { metricIds, datasource } = validateMetricsSchema(req.query);
 
     if (metricIds) {
       return res.json({
         metrics: metricProvidersRegistry.listMetrics(
           parseCommaSeparatedString(metricIds),
         ),
+      });
+    }
+
+    if (datasource) {
+      return res.json({
+        metrics: metricProvidersRegistry.listMetricsByDatasource(datasource),
       });
     }
 
