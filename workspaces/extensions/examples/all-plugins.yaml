@@ -1,0 +1,32 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  namespace: extensions-plugin-demo
+  name: all-plugins
+  description: A collection of all the extensions plugins
+spec:
+  targets:
+    - ./plugins/3scale.yaml
+    - ./plugins/acr.yaml
+    - ./plugins/bulk-import.yaml
+    - ./plugins/certified-plugin-1-by-vendor-a.yaml
+    - ./plugins/certified-plugin-2-by-vendor-a.yaml
+    - ./plugins/certified-plugin-3-by-vendor-b.yaml
+    - ./plugins/keycloak.yaml
+    - ./plugins/extensions.yaml
+    - ./plugins/no-icon-no-description.yaml
+    - ./plugins/pre-installed-false.yaml
+    - ./plugins/pre-installed-true.yaml
+    - ./plugins/pre-installed-undefined.yaml
+    - ./plugins/quay.yaml
+    - ./plugins/search.yaml
+    - ./plugins/support-community.yaml
+    - ./plugins/support-dev-preview.yaml
+    - ./plugins/support-generally-available.yaml
+    - ./plugins/support-none.yaml
+    - ./plugins/support-string.yaml
+    - ./plugins/support-tech-preview.yaml
+    - ./plugins/support-undefined.yaml
+    - ./plugins/support-unknown-level.yaml
+    - ./plugins/tekton.yaml
+    - ./plugins/topology.yaml
