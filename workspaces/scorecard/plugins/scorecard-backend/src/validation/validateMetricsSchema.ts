@@ -17,11 +17,13 @@
 import { z } from 'zod';
 import { InputError } from '@backstage/errors';
 
-export function validateCatalogMetricsSchema(query: unknown): {
+export function validateMetricsSchema(query: unknown): {
   metricIds?: string;
+  datasource?: string;
 } {
   const catalogMetricsSchema = z.object({
     metricIds: z.string().min(1).optional(),
+    datasource: z.string().min(1).optional(),
   });
 
   const parsed = catalogMetricsSchema.safeParse(query);
