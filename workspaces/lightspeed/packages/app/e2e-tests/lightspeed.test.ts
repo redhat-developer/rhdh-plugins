@@ -32,6 +32,7 @@ import {
   assertClipboardContains,
   switchToLocale,
 } from './utils/testHelper';
+import { LightspeedPage } from './pages/LightspeedPage';
 import {
   uploadFiles,
   uploadAndAssertDuplicate,
@@ -131,6 +132,54 @@ test.describe('Lightspeed tests', () => {
 
     await switchToLocale(sharedPage, locale);
     await openLightspeed(sharedPage);
+  });
+
+  test.describe('Chatbot Display Modes', () => {
+    let lightspeedPage: LightspeedPage;
+
+    test.beforeEach(async () => {
+      lightspeedPage = new LightspeedPage(sharedPage);
+      await lightspeedPage.goto('/');
+    });
+
+    test('should display chatbot in overlay mode with backstage page visible', async () => {
+      await lightspeedPage.expectBackstagePageVisible();
+      await lightspeedPage.openChatbot();
+
+      await lightspeedPage.expectConversationArea('Overlay');
+      await lightspeedPage.expectChatInputAreaVisible();
+      await lightspeedPage.expectBackstagePageVisible();
+      await lightspeedPage.expectChatbotControlsVisible();
+
+      await lightspeedPage.openChatHistoryDrawer();
+      await lightspeedPage.expectEmptyChatHistory();
+      await lightspeedPage.closeChatHistoryDrawer();
+
+      await lightspeedPage.verifyDisplayModeMenuOptions();
+    });
+
+    test('should display chatbot in dock to window mode with backstage page visible', async () => {
+      await lightspeedPage.openChatbot();
+      await lightspeedPage.selectDisplayMode('Dock to window');
+
+      await lightspeedPage.expectConversationArea('Dock to window');
+      await lightspeedPage.expectBackstagePageVisible();
+      await lightspeedPage.expectChatInputAreaVisible();
+      await lightspeedPage.expectChatbotControlsVisible();
+
+      await lightspeedPage.openChatHistoryDrawer();
+      await lightspeedPage.expectEmptyChatHistory();
+      await lightspeedPage.closeChatHistoryDrawer();
+    });
+
+    test('should display chatbot in fullscreen mode with backstage page hidden', async () => {
+      await lightspeedPage.openChatbot();
+      await lightspeedPage.selectDisplayMode('Fullscreen');
+
+      await lightspeedPage.expectConversationArea('Fullscreen');
+      await lightspeedPage.expectEmptyChatHistory();
+      await lightspeedPage.expectBackstagePageVisible(false);
+    });
   });
 
   test('Lightspeed is available', async ({ browser }, testInfo) => {
