@@ -36,21 +36,46 @@ export type ReferencedDocument = {
 };
 
 export type ReferencedDocuments = ReferencedDocument[];
+
+export type LCSModelType = 'embedding' | 'llm';
+export type LCSModelApiModelType = 'embedding' | 'llm';
+
+export interface LCSModel {
+  identifier: string;
+  metadata: {
+    embedding_dimension: number;
+  };
+  api_model_type: LCSModelApiModelType;
+  provider_id: string;
+  type: 'model';
+  provider_resource_id: string;
+  model_type: LCSModelType;
+}
+export interface LCSConversation {
+  provider: string;
+  model: string;
+  messages: BaseMessage[];
+  started_at: string;
+  completed_at: string;
+  referenced_documents?: ReferencedDocuments;
+}
+
+export interface LCSShield {
+  identifier: string;
+  provider_id: string;
+  type: 'shield';
+  params: {};
+  provider_resource_id: string;
+}
 export interface BaseMessage {
   name: string;
   type: string;
   id: number;
   content: string;
-  response_metadata: {
-    model?: string;
-    created_at: number;
-    role?: string;
-  };
+  model: string;
+  timestamp: string;
   sources?: SourcesCardProps;
-  additional_kwargs: {
-    referenced_documents?: ReferencedDocuments;
-    [_key: string]: any;
-  };
+  referenced_documents?: ReferencedDocuments;
   error?: AlertProps;
 }
 export type ConversationSummary = {
@@ -63,7 +88,6 @@ export enum SupportedFileType {
   JSON = 'application/json',
   YAML = 'application/x-yaml',
   TEXT = 'text/plain',
-  XML = 'text/xml',
 }
 export interface FileContent {
   content: string;
@@ -79,10 +103,17 @@ export type Attachment = {
 
 export type ConversationList = ConversationSummary[];
 
-export type SamplePrompts = {
-  title: string;
-  message: string;
-}[];
+export type SamplePrompt =
+  | {
+      title: string;
+      message: string;
+    }
+  | {
+      titleKey: string;
+      messageKey: string;
+    };
+
+export type SamplePrompts = SamplePrompt[];
 
 export type CaptureFeedback = {
   conversation_id: string;

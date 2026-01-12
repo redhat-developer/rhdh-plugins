@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import Button from '@mui/material/Button';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -23,6 +21,7 @@ import Stepper from '@mui/material/Stepper';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { useStepperContext } from '../utils/StepperContext';
 import SubmitButton from './SubmitButton';
 
@@ -59,11 +58,12 @@ const OrchestratorFormStepper = ({
 }: {
   steps: OrchestratorFormStep[];
 }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
   const { activeStep, reviewStep } = useStepperContext();
   const stepsWithReview = [
     ...steps,
-    { content: reviewStep, title: 'Review', key: 'review' },
+    { content: reviewStep, title: t('common.review'), key: 'review' },
   ];
 
   return (
@@ -96,8 +96,11 @@ const OrchestratorFormStepper = ({
 };
 
 export const OrchestratorFormToolbar = () => {
-  const { activeStep, handleBack, isValidating } = useStepperContext();
+  const { t } = useTranslation();
+  const { activeStep, handleBack, isValidating, isFetching } =
+    useStepperContext();
   const { classes } = useStyles();
+
   return (
     <div className={classes.footer}>
       <Button
@@ -105,9 +108,11 @@ export const OrchestratorFormToolbar = () => {
         onClick={handleBack}
         className={classes.regularButton}
       >
-        Back
+        {t('common.back')}
       </Button>
-      <SubmitButton submitting={isValidating}>Next</SubmitButton>
+      <SubmitButton submitting={isValidating || isFetching}>
+        {t('common.next')}
+      </SubmitButton>
     </div>
   );
 };

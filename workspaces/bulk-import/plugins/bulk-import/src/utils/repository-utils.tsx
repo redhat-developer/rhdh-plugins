@@ -15,7 +15,8 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import { StatusOK } from '@backstage/core-components';
+import { Link, StatusOK } from '@backstage/core-components';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
 import * as jsyaml from 'js-yaml';
@@ -35,6 +36,7 @@ import {
   ImportJobs,
   ImportJobStatus,
   ImportStatus,
+  isGithubJob,
   JobErrors,
   Order,
   OrgAndRepoResponse,
@@ -43,8 +45,34 @@ import {
   RepositorySelection,
   RepositoryStatus,
 } from '../types';
+import { getTaskStatusInfo } from './task-status';
 
-export const gitlabFeatureFlag = false;
+const TaskLink = ({
+  taskId,
+  t,
+}: {
+  taskId?: string;
+  t: (key: string) => string;
+}) => {
+  const configApi = useApi(configApiRef);
+  const appBaseUrl = configApi.getString('app.baseUrl');
+
+  if (!taskId) return null;
+
+  return (
+    <Link
+      to={`${appBaseUrl}/create/tasks/${taskId}`}
+      data-testid="view-task-link"
+      style={{
+        paddingLeft: '5px',
+        display: 'inline-flex',
+        alignItems: 'center',
+      }}
+    >
+      {t('tasks.viewTask')}
+    </Link>
+  );
+};
 
 export const descendingComparator = (
   a: AddRepositoryData,
@@ -74,6 +102,13 @@ export const descendingComparator = (
     value1 = order[(value1 as ImportStatus) || RepositoryStatus.NotGenerated];
     value2 = order[(value2 as ImportStatus) || RepositoryStatus.NotGenerated];
   }
+
+  // Convert strings to lowercase for case-insensitive comparison
+  if (typeof value1 === 'string' && typeof value2 === 'string') {
+    value1 = value1.toLowerCase();
+    value2 = value2.toLowerCase();
+  }
+
   if (value2 < value1) {
     return -1;
   }
@@ -97,15 +132,20 @@ export const defaultCatalogInfoYaml = (
   repoName: string,
   orgName: string,
   owner: string,
-) => ({
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: {
-    name: componentName,
-    annotations: { 'github.com/project-slug': `${orgName}/${repoName}` },
-  },
-  spec: { type: 'other', lifecycle: 'unknown', owner },
-});
+  gitProvider: 'github' | 'gitlab',
+) => {
+  return {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'Component',
+    metadata: {
+      name: componentName,
+      annotations: {
+        [`${gitProvider}.com/project-slug`]: `${orgName}/${repoName}`,
+      },
+    },
+    spec: { type: 'other', lifecycle: 'unknown', owner },
+  };
+};
 
 export const componentNameRegex =
   /^([a-zA-Z0-9]+[-_.])*[a-zA-Z0-9]+$|^[a-zA-Z0-9]{1,63}$/;
@@ -130,6 +170,7 @@ export const getPRTemplate = (
   baseUrl: string,
   repositoryUrl: string,
   defaultBranch: string,
+  gitProvider: 'github' | 'gitlab',
 ): PullRequestPreview => {
   const importJobUrl = repositoryUrl
     ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}&defaultBranch=${defaultBranch}`
@@ -141,7 +182,13 @@ export const getPRTemplate = (
     prTitle: 'Add catalog-info.yaml config file',
     prDescription: `This pull request adds a **Backstage entity metadata file**\nto this repository so that the component can\nbe added to the [software catalog](${baseUrl}/catalog).\nAfter this pull request is merged, the component will become available.\nFor more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).\nView the import job in your app [here](${importJobUrl}).`,
     useCodeOwnersFile: false,
-    yaml: defaultCatalogInfoYaml(name, componentName, orgName, entityOwner),
+    yaml: defaultCatalogInfoYaml(
+      name,
+      componentName,
+      orgName,
+      entityOwner,
+      gitProvider,
+    ),
   };
 };
 
@@ -222,39 +269,61 @@ export const urlHelper = (url: string) => {
 
 export const getImportStatus = (
   status: string,
+  t: (key: string) => string,
   showIcon?: boolean,
   prUrl?: string,
-  isApprovalToolGitlab: boolean = false,
+  taskId?: string,
 ) => {
   if (!status) {
     return '';
   }
-  const labelText = gitlabFeatureFlag ? 'Already imported' : 'Added';
-  switch (status) {
-    case 'WAIT_PR_APPROVAL':
-      return showIcon ? (
-        <WaitingForPR
-          url={prUrl as string}
-          isApprovalToolGitlab={isApprovalToolGitlab}
-        />
-      ) : (
-        'Waiting for Approval'
-      );
-    case 'ADDED':
-      return showIcon ? (
-        <Typography
-          component="span"
-          style={{ display: 'flex', alignItems: 'baseline' }}
-        >
-          <StatusOK />
-          {gitlabFeatureFlag ? 'Imported' : 'Added'}
-        </Typography>
-      ) : (
-        labelText
-      );
-    default:
-      return '';
+  const labelText = t('status.imported');
+
+  if (status === 'WAIT_PR_APPROVAL') {
+    return showIcon ? (
+      <WaitingForPR url={prUrl as string} />
+    ) : (
+      t('status.waitingForApproval')
+    );
   }
+
+  if (status === 'ADDED') {
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        <StatusOK />
+        {t('status.imported')}
+      </Typography>
+    ) : (
+      labelText
+    );
+  }
+
+  if (taskId && status.startsWith('TASK')) {
+    const { taskLabelText, taskIcon } = getTaskStatusInfo(status, t);
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {taskIcon}
+        {taskLabelText}
+        <TaskLink taskId={taskId} t={t} />
+      </Typography>
+    ) : (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {taskLabelText}
+        <TaskLink taskId={taskId} t={t} />
+      </Typography>
+    );
+  }
+
+  return '';
 };
 
 export const evaluateRowForRepo = (
@@ -380,8 +449,10 @@ export const prepareDataForSubmission = (
 ) =>
   Object.values(repositories).reduce(
     (acc: CreateImportJobRepository[], repo) => {
+      const gitProvider =
+        approvalTool === ApprovalTool.Gitlab ? 'gitlab' : 'github';
       acc.push({
-        approvalTool: approvalTool.toLocaleUpperCase(),
+        approvalTool: approvalTool,
         codeOwnersFileAsEntityOwner:
           repo.catalogInfoYaml?.prTemplate?.useCodeOwnersFile || false,
         catalogEntityName:
@@ -400,7 +471,7 @@ export const prepareDataForSubmission = (
           null,
           2,
         ),
-        github: {
+        [gitProvider]: {
           pullRequest: {
             title:
               repo.catalogInfoYaml?.prTemplate?.prTitle ||
@@ -419,57 +490,44 @@ export const getApi = (
   page: number,
   size: number,
   searchString: string,
+  approvalTool: string,
   options?: APITypes,
 ) => {
   if (options?.fetchOrganizations) {
-    return `${backendUrl}/api/bulk-import/organizations?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}`;
+    return `${backendUrl}/api/bulk-import/organizations?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
   }
   if (options?.orgName) {
-    return `${backendUrl}/api/bulk-import/organizations/${options.orgName}/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}`;
+    return `${backendUrl}/api/bulk-import/organizations/${options.orgName}/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
   }
-  return `${backendUrl}/api/bulk-import/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}`;
+  return `${backendUrl}/api/bulk-import/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
 };
 
 export const getCustomisedErrorMessage = (
   status: (RepositoryStatus | string)[] | undefined,
+  t: (key: string) => string,
 ) => {
   let message = '';
   let showRepositoryLink = false;
   status?.forEach(s => {
     if (s === RepositoryStatus.PR_ERROR) {
-      message = message.concat(
-        "Couldn't create a new PR due to insufficient permissions. Contact your administrator.",
-        '\n',
-      );
+      message = message.concat(t('errors.prErrorPermissions'), '\n');
       showRepositoryLink = true;
     }
 
     if (s === RepositoryStatus.CATALOG_INFO_FILE_EXISTS_IN_REPO) {
-      message = message.concat(
-        'Since catalog-info.yaml already exists in the repository, no new PR will be created. However, the entity will still be registered in the catalog page.',
-        '\n',
-      );
+      message = message.concat(t('errors.catalogInfoExists'), '\n');
     }
 
     if (s === RepositoryStatus.CATALOG_ENTITY_CONFLICT) {
-      message = message.concat(
-        "Couldn't create a new PR because of catalog entity conflict.",
-        '\n',
-      );
+      message = message.concat(t('errors.catalogEntityConflict'), '\n');
     }
 
     if (s === RepositoryStatus.REPO_EMPTY) {
-      message = message.concat(
-        "Couldn't create a new PR because the repository is empty. Push an initial commit to the repository.",
-        '\n',
-      );
+      message = message.concat(t('errors.repoEmpty'), '\n');
     }
 
     if (s === RepositoryStatus.CODEOWNERS_FILE_NOT_FOUND_IN_REPO) {
-      message = message.concat(
-        'CODEOWNERS file is missing from the repository. Add a CODEOWNERS file to create a new PR.',
-        '\n',
-      );
+      message = message.concat(t('errors.codeOwnersNotFound'), '\n');
     }
   });
   if (!message) {
@@ -478,7 +536,10 @@ export const getCustomisedErrorMessage = (
   return { message, showRepositoryLink };
 };
 
-export const calculateLastUpdated = (dateString: string) => {
+export const calculateLastUpdated = (
+  dateString: string,
+  t: (key: string, params?: any) => string,
+) => {
   if (!dateString) {
     return '';
   }
@@ -496,31 +557,32 @@ export const calculateLastUpdated = (dateString: string) => {
   const diffInDays = Math.floor(diffInHours / 24);
 
   if (diffInDays > 0) {
-    return `${diffInDays} ${diffInDays > 1 ? 'days' : 'day'} ago`;
+    return t('time.daysAgo', { count: diffInDays });
   }
   if (diffInHours > 0) {
-    return `${diffInHours} ${diffInHours > 1 ? 'hours' : 'hour'} ago`;
+    return t('time.hoursAgo', { count: diffInHours });
   }
   if (diffInMinutes > 0) {
-    return `${diffInMinutes} ${diffInMinutes > 1 ? 'minutes' : 'minute'} ago`;
+    return t('time.minutesAgo', { count: diffInMinutes });
   }
-  return `${diffInSeconds} ${diffInSeconds > 1 ? 'seconds' : 'second'} ago`;
+  return t('time.secondsAgo', { count: diffInSeconds });
 };
 
 export const evaluatePRTemplate = (
   repositoryStatus: ImportJobStatus,
 ): { pullReqPreview: PullRequestPreview; isInvalidEntity: boolean } => {
+  const gitProvider = isGithubJob(repositoryStatus) ? 'github' : 'gitlab';
   try {
     const entity = jsyaml.loadAll(
-      repositoryStatus.github.pullRequest.catalogInfoContent,
+      repositoryStatus[gitProvider]?.pullRequest.catalogInfoContent ?? '',
     )[0] as Entity;
     const isInvalid =
       !entity?.metadata?.name || !entity?.apiVersion || !entity?.kind;
     return {
       pullReqPreview: {
-        pullRequestUrl: repositoryStatus.github.pullRequest.url,
-        prTitle: repositoryStatus.github.pullRequest.title,
-        prDescription: repositoryStatus.github.pullRequest.body,
+        pullRequestUrl: repositoryStatus[gitProvider]?.pullRequest.url,
+        prTitle: repositoryStatus[gitProvider]?.pullRequest.title,
+        prDescription: repositoryStatus[gitProvider]?.pullRequest.body,
         prAnnotations: convertKeyValuePairsToString(
           entity?.metadata?.annotations,
         ),
@@ -538,9 +600,9 @@ export const evaluatePRTemplate = (
   } catch (e) {
     return {
       pullReqPreview: {
-        pullRequestUrl: repositoryStatus.github.pullRequest.url,
-        prTitle: repositoryStatus.github.pullRequest.title,
-        prDescription: repositoryStatus.github.pullRequest.body,
+        pullRequestUrl: repositoryStatus[gitProvider]?.pullRequest.url,
+        prTitle: repositoryStatus[gitProvider]?.pullRequest.title,
+        prDescription: repositoryStatus[gitProvider]?.pullRequest.body,
         prAnnotations: undefined,
         prLabels: undefined,
         prSpec: undefined,
@@ -563,8 +625,9 @@ export const prepareDataForOrganizations = (result: OrgAndRepoResponse) => {
           [val.id]: {
             id: val.id,
             orgName: val.name,
-            organizationUrl: `https://github.com/${val?.name}`,
+            organizationUrl: `${val?.url}`,
             totalReposInOrg: val.totalRepoCount,
+            approvalTool: result.approvalTool,
           },
         };
       },
@@ -578,6 +641,8 @@ export const prepareDataForRepositories = (
   user: string,
   baseUrl: string,
 ) => {
+  const gitProvider =
+    result?.approvalTool === ApprovalTool.Gitlab ? 'gitlab' : 'github';
   const repoData: { [id: string]: AddRepositoryData } =
     result?.repositories?.reduce((acc, val: Repository) => {
       const id = val.id;
@@ -586,6 +651,7 @@ export const prepareDataForRepositories = (
         [id]: {
           id,
           repoName: val.name,
+          approvalTool: result?.approvalTool ?? ApprovalTool.Git,
           defaultBranch: val.defaultBranch || 'main',
           orgName: val.organization,
           repoUrl: val.url,
@@ -601,6 +667,7 @@ export const prepareDataForRepositories = (
               baseUrl || '',
               val.url || '',
               val.defaultBranch || 'main',
+              gitProvider,
             ),
           },
         },
@@ -621,11 +688,17 @@ export const prepareDataForAddedRepositories = (
   const repoData: { [id: string]: AddRepositoryData } =
     importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
       const id = `${val.repository.organization}/${val.repository.name}`;
+      const gitProvider = isGithubJob(val) ? 'github' : 'gitlab';
       return {
         ...acc,
         [id]: {
           id,
           source: val.source,
+          task: {
+            id: val.task?.taskId,
+            status: val.status,
+          },
+          approvalTool: val.approvalTool,
           repoName: val.repository.name,
           defaultBranch: val.repository.defaultBranch,
           orgName: val.repository.organization,
@@ -645,8 +718,9 @@ export const prepareDataForAddedRepositories = (
               baseUrl,
               val.repository.url || '',
               val.repository.defaultBranch || 'main',
+              gitProvider,
             ),
-            pullRequest: val?.github?.pullRequest?.url || '',
+            pullRequest: val[gitProvider]?.pullRequest?.url || '',
             lastUpdated: val.lastUpdate,
           },
         },
@@ -658,13 +732,11 @@ export const prepareDataForAddedRepositories = (
   };
 };
 
-const validateKeyValuePair = yup
-  .string()
-  .nullable()
-  .test(
-    'is-key-value-pair',
-    'Each entry must have a key and a value separated by a colon.',
-    value => {
+const validateKeyValuePair = (t: (key: string) => string) =>
+  yup
+    .string()
+    .nullable()
+    .test('is-key-value-pair', t('validation.keyValuePairFormat'), value => {
       if (!value) return true;
       const keyValuePairs = value.split(';').map(pair => pair.trim());
       for (const pair of keyValuePairs) {
@@ -676,29 +748,33 @@ const validateKeyValuePair = yup
         }
       }
       return true;
-    },
-  );
+    });
 
-export const getValidationSchema = (approvalTool: string) =>
+export const getValidationSchema = (
+  approvalTool: string,
+  t: (key: string, params?: any) => string,
+) =>
   yup.object().shape({
-    prTitle: yup.string().required(`${approvalTool} title is required`),
+    prTitle: yup
+      .string()
+      .required(t('validation.titleRequired', { approvalTool })),
     prDescription: yup
       .string()
-      .required(`${approvalTool} description is required`),
+      .required(t('validation.descriptionRequired', { approvalTool })),
     componentName: yup
       .string()
       .matches(
         componentNameRegex,
-        `"${yup.string()}" is not valid; expected a string that is sequences of [a-zA-Z0-9] separated by any of [-_.], at most 63 characters in total. To learn more about catalog file format, visit: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md`,
+        t('validation.componentNameInvalid', { value: yup.string() }),
       )
-      .required('Component name is required'),
+      .required(t('validation.componentNameRequired')),
     useCodeOwnersFile: yup.boolean(),
     entityOwner: yup.string().when('useCodeOwnersFile', {
       is: false,
-      then: schema => schema.required('Entity Owner is required'),
+      then: schema => schema.required(t('validation.entityOwnerRequired')),
       otherwise: schema => schema.notRequired(),
     }),
-    prLabels: validateKeyValuePair,
-    prAnnotations: validateKeyValuePair,
-    prSpec: validateKeyValuePair,
+    prLabels: validateKeyValuePair(t),
+    prAnnotations: validateKeyValuePair(t),
+    prSpec: validateKeyValuePair(t),
   });

@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
+import {
+  mockApis,
+  renderInTestApp,
+  TestApiProvider,
+} from '@backstage/test-utils';
+import { configApiRef } from '@backstage/core-plugin-api';
 import { QuickstartButton } from './QuickstartButton';
-import { useQuickstartPermission } from '../../hooks/useQuickstartPermission';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
 
 // Mock the hooks
-jest.mock('../../hooks/useQuickstartPermission', () => ({
-  useQuickstartPermission: jest.fn(),
-}));
-
 jest.mock('../../hooks/useQuickstartDrawerContext', () => ({
   useQuickstartDrawerContext: jest.fn(),
 }));
@@ -32,32 +33,75 @@ describe('QuickstartButton', () => {
   const mockToggleDrawer = jest.fn();
   const mockOnClick = jest.fn();
 
+  const mockConfigApi = mockApis.config({
+    data: {
+      app: {
+        quickstart: [
+          {
+            title: 'Test Quickstart',
+            roles: ['admin'],
+            steps: [],
+          },
+        ],
+      },
+    },
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
-    (useQuickstartPermission as jest.Mock).mockReturnValue(true);
     (useQuickstartDrawerContext as jest.Mock).mockReturnValue({
       toggleDrawer: mockToggleDrawer,
+      userRole: 'admin',
+      roleLoading: false,
     });
   });
 
-  it('renders the button when permission is allowed', () => {
-    render(<QuickstartButton />);
+  const renderWithApi = (configApi = mockConfigApi) => {
+    return renderInTestApp(
+      <TestApiProvider apis={[[configApiRef, configApi]]}>
+        <QuickstartButton />
+      </TestApiProvider>,
+    );
+  };
+
+  it('renders the button when user has quickstart items', async () => {
+    await renderWithApi();
 
     const button = screen.getByTestId('quickstart-button');
     expect(button).toBeInTheDocument();
     expect(screen.getByText('Quick start')).toBeInTheDocument();
   });
 
-  it('does not render when permission is denied', () => {
-    (useQuickstartPermission as jest.Mock).mockReturnValue(false);
+  it('does not render when user has no quickstart items', async () => {
+    const emptyConfigApi = mockApis.config({
+      data: {
+        app: {
+          quickstart: [],
+        },
+      },
+    });
 
-    render(<QuickstartButton />);
+    await renderWithApi(emptyConfigApi);
 
-    expect(screen.queryByTestId('quickstart-button')).not.toBeInTheDocument();
+    const button = screen.queryByTestId('quickstart-button');
+    expect(button).not.toBeInTheDocument();
   });
 
-  it('calls toggleDrawer when clicked', () => {
-    render(<QuickstartButton />);
+  it('does not render when user role does not match any items', async () => {
+    (useQuickstartDrawerContext as jest.Mock).mockReturnValue({
+      toggleDrawer: mockToggleDrawer,
+      userRole: 'developer', // No items for developer in our mock config
+      roleLoading: false,
+    });
+
+    await renderWithApi();
+
+    const button = screen.queryByTestId('quickstart-button');
+    expect(button).not.toBeInTheDocument();
+  });
+
+  it('calls toggleDrawer when clicked', async () => {
+    await renderWithApi();
 
     const button = screen.getByTestId('quickstart-button');
     fireEvent.click(button);
@@ -65,8 +109,14 @@ describe('QuickstartButton', () => {
     expect(mockToggleDrawer).toHaveBeenCalledTimes(1);
   });
 
-  it('calls custom onClick when provided', () => {
-    render(<QuickstartButton onClick={mockOnClick} />);
+  it('calls custom onClick when provided', async () => {
+    const { rerender } = await renderWithApi();
+
+    rerender(
+      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
+        <QuickstartButton onClick={mockOnClick} />
+      </TestApiProvider>,
+    );
 
     const button = screen.getByTestId('quickstart-button');
     fireEvent.click(button);
@@ -75,15 +125,27 @@ describe('QuickstartButton', () => {
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
 
-  it('renders with custom title', () => {
-    render(<QuickstartButton title="Custom Quickstart" />);
+  it('renders with custom title', async () => {
+    const { rerender } = await renderWithApi();
+
+    rerender(
+      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
+        <QuickstartButton title="Custom Quickstart" />
+      </TestApiProvider>,
+    );
 
     expect(screen.getByText('Custom Quickstart')).toBeInTheDocument();
   });
 
-  it('applies custom styles', () => {
+  it('applies custom styles', async () => {
     const customStyle = { backgroundColor: 'red' };
-    render(<QuickstartButton style={customStyle} />);
+    const { rerender } = await renderWithApi();
+
+    rerender(
+      <TestApiProvider apis={[[configApiRef, mockConfigApi]]}>
+        <QuickstartButton style={customStyle} />
+      </TestApiProvider>,
+    );
 
     const button = screen.getByTestId('quickstart-button');
     expect(button).toHaveStyle('background-color: red');

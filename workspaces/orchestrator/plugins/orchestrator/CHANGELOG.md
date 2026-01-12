@@ -1,5 +1,165 @@
 ### Dependencies
 
+## 5.3.1
+
+### Patch Changes
+
+- 8524940: Fix TypeScript compilation errors in orchestrator plugins
+- 48fb7f2: Fix browser tab showing `[object Object]` on workflow instance page
+
+  Replace `<Trans>` component with `t()` function for page title to ensure a string is returned instead of an element, which was causing `[object Object]` to appear in the browser tab title.
+
+- cc27a4b: Migrate from Moment.js to Luxon for date/time handling
+
+  **Breaking Change:** Removed deprecated Moment.js dependency
+  - Replace `moment` and `react-moment` with `luxon` for all date/time operations
+  - Add `formatDuration` utility function that mimics moment's `.humanize()` behavior
+  - Add comprehensive unit tests for duration formatting
+
+- Updated dependencies [5771568]
+- Updated dependencies [c35d07c]
+- Updated dependencies [f030878]
+- Updated dependencies [8524940]
+- Updated dependencies [2be9dcc]
+- Updated dependencies [d91ef65]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.1
+
+## 5.3.0
+
+### Minor Changes
+
+- 782c33f: Removal and updating outdated and unmaintained dependencies
+- 29dfed0: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- a970cf3: Fix workflow start time displaying `{{ time }}` placeholder instead of actual time
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- f5f4973: Updated dependency `@openapitools/openapi-generator-cli` to `2.25.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [a1671ab]
+- Updated dependencies [40b80fe]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+- Updated dependencies [40b80fe]
+- Updated dependencies [34a36cb]
+- Updated dependencies [6db1430]
+- Updated dependencies [29dfed0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.4.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.0
+
+## 5.2.1
+
+### Patch Changes
+
+- Updated dependencies [40e4267]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.3.1
+
+## 5.2.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.3.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.3.0
+
+## 5.1.1
+
+### Patch Changes
+
+- Updated dependencies [149804f]
+- Updated dependencies [8b1ce63]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.2.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.2.0
+
+## 5.1.0
+
+### Minor Changes
+
+- de5ced6: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [de5ced6]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.1.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.1.0
+
+## 5.0.9
+
+### Patch Changes
+
+- d3e9c60: Fix typo in useOrchestratorAuth when searching custom apis
+
+## 5.0.8
+
+### Patch Changes
+
+- a24d93c: The AuthRequester widget can reference statically added non-core auth apis.
+- 126f478: export orchestrator translation ref
+- 23bb527: Simplify Workflow Instance page header based on customer feedback.
+
+## 5.0.7
+
+### Patch Changes
+
+- cdf9bc0: fix typo in results card
+- d87ba9e: ### Move components to `ui` folder:
+  - BaseOrchestratorPage
+  - InfoDialog
+  - Selector
+  - WorkflowInstanceStatusIndicator
+  - WorkflowStatus
+
+  ### Move components to `WorkflowInstancePage` folder:
+  - Paragraph
+  - WorkflowDescriptionModal
+  - WorkflowRunDetails
+
+  ### Move types to `types` folder:
+  - WorkflowRunDetail
+
+- f0a427c: Added internationalization to the frontend plugins.
+- Updated dependencies [f0a427c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.6
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.6
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.6
+
+## 5.0.6
+
+### Patch Changes
+
+- 1a775a6: Fixes the CSP issues caused by integration with the kie-tools editor. We newly show just the workflow source code.
+- df7e964: fix wrong color for selected tab
+- 7d15bdf: UI fixes
+- Updated dependencies [c79ffa7]
+- Updated dependencies [a4ae23c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.5
+
+## 5.0.5
+
+### Patch Changes
+
+- 2fbdb53: remove setting inputs as readonly when execute from nextWorkflows as this was part of deprecated assessment workflow type
+- 8c95d55: Align with RHDH @backstage/core-components version and add table translation
+- f868d17: filter last run in wotkflows tab by entity
+- Updated dependencies [2fbdb53]
+- Updated dependencies [8c95d55]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.0.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.4
+
 ## 5.0.4
 
 ### Patch Changes

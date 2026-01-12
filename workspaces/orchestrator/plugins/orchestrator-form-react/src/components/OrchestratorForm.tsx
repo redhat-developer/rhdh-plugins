@@ -25,7 +25,10 @@ import get from 'lodash/get';
 
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
+import { TranslationFunction } from '../hooks/useTranslation';
+import extractStaticDefaults from '../utils/extractStaticDefaults';
 import generateUiSchema from '../utils/generateUiSchema';
+import { pruneFormData } from '../utils/pruneFormData';
 import { StepperContextProvider } from '../utils/StepperContext';
 import OrchestratorFormWrapper from './OrchestratorFormWrapper';
 import ReviewStep from './ReviewStep';
@@ -50,7 +53,7 @@ export type OrchestratorFormProps = {
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
   initialFormData: JsonObject;
-  isDataReadonly?: boolean;
+  t: TranslationFunction;
 };
 
 /**
@@ -105,12 +108,31 @@ const OrchestratorForm = ({
   handleExecute,
   isExecuting,
   initialFormData,
-  isDataReadonly,
   setAuthTokenDescriptors,
+  t,
 }: OrchestratorFormProps) => {
+  // Extract static defaults from fetch:response:default in schema and merge with initialFormData
+  // This ensures defaults are available before widgets render
+  const initialDataWithDefaults = useMemo(() => {
+    const base = initialFormData ? structuredClone(initialFormData) : {};
+    return extractStaticDefaults(rawSchema, base);
+  }, [rawSchema, initialFormData]);
+
   // make the form a controlled component so the state will remain when moving between steps. see https://rjsf-team.github.io/react-jsonschema-form/docs/quickstart#controlled-component
-  const [formData, setFormData] = useState<JsonObject>(
-    initialFormData ? () => structuredClone(initialFormData) : {},
+  const [formData, setFormData] = useState<JsonObject>(initialDataWithDefaults);
+
+  const [changedByUserMap, setChangedByUserMap] = useState<
+    Record<string, boolean>
+  >({});
+  const getIsChangedByUser = useCallback(
+    (id: string) => !!changedByUserMap[id],
+    [changedByUserMap],
+  );
+  const setIsChangedByUser = useCallback(
+    (id: string, isChangedByUser: boolean) => {
+      setChangedByUserMap(prev => ({ ...prev, [id]: isChangedByUser }));
+    },
+    [],
   );
 
   const schema = useMemo(() => removeHiddenSteps(rawSchema), [rawSchema]);
@@ -121,9 +143,16 @@ const OrchestratorForm = ({
   );
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
 
+  // Prune form data to remove properties that no longer exist in the schema
+  // This handles the case where SchemaUpdater dynamically adds/removes fields
+  const prunedFormData = useMemo(() => {
+    return pruneFormData(formData, schema);
+  }, [formData, schema]);
+
   const _handleExecute = useCallback(() => {
-    handleExecute(formData);
-  }, [formData, handleExecute]);
+    // Use pruned data for execution to avoid submitting stale properties
+    handleExecute(prunedFormData);
+  }, [prunedFormData, handleExecute]);
 
   const onSubmit = useCallback(
     (_formData: JsonObject) => {
@@ -133,28 +162,23 @@ const OrchestratorForm = ({
   );
 
   const uiSchema = useMemo<UiSchema<JsonObject>>(() => {
-    return generateUiSchema(
-      schema,
-      isMultiStep,
-      isDataReadonly ? initialFormData : undefined,
-    );
-  }, [schema, isMultiStep, isDataReadonly, initialFormData]);
+    return generateUiSchema(schema, isMultiStep);
+  }, [schema, isMultiStep]);
 
-  const reviewStep = useMemo(
-    () => (
+  const reviewStep = useMemo(() => {
+    return (
       <ReviewStep
-        data={formData}
+        data={prunedFormData}
         schema={schema}
         busy={isExecuting}
         handleExecute={_handleExecute}
         // no schema update here
       />
-    ),
-    [formData, schema, isExecuting, _handleExecute],
-  );
+    );
+  }, [prunedFormData, schema, isExecuting, _handleExecute]);
 
   return (
-    <StepperContextProvider reviewStep={reviewStep}>
+    <StepperContextProvider reviewStep={reviewStep} t={t}>
       {isMultiStep ? (
         <OrchestratorFormWrapper
           schema={schema}
@@ -165,6 +189,8 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          getIsChangedByUser={getIsChangedByUser}
+          setIsChangedByUser={setIsChangedByUser}
         >
           <Fragment />
         </OrchestratorFormWrapper> // it is required to pass the fragment so rjsf won't generate a Submit button
@@ -177,6 +203,8 @@ const OrchestratorForm = ({
           formData={formData}
           setFormData={setFormData}
           setAuthTokenDescriptors={setAuthTokenDescriptors}
+          getIsChangedByUser={getIsChangedByUser}
+          setIsChangedByUser={setIsChangedByUser}
         />
       )}
     </StepperContextProvider>

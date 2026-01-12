@@ -16,15 +16,17 @@
 
 import { TableColumn } from '@backstage/core-components';
 
-export const ReposSelectDrawerColumnHeader: TableColumn[] = [
+export const getReposSelectDrawerColumnHeader = (
+  t: (key: string, ...args: any[]) => string,
+): TableColumn[] => [
   {
     id: 'name',
-    title: 'Name',
+    title: t('table.headers.name'),
     field: 'repoName',
   },
   {
     id: 'url',
-    title: 'URL',
+    title: t('table.headers.url'),
     field: 'repoUrl',
   },
   {

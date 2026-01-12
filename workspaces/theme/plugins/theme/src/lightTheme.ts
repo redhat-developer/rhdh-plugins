@@ -85,6 +85,8 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
       appBarBackgroundColor: '#f2f2f2',
       appBarForegroundColor: '#1f1f1f',
       appBarBackgroundImage: 'none',
+
+      starredItemsColor: '#F3BA37',
     },
     primary: {
       main: '#0066CC',

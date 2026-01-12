@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useMemo } from 'react';
 
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
@@ -32,10 +32,12 @@ type SingleStepFormProps = Pick<
   | 'formData'
   | 'setFormData'
   | 'setAuthTokenDescriptors'
+  | 'getIsChangedByUser'
+  | 'setIsChangedByUser'
 >;
 
 const SingleStepForm = (props: SingleStepFormProps) => {
-  const steps = React.useMemo<OrchestratorFormStep[]>(() => {
+  const steps = useMemo<OrchestratorFormStep[]>(() => {
     return [
       {
         title: props.schema.title ?? 'Inputs',

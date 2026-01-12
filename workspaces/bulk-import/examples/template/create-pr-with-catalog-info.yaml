@@ -1,0 +1,78 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: create-pr-with-catalog-info
+  title: Create catalog-info.yaml in GitHub/GitLab repository
+spec:
+  owner: backstage/techdocs-core
+  type: service
+
+  parameters:
+    - title: Repository Details
+      required:
+        - repoUrl
+        - branchName
+        - targetBranchName
+        - name
+        - organization
+      properties:
+        repoUrl:
+          type: string
+          title: Repository URL (Backstage format)
+          description: 'e.g. github.com?owner=Org&repo=repoName or gitlab.com?owner=Org&repo=repoName'
+        organization:
+          type: string
+          title: Owner of the Repository
+        name:
+          type: string
+          title: Name of the repository
+        branchName:
+          type: string
+          title: The branch to add the catalog entity to
+        targetBranchName:
+          type: string
+          title: The branch to target the PR/MR to
+        gitProviderHost:
+          type: string
+          title: Git provider host
+
+  steps:
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          organization: ${{ parameters.organization }}
+
+    # --- GitHub PR ---
+    - id: pr-github
+      if: ${{ parameters.gitProviderHost === "github.com" }}
+      name: Create PR (GitHub)
+      action: publish:github:pull-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: ${{ parameters.branchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}
+        title: 'Add catalog-info.yaml'
+        description: 'This PR adds a default catalog-info.yaml for Backstage.'
+
+    # --- GitLab MR ---
+    - id: mr-gitlab
+      if: ${{ parameters.gitProviderHost === "gitlab.com" }}
+      name: Create MR (GitLab)
+      action: publish:gitlab:merge-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: ${{ parameters.branchName }}
+        targetBranchName: ${{ parameters.targetBranchName }}
+        title: 'Add catalog-info.yaml'
+        description: 'This MR adds a default catalog-info.yaml for Backstage.'
+
+    - id: register
+      name: Register catalog-info.yaml in Backstage
+      action: catalog:register
+      input:
+        optional: true
+        repoContentsUrl: https://${{ parameters.gitProviderHost }}/${{ parameters.organization }}/${{ parameters.name }}/blob/${{ parameters.branchName }}/catalog-info.yaml

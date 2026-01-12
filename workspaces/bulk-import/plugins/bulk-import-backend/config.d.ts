@@ -14,4 +14,12 @@
  * limitations under the License.
  */
 
-export interface Config {}
+export interface Config {
+  bulkImport?: {
+    /**
+     * The name of the scaffolder template to execute for importing a repository.
+     * @visibility backend
+     */
+    importTemplate?: string;
+  };
+}

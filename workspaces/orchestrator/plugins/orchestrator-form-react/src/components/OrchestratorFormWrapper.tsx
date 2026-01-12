@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useMemo, useState } from 'react';
 
 import { ErrorPanel } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 
 import Grid from '@mui/material/Grid';
-import { withTheme } from '@rjsf/core';
+import { IChangeEvent, withTheme } from '@rjsf/core';
 import { Theme as MuiTheme } from '@rjsf/material-ui';
 import { ErrorSchema } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
@@ -32,9 +32,12 @@ import {
   useOrchestratorFormApiOrDefault,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 
+import { useTranslation } from '../hooks/useTranslation';
+import { getActiveStepKey } from '../utils/getSortedStepEntries';
 import { useStepperContext } from '../utils/StepperContext';
 import useValidator from '../utils/useValidator';
 import { AuthRequester } from './AuthRequester';
+import { createHiddenFieldTemplate } from './HiddenFieldTemplate';
 import StepperObjectField from './StepperObjectField';
 
 const MuiForm = withTheme<
@@ -43,23 +46,27 @@ const MuiForm = withTheme<
   OrchestratorFormContextProps
 >(MuiTheme);
 
+// Get the default FieldTemplate from Material-UI theme and wrap it with hidden field support
+const DefaultFieldTemplate = MuiTheme.templates?.FieldTemplate;
+const HiddenFieldTemplate = DefaultFieldTemplate
+  ? createHiddenFieldTemplate(DefaultFieldTemplate as any)
+  : undefined;
+
 const FormComponent = (decoratorProps: FormDecoratorProps) => {
   const formContext = decoratorProps.formContext;
-
-  const [extraErrors, setExtraErrors] = React.useState<
+  const [extraErrors, setExtraErrors] = useState<
     ErrorSchema<JsonObject> | undefined
   >();
   const numStepsInMultiStepSchema = formContext?.numStepsInMultiStepSchema;
   const isMultiStep = numStepsInMultiStepSchema !== undefined;
   const { handleNext, activeStep, handleValidateStarted, handleValidateEnded } =
     useStepperContext();
-  const [validationError, setValidationError] = React.useState<
-    Error | undefined
-  >();
+  const [validationError, setValidationError] = useState<Error | undefined>();
   const validator = useValidator(isMultiStep);
+  const { t } = useTranslation();
 
   if (!formContext) {
-    return <div>Form decorator must provide context data.</div>;
+    return <div>{t('formDecorator.error')}</div>;
   }
 
   const {
@@ -75,23 +82,30 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
     if (!isMultiStep) {
       return undefined;
     }
-    return Object.keys(schema.properties || {})[activeStep];
+
+    return getActiveStepKey(schema, activeStep);
   };
 
   const onSubmit = async (_formData: JsonObject) => {
     setExtraErrors(undefined);
     let _extraErrors: ErrorSchema<JsonObject> | undefined = undefined;
     let _validationError: Error | undefined = undefined;
+    const activeKey = getActiveKey();
+
     if (decoratorProps.getExtraErrors) {
       try {
         handleValidateStarted();
         _extraErrors = await decoratorProps.getExtraErrors(formData, uiSchema);
-        const activeKey = getActiveKey();
-        setExtraErrors(
-          activeKey && _extraErrors?.[activeKey]
-            ? (_extraErrors[activeKey] as ErrorSchema<JsonObject>)
-            : _extraErrors,
-        );
+
+        if (activeKey) {
+          setExtraErrors(
+            _extraErrors?.[activeKey]
+              ? (_extraErrors[activeKey] as ErrorSchema<JsonObject>)
+              : undefined,
+          );
+        } else {
+          setExtraErrors(_extraErrors);
+        }
       } catch (err) {
         _validationError = err as Error;
       } finally {
@@ -99,13 +113,29 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
       }
     }
     setValidationError(_validationError);
+
+    const currentStepErrors = activeKey
+      ? _extraErrors?.[activeKey]
+      : _extraErrors;
+    const hasCurrentStepErrors =
+      currentStepErrors && Object.keys(currentStepErrors).length > 0;
+
     if (
-      (!_extraErrors || Object.keys(_extraErrors).length === 0) &&
+      !hasCurrentStepErrors &&
       !_validationError &&
       activeStep < (numStepsInMultiStepSchema ?? 1)
     ) {
       _onSubmit(_formData);
       handleNext();
+    }
+  };
+
+  const onChange = (
+    e: IChangeEvent<JsonObject, JSONSchema7, OrchestratorFormContextProps>,
+  ) => {
+    setFormData(e.formData || {});
+    if (decoratorProps.onChange) {
+      decoratorProps.onChange(e);
     }
   };
 
@@ -121,6 +151,9 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           {...omit(decoratorProps, 'getExtraErrors')}
           widgets={{ AuthRequester, ...decoratorProps.widgets }}
           fields={isMultiStep ? { ObjectField: StepperObjectField } : {}}
+          templates={
+            HiddenFieldTemplate ? { FieldTemplate: HiddenFieldTemplate } : {}
+          }
           uiSchema={uiSchema}
           validator={validator}
           schema={schema}
@@ -129,12 +162,7 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
           noHtml5Validate
           extraErrors={extraErrors}
           onSubmit={e => onSubmit(e.formData || {})}
-          onChange={e => {
-            setFormData(e.formData || {});
-            if (decoratorProps.onChange) {
-              decoratorProps.onChange(e);
-            }
-          }}
+          onChange={onChange}
         >
           {children}
         </MuiForm>
@@ -145,13 +173,23 @@ const FormComponent = (decoratorProps: FormDecoratorProps) => {
 
 const OrchestratorFormWrapper = (props: OrchestratorFormContextProps) => {
   const formApi = useOrchestratorFormApiOrDefault();
+  const { handleFetchStarted, handleFetchEnded } = useStepperContext();
 
-  const NewComponent = React.useMemo(() => {
+  const NewComponent = useMemo(() => {
     const formDecorator = formApi.getFormDecorator();
     return formDecorator(FormComponent);
   }, [formApi]);
 
-  return <NewComponent {...props} />;
+  const propsWithFetchHandlers = useMemo(
+    () => ({
+      ...props,
+      handleFetchStarted,
+      handleFetchEnded,
+    }),
+    [props, handleFetchStarted, handleFetchEnded],
+  );
+
+  return <NewComponent {...propsWithFetchHandlers} />;
 };
 
 export default OrchestratorFormWrapper;

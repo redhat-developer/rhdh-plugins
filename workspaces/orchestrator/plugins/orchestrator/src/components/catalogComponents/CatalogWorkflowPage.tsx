@@ -23,8 +23,8 @@ import { Grid } from '@material-ui/core';
 
 import { orchestratorApiRef } from '../../api';
 import { entityWorkflowRouteRef } from '../../routes';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from '../OrchestratorPage/WorkflowRunsTabContent';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { RunButton } from '../WorkflowPage/RunButton';
 import { WorkflowDetailsTabContent } from '../WorkflowPage/WorkflowDetailsTabContent';
 

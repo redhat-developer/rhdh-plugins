@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import useSwr, { useSWRConfig } from 'swr';
 import * as uuid from 'uuid';
@@ -28,13 +29,13 @@ const usePolling = <T>(
 ) => {
   const config = useSWRConfig();
 
-  const prevFn = React.useRef(fn);
-  const uniqueKey = React.useMemo<string>(() => {
+  const prevFn = useRef(fn);
+  const uniqueKey = useMemo<string>(() => {
     return uuid.v4();
   }, []);
 
-  const [error, setError] = React.useState();
-  const isInitalLoad = React.useRef(true);
+  const [error, setError] = useState();
+  const isInitalLoad = useRef(true);
 
   const { data, isLoading } = useSwr<T>(uniqueKey, fn, {
     refreshInterval: (value_: T | undefined) => {
@@ -55,19 +56,19 @@ const usePolling = <T>(
     revalidateOnFocus: false, // click on sort will result in two calls to backend if not disabled
   });
 
-  const restart = React.useCallback(
+  const restart = useCallback(
     () => config.mutate(uniqueKey),
     [config, uniqueKey],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (prevFn.current !== fn) {
       restart();
       prevFn.current = fn;
     }
   }, [fn, restart]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // clean cache after unmount, no need to store the data globally
     return () => config.cache.delete(uniqueKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps

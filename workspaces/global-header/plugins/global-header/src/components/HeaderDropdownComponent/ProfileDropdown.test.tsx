@@ -19,10 +19,23 @@ import { useUserProfile } from '@backstage/plugin-user-settings';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { ProfileDropdown } from './ProfileDropdown';
 
 jest.mock('@backstage/plugin-user-settings', () => ({
   useUserProfile: jest.fn(),
+}));
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
 }));
 
 jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
@@ -33,11 +46,12 @@ jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
         Component: MockComponent,
         config: {
           props: {
-            icon: 'someicon',
-            title: 'sometitle',
-            link: 'somelink',
+            icon: 'manageAccounts',
+            title: 'Settings',
+            titleKey: 'profile.settings',
+            link: '/settings',
           },
-          priority: '100',
+          priority: 200,
         },
       },
       {
@@ -46,8 +60,10 @@ jest.mock('../../hooks/useProfileDropdownMountPoints', () => {
           props: {
             icon: 'account',
             title: 'My profile',
+            titleKey: 'profile.myProfile',
+            type: 'myProfile',
           },
-          priority: '90',
+          priority: 150,
         },
       },
     ],
@@ -172,6 +188,75 @@ describe('ProfileDropdown', () => {
         'href',
         '/catalog/default/user/test-user',
       );
+    });
+  });
+
+  it('should hide My Profile menu item for guest users', async () => {
+    setUserProfileMock({
+      displayName: 'Guest',
+      userEntityRef: 'user:development/guest',
+    });
+
+    const catalogApi = createMockCatalogApi({
+      metadata: {
+        name: 'guest',
+        title: 'Guest',
+      },
+      spec: {
+        profile: { displayName: 'Guest' },
+      },
+    });
+
+    await renderComponent(catalogApi);
+    const profileButton = screen.getByRole('button', {
+      name: /Profile picture Guest/i,
+    });
+    fireEvent.click(profileButton);
+
+    await waitFor(() => {
+      // Should find Settings menu item
+      const settingsLink = screen.getByRole('menuitem', {
+        name: /Settings/i,
+      });
+      expect(settingsLink).toBeInTheDocument();
+
+      // Should NOT find My Profile menu item for guest users
+      const myProfileLink = screen.queryByRole('menuitem', {
+        name: /My profile/i,
+      });
+      expect(myProfileLink).not.toBeInTheDocument();
+    });
+  });
+
+  it('should hide My Profile menu item when catalog API fails', async () => {
+    setUserProfileMock({
+      displayName: 'Test User',
+      userEntityRef: 'user:default/test-user',
+    });
+
+    // Mock catalog API to throw an error (user not found in catalog)
+    const catalogApi = {
+      getEntityByRef: jest.fn().mockRejectedValue(new Error('User not found')),
+    } as unknown as CatalogApi;
+
+    await renderComponent(catalogApi);
+    const profileButton = screen.getByRole('button', {
+      name: /Profile picture Test User/i,
+    });
+    fireEvent.click(profileButton);
+
+    await waitFor(() => {
+      // Should find Settings menu item
+      const settingsLink = screen.getByRole('menuitem', {
+        name: /Settings/i,
+      });
+      expect(settingsLink).toBeInTheDocument();
+
+      // Should NOT find My Profile menu item when catalog API fails
+      const myProfileLink = screen.queryByRole('menuitem', {
+        name: /My profile/i,
+      });
+      expect(myProfileLink).not.toBeInTheDocument();
     });
   });
 });

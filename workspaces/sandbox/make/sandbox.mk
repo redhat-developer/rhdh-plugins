@@ -6,7 +6,7 @@ PLATFORM ?= $(OS)/$(ARCH)
 
 .PHONY: push-plugin
 push-plugin:
-	npx @janus-idp/cli@3.3.1 package package-dynamic-plugins \
+	npx @red-hat-developer-hub/cli@latest plugin package \
 		--tag $(SANDBOX_RHDH_PLUGIN_IMAGE) \
 		--platform $(PLATFORM) && \
 	podman push $(SANDBOX_RHDH_PLUGIN_IMAGE)
@@ -16,8 +16,9 @@ RHDH_LOCAL_DIR := "$(TMPDIR)rhdh-local"
 .PHONY: clone-rhdh-local
 clone-rhdh-local:
 	rm -rf ${RHDH_LOCAL_DIR}; \
-	git clone https://github.com/redhat-developer/rhdh-local $(RHDH_LOCAL_DIR) && \
+	git clone --depth 1 https://github.com/redhat-developer/rhdh-local $(RHDH_LOCAL_DIR) && \
 	cd $(RHDH_LOCAL_DIR) && \
+	git fetch --unshallow && \
 	git checkout 37be302480b1458c3dfd3270c25726d65f0ffe75 && \
 	echo "cloned to $(RHDH_LOCAL_DIR)"
 
@@ -37,7 +38,7 @@ generate-env:
 start-rhdh-local: clone-rhdh-local generate-env
 	rm -rf plugins/sandbox/dist-dynamic
 	rm -rf red-hat-developer-hub-backstage-plugin-sandbox
-	podman run -it --rm -w /home -v $(PWD):/home node:22 bash -c "yarn install && npx --yes @janus-idp/cli@latest package package-dynamic-plugins --export-to .  && exit"
+	podman run -it --rm -w /home -v $(PWD):/home node:22 bash -c "yarn install && npx --yes @red-hat-developer-hub/cli@latest plugin package --export-to .  && exit"
 	cp -r red-hat-developer-hub-backstage-plugin-sandbox $(RHDH_LOCAL_DIR)/local-plugins/
 	cp deploy/base/app-config.yaml $(RHDH_LOCAL_DIR)/configs/app-config/app-config.yaml
 	cp deploy/base/dynamic-plugins.yaml $(RHDH_LOCAL_DIR)/configs/dynamic-plugins/dynamic-plugins.override.yaml

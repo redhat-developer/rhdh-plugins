@@ -7,6 +7,8 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const DynamicGlobalFloatingActionButton: React.ComponentType;
@@ -27,6 +29,7 @@ export type FABMountPoint = {
 export type FloatingActionButton = {
   slot?: Slot;
   label: string;
+  labelKey?: string;
   showLabel?: boolean;
   icon?: string | React.ReactElement;
   size?: 'small' | 'medium' | 'large';
@@ -43,6 +46,7 @@ export type FloatingActionButton = {
   onClick?: React.MouseEventHandler;
   to?: string;
   toolTip?: string;
+  toolTipKey?: string;
   priority?: number;
   visibleOnPaths?: string[];
   excludeOnPaths?: string[];
@@ -63,6 +67,29 @@ export const GlobalFloatingActionButton: ({
 
 // @public
 export const globalFloatingActionButtonPlugin: BackstagePlugin<{}, {}, {}>;
+
+// @public
+export const globalFloatingActionButtonTranslationRef: TranslationRef<
+  'plugin.global-floating-action-button',
+  {
+    readonly 'fab.menu.tooltip': string;
+    readonly 'fab.github.label': string;
+    readonly 'fab.github.tooltip': string;
+    readonly 'fab.create.label': string;
+    readonly 'fab.create.tooltip': string;
+    readonly 'fab.docs.label': string;
+    readonly 'fab.docs.tooltip': string;
+    readonly 'fab.apis.label': string;
+    readonly 'fab.apis.tooltip': string;
+    readonly 'fab.bulkImport.label': string;
+    readonly 'fab.bulkImport.tooltip': string;
+    readonly 'fab.quay.label': string;
+    readonly 'fab.quay.tooltip': string;
+  }
+>;
+
+// @public
+export const globalFloatingActionButtonTranslations: TranslationResource<'plugin.global-floating-action-button'>;
 
 // @public
 export const NullComponent: React.ComponentType;

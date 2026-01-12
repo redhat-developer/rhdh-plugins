@@ -431,8 +431,13 @@ export class DataIndexService {
     definitionId: string;
     limit: number;
     offset: number;
+    targetEntity?: string;
   }): Promise<ProcessInstance[]> {
-    const graphQlQuery = `{ ProcessInstances(where: {processId: {equal: "${args.definitionId}" } }, orderBy: {start:DESC}, pagination: {limit: ${args.limit}, offset: ${args.offset}}) { id, processName, state, start, end } }`;
+    const targetEntityWhereCondition = args.targetEntity
+      ? `, variables: {targetEntity: {equal: "${args.targetEntity}" } }`
+      : '';
+
+    const graphQlQuery = `{ ProcessInstances( where: {processId: {equal: "${args.definitionId}" } ${targetEntityWhereCondition} }, orderBy: {start:DESC}, pagination: {limit: ${args.limit}, offset: ${args.offset}}) { id, processName, state, start, end } }`;
 
     const result = await this.client.query(graphQlQuery, {});
 

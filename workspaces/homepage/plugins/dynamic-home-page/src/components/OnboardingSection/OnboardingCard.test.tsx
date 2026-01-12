@@ -36,6 +36,8 @@ describe('OnboardingCard', () => {
     buttonText: 'Learn More',
     buttonLink: '/docs',
     target: '_blank',
+    ariaLabel: 'Learn more about getting started',
+    endIcon: null,
   };
 
   const renderWithTheme = (ui: ReactElement) => {
@@ -67,9 +69,31 @@ describe('OnboardingCard', () => {
     expect(link).toHaveAttribute('target', '_blank');
   });
 
-  it('should render the ArrowForwardIcon', () => {
+  it('should render custom icon when provided', () => {
+    const CustomIcon = () => <div data-testid="custom-icon">Custom</div>;
+    const propsWithIcon = { ...mockProps, endIcon: <CustomIcon /> };
+
+    renderWithTheme(<OnboardingCard {...propsWithIcon} />);
+
+    expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
+  });
+
+  it('should apply aria-label when provided', () => {
     renderWithTheme(<OnboardingCard {...mockProps} />);
-    const icon = screen.getByTestId('ArrowForwardIcon');
-    expect(icon).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /Learn More/i });
+
+    expect(link).toHaveAttribute(
+      'aria-label',
+      'Learn more about getting started',
+    );
+  });
+
+  it('should not apply aria-label when not provided', () => {
+    const { ariaLabel, ...propsWithoutAriaLabel } = mockProps;
+
+    renderWithTheme(<OnboardingCard {...propsWithoutAriaLabel} />);
+    const link = screen.getByRole('link', { name: /Learn More/i });
+
+    expect(link).not.toHaveAttribute('aria-label');
   });
 });

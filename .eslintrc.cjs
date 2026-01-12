@@ -24,7 +24,8 @@ module.exports = {
     'notice/notice': [
       'error',
       {
-        mustMatch: /Copyright (The Backstage Authors|Red Hat, Inc.)/,
+        mustMatch:
+          /Copyright (The Backstage Authors|Red Hat, Inc.|The Backstage Authors and Red Hat, Inc.)/,
         templateFile: path.resolve(
           // eslint-disable-next-line no-restricted-syntax
           __dirname,

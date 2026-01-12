@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import { useRef } from 'react';
-
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import FormControl from '@mui/material/FormControl';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Typography from '@mui/material/Typography';
 import { Formik } from 'formik';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
+import { useTranslation } from '../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   ApprovalTool,
@@ -37,8 +36,7 @@ import { DrawerContextProvider } from './DrawerContext';
 import { RepositoriesList } from './Repositories/RepositoriesList';
 
 export const BulkImportPage = () => {
-  // to store the queryClient instance
-  const queryClientRef = useRef<QueryClient>();
+  const { t } = useTranslation();
   const initialValues: AddRepositoriesFormValues = {
     repositoryType: RepositorySelection.Repository,
     repositories: {},
@@ -51,41 +49,41 @@ export const BulkImportPage = () => {
     resourceRef: bulkImportPermission.resourceType,
   });
 
-  if (!queryClientRef.current) {
-    queryClientRef.current = new QueryClient();
-  }
-
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
       return <Progress />;
     }
     if (bulkImportViewPermissionResult.allowed) {
       return (
-        <QueryClientProvider client={queryClientRef.current!}>
-          <Formik
-            initialValues={initialValues}
-            enableReinitialize
-            onSubmit={async (_values: AddRepositoriesFormValues) => {}}
-          >
-            <FormControl fullWidth>
-              <RepositoriesList />
-            </FormControl>
-          </Formik>
-        </QueryClientProvider>
+        <Formik
+          initialValues={initialValues}
+          enableReinitialize
+          onSubmit={async (_values: AddRepositoriesFormValues) => {}}
+        >
+          <FormControl fullWidth>
+            <RepositoriesList />
+          </FormControl>
+        </Formik>
       );
     }
     return (
       <Alert severity="warning" data-testid="no-permission-alert">
-        <AlertTitle>Permission required</AlertTitle>
-        To view the added repositories, contact your administrator to give you
-        the `bulk.import` permission.
+        <AlertTitle>{t('permissions.title')}</AlertTitle>
+        {t('permissions.viewRepositoriesMessage')}
       </Alert>
     );
   };
 
   return (
     <Page themeId="tool">
-      <Header title="Bulk import" />
+      <Header
+        title={
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
+            {t('page.title')}
+          </Typography>
+        }
+        style={{ borderBottom: '1px solid #ccc' }}
+      />
       <DrawerContextProvider>
         <DeleteDialogContextProvider>
           <Content>{showContent()}</Content>

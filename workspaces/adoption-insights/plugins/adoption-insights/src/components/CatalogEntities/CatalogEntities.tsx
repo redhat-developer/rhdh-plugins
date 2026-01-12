@@ -31,15 +31,13 @@ import { entityRouteRef } from '@backstage/plugin-catalog-react';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
 import CardWrapper from '../CardWrapper';
-import {
-  CATALOG_ENTITIES_TABLE_HEADERS,
-  CATALOG_ENTITIES_TITLE,
-} from '../../utils/constants';
+import { CATALOG_ENTITIES_TABLE_HEADERS } from '../../utils/constants';
 import { useCatalogEntities } from '../../hooks/useCatalogEntities';
 import TableFooterPagination from '../CardFooter';
 import { getLastUsedDay, getUniqueCatalogEntityKinds } from '../../utils/utils';
 import FilterDropdown from './FilterDropdown';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const CatalogEntities = () => {
   const [page, setPage] = useState(0);
@@ -49,6 +47,7 @@ const CatalogEntities = () => {
   const [uniqueCatalogEntityKinds, setUniqueCatalogEntityKinds] = useState<
     string[]
   >([]);
+  const { t } = useTranslation();
 
   const entityLink = useRouteRef(entityRouteRef);
 
@@ -99,7 +98,7 @@ const CatalogEntities = () => {
 
   if (error) {
     return (
-      <CardWrapper title={CATALOG_ENTITIES_TITLE}>
+      <CardWrapper title={t('catalogEntities.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -110,12 +109,12 @@ const CatalogEntities = () => {
     !loading
   ) {
     return (
-      <CardWrapper title={CATALOG_ENTITIES_TITLE}>
+      <CardWrapper title={t('catalogEntities.title')}>
         <Box
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
@@ -125,7 +124,13 @@ const CatalogEntities = () => {
 
   return (
     <CardWrapper
-      title={CATALOG_ENTITIES_TITLE}
+      title={
+        rowsPerPage >= (catalogEntities.data?.length ?? 0)
+          ? t('catalogEntities.allTitle' as any, {})
+          : t('catalogEntities.topNTitle' as any, {
+              count: rowsPerPage.toString(),
+            })
+      }
       filter={
         <FilterDropdown
           selectedOption={selectedOption}
@@ -146,7 +151,7 @@ const CatalogEntities = () => {
                   width: '25%',
                 }}
               >
-                {header.title}
+                {t(header.titleKey as any, {})}
               </TableCell>
             ))}
           </TableRow>
@@ -195,7 +200,7 @@ const CatalogEntities = () => {
                     entity.kind?.slice(1) || '--'}
                 </TableCell>
                 <TableCell sx={{ width: '25%' }}>
-                  {getLastUsedDay(entity.last_used) ?? '--'}
+                  {getLastUsedDay(entity.last_used, t) ?? '--'}
                 </TableCell>
                 <TableCell sx={{ width: '25%' }}>
                   {Number(entity.count).toLocaleString('en-US') ?? '--'}

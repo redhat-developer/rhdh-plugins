@@ -12,6 +12,21 @@ import { SubRouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@material-ui/core/SvgIcon';
 
 // @public
+export const AnalyticsIcon: (
+  props: SvgIconProps & {
+    variant?: 'outlined' | 'filled';
+  },
+) => React_2.JSX.Element;
+
+// @public
+export const AnalyticsIconFilled: (props: SvgIconProps) => React_2.JSX.Element;
+
+// @public
+export const AnalyticsIconOutlined: (
+  props: SvgIconProps,
+) => React_2.JSX.Element;
+
+// @public
 export const ResourceOptimizationIcon: (
   props: SvgIconProps & {
     variant?: 'outlined' | 'filled';

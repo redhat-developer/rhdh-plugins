@@ -1,5 +1,93 @@
 ### Dependencies
 
+## 8.5.1
+
+### Patch Changes
+
+- d91ef65: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@openapitools/openapi-generator-cli` to `2.25.2`.
+- Updated dependencies [8524940]
+- Updated dependencies [d91ef65]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.1
+
+## 8.5.0
+
+### Minor Changes
+
+- 29dfed0: Backstage version bump to v1.45.2
+- 43376f1: Removing the deprecated moment package and replacing with luxon
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [a1671ab]
+- Updated dependencies [40b80fe]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+- Updated dependencies [40b80fe]
+- Updated dependencies [34a36cb]
+- Updated dependencies [29dfed0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+
+## 8.4.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+
+## 8.3.0
+
+### Minor Changes
+
+- fceb33e: Removal of deprecated package @backstage/backend-tasks
+
+## 8.2.0
+
+### Minor Changes
+
+- de5ced6: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [de5ced6]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.0
+
+## 8.1.0
+
+### Minor Changes
+
+- 1a519f8: removal of @backstage/backend-common
+
+## 8.0.6
+
+### Patch Changes
+
+- f0a427c: Added internationalization to the frontend plugins.
+- Updated dependencies [f0a427c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.6
+
+## 8.0.5
+
+### Patch Changes
+
+- 121e764: improve abort instance error handling
+- Updated dependencies [c79ffa7]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.5
+
+## 8.0.4
+
+### Patch Changes
+
+- f868d17: filter last run in wotkflows tab by entity
+- Updated dependencies [2fbdb53]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.4
+
 ## 8.0.3
 
 ### Patch Changes

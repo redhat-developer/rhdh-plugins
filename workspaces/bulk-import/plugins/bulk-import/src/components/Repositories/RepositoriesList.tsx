@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import type { MouseEvent } from 'react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Table } from '@backstage/core-components';
@@ -23,13 +22,14 @@ import { Table } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 import TablePagination from '@mui/material/TablePagination';
 
+import { useGitlabConfigured } from '../../hooks';
 import { useAddedRepositories } from '../../hooks/useAddedRepositories';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddedRepositoryColumnNameEnum,
   AddRepositoryData,
   SortingOrderEnum,
 } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { RepositoriesHeader } from '../AddRepositories/RepositoriesHeader';
 import { useDeleteDialog } from '../DeleteDialogContext';
 import { useDrawer } from '../DrawerContext';
@@ -37,25 +37,20 @@ import { AddedRepositoriesTableBody } from './AddedRepositoriesTableBody';
 import DeleteRepositoryDialog from './DeleteRepositoryDialog';
 import EditCatalogInfo from './EditCatalogInfo';
 import { RepositoriesAddLink } from './RepositoriesAddLink';
-import { RepositoriesListColumns } from './RepositoriesListColumns';
+import { getRepositoriesListColumns } from './RepositoriesListColumns';
 
 export const RepositoriesList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const [order, setOrder] = useState<SortingOrderEnum>(SortingOrderEnum.Asc);
-  const [orderBy, setOrderBy] = useState<string>('repoName');
+  const { t } = useTranslation();
   const { openDialog, setOpenDialog, deleteComponent } = useDeleteDialog();
   const { openDrawer, setOpenDrawer, drawerData } = useDrawer();
   const [pageNumber, setPageNumber] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const gitlabConfigured = useGitlabConfigured();
 
-  const orderByColumn = useMemo(() => {
-    return orderBy?.replace(/\.([a-zA-Z])/g, (_, char) =>
-      char.toUpperCase('en-US'),
-    ) as keyof typeof AddedRepositoryColumnNameEnum;
-  }, [orderBy]);
   const {
     data: importJobs,
     error: errJobs,
@@ -65,8 +60,8 @@ export const RepositoriesList = () => {
     pageNumber + 1,
     rowsPerPage,
     debouncedSearch,
-    AddedRepositoryColumnNameEnum[orderByColumn],
-    order,
+    AddedRepositoryColumnNameEnum.repoName,
+    SortingOrderEnum.Asc,
   );
 
   const closeDialog = () => {
@@ -84,12 +79,6 @@ export const RepositoriesList = () => {
     setOpenDrawer(false);
   };
 
-  const handleRequestSort = (_event: MouseEvent<unknown>, property: string) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? SortingOrderEnum.Desc : SortingOrderEnum.Asc);
-    setOrderBy(property);
-  };
-
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     pageNumber > 0 ? Math.max(0, rowsPerPage - importJobs.totalJobs) : 0;
@@ -98,30 +87,41 @@ export const RepositoriesList = () => {
     setDebouncedSearch(str);
     setPageNumber(0);
   };
-  const baseTitle = gitlabFeatureFlag
-    ? 'Imported entities'
-    : 'Added repositories';
+  const baseTitle = gitlabConfigured
+    ? t('repositories.importedEntities')
+    : t('repositories.addedRepositories');
+
+  const getTitleWithCount = () => {
+    if (gitlabConfigured) {
+      return t('repositories.importedEntitiesCount' as any, {
+        count: importJobs.totalJobs.toString(),
+      });
+    }
+    return t('repositories.addedRepositoriesCount' as any, {
+      count: importJobs.totalJobs.toString(),
+    });
+  };
+
   const finalTitle =
-    importJobs?.totalJobs === 0
-      ? baseTitle
-      : `${baseTitle} (${importJobs.totalJobs})`;
+    importJobs?.totalJobs === 0 ? baseTitle : getTitleWithCount();
   return (
     <>
       <RepositoriesAddLink />
       <Table
         data={importJobs.addedRepositories ?? []}
-        columns={RepositoriesListColumns}
+        columns={getRepositoriesListColumns(t, gitlabConfigured)}
         onSearchChange={handleSearch}
         title={finalTitle}
+        options={{
+          search: true,
+        }}
+        localization={{
+          toolbar: {
+            searchPlaceholder: t('common.filter'),
+          },
+        }}
         components={{
-          Header: () => (
-            <RepositoriesHeader
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-              showImportJobs
-            />
-          ),
+          Header: () => <RepositoriesHeader showImportJobs />,
           Body: () => (
             <AddedRepositoriesTableBody
               error={errJobs}
@@ -134,11 +134,11 @@ export const RepositoriesList = () => {
           Pagination: () => (
             <TablePagination
               rowsPerPageOptions={[
-                { value: 5, label: '5 rows' },
-                { value: 10, label: '10 rows' },
-                { value: 20, label: '20 rows' },
-                { value: 50, label: '50 rows' },
-                { value: 100, label: '100 rows' },
+                { value: 5, label: t('table.pagination.rows5') },
+                { value: 10, label: t('table.pagination.rows10') },
+                { value: 20, label: t('table.pagination.rows20') },
+                { value: 50, label: t('table.pagination.rows50') },
+                { value: 100, label: t('table.pagination.rows100') },
               ]}
               component="div"
               count={importJobs.totalJobs || 0}
@@ -163,7 +163,11 @@ export const RepositoriesList = () => {
               justifyContent: 'center',
             }}
           >
-            No records found
+            {t(
+              gitlabConfigured
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         }
       />

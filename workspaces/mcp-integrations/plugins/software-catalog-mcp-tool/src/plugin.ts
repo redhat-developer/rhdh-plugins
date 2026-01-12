@@ -1,0 +1,718 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import {
+  coreServices,
+  createBackendPlugin,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
+import {
+  CatalogService,
+  catalogServiceRef,
+} from '@backstage/plugin-catalog-node';
+import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
+import { Entity } from '@backstage/catalog-model';
+
+/**
+ * backstageMcpPlugin backend plugin
+ *
+ * @public
+ */
+export const backstageMcpPlugin = createBackendPlugin({
+  pluginId: 'software-catalog-mcp-tool',
+  register(env) {
+    env.registerInit({
+      deps: {
+        actionsRegistry: actionsRegistryServiceRef,
+        logger: coreServices.logger,
+        httpAuth: coreServices.httpAuth,
+        httpRouter: coreServices.httpRouter,
+        catalog: catalogServiceRef,
+        auth: coreServices.auth,
+      },
+      async init({ actionsRegistry, catalog, auth, logger }) {
+        actionsRegistry.register({
+          name: 'fetch-template-metadata',
+          title: 'Fetch Software Template Metadata',
+          description: `Search and retrieve Software Template metadata from the Backstage catalog.
+
+This tool retrieves Backstage Software Templates with their configuration details including parameters and steps. 
+It can be called without filters to list all templates, or filtered by name, title, or uid to find specific templates.
+For additional information related to the fetched Software Template metadata, you can call an available Tech Docs retrieval tool to receive the documentation
+for the Templates as well.
+
+Returns template-specific fields including:
+- Basic metadata (name, tags, labels, description, owner)
+- Template parameters (as JSON string)
+- Template steps/workflow (as JSON string)
+
+When to use this tool:
+- List all available Software Templates
+- Search for templates by name, title, or unique identifier
+- Get template configuration details (parameters, steps)
+`,
+          schema: {
+            input: z =>
+              z.object({
+                name: z.string().optional().describe('Filter Template by name'),
+                title: z
+                  .string()
+                  .optional()
+                  .describe('Filter Template by Title.'),
+                uid: z
+                  .string()
+                  .optional()
+                  .describe('Filter Template by Unique Identifier.'),
+              }),
+            output: z =>
+              z.object({
+                templates: z
+                  .array(
+                    z.object({
+                      name: z
+                        .string()
+                        .describe(
+                          'The name field for the Backstage Software Template in the catalog',
+                        ),
+                      tags: z
+                        .string()
+                        .optional()
+                        .describe(
+                          'The tags associated with the Backstage Software Template as comma-separated values',
+                        ),
+                      labels: z
+                        .string()
+                        .optional()
+                        .describe(
+                          'The labels associated with the Backstage Software Template as comma-separated values',
+                        ),
+                      description: z
+                        .string()
+                        .optional()
+                        .describe(
+                          'The description of the Backstage Software Template',
+                        ),
+                      owner: z
+                        .string()
+                        .optional()
+                        .describe(
+                          'The owner of the Backstage Software Template (e.g., team-platform, user:john.doe)',
+                        ),
+                      parameters: z
+                        .string()
+                        .optional()
+                        .describe(
+                          'The parameters of the Backstage Software Template as JSON string',
+                        ),
+                      steps: z
+                        .string()
+                        .optional()
+                        .describe(
+                          'The steps of the Backstage Software Template as JSON string',
+                        ),
+                    }),
+                  )
+                  .describe('An array of Software Template metadata'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if the operation fails'),
+              }),
+          },
+          action: async ({ input }) => {
+            try {
+              const result = await fetchSoftwareTemplateMetadata(
+                catalog,
+                auth,
+                logger,
+                input,
+              );
+              return {
+                output: {
+                  ...result,
+                  error: undefined,
+                },
+              };
+            } catch (error) {
+              logger.error(
+                'fetch-template-metadata: Error fetching template metadata:',
+                error,
+              );
+              return {
+                output: {
+                  templates: [],
+                  error: error.message,
+                },
+              };
+            }
+          },
+        });
+
+        // This action is used to fetch the list of catalog entities from Backstage. It returns an array of entity names
+        actionsRegistry.register({
+          name: 'fetch-catalog-entities',
+          title: 'Fetch Catalog Entities',
+          description: `Search and retrieve catalog entities from the Backstage server.
+
+List all Backstage entities such as Components, Systems, Resources, APIs, Locations, Users, and Groups. 
+By default, results are returned in JSON array format, where each entry in the JSON array is an entity with the following fields: 'name', 'description','type', 'owner', 'tags', 'dependsOn' and 'kind'.
+Setting 'verbose' to true will return the full Backstage entity objects, but should only be used if the reduced output is not sufficient, as this will significantly impact context usage (especially on smaller models).
+Note: 'type' can only be filtered on if a specified entity 'kind' is also specified.
+
+Example invocations and the output from those invocations:
+  # Find all Resources of type storage
+  fetch-catalog-entities kind:Resource type:storage
+  Output: {
+  "entities": [
+    {
+      "name": "ibm-granite-s3-bucket",
+      "kind": "Resource",
+      "type": "storage",
+      "tags": [
+        "genai",
+        "ibm",
+        "llm",
+        "granite",
+        "conversational",
+        "task-text-generation"
+      ]
+    }
+  ]
+
+
+`,
+          // End tool description
+          schema: {
+            input: z =>
+              z.object({
+                kind: z
+                  .string()
+                  .optional()
+                  .describe(
+                    'Filter entities by kind (e.g., Component, API, System)',
+                  ),
+                type: z
+                  .string()
+                  .optional()
+                  .describe(
+                    'Filter entities by type (e.g., ai-model, library, website).',
+                  ),
+                name: z.string().optional().describe('Filter entities by name'),
+                owner: z
+                  .string()
+                  .optional()
+                  .describe(
+                    'Filter entities by owner (e.g., team-platform, user:john.doe)',
+                  ),
+                lifecycle: z
+                  .string()
+                  .optional()
+                  .describe(
+                    'Filter entities by lifecycle (e.g., production, staging, development)',
+                  ),
+                tags: z // Don't define using arrays - some mcp clients (notably llama stack) have issues decoding them (more investigation needed)
+                  .string()
+                  .optional()
+                  .describe(
+                    'Filter entities by tags as comma-separated values (e.g., "genai,ibm,llm,granite,conversational,task-text-generation")',
+                  ),
+                verbose: z
+                  .boolean()
+                  .optional()
+                  .describe(
+                    'If true, returns the full Backstage Entity object from the API rather than the shortened output.',
+                  ),
+              }),
+            output: z =>
+              z.object({
+                entities: z
+                  .array(
+                    z.union([
+                      z.object({
+                        name: z
+                          .string()
+                          .describe(
+                            'The name field for each Backstage entity in the catalog',
+                          ),
+                        kind: z
+                          .string()
+                          .describe(
+                            'The kind/type of the Backstage entity (e.g., Component, API, System)',
+                          ),
+                        tags: z
+                          .string()
+                          .optional()
+                          .describe(
+                            'The tags associated with the Backstage entity as comma-separated values',
+                          ),
+                        description: z
+                          .string()
+                          .optional()
+                          .describe('The description of the Backstage entity'),
+                        type: z
+                          .string()
+                          .optional()
+                          .describe(
+                            'The type of the Backstage entity (e.g., service, library, website)',
+                          ),
+                        owner: z
+                          .string()
+                          .optional()
+                          .describe(
+                            'The owner of the Backstage entity (e.g., team-platform, user:john.doe)',
+                          ),
+                        lifecycle: z
+                          .string()
+                          .optional()
+                          .describe(
+                            'The lifecycle of the Backstage entity (e.g., production, staging, development)',
+                          ),
+                        dependsOn: z
+                          .string()
+                          .optional()
+                          .describe(
+                            'List of entities this entity depends on as comma-separated values (e.g., "component:default/database,api:default/external-service")',
+                          ),
+                      }),
+                      z.custom<Entity>(),
+                    ]),
+                  )
+                  .describe(
+                    'An array of entities (either Backstage Entity objects or shortened entity information based on verbose parameter)',
+                  ),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if validation fails'),
+              }),
+          },
+          action: async ({ input }) => {
+            // Validate that type is only used with kind -- we could just allow `type` to be specified without `kind` but given types are per kind it made sense to restrict it
+            // The Backstage MCP server will return a 500 error if we throw a validation error (without saying why), so instead, let's return the error message in the output
+            // TODO: Investigate potential upstream improvements to allow error messages to be returned to the client
+            if (input.type && !input.kind) {
+              return {
+                output: {
+                  entities: [],
+                  error:
+                    'entity type cannot be specified without an entity kind specified',
+                },
+              };
+            }
+            try {
+              const result = await fetchCatalogEntities(
+                catalog,
+                auth,
+                logger,
+                input,
+              );
+              return {
+                output: {
+                  ...result,
+                  error: undefined,
+                },
+              };
+            } catch (error) {
+              logger.error(
+                'fetch-catalog-entities: Error fetching catalog entities:',
+                error,
+              );
+              return {
+                output: {
+                  entities: [],
+                  error: error.message,
+                },
+              };
+            }
+          },
+        });
+
+        // registers catalog entities
+        // returns:: JSON response with location ID
+        // @ts-ignore
+        actionsRegistry.register({
+          name: 'register-catalog-entities',
+          title: 'Register Catalog Entities',
+          description: `Register entities defined remotely (create new Locations).
+
+This tool is analogous to the "register existing components" function you see in the Backstage dashboard,
+where you supply a URL link that allows for the downloading of a 'catalog-info.yaml' file that 
+defines the various Entities (Components, Systems, Resources, APIs, Users, and Groups) you want to 
+create or import into the Backstage catalog.
+
+The action within the catalog results in the creation of a Location entity that is the parent of owner
+of all the additional entities defined in the 'catalog-info.yaml' file.
+
+The dynamically generated, random UUID created to go along with the newly created Location entity is returned
+to the caller.  That UUID can be later used if you want to unregister or delete the Location entity and all
+of its children entities.
+
+Example invocation and the output from the invocation:
+  # Register a Location from a GitHub URL
+  register-catalog-entities locationURL: https://github.com/redhat-ai-dev/model-catalog-example/blob/main/developer-model-service/catalog-info.yaml
+  Output: {
+    "locationID": "aaaa-bbbb-cccc-dddd"
+  }      
+`,
+          schema: {
+            input: z =>
+              z.object({
+                locationURL: z
+                  .string()
+                  .describe(
+                    `URL reference to the catalog-info.yaml file that describes what entities to import.`,
+                  ),
+              }),
+            output: z =>
+              z.object({
+                locationID: z
+                  .string()
+                  .optional()
+                  .describe('The location ID generated by the registration'),
+                error: z
+                  .string()
+                  .optional()
+                  .describe('Error message if creation fails'),
+              }),
+          },
+          attributes: {
+            readOnly: false,
+          },
+          action: async ({ input }) => {
+            if (!input.locationURL || input.locationURL === '') {
+              return {
+                output: {
+                  error: 'a location URL must be specified',
+                },
+              };
+            }
+
+            // Validate that the locationURL is a valid URL
+            try {
+              // eslint-disable-next-line no-new
+              new URL(input.locationURL);
+            } catch {
+              return {
+                output: {
+                  error: 'location URL must be a valid URL string',
+                },
+              };
+            }
+            try {
+              const locReq = {
+                type: 'url',
+                target: input.locationURL,
+              };
+              const credentials = await auth.getOwnServiceCredentials();
+              const result = await catalog.addLocation(locReq, {
+                credentials,
+              });
+
+              return {
+                output: {
+                  locationID: result.location.id,
+                  error: undefined,
+                },
+              };
+            } catch (error) {
+              logger.error(
+                'register-catalog-entities: Error registering catalog entities:',
+                error,
+              );
+              return {
+                output: {
+                  error: error.message,
+                },
+              };
+            }
+          },
+        });
+
+        // registers catalog entities
+        // returns:: JSON response with location ID
+        // @ts-ignore
+        actionsRegistry.register({
+          name: 'unregister-catalog-entities',
+          title: 'Unregister Catalog Entities',
+          description: `Unregister a Location and the entities it owns.
+
+This tool is analogous to the "unregister location" function you see in the Backstage dashboard,
+where you supply the UUID for a Location entity link that allows for the removal of the Location and
+the various Entities (Components, Systems, Resources, APIs, Users, and Groups) that were also created
+when the Location was imported. Alternatively, you can provide the URL used to register the location.
+
+Example invocation and the output from the invocation:
+  # Unregister a Location by ID
+  unregister-catalog-entities type: { locationId: "aaa-bbb-ccc-ddd" }
+  Output: {}
+
+  # Unregister a Location by URL
+  unregister-catalog-entities type: { locationUrl: "https://github.com/redhat-ai-dev/model-catalog-example/blob/main/developer-model-service/catalog-info.yaml" }
+  Output: {}
+`,
+          schema: {
+            input: z =>
+              z
+                .object({
+                  type: z.union([
+                    z.object({
+                      locationId: z
+                        .string()
+                        .describe(`Location ID of the Entity to unregister`),
+                    }),
+                    z.object({
+                      locationUrl: z
+                        .string()
+                        .describe(
+                          `URL of the catalog-info.yaml file to unregister for example: https://github.com/backstage/demo/blob/master/catalog-info.yaml`,
+                        ),
+                    }),
+                  ]),
+                })
+                .describe(
+                  'The type to the unregister-catalog-entities action. Either locationId or locationUrl must be provided.',
+                ),
+            output: z => z.object({}),
+          },
+          attributes: {
+            destructive: true,
+            readOnly: false,
+            idempotent: true,
+          },
+          action: async ({ input: { type }, credentials }) => {
+            if ('locationId' in type) {
+              await catalog.removeLocationById(type.locationId, {
+                credentials,
+              });
+            } else {
+              const locations = await catalog
+                .getLocations(
+                  {},
+                  {
+                    credentials,
+                  },
+                )
+                .then(response =>
+                  response.items.filter(
+                    location =>
+                      location.target.toLowerCase() ===
+                      type.locationUrl.toLowerCase(),
+                  ),
+                );
+
+              if (locations.length === 0) {
+                logger.error(
+                  `unregister-catalog-entities: Location with URL ${type.locationUrl} not found`,
+                );
+                throw new Error(
+                  `Location with URL ${type.locationUrl} not found`,
+                );
+              }
+
+              for (const location of locations) {
+                await catalog.removeLocationById(location.id, {
+                  credentials,
+                });
+              }
+            }
+
+            return { output: {} };
+          },
+        });
+      },
+    });
+  },
+});
+
+export async function fetchSoftwareTemplateMetadata(
+  catalog: CatalogService,
+  auth: any,
+  logger: LoggerService,
+  input?: {
+    name?: string;
+    title?: string;
+    uid?: string;
+  },
+) {
+  const credentials = await auth.getOwnServiceCredentials();
+
+  const filter: any = {
+    kind: 'Template', // Only fetch Template entities
+  };
+
+  if (input?.name) {
+    filter['metadata.name'] = input.name;
+  }
+  if (input?.title) {
+    filter['metadata.title'] = input.title;
+  }
+  if (input?.uid) {
+    filter['metadata.uid'] = input.uid;
+  }
+
+  const getEntitiesOptions: any = {
+    filter,
+    fields: [
+      'metadata.name',
+      'metadata.tags',
+      'metadata.labels',
+      'metadata.description',
+      'spec.owner',
+      'spec.parameters',
+      'spec.steps',
+    ],
+  };
+
+  logger.info(
+    'fetch-template-metadata: Fetching template metadata with options:',
+    filter,
+  );
+
+  const { items } = await catalog.getEntities(getEntitiesOptions, {
+    credentials,
+  });
+
+  return {
+    templates: items.map(template => ({
+      name: template.metadata.name,
+      tags: template.metadata.tags?.join(',') || undefined,
+      labels: template.metadata.labels
+        ? Object.entries(template.metadata.labels)
+            .map(([k, v]) => `${k}:${v}`)
+            .join(',')
+        : undefined,
+      description: template.metadata.description,
+      owner:
+        typeof template.spec?.owner === 'string'
+          ? template.spec.owner
+          : undefined,
+      parameters: template.spec?.parameters
+        ? JSON.stringify(template.spec.parameters)
+        : undefined,
+      steps: template.spec?.steps
+        ? JSON.stringify(template.spec.steps)
+        : undefined,
+    })),
+  };
+}
+
+// fetchCatalogEntities retrieves the list of entities present in the Backstage catalog, with optional filtering by kind and type
+export async function fetchCatalogEntities(
+  catalog: CatalogService,
+  auth: any,
+  logger: LoggerService,
+  input?: {
+    kind?: string;
+    type?: string;
+    name?: string;
+    owner?: string;
+    tags?: string;
+    lifecycle?: string;
+    verbose?: boolean;
+  },
+) {
+  const credentials = await auth.getOwnServiceCredentials();
+
+  // Build filter object based on input parameters
+  const filter: any = {};
+  if (input?.kind) {
+    filter.kind = input.kind;
+  }
+  if (input?.type) {
+    filter['spec.type'] = input.type;
+  }
+  if (input?.name) {
+    filter['metadata.name'] = input.name;
+  }
+  if (input?.owner) {
+    filter['spec.owner'] = input.owner;
+  }
+  if (input?.lifecycle) {
+    filter['spec.lifecycle'] = input.lifecycle;
+  }
+  if (input?.tags) {
+    filter['metadata.tags'] = input.tags.split(',').map(tag => tag.trim());
+  }
+
+  const getEntitiesOptions: any = {
+    filter,
+  };
+
+  // When using the reduced output, we can also reduce the number of fields fetched via the API
+  if (!input?.verbose) {
+    getEntitiesOptions.fields = [
+      'metadata.name',
+      'kind',
+      'metadata.tags',
+      'metadata.description',
+      'spec.type',
+      'spec.owner',
+      'spec.lifecycle',
+      'relations',
+    ];
+  }
+
+  // Avoid potentially logging PII when we log which filters are being used
+  const logEntityNames = process.env.LOG_ENTITY_NAMES === 'true';
+  const loggedFilters = {
+    ...getEntitiesOptions.filter,
+  };
+  if (!logEntityNames) {
+    if (Object.prototype.hasOwnProperty.call(loggedFilters, 'metadata.name')) {
+      loggedFilters['metadata.name'] = '[REDACTED]';
+    }
+    if (Object.prototype.hasOwnProperty.call(loggedFilters, 'spec.owner')) {
+      loggedFilters['spec.owner'] = '[REDACTED]';
+    }
+  }
+  // Log the options being used to fetch the entities, with PII redacted
+  logger.info(
+    'fetch-catalog-entities: Fetching catalog entities with options:',
+    loggedFilters,
+  );
+
+  const { items } = await catalog.getEntities(getEntitiesOptions, {
+    credentials,
+  });
+
+  return {
+    // Return full Entity objects when fullOutput is true
+    entities: input?.verbose
+      ? items
+      : items.map(entity => ({
+          name: entity.metadata.name,
+          kind: entity.kind,
+          tags: entity.metadata.tags?.join(',') || '',
+          description: entity.metadata.description,
+          lifecycle:
+            typeof entity.spec?.lifecycle === 'string'
+              ? entity.spec.lifecycle
+              : undefined,
+          type:
+            typeof entity.spec?.type === 'string'
+              ? entity.spec.type
+              : undefined,
+          owner:
+            typeof entity.spec?.owner === 'string'
+              ? entity.spec.owner
+              : undefined,
+          dependsOn:
+            entity.relations
+              ?.filter(relation => relation.type === 'dependsOn')
+              .map(relation => relation.targetRef)
+              .join(',') || '',
+        })),
+  };
+}

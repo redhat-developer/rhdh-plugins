@@ -31,6 +31,8 @@ import { MenuItemConfig, MenuSection } from './MenuSection';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useProfileDropdownMountPoints } from '../../hooks/useProfileDropdownMountPoints';
 import { useDropdownManager } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
+import { translateWithFallback } from '../../utils/translationUtils';
 
 /**
  * @public
@@ -44,6 +46,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
   const [user, setUser] = useState<string | null>();
   const [profileLink, setProfileLink] = useState<string | null>();
+  const { t } = useTranslation();
   const {
     displayName,
     backstageIdentity,
@@ -98,7 +101,8 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
           setUser(null);
           setProfileLink(null);
         }
-      } catch (_err) {
+      } catch (err) {
+        // User entity doesn't exist in catalog (e.g., guest user)
         setUser(null);
         setProfileLink(null);
       }
@@ -108,23 +112,43 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
   }, [backstageIdentity, catalogApi]);
 
   const menuItems = useMemo(() => {
+    // Check if user is a guest (guest user has userEntityRef like "user:development/guest" or "user:default/guest")
+    const isGuestUser =
+      backstageIdentity?.userEntityRef?.includes('/guest') ||
+      profileLink === null;
+
     return (profileDropdownMountPoints ?? [])
       .map(mp => {
         const {
           title = '',
+          titleKey = '',
           icon = '',
           link: staticLink = '',
+          type = '',
         } = mp.config?.props ?? {};
-        const isMyProfile = title.toLowerCase() === 'my profile';
+        // The title fallbacks are to be backward compatibility with older versions
+        // of the global-header configuration if a customer has customized it.
+        const isMyProfile =
+          type === 'myProfile' ||
+          title === 'profile.myProfile' ||
+          title === 'My profile';
         const link = isMyProfile ? profileLink ?? '' : staticLink;
 
-        if (!link && title) {
+        // Hide "My Profile" for guest users or when user doesn't exist in catalog
+        if (isMyProfile && isGuestUser) {
           return null;
         }
 
+        // Hide items without links (but allow "My Profile" to pass through for authenticated users)
+        if (!link && title && !isMyProfile) {
+          return null;
+        }
+
+        const translatedTitle = translateWithFallback(t, titleKey, title);
+
         return {
           Component: mp.Component,
-          label: title,
+          label: translatedTitle,
           link,
           priority: mp.config?.priority ?? 0,
           ...(icon && { icon }),
@@ -132,7 +156,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
       })
       .filter((item: MenuItemConfig) => item !== null)
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
-  }, [profileDropdownMountPoints, profileLink]);
+  }, [profileDropdownMountPoints, profileLink, backstageIdentity, t]);
 
   if (menuItems.length === 0) {
     return null;
@@ -160,7 +184,7 @@ export const ProfileDropdown = ({ layout }: ProfileDropdownProps) => {
                 <Avatar
                   src={profile.picture}
                   sx={{ mr: 2, height: '32px', width: '32px' }}
-                  alt="Profile picture"
+                  alt={t('profile.picture')}
                 />
               ) : (
                 <AccountCircleOutlinedIcon fontSize="small" sx={{ mr: 1 }} />

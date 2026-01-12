@@ -15,10 +15,12 @@
  */
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const CustomLegend = (props: any) => {
   const theme = useTheme();
   const { payload } = props;
+  const { t } = useTranslation();
 
   return (
     <div
@@ -39,7 +41,7 @@ const CustomLegend = (props: any) => {
             <div
               style={{
                 width: 20,
-                height: 3,
+                height: 4,
                 backgroundColor: entry.color,
               }}
             />
@@ -56,7 +58,9 @@ const CustomLegend = (props: any) => {
             variant="body2"
             style={{ color: theme.palette.text.primary, fontSize: '0.875rem' }}
           >
-            {entry.value === 'new_users' ? 'New users' : 'Returning users'}
+            {entry.value === 'new_users'
+              ? t('activeUsers.legend.newUsers')
+              : t('activeUsers.legend.returningUsers')}
           </Typography>
         </div>
       ))}

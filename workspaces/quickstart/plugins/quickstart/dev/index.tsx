@@ -16,7 +16,9 @@
 
 import { createDevApp } from '@backstage/dev-utils';
 import { quickstartPlugin, QuickstartDrawerProvider } from '../src/plugin';
+import { quickstartTranslations } from '../src/translations';
 import { useQuickstartDrawerContext } from '../src/hooks/useQuickstartDrawerContext';
+import { useTranslation } from '../src/hooks/useTranslation';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
@@ -27,26 +29,28 @@ import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 const QuickstartTestPageContent = () => {
   const { openDrawer, closeDrawer, isDrawerOpen } =
     useQuickstartDrawerContext();
+  const { t } = useTranslation();
 
   return (
     <Box sx={{ padding: 4 }}>
       <Typography variant="h3" gutterBottom>
-        Quickstart Plugin Test Page
+        {t('dev.pageTitle')}
       </Typography>
 
       <Typography variant="body1" paragraph>
-        This is a test page for the Quickstart plugin. Use the buttons below to
-        interact with the quickstart drawer.
+        {t('dev.pageDescription')}
       </Typography>
 
       <Card sx={{ maxWidth: 600, marginBottom: 2 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Drawer Controls
+            {t('dev.drawerControls')}
           </Typography>
 
           <Typography variant="body2" color="text.secondary" paragraph>
-            Current drawer state: {isDrawerOpen ? 'Open' : 'Closed'}
+            {t('dev.currentState' as any, {
+              state: isDrawerOpen ? t('dev.stateOpen') : t('dev.stateClosed'),
+            })}
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -56,7 +60,7 @@ const QuickstartTestPageContent = () => {
               onClick={openDrawer}
               disabled={isDrawerOpen}
             >
-              Open Quickstart Guide
+              {t('button.openQuickstartGuide')}
             </Button>
 
             <Button
@@ -64,7 +68,7 @@ const QuickstartTestPageContent = () => {
               onClick={closeDrawer}
               disabled={!isDrawerOpen}
             >
-              Close Drawer
+              {t('button.closeDrawer')}
             </Button>
           </Box>
         </CardContent>
@@ -73,19 +77,18 @@ const QuickstartTestPageContent = () => {
       <Card sx={{ maxWidth: 600 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Instructions
+            {t('dev.instructions')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            1. Click "Open Quickstart Guide" to open the drawer
+            {t('dev.step1')}
             <br />
-            2. Navigate through the quickstart steps
+            {t('dev.step2')}
             <br />
-            3. Test the progress tracking by completing steps
+            {t('dev.step3')}
             <br />
-            4. The drawer can be closed using the close button or the drawer's
-            own controls
+            {t('dev.step4')}
             <br />
-            5. Progress is automatically saved to localStorage
+            {t('dev.step5')}
           </Typography>
         </CardContent>
       </Card>
@@ -101,6 +104,9 @@ const QuickstartTestPage = () => (
 
 createDevApp()
   .registerPlugin(quickstartPlugin)
+  .addTranslationResource(quickstartTranslations)
+  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({
     element: <QuickstartTestPage />,

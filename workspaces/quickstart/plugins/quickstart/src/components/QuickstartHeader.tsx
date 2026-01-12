@@ -18,8 +18,11 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import quickstartImage from '../assets/quickstart-image.png';
+import { useTranslation } from '../hooks/useTranslation';
 
 export const QuickstartHeader = () => {
+  const { t } = useTranslation();
+
   return (
     <Toolbar
       sx={{
@@ -43,10 +46,10 @@ export const QuickstartHeader = () => {
         }}
       >
         <Typography sx={{ fontSize: theme => theme.typography.h6 }}>
-          Let's get you started with Developer Hub
+          {t('header.title')}
         </Typography>
         <Typography sx={{ fontSize: theme => theme.typography.caption }}>
-          We'll guide you through a few quick steps
+          {t('header.subtitle')}
         </Typography>
       </Box>
     </Toolbar>

@@ -22,6 +22,8 @@ import Grid from '@mui/material/Grid';
 
 import { SubmitButton } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 const MissingSchemaNotice = ({
   isExecuting,
   handleExecute,
@@ -29,12 +31,13 @@ const MissingSchemaNotice = ({
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
 }) => {
+  const { t } = useTranslation();
   return (
     <Grid container spacing={2}>
       <Grid item xs={12}>
         <Alert severity="info" style={{ width: '100%' }}>
-          <AlertTitle>Missing JSON Schema for Input Form</AlertTitle>
-          This workflow will run without any input values.
+          <AlertTitle>{t('messages.missingJsonSchema.title')}</AlertTitle>
+          {t('messages.missingJsonSchema.message')}
           <br />
           To enable a form-based input, please provide a valid JSON schema in
           the <code>dataInputSchema</code> property of your workflow definition

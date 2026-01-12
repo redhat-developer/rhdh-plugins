@@ -27,9 +27,11 @@ import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
+  ApprovalTool,
   ImportJobStatus,
   PullRequestPreview,
   PullRequestPreviewData,
@@ -64,6 +66,7 @@ export const PreviewFileSidebar = ({
   handleSave: (pullRequest: PullRequestPreviewData, _event: any) => void;
   isSubmitting?: boolean;
 }) => {
+  const { t } = useTranslation();
   const { setStatus, status, setFieldValue, values } =
     useFormikContext<AddRepositoriesFormValues>();
   const classes = useDrawerStyles();
@@ -80,14 +83,17 @@ export const PreviewFileSidebar = ({
     url: string,
     branch: string,
     repoPrTemplate: PullRequestPreview,
+    approvalTool?: ApprovalTool,
   ) => {
     if (values?.repositories?.[id]?.catalogInfoYaml?.isInitialized) {
       return values.repositories[id].catalogInfoYaml
         ?.prTemplate as PullRequestPreview;
     }
+
     const result = await bulkImportApi.getImportAction(
       url || '',
       branch || 'main',
+      approvalTool,
     );
     if ((result as Response)?.statusText) {
       setStatus({
@@ -97,9 +103,7 @@ export const PreviewFileSidebar = ({
           [id]: {
             error: {
               title: (result as Response)?.statusText,
-              message: [
-                `Failed to fetch the pull request. A new YAML has been generated below.`,
-              ],
+              message: [t('previewFile.failedToFetchPR')],
             },
           },
         },
@@ -122,6 +126,7 @@ export const PreviewFileSidebar = ({
           baseUrl as string,
           url,
           branch,
+          approvalTool === ApprovalTool.Gitlab ? 'gitlab' : 'github',
         );
         delete prTemp.prDescription;
         delete prTemp.prTitle;
@@ -132,9 +137,7 @@ export const PreviewFileSidebar = ({
             ...(status?.infos || {}),
             [id]: {
               error: {
-                message: [
-                  'The entity YAML in your pull request is invalid (empty file or missing apiVersion, kind, or metadata.name). A new YAML has been generated below.',
-                ],
+                message: [t('previewFile.invalidEntityYaml')],
               },
             },
           },
@@ -162,6 +165,7 @@ export const PreviewFileSidebar = ({
           repo.repoUrl || '',
           repo.defaultBranch || 'main',
           repo.catalogInfoYaml?.prTemplate as PullRequestPreview,
+          data?.approvalTool,
         );
         setFieldValue(
           `repositories.${repo.id}.catalogInfoYaml.isInitialized`,
@@ -176,6 +180,7 @@ export const PreviewFileSidebar = ({
         data.repoUrl || '',
         data.defaultBranch || 'main',
         data.catalogInfoYaml?.prTemplate as PullRequestPreview,
+        data?.approvalTool,
       );
       setFieldValue(
         `repositories.${data.id}.catalogInfoYaml.isInitialized`,

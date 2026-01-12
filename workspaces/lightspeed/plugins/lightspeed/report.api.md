@@ -4,15 +4,12 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { JSX as JSX_2 } from 'react';
-import * as React_2 from 'react';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 
 // @public
-export const LightspeedIcon: () => React_2.JSX.Element;
+export const LightspeedIcon: () => JSX_2.Element;
 
 // @public
 export const LightspeedPage: () => JSX_2.Element;

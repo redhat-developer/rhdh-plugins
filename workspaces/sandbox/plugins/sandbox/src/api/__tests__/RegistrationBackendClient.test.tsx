@@ -266,4 +266,65 @@ describe('RegistrationBackendClient', () => {
       );
     });
   });
+
+  describe('getUIConfig', () => {
+    it('should return UI config with workatoWebHookURL', async () => {
+      const mockUIConfig = {
+        workatoWebHookURL: 'https://webhooks.test',
+      };
+
+      mockSecureFetchApi.fetch.mockResolvedValue(
+        createMockResponse({
+          ok: true,
+          json: () => Promise.resolve(mockUIConfig),
+        }),
+      );
+
+      const result = await client.getUIConfig();
+
+      expect(result).toEqual(mockUIConfig);
+      expect(mockSecureFetchApi.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/uiconfig'),
+        expect.objectContaining({ method: 'GET' }),
+      );
+    });
+
+    it('should return empty config if workatoWebHookURL is not present', async () => {
+      const mockUIConfig = {};
+
+      mockSecureFetchApi.fetch.mockResolvedValue(
+        createMockResponse({
+          ok: true,
+          json: () => Promise.resolve(mockUIConfig),
+        }),
+      );
+
+      const result = await client.getUIConfig();
+
+      expect(result).toEqual({});
+      expect(result.workatoWebHookURL).toBeUndefined();
+    });
+
+    it('should return empty config on unsuccessful response', async () => {
+      mockSecureFetchApi.fetch.mockResolvedValue(
+        createMockResponse({
+          ok: false,
+          status: 500,
+          json: () => Promise.resolve({}),
+        }),
+      );
+
+      const result = await client.getUIConfig();
+
+      expect(result).toEqual({});
+    });
+
+    it('should return empty config on fetch error', async () => {
+      mockSecureFetchApi.fetch.mockRejectedValue(new Error('Network failure'));
+
+      const result = await client.getUIConfig();
+
+      expect(result).toEqual({});
+    });
+  });
 });

@@ -18,31 +18,12 @@ import React, { useState } from 'react';
 import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
+import { useBaseFiltersStyles } from '../../../components/filtersStyles';
 import { ComboBox } from './ComboBox';
 
 const useFiltersStyles = makeStyles(
   theme => ({
-    root: {
-      height: '100%',
-      width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      marginRight: theme.spacing(3),
-    },
-    value: {
-      fontWeight: 'bold',
-      fontSize: 18,
-    },
-    header: {
-      display: 'flex',
-      alignItems: 'center',
-      height: theme.spacing(7.5),
-      justifyContent: 'space-between',
-      borderBottom: `1px solid ${theme.palette.grey[500]}`,
-    },
     filters: {
-      display: 'flex',
-      flexDirection: 'column',
       '& > *': {
         marginTop: theme.spacing(2),
       },
@@ -74,13 +55,14 @@ export type FiltersProps = {
 /** @public */
 export function Filters(props: FiltersProps) {
   const { onFiltersChange, onFiltersReset, ...filters } = props;
+  const baseClasses = useBaseFiltersStyles();
   const classes = useFiltersStyles();
   const [globalKeyId, setGlobalKeyId] = useState(0); // Used for reseting the ComboBoxes internal state
 
   return (
-    <Box className={classes.root}>
-      <Box className={classes.header}>
-        <Box className={classes.value}>Filters</Box>
+    <Box className={baseClasses.root}>
+      <Box className={baseClasses.header}>
+        <Box className={baseClasses.value}>Filters</Box>
         <Button
           color="primary"
           onClick={(_): void => {
@@ -91,7 +73,7 @@ export function Filters(props: FiltersProps) {
           Reset
         </Button>
       </Box>
-      <Box className={classes.filters}>
+      <Box className={`${baseClasses.filters} ${classes.filters}`}>
         {filterFieldIds.map(ffid => (
           <ComboBox
             multiple

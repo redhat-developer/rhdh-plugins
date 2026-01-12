@@ -1,5 +1,96 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.20.0
+
+### Minor Changes
+
+- 3f708c9: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+
+## 1.19.0
+
+### Minor Changes
+
+- 7982d37: Backstage version bump to v1.44.2
+
+## 1.18.2
+
+### Patch Changes
+
+- e8b5090: fix: add ability to use custom star icons
+
+## 1.18.1
+
+### Patch Changes
+
+- 927b031: Make the myProfile check backward compatible for customers with a custom header configuration
+
+## 1.18.0
+
+### Minor Changes
+
+- 97011bd: Adding translation support for the string coming through configuration
+
+## 1.17.3
+
+### Patch Changes
+
+- b887a58: French translation updated
+
+## 1.17.2
+
+### Patch Changes
+
+- 4e2f33e: Fix the test package build and rebuild both packages to have a consistant commit for them.
+- 2c4b3c0: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+
+## 1.17.1
+
+### Patch Changes
+
+- d59b616: Add `type` prop for MenuItemLink identification and hide "My profile" menuItemLink for guest users
+
+  - Add `type` prop to MenuItemLink component config for better identification when i18n applied
+  - Hide "My Profile" menu item when user entity reference contains '/guest'
+  - Hide "My Profile" menu item when catalog API fails to fetch user entity
+  - Export `globalHeaderTranslations` from plugin for i18n integration
+
+## 1.17.0
+
+### Minor Changes
+
+- d59f08b: Backstage version bump to v1.42.5
+
+## 1.16.1
+
+### Patch Changes
+
+- 60a37b4: Fixes the global header starred items icon color and visibility:
+
+  - Changed star icon color to use theme.rhdh.general.starredItemsColor for better visibility and customization
+  - Star icon now only appears on hover instead of being always visible
+  - Maintains consistent styling with table view starred items across the application
+
+## 1.16.0
+
+### Minor Changes
+
+- 6d86c5c: Add internationalization (i18n) support with German, French, Italian, and Spanish translations.
+
+### Patch Changes
+
+- cf9f6d0: Fixed dropdown empty state corners by removing the border line
+
+## 1.15.1
+
+### Patch Changes
+
+- aaaaf2d: Add divider above Sign out option in profile dropdown for better visual separation
+- b991a8a: Show empty state when no help items available
+
 ## 1.15.0
 
 ### Minor Changes

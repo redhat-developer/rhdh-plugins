@@ -30,6 +30,8 @@ import { CustomFab } from './CustomFab';
 import { getSlotOptions } from '../utils';
 import { FloatingActionButton, Slot } from '../types';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from '../hooks/useTranslation';
+import { getTranslatedTextWithFallback } from '../utils/translationUtils';
 
 const useStyles = makeStyles(theme => ({
   fabContainer: {
@@ -81,7 +83,9 @@ export const FABWithSubmenu = ({
       setIsMenuOpen(true);
     }
   };
-
+  // This hook call is necessary to prevent infinite re-render loops
+  // The translation context provides stability to the component's render cycle
+  const { t } = useTranslation();
   return (
     <Box
       className={classnames(fab.fabContainer, className)}
@@ -91,7 +95,10 @@ export const FABWithSubmenu = ({
       id="floating-button-with-submenu"
       data-testid="floating-button-with-submenu"
     >
-      <Tooltip title="Menu" placement={getSlotOptions(slot).tooltipDirection}>
+      <Tooltip
+        title={getTranslatedTextWithFallback(t, 'fab.menu.tooltip', 'Menu')}
+        placement={getSlotOptions(slot).tooltipDirection}
+      >
         <Typography>
           <Box ref={containerRef} sx={{ overflow: 'hidden' }} />
           <Fab
@@ -124,6 +131,7 @@ export const FABWithSubmenu = ({
             <Box>
               <CustomFab
                 actionButton={fb}
+                t={t}
                 size="medium"
                 key={fb.label}
                 className={styles.button}

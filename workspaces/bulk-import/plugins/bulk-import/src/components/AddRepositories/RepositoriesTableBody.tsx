@@ -22,6 +22,7 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddedRepositories, AddRepositoryData } from '../../types';
 import { OrganizationTableRow } from './OrganizationTableRow';
 import { getRepositoriesColumnHeader } from './RepositoriesColumnHeader';
@@ -50,6 +51,7 @@ export const RepositoriesTableBody = ({
   showOrganizations?: boolean;
   isApprovalToolGitlab?: boolean;
 }) => {
+  const { t } = useTranslation();
   const isSelected = (id: string) => {
     return !!selectedRepos[id];
   };
@@ -59,7 +61,9 @@ export const RepositoriesTableBody = ({
       <tbody>
         <tr>
           <td
-            colSpan={getRepositoriesColumnHeader(isApprovalToolGitlab).length}
+            colSpan={
+              getRepositoriesColumnHeader(isApprovalToolGitlab, t).length
+            }
           >
             <Box
               data-testid={`${ariaLabel}-loading`}
@@ -111,7 +115,9 @@ export const RepositoriesTableBody = ({
   return (
     <tbody>
       <tr>
-        <td colSpan={getRepositoriesColumnHeader(isApprovalToolGitlab).length}>
+        <td
+          colSpan={getRepositoriesColumnHeader(isApprovalToolGitlab, t).length}
+        >
           <Box
             data-testid="no-repositories-found"
             sx={{
@@ -120,7 +126,11 @@ export const RepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            No records found
+            {t(
+              isApprovalToolGitlab
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         </td>
       </tr>

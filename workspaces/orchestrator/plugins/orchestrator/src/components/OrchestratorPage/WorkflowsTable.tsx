@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { Link, TableColumn, TableProps } from '@backstage/core-components';
@@ -40,16 +40,18 @@ import WorkflowOverviewFormatter, {
   FormattedWorkflowOverview,
 } from '../../dataFormatters/WorkflowOverviewFormatter';
 import { usePermissionArray } from '../../hooks/usePermissionArray';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
   executeWorkflowRouteRef,
+  workflowInstanceRouteRef,
   workflowRouteRef,
   workflowRunsRouteRef,
 } from '../../routes';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
-import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
-import { WorkflowStatus } from '../WorkflowStatus';
+import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
+import { WorkflowStatus } from '../ui/WorkflowStatus';
 import { InputSchemaDialog } from './InputSchemaDialog';
 
 export interface WorkflowsTableProps {
@@ -111,11 +113,15 @@ const usePermittedToViewBatch = (
 };
 
 export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const definitionLink = useRouteRef(workflowRouteRef);
   const definitionRunsLink = useRouteRef(workflowRunsRouteRef);
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
+  const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
+  const workflowInstanceLink = useRouteRef(workflowInstanceRouteRef);
+
   const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
@@ -132,7 +138,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     FormattedWorkflowOverview | undefined
   >(undefined);
 
-  const toggleInputSchemaDialog = React.useCallback(() => {
+  const toggleInputSchemaDialog = useCallback(() => {
     setIsInputSchemaDialogOpen(prev => !prev);
   }, []);
 
@@ -209,7 +215,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     const actionItems: TableProps<FormattedWorkflowOverview>['actions'] = [
       rowData => ({
         icon: PlayArrow,
-        tooltip: 'Run',
+        tooltip: t('table.actions.run'),
         disabled: !canExecuteWorkflow(rowData.id),
         onClick: () => handleExecute(rowData),
       }),
@@ -219,13 +225,13 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
       actionItems.push(
         rowData => ({
           icon: FormatListBulleted,
-          tooltip: 'View runs',
+          tooltip: t('table.actions.viewRuns'),
           disabled: !canViewWorkflow(rowData.id),
           onClick: () => handleViewVariables(rowData),
         }),
         rowData => ({
           icon: DeveloperModeOutlined,
-          tooltip: 'View input schema',
+          tooltip: t('table.actions.viewInputSchema'),
           disabled: !canViewWorkflow(rowData.id),
           onClick: () => handleViewInputSchema(rowData),
         }),
@@ -233,6 +239,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
 
     return actionItems;
   }, [
+    t,
     canExecuteWorkflow,
     canViewWorkflow,
     handleExecute,
@@ -257,10 +264,36 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
     [entityRef, entityWorkflowLink, definitionLink, kind, name, namespace],
   );
 
+  const instanceLink = useCallback(
+    (rowData: FormattedWorkflowOverview) => {
+      if (canViewInstance(rowData.id)) {
+        return entityRef
+          ? entityInstanceLink({
+              namespace,
+              kind,
+              name,
+              workflowId: rowData.id,
+              instanceId: rowData.lastRunId,
+            })
+          : workflowInstanceLink({ instanceId: rowData.lastRunId });
+      }
+      return undefined;
+    },
+    [
+      canViewInstance,
+      entityInstanceLink,
+      workflowInstanceLink,
+      entityRef,
+      namespace,
+      kind,
+      name,
+    ],
+  );
+
   const columns = useMemo<TableColumn<FormattedWorkflowOverview>[]>(
     () => [
       {
-        title: 'Name',
+        title: t('table.headers.name'),
         field: 'name',
         render: rowData =>
           canViewWorkflow(rowData.id) ? (
@@ -270,15 +303,18 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
           ),
       },
       {
-        title: 'Workflow status',
-        field: 'avialability',
+        title: t('table.headers.workflowStatus'),
+        field: 'availability',
         render: rowData => (
-          <WorkflowStatus availability={rowData.availablity} />
+          <WorkflowStatus availability={rowData.availability} />
         ),
       },
-      { title: 'Last run', field: 'lastTriggered' },
       {
-        title: 'Last run status',
+        title: t('table.headers.lastRun'),
+        field: 'lastTriggered',
+      },
+      {
+        title: t('table.headers.lastRunStatus'),
         field: 'lastRunStatus',
         render: rowData => {
           const originalRawData = items.find(
@@ -289,16 +325,18 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
               status={
                 originalRawData?.lastRunStatus as ProcessInstanceStatusDTO
               }
-              lastRunId={
-                canViewInstance(rowData.id) ? rowData.lastRunId : undefined
-              }
+              instanceLink={instanceLink(rowData)}
             />
           );
         },
       },
-      { title: 'Description', field: 'description', minWidth: '25vw' },
+      {
+        title: t('table.headers.description'),
+        field: 'description',
+        minWidth: '25vw',
+      },
     ],
-    [canViewInstance, canViewWorkflow, entityLink, items],
+    [t, canViewWorkflow, entityLink, items, instanceLink],
   );
 
   const options = useMemo<TableProps['options']>(
@@ -322,7 +360,7 @@ export const WorkflowsTable = ({ items }: WorkflowsTableProps) => {
         />
       )}
       <OverrideBackstageTable<FormattedWorkflowOverview>
-        title="Workflows"
+        title={t('table.title.workflows')}
         options={options}
         columns={columns}
         data={data}

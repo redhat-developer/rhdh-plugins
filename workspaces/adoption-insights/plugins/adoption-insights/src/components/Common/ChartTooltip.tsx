@@ -17,18 +17,28 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import { formatInTimeZone } from 'date-fns-tz';
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import {
   formatHourlyBucket,
   formatDateWithRange,
   formatTooltipHeaderLabel,
   formatWeeklyBucket,
+  formatLongDate,
+  safeDate,
 } from '../../utils/utils';
 import { useDateRange } from '../Header/DateRangeContext';
 
-const labelOverrides: Record<string, string> = {
-  count: 'Number of searches',
-};
+import { useTranslation } from '../../hooks/useTranslation';
+import { useLanguage } from '../../hooks/useLanguage';
+import { adoptionInsightsTranslationRef } from '../../translations';
+
+const getLabelOverrides = (
+  t: TranslationFunction<typeof adoptionInsightsTranslationRef.T>,
+) => ({
+  count: t('common.numberOfSearches'),
+  new_users: t('activeUsers.legend.newUsers'),
+  returning_users: t('activeUsers.legend.returningUsers'),
+});
 
 const ChartTooltip = ({
   active,
@@ -43,21 +53,29 @@ const ChartTooltip = ({
 }) => {
   const theme = useTheme();
   const { startDateRange, endDateRange } = useDateRange();
-
-  const timeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const { t } = useTranslation();
+  const locale = useLanguage();
+  const labelOverrides = getLabelOverrides(t);
 
   const getLabel = (key: string) =>
-    labelOverrides[key] || formatTooltipHeaderLabel(key);
+    (labelOverrides as any)[key] || formatTooltipHeaderLabel(key);
+
   const formatBucketLabel = (date: Date) => {
     switch (grouping) {
       case 'hourly':
-        return formatHourlyBucket(date);
+        return formatHourlyBucket(date, locale);
       case 'weekly':
-        return formatWeeklyBucket(date);
+        return formatWeeklyBucket(date, locale);
       case 'monthly':
-        return formatDateWithRange(date, startDateRange, endDateRange);
+        return formatDateWithRange(
+          date,
+          startDateRange,
+          endDateRange,
+          t,
+          locale,
+        );
       default:
-        return formatInTimeZone(date, timeZone, 'MMMM d, yyyy');
+        return formatLongDate(date, locale);
     }
   };
 
@@ -65,9 +83,9 @@ const ChartTooltip = ({
     return null;
   }
 
-  const date = label
-    ? new Date(formatInTimeZone(label, timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX"))
-    : new Date();
+  // Parse date from chart label - chart data typically provides ISO strings or timestamps
+  const date = label ? safeDate(label) : new Date();
+
   return (
     <Paper
       elevation={1}
@@ -86,14 +104,19 @@ const ChartTooltip = ({
       >
         {formatBucketLabel(date)
           .split('\n')
-          .map((line, i) => (
-            <div key={i}>{line}</div>
+          .map((line, index) => (
+            <div key={`tooltip-line-${line.substring(0, 10)}-${index}`}>
+              {line}
+            </div>
           ))}
       </Typography>
 
       <Box display="flex" justifyContent="space-between" alignItems="center">
         {payload.map(({ dataKey, value }, index) => (
-          <Box mr={index === payload.length - 1 ? 0 : 3}>
+          <Box
+            key={`tooltip-value-${dataKey}-${value}-${index}`}
+            mr={index === payload.length - 1 ? 0 : 3}
+          >
             <Typography
               sx={{
                 fontSize: '0.875rem',

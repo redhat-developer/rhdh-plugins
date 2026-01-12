@@ -131,17 +131,28 @@ export function GenerateModelResourceEntities(
 
     // Handle any annotations present on the model resource
     if (model.annotations !== undefined) {
-      // Add the techdocs annotation to the resource if present
-      let techdocsUrl: string = model.annotations.TechDocs;
-      techdocsUrl = techdocsUrl.trim();
-      if (model.annotations.TechDocs !== '') {
-        if (modelResourceEntity.metadata.annotations === undefined) {
-          modelResourceEntity.metadata.annotations = {};
-        }
-        modelResourceEntity.metadata.annotations[
-          'backstage.io/techdocs-ref'
-        ] = `url:${techdocsUrl}`;
+      // Initialize annotations object if needed
+      if (modelResourceEntity.metadata.annotations === undefined) {
+        modelResourceEntity.metadata.annotations = {};
       }
+
+      // Copy all annotations from model to resource entity
+      Object.keys(model.annotations).forEach(key => {
+        // Special handling for TechDocs annotation
+        if (key === 'TechDocs') {
+          let techdocsUrl: string = model.annotations![key];
+          techdocsUrl = techdocsUrl.trim();
+          if (techdocsUrl !== '') {
+            modelResourceEntity.metadata.annotations![
+              'backstage.io/techdocs-ref'
+            ] = `url:${techdocsUrl}`;
+          }
+        } else {
+          // Copy all other annotations as-is
+          modelResourceEntity.metadata.annotations![key] =
+            model.annotations![key];
+        }
+      });
     }
     modelResourceEntities.push(modelResourceEntity);
   });
@@ -194,6 +205,18 @@ export function GenerateModelServerComponentEntity(
       url: `${modelServer.API.url}`,
     });
     modelServerComponent.spec.providesApis = [modelServer.name];
+
+    // Copy annotations from API to component metadata if they exist
+    if (modelServer.API.annotations !== undefined) {
+      if (modelServerComponent.metadata.annotations === undefined) {
+        modelServerComponent.metadata.annotations = {};
+      }
+      // Copy all key-value pairs from API annotations to component annotations
+      Object.keys(modelServer.API.annotations).forEach(key => {
+        modelServerComponent.metadata.annotations![key] =
+          modelServer.API!.annotations![key];
+      });
+    }
   }
   if (modelServer.homepageURL !== undefined) {
     modelServerComponent.metadata.links.push({
@@ -201,6 +224,19 @@ export function GenerateModelServerComponentEntity(
       url: `${modelServer.homepageURL}`,
     });
   }
+
+  // Copy annotations from modelServer to component metadata if they exist
+  if (modelServer.annotations !== undefined) {
+    if (modelServerComponent.metadata.annotations === undefined) {
+      modelServerComponent.metadata.annotations = {};
+    }
+    // Copy all key-value pairs from modelServer annotations to component annotations
+    Object.keys(modelServer.annotations).forEach(key => {
+      modelServerComponent.metadata.annotations![key] =
+        modelServer.annotations![key];
+    });
+  }
+
   return modelServerComponent;
 }
 

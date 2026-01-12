@@ -4,10 +4,8 @@
 
 ```ts
 import type { Entity } from '@backstage/catalog-model';
-import { EntityFilterQuery } from '@backstage/catalog-client/index';
-import { EntityFilterQuery as EntityFilterQuery_2 } from '@backstage/catalog-client';
-import { GetEntitiesRequest } from '@backstage/catalog-client/index';
-import { GetEntitiesRequest as GetEntitiesRequest_2 } from '@backstage/catalog-client';
+import { EntityFilterQuery } from '@backstage/catalog-client';
+import { GetEntitiesRequest } from '@backstage/catalog-client';
 
 // @public (undocumented)
 export interface AIModel extends Entity {
@@ -27,12 +25,12 @@ export const createSearchParams: <
 // @public (undocumented)
 export const decodeEntityFilter: (
   searchParameters: URLSearchParams,
-) => EntityFilterQuery_2 | undefined;
+) => EntityFilterQuery | undefined;
 
 // @public (undocumented)
 export const decodeGetEntitiesRequest: (
   searchParams: URLSearchParams,
-) => GetEntitiesRequest_2;
+) => GetEntitiesRequest;
 
 // @public (undocumented)
 export const encodeEntityFilterQuery: (
@@ -60,12 +58,8 @@ export interface GetEntitiesResponse<T> {
 // @public (undocumented)
 export interface ModelServiceApi {
   // (undocumented)
-  getModels(
-    request: GetEntitiesRequest_2,
-  ): Promise<GetEntitiesResponse<AIModel>>;
+  getModels(request: GetEntitiesRequest): Promise<GetEntitiesResponse<AIModel>>;
   // (undocumented)
-  getTemplates(
-    request: GetEntitiesRequest_2,
-  ): Promise<GetEntitiesResponse<any>>;
+  getTemplates(request: GetEntitiesRequest): Promise<GetEntitiesResponse<any>>;
 }
 ```

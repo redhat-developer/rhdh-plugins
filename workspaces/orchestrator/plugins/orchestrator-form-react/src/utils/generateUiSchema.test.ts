@@ -366,7 +366,7 @@ describe('extract ui schema', () => {
     expect(uiSchema).toEqual(expected);
   });
 
-  it('should handle a complex schema with various ui: properties and $ref, including readonly data', () => {
+  it('should handle a complex schema with various ui: properties and $ref', () => {
     const complexSchema = {
       title: 'Complex Schema Example',
       type: 'object',
@@ -499,7 +499,6 @@ describe('extract ui schema', () => {
           done: {
             'ui:widget': 'checkbox',
           },
-          'ui:readonly': true,
         },
       },
       preferences: {
@@ -518,15 +517,7 @@ describe('extract ui schema', () => {
       },
     };
 
-    const uiSchema = generateUiSchema(complexSchema, true, {
-      tasks: {
-        items: {
-          title: 'purple',
-          details: 'abc',
-          done: true,
-        },
-      },
-    });
+    const uiSchema = generateUiSchema(complexSchema, true);
     expect(uiSchema).toEqual(expected);
   });
 });

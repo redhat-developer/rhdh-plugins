@@ -49,6 +49,7 @@ import {
 import Box from '@mui/material/Box';
 import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
+import { Administration } from '@backstage-community/plugin-rbac';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -81,10 +82,15 @@ const SidebarLogo = () => {
 export const Root = ({ children }: PropsWithChildren<{}>) => {
   return (
     <Box
+      id="sidebar"
       sx={{
-        '.quickstart-drawer-open &': {
-          "& main[class*='BackstagePage-root']": {
-            marginRight: 'calc(var(--quickstart-drawer-width, 500px) + 1.5em) ',
+        // When drawer is open, adjust the content size
+        // This code exists similarly in RHDH:
+        // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/Root/Root.tsx#L159-L165
+        // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/ErrorPages/ErrorPage.tsx#L54-L59
+        'body.quickstart-drawer-open #sidebar&': {
+          "> div > main[class*='BackstagePage-root']": {
+            marginRight: 'calc(var(--quickstart-drawer-width, 500px) + 1.5em)',
             transition: 'margin-right 0.3s ease',
           },
         },
@@ -118,6 +124,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               />
               {/* End global nav */}
               <SidebarDivider />
+              <Administration />
               <SidebarScrollWrapper>
                 {/* Items in this group will be scrollable if they run out of space */}
               </SidebarScrollWrapper>

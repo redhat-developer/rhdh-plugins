@@ -18,8 +18,21 @@ import type { ReactNode } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
 
 import Techdocs from '../Techdocs';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 const types = ['component', 'component', 'service', 'website'];
 const names = ['test-doc-1', 'test-doc-2', 'test-doc-3', 'test-doc-4'];
@@ -67,10 +80,10 @@ jest.mock('@backstage/core-plugin-api', () => ({
 
 jest.mock('../../../utils/constants', () => ({
   TECHDOCS_TABLE_HEADERS: [
-    { id: 'name', title: 'Name' },
-    { id: 'kind', title: 'Kind' },
-    { id: 'lastUsed', title: 'Last Used' },
-    { id: 'count', title: 'Views' },
+    { id: 'name', titleKey: 'table.headers.name' },
+    { id: 'kind', titleKey: 'table.headers.kind' },
+    { id: 'lastUsed', titleKey: 'table.headers.lastUsed' },
+    { id: 'count', titleKey: 'table.headers.views' },
   ],
 }));
 
@@ -101,13 +114,13 @@ describe('Techdocs', () => {
   });
 
   it('should render the component with initial data', () => {
-    expect(screen.getByText('Top 3 techdocs')).toBeInTheDocument();
+    expect(screen.getByText('Top 3 TechDocs')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(5);
   });
 
   it('should display correct table headers', () => {
     const headers = screen.getAllByRole('columnheader');
-    const expectedHeaders = ['Name', 'Kind', 'Last Used', 'Views'];
+    const expectedHeaders = ['Name', 'Kind', 'Last used', 'Views'];
 
     expect(headers).toHaveLength(expectedHeaders.length);
 
@@ -120,9 +133,9 @@ describe('Techdocs', () => {
     const select = screen.getByRole('combobox');
 
     await user.click(select);
-    await user.click(screen.getByText('Top 5'));
+    await user.click(screen.getByText('All'));
 
-    expect(screen.getByText('Top 5 techdocs')).toBeInTheDocument();
+    expect(screen.getByText('All TechDocs')).toBeInTheDocument();
     expect(screen.getAllByRole('row')).toHaveLength(6);
   });
 

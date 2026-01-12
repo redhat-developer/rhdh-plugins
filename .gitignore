@@ -60,3 +60,6 @@ site
 
 # RBAC Policies
 *policy.local.csv
+
+# Cursor IDE configuration files
+.cursorrules

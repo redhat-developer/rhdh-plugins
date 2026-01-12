@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Translations minor updates",
+      "matchFileNames": ["workspaces/translations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Translations)"
+      ],
+      "addLabels": ["team/rhdh", "translations"]
+    },
+    {
+      "description": "all Translations patch updates",
+      "matchFileNames": ["workspaces/translations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Translations)"
+      ],
+      "addLabels": ["team/rhdh", "translations"]
+    },
+    {
+      "description": "all Translations dev dependency updates",
+      "matchFileNames": ["workspaces/translations/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Translations)"
+      ],
+      "addLabels": ["team/rhdh", "translations"]
+    }
+  ]
+}

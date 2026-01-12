@@ -28,6 +28,7 @@ import CardWrapper from './CardWrapper';
 import HomePageAiModels from '../../images/homepage-ai-models.svg';
 import { useModels } from '../../hooks/useModels';
 import { ViewMoreLink } from '../Links/ViewMoreLink';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const ModelSection = () => {
   const [isRemoveFirstCard, setIsRemoveFirstCard] = React.useState(false);
@@ -39,6 +40,7 @@ export const ModelSection = () => {
   const isExtraSmallScreen = useMediaQuery(theme.breakpoints.down(900));
   const smallScreenWidth = isExtraSmallScreen ? 266 : 180;
   const imageWidth = isSmallScreen ? smallScreenWidth : 266;
+  const { t } = useTranslation();
 
   const handleClose = () => {
     setShowDiscoveryCard(false);
@@ -47,7 +49,7 @@ export const ModelSection = () => {
     }, 500);
   };
   const { data } = useModels();
-  const models = data?.items ?? [];
+  const models = data?.items;
   const params = new URLSearchParams({
     'filters[kind]': 'resource',
     'filters[type]': 'ai-model',
@@ -59,7 +61,12 @@ export const ModelSection = () => {
     <React.Fragment>
       <Grid container spacing={1} alignItems="stretch">
         {!isRemoveFirstCard && (
-          <Grid item xs={12} md={5} key="AI models illustration">
+          <Grid
+            item
+            xs={12}
+            md={5}
+            key={t('accessibility.aiModelsIllustration')}
+          >
             <Box
               sx={{
                 border: `1px solid ${theme.palette.grey[400]}`,
@@ -86,20 +93,19 @@ export const ModelSection = () => {
                 component="img"
                 src={HomePageAiModels}
                 onLoad={() => setImgLoaded(true)}
-                alt="AI models illustration"
+                alt={t('accessibility.aiModelsIllustration')}
                 height={300}
                 width={imageWidth}
               />
               <Box sx={{ p: 2 }}>
                 <Box>
                   <Typography variant="body2" paragraph>
-                    Discover the AI models and services that are available in
-                    your organization
+                    {t('sections.discoverModels')}
                   </Typography>
                 </Box>
                 <IconButton
                   onClick={handleClose}
-                  aria-label="close"
+                  aria-label={t('accessibility.close')}
                   sx={{ position: 'absolute', top: 8, right: 8 }}
                 >
                   <CloseIcon sx={{ width: '16px', height: '16px' }} />
@@ -118,7 +124,7 @@ export const ModelSection = () => {
             <CardWrapper
               link={`/catalog/default/resource/${item.metadata.name}`}
               title={item.spec?.profile?.displayName ?? item.metadata.name}
-              version="latest"
+              version={t('common.latest')}
               description={item.metadata.description ?? ''}
               tags={item.metadata?.tags ?? []}
             />
@@ -127,7 +133,9 @@ export const ModelSection = () => {
       </Grid>
       <Box sx={{ pt: 2 }}>
         <ViewMoreLink to={catalogModelLink}>
-          View all {data?.totalItems ? data?.totalItems : ''} models
+          {t('sections.viewAllModels' as any, {
+            count: data?.totalItems ? data?.totalItems.toString() : '',
+          })}
         </ViewMoreLink>
       </Box>
     </React.Fragment>

@@ -22,6 +22,7 @@ import yaml from 'js-yaml';
 import { get } from 'lodash';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -29,7 +30,11 @@ import {
   PullRequestPreviewData,
   RepositorySelection,
 } from '../../types';
-import { ImportJobResponse, ImportJobStatus } from '../../types/response-types';
+import {
+  ImportJobResponse,
+  ImportJobStatus,
+  isGithubJob,
+} from '../../types/response-types';
 import {
   getJobErrors,
   prepareDataForSubmission,
@@ -45,14 +50,18 @@ const EditCatalogInfo = ({
   onClose: () => void;
   open: boolean;
 }) => {
+  const { t } = useTranslation();
   const bulkImportApi = useApi(bulkImportApiRef);
   const { setSubmitting, setStatus, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
   let yamlContent = {} as Entity;
   try {
-    yamlContent = yaml.loadAll(
-      importStatus?.github?.pullRequest?.catalogInfoContent,
-    )[0] as Entity;
+    if (importStatus) {
+      const gitProvider = isGithubJob(importStatus) ? 'github' : 'gitlab';
+      yamlContent = yaml.loadAll(
+        importStatus[gitProvider]?.pullRequest?.catalogInfoContent ?? '',
+      )[0] as Entity;
+    }
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn(e);
@@ -64,6 +73,7 @@ const EditCatalogInfo = ({
   const previewData: AddRepositoryData = {
     id: importStatus?.repository?.id,
     repoUrl: importStatus?.repository?.url,
+    approvalTool: importStatus?.approvalTool,
     repoName: importStatus?.repository?.name,
     orgName: importStatus?.repository?.organization,
     catalogInfoYaml: {
@@ -89,6 +99,7 @@ const EditCatalogInfo = ({
           catalogInfoYaml: {
             prTemplate: pullRequest[`${importStatus.repository.id}`],
           },
+          approvalTool: importStatus.approvalTool,
           defaultBranch: importStatus.repository?.defaultBranch,
           organizationUrl: importStatus.repository.url
             ?.substring(
@@ -125,8 +136,10 @@ const EditCatalogInfo = ({
               error: {
                 message:
                   get(createJobResponse, 'error.message') ||
-                  'Failed to create pull request',
-                status: get(createJobResponse, 'error.name') || 'Error occured',
+                  t('repositories.failedToCreatePullRequest'),
+                status:
+                  get(createJobResponse, 'error.name') ||
+                  t('repositories.errorOccured'),
               },
             },
           });
@@ -146,7 +159,7 @@ const EditCatalogInfo = ({
           repository: importStatus.repository.name,
           catalogEntityName,
           error: {
-            message: error?.message || 'Error occured',
+            message: error?.message || t('repositories.errorOccured'),
             status: error?.name,
           },
         },

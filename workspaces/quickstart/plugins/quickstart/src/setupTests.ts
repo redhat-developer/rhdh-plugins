@@ -15,3 +15,14 @@
  */
 
 import '@testing-library/jest-dom';
+import { mockUseTranslation, MockTrans } from './test-utils/mockTranslations';
+
+// Global mock for useTranslation hook
+jest.mock('./hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+// Global mock for Trans component
+jest.mock('./components/Trans', () => ({
+  Trans: MockTrans,
+}));

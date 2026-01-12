@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-common",
-  "version": "3.0.3",
+  "version": "3.3.1",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -12,7 +12,6 @@
   },
   "backstage": {
     "role": "common-library",
-    "supported-versions": "1.39.1",
     "pluginId": "orchestrator",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-orchestrator",
@@ -28,8 +27,6 @@
   },
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "keywords": [
-    "support:tech-preview",
-    "lifecycle:active",
     "backstage",
     "plugin",
     "orchestrator",
@@ -57,17 +54,19 @@
     "openapi:check": "./scripts/openapi.sh check"
   },
   "dependencies": {
-    "@backstage/plugin-permission-common": "^0.9.0",
-    "@backstage/types": "^1.2.1",
-    "@severlessworkflow/sdk-typescript": "^3.0.3",
+    "@backstage/core-plugin-api": "^1.12.0",
+    "@backstage/plugin-permission-common": "^0.9.3",
+    "@backstage/types": "^1.2.2",
+    "@serverlessworkflow/sdk-typescript": "^0.8.4",
     "axios": "^1.11.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.32.1",
-    "@openapitools/openapi-generator-cli": "2.21.4",
+    "@backstage/cli": "^0.34.5",
+    "@openapitools/openapi-generator-cli": "2.25.2",
+    "@types/js-yaml": "^4.0.0",
     "@types/json-schema": "7.0.15",
-    "js-yaml-cli": "0.6.0"
+    "js-yaml-cli": "^0.6.0"
   },
   "maintainers": [
     "@mlibra",

@@ -1,0 +1,5 @@
+playwright.config.ts
+.eslintrc.js
+.prettierrc.js
+coverage
+report-alpha.api.md

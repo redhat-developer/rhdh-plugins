@@ -22,8 +22,6 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import fetch from 'node-fetch';
 
-// const fetch = (await import('node-fetch')).default;
-
 import {
   lightspeedChatCreatePermission,
   lightspeedChatDeletePermission,
@@ -53,6 +51,13 @@ export async function createRouter(
 
   const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
+  // Only support one MCP server for now
+  const mcpServerName = config
+    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
+    ?.getString('name');
+  const mcpToken = config
+    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
+    ?.getString('token');
 
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });
@@ -65,46 +70,10 @@ export async function createRouter(
 
   const authorizer = userPermissionAuthorization(permissions);
 
-  // Middleware proxy to exclude passthroughPaths
-  router.use('/v1', async (req, res, next) => {
-    const passthroughPaths = ['/query', '/feedback'];
-
-    if (passthroughPaths.some(path => req.path.startsWith(path))) {
-      return next(); // This will skip proxying and go to rcs endpoint handlers.
-    }
-    // TODO: parse server_id from req.body and get URL and token when multi-server is supported
-    const credentials = await httpAuth.credentials(req);
-    const user = await userInfo.getUserInfo(credentials);
-    const userEntity = user.userEntityRef;
-
-    logger.info(`receives call from user: ${userEntity}`);
-    try {
-      await authorizer.authorizeUser(lightspeedChatReadPermission, credentials);
-    } catch (error) {
-      if (error instanceof NotAllowedError) {
-        logger.error(error.message);
-        return res.status(403).json({ error: error.message });
-      }
-    }
-
-    // For all other /v1/* requests, use the proxy to llm server
-    const apiToken = config
-      .getConfigArray('lightspeed.servers')[0]
-      .getOptionalString('token'); // currently only single llm server is supported
-    req.headers.authorization = `Bearer ${apiToken}`;
-    // Proxy middleware configuration
-    const apiProxy = createProxyMiddleware({
-      target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
-      changeOrigin: true,
-    });
-    return apiProxy(req, res, next);
-  });
-
   // Middleware proxy to exclude rcs POST endpoints
   router.use('/', async (req, res, next) => {
     const passthroughPaths = ['/v1/query', '/v1/feedback'];
-
-    if (passthroughPaths.includes(req.path)) {
+    if (passthroughPaths.includes(req.path) || req.method === 'PUT') {
       return next(); // This will skip proxying and go to POST endpoints
     }
     // TODO: parse server_id from req.body and get URL and token when multi-server is supported
@@ -133,7 +102,6 @@ export async function createRouter(
     }
     // Proxy middleware configuration
     const apiProxy = createProxyMiddleware({
-      // target: config.getConfigArray('lightspeed.servers')[0].getString('url'), // currently only single llm server is supported
       target: `http://0.0.0.0:${port}`,
       changeOrigin: true,
       pathRewrite: (path, _) => {
@@ -185,7 +153,7 @@ export async function createRouter(
       if (!fetchResponse.ok) {
         // Read the error body
         const errorBody = await fetchResponse.json();
-        const errormsg = `Error from road-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
+        const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
         logger.error(errormsg);
 
         // Return a 500 status for any upstream error
@@ -225,7 +193,6 @@ export async function createRouter(
         );
         const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
         request.body.media_type = 'application/json'; // set media_type to receive start and end event
-
         // if system_prompt is defined in lightspeed config
         // set system_prompt to override the default rhdh system prompt
         if (system_prompt && system_prompt.trim().length > 0) {
@@ -233,12 +200,16 @@ export async function createRouter(
         }
 
         const requestBody = JSON.stringify(request.body);
+        const mcpHeaders = mcpToken
+          ? `{"${mcpServerName}": {"Authorization": "Bearer ${mcpToken}"}}`
+          : '';
         const fetchResponse = await fetch(
           `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              'MCP-HEADERS': mcpHeaders,
             },
             body: requestBody,
           },
@@ -247,7 +218,7 @@ export async function createRouter(
         if (!fetchResponse.ok) {
           // Read the error body
           const errorBody = await fetchResponse.json();
-          const errormsg = `Error from road-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
+          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
           logger.error(errormsg);
 
           // Return a 500 status for any upstream error
@@ -260,6 +231,59 @@ export async function createRouter(
         fetchResponse.body.pipe(response);
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
+        logger.error(errormsg);
+
+        if (error instanceof NotAllowedError) {
+          response.status(403).json({ error: error.message });
+        } else {
+          response.status(500).json({ error: errormsg });
+        }
+      }
+    },
+  );
+
+  router.put(
+    '/v2/conversations/:conversation_id',
+    async (request, response) => {
+      try {
+        const credentials = await httpAuth.credentials(request);
+        const userEntity = await userInfo.getUserInfo(credentials);
+        const user_id = userEntity.userEntityRef;
+        const conversation_id = request.params.conversation_id;
+
+        const requestBody = JSON.stringify(request.body);
+        await authorizer.authorizeUser(
+          lightspeedChatCreatePermission,
+          credentials,
+        );
+        const userQueryParam = `user_id=${encodeURIComponent(user_id)}`;
+        const fetchResponse = await fetch(
+          `http://0.0.0.0:${port}/v2/conversations/${conversation_id}?${userQueryParam}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          },
+        );
+        if (!fetchResponse.ok) {
+          // Read the error body
+          const errorBody = await fetchResponse.json();
+          const errormsg = `Error from lightspeed-core server: ${errorBody.error?.message || errorBody?.detail?.cause || 'Unknown error'}`;
+          logger.error(errormsg);
+
+          // Return a 500 status for any upstream error
+          response.status(500).json({
+            error: errormsg,
+          });
+          return;
+        }
+
+        const data = await fetchResponse.json();
+        response.status(fetchResponse.status).json(data);
+      } catch (error) {
+        const errormsg = `Error while updating topic summary: ${error}`;
         logger.error(errormsg);
 
         if (error instanceof NotAllowedError) {

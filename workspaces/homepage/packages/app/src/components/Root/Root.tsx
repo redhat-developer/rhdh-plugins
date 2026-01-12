@@ -84,6 +84,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
       <SidebarGroup label="Menu" icon={<MenuIcon />}>
         {/* Global nav, not org-specific */}
         <SidebarItem icon={HomeIcon} to="" text="Home" />
+        <SidebarItem icon={HomeIcon} to="customizable" text="Customizable" />
         <SidebarItem icon={CatalogIcon} to="catalog" text="Catalog" />
         <MyGroupsSidebarItem
           singularTitle="My Group"

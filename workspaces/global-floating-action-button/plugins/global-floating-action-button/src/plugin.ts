@@ -18,6 +18,7 @@ import {
   createComponentExtension,
   createPlugin,
 } from '@backstage/core-plugin-api';
+import { globalFloatingActionButtonTranslationRef } from './translations';
 
 /**
  * Global Floating Action Button Plugin
@@ -35,7 +36,11 @@ export const globalFloatingActionButtonPlugin = createPlugin({
  */
 export const dynamicGlobalFloatingActionButtonPlugin = createPlugin({
   id: 'dynamic-global-floating-action-button',
-});
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [globalFloatingActionButtonTranslationRef],
+  },
+} as any);
 
 /**
  * Global Floating Action Button
@@ -88,3 +93,13 @@ export const NullComponent: React.ComponentType =
       },
     }),
   );
+
+/**
+ * Translation resource for the global floating action button plugin
+ *
+ * @public
+ */
+export {
+  globalFloatingActionButtonTranslations,
+  globalFloatingActionButtonTranslationRef,
+} from './translations';

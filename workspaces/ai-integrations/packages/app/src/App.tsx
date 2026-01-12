@@ -57,6 +57,7 @@ import {
   AiNewsPage,
 } from '@red-hat-developer-hub/backstage-plugin-ai-experience';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { aiExperienceTranslationsResource } from '@red-hat-developer-hub/backstage-plugin-ai-experience';
 
 const githubProvider = {
   id: 'github-auth-provider',
@@ -67,6 +68,11 @@ const githubProvider = {
 
 const app = createApp({
   apis,
+  __experimentalTranslations: {
+    defaultLanguage: 'en',
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [aiExperienceTranslationsResource],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,

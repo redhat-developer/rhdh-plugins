@@ -20,8 +20,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import WavingHandIcon from '@mui/icons-material/WavingHandOutlined';
-import { useQuickstartPermission } from '../../hooks/useQuickstartPermission';
 import { useQuickstartDrawerContext } from '../../hooks/useQuickstartDrawerContext';
+import { useTranslation } from '../../hooks/useTranslation';
+import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
+import { QuickstartItemData } from '../../types';
+import { filterQuickstartItemsByRole } from '../../utils';
+// Role is now provided through context
 
 /**
  * Props for the QuickstartButton component
@@ -44,23 +48,44 @@ export interface QuickstartButtonProps {
 }
 
 /**
+ * Quickstart button component for the global header help dropdown
  * @public
  */
 export const QuickstartButton = ({
-  title = 'Quick start',
+  title,
   style,
   onClick = () => {},
 }: QuickstartButtonProps) => {
-  const isAllowed = useQuickstartPermission();
-  const { toggleDrawer } = useQuickstartDrawerContext();
+  // All hooks must be called at the top level, before any early returns
+  const { t } = useTranslation();
+  const { toggleDrawer, userRole, roleLoading } = useQuickstartDrawerContext();
   const theme = useTheme();
+
+  // Check if there are any quickstart items available for the current user
+  const apiHolder = useApiHolder();
+  const config = apiHolder.get(configApiRef);
+  const quickstartItems: QuickstartItemData[] = config?.has('app.quickstart')
+    ? config.get('app.quickstart')
+    : [];
+
+  const filteredItems =
+    !roleLoading && userRole
+      ? filterQuickstartItemsByRole(quickstartItems, userRole)
+      : [];
+
+  const defaultTitle = t('button.quickstart');
 
   const handleClick = useCallback(() => {
     toggleDrawer();
     onClick();
   }, [toggleDrawer, onClick]);
 
-  return isAllowed ? (
+  // Hide the button if there are no quickstart items for the user
+  if (!roleLoading && filteredItems.length === 0) {
+    return null;
+  }
+
+  return (
     <MenuItem
       sx={{
         width: '100%',
@@ -102,11 +127,11 @@ export const QuickstartButton = ({
             }}
           >
             <Typography variant="body2" color={theme.palette.text.primary}>
-              {title}
+              {title || defaultTitle}
             </Typography>
           </Box>
         </Box>
       </Box>
     </MenuItem>
-  ) : null;
+  );
 };

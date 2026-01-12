@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import {
   WorkflowFormatDTO,
@@ -32,12 +32,12 @@ export interface FormattedWorkflowOverview {
   readonly lastRunId: string;
   readonly description: string;
   readonly format: WorkflowFormatDTO;
-  readonly availablity?: string;
+  readonly availability?: string;
 }
 
-const formatIsAvailable = (availablity: boolean | undefined) => {
-  if (availablity === true) return AVAILABLE;
-  else if (availablity === false) return UNAVAILABLE;
+const formatIsAvailable = (availability: boolean | undefined) => {
+  if (availability === true) return AVAILABLE;
+  else if (availability === false) return UNAVAILABLE;
   return VALUE_UNAVAILABLE;
 };
 
@@ -57,13 +57,15 @@ const WorkflowOverviewFormatter: DataFormatter<
       id: data.workflowId,
       name: data.name ?? VALUE_UNAVAILABLE,
       lastTriggered: data.lastTriggeredMs
-        ? moment(data.lastTriggeredMs).toDate().toLocaleString()
+        ? DateTime.fromMillis(data.lastTriggeredMs).toLocaleString(
+            DateTime.DATETIME_SHORT_WITH_SECONDS,
+          )
         : VALUE_UNAVAILABLE,
       lastRunStatus: formatLastRunStatus(data.lastRunStatus),
       lastRunId: data.lastRunId ?? VALUE_UNAVAILABLE,
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
-      availablity: formatIsAvailable(data.isAvailable),
+      availability: formatIsAvailable(data.isAvailable),
     };
   },
 };

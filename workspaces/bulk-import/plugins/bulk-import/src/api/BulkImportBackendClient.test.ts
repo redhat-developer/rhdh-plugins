@@ -28,6 +28,7 @@ import {
 import {
   AddedRepositoryColumnNameEnum,
   ApprovalTool,
+  ImportFlow,
   RepositoryStatus,
   SortingOrderEnum,
 } from '../types';
@@ -173,63 +174,78 @@ const handlers = [
     },
   ),
 ];
+
 const server = setupServer(...handlers);
 
 beforeAll(() => server.listen());
 afterEach(() => server.restoreHandlers());
 afterAll(() => server.close());
 
-describe('BulkImportBackendClient', () => {
+const getConfigApi = (importAPI: ImportFlow) => ({
+  has: jest.fn(),
+  keys: jest.fn(),
+  get: jest.fn(),
+  getBoolean: jest.fn(),
+  getConfig: jest.fn(),
+  getConfigArray: jest.fn(),
+  getNumber: jest.fn(),
+  getString: jest.fn(key => {
+    if (key === 'backend.baseUrl') {
+      return LOCAL_ADDR;
+    }
+    return '';
+  }),
+  getStringArray: jest.fn(),
+  getOptional: jest.fn(),
+  getOptionalStringArray: jest.fn(),
+  getOptionalBoolean: jest.fn(),
+  getOptionalConfig: jest.fn(),
+  getOptionalConfigArray: jest.fn(),
+  getOptionalNumber: jest.fn(),
+  getOptionalString: jest.fn(key => {
+    if (key === 'bulkImport.importAPI') {
+      return importAPI;
+    }
+    return undefined;
+  }),
+});
+
+const bearerToken = 'test-token';
+
+const identityApi = {
+  async getCredentials() {
+    return { token: bearerToken };
+  },
+} as IdentityApi;
+
+describe('BulkImportBackendClient with open-pull-requests', () => {
   let bulkImportApi: BulkImportAPI;
-  const getConfigApi = (getOptionalStringFn: any) => ({
-    has: jest.fn(),
-    keys: jest.fn(),
-    get: jest.fn(),
-    getBoolean: jest.fn(),
-    getConfig: jest.fn(),
-    getConfigArray: jest.fn(),
-    getNumber: jest.fn(),
-    getString: jest.fn(key => {
-      if (key === 'backend.baseUrl') {
-        return LOCAL_ADDR;
-      }
-      return '';
-    }),
-    getStringArray: jest.fn(),
-    getOptional: jest.fn(),
-    getOptionalStringArray: jest.fn(),
-    getOptionalBoolean: jest.fn(),
-    getOptionalConfig: jest.fn(),
-    getOptionalConfigArray: jest.fn(),
-    getOptionalNumber: jest.fn(),
-    getOptionalString: getOptionalStringFn,
-  });
-
-  const bearerToken = 'test-token';
-
-  const identityApi = {
-    async getCredentials() {
-      return { token: bearerToken };
-    },
-  } as IdentityApi;
 
   beforeEach(() => {
     bulkImportApi = new BulkImportBackendClient({
-      configApi: getConfigApi(() => {
-        return '/api';
-      }),
+      configApi: getConfigApi(ImportFlow.OpenPullRequests),
       identityApi: identityApi,
     });
   });
 
   describe('getRepositories', () => {
     it('getRepositories should retrieve repositories successfully', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, '');
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        '',
+        ApprovalTool.Git,
+      );
       expect(repositories).toEqual(mockGetRepositories.repositories);
     });
 
     it('getRepositories should retrieve repositories based on search string', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, 'ap');
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        'ap',
+        ApprovalTool.Git,
+      );
       expect(repositories).toEqual(
         mockGetRepositories.repositories.filter(r => r.repoName.includes('ap')),
       );
@@ -245,46 +261,66 @@ describe('BulkImportBackendClient', () => {
         ),
       );
 
-      await expect(bulkImportApi.dataFetcher(1, 2, '')).resolves.toEqual(
-        expect.objectContaining([]),
-      );
+      await expect(
+        bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git),
+      ).resolves.toEqual(expect.objectContaining([]));
     });
   });
 
   describe('getRepositories from an organization', () => {
     it('getRepositories should retrieve repositories from an organization successfully', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, '', {
-        orgName: 'org/dessert',
-      });
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        '',
+        ApprovalTool.Git,
+        {
+          orgName: 'org/dessert',
+        },
+      );
       expect(repositories).toEqual(
-        mockGetRepositories.repositories.slice(0, 7),
+        mockGetRepositories.repositories.filter(
+          r => r.orgName === 'org/dessert',
+        ),
       );
     });
 
     it('getRepositories should retrieve repositories from an organization based on search string', async () => {
-      const repositories = await bulkImportApi.dataFetcher(1, 2, 'des', {
-        orgName: 'org/dessert',
-      });
+      const repositories = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        'des',
+        ApprovalTool.Git,
+        {
+          orgName: 'org/dessert',
+        },
+      );
       expect(repositories).toEqual(
-        mockGetRepositories.repositories
-          .slice(0, 7)
-          .filter(r => r.repoName.includes('des')),
+        mockGetRepositories.repositories.filter(
+          r => r.orgName === 'org/dessert' && r.repoName.includes('des'),
+        ),
       );
     });
   });
 
   describe('getOrganizations', () => {
     it('getOrganizations should retrieve organizations successfully', async () => {
-      const orgs = await bulkImportApi.dataFetcher(1, 2, '', {
+      const orgs = await bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {
         fetchOrganizations: true,
       });
       expect(orgs).toEqual(mockGetOrganizations.organizations);
     });
 
     it('getOrganizations should retrieve organizations based on search string', async () => {
-      const orgs = await bulkImportApi.dataFetcher(1, 2, 'des', {
-        fetchOrganizations: true,
-      });
+      const orgs = await bulkImportApi.dataFetcher(
+        1,
+        2,
+        'des',
+        ApprovalTool.Git,
+        {
+          fetchOrganizations: true,
+        },
+      );
       expect(orgs).toEqual(
         mockGetOrganizations.organizations.filter(r =>
           r.orgName.includes('des'),
@@ -303,7 +339,9 @@ describe('BulkImportBackendClient', () => {
       );
 
       await expect(
-        bulkImportApi.dataFetcher(1, 2, '', { fetchOrganizations: true }),
+        bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {
+          fetchOrganizations: true,
+        }),
       ).resolves.toEqual(expect.objectContaining([]));
     });
   });
@@ -379,6 +417,7 @@ describe('BulkImportBackendClient', () => {
         prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
         true,
       );
+
       expect(response.length).toBe(4);
 
       response = await bulkImportApi.createImportJobs(
@@ -399,6 +438,27 @@ describe('BulkImportBackendClient', () => {
         ok: false,
         status: 404,
       });
+    });
+  });
+});
+
+describe('BulkImportBackendClient with scaffolder', () => {
+  let bulkImportApi: BulkImportAPI;
+
+  beforeEach(() => {
+    bulkImportApi = new BulkImportBackendClient({
+      configApi: getConfigApi(ImportFlow.Scaffolder),
+      identityApi: identityApi,
+    });
+  });
+
+  describe('createImportJobs', () => {
+    it('should be able to dry run and return an empty object', async () => {
+      const response = await bulkImportApi.createImportJobs(
+        prepareDataForSubmission(mockSelectedRepositories, ApprovalTool.Git),
+        true,
+      );
+      expect(response).toEqual({});
     });
   });
 });

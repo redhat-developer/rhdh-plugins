@@ -19,6 +19,10 @@ import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettin
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined';
 import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
 import PowerOutlinedIcon from '@mui/icons-material/PowerOutlined';
+import LoginIcon from '@mui/icons-material/Login';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import ControlPointOutlinedIcon from '@mui/icons-material/ControlPointOutlined';
+import SchoolOutlinedIcon from '@mui/icons-material/SchoolOutlined';
 import { SxProps, Theme } from '@mui/material/styles';
 import { useApp } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
@@ -35,6 +39,10 @@ const commonIcons: {
   Rbac: <VpnKeyOutlinedIcon />,
   Git: <FileCopyOutlinedIcon />,
   Plugins: <PowerOutlinedIcon />,
+  Import: <LoginIcon />,
+  Catalog: <CategoryOutlinedIcon />,
+  SelfService: <ControlPointOutlinedIcon />,
+  Learning: <SchoolOutlinedIcon />,
 };
 
 export const QuickstartItemIcon = ({ icon, sx }: QuickstartItemIconProps) => {
@@ -64,7 +72,8 @@ export const QuickstartItemIcon = ({ icon, sx }: QuickstartItemIconProps) => {
   if (
     icon.startsWith('https://') ||
     icon.startsWith('http://') ||
-    icon.startsWith('/')
+    icon.startsWith('/') ||
+    icon.startsWith('data:image/')
   ) {
     return (
       <MuiIcon

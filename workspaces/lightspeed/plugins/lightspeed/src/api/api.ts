@@ -16,30 +16,35 @@
 
 import { createApiRef } from '@backstage/core-plugin-api';
 
-import OpenAI from 'openai';
-
 import {
   Attachment,
   BaseMessage,
   CaptureFeedback,
   ConversationList,
+  LCSModel,
 } from '../types';
 
 export type LightspeedAPI = {
-  getAllModels: () => Promise<OpenAI.Models.Model[]>;
+  getAllModels: () => Promise<LCSModel[]>;
   getConversationMessages: (conversation_id: string) => Promise<BaseMessage[]>;
   createMessage: (
     prompt: string,
     selectedModel: string,
+    selectedProvider: string,
     conversation_id: string,
     attachments: Attachment[],
   ) => Promise<ReadableStreamDefaultReader>;
   deleteConversation: (
     conversation_id: string,
   ) => Promise<{ success: boolean }>;
+  renameConversation: (
+    conversation_id: string,
+    newName: string,
+  ) => Promise<{ success: boolean }>;
   getConversations: () => Promise<ConversationList>;
   getFeedbackStatus: () => Promise<boolean>;
   captureFeedback: (payload: CaptureFeedback) => Promise<{ response: string }>;
+  isTopicRestrictionEnabled: () => Promise<boolean>;
 };
 
 export const lightspeedApiRef = createApiRef<LightspeedAPI>({

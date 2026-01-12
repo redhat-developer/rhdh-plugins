@@ -38,7 +38,7 @@ export interface DynamicHomePageProps {
  * @public
  */
 export const DynamicHomePage = (props: DynamicHomePageProps) => {
-  const cards = useDynamicHomePageCards();
+  const mountPoints = useDynamicHomePageCards();
 
-  return <HomePage {...props} cards={cards} />;
+  return <HomePage {...props} mountPoints={mountPoints} customizable={false} />;
 };

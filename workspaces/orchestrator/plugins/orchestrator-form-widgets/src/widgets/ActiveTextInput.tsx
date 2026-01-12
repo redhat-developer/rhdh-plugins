@@ -36,6 +36,7 @@ import {
   useFetch,
   applySelectorArray,
   applySelectorString,
+  useProcessingState,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -56,22 +57,34 @@ export const ActiveTextInput: Widget<
 
   const { id, label, value, onChange, formContext } = props;
   const formData = formContext?.formData;
+  const isChangedByUser = !!formContext?.getIsChangedByUser(id);
+  const setIsChangedByUser = formContext?.setIsChangedByUser;
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
+  const isReadOnly = !!props?.schema.readOnly;
 
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
+  const staticDefault = uiProps['fetch:response:default'];
+  const staticDefaultValue =
+    typeof staticDefault === 'string' ? staticDefault : undefined;
+  const hasFetchUrl = !!uiProps['fetch:url'];
 
+  // If fetch:url is configured, either fetch:response:value OR fetch:response:default should be set
+  // to provide meaningful behavior. Without fetch:url, the widget works as a plain text input.
   const [localError] = useState<string | undefined>(
-    !defaultValueSelector
-      ? `The fetch:response:value needs to be set for ${props.id}.`
+    hasFetchUrl && !defaultValueSelector && !staticDefaultValue
+      ? `When fetch:url is configured, either fetch:response:value or fetch:response:default should be set for ${props.id}.`
       : undefined,
   );
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
+
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -82,35 +95,57 @@ export const ActiveTextInput: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
-  const handleChange = useCallback(
-    (changed: string) => {
-      onChange(changed);
-    },
-    [onChange],
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
   );
 
+  const handleChange = useCallback(
+    (changed: string, isByUser: boolean) => {
+      if (isByUser && setIsChangedByUser) {
+        // we must handle this change out of this component's state since the component can be (de)mounted on wizard transitions or by the SchemaUpdater
+        setIsChangedByUser(id, true);
+      }
+      onChange(changed);
+    },
+    [onChange, id, setIsChangedByUser],
+  );
+
+  // Process fetch results - only override if fetch returns a non-empty value
+  // Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
-    if (!data || !defaultValueSelector) {
+    if (!data) {
       return;
     }
 
     const doItAsync = async () => {
-      if (value === undefined) {
-        // loading default so do it only once
-        const defaultValue = await applySelectorString(
-          data,
-          defaultValueSelector,
-        );
-        handleChange(defaultValue);
-      }
+      await wrapProcessing(async () => {
+        // Only apply fetched value if user hasn't changed the field
+        if (!isChangedByUser && defaultValueSelector) {
+          const fetchedValue = await applySelectorString(
+            data,
+            defaultValueSelector,
+          );
 
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-        );
-        setAutocompleteOptions(autocompleteValues);
-      }
+          if (
+            typeof fetchedValue === 'string' &&
+            fetchedValue !== 'null' &&
+            value !== fetchedValue
+          ) {
+            handleChange(fetchedValue, false);
+          }
+        }
+
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
+            data,
+            autocompleteSelector,
+          );
+          setAutocompleteOptions(autocompleteValues);
+        }
+      });
     };
 
     doItAsync();
@@ -121,13 +156,17 @@ export const ActiveTextInput: Widget<
     props.id,
     value,
     handleChange,
+    isChangedByUser,
+    wrapProcessing,
   ]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  // Show loading only if we don't have a static default value to display
+  // This ensures the default is shown instantly while fetch happens in background
+  if (completeLoading && !staticDefaultValue) {
     return <CircularProgress size={20} />;
   }
 
@@ -136,8 +175,9 @@ export const ActiveTextInput: Widget<
       <TextField
         {...params}
         data-testid={`${id}-textfield`}
-        onChange={event => handleChange(event.target.value)}
+        onChange={event => handleChange(event.target.value, true)}
         label={label}
+        disabled={isReadOnly}
       />
     );
 
@@ -147,7 +187,8 @@ export const ActiveTextInput: Widget<
           options={autocompleteOptions}
           data-testid={`${id}-autocomplete`}
           value={value}
-          onChange={(_, v) => handleChange(v)}
+          onChange={(_, v) => handleChange(v, true)}
+          disabled={isReadOnly}
           renderInput={renderInput}
           renderOption={(liProps, item, state) => {
             return (
@@ -174,8 +215,9 @@ export const ActiveTextInput: Widget<
       <TextField
         value={value ?? ''}
         data-testid={`${id}-textfield`}
-        onChange={event => handleChange(event.target.value)}
+        onChange={event => handleChange(event.target.value, true)}
         label={label}
+        disabled={isReadOnly}
       />
     </FormControl>
   );

@@ -23,44 +23,47 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
-import {
-  AddedRepositories,
-  AddRepositoriesFormValues,
-  ApprovalTool,
-} from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
-
-const sPad = (repositories: AddedRepositories) =>
-  Object.keys(repositories || []).length > 1 ? 's' : '';
+import { useTranslation } from '../../hooks/useTranslation';
+import { AddRepositoriesFormValues, ApprovalTool } from '../../types';
 
 export const AddRepositoriesFormFooter = () => {
+  const { t } = useTranslation();
   const { values, handleSubmit, isSubmitting } =
     useFormikContext<AddRepositoriesFormValues>();
 
+  const isPluralRepositories =
+    Object.keys(values.repositories || []).length > 1;
+
+  const getGitSubmitTitle = () => {
+    return t('common.import');
+  };
+
   const label = {
     [ApprovalTool.ServiceNow]: {
-      submitTitle: `Create ServiceNow ticket${sPad(values.repositories)}`,
-      toolTipTitle: `Catalog-info.yaml files must be generated before creating a ServiceNow ticket`,
+      submitTitle: isPluralRepositories
+        ? t('forms.footer.createServiceNowTickets')
+        : t('forms.footer.createServiceNowTicket'),
+      toolTipTitle: t('forms.footer.serviceNowTooltip'),
     },
     [ApprovalTool.Gitlab]: {
-      submitTitle: `Import`,
-      toolTipTitle:
-        'The Catalog-info.yaml files need to be generated for import.',
+      submitTitle: t('common.import'),
+      toolTipTitle: t('forms.footer.importTooltip'),
     },
     [ApprovalTool.Git]: {
-      submitTitle: gitlabFeatureFlag
-        ? 'Import'
-        : `Create pull request${sPad(values.repositories)}`,
-      toolTipTitle: gitlabFeatureFlag
-        ? 'The Catalog-info.yaml files need to be generated for import.'
-        : `Catalog-info.yaml files must be generated before creating a pull request`,
+      submitTitle: getGitSubmitTitle(),
+      toolTipTitle: t('forms.footer.importTooltip'),
     },
   };
 
   const disableCreate =
-    values.approvalTool === ApprovalTool.Gitlab ||
-    !values.repositories ||
-    Object.values(values.repositories).length === 0;
+    !values.repositories || Object.values(values.repositories).length === 0;
+
+  const getTooltipTitle = () => {
+    if (disableCreate) {
+      return t('forms.footer.selectRepositoryTooltip');
+    }
+    return label[values.approvalTool]?.toolTipTitle;
+  };
 
   const submitButton = (
     <Button
@@ -85,8 +88,8 @@ export const AddRepositoriesFormFooter = () => {
         justifyContent: 'left',
         position: 'fixed',
         bottom: 0,
-        pt: 3,
-        pb: 3,
+        pt: 2,
+        pb: 4,
         pl: 3,
         backgroundColor: theme =>
           theme.palette.mode === 'light'
@@ -101,7 +104,7 @@ export const AddRepositoriesFormFooter = () => {
     >
       {disableCreate ? (
         <Tooltip
-          title={label[values.approvalTool]?.toolTipTitle}
+          title={getTooltipTitle()}
           sx={{
             maxWidth: 'none',
           }}
@@ -112,7 +115,7 @@ export const AddRepositoriesFormFooter = () => {
         submitButton
       )}
       <Link to="/bulk-import/repositories">
-        <Button variant="outlined">Cancel</Button>
+        <Button variant="outlined">{t('common.cancel')}</Button>
       </Link>
     </Box>
   );

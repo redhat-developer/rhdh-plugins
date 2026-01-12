@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
+import { MarkdownContent } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
 import type { JSONSchema7 } from 'json-schema';
 import { UiProps } from '../uiPropTypes';
 import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
 import { ErrorText } from './ErrorText';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { useFetchAndEvaluate } from '../utils';
@@ -33,12 +34,16 @@ export const ActiveText: Widget<
   const uiProps = (options?.props ?? {}) as UiProps;
 
   const formData = formContext?.formData;
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const { text, error, loading } = useFetchAndEvaluate(
     uiProps['ui:text'] ?? '',
     formData ?? {},
     uiProps,
     id,
+    handleFetchStarted,
+    handleFetchEnded,
   );
 
   if (!uiProps['ui:text']) {
@@ -55,8 +60,12 @@ export const ActiveText: Widget<
   }
 
   return (
-    <Typography variant={uiProps['ui:variant']} data-testid={id}>
-      {loading ? <CircularProgress size={20} /> : text}
-    </Typography>
+    <Box data-testid={id}>
+      {loading ? (
+        <CircularProgress size={20} />
+      ) : (
+        <MarkdownContent content={text || ''} />
+      )}
+    </Box>
   );
 };

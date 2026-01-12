@@ -42,6 +42,16 @@ export interface GetAccessResponse {
   authorizeProjects: string[];
 }
 
+/**
+ * Response from cost management access endpoint
+ * @public
+ */
+export interface GetCostManagementAccessResponse {
+  decision: string;
+  authorizedClusterNames: string[];
+  authorizeProjects: string[];
+}
+
 /** @public */
 export type GetRecommendationByIdRequest = Parameters<
   OptimizationsApi['getRecommendationById']

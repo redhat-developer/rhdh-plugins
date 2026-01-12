@@ -5,19 +5,15 @@
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import { RouteRef } from '@backstage/core-plugin-api';
 
 // @public
-export const ScorecardPage: () => JSX_2.Element;
+export const EntityScorecardContent: () => JSX_2.Element;
 
 // @public
-export const scorecardPlugin: BackstagePlugin<
-  {
-    root: RouteRef<undefined>;
-  },
-  {},
-  {}
->;
+export const ScorecardHomepageSection: () => JSX_2.Element;
+
+// @public
+export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
 
 // (No @packageDocumentation comment for this package)
 ```

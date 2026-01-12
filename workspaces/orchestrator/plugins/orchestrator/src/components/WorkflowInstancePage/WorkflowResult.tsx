@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { ReactNode } from 'react';
+import { ReactNode, useCallback, useMemo, useReducer, useState } from 'react';
 
 import {
   InfoCard,
@@ -28,7 +28,9 @@ import { AboutField } from '@backstage/plugin-catalog';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -38,18 +40,22 @@ import {
   ProcessInstanceDTO,
   ProcessInstanceErrorDTO,
   ProcessInstanceStatusDTO,
-  QUERY_PARAM_PREVIOUS_INSTANCE_ID,
+  QUERY_PARAM_INSTANCE_ID,
   WorkflowOverviewDTO,
   WorkflowResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
+import { useLogsEnabled } from '../../hooks/useLogsEnabled';
+import { useTranslation } from '../../hooks/useTranslation';
 import { executeWorkflowRouteRef } from '../../routes';
 import { buildUrl } from '../../utils/UrlUtils';
+import { Trans } from '../Trans';
 import {
   WorkflowDescriptionModal,
   WorkflowDescriptionModalProps,
-} from '../WorkflowDescriptionModal';
+} from './WorkflowDescriptionModal';
+import { WorkflowLogsDialog } from './WorkflowLogsDialog';
 
 const useStyles = makeStyles()(theme => ({
   outputGrid: {
@@ -88,6 +94,7 @@ const ResultMessage = ({
   resultMessage?: WorkflowResultDTO['message'];
   executionSummary?: string[];
 }) => {
+  const { t } = useTranslation();
   const errorMessage = error?.message || error?.toString();
   const executionSummaryArray: string[] = executionSummary ?? [];
 
@@ -119,9 +126,10 @@ const ResultMessage = ({
       const nodeMatch = waitingMessage.match(/node (\S+) since/);
       const node = nodeMatch?.[1] ?? 'unknown';
       return (
-        <>
-          Workflow is running - waiting at node {node} since {formattedTime}
-        </>
+        <Trans
+          message="run.status.runningWaitingAtNode"
+          params={{ node, formattedTime }}
+        />
       );
     }
     const [startedTime] = getTimeFromExecutionSummary('started');
@@ -129,8 +137,12 @@ const ResultMessage = ({
     if (startedTime !== '') {
       return (
         <>
-          <CircularProgress size="0.75rem" /> Workflow is running. Started
-          {startedTime}
+          <CircularProgress size="0.75rem" />
+          &nbsp;
+          <Trans
+            message="run.status.workflowIsRunning"
+            params={{ time: startedTime }}
+          />
         </>
       );
     }
@@ -147,13 +159,23 @@ const ResultMessage = ({
     if (status === ProcessInstanceStatusDTO.Completed) {
       // Backend reports "Completed" but there's also an error
       alertProps = {
-        title: `Run completed ${getTimeFromExecutionSummary('completed')} with message`,
+        title: (
+          <Trans
+            message="run.status.completedWithMessage"
+            params={{ time: getTimeFromExecutionSummary('completed') }}
+          />
+        ),
         message: errorMessage,
         severity: 'warning',
       };
     } else {
       alertProps = {
-        title: `Run has failed ${getTimeFromExecutionSummary('failed')}`,
+        title: (
+          <Trans
+            message="run.status.failed"
+            params={{ time: getTimeFromExecutionSummary('failed') }}
+          />
+        ),
         message: errorMessage,
         severity: 'error',
       };
@@ -166,7 +188,7 @@ const ResultMessage = ({
       severity: 'info',
     };
   } else if (status && finalStates.includes(status)) {
-    let message = 'The workflow provided no additional info about the status.';
+    let message = t('run.status.noAdditionalInfo');
     if (resultMessage) {
       // Workaround, an Element is still accepted by the Alert component
       message = (
@@ -176,7 +198,12 @@ const ResultMessage = ({
 
     // run completed
     alertProps = {
-      title: `Run completed ${getTimeFromExecutionSummary('completed')}`,
+      title: (
+        <Trans
+          message="run.status.completedAt"
+          params={{ time: getTimeFromExecutionSummary('completed') }}
+        />
+      ),
       message,
       severity: 'success',
     };
@@ -186,7 +213,7 @@ const ResultMessage = ({
 
     alertProps = {
       title: <>{activeMessage}</>,
-      message: 'Results will be displayed here once the run is complete.',
+      message: t('run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete'),
       severity: 'info',
     };
   }
@@ -208,6 +235,7 @@ const NextWorkflows = ({
   instanceId: string;
   nextWorkflows: WorkflowResultDTO['nextWorkflows'];
 }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
 
   const orchestratorApi = useApi(orchestratorApiRef);
@@ -218,28 +246,28 @@ const NextWorkflows = ({
   const [
     currentOpenedWorkflowDescriptionModalID,
     setCurrentOpenedWorkflowDescriptionModalID,
-  ] = React.useState('');
+  ] = useState('');
 
-  const [currentWorkflow, setCurrentWorkflow] = React.useState(
+  const [currentWorkflow, setCurrentWorkflow] = useState(
     {} as WorkflowOverviewDTO,
   );
   const [workflowError, setWorkflowError] =
-    React.useState<WorkflowDescriptionModalProps['workflowError']>();
+    useState<WorkflowDescriptionModalProps['workflowError']>();
 
-  const runWorkflowLink = React.useMemo(
+  const runWorkflowLink = useMemo(
     () =>
       buildUrl(
         executeWorkflowLink({
           workflowId: currentOpenedWorkflowDescriptionModalID,
         }),
         {
-          [QUERY_PARAM_PREVIOUS_INSTANCE_ID]: instanceId,
+          [QUERY_PARAM_INSTANCE_ID]: instanceId,
         },
       ),
     [currentOpenedWorkflowDescriptionModalID, executeWorkflowLink, instanceId],
   );
 
-  const openWorkflowDescriptionModal = React.useCallback(
+  const openWorkflowDescriptionModal = useCallback(
     (itemId: string) => {
       if (itemId) {
         orchestratorApi
@@ -256,7 +284,7 @@ const NextWorkflows = ({
     [orchestratorApi],
   );
 
-  const closeWorkflowDescriptionModal = React.useCallback(() => {
+  const closeWorkflowDescriptionModal = useCallback(() => {
     setCurrentOpenedWorkflowDescriptionModalID('');
     setCurrentWorkflow({} as WorkflowOverviewDTO);
   }, []);
@@ -267,8 +295,8 @@ const NextWorkflows = ({
 
   const sectionLabel =
     nextWorkflows.length === 1
-      ? 'Suggested next workflow'
-      : 'Suggested next workflows';
+      ? t('run.suggestedNextWorkflow')
+      : t('run.suggestedNextWorkflows');
 
   return (
     <Grid item xs={12} className={classes.outputGrid}>
@@ -305,6 +333,7 @@ const WorkflowOutputs = ({
 }: {
   outputs: WorkflowResultDTO['outputs'];
 }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
 
   if (!outputs?.length) {
@@ -336,7 +365,7 @@ const WorkflowOutputs = ({
     <>
       {links?.length > 0 && (
         <Grid item md={12} key="__links" className={classes.links}>
-          <AboutField label="Links">
+          <AboutField label={t('common.links')}>
             <List dense disablePadding>
               {links
                 .filter(
@@ -357,7 +386,7 @@ const WorkflowOutputs = ({
 
       {(Object.keys(valuesAsObject).length > 0 || markdowns?.length > 0) && (
         <Grid item md={12} key="non__links" className={classes.values}>
-          <AboutField label="Values">
+          <AboutField label={t('common.values')}>
             {markdowns?.length > 0 &&
               markdowns.map(item => (
                 <MarkdownContent
@@ -380,31 +409,66 @@ export const WorkflowResult: React.FC<{
   className: string;
   cardClassName?: string;
 }> = ({ instance, className, cardClassName }) => {
+  const { t } = useTranslation();
   const result = instance.workflowdata?.result;
+  const [isLogsDialogOpen, toggleLogsDialog] = useReducer(
+    state => !state,
+    false,
+  );
+  const logsEnabled = useLogsEnabled();
 
   return (
-    <InfoCard
-      title="Results"
-      subheader={
-        <ResultMessage
-          status={instance.state}
-          error={instance.error}
-          resultMessage={result?.message}
-          executionSummary={instance.executionSummary}
-        />
-      }
-      divider={false}
-      className={className}
-      cardClassName={cardClassName}
-    >
-      <Grid container alignContent="flex-start" spacing="1rem">
-        <NextWorkflows
-          instanceId={instance.id}
-          nextWorkflows={result?.nextWorkflows}
-        />
-        <WorkflowOutputs outputs={result?.outputs} />
-      </Grid>
-    </InfoCard>
+    <>
+      <InfoCard
+        title={t('run.results')}
+        subheader={
+          <ResultMessage
+            status={instance.state}
+            error={instance.error}
+            resultMessage={result?.message}
+            executionSummary={instance.executionSummary}
+          />
+        }
+        divider={false}
+        className={className}
+        cardClassName={cardClassName}
+      >
+        <Divider sx={{ mb: 2 }} />
+        {logsEnabled && (
+          <>
+            <Box sx={{ ml: 2 }}>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={toggleLogsDialog}
+                disableRipple
+                sx={{
+                  textTransform: 'none',
+                  padding: 0,
+                  minWidth: 'auto',
+                  '&:hover': { backgroundColor: 'transparent' },
+                }}
+              >
+                {t('run.logs.viewLogs')}
+              </Button>
+            </Box>
+            <Divider sx={{ mt: 2, mb: 2 }} />
+          </>
+        )}
+        <Grid container alignContent="flex-start" spacing="1rem">
+          <NextWorkflows
+            instanceId={instance.id}
+            nextWorkflows={result?.nextWorkflows}
+          />
+          <WorkflowOutputs outputs={result?.outputs} />
+        </Grid>
+      </InfoCard>
+      <WorkflowLogsDialog
+        open={isLogsDialogOpen}
+        onClose={toggleLogsDialog}
+        instanceId={instance.id}
+      />
+    </>
   );
 };
 

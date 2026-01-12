@@ -28,6 +28,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { orchestratorApiRef } from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 import { entityWorkflowRouteRef, workflowRouteRef } from '../../routes';
 import ServerlessWorkflowEditor from './ServerlessWorkflowEditor';
 import WorkflowDefinitionDetailsCard from './WorkflowDetailsCard';
@@ -43,6 +44,7 @@ export const WorkflowDetailsTabContent = ({
   workflowOverviewDTO,
   errorWorkflowOverview,
 }: Props) => {
+  const { t } = useTranslation();
   const adminView = usePermission({
     permission: orchestratorAdminViewPermission,
   });
@@ -60,7 +62,7 @@ export const WorkflowDetailsTabContent = ({
   }
 
   return (
-    <Grid container item direction="column" xs={12} spacing={2}>
+    <Grid container item direction="column" xs={12} spacing={2} wrap="nowrap">
       {errorWorkflowOverview && (
         <Grid item>
           <ResponseErrorPanel error={errorWorkflowOverview} />
@@ -74,7 +76,7 @@ export const WorkflowDetailsTabContent = ({
       </Grid>
       {workflowOverviewDTO && adminView.allowed && value && !entityRef && (
         <Grid item>
-          <InfoCard title="Workflow definition">
+          <InfoCard title={t('workflow.definition')}>
             <ServerlessWorkflowEditor
               format={workflowOverviewDTO.format}
               loadingWorkflowSource={loading}

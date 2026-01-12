@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import moment from 'moment';
+
+import { DateTime } from 'luxon';
 
 import { NodeInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -23,22 +24,24 @@ export const compareNodes = (
   nodeA: NodeInstanceDTO,
   nodeB: NodeInstanceDTO,
 ) => {
-  const aEnter = moment(nodeA.enter);
-  const bEnter = moment(nodeB.enter);
-  if (aEnter.isBefore(bEnter)) {
-    return -1;
-  } else if (aEnter.isAfter(bEnter)) {
-    return 1;
-  }
+  const aEnter = nodeA.enter
+    ? DateTime.fromISO(nodeA.enter)
+    : DateTime.invalid('missing');
+  const bEnter = nodeB.enter
+    ? DateTime.fromISO(nodeB.enter)
+    : DateTime.invalid('missing');
 
+  // Compare enter timestamps
+  if (aEnter.toMillis() < bEnter.toMillis()) return -1;
+  if (aEnter.toMillis() > bEnter.toMillis()) return 1;
+
+  // Compare exit timestamps
   if (isNonNullable(nodeA.exit) && isNonNullable(nodeB.exit)) {
-    const aExit = moment(nodeA.exit);
-    const bExit = moment(nodeB.exit);
-    if (aExit.isBefore(bExit)) {
-      return -1;
-    } else if (aExit.isAfter(bExit)) {
-      return 1;
-    }
+    const aExit = DateTime.fromISO(nodeA.exit);
+    const bExit = DateTime.fromISO(nodeB.exit);
+
+    if (aExit.toMillis() < bExit.toMillis()) return -1;
+    if (aExit.toMillis() > bExit.toMillis()) return 1;
   } else {
     // nodeA exited, but nodeB didn't
     if (isNonNullable(nodeA.exit)) return -1;
@@ -46,11 +49,9 @@ export const compareNodes = (
     if (isNonNullable(nodeB.exit)) return 1;
   }
 
-  if (nodeA.id < nodeB.id) {
-    return -1;
-  } else if (nodeA.id > nodeB.id) {
-    return 1;
-  }
+  // Fallback to id sorting
+  if (nodeA.id < nodeB.id) return -1;
+  if (nodeA.id > nodeB.id) return 1;
 
   return 0;
 };

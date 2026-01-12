@@ -16,9 +16,15 @@
 import {
   createPlugin,
   createRoutableExtension,
+  createApiFactory,
+  fetchApiRef,
+  discoveryApiRef,
+  createComponentExtension,
 } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
+import { scorecardApiRef, ScorecardApiClient } from './api';
+import { scorecardTranslationRef } from './translations';
 
 /**
  * Plugin for the Scorecard Frontend.
@@ -29,17 +35,48 @@ export const scorecardPlugin = createPlugin({
   routes: {
     root: rootRouteRef,
   },
-});
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [scorecardTranslationRef],
+  },
+  apis: [
+    createApiFactory({
+      api: scorecardApiRef,
+      deps: {
+        fetchApi: fetchApiRef,
+        discoveryApi: discoveryApiRef,
+      },
+      factory: ({ fetchApi, discoveryApi }) =>
+        new ScorecardApiClient({ fetchApi, discoveryApi }),
+    }),
+  ],
+} as any);
 
 /**
  * Frontend page for the Scorecard.
  * @public
  */
-export const ScorecardPage = scorecardPlugin.provide(
+export const EntityScorecardContent = scorecardPlugin.provide(
   createRoutableExtension({
-    name: 'ScorecardPage',
+    name: 'EntityScorecardContent',
     component: () =>
-      import('./components/ScorecardPage').then(m => m.ScorecardPage),
+      import('./components/Scorecard').then(m => m.EntityScorecardContent),
     mountPoint: rootRouteRef,
+  }),
+);
+
+/**
+ * Scorecard homepage section.
+ * @public
+ */
+export const ScorecardHomepageSection = scorecardPlugin.provide(
+  createComponentExtension({
+    name: 'ScorecardHomepageSection',
+    component: {
+      lazy: () =>
+        import('./components/ScorecardHomepageSection').then(
+          m => m.ScorecardHomepageSection,
+        ),
+    },
   }),
 );

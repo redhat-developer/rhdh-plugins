@@ -53,6 +53,8 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
   - [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)
     - [Example](#example)
   - [Retrieving Data from Backstage Catalog](#retrieving-data-from-backstage-catalog)
+  - [Hiding Fields](#hiding-fields)
+    - [Example Usage](#example-usage)
   - [Customization](#customization)
 
 ## Context
@@ -165,7 +167,6 @@ Example complex HTTP response:
         "title": "Send certificates via",
         "ui:widget": "ActiveText",
         "ui:props": {
-          "ui:variant": "caption",
           "ui:text": "This course does not provide certificate"
         }
       }
@@ -214,9 +215,10 @@ The widget supports following `ui:props`:
 - fetch:headers
 - fetch:method
 - fetch:body
+- fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:value
 - fetch:response:mandatory
-- fetch:retrigger
 
 [Check mode details](#content-of-uiprops)
 
@@ -297,7 +299,9 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:value
+- fetch:response:default
 - fetch:response:autocomplete
 - validate:url
 - validate:method
@@ -335,7 +339,9 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:value
+- fetch:response:default
 - fetch:response:label
 - validate:url
 - validate:method
@@ -354,6 +360,10 @@ A smart component based on the [@mui/material/TextField](https://mui.com/materia
 The selected items are represented as chips, the value of the field is an array of strings.
 
 Users can only enter values that are provided in the list returned by `fetch:url` and `fetch:response:autocomplete`.
+
+Optionally, the `fetch:response:value` selector can be used to pre-select values which the user can unselect later. The selector must result in an array of strings.
+
+Optionally, the `fetch:response:mandatory` selector can be used to hardcode preselection of certain values which the user can not unselect. The selector must result in an array of strings.
 
 ![example](./widgets/ActiveMultiSelect_01.png)
 
@@ -378,12 +388,17 @@ The widget supports following `ui:props`:
 - fetch:method
 - fetch:body
 - fetch:retrigger
+- fetch:error:ignoreUnready
 - fetch:response:autocomplete
+- fetch:response:mandatory
+- fetch:response:value
+- fetch:response:default
 - validate:url
 - validate:method
 - validate:headers
 - validate:body
 - validate:retrigger
+- ui:allowNewItems
 
 [Check more details](#content-of-uiprops)
 
@@ -391,7 +406,17 @@ The widget supports following `ui:props`:
 
 Referenced as: `"ui:widget": "ActiveText"`.
 
-A smart component based on the [@mui/material/Typography](https://mui.com/material-ui/react-typography/) that displays text with dynamically changing content using `${{...}}` templates (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+A smart component that displays **markdown-formatted text** with dynamically changing content using `$${{...}}` templates (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+
+The widget automatically renders the content as **Markdown**, supporting features like:
+
+- Headers (`#`, `##`, `###`)
+- **Bold** and _italic_ text
+- Lists (bullet and numbered)
+- Links
+- Blockquotes
+- Code blocks
+- And all standard Markdown syntax
 
 The content of the text can be derived from various sources, including:
 
@@ -409,9 +434,39 @@ The response from the fetch operation is expected to be a JSON object. You can t
 
 The data will be refetched if the value of any of the keys listed in the `fetch:retrigger` array changes.
 
+### Markdown Rendering
+
+The `ui:text` property in the `ui:props` defines the markdown content to be displayed. Both static markdown and dynamic content with templates are supported.
+
+**Example with static markdown:**
+
+```json
+"welcomeMessage": {
+  "type": "string",
+  "ui:widget": "ActiveText",
+  "ui:props": {
+    "ui:text": "# Welcome!\n\nThis is **bold** and this is *italic*.\n\n- Item 1\n- Item 2\n\n[Link to docs](https://backstage.io)"
+  }
+}
+```
+
+**Example with dynamic content and markdown:**
+
+```json
+"dynamicMessage": {
+  "type": "string",
+  "ui:widget": "ActiveText",
+  "ui:props": {
+    "ui:text": "Hello **$${{current.name}}**, you selected: **$${{current.state}}**"
+  }
+}
+```
+
 ### Dynamic Text Templating
 
-The `ui:text` property in the `ui:props` defines the text to be displayed. This text can contain template literals in the format `${{...}}`. These templates are evaluated at runtime and replaced with dynamic values from various sources (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+The `ui:text` property can contain template literals in the format `$${{...}}`. These templates are evaluated at runtime and replaced with dynamic values from various sources (see [Templating and Backstage API Exposed Parts](#templating-and-backstage-api-exposed-parts)).
+
+The resulting text is then rendered as Markdown, so you can combine dynamic values with markdown formatting.
 
 For example, if your API response is:
 
@@ -436,7 +491,7 @@ You can configure your ActiveText widget like this:
       "fetch:url": "/api/mydata",
       "fetch:response:name": "data.name",
       "fetch:response:value": "data.value",
-      "ui:text": "The name is: $${{fetch:response:name}}, and the value is: $${{fetch:response:value}}"
+      "ui:text": "**Name:** $${{fetch:response:name}}\n\n**Value:** $${{fetch:response:value}}"
     }
   },
 ```
@@ -445,14 +500,13 @@ You can configure your ActiveText widget like this:
 
 The widget supports the following `ui:props` (for detailed information on each, see [Content of `ui:props`](#content-of-uiprops)):
 
-- `ui:variant`: Corresponds to the `variant` property of the `@mui/material/Typography` component, allowing you to control the visual style of the text (e.g., `h1`, `body1`, `caption`).
-- `ui:text`: The text to display, which can include `${{...}}` templates for dynamic values.
-- `fetch:response:[YOUR_KEY]`: Selectors to extract data from the fetch response. The `[YOUR_KEY]` can be any name you choose.
-- `fetch:url`
-- `fetch:method`
-- `fetch:headers`
-- `fetch:body`
-- `fetch:retrigger`
+- `ui:text`: The markdown text to display, which can include `$${{...}}` templates for dynamic values. The content is rendered as Markdown, supporting all standard Markdown features.
+- `fetch:response:[YOUR_KEY]`: Selectors to extract data from the fetch response. The `[YOUR_KEY]` can be any name you choose. These values can be used in the `ui:text` templates.
+- `fetch:url`: URL to fetch dynamic data from
+- `fetch:method`: HTTP method for the fetch request
+- `fetch:headers`: HTTP headers for the fetch request
+- `fetch:body`: HTTP body for the fetch request
+- `fetch:retrigger`: Array of field paths that trigger a refetch when their values change
 
 ## Content of `ui:props`
 
@@ -460,6 +514,8 @@ A list of particular widgets supported by each widget can be found in its descri
 The behavior of `ui:props` listed below is similar among different components, if supported.
 
 Various selectors (like `fetch:response:*`) are processed by the [jsonata](https://docs.jsonata.org/overview.html) library and so should conform to its [syntax](https://docs.jsonata.org/simple).
+
+**Note:** The `ui:props` object now supports both string and object type values for `fetch:response:*` properties, allowing for more flexible configurations. When used as JSONata selectors, these values should be strings.
 
 ### List of widget properties
 
@@ -470,7 +526,9 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |        fetch:method         |                                                                                                                                                                                                              HTTP method to use. The default is GET.                                                                                                                                                                                                               |                   GET, POST (So far no identified use-case for PUT or DELETE)                   |
 |         fetch:body          |                                                                                                                                                 An object representing the body of an HTTP POST request. Not used with the GET method. Property value can be a string template or an array of strings. templates.                                                                                                                                                  | `{“foo”: “bar $${{identityApi.token}}”, "myArray": ["constant", "$${{current.solutionName}}"]}` |
 |       fetch:retrigger       |                                                                                                                                                An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                |                      `["current.solutionName", "identityApi.profileName"]`                      |
-| fetch:response:\[YOUR_KEY\] |                                                                                                                           A json selector of data from the fetch-response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records to be used i.e. by the StaticText                                                                                                                            |                                 Account.Order.Product.ProductID                                 |
+|  fetch:error:ignoreUnready  |                                                                                                 When set to `true`, suppresses fetch error display until all `fetch:retrigger` dependencies have non-empty values. This is useful when fetch depends on other fields that are not filled yet, preventing expected errors from being displayed during initial load.                                                                                                 |                               `true`, `false` (default: `false`)                                |
+|   fetch:response:default    |                                                                   A static default value that is applied immediately when the widget mounts, before any fetch completes. Acts as a fallback when fetch fails or has not completed yet. Gets overridden by `fetch:response:value` once fetch succeeds. For ActiveTextInput/ActiveDropdown use a string, for ActiveMultiSelect use a string array.                                                                   |                        `"create"` (string) or `["tag1", "tag2"]` (array)                        |
+| fetch:response:\[YOUR_KEY\] |                                                                                            A JSONata selector (string) or object value for extracting data from the fetch response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records. Supports both string selectors and object type values.                                                                                             |                                 Account.Order.Product.ProductID                                 |
 |    fetch:response:label     |                                                                                                                                                                         Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                         |                                                                                                 |
 |    fetch:response:value     |                                                                                                                                                                Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                 |                                                                                                 |
 | fetch:response:autocomplete |                                                                                                                                                            Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used for selecting list of strings for autocomplete feature (ActiveTextInput)                                                                                                                                                            |                                                                                                 |
@@ -479,8 +537,8 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |     validate:retrigger      | An array similar to fetch:retrigger. Force revalidation of the field if a dependency is changed. In the most simple case when just the value of the particular field is listed (sort of \[“current.myField”\], the validation is triggered “on input”, i.e. when the user types a character in ActiveInputBox. The network calls are throttled. No matter if validate:retrigger is used, the validation happens at least on submit or transition to the next page. |                                                                                                 |
 |        validate:body        |                                                                                                                                                                                                                       Similar to fetch:body                                                                                                                                                                                                                        |                                                                                                 |
 |      validate:headers       |                                                                                                                                                                                                                    Similar to validate:headers                                                                                                                                                                                                                     |                                                                                                 |
-|         ui:variant          |                                                                                                                                                                                   So far specific for StaticText widget only. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                                   |                                                                                                 |
-|           ui:text           |                                                                                                                                                                    So far specific for StaticText widget only. Check the description there. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                                     |                                                                                                 |
+|           ui:text           |                                                                                                                                                    Specific for ActiveText widget. The markdown content to display, which can include `$${{...}}` templates. See [ActiveText props](#activetext-widget-uiprops)                                                                                                                                                    |                                                                                                 |
+|      ui:allowNewItems       |                                                                                                                                                             Allows users to add new items that are not present in the fetched autocomplete options. Only supported by widgets like ActiveMultiSelect.                                                                                                                                                              |                               `true`, `false` (default: `false`)                                |
 
 #### Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers
 
@@ -637,6 +695,261 @@ That’s the reason for listing the exposed keys explicitly.
 Integration with the Backstage Catalog can be achieved via calling the Catalog REST API, leveraging the fetch:response:\* selectors and the use of the `$${{...}}` templates.
 
 In the future, new widgets wrapping such explicit use case can be added.
+
+## Hiding Fields
+
+Fields can be hidden from the form display while still maintaining their widget functionality and participating in form submission using the `ui:hidden` property. The `ui:hidden` property supports two modes: **static** and **conditional (dynamic)** hiding.
+
+This is different from `"ui:widget": "hidden"` which changes the widget type itself. With `ui:hidden`, the field keeps its original widget type (like `ActiveText`, `ActiveTextInput`, etc.) but is visually hidden from the user.
+
+### Static Hiding
+
+Hide a field permanently using a boolean value:
+
+```json
+{
+  "hiddenField": {
+    "type": "string",
+    "title": "Hidden ActiveText",
+    "ui:widget": "ActiveText",
+    "ui:hidden": true,
+    "ui:props": {
+      "ui:text": "This text is hidden but still rendered"
+    }
+  }
+}
+```
+
+### Conditional (Dynamic) Hiding
+
+Hide fields based on the values of other form fields using condition objects:
+
+#### Basic Conditions
+
+```json
+{
+  "deploymentType": {
+    "type": "string",
+    "title": "Deployment Type",
+    "enum": ["simple", "advanced", "custom", "managed"]
+  },
+  "advancedConfig": {
+    "type": "string",
+    "title": "Advanced Configuration",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "isNot": ["advanced", "custom"]
+    }
+  }
+}
+```
+
+In this example, `advancedConfig` is hidden unless `deploymentType` is `"advanced"` or `"custom"`.
+
+#### Supported Condition Patterns
+
+**1. Hide when field equals value(s) (`is`)**
+
+```json
+{
+  "debugMode": {
+    "type": "boolean",
+    "title": "Enable Debug Mode",
+    "ui:hidden": {
+      "when": "environment",
+      "is": "production"
+    }
+  }
+}
+```
+
+Use an array for multiple values (OR logic):
+
+```json
+{
+  "basicOptions": {
+    "type": "object",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "is": ["simple", "managed"]
+    }
+  }
+}
+```
+
+**2. Hide when field does NOT equal value(s) (`isNot`)**
+
+```json
+{
+  "customScript": {
+    "type": "string",
+    "title": "Custom Deployment Script",
+    "ui:widget": "textarea",
+    "ui:hidden": {
+      "when": "deploymentType",
+      "isNot": "custom"
+    }
+  }
+}
+```
+
+**3. Hide when field is empty (`isEmpty`)**
+
+```json
+{
+  "childConfig": {
+    "type": "object",
+    "ui:hidden": {
+      "when": "parentField",
+      "isEmpty": true
+    }
+  }
+}
+```
+
+**4. Multiple conditions with AND logic (`allOf`)**
+
+```json
+{
+  "productionApprover": {
+    "type": "string",
+    "title": "Production Approver",
+    "ui:hidden": {
+      "allOf": [
+        { "when": "environment", "is": "production" },
+        { "when": "requiresApproval", "is": true }
+      ]
+    }
+  }
+}
+```
+
+**5. Multiple conditions with OR logic (`anyOf`)**
+
+```json
+{
+  "skipValidation": {
+    "type": "boolean",
+    "ui:hidden": {
+      "anyOf": [
+        { "when": "environment", "is": "development" },
+        { "when": "quickDeploy", "is": true }
+      ]
+    }
+  }
+}
+```
+
+#### Nested Field Paths
+
+You can reference nested fields using dot notation:
+
+```json
+{
+  "advancedPort": {
+    "type": "integer",
+    "ui:hidden": {
+      "when": "config.server.useDefaultPort",
+      "is": true
+    }
+  }
+}
+```
+
+### Complete Example
+
+```json
+{
+  "title": "Deployment Configuration",
+  "type": "object",
+  "properties": {
+    "deploymentType": {
+      "type": "string",
+      "title": "Deployment Type",
+      "enum": ["simple", "advanced", "custom", "managed"],
+      "default": "simple"
+    },
+    "environment": {
+      "type": "string",
+      "title": "Environment",
+      "enum": ["development", "staging", "production"],
+      "default": "development"
+    },
+    "replicas": {
+      "type": "integer",
+      "title": "Number of Replicas",
+      "default": 1,
+      "ui:hidden": {
+        "when": "deploymentType",
+        "is": "simple"
+      }
+    },
+    "customScript": {
+      "type": "string",
+      "title": "Custom Deployment Script",
+      "ui:widget": "textarea",
+      "ui:hidden": {
+        "when": "deploymentType",
+        "isNot": "custom"
+      }
+    },
+    "productionApprover": {
+      "type": "string",
+      "title": "Production Approver Email",
+      "ui:hidden": {
+        "anyOf": [
+          { "when": "environment", "isNot": "production" },
+          { "when": "deploymentType", "is": "simple" }
+        ]
+      }
+    },
+    "advancedSettings": {
+      "type": "object",
+      "title": "Advanced Settings",
+      "ui:hidden": {
+        "when": "deploymentType",
+        "is": ["simple", "managed"]
+      },
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "title": "CPU Limit"
+        },
+        "memory": {
+          "type": "string",
+          "title": "Memory Limit"
+        }
+      }
+    }
+  }
+}
+```
+
+### Key Differences
+
+| Property                | Behavior                                    | Use Case                                                                               |
+| ----------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `"ui:widget": "hidden"` | Changes widget type to hidden input         | Simple hidden form values                                                              |
+| `"ui:hidden": true`     | Keeps original widget but hides it visually | Hide widgets while preserving their functionality (e.g., ActiveText that fetches data) |
+| `"ui:hidden": {...}`    | Conditionally hides based on form data      | Dynamic forms that adapt to user input                                                 |
+
+### Behavior of Hidden Fields
+
+Hidden fields (regardless of hiding method):
+
+- **Are not displayed** in the form
+- **Are not shown** in the wizard stepper navigation (multi-step forms)
+- **Still participate** in form validation
+- **Are included** in form submission
+- **Are excluded** from the review page (but will still be part of the request payload)
+- **Maintain their widget functionality** (fetching, validation, etc.)
+- **Update in real-time** when form data changes (for conditional hiding)
+
+> **Note:** Hidden fields are not displayed on the review page for clarity, but they are still included in the workflow execution request. If you need to completely exclude fields from the request payload, you can use the [`SchemaUpdater` API](./extensibleForm.md#schema-updater) to dynamically modify the schema.
+
+### Automatic Step Hiding
+
+If all inputs within a multi-step form's step are marked with `ui:hidden` (either statically or dynamically), the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
 
 ## Customization
 

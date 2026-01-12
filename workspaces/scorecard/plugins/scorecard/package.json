@@ -1,14 +1,26 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-scorecard",
-  "version": "0.1.0",
+  "version": "2.2.0",
   "license": "Apache-2.0",
-  "private": true,
   "main": "src/index.ts",
   "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "alpha": [
+        "src/alpha.ts"
+      ],
+      "package.json": [
+        "package.json"
+      ]
+    }
+  },
   "publishConfig": {
-    "access": "public",
-    "main": "dist/index.esm.js",
-    "types": "dist/index.d.ts"
+    "access": "public"
   },
   "repository": {
     "type": "git",
@@ -36,26 +48,28 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.17.2",
-    "@backstage/core-plugin-api": "^1.10.7",
-    "@backstage/theme": "^0.6.6",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.61",
+    "@backstage/core-components": "^0.18.3",
+    "@backstage/core-plugin-api": "^1.12.0",
+    "@backstage/plugin-catalog-react": "^1.21.3",
+    "@backstage/plugin-permission-react": "^0.4.38",
+    "@backstage/theme": "^0.7.0",
     "@mui/icons-material": "5.18.0",
     "@mui/material": "5.18.0",
-    "@patternfly/react-charts": "^8.1.0",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "react-use": "^17.2.4",
-    "victory": "^37.3.6"
+    "recharts": "^3.3.0"
   },
   "peerDependencies": {
-    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "*"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.32.1",
-    "@backstage/core-app-api": "^1.17.0",
-    "@backstage/dev-utils": "^1.1.10",
-    "@backstage/test-utils": "^1.7.8",
+    "@backstage/cli": "^0.34.5",
+    "@backstage/core-app-api": "^1.19.2",
+    "@backstage/dev-utils": "^1.1.17",
+    "@backstage/test-utils": "^1.7.13",
+    "@backstage/ui": "^0.9.1",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",

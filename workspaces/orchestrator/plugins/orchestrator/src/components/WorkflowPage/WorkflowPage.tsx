@@ -19,18 +19,35 @@ import { useAsync } from 'react-use';
 import { TabbedLayout } from '@backstage/core-components';
 import { useApi, useRouteRefParams } from '@backstage/core-plugin-api';
 
+import { Box } from '@material-ui/core';
 import Grid from '@mui/material/Grid';
+import { makeStyles } from 'tss-react/mui';
 
 import { orchestratorApiRef } from '../../api';
+import { useTranslation } from '../../hooks/useTranslation';
 import { workflowRouteRef, workflowRunsRoutePath } from '../../routes';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
+import { useIsDarkMode } from '../../utils/isDarkMode';
 import { WorkflowRunsTabContent } from '../OrchestratorPage/WorkflowRunsTabContent';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { RunButton } from './RunButton';
 import { WorkflowDetailsTabContent } from './WorkflowDetailsTabContent';
 
+const useStyles = makeStyles<{ isDarkMode: boolean }>()(
+  (_, { isDarkMode }) => ({
+    tabbedLayout: {
+      '& .Mui-selected': {
+        color: isDarkMode ? '#ffffff !important' : '#151515 !important',
+      },
+    },
+  }),
+);
+
 export const WorkflowPage = () => {
+  const { t } = useTranslation();
   const { workflowId } = useRouteRefParams(workflowRouteRef);
   const orchestratorApi = useApi(orchestratorApiRef);
+  const isDarkMode = useIsDarkMode();
+  const { classes } = useStyles({ isDarkMode });
 
   const {
     value: workflowOverviewDTO,
@@ -47,24 +64,29 @@ export const WorkflowPage = () => {
       typeLink="/orchestrator"
       noPadding
     >
-      <TabbedLayout>
-        <TabbedLayout.Route path="/" title="Workflow details">
-          <Grid container spacing={2}>
-            <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
-            <WorkflowDetailsTabContent
-              loadingWorkflowOverview={loadingWorkflowOverview}
-              workflowOverviewDTO={workflowOverviewDTO?.data}
-              errorWorkflowOverview={errorWorkflowOverview}
-            />
-          </Grid>
-        </TabbedLayout.Route>
-        <TabbedLayout.Route path={workflowRunsRoutePath} title="Workflow runs">
-          <Grid container spacing={2}>
-            <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
-            <WorkflowRunsTabContent />
-          </Grid>
-        </TabbedLayout.Route>
-      </TabbedLayout>
+      <Box className={classes.tabbedLayout}>
+        <TabbedLayout>
+          <TabbedLayout.Route path="/" title={t('page.tabs.workflowDetails')}>
+            <Grid container spacing={2}>
+              <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
+              <WorkflowDetailsTabContent
+                loadingWorkflowOverview={loadingWorkflowOverview}
+                workflowOverviewDTO={workflowOverviewDTO?.data}
+                errorWorkflowOverview={errorWorkflowOverview}
+              />
+            </Grid>
+          </TabbedLayout.Route>
+          <TabbedLayout.Route
+            path={workflowRunsRoutePath}
+            title={t('page.tabs.workflowRuns')}
+          >
+            <Grid container spacing={2}>
+              <RunButton isAvailable={workflowOverviewDTO?.data.isAvailable} />
+              <WorkflowRunsTabContent />
+            </Grid>
+          </TabbedLayout.Route>
+        </TabbedLayout>
+      </Box>
     </BaseOrchestratorPage>
   );
 };

@@ -18,10 +18,10 @@ dynamicPlugins:
           importName: EntitySection
           config:
             layouts:
-              xl: { w: 12, h: 6 }
-              lg: { w: 12, h: 6 }
-              md: { w: 12, h: 6 }
-              sm: { w: 12, h: 6 }
-              xs: { w: 12, h: 10 }
-              xxs: { w: 12, h: 14.5 }
+              xl: { w: 12, h: 7 }
+              lg: { w: 12, h: 7 }
+              md: { w: 12, h: 8 }
+              sm: { w: 12, h: 9 }
+              xs: { w: 12, h: 11 }
+              xxs: { w: 12, h: 15 }
 ```

@@ -24,12 +24,13 @@ import {
 } from '../../../catalog/catalogUtils';
 import type { Components } from '../../../generated/openapi';
 import type { GithubApiService } from '../../../github';
+import { GitlabApiService } from '../../../gitlab';
 
 export async function getImportStatusFromLocations(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
@@ -58,7 +59,7 @@ async function getImportStatusWithCheckerFn(
   deps: {
     logger: LoggerService;
     config: Config;
-    githubApiService: GithubApiService;
+    gitApiService: GithubApiService | GitlabApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
@@ -69,17 +70,14 @@ async function getImportStatusWithCheckerFn(
   lastUpdate?: string;
 } | null> {
   // Check to see if there are any PR
-  const openImportPr = await deps.githubApiService.findImportOpenPr(
-    deps.logger,
-    {
-      repoUrl,
-    },
-  );
-  if (!openImportPr.prUrl) {
+  const openImportPr = await deps.gitApiService.findImportOpenPr(deps.logger, {
+    repoUrl,
+  });
+  if (!openImportPr?.prUrl) {
     const existsInCatalog = await catalogExistenceCheckFn(
       getCatalogUrl(deps.config, repoUrl, defaultBranch),
     );
-    const existsInRepo = await deps.githubApiService.hasFileInRepo({
+    const existsInRepo = await deps.gitApiService.hasFileInRepo({
       repoUrl,
       defaultBranch,
       fileName: getCatalogFilename(deps.config),

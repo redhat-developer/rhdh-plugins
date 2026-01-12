@@ -36,15 +36,17 @@ import InfoComponent from './Info';
 import CustomTooltip from './Tooltip';
 import { useUsers } from '../../hooks/useUsers';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Users = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const { users, loading, error } = useUsers();
 
   if (error) {
     return (
-      <CardWrapper title="Total number of users" filter={<InfoComponent />}>
+      <CardWrapper title={t('users.title')} filter={<InfoComponent />}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -55,12 +57,12 @@ const Users = () => {
     !error
   ) {
     return (
-      <CardWrapper title="Total number of users" filter={<InfoComponent />}>
+      <CardWrapper title={t('users.title')} filter={<InfoComponent />}>
         <Box
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
@@ -78,15 +80,19 @@ const Users = () => {
 
   const data = [
     {
-      name: 'Logged-in users',
+      name: t('users.loggedInUsers'),
       value: Number(logged_in_users),
       color: '#00AEEF',
     },
-    { name: 'Licensed', value: Number(licensed_users), color: '#E5E5E5' },
+    {
+      name: t('users.licensedNotLoggedIn'),
+      value: Number(licensed_users) - Number(logged_in_users),
+      color: '#E5E5E5',
+    },
   ];
 
   return (
-    <CardWrapper title="Total number of users" filter={<InfoComponent />}>
+    <CardWrapper title={t('users.title')} filter={<InfoComponent />}>
       {loading ? (
         <Box
           display="flex"
@@ -131,7 +137,9 @@ const Users = () => {
                       }}
                     />
                     <Label
-                      value={`of ${licensed_users.toLocaleString('en-US')}`}
+                      value={t('users.ofTotal' as any, {
+                        total: licensed_users.toLocaleString('en-US'),
+                      })}
                       position="center"
                       dy={20}
                       style={{
@@ -165,7 +173,7 @@ const Users = () => {
                     }}
                   />
                 </ListItemIcon>
-                <ListItemText primary="Logged-in users" />
+                <ListItemText primary={t('users.loggedInUsers')} />
               </ListItem>
               <ListItem key="licensed users" disableGutters>
                 <ListItemIcon sx={{ minWidth: 24 }}>
@@ -178,7 +186,7 @@ const Users = () => {
                     }}
                   />
                 </ListItemIcon>
-                <ListItemText primary="Licensed" />
+                <ListItemText primary={t('users.licensedNotLoggedIn')} />
               </ListItem>
             </List>
           </Box>
@@ -192,7 +200,7 @@ const Users = () => {
               {loggedInPercentage}%
             </Typography>
             <Typography variant="body1" color="textSecondary">
-              have logged in
+              {t('users.haveLoggedIn')}
             </Typography>
           </Box>
         </Box>

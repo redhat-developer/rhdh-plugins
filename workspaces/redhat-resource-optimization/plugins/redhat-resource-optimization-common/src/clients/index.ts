@@ -16,3 +16,4 @@
 
 export * from './optimizations';
 export * from './orchestrator-slim';
+export * from './cost-management';

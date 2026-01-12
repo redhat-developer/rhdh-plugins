@@ -21,10 +21,14 @@ import { StatusRunning } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useImportFlow } from '../../hooks/useImportFlow';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
+  ImportFlow,
   RepositoryStatus,
+  TaskStatus,
 } from '../../types';
 import {
   areAllRowsSelected,
@@ -39,6 +43,8 @@ export const CatalogInfoStatus = ({
   isLoading,
   isDrawer,
   importStatus,
+  taskId,
+  prUrl,
 }: {
   data: AddRepositoryData;
   isLoading?: boolean;
@@ -46,12 +52,20 @@ export const CatalogInfoStatus = ({
   isItemSelected?: boolean;
   isDrawer?: boolean;
   importStatus?: string;
+  taskId?: string;
+  prUrl?: string;
 }) => {
+  const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
 
   useEffect(() => {
-    if (importStatus === RepositoryStatus.ADDED) {
+    if (
+      importStatus === RepositoryStatus.ADDED ||
+      importStatus === RepositoryStatus.WAIT_PR_APPROVAL ||
+      importStatus === TaskStatus.Processing ||
+      importStatus === TaskStatus.Completed
+    ) {
       setFieldValue(`excludedRepositories.${data.id}`, {
         repoId: data.id,
         orgName: data.orgName,
@@ -70,7 +84,10 @@ export const CatalogInfoStatus = ({
     data?.selectedRepositories || {},
   );
 
+  const importFlow = useImportFlow();
+
   if (
+    importFlow !== ImportFlow.Scaffolder &&
     !isDrawer &&
     (isSelected ||
       (data?.totalReposInOrg && data.totalReposInOrg > 0 && allSelected))
@@ -85,7 +102,7 @@ export const CatalogInfoStatus = ({
           component="span"
           style={{ fontWeight: '400', fontSize: '0.875rem', color: '#181818' }}
         >
-          Generating
+          {t('catalogInfo.status.generating')}
         </Typography>
       </StatusRunning>
     );
@@ -93,8 +110,14 @@ export const CatalogInfoStatus = ({
 
   if (importStatus) {
     return (
-      <Typography component="span" style={{ color: '#6A6E73' }}>
-        {getImportStatus(importStatus)}
+      <Typography component="span">
+        {getImportStatus(
+          importStatus,
+          (key: string) => t(key as any, {}),
+          true,
+          prUrl,
+          taskId,
+        )}
       </Typography>
     );
   }
@@ -103,5 +126,9 @@ export const CatalogInfoStatus = ({
     return null;
   }
 
-  return <Typography component="span">Not Generated</Typography>;
+  return (
+    <Typography component="span" style={{ color: '#6A6E73' }}>
+      {t('status.readyToImport')}
+    </Typography>
+  );
 };

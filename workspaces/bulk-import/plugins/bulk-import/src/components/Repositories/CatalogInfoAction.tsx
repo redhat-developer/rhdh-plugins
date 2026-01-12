@@ -31,6 +31,7 @@ import { useFormikContext } from 'formik';
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import { bulkImportApiRef } from '../../api/BulkImportBackendClient';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
@@ -40,6 +41,7 @@ import {
 import { useDrawer } from '../DrawerContext';
 
 const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { setDrawerData, setOpenDrawer, drawerData } = useDrawer();
   const { setStatus } = useFormikContext<AddRepositoriesFormValues>();
   const { values } = useFormikContext<AddRepositoriesFormValues>();
@@ -60,6 +62,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
       return await bulkImportApi.getImportAction(
         repoUrl,
         defaultBranch || 'main',
+        data.approvalTool,
       );
     }
     return null;
@@ -95,7 +98,7 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   };
 
   useEffect(() => {
-    if (!loading && repoUrl && defaultBranch) {
+    if (!loading && repoUrl && defaultBranch && value) {
       const shouldOpenPanel =
         value?.status === RepositoryStatus.WAIT_PR_APPROVAL &&
         values.repositories[(value as ImportJobStatus)?.repository?.id];
@@ -120,11 +123,11 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
   const catalogIcon = () => {
     if (hasPermissionToEdit) {
       return {
-        tooltip: 'Edit catalog-info.yaml pull request',
+        tooltip: t('repositories.editCatalogInfoTooltip'),
         icon: (
           <IconButton
             color="inherit"
-            aria-label="Update"
+            aria-label={t('common.update')}
             data-testid="update"
             onClick={() => handleOpenDrawer(value as ImportJobStatus)}
             size="large"
@@ -137,13 +140,13 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
     }
     if (canView) {
       return {
-        tooltip: 'View catalog-info.yaml file',
+        tooltip: t('repositories.viewCatalogInfoTooltip'),
         icon: (
           <IconButton
             target="_blank"
             href={canView}
             color="inherit"
-            aria-label="View"
+            aria-label={t('common.view')}
             size="large"
           >
             <OpenInNewIcon />

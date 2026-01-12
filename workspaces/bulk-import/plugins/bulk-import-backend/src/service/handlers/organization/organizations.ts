@@ -21,6 +21,7 @@ import type {
   GithubApiService,
   GithubOrganizationResponse,
 } from '../../../github';
+import { GitlabApiService, GitlabOrganizationResponse } from '../../../gitlab';
 import {
   DefaultPageNumber,
   DefaultPageSize,
@@ -29,7 +30,7 @@ import {
 
 export async function findAllOrganizations(
   logger: LoggerService,
-  githubApiService: GithubApiService,
+  gitApiService: GithubApiService | GitlabApiService,
   search?: string,
   pageNumber: number = DefaultPageNumber,
   pageSize: number = DefaultPageSize,
@@ -39,12 +40,14 @@ export async function findAllOrganizations(
       search ?? ''
     }',${pageNumber},${pageSize})..`,
   );
+
   const allOrgsAccessible =
-    await githubApiService.getOrganizationsFromIntegrations(
+    await gitApiService.getOrganizationsFromIntegrations(
       search,
       pageNumber,
       pageSize,
     );
+
   const errorList: string[] = [];
   for (const err of allOrgsAccessible.errors ?? []) {
     if (err.error?.message) {
@@ -77,7 +80,9 @@ export async function findAllOrganizations(
   };
 }
 
-function extractOrgMap(allOrgsAccessible: GithubOrganizationResponse) {
+function extractOrgMap(
+  allOrgsAccessible: GithubOrganizationResponse | GitlabOrganizationResponse,
+) {
   const orgMap = new Map<string, Components.Schemas.Organization>();
   for (const org of allOrgsAccessible.organizations ?? []) {
     let totalRepoCount: number | undefined;

@@ -44,6 +44,8 @@ import {
   addDismissedEntityIllustrationUsers,
   hasEntityIllustrationUserDismissed,
 } from '../../utils/utils';
+import { useTranslation } from '../../hooks/useTranslation';
+import { Trans } from '../Trans';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -56,6 +58,7 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
 
 export const EntitySection = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { displayName, loading: profileLoading } = useUserProfile();
   const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
@@ -109,10 +112,10 @@ export const EntitySection = () => {
     );
   } else if (!data) {
     content = (
-      <WarningPanel severity="error" title="Could not fetch data.">
+      <WarningPanel severity="error" title={t('entities.fetchError')}>
         <CodeSnippet
           language="text"
-          text={error?.toString() ?? 'Unknown error'}
+          text={error?.toString() ?? t('entities.error')}
         />
       </WarningPanel>
     );
@@ -165,14 +168,13 @@ export const EntitySection = () => {
                   <Box sx={{ p: 2 }}>
                     <Box>
                       <Typography variant="body2" paragraph>
-                        Browse the Systems, Components, Resources, and APIs that
-                        are available in your organization.
+                        {t('entities.description')}
                       </Typography>
                     </Box>
                     {entities?.length > 0 && (
                       <IconButton
                         onClick={handleClose}
-                        aria-label="close"
+                        aria-label={t('entities.close')}
                         style={{
                           position: 'absolute',
                           top: '8px',
@@ -224,7 +226,7 @@ export const EntitySection = () => {
                 >
                   <CardContent>
                     <Typography sx={{ fontSize: '1.125rem', fontWeight: 500 }}>
-                      No software catalog added yet
+                      {t('entities.empty')}
                     </Typography>
                     <Typography
                       sx={{
@@ -234,11 +236,10 @@ export const EntitySection = () => {
                         mb: '16px',
                       }}
                     >
-                      Once software catalogs are added, this space will showcase
-                      relevant content tailored to your experience.
+                      {t('entities.emptyDescription')}
                     </Typography>
                     <StyledLink to="/catalog-import" underline="none">
-                      Register a component
+                      {t('entities.register')}
                     </StyledLink>
                   </CardContent>
                 </Box>
@@ -268,13 +269,16 @@ export const EntitySection = () => {
           fontSize: '1.5rem',
         }}
       >
-        Explore Your Software Catalog
+        {t('entities.title')}
       </Typography>
       {content}
       {entities?.length > 0 && (
         <Box sx={{ pt: 2 }}>
           <ViewMoreLink to="/catalog">
-            View all {data?.totalItems ? data?.totalItems : ''} catalog entities
+            <Trans
+              message="entities.viewAll"
+              params={{ count: data?.totalItems?.toString() || '' }}
+            />
           </ViewMoreLink>
         </Box>
       )}

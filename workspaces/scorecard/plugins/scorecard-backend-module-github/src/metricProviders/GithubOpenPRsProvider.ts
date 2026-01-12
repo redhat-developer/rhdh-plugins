@@ -14,28 +14,82 @@
  * limitations under the License.
  */
 
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import type { Config } from '@backstage/config';
+import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  getThresholdsFromConfig,
+  MetricProvider,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { GithubClient } from '../github/GithubClient';
+import { getRepositoryInformationFromEntity } from '../github/utils';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
+  private readonly githubClient: GithubClient;
+  private readonly thresholds: ThresholdConfig;
+
+  private constructor(config: Config, thresholds?: ThresholdConfig) {
+    this.githubClient = new GithubClient(config);
+    this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
+  }
+
   getProviderDatasourceId(): string {
     return 'github';
   }
 
   getProviderId() {
-    return 'github.open-prs';
+    return 'github.open_prs';
+  }
+
+  getMetricType(): 'number' {
+    return 'number';
   }
 
   getMetric(): Metric<'number'> {
     return {
       id: this.getProviderId(),
-      title: 'Github open PRs',
-      type: 'number',
+      title: 'GitHub open PRs',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository.',
+      type: this.getMetricType(),
       history: true,
     };
   }
 
-  async calculateMetric(): Promise<number> {
-    return 42;
+  getMetricThresholds(): ThresholdConfig {
+    return this.thresholds;
+  }
+
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.github.com/project-slug': CATALOG_FILTER_EXISTS,
+    };
+  }
+
+  static fromConfig(config: Config): GithubOpenPRsProvider {
+    const thresholds = getThresholdsFromConfig(
+      config,
+      'scorecard.plugins.github.open_prs.thresholds',
+      'number',
+    );
+
+    return new GithubOpenPRsProvider(config, thresholds);
+  }
+
+  async calculateMetric(entity: Entity): Promise<number> {
+    const repository = getRepositoryInformationFromEntity(entity);
+    const { target } = getEntitySourceLocation(entity);
+
+    const result = await this.githubClient.getOpenPullRequestsCount(
+      target,
+      repository,
+    );
+
+    return result;
   }
 }

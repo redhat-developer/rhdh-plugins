@@ -18,6 +18,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
+import { useTranslation } from '../hooks/useTranslation';
 
 export type QuickstartFooterProps = {
   handleDrawerClose: () => void;
@@ -28,6 +29,8 @@ export const QuickstartFooter = ({
   handleDrawerClose,
   progress,
 }: QuickstartFooterProps) => {
+  const { t } = useTranslation();
+
   return (
     <Box>
       <LinearProgress variant="determinate" value={progress} />
@@ -40,9 +43,11 @@ export const QuickstartFooter = ({
         }}
       >
         <Typography sx={{ fontSize: theme => theme.typography.caption }}>
-          {progress > 0 ? `${progress}% progress` : 'Not started'}
+          {progress > 0
+            ? t('footer.progress' as any, { progress: progress.toString() })
+            : t('footer.notStarted')}
         </Typography>
-        <Button onClick={() => handleDrawerClose()}>Hide</Button>
+        <Button onClick={() => handleDrawerClose()}>{t('footer.hide')}</Button>
       </Box>
     </Box>
   );

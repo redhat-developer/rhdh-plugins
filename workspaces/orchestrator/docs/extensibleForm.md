@@ -13,7 +13,7 @@ This decorator supports overriding a selected set of [react-json-schema-form pro
 The custom decorator is delivered via a factory method that leverages a [Backstage utility API](https://backstage.io/docs/api/utility-apis) provided by the orchestrator.
 To trigger the desired behavior, the workflow schema should include custom UI properties.
 
-For reference, an example plugin can be found [here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-form-widgets).
+For reference, an example plugin can be found [here](../plugins/orchestrator-form-widgets).
 
 ## API
 
@@ -32,7 +32,7 @@ export type FormDecoratorProps = Pick<
 };
 ```
 
-More info can be found [here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-form-api/src/api.ts).
+More info can be found [here](../plugins/orchestrator-form-api/src/api.ts).
 
 ### Access to actual schema or form data by custom widgets
 
@@ -54,9 +54,9 @@ export const SchemaUpdater: Widget<
 ### Example API Implementation
 
 The most simple implementation of the API is the default one - adds no extra logic except passing the `formContext`.
-See [its sources](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-form-api/src/DefaultFormApi.tsx).
+See [its sources](../plugins/orchestrator-form-api/src/DefaultFormApi.tsx).
 
-More complex example is [the FormWidgetsApi provided by orchestrator-form-widgets plugin](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-form-widgets/src/FormWidgetsApi.tsx).
+More complex example is [the FormWidgetsApi provided by orchestrator-form-widgets plugin](../plugins/orchestrator-form-widgets/src/FormWidgetsApi.tsx).
 
 ### Plugin Creation Example
 
@@ -77,9 +77,7 @@ export const testFactoryPlugin = createPlugin({
 
 ### Schema example
 
-For a schema example referencing custom `ui:widgets`, look [here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-form-widgets/http-workflow-dev-server/exampleWorkflows/schemas/dynamic-course-select__main-schema.json)
-
-Instructions how to set the whole environment to run that example workflow, are listed [here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-form-widgets/README.md).
+For a schema example referencing custom `ui:widgets`, look [here](https://github.com/rhdhorchestrator/backstage-orchestrator-workflows/blob/main/workflows/schemas/dynamic_schema__main-schema.json)
 
 ### Dynamic plugin configuration
 
@@ -92,7 +90,7 @@ pluginConfig:
       red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
 ```
 
-See `scalprum` config in the [package.json](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/plugins/orchestrator-form-widgets/package.json).
+See `scalprum` config in the [package.json](../plugins/orchestrator-form-widgets/package.json).
 
 ### Referencing the custom behavior in the schema
 
@@ -112,10 +110,6 @@ The `orchestrator-form-react` plugin handles the following key tasks:
 
 - **Organizing Forms into Wizard-Style Steps:** If the schema is an object containing nested objects (i.e., the root is an object, and its properties are also objects), the plugin organizes the form into multiple steps. Each nested object becomes a separate step in a wizard-style interface. For example, the schema provided above results in two steps: _Personal Details_ and _Contact Details_.
 
-The [`orchestrator-form-react`](https://github.com/janus-idp/backstage-plugins/tree/main/plugins/orchestrator-form-react) plugin is designed to operate independently of the main orchestrator plugin. This modularity allows developers to test and validate form behavior in a standalone Backstage development environment before integrating it with the full orchestrator setup.
+The [`orchestrator-form-react`](../plugins/orchestrator-form-react) plugin is designed to operate independently of the main orchestrator plugin. This modularity allows developers to test and validate form behavior in a standalone Backstage development environment before integrating it with the full orchestrator setup.
 
 To use this plugin, add the `@red-hat-developer-hub/backstage-plugin-orchestrator-form-react` package as a dependency in your project.
-
-## Example implementation
-
-Example implementation of the API is the [orchestrator-form-widgets](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-form-widgets) which documentation can be found in [extensibleForm.md](./extensibleForm).

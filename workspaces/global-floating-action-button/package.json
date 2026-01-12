@@ -16,10 +16,12 @@
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
+    "test:e2e": "playwright test",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
@@ -35,10 +37,11 @@
     "directory": "workspaces/global-floating-action-button"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.32.1",
+    "@backstage/cli": "^0.34.5",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.13.4",
+    "@backstage/repo-tools": "^0.16.0",
     "@changesets/cli": "^2.27.1",
+    "@playwright/test": "^1.56.1",
     "@spotify/prettier-config": "^12.0.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -47,7 +50,8 @@
   },
   "resolutions": {
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

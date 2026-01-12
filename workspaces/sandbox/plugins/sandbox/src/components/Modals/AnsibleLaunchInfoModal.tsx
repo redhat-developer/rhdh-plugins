@@ -38,6 +38,8 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Link } from '@backstage/core-components';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
+import { useTrackAnalytics } from '../../utils/eddl-utils';
+import { Intcmp } from '../../hooks/useProductURLs';
 
 // Import the logos
 import AnsibleLogo from '../../assets/logos/ansible.svg';
@@ -53,6 +55,7 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
   setOpen,
 }) => {
   const theme = useTheme();
+
   const {
     ansibleUILink,
     ansibleUIUser,
@@ -60,6 +63,21 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
     ansibleError,
     ansibleStatus,
   } = useSandboxContext();
+
+  const trackAnalytics = useTrackAnalytics();
+
+  // Handle CTA click for analytics
+  const handleAnsibleCtaClick = async () => {
+    if (ansibleUILink) {
+      await trackAnalytics(
+        'Get Started - Ansible',
+        'Catalog',
+        ansibleUILink,
+        Intcmp.AAP,
+        'cta',
+      );
+    }
+  };
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleClose = () => {
@@ -357,7 +375,13 @@ export const AnsibleLaunchInfoModal: React.FC<AnsibleLaunchInfoModalProps> = ({
               )}
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'flex-start', pl: 3, pb: 3 }}>
-            <Link to={ansibleUILink ?? ''} underline="none" target="_blank">
+            <Link
+              to={ansibleUILink || ''}
+              underline="none"
+              target="_blank"
+              onClick={handleAnsibleCtaClick}
+              data-analytics-track-by-analytics-manager="false"
+            >
               <Button
                 variant="contained"
                 color="primary"

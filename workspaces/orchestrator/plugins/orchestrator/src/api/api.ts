@@ -27,6 +27,7 @@ import {
   PaginationInfoDTO,
   ProcessInstanceDTO,
   ProcessInstanceListResultDTO,
+  WorkflowInstanceLogsDTO,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -77,6 +78,10 @@ export interface OrchestratorApi {
     paginationInfo?: PaginationInfoDTO,
     filters?: Filter,
   ): Promise<AxiosResponse<ProcessInstanceListResultDTO>>;
+
+  getInstanceLogs(
+    instanceId: string,
+  ): Promise<AxiosResponse<WorkflowInstanceLogsDTO>>;
 }
 
 export const orchestratorApiRef = createApiRef<OrchestratorApi>({

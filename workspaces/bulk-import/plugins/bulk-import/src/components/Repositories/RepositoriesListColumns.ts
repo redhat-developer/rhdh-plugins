@@ -17,42 +17,52 @@
 import { TableColumn } from '@backstage/core-components';
 
 import { AddRepositoryData } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 
-export const RepositoriesListColumns: TableColumn<AddRepositoryData>[] = [
+// Translation keys for table headers
+export const getRepositoriesListColumns = (
+  t: (key: string, ...args: any[]) => string,
+  gitlabConfigured: boolean,
+  isScaffolderEnabled: boolean = false,
+): TableColumn<AddRepositoryData>[] => [
   {
     id: 'name',
-    title: 'Name',
+    title: t('table.headers.name'),
     field: 'repoName',
     type: 'string',
   },
   {
     id: 'repo-url',
-    title: `${gitlabFeatureFlag ? 'URL' : 'Repo URL'}`,
+    title: gitlabConfigured
+      ? t('table.headers.url')
+      : t('table.headers.repoUrl'),
     field: 'repoUrl',
     type: 'string',
   },
   {
     id: 'organization',
-    title: `${gitlabFeatureFlag ? 'Organization/group' : 'Organization'}`,
+    title: gitlabConfigured
+      ? t('table.headers.organizationGroup')
+      : t('table.headers.organization'),
     field: 'organizationUrl',
     type: 'string',
   },
   {
     id: 'status',
-    title: 'Status',
+    title: isScaffolderEnabled
+      ? t('table.headers.taskStatus')
+      : t('table.headers.status'),
     field: 'catalogInfoYaml.status',
     type: 'string',
   },
   {
     id: 'last-updated',
-    title: 'Last updated',
+    title: t('table.headers.lastUpdated'),
     field: 'catalogInfoYaml.lastUpdated',
     type: 'datetime',
   },
   {
     id: 'actions',
-    title: 'Actions',
+    title: t('table.headers.actions'),
     field: 'actions',
     sorting: false,
     type: 'string',

@@ -23,14 +23,24 @@ spec:
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts: [github.com]
+    - title: Choose component name
+      required:
+        - entityName
+      properties:
+        entityName:
+          title: Entity Name
+          type: string
+          description: Name for the new component (will be used in catalog-info.yaml)
+          pattern: '^[a-z0-9]([-a-z0-9]*[a-z0-9])?$'
+          ui:autofocus: true
     - title: Provide workflow inputs
       required:
         - language
+        - name
       properties:
         language:
           title: Language
           type: string
-          ui:autofocus: true
           enum:
             - 'English'
             - 'Spanish'
@@ -42,13 +52,13 @@ spec:
 
   steps:
     - id: fetch
-      name: Fetch skeleton
+      name: Fetch catalog info
       action: fetch:template
       input:
         url: ./skeleton
-        copyWithoutRender:
-          - .github/workflows/*
-        values: {}
+        targetPath: ./
+        values:
+          entityName: ${{ parameters.entityName }}
 
     - id: publish
       name: Publish to GitHub
@@ -70,7 +80,7 @@ spec:
       action: orchestrator:workflow:run
       input:
         workflow_id: yamlgreet
-        targetEntity: component:default/example-component
+        target_entity: component:default/${{ parameters.entityName }}
         parameters: # matches workflow's dataInputSchema
           language: ${{ parameters.language }}
           name: ${{ parameters.name }}

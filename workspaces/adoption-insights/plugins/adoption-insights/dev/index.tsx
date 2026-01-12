@@ -21,6 +21,7 @@ import { TestApiProvider } from '@backstage/test-utils';
 
 import { adoptionInsightsPlugin, AdoptionInsightsPage } from '../src/plugin';
 import { adoptionInsightsApiRef } from '../src/api';
+import { adoptionInsightsTranslations } from '../src/translations';
 import {
   ActiveUsersResponse,
   AdoptionInsightsApi,
@@ -76,7 +77,20 @@ export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
   async getUsers(_options: APIsViewOptions): Promise<UsersResponse> {
     return mockUsers;
   }
-  async downloadBlob(_options: APIsViewOptions): Promise<void> {
+  async downloadBlob(options: APIsViewOptions): Promise<void> {
+    // Simulate CSV download in dev mode - filename comes from frontend translation
+    const csvContent =
+      'date,new_users,returning_users,total_users\n2024-01-01,10,20,30\n2024-01-02,12,18,30\n2024-01-03,8,22,30';
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = options.blobName || 'active-users.csv'; // Use translated filename from frontend
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
     return Promise.resolve();
   }
 }
@@ -96,6 +110,9 @@ const AdoptionInsightsWrapper = ({ children }: { children: ReactNode }) => (
 createDevApp()
   .registerPlugin(adoptionInsightsPlugin)
   .addThemes(getAllThemes())
+  .addTranslationResource(adoptionInsightsTranslations)
+  .setAvailableLanguages(['en', 'de', 'fr', 'it', 'es'])
+  .setDefaultLanguage('en')
   .addPage({
     element: (
       <AdoptionInsightsWrapper>
@@ -140,7 +157,7 @@ createDevApp()
         <Techdocs />
       </AdoptionInsightsWrapper>
     ),
-    title: 'Top Techdocs',
+    title: 'Top TechDocs',
   })
   .addPage({
     path: '/searches',

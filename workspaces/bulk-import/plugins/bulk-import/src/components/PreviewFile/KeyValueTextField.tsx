@@ -19,6 +19,8 @@ import type { FocusEvent } from 'react';
 import FormHelperText from '@mui/material/FormHelperText';
 import TextField from '@mui/material/TextField';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 interface KeyValueTextFieldProps {
   label: string;
   name: string;
@@ -34,12 +36,14 @@ const KeyValueTextField = ({
   onChange,
   fieldError,
 }: KeyValueTextFieldProps) => {
+  const { t } = useTranslation();
+
   return (
     <div>
       <TextField
         multiline
         label={label}
-        placeholder="key1: value2; key2: value2"
+        placeholder={t('previewFile.keyValuePlaceholder')}
         variant="outlined"
         margin="normal"
         fullWidth
@@ -50,7 +54,9 @@ const KeyValueTextField = ({
         helperText={fieldError}
       />
       <FormHelperText style={{ marginLeft: '0.8rem' }}>
-        Use semicolon to separate {label.toLocaleLowerCase('en-US')}
+        {t('previewFile.useSemicolonSeparator' as any, {
+          label: label.toLocaleLowerCase('en-US'),
+        })}
       </FormHelperText>
     </div>
   );

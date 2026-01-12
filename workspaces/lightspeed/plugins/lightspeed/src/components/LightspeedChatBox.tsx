@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
-import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import {
+  ForwardedRef,
+  forwardRef,
+  Fragment,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 
 import { makeStyles } from '@material-ui/core';
 import {
@@ -29,13 +34,10 @@ import {
 } from '@patternfly/chatbot';
 import { Alert } from '@patternfly/react-core';
 
-import {
-  FUNCTION_DISCLAIMER,
-  FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION,
-} from '../const';
 import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
 import { useFeedbackActions } from '../hooks/useFeedbackActions';
+import { useTranslation } from '../hooks/useTranslation';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
@@ -63,6 +65,7 @@ type LightspeedChatBoxProps = {
   messages: MessageProps[];
   profileLoading: boolean;
   announcement: string | undefined;
+  topicRestrictionEnabled: boolean;
   welcomePrompts: WelcomePrompt[];
   conversationId: string;
   isStreaming: boolean;
@@ -72,7 +75,7 @@ export interface ScrollContainerHandle {
   scrollToBottom: () => void;
 }
 
-export const LightspeedChatBox = React.forwardRef(
+export const LightspeedChatBox = forwardRef(
   (
     {
       userName,
@@ -82,16 +85,15 @@ export const LightspeedChatBox = React.forwardRef(
       profileLoading,
       welcomePrompts,
       isStreaming,
+      topicRestrictionEnabled,
     }: LightspeedChatBoxProps,
-    ref: React.ForwardedRef<ScrollContainerHandle>,
+    ref: ForwardedRef<ScrollContainerHandle>,
   ) => {
     const classes = useStyles();
-    const scrollQueued = React.useRef(false);
-    const containerRef = React.useRef<MessageBoxHandle>(null);
+    const scrollQueued = useRef(false);
+    const containerRef = useRef<MessageBoxHandle>(null);
+    const { t } = useTranslation();
 
-    const configApi = useApi(configApiRef);
-    const questionValidationEnabled =
-      configApi.getOptionalBoolean('lightspeed.questionValidation') ?? true;
     const cmessages = useBufferedMessages(messages, 30);
     const { autoScroll, scrollToBottom, scrollToTop } =
       useAutoScroll(containerRef);
@@ -101,7 +103,7 @@ export const LightspeedChatBox = React.forwardRef(
       isStreaming,
     );
 
-    React.useImperativeHandle(ref, () => ({
+    useImperativeHandle(ref, () => ({
       scrollToBottom: () => {
         if (scrollQueued.current) return;
         scrollQueued.current = true;
@@ -114,7 +116,7 @@ export const LightspeedChatBox = React.forwardRef(
     }));
 
     // Auto-scrolls to the latest message
-    React.useEffect(() => {
+    useEffect(() => {
       if (!autoScroll || scrollQueued.current) return undefined;
 
       scrollQueued.current = true;
@@ -153,24 +155,32 @@ export const LightspeedChatBox = React.forwardRef(
         ref={containerRef}
         onScrollToTopClick={scrollToTop}
         onScrollToBottomClick={scrollToBottom}
+        jumpButtonBottomProps={{ 'aria-label': t('aria.scroll.down') }}
+        jumpButtonTopProps={{ 'aria-label': t('aria.scroll.up') }}
+        jumpButtonBottomTooltipProps={{ content: t('tooltip.backToBottom') }}
+        jumpButtonTopTooltipProps={{ content: t('tooltip.backToTop') }}
       >
         <div>
           <Alert
-            title="Important"
+            title={t('aria.important')}
             variant="info"
             isInline
             className={classes.alert}
           >
-            {questionValidationEnabled
-              ? FUNCTION_DISCLAIMER
-              : FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION}
+            {topicRestrictionEnabled
+              ? t('disclaimer.withValidation')
+              : t('disclaimer.withoutValidation')}
           </Alert>
           <br />
         </div>
         {welcomePrompts.length ? (
           <ChatbotWelcomePrompt
-            title={`Hello, ${profileLoading ? '...' : (userName ?? 'Guest')}`}
-            description="How can I help you today?"
+            title={t('chatbox.welcome.greeting' as any, {
+              userName: profileLoading
+                ? t('user.loading')
+                : (userName ?? t('user.guest')),
+            })}
+            description={t('chatbox.welcome.description')}
             prompts={welcomePrompts}
           />
         ) : (
@@ -179,9 +189,9 @@ export const LightspeedChatBox = React.forwardRef(
         {conversationMessages.map((message, index) => {
           if (index === cmessages.length - 1) {
             return (
-              <React.Fragment key={`${message.role}-${index}`}>
+              <Fragment key={`${message.role}-${index}`}>
                 <Message key={`${message.role}-${index}`} {...message} />
-              </React.Fragment>
+              </Fragment>
             );
           }
           return <Message key={`${message.role}-${index}`} {...message} />;

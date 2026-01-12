@@ -14,22 +14,53 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-import { fireEvent, render, screen } from '@testing-library/react';
-
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { DeleteModal } from '../DeleteModal';
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => mockUseTranslation()),
+}));
+
+const mockMutateAsync = jest.fn().mockResolvedValue({ success: true });
+
+const mockUseDeleteConversation = jest.fn(() => ({
+  mutateAsync: mockMutateAsync,
+  isError: false,
+  error: null,
+  isPending: false,
+}));
+
+jest.mock('../../hooks', () => ({
+  useDeleteConversation: () => mockUseDeleteConversation(),
+}));
 
 describe('DeleteModal', () => {
   const onClose = jest.fn();
   const onConfirm = jest.fn();
+  const conversationId = 'test-conversation-id';
 
-  afterEach(() => {
+  beforeEach(() => {
     jest.clearAllMocks();
+    mockMutateAsync.mockResolvedValue({ success: true });
+    mockUseDeleteConversation.mockReturnValue({
+      mutateAsync: mockMutateAsync,
+      isError: false,
+      error: null,
+      isPending: false,
+    });
   });
 
   test('should render the modal with correct content when open', () => {
-    render(<DeleteModal isOpen onClose={onClose} onConfirm={onConfirm} />);
+    render(
+      <DeleteModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        conversationId={conversationId}
+      />,
+    );
 
     expect(screen.getByText('Delete chat?')).toBeInTheDocument();
     expect(
@@ -43,27 +74,102 @@ describe('DeleteModal', () => {
 
   test('should not render when isOpen is false', () => {
     render(
-      <DeleteModal isOpen={false} onClose={onClose} onConfirm={onConfirm} />,
+      <DeleteModal
+        isOpen={false}
+        onClose={onClose}
+        onConfirm={onConfirm}
+        conversationId={conversationId}
+      />,
     );
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   test('should call onClose when the cancel button is clicked', () => {
-    render(<DeleteModal isOpen onClose={onClose} onConfirm={onConfirm} />);
+    render(
+      <DeleteModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        conversationId={conversationId}
+      />,
+    );
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     fireEvent.click(cancelButton);
 
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
-  test('should call onConfirm when the delete button is clicked', () => {
-    render(<DeleteModal isOpen onClose={onClose} onConfirm={onConfirm} />);
+  test('should call deleteConversation and onConfirm when delete button is clicked', async () => {
+    render(
+      <DeleteModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        conversationId={conversationId}
+      />,
+    );
 
     const deleteButton = screen.getByRole('button', { name: 'Delete' });
     fireEvent.click(deleteButton);
 
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith({
+        conversation_id: conversationId,
+        invalidateCache: false,
+      });
+      expect(onConfirm).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  test('should display error message when delete fails', () => {
+    mockUseDeleteConversation.mockReturnValueOnce({
+      mutateAsync: mockMutateAsync,
+      isError: true,
+      error: new Error('Delete failed') as any,
+      isPending: false,
+    });
+
+    render(
+      <DeleteModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        conversationId={conversationId}
+      />,
+    );
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByText(/Error occured/i)).toBeInTheDocument();
+  });
+
+  test('should not call onConfirm when delete fails', async () => {
+    mockMutateAsync.mockRejectedValueOnce(new Error('Delete failed'));
+    mockUseDeleteConversation.mockReturnValueOnce({
+      mutateAsync: mockMutateAsync,
+      isError: true,
+      error: new Error('Delete failed') as any,
+      isPending: false,
+    });
+
+    render(
+      <DeleteModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        conversationId={conversationId}
+      />,
+    );
+
+    const deleteButton = screen.getByRole('button', { name: 'Delete' });
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalled();
+    });
+
+    expect(onConfirm).not.toHaveBeenCalled();
   });
 });

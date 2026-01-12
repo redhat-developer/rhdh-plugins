@@ -22,17 +22,17 @@ import Paper from '@mui/material/Paper';
 import { useFormikContext } from 'formik';
 
 import { useNumberOfApprovalTools } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   ApprovalTool as ApprovalToolEnum,
-  RepositorySelection,
 } from '../../types';
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
 import { AddRepositoriesTableToolbar } from './AddRepositoriesTableToolbar';
 import ApprovalTool from './ApprovalTool';
 import { RepositoriesTable } from './RepositoriesTable';
 
 export const AddRepositoriesTable = ({ title }: { title?: string }) => {
+  const { t } = useTranslation();
   const { values, setFieldValue } =
     useFormikContext<AddRepositoriesFormValues>();
   const [isApprovalToolGitlab, setIsApprovalToolGitlab] = useState(false);
@@ -58,7 +58,7 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
   return (
     <Box sx={{ width: '100%' }}>
       <Paper style={{ width: '100%' }}>
-        {numberOfApprovalTools > 1 && gitlabFeatureFlag && (
+        {numberOfApprovalTools > 1 && (
           <ApprovalTool
             approvalTool={values.approvalTool}
             setFieldValue={setFieldValue}
@@ -67,28 +67,16 @@ export const AddRepositoriesTable = ({ title }: { title?: string }) => {
         <AddRepositoriesTableToolbar
           title={
             title ||
-            `Selected  ${isApprovalToolGitlab ? 'projects' : 'repositories'}`
+            `${t('addRepositories.selectedLabel')} ${isApprovalToolGitlab ? t('addRepositories.selectedProjects') : t('addRepositories.selectedRepositories')}`
           }
           setSearchString={setSearchInput}
-          onPageChange={setPage}
-          isApprovalToolGitlab={isApprovalToolGitlab}
         />
-        {values.repositoryType === RepositorySelection.Repository ? (
-          <RepositoriesTable
-            searchString={searchString}
-            page={page}
-            isApprovalToolGitlab={isApprovalToolGitlab}
-            setPage={setPage}
-          />
-        ) : (
-          <RepositoriesTable
-            searchString={searchString}
-            page={page}
-            isApprovalToolGitlab={isApprovalToolGitlab}
-            setPage={setPage}
-            showOrganizations
-          />
-        )}
+        <RepositoriesTable
+          searchString={searchString}
+          page={page}
+          isApprovalToolGitlab={isApprovalToolGitlab}
+          setPage={setPage}
+        />
       </Paper>
     </Box>
   );

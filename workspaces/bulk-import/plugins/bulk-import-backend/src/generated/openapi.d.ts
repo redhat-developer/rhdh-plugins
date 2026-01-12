@@ -1,18 +1,4 @@
-/*
- * Copyright Red Hat, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// GENERATED FILE. DO NOT EDIT.
 
 // eslint-disable
 // prettier-ignore
@@ -24,6 +10,7 @@ declare namespace Components {
   }
   namespace Parameters {
     export type ApiVersionHeaderParam = 'v1' | 'v2';
+    export type ApprovalToolParam = string;
     export type PagePerIntegrationQueryParam = number;
     export type PagePerIntegrationQueryParamDeprecated = number;
     export type PageQueryParam = number;
@@ -49,15 +36,23 @@ declare namespace Components {
     searchQueryParam?: Parameters.SearchQueryParam;
     pageQueryParam?: Parameters.PageQueryParam;
     sizeQueryParam?: Parameters.SizeQueryParam;
+    approvalToolParam?: Parameters.ApprovalToolParam;
   }
   namespace Schemas {
-    export type ApprovalTool = 'GIT' | 'SERVICENOW';
+    export type ApprovalTool = 'GIT' | 'SERVICENOW' | 'GITLAB';
     /**
      * Import Job
      */
     export interface Import {
       id?: string;
-      status?: /* Import Job status */ ImportStatus;
+      status?: /* Import Job status */
+      ImportStatus | /* Import Job status */ TaskImportStatus;
+      task?: {
+        taskId?: string;
+      };
+      tasks?: {
+        taskId?: string;
+      }[];
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
        */
@@ -67,31 +62,16 @@ declare namespace Components {
       approvalTool?: ApprovalTool;
       repository?: /* Repository */ Repository;
       /**
+       * GitLab details. Applicable if approvalTool is gitlab.
+       */
+      gitlab?: {
+        pullRequest?: PullRequest;
+      };
+      /**
        * GitHub details. Applicable if approvalTool is git.
        */
       github?: {
-        pullRequest?: {
-          /**
-           * URL of the Pull Request
-           */
-          url?: string;
-          /**
-           * Pull Request number
-           */
-          number?: number;
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-          /**
-           * content of the catalog-info.yaml as fetched from the Pull Request.
-           */
-          catalogInfoContent?: string;
-        };
+        pullRequest?: PullRequest;
       };
     }
     /**
@@ -140,22 +120,16 @@ declare namespace Components {
        */
       catalogInfoContent?: string;
       /**
+       * GitLab details. Applicable if approvalTool is gitlab.
+       */
+      gitlab?: {
+        pullRequest?: PullRequest;
+      };
+      /**
        * GitHub details. Applicable if approvalTool is git.
        */
       github?: {
-        /**
-         * Pull Request details. Applicable if approvalTool is git.
-         */
-        pullRequest?: {
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-        };
+        pullRequest?: PullRequest;
       };
     }
     /**
@@ -198,6 +172,29 @@ declare namespace Components {
       pagePerIntegration?: number;
       sizePerIntegration?: number;
     }
+    export interface PullRequest {
+      /**
+       * URL of the Pull Request
+       */
+      url?: string;
+      /**
+       * Pull Request number
+       */
+      number?: number;
+      /**
+       * title of the Pull Request
+       */
+      title?: string;
+      /**
+       * body of the Pull Request
+       */
+      body?: string;
+      /**
+       * content of the catalog-info.yaml as fetched from the Pull Request.
+       */
+      catalogInfoContent?: string;
+      status?: 'WAIT_PR_APPROVAL' | 'PR_MERGED' | 'PR_ERROR';
+    }
     /**
      * Repository
      */
@@ -218,7 +215,8 @@ declare namespace Components {
        * organization which the repository is part of
        */
       organization?: string;
-      importStatus?: /* Import Job status */ ImportStatus;
+      importStatus?: /* Import Job status */
+      ImportStatus | /* Import Job status */ TaskImportStatus;
       /**
        * default branch
        */
@@ -237,6 +235,14 @@ declare namespace Components {
       sizePerIntegration?: number;
     }
     /**
+     * Scaffolder Task
+     */
+    export interface ScaffolderTask {
+      taskId?: string;
+      repositoryId?: number;
+      locations?: string[];
+    }
+    /**
      * Import Source:
      *   * 'config' - Import from static catalog location configuration in 'app-config'
      *   * 'location' - Import of user registered entities using locations endpoint
@@ -250,7 +256,14 @@ declare namespace Components {
      */
     export interface SourceImport {
       id?: string;
-      status?: /* Import Job status */ ImportStatus;
+      status?: /* Import Job status */
+      ImportStatus | /* Import Job status */ TaskImportStatus;
+      task?: {
+        taskId?: string;
+      };
+      tasks?: {
+        taskId?: string;
+      }[];
       /**
        * Specified entity name in the catalog. Filled only in response for dry-run import requests.
        */
@@ -260,31 +273,16 @@ declare namespace Components {
       approvalTool?: ApprovalTool;
       repository?: /* Repository */ Repository;
       /**
+       * GitLab details. Applicable if approvalTool is gitlab.
+       */
+      gitlab?: {
+        pullRequest?: PullRequest;
+      };
+      /**
        * GitHub details. Applicable if approvalTool is git.
        */
       github?: {
-        pullRequest?: {
-          /**
-           * URL of the Pull Request
-           */
-          url?: string;
-          /**
-           * Pull Request number
-           */
-          number?: number;
-          /**
-           * title of the Pull Request
-           */
-          title?: string;
-          /**
-           * body of the Pull Request
-           */
-          body?: string;
-          /**
-           * content of the catalog-info.yaml as fetched from the Pull Request.
-           */
-          catalogInfoContent?: string;
-        };
+        pullRequest?: PullRequest;
       };
       source?: /**
        * Import Source:
@@ -296,6 +294,17 @@ declare namespace Components {
        */
       Source;
     }
+    /**
+     * Import Job status
+     */
+    export type TaskImportStatus =
+      | 'TASK_CANCELLED'
+      | 'TASK_COMPLETED'
+      | 'TASK_FAILED'
+      | 'TASK_OPEN'
+      | 'TASK_PROCESSING'
+      | 'TASK_SKIPPED'
+      | 'TASK_FETCH_FAILED';
   }
 }
 declare namespace Paths {
@@ -312,14 +321,37 @@ declare namespace Paths {
       export type $202 = /* Import Job */ Components.Schemas.Import[];
     }
   }
+  namespace CreateTaskImportJobs {
+    export type RequestBody =
+      /* Import Job request */ Components.Schemas.ImportRequest[];
+    namespace Responses {
+      export type $202 = /* Import Job */ Components.Schemas.Import[];
+    }
+  }
   namespace DeleteImportByRepo {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type DefaultBranch = string;
       export type Repo = string;
     }
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export interface $204 {}
+      export interface $500 {}
+    }
+  }
+  namespace DeleteTaskImportByRepo {
+    namespace Parameters {
+      export type ApprovalTool = string;
+      export type Repo = string;
+    }
+    export interface QueryParameters {
+      repo?: Parameters.Repo;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export interface $204 {}
@@ -327,6 +359,88 @@ declare namespace Paths {
     }
   }
   namespace FindAllImports {
+    export interface HeaderParameters {
+      'api-version'?: Parameters.ApiVersion;
+    }
+    namespace Parameters {
+      export type ApiVersion = 'v1' | 'v2';
+      export type ApprovalTool = string;
+      export type Page = number;
+      export type PagePerIntegration = number;
+      export type Search = string;
+      export type Size = number;
+      export type SizePerIntegration = number;
+      export type SortColumn =
+        | 'repository.name'
+        | 'repository.organization'
+        | 'repository.url'
+        | 'lastUpdate'
+        | 'status';
+      export type SortOrder = 'asc' | 'desc';
+    }
+    export interface QueryParameters {
+      pagePerIntegration?: Parameters.PagePerIntegration;
+      sizePerIntegration?: Parameters.SizePerIntegration;
+      page?: Parameters.Page;
+      size?: Parameters.Size;
+      sortOrder?: Parameters.SortOrder;
+      sortColumn?: Parameters.SortColumn;
+      search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export type $200 =
+        /* Import Job with source it originates from */
+        | Components.Schemas.SourceImport[]
+        | /* Import Job List */ Components.Schemas.ImportJobListV2;
+      export type $500 =
+        | string
+        | /* Import Job List */ Components.Schemas.ImportJobListV2;
+    }
+  }
+  namespace FindAllOrganizations {
+    namespace Parameters {
+      export type ApprovalTool = string;
+      export type PagePerIntegration = number;
+      export type Search = string;
+      export type SizePerIntegration = number;
+    }
+    export interface QueryParameters {
+      pagePerIntegration?: Parameters.PagePerIntegration;
+      sizePerIntegration?: Parameters.SizePerIntegration;
+      search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export type $200 =
+        /* Organization List */ Components.Schemas.OrganizationList;
+      export type $500 =
+        /* Organization List */ Components.Schemas.OrganizationList;
+    }
+  }
+  namespace FindAllRepositories {
+    namespace Parameters {
+      export type ApprovalTool = string;
+      export type CheckImportStatus = boolean;
+      export type PagePerIntegration = number;
+      export type Search = string;
+      export type SizePerIntegration = number;
+    }
+    export interface QueryParameters {
+      checkImportStatus?: Parameters.CheckImportStatus;
+      pagePerIntegration?: Parameters.PagePerIntegration;
+      sizePerIntegration?: Parameters.SizePerIntegration;
+      search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export type $200 =
+        /* Repository List */ Components.Schemas.RepositoryList;
+      export type $500 =
+        /* Repository List */ Components.Schemas.RepositoryList;
+    }
+  }
+  namespace FindAllTaskImports {
     export interface HeaderParameters {
       'api-version'?: Parameters.ApiVersion;
     }
@@ -364,52 +478,16 @@ declare namespace Paths {
         | /* Import Job List */ Components.Schemas.ImportJobListV2;
     }
   }
-  namespace FindAllOrganizations {
-    namespace Parameters {
-      export type PagePerIntegration = number;
-      export type Search = string;
-      export type SizePerIntegration = number;
-    }
-    export interface QueryParameters {
-      pagePerIntegration?: Parameters.PagePerIntegration;
-      sizePerIntegration?: Parameters.SizePerIntegration;
-      search?: Parameters.Search;
-    }
-    namespace Responses {
-      export type $200 =
-        /* Organization List */ Components.Schemas.OrganizationList;
-      export type $500 =
-        /* Organization List */ Components.Schemas.OrganizationList;
-    }
-  }
-  namespace FindAllRepositories {
-    namespace Parameters {
-      export type CheckImportStatus = boolean;
-      export type PagePerIntegration = number;
-      export type Search = string;
-      export type SizePerIntegration = number;
-    }
-    export interface QueryParameters {
-      checkImportStatus?: Parameters.CheckImportStatus;
-      pagePerIntegration?: Parameters.PagePerIntegration;
-      sizePerIntegration?: Parameters.SizePerIntegration;
-      search?: Parameters.Search;
-    }
-    namespace Responses {
-      export type $200 =
-        /* Repository List */ Components.Schemas.RepositoryList;
-      export type $500 =
-        /* Repository List */ Components.Schemas.RepositoryList;
-    }
-  }
   namespace FindImportStatusByRepo {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type DefaultBranch = string;
       export type Repo = string;
     }
     export interface QueryParameters {
       repo?: Parameters.Repo;
       defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 = /* Import Job */ Components.Schemas.Import;
@@ -418,6 +496,7 @@ declare namespace Paths {
   }
   namespace FindRepositoriesByOrganization {
     namespace Parameters {
+      export type ApprovalTool = string;
       export type CheckImportStatus = boolean;
       export type OrganizationName = string;
       export type PagePerIntegration = number;
@@ -432,12 +511,29 @@ declare namespace Paths {
       pagePerIntegration?: Parameters.PagePerIntegration;
       sizePerIntegration?: Parameters.SizePerIntegration;
       search?: Parameters.Search;
+      approvalTool?: Parameters.ApprovalTool;
     }
     namespace Responses {
       export type $200 =
         /* Repository List */ Components.Schemas.RepositoryList;
       export type $500 =
         /* Repository List */ Components.Schemas.RepositoryList;
+    }
+  }
+  namespace FindTaskImportStatusByRepo {
+    namespace Parameters {
+      export type ApprovalTool = string;
+      export type DefaultBranch = string;
+      export type Repo = string;
+    }
+    export interface QueryParameters {
+      repo?: Parameters.Repo;
+      defaultBranch?: Parameters.DefaultBranch;
+      approvalTool?: Parameters.ApprovalTool;
+    }
+    namespace Responses {
+      export type $200 = /* Import Job */ Components.Schemas.Import;
+      export interface $500 {}
     }
   }
   namespace Ping {
@@ -504,6 +600,41 @@ export interface OperationMethods {
     data?: Paths.CreateImportJobs.RequestBody,
     config?: AxiosRequestConfig,
   ): OperationResponse<Paths.CreateImportJobs.Responses.$202>;
+  /**
+   * findAllTaskImports - Fetch Import Jobs
+   */
+  'findAllTaskImports'(
+    parameters?: Parameters<
+      Paths.FindAllTaskImports.QueryParameters &
+        Paths.FindAllTaskImports.HeaderParameters
+    > | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.FindAllTaskImports.Responses.$200>;
+  /**
+   * createTaskImportJobs - Execute a scaffolder template for a list of repositories
+   */
+  'createTaskImportJobs'(
+    parameters?: Parameters<UnknownParamsObject> | null,
+    data?: Paths.CreateTaskImportJobs.RequestBody,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
+  /**
+   * findTaskImportStatusByRepo - Get Import Status by repository
+   */
+  'findTaskImportStatusByRepo'(
+    parameters?: Parameters<Paths.FindTaskImportStatusByRepo.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.FindTaskImportStatusByRepo.Responses.$200>;
+  /**
+   * deleteTaskImportByRepo - Delete stored scaffolder task records for a specific repository
+   */
+  'deleteTaskImportByRepo'(
+    parameters?: Parameters<Paths.DeleteTaskImportByRepo.QueryParameters> | null,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): OperationResponse<Paths.DeleteTaskImportByRepo.Responses.$204>;
   /**
    * findImportStatusByRepo - Get Import Status by repository
    */
@@ -587,6 +718,45 @@ export interface PathsDictionary {
       config?: AxiosRequestConfig,
     ): OperationResponse<Paths.CreateImportJobs.Responses.$202>;
   };
+  ['/task-imports']: {
+    /**
+     * findAllTaskImports - Fetch Import Jobs
+     */
+    'get'(
+      parameters?: Parameters<
+        Paths.FindAllTaskImports.QueryParameters &
+          Paths.FindAllTaskImports.HeaderParameters
+      > | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.FindAllTaskImports.Responses.$200>;
+    /**
+     * createTaskImportJobs - Execute a scaffolder template for a list of repositories
+     */
+    'post'(
+      parameters?: Parameters<UnknownParamsObject> | null,
+      data?: Paths.CreateTaskImportJobs.RequestBody,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.CreateTaskImportJobs.Responses.$202>;
+  };
+  ['/task-import/by-repo']: {
+    /**
+     * findTaskImportStatusByRepo - Get Import Status by repository
+     */
+    'get'(
+      parameters?: Parameters<Paths.FindTaskImportStatusByRepo.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.FindTaskImportStatusByRepo.Responses.$200>;
+    /**
+     * deleteTaskImportByRepo - Delete stored scaffolder task records for a specific repository
+     */
+    'delete'(
+      parameters?: Parameters<Paths.DeleteTaskImportByRepo.QueryParameters> | null,
+      data?: any,
+      config?: AxiosRequestConfig,
+    ): OperationResponse<Paths.DeleteTaskImportByRepo.Responses.$204>;
+  };
   ['/import/by-repo']: {
     /**
      * findImportStatusByRepo - Get Import Status by repository
@@ -616,7 +786,10 @@ export type ImportRequest = Components.Schemas.ImportRequest;
 export type ImportStatus = Components.Schemas.ImportStatus;
 export type Organization = Components.Schemas.Organization;
 export type OrganizationList = Components.Schemas.OrganizationList;
+export type PullRequest = Components.Schemas.PullRequest;
 export type Repository = Components.Schemas.Repository;
 export type RepositoryList = Components.Schemas.RepositoryList;
+export type ScaffolderTask = Components.Schemas.ScaffolderTask;
 export type Source = Components.Schemas.Source;
 export type SourceImport = Components.Schemas.SourceImport;
+export type TaskImportStatus = Components.Schemas.TaskImportStatus;

@@ -32,6 +32,7 @@ import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
   applySelectorArray,
+  useProcessingState,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -60,15 +61,22 @@ export const ActiveDropdown: Widget<
 
   const { id, label, value, onChange, formContext } = props;
   const formData = formContext?.formData;
+  const isChangedByUser = !!formContext?.getIsChangedByUser(id);
+  const setIsChangedByUser = formContext?.setIsChangedByUser;
+
   const labelId = `${props.id}-label`;
 
   const uiProps = useMemo(
     () => (props.options?.props ?? {}) as UiProps,
     [props.options?.props],
   );
+  const isReadOnly = !!props?.schema.readOnly;
 
   const labelSelector = uiProps['fetch:response:label']?.toString();
   const valueSelector = uiProps['fetch:response:value']?.toString();
+  const staticDefault = uiProps['fetch:response:default'];
+  const staticDefaultValue =
+    typeof staticDefault === 'string' ? staticDefault : undefined;
 
   const [localError, setLocalError] = useState<string | undefined>(
     !labelSelector || !valueSelector
@@ -77,6 +85,9 @@ export const ActiveDropdown: Widget<
   );
   const [labels, setLabels] = useState<string[]>();
   const [values, setValues] = useState<string[]>();
+
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -87,49 +98,85 @@ export const ActiveDropdown: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
+
   useEffect(() => {
     if (!data || !labelSelector || !valueSelector) {
       return;
     }
 
     const doItAsync = async () => {
-      const selectedLabels = await applySelectorArray(data, labelSelector);
-      const selectedValues = await applySelectorArray(data, valueSelector);
+      await wrapProcessing(async () => {
+        const selectedLabels = await applySelectorArray(data, labelSelector);
+        const selectedValues = await applySelectorArray(data, valueSelector);
 
-      if (selectedLabels.length !== selectedValues.length) {
-        setLocalError(
-          `Selected labels and values have different count (${selectedLabels.length} and ${selectedValues.length}) for ${props.id}`,
-        );
-        return;
-      }
+        if (selectedLabels.length !== selectedValues.length) {
+          setLocalError(
+            `Selected labels and values have different count (${selectedLabels.length} and ${selectedValues.length}) for ${props.id}`,
+          );
+          return;
+        }
 
-      setLabels(selectedLabels);
-      setValues(selectedValues);
+        setLabels(selectedLabels);
+        setValues(selectedValues);
+      });
     };
 
     doItAsync();
-  }, [labelSelector, valueSelector, data, props.id]);
+  }, [labelSelector, valueSelector, data, props.id, wrapProcessing]);
 
   const handleChange = useCallback(
-    (changed: string) => {
+    (changed: string, isByUser: boolean) => {
+      if (isByUser && setIsChangedByUser) {
+        // we must handle this change out of this component's state since the component can be (de)mounted on wizard transitions or by the SchemaUpdater
+        setIsChangedByUser(id, true);
+      }
       onChange(changed);
     },
-    [onChange],
+    [onChange, id, setIsChangedByUser],
   );
 
+  // Set default value from fetched options
+  // Priority: static default (if valid option) > first fetched option
+  // Note: Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
-    if (!value && values && values.length > 0) {
-      handleChange(values[0]);
+    if (!isChangedByUser && !value && values && values.length > 0) {
+      // If static default is provided and is a valid option, use it
+      if (staticDefaultValue && values.includes(staticDefaultValue)) {
+        handleChange(staticDefaultValue, false);
+      } else {
+        // Otherwise use the first fetched value
+        handleChange(values[0], false);
+      }
     }
-  }, [handleChange, value, values]);
+  }, [handleChange, value, values, isChangedByUser, staticDefaultValue]);
 
   if (localError ?? error) {
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading || !labels || !values) {
+  // Compute display options: use fetched options, or fall back to static default
+  const hasOptions = labels && labels.length > 0 && values && values.length > 0;
+  const hasFallbackDefault = !hasOptions && staticDefaultValue;
+
+  // Show loading only if we have no options AND no fallback default
+  if (completeLoading && !hasFallbackDefault) {
     return <CircularProgress size={20} />;
   }
+
+  // If still loading but no options yet and no fallback, show spinner
+  if (!hasOptions && !hasFallbackDefault) {
+    return <CircularProgress size={20} />;
+  }
+
+  // Use fetched options or fallback to static default as single option
+  const displayLabels = hasOptions ? labels : [staticDefaultValue!];
+  const displayValues = hasOptions ? values : [staticDefaultValue!];
 
   return (
     <FormControl variant="outlined" fullWidth>
@@ -138,18 +185,22 @@ export const ActiveDropdown: Widget<
         labelId={labelId}
         id={id}
         data-testid={id}
-        value={value}
+        value={value ?? ''}
         label={label}
-        onChange={event => handleChange(event.target.value as string)}
+        disabled={isReadOnly}
+        onChange={event => handleChange(event.target.value as string, true)}
+        MenuProps={{
+          PaperProps: { sx: { maxHeight: '20rem' } },
+        }}
       >
-        {labels.map((itemLabel, idx) => (
+        {displayLabels.map((itemLabel, idx) => (
           <MenuItem
-            key={values[idx]}
-            value={values[idx]}
-            data-testid={`${id}-menuitem-${values[idx]}`}
+            key={displayValues[idx]}
+            value={displayValues[idx]}
+            data-testid={`${id}-menuitem-${displayValues[idx]}`}
             className={clsx(
               classes.menuItem,
-              value === values[idx] && classes.menuItemSelected,
+              value === displayValues[idx] && classes.menuItemSelected,
             )}
           >
             {itemLabel}

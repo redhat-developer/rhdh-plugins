@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -28,6 +28,7 @@ import {
   useRouteRef,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 import { JsonObject } from '@backstage/types';
 
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
@@ -64,17 +65,18 @@ import { SHORT_REFRESH_INTERVAL } from '../../constants';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import usePolling from '../../hooks/usePolling';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
-  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
 } from '../../routes';
+import { orchestratorTranslationRef } from '../../translations';
 import { deepSearchObject } from '../../utils/deepSearchObject';
 import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
-import { InfoDialog } from '../InfoDialog';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
+import { InfoDialog } from '../ui/InfoDialog';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({
@@ -117,22 +119,18 @@ const AbortConfirmationDialogContent = ({
 }: {
   canAbort: boolean;
 }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
   return (
     <div>
       <Box className={classes.modalText}>
-        <Typography variant="h6">
-          Are you sure you want to abort this workflow run? <br /> <br />
-          Aborting will stop all in-progress and pending steps immediately. Any
-          incomplete tasks will not be saved.
-        </Typography>
+        <Typography variant="h6">{t('run.abort.warning')}</Typography>
       </Box>
       {!canAbort && (
         <Box sx={{ width: '100%' }}>
           <Alert severity="info">
-            <AlertTitle>Run completed</AlertTitle>
-            It is not possible to abort the run as it has already been
-            completed.
+            <AlertTitle>{t('run.abort.completed.title')}</AlertTitle>
+            {t('run.abort.completed.message')}
           </Alert>
         </Box>
       )}
@@ -143,6 +141,7 @@ const AbortConfirmationDialogContent = ({
 const AbortConfirmationDialogActions = (
   props: AbortConfirmationDialogActionsProps,
 ) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
   return (
     <>
@@ -153,7 +152,7 @@ const AbortConfirmationDialogActions = (
         startIcon={props.isAborting ? <CircularProgress size="1rem" /> : null}
         disabled={props.isAborting || !props.canAbort}
       >
-        Abort
+        {t('run.abort.button')}
       </Button>
       <Button
         onClick={props.handleCancel}
@@ -161,7 +160,7 @@ const AbortConfirmationDialogActions = (
         color="primary"
         disabled={props.isAborting}
       >
-        Cancel
+        {t('common.cancel')}
       </Button>
     </>
   );
@@ -198,7 +197,13 @@ const getAuthTokenDescriptors = async (
   return uiProps.authTokenDescriptors as AuthTokenDescriptor[];
 };
 
+// hack
+type LocalTranslationFunction =
+  | TranslationFunction<typeof orchestratorTranslationRef.T>
+  | ((key: string, params?: Record<string, string>) => string);
+
 export const WorkflowInstancePage = () => {
+  const { t } = useTranslation() as { t: LocalTranslationFunction };
   const { classes } = useStyles();
 
   const navigate = useNavigate();
@@ -206,8 +211,8 @@ export const WorkflowInstancePage = () => {
   const { authenticate } = useOrchestratorAuth();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
   const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
-  const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
   const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
+
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
     entityRef = `${kind}:${namespace}/${name}`;
@@ -215,14 +220,13 @@ export const WorkflowInstancePage = () => {
   const [isAbortConfirmationDialogOpen, setIsAbortConfirmationDialogOpen] =
     useState(false);
 
-  const [isAborting, setIsAborting] = React.useState(false);
-  const [isAbortSnackbarOpen, setIsAbortSnackbarOpen] = React.useState(false);
-  const [abortError, setAbortError] = React.useState('');
+  const [isAborting, setIsAborting] = useState(false);
+  const [isAbortSnackbarOpen, setIsAbortSnackbarOpen] = useState(false);
+  const [abortError, setAbortError] = useState('');
 
-  const [isRetrigger, setIsRetrigger] = React.useState(false);
-  const [isRetriggerSnackbarOpen, setIsRetriggerSnackbarOpen] =
-    React.useState(false);
-  const [retriggerError, setRetriggerError] = React.useState('');
+  const [isRetrigger, setIsRetrigger] = useState(false);
+  const [isRetriggerSnackbarOpen, setIsRetriggerSnackbarOpen] = useState(false);
+  const [retriggerError, setRetriggerError] = useState('');
 
   const handleAbortBarClose = () => {
     setIsAbortSnackbarOpen(false);
@@ -231,7 +235,7 @@ export const WorkflowInstancePage = () => {
     setIsRetriggerSnackbarOpen(false);
   };
 
-  const fetchInstance = React.useCallback(async () => {
+  const fetchInstance = useCallback(async () => {
     if (!instanceId) {
       return undefined;
     }
@@ -283,11 +287,11 @@ export const WorkflowInstancePage = () => {
     value?.state === ProcessInstanceStatusDTO.Aborted ||
     value?.state === ProcessInstanceStatusDTO.Error;
 
-  const toggleAbortConfirmationDialog = React.useCallback(() => {
+  const toggleAbortConfirmationDialog = useCallback(() => {
     setIsAbortConfirmationDialogOpen(prev => !prev);
   }, []);
 
-  const handleAbort = React.useCallback(async () => {
+  const handleAbort = useCallback(async () => {
     if (value) {
       setIsAborting(true);
 
@@ -295,16 +299,31 @@ export const WorkflowInstancePage = () => {
         await orchestratorApi.abortWorkflowInstance(value.id);
         restart();
       } catch (e) {
-        setAbortError(`Abort failed: ${(e as Error).message}`);
+        const res = await fetchInstance();
+        if (res?.state === ProcessInstanceStatusDTO.Completed) {
+          setAbortError(t('workflow.errors.abortFailed'));
+          restart();
+        } else {
+          setAbortError(
+            t('workflow.errors.abortFailed', { reason: (e as Error).message }),
+          );
+        }
         setIsAbortSnackbarOpen(true);
       } finally {
         setIsAborting(false);
         toggleAbortConfirmationDialog();
       }
     }
-  }, [orchestratorApi, restart, value, toggleAbortConfirmationDialog]);
+  }, [
+    t,
+    orchestratorApi,
+    restart,
+    value,
+    toggleAbortConfirmationDialog,
+    fetchInstance,
+  ]);
 
-  const handleRerun = React.useCallback(() => {
+  const handleRerun = useCallback(() => {
     if (!value) {
       return;
     }
@@ -337,10 +356,12 @@ export const WorkflowInstancePage = () => {
         restart();
       } catch (retriggerInstanceError) {
         if (retriggerInstanceError.toString().includes('Failed Node ID')) {
-          setRetriggerError(`Run failed again`);
+          setRetriggerError(t('workflow.buttons.runFailedAgain'));
         } else {
           setRetriggerError(
-            `Retrigger failed: ${(retriggerInstanceError as Error).message}`,
+            t('workflow.errors.retriggerFailed', {
+              reason: (retriggerInstanceError as Error).message,
+            }),
           );
         }
         setIsRetriggerSnackbarOpen(true);
@@ -369,28 +390,19 @@ export const WorkflowInstancePage = () => {
 
   const combinedError: Error | undefined = error || inputSchemaError;
 
+  const title = t('run.pageTitle', {
+    processName: value?.processName ?? '',
+  });
+
   return (
-    <BaseOrchestratorPage
-      title={value?.id}
-      type={value?.processName}
-      typeLink={
-        entityRef
-          ? entityWorkflowLink({
-              namespace,
-              kind,
-              name,
-              workflowId: value?.processId ?? '',
-            })
-          : `/orchestrator/workflows/${workflowId}`
-      }
-    >
+    <BaseOrchestratorPage title={title}>
       {loading ? <Progress /> : null}
       {combinedError ? <ResponseErrorPanel error={combinedError} /> : null}
       {!loading && isNonNullable(value) ? (
         <>
           <ContentHeader title="">
             <InfoDialog
-              title="Abort workflow run?"
+              title={t('run.abort.title')}
               titleIcon={<Error className={classes.errorColor} />}
               onClose={toggleAbortConfirmationDialog}
               open={isAbortConfirmationDialogOpen}
@@ -409,7 +421,7 @@ export const WorkflowInstancePage = () => {
               <Grid item>
                 {canAbort && (
                   <Tooltip
-                    title="user not authorized to abort workflow"
+                    title={t('tooltips.userNotAuthorizedAbort')}
                     disableHoverListener={permittedToUse.allowed}
                   >
                     <Button
@@ -418,14 +430,14 @@ export const WorkflowInstancePage = () => {
                       disabled={!permittedToUse.allowed}
                       onClick={toggleAbortConfirmationDialog}
                     >
-                      Abort
+                      {t('run.abort.button')}
                     </Button>
                   </Tooltip>
                 )}
               </Grid>
               <Grid item>
                 <Tooltip
-                  title="user not authorized to execute workflow"
+                  title={t('tooltips.userNotAuthorizedExecute')}
                   disableHoverListener={permittedToUse.allowed}
                 >
                   <Button
@@ -446,15 +458,14 @@ export const WorkflowInstancePage = () => {
                         <ArrowDropDown />
                       ) : null
                     }
-                    style={{ color: 'white' }}
                   >
                     {value.state === ProcessInstanceStatusDTO.Active ? (
                       <>
                         <CircularProgress color="inherit" size="0.75rem" />
-                        &nbsp;Running...
+                        &nbsp;{t('workflow.buttons.running')}
                       </>
                     ) : (
-                      'Run again'
+                      t('workflow.buttons.runAgain')
                     )}
                   </Button>
                 </Tooltip>
@@ -482,7 +493,7 @@ export const WorkflowInstancePage = () => {
                     disabled={!inputSchema}
                   >
                     <SwipeRightAltOutlined />
-                    From failure point
+                    {t('workflow.buttons.fromFailurePoint')}
                   </MenuItem>
                 </Menu>
               </Grid>

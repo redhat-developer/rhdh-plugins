@@ -81,17 +81,28 @@ export const useOrchestratorAuth = () => {
   const findCustomProvider = useCallback(
     async (providerApiId: string): Promise<unknown> => {
       const allPlugins = app.getPlugins();
+
+      // For APIs deployed within plugins
       const apiRef = allPlugins
         .flatMap(plugin => Array.from(plugin.getApis()))
         .find((api: AnyApiFactory) => api.api.id === providerApiId)?.api;
 
-      if (!apiRef) {
-        throw new Error(
-          `Unknown custom auth provider API of id "${providerApiId}". The provider API id should match the ApiRef id.`,
-        );
+      if (apiRef) {
+        const api = apiHolder.get(apiRef);
+        if (!api) {
+          throw new Error(
+            `API with id "${providerApiId}" was not found in the API holder. The API is provided by a plugin.`,
+          );
+        }
+        return api;
       }
 
-      const api = apiHolder.get(apiRef);
+      // Try to find a statically added api ref, like the 'internal.auth.oidc'
+      // by https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/api/AuthApiRefs.ts
+      // Hint: If this approach proves to be working, we could use it for the other apis as well.
+      // @ts-ignore
+      const allApis = apiHolder.apis as Map<string, object>;
+      const api = allApis.get(providerApiId);
       if (!api) {
         throw new Error(
           `API with id "${providerApiId}" was not found in the API holder.`,

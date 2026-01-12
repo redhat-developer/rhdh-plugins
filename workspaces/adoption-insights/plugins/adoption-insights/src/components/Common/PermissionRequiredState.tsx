@@ -20,8 +20,11 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
 import { PermissionRequiredIcon } from './PermissionRequiredIcon';
+import { useTranslation } from '../../hooks/useTranslation';
+import { Trans } from '../Trans';
 
 const PermissionRequiredState = () => {
+  const { t } = useTranslation();
   return (
     <Box
       sx={{
@@ -32,11 +35,10 @@ const PermissionRequiredState = () => {
       }}
     >
       <EmptyState
-        title="Missing permissions"
+        title={t('permission.title')}
         description={
           <Typography variant="subtitle1" component="span">
-            To view Adoption Insights plugin, contact your administrator to give
-            the <b>adoption-insights.events.read</b> permissions.
+            <Trans message="permission.description" />
           </Typography>
         }
         missing={{ customImage: <PermissionRequiredIcon /> }}
@@ -47,7 +49,7 @@ const PermissionRequiredState = () => {
             target="_blank"
             href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/adoption-insights/plugins/adoption-insights/README.md#permission-framework-support"
           >
-            Read more &nbsp; <OpenInNewIcon />
+            {t('common.readMore')} &nbsp; <OpenInNewIcon />
           </Button>
         }
       />

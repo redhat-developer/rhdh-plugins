@@ -18,31 +18,35 @@ import { TableColumn } from '@backstage/core-components';
 
 export const getRepositoriesColumnHeader = (
   isApprovalToolGitlab: boolean = false,
+  t: (key: string, ...args: any[]) => string,
+  isScaffolderEnabled: boolean = false,
 ): TableColumn[] => [
   {
     id: 'name',
-    title: 'Name',
+    title: t('table.headers.name'),
     field: 'repoName',
   },
   {
     id: 'url',
-    title: 'URL',
+    title: t('table.headers.url'),
     field: 'repoUrl',
   },
   isApprovalToolGitlab
     ? {
         id: 'group',
-        title: 'Group',
+        title: t('table.headers.group'),
         field: 'organizationUrl', // Need to change this to according to the gitlab API
       }
     : {
         id: 'organization',
-        title: 'Organization',
+        title: t('table.headers.organization'),
         field: 'organizationUrl',
       },
   {
     id: 'cataloginfoyaml',
-    title: 'catalog-info.yaml',
+    title: isScaffolderEnabled
+      ? t('table.headers.taskStatus')
+      : t('table.headers.status'),
     field: 'catalogInfoYaml.status',
   },
 ];

@@ -1,5 +1,89 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-api
 
+## 2.4.1
+
+### Patch Changes
+
+- Updated dependencies [8524940]
+- Updated dependencies [d91ef65]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.1
+
+## 2.4.0
+
+### Minor Changes
+
+- 29dfed0: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [a1671ab]
+- Updated dependencies [40b80fe]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+- Updated dependencies [40b80fe]
+- Updated dependencies [34a36cb]
+- Updated dependencies [29dfed0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+
+## 2.3.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+
+## 2.2.0
+
+### Minor Changes
+
+- 149804f: Disable Next button when active widgets are fetching and processing data
+  - Add isFetching state tracking to StepperContext using a counter to monitor multiple concurrent async operations
+  - Update OrchestratorFormToolbar to disable Next button when isFetching is true (in addition to existing isValidating check)
+  - Add handleFetchStarted and handleFetchEnded callbacks to OrchestratorFormContextProps to allow widgets to report their loading status
+  - Update useFetchAndEvaluate to track complete loading state (fetch + template evaluation) and notify context
+  - Create useProcessingState custom hook to reduce code duplication across widgets, providing a reusable pattern for tracking both fetch and processing states
+  - Refactor SchemaUpdater, ActiveTextInput, ActiveDropdown, and ActiveMultiSelect to use useProcessingState hook
+  - Track the complete loading lifecycle: fetch → process → ready, ensuring Next button is disabled until all async work completes
+  - Prevents race conditions where Next button becomes enabled before widgets finish processing data
+
+## 2.1.0
+
+### Minor Changes
+
+- de5ced6: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [de5ced6]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.0
+
+## 2.0.6
+
+### Patch Changes
+
+- Updated dependencies [f0a427c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.6
+
+## 2.0.5
+
+### Patch Changes
+
+- Updated dependencies [c79ffa7]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.5
+
+## 2.0.4
+
+### Patch Changes
+
+- Updated dependencies [2fbdb53]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.4
+
 ## 2.0.3
 
 ### Patch Changes

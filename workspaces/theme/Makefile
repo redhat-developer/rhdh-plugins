@@ -44,14 +44,14 @@ add-tests-to-showcase:
 	@echo
 	@echo Will build and install test plugins into ${showcase}
 	@echo
-	cd plugins/bc-test && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
-	cd plugins/mui4-test && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
-	cd plugins/mui5-test && npx --yes @janus-idp/cli package export-dynamic-plugin --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/bcc-test && npx --yes @red-hat-developer-hub/cli@latest plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/mui4-test && npx --yes @red-hat-developer-hub/cli@latest plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
+	cd plugins/mui5-test && npx --yes @red-hat-developer-hub/cli@latest plugin export --dynamic-plugins-root "${dproot}" --clean "${clean}" --dev "${dev}"
 
 remove-from-showcase:
 	@echo
 	@echo Remove theme and test plugins from ${showcase}
 	@echo
-	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-bc-test"
+	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-bcc-test"
 	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-mui4-test"
 	rm -rf "${dproot}/red-hat-developer-hub-backstage-plugin-mui5-test"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,3 +24,9 @@
 // that are useful to other plugins or modules.
 
 export * from './components';
+export * from './hooks';
+export type {
+  HiddenCondition,
+  HiddenConditionObject,
+  HiddenConditionComposite,
+} from './types/HiddenCondition';

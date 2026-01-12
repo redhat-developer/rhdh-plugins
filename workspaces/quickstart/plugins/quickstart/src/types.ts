@@ -14,14 +14,42 @@
  * limitations under the License.
  */
 
+/**
+ * Call-to-action data for quickstart items
+ * @public
+ */
 export interface QuickstartItemCtaData {
+  /** The text to display for the CTA button */
   text: string;
+  /** Translation key for the CTA text */
+  textKey?: string;
+  /** The URL to navigate to when clicked */
   link: string;
 }
 
+/**
+ * Configuration data for a quickstart item
+ * @public
+ */
 export interface QuickstartItemData {
+  /** The title of the quickstart item */
   title: string;
+  /** Translation key for the title */
+  titleKey?: string;
+  /** Array of roles that can access this item (defaults to ['admin'] if not specified) */
+  roles?: string[];
+  /** Icon identifier for the item */
   icon?: string;
+  /** Description text for the item */
   description: string;
+  /** Translation key for the description */
+  descriptionKey?: string;
+  /** Call-to-action configuration */
   cta?: QuickstartItemCtaData;
 }
+
+/**
+ * User role type for quickstart functionality
+ * @public
+ */
+export type UserRole = 'admin' | 'developer';

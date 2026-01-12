@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AuthService } from '@backstage/backend-plugin-api/*';
+import { AuthService } from '@backstage/backend-plugin-api';
 import {
   CatalogApi,
   EntityFilterQuery,

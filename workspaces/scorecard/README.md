@@ -8,3 +8,5 @@ To start the app, run:
 yarn install
 yarn start
 ```
+
+> Notice: The guest user has admin permissions in this application for quick setup. For better control, specify more users and groups in app-config.local.yaml and define a separate admin/admins permission instead of using the guest user. Using the guest user as an admin is not recommended for permission management.

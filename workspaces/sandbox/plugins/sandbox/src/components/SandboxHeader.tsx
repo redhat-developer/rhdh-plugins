@@ -21,30 +21,57 @@ import { useTheme } from '@mui/material/styles';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import { Header, Link } from '@backstage/core-components';
+import { useTrackAnalytics } from '../utils/eddl-utils';
 
 interface SandboxHeaderProps {
   pageTitle: string;
 }
 
 export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
+  const trackAnalytics = useTrackAnalytics();
+
   useEffect(() => {
-    // Check if script is already loaded
-    if (!document.getElementById('trustarc')) {
-      const script = document.createElement('script');
-      script.id = 'trustarc';
-      script.src =
-        '//static.redhat.com/libs/redhat/marketing/latest/trustarc/trustarc.js';
-      document.body.appendChild(script);
-    }
-    if (!document.getElementById('dpal')) {
-      const script = document.createElement('script');
-      script.id = 'dpal';
-      script.src = 'https://www.redhat.com/ma/dpal.js';
-      document.body.appendChild(script);
-    }
+    const initializeAnalytics = async () => {
+      // Check if script is already loaded
+      if (!document.getElementById('trustarc')) {
+        const script = document.createElement('script');
+        script.id = 'trustarc';
+        script.src =
+          '//static.redhat.com/libs/redhat/marketing/latest/trustarc/trustarc.js';
+        document.body.appendChild(script);
+      }
+      if (!document.getElementById('dpal')) {
+        const script = document.createElement('script');
+        script.id = 'dpal';
+        script.src = 'https://www.redhat.com/ma/dpal.js';
+        document.body.appendChild(script);
+      }
+    };
+
+    initializeAnalytics();
   }, []);
 
   const theme = useTheme();
+
+  // Handle Contact Sales click for analytics tracking
+  const handleContactSalesClick = async (
+    event: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await trackAnalytics(
+      'Contact Red Hat Sales',
+      'Support',
+      'https://www.redhat.com/en/contact',
+      undefined,
+      'cta',
+    );
+
+    // Navigate after tracking completes
+    window.open('https://www.redhat.com/en/contact', '_blank');
+  };
+
   return (
     <Header
       pageTitleOverride={pageTitle}
@@ -90,6 +117,7 @@ export const SandboxHeader: React.FC<SandboxHeaderProps> = ({ pageTitle }) => {
           to="https://www.redhat.com/en/contact"
           underline="none"
           target="_blank"
+          onClick={handleContactSalesClick}
         >
           <Button
             variant="outlined"

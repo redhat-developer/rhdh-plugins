@@ -4,20 +4,31 @@
 # The last matching pattern takes precedence.
 # https://help.github.com/articles/about-codeowners/
 
-*                                                   @bethgriggs @nickboldt @kim-tsao @04kash @JessicaJHee
+# One or multiple RHDH teams or (external) individuals are responsible for their workspace.
+# 
+# We mention individuals from their teams here as 'point of contact'.
+#
+# External or other maintainers are mentioned explicitely and seperated with three spaces.
+#
+# The workspace list is alphabetical ordered.
+# In VS code: select the lines and select ">Sort Lines Ascending" from the Commands menu.
 
-/workspaces/adoption-insights                       @rohitkrai03 @karthikjeeyar 
-/workspaces/ai-integrations                         @johnmcollier @gabemontero @rohitkrai03 @karthikjeeyar @eswaraiahsapram @lucifergene
-/workspaces/bulk-import                             @christoph-jerolimov @debsmita1 @rm3l
-/workspaces/global-floating-action-button           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
-/workspaces/global-header                           @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
-/workspaces/homepage                                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
-/workspaces/lightspeed                              @karthikjeeyar @yangcao77 @rohitkrai03
-/workspaces/marketplace                             @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff @karthikjeeyar
-/workspaces/openshift-image-registry                @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff @karthikjeeyar
+*                                                   @redhat-developer/rhdh-cope   @redhat-developer/rhdh-security
+
+/workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
+/workspaces/ai-integrations                         @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
+/workspaces/bulk-import                             @redhat-developer/rhdh-plugins @rm3l   @redhat-developer/rhdh-ui @debsmita1 @its-mitesh-kumar
+/workspaces/global-floating-action-button           @redhat-developer/rhdh-ui @debsmita1 @divyanshiGupta
+/workspaces/global-header                           @redhat-developer/rhdh-ui @ciiay @divyanshiGupta
+/workspaces/homepage                                @redhat-developer/rhdh-ui @christoph-jerolimov @eswaraiahsapram
+/workspaces/lightspeed                              @redhat-developer/rhdh-ui @karthikjeeyar @rohitkrai03   @yangcao77
+/workspaces/marketplace                             @redhat-developer/rhdh-ui @christoph-jerolimov @karthikjeeyar
+/workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk
+/workspaces/openshift-image-registry                @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
 /workspaces/orchestrator                            @batzionb @mareklibra @gciavarrini
-/workspaces/theme                                   @christoph-jerolimov @ciiay @debsmita1 @divyanshiGupta @gashcrumb @its-mitesh-kumar @logonoff
+/workspaces/quickstart                              @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
+/workspaces/redhat-resource-optimization            @ydayagi @mareklibra @batzionb @PreetiW @asmasarw
 /workspaces/sandbox                                 @lucifergene @rohitkrai03 @karthikjeeyar @xcoulon @alexeykazakov @mfrancisc @rsoaresd @jrosental @rajivnathan @MatousJobanek
-/workspaces/scorecard                               @christoph-jerolimov @rohitkrai03 @karthikjeeyar @eswaraiahsapram @its-mitesh-kumar
-/workspaces/redhat-resource-optimization            @ydayagi @mareklibra @batzionb @PreetiW
-/workspaces/quickstart                              @divyanshiGupta @christoph-jerolimov @ciiay @debsmita1 @its-mitesh-kumar @logonoff
+/workspaces/scorecard                               @redhat-developer/rhdh-plugins   @redhat-developer/rhdh-ui @christoph-jerolimov @its-mitesh-kumar @eswaraiahsapram
+/workspaces/theme                                   @redhat-developer/rhdh-ui @ciiay   @logonoff
+/workspaces/translations                            @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar

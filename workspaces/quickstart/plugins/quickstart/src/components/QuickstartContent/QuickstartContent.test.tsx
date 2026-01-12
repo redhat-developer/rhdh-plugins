@@ -18,6 +18,7 @@ import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { QuickstartContent } from './QuickstartContent';
 import { renderInTestApp } from '@backstage/test-utils';
 import { mockQuickstartItems } from '../mockData';
+import { filterQuickstartItemsByRole } from '../../utils';
 
 jest.mock('@mui/material/Collapse', () => ({
   __esModule: true,
@@ -32,30 +33,77 @@ beforeEach(() => {
 describe('QuickstartContent', () => {
   const mockSetProgress = jest.fn();
 
-  it('renders EmptyState when no items are passed', async () => {
+  it('renders all quickstart items for admin role', async () => {
+    const adminItems = filterQuickstartItemsByRole(
+      mockQuickstartItems,
+      'admin',
+    );
+
     await renderInTestApp(
       <QuickstartContent
-        quickstartItems={[]}
+        quickstartItems={adminItems}
         setProgress={mockSetProgress}
-        itemCount={0}
+        itemCount={adminItems.length}
+        isLoading={false}
       />,
     );
 
-    expect(
-      screen.getByText('Quickstart content not available.'),
-    ).toBeInTheDocument();
+    // Admin-specific items should be visible
+    expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 for Admin')).toBeInTheDocument();
+    // Items with other roles should not be visible
+    expect(screen.queryByText('Step 1 for Developer')).not.toBeInTheDocument();
+    expect(screen.queryByText('Step 2 for Developer')).not.toBeInTheDocument();
   });
 
-  it('renders all quickstart items passed in props', async () => {
+  it('treats items with no roles as admin items when rendering', async () => {
+    // Using actual filtering logic: items with no roles default to admin
+    const adminAndNoRoleItems = filterQuickstartItemsByRole(
+      mockQuickstartItems,
+      'admin',
+    );
+
     await renderInTestApp(
       <QuickstartContent
-        quickstartItems={mockQuickstartItems}
+        quickstartItems={adminAndNoRoleItems}
         setProgress={mockSetProgress}
-        itemCount={2}
+        itemCount={adminAndNoRoleItems.length}
+        isLoading={false}
       />,
     );
-    expect(screen.getByText('Step 1')).toBeInTheDocument();
-    expect(screen.getByText('Step 2')).toBeInTheDocument();
+
+    // Both admin items and no-role items should be visible
+    expect(screen.getByText('Step 1 for Admin')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 for Admin')).toBeInTheDocument();
+    expect(screen.getByText('Step 1 - No Roles Assigned')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 - No Roles Assigned')).toBeInTheDocument();
+
+    // Developer items should not be visible
+    expect(screen.queryByText('Step 1 for Developer')).not.toBeInTheDocument();
+    expect(screen.queryByText('Step 2 for Developer')).not.toBeInTheDocument();
+  });
+
+  it('renders all quickstart items for developer role', async () => {
+    const developerItems = filterQuickstartItemsByRole(
+      mockQuickstartItems,
+      'developer',
+    );
+
+    await renderInTestApp(
+      <QuickstartContent
+        quickstartItems={developerItems}
+        setProgress={mockSetProgress}
+        itemCount={developerItems.length}
+        isLoading={false}
+      />,
+    );
+
+    // Developer-specific items should be visible
+    expect(screen.getByText('Step 1 for Developer')).toBeInTheDocument();
+    expect(screen.getByText('Step 2 for Developer')).toBeInTheDocument();
+    // Items with other roles should not be visible
+    expect(screen.queryByText('Step 1 for Admin')).not.toBeInTheDocument();
+    expect(screen.queryByText('Step 2 for Admin')).not.toBeInTheDocument();
   });
 
   it('only opens one item at a time', async () => {
@@ -64,6 +112,7 @@ describe('QuickstartContent', () => {
         quickstartItems={mockQuickstartItems}
         setProgress={mockSetProgress}
         itemCount={2}
+        isLoading={false}
       />,
     );
 

@@ -20,3 +20,7 @@ export {
   OrchestratorCatalogTab,
   IsOrchestratorCatalogTabAvailable,
 } from './components/catalogComponents/CatalogTab';
+export {
+  orchestratorTranslations,
+  orchestratorTranslationRef,
+} from './translations';

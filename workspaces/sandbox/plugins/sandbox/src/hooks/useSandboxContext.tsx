@@ -23,6 +23,10 @@ import { LONG_INTERVAL, SHORT_INTERVAL } from '../const';
 import { signupDataToStatus } from '../utils/register-utils';
 import { AnsibleStatus, decode, getReadyCondition } from '../utils/aap-utils';
 import { errorMessage } from '../utils/common';
+import {
+  useSegmentAnalytics,
+  SegmentTrackingData,
+} from '../utils/segment-analytics';
 
 interface SandboxContextType {
   userStatus: string;
@@ -42,6 +46,8 @@ interface SandboxContextType {
   ansibleUILink: string | undefined;
   ansibleError: string | null;
   ansibleStatus: AnsibleStatus;
+  segmentTrackClick?: (data: SegmentTrackingData) => Promise<void>;
+  marketoWebhookURL?: string;
 }
 
 const SandboxContext = createContext<SandboxContextType | undefined>(undefined);
@@ -61,7 +67,8 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const aapApi = useApi(aapApiRef);
   const kubeApi = useApi(kubeApiRef);
   const registerApi = useApi(registerApiRef);
-
+  const [segmentWriteKey, setSegmentWriteKey] = useState<string>();
+  const [marketoWebhookURL, setMarketoWebhookURL] = useState<string>();
   const [statusUnknown, setStatusUnknown] = React.useState(true);
   const [userFound, setUserFound] = useState<boolean>(false);
   const [userData, setData] = useState<SignupData | undefined>(undefined);
@@ -70,6 +77,8 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
   const [verificationRequired, setVerificationRequired] =
     useState<boolean>(false);
   const [pendingApproval, setPendingApproval] = useState<boolean>(false);
+
+  const segmentAnalytics = useSegmentAnalytics(segmentWriteKey, userData);
 
   const [ansibleData, setAnsibleData] = React.useState<AAPData | undefined>();
   const [ansibleUILink, setAnsibleUILink] = React.useState<
@@ -199,6 +208,30 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Initialize Segment Analytics
+  useEffect(() => {
+    const fetchSegmentWriteKey = async () => {
+      try {
+        const writeKey = await registerApi.getSegmentWriteKey();
+        setSegmentWriteKey(writeKey);
+      } catch (error) {
+        // Failed to fetch Segment write key, continue without Segment tracking
+      }
+    };
+    fetchSegmentWriteKey();
+  }, [registerApi]);
+
+  // Fetch Marketo webhook URL from UI config
+  useEffect(() => {
+    const fetchUIConfig = async () => {
+      const uiConfig = await registerApi.getUIConfig();
+      if (uiConfig.workatoWebHookURL) {
+        setMarketoWebhookURL(uiConfig.workatoWebHookURL);
+      }
+    };
+    fetchUIConfig();
+  }, [registerApi]);
+
   const pollStatus = userFound && !userReady;
   const pollInterval =
     status === 'provisioning' ? SHORT_INTERVAL : LONG_INTERVAL;
@@ -249,6 +282,8 @@ export const SandboxProvider: React.FC<{ children: React.ReactNode }> = ({
         ansibleUILink,
         ansibleError,
         ansibleStatus,
+        segmentTrackClick: segmentAnalytics.trackClick,
+        marketoWebhookURL,
       }}
     >
       {children}

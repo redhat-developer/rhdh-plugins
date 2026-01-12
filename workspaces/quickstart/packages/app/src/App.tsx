@@ -51,9 +51,17 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { quickstartTranslations } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { RbacPage } from '@backstage-community/plugin-rbac';
 
 const app = createApp({
   apis,
+  __experimentalTranslations: {
+    defaultLanguage: 'en',
+    availableLanguages: ['en', 'de', 'fr', 'es'],
+    resources: [quickstartTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,
@@ -72,7 +80,21 @@ const app = createApp({
     });
   },
   components: {
-    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
+    SignInPage: props => (
+      <SignInPage
+        {...props}
+        auto
+        providers={[
+          'guest',
+          {
+            id: 'github-auth-provider',
+            title: 'GitHub',
+            message: 'Sign in using GitHub',
+            apiRef: githubAuthApiRef,
+          },
+        ]}
+      />
+    ),
   },
   themes: getAllThemes(),
 });
@@ -97,6 +119,7 @@ const routes = (
       </TechDocsAddons>
     </Route>
     <Route path="/create" element={<ScaffolderPage />} />
+    <Route path="/rbac" element={<RbacPage />} />;
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
       path="/catalog-import"

@@ -25,6 +25,8 @@ import { useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
+import { useTranslation } from '../../hooks/useTranslation';
+
 interface ApprovalToolProps {
   approvalTool: string;
   setFieldValue: (field: string, value: any) => void; // Type for setFieldValue from Formik
@@ -34,6 +36,7 @@ const ApprovalTool: FC<ApprovalToolProps> = ({
   approvalTool,
   setFieldValue,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const handleApprovalToolChange = (
     _event: ChangeEvent<{}>,
@@ -57,11 +60,11 @@ const ApprovalTool: FC<ApprovalToolProps> = ({
       }}
     >
       <Typography fontSize="14px" fontWeight="500">
-        Approval tool
+        {t('addRepositories.approvalTool.title')}
       </Typography>
       <Tooltip
         placement="top"
-        title="Importing requires approval. After the pull/merge request is approved, the repositories/projects will be imported to the Catalog page."
+        title={t('addRepositories.approvalTool.tooltip')}
       >
         <Typography
           sx={{
@@ -81,8 +84,16 @@ const ApprovalTool: FC<ApprovalToolProps> = ({
         value={approvalTool}
         onChange={handleApprovalToolChange}
       >
-        <FormControlLabel value="git" control={<Radio />} label="GitHub" />
-        <FormControlLabel value="gitlab" control={<Radio />} label="GitLab" />
+        <FormControlLabel
+          value="GIT"
+          control={<Radio />}
+          label={t('addRepositories.approvalTool.github')}
+        />
+        <FormControlLabel
+          value="GITLAB"
+          control={<Radio />}
+          label={t('addRepositories.approvalTool.gitlab')}
+        />
       </RadioGroup>
     </Box>
   );

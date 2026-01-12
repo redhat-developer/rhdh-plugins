@@ -72,7 +72,7 @@ export async function findOpenPRForBranch(
   return {};
 }
 
-async function getCatalogInfoContentFromPR(
+export async function getCatalogInfoContentFromPR(
   logger: LoggerService,
   config: Config,
   octo: Octokit,

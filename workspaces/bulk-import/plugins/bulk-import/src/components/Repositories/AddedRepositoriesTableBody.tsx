@@ -21,9 +21,11 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 
+import { useGitlabConfigured } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 import { AddedRepositoryTableRow } from './AddedRepositoryTableRow';
-import { RepositoriesListColumns } from './RepositoriesListColumns';
+import { getRepositoriesListColumns } from './RepositoriesListColumns';
 
 export const AddedRepositoriesTableBody = ({
   loading,
@@ -36,11 +38,18 @@ export const AddedRepositoriesTableBody = ({
   emptyRows: number;
   rows: AddRepositoryData[];
 }) => {
+  const gitlabConfigured = useGitlabConfigured();
+  const { t } = useTranslation();
+  const repositoriesListColumns = getRepositoriesListColumns(
+    t,
+    gitlabConfigured,
+  );
+
   if (loading) {
     return (
       <tbody>
         <tr>
-          <td colSpan={RepositoriesListColumns?.length}>
+          <td colSpan={repositoriesListColumns?.length}>
             <Box
               data-testid="import-jobs-loading"
               sx={{
@@ -60,7 +69,7 @@ export const AddedRepositoriesTableBody = ({
     return (
       <tbody>
         <tr>
-          <td colSpan={RepositoriesListColumns?.length}>
+          <td colSpan={repositoriesListColumns?.length}>
             <div data-testid="import-jobs-error">
               <Alert severity="error">{`${error.name}. ${error.message}`}</Alert>
             </div>
@@ -91,7 +100,7 @@ export const AddedRepositoriesTableBody = ({
   return (
     <tbody>
       <tr>
-        <td colSpan={RepositoriesListColumns?.length}>
+        <td colSpan={repositoriesListColumns?.length}>
           <Box
             data-testid="no-import-jobs-found"
             sx={{
@@ -100,7 +109,11 @@ export const AddedRepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            No records found
+            {t(
+              gitlabConfigured
+                ? 'repositories.noProjectsFound'
+                : 'repositories.noRecordsFound',
+            )}
           </Box>
         </td>
       </tr>

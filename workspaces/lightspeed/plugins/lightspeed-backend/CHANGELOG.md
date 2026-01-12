@@ -1,5 +1,80 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.1.1
+
+### Patch Changes
+
+- b0c55d6: Updated dependency `msw` to `2.12.4`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- 99f35d5: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- Updated dependencies [99f35d5]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.1.0
+
+## 1.0.4
+
+### Patch Changes
+
+- 234cc73: Updated dependency `msw` to `2.12.2`.
+- 40b80fe: Remove "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [58e26ba]
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.4
+
+## 1.0.3
+
+### Patch Changes
+
+- e102a81: proxy PUT /v2/conversations/:conversation request
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.3
+
+## 1.0.2
+
+### Patch Changes
+
+- c5fa204: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `msw` to `2.11.6`.
+  Updated dependency `@patternfly/chatbot` to `6.4.1`.
+  Updated dependency `@patternfly/react-core` to `6.4.0`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.2
+
+## 1.0.1
+
+### Patch Changes
+
+- 4fcf3d4: update the question validation prompt
+
+## 1.0.0
+
+### Major Changes
+
+- c6e4f39: migrate from road-core to lightspeed-core
+
+### Patch Changes
+
+- 2204143: Align lightspeed UI with LCS
+
+## 0.6.0
+
+### Minor Changes
+
+- d922b04: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- 4786755: Updated dependency `msw` to `2.11.3`.
+- 1bbd3c2: Updated dependency `@langchain/openai` to `^0.6.0`.
+  Updated dependency `msw` to `2.11.1`.
+- Updated dependencies [d922b04]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.4.0
+
 ## 0.5.7
 
 ### Patch Changes

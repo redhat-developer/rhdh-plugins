@@ -1,5 +1,31 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-common
 
+## 0.6.1
+
+## 0.6.0
+
+### Minor Changes
+
+- 77529c3: Backstage version bump to v1.45.2
+
+## 0.5.0
+
+### Minor Changes
+
+- 44dd4f2: Backstage version bump to v1.44.2
+
+### Patch Changes
+
+- 40b80fe: Remove "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+
+## 0.4.1
+
+## 0.4.0
+
+### Minor Changes
+
+- 6673ba3: Backstage version bump to v1.42.5
+
 ## 0.3.0
 
 ### Minor Changes

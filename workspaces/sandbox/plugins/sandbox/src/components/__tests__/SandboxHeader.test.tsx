@@ -13,13 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
 import { SandboxHeader } from '../SandboxHeader';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { wrapInTestApp } from '@backstage/test-utils';
+import * as eddlUtils from '../../utils/eddl-utils';
+
+// Mock the useTrackAnalytics hook
+jest.mock('../../utils/eddl-utils', () => ({
+  ...jest.requireActual('../../utils/eddl-utils'),
+  useTrackAnalytics: jest.fn(),
+}));
 
 describe('SandboxHeader', () => {
+  const mockTrackAnalytics = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock the useTrackAnalytics hook to return a mock function
+    (eddlUtils.useTrackAnalytics as jest.Mock).mockReturnValue(
+      mockTrackAnalytics,
+    );
+  });
+
   const renderComponent = (pageTitle = 'My Page Title') => {
     const theme = createTheme();
     return render(
@@ -74,5 +91,31 @@ describe('SandboxHeader', () => {
     // Check for OpenInNewIcon near the Red Hat Developer Hub text
     const subtitle = screen.getByText(/powered by/i).parentElement;
     expect(subtitle?.querySelector('svg')).toBeInTheDocument();
+  });
+
+  test('calls trackAnalytics with correct parameters when Contact Sales is clicked', async () => {
+    const windowOpenSpy = jest.spyOn(window, 'open').mockImplementation();
+
+    renderComponent();
+    const button = screen.getByText('Contact Red Hat Sales');
+    const link = button.closest('a');
+
+    fireEvent.click(link!);
+
+    await waitFor(() => {
+      expect(mockTrackAnalytics).toHaveBeenCalledWith(
+        'Contact Red Hat Sales',
+        'Support',
+        'https://www.redhat.com/en/contact',
+        undefined,
+        'cta',
+      );
+      expect(windowOpenSpy).toHaveBeenCalledWith(
+        'https://www.redhat.com/en/contact',
+        '_blank',
+      );
+    });
+
+    windowOpenSpy.mockRestore();
   });
 });

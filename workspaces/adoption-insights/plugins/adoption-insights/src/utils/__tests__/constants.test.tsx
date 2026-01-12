@@ -15,7 +15,6 @@
  */
 import {
   DATE_RANGE_OPTIONS,
-  CATALOG_ENTITIES_TITLE,
   CATALOG_ENTITIES_TABLE_HEADERS,
   PLUGINS_TABLE_HEADERS,
   TECHDOCS_TABLE_HEADERS,
@@ -25,49 +24,45 @@ import {
 describe('Constants', () => {
   test('DATE_RANGE_OPTIONS should have correct values', () => {
     expect(DATE_RANGE_OPTIONS).toEqual([
-      { value: 'today', label: 'Today' },
-      { value: 'last-week', label: 'Last week' },
-      { value: 'last-month', label: 'Last month' },
-      { value: 'last-28-days', label: 'Last 28 days' },
-      { value: 'last-year', label: 'Last year' },
+      { value: 'today', labelKey: 'header.dateRange.today' },
+      { value: 'last-week', labelKey: 'header.dateRange.lastWeek' },
+      { value: 'last-month', labelKey: 'header.dateRange.lastMonth' },
+      { value: 'last-28-days', labelKey: 'header.dateRange.last28Days' },
+      { value: 'last-year', labelKey: 'header.dateRange.lastYear' },
     ]);
-  });
-
-  test('CATALOG_ENTITIES_TITLE should be defined', () => {
-    expect(CATALOG_ENTITIES_TITLE).toBe('Top catalog entities');
   });
 
   test('CATALOG_ENTITIES_TABLE_HEADERS should have correct headers', () => {
     expect(CATALOG_ENTITIES_TABLE_HEADERS).toEqual([
-      { id: 'name', title: 'Name' },
-      { id: 'kind', title: 'Kind' },
-      { id: 'last-used', title: 'Last used' },
-      { id: 'views', title: 'Views' },
+      { id: 'name', titleKey: 'table.headers.name' },
+      { id: 'kind', titleKey: 'table.headers.kind' },
+      { id: 'last-used', titleKey: 'table.headers.lastUsed' },
+      { id: 'views', titleKey: 'table.headers.views' },
     ]);
   });
 
   test('PLUGINS_TABLE_HEADERS should have correct headers', () => {
     expect(PLUGINS_TABLE_HEADERS).toEqual([
-      { id: 'name', title: 'Name' },
-      { id: 'trend', title: 'Trend' },
-      { id: 'percent', title: '' },
-      { id: 'views', title: 'Views' },
+      { id: 'name', titleKey: 'table.headers.name' },
+      { id: 'trend', titleKey: 'table.headers.trend' },
+      { id: 'percent', titleKey: '' },
+      { id: 'views', titleKey: 'table.headers.views' },
     ]);
   });
 
   test('TECHDOCS_TABLE_HEADERS should have correct headers', () => {
     expect(TECHDOCS_TABLE_HEADERS).toEqual([
-      { id: 'name', title: 'Name' },
-      { id: 'entity', title: 'Entity' },
-      { id: 'last-used', title: 'Last used' },
-      { id: 'views', title: 'Views' },
+      { id: 'name', titleKey: 'table.headers.name' },
+      { id: 'entity', titleKey: 'table.headers.entity' },
+      { id: 'last-used', titleKey: 'table.headers.lastUsed' },
+      { id: 'views', titleKey: 'table.headers.views' },
     ]);
   });
 
   test('TEMPLATE_TABLE_HEADERS should have correct headers', () => {
     expect(TEMPLATE_TABLE_HEADERS).toEqual([
-      { id: 'name', title: 'Name' },
-      { id: 'executions', title: 'Executions' },
+      { id: 'name', titleKey: 'table.headers.name' },
+      { id: 'executions', titleKey: 'table.headers.executions' },
     ]);
   });
 });

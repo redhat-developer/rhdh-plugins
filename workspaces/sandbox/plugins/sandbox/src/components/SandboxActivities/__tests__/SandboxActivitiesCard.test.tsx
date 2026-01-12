@@ -20,8 +20,16 @@ import { SandboxActivitiesCard } from '../SandboxActivitiesCard';
 import { ThemeProvider } from '@mui/material/styles';
 import { lightTheme } from '@backstage/theme';
 import { wrapInTestApp } from '@backstage/test-utils';
+import * as eddlUtils from '../../../utils/eddl-utils';
+
+// Mock the useTrackAnalytics hook
+jest.mock('../../../utils/eddl-utils', () => ({
+  ...jest.requireActual('../../../utils/eddl-utils'),
+  useTrackAnalytics: jest.fn(),
+}));
 
 describe('SandboxActivitiesCard', () => {
+  const mockTrackAnalytics = jest.fn();
   const mockArticle = {
     img: 'test-image.jpg',
     title: 'Test Article',
@@ -29,11 +37,19 @@ describe('SandboxActivitiesCard', () => {
     link: '/test-link',
   };
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Mock the useTrackAnalytics hook to return a mock function
+    (eddlUtils.useTrackAnalytics as jest.Mock).mockReturnValue(
+      mockTrackAnalytics,
+    );
+  });
+
   const renderCard = () => {
     return render(
       wrapInTestApp(
         <ThemeProvider theme={lightTheme}>
-          <SandboxActivitiesCard key="test-key" article={mockArticle} />
+          <SandboxActivitiesCard article={mockArticle} />
         </ThemeProvider>,
       ),
     );
@@ -101,5 +117,26 @@ describe('SandboxActivitiesCard', () => {
 
     // Check description has italic style
     expect(descriptionElement).toHaveStyle('font-style: italic');
+  });
+
+  describe('EDDL data attributes', () => {
+    it('should have correct Red Hat EDDL data attributes for activities', () => {
+      renderCard();
+
+      const linkElement = screen.getByRole('link');
+
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-category',
+        'Developer Sandbox|Activities',
+      );
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-text',
+        'Test Article',
+      );
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-region',
+        'sandbox-activities',
+      );
+    });
   });
 });

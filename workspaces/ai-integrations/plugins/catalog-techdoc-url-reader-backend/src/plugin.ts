@@ -34,15 +34,11 @@ import {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
-import { NotFoundError } from '@backstage/errors';
+import { NotFoundError, NotModifiedError } from '@backstage/errors';
 import { Readable } from 'stream';
 import fs from 'fs';
 import platformPath from 'path';
 import os from 'os';
-import {
-  readModelCatalogApiEntityConfigs,
-  ModelCatalogConfig,
-} from '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog';
 
 export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
   implements UrlReaderServiceReadTreeResponse
@@ -91,10 +87,28 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
   }
 }
 
+export type BridgeConfig = {
+  id: string;
+  baseUrl: string;
+};
+
+export function readBridgeConfigs(config: Config): BridgeConfig[] {
+  const configs = config.getOptionalConfig('catalog.providers.modelCatalog');
+  if (!configs) {
+    return [];
+  }
+  return configs.keys().map(id => readBridgeConfig(id, configs.getConfig(id)));
+}
+
+export function readBridgeConfig(id: string, config: Config): BridgeConfig {
+  const url = config.getString('baseUrl');
+  return { id, baseUrl: url };
+}
+
 export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   private readonly workDir: string;
   private readonly logger: LoggerService;
-  private readonly bridgeConfigs: ModelCatalogConfig[];
+  private readonly bridgeConfigs: BridgeConfig[];
 
   static factory: ReaderFactory = ({ config, logger }) => {
     const reader = new ModeCatalogBridgeTechdocUrlReader(config, logger);
@@ -107,7 +121,7 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     this.logger = logger.child({
       source: 'ModeCatalogBridgeTechdocUrlReader"',
     });
-    this.bridgeConfigs = readModelCatalogApiEntityConfigs(config);
+    this.bridgeConfigs = readBridgeConfigs(config);
     this.workDir = os.tmpdir();
 
     const bkend = config.getOptionalString('backend.workingDirectory');
@@ -159,6 +173,9 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     const message = `could not read ${url}, ${response.status} ${response.statusText}`;
     if (response.status === 404) {
       throw new NotFoundError(message);
+    }
+    if (response.status === 304) {
+      throw new NotModifiedError();
     }
     throw new Error(message);
   }

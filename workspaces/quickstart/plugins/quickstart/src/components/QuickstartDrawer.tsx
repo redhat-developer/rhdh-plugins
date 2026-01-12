@@ -20,16 +20,48 @@ import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { Quickstart } from './Quickstart';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
+import { filterQuickstartItemsByRole } from '../utils';
+// Role is now provided through context to avoid re-fetching on drawer open/close
+import { useMemo } from 'react';
 
 export const QuickstartDrawer = () => {
-  const { isDrawerOpen, closeDrawer, drawerWidth } =
+  const { isDrawerOpen, closeDrawer, drawerWidth, userRole, roleLoading } =
     useQuickstartDrawerContext();
 
   const apiHolder = useApiHolder();
   const config = apiHolder.get(configApiRef);
-  const quickstartItems: QuickstartItemData[] = config?.has('app.quickstart')
-    ? config.get('app.quickstart')
-    : [];
+  const quickstartItems: QuickstartItemData[] = useMemo(() => {
+    return config?.has('app.quickstart')
+      ? (config.get('app.quickstart') as QuickstartItemData[])
+      : [];
+  }, [config]);
+
+  // Items available to the user based on role from context
+  const eligibleItems = useMemo(() => {
+    return !roleLoading && userRole
+      ? filterQuickstartItemsByRole(quickstartItems, userRole)
+      : [];
+  }, [roleLoading, userRole, quickstartItems]);
+
+  // Only expose items to the body when drawer is open to avoid re-renders during close
+  const filteredItems = useMemo(() => {
+    return isDrawerOpen ? eligibleItems : [];
+  }, [isDrawerOpen, eligibleItems]);
+
+  // No auto-open logic here; the provider initializes per user (visited/open)
+
+  // If no quickstart items are configured at all, don't render the drawer to avoid reserving space
+  if (quickstartItems.length === 0) {
+    return null;
+  }
+
+  // If there are no items for the user, hide the drawer entirely
+  if (!roleLoading && eligibleItems.length === 0) {
+    return null;
+  }
+
+  // No role-fetching or filtering here when the drawer is closed
+
   return (
     <Drawer
       sx={{
@@ -56,8 +88,9 @@ export const QuickstartDrawer = () => {
       open={isDrawerOpen}
     >
       <Quickstart
-        quickstartItems={quickstartItems}
+        quickstartItems={filteredItems}
         handleDrawerClose={closeDrawer}
+        isLoading={roleLoading}
       />
     </Drawer>
   );

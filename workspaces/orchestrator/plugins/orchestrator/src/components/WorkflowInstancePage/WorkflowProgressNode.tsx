@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import Moment from 'react-moment';
+import { FC } from 'react';
 
 import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
@@ -24,18 +23,21 @@ import HourglassTop from '@mui/icons-material/HourglassTop';
 import PauseCircle from '@mui/icons-material/PauseCircle';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { DateTime } from 'luxon';
 
 import { ProcessInstanceStatusDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { VALUE_UNAVAILABLE } from '../../constants';
+import { useTranslation } from '../../hooks/useTranslation';
 import { useWorkflowInstanceStateColors } from '../../hooks/useWorkflowInstanceStatusColors';
-import { Paragraph } from '../Paragraph';
+import { Paragraph } from './Paragraph';
 import { WorkflowProgressNodeModel } from './WorkflowProgressNodeModel';
 
-const WorkflowProgressNodeIcon: React.FC<{
+const WorkflowProgressNodeIcon: FC<{
   status?: WorkflowProgressNodeModel['status'];
   error?: WorkflowProgressNodeModel['error'];
 }> = ({ status, error }) => {
+  const { t } = useTranslation();
   const color = useWorkflowInstanceStateColors(status);
   switch (status) {
     case ProcessInstanceStatusDTO.Error: {
@@ -43,7 +45,7 @@ const WorkflowProgressNodeIcon: React.FC<{
         <Tooltip
           title={
             error?.message ??
-            'Additional details about this error are not available'
+            t('messages.additionalDetailsAboutThisErrorAreNotAvailable')
           }
         >
           <Error className={color} />
@@ -52,35 +54,35 @@ const WorkflowProgressNodeIcon: React.FC<{
     }
     case ProcessInstanceStatusDTO.Completed: {
       return (
-        <Tooltip title="Completed">
+        <Tooltip title={t('tooltips.completed')}>
           <CheckCircle className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Active: {
       return (
-        <Tooltip title="Active">
+        <Tooltip title={t('tooltips.active')}>
           <HourglassTop className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Aborted: {
       return (
-        <Tooltip title="Aborted">
+        <Tooltip title={t('tooltips.aborted')}>
           <Cancel className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Suspended: {
       return (
-        <Tooltip title="Suspended">
+        <Tooltip title={t('tooltips.suspended')}>
           <PauseCircle className={color} />
         </Tooltip>
       );
     }
     case ProcessInstanceStatusDTO.Pending: {
       return (
-        <Tooltip title="Pending">
+        <Tooltip title={t('tooltips.pending')}>
           <HourglassTop className={color} />
         </Tooltip>
       );
@@ -93,24 +95,26 @@ WorkflowProgressNodeIcon.displayName = 'WorkflowProgressNodeIcon';
 
 export const WorkflowProgressNode: React.FC<{
   model: WorkflowProgressNodeModel;
-}> = ({ model }) => (
-  <Paragraph>
-    <Typography
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
-      <WorkflowProgressNodeIcon status={model.status} error={model.error} />
-      <Typography style={{ paddingLeft: '8px' }}>{model.name}</Typography>
-    </Typography>
-    <small style={{ paddingLeft: '32px', color: 'grey' }}>
-      {!model.exit ? (
-        VALUE_UNAVAILABLE
-      ) : (
-        <Moment fromNow>{new Date(`${model.exit}`)}</Moment>
-      )}
-    </small>
-  </Paragraph>
-);
+}> = ({ model }) => {
+  const relativeTime = model.exit
+    ? (DateTime.fromISO(model.exit).toRelative() ?? VALUE_UNAVAILABLE)
+    : VALUE_UNAVAILABLE;
+
+  return (
+    <Paragraph>
+      <Typography
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <WorkflowProgressNodeIcon status={model.status} error={model.error} />
+        <Typography style={{ paddingLeft: '8px' }}>{model.name}</Typography>
+      </Typography>
+      <small style={{ paddingLeft: '32px', color: 'grey' }}>
+        {relativeTime}
+      </small>
+    </Paragraph>
+  );
+};
 WorkflowProgressNode.displayName = 'WorkflowProgressNode';

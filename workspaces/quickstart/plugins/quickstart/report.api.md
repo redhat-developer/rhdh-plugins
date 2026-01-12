@@ -7,10 +7,23 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { CSSProperties } from 'react';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { PropsWithChildren } from 'react';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
-export const QuickstartButton: React.ComponentType<QuickstartButtonProps>;
+export const filterQuickstartItemsByRole: (
+  items: QuickstartItemData[],
+  userRole: string,
+) => QuickstartItemData[];
+
+// @public
+export const QuickstartButton: ({
+  title,
+  style,
+  onClick,
+}: QuickstartButtonProps) => JSX_2.Element | null;
 
 // @public
 export interface QuickstartButtonProps {
@@ -25,18 +38,103 @@ export interface QuickstartDrawerContextType {
   drawerWidth: number;
   isDrawerOpen: boolean;
   openDrawer: () => void;
+  roleLoading: boolean;
   setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
   toggleDrawer: () => void;
+  userRole: UserRole | null;
 }
 
 // @public
-export const QuickstartDrawerProvider: React.ComponentType<PropsWithChildren>;
+export const QuickstartDrawerProvider: ({
+  children,
+}: PropsWithChildren) => JSX_2.Element;
+
+// @public
+export interface QuickstartItemCtaData {
+  link: string;
+  text: string;
+  textKey?: string;
+}
+
+// @public
+export interface QuickstartItemData {
+  cta?: QuickstartItemCtaData;
+  description: string;
+  descriptionKey?: string;
+  icon?: string;
+  roles?: string[];
+  title: string;
+  titleKey?: string;
+}
 
 // @public
 export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
 
 // @public
+export const quickstartTranslationRef: TranslationRef<
+  'plugin.quickstart',
+  {
+    readonly 'button.quickstart': string;
+    readonly 'button.openQuickstartGuide': string;
+    readonly 'button.closeDrawer': string;
+    readonly 'button.gotIt': string;
+    readonly 'footer.progress': string;
+    readonly 'footer.hide': string;
+    readonly 'footer.notStarted': string;
+    readonly 'header.title': string;
+    readonly 'header.subtitle': string;
+    readonly 'content.emptyState.title': string;
+    readonly 'item.expandAriaLabel': string;
+    readonly 'item.collapseAriaLabel': string;
+    readonly 'item.expandButtonAriaLabel': string;
+    readonly 'item.collapseButtonAriaLabel': string;
+    readonly 'steps.setupAuthentication.title': string;
+    readonly 'steps.setupAuthentication.description': string;
+    readonly 'steps.setupAuthentication.ctaTitle': string;
+    readonly 'steps.configureRbac.title': string;
+    readonly 'steps.configureRbac.description': string;
+    readonly 'steps.configureRbac.ctaTitle': string;
+    readonly 'steps.configureGit.title': string;
+    readonly 'steps.configureGit.description': string;
+    readonly 'steps.configureGit.ctaTitle': string;
+    readonly 'steps.managePlugins.title': string;
+    readonly 'steps.managePlugins.description': string;
+    readonly 'steps.managePlugins.ctaTitle': string;
+    readonly 'steps.importApplication.title': string;
+    readonly 'steps.importApplication.description': string;
+    readonly 'steps.importApplication.ctaTitle': string;
+    readonly 'steps.learnAboutCatalog.title': string;
+    readonly 'steps.learnAboutCatalog.description': string;
+    readonly 'steps.learnAboutCatalog.ctaTitle': string;
+    readonly 'steps.exploreSelfServiceTemplates.title': string;
+    readonly 'steps.exploreSelfServiceTemplates.description': string;
+    readonly 'steps.exploreSelfServiceTemplates.ctaTitle': string;
+    readonly 'steps.findAllLearningPaths.title': string;
+    readonly 'steps.findAllLearningPaths.description': string;
+    readonly 'steps.findAllLearningPaths.ctaTitle': string;
+    readonly 'dev.pageTitle': string;
+    readonly 'dev.pageDescription': string;
+    readonly 'dev.drawerControls': string;
+    readonly 'dev.currentState': string;
+    readonly 'dev.stateOpen': string;
+    readonly 'dev.stateClosed': string;
+    readonly 'dev.instructions': string;
+    readonly 'dev.step1': string;
+    readonly 'dev.step2': string;
+    readonly 'dev.step3': string;
+    readonly 'dev.step4': string;
+    readonly 'dev.step5': string;
+  }
+>;
+
+// @public
+export const quickstartTranslations: TranslationResource<'plugin.quickstart'>;
+
+// @public
 export const useQuickstartDrawerContext: () => QuickstartDrawerContextType;
+
+// @public
+export type UserRole = 'admin' | 'developer';
 
 // (No @packageDocumentation comment for this package)
 ```

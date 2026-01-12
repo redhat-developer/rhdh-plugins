@@ -22,6 +22,7 @@ import MenuItem, { MenuItemProps } from '@mui/material/MenuItem';
 import { Link } from '@backstage/core-components';
 import { MenuItemLinkProps } from '../MenuItemLink/MenuItemLink';
 import ListSubheader from '@mui/material/ListSubheader';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * Menu item configuration
@@ -31,8 +32,10 @@ import ListSubheader from '@mui/material/ListSubheader';
 export interface MenuItemConfig {
   Component: ComponentType<MenuItemLinkProps | MenuItemProps | {}>;
   label: string;
+  labelKey?: string;
   icon?: string;
   subLabel?: string;
+  subLabelKey?: string;
   link?: string;
 }
 
@@ -53,8 +56,15 @@ export const MenuSection: FC<MenuSectionConfig> = ({
   hideDivider = false,
   handleClose,
 }) => {
+  const { t } = useTranslation();
   const hasClickableSubheader =
     optionalLink && optionalLinkLabel && items.length > 0;
+
+  // Check if sectionLabel looks like a translation key (contains dots)
+  const translatedSectionLabel =
+    sectionLabel && sectionLabel.includes('.')
+      ? t(sectionLabel as any, {}) || sectionLabel // Fallback to original if translation fails
+      : sectionLabel;
 
   return (
     <>
@@ -79,7 +89,7 @@ export const MenuSection: FC<MenuSectionConfig> = ({
               fontWeight: 400,
             }}
           >
-            {sectionLabel}
+            {translatedSectionLabel}
           </ListSubheader>
 
           {optionalLinkLabel && (
@@ -98,25 +108,32 @@ export const MenuSection: FC<MenuSectionConfig> = ({
         </MenuItem>
       )}
 
-      {items.map(({ icon, label, subLabel, link, Component }, index) => (
-        <MenuItem
-          key={`menu-item-${index.toString()}`}
-          disableRipple
-          disableTouchRipple
-          onClick={handleClose}
-          sx={{ py: 0.5 }}
-          component={link ? Link : Fragment}
-          to={link}
-        >
-          <Component
-            icon={icon}
-            to={link!}
-            title={label}
-            subTitle={subLabel}
+      {items.map(
+        (
+          { icon, label, labelKey, subLabel, subLabelKey, link, Component },
+          index,
+        ) => (
+          <MenuItem
+            key={`menu-item-${index.toString()}`}
+            disableRipple
+            disableTouchRipple
             onClick={handleClose}
-          />
-        </MenuItem>
-      ))}
+            sx={{ py: 0.5 }}
+            component={link ? Link : Fragment}
+            to={link}
+          >
+            <Component
+              icon={icon}
+              to={link!}
+              title={label}
+              titleKey={labelKey}
+              subTitle={subLabel}
+              subTitleKey={subLabelKey}
+              onClick={handleClose}
+            />
+          </MenuItem>
+        ),
+      )}
       {!hideDivider && <Divider sx={{ my: 0.5 }} />}
     </>
   );

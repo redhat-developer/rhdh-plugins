@@ -15,5 +15,11 @@
  */
 
 export { useAddedRepositories } from './useAddedRepositories';
+export { useInstructionsConfig } from './useInstructionsConfig';
+export { useInstructionsPreference } from './useInstructionsPreference';
 export { useRepositories } from './useRepositories';
-export { useNumberOfApprovalTools } from './useNumberOfApprovalTools';
+export {
+  useNumberOfApprovalTools,
+  useGitlabConfigured,
+} from './useNumberOfApprovalTools';
+export { useTranslation } from './useTranslation';

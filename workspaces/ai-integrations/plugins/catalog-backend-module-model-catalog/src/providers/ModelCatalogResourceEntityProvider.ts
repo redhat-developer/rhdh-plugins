@@ -160,6 +160,8 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       catalogKeys = [];
     }
     let entityList: Entity[] = [];
+    this.logger.debug(`Found ${catalogKeys.length} model catalogs`);
+    this.logger.debug(`Fetched ModelCatalog: ${JSON.stringify(catalogKeys)}`);
 
     await Promise.all(
       catalogKeys.map(async key => {
@@ -182,7 +184,8 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
           this.getProviderName();
       }
     });
-
+    this.logger.debug(`Found ${entityList.length} entities`);
+    this.logger.debug(`Fetched Entities: ${JSON.stringify(entityList)}`);
     /** [6]: Add/update the catalog entities that correspond to the models */
     await this.connection.applyMutation({
       type: 'full',

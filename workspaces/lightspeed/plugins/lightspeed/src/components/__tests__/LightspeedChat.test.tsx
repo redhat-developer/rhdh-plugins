@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-
 import {
   configApiRef,
   IdentityApi,
@@ -33,7 +31,9 @@ import {
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { lightspeedApiRef } from '../../api/api';
 import { useConversations } from '../../hooks';
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
 
@@ -84,6 +84,10 @@ jest.mock('../../hooks/useConversationMessages', () => ({
   }),
 }));
 
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: jest.fn(() => mockUseTranslation()),
+}));
+
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');
   return {
@@ -99,11 +103,23 @@ const mockUsePermission = usePermission as jest.MockedFunction<
 
 const configAPi = mockApis.config({});
 
+const mockLightspeedApi = {
+  getAllModels: jest.fn().mockResolvedValue([]),
+  getConversationMessages: jest.fn().mockResolvedValue([]),
+  createMessage: jest.fn().mockResolvedValue(new Response().body),
+  deleteConversation: jest.fn().mockResolvedValue({ success: true }),
+  getConversations: jest.fn().mockResolvedValue([]),
+  getFeedbackStatus: jest.fn().mockResolvedValue(false),
+  captureFeedback: jest.fn().mockResolvedValue({ response: 'success' }),
+  isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
+};
+
 const setupLightspeedChat = () => (
   <TestApiProvider
     apis={[
       [identityApiRef, identityApi],
       [configApiRef, configAPi],
+      [lightspeedApiRef, mockLightspeedApi],
     ]}
   >
     <FileAttachmentContextProvider>
@@ -112,6 +128,8 @@ const setupLightspeedChat = () => (
           selectedModel="granite"
           profileLoading={false}
           handleSelectedModel={() => {}}
+          topicRestrictionEnabled={false}
+          selectedProvider="openai"
           models={[]}
           avatar="test"
           userName="user:test"
@@ -193,7 +211,7 @@ describe('LightspeedChat', () => {
     const input = screen.getByTestId('attachment-input') as HTMLInputElement;
     expect(input).toHaveAttribute(
       'accept',
-      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml,application/xml,.xml',
+      'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml',
     );
   });
 
@@ -226,8 +244,121 @@ describe('LightspeedChat', () => {
 
     expect(
       screen.getByText(
-        'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+        'Unsupported file type. Supported types are: .txt, .yaml, and .json.',
       ),
     ).toBeInTheDocument();
+  });
+
+  describe('filterConversations', () => {
+    beforeEach(() => {
+      mockUseConversations.mockReturnValue({
+        data: [
+          {
+            conversation_id: 'pinned-1',
+            topic_summary: 'Pinned Chat One',
+            last_message_timestamp: Date.now() / 1000,
+          },
+          {
+            conversation_id: 'pinned-2',
+            topic_summary: 'Pinned Chat Two',
+            last_message_timestamp: (Date.now() - 1000) / 1000,
+          },
+          {
+            conversation_id: 'recent-1',
+            topic_summary: 'Recent Chat One',
+            last_message_timestamp: (Date.now() - 2000) / 1000,
+          },
+          {
+            conversation_id: 'recent-2',
+            topic_summary: 'Recent Chat Two',
+            last_message_timestamp: (Date.now() - 3000) / 1000,
+          },
+        ],
+        isRefetching: false,
+        isLoading: false,
+      });
+    });
+
+    it('should filter conversations by search term and show matching results', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Search');
+      expect(searchInput).toBeInTheDocument();
+
+      await userEvent.type(searchInput, 'Pinned Chat One');
+
+      expect(searchInput).toHaveValue('Pinned Chat One');
+    });
+
+    it('should return empty object when search filters out all items from both sections', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Search');
+
+      await userEvent.type(searchInput, 'NonExistentSearchTerm12345');
+
+      expect(searchInput).toHaveValue('NonExistentSearchTerm12345');
+    });
+
+    it('should show empty state messages when sections are empty and there were no original items', async () => {
+      mockUseConversations.mockReturnValue({
+        data: [],
+        isRefetching: false,
+        isLoading: false,
+      });
+
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Search');
+      expect(searchInput).toBeInTheDocument();
+    });
+
+    it('should show pinned chats section when pinning is enabled', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Search');
+      expect(searchInput).toBeInTheDocument();
+    });
+
+    it('should not show pinned chats section when pinning is disabled', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Search');
+      expect(searchInput).toBeInTheDocument();
+    });
+
+    it('should return empty object when both sections have search results but are filtered out', async () => {
+      render(setupLightspeedChat());
+
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+
+      const searchInput = screen.getByPlaceholderText('Search');
+
+      await userEvent.type(searchInput, 'xyz123nonexistent');
+
+      expect(searchInput).toHaveValue('xyz123nonexistent');
+    });
   });
 });

@@ -21,7 +21,20 @@ import { IdentityApi, identityApiRef } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
 import { AdoptionInsightsPage } from '../AdoptionInsightsPage';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 jest.mock('@mui/material/styles', () => ({
   ...jest.requireActual('@mui/material/styles'),
@@ -105,6 +118,8 @@ describe('AdoptionInsightsPage', () => {
   const mockTheme = {
     breakpoints: {
       down: jest.fn(),
+      up: jest.fn(),
+      between: jest.fn(),
     },
   };
 

@@ -19,6 +19,10 @@ import {
   useEntityPresentation,
 } from '@backstage/plugin-catalog-react';
 import { renderInTestApp } from '@backstage/test-utils';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { StarredDropdown } from './StarredDropdown';
 import { useDropdownManager } from '../../hooks';
 
@@ -29,6 +33,15 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 
 jest.mock('../../hooks', () => ({
   useDropdownManager: jest.fn(),
+}));
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
 }));
 
 describe('StarredDropdown', () => {
@@ -108,5 +121,55 @@ describe('StarredDropdown', () => {
     await renderInTestApp(<StarredDropdown />);
     fireEvent.click(screen.getByRole('button'));
     expect(handleOpen).toHaveBeenCalled();
+  });
+
+  it('shows star icon only on hover via CSS', async () => {
+    (useStarredEntities as jest.Mock).mockReturnValue({
+      starredEntities: new Set(['component:default/my-entity']),
+      toggleStarredEntity: jest.fn(),
+      isStarredEntity: jest.fn(),
+    });
+
+    (useDropdownManager as jest.Mock).mockReturnValue({
+      anchorEl: document.createElement('div'), // Simulate open dropdown
+      handleOpen: jest.fn(),
+      handleClose: jest.fn(),
+    });
+
+    await renderInTestApp(<StarredDropdown />);
+
+    const starButton = screen.getByLabelText('Remove from list');
+
+    // Star should be hidden initially
+    expect(starButton).toHaveStyle('visibility: hidden');
+
+    // Star should have the star-icon class for CSS targeting
+    expect(starButton).toHaveClass('star-icon');
+  });
+
+  it('calls toggleStarredEntity when star icon is clicked', async () => {
+    const toggleStarredEntity = jest.fn();
+    (useStarredEntities as jest.Mock).mockReturnValue({
+      starredEntities: new Set(['component:default/my-entity']),
+      toggleStarredEntity,
+      isStarredEntity: jest.fn(),
+    });
+
+    (useDropdownManager as jest.Mock).mockReturnValue({
+      anchorEl: document.createElement('div'), // Simulate open dropdown
+      handleOpen: jest.fn(),
+      handleClose: jest.fn(),
+    });
+
+    await renderInTestApp(<StarredDropdown />);
+
+    // Star is always available for clicking, just hidden visually
+
+    const starButton = screen.getByLabelText('Remove from list');
+    fireEvent.click(starButton);
+
+    expect(toggleStarredEntity).toHaveBeenCalledWith(
+      'component:default/my-entity',
+    );
   });
 });

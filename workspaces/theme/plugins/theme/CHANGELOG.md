@@ -1,5 +1,35 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.12.0
+
+### Minor Changes
+
+- f66ba99: Backstage version bump to v1.45.3
+
+## 0.11.0
+
+### Minor Changes
+
+- 11029f6: Backstage version bump to v1.44.2
+
+## 0.10.2
+
+### Patch Changes
+
+- 374d565: Scope TechDocs subheader toolbar to use `background.paper`, fixing the gray strip under the page header. Adds a `MuiCssBaseline` rule targeting `[class*="BackstageHeader-header-"] + [class*="MuiToolbar-root"]` so other toolbars remain unaffected.
+
+## 0.10.1
+
+### Patch Changes
+
+- fe339e6: Release all themes and test packages together to resolve build issues
+
+## 0.10.0
+
+### Minor Changes
+
+- 37b8b27: Backstage version bump to v1.42.5
+
 ## 0.9.1
 
 ### Patch Changes

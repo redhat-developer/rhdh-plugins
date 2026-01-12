@@ -21,7 +21,20 @@ import {
   TestApiProvider,
 } from '@backstage/test-utils';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { SupportButton } from './SupportButton';
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
+}));
 
 const configWithSupportUrl = mockApis.config({
   data: {

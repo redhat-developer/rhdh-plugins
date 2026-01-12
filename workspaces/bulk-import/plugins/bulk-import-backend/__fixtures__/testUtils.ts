@@ -36,6 +36,13 @@ const BASE_CONFIG = {
     baseUrl: 'https://my-backstage-app.example.com',
   },
   integrations: {
+    gitlab: [
+      {
+        host: 'gitlab.com',
+        baseUrl: LOCAL_ADDR,
+        token: 'my_super_secret_gl_token', // notsecret
+      },
+    ],
     github: [
       {
         host: 'github.com',
@@ -95,7 +102,41 @@ const BASE_CONFIG = {
         target:
           'https://github.com/my-org-3/another-repo/blob/main/some/path/to/my-component.yaml',
       },
+      // Gitlab Related
+      {
+        type: 'url',
+        // import status should be ADDED because it contains a catalog-info.yaml in its default branch
+        target:
+          'https://gitlab.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/blob/main/catalog-info.yaml',
+      },
+      {
+        type: 'url',
+        // same repo but with path not to the root of the repo => will be ignored
+        target:
+          'https://gitlab.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/blob/main/path/to/some/other/component/catalog-info.yaml',
+      },
+      {
+        type: 'url',
+        // import status should be WAIT_PR_APPROVAL because it does not contain a catalog-info.yaml in its default branch but has an import PR open
+        target:
+          'https://gitlab.com/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr/blob/main/catalog-info.yaml',
+      },
+      {
+        type: 'url',
+        // import status should be null because it does not contain a catalog-info.yaml in its default branch and has no an import PR open
+        target:
+          'https://gitlab.com/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-no-import-pr/blob/main/catalog-info.yaml',
+      },
+      {
+        type: 'url',
+        // Location not considered as Import job
+        target:
+          'https://gitlab.com/my-org-3/another-repo/blob/main/some/path/to/my-component.yaml',
+      },
     ],
+  },
+  bulkImport: {
+    importTemplate: `template:default/some-template`,
   },
 };
 
@@ -132,6 +173,7 @@ export async function startBackendServer(
   mockCatalogClient: CatalogClient,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
   config?: any,
+  db?: any,
 ): Promise<any> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     bulkImportPlugin,
@@ -145,6 +187,7 @@ export async function startBackendServer(
       deps: {},
       factory: () => mockCatalogClient,
     }),
+    db ?? mockServices.database.factory(),
   ];
   if (authorizeResult) {
     features.push(

@@ -27,7 +27,7 @@ import {
   bulkImportApiRef,
   BulkImportBackendClient,
 } from './api/BulkImportBackendClient';
-import { addRepositoriesRouteRef, rootRouteRef } from './routes';
+import { addRepositoriesRouteRef, rootRouteRef, tasksRouteRef } from './routes';
 
 /**
  * @public
@@ -38,6 +38,7 @@ export const bulkImportPlugin = createPlugin({
   routes: {
     root: rootRouteRef,
     addRepositories: addRepositoriesRouteRef,
+    tasks: tasksRouteRef,
   },
   apis: [
     createApiFactory({
@@ -46,8 +47,9 @@ export const bulkImportPlugin = createPlugin({
         configApi: configApiRef,
         identityApi: identityApiRef,
       },
-      factory: ({ configApi, identityApi }) =>
-        new BulkImportBackendClient({ configApi, identityApi }),
+      factory: ({ configApi, identityApi }) => {
+        return new BulkImportBackendClient({ configApi, identityApi });
+      },
     }),
   ],
 });

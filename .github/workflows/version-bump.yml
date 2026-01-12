@@ -41,7 +41,7 @@ jobs:
     name: ${{ matrix.workspace }} version:bump
     steps:
       - name: 'Checkout rhdh-plugins'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 1
 
@@ -53,7 +53,7 @@ jobs:
           registry-url: https://registry.npmjs.org/ # Needed for auth
       - name: cache all node_modules
         id: cache-modules
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-node_modules-${{ hashFiles('yarn.lock', '**/package.json') }}
@@ -62,7 +62,7 @@ jobs:
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - name: cache global yarn cache
-        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         if: steps.cache-modules.outputs.cache-hit != 'true'
         with:
           path: ${{ steps.yarn-cache.outputs.dir }}
@@ -123,7 +123,7 @@ jobs:
           git push origin ${{ matrix.workspace }}/v${{ steps.set_release_name.outputs.release_version }}
       - name: 'Create Pull Request'
         if: ${{ steps.check_for_changes.outputs.HAS_CHANGES == 1 }}
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           github-token: ${{secrets.RHDH_BOT_TOKEN}}
           script: |

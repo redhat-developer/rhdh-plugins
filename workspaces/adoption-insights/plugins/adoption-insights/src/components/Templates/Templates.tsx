@@ -30,14 +30,17 @@ import Link from '@mui/material/Link';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
+
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
 import EmptyChartState from '../Common/EmptyChartState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Templates = () => {
   const [page, setPage] = useState(0);
   const [limit] = useState(20);
   const [rowsPerPage, setRowsPerPage] = useState(3);
+  const { t } = useTranslation();
 
   const { templates, loading, error } = useTemplates({ limit });
 
@@ -62,7 +65,7 @@ const Templates = () => {
 
   if (error) {
     return (
-      <CardWrapper title="Top templates">
+      <CardWrapper title={t('templates.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -70,12 +73,12 @@ const Templates = () => {
 
   if (!visibleTemplates || visibleTemplates?.length === 0) {
     return (
-      <CardWrapper title="Top templates">
+      <CardWrapper title={t('templates.title')}>
         <Box
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
@@ -84,93 +87,109 @@ const Templates = () => {
   }
 
   return (
-    <CardWrapper title={`Top ${rowsPerPage} templates`}>
-      <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
-        <TableHead>
-          <TableRow>
-            {TEMPLATE_TABLE_HEADERS.map(header => (
-              <TableCell
-                key={header.id}
-                align="left"
-                sx={{
-                  borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
-                }}
-              >
-                {header.title}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {loading ? (
+    <CardWrapper
+      title={
+        rowsPerPage >= (templates.data?.length ?? 0)
+          ? t('templates.allTitle' as any, {})
+          : t('templates.topNTitle' as any, { count: rowsPerPage.toString() })
+      }
+    >
+      <Box sx={{ width: '100%' }}>
+        <Table aria-labelledby="Templates" sx={{ width: '100%' }}>
+          <TableHead>
             <TableRow>
-              <TableCell colSpan={TEMPLATE_TABLE_HEADERS.length} align="center">
-                <CircularProgress />
-              </TableCell>
-            </TableRow>
-          ) : (
-            visibleTemplates?.map(template => {
-              if (
-                !template.entityref ||
-                Object.keys(template.entityref).length === 0
-              )
-                return null;
-
-              const { name, namespace = 'default' } = parseEntityRef(
-                template?.entityref,
-              );
-              const entityHrefLink = `/create/templates/${namespace}/${name}`;
-
-              return (
-                <TableRow
-                  key={template.entityref}
+              {TEMPLATE_TABLE_HEADERS.map(header => (
+                <TableCell
+                  key={header.id}
+                  align="left"
                   sx={{
-                    '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                     borderBottom: theme =>
                       `1px solid ${theme.palette.grey[300]}`,
                   }}
                 >
-                  <TableCell sx={{ width: '50%' }}>
-                    <Link
-                      component="a"
-                      href={entityHrefLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {t(header.titleKey as any, {})}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={TEMPLATE_TABLE_HEADERS.length}
+                  align="center"
+                >
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : (
+              visibleTemplates?.map(template => {
+                if (
+                  !template.entityref ||
+                  Object.keys(template.entityref).length === 0
+                )
+                  return null;
+
+                const { name, namespace = 'default' } = parseEntityRef(
+                  template?.entityref,
+                );
+                const entityHrefLink = `/create/templates/${namespace}/${name}`;
+
+                return (
+                  <TableRow
+                    key={template.entityref}
+                    sx={{
+                      '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
+                      borderBottom: theme =>
+                        `1px solid ${theme.palette.grey[300]}`,
+                    }}
+                  >
+                    <TableCell
                       sx={{
-                        textDecoration: 'none',
-                        '&:hover': {
-                          textDecoration: 'none',
-                        },
+                        width: '50%',
                       }}
                     >
-                      {name ?? '--'}
-                    </Link>
-                  </TableCell>
-                  <TableCell sx={{ width: '50%' }}>
-                    {Number(template.count).toLocaleString('en-US') ?? '--'}
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell
-              colSpan={TEMPLATE_TABLE_HEADERS.length}
-              sx={{ padding: 0 }}
-            >
-              <TableFooterPagination
-                count={templates.data?.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                handleChangePage={handleChangePage}
-                handleChangeRowsPerPage={handleChangeRowsPerPage}
-              />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+                      <Link
+                        component="a"
+                        href={entityHrefLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'none',
+                          },
+                        }}
+                      >
+                        {name ?? '--'}
+                      </Link>
+                    </TableCell>
+                    <TableCell sx={{ width: '50%' }}>
+                      {Number(template.count).toLocaleString('en-US') ?? '--'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell
+                colSpan={TEMPLATE_TABLE_HEADERS.length}
+                sx={{ padding: 0 }}
+              >
+                <TableFooterPagination
+                  count={templates.data?.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  handleChangePage={handleChangePage}
+                  handleChangeRowsPerPage={handleChangeRowsPerPage}
+                />
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </Box>
     </CardWrapper>
   );
 };

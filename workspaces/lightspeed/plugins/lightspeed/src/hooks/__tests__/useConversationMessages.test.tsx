@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import { useApi } from '@backstage/core-plugin-api';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -82,7 +80,7 @@ const generateSSEFromText = (
   tokens.forEach((token, index) => {
     events.push({
       event: 'token',
-      data: { id: index, token },
+      data: { id: index, token, role: 'inference' },
     });
   });
 
@@ -229,6 +227,7 @@ describe('useConversationMesages', () => {
           'initialConversationId',
           'test-user',
           'gpt-3',
+          'openai',
           'user.png',
           onComplete,
         ),
@@ -275,6 +274,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
           'testId',
           'test-user',
           'gpt-3',
+          'openai',
           'user.png',
           onComplete,
         ),
@@ -299,7 +299,13 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
     (useApi as jest.Mock).mockReturnValue(mockApi);
 
     const { result } = renderHook(
-      () => useConversationMessages('testConversationId', 'test-user', 'gpt-3'),
+      () =>
+        useConversationMessages(
+          'testConversationId',
+          'test-user',
+          'gpt-3',
+          'openai',
+        ),
       {
         wrapper,
       },
@@ -339,6 +345,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
     expect(mockApi.createMessage).toHaveBeenCalledWith(
       prompt,
       'gpt-3',
+      'openai',
       'testConversationId',
       [],
     );
@@ -367,6 +374,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
           'testConversationId',
           'test-user',
           'gpt-3',
+          'openai',
           'avatar.png',
         ),
       { wrapper },
@@ -438,22 +446,19 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
     queryClient.clear();
     const mockData = [
       {
-        id: ['HumanMessage'],
-        kwargs: {
-          content: 'Hello!',
-          response_metadata: {
-            created_at: 1609459200000,
+        conversation_id: 'testConversationId',
+        started_at: '2021-01-01T00:00:00Z',
+        completed_at: '2021-01-01T00:01:00Z',
+        messages: [
+          {
+            type: 'user',
+            content: 'Hello!',
           },
-        },
-      },
-      {
-        id: ['AiMessage'],
-        kwargs: {
-          content: 'Hi, How are you!',
-          response_metadata: {
-            created_at: 1609459200000,
+          {
+            type: 'assistant',
+            content: 'Hi, How are you!',
           },
-        },
+        ],
       },
     ];
 
@@ -506,6 +511,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
           conversationId,
           'test-user',
           'gpt-3',
+          'openai',
           'user.png',
           onComplete,
         ),
@@ -584,6 +590,7 @@ data: {"event": "token", "data": {"id": 2, "token": ""}}\n
           conversationId,
           'test-user',
           'gpt-3',
+          'openai',
           'user.png',
           onComplete,
         ),

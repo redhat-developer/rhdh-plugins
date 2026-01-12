@@ -13,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import React from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -31,11 +30,11 @@ const SubmitButton = ({
 }: {
   submitting: boolean;
   handleClick?: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   focusOnMount?: boolean;
 }) => {
-  const ref = React.useRef<HTMLButtonElement>(null);
-  React.useEffect(() => {
+  const ref = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
     if (focusOnMount) {
       ref.current?.focus();
     }

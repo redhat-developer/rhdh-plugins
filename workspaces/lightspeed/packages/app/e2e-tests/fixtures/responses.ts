@@ -19,16 +19,22 @@ export const createdAt = Date.now();
 
 export const models = [
   {
-    id: 'mock-model-1',
-    object: 'model',
-    created: Math.floor(createdAt / 1000),
+    identifier: 'mock-provider-1/mock-model-1',
+    api_model_type: 'llm',
+    model_type: 'llm',
+    provider_resource_id: 'mock-model-1',
+    type: 'model',
     owned_by: 'library',
+    provider_id: 'mock-provider-1',
   },
   {
-    id: 'mock-model-2',
-    object: 'model',
-    created: Math.floor(createdAt / 1000),
+    identifier: 'mock-provider-1/mock-model-2',
+    api_model_type: 'llm',
+    model_type: 'llm',
+    provider_resource_id: 'mock-model-2',
+    type: 'model',
     owned_by: 'library',
+    provider_id: 'mock-provider-1',
   },
 ];
 
@@ -64,57 +70,52 @@ export const moreConversations = [
 
 export const contents = [
   {
-    lc: 1,
-    type: 'constructor',
-    id: ['langchain_core', 'messages', 'HumanMessage'],
-    content: 'New conversation',
-    response_metadata: {
-      created_at: createdAt,
-    },
-    additional_kwargs: {},
-  },
-  {
-    lc: 1,
-    type: 'constructor',
-    id: ['langchain_core', 'messages', 'AIMessage'],
-    content: 'Still a placeholder message',
-    response_metadata: {
-      created_at: createdAt,
-      model: models[1].id,
-      tool_calls: [],
-      invalid_tool_calls: [],
-      additional_kwargs: {},
-    },
+    provider: models[1].provider_id,
+    model: models[1].provider_resource_id,
+    messages: [
+      {
+        content: 'New conversation',
+        type: 'user',
+      },
+      {
+        content: "Still a placeholder message'",
+        type: 'assistant',
+      },
+    ],
+    started_at: '2025-10-06T15:39:38Z',
+    completed_at: '2025-10-06T15:39:42Z',
   },
 ];
 
+export const mockedShields = [
+  {
+    identifier: 'test-shield-id',
+    provider_id: 'test-shield-id',
+    type: 'shield',
+    params: {},
+    provider_resource_id: 'test-shield-id',
+  },
+];
 const repeatedSentence =
   'OpenShift deployment is a way to manage applications on the OpenShift platform.';
 const openshiftLongParagraph = `${repeatedSentence} `.repeat(30);
 
 export const demoChatContent = [
   {
-    lc: 1,
-    type: 'constructor',
-    id: ['langchain_core', 'messages', 'HumanMessage'],
-    content: 'let me know about openshift deployment in detail',
-    response_metadata: {
-      created_at: createdAt,
-    },
-    additional_kwargs: {},
-  },
-  {
-    lc: 1,
-    type: 'constructor',
-    id: ['langchain_core', 'messages', 'AIMessage'],
-    content: openshiftLongParagraph,
-    response_metadata: {
-      created_at: createdAt,
-      model: models[1].id,
-      tool_calls: [],
-      invalid_tool_calls: [],
-      additional_kwargs: {},
-    },
+    provider: models[1].provider_id,
+    model: models[1].provider_resource_id,
+    messages: [
+      {
+        content: 'let me know about openshift deployment in detail',
+        type: 'user',
+      },
+      {
+        content: openshiftLongParagraph,
+        type: 'assistant',
+      },
+    ],
+    started_at: createdAt,
+    completed_at: createdAt,
   },
 ];
 
@@ -137,7 +138,7 @@ export const generateQueryResponse = (conversationId: string) => {
   tokens.forEach((token, index) => {
     events.push({
       event: 'token',
-      data: { id: index, token },
+      data: { id: index, token, role: 'inference' },
     });
   });
 

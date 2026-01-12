@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { Navigate, Route } from 'react-router-dom';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
@@ -52,10 +51,22 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+import { lightspeedTranslations } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
 import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
 const app = createApp({
   apis,
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'fr', 'es', 'de'],
+    resources: [lightspeedTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,
@@ -74,7 +85,9 @@ const app = createApp({
     });
   },
   components: {
-    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
+    SignInPage: props => (
+      <SignInPage {...props} auto providers={['guest', githubProvider]} />
+    ),
   },
 });
 

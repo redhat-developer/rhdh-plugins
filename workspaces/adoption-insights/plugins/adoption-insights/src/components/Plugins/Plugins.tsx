@@ -31,18 +31,19 @@ import Box from '@mui/material/Box';
 
 import CardWrapper from '../CardWrapper';
 import { PLUGINS_TABLE_HEADERS } from '../../utils/constants';
+
 import { usePlugins } from '../../hooks/usePlugins';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
 import EmptyChartState from '../Common/EmptyChartState';
-import { useDateRange } from '../Header/DateRangeContext';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const Plugins = () => {
   const [page, setPage] = useState(0);
   const [limit] = useState(20);
   const [rowsPerPage, setRowsPerPage] = useState(3);
+  const { t } = useTranslation();
 
-  const { isDefaultDateRange } = useDateRange();
   const { plugins, loading, error } = usePlugins({ limit });
 
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
@@ -66,7 +67,7 @@ const Plugins = () => {
 
   if (error) {
     return (
-      <CardWrapper title="Top plugins">
+      <CardWrapper title={t('plugins.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -74,12 +75,12 @@ const Plugins = () => {
 
   if (!visiblePlugins || visiblePlugins?.length === 0) {
     return (
-      <CardWrapper title="Top plugins">
+      <CardWrapper title={t('plugins.title')}>
         <Box
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
@@ -88,101 +89,128 @@ const Plugins = () => {
   }
 
   return (
-    <CardWrapper title={`Top ${rowsPerPage} plugins`}>
-      <Table aria-labelledby="Catalog entities" sx={{ width: '100%' }}>
-        <TableHead>
-          <TableRow>
-            {PLUGINS_TABLE_HEADERS.map(header => {
-              if (isDefaultDateRange && header.id === 'percent') return null;
-              return (
+    <CardWrapper
+      title={
+        rowsPerPage >= (plugins.data?.length ?? 0)
+          ? t('plugins.allTitle' as any, {})
+          : t('plugins.topNTitle' as any, { count: rowsPerPage.toString() })
+      }
+    >
+      <Box sx={{ width: '100%' }}>
+        <Table aria-labelledby="Plugins" sx={{ width: '100%' }}>
+          <TableHead>
+            <TableRow>
+              {PLUGINS_TABLE_HEADERS.map(header => {
+                return (
+                  <TableCell
+                    key={header.id}
+                    align="left"
+                    sx={{
+                      borderBottom: theme =>
+                        `1px solid ${theme.palette.grey[300]}`,
+                    }}
+                  >
+                    {t(header.titleKey as any, {})}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
                 <TableCell
-                  key={header.id}
-                  align="left"
+                  colSpan={PLUGINS_TABLE_HEADERS.length}
+                  align="center"
+                >
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : (
+              visiblePlugins?.map(plugin => (
+                <TableRow
+                  key={plugin.plugin_id}
                   sx={{
+                    '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
                     borderBottom: theme =>
                       `1px solid ${theme.palette.grey[300]}`,
                   }}
                 >
-                  {header.title}
-                </TableCell>
-              );
-            })}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={PLUGINS_TABLE_HEADERS.length} align="center">
-                <CircularProgress />
-              </TableCell>
-            </TableRow>
-          ) : (
-            visiblePlugins?.map(plugin => (
-              <TableRow
-                key={plugin.plugin_id}
-                sx={{
-                  '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
-                  borderBottom: theme => `1px solid ${theme.palette.grey[300]}`,
-                }}
-              >
-                <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
-                  {plugin.plugin_id ?? '--'}
-                </TableCell>
-                <TableCell sx={{ width: '40%' }}>
-                  {plugin.trend?.length > 0 ? (
-                    <ResponsiveContainer width={250} height={50}>
-                      <LineChart data={plugin.trend}>
-                        <Line
-                          type="monotone"
-                          dataKey="count"
-                          stroke="#9370DB"
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    '--'
-                  )}
-                </TableCell>
-                {!isDefaultDateRange && (
-                  <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <TableCell
+                    sx={{
+                      width: '20%',
+                    }}
+                  >
+                    {plugin.plugin_id ?? '--'}
+                  </TableCell>
+                  <TableCell sx={{ width: '40%' }}>
+                    {plugin.trend?.length > 1 ? (
+                      <ResponsiveContainer width="100%" height={50}>
+                        <LineChart data={plugin.trend}>
+                          <Line
+                            type="monotone"
+                            dataKey="count"
+                            stroke="#9370DB"
+                            strokeWidth={2}
+                            dot={false}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      '--'
+                    )}
+                  </TableCell>
+                  <TableCell sx={{ width: '20%' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        minWidth: 0,
+                      }}
+                    >
                       {Math.round(Number(plugin.trend_percentage)) < 0 ? (
-                        <TrendingDownIcon sx={{ color: 'red' }} />
+                        <TrendingDownIcon
+                          sx={{ color: 'red', flexShrink: 0 }}
+                        />
                       ) : (
-                        <TrendingUpIcon sx={{ color: 'green' }} />
+                        <TrendingUpIcon
+                          sx={{ color: 'green', flexShrink: 0 }}
+                        />
                       )}
-                      <Typography variant="body2">
+                      <Typography
+                        variant="body2"
+                        sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+                      >
                         {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
                       </Typography>
                     </Box>
                   </TableCell>
-                )}
-                <TableCell sx={isDefaultDateRange ? {} : { width: '20%' }}>
-                  {Number(plugin.visit_count).toLocaleString('en-US') ?? '--'}
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell
-              colSpan={PLUGINS_TABLE_HEADERS.length}
-              sx={{ padding: 0 }}
-            >
-              <TableFooterPagination
-                count={plugins.data?.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                handleChangePage={handleChangePage}
-                handleChangeRowsPerPage={handleChangeRowsPerPage}
-              />
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+                  <TableCell sx={{ width: '20%' }}>
+                    {Number(plugin.visit_count).toLocaleString('en-US') ?? '--'}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TableCell
+                colSpan={PLUGINS_TABLE_HEADERS.length}
+                sx={{ padding: 0 }}
+              >
+                <TableFooterPagination
+                  count={plugins.data?.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  handleChangePage={handleChangePage}
+                  handleChangeRowsPerPage={handleChangeRowsPerPage}
+                />
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
+      </Box>
     </CardWrapper>
   );
 };

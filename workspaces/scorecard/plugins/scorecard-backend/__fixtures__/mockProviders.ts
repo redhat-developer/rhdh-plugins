@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import type { Entity } from '@backstage/catalog-model';
 import {
   Metric,
   MetricType,
   MetricValue,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
@@ -29,8 +32,17 @@ abstract class MockMetricProvider<T extends MetricType>
     protected providerId: string,
     protected datasourceId: string,
     protected title: string,
+    protected description: string,
     protected value: MetricValue<T>,
   ) {}
+
+  abstract getMetricThresholds(): ThresholdConfig;
+
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.mock/key': CATALOG_FILTER_EXISTS,
+    };
+  }
 
   getProviderDatasourceId(): string {
     return this.datasourceId;
@@ -40,16 +52,25 @@ abstract class MockMetricProvider<T extends MetricType>
     return this.providerId;
   }
 
+  getMetricType(): T {
+    return this.metricType;
+  }
+
+  supportsEntity(_: Entity): boolean {
+    return true;
+  }
+
   getMetric(): Metric<T> {
     const metric: Metric<T> = {
       id: this.providerId,
       title: this.title,
+      description: this.description,
       type: this.metricType,
     };
     return metric;
   }
 
-  async calculateMetric(): Promise<MetricValue<T>> {
+  async calculateMetric(_entity: Entity): Promise<MetricValue<T>> {
     return this.value;
   }
 }
@@ -59,19 +80,62 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
     providerId: string,
     datasourceId: string,
     title: string = 'Mock Number Metric',
+    description: string = 'Mock number description.',
     value: number = 42,
   ) {
-    super('number', providerId, datasourceId, title, value);
+    super('number', providerId, datasourceId, title, description, value);
+  }
+  getMetricThresholds(): ThresholdConfig {
+    return {
+      rules: [
+        { key: 'error', expression: '>40' },
+        { key: 'warning', expression: '>20' },
+        { key: 'success', expression: '<=20' },
+      ],
+    };
   }
 }
 
-export class MockStringProvider extends MockMetricProvider<'string'> {
+export class MockBooleanProvider extends MockMetricProvider<'boolean'> {
   constructor(
     providerId: string,
     datasourceId: string,
-    title: string = 'Mock String Metric',
-    value: string = 'test-value',
+    title: string = 'Mock Boolean Metric',
+    description: string = 'Mock boolean description.',
+    value: boolean = false,
   ) {
-    super('string', providerId, datasourceId, title, value);
+    super('boolean', providerId, datasourceId, title, description, value);
+  }
+  getMetricThresholds(): ThresholdConfig {
+    return {
+      rules: [
+        { key: 'success', expression: '==true' },
+        { key: 'error', expression: '==false' },
+      ],
+    };
   }
 }
+export const githubNumberProvider = new MockNumberProvider(
+  'github.number_metric',
+  'github',
+  'Github Number Metric',
+);
+
+export const githubNumberMetricMetadata = {
+  history: undefined,
+  title: 'Github Number Metric',
+  description: 'Mock number description.',
+  type: 'number' as const,
+};
+
+export const jiraBooleanProvider = new MockBooleanProvider(
+  'jira.boolean_metric',
+  'jira',
+);
+
+export const jiraBooleanMetricMetadata = {
+  history: undefined,
+  title: 'Mock Boolean Metric',
+  description: 'Mock boolean description.',
+  type: 'boolean' as const,
+};

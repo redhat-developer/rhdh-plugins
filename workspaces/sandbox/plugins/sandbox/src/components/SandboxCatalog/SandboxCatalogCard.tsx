@@ -301,6 +301,7 @@ export const SandboxCatalogCard: React.FC<SandboxCatalogCardProps> = ({
           <SandboxCatalogCardButton
             link={link}
             id={id}
+            title={title}
             handleTryButtonClick={handleTryButtonClick}
             theme={theme}
             refetchingUserData={refetchingUserData}

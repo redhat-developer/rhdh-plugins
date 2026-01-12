@@ -1,5 +1,51 @@
 ### Dependencies
 
+## 1.17.0
+
+### Minor Changes
+
+- 243f00a: Backstage version bump to v1.45.2
+
+## 1.16.1
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- b8fb354: Updated dependency `@testing-library/jest-dom` to `6.9.1`.
+
+## 1.16.0
+
+### Minor Changes
+
+- 99f080a: Backstage version bump to v1.43.2
+
+## 1.15.0
+
+### Minor Changes
+
+- da9c62b: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- 788ae3c: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.10.0`.
+
+## 1.14.0
+
+### Minor Changes
+
+- 868fff2: Backstage version bump to v1.41.2
+
+### Patch Changes
+
+- 670728c: Updated dependency `@testing-library/jest-dom` to `6.8.0`.
+- 4fc279c: Updated dependency `@testing-library/jest-dom` to `6.7.0`.
+
+## 1.13.4
+
+### Patch Changes
+
+- 04856e6: remove janus-idp/cli devDependency and export-dynamic script
+
 ## 1.13.3
 
 ### Patch Changes

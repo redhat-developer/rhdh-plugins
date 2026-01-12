@@ -15,9 +15,22 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { SearchInput } from './SearchInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
+
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
+}));
 
 describe('SearchInput', () => {
   const params = {

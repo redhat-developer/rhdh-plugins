@@ -4,6 +4,10 @@ kind: Component
 metadata:
   name: red-hat-developer-hub-bulk-import
   title: RHDH Bulk Import plugin
+  description: |
+    With this plugin you can import multiple code repositories into your software catalog at once. The plugin provides
+    a simple to use interface that can list all the repositories in your organization and allows you to select the ones
+    you want to import.
   annotations:
     github.com/project-slug: red-hat-developer-hub/backstage-plugins
     github.com/team-slug: rhdh/maintainers-plugins
@@ -20,7 +24,7 @@ metadata:
       type: source
 spec:
   type: backstage-plugin
-  lifecycle: production
   owner: rhdh-team
+  lifecycle: active
   system: rhdh
   subcomponentOf: rhdh-plugins

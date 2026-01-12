@@ -27,6 +27,7 @@ import {
   ChartScatter,
   createContainer,
   getInteractiveLegendEvents,
+  ChartThemeColor,
 } from '@patternfly/react-charts/victory';
 import { chart_color_blue_100 } from '@patternfly/react-tokens/dist/js/chart_color_blue_100';
 import { chart_color_blue_200 } from '@patternfly/react-tokens/dist/js/chart_color_blue_200';
@@ -44,7 +45,6 @@ import {
 import messages from './i18n/messages';
 import { unitsLookupKey } from './utils/format';
 import { getDateRangeString } from './utils/chart-datum';
-import ChartTheme from './theme';
 
 const useOptimizationsBreakdownChartStyles = makeStyles(() => ({
   chartOverride: {
@@ -86,6 +86,7 @@ const OptimizationsBreakdownChart: React.FC<
   const [hiddenSeries, setHiddenSeries] = useState(new Set<number>());
   const [series, setSeries] = useState<ChartSeries[]>();
   const [width, setWidth] = useState(0);
+
   const intl = useIntl();
   const classes = useOptimizationsBreakdownChartStyles();
 
@@ -194,7 +195,7 @@ const OptimizationsBreakdownChart: React.FC<
     const result: (string | string[] | undefined)[] = [];
 
     if (series) {
-      series.map(serie => {
+      series.forEach(serie => {
         // Each group of chart names are hidden / shown together
         if (serie.childName === 'usage') {
           result.push([serie.childName, 'scatter']);
@@ -479,6 +480,7 @@ const OptimizationsBreakdownChart: React.FC<
     <div className={classes.chartOverride} ref={containerRef}>
       <div style={{ height: chartHeight }}>
         <Chart
+          key={`chart-${name}`}
           containerComponent={cloneContainer()}
           domain={getDomain(series, hiddenSeries, 1)}
           domainPadding={{ x: [30, 30] }}
@@ -489,8 +491,9 @@ const OptimizationsBreakdownChart: React.FC<
           legendPosition="bottom"
           name={name}
           padding={getPadding()}
-          theme={ChartTheme}
           width={width}
+          // PatternFly will handle theming automatically when pf-v6-theme-dark is applied
+          themeColor={ChartThemeColor.default}
         >
           <ChartAxis fixLabelOverlap />
           <ChartAxis dependentAxis showGrid />

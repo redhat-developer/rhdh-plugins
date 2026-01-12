@@ -1,5 +1,50 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 6.9.1
+
+## 6.9.0
+
+## 6.8.0
+
+### Minor Changes
+
+- 0739b9a: Backstage version bump to v1.45.2
+
+## 6.7.2
+
+## 6.7.1
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+
+## 6.7.0
+
+## 1.11.0
+
+### Minor Changes
+
+- 4e3b05a: Backstage version bump to v1.44.1
+
+## 1.10.0
+
+### Minor Changes
+
+- 2a31b02: Implement scaffolder template execution for the bulk-import plugin.
+
+## 1.9.0
+
+### Minor Changes
+
+- 81cfcfe: Backstage version bump to v1.42.5
+
+## 1.8.0
+
+### Minor Changes
+
+- 391dbd5: Backstage version bump to v1.41.1
+
 ## 1.7.2
 
 ### Patch Changes

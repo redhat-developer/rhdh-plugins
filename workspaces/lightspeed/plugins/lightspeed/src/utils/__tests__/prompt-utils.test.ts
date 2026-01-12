@@ -16,6 +16,16 @@
 import { SamplePrompts } from '../../types';
 import { getRandomSamplePrompts } from '../prompt-utils';
 
+const getPromptTitle = (prompt: any): string => {
+  if ('title' in prompt) {
+    return prompt.title;
+  }
+  if ('titleKey' in prompt) {
+    return prompt.titleKey;
+  }
+  return 'Unknown';
+};
+
 describe('getRandomSamplePrompts', () => {
   it('should return empty array from default prompts and userPrompts is undefined', () => {
     const result = getRandomSamplePrompts(undefined, undefined);
@@ -45,10 +55,10 @@ describe('getRandomSamplePrompts', () => {
     const result = getRandomSamplePrompts(userPrompts, defaultPrompts, 3);
     expect(result.length).toBe(3);
     const [prompt1, prompt2, prompt3] = result;
-    const userPromptsTitles = userPrompts.map(prompt => prompt.title);
-    expect(userPromptsTitles).toContain(prompt1.title);
-    expect(userPromptsTitles).toContain(prompt2.title);
-    expect(userPromptsTitles).toContain(prompt3.title);
+    const userPromptsTitles = userPrompts.map(prompt => getPromptTitle(prompt));
+    expect(userPromptsTitles).toContain(getPromptTitle(prompt1));
+    expect(userPromptsTitles).toContain(getPromptTitle(prompt2));
+    expect(userPromptsTitles).toContain(getPromptTitle(prompt3));
   });
 
   it('should return 2 random prompts from default prompts if userPrompts length is equal to 0', () => {
@@ -61,8 +71,10 @@ describe('getRandomSamplePrompts', () => {
     const result = getRandomSamplePrompts(userPrompts, defaultPrompts);
     expect(result.length).toBe(2);
     const [prompt1, prompt2] = result;
-    const defaultPromptsTitles = defaultPrompts.map(prompt => prompt.title);
-    expect(defaultPromptsTitles).toContain(prompt1.title);
-    expect(defaultPromptsTitles).toContain(prompt2.title);
+    const defaultPromptsTitles = defaultPrompts.map(prompt =>
+      getPromptTitle(prompt),
+    );
+    expect(defaultPromptsTitles).toContain(getPromptTitle(prompt1));
+    expect(defaultPromptsTitles).toContain(getPromptTitle(prompt2));
   });
 });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { FC } from 'react';
 
 import {
   InfoCard,
@@ -23,21 +23,24 @@ import {
   StructuredMetadataTable,
 } from '@backstage/core-components';
 
-export const WorkflowInputs: React.FC<{
+import { useTranslation } from '../../hooks/useTranslation';
+
+export const WorkflowInputs: FC<{
   className: string;
   value: any;
   loading: any;
   responseError: any;
   cardClassName: string;
 }> = ({ className, value, loading, responseError, cardClassName }) => {
+  const { t } = useTranslation();
   const inputs = value?.data;
   return (
     <InfoCard
-      title="Inputs"
+      title={t('run.inputs')}
       subheader={
         !loading &&
         !responseError &&
-        !inputs && <i>The workflow instance has no inputs</i>
+        !inputs && <i>{t('messages.workflowInstanceNoInputs')}</i>
       }
       divider={false}
       className={className}

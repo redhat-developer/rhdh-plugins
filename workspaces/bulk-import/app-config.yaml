@@ -32,8 +32,14 @@ backend:
     client: better-sqlite3
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+  reading:
+    allow:
+      - host: raw.githubusercontent.com
 
 integrations:
+  gitlab:
+    - host: gitlab.com
+      token: ${GITLAB_TOKEN}
   github:
     - host: github.com
       # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
@@ -66,6 +72,7 @@ techdocs:
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
+    guest: {}
     # See https://backstage.io/docs/auth/guest/provider
     github:
       development:
@@ -89,9 +96,9 @@ catalog:
     - type: file
       target: ../../examples/entities.yaml
 
-    # Local example template
+    # Local example templates
     - type: file
-      target: ../../examples/template/template.yaml
+      target: ../../examples/template/create-pr-with-catalog-info.yaml
       rules:
         - allow: [Template]
 
@@ -115,3 +122,7 @@ catalog:
 permission:
   # setting this to `false` will disable permissions
   enabled: true
+# scaffolder template execution configuration. Disabled by default.
+# bulkImport:
+#   importTemplate: template:default/create-pr-with-catalog-info
+#   importAPI: scaffolder

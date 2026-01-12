@@ -81,6 +81,8 @@ describe('SandboxCatalogCard', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Setup window.appEventData for tests
+    (global as any).window = { appEventData: [] };
 
     (useGreenCorners as jest.Mock).mockReturnValue({
       greenCorners: mockGreenCorners,
@@ -169,7 +171,7 @@ describe('SandboxCatalogCard', () => {
     expect(mockSignupUser).toHaveBeenCalled(); // check it signs up the user
     expect(mockRefetchUserData).toHaveBeenCalled();
     expect(mockOpen).toHaveBeenCalledWith(
-      'https://sandboxcluster.test//k8s/cluster/projects/bob-2-dev',
+      `https://sandboxcluster.test//k8s/cluster/projects/bob-2-dev`,
       '_blank',
     ); // check it opens the url after signup
     expect(mockShowGreenCorner).toHaveBeenCalled();

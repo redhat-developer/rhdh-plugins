@@ -16,15 +16,13 @@
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-const Tooltip = ({ active, payload, licensed_users, logged_in_users }: any) => {
+const Tooltip = ({ active, payload, licensed_users }: any) => {
   if (active && payload?.length) {
-    const percent = Math.round(
-      (payload[0].name === 'Licensed'
-        ? (payload[0].value - logged_in_users) / licensed_users
-        : payload[0].value / licensed_users) * 100,
-    );
+    // Calculate percentage based on the actual value in the segment
+    // Since the data now correctly represents each segment, we can calculate directly
+    const percent = Math.round((payload[0].value / licensed_users) * 100);
 
-    const { value, name } = payload[0];
+    const { value } = payload[0];
 
     return (
       <Paper
@@ -39,9 +37,7 @@ const Tooltip = ({ active, payload, licensed_users, logged_in_users }: any) => {
         <Typography
           style={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}
         >
-          {name === 'Licensed'
-            ? (value - logged_in_users).toLocaleString('en-US')
-            : value.toLocaleString('en-US')}
+          {value.toLocaleString('en-US')}
         </Typography>
         <Typography
           style={{

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import { ThresholdResult } from './threshold';
+
 /**
  * @public
  */
-export type MetricType = 'number' | 'boolean' | 'string';
+export type MetricType = 'number' | 'boolean';
 
 /**
  * @public
@@ -26,9 +28,15 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
   ? number
   : T extends 'boolean'
   ? boolean
-  : T extends 'string'
-  ? string
   : never;
+
+/**
+ * @public
+ */
+export type AggregatedMetricValue = {
+  count: number;
+  name: 'success' | 'warning' | 'error';
+};
 
 /**
  * @public
@@ -36,7 +44,46 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 export type Metric<T extends MetricType = MetricType> = {
   id: string;
   title: string;
-  description?: string;
+  description: string;
   type: T;
   history?: boolean;
+};
+
+/**
+ * @public
+ */
+export type MetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result: {
+    value: MetricValue | null;
+    timestamp: string;
+    thresholdResult: ThresholdResult;
+  };
+  error?: string;
+};
+
+/**
+ * @public
+ */
+export type AggregatedMetricResult = {
+  id: string;
+  status: 'success' | 'error';
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+  };
+  result: {
+    values: AggregatedMetricValue[];
+    total: number;
+    timestamp: string;
+  };
 };

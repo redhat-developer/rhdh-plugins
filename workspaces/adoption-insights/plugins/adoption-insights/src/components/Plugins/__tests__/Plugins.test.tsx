@@ -25,15 +25,25 @@ import {
 import '@testing-library/jest-dom';
 
 import { usePlugins } from '../../../hooks/usePlugins';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import Plugins from '../Plugins';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 
 // Mock the usePlugins hook
 jest.mock('../../../hooks/usePlugins', () => ({
   usePlugins: jest.fn(),
-}));
-
-jest.mock('../../Header/DateRangeContext', () => ({
-  useDateRange: jest.fn(() => ({ isDefaultDateRange: true })),
 }));
 
 jest.mock('../../CardFooter', () => () => <div data-testid="pagination" />);

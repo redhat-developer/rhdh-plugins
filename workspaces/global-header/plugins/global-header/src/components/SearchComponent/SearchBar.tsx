@@ -27,6 +27,7 @@ import { SearchInput } from './SearchInput';
 import { SearchOption } from './SearchOption';
 import { useTheme } from '@mui/material/styles';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface SearchBarProps {
   query: SearchResultProps['query'];
@@ -39,6 +40,7 @@ export const SearchBar = (props: SearchBarProps) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const highlightedIndexRef = useRef(highlightedIndex);
   const { setTerm } = useSearch();
+  const { t } = useTranslation();
 
   const onInputChange = useDebouncedCallback((_, inputValue) => {
     setSearchTerm(inputValue);
@@ -55,7 +57,7 @@ export const SearchBar = (props: SearchBarProps) => {
         const results = query?.term ? value?.results ?? [] : [];
         let options: string[] = [];
         if (query?.term && results.length === 0) {
-          options = ['No results found'];
+          options = [t('search.noResults')];
         }
         if (results.length > 0) {
           options = [
@@ -114,7 +116,7 @@ export const SearchBar = (props: SearchBarProps) => {
               <SearchInput
                 params={params}
                 error={!!error}
-                helperText={error ? 'Error fetching results' : ''}
+                helperText={error ? t('search.errorFetching') : ''}
               />
             )}
             renderOption={(renderProps, option, { index }) => (

@@ -18,8 +18,11 @@ import { SidebarItem } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
+import { useTheme } from '@mui/material/styles';
+
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
+import { useTranslation } from '../hooks/useTranslation';
 import { getImageForIconClass } from '../utils/icons';
 
 /**
@@ -27,9 +30,15 @@ import { getImageForIconClass } from '../utils/icons';
  * Bulk Import Icon
  */
 export const BulkImportIcon = () => {
+  const theme = useTheme();
+  const isDarkTheme = theme.palette.mode === 'dark';
+  const iconClass = isDarkTheme
+    ? 'icon-bulk-import-white'
+    : 'icon-bulk-import-black';
+
   return (
     <img
-      src={getImageForIconClass('icon-bulk-import-white')}
+      src={getImageForIconClass(iconClass)}
       alt="bulk import icon"
       style={{ height: '25px' }}
     />
@@ -37,6 +46,7 @@ export const BulkImportIcon = () => {
 };
 
 export const BulkImportSidebarItem = () => {
+  const { t } = useTranslation();
   const { loading: isUserLoading, allowed } = usePermission({
     permission: bulkImportPermission,
     resourceRef: bulkImportPermission.resourceType,
@@ -49,7 +59,7 @@ export const BulkImportSidebarItem = () => {
   if (!isUserLoading && isPermissionFrameworkEnabled) {
     return allowed ? (
       <SidebarItem
-        text="Bulk import"
+        text={t('sidebar.bulkImport')}
         to="bulk-import/repositories"
         icon={BulkImportIcon}
       />
@@ -59,7 +69,7 @@ export const BulkImportSidebarItem = () => {
   if (!isPermissionFrameworkEnabled) {
     return (
       <SidebarItem
-        text="Bulk import"
+        text={t('sidebar.bulkImport')}
         to="bulk-import/repositories"
         icon={BulkImportIcon}
       />

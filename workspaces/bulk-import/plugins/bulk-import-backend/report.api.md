@@ -10,6 +10,7 @@ import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
 import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
+import type { DatabaseService } from '@backstage/backend-plugin-api';
 import type { DiscoveryService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
@@ -35,6 +36,8 @@ export interface RouterOptions {
     catalogApi: CatalogApi;
     // (undocumented)
     config: Config;
+    // (undocumented)
+    database: DatabaseService;
     // (undocumented)
     discovery: DiscoveryService;
     // (undocumented)

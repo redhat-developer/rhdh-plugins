@@ -21,23 +21,33 @@ import {
 } from '@backstage/core-plugin-api';
 
 import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
 
 import { MenuItemLinkContent } from '../MenuItemLink/MenuItemLinkContent';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const LogoutButton = () => {
   const errorApi = useApi(errorApiRef);
   const identityApi = useApi(identityApiRef);
+  const { t } = useTranslation();
 
   const handleLogout = () => {
     identityApi.signOut().catch(error => errorApi.post(error));
   };
 
   return (
-    <MenuItem
-      onClick={handleLogout}
-      sx={{ cursor: 'pointer', width: '100%', color: 'inherit' }}
-    >
-      <MenuItemLinkContent icon="logout" label="Sign out" />
-    </MenuItem>
+    <>
+      <Divider />
+      <MenuItem
+        onClick={handleLogout}
+        sx={{
+          cursor: 'pointer',
+          width: '100%',
+          color: 'inherit',
+        }}
+      >
+        <MenuItemLinkContent icon="logout" label={t('profile.signOut')} />
+      </MenuItem>
+    </>
   );
 };

@@ -23,9 +23,11 @@ import { useDropdownManager } from '../../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { MenuSection } from './MenuSection';
 import { DropdownEmptyState } from './DropdownEmptyState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const ApplicationLauncherDropdown = () => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
+  const { t } = useTranslation();
 
   const mountPoints = useApplicationLauncherDropdownMountPoints();
 
@@ -47,6 +49,7 @@ export const ApplicationLauncherDropdown = () => {
         Component: mp.Component,
         icon: mp.config?.props?.icon,
         label: mp.config?.props?.title,
+        labelKey: mp.config?.props?.titleKey,
         link: mp.config?.props?.link,
         external: mp.config?.props?.external ?? false,
         priority: mp.config?.priority ?? 0,
@@ -65,7 +68,7 @@ export const ApplicationLauncherDropdown = () => {
   return (
     <HeaderDropdownComponent
       buttonContent={<AppsIcon />}
-      tooltip="Application launcher"
+      tooltip={t('applicationLauncher.tooltip')}
       isIconButton
       onOpen={handleOpen}
       onClose={handleClose}
@@ -87,8 +90,8 @@ export const ApplicationLauncherDropdown = () => {
         )
       ) : (
         <DropdownEmptyState
-          title="No application links configured"
-          subTitle="Configure application links in dynamic plugin config for quick access from here."
+          title={t('applicationLauncher.noLinksTitle')}
+          subTitle={t('applicationLauncher.noLinksSubtitle')}
           icon={
             <AppRegistrationIcon
               sx={{ fontSize: 64, color: 'text.disabled' }}

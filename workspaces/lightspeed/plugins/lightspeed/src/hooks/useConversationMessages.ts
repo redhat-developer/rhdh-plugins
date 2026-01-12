@@ -26,11 +26,11 @@ import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
 import botAvatar from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
-import { Attachment, ReferencedDocument } from '../types';
+import { Attachment, LCSConversation, ReferencedDocument } from '../types';
 import {
   createBotMessage,
   createUserMessage,
-  getMessageData,
+  getConversationsData,
   getTimestamp,
   transformDocumentsToSources,
 } from '../utils/lightspeed-chatbox-utils';
@@ -60,6 +60,7 @@ type Conversations = { [_key: string]: MessageProps[] };
  * @param conversationId
  * @param userName
  * @param selectedModel
+ * @param selectedProvider
  * @param avatar
  *
  */
@@ -67,6 +68,7 @@ export const useConversationMessages = (
   conversationId: string,
   userName: string | undefined,
   selectedModel: string,
+  selectedProvider: string,
   avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
@@ -116,34 +118,28 @@ export const useConversationMessages = (
       };
 
       let index = 0;
-      for (let i = 0; i < conversationsData.length; i += 2) {
-        const userMessage = conversationsData[i];
-        const aiMessage = conversationsData[i + 1];
-
-        const { content: humanMessage, timestamp: userTimestamp } =
-          getMessageData(userMessage);
-        const {
-          model,
-          content: botMessage,
-          timestamp: botTimestamp,
-          referencedDocuments,
-        } = getMessageData(aiMessage);
+      for (let i = 0; i < conversationsData.length; i++) {
+        const [userMessage, aiMessage] = getConversationsData(
+          conversationsData[i] as unknown as LCSConversation,
+        );
 
         _conversations[currentConversation].push(
           ...[
             createUserMessage({
               avatar,
               name: userName,
-              content: humanMessage,
-              timestamp: userTimestamp,
+              content: userMessage.content,
+              timestamp: userMessage.timestamp,
             }),
             createBotMessage({
               avatar: botAvatar,
               isLoading: false,
-              name: model ?? selectedModel,
-              content: botMessage,
-              timestamp: botTimestamp,
-              sources: transformDocumentsToSources(referencedDocuments),
+              name: conversationsData[i].model ?? selectedModel,
+              content: aiMessage.content,
+              timestamp: aiMessage.timestamp,
+              sources: transformDocumentsToSources(
+                aiMessage?.referenced_documents ?? [],
+              ),
             }),
           ],
         );
@@ -215,6 +211,7 @@ export const useConversationMessages = (
         const reader = await createMessage({
           prompt,
           selectedModel,
+          selectedProvider,
           currentConversation,
           attachments,
         });
@@ -275,11 +272,14 @@ export const useConversationMessages = (
                         })
                       : { ...conversation[lastMessageIndex] };
 
-                  lastMessage.isLoading = false;
+                  if ((lastMessage?.content ?? '').trim().length > 0) {
+                    lastMessage.isLoading = false;
+                  }
                   lastMessage.content += content;
                   lastMessage.name =
                     data?.response_metadata?.model || selectedModel;
                   lastMessage.timestamp = getTimestamp(
+                    // TODO: To be fixed in the query response
                     data?.response_metadata?.created_at || Date.now(),
                   );
 
@@ -307,9 +307,10 @@ export const useConversationMessages = (
                     conversation.length === 0
                       ? createBotMessage({
                           content: '',
+                          isLoading: false,
                           timestamp: getTimestamp(Date.now()),
                         })
-                      : { ...conversation[lastMessageIndex] };
+                      : { ...conversation[lastMessageIndex], isLoading: false };
 
                   if (documents.length) {
                     lastMessage.sources = {
@@ -406,6 +407,7 @@ export const useConversationMessages = (
       onComplete,
       onStart,
       selectedModel,
+      selectedProvider,
       createMessage,
       currentConversation,
     ],

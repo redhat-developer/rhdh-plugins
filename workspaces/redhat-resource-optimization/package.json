@@ -45,8 +45,8 @@
     "@backstage/repo-tools": "^0.13.3",
     "@changesets/cli": "^2.27.1",
     "@microsoft/api-extractor-model": "^7.29.2",
-    "@microsoft/tsdoc": "^0.15.0",
-    "@microsoft/tsdoc-config": "^0.17.0",
+    "@microsoft/tsdoc": "^0.16.0",
+    "@microsoft/tsdoc-config": "^0.18.0",
     "@useoptic/optic": "^0.55.0",
     "concurrently": "^9.0.0",
     "knip": "^5.27.4",
@@ -65,8 +65,8 @@
     "@types/react-dom": "^18",
     "react": "^18",
     "react-dom": "^18",
-    "@rjsf/core": "5.24.12",
-    "@rjsf/utils": "5.24.12"
+    "@rjsf/core": "5.24.13",
+    "@rjsf/utils": "5.24.13"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

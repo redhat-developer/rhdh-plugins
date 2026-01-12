@@ -1,5 +1,161 @@
 ### Dependencies
 
+## 6.9.1
+
+### Patch Changes
+
+- 86a9000: Remove interactive column sorting and fix case-insensitive sort ordering.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.9.1
+
+## 6.9.0
+
+### Minor Changes
+
+- b88e8dd: Improve bulk import UI consistency and user experience
+  - Ensure "Bulk import" navigation in left sidebar takes users directly to Import page
+  - Hide source control tool radio buttons when only one provider is configured
+  - Remove Repository/Organization toggle buttons from Import page
+  - Update empty state message for better user guidance
+  - Show "Import to Red Hat Developer Hub" info bar for pull request flow, hide for scaffolder flow
+  - Show "Choose a source control tool" step only when multiple approval tools are configured
+  - Added "Missing Configuration" page that displays when no GitHub or GitLab integrations are configured
+  - Show "Ready to import" instead of "Not generated" status in scaffolder flow
+  - Remove "Preview file" button for selected repositories in scaffolder flow
+  - Fix task status display to show status text + separate "View task" button
+
+### Patch Changes
+
+- 1a99b9f: Updated dependency `@playwright/test` to `1.57.0`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.9.0
+
+## 6.8.0
+
+### Minor Changes
+
+- 0739b9a: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- Updated dependencies [0739b9a]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.8.0
+
+## 6.7.2
+
+### Patch Changes
+
+- 8694ed5: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@playwright/test` to `1.56.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.2
+
+## 6.7.1
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [40b80fe]
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.1
+
+## 6.7.0
+
+### Minor Changes
+
+- 3764e8e: Use enums for importFlow and TaskStatus
+  - Convert TaskStatus from union type to enum for better status handling and type safety
+  - Add ImportFlow enum to standardize import flow configuration values
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.0
+
+## 1.19.0
+
+### Minor Changes
+
+- 4e3b05a: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [4e3b05a]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.11.0
+
+## 1.18.1
+
+### Patch Changes
+
+- 0c89f33: Updated dependency `@playwright/test` to `1.56.0`.
+
+## 1.18.0
+
+### Minor Changes
+
+- 8c33ce4: Enable GitLab frontend support. Restore previously removed approval tool parameters in the backend.
+
+## 1.17.2
+
+### Patch Changes
+
+- 4c5967e: Make bulkImport configuration optional again to be backward compatible
+
+## 1.17.1
+
+### Patch Changes
+
+- 433fde0: Include config.d.ts in the bulk-import plugin release bundle.
+
+## 1.17.0
+
+### Minor Changes
+
+- 2a31b02: Implement scaffolder template execution for the bulk-import plugin.
+
+### Patch Changes
+
+- 316e356: Migrate from rhdh-theme to the theme within rhdh-plugins repo.
+- cc7083f: Use a single react-query QueryClient instance for all pages and remove the need to have one in the app.
+- Updated dependencies [2a31b02]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.10.0
+
+## 1.16.1
+
+### Patch Changes
+
+- dd5350f: French translation updated
+- b338a66: Updated dependency `@playwright/test` to `1.55.1`.
+
+## 1.16.0
+
+### Minor Changes
+
+- fcc3bcc: Add internationalization (i18n) support with German, French and Spanish translations in bulk import.
+
+## 1.15.0
+
+### Minor Changes
+
+- 81cfcfe: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [81cfcfe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.9.0
+
+## 1.14.0
+
+### Minor Changes
+
+- 391dbd5: Backstage version bump to v1.41.1
+
+### Patch Changes
+
+- 219c891: Updated dependency `@playwright/test` to `1.54.2`.
+- cf4dcc9: Updated dependency `@playwright/test` to `1.54.2`.
+- 8256072: Updated dependency `@playwright/test` to `1.55.0`.
+- Updated dependencies [391dbd5]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.8.0
+
 ## 1.13.4
 
 ### Patch Changes

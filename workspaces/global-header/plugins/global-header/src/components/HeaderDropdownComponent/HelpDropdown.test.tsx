@@ -15,6 +15,10 @@
  */
 import { screen, fireEvent } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/test-utils';
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
 import { HelpDropdown } from './HelpDropdown';
 import { useDropdownManager } from '../../hooks';
 import { useHelpDropdownMountPoints } from '../../hooks/useHelpDropdownMountPoints';
@@ -28,12 +32,23 @@ jest.mock('../../hooks/useHelpDropdownMountPoints', () => ({
   useHelpDropdownMountPoints: jest.fn(),
 }));
 
+// Mock translation hooks
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
+}));
+
 const MockComponent = ({ title, icon }: any) => (
   <div data-testid="mock-component">
     {icon && <span data-testid="mock-icon">{icon}</span>}
     {title}
   </div>
 );
+
+const MockNullComponent = () => null;
 
 describe('HelpDropdown', () => {
   const mockHandleOpen = jest.fn();
@@ -49,20 +64,52 @@ describe('HelpDropdown', () => {
     });
   });
 
-  it('returns null when there are no mount points', async () => {
+  it('shows empty state when there are no mount points', async () => {
     (useHelpDropdownMountPoints as jest.Mock).mockReturnValue([]);
 
-    const { container } = await renderInTestApp(<HelpDropdown />);
+    await renderInTestApp(<HelpDropdown />);
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByRole('button')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(await screen.findByText('No support links')).toBeInTheDocument();
   });
 
-  it('returns null when mount points is undefined', async () => {
+  it('shows empty state when mount points is undefined', async () => {
     (useHelpDropdownMountPoints as jest.Mock).mockReturnValue(undefined);
 
-    const { container } = await renderInTestApp(<HelpDropdown />);
+    await renderInTestApp(<HelpDropdown />);
 
-    expect(container.firstChild).toBeNull();
+    expect(screen.getByRole('button')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(await screen.findByText('No support links')).toBeInTheDocument();
+  });
+
+  it('shows empty state when all components return null', async () => {
+    const mockMountPoints: HelpDropdownMountPoint[] = [
+      {
+        Component: MockNullComponent,
+        config: {
+          props: {
+            title: 'Null Component',
+          },
+          priority: 1,
+        },
+      },
+    ];
+
+    (useHelpDropdownMountPoints as jest.Mock).mockReturnValue(mockMountPoints);
+
+    await renderInTestApp(<HelpDropdown />);
+
+    expect(screen.getByRole('button')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(await screen.findByText('No support links')).toBeInTheDocument();
   });
 
   it('renders help dropdown button when mount points exist', async () => {

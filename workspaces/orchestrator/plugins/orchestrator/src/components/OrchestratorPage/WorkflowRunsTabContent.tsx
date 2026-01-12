@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   ErrorPanel,
@@ -44,35 +44,49 @@ import {
 import { orchestratorApiRef } from '../../api';
 import { DEFAULT_TABLE_PAGE_SIZE } from '../../constants';
 import usePolling from '../../hooks/usePolling';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
   workflowInstanceRouteRef,
   workflowRouteRef,
 } from '../../routes';
-import { Selector } from '../Selector';
+import { Trans } from '../Trans';
+import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import OverrideBackstageTable from '../ui/OverrideBackstageTable';
+import { Selector } from '../ui/Selector';
+import { WorkflowInstanceStatusIndicator } from '../ui/WorkflowInstanceStatusIndicator';
 import { mapProcessInstanceToDetails } from '../WorkflowInstancePage/WorkflowInstancePageContent';
-import { WorkflowInstanceStatusIndicator } from '../WorkflowInstanceStatusIndicator';
-import { WorkflowRunDetail } from '../WorkflowRunDetail';
 
-const makeSelectItemsFromProcessInstanceValues = (): SelectItem[] => [
-  { label: 'Running', value: ProcessInstanceStatusDTO.Active },
-  { label: 'Failed', value: ProcessInstanceStatusDTO.Error },
-  { label: 'Completed', value: ProcessInstanceStatusDTO.Completed },
-  { label: 'Aborted', value: ProcessInstanceStatusDTO.Aborted },
-  { label: 'Suspended', value: ProcessInstanceStatusDTO.Suspended },
+const makeSelectItemsFromProcessInstanceValues = (t: any): SelectItem[] => [
+  { label: t('table.status.running'), value: ProcessInstanceStatusDTO.Active },
+  { label: t('table.status.failed'), value: ProcessInstanceStatusDTO.Error },
+  {
+    label: t('table.status.completed'),
+    value: ProcessInstanceStatusDTO.Completed,
+  },
+  { label: t('table.status.aborted'), value: ProcessInstanceStatusDTO.Aborted },
+  {
+    label: t('table.status.pending'),
+    value: ProcessInstanceStatusDTO.Suspended,
+  },
 ];
 
-const statuses = makeSelectItemsFromProcessInstanceValues();
-const started = ['Today', 'Yesterday', 'Last 7 days', 'This month'].map(
-  (time): SelectItem => ({
-    label: time,
-    value: time,
-  }),
-);
-
 export const WorkflowRunsTabContent = () => {
+  const { t } = useTranslation();
+
+  const statuses = makeSelectItemsFromProcessInstanceValues(t);
+  const started = [
+    t('table.filters.startedOptions.today'),
+    t('table.filters.startedOptions.yesterday'),
+    t('table.filters.startedOptions.last7days'),
+    t('table.filters.startedOptions.thisMonth'),
+  ].map(
+    (time): SelectItem => ({
+      label: time,
+      value: time,
+    }),
+  );
   const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
   const { workflowId, kind, name, namespace } = useRouteRefParams(
     entityWorkflowRouteRef,
@@ -98,7 +112,7 @@ export const WorkflowRunsTabContent = () => {
   const [orderByField, setOrderByField] = useState<string>('start');
   const [orderDirection, setOrderDirection] = useState('desc');
 
-  const getFilter = React.useCallback((): Filter | undefined => {
+  const getFilter = useCallback((): Filter | undefined => {
     // runs for specific WF
     const workflowIdFilter: FieldFilter | undefined = workflowId
       ? {
@@ -210,7 +224,7 @@ export const WorkflowRunsTabContent = () => {
     return filters[0] || undefined;
   }, [workflowId, statusSelectorValue, startedSelectorValue, entityRef]);
 
-  const fetchInstances = React.useCallback(async () => {
+  const fetchInstances = useCallback(async () => {
     const paginationInfo: PaginationInfoDTO = {
       pageSize: pageSize + 1, // add one more to know if this is the last page or there are more instances. If there are no more instances, next button is disabled.
       offset: page * pageSize,
@@ -227,7 +241,9 @@ export const WorkflowRunsTabContent = () => {
     );
 
     const clonedData: WorkflowRunDetail[] =
-      instances.data.items?.map(mapProcessInstanceToDetails) || [];
+      instances.data.items?.map(instance =>
+        mapProcessInstanceToDetails(instance, t),
+      ) || [];
     return clonedData;
   }, [
     orchestratorApi,
@@ -236,11 +252,12 @@ export const WorkflowRunsTabContent = () => {
     orderByField,
     orderDirection,
     getFilter,
+    t,
   ]);
 
   const { loading, error, value } = usePolling(fetchInstances);
 
-  const applyBackendSort = React.useCallback(
+  const applyBackendSort = useCallback(
     (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number => {
       // Workaround for material-table applying sorting on top of backend sorting. The version we are using is too old to request a fix.
       // Should be resolved when upgrading backstage and all plugins to material6
@@ -258,7 +275,7 @@ export const WorkflowRunsTabContent = () => {
     [value, orderDirection],
   );
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     (): TableColumn<WorkflowRunDetail>[] => [
       {
         title: 'ID',
@@ -287,7 +304,7 @@ export const WorkflowRunsTabContent = () => {
         ? []
         : [
             {
-              title: 'Workflow name',
+              title: t('table.headers.workflowName'),
               field: 'processName',
               customSort: applyBackendSort,
               render: (data: WorkflowRunDetail) => (
@@ -298,7 +315,7 @@ export const WorkflowRunsTabContent = () => {
             },
           ]),
       {
-        title: 'Run Status',
+        title: t('table.headers.runStatus'),
         field: 'state',
         render: (data: WorkflowRunDetail) => (
           <WorkflowInstanceStatusIndicator
@@ -306,10 +323,15 @@ export const WorkflowRunsTabContent = () => {
           />
         ),
       },
-      { title: 'Started', field: 'start', customSort: applyBackendSort },
-      { title: 'Duration', field: 'duration', sorting: false },
+      {
+        title: t('table.headers.started'),
+        field: 'start',
+        customSort: applyBackendSort,
+      },
+      { title: t('table.headers.duration'), field: 'duration', sorting: false },
     ],
     [
+      t,
       workflowInstanceLink,
       workflowId,
       workflowPageLink,
@@ -336,7 +358,7 @@ export const WorkflowRunsTabContent = () => {
     <Grid container item xs={12} spacing={2}>
       <Grid item>
         <Selector
-          label="Status"
+          label={t('table.filters.status')}
           items={statuses}
           onChange={value_ => {
             setStatusSelectorValue(value_);
@@ -345,7 +367,7 @@ export const WorkflowRunsTabContent = () => {
           selected={statusSelectorValue}
         />
         <Selector
-          label="Started"
+          label={t('table.filters.started')}
           items={started}
           onChange={value_ => {
             setStartedSelectorValue(value_);
@@ -358,9 +380,17 @@ export const WorkflowRunsTabContent = () => {
         <InfoCard
           noPadding
           title={
-            workflowId
-              ? `Workflow runs (${data.length}) `
-              : `All runs (${data.length}) `
+            workflowId ? (
+              <Trans
+                message="table.title.allWorkflowRuns"
+                params={{ count: data.length }}
+              />
+            ) : (
+              <Trans
+                message="table.title.allRuns"
+                params={{ count: data.length }}
+              />
+            )
           }
         >
           <OverrideBackstageTable

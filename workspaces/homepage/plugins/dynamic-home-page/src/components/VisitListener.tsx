@@ -23,7 +23,7 @@ export const VisitListener = () => {
   const cards = useDynamicHomePageCards();
 
   const shouldLoadVisitListener = useMemo<boolean>(() => {
-    if (!cards) {
+    if (cards.length === 0) {
       return false;
     }
 
@@ -32,8 +32,10 @@ export const VisitListener = () => {
       'Extension(TopVisitedCard)',
     ];
 
-    return cards.some(card =>
-      requiresVisitListener.includes(card.Component.displayName!),
+    return cards.some(
+      card =>
+        card.Component?.displayName &&
+        requiresVisitListener.includes(card.Component.displayName),
     );
   }, [cards]);
 

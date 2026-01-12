@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { FileRejection } from 'react-dropzone/.';
 
-import { ErrorPanel } from '@backstage/core-components';
-
-import { Box, makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+import Divider from '@mui/material/Divider';
 import {
   Chatbot,
   ChatbotAlert,
@@ -37,6 +36,7 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
+import { PlusIcon, SearchIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
@@ -44,11 +44,12 @@ import {
   useBackstageUserIdentity,
   useConversationMessages,
   useConversations,
-  useDeleteConversation,
   useIsMobile,
   useLastOpenedConversation,
   useLightspeedDeletePermission,
 } from '../hooks';
+import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
+import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
@@ -62,6 +63,7 @@ import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
+import { RenameConversationModal } from './RenameConversationModal';
 
 const useStyles = makeStyles(theme => ({
   body: {
@@ -102,15 +104,19 @@ const useStyles = makeStyles(theme => ({
 
 type LightspeedChatProps = {
   selectedModel: string;
+  topicRestrictionEnabled: boolean;
+  selectedProvider: string;
   userName?: string;
   avatar?: string;
   profileLoading: boolean;
   handleSelectedModel: (item: string) => void;
-  models: { label: string; value: string }[];
+  models: { label: string; value: string; provider: string }[];
 };
 
 export const LightspeedChat = ({
   selectedModel,
+  topicRestrictionEnabled,
+  selectedProvider,
   userName,
   avatar,
   profileLoading,
@@ -119,19 +125,20 @@ export const LightspeedChat = ({
 }: LightspeedChatProps) => {
   const isMobile = useIsMobile();
   const classes = useStyles();
+  const { t } = useTranslation();
   const user = useBackstageUserIdentity();
-  const [filterValue, setFilterValue] = React.useState<string>('');
-  const [announcement, setAnnouncement] = React.useState<string>('');
-  const [conversationId, setConversationId] = React.useState<string>('');
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState<boolean>(!isMobile);
-  const [newChatCreated, setNewChatCreated] = React.useState<boolean>(false);
+  const [filterValue, setFilterValue] = useState<string>('');
+  const [announcement, setAnnouncement] = useState<string>('');
+  const [conversationId, setConversationId] = useState<string>('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(!isMobile);
+  const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
-    React.useState<boolean>(false);
-  const [error, setError] = React.useState<Error | null>(null);
-  const [targetConversationId, setTargetConversationId] =
-    React.useState<string>('');
-  const [isDeleteModalOpen, setIsDeleteModalOpen] =
-    React.useState<boolean>(false);
+    useState<boolean>(false);
+  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true); // read from user settings in future
+  const [pinnedChats, setPinnedChats] = useState<string[]>([]); // read from user settings in future
+  const [targetConversationId, setTargetConversationId] = useState<string>('');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
 
@@ -146,11 +153,17 @@ export const LightspeedChat = ({
   } = useFileAttachmentContext();
 
   // Sync conversationId with lastOpenedId whenever lastOpenedId changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (isReady && lastOpenedId !== null) {
       setConversationId(lastOpenedId);
     }
   }, [lastOpenedId, isReady]);
+
+  useEffect(() => {
+    if (!isPinningChatsEnabled) {
+      setPinnedChats([]);
+    }
+  }, [isPinningChatsEnabled]);
 
   const queryClient = useQueryClient();
 
@@ -159,17 +172,18 @@ export const LightspeedChat = ({
     isLoading,
     isRefetching,
   } = useConversations();
-  const { mutateAsync: deleteConversation } = useDeleteConversation();
+
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
+  const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
   const samplePrompts = useWelcomePrompts();
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && lastOpenedId === null && isReady) {
       setConversationId(TEMP_CONVERSATION_ID);
       setNewChatCreated(true);
     }
   }, [user, isReady, lastOpenedId, setConversationId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Clear last opened conversationId when there are no conversations.
     if (
       !isLoading &&
@@ -181,7 +195,7 @@ export const LightspeedChat = ({
     }
   }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
     if (conversationId) {
       setLastOpenedId(conversationId);
@@ -209,27 +223,30 @@ export const LightspeedChat = ({
       conversationId,
       userName,
       selectedModel,
+      selectedProvider,
       avatar,
       onComplete,
       onStart,
     );
 
   const [messages, setMessages] =
-    React.useState<MessageProps[]>(conversationMessages);
+    useState<MessageProps[]>(conversationMessages);
 
   const sendMessage = (message: string | number) => {
     if (conversationId !== TEMP_CONVERSATION_ID) {
       setNewChatCreated(false);
     }
     setAnnouncement(
-      `Message from User: ${prompt}. Message from Bot is loading.`,
+      t('conversation.announcement.userMessage' as any, {
+        prompt: message.toString(),
+      }),
     );
     handleInputPrompt(message.toString(), getAttachments(fileContents));
     setIsSendButtonDisabled(true);
     setFileContents([]);
   };
 
-  const onNewChat = React.useCallback(() => {
+  const onNewChat = useCallback(() => {
     (async () => {
       if (conversationId !== TEMP_CONVERSATION_ID) {
         setMessages([]);
@@ -252,52 +269,93 @@ export const LightspeedChat = ({
     setIsDeleteModalOpen(true);
   };
 
-  const handleDeleteConversation = React.useCallback(() => {
-    (async () => {
-      try {
-        await deleteConversation({
-          conversation_id: targetConversationId,
-          invalidateCache: false,
-        });
-        if (targetConversationId === lastOpenedId) {
-          onNewChat();
-          clearLastOpenedId();
-        }
-        setIsDeleteModalOpen(false);
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn(e);
-        setError(e);
-      }
-    })();
-  }, [
-    deleteConversation,
-    clearLastOpenedId,
-    lastOpenedId,
-    onNewChat,
-    targetConversationId,
-  ]);
+  const openChatRenameModal = (conversation_id: string) => {
+    setTargetConversationId(conversation_id);
+    setIsRenameModalOpen(true);
+  };
 
-  const additionalMessageProps = React.useCallback(
-    (conversationSummary: ConversationSummary) => ({
-      menuItems: (
-        <DropdownItem
-          isDisabled={!hasDeleteAccess}
-          onClick={() => openDeleteModal(conversationSummary.conversation_id)}
-        >
-          Delete
-        </DropdownItem>
+  const handleDeleteConversation = useCallback(() => {
+    if (targetConversationId === lastOpenedId) {
+      onNewChat();
+      clearLastOpenedId();
+    }
+    setIsDeleteModalOpen(false);
+  }, [clearLastOpenedId, lastOpenedId, onNewChat, targetConversationId]);
+
+  const pinChat = (convId: string) => {
+    setPinnedChats(prev => [...prev, convId]); // write to user settings in future
+  };
+
+  const unpinChat = (convId: string) => {
+    setPinnedChats(prev => prev.filter(id => id !== convId)); // write to user settings in future
+  };
+
+  const additionalMessageProps = useCallback(
+    (conversationSummary: ConversationSummary) => {
+      const isChatFavorite = pinnedChats?.find(
+        c => c === conversationSummary.conversation_id,
+      );
+      return {
+        menuItems: (
+          <>
+            <DropdownItem
+              isDisabled={!hasUpdateAccess}
+              onClick={() =>
+                openChatRenameModal(conversationSummary.conversation_id)
+              }
+            >
+              {t('conversation.rename')}
+            </DropdownItem>
+            {isPinningChatsEnabled && (
+              <>
+                {isChatFavorite ? (
+                  <DropdownItem
+                    onClick={() =>
+                      unpinChat(conversationSummary.conversation_id)
+                    }
+                  >
+                    {t('conversation.removeFromPinnedChats')}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    onClick={() => pinChat(conversationSummary.conversation_id)}
+                  >
+                    {t('conversation.addToPinnedChats')}
+                  </DropdownItem>
+                )}
+              </>
+            )}
+            <DropdownItem
+              isDisabled={!hasDeleteAccess}
+              onClick={() =>
+                openDeleteModal(conversationSummary.conversation_id)
+              }
+            >
+              {t('conversation.delete')}
+            </DropdownItem>
+          </>
+        ),
+      };
+    },
+    [pinnedChats, hasDeleteAccess, isPinningChatsEnabled, hasUpdateAccess, t],
+  );
+
+  const categorizedMessages = useMemo(
+    () =>
+      getCategorizeMessages(
+        conversations,
+        pinnedChats,
+        additionalMessageProps,
+        t,
       ),
-    }),
-    [hasDeleteAccess],
-  );
-  const categorizedMessages = getCategorizeMessages(
-    conversations,
-    additionalMessageProps,
+    [additionalMessageProps, conversations, pinnedChats, t],
   );
 
-  const filterConversations = React.useCallback(
+  const filterConversations = useCallback(
     (targetValue: string) => {
+      const pinnedChatsKey = t('conversation.category.pinnedChats') || 'Pinned';
+      let isNoPinnedChatsSearchResults = false;
+      let isNoRecentChatsSearchResults = false;
       const filteredConversations = Object.entries(categorizedMessages).reduce(
         (acc, [key, items]) => {
           const filteredItems = items.filter(item =>
@@ -305,27 +363,71 @@ export const LightspeedChat = ({
               .toLocaleLowerCase('en-US')
               .includes(targetValue.toLocaleLowerCase('en-US')),
           );
-          if (filteredItems.length > 0) {
-            acc[key] = filteredItems;
+          const isPinnedCategory = key === pinnedChatsKey;
+          if (isPinnedCategory && isPinningChatsEnabled) {
+            if (filteredItems.length > 0) {
+              acc[pinnedChatsKey] = filteredItems;
+            } else {
+              isNoPinnedChatsSearchResults =
+                categorizedMessages[pinnedChatsKey].length > 0;
+              acc[pinnedChatsKey] = [
+                {
+                  id: isNoPinnedChatsSearchResults
+                    ? 'no-pinned-chats-search-results'
+                    : 'no-pinned-chats',
+                  text: isNoPinnedChatsSearchResults
+                    ? t('common.noSearchResults')
+                    : t('chatbox.emptyState.noPinnedChats'),
+                  noIcon: true,
+                  additionalProps: {
+                    isDisabled: true,
+                  },
+                },
+              ];
+            }
+          } else if (!isPinnedCategory) {
+            if (filteredItems.length > 0) {
+              acc[key] = filteredItems;
+            } else {
+              isNoRecentChatsSearchResults =
+                categorizedMessages[key].length > 0;
+
+              acc[key] = [
+                {
+                  id: isNoRecentChatsSearchResults
+                    ? 'no-recent-chats-search-results'
+                    : 'no-recent-chats',
+                  text: isNoRecentChatsSearchResults
+                    ? t('common.noSearchResults')
+                    : t('chatbox.emptyState.noRecentChats'),
+                  noIcon: true,
+                  additionalProps: {
+                    isDisabled: true,
+                  },
+                },
+              ];
+            }
           }
           return acc;
         },
         {} as any,
       );
+      // If both sections had items but search filtered them all out, return empty object
+      // so PatternFly's default empty state shows instead of custom empty state messages
+      if (isNoPinnedChatsSearchResults && isNoRecentChatsSearchResults) {
+        return {};
+      }
       return filteredConversations;
     },
-    [categorizedMessages],
+    [categorizedMessages, isPinningChatsEnabled, t],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMessages(conversationMessages);
   }, [conversationMessages]);
 
-  const onSelectActiveItem = React.useCallback(
-    (
-      _: React.MouseEvent | undefined,
-      selectedItem: string | number | undefined,
-    ) => {
+  const onSelectActiveItem = useCallback(
+    (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
       setNewChatCreated(false);
       setConversationId((c_id: string) => {
         if (c_id !== selectedItem) {
@@ -347,20 +449,23 @@ export const LightspeedChat = ({
   const welcomePrompts =
     (newChatCreated && conversationMessages.length === 0) ||
     (!conversationFound && conversationMessages.length === 0)
-      ? samplePrompts?.map(prompt => ({
-          title: prompt.title,
-          message: prompt.message,
-          onClick: () => {
-            sendMessage(prompt.message);
-          },
-        }))
+      ? samplePrompts?.map(prompt => {
+          const p = prompt as { title: string; message: string };
+          return {
+            title: p.title,
+            message: p.message,
+            onClick: () => {
+              sendMessage(p.message);
+            },
+          };
+        })
       : [];
 
-  const handleFilter = React.useCallback((value: string) => {
+  const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
   }, []);
 
-  const onDrawerToggle = React.useCallback(() => {
+  const onDrawerToggle = useCallback(() => {
     setIsDrawerOpen(isOpen => !isOpen);
   }, []);
 
@@ -374,28 +479,27 @@ export const LightspeedChat = ({
       if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
         setShowAlert(true);
         setUploadError({
-          message:
-            'Unsupported file type. Supported types are: .txt, .yaml, .json and .xml.',
+          message: t('file.upload.error.unsupportedType'),
         });
       }
     });
   };
-
-  if (error) {
-    return (
-      <Box padding={1}>
-        <ErrorPanel error={error} />
-      </Box>
-    );
-  }
 
   return (
     <>
       {isDeleteModalOpen && (
         <DeleteModal
           isOpen={isDeleteModalOpen}
+          conversationId={targetConversationId}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDeleteConversation}
+        />
+      )}
+      {isRenameModalOpen && (
+        <RenameConversationModal
+          isOpen={isRenameModalOpen}
+          onClose={() => setIsRenameModalOpen(false)}
+          conversationId={targetConversationId}
         />
       )}
       <Chatbot
@@ -408,10 +512,12 @@ export const LightspeedChat = ({
               aria-expanded={isDrawerOpen}
               onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
               className={classes.headerMenu}
+              tooltipContent={t('tooltip.chatHistoryMenu')}
+              aria-label={t('aria.chatHistoryMenu')}
             />
             <ChatbotHeaderTitle className={classes.headerTitle}>
               <Title headingLevel="h1" size="3xl">
-                Developer Lightspeed
+                {t('chatbox.header.title')}
               </Title>
             </ChatbotHeaderTitle>
           </ChatbotHeaderMain>
@@ -420,26 +526,55 @@ export const LightspeedChat = ({
             selectedModel={selectedModel}
             handleSelectedModel={item => handleSelectedModel(item)}
             models={models}
+            isPinningChatsEnabled={isPinningChatsEnabled}
+            onPinnedChatsToggle={setIsPinningChatsEnabled}
           />
         </ChatbotHeader>
+        <Divider />
         <ChatbotConversationHistoryNav
           drawerPanelContentProps={{ isResizable: true, minSize: '200px' }}
           reverseButtonOrder
           displayMode={ChatbotDisplayMode.embedded}
           onDrawerToggle={onDrawerToggle}
+          title=""
+          navTitleIcon={null}
           isDrawerOpen={isDrawerOpen}
+          drawerCloseButtonProps={{
+            'aria-label': t('aria.closeDrawerPanel'),
+          }}
           setIsDrawerOpen={setIsDrawerOpen}
           activeItemId={conversationId}
           onSelectActiveItem={onSelectActiveItem}
           conversations={filterConversations(filterValue)}
           onNewChat={newChatCreated ? undefined : onNewChat}
+          newChatButtonText={t('button.newChat')}
+          newChatButtonProps={{
+            icon: <PlusIcon />,
+          }}
           handleTextInputChange={handleFilter}
-          searchInputPlaceholder="Search previous chats..."
+          searchInputPlaceholder={t('chatbox.search.placeholder')}
+          searchInputAriaLabel={t('aria.search.placeholder')}
+          searchInputProps={{
+            value: filterValue,
+            onClear: () => {
+              setFilterValue('');
+            },
+          }}
+          noResultsState={
+            filterValue &&
+            Object.keys(filterConversations(filterValue)).length === 0
+              ? {
+                  bodyText: t('chatbox.emptyState.noResults.body'),
+                  titleText: t('chatbox.emptyState.noResults.title'),
+                  icon: SearchIcon,
+                }
+              : undefined
+          }
           drawerContent={
             <FileDropZone
               onFileDrop={(e, data) => handleAttach(data, e)}
               displayMode={ChatbotDisplayMode.embedded}
-              infoText="Supported file types are: .txt, .yaml, .json and .xml. The maximum file size is 25 MB."
+              infoText={t('chatbox.fileUpload.infoText')}
               allowedFileTypes={supportedFileTypes}
               onAttachRejected={onAttachRejected}
             >
@@ -447,7 +582,7 @@ export const LightspeedChat = ({
                 <div className={classes.errorContainer}>
                   <ChatbotAlert
                     component="h4"
-                    title="File upload failed"
+                    title={t('chatbox.fileUpload.failed')}
                     variant={uploadError.type ?? 'danger'}
                     isInline
                     onClose={() => setUploadError({ message: null })}
@@ -467,6 +602,7 @@ export const LightspeedChat = ({
                   welcomePrompts={welcomePrompts}
                   conversationId={conversationId}
                   isStreaming={isSendButtonDisabled}
+                  topicRestrictionEnabled={topicRestrictionEnabled}
                 />
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
@@ -480,13 +616,25 @@ export const LightspeedChat = ({
                   buttonProps={{
                     attach: {
                       inputTestId: 'attachment-input',
+                      tooltipContent: t('tooltip.attach'),
+                    },
+                    microphone: {
+                      tooltipContent: {
+                        active: t('tooltip.microphone.active'),
+                        inactive: t('tooltip.microphone.inactive'),
+                      },
+                    },
+                    send: {
+                      tooltipContent: t('tooltip.send'),
                     },
                   }}
                   allowedFileTypes={supportedFileTypes}
                   onAttachRejected={onAttachRejected}
-                  placeholder="Send a message and optionally upload a JSON, YAML, TXT, or XML file..."
+                  placeholder={t('chatbox.message.placeholder')}
                 />
-                <ChatbotFootnote {...getFootnoteProps(classes.footerPopover)} />
+                <ChatbotFootnote
+                  {...getFootnoteProps(classes.footerPopover, t)}
+                />
               </ChatbotFooter>
             </FileDropZone>
           }

@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-import {
-  catalogModuleModelCatalogResourceEntityProvider,
-  catalogModuleRHDHRHOAIReaderProcessor,
-  catalogModuleRHDHRHOAILocationsExtensionPoint,
-  catalogModuleRHDHRHOAIEntityProvider,
-} from './module';
+import { catalogModuleModelCatalogResourceEntityProvider } from './module';
 
 describe('model-catalog', () => {
   it('should export entity providers and processor', () => {
     expect(catalogModuleModelCatalogResourceEntityProvider).toBeDefined();
-    expect(catalogModuleRHDHRHOAIReaderProcessor).toBeDefined();
-    expect(catalogModuleRHDHRHOAILocationsExtensionPoint).toBeDefined();
-    expect(catalogModuleRHDHRHOAIEntityProvider).toBeDefined();
   });
 });

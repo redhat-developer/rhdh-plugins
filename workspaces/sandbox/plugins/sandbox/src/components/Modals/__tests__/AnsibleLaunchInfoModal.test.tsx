@@ -21,9 +21,14 @@ import { AnsibleLaunchInfoModal } from '../AnsibleLaunchInfoModal';
 import { useSandboxContext } from '../../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../../utils/aap-utils';
 import { wrapInTestApp } from '@backstage/test-utils';
+import { Intcmp } from '../../../hooks/useProductURLs';
+import * as eddlUtils from '../../../utils/eddl-utils';
 
 // Mock the useSandboxContext hook
 jest.mock('../../../hooks/useSandboxContext');
+
+// Mock the EDDL utils
+jest.mock('../../../utils/eddl-utils');
 
 // Mock clipboard API
 Object.defineProperty(window.navigator, 'clipboard', {
@@ -44,9 +49,17 @@ describe('AnsibleLaunchInfoModal', () => {
   const mockUseSandboxContext = useSandboxContext as jest.MockedFunction<
     typeof useSandboxContext
   >;
+  const mockUseTrackAnalytics = jest.spyOn(eddlUtils, 'useTrackAnalytics');
+
+  const mockTrackAnalytics = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Setup window.appEventData for tests
+    (global as any).window = { appEventData: [] };
+
+    // Mock useTrackAnalytics to return our mock function
+    mockUseTrackAnalytics.mockReturnValue(mockTrackAnalytics);
   });
 
   const renderModal = (contextOverrides = {}) => {
@@ -243,7 +256,7 @@ describe('AnsibleLaunchInfoModal', () => {
 
     // The button should be wrapped in a Link component that targets the ansible URL
     const linkElement = getStartedButton.closest('a');
-    expect(linkElement).toHaveAttribute('href', 'https://ansible.example.com');
+    expect(linkElement).toHaveAttribute('href', `https://ansible.example.com`);
     expect(linkElement).toHaveAttribute('target', '_blank');
   });
 
@@ -259,5 +272,61 @@ describe('AnsibleLaunchInfoModal', () => {
         /button on the Ansible Automation Platform sandbox card/i,
       ),
     ).toBeInTheDocument();
+  });
+
+  describe('CTA Event Pushing', () => {
+    it('should disable automatic tracking and push CTA event when Get started link is clicked', () => {
+      renderModal();
+
+      const getStartedButton = screen.getByRole('button', {
+        name: /Get started/i,
+      });
+
+      // The button should be wrapped in a Link component
+      const linkElement = getStartedButton.closest('a');
+
+      // Should have automatic tracking disabled
+      expect(linkElement).toHaveAttribute(
+        'data-analytics-track-by-analytics-manager',
+        'false',
+      );
+
+      // Click the link
+      fireEvent.click(linkElement!);
+
+      // Should push CTA event with correct parameters
+      expect(mockTrackAnalytics).toHaveBeenCalledWith(
+        'Get Started - Ansible',
+        'Catalog',
+        'https://ansible.example.com',
+        Intcmp.AAP,
+        'cta',
+      );
+    });
+
+    it('should not push CTA event if ansibleUILink is not available', () => {
+      // Clear all mocks to ensure clean state
+      jest.clearAllMocks();
+
+      const contextOverrides = {
+        ansibleStatus: AnsibleStatus.READY,
+        ansibleUILink: undefined, // No link available
+        ansibleUIUser: 'admin',
+        ansibleUIPassword: 'password123',
+        ansibleError: null,
+      };
+
+      renderModal(contextOverrides);
+
+      const getStartedButton = screen.getByRole('button', {
+        name: /Get started/i,
+      });
+
+      const linkElement = getStartedButton.closest('a');
+      fireEvent.click(linkElement!);
+
+      // Should not push event when link is not available
+      expect(mockTrackAnalytics).not.toHaveBeenCalled();
+    });
   });
 });

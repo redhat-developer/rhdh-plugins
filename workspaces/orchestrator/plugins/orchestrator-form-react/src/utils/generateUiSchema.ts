@@ -166,39 +166,28 @@ function extractUiSchema(mixedSchema: JSONSchema7): UiSchema<JsonObject> {
         processObject(curSchema.else, `${path}`);
       }
     }
+
+    // Handle dependencies with oneOf - extract UI properties from conditional branches
+    if (curSchema.dependencies) {
+      Object.entries(curSchema.dependencies).forEach(([_depKey, depValue]) => {
+        if (typeof depValue === 'object' && !Array.isArray(depValue)) {
+          const depSchema = depValue as JSONSchema7;
+          if (depSchema.oneOf) {
+            // Process each oneOf branch to extract UI properties
+            depSchema.oneOf.forEach(branch => {
+              if (typeof branch === 'object' && branch.properties) {
+                processObjectProperties(branch.properties, path);
+              }
+            });
+          }
+        }
+      });
+    }
   };
 
   processObject(mixedSchema, '');
   return replaceSparseArrayElementsdWithEmptyObject(result);
 }
-
-const addReadonly = (
-  data: JsonObject,
-  uiSchema: UiSchema<JsonObject>,
-  isMultiStep: boolean,
-) => {
-  // make inputs that came from existing instance variables readonly
-  if (!isMultiStep) {
-    for (const key of Object.keys(data)) {
-      uiSchema[key] = {
-        ...uiSchema[key],
-        'ui:readonly': true,
-      };
-    }
-    return;
-  }
-  for (const [stepKey, stepValue] of Object.entries(data)) {
-    uiSchema[stepKey] = {
-      ...uiSchema[stepKey],
-    };
-    for (const key of Object.keys(stepValue as JsonObject)) {
-      uiSchema[stepKey][key] = {
-        ...uiSchema[stepKey][key],
-        'ui:readonly': true,
-      };
-    }
-  }
-};
 
 const addFocusOnFirstElement = (
   schema: JSONSchema7,
@@ -239,12 +228,8 @@ const addFocusOnFirstElement = (
 const generateUiSchema = (
   schema: JSONSchema7,
   isMultiStep: boolean,
-  readonlyData?: JsonObject,
 ): UiSchema<JsonObject> => {
   const uiSchema = extractUiSchema(schema);
-  if (readonlyData) {
-    addReadonly(readonlyData, uiSchema, isMultiStep);
-  }
   addFocusOnFirstElement(schema, uiSchema, isMultiStep);
   return uiSchema;
 };

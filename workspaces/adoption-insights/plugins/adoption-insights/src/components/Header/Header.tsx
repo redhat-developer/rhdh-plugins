@@ -19,7 +19,6 @@ import type { FC, HTMLProps, MouseEvent } from 'react';
 import { Header } from '@backstage/core-components';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
@@ -28,19 +27,24 @@ import Button from '@mui/material/Button';
 import DateRangePicker from './DateRangePicker';
 import { useDateRange } from './DateRangeContext';
 import { DATE_RANGE_OPTIONS } from '../../utils/constants';
-import { format, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
+import { formatDate } from '../../utils/utils';
 import { getDateRange } from '../../utils/utils';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useLanguage } from '../../hooks/useLanguage';
 
 interface InsightsHeaderProps extends HTMLProps<HTMLDivElement> {
   title: string;
 }
 
-const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
+const InsightsHeader: FC<InsightsHeaderProps> = () => {
   const [selectedOption, setSelectedOption] = useState<string>('last-28-days');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
+  const locale = useLanguage();
 
   const {
     startDateRange,
@@ -104,31 +108,29 @@ const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
 
   const getLabel = useMemo(() => {
     return (value: string) => {
-      if (value === 'dateRange' && startDateRange && endDateRange)
-        return `${format(startDateRange, 'PP')} - ${format(
+      if (value === 'dateRange' && startDateRange && endDateRange) {
+        const startFormatted = formatDate(
+          startDateRange,
+          { year: 'numeric', month: 'short', day: 'numeric' },
+          locale,
+        );
+        const endFormatted = formatDate(
           endDateRange,
-          'PP',
-        )}`;
+          { year: 'numeric', month: 'short', day: 'numeric' },
+          locale,
+        );
+        return `${startFormatted} - ${endFormatted}`;
+      }
 
       const option = DATE_RANGE_OPTIONS.find(opt => opt.value === value);
-      return option ? option.label : 'Last 28 days';
+      return option
+        ? t(option.labelKey as any, {})
+        : t('header.dateRange.defaultLabel');
     };
-  }, [startDateRange, endDateRange]);
+  }, [startDateRange, endDateRange, t, locale]);
 
   return (
-    <Header
-      pageTitleOverride="Adoption Insights"
-      title={
-        <Typography
-          variant="h3"
-          color="textPrimary"
-          sx={{ fontWeight: 'bold' }}
-        >
-          {title}
-        </Typography>
-      }
-      style={{ background: 'none' }}
-    >
+    <Header title={t('header.title')} pageTitleOverride={t('header.title')}>
       <Select
         displayEmpty
         open={menuOpen}
@@ -163,18 +165,18 @@ const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
             value={option.value}
             sx={{ height: '52px' }}
           >
-            {option.label}
+            {t(option.labelKey as any, {})}
           </MenuItem>
         ))}
         <Divider />
         <MenuItem
           sx={{ height: '52px' }}
-          onMouseDown={event => {
+          onMouseDown={(event: MouseEvent<HTMLElement>) => {
             event.preventDefault();
             handleDateRangeClick(event);
           }}
         >
-          Date range...
+          {t('header.dateRange.dateRange')}
         </MenuItem>
       </Select>
 
@@ -203,14 +205,14 @@ const InsightsHeader: FC<InsightsHeaderProps> = ({ title }) => {
             color="primary"
             sx={{ textTransform: 'none' }}
           >
-            Cancel
+            {t('header.dateRange.cancel')}
           </Button>
           <Button
             onClick={handleDateRange}
             color="primary"
             disabled={!(startDate && endDate)}
           >
-            OK
+            {t('header.dateRange.ok')}
           </Button>
         </Box>
       </Popover>

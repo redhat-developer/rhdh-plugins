@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from 'tss-react/mui';
 import { Theme } from '@mui/material/styles';
@@ -34,6 +34,7 @@ import {
   applySelectorArray,
   useFetch,
   useRetriggerEvaluate,
+  useProcessingState,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -48,6 +49,10 @@ const useStyles = makeStyles()(
   }),
 );
 
+const toSortedString = (array: string[]) => {
+  return [...array].sort((a, b) => a.localeCompare(b)).join(',');
+};
+
 export const ActiveMultiSelect: Widget<
   JsonObject,
   JSONSchema7,
@@ -58,23 +63,64 @@ export const ActiveMultiSelect: Widget<
   const { id, name, label, value: rawValue, onChange, formContext } = props;
   const value = rawValue as string[];
   const formData = formContext?.formData;
+  const isChangedByUser = !!formContext?.getIsChangedByUser(id);
+  const setIsChangedByUser = formContext?.setIsChangedByUser;
 
   const uiProps = useMemo(
     () => (props.options.props ?? {}) as UiProps,
     [props.options.props],
   );
+  const isReadOnly = !!props?.schema.readOnly;
 
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
   const mandatorySelector = uiProps['fetch:response:mandatory']?.toString();
+  const defaultValueSelector = uiProps['fetch:response:value']?.toString();
+  const allowNewItems = uiProps['ui:allowNewItems'] === true;
+  const staticDefault = uiProps['fetch:response:default'];
+  const staticDefaultValues = Array.isArray(staticDefault)
+    ? (staticDefault as string[])
+    : undefined;
 
   const [localError] = useState<string | undefined>(
     autocompleteSelector
       ? undefined
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
+  const [inProgressItem, setInProgressItem] = useState<string | undefined>();
+
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
+
+  // Compute all options: fetched options + in-progress item + static defaults as fallback
+  const allOptions: string[] = useMemo(() => {
+    const baseOptions = autocompleteOptions ?? [];
+    const hasOptions = baseOptions.length > 0;
+
+    // Start with fetched options or static defaults as fallback
+    let options = hasOptions ? baseOptions : (staticDefaultValues ?? []);
+
+    // Add in-progress item if allowed
+    if (allowNewItems && inProgressItem) {
+      options = [...new Set([inProgressItem, ...options])];
+    }
+
+    // Also include current values so they appear as options
+    if (value && value.length > 0) {
+      options = [...new Set([...options, ...value])];
+    }
+
+    return options;
+  }, [
+    inProgressItem,
+    autocompleteOptions,
+    allowNewItems,
+    staticDefaultValues,
+    value,
+  ]);
+
+  const handleFetchStarted = formContext?.handleFetchStarted;
+  const handleFetchEnded = formContext?.handleFetchEnded;
 
   const retrigger = useRetriggerEvaluate(
     templateUnitEvaluator,
@@ -85,49 +131,103 @@ export const ActiveMultiSelect: Widget<
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
+  // Track the complete loading state (fetch + processing)
+  const { completeLoading, wrapProcessing } = useProcessingState(
+    loading,
+    handleFetchStarted,
+    handleFetchEnded,
+  );
+
+  // Process fetch results
+  // Note: Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
     if (!data) {
       return;
     }
 
     const doItAsync = async () => {
-      if (autocompleteSelector) {
-        const autocompleteValues = await applySelectorArray(
-          data,
-          autocompleteSelector,
-          true,
-          true,
-        );
-        setAutocompleteOptions(autocompleteValues);
-      }
+      await wrapProcessing(async () => {
+        if (autocompleteSelector) {
+          const autocompleteValues = await applySelectorArray(
+            data,
+            autocompleteSelector,
+            true,
+            true,
+          );
 
-      if (mandatorySelector) {
-        const mandatory = await applySelectorArray(
-          data,
-          mandatorySelector,
-          true,
-        );
-        setMandatoryValues(mandatory);
-        if (!mandatory.every(item => value.includes(item))) {
-          onChange([...new Set([...mandatory, ...value])]);
+          // Only update if arrays differ (by item or count).
+          const arraysAreEqual =
+            Array.isArray(autocompleteOptions) &&
+            autocompleteValues.length === autocompleteOptions.length &&
+            toSortedString(autocompleteValues) ===
+              toSortedString(autocompleteOptions);
+
+          if (!arraysAreEqual) {
+            setAutocompleteOptions(autocompleteValues);
+          }
         }
-      }
+
+        let defaults: string[] = [];
+        if (!isChangedByUser) {
+          // set this just once, when the user has not touched the field
+          if (defaultValueSelector) {
+            defaults = await applySelectorArray(
+              data,
+              defaultValueSelector,
+              true,
+              true,
+            );
+            // no need to persist the defaults, they are used only once
+          }
+        }
+
+        let mandatory: string[] = [];
+        if (mandatorySelector) {
+          mandatory = await applySelectorArray(data, mandatorySelector, true);
+
+          // Only update if arrays differ (by item or count).
+          const arraysAreEqual =
+            Array.isArray(mandatoryValues) &&
+            mandatory.length === mandatoryValues.length &&
+            toSortedString(mandatory) === toSortedString(mandatoryValues);
+
+          if (!arraysAreEqual) {
+            setMandatoryValues(mandatory);
+          }
+        }
+
+        if (
+          !mandatory.every(item => value.includes(item)) ||
+          !defaults.every(item => value.includes(item))
+        ) {
+          onChange([...new Set([...mandatory, ...value, ...defaults])]);
+        }
+      });
     };
 
     doItAsync();
   }, [
     autocompleteSelector,
     mandatorySelector,
+    defaultValueSelector,
+    autocompleteOptions,
+    mandatoryValues,
+    isChangedByUser,
     data,
     props.id,
     value,
     onChange,
+    wrapProcessing,
   ]);
 
   const handleChange = (
-    _: React.SyntheticEvent,
+    _: SyntheticEvent,
     changed: AutocompleteValue<string[], false, false, false>,
   ) => {
+    if (setIsChangedByUser) {
+      setIsChangedByUser(id, true);
+    }
+    setInProgressItem(undefined);
     onChange(changed);
   };
 
@@ -135,18 +235,25 @@ export const ActiveMultiSelect: Widget<
     return <ErrorText text={localError ?? error ?? ''} id={id} />;
   }
 
-  if (loading) {
+  // Show spinner only if loading AND we don't have static defaults to show
+  const hasStaticDefaults =
+    staticDefaultValues && staticDefaultValues.length > 0;
+  if (completeLoading && !hasStaticDefaults) {
     return <CircularProgress size={20} />;
   }
 
-  if (autocompleteOptions) {
+  // Render if we have fetched options, static defaults, or current values
+  const hasOptionsToShow =
+    allOptions.length > 0 || autocompleteOptions !== undefined;
+  if (hasOptionsToShow) {
     return (
       <Box>
         <FormControl variant="outlined" fullWidth>
           <Autocomplete
             multiple
             data-testid={`${id}-autocomplete`}
-            options={autocompleteOptions}
+            disabled={isReadOnly}
+            options={allOptions}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}
             filterSelectedOptions
@@ -169,12 +276,20 @@ export const ActiveMultiSelect: Widget<
                 name={name}
                 variant="outlined"
                 label={label}
+                onChange={event => {
+                  setInProgressItem(event.target.value);
+                }}
               />
             )}
             renderTags={(values, getTagProps) =>
               values.map((item, index) => {
                 const tagProps = getTagProps({ index });
-                const { className, onDelete, ...restTagProps } = tagProps;
+                const {
+                  className,
+                  onDelete,
+                  key: _,
+                  ...restTagProps
+                } = tagProps;
 
                 return (
                   <Box key={item} title={item}>

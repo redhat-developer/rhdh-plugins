@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 import React from 'react';
-
+import { useAsync } from 'react-use';
 import { Content, Page } from '@backstage/core-components';
+import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
-
-import SectionWrapper from '../SectionWrapper';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import useGreeting from '../../hooks/useGreeting';
+import { useTranslation } from '../../hooks/useTranslation';
 import LearnSection from '../LearnSection';
 import ModelSection from '../ModelSection';
+import SectionWrapper from '../SectionWrapper';
 import TemplateSection from '../TemplateSection';
-import useGreeting from '../../hooks/useGreeting';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { identityApiRef, useApi } from '@backstage/core-plugin-api';
-import { useAsync } from 'react-use';
 
 export const AiExperienceHomePage = () => {
   const greeting = useGreeting();
   const identityApi = useApi(identityApiRef);
+  const { t } = useTranslation();
 
   const { value: profile } = useAsync(() => identityApi.getProfileInfo());
 
@@ -39,7 +39,9 @@ export const AiExperienceHomePage = () => {
         <Content>
           <Box>
             <SectionWrapper
-              title={`${greeting} ${profile?.displayName ?? 'Guest'}!`}
+              title={`${greeting} ${
+                profile?.displayName ?? t('common.guest')
+              }!`}
             >
               <Box sx={{ padding: '20px 10px 30px 40px' }}>
                 <LearnSection />
@@ -47,14 +49,14 @@ export const AiExperienceHomePage = () => {
             </SectionWrapper>
           </Box>
           <Box sx={{ pt: 3 }}>
-            <SectionWrapper title="Explore AI models">
+            <SectionWrapper title={t('sections.exploreAiModels')}>
               <Box sx={{ padding: '20px 10px 10px 0' }}>
                 <ModelSection />
               </Box>
             </SectionWrapper>
           </Box>
           <Box sx={{ pt: 3 }}>
-            <SectionWrapper title="Explore AI templates">
+            <SectionWrapper title={t('sections.exploreAiTemplates')}>
               <Box sx={{ padding: '20px 10px 10px 0' }}>
                 <TemplateSection />
               </Box>

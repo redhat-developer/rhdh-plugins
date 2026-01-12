@@ -17,6 +17,7 @@
 import type { ComponentType } from 'react';
 
 import type { Tool } from '@backstage/plugin-home';
+import type { CardLayout, CardSettings } from '@backstage/plugin-home-react';
 
 /**
  * @public
@@ -44,7 +45,28 @@ export interface Layout {
  * @public
  */
 export interface HomePageCardMountPointConfig {
+  /**
+   * This is the internal id that solves duplication issues when using
+   * cthe same omponent with different configurations.
+   * This is used as reference identifier when calling
+   * `createCardExtension` (as name) to convert dynamic mount points
+   * to home page cards for the `CustomHomepageGrid`.
+   *
+   * **NOTE:** This field is required when enabling user customization!
+   */
+  id?: string;
+  title?: string;
+  titleKey?: string;
+  description?: string;
+  descriptionKey?: string;
+
+  cardLayout?: CardLayout;
+  settings?: CardSettings;
+
   priority?: number;
+  /**
+   * Setting a layout configuration enables this card by default.
+   */
   layouts?: Record<Breakpoint, Layout>;
 }
 
@@ -53,6 +75,12 @@ export interface HomePageCardMountPointConfig {
  */
 export interface HomePageCardMountPoint {
   Component: ComponentType;
+
+  // Untested
+  Actions?: ComponentType;
+  // Untested
+  Settings?: ComponentType;
+
   config?: HomePageCardMountPointConfig & {
     props?: Record<string, any>;
   };
@@ -63,4 +91,14 @@ export type QuickAccessLink = {
   title: string;
   isExpanded?: boolean;
   links: (Tool & { iconUrl: string })[];
+};
+
+export type LearningSectionItem = {
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonLink: string;
+  target?: string;
+  ariaLabel?: string;
+  endIcon: React.ComponentType;
 };

@@ -26,12 +26,8 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
 
-import {
-  handlers,
-  LOCAL_AI_ADDR,
-  mockModelRes,
-} from '../../__fixtures__/handlers';
-import { LOCAL_RCS_ADDR, rcsHandlers } from '../../__fixtures__/rcsHandlers';
+import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
+import { lcsHandlers, LOCAL_LCS_ADDR } from '../../__fixtures__/lcsHandlers';
 import { lightspeedPlugin } from '../plugin';
 
 const mockUserId = `user: default/user1`;
@@ -75,7 +71,7 @@ const splitJsonObjects = (response: { text: string }): string[] =>
 
 describe('lightspeed router tests', () => {
   const server = setupServer(...handlers);
-  const rcs = setupServer(...rcsHandlers);
+  const rcs = setupServer(...lcsHandlers);
 
   beforeAll(() => {
     server.listen({
@@ -154,36 +150,29 @@ describe('lightspeed router tests', () => {
     });
   });
 
-  describe('/v1/* proxy middleware', () => {
-    it('should proxy requests to /v1/models', async () => {
+  describe('GET v1/models', () => {
+    it('should load available models', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
         '/api/lightspeed/v1/models',
       );
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockModelRes);
-    });
-
-    it('unknown path', async () => {
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer).get(
-        '/api/lightspeed/v1/unknown',
-      );
-
-      expect(response.status).toBe(404);
-      expect(String(response.error)).toContain(
-        'Error: cannot GET /api/lightspeed/v1/unknown (404)',
-      );
+      const responseData = response.body;
+      expect(responseData.models).toBeDefined();
+      expect(Array.isArray(responseData.models)).toBe(true);
+      expect(responseData.models.length).toBe(2);
+      expect(responseData.models[0].identifier).toBeDefined();
+      expect(responseData.models[1].identifier).toBeDefined();
     });
   });
 
-  describe('GET /conversations', () => {
+  describe('GET /v2/conversations', () => {
     it('load conversations list with summary', async () => {
       const mockSummary = 'dummy summary';
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
-        `/api/lightspeed/conversations`,
+        `/api/lightspeed/v2/conversations`,
       );
       expect(response.statusCode).toEqual(200);
       // Parse response body
@@ -215,39 +204,116 @@ describe('lightspeed router tests', () => {
     });
   });
 
-  describe('GET and DELETE /conversations/:conversation_id', () => {
+  describe('PUT /v2/conversations/:conversation_id', () => {
+    it('should successfully update topic summary', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${encodedConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        conversation_id: mockConversationId,
+        success: true,
+        message: 'Topic summary updated successfully',
+      });
+    });
+
+    it('should fail with unauthorized error while updating topic summary', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${encodedConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(403);
+      expect(response.body.error).toBeDefined();
+    });
+
+    it('should return 500 error when conversation does not exist', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${mockAnotherConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain('not found');
+    });
+
+    it('should handle upstream server errors properly', async () => {
+      const backendServer = await startBackendServer();
+      // Override the handler to simulate an error from upstream
+      rcs.use(
+        http.put(`${LOCAL_LCS_ADDR}/v2/conversations/:conversation_id`, () => {
+          return new HttpResponse(
+            JSON.stringify({
+              error: {
+                message: 'Internal server error',
+              },
+            }),
+            {
+              status: 500,
+              headers: { 'Content-Type': 'application/json' },
+            },
+          );
+        }),
+      );
+
+      const response = await request(backendServer)
+        .put(`/api/lightspeed/v2/conversations/${encodedConversationId}`)
+        .send({
+          topic_summary: 'new topic',
+        });
+
+      expect(response.statusCode).toEqual(500);
+      expect(response.body.error).toContain(
+        'Error from lightspeed-core server',
+      );
+    });
+  });
+
+  describe('GET and DELETE /v2/conversations/:conversation_id', () => {
     it('load history', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
-        `/api/lightspeed/conversations/${encodedConversationId}`,
+        `/api/lightspeed/v2/conversations/${encodedConversationId}`,
       );
       expect(response.statusCode).toEqual(200);
       // Parse response body
       const responseData = response.body;
 
-      // Check that responseData is an array
+      // New format: chat_history is a list of sessions containing messages
       expect(responseData.chat_history).toBeDefined();
       expect(Array.isArray(responseData.chat_history)).toBe(true);
-      expect(responseData.chat_history.length).toBe(2);
+      expect(responseData.chat_history.length).toBe(1);
 
-      expect(responseData.chat_history[0].type).toBe('human');
-      expect(
-        responseData.chat_history[0].response_metadata.created_at,
-      ).toBeDefined();
-
-      expect(responseData.chat_history[1].type).toBe('ai');
-      expect(
-        responseData.chat_history[1].response_metadata.created_at,
-      ).toBeDefined();
-      expect(responseData.chat_history[1].response_metadata.model).toBe(
-        'granite3-dense:8b',
+      const session = responseData.chat_history[0];
+      expect(Array.isArray(session.messages)).toBe(true);
+      expect(session.messages.length).toBe(2);
+      expect(session.messages[0]).toEqual(
+        expect.objectContaining({ type: 'user', content: expect.any(String) }),
       );
+      expect(session.messages[1]).toEqual(
+        expect.objectContaining({
+          type: 'assistant',
+          content: expect.any(String),
+        }),
+      );
+      expect(session.started_at).toBeDefined();
+      expect(session.completed_at).toBeDefined();
+      expect(session.provider).toBeDefined();
+      expect(session.model).toBeDefined();
     });
 
     it('should fail with unauthorized error while fetching conversation history', async () => {
       const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
       const response = await request(backendServer).get(
-        `/api/lightspeed/conversations/${encodedConversationId}`,
+        `/api/lightspeed/v2/conversations/${encodedConversationId}`,
       );
       expect(response.statusCode).toEqual(403);
     });
@@ -256,7 +322,7 @@ describe('lightspeed router tests', () => {
       // delete request
       const backendServer = await startBackendServer();
       const deleteResponse = await request(backendServer).delete(
-        `/api/lightspeed/conversations/${encodedConversationId}`,
+        `/api/lightspeed/v2/conversations/${encodedConversationId}`,
       );
       expect(deleteResponse.statusCode).toEqual(200);
     });
@@ -265,7 +331,7 @@ describe('lightspeed router tests', () => {
       // delete request
       const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
       const deleteResponse = await request(backendServer).delete(
-        `/api/lightspeed/conversations/${encodedConversationId}`,
+        `/api/lightspeed/v2/conversations/${encodedConversationId}`,
       );
       expect(deleteResponse.statusCode).toEqual(403);
     });
@@ -274,7 +340,7 @@ describe('lightspeed router tests', () => {
       // await deleteHistory(mockConversationId);
       const backendServer = await startBackendServer();
       const response = await request(backendServer).get(
-        `/api/lightspeed/conversations/${encodedConversationId}`,
+        `/api/lightspeed/v2/conversations/${encodedConversationId}`,
       );
       expect(response.statusCode).toEqual(500);
       expect(response.body.error).toContain('not found');
@@ -284,7 +350,7 @@ describe('lightspeed router tests', () => {
       const backendServer = await startBackendServer();
 
       const response = await request(backendServer).get(
-        `/api/lightspeed/conversations/${mockAnotherConversationId}`,
+        `/api/lightspeed/v2/conversations/${mockAnotherConversationId}`,
       );
       expect(response.statusCode).toEqual(500);
       expect(response.body.error).toContain('not found');
@@ -454,7 +520,7 @@ describe('lightspeed router tests', () => {
       const backendServer = await startBackendServer();
       const nonExistentModel = 'nonexistent-model';
       rcs.use(
-        http.post(`${LOCAL_RCS_ADDR}/v1/streaming_query`, () => {
+        http.post(`${LOCAL_LCS_ADDR}/v1/streaming_query`, () => {
           return new HttpResponse(
             JSON.stringify({
               error: {

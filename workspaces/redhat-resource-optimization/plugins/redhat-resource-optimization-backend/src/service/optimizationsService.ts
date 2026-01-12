@@ -20,10 +20,8 @@ import {
   createServiceRef,
 } from '@backstage/backend-plugin-api';
 import type { OptimizationsApi } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
-import { DefaultApiClient } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/DefaultApiClient';
-
-const DEFAULT_OPTIMIZATIONS_BASE_URL =
-  'https://console.redhat.com/api/cost-management/v1';
+import { OptimizationsClient } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
+import { DEFAULT_API_BASE_URL } from '../util/constant';
 
 export const optimizationServiceRef = createServiceRef<OptimizationsApi>({
   id: 'optimization-client',
@@ -33,19 +31,18 @@ export const optimizationServiceRef = createServiceRef<OptimizationsApi>({
       deps: {
         configApi: coreServices.rootConfig,
       },
-      async factory({ configApi }) {
-        // create a custom object to override the base URL
-        const defaultClient = new DefaultApiClient({
+      async factory({ configApi }): Promise<OptimizationsApi> {
+        const baseUrl =
+          configApi.getOptionalString('optimizationsBaseUrl') ??
+          DEFAULT_API_BASE_URL;
+
+        return new OptimizationsClient({
           discoveryApi: {
-            async getBaseUrl() {
-              const baseUrl =
-                configApi.getOptionalString('optimizationsBaseUrl') ??
-                DEFAULT_OPTIMIZATIONS_BASE_URL;
+            async getBaseUrl(_pluginId?: string) {
               return baseUrl;
             },
           },
-        });
-        return defaultClient;
+        }) as OptimizationsApi;
       },
     }),
 });

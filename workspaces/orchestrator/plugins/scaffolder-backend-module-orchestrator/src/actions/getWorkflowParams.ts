@@ -16,19 +16,12 @@
 import { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import { JsonObject } from '@backstage/types/index';
+import { JsonObject } from '@backstage/types';
 
 import { isAxiosError } from 'axios';
 import { dump } from 'js-yaml';
 
 import { getOrchestratorApi, getRequestConfigOption } from './utils';
-
-type RunWorkflowTemplateActionInput = { workflow_id: string; indent?: number };
-type RunWorkflowTemplateActionOutput = {
-  title: string;
-  description: string;
-  parameters: string;
-};
 
 const getError = (err: unknown): Error => {
   if (
@@ -45,26 +38,18 @@ const getError = (err: unknown): Error => {
 const indentString = (str: string, indent: number) =>
   indent ? str.replace(/^/gm, ' '.repeat(indent)) : str;
 
-export const createGetWorkflowParamsAction = (
+export function createGetWorkflowParamsAction(
   discoveryService: DiscoveryApi,
   authService: AuthService,
-) =>
-  createTemplateAction<
-    RunWorkflowTemplateActionInput,
-    RunWorkflowTemplateActionOutput
-  >({
+) {
+  return createTemplateAction({
     id: 'orchestrator:workflow:get_params',
     description: 'Collect parameters of a SonataFlow workflow.',
     supportsDryRun: false,
     schema: {
       input: {
-        required: ['workflow_id'],
-        type: 'object',
-        properties: {
-          workflow_id: {
-            type: 'string',
-          },
-        },
+        workflow_id: z => z.string().describe('Workflow Id'),
+        indent: z => z.number().optional().describe('Number of indents'),
       },
     },
     async handler(ctx) {
@@ -117,3 +102,4 @@ export const createGetWorkflowParamsAction = (
       }
     },
   });
+}

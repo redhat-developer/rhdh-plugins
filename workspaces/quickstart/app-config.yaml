@@ -3,29 +3,87 @@ app:
   baseUrl: http://localhost:3000
   quickstart:
     - title: Set up authentication
+      titleKey: steps.setupAuthentication.title
       icon: Admin
+      roles:
+        - admin
       description: Set up secure login credentials to protect your account from unauthorized access.
+      descriptionKey: steps.setupAuthentication.description
       cta:
         text: Learn more
+        textKey: steps.setupAuthentication.ctaTitle
         link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/
     - title: Configure RBAC
+      titleKey: steps.configureRbac.title
       icon: Rbac
       description: Assign roles and permissions to control who can view, create, or edit resources, ensuring secure and efficient collaboration.
+      descriptionKey: steps.configureRbac.description
       cta:
         text: Manage access
+        textKey: steps.configureRbac.ctaTitle
         link: /rbac
     - title: Configure Git
+      titleKey: steps.configureGit.title
       icon: Git
       description: Connect your Git providers, such as GitHub to manage code, automate workflows, and integrate with platform features.
+      descriptionKey: steps.configureGit.description
       cta:
         text: Learn more
+        textKey: steps.configureGit.ctaTitle
         link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/
     - title: Manage plugins
+      titleKey: steps.managePlugins.title
       icon: Plugins
       description: Browse and install extensions to add features, connect with external tools, and customize your experience.
+      descriptionKey: steps.managePlugins.description
       cta:
         text: Explore plugins
+        textKey: steps.managePlugins.ctaTitle
         link: /extensions
+    - title: Import application
+      titleKey: steps.importApplication.title
+      roles:
+        - developer
+      icon: Import
+      description: Import your existing code and services into the catalog to organize and access them through your developer portal.
+      descriptionKey: steps.importApplication.description
+      cta:
+        text: Import
+        textKey: steps.importApplication.ctaTitle
+        link: /bulk-import/repositories
+    - title: Learn about the Catalog
+      titleKey: steps.learnAboutCatalog.title
+      roles:
+        - developer
+      icon: Catalog
+      description: Discover all software components, services, and APIs, and view their owners and documentation.
+      descriptionKey: steps.learnAboutCatalog.description
+      cta:
+        text: View Catalog
+        textKey: steps.learnAboutCatalog.ctaTitle
+        link: /catalog
+    - title: Explore Self-service templates
+      titleKey: steps.exploreSelfServiceTemplates.title
+      roles:
+        - developer
+      icon: SelfService
+      description: Use our self-service templates to quickly set up new projects, services, or documentation.
+      descriptionKey: steps.exploreSelfServiceTemplates.description
+      cta:
+        text: Explore templates
+        textKey: steps.exploreSelfServiceTemplates.ctaTitle
+        link: /create
+    - title: Find all Learning Paths
+      titleKey: steps.findAllLearningPaths.title
+      roles:
+        - developer
+      icon: Learning
+      description: Integrate tailored e-learning into your workflows with Learning Paths to accelerate onboarding, close skill gaps, and promote best practices.
+      descriptionKey: steps.findAllLearningPaths.description
+      cta:
+        text: View Learning Paths
+        textKey: steps.findAllLearningPaths.ctaTitle
+        link: /learning-paths
 
 organization:
   name: My Company
@@ -106,18 +164,18 @@ catalog:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
       target: ../../examples/entities.yaml
-
-    # Local example template
     - type: file
       target: ../../examples/template/template.yaml
       rules:
         - allow: [Template]
-
-    # Local example organizational data
     - type: file
       target: ../../examples/org.yaml
       rules:
         - allow: [User, Group]
+
+    # Test catalog - tech docs integration
+    - type: url
+      target: https://github.com/redhat-developer/rhdh/blob/main/catalog-info.yaml
 
     ## Uncomment these lines to add more example data
     # - type: url
@@ -134,8 +192,11 @@ catalog:
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
-
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
   # setting this to `false` will disable permissions
-  enabled: false
+  enabled: true
+  rbac:
+    pluginsWithPermission:
+      - catalog
+      - extensions

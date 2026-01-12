@@ -1,6 +1,6 @@
 {
   "name": "@internal/scorecard",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": "18 || 20 || 22"
@@ -17,13 +17,14 @@
     "build-image": "yarn workspace backend build-image",
     "build:knip-reports": "backstage-repo-tools knip-reports",
     "clean": "backstage-cli repo clean",
-    "test": "backstage-cli repo test",
-    "test:all": "backstage-cli repo test --coverage",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' backstage-cli repo test",
+    "test:all": "NODE_OPTIONS='--experimental-vm-modules' backstage-cli repo test --coverage",
     "test:e2e": "playwright test",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
@@ -39,11 +40,11 @@
     "directory": "workspaces/scorecard"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.32.1",
+    "@backstage/cli": "^0.34.5",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.13.4",
+    "@backstage/repo-tools": "^0.16.0",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.54.2",
+    "@playwright/test": "^1.56.1",
     "@spotify/prettier-config": "^15.0.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -53,8 +54,8 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@backstage/plugin-catalog-backend": "2.0.0",
-    "@backstage/plugin-scaffolder-backend": "1.33.0"
+    "refractor@npm:3.6.0/prismjs": "^1.30.0",
+    "isolated-vm": "6.0.2"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

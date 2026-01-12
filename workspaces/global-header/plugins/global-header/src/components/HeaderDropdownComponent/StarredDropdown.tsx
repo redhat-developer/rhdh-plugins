@@ -19,7 +19,7 @@ import {
   useEntityPresentation,
   useStarredEntities,
 } from '@backstage/plugin-catalog-react';
-import { Link } from '@backstage/core-components';
+import { Link, AppIcon } from '@backstage/core-components';
 import {
   CompoundEntityRef,
   Entity,
@@ -40,6 +40,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { useDropdownManager } from '../../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { DropdownEmptyState } from './DropdownEmptyState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 /**
  * @public
@@ -62,6 +63,8 @@ const StarredItem: FC<SectionComponentProps> = ({
     useEntityPresentation(entityRef);
   const { name, kind, namespace } = parseEntityRef(entityRef as string);
   const theme = useTheme();
+  const { t } = useTranslation();
+  const rhdhPalette = (theme.palette as any).rhdh;
 
   return (
     <MenuItem
@@ -70,6 +73,11 @@ const StarredItem: FC<SectionComponentProps> = ({
       onClick={handleClose}
       disableRipple
       disableTouchRipple
+      sx={{
+        '&:hover .star-icon, &:focus-visible .star-icon': {
+          visibility: 'visible',
+        },
+      }}
     >
       {Icon && (
         <ListItemIcon sx={{ minWidth: 36 }}>
@@ -86,15 +94,20 @@ const StarredItem: FC<SectionComponentProps> = ({
         // inset={!Icon}
         sx={{ ml: 1, mr: 1 }}
       />
-      <Tooltip title="Remove from list">
+      <Tooltip title={t('starred.removeTooltip')}>
         <IconButton
+          className="star-icon"
           onClick={e => {
             e.preventDefault();
             e.stopPropagation();
             toggleStarredEntity(entityRef);
           }}
+          sx={{
+            visibility: 'hidden',
+            color: rhdhPalette?.general?.starredItemsColor ?? '#F3BA37',
+          }}
         >
-          <Star color="warning" />
+          <AppIcon id="star" Fallback={Star} />
         </IconButton>
       </Tooltip>
     </MenuItem>
@@ -104,22 +117,23 @@ const StarredItem: FC<SectionComponentProps> = ({
 export const StarredDropdown = () => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
   const { starredEntities, toggleStarredEntity } = useStarredEntities();
+  const { t } = useTranslation();
 
   const entitiesArray = Array.from(starredEntities);
 
   return (
     <HeaderDropdownComponent
-      buttonContent={<StarBorderIcon />}
+      buttonContent={<AppIcon id="unstarred" Fallback={StarBorderIcon} />}
       onOpen={handleOpen}
       onClose={handleClose}
       anchorEl={anchorEl}
-      tooltip="Your starred items"
+      tooltip={t('starred.title')}
       isIconButton
     >
       {entitiesArray.length > 0 ? (
         <>
           <ListItemText
-            primary="Your starred items"
+            primary={t('starred.title')}
             sx={{ pl: 2, mt: 1, fontWeight: 'bold', color: 'text.secondary' }}
           />
           {entitiesArray.map(enitityRef => (
@@ -133,8 +147,8 @@ export const StarredDropdown = () => {
         </>
       ) : (
         <DropdownEmptyState
-          title="No starred items yet"
-          subTitle="Click the star icon next to an entity's name to save it here for quick access."
+          title={t('starred.noItemsTitle')}
+          subTitle={t('starred.noItemsSubtitle')}
           icon={<AutoAwesomeIcon sx={{ fontSize: 64 }} color="disabled" />}
         />
       )}

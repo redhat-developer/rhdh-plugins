@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { FC } from 'react';
 
 import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { compareNodes } from '../../utils/NodeInstanceUtils';
-import { Paragraph } from '../Paragraph';
+import { Paragraph } from './Paragraph';
 import { WorkflowProgressNode } from './WorkflowProgressNode';
 import { fromNodeInstanceToWorkflowProgressNodeModel } from './WorkflowProgressNodeModel';
 
@@ -30,24 +31,33 @@ export interface WorkflowProgressProps {
   emptyState?: React.ReactNode;
 }
 
-export const WorkflowProgress: React.FC<WorkflowProgressProps> = ({
+export const WorkflowProgress: FC<WorkflowProgressProps> = ({
   workflowStatus,
   workflowError,
   workflowNodes,
-  emptyState = <Paragraph>No data available</Paragraph>,
-}) => (
-  <>
-    {workflowNodes.length === 0
-      ? emptyState
-      : structuredClone(workflowNodes)
-          .sort(compareNodes)
-          .map(
-            fromNodeInstanceToWorkflowProgressNodeModel(
-              workflowStatus,
-              workflowError,
-            ),
-          )
-          .map(model => <WorkflowProgressNode model={model} key={model.id} />)}
-  </>
-);
+  emptyState,
+}) => {
+  const { t } = useTranslation();
+  const defaultEmptyState = emptyState || (
+    <Paragraph>{t('messages.noDataAvailable')}</Paragraph>
+  );
+
+  return (
+    <>
+      {workflowNodes.length === 0
+        ? defaultEmptyState
+        : structuredClone(workflowNodes)
+            .sort(compareNodes)
+            .map(
+              fromNodeInstanceToWorkflowProgressNodeModel(
+                workflowStatus,
+                workflowError,
+              ),
+            )
+            .map(model => (
+              <WorkflowProgressNode model={model} key={model.id} />
+            ))}
+    </>
+  );
+};
 WorkflowProgress.displayName = 'WorkflowProgress';

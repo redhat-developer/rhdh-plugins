@@ -32,6 +32,7 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 
 import CircularProgress from '@mui/material/CircularProgress';
+import { useTrackAnalytics } from '../../../utils/eddl-utils';
 
 const FLAG_FETCH_URL =
   'https://catamphetamine.github.io/country-flag-icons/3x2';
@@ -64,6 +65,41 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
   error,
 }) => {
   const theme = useTheme();
+  const trackAnalytics = useTrackAnalytics();
+
+  // Handle Send Code click for analytics tracking
+  const handleSendCodeClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await trackAnalytics(
+      'Send Code',
+      'Verification',
+      window.location.href,
+      undefined,
+      'cta',
+    );
+    handlePhoneNumberSubmit();
+  };
+
+  // Handle Cancel click for analytics tracking
+  const handleCancelClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    await trackAnalytics(
+      'Cancel Verification',
+      'Verification',
+      window.location.href,
+      undefined,
+      'cta',
+    );
+    handleClose();
+  };
 
   const PhoneInputField = forwardRef(function PhoneInputField(
     props: TextFieldProps,
@@ -204,7 +240,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         <Button
           data-testid="submit-phone-button"
           variant="contained"
-          onClick={handlePhoneNumberSubmit}
+          onClick={handleSendCodeClick}
           type="submit"
           disabled={!phoneNumber || loading}
           endIcon={
@@ -216,7 +252,7 @@ export const PhoneNumberStep: React.FC<PhoneNumberFormProps> = ({
         <Button
           data-testid="close-phone-button"
           variant="outlined"
-          onClick={handleClose}
+          onClick={handleCancelClick}
           sx={{
             border: `1px solid ${theme.palette.primary.main}`,
             '&:hover': {

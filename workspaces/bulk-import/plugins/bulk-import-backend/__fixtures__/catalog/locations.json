@@ -33,5 +33,40 @@
       "target": "https://github.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/blob/main/plugins/my-plugin/examples/templates/01-some-template.yaml",
       "type": "url"
     }
+  },
+  {
+    "data": {
+      "id": "8",
+      "target": "https://gitlab.com/saltypig1/funtimes/blob/dev/catalog-info.yaml",
+      "type": "url"
+    }
+  },
+  {
+    "data": {
+      "id": "9",
+      "target": "https://gitlab.com/my-ent-org-2/swapi-node/blob/main/catalog-info.yaml",
+      "type": "url"
+    }
+  },
+  {
+    "data": {
+      "id": "10",
+      "target": "https://gitlab.com/my-ent-org-2/swapi-node/blob/main/catalog-info.yaml",
+      "type": "url"
+    }
+  },
+  {
+    "data": {
+      "id": "11",
+      "target": "https://gitlab.com/my-ent-org-2/swapi-node/blob/feature/myAwesomeFeat/catalog-info.yaml",
+      "type": "url"
+    }
+  },
+  {
+    "data": {
+      "id": "12",
+      "target": "https://gitlab.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch/blob/main/plugins/my-plugin/examples/templates/01-some-template.yaml",
+      "type": "url"
+    }
   }
 ]

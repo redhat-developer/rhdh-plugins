@@ -14,22 +14,33 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { Ref, useMemo, useState } from 'react';
 
 import { createStyles, makeStyles } from '@material-ui/core';
-import { ChatbotHeaderActions } from '@patternfly/chatbot';
+import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
+import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import {
+  ChatbotHeaderActions,
+  ChatbotHeaderOptionsDropdown,
+} from '@patternfly/chatbot';
+import {
+  Divider,
   Dropdown,
+  DropdownGroup,
   DropdownItem,
   DropdownList,
   MenuToggle,
   MenuToggleElement,
 } from '@patternfly/react-core';
 
+import { useTranslation } from '../hooks/useTranslation';
+
 type LightspeedChatBoxHeaderProps = {
   selectedModel: string;
   handleSelectedModel: (item: string) => void;
-  models: { label: string; value: string }[];
+  models: { label: string; value: string; provider: string }[];
+  isPinningChatsEnabled: boolean;
+  onPinnedChatsToggle: (state: boolean) => void;
 };
 
 const useStyles = makeStyles(() =>
@@ -40,6 +51,14 @@ const useStyles = makeStyles(() =>
         margin: 0,
       },
     },
+    optionsToggle: {
+      '& svg': {
+        transform: 'none !important',
+      },
+    },
+    groupTitle: {
+      fontWeight: 'bold',
+    },
   }),
 );
 
@@ -47,15 +66,35 @@ export const LightspeedChatBoxHeader = ({
   selectedModel,
   handleSelectedModel,
   models,
+  isPinningChatsEnabled,
+  onPinnedChatsToggle,
 }: LightspeedChatBoxHeaderProps) => {
-  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = React.useState(false);
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const styles = useStyles();
 
-  const toggle = (toggleRef: React.Ref<MenuToggleElement>) => (
+  // Group models by provider
+  const groupedModels = useMemo(() => {
+    const groups: {
+      [key: string]: { label: string; value: string; provider: string }[];
+    } = {};
+
+    models.forEach(model => {
+      const provider = model.provider || t('chatbox.provider.other');
+      if (!groups[provider]) {
+        groups[provider] = [];
+      }
+      groups[provider].push(model);
+    });
+
+    return groups;
+  }, [models, t]);
+
+  const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <MenuToggle
       variant="secondary"
-      aria-label="Chatbot selector"
+      aria-label={t('aria.chatbotSelector')}
       ref={toggleRef}
       isExpanded={isOptionsMenuOpen}
       onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}
@@ -63,6 +102,10 @@ export const LightspeedChatBoxHeader = ({
       {selectedModel}
     </MenuToggle>
   );
+
+  const handlePinningChatsToggle = (state: boolean) => {
+    onPinnedChatsToggle(state);
+  };
 
   return (
     <ChatbotHeaderActions>
@@ -80,13 +123,65 @@ export const LightspeedChatBoxHeader = ({
         toggle={toggle}
       >
         <DropdownList>
-          {models.map(m => (
-            <DropdownItem value={m.value} key={m.value}>
-              {m.label}
-            </DropdownItem>
-          ))}
+          {Object.entries(groupedModels).map(
+            ([provider, providerModels], index) => (
+              <>
+                <DropdownGroup
+                  className={styles.groupTitle}
+                  key={provider}
+                  label={provider}
+                  labelHeadingLevel="h1"
+                >
+                  {providerModels.map(model => (
+                    <DropdownItem value={model.value} key={model.value}>
+                      {model.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownGroup>
+                {index < Object.entries(groupedModels).length - 1 && (
+                  <Divider component="li" />
+                )}
+              </>
+            ),
+          )}
         </DropdownList>
       </Dropdown>
+      <ChatbotHeaderOptionsDropdown
+        isCompact
+        toggleProps={{
+          'aria-label': t('aria.settings.label'),
+          className: styles.optionsToggle,
+        }}
+        tooltipProps={{
+          content: t('tooltip.settings'),
+        }}
+      >
+        <DropdownGroup>
+          <DropdownList>
+            {isPinningChatsEnabled ? (
+              <DropdownItem
+                value="disablePinningChats"
+                key="disablePinningChat"
+                icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
+                description={t('settings.pinned.enabled.description')}
+                onClick={() => handlePinningChatsToggle(false)}
+              >
+                {t('settings.pinned.disable')}
+              </DropdownItem>
+            ) : (
+              <DropdownItem
+                value="enablePinningChats"
+                key="enablePinningChats"
+                icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
+                description={t('settings.pinned.disabled.description')}
+                onClick={() => handlePinningChatsToggle(true)}
+              >
+                {t('settings.pinned.enable')}
+              </DropdownItem>
+            )}
+          </DropdownList>
+        </DropdownGroup>
+      </ChatbotHeaderOptionsDropdown>
     </ChatbotHeaderActions>
   );
 };

@@ -15,8 +15,21 @@
  */
 import { render, screen, cleanup } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import Users from '../Users'; // Adjust path as needed
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
 import { useUsers } from '../../../hooks/useUsers';
+import Users from '../Users';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+})); // Adjust path as needed
 
 jest.mock('../../../hooks/useUsers', () => ({
   useUsers: jest.fn(),

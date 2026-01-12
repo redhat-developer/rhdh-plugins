@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
   Content,
@@ -59,7 +59,7 @@ export const WorkflowsTabContent = ({
     WorkflowOverviewDTO[] | undefined
   >(fetchWorkflowOverviews);
 
-  const isReady = React.useMemo(() => !loading && !error, [loading, error]);
+  const isReady = useMemo(() => !loading && !error, [loading, error]);
 
   return (
     <Content noPadding>

@@ -30,6 +30,7 @@ import {
 } from '../../api/BulkImportBackendClient';
 import { useAddedRepositories } from '../../hooks';
 import { mockGetImportJobs, mockGetRepositories } from '../../mocks/mockData';
+import { TaskStatus } from '../../types';
 import { RepositoriesList } from './RepositoriesList';
 
 jest.mock('./RepositoriesList', () => ({
@@ -55,7 +56,13 @@ const mockIdentityApi = {
 const mockAsyncData = {
   loading: false,
   data: {
-    addedRepositories: mockGetImportJobs.imports,
+    addedRepositories: mockGetImportJobs.imports.map(item => ({
+      id: item.id,
+      task: {
+        id: item.task?.taskId || '',
+        status: TaskStatus.Completed,
+      },
+    })),
     totalJobs: mockGetImportJobs.imports.length,
   },
   totalCount: 1,
@@ -123,7 +130,9 @@ describe('RepositoriesList', () => {
     ).toBeInTheDocument();
     const emptyMessage = screen.getByTestId('no-import-jobs-found');
     expect(emptyMessage).toBeInTheDocument();
-    expect(emptyMessage).toHaveTextContent('No records found');
+    expect(emptyMessage).toHaveTextContent(
+      'No repositories available to import.',
+    );
   });
 
   it('should display an alert in case of any errors', async () => {

@@ -1,5 +1,118 @@
 ### Dependencies
 
+## 6.9.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.9.1
+
+## 6.9.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.9.0
+
+## 6.8.0
+
+### Minor Changes
+
+- 0739b9a: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- Updated dependencies [0739b9a]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.8.0
+
+## 6.7.2
+
+### Patch Changes
+
+- 8694ed5: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@playwright/test` to `1.56.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.2
+
+## 6.7.1
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [40b80fe]
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.1
+
+## 6.7.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.7.0
+
+## 6.6.0
+
+### Minor Changes
+
+- 4e3b05a: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [4e3b05a]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.11.0
+
+## 6.5.1
+
+### Patch Changes
+
+- ace9761: Fix failing repo list table when GitLab token is bad.
+
+## 6.5.0
+
+### Minor Changes
+
+- 8c33ce4: Enable GitLab frontend support. Restore previously removed approval tool parameters in the backend.
+
+## 6.4.1
+
+### Patch Changes
+
+- 4c5967e: Make bulkImport configuration optional again to be backward compatible
+
+## 6.4.0
+
+### Minor Changes
+
+- 2a31b02: Implement scaffolder template execution for the bulk-import plugin.
+
+### Patch Changes
+
+- bd09be8: Automatically select templates from default namespace for bulkImport.importTemplate configuration.
+- b5ce9fc: Fix dependencies: Replace @ai-zen/node-fetch-event-source with @microsoft/fetch-event-source and remove unused dependency @roadiehq/scaffolder-backend-module-utils
+- e11b586: Fix an sql issue when filtering added repositories on SQlite
+- Updated dependencies [2a31b02]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.10.0
+
+## 6.3.0
+
+### Minor Changes
+
+- 60cea87: Add the ability to use GitLab for bulk imports
+- 81cfcfe: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [81cfcfe]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.9.0
+
+## 6.2.0
+
+### Minor Changes
+
+- 391dbd5: Backstage version bump to v1.41.1
+
+### Patch Changes
+
+- Updated dependencies [391dbd5]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@1.8.0
+
 ## 6.1.7
 
 ### Patch Changes

@@ -18,26 +18,42 @@ import React from 'react';
 import { ConfigApi, configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { DEFAULT_SAMPLE_PROMPTS, RHDH_SAMPLE_PROMPTS } from '../const';
-import { SamplePrompts } from '../types';
+import { SamplePrompt, SamplePrompts } from '../types';
 import { getRandomSamplePrompts } from '../utils/prompt-utils';
+import { useTopicRestrictionStatus } from './useQuestionValidation';
+import { useTranslation } from './useTranslation';
 
 export const useWelcomePrompts = (): SamplePrompts => {
   const configApi: ConfigApi = useApi(configApiRef);
+  const { t } = useTranslation();
+  const { data: questionValidationEnabled } = useTopicRestrictionStatus();
 
   return React.useMemo(() => {
-    const questionValidationEnabled =
-      configApi.getOptionalBoolean('lightspeed.questionValidation') ?? true;
+    // Transform translation keys to actual prompts
+    const translatePrompts = (prompts: SamplePrompts): SamplePrompts => {
+      return prompts.map((prompt: SamplePrompt) => {
+        if ('titleKey' in prompt && 'messageKey' in prompt) {
+          return {
+            title: t(prompt.titleKey as any, { defaultValue: prompt.titleKey }),
+            message: t(prompt.messageKey as any, {
+              defaultValue: prompt.messageKey,
+            }),
+          };
+        }
+        return prompt as { title: string; message: string };
+      });
+    };
 
     const DEFAULT_PROMPTS = questionValidationEnabled
-      ? RHDH_SAMPLE_PROMPTS
-      : [...DEFAULT_SAMPLE_PROMPTS, ...RHDH_SAMPLE_PROMPTS];
+      ? translatePrompts(RHDH_SAMPLE_PROMPTS)
+      : translatePrompts([...DEFAULT_SAMPLE_PROMPTS, ...RHDH_SAMPLE_PROMPTS]);
 
-    const samplePrompts: SamplePrompts = (
+    const userConfiguredPrompts: SamplePrompts = (
       configApi?.getOptionalConfigArray('lightspeed.prompts') ?? []
     ).map(config => ({
       title: config.getString('title') ?? '',
       message: config.getString('message') ?? '',
     }));
-    return getRandomSamplePrompts(samplePrompts, DEFAULT_PROMPTS);
-  }, [configApi]);
+    return getRandomSamplePrompts(userConfiguredPrompts, DEFAULT_PROMPTS);
+  }, [configApi, t, questionValidationEnabled]);
 };

@@ -49,6 +49,7 @@
     "@mui/material": "^5.16.14",
     "@rhds/elements": "^2.0.1",
     "@rhds/icons": "^1.1.1",
+    "@segment/analytics-next": "^1.0.0",
     "libphonenumber-js": "^1.12.8",
     "lodash": "^4.17.21",
     "react-phone-number-input": "^3.4.12",
@@ -92,7 +93,6 @@
   },
   "configSchema": "config.d.ts",
   "keywords": [
-    "lifecycle:active",
     "backstage",
     "plugin"
   ],

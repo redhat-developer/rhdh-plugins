@@ -23,6 +23,7 @@ import { ClockConfig, HeaderWorldClock } from '@backstage/plugin-home';
 import useAsync from 'react-use/esm/useAsync';
 
 import { LocalClock, LocalClockProps } from './LocalClock';
+import { useTranslation } from '../hooks/useTranslation';
 
 export interface HeaderProps {
   title?: string;
@@ -44,35 +45,68 @@ export interface HeaderProps {
 //   return 'Good evening {{firstName}}';
 // };
 
-export const getPersonalizedTitle = (
+/**
+ * Handles user-provided title customization with variable interpolation.
+ *
+ * When users provide custom titles in their configuration, they take responsibility
+ * for internationalization at the configuration level. This function simply handles
+ * the variable interpolation for their custom strings.
+ *
+ * Supports variables:
+ * - {{firstName}} - First part of displayName (split by space)
+ * - {{displayName}} - Full displayName from user profile
+ *
+ * @param title - User-provided title string with optional {{variables}}
+ * @param displayName - User's displayName from profile, if available
+ */
+const interpolateUserTitle = (
   title: string,
   displayName: string | undefined,
 ) => {
-  const firstName = displayName?.split(' ')[0];
-  const replacedTitle = title
-    .replace('{{firstName}}', firstName ?? '')
-    .replace('{{displayName}}', displayName ?? '');
-  return replacedTitle;
+  if (!displayName) {
+    // Remove variable placeholders when no displayName is available
+    return title.replace(/\{\{(firstName|displayName)\}\}/g, '');
+  }
+
+  const firstName = displayName.split(' ')[0];
+  return title
+    .replace(/\{\{firstName\}\}/g, firstName)
+    .replace(/\{\{displayName\}\}/g, displayName);
 };
 
 export const Header = (props: HeaderProps) => {
   const identityApi = useApi(identityApiRef);
   const { value: profile } = useAsync(() => identityApi.getProfileInfo());
+  const { t } = useTranslation();
 
   const title = useMemo<string>(() => {
+    const firstName = profile?.displayName?.split(' ')[0];
+
+    // Priority 1: User-provided personalized title (user handles i18n)
     if (profile?.displayName && props.personalizedTitle) {
-      return getPersonalizedTitle(props.personalizedTitle, profile.displayName);
-    } else if (props.title) {
-      return getPersonalizedTitle(props.title, profile?.displayName);
+      return interpolateUserTitle(props.personalizedTitle, profile.displayName);
     }
-    // return getPersonalizedTitle(getTimeBasedTitle(), profile?.displayName);
-    return getPersonalizedTitle('Welcome back!', profile?.displayName);
-  }, [profile?.displayName, props.personalizedTitle, props.title]);
+
+    // Priority 2: User-provided general title (user handles i18n)
+    if (props.title) {
+      return interpolateUserTitle(props.title, profile?.displayName);
+    }
+
+    // Default: Use plugin's translation system
+    if (profile?.displayName && firstName) {
+      return t('header.welcomePersonalized' as any, { name: firstName });
+    }
+
+    return t('header.welcome');
+  }, [profile?.displayName, props.personalizedTitle, props.title, t]);
 
   const subtitle = useMemo<string | undefined>(() => {
-    return props.subtitle
-      ? getPersonalizedTitle(props.subtitle, profile?.displayName)
-      : undefined;
+    // User-provided subtitle (user handles i18n)
+    if (props.subtitle) {
+      return interpolateUserTitle(props.subtitle, profile?.displayName);
+    }
+
+    return undefined;
   }, [props.subtitle, profile?.displayName]);
 
   return (
@@ -86,7 +120,7 @@ export const Header = (props: HeaderProps) => {
           label={
             props.localClock?.label ??
             (props.worldClocks && props.worldClocks.length > 0
-              ? 'Local'
+              ? t('header.local')
               : undefined)
           }
           format={

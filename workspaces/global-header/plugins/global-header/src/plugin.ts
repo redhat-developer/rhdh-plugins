@@ -29,6 +29,7 @@ import { CreateDropdownProps } from './components/HeaderDropdownComponent/Create
 import { ProfileDropdownProps } from './components/HeaderDropdownComponent/ProfileDropdown';
 import { SupportButtonProps } from './plugin';
 import { HelpDropdownProps } from './components/HeaderDropdownComponent/HelpDropdown';
+import { globalHeaderTranslationRef } from './translations';
 
 export type { GlobalHeaderComponentProps } from './components/GlobalHeaderComponent';
 
@@ -71,7 +72,11 @@ export { defaultGlobalHeaderComponentsMountPoints } from './defaultMountPoints/d
  */
 export const globalHeaderPlugin = createPlugin({
   id: 'global-header',
-});
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it'],
+    resources: [globalHeaderTranslationRef],
+  },
+} as any);
 
 /**
  * Global Header
@@ -414,3 +419,10 @@ export const CompanyLogo = globalHeaderPlugin.provide(
     },
   }),
 );
+
+/**
+ * Translation resource for the global header plugin
+ *
+ * @public
+ */
+export { globalHeaderTranslations } from './translations';

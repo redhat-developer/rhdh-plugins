@@ -35,21 +35,28 @@ import {
   getTotal,
   getXAxisformat,
   getXAxisTickValues,
+  formatNumber,
+  getGroupingLabel,
 } from '../../utils/utils';
 import CustomCursor from '../Common/CustomCursor';
 import EmptyChartState from '../Common/EmptyChartState';
 import ChartTooltip from '../Common/ChartTooltip';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useLanguage } from '../../hooks/useLanguage';
+import { Trans } from '../Trans';
 
 const Searches = () => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const { t } = useTranslation();
+  const locale = useLanguage();
 
   const { searches, loading, error } = useSearches();
   const { data, grouping = 'daily' } = searches;
 
   if (error) {
     return (
-      <CardWrapper title="Searches">
+      <CardWrapper title={t('searches.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -57,12 +64,12 @@ const Searches = () => {
 
   if (!data || data?.length === 0 || (!data?.[0] && !loading)) {
     return (
-      <CardWrapper title="Searches">
+      <CardWrapper title={t('searches.title')}>
         <Box
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
@@ -72,7 +79,9 @@ const Searches = () => {
 
   return (
     <CardWrapper
-      title={`${getTotal(data, 'count')?.toLocaleString('en-US')} searches`}
+      title={t('searches.totalCount' as any, {
+        count: getTotal(data, 'count')?.toLocaleString('en-US') || '0',
+      })}
     >
       {loading ? (
         <Box
@@ -86,13 +95,19 @@ const Searches = () => {
       ) : (
         <>
           <Typography style={{ margin: '20px 36px' }}>
-            An average of{' '}
+            {t('searches.averagePrefix')}{' '}
             <b>
-              {`${Math.round(getAverage(data, 'count')).toLocaleString(
-                'en-US',
-              )} searches per ${grouping === 'hourly' ? 'hour' : 'day'}`}
-            </b>{' '}
-            were conducted during this period.
+              <Trans
+                message="searches.averageText"
+                params={{
+                  count: Math.round(getAverage(data, 'count')).toLocaleString(
+                    'en-US',
+                  ),
+                  period: getGroupingLabel(grouping, t, 'searches'),
+                }}
+              />
+            </b>
+            {t('searches.averageSuffix')}
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -107,7 +122,7 @@ const Searches = () => {
                 />
                 <XAxis
                   dataKey="date"
-                  tickFormatter={date => getXAxisformat(date, grouping)}
+                  tickFormatter={date => getXAxisformat(date, grouping, locale)}
                   ticks={getXAxisTickValues(data, grouping)}
                   tick={{ fill: theme.palette.text.primary }}
                   axisLine={false}
@@ -119,7 +134,7 @@ const Searches = () => {
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: theme.palette.text.primary }}
-                  tickFormatter={value => value.toLocaleString('en-US')}
+                  tickFormatter={value => formatNumber(value, {}, locale)}
                   tickMargin={20}
                 />
                 <Tooltip

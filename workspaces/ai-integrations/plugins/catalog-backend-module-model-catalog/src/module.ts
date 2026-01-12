@@ -17,14 +17,9 @@ import {
   coreServices,
   createBackendModule,
 } from '@backstage/backend-plugin-api';
-import {
-  catalogProcessingExtensionPoint,
-  catalogLocationsExtensionPoint,
-} from '@backstage/plugin-catalog-node/alpha';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 
 import { ModelCatalogResourceEntityProvider } from './providers';
-import { RHDHRHOAIReaderProcessor } from './processors';
-import { RHDHRHOAIEntityProvider } from './providers/RHDHRHOAIEntityProvider';
 
 /**
  * catalogModuleModelCatalogResourceEntityProvider defines the model catalog entity provider which runs on startup
@@ -60,96 +55,3 @@ export const catalogModuleModelCatalogResourceEntityProvider =
       });
     },
   });
-
-/**
- * catalogModuleRHDHRHOAIReaderProcessor defines the custom processor used to ingest updated/newly
- * discovered model catalog entities
- *
- * @public
- */
-export const catalogModuleRHDHRHOAIReaderProcessor = createBackendModule({
-  pluginId: 'catalog',
-  moduleId: 'rhdh-rhoai-bridge-reader-processor',
-  register(env) {
-    env.registerInit({
-      deps: {
-        catalog: catalogProcessingExtensionPoint,
-        reader: coreServices.urlReader,
-        config: coreServices.rootConfig,
-        logger: coreServices.logger,
-      },
-      async init({ catalog, reader, config, logger }) {
-        catalog.addProcessor(
-          new RHDHRHOAIReaderProcessor(reader, config, logger),
-        );
-      },
-    });
-  },
-});
-
-/** so a `CatalogProcessor` does not need to also provide a `CatalogLocationsExtensionPoint` if it only supports imports of locations
- * from the app-config.yaml on startup, but if you want to dynamically add Locations via the catalog's REST API (like what the UI does for import
- * of catalog-info.yaml from git repos) then you need to also provide a `CatalogLocationsExtension` point to add your type to the default list of 'url' and 'file';
- * fwiw in examining the core Backstage code, none of the default `CatalogProcessors` bother to also provide a `CatalogLocationsExtension`; however,
- * we want to allow our RHDH bridge to import new locations dynamically
- *
- * @public
- */
-export const catalogModuleRHDHRHOAILocationsExtensionPoint =
-  createBackendModule({
-    pluginId: 'catalog',
-    moduleId: 'rhdh-rhoai-bridge-location-extension-point',
-    register(env) {
-      env.registerInit({
-        deps: {
-          catalog: catalogLocationsExtensionPoint,
-          logger: coreServices.logger,
-        },
-        async init({ catalog, logger }) {
-          // setAllowedLocationTypes does not add to the list but replaces it, so we preserve the default options of 'file' and 'url'
-          logger
-            .child({ source: 'catalog-backend-module-model-catalog"' })
-            .info("Registering the 'rhdh-rhoai-bridge' location type");
-          const allowedLocationTypes = ['file', 'url', 'rhdh-rhoai-bridge'];
-          catalog.setAllowedLocationTypes(allowedLocationTypes);
-        },
-      });
-    },
-  });
-
-/**
- * catalogModuleRHDHRHOAIEntityProvider defines the entity provider used to handle ingestion/cleanup of locations in the model catalog
- *
- * @public
- */
-export const catalogModuleRHDHRHOAIEntityProvider = createBackendModule({
-  pluginId: 'catalog',
-  moduleId: 'rhdh-rhoai-bridge-entiry-provider',
-  register(env) {
-    env.registerInit({
-      deps: {
-        catalog: catalogProcessingExtensionPoint,
-        config: coreServices.rootConfig,
-        discovery: coreServices.discovery,
-        logger: coreServices.logger,
-        scheduler: coreServices.scheduler,
-        reader: coreServices.urlReader,
-      },
-      async init({ catalog, config, logger, scheduler, discovery, reader }) {
-        const runner = scheduler.createScheduledTaskRunner({
-          frequency: { seconds: 30 },
-          timeout: { minutes: 3 },
-        });
-        catalog.addEntityProvider(
-          new RHDHRHOAIEntityProvider(
-            discovery,
-            config,
-            logger,
-            runner,
-            reader,
-          ),
-        );
-      },
-    });
-  },
-});

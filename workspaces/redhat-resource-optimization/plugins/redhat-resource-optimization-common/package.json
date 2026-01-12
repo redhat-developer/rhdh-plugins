@@ -1,7 +1,12 @@
 {
+  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-common",
+  "description": "Common functionalities for the redhat-resource-optimization plugin",
+  "version": "2.0.1",
   "backstage": {
-    "pluginId": "redhat-resource-optimization-common",
+    "pluginId": "redhat-resource-optimization",
     "pluginPackages": [
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
       "@red-hat-developer-hub/plugin-redhat-resource-optimization-common"
     ],
     "role": "common-library"
@@ -14,7 +19,6 @@
     "lodash": "^4.17.21",
     "uri-template": "^2.0.0"
   },
-  "description": "Common functionalities for the redhat-resource-optimization plugin",
   "devDependencies": {
     "@backstage/cli": "^0.29.4",
     "@backstage/types": "^1.2.1",
@@ -65,14 +69,13 @@
   },
   "license": "Apache-2.0",
   "main": "src/index.ts",
-  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-common",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "directory": "workspaces/redhat-resource-optimization/plugins/redhat-resource-optimization-common",
     "type": "git",
-    "url": "https://github.com/backstage/community-plugins"
+    "url": "https://github.com/redhat-developer/rhdh-plugins"
   },
   "scripts": {
     "build": "backstage-cli package build",
@@ -86,6 +89,5 @@
     "tsc:dry-run": "yarn run -T tsc --noEmit --emitDeclarationOnly false"
   },
   "sideEffects": false,
-  "types": "src/index.ts",
-  "version": "2.0.0"
+  "types": "src/index.ts"
 }

@@ -1,8 +1,8 @@
 # orchestrator-form-widgets
 
-This Backstage frontend plugin provides default, but optional, set of RJSF form widgets for the Orchestrator workflow execution page as described in [orchestrator-form-api plugin](../orchestrator-form-api/README.md) or [extensibleForm.md](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/extensibleForm.md).
+This Backstage frontend plugin provides default, but optional, set of RJSF form widgets for the Orchestrator workflow execution page as described in [extensibleForm.md](../../docs/extensibleForm.md).
 
-Documentation of implemented widgets can be found in a [orchestratorFormWidgets.md](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/orchestratorFormWidgets.md).
+Documentation of implemented widgets can be found in a [orchestratorFormWidgets.md](../../docs/orchestratorFormWidgets.md).
 
 ## Deployment
 

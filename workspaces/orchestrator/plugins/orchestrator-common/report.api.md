@@ -14,7 +14,7 @@ import type { JSONSchema7Definition } from 'json-schema';
 import { JsonValue } from '@backstage/types';
 import { OAuthScope } from '@backstage/core-plugin-api';
 import type { RawAxiosRequestConfig } from 'axios';
-import type { Specification } from '@severlessworkflow/sdk-typescript';
+import type { Specification } from '@serverlessworkflow/sdk-typescript';
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
@@ -172,7 +172,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    abortWorkflow(instanceId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<string, any>>;
+    abortWorkflow(instanceId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<string, any, {}>>;
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -184,7 +184,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ExecuteWorkflowResponseDTO, any>>;
+    executeWorkflow(workflowId: string, executeWorkflowRequestDTO: ExecuteWorkflowRequestDTO, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ExecuteWorkflowResponseDTO, any, {}>>;
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -194,7 +194,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getInstanceById(instanceId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ProcessInstanceDTO, any>>;
+    getInstanceById(instanceId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ProcessInstanceDTO, any, {}>>;
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
@@ -205,7 +205,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getInstances(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ProcessInstanceListResultDTO, any>>;
+    getInstances(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ProcessInstanceListResultDTO, any, {}>>;
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -217,7 +217,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getWorkflowInputSchemaById(workflowId: string, instanceId?: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<InputSchemaResponseDTO, any>>;
+    getWorkflowInputSchemaById(workflowId: string, instanceId?: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<InputSchemaResponseDTO, any, {}>>;
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -230,7 +230,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getWorkflowInstances(workflowId: string, searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ProcessInstanceListResultDTO, any>>;
+    getWorkflowInstances(workflowId: string, searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<ProcessInstanceListResultDTO, any, {}>>;
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -239,7 +239,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getWorkflowOverviewById(workflowId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowOverviewDTO, any>>;
+    getWorkflowOverviewById(workflowId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowOverviewDTO, any, {}>>;
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -248,17 +248,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getWorkflowSourceById(workflowId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<string, any>>;
-    // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-    // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-    // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-    // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
-    // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
-    // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
-    // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
-    // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
-    // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getWorkflowsOverview(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any>>;
+    getWorkflowSourceById(workflowId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<string, any, {}>>;
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -268,7 +258,17 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest?: GetWorkflowsOverviewForEntityRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any>>;
+    getWorkflowsOverview(searchRequest?: SearchRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any, {}>>;
+    // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+    // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+    // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+    // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
+    // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
+    // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
+    // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
+    // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
+    // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
+    getWorkflowsOverviewForEntity(getWorkflowsOverviewForEntityRequest?: GetWorkflowsOverviewForEntityRequest, options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowOverviewListResultDTO, any, {}>>;
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-optional-name) The @param should not include a JSDoc-style optional name; it must not be enclosed in '[ ]' brackets.
@@ -276,7 +276,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    getWorkflowStatuses(options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowRunStatusDTO[], any>>;
+    getWorkflowStatuses(options?: RawAxiosRequestConfig): Promise<AxiosResponse<WorkflowRunStatusDTO[], any, {}>>;
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
@@ -285,7 +285,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    pingWorkflowServiceById(workflowId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<boolean, any>>;
+    pingWorkflowServiceById(workflowId: string, options?: RawAxiosRequestConfig): Promise<AxiosResponse<boolean, any, {}>>;
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@summary" is not defined in this configuration
     // Warning: (tsdoc-param-tag-missing-hyphen) The @param block should be followed by a parameter name and then a hyphen
     // Warning: (tsdoc-param-tag-with-invalid-type) The @param block should not include a JSDoc-style '{type}'
@@ -299,7 +299,7 @@ export class DefaultApi extends BaseAPI {
     // Warning: (tsdoc-escape-right-brace) The "}" character should be escaped using a backslash to avoid confusion with a TSDoc inline tag
     // Warning: (tsdoc-malformed-inline-tag) Expecting a TSDoc tag starting with "{@"
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
-    retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: RawAxiosRequestConfig): Promise<AxiosResponse<object, any>>;
+    retriggerInstance(workflowId: string, instanceId: string, retriggerInstanceRequestDTO: RetriggerInstanceRequestDTO, options?: RawAxiosRequestConfig): Promise<AxiosResponse<object, any, {}>>;
 }
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
@@ -1134,11 +1134,6 @@ export type ProcessInstanceVariables = Record<string, unknown>;
 // @public (undocumented)
 export const QUERY_PARAM_INSTANCE_ID: "instanceId";
 
-// Warning: (ae-missing-release-tag) "QUERY_PARAM_PREVIOUS_INSTANCE_ID" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export const QUERY_PARAM_PREVIOUS_INSTANCE_ID: "previousInstanceId";
-
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
 // Warning: (ae-missing-release-tag) "RetriggerInstanceRequestDTO" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -1237,7 +1232,7 @@ export interface WorkflowDataDTO {
 // Warning: (ae-missing-release-tag) "WorkflowDefinition" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
-export type WorkflowDefinition = OmitRecursively<Specification.Workflow, 'normalize'>;
+export type WorkflowDefinition = OmitRecursively<Specification.Workflow, 'normalize' | 'asPlainObject'>;
 
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@export" is not defined in this configuration
 // Warning: (tsdoc-undefined-tag) The TSDoc tag "@interface" is not defined in this configuration
@@ -1344,6 +1339,16 @@ export type WorkflowInputSchemaStep = {
     readonlyKeys: string[];
 };
 
+// Warning: (ae-missing-release-tag) "WorkflowInstanceLogsDTO" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export interface WorkflowInstanceLogsDTO {
+    // (undocumented)
+    instanceId: string;
+    // (undocumented)
+    logs: WorkflowLogEntry[];
+}
+
 // Warning: (ae-missing-release-tag) "WorkflowListResult" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
@@ -1369,6 +1374,16 @@ export interface WorkflowListResultDTO {
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@type" is not defined in this configuration
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
     'paginationInfo': PaginationInfoDTO;
+}
+
+// Warning: (ae-missing-release-tag) "WorkflowLogEntry" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export interface WorkflowLogEntry {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    log: string;
 }
 
 // Warning: (ae-missing-release-tag) "WorkflowOverview" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -1635,7 +1650,6 @@ export interface WorkflowRunStatusDTO {
 // Warnings were encountered during analysis:
 //
 // src/QueryParams.d.ts:1:22 - (ae-undocumented) Missing documentation for "QUERY_PARAM_INSTANCE_ID".
-// src/QueryParams.d.ts:2:22 - (ae-undocumented) Missing documentation for "QUERY_PARAM_PREVIOUS_INSTANCE_ID".
 // src/constants.d.ts:9:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_PERSISTENCE_PATH".
 // src/constants.d.ts:10:22 - (ae-undocumented) Missing documentation for "DEFAULT_SONATAFLOW_BASE_URL".
 // src/constants.d.ts:11:22 - (ae-undocumented) Missing documentation for "DEFAULT_WORKFLOWS_PATH".
@@ -2132,6 +2146,12 @@ export interface WorkflowRunStatusDTO {
 // src/types.d.ts:79:5 - (ae-undocumented) Missing documentation for "name".
 // src/types.d.ts:80:5 - (ae-undocumented) Missing documentation for "uniqueId".
 // src/types.d.ts:81:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
+// src/types.d.ts:83:1 - (ae-undocumented) Missing documentation for "WorkflowLogEntry".
+// src/types.d.ts:84:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:85:5 - (ae-undocumented) Missing documentation for "log".
+// src/types.d.ts:87:1 - (ae-undocumented) Missing documentation for "WorkflowInstanceLogsDTO".
+// src/types.d.ts:88:5 - (ae-undocumented) Missing documentation for "instanceId".
+// src/types.d.ts:89:5 - (ae-undocumented) Missing documentation for "logs".
 // src/utils/StringUtils.d.ts:1:1 - (ae-undocumented) Missing documentation for "Capitalized".
 // src/utils/StringUtils.d.ts:2:22 - (ae-undocumented) Missing documentation for "capitalize".
 // src/utils/StringUtils.d.ts:3:22 - (ae-undocumented) Missing documentation for "ellipsis".

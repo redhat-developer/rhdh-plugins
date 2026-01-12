@@ -14,29 +14,26 @@
  * limitations under the License.
  */
 
-import { Link } from '@backstage/core-components';
+import { Link, StatusOK } from '@backstage/core-components';
 
-import ReadyIcon from '@mui/icons-material/CheckOutlined';
 import FailIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { useFormikContext } from 'formik';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoriesFormValues,
   AddRepositoryData,
   ErrorType,
   RepositorySelection,
-  RepositoryStatus,
 } from '../../types';
-import {
-  getCustomisedErrorMessage,
-  gitlabFeatureFlag,
-} from '../../utils/repository-utils';
+import { getCustomisedErrorMessage } from '../../utils/repository-utils';
 import { useDrawer } from '../DrawerContext';
 
 export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
+  const { t } = useTranslation();
   const { status, values } = useFormikContext<AddRepositoriesFormValues>();
   const { setOpenDrawer, setDrawerData } = useDrawer();
   const statusErrors = (status?.errors as ErrorType) || {};
@@ -44,6 +41,7 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
   const errorMessage = getCustomisedErrorMessage(
     Object.values(statusErrors).find(s => s?.repository?.name === data.repoName)
       ?.error.message,
+    (key: string) => t(key as any, {}),
   );
 
   const openDrawer = (dd: AddRepositoryData) => {
@@ -65,18 +63,21 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             title={
               values.repositoryType === RepositorySelection.Repository
                 ? errorMessage.message
-                : 'PR creation was unsuccessful for some repositories. Click on `Edit` to see the reason.'
+                : t('previewFile.prCreationUnsuccessful')
             }
           >
-            <FailIcon
-              color="error"
-              style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-            />
+            <Typography component="span">
+              <FailIcon
+                color="error"
+                style={{ verticalAlign: 'sub', paddingTop: '7px' }}
+              />
+              <Typography component="span" data-testid="failed">
+                {' '}
+                {t('previewFile.failedToCreatePR')}{' '}
+              </Typography>
+            </Typography>
           </Tooltip>
-          <Typography component="span" data-testid="failed">
-            {' '}
-            Failed to create PR{' '}
-          </Typography>
+
           <Link
             to={errorMessage.showRepositoryLink ? data.repoUrl || '' : ''}
             onClick={() =>
@@ -86,25 +87,26 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
           >
             {errorMessage.showRepositoryLink ? (
               <>
-                View repository{' '}
+                {t('previewFile.viewRepository')}{' '}
                 <OpenInNewIcon
                   style={{ verticalAlign: 'sub', paddingTop: '7px' }}
                 />{' '}
               </>
             ) : (
-              'Edit'
+              t('common.edit')
             )}
           </Link>
         </>
       ) : (
-        <>
-          <ReadyIcon
-            color="success"
-            style={{ verticalAlign: 'sub', paddingTop: '7px' }}
-          />
-          {gitlabFeatureFlag ? 'Ready to import' : RepositoryStatus.Ready}{' '}
+        <Typography
+          component="span"
+          style={{ display: 'flex', alignItems: 'baseline' }}
+        >
+          <StatusOK />
+          {t('status.readyToImport')}
           <Link
             to=""
+            style={{ marginLeft: '4px' }}
             onClick={() => openDrawer(data)}
             data-testid={
               Object.keys(data?.selectedRepositories || []).length > 1
@@ -113,10 +115,10 @@ export const PreviewFile = ({ data }: { data: AddRepositoryData }) => {
             }
           >
             {Object.keys(data?.selectedRepositories || []).length > 1
-              ? 'Preview files'
-              : 'Preview file'}
+              ? t('previewFile.previewFiles')
+              : t('previewFile.previewFile')}
           </Link>
-        </>
+        </Typography>
       )}
     </>
   );

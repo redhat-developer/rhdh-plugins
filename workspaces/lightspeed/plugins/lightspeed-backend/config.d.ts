@@ -19,29 +19,7 @@ export interface Config {
    * Configuration required for using lightspeed
    * @visibility frontend
    */
-  lightspeed: {
-    servers: Array<{
-      /**
-       * The id of the server.
-       * @visibility frontend
-       */
-      id: string;
-      /**
-       * The url of the server.
-       * @visibility frontend
-       */
-      url: string;
-      /**
-       * The access token for authenticating server.
-       * @visibility secret
-       */
-      token?: string;
-    }>;
-    /**
-     * query restriction validation (Enabled by default).
-     * @visibility frontend
-     */
-    questionValidation?: boolean;
+  lightspeed?: {
     /**
      * configure the port number for the lightspeed service.
      * @visibility backend
@@ -52,5 +30,21 @@ export interface Config {
      * @visibility backend
      */
     systemPrompt?: string;
+    /**
+     * configure the MCP server for the lightspeed service.
+     * @visibility backend
+     */
+    mcpServers?: Array<{
+      /**
+       * The name of the mcp server.
+       * @visibility backend
+       */
+      name: string;
+      /**
+       * The access token for authenticating MCP server.
+       * @visibility secret
+       */
+      token: string;
+    }>;
   };
 }

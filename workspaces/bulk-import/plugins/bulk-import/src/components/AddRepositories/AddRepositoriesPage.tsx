@@ -14,39 +14,35 @@
  * limitations under the License.
  */
 
-import { useRef } from 'react';
+import { useState } from 'react';
 
 import { Content, Header, Page, Progress } from '@backstage/core-components';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { useTheme } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
-import { gitlabFeatureFlag } from '../../utils/repository-utils';
+import { useNumberOfApprovalTools } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoriesForm } from './AddRepositoriesForm';
-import { Illustrations } from './Illustrations';
+import { ConfigurableInstructions } from './ConfigurableInstructions';
 
 export const AddRepositoriesPage = () => {
-  const queryClientRef = useRef<QueryClient>();
-  const theme = useTheme();
-
-  if (!queryClientRef.current) {
-    queryClientRef.current = new QueryClient();
-  }
+  const { t } = useTranslation();
+  const [formError, setFormError] = useState<any>(null);
 
   const bulkImportViewPermissionResult = usePermission({
     permission: bulkImportPermission,
     resourceRef: bulkImportPermission.resourceType,
   });
+
+  const { numberOfApprovalTools } = useNumberOfApprovalTools();
+
+  // Show instructions section for all flows now that it's customizable
+  // Only hide if no integrations are configured (missing configurations)
+  const showInstructionsSection = numberOfApprovalTools > 0;
 
   const showContent = () => {
     if (bulkImportViewPermissionResult.loading) {
@@ -55,91 +51,18 @@ export const AddRepositoriesPage = () => {
     if (bulkImportViewPermissionResult.allowed) {
       return (
         <>
-          <div style={{ padding: '24px' }}>
-            <Accordion defaultExpanded>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                id="add-repository-summary"
-              >
-                <Typography variant="h5">
-                  {gitlabFeatureFlag
-                    ? 'Import to Red Hat Developer Hub'
-                    : 'Add repositories to Red Hat Developer Hub in 4 steps'}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                sx={{
-                  flexDirection: 'row',
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  overflow: 'auto',
-                }}
-              >
-                {gitlabFeatureFlag && (
-                  <Illustrations
-                    iconClassname={
-                      theme.palette.mode === 'dark'
-                        ? 'icon-approval-tool-white'
-                        : 'icon-approval-tool-black'
-                    }
-                    iconText="Choose approval tool (GitHub/GitLab) for PR creation"
-                  />
-                )}
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-choose-repositories-white'
-                      : 'icon-choose-repositories-black'
-                  }
-                  iconText={
-                    gitlabFeatureFlag
-                      ? 'Choose which items you want to import'
-                      : 'Choose repositories you want to add'
-                  }
-                />
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-generate-cataloginfo-white'
-                      : 'icon-generate-cataloginfo-black'
-                  }
-                  iconText={
-                    gitlabFeatureFlag
-                      ? 'Generate a catalog-info.yaml file for each selected item'
-                      : 'Generate a catalog-info.yaml file for each repository'
-                  }
-                />
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-edit-pullrequest-white'
-                      : 'icon-edit-pullrequest-black'
-                  }
-                  iconText="Edit the pull request details if needed"
-                />
-                <Illustrations
-                  iconClassname={
-                    theme.palette.mode === 'dark'
-                      ? 'icon-track-status-white'
-                      : 'icon-track-status-black'
-                  }
-                  iconText="Track the approval status"
-                />
-              </AccordionDetails>
-            </Accordion>
-          </div>
-          <QueryClientProvider client={queryClientRef.current as QueryClient}>
-            <AddRepositoriesForm />
-          </QueryClientProvider>
+          {showInstructionsSection && !formError && (
+            <ConfigurableInstructions />
+          )}
+          <AddRepositoriesForm onErrorChange={setFormError} />
         </>
       );
     }
     return (
       <div style={{ padding: '24px' }}>
         <Alert severity="warning" data-testid="no-permission-alert">
-          <AlertTitle>Permission required</AlertTitle>
-          To add repositories, contact your administrator to give you the
-          `bulk.import` permission.
+          <AlertTitle>{t('permissions.title')}</AlertTitle>
+          {t('permissions.addRepositoriesMessage')}
         </Alert>
       </div>
     );
@@ -147,9 +70,8 @@ export const AddRepositoriesPage = () => {
   return (
     <Page themeId="tool">
       <Header
-        title={gitlabFeatureFlag ? 'Import entities' : 'Add repositories'}
-        type="Bulk import"
-        typeLink=".."
+        title={t('page.title')}
+        style={{ borderBottom: '1px solid #ccc' }}
       />
       <Content noPadding>{showContent()}</Content>
     </Page>

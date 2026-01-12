@@ -1,5 +1,52 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.7.0
+
+### Minor Changes
+
+- 3c3ac01: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- c6c029b: allow base64 image in floating action button icon
+- 40b80fe: Remove "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+
+## 1.6.1
+
+### Patch Changes
+
+- 543f65a: Fix horizontal page overflow issue in Backstage v1.44.2 by adding required CSS import. Added `@backstage/ui/css/styles.css` import to resolve layout issues introduced in the v1.44.2 upgrade.
+
+## 1.6.0
+
+### Minor Changes
+
+- 921fe17: Backstage version bump to v1.44.2
+
+## 1.5.0
+
+### Minor Changes
+
+- c9b7aa5: Adding localization support for `label` and `tooltip`
+
+## 1.4.1
+
+### Patch Changes
+
+- 08ebed6: Fix the test package build and rebuild all packages to have a consistant commit for them.
+
+## 1.4.0
+
+### Minor Changes
+
+- b961b03: Backstage version bump to v1.42.5
+
+## 1.3.0
+
+### Minor Changes
+
+- 251b379: Backstage version bump to v1.41.2
+
 ## 1.2.2
 
 ### Patch Changes

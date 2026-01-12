@@ -1,0 +1,155 @@
+[
+  {
+    "id": 111,
+    "web_url": "https://gitlab.com/groups/my-org-1",
+    "name": "my-org-1",
+    "path": "my-org-1",
+    "description": "A great organization",
+    "visibility": "public",
+    "share_with_group_lock": false,
+    "require_two_factor_authentication": false,
+    "two_factor_grace_period": 48,
+    "project_creation_level": "developer",
+    "auto_devops_enabled": null,
+    "subgroup_creation_level": "maintainer",
+    "emails_disabled": false,
+    "emails_enabled": true,
+    "show_diff_preview_in_email": true,
+    "mentions_disabled": null,
+    "lfs_enabled": true,
+    "archived": false,
+    "math_rendering_limits_enabled": true,
+    "lock_math_rendering_limits_enabled": false,
+    "default_branch": null,
+    "default_branch_protection": 2,
+    "default_branch_protection_defaults": {
+      "allowed_to_push": [
+        {
+          "access_level": 40
+        }
+      ],
+      "allow_force_push": false,
+      "allowed_to_merge": [
+        {
+          "access_level": 40
+        }
+      ]
+    },
+    "avatar_url": null,
+    "request_access_enabled": true,
+    "full_name": "my-org-1",
+    "full_path": "my-org-1",
+    "created_at": "2025-07-31T19:10:56.982Z",
+    "parent_id": null,
+    "organization_id": 1,
+    "shared_runners_setting": "enabled",
+    "max_artifacts_size": null,
+    "marked_for_deletion_on": null,
+    "ldap_cn": null,
+    "ldap_access": null,
+    "wiki_access_level": "enabled",
+    "web_based_commit_signing_enabled": false
+  },
+  {
+    "id": 112015960,
+    "web_url": "https://gitlab.com/groups/gl-lincolnhawk",
+    "name": "gl-lincolnhawk",
+    "path": "gl-lincolnhawk",
+    "description": "A great organization",
+    "visibility": "public",
+    "share_with_group_lock": false,
+    "require_two_factor_authentication": false,
+    "two_factor_grace_period": 48,
+    "project_creation_level": "developer",
+    "auto_devops_enabled": null,
+    "subgroup_creation_level": "maintainer",
+    "emails_disabled": false,
+    "emails_enabled": true,
+    "show_diff_preview_in_email": true,
+    "mentions_disabled": null,
+    "lfs_enabled": true,
+    "archived": false,
+    "math_rendering_limits_enabled": true,
+    "lock_math_rendering_limits_enabled": false,
+    "default_branch": null,
+    "default_branch_protection": 2,
+    "default_branch_protection_defaults": {
+      "allowed_to_push": [
+        {
+          "access_level": 40
+        }
+      ],
+      "allow_force_push": false,
+      "allowed_to_merge": [
+        {
+          "access_level": 40
+        }
+      ]
+    },
+    "avatar_url": null,
+    "request_access_enabled": true,
+    "full_name": "gl-lincolnhawk",
+    "full_path": "gl-lincolnhawk",
+    "created_at": "2025-07-31T19:09:49.702Z",
+    "parent_id": null,
+    "organization_id": 1,
+    "shared_runners_setting": "enabled",
+    "max_artifacts_size": null,
+    "marked_for_deletion_on": null,
+    "ldap_cn": null,
+    "ldap_access": null,
+    "wiki_access_level": "enabled",
+    "web_based_commit_signing_enabled": false
+  },
+  {
+    "id": 110779644,
+    "web_url": "https://gitlab.com/groups/saltypig1",
+    "name": "saltypig",
+    "path": "saltypig1",
+    "description": "A second great organization",
+    "visibility": "public",
+    "share_with_group_lock": false,
+    "require_two_factor_authentication": false,
+    "two_factor_grace_period": 48,
+    "project_creation_level": "developer",
+    "auto_devops_enabled": null,
+    "subgroup_creation_level": "maintainer",
+    "emails_disabled": false,
+    "emails_enabled": true,
+    "show_diff_preview_in_email": true,
+    "mentions_disabled": null,
+    "lfs_enabled": true,
+    "archived": false,
+    "math_rendering_limits_enabled": true,
+    "lock_math_rendering_limits_enabled": false,
+    "default_branch": null,
+    "default_branch_protection": 2,
+    "default_branch_protection_defaults": {
+      "allowed_to_push": [
+        {
+          "access_level": 40
+        }
+      ],
+      "allow_force_push": false,
+      "allowed_to_merge": [
+        {
+          "access_level": 40
+        }
+      ]
+    },
+    "avatar_url": null,
+    "request_access_enabled": true,
+    "full_name": "saltypig",
+    "full_path": "saltypig1",
+    "created_at": "2025-07-10T15:15:13.881Z",
+    "parent_id": null,
+    "organization_id": 1,
+    "shared_runners_setting": "enabled",
+    "max_artifacts_size": null,
+    "marked_for_deletion_on": null,
+    "ldap_cn": null,
+    "ldap_access": null,
+    "wiki_access_level": "enabled",
+    "web_based_commit_signing_enabled": false
+  }
+]

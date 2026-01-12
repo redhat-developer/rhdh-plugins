@@ -1,6 +1,8 @@
 # Lightspeed plugin for Backstage
 
-The Lightspeed plugin enables you to interact with any LLM server running a model with OpenAI's API compatibility.
+Red Hat Developer Lightspeed for Red Hat Developer Hub (Developer Lightspeed for RHDH) is a virtual assistant powered by generative AI that offers in-depth insights into Red Hat Developer Hub (RHDH), including its wide range of capabilities. You can interact with this assistant to explore and learn more about RHDH in greater detail.
+
+Developer Lightspeed for RHDH provides a natural language interface within the RHDH console, helping you easily find information about the product, understand its features, and get answers to your questions as they come up.
 
 ## For administrators
 
@@ -20,6 +22,7 @@ The Lightspeed plugin has support for the permission framework.
 p, role:default/team_a, lightspeed.chat.read, read, allow
 p, role:default/team_a, lightspeed.chat.create, create, allow
 p, role:default/team_a, lightspeed.chat.delete, delete, allow
+p, role:default/team_a, lightspeed.chat.update, update, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 
@@ -93,59 +96,52 @@ global:
     includes:
       - dynamic-plugins.default.yaml
     plugins:
-      - package: '@red-hat-developer-hub/backstage-plugin-lightspeed@0.1.2'
-        integrity: >-
-          sha512-bCKETjVhjZFLx7ImSFcptA3yvwJhFLFTFhMo/LvdVc0K5E76/SpEEkYBPup4aEQMivZBJKn0iVQFBuduChCDpA==
-        disabled: false
-        pluginConfig:
-          dynamicPlugins:
-            frontend:
-              red-hat-developer-hub.backstage-plugin-lightspeed:
-                appIcons:
-                  - name: LightspeedIcon
-                    module: LightspeedPlugin
-                    importName: LightspeedIcon
-                dynamicRoutes:
-                  - path: /lightspeed
-                    importName: LightspeedPage
-                    module: LightspeedPlugin
-                    menuItem:
-                      icon: LightspeedIcon
-                      text: Lightspeed
+    - package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-lightspeed:next__0.6.1!red-hat-developer-hub-backstage-plugin-lightspeed
+      disabled: false
+      pluginConfig:
+        lightspeed:
+          # OPTIONAL: Custom users prompts displayed to users
+          # If not provided, the plugin uses built-in default prompts
+          prompts:
+            - title: 'Getting Started with Red Hat Developer Hub'
+              message: Can you guide me through the first steps to start using Developer Hub
+                as a developer, like exploring the Software Catalog and adding my
+                service?
+        dynamicPlugins:
+          frontend:
+            red-hat-developer-hub.backstage-plugin-lightspeed:
+              translationResources:
+                - importName: lightspeedTranslations
+                  module: Alpha
+                  ref: lightspeedTranslationRef
+              appIcons:
+                - name: LightspeedIcon
+                  module: LightspeedPlugin
+                  importName: LightspeedIcon
+              dynamicRoutes:
+                - path: /lightspeed
+                  importName: LightspeedPage
+                  module: LightspeedPlugin
+                  menuItem:
+                    icon: LightspeedIcon
+                    text: Lightspeed
 ```
 
 - add the lightspeed configuration in the `app-config.yaml`
 
 ```
-lightspeed:
-  servers:
-    - id: <server_id>
-      url: <server_URL>
-      token: <api_key>
-  questionValidation: true # Optional - To disable question (prompt) validation set it to false.
   prompts: # optional
     - title: <prompt_title>
-    - message: <prompt_message>
-```
-
-`questionValidation` is default to be enabled with topic restriction on RHDH related topics.
-If you want to disable the validation, set the value to be `false`.
-
-Example configuration to disable `questionValidation`:
-
-```yaml
-lightspeed:
-  questionValidation: false
-  servers: ... ...
+      message: <prompt_message>
 ```
 
 ---
 
-#### To install this plugin locally in [backstage-showcase](https://github.com/janus-idp/backstage-showcase) application as a dynamic plugin.
+#### To install this plugin locally in [RHDH](https://github.com/redhat-developer/rhdh) application as a dynamic plugin.
 
 Follow the below steps -
 
-- Export dynamic plugin assets. This will build and create the static assets for the plugin and put it inside dist-scalprum folder.
+- Export dynamic plugin assets. This will build and create the static assets for the plugin and put it inside dynamic-plugins-root folder.
 
 `yarn install`
 
@@ -153,32 +149,19 @@ Follow the below steps -
 
 `yarn build`
 
-`yarn export-dynamic`
-
-- Package and copy dist-scalprum folder assets to dynamic-plugins-root folder in [backstage-showcase](https://github.com/janus-idp/backstage-showcase) application.
-
-To Package the plugin, run the below commands.
-
-```
-pkg=../plugins/lightspeed
-archive=$(npm pack $pkg)
-tar -xzf "$archive" && rm "$archive"
-mv package $(echo $archive | sed -e 's:\.tgz$::')
-```
+`npx @janus-idp/cli@latest package package-dynamic-plugins --export-to <path-to>/rhdh/dynamic-plugins-root`
 
 - Add the extension point inside the `app-config.yaml` or `app-config.local.yaml` file.
 
 ```
 
-lightspeed:
-  servers:
-    - id: <server id>
-      url: <serverURL>
-      token: <api key> # dummy token
-
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-lightspeed:
+      translationResources:
+        - importName: lightspeedTranslations
+          module: Alpha
+          ref: lightspeedTranslationRef
       appIcons:
         - name: LightspeedIcon
           module: LightspeedPlugin

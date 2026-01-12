@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
 import { Content, Header, Page } from '@backstage/core-components';
@@ -25,6 +25,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
+import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
+import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -40,9 +42,11 @@ const useStyles = makeStyles(() =>
 
 const THEME_DARK = 'dark';
 const THEME_DARK_CLASS = 'pf-v6-theme-dark';
+const LAST_SELECTED_MODEL_KEY = 'lastSelectedModel';
 
 const LightspeedPageInner = () => {
   const classes = useStyles();
+  const { t } = useTranslation();
   const {
     palette: { type },
   } = useTheme();
@@ -50,20 +54,33 @@ const LightspeedPageInner = () => {
   const identityApi = useApi(identityApiRef);
 
   const { data: models } = useAllModels();
+
   const { allowed: hasViewAccess, loading } = useLightspeedViewPermission();
 
   const { value: profile, loading: profileLoading } = useAsync(
     async () => await identityApi.getProfileInfo(),
   );
 
-  const [selectedModel, setSelectedModel] = React.useState('');
+  const [selectedModel, setSelectedModel] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState('');
 
-  const modelsItems = React.useMemo(
-    () => (models ? models.map(m => ({ label: m.id, value: m.id })) : []),
+  const { data: topicRestrictionEnabled } = useTopicRestrictionStatus();
+
+  const modelsItems = useMemo(
+    () =>
+      models
+        ? models
+            .filter(model => model.model_type === 'llm')
+            .map(m => ({
+              label: m.provider_resource_id,
+              value: m.provider_resource_id,
+              provider: m.provider_id,
+            }))
+        : [],
     [models],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     const htmlTagElement = document.documentElement;
     if (type === THEME_DARK) {
       htmlTagElement.classList.add(THEME_DARK_CLASS);
@@ -73,9 +90,58 @@ const LightspeedPageInner = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 
-  React.useEffect(() => {
-    if (modelsItems.length > 0) setSelectedModel(modelsItems[0].value);
+  useEffect(() => {
+    if (modelsItems.length > 0) {
+      try {
+        const storedData = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+        const parsedData = storedData ? JSON.parse(storedData) : null;
+
+        // Check if stored model exists in available models
+        const storedModel = parsedData?.model
+          ? modelsItems.find(m => m.value === parsedData.model)
+          : null;
+
+        if (storedModel) {
+          setSelectedModel(storedModel.value);
+          setSelectedProvider(storedModel.provider);
+        } else {
+          // Fallback to first model if stored model is not available
+          setSelectedModel(modelsItems[0].value);
+          setSelectedProvider(modelsItems[0].provider);
+        }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(
+          'Error loading last selected model from localStorage:',
+          error,
+        );
+        // Fallback to first model on error
+        setSelectedModel(modelsItems[0].value);
+        setSelectedProvider(modelsItems[0].provider);
+      }
+    }
   }, [modelsItems]);
+
+  // Save to localStorage whenever model or provider changes
+  useEffect(() => {
+    if (selectedModel && selectedProvider) {
+      try {
+        localStorage.setItem(
+          LAST_SELECTED_MODEL_KEY,
+          JSON.stringify({
+            model: selectedModel,
+            provider: selectedProvider,
+          }),
+        );
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(
+          'Error saving last selected model to localStorage:',
+          error,
+        );
+      }
+    }
+  }, [selectedModel, selectedProvider]);
 
   if (loading) {
     return null;
@@ -84,9 +150,9 @@ const LightspeedPageInner = () => {
   return (
     <Page themeId="tool">
       <Header
-        title="Lightspeed"
+        title={t('page.title')}
         style={{ display: 'none' }}
-        pageTitleOverride="Developer Lightspeed"
+        pageTitleOverride={t('page.title')}
       />
       <Content className={classes.container}>
         {!hasViewAccess ? (
@@ -95,8 +161,14 @@ const LightspeedPageInner = () => {
           <FileAttachmentContextProvider>
             <LightspeedChat
               selectedModel={selectedModel}
+              selectedProvider={selectedProvider}
+              topicRestrictionEnabled={topicRestrictionEnabled ?? false}
               handleSelectedModel={item => {
                 setSelectedModel(item);
+                setSelectedProvider(
+                  modelsItems.find((m: any) => m.value === item)?.provider ||
+                    '',
+                );
               }}
               models={modelsItems}
               userName={profile?.displayName}

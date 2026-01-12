@@ -1,5 +1,191 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.6.0
+
+### Minor Changes
+
+- c35d07c: Add fetch:error:ignoreUnready and fetch:response:default options for form widgets
+
+  **Feature 1: fetch:error:ignoreUnready**
+
+  When using widgets with `fetch:retrigger` dependencies, the initial fetch often fails because dependent fields don't have values yet. This results in HTTP errors being displayed during initial load.
+  - Add `fetch:error:ignoreUnready` option to suppress fetch error display until all `fetch:retrigger` dependencies have non-empty values
+  - Errors are only suppressed when dependencies are empty; once filled, real errors are shown
+  - Supported by: ActiveTextInput, ActiveDropdown, ActiveMultiSelect, SchemaUpdater
+
+  **Feature 2: fetch:response:default**
+
+  Widgets previously required `fetch:response:value` for defaults, meaning fetch must succeed. This adds static fallback defaults.
+  - Add `fetch:response:default` option for static default values applied immediately on form initialization
+  - Defaults are applied at form initialization level in `OrchestratorForm`, ensuring controlled components work correctly
+  - Static defaults act as fallback when fetch fails, hasn't completed, or returns empty
+  - Fetched values only override defaults when non-empty
+  - Supported by: ActiveTextInput (string), ActiveDropdown (string), ActiveMultiSelect (string[])
+
+  **Usage Examples:**
+
+  ```json
+  {
+    "action": {
+      "ui:widget": "ActiveTextInput",
+      "ui:props": {
+        "fetch:url": "...",
+        "fetch:retrigger": ["current.appName"],
+        "fetch:error:ignoreUnready": true,
+        "fetch:response:default": "create"
+      }
+    }
+  }
+  ```
+
+- 5c9f044: Add object type support in ui:props for fetch:response:\* properties (RHIDP-11054)
+
+  **Type System Enhancement:**
+  - Updated `UiProps` type to accept `JsonValue` instead of `string` for `fetch:response:*` properties
+  - Enables using objects, arrays, and other JSON types in ui:props, not just strings
+  - Maintains full backward compatibility with existing string-based selectors
+
+  **Runtime Safety:**
+  - Added runtime validation in `useTemplateUnitEvaluator` to ensure selectors are strings when evaluated as JSONata expressions
+  - Provides clear error messages when invalid types are used
+
+  **Documentation:**
+  - Updated `orchestratorFormWidgets.md` to document object type support
+  - Added examples showing flexible ui:props configurations
+
+  This change allows users to reference object attributes more easily in ui:props while maintaining type safety and backward compatibility.
+
+### Patch Changes
+
+- 8524940: Fix TypeScript compilation errors in orchestrator plugins
+- Updated dependencies [8524940]
+- Updated dependencies [d91ef65]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.1
+
+## 1.5.0
+
+### Minor Changes
+
+- 29dfed0: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- 40b80fe: Change "lifecycle" to active in catalog-info.yaml
+- 40b80fe: Remove "support", "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- Updated dependencies [a1671ab]
+- Updated dependencies [40b80fe]
+- Updated dependencies [782c33f]
+- Updated dependencies [f5f4973]
+- Updated dependencies [40b80fe]
+- Updated dependencies [34a36cb]
+- Updated dependencies [29dfed0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.3.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.0
+
+## 1.4.1
+
+### Patch Changes
+
+- 40e4267: Fixing endless onChange() loop and turning "ui:allowNewItems" from string to boolean type.
+
+## 1.4.0
+
+### Minor Changes
+
+- fba1136: Backstage version bump to v1.44.1
+
+### Patch Changes
+
+- Updated dependencies [fba1136]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.3.0
+
+## 1.3.0
+
+### Minor Changes
+
+- 149804f: Disable Next button when active widgets are fetching and processing data
+  - Add isFetching state tracking to StepperContext using a counter to monitor multiple concurrent async operations
+  - Update OrchestratorFormToolbar to disable Next button when isFetching is true (in addition to existing isValidating check)
+  - Add handleFetchStarted and handleFetchEnded callbacks to OrchestratorFormContextProps to allow widgets to report their loading status
+  - Update useFetchAndEvaluate to track complete loading state (fetch + template evaluation) and notify context
+  - Create useProcessingState custom hook to reduce code duplication across widgets, providing a reusable pattern for tracking both fetch and processing states
+  - Refactor SchemaUpdater, ActiveTextInput, ActiveDropdown, and ActiveMultiSelect to use useProcessingState hook
+  - Track the complete loading lifecycle: fetch → process → ready, ensuring Next button is disabled until all async work completes
+  - Prevents race conditions where Next button becomes enabled before widgets finish processing data
+
+### Patch Changes
+
+- Updated dependencies [149804f]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.2.0
+
+## 1.2.0
+
+### Minor Changes
+
+- e86bce0: Add markdown rendering support to ActiveText widget
+  - Replace Typography component with MarkdownContent from @backstage/core-components
+  - Support both static markdown content and dynamic template variables in markdown
+  - Markdown features include headers, bold/italic text, lists, links, blockquotes, code blocks, and tables
+  - Remove deprecated ui:variant prop as markdown provides its own styling through syntax
+  - Update documentation to reflect markdown support and provide usage examples
+
+### Patch Changes
+
+- 4fa1356: In the active widgets, the default value received from an endpoint now replaces the actual value, unless the user has modified it.
+
+## 1.1.0
+
+### Minor Changes
+
+- de5ced6: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- Updated dependencies [de5ced6]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.1.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.1.0
+
+## 1.0.8
+
+### Patch Changes
+
+- e50b2b6: feat(orchestrator): The ActiveMultiSelect widget supports fetch:response:value selector for defaults
+- fad61b7: ActiveTextInput ignores default value if it is null
+- c2a1160: Add readonly option to the active widgets
+
+## 1.0.7
+
+### Patch Changes
+
+- f370925: Fix ActiveDropdown for long lists.
+
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [f0a427c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.6
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.6
+
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies [c79ffa7]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.5
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.5
+
+## 1.0.4
+
+### Patch Changes
+
+- 8c95d55: Align with RHDH @backstage/core-components version and add table translation
+- Updated dependencies [2fbdb53]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.0.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.0.4
+
 ## 1.0.3
 
 ### Patch Changes

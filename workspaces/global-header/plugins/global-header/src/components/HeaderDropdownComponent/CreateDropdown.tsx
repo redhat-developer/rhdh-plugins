@@ -21,6 +21,7 @@ import ArrowDropDownOutlinedIcon from '@mui/icons-material/ArrowDropDownOutlined
 
 import { MenuItemConfig } from './MenuSection';
 import { useCreateDropdownMountPoints } from '../../hooks/useCreateDropdownMountPoints';
+import { useTranslation } from '../../hooks/useTranslation';
 import { useDropdownManager } from '../../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import Box from '@mui/material/Box';
@@ -44,6 +45,7 @@ export interface CreateDropdownProps {
 }
 
 export const CreateDropdown = ({ layout }: CreateDropdownProps) => {
+  const { t } = useTranslation();
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
 
   const createDropdownMountPoints = useCreateDropdownMountPoints();
@@ -65,7 +67,7 @@ export const CreateDropdown = ({ layout }: CreateDropdownProps) => {
     <HeaderDropdownComponent
       buttonContent={
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          Self-service <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
+          {t('create.title')} <ArrowDropDownOutlinedIcon sx={{ ml: 1 }} />
         </Box>
       }
       buttonProps={{

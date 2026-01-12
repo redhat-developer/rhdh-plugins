@@ -1,5 +1,107 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.1.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.1.1
+
+## 1.1.0
+
+### Minor Changes
+
+- 99f35d5: Backstage version bump to v1.45.2
+
+### Patch Changes
+
+- Updated dependencies [99f35d5]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.1.0
+
+## 1.0.4
+
+### Patch Changes
+
+- 58e26ba: '@red-hat-developer-hub/backstage-plugin-lightspeed' :
+  - Added missing translations for untranslated labels across the Lightspeed chat UI.
+  - Added lightspeed settings kebab menu
+  - Added a new “Pinned” section. The section is conditionally visible only when pinning chats are enabled in Lightspeed settings. It shows an empty state when no chats are pinned.
+  - Added Kebab menu actions to each chat item with actions: Rename, Pin, Unpin
+  - Implemented logic to move chats between Pinned and Recent sections based on the selected action (“Pin” / “Unpin”).
+  - Updated search behavior to show results under both Pinned and Recent groups (when enabled), including appropriate empty search messaging.
+  - The Rename action opens a dialog with an editable text field and confirm/cancel actions.
+  - Replaced the patternfly components with MUI to match the Figma designs [Design 1](https://www.figma.com/design/urwU8VqRvHfbxMqxeVknrv/RHDH-Lightspeed---AI-Assistant?node-id=1523-1670&t=CqnUYsxar0PtjAjZ-0)
+    [Design 2](https://www.figma.com/design/urwU8VqRvHfbxMqxeVknrv/RHDH-Lightspeed---AI-Assistant?node-id=2514-5415&t=PphIEOl5Yzmgv5tI-0)
+
+  '@red-hat-developer-hub/backstage-plugin-lightspeed-common':
+
+  Added the Update api client
+
+- 40b80fe: Remove "lifecycle" keywords and "supported-versions" in package.json. Change "lifecycle" to active in catalog.yaml
+- b609890: update lightspeed model dropdown styles
+- Updated dependencies [58e26ba]
+- Updated dependencies [40b80fe]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.4
+
+## 1.0.3
+
+### Patch Changes
+
+- 5a26e61: Rever PF upgrade to reduce the bundle size
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.3
+
+## 1.0.2
+
+### Patch Changes
+
+- ad1528c: Add localStorage persistence for last selected model
+
+  The Lightspeed plugin now remembers the user's last selected model across page refreshes, automatically restoring it when available.
+
+- f686a9a: updated legal text
+- be83b61: Upgrade patternfly chatbot
+
+  Monaco editor is used from npm package instead of cdn allowing us to remove custom csp rules
+
+- c5fa204: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `msw` to `2.11.6`.
+  Updated dependency `@patternfly/chatbot` to `6.4.1`.
+  Updated dependency `@patternfly/react-core` to `6.4.0`.
+- 71bb80d: fix streaming response in lightspeed UI
+- d8bb650: Remove unsupported file type from lightspeed
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.0.2
+
+## 1.0.1
+
+### Patch Changes
+
+- 7ba5eb5: use only llm models in the model dropdown
+
+## 1.0.0
+
+### Major Changes
+
+- 2204143: Align lightspeed UI with LCS
+
+## 0.6.1
+
+### Patch Changes
+
+- 51c5897: Export i18n resources from alpha module
+
+## 0.6.0
+
+### Minor Changes
+
+- 693c3df: Add internationalization (i18n) support with German, French and Spanish translations in lightspeed.
+- d922b04: Backstage version bump to v1.42.5
+
+### Patch Changes
+
+- cfa3434: Updated dependency `@patternfly/chatbot` to `6.3.2`.
+  Updated dependency `@patternfly/react-core` to `6.3.1`.
+- Updated dependencies [d922b04]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@0.4.0
+
 ## 0.5.7
 
 ### Patch Changes

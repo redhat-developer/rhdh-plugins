@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import { useAsync } from 'react-use';
 
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
@@ -28,8 +27,9 @@ import { InputSchemaResponseDTO } from '@red-hat-developer-hub/backstage-plugin-
 
 import { orchestratorApiRef } from '../../api/api';
 import { FormattedWorkflowOverview } from '../../dataFormatters/WorkflowOverviewFormatter';
+import { useTranslation } from '../../hooks/useTranslation';
 import { useIsDarkMode } from '../../utils/isDarkMode';
-import { InfoDialog } from '../InfoDialog';
+import { InfoDialog } from '../ui/InfoDialog';
 import { JsonCodeBlock } from '../ui/JsonCodeBlock';
 
 const InputSchemaDialogContent = ({
@@ -41,6 +41,7 @@ const InputSchemaDialogContent = ({
   loading: boolean;
   error: Error | undefined;
 }) => {
+  const { t } = useTranslation();
   const isDarkMode = useIsDarkMode();
 
   if (loading) return <Progress />;
@@ -54,10 +55,11 @@ const InputSchemaDialogContent = ({
   return (
     <Box>
       {inputSchema?.inputSchema === undefined ? (
-        <Typography>No input schema is defined for this workflow.</Typography>
+        <Typography>{t('messages.noInputSchemaWorkflow')}</Typography>
       ) : (
         <JsonCodeBlock
           isDarkMode={isDarkMode}
+          maxHeight={400}
           value={inputSchema?.inputSchema}
         />
       )}

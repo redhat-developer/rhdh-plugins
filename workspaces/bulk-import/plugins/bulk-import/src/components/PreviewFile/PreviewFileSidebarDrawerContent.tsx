@@ -28,6 +28,7 @@ import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddRepositoryData,
   PullRequestPreviewData,
@@ -57,6 +58,7 @@ export const PreviewFileSidebarDrawerContent = ({
 
   setPullRequest: (pullRequest: PullRequestPreviewData) => void;
 }) => {
+  const { t } = useTranslation();
   const [formErrors, setFormErrors] = useState<PullRequestPreviewData>();
 
   if (isLoading) {
@@ -66,7 +68,7 @@ export const PreviewFileSidebarDrawerContent = ({
           <Skeleton variant="rectangular" width="100%" height="100%" />
           <IconButton
             key="dismiss"
-            title="Close the drawer"
+            title={t('previewFile.closeDrawer')}
             onClick={onCancel}
             color="inherit"
             size="large"
@@ -119,7 +121,7 @@ export const PreviewFileSidebarDrawerContent = ({
 
           <IconButton
             key="dismiss"
-            title="Close the drawer"
+            title={t('previewFile.closeDrawer')}
             onClick={onCancel}
             color="inherit"
             size="large"
@@ -197,10 +199,10 @@ export const PreviewFileSidebarDrawerContent = ({
             isSubmitting && <CircularProgress size="20px" color="inherit" />
           }
         >
-          Save
+          {t('common.save')}
         </Button>
         <Link to="" variant="button" onClick={onCancel}>
-          <Button variant="outlined">Cancel</Button>
+          <Button variant="outlined">{t('common.cancel')}</Button>
         </Link>
       </Box>
     </>

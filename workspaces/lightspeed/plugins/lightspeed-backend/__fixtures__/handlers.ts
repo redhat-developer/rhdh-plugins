@@ -18,15 +18,6 @@ import { http, HttpResponse } from 'msw';
 
 const localHostAndPort = 'localhost:443';
 export const LOCAL_AI_ADDR = `http://${localHostAndPort}/v1`;
-export const mockModelRes = {
-  object: 'list',
-  data: [
-    {
-      id: 'ibm-granite-8b-code-instruct',
-      object: 'model',
-    },
-  ],
-};
 
 function loadTestFixture(filePathFromFixturesDir: string) {
   return require(`${__dirname}/${filePathFromFixturesDir}`);
@@ -53,10 +44,6 @@ export const handlers = [
         'Content-Type': 'text/plain',
       },
     });
-  }),
-
-  http.get(`${LOCAL_AI_ADDR}/models`, () => {
-    return HttpResponse.json(mockModelRes);
   }),
 
   // Catch-all handler for unknown paths

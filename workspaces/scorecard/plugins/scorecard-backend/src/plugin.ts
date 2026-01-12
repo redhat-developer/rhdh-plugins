@@ -17,14 +17,23 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
+import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
-import { createTodoListService } from './services/TodoListService';
 import {
   MetricProvider,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { MetricProvidersRegistry } from './services/MetricProviders/MetricProvidersRegistry';
+import { MetricProvidersRegistry } from './providers/MetricProvidersRegistry';
+import { CatalogMetricService } from './service/CatalogMetricService';
+import { ThresholdEvaluator } from './threshold/ThresholdEvaluator';
+import { scorecardPermissions } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  scorecardMetricPermissionResourceRef,
+  rules as scorecardRules,
+} from './permissions/rules';
+import { migrate } from './database/migration';
+import { DatabaseMetricValues } from './database/DatabaseMetricValues';
+import { Scheduler } from './scheduler';
 
 /**
  * scorecardPlugin backend plugin
@@ -46,22 +55,69 @@ export const scorecardPlugin = createBackendPlugin({
 
     env.registerInit({
       deps: {
-        logger: coreServices.logger,
-        httpAuth: coreServices.httpAuth,
-        httpRouter: coreServices.httpRouter,
+        auth: coreServices.auth,
         catalog: catalogServiceRef,
+        config: coreServices.rootConfig,
+        database: coreServices.database,
+        httpRouter: coreServices.httpRouter,
+        httpAuth: coreServices.httpAuth,
+        logger: coreServices.logger,
+        permissions: coreServices.permissions,
+        permissionsRegistry: coreServices.permissionsRegistry,
+        scheduler: coreServices.scheduler,
       },
-      async init({ logger, httpAuth, httpRouter, catalog }) {
-        const todoListService = await createTodoListService({
-          logger,
-          catalog,
+      async init({
+        auth,
+        catalog,
+        config,
+        database,
+        httpRouter,
+        httpAuth,
+        logger,
+        permissions,
+        permissionsRegistry,
+        scheduler,
+      }) {
+        permissionsRegistry.addResourceType({
+          resourceRef: scorecardMetricPermissionResourceRef,
+          getResources: async (resourceRefs: string[]) => {
+            return metricProvidersRegistry.listMetrics(resourceRefs);
+          },
+          permissions: scorecardPermissions,
+          rules: Object.values(scorecardRules),
         });
+
+        // Run database migrations
+        await migrate(database);
+
+        const client = await database.getClient();
+        const dbMetricValues = new DatabaseMetricValues(client);
+
+        const catalogMetricService = new CatalogMetricService({
+          catalog,
+          auth,
+          registry: metricProvidersRegistry,
+          database: dbMetricValues,
+        });
+
+        Scheduler.create({
+          auth,
+          catalog,
+          config,
+          logger,
+          scheduler,
+          database: dbMetricValues,
+          metricProvidersRegistry,
+          thresholdEvaluator: new ThresholdEvaluator(),
+        }).start();
 
         httpRouter.use(
           await createRouter({
-            httpAuth,
-            todoListService,
             metricProvidersRegistry,
+            catalogMetricService,
+            catalog,
+            httpAuth,
+            permissions,
           }),
         );
       },

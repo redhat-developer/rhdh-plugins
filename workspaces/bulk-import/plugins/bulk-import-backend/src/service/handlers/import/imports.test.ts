@@ -128,6 +128,20 @@ describe('imports', () => {
         expect(response.status).toEqual(200);
         let expectedRespBody: any = [
           {
+            approvalTool: 'GITLAB',
+            id: 'https://gitlab.com/saltypig1/funtimes',
+            lastUpdate: '2025-08-15T15:03:44.927Z',
+            repository: {
+              defaultBranch: 'dev',
+              id: 'saltypig1/funtimes',
+              name: 'funtimes',
+              organization: 'saltypig1',
+              url: 'https://gitlab.com/saltypig1/funtimes',
+            },
+            status: null,
+            source: 'location',
+          },
+          {
             approvalTool: 'GIT',
             id: 'https://github.com/octocat/my-awesome-repo',
             lastUpdate: '2011-01-26T19:14:43Z',
@@ -156,6 +170,20 @@ describe('imports', () => {
             source: 'config',
           },
           {
+            approvalTool: 'GITLAB',
+            id: 'https://gitlab.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch',
+            lastUpdate: '2025-07-31T14:52:27.849Z',
+            repository: {
+              defaultBranch: 'main',
+              id: 'my-org-1/my-repo-with-existing-catalog-info-in-default-branch',
+              name: 'my-repo-with-existing-catalog-info-in-default-branch',
+              organization: 'my-org-1',
+              url: 'https://gitlab.com/my-org-1/my-repo-with-existing-catalog-info-in-default-branch',
+            },
+            status: 'ADDED',
+            source: 'config',
+          },
+          {
             approvalTool: 'GIT',
             github: {
               pullRequest: {
@@ -177,18 +205,40 @@ describe('imports', () => {
             status: 'WAIT_PR_APPROVAL',
             source: 'config',
           },
+          {
+            approvalTool: 'GITLAB',
+            gitlab: {
+              pullRequest: {
+                body: 'Onboarding this repository into Red Hat Developer Hub.',
+                number: 454,
+                title: 'Add catalog-info.yaml',
+                url: 'https://gitlab.com/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-p/-/merge_requests/454',
+              },
+            },
+            id: 'https://gitlab.com/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr',
+            lastUpdate: '2025-08-20T18:16:50.667Z',
+            repository: {
+              defaultBranch: 'main',
+              id: 'my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr',
+              name: 'my-repo-with-no-catalog-info-in-default-branch-and-import-pr',
+              organization: 'my-org-1',
+              url: 'https://gitlab.com/my-org-1/my-repo-with-no-catalog-info-in-default-branch-and-import-pr',
+            },
+            status: 'WAIT_PR_APPROVAL',
+            source: 'config',
+          },
         ];
         if (apiVersion === 'v2') {
           expectedRespBody = {
             imports: expectedRespBody,
             page: 1,
             size: 20,
-            totalCount: 3,
+            totalCount: 6,
           };
         }
         expect(response.body).toEqual(expectedRespBody);
         // Location entity refresh triggered (on each 'ADDED' repo)
-        expect(mockCatalogClient.refreshEntity).toHaveBeenCalledTimes(1);
+        expect(mockCatalogClient.refreshEntity).toHaveBeenCalledTimes(2);
       },
     );
   });
@@ -526,6 +576,7 @@ spec:
           status: 'PR_ERROR',
         },
         {
+          approvalTool: 'GIT',
           github: {
             pullRequest: {
               number: 1347,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
 import { Content, InfoCard, Link } from '@backstage/core-components';
@@ -23,7 +23,7 @@ import { usePermission } from '@backstage/plugin-permission-react';
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import moment from 'moment';
+import { DateTime } from 'luxon';
 import { makeStyles } from 'tss-react/mui';
 
 import {
@@ -35,23 +35,29 @@ import {
 
 import { orchestratorApiRef } from '../../api/api';
 import { VALUE_UNAVAILABLE } from '../../constants';
-import { WorkflowRunDetail } from '../WorkflowRunDetail';
-import { WorkflowRunDetails } from '../WorkflowRunDetails';
+import { useTranslation } from '../../hooks/useTranslation';
+import { formatDuration } from '../../utils/DurationUtils';
+import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
 import { WorkflowInputs } from './WorkflowInputs';
 import { WorkflowProgress } from './WorkflowProgress';
 import { WorkflowResult } from './WorkflowResult';
+import { WorkflowRunDetails } from './WorkflowRunDetails';
 
 export const mapProcessInstanceToDetails = (
   instance: ProcessInstanceDTO,
+  t: any,
 ): WorkflowRunDetail => {
-  const start = instance.start ? moment(instance.start) : undefined;
+  const start = instance.start ? DateTime.fromISO(instance.start) : undefined;
   let duration: string = VALUE_UNAVAILABLE;
   if (start && instance.end) {
-    const end = moment(instance.end);
-    duration = moment.duration(start.diff(end)).humanize();
+    const end = DateTime.fromISO(instance.end);
+    const diffMs = end.diff(start).toMillis();
+    duration = formatDuration(diffMs, t);
   }
-  const started = start?.toDate().toLocaleString() ?? VALUE_UNAVAILABLE;
+  const started =
+    start?.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS) ??
+    VALUE_UNAVAILABLE;
 
   return {
     id: instance.id,
@@ -80,17 +86,23 @@ const useStyles = makeStyles()(() => ({
   cardClassName: {
     overflow: 'auto',
   },
+  titleContainer: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 }));
 
 export const WorkflowInstancePageContent: React.FC<{
   instance: ProcessInstanceDTO;
 }> = ({ instance }) => {
+  const { t } = useTranslation();
   const { classes } = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
 
-  const details = React.useMemo(
-    () => mapProcessInstanceToDetails(instance),
-    [instance],
+  const details = useMemo(
+    () => mapProcessInstanceToDetails(instance, t),
+    [instance, t],
   );
 
   const workflowdata = instance?.workflowdata;
@@ -120,7 +132,7 @@ export const WorkflowInstancePageContent: React.FC<{
 
   const [isVariablesDialogOpen, setIsVariablesDialogOpen] = useState(false);
 
-  const toggleVariablesDialog = React.useCallback(() => {
+  const toggleVariablesDialog = useCallback(() => {
     setIsVariablesDialogOpen(prev => !prev);
   }, []);
 
@@ -141,7 +153,7 @@ export const WorkflowInstancePageContent: React.FC<{
         component="div"
         style={{ textAlign: 'right' }}
       >
-        <b>View variables</b>
+        <b>{t('run.viewVariables')}</b>
       </Typography>
     </Link>
   );
@@ -156,11 +168,15 @@ export const WorkflowInstancePageContent: React.FC<{
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <InfoCard
-            title="Details"
+            title={
+              <div className={classes.titleContainer}>
+                <Typography component="span">{t('common.details')}</Typography>
+                {viewVariables}
+              </div>
+            }
             divider={false}
             className={classes.topRowCard}
             cardClassName={classes.cardClassName}
-            icon={viewVariables}
           >
             <WorkflowRunDetails details={details} />
           </InfoCard>
@@ -186,7 +202,7 @@ export const WorkflowInstancePageContent: React.FC<{
 
         <Grid item xs={6}>
           <InfoCard
-            title="Workflow progress"
+            title={t('workflow.progress')}
             divider={false}
             className={classes.bottomRowCard}
             cardClassName={classes.cardClassName}

@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 0.9.0
+
+### Minor Changes
+
+- f57ad78: Backstage version bump to v1.45.3
+
+## 0.8.0
+
+### Minor Changes
+
+- 44c967a: Backstage version bump to v1.44.2
+
+## 0.7.0
+
+### Minor Changes
+
+- 7b81c3d: copy model/modelServer annotations to resource/component annotations
+
+## 0.6.0
+
+### Minor Changes
+
+- 986f8ad: Backstage version bump to v1.42.5
+
 ## 0.5.0
 
 ### Minor Changes

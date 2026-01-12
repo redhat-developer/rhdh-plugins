@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
+import {
+  coreServices,
+  createServiceFactory,
+} from '@backstage/backend-plugin-api';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
+import { Knex } from 'knex';
 import request from 'supertest';
 
 import { setupTest, startBackendServer } from '../../__fixtures__/testUtils';
@@ -69,9 +74,34 @@ describe('router tests', () => {
         ) => Promise<request.Response>,
       ) => {
         const { mockCatalogClient } = useTestData();
+        const mockDb = createServiceFactory({
+          service: coreServices.database,
+          deps: {},
+          factory: async () => ({
+            getClient: async () =>
+              ({
+                migrate: {
+                  latest: jest.fn(),
+                },
+                insert: jest.fn().mockReturnThis(),
+                select: jest.fn().mockReturnThis(),
+                where: jest.fn().mockReturnThis(),
+                whereIn: jest.fn().mockReturnThis(),
+                offset: jest.fn().mockReturnThis(),
+                limit: jest.fn().mockReturnThis(),
+                andWhere: jest.fn().mockReturnThis(),
+                count: jest.fn().mockReturnThis(),
+                first: jest.fn().mockReturnThis(),
+                delete: jest.fn().mockReturnThis(),
+                raw: jest.fn().mockReturnThis(),
+              }) as unknown as Knex,
+          }),
+        });
         const backendServer = await startBackendServer(
           mockCatalogClient,
           AuthorizeResult.DENY,
+          undefined,
+          mockDb,
         );
 
         const response = await reqHandler(request(backendServer));

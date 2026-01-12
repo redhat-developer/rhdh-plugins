@@ -13,6 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// CRITICAL: Import mocks BEFORE components
+import { mockUseTranslation } from '../test-utils/mockTranslations';
+
+jest.mock('./useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('./useLanguage', () => ({
+  useLanguage: () => 'en', // Mock English locale for tests
+}));
+
+// Component imports AFTER mocks
 import { renderHook, waitFor } from '@testing-library/react';
 
 import useGreeting from './useGreeting';

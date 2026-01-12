@@ -18,6 +18,7 @@ import { Link } from '@backstage/core-components';
 
 import Typography from '@mui/material/Typography';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { AddRepositoryData } from '../../types';
 
 export const SelectRepositories = ({
@@ -29,6 +30,8 @@ export const SelectRepositories = ({
   orgData: AddRepositoryData;
   addedRepositoriesCount: number;
 }) => {
+  const { t } = useTranslation();
+
   if (orgData?.totalReposInOrg === 0) {
     return (
       <Typography
@@ -36,7 +39,7 @@ export const SelectRepositories = ({
         style={{ color: '#6A6E73' }}
         data-testid="no-repositories"
       >
-        No repositories found
+        {t('addRepositories.noRepositoriesFound')}
       </Typography>
     );
   }
@@ -48,9 +51,9 @@ export const SelectRepositories = ({
         style={{ color: '#6A6E73' }}
         data-testid="no-repositories"
       >
-        All repositories are added{' '}
+        {t('addRepositories.allRepositoriesAdded')}{' '}
         <Link to="" onClick={() => onOrgRowSelected(orgData)}>
-          View
+          {t('common.view')}
         </Link>
       </Typography>
     );
@@ -62,9 +65,9 @@ export const SelectRepositories = ({
   ) {
     return (
       <Typography component="span" data-testid="select-repositories">
-        None{' '}
+        {t('addRepositories.noSelection')}{' '}
         <Link to="" onClick={() => onOrgRowSelected(orgData)}>
-          Select
+          {t('common.select')}
         </Link>
       </Typography>
     );
@@ -74,7 +77,7 @@ export const SelectRepositories = ({
       {Object.keys(orgData.selectedRepositories || [])?.length}/
       {(orgData?.totalReposInOrg || 0) - addedRepositoriesCount}{' '}
       <Link onClick={() => onOrgRowSelected(orgData)} to="">
-        Edit
+        {t('common.edit')}
       </Link>
     </Typography>
   );

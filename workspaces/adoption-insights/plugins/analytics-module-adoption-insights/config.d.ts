@@ -16,8 +16,8 @@
 
 export interface Config {
   app?: {
-    analytics: {
-      adoptionInsights: {
+    analytics?: {
+      adoptionInsights?: {
         /**
          * Maximum buffer size for event batching.
          * default 20

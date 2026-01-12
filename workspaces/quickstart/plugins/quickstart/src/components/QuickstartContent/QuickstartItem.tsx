@@ -27,6 +27,8 @@ import { QuickstartItemIcon } from './QuickstartItemIcon';
 import { QuickstartCtaLink } from './QuickstartCtaLink';
 import IconButton from '@mui/material/IconButton';
 import { QuickstartItemData } from '../../types';
+import { useTranslation } from '../../hooks/useTranslation';
+import { getTranslatedTextWithFallback } from '../../utils';
 
 export type QuickstartItemProps = {
   item: QuickstartItemData;
@@ -43,6 +45,7 @@ export const QuickstartItem = ({
   open,
   handleOpen,
 }: QuickstartItemProps) => {
+  const { t } = useTranslation();
   const [stepCompleted, setStepCompleted] = useState<boolean>(false);
   const itemKey = `${item.title}-${index}`;
 
@@ -70,7 +73,11 @@ export const QuickstartItem = ({
         onClick={handleOpen}
         role="button"
         aria-expanded={open}
-        aria-label={`${open ? 'Collapse' : 'Expand'} ${item.title} details`}
+        aria-label={
+          open
+            ? t('item.collapseAriaLabel' as any, { title: item.title })
+            : t('item.expandAriaLabel' as any, { title: item.title })
+        }
         tabIndex={0}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -103,7 +110,7 @@ export const QuickstartItem = ({
           />
         </ListItemIcon>
         <ListItemText
-          primary={item.title}
+          primary={getTranslatedTextWithFallback(t, item.titleKey, item.title)}
           sx={{
             '& .v5-MuiTypography-root': {
               fontWeight: theme =>
@@ -115,7 +122,11 @@ export const QuickstartItem = ({
           }}
         />
         <IconButton
-          aria-label={open ? 'Collapse item' : 'Expand item'}
+          aria-label={
+            open
+              ? t('item.collapseButtonAriaLabel')
+              : t('item.expandButtonAriaLabel')
+          }
           sx={{
             ...(open
               ? { color: theme => theme.palette.text.primary }
@@ -140,7 +151,13 @@ export const QuickstartItem = ({
           }}
         >
           <ListItem>
-            <ListItemText primary={item.description} />
+            <ListItemText
+              primary={getTranslatedTextWithFallback(
+                t,
+                item.descriptionKey,
+                item.description,
+              )}
+            />
           </ListItem>
           <ListItem>
             <QuickstartCtaLink

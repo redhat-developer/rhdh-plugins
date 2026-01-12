@@ -22,14 +22,15 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Table from '@mui/material/Table';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
+import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { useRepositories } from '../../hooks';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   AddedRepositories,
   AddRepositoriesFormValues,
   AddRepositoryData,
-  Order,
   RepositoryStatus,
 } from '../../types';
 import {
@@ -43,6 +44,23 @@ import {
 import { AddRepositoriesDrawer } from './AddRepositoriesDrawer';
 import { RepositoriesHeader } from './RepositoriesHeader';
 import { RepositoriesTableBody } from './RepositoriesTableBody';
+
+const useStyles = makeStyles(() => ({
+  repositoriesTableFixedColumns: {
+    '& th:nth-child(1), & td:nth-child(1)': {
+      width: '20%',
+    },
+    '& th:nth-child(2), & td:nth-child(2)': {
+      width: '30%',
+    },
+    '& th:nth-child(3), & td:nth-child(3)': {
+      width: '20%',
+    },
+    '& th:nth-child(4), & td:nth-child(4)': {
+      width: '30%',
+    },
+  },
+}));
 
 export const RepositoriesTable = ({
   searchString,
@@ -61,10 +79,10 @@ export const RepositoriesTable = ({
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
 }) => {
+  const classes = useStyles();
+  const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
-  const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<string>();
   const [selected, setSelected] = useState<AddedRepositories>({});
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<AddRepositoryData[]>([]);
@@ -80,6 +98,7 @@ export const RepositoriesTable = ({
     page: (drawerOrganization ? drawerPage : localPage) + 1,
     querySize: rowsPerPage,
     searchString,
+    approvalTool: values.approvalTool,
   });
 
   useEffect(() => {
@@ -96,6 +115,13 @@ export const RepositoriesTable = ({
     }
   }, [drawerOrganization, values?.repositories]);
 
+  // Sync local selected state with form values
+  useEffect(() => {
+    if (!drawerOrganization) {
+      setSelected(values.repositories || {});
+    }
+  }, [values.repositories, drawerOrganization]);
+
   useEffect(() => {
     if (showOrganizations) {
       setTableData(Object.values(data?.organizations || {}));
@@ -110,17 +136,11 @@ export const RepositoriesTable = ({
       : evaluateRowForOrg(tableData, values.repositories);
 
     filteredRows = [...(filteredRows || [])]?.sort(
-      getComparator(order, orderBy as string),
+      getComparator('asc', 'repoName'),
     );
 
     return filteredRows;
-  }, [tableData, order, orderBy, values?.repositories, showOrganizations]);
-
-  const handleRequestSort = (_event: MouseEvent<unknown>, property: string) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  }, [tableData, values?.repositories, showOrganizations]);
 
   const updateSelectedRepositories = useCallback(
     (newSelected: AddedRepositories) => {
@@ -292,6 +312,7 @@ export const RepositoriesTable = ({
           style={{ minWidth: 750, height: '70%' }}
           size="small"
           data-testid={ariaLabel()}
+          className={classes.repositoriesTableFixedColumns}
         >
           <RepositoriesHeader
             numSelected={
@@ -300,10 +321,7 @@ export const RepositoriesTable = ({
                 : selectedRepositoriesOnActivePage.length
             }
             isDataLoading={loading}
-            order={order}
-            orderBy={orderBy}
             onSelectAllClick={handleSelectAllClick}
-            onRequestSort={handleRequestSort}
             rowCount={getRowCount() || 0}
             showOrganizations={drawerOrganization ? false : showOrganizations}
             isRepoSelectDrawer={!!drawerOrganization}
@@ -326,11 +344,11 @@ export const RepositoriesTable = ({
           <TablePagination
             style={{ height: '30%' }}
             rowsPerPageOptions={[
-              { value: 5, label: '5 rows' },
-              { value: 10, label: '10 rows' },
-              { value: 20, label: '20 rows' },
-              { value: 50, label: '50 rows' },
-              { value: 100, label: '100 rows' },
+              { value: 5, label: t('table.pagination.rows5') },
+              { value: 10, label: t('table.pagination.rows10') },
+              { value: 20, label: t('table.pagination.rows20') },
+              { value: 50, label: t('table.pagination.rows50') },
+              { value: 100, label: t('table.pagination.rows100') },
             ]}
             component="div"
             count={
@@ -348,9 +366,7 @@ export const RepositoriesTable = ({
       </TableContainer>
       {showOrganizations && activeOrganization && (
         <AddRepositoriesDrawer
-          title={
-            isApprovalToolGitlab ? 'Selected projects' : 'Selected repositories'
-          }
+          title={`${t('addRepositories.selectedLabel')} ${isApprovalToolGitlab ? t('addRepositories.selectedProjects') : t('addRepositories.selectedRepositories')}`}
           orgData={activeOrganization}
           onSelect={handleUpdatesFromDrawer}
           open={isOpen}

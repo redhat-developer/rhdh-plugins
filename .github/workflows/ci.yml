@@ -21,13 +21,13 @@ jobs:
         run: echo "NUMBER_OF_COMMITS=$(($COMMITS + 1))" >> $GITHUB_ENV
 
       - name: Checkout base branch for diff purposes
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 50 # TODO(awanlin): Temporary fix
 
       - name: Checkout head branch
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           # Needed for diff
           fetch-depth: ${{ env.NUMBER_OF_COMMITS }}
@@ -63,11 +63,11 @@ jobs:
 
     steps:
       - name: Checkout main branch for tests purposes
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: main
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
@@ -92,7 +92,7 @@ jobs:
 
       - name: prettier
         run: yarn prettier:check
-      
+
       - name: read knip-reports flag from bcp.json
         id: bcp
         run: |
@@ -106,7 +106,7 @@ jobs:
             echo "bcp.json not found. Defaulting knip_reports to false."
             echo "knip_reports=false" >> $GITHUB_OUTPUT
           fi
-          
+
       - name: check knip reports
         if: ${{ steps.bcp.outputs.knip_reports == 'true' }}
         run: yarn build:knip-reports --ci
@@ -124,7 +124,7 @@ jobs:
         run: yarn backstage-cli repo fix --check --publish
 
       - name: test changed packages
-        run: yarn backstage-cli repo test --coverage --maxWorkers=3
+        run: yarn test:all --maxWorkers=3
 
       - name: install playwright
         if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
@@ -157,7 +157,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout head branch
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
       - name: Setup node

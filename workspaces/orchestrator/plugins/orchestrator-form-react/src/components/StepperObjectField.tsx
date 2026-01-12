@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useMemo } from 'react';
 
 import { JsonObject } from '@backstage/types';
 
 import ObjectField from '@rjsf/core/lib/components/fields/ObjectField';
 import { ErrorSchema, FieldProps, IdSchema } from '@rjsf/utils';
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
-import get from 'lodash/get';
+import type { JSONSchema7 } from 'json-schema';
 
+import { useTranslation } from '../hooks/useTranslation';
+import { getSortedStepEntries } from '../utils/getSortedStepEntries';
 import OrchestratorFormStepper, {
   OrchestratorFormStep,
   OrchestratorFormToolbar,
@@ -36,26 +38,14 @@ const StepperObjectField = ({
   errorSchema,
   ...props
 }: FieldProps<JsonObject, JSONSchema7>) => {
-  if (schema.properties === undefined) {
-    throw new Error(
-      "Stepper object field is not supported for schema that doesn't contain properties",
-    );
-  }
+  const { t } = useTranslation();
 
-  const uiOrder = get(schema, 'ui:order') as string[] | undefined;
-  let sortedStepEntries = Object.entries(schema.properties);
-  if (uiOrder && uiOrder.length > 0) {
-    sortedStepEntries = uiOrder
-      .map(key =>
-        schema.properties?.[key] ? [key, schema.properties[key]] : undefined,
-      )
-      .filter(Boolean) as [string, JSONSchema7Definition][];
-
-    Object.entries(schema.properties).forEach(([key, subSchema]) => {
-      if (!uiOrder.includes(key)) {
-        sortedStepEntries.push([key, subSchema]);
-      }
-    });
+  const sortedStepEntries = useMemo(
+    () => getSortedStepEntries(schema),
+    [schema],
+  );
+  if (sortedStepEntries === undefined) {
+    throw new Error(t('stepperObjectField.error'));
   }
 
   const steps = sortedStepEntries.reduce<OrchestratorFormStep[]>(

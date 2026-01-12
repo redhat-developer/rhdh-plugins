@@ -1,8 +1,12 @@
 {
+  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization",
+  "version": "2.0.1",
   "backstage": {
     "pluginId": "redhat-resource-optimization",
     "pluginPackages": [
-      "@red-hat-developer-hub/plugin-redhat-resource-optimization"
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-common"
     ],
     "role": "frontend-plugin"
   },
@@ -15,7 +19,7 @@
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.61",
-    "@patternfly/react-charts": "^8.1.0",
+    "@patternfly/react-charts": "^8.3.0",
     "@patternfly/react-tokens": "^6.1.0",
     "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^",
     "date-fns": "^3.6.0",
@@ -64,7 +68,6 @@
   ],
   "license": "Apache-2.0",
   "main": "src/index.ts",
-  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization",
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.13.1 || ^17.0.0 || ^18.0.0",
@@ -95,6 +98,5 @@
         "package.json"
       ]
     }
-  },
-  "version": "2.0.0"
+  }
 }

@@ -16,25 +16,46 @@
 
 import { TabbedLayout } from '@backstage/core-components';
 
+import { Box } from '@material-ui/core';
+import { makeStyles } from 'tss-react/mui';
+
+import { useTranslation } from '../../hooks/useTranslation';
 import { workflowInstancesRouteRef } from '../../routes';
-import { BaseOrchestratorPage } from '../BaseOrchestratorPage';
+import { useIsDarkMode } from '../../utils/isDarkMode';
+import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 import { WorkflowsTabContent } from './WorkflowsTabContent';
 
+const useStyles = makeStyles<{ isDarkMode: boolean }>()(
+  (_, { isDarkMode }) => ({
+    tabbedLayout: {
+      '& .Mui-selected': {
+        color: isDarkMode ? '#ffffff !important' : '#151515 !important',
+      },
+    },
+  }),
+);
+
 export const OrchestratorPage = () => {
+  const { t } = useTranslation();
+  const isDarkMode = useIsDarkMode();
+  const { classes } = useStyles({ isDarkMode });
+
   return (
-    <BaseOrchestratorPage title="Workflow Orchestrator" noPadding>
-      <TabbedLayout>
-        <TabbedLayout.Route path="/" title="Workflows">
-          <WorkflowsTabContent />
-        </TabbedLayout.Route>
-        <TabbedLayout.Route
-          path={workflowInstancesRouteRef.path}
-          title="All runs"
-        >
-          <WorkflowRunsTabContent />
-        </TabbedLayout.Route>
-      </TabbedLayout>
+    <BaseOrchestratorPage title={t('page.title')} noPadding>
+      <Box className={classes.tabbedLayout}>
+        <TabbedLayout>
+          <TabbedLayout.Route path="/" title={t('page.tabs.workflows')}>
+            <WorkflowsTabContent />
+          </TabbedLayout.Route>
+          <TabbedLayout.Route
+            path={workflowInstancesRouteRef.path}
+            title={t('page.tabs.allRuns')}
+          >
+            <WorkflowRunsTabContent />
+          </TabbedLayout.Route>
+        </TabbedLayout>
+      </Box>
     </BaseOrchestratorPage>
   );
 };

@@ -16,13 +16,27 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../../test-utils/mockTranslations';
+
 import TableFooterPagination from '../TableFooterPagination';
+
+// Mock translation hooks
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../Trans', () => ({
+  Trans: MockTrans,
+}));
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 describe('TableFooterPagination', () => {
   const defaultProps = {
     count: 100,
-    rowsPerPage: 10,
+    rowsPerPage: 5,
     page: 0,
     handleChangePage: jest.fn(),
     handleChangeRowsPerPage: jest.fn(),
@@ -52,7 +66,8 @@ describe('TableFooterPagination', () => {
     const select = screen.getByRole('combobox');
 
     await userEvent.click(select);
-    await userEvent.click(screen.getByText('Top 5'));
+    const options = screen.getAllByRole('option');
+    await userEvent.click(options[0]);
 
     expect(defaultProps.handleChangeRowsPerPage).toHaveBeenCalled();
   });
@@ -90,6 +105,136 @@ describe('TableFooterPagination', () => {
     expect(menu).toHaveStyle({
       width: '190px',
       borderRadius: '8px',
+    });
+  });
+
+  describe('Dynamic "Top X" options logic', () => {
+    it('should not render when count is 1 (single option)', () => {
+      const { container } = renderComponent({ ...defaultProps, count: 1 });
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('should not render when count is 2 (single option)', () => {
+      const { container } = renderComponent({ ...defaultProps, count: 2 });
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('should show only "Top 3" option for 3 items (exact match, single option)', () => {
+      const { container } = renderComponent({ ...defaultProps, count: 3 });
+      expect(container.firstChild).toBeNull(); // Still hidden because only one option
+    });
+
+    it('should show "Top 3, All" options for 4 items', async () => {
+      renderComponent({ ...defaultProps, count: 4, rowsPerPage: 3 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(2);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('All');
+      expect(screen.queryByText('Top 4')).not.toBeInTheDocument();
+      expect(screen.queryByText('Top 5')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5" options for 5 items (exact match)', async () => {
+      renderComponent({ ...defaultProps, count: 5, rowsPerPage: 3 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(2);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(screen.queryByText('Top 4')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5, All" options for 6 items', async () => {
+      renderComponent({ ...defaultProps, count: 6, rowsPerPage: 3 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(3);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('All');
+      expect(screen.queryByText('Top 6')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5, All" options for 7 items', async () => {
+      renderComponent({ ...defaultProps, count: 7, rowsPerPage: 3 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(3);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('All');
+      expect(screen.queryByText('Top 7')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5, Top 10" options for 10 items (exact match)', async () => {
+      renderComponent({ ...defaultProps, count: 10, rowsPerPage: 5 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(3);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('Top 10');
+    });
+
+    it('should show "Top 3, Top 5, Top 10, All" options for 11 items', async () => {
+      renderComponent({ ...defaultProps, count: 11, rowsPerPage: 3 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(4);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('Top 10');
+      expect(options[3]).toHaveTextContent('All');
+      expect(screen.queryByText('Top 11')).not.toBeInTheDocument();
+    });
+
+    it('should show "Top 3, Top 5, Top 10, Top 20" options for 20 items (exact match)', async () => {
+      renderComponent({ ...defaultProps, count: 20, rowsPerPage: 5 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(4);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('Top 10');
+      expect(options[3]).toHaveTextContent('Top 20');
+    });
+
+    it('should show "Top 3, Top 5, Top 10, Top 20" options for 25 items (no All - exceeds max)', async () => {
+      renderComponent({ ...defaultProps, count: 25, rowsPerPage: 5 });
+      const select = screen.getByRole('combobox');
+
+      await userEvent.click(select);
+
+      const options = screen.getAllByRole('option');
+      expect(options).toHaveLength(4);
+      expect(options[0]).toHaveTextContent('Top 3');
+      expect(options[1]).toHaveTextContent('Top 5');
+      expect(options[2]).toHaveTextContent('Top 10');
+      expect(options[3]).toHaveTextContent('Top 20');
+      expect(screen.queryByText('All')).not.toBeInTheDocument();
+      expect(screen.queryByText('Top 25')).not.toBeInTheDocument();
     });
   });
 });

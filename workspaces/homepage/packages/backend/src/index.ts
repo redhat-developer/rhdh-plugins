@@ -20,7 +20,7 @@ const backend = createBackend();
 
 backend.add(import('@backstage/plugin-app-backend'));
 backend.add(import('@backstage/plugin-proxy-backend'));
-backend.add(import('@backstage/plugin-scaffolder-backend/alpha'));
+backend.add(import('@backstage/plugin-scaffolder-backend'));
 backend.add(import('@backstage/plugin-techdocs-backend/alpha'));
 
 // auth plugin
@@ -57,7 +57,7 @@ backend.add(import('@backstage/plugin-search-backend-module-pg/alpha'));
 backend.add(import('@backstage/plugin-search-backend-module-catalog'));
 backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
 
-// kubernetes
-backend.add(import('@backstage/plugin-kubernetes-backend/alpha'));
+// kubernetes plujgin
+backend.add(import('@backstage/plugin-kubernetes-backend'));
 
 backend.start();

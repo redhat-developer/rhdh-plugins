@@ -16,7 +16,7 @@
 import {
   EntityFilterQuery,
   GetEntitiesRequest,
-} from '@backstage/catalog-client/index';
+} from '@backstage/catalog-client';
 
 /**
  * @public

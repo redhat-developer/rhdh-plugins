@@ -1,8 +1,12 @@
 {
+  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
+  "version": "2.0.2",
   "backstage": {
-    "pluginId": "redhat-resource-optimization-backend",
+    "pluginId": "redhat-resource-optimization",
     "pluginPackages": [
-      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend"
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
+      "@red-hat-developer-hub/plugin-redhat-resource-optimization-common"
     ],
     "role": "backend-plugin"
   },
@@ -15,7 +19,7 @@
     "@backstage/plugin-permission-common": "^0.8.4",
     "@backstage/plugin-permission-node": "^0.8.7",
     "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^",
-    "@types/express": "4.17.23",
+    "@types/express": "4.17.25",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "lodash": "4.17.21",
@@ -29,7 +33,7 @@
     "@backstage/plugin-auth-backend": "^0.24.2",
     "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.4",
     "@backstage/plugin-proxy-backend": "^0.5.10",
-    "@types/lodash": "4.17.20",
+    "@types/lodash": "4.17.21",
     "@types/supertest": "^6.0.0",
     "msw": "^1.0.0",
     "supertest": "^7.0.0"
@@ -45,14 +49,13 @@
   ],
   "license": "Apache-2.0",
   "main": "src/index.ts",
-  "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend",
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "directory": "workspaces/redhat-resource-optimization/plugins/redhat-resource-optimization-backend",
     "type": "git",
-    "url": "https://github.com/backstage/community-plugins"
+    "url": "https://github.com/redhat-developer/rhdh-plugins"
   },
   "scripts": {
     "build": "backstage-cli package build",
@@ -70,6 +73,5 @@
         "package.json"
       ]
     }
-  },
-  "version": "2.0.1"
+  }
 }

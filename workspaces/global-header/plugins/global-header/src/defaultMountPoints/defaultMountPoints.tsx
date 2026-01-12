@@ -147,8 +147,9 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
       priority: 200,
       props: {
         title: 'Settings',
-        icon: 'manageAccounts',
+        titleKey: 'profile.settings',
         link: '/settings',
+        icon: 'manageAccounts',
       },
     },
   },
@@ -158,7 +159,9 @@ export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
       priority: 150,
       props: {
         title: 'My profile',
+        titleKey: 'profile.myProfile',
         icon: 'account',
+        type: 'myProfile', // Semantic identifier
       },
     },
   },
@@ -177,6 +180,7 @@ export const defaultHelpDropdownMountPoints: HelpDropdownMountPoint[] = [
       priority: 100,
       props: {
         title: 'Quick start',
+        titleKey: 'help.quickStart',
         icon: 'quickstart',
         link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/',
       },
@@ -195,10 +199,11 @@ export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherD
     {
       Component: MenuItemLink as ComponentType,
       config: {
-        section: 'Documentation',
+        section: 'applicationLauncher.sections.documentation',
         priority: 150,
         props: {
           title: 'Developer Hub',
+          titleKey: 'applicationLauncher.developerHub',
           icon: 'developerHub',
           link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub',
         },
@@ -207,10 +212,11 @@ export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherD
     {
       Component: MenuItemLink as ComponentType,
       config: {
-        section: 'Developer Tools',
+        section: 'applicationLauncher.sections.developerTools',
         priority: 130,
         props: {
           title: 'RHDH Local',
+          titleKey: 'applicationLauncher.rhdhLocal',
           icon: 'developerHub',
           link: 'https://github.com/redhat-developer/rhdh-local',
         },

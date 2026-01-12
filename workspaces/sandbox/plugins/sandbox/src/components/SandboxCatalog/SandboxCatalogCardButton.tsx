@@ -23,10 +23,13 @@ import { Link } from '@backstage/core-components';
 import { useSandboxContext } from '../../hooks/useSandboxContext';
 import { AnsibleStatus } from '../../utils/aap-utils';
 import { Product } from './productData';
+import { useTrackAnalytics } from '../../utils/eddl-utils';
+import { Intcmp } from '../../hooks/useProductURLs';
 
 type SandboxCatalogCardButtonProps = {
   link: string;
   id: Product;
+  title: string;
   handleTryButtonClick: (id: Product) => void;
   theme: Theme;
   refetchingUserData?: boolean;
@@ -34,10 +37,11 @@ type SandboxCatalogCardButtonProps = {
 
 export const SandboxCatalogCardButton: React.FC<
   SandboxCatalogCardButtonProps
-> = ({ link, id, handleTryButtonClick, theme, refetchingUserData }) => {
+> = ({ link, id, title, handleTryButtonClick, theme, refetchingUserData }) => {
   const { loading, userFound, verificationRequired, userReady, ansibleStatus } =
     useSandboxContext();
   const [clicked, setClicked] = React.useState(false);
+  const trackAnalytics = useTrackAnalytics();
 
   const handleClick = () => {
     if (!clicked) setClicked(true);
@@ -89,6 +93,31 @@ export const SandboxCatalogCardButton: React.FC<
     },
   };
 
+  // Get the intcmp parameter for this product
+  const getIntcmpFromProduct = (productId: Product): string | undefined => {
+    switch (productId) {
+      case Product.OPENSHIFT_CONSOLE:
+        return Intcmp.OPENSHIFT_CONSOLE;
+      case Product.DEVSPACES:
+        return Intcmp.DEVSPACES;
+      case Product.OPENSHIFT_AI:
+        return Intcmp.RHODS;
+      case Product.OPENSHIFT_VIRT:
+        return Intcmp.OPENSHIFT_VIRT;
+      case Product.AAP:
+        return Intcmp.AAP;
+      default:
+        return undefined;
+    }
+  };
+
+  const intcmp = getIntcmpFromProduct(id);
+
+  // Handle CTA click for analytics
+  const handleCtaClick = async () => {
+    await trackAnalytics(title, 'Catalog', link, intcmp, 'cta');
+  };
+
   const buttonContent = (
     <Button
       size="medium"
@@ -107,10 +136,31 @@ export const SandboxCatalogCardButton: React.FC<
   );
 
   return userFound && !loading && !verificationRequired ? (
-    <Link to={link} underline="none">
+    <Link
+      to={link}
+      underline="none"
+      onClick={handleCtaClick}
+      data-analytics-track-by-analytics-manager="false"
+    >
       {buttonContent}
     </Link>
   ) : (
-    buttonContent
+    // When there's no link, we push CTA event on button click
+    <Button
+      size="medium"
+      color="primary"
+      variant="outlined"
+      onClick={() => {
+        if (!loading) {
+          handleClick();
+          handleCtaClick();
+        }
+      }}
+      endIcon={endIcon}
+      sx={buttonSx}
+      data-analytics-track-by-analytics-manager="false"
+    >
+      {label}
+    </Button>
   );
 };

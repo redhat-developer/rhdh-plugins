@@ -35,22 +35,29 @@ import {
   getAverage,
   getXAxisformat,
   getXAxisTickValues,
+  formatNumber,
+  getGroupingLabel,
 } from '../../utils/utils';
 import { useActiveUsers } from '../../hooks/useActiveUsers';
 import { Typography } from '@material-ui/core';
 import ExportCSVButton from './ExportCSVButton';
 import EmptyChartState from '../Common/EmptyChartState';
 import ChartTooltip from '../Common/ChartTooltip';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useLanguage } from '../../hooks/useLanguage';
+import { Trans } from '../Trans';
 
 const ActiveUsers = () => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
+  const { t } = useTranslation();
+  const locale = useLanguage();
 
   const { activeUsers, loading, error } = useActiveUsers();
   const { data, grouping = 'daily' } = activeUsers;
   if (error) {
     return (
-      <CardWrapper title="Active users">
+      <CardWrapper title={t('activeUsers.title')}>
         <ResponseErrorPanel error={error} />
       </CardWrapper>
     );
@@ -58,12 +65,12 @@ const ActiveUsers = () => {
 
   if (!data || data?.length === 0 || (!data?.[0] && !loading)) {
     return (
-      <CardWrapper title="Active users">
+      <CardWrapper title={t('activeUsers.title')}>
         <Box
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={200}
+          minHeight={80}
         >
           <EmptyChartState />
         </Box>
@@ -72,7 +79,7 @@ const ActiveUsers = () => {
   }
 
   return (
-    <CardWrapper title="Active users" filter={<ExportCSVButton />}>
+    <CardWrapper title={t('activeUsers.title')} filter={<ExportCSVButton />}>
       {loading ? (
         <Box
           display="flex"
@@ -85,12 +92,19 @@ const ActiveUsers = () => {
       ) : (
         <>
           <Typography style={{ margin: '20px 36px' }}>
+            {t('activeUsers.averagePrefix')}{' '}
             <b>
-              {`${Math.round(getAverage(data, 'total_users')).toLocaleString(
-                'en-Us',
-              )} active users per ${grouping === 'hourly' ? 'hour' : 'day'}`}
-            </b>{' '}
-            were conducted during this period.
+              <Trans
+                message="activeUsers.averageText"
+                params={{
+                  count: Math.round(
+                    getAverage(data, 'total_users'),
+                  ).toLocaleString('en-US'),
+                  period: getGroupingLabel(grouping, t, 'activeUsers'),
+                }}
+              />
+            </b>
+            {t('activeUsers.averageSuffix')}
           </Typography>
           <Box sx={{ height: 310, mt: 4, mb: 4, ml: 0, mr: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -124,7 +138,7 @@ const ActiveUsers = () => {
 
                 <XAxis
                   dataKey="date"
-                  tickFormatter={date => getXAxisformat(date, grouping)}
+                  tickFormatter={date => getXAxisformat(date, grouping, locale)}
                   ticks={getXAxisTickValues(data, grouping)}
                   tick={{ fill: theme.palette.text.primary }}
                   axisLine={false}
@@ -136,7 +150,7 @@ const ActiveUsers = () => {
                   tick={{ fill: theme.palette.text.primary }}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={value => value.toLocaleString('en-Us')}
+                  tickFormatter={value => formatNumber(value, {}, locale)}
                   tickMargin={20}
                 />
                 <Tooltip

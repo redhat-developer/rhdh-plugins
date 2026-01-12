@@ -46,6 +46,8 @@ import {
   Spacer,
 } from '../src/plugin';
 
+import { globalHeaderTranslations } from '../src/translations';
+
 import {
   defaultApplicationLauncherDropdownMountPoints,
   defaultCreateDropdownMountPoints,
@@ -168,6 +170,9 @@ const Providers = ({
 createDevApp()
   .registerPlugin(globalHeaderPlugin)
   .addThemes(getAllThemes())
+  .addTranslationResource(globalHeaderTranslations)
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it'])
+  .setDefaultLanguage('en')
   .addPage({
     element: (
       <Providers
