@@ -15,122 +15,139 @@
  */
 
 import { Page, expect } from '@playwright/test';
+import { LightspeedMessages, evaluateMessage } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
-export class LightspeedPage {
-  constructor(readonly page: Page) {}
+// Actions
+export async function openChatbot(page: Page) {
+  await page.getByRole('button', { name: 'lightspeed-close' }).click();
+}
 
-  // Locators
-  readonly chatbotToggleButton = () =>
-    this.page.getByRole('button', { name: 'lightspeed-close' });
-  readonly chatbotOptionsMenuButton = () =>
-    this.page.getByRole('button', { name: 'Chatbot options' });
-  readonly chatHistoryMenuButton = () =>
-    this.page.getByRole('button', { name: 'Chat history menu' });
-  readonly drawerCloseButton = () =>
-    this.page.getByRole('button', { name: 'Close drawer panel' });
-  readonly chatbotHeader = () => this.page.locator('.pf-chatbot__header');
-  readonly conversationArea = () =>
-    this.page.getByLabel('Scrollable message log');
-  readonly chatbotPanel = () =>
-    this.page.getByLabel('Chatbot', { exact: true });
-  readonly backstagePageContent = () => this.page.getByText('Red Hat Catalog');
-
-  // Actions
-  async goto(path = '/') {
-    await this.page.goto(path);
-  }
-
-  async openChatbot() {
-    await this.chatbotToggleButton().click();
-  }
-
-  async selectDisplayMode(mode: DisplayMode) {
-    await this.chatbotOptionsMenuButton().click();
-    await this.page.getByRole('menuitem', { name: mode }).click();
-  }
-
-  async openChatHistoryDrawer() {
-    await this.chatHistoryMenuButton().click();
-  }
-
-  async closeChatHistoryDrawer() {
-    await this.drawerCloseButton().click();
-  }
-
-  // Assertions
-  async expectBackstagePageVisible(visible = true) {
-    const assertion = visible
-      ? expect(this.backstagePageContent())
-      : expect(this.backstagePageContent()).not;
-    await assertion.toBeVisible();
-  }
-
-  async expectChatbotControlsVisible() {
-    await expect(this.chatbotHeader()).toBeVisible();
-    await expect(this.chatHistoryMenuButton()).toBeVisible();
-    await expect(this.chatbotOptionsMenuButton()).toBeVisible();
-  }
-
-  async verifyDisplayModeMenuOptions() {
-    await this.chatbotOptionsMenuButton().click();
-    await expect(this.chatbotPanel()).toMatchAriaSnapshot(`
-      - menu:
-        - menuitem "Display mode" [disabled]
-        - menuitem "Overlay"
-        - menuitem "Dock to window"
-        - menuitem "Fullscreen"
-      - separator
-      - menu:
-        - menuitem "Disable pinned chats Pinned chats are currently enabled"
-      `);
-  }
-
-  async expectChatInputAreaVisible() {
-    await expect(this.chatbotPanel()).toMatchAriaSnapshot(`
-      - textbox "Send a message and optionally upload a JSON, YAML, or TXT file..."
-      - button "Attach"
-      - button "Use microphone"
-      - button "Always review AI generated content prior to use."
-      `);
-  }
-
-  async expectEmptyChatHistory() {
-    await expect(
-      this.page.getByRole('heading', { name: 'Pinned' }),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole('menuitem', { name: 'No pinned chats' }),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole('heading', { name: 'Recent' }),
-    ).toBeVisible();
-    await expect(
-      this.page.getByRole('menuitem', { name: 'No recent chats' }),
-    ).toBeVisible();
-  }
-
-  private readonly welcomeHeader = `
-      - region "Scrollable message log":
-        - 'heading "Info alert: Important" [level=4]'
-        - text: This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.
-        - heading "Hello, Guest How can I help you today?" [level=1]`;
-
-  private readonly buttonGroup = `
-        - button
-        - text: ''`;
-
-  private readonly buttonCounts: Record<DisplayMode, number> = {
-    Overlay: 1,
-    'Dock to window': 2,
-    Fullscreen: 3,
+export async function selectDisplayMode(
+  page: Page,
+  t: LightspeedMessages,
+  mode: DisplayMode,
+) {
+  await page.getByRole('button', { name: t['aria.settings.label'] }).click();
+  const modeMap: Record<DisplayMode, string> = {
+    Overlay: t['settings.displayMode.overlay'],
+    'Dock to window': t['settings.displayMode.docked'],
+    Fullscreen: t['settings.displayMode.fullscreen'],
   };
+  await page.getByRole('menuitem', { name: modeMap[mode] }).click();
+}
 
-  async expectConversationArea(mode: DisplayMode) {
-    const buttons = this.buttonGroup.repeat(this.buttonCounts[mode]);
-    const snapshot = `${this.welcomeHeader}${buttons}
-      `;
-    await expect(this.conversationArea()).toMatchAriaSnapshot(snapshot);
-  }
+export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
+  await page.getByRole('button', { name: t['aria.chatHistoryMenu'] }).click();
+}
+
+export async function closeChatHistoryDrawer(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await page.getByRole('button', { name: t['aria.closeDrawerPanel'] }).click();
+}
+
+// Assertions
+export async function expectBackstagePageVisible(page: Page, visible = true) {
+  const locator = page.getByText('Red Hat Catalog');
+  const assertion = visible ? expect(locator) : expect(locator).not;
+  await assertion.toBeVisible();
+}
+
+export async function expectChatbotControlsVisible(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await expect(page.locator('.pf-chatbot__header')).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: t['aria.chatHistoryMenu'] }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: t['aria.settings.label'] }),
+  ).toBeVisible();
+}
+
+export async function verifyDisplayModeMenuOptions(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await page.getByRole('button', { name: t['aria.settings.label'] }).click();
+  await expect(page.getByLabel('Chatbot', { exact: true }))
+    .toMatchAriaSnapshot(`
+    - menu:
+      - menuitem "${t['settings.displayMode.label']}" [disabled]
+      - menuitem "${t['settings.displayMode.overlay']}"
+      - menuitem "${t['settings.displayMode.docked']}"
+      - menuitem "${t['settings.displayMode.fullscreen']}"
+    - separator
+    - menu:
+      - menuitem "${t['settings.pinned.disable']} ${t['settings.pinned.enabled.description']}"
+    `);
+}
+
+export async function expectChatInputAreaVisible(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await expect(
+    page.getByRole('textbox', { name: t['chatbox.message.placeholder'] }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: t['footer.accuracy.label'] }),
+  ).toBeVisible();
+}
+
+export async function expectEmptyChatHistory(
+  page: Page,
+  t: LightspeedMessages,
+) {
+  await expect(
+    page.getByRole('heading', { name: t['conversation.category.pinnedChats'] }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', { name: t['chatbox.emptyState.noPinnedChats'] }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: t['conversation.category.recent'] }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', { name: t['chatbox.emptyState.noRecentChats'] }),
+  ).toBeVisible();
+}
+
+function getWelcomeHeader(t: LightspeedMessages): string {
+  const greeting = evaluateMessage(
+    t['chatbox.welcome.greeting'],
+    t['user.guest'],
+  );
+  return `
+    - region "Scrollable message log":
+      - 'heading "Info alert: ${t['aria.important']}" [level=4]'
+      - text: ${t['disclaimer.withValidation']}
+      - heading "${greeting} ${t['chatbox.welcome.description']}" [level=1]`;
+}
+
+const buttonGroup = `
+      - button
+      - text: ''`;
+
+const buttonCounts: Record<DisplayMode, number> = {
+  Overlay: 1,
+  'Dock to window': 2,
+  Fullscreen: 3,
+};
+
+export async function expectConversationArea(
+  page: Page,
+  t: LightspeedMessages,
+  mode: DisplayMode,
+) {
+  const buttons = buttonGroup.repeat(buttonCounts[mode]);
+  const snapshot = `${getWelcomeHeader(t)}${buttons}
+    `;
+  await expect(page.getByLabel('Scrollable message log')).toMatchAriaSnapshot(
+    snapshot,
+  );
 }
