@@ -58,15 +58,6 @@ export class CatalogMetricService {
   }
 
   /**
-   * Get the catalog service
-   *
-   * @returns CatalogService
-   */
-  getCatalogService(): CatalogService {
-    return this.catalog;
-  }
-
-  /**
    * Get latest metric results for a specific catalog entity and metric providers.
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
