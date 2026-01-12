@@ -15,6 +15,8 @@
  */
 
 export { useAddedRepositories } from './useAddedRepositories';
+export { useInstructionsConfig } from './useInstructionsConfig';
+export { useInstructionsPreference } from './useInstructionsPreference';
 export { useRepositories } from './useRepositories';
 export {
   useNumberOfApprovalTools,

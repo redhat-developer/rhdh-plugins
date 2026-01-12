@@ -27,5 +27,57 @@ export interface Config {
      * @visibility frontend
      */
     importAPI?: 'open-pull-requests' | 'scaffolder';
+
+    /**
+     * The name of the scaffolder template to execute for importing a repository.
+     * @visibility backend
+     */
+    importTemplate?: string;
+
+    /**
+     * Whether to show the instructions section
+     * @default true
+     * @visibility frontend
+     */
+    instructionsEnabled?: boolean;
+
+    /**
+     * Whether the section should be expanded by default
+     * @default true
+     * @visibility frontend
+     */
+    instructionsDefaultExpanded?: boolean;
+
+    /**
+     * Array of steps to display in the instructions section
+     * If not provided, uses the default built-in steps
+     * Users can define any number of custom steps
+     * @visibility frontend
+     * @deepVisibility frontend
+     */
+    instructionsSteps?: Array<{
+      /**
+       * Unique identifier for the step
+       * @visibility frontend
+       */
+      id: string;
+
+      /**
+       * Display text for the step
+       * @visibility frontend
+       */
+      text: string;
+
+      /**
+       * Icon configuration - supports multiple formats:
+       * - Backstage system icons: 'kind:component', 'kind:api', etc.
+       * - Material Design icons: 'settings', 'home', 'build', etc.
+       * - SVG strings: '<svg xmlns="http://www.w3.org/2000/svg">...</svg>'
+       * - URLs: 'https://example.com/icon.png', '/assets/icon.svg'
+       * - Data URIs: 'data:image/svg+xml;base64,...'
+       * @visibility frontend
+       */
+      icon?: string;
+    }>;
   };
 }
