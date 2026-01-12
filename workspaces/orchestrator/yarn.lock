@@ -12449,7 +12449,6 @@ __metadata:
     "@backstage/plugin-scaffolder-backend": ^3.0.1
     "@backstage/plugin-scaffolder-node": ^0.12.1
     "@janus-idp/backstage-plugin-audit-log-node": ^1.7.1
-    "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^"
     "@types/express": 4.17.25
@@ -12557,7 +12556,6 @@ __metadata:
     "@backstage/test-utils": ^1.7.13
     "@backstage/theme": ^0.7.0
     "@backstage/types": ^1.2.2
-    "@janus-idp/cli": 3.6.1
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.17.1
     "@mui/styles": 5.18.0
@@ -12611,7 +12609,6 @@ __metadata:
     "@backstage/plugin-permission-react": ^0.4.38
     "@backstage/test-utils": ^1.7.13
     "@backstage/types": ^1.2.2
-    "@janus-idp/cli": 3.6.1
     "@material-ui/core": ^4.12.4
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.17.1
@@ -12660,7 +12657,6 @@ __metadata:
     "@backstage/plugin-scaffolder-node": ^0.12.1
     "@backstage/plugin-scaffolder-node-test-utils": ^0.3.5
     "@backstage/types": ^1.2.2
-    "@janus-idp/cli": 3.6.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@spotify/prettier-config": ^15.0.0
     "@types/js-yaml": ^4.0.0
