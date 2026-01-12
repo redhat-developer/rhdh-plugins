@@ -28,6 +28,10 @@ In this case:
 - ✅ Entities owned by `group:default/developers` are included
 - ❌ Entities owned by `group:default/engineering` are **NOT** included
 
+**Enabling Transitive Ownership:**
+
+To include entities from all parent groups in the aggregation (not just direct parent groups), you can enable transitive parent groups. If you're using Red Hat Developer Hub (RHDH), you can enable transitive parent groups by following the [transitive parent group enablement documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.5/html-single/authorization_in_red_hat_developer_hub/index#enabling-transitive-parent-groups). This will allow the aggregation to traverse nested group hierarchies and include entities from all parent groups in the hierarchy.
+
 ## API Endpoint
 
 ### `GET /metrics/:metricId/catalog/aggregations`
@@ -62,7 +66,6 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations"
 #### Key Features
 
 - **Metric Access Validation**: This endpoint explicitly validates that the user has access to the specified metric and returns `403 Forbidden` if access is denied
-- **Single Metric Only**: Returns aggregation for only the specified metric (no need for `metricIds` query parameter)
 - **Empty Results Handling**: Returns an empty array `[]` when the user owns no entities, avoiding errors when filtering by a single metric
 
 ## Error Handling
@@ -99,6 +102,7 @@ If invalid query parameters are provided:
 
 1. **Handle Empty Results**: Always check for empty arrays when the user owns no entities
 
-2. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. If you need nested group aggregation, consider restructuring your groups or implementing custom logic
+2. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. You currently receive scorecard results only for entities you own and those of your immediate parent group. To include results from _all_ parent
+   groups, you can either implement custom logic, restructure your groups, or (if using RHDH), enable transitive parent groups ([see transitive parent group enablement documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.5/html-single/authorization_in_red_hat_developer_hub/index#enabling-transitive-parent-groups)).
 
 3. **Metric Access**: This endpoint validates metric access upfront, so you'll get a clear `403 Forbidden` error if the user doesn't have permission to view the specified metric
