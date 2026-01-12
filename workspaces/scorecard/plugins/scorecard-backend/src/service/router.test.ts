@@ -265,16 +265,16 @@ describe('createRouter', () => {
       expect(response.body.error.message).toContain('Invalid query parameters');
     });
 
-    it('should prioritize metricIds over datasource when both are provided', async () => {
+    it('should return 400 InputError when both metricIds and datasource are provided', async () => {
       const response = await request(app).get(
         '/metrics?metricIds=sonar.quality&datasource=github',
       );
 
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('metrics');
-      expect(response.body.metrics).toHaveLength(1);
-
-      expect(response.body.metrics[0].id).toBe('sonar.quality');
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toBe(
+        'Cannot filter by both metricIds and datasource',
+      );
     });
   });
 

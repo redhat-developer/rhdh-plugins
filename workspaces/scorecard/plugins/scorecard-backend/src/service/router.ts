@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { NotAllowedError, NotFoundError } from '@backstage/errors';
+import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import express, { Request } from 'express';
 import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
@@ -94,6 +94,10 @@ export async function createRouter({
 
   router.get('/metrics', async (req, res) => {
     const { metricIds, datasource } = validateMetricsSchema(req.query);
+
+    if (metricIds && datasource) {
+      throw new InputError('Cannot filter by both metricIds and datasource');
+    }
 
     if (metricIds) {
       return res.json({

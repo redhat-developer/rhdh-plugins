@@ -114,9 +114,10 @@ Returns a list of available metrics. Supports filtering by metric IDs or datasou
 
 #### Behavior
 
-- If `metricIds` is provided, returns only the specified metrics (takes precedence over `datasource`)
+- If `metricIds` is provided, returns only the specified metrics
 - If `datasource` is provided (and `metricIds` is not), returns all metrics from that datasource
 - If neither parameter is provided, returns all available metrics
+- **Note**: Providing both `metricIds` and `datasource` will result in a `400 Bad Request` error
 
 #### Example Requests
 
