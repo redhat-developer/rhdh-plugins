@@ -109,10 +109,10 @@ const orchestratorTranslationIt = createTranslationMessages({
       "Non è possibile interrompere l'esecuzione poiché è già stata completata.",
     'run.status.completed': 'Esecuzione completata',
     'run.status.failed': 'Esecuzione non riuscita {{time}}',
+    'run.status.failedAt': 'Esecuzione non riuscita {{time}}',
     'run.status.aborted': 'Esecuzione interrotta',
     'run.status.completedWithMessage':
       'Esecuzione completata {{time}} con messaggio',
-    'run.status.failedAt': 'Esecuzione non riuscita {{time}}',
     'run.status.completedAt': 'Esecuzione completata {{time}}',
     'run.status.running':
       'Flusso di lavoro in esecuzione. Avviato alle {{time}}',
@@ -163,6 +163,30 @@ const orchestratorTranslationIt = createTranslationMessages({
     'common.next': 'Successivo',
     'common.review': 'Revisione',
     'common.unavailable': '---',
+    'common.goBack': 'Torna indietro',
+    'permissions.accessDenied': 'Accesso negato',
+    'permissions.accessDeniedDescription':
+      'Non hai il permesso di visualizzare questa esecuzione del workflow.',
+    'permissions.requiredPermission': 'Permesso richiesto',
+    'permissions.contactAdmin':
+      'Contatta il tuo amministratore per richiedere i permessi necessari.',
+    'permissions.missingOwnership':
+      'Questa esecuzione del workflow non ha informazioni di proprietà registrate.',
+    'permissions.notYourRun':
+      'Questa esecuzione del workflow è stata avviata da un altro utente.',
+    'duration.aFewSeconds': 'alcuni secondi',
+    'duration.aSecond': 'un secondo',
+    'duration.seconds': '{{count}} secondi',
+    'duration.aMinute': 'un minuto',
+    'duration.minutes': '{{count}} minuti',
+    'duration.anHour': "un'ora",
+    'duration.hours': '{{count}} ore',
+    'duration.aDay': 'un giorno',
+    'duration.days': '{{count}} giorni',
+    'duration.aMonth': 'un mese',
+    'duration.months': '{{count}} mesi',
+    'duration.aYear': 'un anno',
+    'duration.years': '{{count}} anni',
     'stepperObjectField.error':
       "Il campo dell'oggetto Stepper non è supportato per lo schema che non contiene proprietà",
     'formDecorator.error':
