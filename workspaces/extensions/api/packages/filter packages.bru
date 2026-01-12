@@ -1,0 +1,19 @@
+meta {
+  name: filter packages
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/api/extensions/packages?filter=metadata.name=doesnotexist
+  body: none
+  auth: bearer
+}
+
+params:query {
+  filter: metadata.name=doesnotexist
+}
+
+auth:bearer {
+  token: {{token}}
+}
