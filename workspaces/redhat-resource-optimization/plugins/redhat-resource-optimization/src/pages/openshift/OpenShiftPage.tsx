@@ -582,7 +582,7 @@ export function OpenShiftPage() {
 
   const columns = useMemo<TableColumn<ProjectCost>[]>(() => {
     const getChangeColor = (change: number) => {
-      if (change > 0) return '#d32f2f';
+      if (change < 0) return '#d32f2f';
       if (isDarkMode) return '#4BB543';
       return '#2e7d32';
     };
