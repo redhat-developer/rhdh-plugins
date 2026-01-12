@@ -92,20 +92,27 @@ test.describe('Test Quick Start plugin', () => {
     // Click and verify configureGit step
     // This is critical: both setupAuthentication and configureGit have the same CTA text "En savoir plus" in French
     // So we need to ensure we're getting the button from the configureGit step, not the setupAuthentication step
-    await page.getByText(translations.steps.configureGit.title).click();
+    const configureGitStepTitle = page.getByText(
+      translations.steps.configureGit.title,
+    );
+    await configureGitStepTitle.click();
     // Wait for the configureGit step description to be visible to ensure the step has expanded
     const configureGitDescription = page.getByText(
       translations.steps.configureGit.description,
     );
     await configureGitDescription.waitFor({ state: 'visible' });
-    // Find the button that's in the same parent container as the configureGit description
-    // This ensures we get the button from the configureGit step, not from setupAuthentication
-    const configureGitButton = configureGitDescription
-      .locator('..')
-      .locator('..')
+    // Find the parent container (List) that contains both the description and the CTA
+    // The structure is: List > ListItem (description) > ListItem (CTA)
+    const parentList = configureGitDescription
+      .locator('..') // ListItemText
+      .locator('..') // ListItem
+      .locator('..'); // List
+    // Find the CTA button within this specific List container to avoid matching the setupAuthentication button
+    const configureGitCta = parentList
       .getByRole('button', { name: translations.steps.configureGit.ctaTitle })
       .first();
-    const href = await configureGitButton.getAttribute('href');
+    await configureGitCta.waitFor({ state: 'visible' });
+    const href = await configureGitCta.getAttribute('href');
     expect(href).toContain(
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/integrating_red_hat_developer_hub_with_github/',
     );

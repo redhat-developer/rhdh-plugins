@@ -19,6 +19,8 @@ import { quickstartMessages } from '../../../../plugins/quickstart/src/translati
 import quickstartTranslationDe from '../../../../plugins/quickstart/src/translations/de.js';
 import quickstartTranslationFr from '../../../../plugins/quickstart/src/translations/fr.js';
 import quickstartTranslationEs from '../../../../plugins/quickstart/src/translations/es.js';
+import quickstartTranslationIt from '../../../../plugins/quickstart/src/translations/it.js';
+import quickstartTranslationJa from '../../../../plugins/quickstart/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type QuickstartMessages = typeof quickstartMessages;
@@ -52,6 +54,10 @@ export function getTranslations(locale: string) {
       return transform(quickstartTranslationDe.messages);
     case 'es':
       return transform(quickstartTranslationEs.messages);
+    case 'it':
+      return transform(quickstartTranslationIt.messages);
+    case 'ja':
+      return transform(quickstartTranslationJa.messages);
     default:
       return quickstartMessages;
   }

@@ -44,7 +44,42 @@ test.describe('Test Quick Start plugin', () => {
   });
 
   test('Access Quick start as User', async ({ page }, testInfo: TestInfo) => {
-    await page.waitForTimeout(1000);
+    // Wait for the page to be ready
+    await page.waitForLoadState('domcontentloaded');
+
+    // Wait for the quickstart drawer to be open (it adds a class to body when open)
+    // If it's not open after a short wait, try to open it via the sidebar
+    const drawerOpen = await page.evaluate(() => {
+      return document.body.classList.contains('quickstart-drawer-open');
+    });
+
+    if (!drawerOpen) {
+      // Drawer might not be open, try to open it via sidebar or wait for it
+      try {
+        const quickstartSidebarItem = page
+          .locator('nav')
+          .getByText('Quickstart');
+        await quickstartSidebarItem.waitFor({
+          state: 'visible',
+          timeout: 5000,
+        });
+        await quickstartSidebarItem.click();
+      } catch {
+        // Sidebar item might not be available, wait for drawer to open automatically
+        // This can happen if role detection is still in progress
+      }
+
+      // Wait for drawer to be open
+      await page.waitForFunction(
+        () => {
+          return document.body.classList.contains('quickstart-drawer-open');
+        },
+        { timeout: 15000 },
+      );
+    }
+
+    // Wait a bit more for the content to render
+    await page.waitForTimeout(500);
     await uiHelper.verifyText(translations.header.title);
     await runAccessibilityTests(
       page,

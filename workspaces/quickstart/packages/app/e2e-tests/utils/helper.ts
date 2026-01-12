@@ -63,8 +63,24 @@ export async function switchToLocale(
   page: Page,
   locale: string,
 ): Promise<void> {
+  // Wait for the page to be ready and Settings link to be available
+  // Use a more reliable approach - wait for the Settings link with a reasonable timeout
+  await page.waitForLoadState('domcontentloaded');
+  await page
+    .getByRole('link', { name: 'Settings' })
+    .waitFor({ state: 'visible', timeout: 10000 });
   await page.getByRole('link', { name: 'Settings' }).click();
+  await page
+    .getByRole('button', { name: 'English' })
+    .waitFor({ state: 'visible', timeout: 5000 });
   await page.getByRole('button', { name: 'English' }).click();
+  await page
+    .getByRole('option', { name: locale })
+    .waitFor({ state: 'visible', timeout: 5000 });
   await page.getByRole('option', { name: locale }).click();
+  await page
+    .locator('a')
+    .filter({ hasText: 'Home' })
+    .waitFor({ state: 'visible', timeout: 5000 });
   await page.locator('a').filter({ hasText: 'Home' }).click();
 }
