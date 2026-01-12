@@ -47,8 +47,7 @@
   ],
   "files": [
     "app-config.yaml",
-    "dist",
-    "dist-scalprum"
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {
@@ -63,8 +62,7 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
+    "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
     "@backstage/core-components": "^0.18.6",
@@ -101,7 +99,6 @@
     "@backstage/plugin-user-settings": "^0.8.31",
     "@backstage/test-utils": "^1.7.14",
     "@backstage/ui": "^0.11.2",
-    "@janus-idp/cli": "3.7.0",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^",
