@@ -227,6 +227,20 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Angeheftete Chats sind derzeit aktiviert',
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert',
+
+    // Tool calling
+    'toolCall.header': 'Werkzeugantwort: {{toolName}}',
+    'toolCall.thinking': '{{seconds}} Sekunden nachgedacht',
+    'toolCall.executionTime': 'Ausführungszeit: ',
+    'toolCall.parameters': 'Parameter',
+    'toolCall.response': 'Antwort',
+    'toolCall.showMore': 'mehr anzeigen',
+    'toolCall.showLess': 'weniger anzeigen',
+    'toolCall.loading': 'Werkzeug wird ausgeführt...',
+    'toolCall.executing': 'Werkzeug wird ausgeführt...',
+    'toolCall.copyResponse': 'Antwort kopieren',
+    'toolCall.summary': 'Hier ist eine Zusammenfassung Ihrer Antwort',
+    'toolCall.mcpServer': 'MCP-Server',
   },
 });
 

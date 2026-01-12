@@ -218,6 +218,20 @@ export const lightspeedMessages = {
   'settings.pinned.disable': 'Disable pinned chats',
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
+
+  // Tool calling
+  'toolCall.header': 'Tool response: {{toolName}}',
+  'toolCall.thinking': 'Thought for {{seconds}} seconds',
+  'toolCall.executionTime': 'Execution time: ',
+  'toolCall.parameters': 'Parameters',
+  'toolCall.response': 'Response',
+  'toolCall.showMore': 'show more',
+  'toolCall.showLess': 'show less',
+  'toolCall.loading': 'Executing tool...',
+  'toolCall.executing': 'Executing tool...',
+  'toolCall.copyResponse': 'Copy response',
+  'toolCall.summary': "Here's a summary of your response",
+  'toolCall.mcpServer': 'MCP Server',
 };
 
 /**

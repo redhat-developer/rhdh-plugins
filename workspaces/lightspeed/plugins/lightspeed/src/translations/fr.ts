@@ -186,6 +186,20 @@ const lightspeedTranslationFr = createTranslationMessages({
       'Les conversation épinglées sont actuellement activées',
     'settings.pinned.disabled.description':
       'Les conversations épinglées sont actuellement désactivées',
+
+    // Tool calling
+    'toolCall.header': "Réponse de l'outil : {{toolName}}",
+    'toolCall.thinking': 'A réfléchi pendant {{seconds}} secondes',
+    'toolCall.executionTime': "Temps d'exécution : ",
+    'toolCall.parameters': 'Paramètres',
+    'toolCall.response': 'Réponse',
+    'toolCall.showMore': 'afficher plus',
+    'toolCall.showLess': 'afficher moins',
+    'toolCall.loading': "Exécution de l'outil...",
+    'toolCall.executing': "Exécution de l'outil...",
+    'toolCall.copyResponse': 'Copier la réponse',
+    'toolCall.summary': 'Voici un résumé de votre réponse',
+    'toolCall.mcpServer': 'Serveur MCP',
   },
 });
 

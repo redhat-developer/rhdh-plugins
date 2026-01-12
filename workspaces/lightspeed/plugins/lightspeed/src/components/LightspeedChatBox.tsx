@@ -17,7 +17,6 @@
 import {
   ForwardedRef,
   forwardRef,
-  Fragment,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -38,6 +37,8 @@ import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
 import { useFeedbackActions } from '../hooks/useFeedbackActions';
 import { useTranslation } from '../hooks/useTranslation';
+import { ToolCall } from '../types';
+import { ToolCallCard } from './ToolCallCard';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
@@ -60,9 +61,14 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+// Extended message type that includes tool calls
+interface ExtendedMessageProps extends MessageProps {
+  toolCalls?: ToolCall[];
+}
+
 type LightspeedChatBoxProps = {
   userName?: string;
-  messages: MessageProps[];
+  messages: ExtendedMessageProps[];
   profileLoading: boolean;
   announcement: string | undefined;
   topicRestrictionEnabled: boolean;
@@ -187,14 +193,33 @@ export const LightspeedChatBox = forwardRef(
           <br />
         )}
         {conversationMessages.map((message, index) => {
-          if (index === cmessages.length - 1) {
-            return (
-              <Fragment key={`${message.role}-${index}`}>
-                <Message key={`${message.role}-${index}`} {...message} />
-              </Fragment>
-            );
-          }
-          return <Message key={`${message.role}-${index}`} {...message} />;
+          const extendedMessage = message as ExtendedMessageProps;
+          const hasToolCalls =
+            extendedMessage.toolCalls && extendedMessage.toolCalls.length > 0;
+
+          // Build extraContent with tool calls rendered after main content
+          const extraContent = hasToolCalls
+            ? {
+                afterMainContent: (
+                  <>
+                    {extendedMessage.toolCalls!.map(toolCall => (
+                      <ToolCallCard
+                        key={`tool-${toolCall.id}-${toolCall.toolName}`}
+                        toolCall={toolCall}
+                      />
+                    ))}
+                  </>
+                ),
+              }
+            : undefined;
+
+          return (
+            <Message
+              key={`${message.role}-${index}`}
+              {...message}
+              extraContent={extraContent}
+            />
+          );
         })}
       </MessageBox>
     );
