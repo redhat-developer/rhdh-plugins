@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 0.14.0
+
+### Minor Changes
+
+- 4fafdf3: Renamed plugins from marketplace to extensions
+
+  - Renamed all packages from `backstage-plugin-marketplace-*` to `backstage-plugin-extensions-*`
+  - Updated all internal references, exports, and API endpoints
+  - lazy load codeEditor to reduce the frontend plugin bundle size
+  - Made catalog entities directory path configurable via `extensions.directory` in app-config.yaml with fallback to `extensions` and `marketplace` directories
+
+### Patch Changes
+
+- Updated dependencies [4fafdf3]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.14.0
+
 ## 0.13.2
 
 ### Patch Changes
