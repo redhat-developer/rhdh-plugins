@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://extensions.backstage.io/v1alpha1/collections",
+  "$ref": "#/$defs/ExtensionsCollection",
+  "$defs": {
+    "ExtensionsCollection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apiVersion": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/$defs/EntityMetadata"
+        },
+        "spec": {
+          "$ref": "#/$defs/ExtensionsCollectionSpec"
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata", "spec"]
+    },
+    "EntityMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "titleKey": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "descriptionKey": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EntityMetadataLink"
+          }
+        }
+      },
+      "required": ["name", "title", "description"]
+    },
+    "EntityMetadataLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": ["title", "url"]
+    },
+    "ExtensionsCollectionSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["curated"]
+        },
+        "plugins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["type"]
+    }
+  }
+}

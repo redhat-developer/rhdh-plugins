@@ -1,0 +1,52 @@
+{
+  "name": "@red-hat-developer-hub/extensions-cli",
+  "description": "CLI for the Extensions",
+  "version": "0.14.0",
+  "backstage": {
+    "role": "cli"
+  },
+  "homepage": "https://red.ht/rhdh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/extensions/packages/cli"
+  },
+  "keywords": [
+    "backstage"
+  ],
+  "license": "Apache-2.0",
+  "main": "dist/index.cjs.js",
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "start": "nodemon --"
+  },
+  "bin": "bin/extensions-cli",
+  "files": [
+    "bin",
+    "dist/**/*.js"
+  ],
+  "dependencies": {
+    "@backstage/catalog-model": "^1.7.6",
+    "@backstage/cli": "^0.34.5",
+    "@backstage/errors": "^1.2.7",
+    "@backstage/types": "^1.2.2",
+    "@red-hat-developer-hub/backstage-plugin-extensions-common": "workspace:^",
+    "chalk": "^4.1.2",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^9.3.5",
+    "inquirer": "^12.4.3",
+    "yaml": "^2.7.0"
+  },
+  "nodemonConfig": {
+    "watch": "./src",
+    "exec": "bin/extensions-cli",
+    "ext": "ts"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4"
+  }
+}
