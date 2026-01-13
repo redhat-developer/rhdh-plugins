@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './useAllModels';
-export * from './useBackstageUserIdentity';
-export * from './useConversationMessages';
-export * from './useConversations';
-export * from './useCreateCoversationMessage';
-export * from './useDeleteConversation';
-export * from './useIsMobile';
-export * from './useLastOpenedConversation';
-export * from './useLightspeedDeletePermission';
-export * from './useLightspeedViewPermission';
-export * from './usePinnedChatsSettings';
-export * from './useSortSettings';
-export * from './useTranslation';
+
+/**
+ * Check if the user is a guest user.
+ * Guest users have userEntityRef like "user:default/guest" or "user:development/guest"
+ *
+ * @param user - The user entity ref (e.g., "user:default/john")
+ * @returns true if the user is a guest user, false otherwise
+ */
+export const isGuestUser = (user: string | undefined): boolean => {
+  if (!user) return true;
+  return user.endsWith('/guest');
+};

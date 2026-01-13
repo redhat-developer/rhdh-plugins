@@ -70,6 +70,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
   usePinnedChatsSettings,
+  useSortSettings,
 } from '../hooks';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
@@ -182,12 +183,12 @@ export const LightspeedChat = ({
   const {
     isPinningChatsEnabled,
     pinnedChats,
-    selectedSort,
     handlePinningChatsToggle,
     pinChat,
     unpinChat,
-    handleSortChange,
   } = usePinnedChatsSettings(user);
+
+  const { selectedSort, handleSortChange } = useSortSettings(user);
 
   const {
     uploadError,

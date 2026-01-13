@@ -17,32 +17,27 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { storageApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { SortOption } from '../utils/lightspeed-chatbox-utils';
+import { isGuestUser } from '../utils/user-utils';
 
 const BUCKET_NAME = 'lightspeed';
 const PINNED_ENABLED_KEY = 'pinnedChatsEnabled';
 const PINNED_CHATS_KEY = 'pinnedChats';
-const SORT_ORDER_KEY = 'sortOrder';
-
-type UserSettings = {
-  [userId: string]: boolean | string[] | SortOption;
-};
 
 type UsePinnedChatsSettingsReturn = {
   isPinningChatsEnabled: boolean;
   pinnedChats: string[];
-  selectedSort: SortOption;
   handlePinningChatsToggle: (enabled: boolean) => void;
   pinChat: (convId: string) => void;
   unpinChat: (convId: string) => void;
-  handleSortChange: (sortOption: SortOption) => void;
 };
 
 /**
  * Hook to manage pinned chats settings with persistence using Backstage StorageApi.
- * Settings are scoped per-user to support multi-user environments.
+ * Settings are automatically scoped per-user by the StorageApi backend when using
+ * database persistence. For guest users, settings are only kept in local state
+ * and not persisted.
  *
- * @param user - The user entity ref (e.g., "user:default/guest")
+ * @param user - The user entity ref (e.g., "user:default/john")
  * @returns Object containing pinned chats state and management functions
  */
 export const usePinnedChatsSettings = (
@@ -53,35 +48,55 @@ export const usePinnedChatsSettings = (
 
   const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true);
   const [pinnedChats, setPinnedChats] = useState<string[]>([]);
-  const [selectedSort, setSelectedSort] = useState<SortOption>('newest');
 
-  // Initialize from storage on mount or when user changes
+  // Determine if we should persist settings (not for guest users)
+  const shouldPersist = !isGuestUser(user);
+
+  // Subscribe to storage changes using observe() for proper async support
   useEffect(() => {
     if (!user) {
       setIsPinningChatsEnabled(true);
       setPinnedChats([]);
-      setSelectedSort('newest');
-      return;
+      return undefined;
     }
 
-    try {
-      const enabledSnapshot = bucket.snapshot<UserSettings>(PINNED_ENABLED_KEY);
-      const chatsSnapshot = bucket.snapshot<UserSettings>(PINNED_CHATS_KEY);
-      const sortSnapshot = bucket.snapshot<UserSettings>(SORT_ORDER_KEY);
-
-      const enabledData = enabledSnapshot.value ?? {};
-      const chatsData = chatsSnapshot.value ?? {};
-      const sortData = sortSnapshot.value ?? {};
-
-      setIsPinningChatsEnabled(
-        (enabledData[user] as boolean | undefined) ?? true,
-      );
-      setPinnedChats((chatsData[user] as string[] | undefined) ?? []);
-      setSelectedSort((sortData[user] as SortOption | undefined) ?? 'newest');
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error reading pinned chats settings from storage:', error);
+    // For guest users, use default values without subscribing to storage
+    if (isGuestUser(user)) {
+      setIsPinningChatsEnabled(true);
+      setPinnedChats([]);
+      return undefined;
     }
+
+    // Subscribe to pinned enabled changes
+    const enabledSubscription = bucket
+      .observe$<boolean>(PINNED_ENABLED_KEY)
+      .subscribe({
+        next: snapshot => {
+          setIsPinningChatsEnabled(snapshot.value ?? true);
+        },
+        error: error => {
+          // eslint-disable-next-line no-console
+          console.error('Error observing pinnedChatsEnabled:', error);
+        },
+      });
+
+    // Subscribe to pinned chats changes
+    const chatsSubscription = bucket
+      .observe$<string[]>(PINNED_CHATS_KEY)
+      .subscribe({
+        next: snapshot => {
+          setPinnedChats(snapshot.value ?? []);
+        },
+        error: error => {
+          // eslint-disable-next-line no-console
+          console.error('Error observing pinnedChats:', error);
+        },
+      });
+
+    return () => {
+      enabledSubscription.unsubscribe();
+      chatsSubscription.unsubscribe();
+    };
   }, [bucket, user]);
 
   // Toggle pinning feature on/off
@@ -91,29 +106,27 @@ export const usePinnedChatsSettings = (
 
       setIsPinningChatsEnabled(enabled);
 
-      try {
-        const enabledSnapshot =
-          bucket.snapshot<UserSettings>(PINNED_ENABLED_KEY);
-        // Create a copy to avoid mutating the read-only snapshot
-        const enabledData = { ...enabledSnapshot.value };
-        enabledData[user] = enabled;
-        bucket.set(PINNED_ENABLED_KEY, enabledData);
+      // Clear pinned chats when disabling
+      if (!enabled) {
+        setPinnedChats([]);
+      }
 
-        // Clear pinned chats when disabling
-        if (!enabled) {
-          setPinnedChats([]);
-          const chatsSnapshot = bucket.snapshot<UserSettings>(PINNED_CHATS_KEY);
-          // Create a copy to avoid mutating the read-only snapshot
-          const chatsData = { ...chatsSnapshot.value };
-          chatsData[user] = [];
-          bucket.set(PINNED_CHATS_KEY, chatsData);
+      // Only persist for non-guest users
+      if (shouldPersist) {
+        try {
+          bucket.set(PINNED_ENABLED_KEY, enabled);
+
+          // Clear pinned chats in storage when disabling
+          if (!enabled) {
+            bucket.set(PINNED_CHATS_KEY, []);
+          }
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Error saving pinning toggle state:', error);
         }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error saving pinning toggle state:', error);
       }
     },
-    [bucket, user],
+    [bucket, user, shouldPersist],
   );
 
   // Pin a chat
@@ -124,21 +137,20 @@ export const usePinnedChatsSettings = (
       setPinnedChats(prev => {
         const updated = [...prev, convId];
 
-        try {
-          const chatsSnapshot = bucket.snapshot<UserSettings>(PINNED_CHATS_KEY);
-          // Create a copy to avoid mutating the read-only snapshot
-          const chatsData = { ...chatsSnapshot.value };
-          chatsData[user] = updated;
-          bucket.set(PINNED_CHATS_KEY, chatsData);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Error saving pinned chat:', error);
+        // Only persist for non-guest users
+        if (shouldPersist) {
+          try {
+            bucket.set(PINNED_CHATS_KEY, updated);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error saving pinned chat:', error);
+          }
         }
 
         return updated;
       });
     },
-    [bucket, user],
+    [bucket, user, shouldPersist],
   );
 
   // Unpin a chat
@@ -149,51 +161,27 @@ export const usePinnedChatsSettings = (
       setPinnedChats(prev => {
         const updated = prev.filter(id => id !== convId);
 
-        try {
-          const chatsSnapshot = bucket.snapshot<UserSettings>(PINNED_CHATS_KEY);
-          // Create a copy to avoid mutating the read-only snapshot
-          const chatsData = { ...chatsSnapshot.value };
-          chatsData[user] = updated;
-          bucket.set(PINNED_CHATS_KEY, chatsData);
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Error saving unpinned chat:', error);
+        // Only persist for non-guest users
+        if (shouldPersist) {
+          try {
+            bucket.set(PINNED_CHATS_KEY, updated);
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error saving unpinned chat:', error);
+          }
         }
 
         return updated;
       });
     },
-    [bucket, user],
-  );
-
-  // Change sort order
-  const handleSortChange = useCallback(
-    (sortOption: SortOption) => {
-      if (!user) return;
-
-      setSelectedSort(sortOption);
-
-      try {
-        const sortSnapshot = bucket.snapshot<UserSettings>(SORT_ORDER_KEY);
-        // Create a copy to avoid mutating the read-only snapshot
-        const sortData = { ...sortSnapshot.value };
-        sortData[user] = sortOption;
-        bucket.set(SORT_ORDER_KEY, sortData);
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Error saving sort order:', error);
-      }
-    },
-    [bucket, user],
+    [bucket, user, shouldPersist],
   );
 
   return {
     isPinningChatsEnabled,
     pinnedChats,
-    selectedSort,
     handlePinningChatsToggle,
     pinChat,
     unpinChat,
-    handleSortChange,
   };
 };
