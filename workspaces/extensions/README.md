@@ -66,7 +66,7 @@ To start the development environment:
 
 ```bash
 git clone https://github.com/redhat-developer/rhdh-plugins.git
-cd rhdh-plugins/workspaces/marketplace
+cd rhdh-plugins/workspaces/extensions
 yarn install
 yarn start
 ```

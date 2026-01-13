@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ const extensionsTranslationIt = createTranslationMessages({
   ref: extensionsTranslationRef,
   full: true,
   messages: {
-    // Page headers and titles
     'header.title': 'Estensioni',
     'header.extensions': 'Estensioni',
     'header.catalog': 'Catalogo',
@@ -29,9 +28,7 @@ const extensionsTranslationIt = createTranslationMessages({
     'header.installedPackagesWithCount': 'Pacchetti installati ({{count}})',
     'header.pluginsPage': 'Plugin',
     'header.packagesPage': 'Pacchetti',
-    'header.collectionsPage': 'Collezioni',
-
-    // Navigation and buttons
+    'header.collectionsPage': 'Raccolte',
     'button.install': 'Installa',
     'button.uninstall': 'Disinstalla',
     'button.enable': 'Abilita',
@@ -40,90 +37,75 @@ const extensionsTranslationIt = createTranslationMessages({
     'button.save': 'Salva',
     'button.close': 'Chiudi',
     'button.viewAll': 'Visualizza tutti i plugin',
-    'button.viewDocumentation': 'Visualizza documentazione',
-    'button.viewInstalledPlugins': 'Visualizza plugin installati ({{count}})',
-    'button.restart': 'Riavvio richiesto',
-
-    // Status labels
+    'button.viewDocumentation': 'Visualizza la documentazione',
+    'button.viewInstalledPlugins': 'Visualizza i plugin installati ({{count}})',
+    'button.restart': 'È necessario riavviare',
     'status.notInstalled': 'Non installato',
     'status.installed': 'Installato',
     'status.disabled': 'Disabilitato',
     'status.partiallyInstalled': 'Parzialmente installato',
     'status.updateAvailable': 'Aggiornamento disponibile',
-
-    // Role labels
     'role.backend': 'Backend',
     'role.backendModule': 'Modulo backend',
     'role.frontend': 'Frontend',
-
-    // Empty states and errors
     'emptyState.noPluginsFound': 'Nessun plugin trovato',
     'emptyState.mustEnableBackend':
-      'Devi abilitare il plugin backend delle Estensioni',
+      'È necessario abilitare il plugin backend Estensioni',
     'emptyState.noPluginsDescription':
-      'Si è verificato un errore durante il caricamento dei plugin. Controlla la tua configurazione o consulta la documentazione del plugin per risolvere. Puoi anche esplorare altri plugin disponibili.',
+      'Si è verificato un errore durante il caricamento dei plugin. Per risolvere il problema, controllare la configurazione o consultare la documentazione del plugin. È anche possibile verificare gli altri plugin disponibili.',
     'emptyState.configureBackend':
       "Configura il plugin '@red-hat-developer-hub/backstage-plugin-extensions-backend'.",
 
     // Alerts and warnings
     'alert.productionDisabled':
-      "L'installazione dei plugin è disabilitata nell'ambiente di produzione.",
-    'alert.installationDisabled': "L'installazione dei plugin è disabilitata.",
+      "L'installazione del plugin è disabilitata nell'ambiente di produzione.",
+    'alert.installationDisabled': "L'installazione del plugin è disabilitata.",
     'alert.missingDynamicArtifact':
-      "Questo pacchetto non può essere gestito. Per abilitare le azioni, deve essere aggiunta un'entità del catalogo con il **spec.dynamicArtifact** richiesto.",
-    'alert.missingDynamicArtifactTitle':
-      'Il pacchetto non può essere modificato',
+      "Impossibile gestire questo pacchetto. Per abilitare le azioni, è necessario aggiungere un'entità Catalogo con lo **spec.dynamicArtifact** richiesto.",
+    'alert.missingDynamicArtifactTitle': 'Impossibile modificare il pacchetto',
     'alert.missingDynamicArtifactForPlugin':
-      "Questo plugin non può essere gestito. Per abilitare le azioni, deve essere aggiunta un'entità del catalogo con il **spec.dynamicArtifact** richiesto a tutti i pacchetti associati.",
+      "Impossibile gestire questo plugin. Per abilitare le azioni, è necessario aggiungere un'entità Catalogo con lo **spec.dynamicArtifact** richiesto a tutti i pacchetti associati.",
     'alert.missingDynamicArtifactTitlePlugin':
-      'Il plugin non può essere modificato',
+      'Impossibile modificare il plugin',
     'alert.extensionsExample':
-      'Per abilitarlo, aggiungi o modifica la configurazione delle estensioni nel tuo file di configurazione dei plugin dinamici.',
+      'Per abilitarla, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.',
     'alert.singlePluginRestart':
-      "Il plugin **{{pluginName}}** richiede un riavvio del sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
+      "Il plugin **{{pluginName}}** richiede il riavvio del sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
     'alert.multiplePluginRestart':
-      "Hai **{{count}}** plugin che richiedono un riavvio del tuo sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
+      "Sono presenti **{{count}}** plugin che richiedono il riavvio del sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
     'alert.singlePackageRestart':
-      "Il pacchetto **{{packageName}}** richiede un riavvio del sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
+      "Il pacchetto **{{packageName}}** richiede il riavvio del sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
     'alert.multiplePackageRestart':
-      "Hai **{{count}}** pacchetti che richiedono un riavvio del tuo sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
+      "Sono presenti **{{count}}** pacchetti che richiedono il riavvio del sistema backend per completare l'installazione, l'aggiornamento, l'abilitazione o la disabilitazione.",
     'alert.restartRequired': '{{count}} plugin installati',
-    'alert.backendRestartRequired': 'Riavvio del backend richiesto',
-    'alert.viewPlugins': 'Visualizza plugin',
-    'alert.viewPackages': 'Visualizza pacchetti',
-
-    // Search and filtering
-    'search.placeholder': 'Cerca plugin...',
+    'alert.backendRestartRequired': 'È necessario riavviare il backend',
+    'alert.viewPlugins': 'Visualizza i plugin',
+    'alert.viewPackages': 'Visualizza i pacchetti',
+    'search.placeholder': 'Ricerca',
     'search.clear': 'Cancella ricerca',
     'search.filter': 'Filtra',
     'search.clearFilter': 'Cancella filtro',
-    'search.noResults': 'Nessun plugin corrisponde ai tuoi criteri di ricerca',
-    'search.filterBy': 'Filtra per',
-    'search.clearFilters': 'Cancella filtri',
-    'search.noResultsFound':
-      'Nessun risultato trovato. Modifica i tuoi filtri e riprova.',
     'search.category': 'Categoria',
     'search.author': 'Autore',
     'search.supportType': 'Tipo di supporto',
-
-    // General UI text
+    'search.noResults': 'Nessun plugin corrisponde ai criteri di ricerca',
+    'search.filterBy': 'Filtra per',
+    'search.clearFilters': 'Cancella filtri',
+    'search.noResultsFound':
+      'Nessun risultato trovato. Regolare i filtri e riprovare.',
     'common.links': 'Collegamenti',
     'common.by': ' di ',
     'common.comma': ', ',
     'common.noDescriptionAvailable': 'nessuna descrizione disponibile',
-    'common.readMore': 'Leggi di più',
+    'common.readMore': 'Per saperne di più',
     'common.close': 'Chiudi',
     'common.apply': 'Applica',
     'common.couldNotApplyYaml': 'Impossibile applicare YAML: {{error}}',
-
-    // Dialogs
-    'dialog.backendRestartRequired': 'Riavvio del backend richiesto',
+    'dialog.backendRestartRequired': 'È necessario riavviare il backend',
     'dialog.packageRestartMessage':
-      'Per completare le modifiche del pacchetto, riavvia il tuo sistema backend.',
+      'Per completare le modifiche al pacchetto, riavviare il sistema backend.',
     'dialog.pluginRestartMessage':
-      'Per completare le modifiche del plugin, riavvia il tuo sistema backend.',
-
-    // Plugin details
+      'Per completare le modifiche al plugin, riavviare il sistema backend.',
     'plugin.description': 'Descrizione',
     'plugin.documentation': 'Documentazione',
     'plugin.repository': 'Repository',
@@ -135,25 +117,21 @@ const extensionsTranslationIt = createTranslationMessages({
     'plugin.dependencies': 'Dipendenze',
     'plugin.configuration': 'Configurazione',
     'plugin.installation': 'Installazione',
-
-    // Package details
-    'package.name': 'Nome del pacchetto:',
+    'package.name': 'Nome pacchetto:',
     'package.version': 'Versione:',
-    'package.dynamicPluginPath': 'Percorso del plugin dinamico:',
+    'package.dynamicPluginPath': 'Percorso plugin dinamico:',
     'package.backstageRole': 'Ruolo Backstage:',
     'package.supportedVersions': 'Versioni supportate:',
     'package.author': 'Autore:',
     'package.support': 'Supporto:',
     'package.lifecycle': 'Ciclo di vita:',
-    'package.highlights': 'Punti salienti',
+    'package.highlights': 'In evidenza',
     'package.about': 'Informazioni',
-    'package.notFound': 'Pacchetto {{namespace}}/{{name}} non trovato!',
+    'package.notFound': 'Pacchetto {{namespace}}/{{name}} non trovato.',
     'package.notAvailable': 'Il pacchetto {{name}} non è disponibile',
     'package.ensureCatalogEntity':
-      "Assicurati che esista un'entità del catalogo per questo pacchetto.",
-
-    // Tables and lists
-    'table.packageName': 'Nome del pacchetto',
+      "Verificare l'esistenza di un'entità catalogo per questo pacchetto.",
+    'table.packageName': 'Nome pacchetto',
     'table.version': 'Versione',
     'table.role': 'Ruolo',
     'table.supportedVersion': 'Versione supportata',
@@ -166,40 +144,37 @@ const extensionsTranslationIt = createTranslationMessages({
     'table.packages': 'Pacchetti',
     'table.pluginsCount': 'Plugin ({{count}})',
     'table.packagesCount': 'Pacchetti ({{count}})',
-    'table.pluginsTable': 'Tabella plugin',
-
-    // Installed packages table
+    'table.pluginsTable': 'Tabella dei plugin',
     'installedPackages.table.title': 'Pacchetti installati ({{count}})',
-    'installedPackages.table.searchPlaceholder': 'Cerca',
+    'installedPackages.table.searchPlaceholder': 'Ricerca',
     'installedPackages.table.columns.name': 'Nome',
     'installedPackages.table.columns.packageName': 'nome del pacchetto npm',
     'installedPackages.table.columns.role': 'Ruolo',
     'installedPackages.table.columns.version': 'Versione',
     'installedPackages.table.columns.actions': 'Azioni',
     'installedPackages.table.tooltips.packageProductionDisabled':
-      "Il pacchetto non può essere gestito nell'ambiente di produzione.",
+      "Impossibile gestire il pacchetto nell'ambiente di produzione.",
     'installedPackages.table.tooltips.installationDisabled':
-      "Il pacchetto non può essere gestito perché l'installazione dei plugin è disabilitata. Per abilitarla, aggiungi o modifica la configurazione delle estensioni nel tuo file di configurazione dei plugin dinamici.",
+      "Impossibile gestire il pacchetto perché l'installazione del plugin è disabilitata. Per abilitarla, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.",
     'installedPackages.table.tooltips.enableActions':
-      "Per abilitare le azioni, aggiungi un'entità del catalogo per questo pacchetto",
+      "Per abilitare le azioni, aggiungere un'entità catalogo per questo pacchetto",
     'installedPackages.table.tooltips.noDownloadPermissions':
-      'Non hai il permesso di scaricare la configurazione. Contatta il tuo amministratore per richiedere accesso o assistenza.',
+      "L'utente non dispone dell'autorizzazione per scaricare la configurazione. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.noEditPermissions':
-      'Non hai il permesso di modificare la configurazione. Contatta il tuo amministratore per richiedere accesso o assistenza.',
+      "L'utente non dispone dell'autorizzazione per modificare la configurazione. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.noTogglePermissions':
-      'Non hai il permesso di abilitare o disabilitare i pacchetti. Contatta il tuo amministratore per richiedere accesso o assistenza.',
+      "L'utente non dispone dell'autorizzazione per abilitare o disabilitare i pacchetti. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'installedPackages.table.tooltips.editPackage':
-      'Modifica configurazione del pacchetto',
+      'Modifica la configurazione del pacchetto',
     'installedPackages.table.tooltips.downloadPackage':
-      'Scarica configurazione del pacchetto',
-    'installedPackages.table.tooltips.enablePackage': 'Abilita pacchetto',
-    'installedPackages.table.tooltips.disablePackage': 'Disabilita pacchetto',
+      'Scarica la configurazione del pacchetto',
+    'installedPackages.table.tooltips.enablePackage': 'Abilita il pacchetto',
+    'installedPackages.table.tooltips.disablePackage':
+      'Disabilita il pacchetto',
     'installedPackages.table.emptyMessages.noResults':
-      'Nessun risultato trovato. Prova con un termine di ricerca diverso.',
+      'Nessun risultato trovato. Provare un termine di ricerca diverso.',
     'installedPackages.table.emptyMessages.noRecords':
       'Nessun record da visualizzare',
-
-    // Plugin actions and states
     'actions.install': 'Installa',
     'actions.view': 'Visualizza',
     'actions.edit': 'Modifica',
@@ -207,73 +182,65 @@ const extensionsTranslationIt = createTranslationMessages({
     'actions.disable': 'Disabilita',
     'actions.actions': 'Azioni',
     'actions.editConfiguration': 'Modifica',
-    'actions.pluginConfigurations': 'Configurazioni del plugin',
+    'actions.pluginConfigurations': 'Configurazioni dei plugin',
     'actions.packageConfiguration': 'Configurazione del pacchetto',
     'actions.pluginCurrentlyEnabled': 'Plugin attualmente abilitato',
     'actions.pluginCurrentlyDisabled': 'Plugin attualmente disabilitato',
     'actions.packageCurrentlyEnabled': 'Pacchetto attualmente abilitato',
     'actions.packageCurrentlyDisabled': 'Pacchetto attualmente disabilitato',
-    'actions.installTitle': 'Installa {{displayName}}',
-    'actions.editTitle': 'Modifica configurazioni di {{displayName}}',
-
-    // Plugin metadata
+    'actions.installTitle': 'Installare {{displayName}}',
+    'actions.editTitle': 'Modificare le configurazioni di {{displayName}}',
     'metadata.by': ' di ',
     'metadata.comma': ', ',
-    'metadata.pluginNotFound': 'Plugin {{name}} non trovato!',
+    'metadata.pluginNotFound': 'Plugin {{name}} non trovato.',
     'metadata.pluginNotAvailable': 'Il plugin {{name}} non è disponibile',
     'metadata.ensureCatalogEntityPlugin':
-      "Assicurati che esista un'entità del catalogo per questo plugin.",
-    'metadata.highlights': 'Punti salienti',
+      "Verificare l'esistenza di un'entità catalogo per questo plugin.",
+    'metadata.highlights': 'In evidenza',
     'metadata.about': 'Informazioni',
     'metadata.publisher': 'Editore',
-    'metadata.supportProvider': 'Fornitore di supporto',
-    'metadata.entryName': "Nome dell'entrata",
-    'metadata.bySomeone': 'di qualcuno',
+    'metadata.supportProvider': 'Fornitore del supporto',
+    'metadata.entryName': 'Nome voce',
+    'metadata.bySomeone': 'da qualcuno',
     'metadata.category': 'Categoria',
     'metadata.versions': 'Versioni',
-    'metadata.backstageCompatibility': 'Versione di compatibilità Backstage',
-
-    // Support type filters
+    'metadata.backstageCompatibility': 'Versione compatibile con Backstage',
     'supportTypes.certifiedBy': 'Certificato da {{value}} ({{count}})',
     'supportTypes.verifiedBy': 'Verificato da {{value}} ({{count}})',
     'supportTypes.customPlugins': 'Plugin personalizzati ({{count}})',
-
-    // Collections
     'collection.kubernetes': 'Kubernetes',
     'collection.monitoring': 'Monitoraggio',
     'collection.security': 'Sicurezza',
-    'collection.viewMore': 'Visualizza di più',
+    'collection.viewMore': 'Visualizza altro',
     'collection.pluginCount': '{{count}} plugin',
     'collection.featured.title': 'Plugin in evidenza',
     'collection.featured.description':
-      'Una collezione curata di plugin consigliati per la maggior parte degli utenti',
-
-    // Installation and configuration
-    'install.title': 'Installa Plugin',
+      'Una raccolta selezionata di plugin in evidenza consigliati per la maggior parte degli utenti',
+    'install.title': 'Installa il plugin',
     'install.configurationRequired': 'Configurazione richiesta',
     'install.optional': 'Opzionale',
-    'install.required': 'Richiesto',
-    'install.selectPackages': 'Seleziona pacchetti da installare',
+    'install.required': 'Richiesta',
+    'install.selectPackages': 'Selezionare i pacchetti da installare',
     'install.allPackages': 'Tutti i pacchetti',
     'install.customConfiguration': 'Configurazione personalizzata',
     'install.installProgress': 'Installazione in corso...',
-    'install.success': 'Plugin installato con successo',
-    'install.error': 'Installazione del plugin fallita',
-    'install.installFrontend': 'Installa plugin frontend',
-    'install.installBackend': 'Installa plugin backend',
+    'install.success': 'Plugin installato correttamente',
+    'install.error': 'Impossibile installare il plugin',
+    'install.installFrontend': 'Installa il plugin frontend',
+    'install.installBackend': 'Installa il plugin backend',
     'install.installTemplates': 'Installa modelli software',
-    'install.installationInstructions': 'Istruzioni di installazione',
-    'install.download': 'Scarica',
+    'install.installationInstructions': "Istruzioni per l'installazione",
+    'install.download': 'Scaricamento',
     'install.examples': 'Esempi',
-    'install.cancel': 'Annulla',
-    'install.reset': 'Reimposta',
-    'install.pluginTabs': 'Tab del plugin',
-    'install.settingUpPlugin': 'Configurazione del plugin',
+    'install.cancel': 'Cancella',
+    'install.reset': 'Reset',
+    'install.pluginTabs': 'Schede dei plugin',
+    'install.settingUpPlugin': 'Impostazione del plugin',
     'install.aboutPlugin': 'Informazioni sul plugin',
     'install.pluginUpdated': 'Plugin aggiornato',
     'install.pluginInstalled': 'Plugin installato',
     'install.instructions': 'Istruzioni',
-    'install.editInstructions': 'Modifica istruzioni',
+    'install.editInstructions': 'Modifica le istruzioni',
     'install.back': 'Indietro',
     'install.packageUpdated': 'Pacchetto aggiornato',
     'install.packageEnabled': 'Pacchetto abilitato',
@@ -281,43 +248,37 @@ const extensionsTranslationIt = createTranslationMessages({
     'install.pluginEnabled': 'Plugin abilitato',
     'install.pluginDisabled': 'Plugin disabilitato',
     'install.errors.missingPluginsList':
-      "Contenuto dell'editor non valido: manca l'elenco 'plugins'",
+      "Contenuto dell'editor non valido: elenco 'plugin' mancante",
     'install.errors.missingPackageItem':
       "Contenuto dell'editor non valido: elemento del pacchetto mancante",
     'install.errors.missingPackageField':
-      "Contenuto dell'editor non valido: campo 'package' mancante nell'elemento",
-    'install.errors.failedToSave': 'Salvataggio fallito',
-
-    // Loading and error states
-    loading: 'Caricamento in corso...',
+      "Contenuto dell'editor non valido: campo 'pacchetto' mancante nell'elemento",
+    'install.errors.failedToSave': 'Impossibile salvare',
+    loading: 'Caricamento...',
     error: 'Si è verificato un errore',
-    retry: 'Riprova',
-
-    // Error messages
+    retry: 'Riprovare',
     'errors.missingConfigFile': 'File di configurazione mancante',
     'errors.missingConfigMessage':
-      "{{message}}. Devi aggiungerlo al tuo app-config.yaml se vuoi abilitare questo strumento. Modifica il file app-config.yaml come mostrato nell'esempio seguente:",
+      "{{message}}. Per abilitare questo strumento, è necessario aggiungerlo ad app-config.yaml. Modificare il file app-config.yaml come mostrato nell'esempio seguente:",
     'errors.invalidConfigFile': 'File di configurazione non valido',
     'errors.invalidConfigMessage':
-      "Errore nel caricamento di 'extensions.installation.saveToSingleFile.file'. {{message}}. Fornisci una configurazione di installazione valida se vuoi abilitare questo strumento. Modifica il tuo file dynamic-plugins.yaml come mostrato nell'esempio seguente:",
+      "Impossibile caricare 'extensions.installation.saveToSingleFile.file'. {{message}}. Per abilitare questo strumento, fornire una configurazione di installazione valida. Modificare il file dynamic-plugins.yaml come mostrato nell'esempio seguente:",
     'errors.fileNotExists':
-      'Il file di configurazione è errato, scritto male o non esiste',
+      'Il file di configurazione non è corretto, non è scritto correttamente o non esiste',
     'errors.fileNotExistsMessage':
-      "{{message}}. Ricontrolla il nome del file specificato nel tuo app-config.yaml se vuoi abilitare questo strumento come evidenziato nell'esempio seguente:",
-    'errors.unknownError': 'Errore nella lettura del file di configurazione. ',
-
-    // Tooltip messages
+      "{{message}}. Per abilitare questo strumento come evidenziato nell'esempio seguente, controllare nuovamente il nome del file specificato in app-config.yaml:",
+    'errors.unknownError':
+      'Errore durante la lettura del file di configurazione. ',
     'tooltips.productionDisabled':
-      "L'installazione dei plugin è disabilitata nell'ambiente di produzione.",
+      "L'installazione del plugin è disabilitata nell'ambiente di produzione.",
     'tooltips.extensionsDisabled':
-      "L'installazione dei plugin è disabilitata. Per abilitarla, aggiungi o modifica la configurazione delle estensioni nel tuo file di configurazione dei plugin dinamici.",
+      "L'installazione del plugin è disabilitata. Per abilitarla, aggiungere o modificare la configurazione delle estensioni nel file di configurazione dynamic-plugins.",
     'tooltips.noPermissions':
-      'Non hai il permesso di installare plugin o visualizzare le loro configurazioni. Contatta il tuo amministratore per richiedere accesso o assistenza.',
+      "L'utente non dispone delle autorizzazioni necessarie per installare plugin o visualizzarne le configurazioni. Contattare l'amministratore per richiedere l'accesso o l'assistenza.",
     'tooltips.missingDynamicArtifact':
-      "Questo {{type}} non può essere gestito. Per abilitare le azioni, deve essere aggiunta un'entità del catalogo con il spec.dynamicArtifact richiesto.",
-    // Accessibility
-    'aria.openPlugin': 'Apri plugin {{name}}',
-    'aria.closeDialog': 'Chiudi dialogo',
+      "Impossibile gestire questo {{type}}. Per abilitare le azioni, è necessario aggiungere un'entità Catalogo con lo spec.dynamicArtifact richiesto.",
+    'aria.openPlugin': 'Apri il plugin {{name}}',
+    'aria.closeDialog': 'Chiudi finestra di dialogo',
     'aria.expandSection': 'Espandi sezione',
     'aria.collapseSection': 'Comprimi sezione',
     'aria.sortBy': 'Ordina per {{field}}',
@@ -327,21 +288,21 @@ const extensionsTranslationIt = createTranslationMessages({
     'badges.verified': 'Verificato',
     'badges.verifiedBy': 'Verificato da {{provider}}',
     'badges.customPlugin': 'Plugin personalizzato',
-    'badges.stableAndSecured': 'Stabile e sicuro da {{provider}}',
-    'badges.generallyAvailable': 'Generalmente disponibile (GA)',
+    'badges.stableAndSecured': 'Stabile e protetto da {{provider}}',
+    'badges.generallyAvailable': 'Generalmente disponibile',
     'badges.gaAndSupportedBy':
-      'Generalmente disponibile (GA) e supportato da {{provider}}',
-    'badges.gaAndSupported': 'Generalmente disponibile (GA) e supportato',
+      'Generalmente disponibile e supportato da {{provider}}',
+    'badges.gaAndSupported': 'Generalmente disponibile e supportato',
     'badges.productionReadyBy':
       'Pronto per la produzione e supportato da {{provider}}',
     'badges.productionReady': 'Pronto per la produzione e supportato',
-    'badges.communityPlugin': 'Plugin della comunità',
+    'badges.communityPlugin': 'Plugin della community',
     'badges.openSourceNoSupport':
       'Plugin open source, nessun supporto ufficiale',
-    'badges.techPreview': 'Anteprima tecnica (TP)',
-    'badges.pluginInDevelopment': 'Plugin ancora in sviluppo',
-    'badges.devPreview': 'Anteprima sviluppatore (DP)',
-    'badges.earlyStageExperimental': 'Un plugin sperimentale in fase iniziale',
+    'badges.techPreview': 'Anteprima tecnica',
+    'badges.pluginInDevelopment': 'Plugin ancora in fase di sviluppo',
+    'badges.devPreview': 'Anteprima di sviluppo',
+    'badges.earlyStageExperimental': 'Plugin sperimentale in fase iniziale',
     'badges.addedByAdmin': "Plugin aggiunti dall'amministratore",
   },
 });

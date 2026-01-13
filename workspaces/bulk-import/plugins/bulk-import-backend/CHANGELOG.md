@@ -1,5 +1,20 @@
 ### Dependencies
 
+## 6.10.1
+
+### Patch Changes
+
+- e143e26: Updated dependency `@octokit/auth-app` to `7.2.2`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.10.1
+
+## 6.10.0
+
+### Patch Changes
+
+- 9e15bf7: Updated dependency `prettier` to `3.7.4`.
+- Updated dependencies [9e15bf7]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.10.0
+
 ## 6.9.1
 
 ### Patch Changes

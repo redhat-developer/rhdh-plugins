@@ -37,7 +37,7 @@ export const globalFloatingActionButtonPlugin = createPlugin({
 export const dynamicGlobalFloatingActionButtonPlugin = createPlugin({
   id: 'dynamic-global-floating-action-button',
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [globalFloatingActionButtonTranslationRef],
   },
 } as any);

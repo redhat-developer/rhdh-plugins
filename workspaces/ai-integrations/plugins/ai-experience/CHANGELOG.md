@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience
 
+## 0.5.1
+
+### Patch Changes
+
+- f74564d: Added 'it' and 'ja' i18n support and updated 'fr' translation strings.
+
 ## 0.5.0
 
 ### Minor Changes

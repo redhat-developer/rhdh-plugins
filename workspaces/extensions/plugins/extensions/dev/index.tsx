@@ -28,7 +28,7 @@ import { extensionsTranslations } from '../src/translations';
 createDevApp()
   .registerPlugin(extensionsPlugin)
   .addTranslationResource(extensionsTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({

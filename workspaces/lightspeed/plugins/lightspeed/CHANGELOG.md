@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.1.2
+
+### Patch Changes
+
+- f74564d: Added 'it' and 'ja' i18n support and updated 'fr' translation strings.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.1.2
+
 ## 1.1.1
 
 ### Patch Changes

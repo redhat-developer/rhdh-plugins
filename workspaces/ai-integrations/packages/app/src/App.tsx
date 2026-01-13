@@ -70,7 +70,7 @@ const app = createApp({
   apis,
   __experimentalTranslations: {
     defaultLanguage: 'en',
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [aiExperienceTranslationsResource],
   },
   bindRoutes({ bind }) {

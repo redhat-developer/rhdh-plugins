@@ -13,27 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsPluginTranslationRef } from './ref';
 
+/**
+ * fr translation for plugin.translations.
+ * @public
+ */
 const translationsTranslationFr = createTranslationMessages({
   ref: translationsPluginTranslationRef,
   messages: {
-    'common.error': "Une erreur s'est produite",
-    'common.loading': 'Chargement en cours...',
-    'common.noData': 'Aucune donnée disponible',
-    'common.refresh': 'Rafraîchir',
-    'export.downloadButton': 'Télécharger les traductions par défaut (anglais)',
-    'export.filename': 'traductions-{{timestamp}}.json',
-    'export.title': 'Traductions',
-    'language.displayFormat': '{{displayName}} ({{code}})',
-    'page.subtitle': 'Gérer et afficher les traductions chargées',
     'page.title': 'Traductions',
-    'table.headers.key': 'Clé',
+    'page.subtitle': 'Gérer et afficher les traductions chargées',
+    'table.title': 'Traductions chargées ({{count}})',
     'table.headers.refId': 'ID de réf',
+    'table.headers.key': 'Clé',
     'table.options.pageSize': 'Articles par page',
     'table.options.pageSizeOptions': 'Afficher {{count}} éléments',
-    'table.title': 'Traductions chargées ({{count}})',
+    'export.title': 'Traductions',
+    'export.downloadButton': 'Télécharger les traductions par défaut (anglais)',
+    'export.filename': 'traductions-{{timestamp}}.json',
+    'common.loading': 'Chargement en cours...',
+    'common.error': "Une erreur s'est produite",
+    'common.noData': 'Aucune donnée disponible',
+    'common.refresh': 'Rafraîchir',
+    'language.displayFormat': '{{displayName}} ({{code}})',
   },
 });
 

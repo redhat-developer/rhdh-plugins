@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.20.1
+
+### Patch Changes
+
+- 350a081: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+- 322c6ad: Updated dependency `@scalprum/react-core` to `0.11.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+- f74564d: Added 'ja' i18n support and updated 'it' and 'fr' translation strings.
+
 ## 1.20.0
 
 ### Minor Changes

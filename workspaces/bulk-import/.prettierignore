@@ -3,3 +3,8 @@ dist-types
 coverage
 .vscode
 .eslintrc.js
+
+# Generated
+plugins/bulk-import-backend/api-docs
+plugins/bulk-import-backend/src/generated/openapi.d.ts
+plugins/bulk-import-backend/src/generated/openapidocument.ts

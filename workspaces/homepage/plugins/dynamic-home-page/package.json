@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-dynamic-home-page",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -52,7 +52,7 @@
   },
   "peerDependencies": {
     "react": "16.13.1 || ^17.0.0 || ^18.2.0",
-    "react-router-dom": "6.30.2"
+    "react-router-dom": "6.30.3"
   },
   "devDependencies": {
     "@backstage/cli": "^0.34.5",
@@ -61,7 +61,7 @@
     "@backstage/plugin-catalog": "^1.32.0",
     "@backstage/test-utils": "^1.7.13",
     "@openshift/dynamic-plugin-sdk": "5.0.1",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "14.3.1",
     "@testing-library/user-event": "14.6.1",

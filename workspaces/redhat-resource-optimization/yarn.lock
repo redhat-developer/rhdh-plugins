@@ -12215,19 +12215,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.11.0":
-  version: 0.11.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.11.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.12.0"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.11.1
+    "@backstage/core-plugin-api": ^1.12.0
     "@backstage/theme": ^0.7.0
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 70368eb43351805dbea8a6f9b1a7e5e0c50ac6edc2ab7639c2fe48084d783b0d3f7a629225ae0e6ae3fd47b3fccdf2eecc4ad9a913ddec32e948f94fb6ecbd92
+  checksum: c8489fa11585c8e57d47c5e3972df90dab01a7de70629ca8c944026a914c98d944837bcfa8ac205c45bbd92f075207dfc4ed560463a933d234649afb8a612fd1
   languageName: node
   linkType: hard
 
@@ -12248,7 +12248,7 @@ __metadata:
     "@backstage/plugin-proxy-backend": ^0.5.10
     "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^"
     "@types/express": 4.17.25
-    "@types/lodash": 4.17.21
+    "@types/lodash": 4.17.22
     "@types/supertest": ^6.0.0
     express: ^4.17.1
     express-promise-router: ^4.1.0
@@ -15626,10 +15626,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:4.17.21, @types/lodash@npm:^4.17.5":
-  version: 4.17.21
-  resolution: "@types/lodash@npm:4.17.21"
-  checksum: e09e3eaf29b18b6c8e130fcbafd8e3c4ecc2110f35255079245e7d1bd310a5a8f93e4e70266533dce672f253bba899c721bc6870097e0a8c5448e0b628136d39
+"@types/lodash@npm:4.17.22, @types/lodash@npm:^4.17.5":
+  version: 4.17.22
+  resolution: "@types/lodash@npm:4.17.22"
+  checksum: 4da5747a2c3df1da9fa125f64054814bb0f64b004aebe093dd2b5644a80c0d352723b84d7adf054e6f2f5aa02eba52237532549ec27531e9224f7179d9f09596
   languageName: node
   linkType: hard
 
@@ -17370,7 +17370,7 @@ __metadata:
     "@patternfly/patternfly": ^6.3.0
     "@playwright/test": ^1.56.1
     "@red-hat-developer-hub/backstage-plugin-orchestrator": ^2.5.1
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.11.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.12.0
     "@red-hat-developer-hub/plugin-redhat-resource-optimization": "workspace:^"
     "@testing-library/dom": ^9.0.0
     "@testing-library/jest-dom": ^6.0.0
@@ -24333,8 +24333,8 @@ __metadata:
   linkType: hard
 
 "glob@npm:^10.0.0, glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1, glob@npm:^10.4.5":
-  version: 10.4.5
-  resolution: "glob@npm:10.4.5"
+  version: 10.5.0
+  resolution: "glob@npm:10.5.0"
   dependencies:
     foreground-child: ^3.1.0
     jackspeak: ^3.1.2
@@ -24344,7 +24344,7 @@ __metadata:
     path-scurry: ^1.11.1
   bin:
     glob: dist/esm/bin.mjs
-  checksum: 0bc725de5e4862f9f387fd0f2b274baf16850dcd2714502ccf471ee401803997983e2c05590cb65f9675a3c6f2a58e7a53f9e365704108c6ad3cbf1d60934c4a
+  checksum: cda96c074878abca9657bd984d2396945cf0d64283f6feeb40d738fe2da642be0010ad5210a1646244a5fc3511b0cab5a374569b3de5a12b8a63d392f18c6043
   languageName: node
   linkType: hard
 

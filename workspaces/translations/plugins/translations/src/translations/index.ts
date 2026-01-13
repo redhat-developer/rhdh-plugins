@@ -24,9 +24,10 @@ export const translationsPluginTranslations = createTranslationResource({
   ref: translationsPluginTranslationRef,
   translations: {
     de: () => import('./de'),
+    es: () => import('./es'),
     fr: () => import('./fr'),
     it: () => import('./it'),
-    es: () => import('./es'),
+    ja: () => import('./ja'),
   },
 });
 /**

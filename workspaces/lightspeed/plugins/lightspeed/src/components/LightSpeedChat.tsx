@@ -524,10 +524,14 @@ export const LightspeedChat = ({
 
           <LightspeedChatBoxHeader
             selectedModel={selectedModel}
-            handleSelectedModel={item => handleSelectedModel(item)}
+            handleSelectedModel={item => {
+              onNewChat();
+              handleSelectedModel(item);
+            }}
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
             onPinnedChatsToggle={setIsPinningChatsEnabled}
+            isModelSelectorDisabled={isSendButtonDisabled}
           />
         </ChatbotHeader>
         <Divider />

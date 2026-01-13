@@ -18,61 +18,61 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { homepageTranslationRef } from './ref';
 
 /**
- * French translation for Homepage.
+ * fr translation for plugin.dynamic-home-page.
  * @public
  */
 const homepageTranslationFr = createTranslationMessages({
   ref: homepageTranslationRef,
   messages: {
-    'entities.close': 'fermer',
-    'entities.description':
-      'Parcourez les systèmes, les composants, les ressources et les API disponibles dans votre organisation.',
-    'entities.empty': "Aucun catalogue de logiciels n'a encore été ajouté",
-    'entities.emptyDescription':
-      'Une fois les catalogues de logiciels ajoutés, cet espace présentera du contenu pertinent adapté à votre expérience.',
-    'entities.error': 'Erreur inconnue',
-    'entities.fetchError': 'Impossible de récupérer les données.',
-    'entities.register': 'Enregistrer un composant',
-    'entities.title': 'Explorez votre catalogue de logiciels',
-    'entities.viewAll': 'Afficher toutes les {{count}} entités du catalogue',
-    'featuredDocs.learnMore': ' En savoir plus',
-    'header.local': 'Locale',
     'header.welcome': 'Content de vous revoir!',
     'header.welcomePersonalized': 'Bienvenue {{name}} !',
+    'header.local': 'Locale',
     'homePage.empty':
       "Aucune carte de page d'accueil (points de montage) configurée ou trouvée.",
-    'onboarding.explore.ariaLabel': 'Accéder au catalogue',
-    'onboarding.explore.buttonText': 'Accéder au catalogue',
-    'onboarding.explore.description':
-      'Explorez les composants, les API et les modèles.',
-    'onboarding.explore.title': 'Explorez',
-    'onboarding.getStarted.ariaLabel':
-      "Lire la documentation (s'ouvre dans un nouvel onglet)",
-    'onboarding.getStarted.buttonText': 'Lire la documentation',
-    'onboarding.getStarted.description':
-      'En savoir plus sur Red Hat Developer Hub.',
-    'onboarding.getStarted.title': 'Commencer',
-    'onboarding.greeting.goodAfternoon': 'Bon après-midi',
-    'onboarding.greeting.goodEvening': 'Bonne soirée',
-    'onboarding.greeting.goodMorning': 'Bonjour',
-    'onboarding.guest': 'Invité',
-    'onboarding.learn.ariaLabel': "Accéder aux parcours d'apprentissage",
-    'onboarding.learn.buttonText': "Accéder aux parcours d'apprentissage",
-    'onboarding.learn.description':
-      'Explorer et développer de nouvelles compétences.',
-    'onboarding.learn.title': 'Apprendre',
-    'quickAccess.error': 'Erreur inconnue',
-    'quickAccess.fetchError': 'Impossible de récupérer les données.',
+    'search.placeholder': 'Recherche',
     'quickAccess.title': 'Accès rapide',
-    'search.placeholder': 'Rechercher',
+    'quickAccess.fetchError': 'Impossible de récupérer les données.',
+    'quickAccess.error': 'Erreur inconnue',
+    'featuredDocs.learnMore': ' En savoir plus',
+    'templates.title': 'Explorer les modèles',
+    'templates.fetchError': 'Impossible de récupérer les données.',
+    'templates.error': 'Erreur inconnue',
     'templates.empty': 'Aucun modèle ajouté pour le moment',
     'templates.emptyDescription':
       'Une fois les modèles ajoutés, cet espace présentera du contenu pertinent adapté à votre expérience.',
-    'templates.error': 'Erreur inconnue',
-    'templates.fetchError': 'Impossible de récupérer les données.',
     'templates.register': 'Enregistrer un modèle',
-    'templates.title': 'Explorer les modèles',
     'templates.viewAll': 'Afficher tous les {{count}} modèles',
+    'onboarding.greeting.goodMorning': 'Bonjour',
+    'onboarding.greeting.goodAfternoon': 'Bon après-midi',
+    'onboarding.greeting.goodEvening': 'Bonne soirée',
+    'onboarding.guest': 'Invité',
+    'onboarding.getStarted.title': 'Commencer',
+    'onboarding.getStarted.description':
+      'En savoir plus sur Red Hat Developer Hub.',
+    'onboarding.getStarted.buttonText': 'Lire la documentation',
+    'onboarding.getStarted.ariaLabel':
+      "Lire la documentation (s'ouvre dans un nouvel onglet)",
+    'onboarding.explore.title': 'Explorer',
+    'onboarding.explore.description':
+      'Explorer les composants, les API et les modèles.',
+    'onboarding.explore.buttonText': 'Accéder au catalogue',
+    'onboarding.explore.ariaLabel': 'Accéder au catalogue',
+    'onboarding.learn.title': 'Apprendre',
+    'onboarding.learn.description':
+      'Explorer et développer de nouvelles compétences.',
+    'onboarding.learn.buttonText': "Accéder aux parcours d'apprentissage",
+    'onboarding.learn.ariaLabel': "Accéder aux parcours d'apprentissage",
+    'entities.title': 'Explorer votre catalogue de logiciels',
+    'entities.fetchError': 'Impossible de récupérer les données.',
+    'entities.error': 'Erreur inconnue',
+    'entities.description':
+      'Parcourir les systèmes, les composants, les ressources et les API disponibles dans votre organisation.',
+    'entities.close': 'fermer',
+    'entities.empty': "Aucun catalogue de logiciels n'a encore été ajouté",
+    'entities.emptyDescription':
+      'Une fois les catalogues de logiciels ajoutés, cet espace présentera du contenu pertinent adapté à votre expérience.',
+    'entities.register': 'Enregistrer un composant',
+    'entities.viewAll': 'Afficher toutes les {{count}} entités du catalogue',
   },
 });
 

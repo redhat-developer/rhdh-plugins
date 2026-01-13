@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.3
+
+### Patch Changes
+
+- f74564d: Added 'it' and 'ja' i18n support and updated 'fr' translation strings.
+- 21d555b: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+- b4c913a: Updated dependency `react-router-dom` to `6.30.3`.
+
 ## 1.10.2
 
 ### Patch Changes

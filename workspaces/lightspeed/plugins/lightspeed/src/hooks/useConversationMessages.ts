@@ -26,7 +26,12 @@ import { ScrollContainerHandle } from '../components/LightspeedChatBox';
 import { TEMP_CONVERSATION_ID } from '../const';
 import botAvatar from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
-import { Attachment, LCSConversation, ReferencedDocument } from '../types';
+import {
+  Attachment,
+  LCSConversation,
+  ReferencedDocument,
+  ToolCall,
+} from '../types';
 import {
   createBotMessage,
   createUserMessage,
@@ -53,7 +58,12 @@ export const useFetchConversationMessages = (currentConversation: string) => {
   });
 };
 
-type Conversations = { [_key: string]: MessageProps[] };
+// Extended message type to include tool calls
+interface ExtendedMessageProps extends MessageProps {
+  toolCalls?: ToolCall[];
+}
+
+type Conversations = { [_key: string]: ExtendedMessageProps[] };
 
 /**
  * Fetches all the messages for given conversation_id
@@ -84,6 +94,13 @@ export const useConversationMessages = (
   const streamingConversations = React.useRef<Conversations>({
     [currentConversation]: [],
   });
+
+  // Track pending tool calls during streaming
+  const pendingToolCalls = React.useRef<{ [id: number]: ToolCall }>({});
+
+  // Cache tool calls by conversation ID and message index to persist across refetches
+  // Key format: `${conversationId}-${messageIndex}`
+  const toolCallsCache = React.useRef<{ [key: string]: ToolCall[] }>({});
 
   React.useEffect(() => {
     if (currentConversation !== conversationId) {
@@ -123,26 +140,34 @@ export const useConversationMessages = (
           conversationsData[i] as unknown as LCSConversation,
         );
 
-        _conversations[currentConversation].push(
-          ...[
-            createUserMessage({
-              avatar,
-              name: userName,
-              content: userMessage.content,
-              timestamp: userMessage.timestamp,
-            }),
-            createBotMessage({
-              avatar: botAvatar,
-              isLoading: false,
-              name: conversationsData[i].model ?? selectedModel,
-              content: aiMessage.content,
-              timestamp: aiMessage.timestamp,
-              sources: transformDocumentsToSources(
-                aiMessage?.referenced_documents ?? [],
-              ),
-            }),
-          ],
-        );
+        // Create user message
+        const userMsg = createUserMessage({
+          avatar,
+          name: userName,
+          content: userMessage.content,
+          timestamp: userMessage.timestamp,
+        });
+
+        // Create bot message
+        const botMsg = createBotMessage({
+          avatar: botAvatar,
+          isLoading: false,
+          name: conversationsData[i].model ?? selectedModel,
+          content: aiMessage.content,
+          timestamp: aiMessage.timestamp,
+          sources: transformDocumentsToSources(
+            aiMessage?.referenced_documents ?? [],
+          ),
+        });
+
+        // Merge cached tool calls if available
+        const cacheKey = `${currentConversation}-${i}`;
+        const cachedToolCalls = toolCallsCache.current[cacheKey];
+        if (cachedToolCalls && cachedToolCalls.length > 0) {
+          botMsg.toolCalls = cachedToolCalls;
+        }
+
+        _conversations[currentConversation].push(userMsg, botMsg);
 
         newConvoIndex.push(index);
         index++;
@@ -243,6 +268,155 @@ export const useConversationMessages = (
                 if (currentConversation === TEMP_CONVERSATION_ID) {
                   // If the conversation is temp, we need to set the new conversation id
                   newConversationId = data?.conversation_id;
+                }
+              }
+
+              // Handle tool_call event
+              if (event === 'tool_call') {
+                const toolCallData = data?.token;
+                if (
+                  typeof toolCallData === 'object' &&
+                  toolCallData?.tool_name
+                ) {
+                  // Full tool call with arguments - track start time
+                  const toolCall: ToolCall = {
+                    id: data.id,
+                    toolName: toolCallData.tool_name,
+                    arguments: toolCallData.arguments || {},
+                    startTime: Date.now(),
+                    isLoading: true,
+                  };
+                  pendingToolCalls.current[data.id] = toolCall;
+
+                  // Update the bot message with the pending tool call
+                  setConversations(prevConversations => {
+                    const conversation =
+                      prevConversations[currentConversation] ?? [];
+                    const lastMessageIndex = conversation.length - 1;
+
+                    if (lastMessageIndex < 0) return prevConversations;
+
+                    const lastMessage = { ...conversation[lastMessageIndex] };
+                    const existingToolCalls = lastMessage.toolCalls || [];
+                    lastMessage.toolCalls = [...existingToolCalls, toolCall];
+
+                    // Cache tool calls for this message (message pair index)
+                    const messageIndex = Math.floor(lastMessageIndex / 2);
+                    const cacheKey = `${currentConversation}-${messageIndex}`;
+                    toolCallsCache.current[cacheKey] = lastMessage.toolCalls;
+
+                    const updatedConversation = [
+                      ...conversation.slice(0, lastMessageIndex),
+                      lastMessage,
+                    ];
+
+                    return {
+                      ...prevConversations,
+                      [currentConversation]: updatedConversation,
+                    };
+                  });
+
+                  // Also update streaming ref
+                  const [humanMessage, aiMessage] =
+                    streamingConversations.current[currentConversation] || [];
+                  if (aiMessage) {
+                    const existingToolCalls = aiMessage.toolCalls || [];
+                    streamingConversations.current[currentConversation] = [
+                      humanMessage,
+                      {
+                        ...aiMessage,
+                        toolCalls: [...existingToolCalls, toolCall],
+                      },
+                    ];
+                  }
+                }
+              }
+
+              // Handle tool_result event
+              if (event === 'tool_result') {
+                const resultData = data?.token;
+                if (resultData?.tool_name) {
+                  const toolId = data.id;
+                  const pendingCall = pendingToolCalls.current[toolId];
+                  const endTime = Date.now();
+                  const executionTime = pendingCall
+                    ? (endTime - pendingCall.startTime) / 1000
+                    : 0;
+
+                  // Update the tool call with result
+                  setConversations(prevConversations => {
+                    const conversation =
+                      prevConversations[currentConversation] ?? [];
+                    const lastMessageIndex = conversation.length - 1;
+
+                    if (lastMessageIndex < 0) return prevConversations;
+
+                    const lastMessage = { ...conversation[lastMessageIndex] };
+                    const toolCalls = lastMessage.toolCalls || [];
+
+                    // Find and update the matching tool call
+                    const updatedToolCalls = toolCalls.map(tc => {
+                      if (
+                        tc.id === toolId ||
+                        tc.toolName === resultData.tool_name
+                      ) {
+                        return {
+                          ...tc,
+                          response: resultData.response,
+                          endTime,
+                          executionTime,
+                          isLoading: false,
+                        };
+                      }
+                      return tc;
+                    });
+
+                    lastMessage.toolCalls = updatedToolCalls;
+
+                    // Update cache with completed tool call
+                    const messageIndex = Math.floor(lastMessageIndex / 2);
+                    const cacheKey = `${currentConversation}-${messageIndex}`;
+                    toolCallsCache.current[cacheKey] = updatedToolCalls;
+
+                    const updatedConversation = [
+                      ...conversation.slice(0, lastMessageIndex),
+                      lastMessage,
+                    ];
+
+                    return {
+                      ...prevConversations,
+                      [currentConversation]: updatedConversation,
+                    };
+                  });
+
+                  // Also update streaming ref
+                  const [humanMessage, aiMessage] =
+                    streamingConversations.current[currentConversation] || [];
+                  if (aiMessage) {
+                    const toolCalls = aiMessage.toolCalls || [];
+                    const updatedToolCalls = toolCalls.map(tc => {
+                      if (
+                        tc.id === toolId ||
+                        tc.toolName === resultData.tool_name
+                      ) {
+                        return {
+                          ...tc,
+                          response: resultData.response,
+                          endTime,
+                          executionTime,
+                          isLoading: false,
+                        };
+                      }
+                      return tc;
+                    });
+                    streamingConversations.current[currentConversation] = [
+                      humanMessage,
+                      { ...aiMessage, toolCalls: updatedToolCalls },
+                    ];
+                  }
+
+                  // Clean up pending tool call
+                  delete pendingToolCalls.current[toolId];
                 }
               }
 
@@ -385,6 +559,16 @@ export const useConversationMessages = (
       // Swap temp conversation messages with new conversation
 
       if (currentConversation === TEMP_CONVERSATION_ID && newConversationId) {
+        // Migrate tool calls cache from temp to new conversation ID
+        Object.keys(toolCallsCache.current).forEach(key => {
+          if (key.startsWith(`${TEMP_CONVERSATION_ID}-`)) {
+            const messageIndex = key.replace(`${TEMP_CONVERSATION_ID}-`, '');
+            const newKey = `${newConversationId}-${messageIndex}`;
+            toolCallsCache.current[newKey] = toolCallsCache.current[key];
+            delete toolCallsCache.current[key];
+          }
+        });
+
         setConversations(prevConversations => {
           return {
             ...prevConversations,

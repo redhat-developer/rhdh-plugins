@@ -16,6 +16,10 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsPluginTranslationRef } from './ref';
 
+/**
+ * Italian translation for plugin.translations.
+ * @public
+ */
 const translationsTranslationIt = createTranslationMessages({
   ref: translationsPluginTranslationRef,
   messages: {

@@ -25,9 +25,11 @@ import { lightspeedTranslationRef } from './ref';
 export const lightspeedTranslations = createTranslationResource({
   ref: lightspeedTranslationRef,
   translations: {
+    de: () => import('./de'),
     es: () => import('./es'),
     fr: () => import('./fr'),
-    de: () => import('./de'),
+    it: () => import('./it'),
+    ja: () => import('./ja'),
   },
 });
 

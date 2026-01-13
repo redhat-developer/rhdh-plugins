@@ -44,7 +44,7 @@ export const extensionsPlugin = createPlugin({
   id: 'extensions',
   routes: allRoutes,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [extensionsTranslationRef],
   },
   apis: [

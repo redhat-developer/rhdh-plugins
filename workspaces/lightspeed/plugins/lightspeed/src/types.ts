@@ -122,3 +122,26 @@ export type CaptureFeedback = {
   user_feedback: string;
   sentiment: number;
 };
+
+// Tool Calling Types
+export interface ToolCall {
+  id: number;
+  toolName: string;
+  description?: string;
+  arguments: Record<string, any>;
+  response?: string;
+  startTime: number;
+  endTime?: number;
+  executionTime?: number; // in seconds
+  isLoading: boolean;
+}
+
+export interface ToolCallEvent {
+  id: number;
+  token: string | { tool_name: string; arguments: Record<string, any> };
+}
+
+export interface ToolResultEvent {
+  id: number;
+  token: { tool_name: string; response: string };
+}

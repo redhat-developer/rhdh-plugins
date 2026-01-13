@@ -64,7 +64,7 @@ const githubProvider = {
 const app = createApp({
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'fr', 'es', 'de'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [lightspeedTranslations],
   },
   bindRoutes({ bind }) {

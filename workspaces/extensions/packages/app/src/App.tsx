@@ -63,7 +63,7 @@ import { Root } from './components/Root';
 const app = createApp({
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [extensionsTranslations],
   },
   bindRoutes({ bind }) {

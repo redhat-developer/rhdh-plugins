@@ -51,7 +51,7 @@
     "@mui/material": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-global-header": "^1.17.1",
     "@red-hat-developer-hub/backstage-plugin-quickstart": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",

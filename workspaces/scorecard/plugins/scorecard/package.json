@@ -69,7 +69,7 @@
     "@backstage/dev-utils": "^1.1.17",
     "@backstage/test-utils": "^1.7.13",
     "@backstage/ui": "^0.9.1",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
