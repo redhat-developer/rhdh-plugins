@@ -48,7 +48,7 @@ export const CardWrapper = ({
     <Card
       elevation={0}
       sx={{
-        width: width ? width : '100%',
+        width: width ?? '100%',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
       }}

@@ -66,9 +66,15 @@ const CustomLegend = (props: CustomLegendProps) => {
   return (
     <StyledLegend>
       {thresholds?.definition?.rules?.map(
-        ({ key, expression }: { key: string; expression: string }) => {
+        ({
+          key: ruleKey,
+          expression: ruleExpression,
+        }: {
+          key: string;
+          expression: string;
+        }) => {
           return (
-            <StyledLegendItem key={`legend-${key}`}>
+            <StyledLegendItem key={`legend-${ruleKey}`}>
               <StyledLegendColorBox
                 color={
                   (
@@ -77,7 +83,7 @@ const CustomLegend = (props: CustomLegendProps) => {
                       warning: theme.palette.warning.main,
                       success: theme.palette.success.main,
                     } as Record<string, string>
-                  )[key] ?? theme.palette.success.main
+                  )[ruleKey] ?? theme.palette.success.main
                 }
               />
               <Typography
@@ -85,13 +91,13 @@ const CustomLegend = (props: CustomLegendProps) => {
                 sx={{ fontSize: '0.875rem', fontWeight: 400 }}
               >
                 {(() => {
-                  const translated = t(`thresholds.${key}` as any, {});
-                  // If translation returns the key itself, fallback to capitalized key
-                  return translated === `thresholds.${key}`
-                    ? key.charAt(0).toUpperCase() + key.slice(1)
+                  const translated = t(`thresholds.${ruleKey}` as any, {});
+                  // If translation returns the ruleKey itself, fallback to capitalized ruleKey
+                  return translated === `thresholds.${ruleKey}`
+                    ? ruleKey.charAt(0).toUpperCase() + ruleKey.slice(1)
                     : translated;
                 })()}{' '}
-                {expression && `${expression}`}
+                {ruleExpression && `${ruleExpression}`}
               </Typography>
             </StyledLegendItem>
           );

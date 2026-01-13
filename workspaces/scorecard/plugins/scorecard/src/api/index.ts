@@ -129,7 +129,7 @@ export class ScorecardApiClient implements ScorecardApi {
     }
 
     const baseUrl = await this.getBaseUrl();
-    const url = new URL(`${baseUrl}/metrics/${metricId}/catalog/aggregation`);
+    const url = new URL(`${baseUrl}/metrics/${metricId}/catalog/aggregations`);
 
     try {
       const response = await this.fetchApi.fetch(url.toString());
@@ -144,7 +144,7 @@ export class ScorecardApiClient implements ScorecardApi {
       const data = await response.json();
 
       if (!Array.isArray(data)) {
-        throw new Error(
+        throw new TypeError(
           'Invalid response format from aggregated scorecard API',
         );
       }
