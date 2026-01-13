@@ -196,7 +196,7 @@ export const ToolCallCard = ({ toolCall }: ToolCallCardProps) => {
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (toolCall.response) {
-      await window.navigator.clipboard.writeText(toolCall.response);
+      await globalThis.navigator.clipboard.writeText(toolCall.response);
     }
   };
 

@@ -25,7 +25,7 @@ jest.mock('../../hooks/useTranslation', () => ({
 }));
 
 // Mock clipboard API
-Object.defineProperty(window, 'navigator', {
+Object.defineProperty(globalThis, 'navigator', {
   value: {
     clipboard: {
       writeText: jest.fn().mockResolvedValue(undefined),
@@ -168,7 +168,7 @@ describe('ToolCallCard', () => {
     fireEvent.click(copyButton);
 
     // Verify clipboard was called
-    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
+    expect(globalThis.navigator.clipboard.writeText).toHaveBeenCalledWith(
       'Found 5 users in the catalog',
     );
   });

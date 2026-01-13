@@ -193,16 +193,15 @@ export const LightspeedChatBox = forwardRef(
           <br />
         )}
         {conversationMessages.map((message, index) => {
-          const extendedMessage = message as ExtendedMessageProps;
           const hasToolCalls =
-            extendedMessage.toolCalls && extendedMessage.toolCalls.length > 0;
+            message.toolCalls && message.toolCalls.length > 0;
 
           // Build extraContent with tool calls rendered after main content
           const extraContent = hasToolCalls
             ? {
                 afterMainContent: (
                   <>
-                    {extendedMessage.toolCalls!.map(toolCall => (
+                    {message.toolCalls!.map(toolCall => (
                       <ToolCallCard
                         key={`tool-${toolCall.id}-${toolCall.toolName}`}
                         toolCall={toolCall}
