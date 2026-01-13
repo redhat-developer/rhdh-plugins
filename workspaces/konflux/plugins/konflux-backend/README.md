@@ -45,10 +45,10 @@ konflux:
   authProvider: serviceAccount # or oidc | impersonationHeaders
   clusters:
     cluster1:
-      apiUrl: https://api.cluster1.example.com
-      uiUrl: https://ui.cluster1.example.com
-      kubearchiveApiUrl: https://archive.cluster1.example.com
-      serviceAccountToken: <token> # if using serviceAccount or impersonationHeaders
+      apiUrl: ${CLUSTER_1_API_URL}
+      uiUrl: ${CLUSTER_1_UI_URL}
+      kubearchiveApiUrl: ${CLUSTER_1_KUBEARCHIVE_API_URL}
+      serviceAccountToken: ${CLUSTER_1_SA_ACCOUNT_TOKEN} # if using serviceAccount or impersonationHeaders
 ```
 
 For detailed documentation, see the [main plugin README](../konflux/README.md).
