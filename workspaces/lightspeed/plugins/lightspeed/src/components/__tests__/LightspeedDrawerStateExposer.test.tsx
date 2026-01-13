@@ -37,6 +37,8 @@ describe('LightspeedDrawerStateExposer', () => {
     setDrawerWidth: mockSetDrawerWidth,
     currentConversationId: undefined,
     setCurrentConversationId: jest.fn(),
+    draftMessage: '',
+    setDraftMessage: jest.fn(),
     ...overrides,
   });
 

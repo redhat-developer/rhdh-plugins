@@ -13,9 +13,11 @@ import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { ConfigApi } from '@backstage/core-plugin-api';
 import { FetchApi } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { PathParams } from '@backstage/core-plugin-api';
 import { PropsWithChildren } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SourcesCardProps } from '@patternfly/chatbot';
+import { SubRouteRef } from '@backstage/core-plugin-api';
 
 // @public
 export type Attachment = {
@@ -163,10 +165,12 @@ export const LightspeedChatContainer: () => JSX_2.Element;
 export interface LightspeedDrawerContextType {
     currentConversationId?: string;
     displayMode: ChatbotDisplayMode;
+    draftMessage: string;
     drawerWidth: number;
     isChatbotActive: boolean;
     setCurrentConversationId: (id: string | undefined) => void;
     setDisplayMode: (mode: ChatbotDisplayMode) => void;
+    setDraftMessage: (message: string) => void;
     setDrawerWidth: React.Dispatch<React.SetStateAction<number>>;
     toggleChatbot: () => void;
 }
@@ -192,6 +196,7 @@ export const LightspeedPage: () => JSX_2.Element;
 // @public
 export const lightspeedPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
+lightspeedConversation: SubRouteRef<PathParams<"/conversation/:conversationId">>;
 }, {}, {}>;
 
 // @public

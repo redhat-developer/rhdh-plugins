@@ -169,6 +169,8 @@ describe('LightspeedChat', () => {
       setDrawerWidth: jest.fn(),
       currentConversationId: undefined,
       setCurrentConversationId: mockSetCurrentConversationId,
+      draftMessage: '',
+      setDraftMessage: jest.fn(),
     });
 
     localStorage.clear();
@@ -484,6 +486,8 @@ describe('LightspeedChat', () => {
         setDrawerWidth: jest.fn(),
         currentConversationId: undefined,
         setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -511,6 +515,8 @@ describe('LightspeedChat', () => {
         setDrawerWidth: jest.fn(),
         currentConversationId: undefined,
         setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -538,6 +544,8 @@ describe('LightspeedChat', () => {
         setDrawerWidth: jest.fn(),
         currentConversationId: undefined,
         setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
       });
 
       render(setupLightspeedChat());

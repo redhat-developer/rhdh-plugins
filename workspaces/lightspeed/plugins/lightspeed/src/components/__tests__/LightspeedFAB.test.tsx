@@ -37,6 +37,8 @@ describe('LightspeedFAB', () => {
     setDrawerWidth: jest.fn(),
     currentConversationId: undefined,
     setCurrentConversationId: jest.fn(),
+    draftMessage: '',
+    setDraftMessage: jest.fn(),
     ...overrides,
   });
 

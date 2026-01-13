@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ChangeEvent,
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { FileRejection } from 'react-dropzone/.';
 
 import { makeStyles } from '@material-ui/core';
@@ -148,6 +155,8 @@ export const LightspeedChat = ({
     setDisplayMode,
     currentConversationId: routeConversationId,
     setCurrentConversationId,
+    draftMessage,
+    setDraftMessage,
   } = useLightspeedDrawerContext();
   const {
     uploadError,
@@ -292,6 +301,7 @@ export const LightspeedChat = ({
     handleInputPrompt(message.toString(), getAttachments(fileContents));
     setIsSendButtonDisabled(true);
     setFileContents([]);
+    setDraftMessage('');
   };
 
   const onNewChat = useCallback(() => {
@@ -300,6 +310,7 @@ export const LightspeedChat = ({
         setMessages([]);
         setFileContents([]);
         setUploadError({ message: null });
+        setDraftMessage('');
         setConversationId(TEMP_CONVERSATION_ID);
         setNewChatCreated(true);
         setCurrentConversationId(undefined);
@@ -312,6 +323,7 @@ export const LightspeedChat = ({
     conversationId,
     setFileContents,
     setUploadError,
+    setDraftMessage,
     displayMode,
     setCurrentConversationId,
   ]);
@@ -491,12 +503,14 @@ export const LightspeedChat = ({
       setCurrentConversationId(newConvId);
       setFileContents([]);
       setUploadError({ message: null });
+      setDraftMessage('');
       scrollToBottomRef.current?.scrollToBottom();
     },
     [
       setConversationId,
       setUploadError,
       setFileContents,
+      setDraftMessage,
       scrollToBottomRef,
       setCurrentConversationId,
     ],
@@ -544,6 +558,11 @@ export const LightspeedChat = ({
     event.preventDefault();
     handleFileUpload(data);
   };
+
+  const handleDraftMessage = (
+    _e: ChangeEvent<HTMLTextAreaElement>,
+    value: string | number,
+  ) => setDraftMessage(value as any);
 
   const onAttachRejected = (data: FileRejection[]) => {
     data.forEach(attachment => {

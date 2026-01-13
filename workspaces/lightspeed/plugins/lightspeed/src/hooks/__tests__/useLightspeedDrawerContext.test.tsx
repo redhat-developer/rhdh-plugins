@@ -30,6 +30,8 @@ describe('useLightspeedDrawerContext', () => {
     setDrawerWidth: jest.fn(),
     currentConversationId: 'test-conv-id',
     setCurrentConversationId: jest.fn(),
+    draftMessage: '',
+    setDraftMessage: jest.fn(),
   };
 
   it('should return context value when used within provider', () => {
@@ -216,5 +218,42 @@ describe('useLightspeedDrawerContext', () => {
 
     result.current.setCurrentConversationId('new-conv-id');
     expect(mockSetConversationId).toHaveBeenCalledWith('new-conv-id');
+  });
+
+  it('should return draftMessage from context', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <LightspeedDrawerContext.Provider
+        value={{ ...mockContextValue, draftMessage: 'test draft message' }}
+      >
+        {children}
+      </LightspeedDrawerContext.Provider>
+    );
+
+    const { result } = renderHook(() => useLightspeedDrawerContext(), {
+      wrapper,
+    });
+
+    expect(result.current.draftMessage).toBe('test draft message');
+  });
+
+  it('should provide working setDraftMessage function', () => {
+    const mockSetDraftMessage = jest.fn();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <LightspeedDrawerContext.Provider
+        value={{
+          ...mockContextValue,
+          setDraftMessage: mockSetDraftMessage,
+        }}
+      >
+        {children}
+      </LightspeedDrawerContext.Provider>
+    );
+
+    const { result } = renderHook(() => useLightspeedDrawerContext(), {
+      wrapper,
+    });
+
+    result.current.setDraftMessage('new draft message');
+    expect(mockSetDraftMessage).toHaveBeenCalledWith('new draft message');
   });
 });

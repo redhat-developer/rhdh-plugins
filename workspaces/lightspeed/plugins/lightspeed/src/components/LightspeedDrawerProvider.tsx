@@ -60,6 +60,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const [currentConversationIdState, setCurrentConversationIdState] = useState<
     string | undefined
   >(undefined);
+  const [draftMessage, setDraftMessageState] = useState<string>('');
   const openedViaFABRef = useRef<boolean>(false);
 
   const isLightspeedRoute = location.pathname.startsWith('/lightspeed');
@@ -148,6 +149,10 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
     [displayModeState, isLightspeedRoute, navigate],
   );
 
+  const setDraftMessage = useCallback((message: string) => {
+    setDraftMessageState(message);
+  }, []);
+
   // Set display mode with route handling for embedded/fullscreen
   const setDisplayMode = useCallback(
     (mode: ChatbotDisplayMode, conversationIdParam?: string) => {
@@ -199,6 +204,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       setDrawerWidth,
       currentConversationId: currentConversationIdState,
       setCurrentConversationId,
+      draftMessage,
+      setDraftMessage,
     }),
     [
       isOpen,
@@ -209,6 +216,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       setDrawerWidth,
       currentConversationIdState,
       setCurrentConversationId,
+      draftMessage,
+      setDraftMessage,
     ],
   );
 

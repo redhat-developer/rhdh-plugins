@@ -57,6 +57,15 @@ export interface LightspeedDrawerContextType {
    * Pass undefined to clear the conversation (example: for new chat)
    */
   setCurrentConversationId: (id: string | undefined) => void;
+  /**
+   * The message in the chat input box
+   * Used to preserve input content when switching between display modes
+   */
+  draftMessage: string;
+  /**
+   * To save the input message as a draft when switching modes
+   */
+  setDraftMessage: (message: string) => void;
 }
 
 /**

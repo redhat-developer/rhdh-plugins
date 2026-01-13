@@ -204,7 +204,7 @@ const lightspeedTranslationFr = createTranslationMessages({
     'toolCall.copyResponse': 'Copier la réponse',
     'toolCall.summary': 'Voici un résumé de votre réponse',
     'toolCall.mcpServer': 'Serveur MCP',
-          // Display modes
+    // Display modes
     'settings.displayMode.label': "Mode d'affichage",
     'settings.displayMode.overlay': 'Superposition',
     'settings.displayMode.docked': 'Ancrer à la fenêtre',
