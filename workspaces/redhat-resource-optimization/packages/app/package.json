@@ -48,7 +48,7 @@
     "@material-ui/icons": "^4.9.1",
     "@patternfly/patternfly": "^6.3.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "^2.5.1",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@red-hat-developer-hub/plugin-redhat-resource-optimization": "workspace:^",
     "history": "^5.0.0",
     "react": "^18.0.2",
