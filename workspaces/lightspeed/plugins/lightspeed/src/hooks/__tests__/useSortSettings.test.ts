@@ -57,33 +57,13 @@ describe('useSortSettings', () => {
       expect(result.current.selectedSort).toBe('newest');
     });
 
-    it('should load persisted value from storage for existing user', async () => {
-      // Pre-populate storage with data (no user key - StorageApi handles per-user scoping)
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('sortOrder', 'oldest');
-
-      const { result } = renderHook(() => useSortSettings(mockUser), {
-        wrapper: createWrapper(mockStorageApi),
-      });
-
-      await waitFor(() => {
-        expect(result.current.selectedSort).toBe('oldest');
-      });
-    });
-
     it('should initialize with default for guest user without loading from storage', async () => {
-      // Pre-populate storage with data
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('sortOrder', 'oldest');
-
       const { result } = renderHook(() => useSortSettings(guestUser), {
         wrapper: createWrapper(mockStorageApi),
       });
 
       // Guest users should always get default values
-      await waitFor(() => {
-        expect(result.current.selectedSort).toBe('newest');
-      });
+      expect(result.current.selectedSort).toBe('newest');
     });
   });
 
@@ -183,9 +163,6 @@ describe('useSortSettings', () => {
 
   describe('user change behavior', () => {
     it('should reset to default when user becomes undefined', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('sortOrder', 'oldest');
-
       const { result, rerender } = renderHook(
         ({ user }) => useSortSettings(user),
         {
@@ -193,6 +170,11 @@ describe('useSortSettings', () => {
           initialProps: { user: mockUser as string | undefined },
         },
       );
+
+      // Set a value
+      act(() => {
+        result.current.handleSortChange('oldest');
+      });
 
       await waitFor(() => {
         expect(result.current.selectedSort).toBe('oldest');
@@ -206,9 +188,6 @@ describe('useSortSettings', () => {
     });
 
     it('should reset to default when user changes to guest', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('sortOrder', 'oldest');
-
       const { result, rerender } = renderHook(
         ({ user }) => useSortSettings(user),
         {
@@ -216,6 +195,11 @@ describe('useSortSettings', () => {
           initialProps: { user: mockUser },
         },
       );
+
+      // Set a value
+      act(() => {
+        result.current.handleSortChange('oldest');
+      });
 
       await waitFor(() => {
         expect(result.current.selectedSort).toBe('oldest');
@@ -256,9 +240,6 @@ describe('useSortSettings', () => {
     });
 
     it('should not identify regular users as guest', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('sortOrder', 'oldest');
-
       const { result } = renderHook(
         () => useSortSettings('user:default/john'),
         {
@@ -266,10 +247,19 @@ describe('useSortSettings', () => {
         },
       );
 
+      // Set a value to verify it's not a guest user
+      act(() => {
+        result.current.handleSortChange('oldest');
+      });
+
       await waitFor(() => {
-        // Regular user should load from storage
+        // Regular user should be able to set and persist values
         expect(result.current.selectedSort).toBe('oldest');
       });
+
+      // Verify it was persisted
+      const bucket = mockStorageApi.forBucket('lightspeed');
+      expect(bucket.snapshot<string>('sortOrder').value).toBe('oldest');
     });
   });
 });

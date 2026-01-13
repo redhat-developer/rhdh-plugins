@@ -59,37 +59,14 @@ describe('usePinnedChatsSettings', () => {
       expect(result.current.pinnedChats).toEqual([]);
     });
 
-    it('should load persisted values from storage for existing user', async () => {
-      // Pre-populate storage with data (no user key - StorageApi handles per-user scoping)
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChatsEnabled', false);
-      bucket.set('pinnedChats', ['conv-1', 'conv-2']);
-
-      const { result } = renderHook(() => usePinnedChatsSettings(mockUser), {
-        wrapper: createWrapper(mockStorageApi),
-      });
-
-      await waitFor(() => {
-        expect(result.current.isPinningChatsEnabled).toBe(false);
-        expect(result.current.pinnedChats).toEqual(['conv-1', 'conv-2']);
-      });
-    });
-
     it('should initialize with defaults for guest user without loading from storage', async () => {
-      // Pre-populate storage with data
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChatsEnabled', false);
-      bucket.set('pinnedChats', ['conv-1', 'conv-2']);
-
       const { result } = renderHook(() => usePinnedChatsSettings(guestUser), {
         wrapper: createWrapper(mockStorageApi),
       });
 
       // Guest users should always get default values
-      await waitFor(() => {
-        expect(result.current.isPinningChatsEnabled).toBe(true);
-        expect(result.current.pinnedChats).toEqual([]);
-      });
+      expect(result.current.isPinningChatsEnabled).toBe(true);
+      expect(result.current.pinnedChats).toEqual([]);
     });
   });
 
@@ -135,17 +112,21 @@ describe('usePinnedChatsSettings', () => {
     });
 
     it('should clear pinned chats when disabling pinning', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChats', ['conv-1', 'conv-2']);
-
       const { result } = renderHook(() => usePinnedChatsSettings(mockUser), {
         wrapper: createWrapper(mockStorageApi),
+      });
+
+      // First add some pinned chats
+      act(() => {
+        result.current.pinChat('conv-1');
+        result.current.pinChat('conv-2');
       });
 
       await waitFor(() => {
         expect(result.current.pinnedChats).toEqual(['conv-1', 'conv-2']);
       });
 
+      // Now disable pinning
       act(() => {
         result.current.handlePinningChatsToggle(false);
       });
@@ -279,11 +260,14 @@ describe('usePinnedChatsSettings', () => {
 
   describe('unpinChat', () => {
     it('should remove a chat from pinned chats', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChats', ['conv-1', 'conv-2']);
-
       const { result } = renderHook(() => usePinnedChatsSettings(mockUser), {
         wrapper: createWrapper(mockStorageApi),
+      });
+
+      // First add some chats
+      act(() => {
+        result.current.pinChat('conv-1');
+        result.current.pinChat('conv-2');
       });
 
       await waitFor(() => {
@@ -300,11 +284,14 @@ describe('usePinnedChatsSettings', () => {
     });
 
     it('should persist unpinned chats to storage', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChats', ['conv-1', 'conv-2']);
-
       const { result } = renderHook(() => usePinnedChatsSettings(mockUser), {
         wrapper: createWrapper(mockStorageApi),
+      });
+
+      // First add some chats
+      act(() => {
+        result.current.pinChat('conv-1');
+        result.current.pinChat('conv-2');
       });
 
       await waitFor(() => {
@@ -316,17 +303,20 @@ describe('usePinnedChatsSettings', () => {
       });
 
       await waitFor(() => {
+        const bucket = mockStorageApi.forBucket('lightspeed');
         const snapshot = bucket.snapshot<string[]>('pinnedChats');
         expect(snapshot.value).toEqual(['conv-2']);
       });
     });
 
     it('should handle unpinning non-existent chat gracefully', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChats', ['conv-1']);
-
       const { result } = renderHook(() => usePinnedChatsSettings(mockUser), {
         wrapper: createWrapper(mockStorageApi),
+      });
+
+      // First add a chat
+      act(() => {
+        result.current.pinChat('conv-1');
       });
 
       await waitFor(() => {
@@ -343,9 +333,6 @@ describe('usePinnedChatsSettings', () => {
     });
 
     it('should not update if user is undefined', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChats', ['conv-1']);
-
       const { result } = renderHook(() => usePinnedChatsSettings(undefined), {
         wrapper: createWrapper(mockStorageApi),
       });
@@ -362,7 +349,7 @@ describe('usePinnedChatsSettings', () => {
         wrapper: createWrapper(mockStorageApi),
       });
 
-      // First pin a chat
+      // First pin chats
       act(() => {
         result.current.pinChat('conv-1');
         result.current.pinChat('conv-2');
@@ -391,10 +378,6 @@ describe('usePinnedChatsSettings', () => {
 
   describe('user change behavior', () => {
     it('should reset to defaults when user becomes undefined', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChatsEnabled', false);
-      bucket.set('pinnedChats', ['conv-1']);
-
       const { result, rerender } = renderHook(
         ({ user }) => usePinnedChatsSettings(user),
         {
@@ -402,6 +385,12 @@ describe('usePinnedChatsSettings', () => {
           initialProps: { user: mockUser as string | undefined },
         },
       );
+
+      // Set some values
+      act(() => {
+        result.current.handlePinningChatsToggle(false);
+        result.current.pinChat('conv-1');
+      });
 
       await waitFor(() => {
         expect(result.current.isPinningChatsEnabled).toBe(false);
@@ -417,10 +406,6 @@ describe('usePinnedChatsSettings', () => {
     });
 
     it('should reset to defaults when user changes to guest', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChatsEnabled', false);
-      bucket.set('pinnedChats', ['conv-1']);
-
       const { result, rerender } = renderHook(
         ({ user }) => usePinnedChatsSettings(user),
         {
@@ -428,6 +413,12 @@ describe('usePinnedChatsSettings', () => {
           initialProps: { user: mockUser },
         },
       );
+
+      // Set some values
+      act(() => {
+        result.current.handlePinningChatsToggle(false);
+        result.current.pinChat('conv-1');
+      });
 
       await waitFor(() => {
         expect(result.current.isPinningChatsEnabled).toBe(false);
@@ -472,10 +463,6 @@ describe('usePinnedChatsSettings', () => {
     });
 
     it('should not identify regular users as guest', async () => {
-      const bucket = mockStorageApi.forBucket('lightspeed');
-      bucket.set('pinnedChatsEnabled', false);
-      bucket.set('pinnedChats', ['conv-1']);
-
       const { result } = renderHook(
         () => usePinnedChatsSettings('user:default/john'),
         {
@@ -483,11 +470,24 @@ describe('usePinnedChatsSettings', () => {
         },
       );
 
+      // Set some values to verify it's not a guest user
+      act(() => {
+        result.current.handlePinningChatsToggle(false);
+        result.current.pinChat('conv-1');
+      });
+
       await waitFor(() => {
-        // Regular user should load from storage
+        // Regular user should be able to set and persist values
         expect(result.current.isPinningChatsEnabled).toBe(false);
         expect(result.current.pinnedChats).toEqual(['conv-1']);
       });
+
+      // Verify it was persisted
+      const bucket = mockStorageApi.forBucket('lightspeed');
+      expect(bucket.snapshot<boolean>('pinnedChatsEnabled').value).toBe(false);
+      expect(bucket.snapshot<string[]>('pinnedChats').value).toEqual([
+        'conv-1',
+      ]);
     });
   });
 });

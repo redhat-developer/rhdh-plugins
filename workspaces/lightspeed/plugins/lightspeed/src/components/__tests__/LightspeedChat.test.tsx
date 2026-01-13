@@ -97,10 +97,15 @@ jest.mock('../../hooks/usePinnedChatsSettings', () => ({
   usePinnedChatsSettings: jest.fn().mockReturnValue({
     isPinningChatsEnabled: true,
     pinnedChats: [],
-    selectedSort: 'newest',
     handlePinningChatsToggle: jest.fn(),
     pinChat: jest.fn(),
     unpinChat: jest.fn(),
+  }),
+}));
+
+jest.mock('../../hooks/useSortSettings', () => ({
+  useSortSettings: jest.fn().mockReturnValue({
+    selectedSort: 'newest',
     handleSortChange: jest.fn(),
   }),
 }));
