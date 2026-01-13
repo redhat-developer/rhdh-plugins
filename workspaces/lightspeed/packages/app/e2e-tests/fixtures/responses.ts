@@ -39,17 +39,17 @@ export const models = [
 ];
 
 export const defaultConversation = {
-  conversation_id: 'user:development/guest+Av8Fax73D4XPx5Ls',
+  conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fe',
 };
 
 export const conversations = [
   {
-    conversation_id: 'user:development/guest+Av8Fax73D4XPx5Ls',
+    conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fe',
     topic_summary: 'Conversation 1',
     last_message_timestamp: createdAt,
   },
   {
-    conversation_id: 'temp-conversation-id',
+    conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fa',
     topic_summary: 'Temporary conversation',
     last_message_timestamp: createdAt,
   },
@@ -57,12 +57,12 @@ export const conversations = [
 
 export const moreConversations = [
   {
-    conversation_id: 'user:development/guest+Av8Fax73D4XPx5Ls',
+    conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fe',
     topic_summary: 'Conversation 1',
     last_message_timestamp: createdAt,
   },
   {
-    conversation_id: 'user:development/guest+Av8Fax73D4XPx5La',
+    conversation_id: '1348e758-15ed-483a-bca5-b8702bbc79fb',
     topic_summary: 'New Conversation',
     last_message_timestamp: createdAt,
   },
