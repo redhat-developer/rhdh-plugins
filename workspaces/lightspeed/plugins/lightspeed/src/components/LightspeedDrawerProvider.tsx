@@ -19,9 +19,10 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
@@ -59,14 +60,31 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const [currentConversationIdState, setCurrentConversationIdState] = useState<
     string | undefined
   >(undefined);
+  const openedViaFABRef = useRef<boolean>(false);
 
   const isLightspeedRoute = location.pathname.startsWith('/lightspeed');
 
+  const conversationMatch = matchPath(
+    '/lightspeed/conversation/:conversationId',
+    location.pathname,
+  );
+
+  const conversationId = conversationMatch?.params?.conversationId;
+
+  const navigateBackOrGoToCatalog = useCallback(() => {
+    // go to catalog page, if the user opens the lightspeed route via a new tab
+    if (!openedViaFABRef.current) {
+      navigate('/catalog');
+      openedViaFABRef.current = true;
+      return;
+    }
+    navigate(-1);
+  }, [navigate]);
+
   useEffect(() => {
     if (isLightspeedRoute) {
-      const match = location.pathname.match(/\/lightspeed\/conversation\/(.+)/);
-      if (match) {
-        setCurrentConversationIdState(match[1]);
+      if (conversationId) {
+        setCurrentConversationIdState(conversationId);
       } else {
         setCurrentConversationIdState(undefined);
       }
@@ -87,10 +105,11 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         return prev;
       });
     }
-  }, [isLightspeedRoute, location.pathname]);
+  }, [conversationId, isLightspeedRoute]);
 
   // Open chatbot in overlay mode
   const openChatbot = useCallback(() => {
+    openedViaFABRef.current = true;
     setDisplayModeState(ChatbotDisplayMode.default);
     setIsOpen(true);
   }, []);
@@ -99,11 +118,11 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const closeChatbot = useCallback(() => {
     // If in embedded mode on the lightspeed route, navigate back
     if (displayModeState === ChatbotDisplayMode.embedded && isLightspeedRoute) {
-      navigate(-1);
+      navigateBackOrGoToCatalog();
     }
     setIsOpen(false);
     setDisplayModeState(ChatbotDisplayMode.default);
-  }, [displayModeState, isLightspeedRoute, navigate]);
+  }, [displayModeState, isLightspeedRoute, navigateBackOrGoToCatalog]);
 
   const toggleChatbot = useCallback(() => {
     if (isOpen) {
@@ -131,7 +150,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
 
   // Set display mode with route handling for embedded/fullscreen
   const setDisplayMode = useCallback(
-    (mode: ChatbotDisplayMode, conversationId?: string) => {
+    (mode: ChatbotDisplayMode, conversationIdParam?: string) => {
       if (mode === displayModeState) {
         return;
       }
@@ -140,7 +159,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
 
       // Navigate to fullscreen route with conversation ID if available
       if (mode === ChatbotDisplayMode.embedded) {
-        const convId = conversationId ?? currentConversationIdState;
+        const convId = conversationIdParam ?? currentConversationIdState;
         const path = convId
           ? `/lightspeed/conversation/${convId}`
           : '/lightspeed';
@@ -148,12 +167,18 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         setIsOpen(true);
       } else {
         if (isLightspeedRoute) {
-          navigate(-1);
+          navigateBackOrGoToCatalog();
         }
         setIsOpen(true);
       }
     },
-    [navigate, isLightspeedRoute, currentConversationIdState, displayModeState],
+    [
+      navigate,
+      isLightspeedRoute,
+      currentConversationIdState,
+      displayModeState,
+      navigateBackOrGoToCatalog,
+    ],
   );
 
   // Only render ChatbotModal for overlay mode

@@ -19,8 +19,8 @@ import { PropsWithChildren } from 'react';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 // eslint-disable-next-line @backstage/no-relative-monorepo-imports
-import { CustomDrawer } from '../../../../packages/app/src/components/Root/CustomDrawer';
-import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
+import { CustomDrawer } from '../../../packages/app/src/components/Root/CustomDrawer';
+import { useLightspeedDrawerContext } from '../src/hooks/useLightspeedDrawerContext';
 
 export const DrawerComponent = ({ children }: PropsWithChildren) => {
   const { displayMode, drawerWidth, setDrawerWidth } =

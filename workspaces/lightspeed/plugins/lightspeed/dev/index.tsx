@@ -19,7 +19,6 @@ import { createDevApp } from '@backstage/dev-utils';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-import { DrawerComponent } from '../src/components/DrawerComponent';
 import {
   LightspeedChatContainer,
   LightspeedDrawerProvider,
@@ -27,6 +26,7 @@ import {
   LightspeedPage,
   lightspeedPlugin,
 } from '../src/plugin';
+import { DrawerComponent } from './DrawerComponent';
 
 const TestPage = () => {
   return (

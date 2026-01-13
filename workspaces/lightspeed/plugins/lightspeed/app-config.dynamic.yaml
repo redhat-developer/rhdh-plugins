@@ -8,8 +8,6 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /lightspeed
           importName: LightspeedPage
-        - path: /lightspeed/conversation/:id
-          importName: LightspeedPage
       mountPoints:
         - mountPoint: application/listener
           importName: LightspeedFAB

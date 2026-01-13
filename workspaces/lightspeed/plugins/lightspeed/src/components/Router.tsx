@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
+import { Route, Routes } from 'react-router-dom';
 
-export const rootRouteRef = createRouteRef({
-  id: 'lightspeed',
-});
+import { LightspeedPage } from './LightspeedPage';
 
-export const addConversationRouteRef = createSubRouteRef({
-  id: 'lightspeed-conversation',
-  parent: rootRouteRef,
-  path: '/conversation/:conversationId',
-});
+/**
+ * @public
+ */
+export const Router = () => {
+  return (
+    <Routes>
+      <Route path="/" element={<LightspeedPage />} />
+      <Route
+        path="/conversation/:conversationId"
+        element={<LightspeedPage />}
+      />
+    </Routes>
+  );
+};

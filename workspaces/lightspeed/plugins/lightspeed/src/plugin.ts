@@ -30,7 +30,7 @@ import {
 
 import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
-import { rootRouteRef } from './routes';
+import { addConversationRouteRef, rootRouteRef } from './routes';
 
 /**
  * Lightspeed Plugin
@@ -40,6 +40,7 @@ export const lightspeedPlugin = createPlugin({
   id: 'lightspeed',
   routes: {
     root: rootRouteRef,
+    lightspeedConversation: addConversationRouteRef,
   },
   apis: [
     createApiFactory({
@@ -55,14 +56,13 @@ export const lightspeedPlugin = createPlugin({
 });
 
 /**
- * Lightspeed Page
+ * Lightspeed Page Router
  * @public
  */
 export const LightspeedPage = lightspeedPlugin.provide(
   createRoutableExtension({
     name: 'LightspeedPage',
-    component: () =>
-      import('./components/LightspeedPage').then(m => m.LightspeedPage),
+    component: () => import('./components/Router').then(m => m.Router),
     mountPoint: rootRouteRef,
   }),
 );

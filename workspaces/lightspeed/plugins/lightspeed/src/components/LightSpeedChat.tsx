@@ -131,7 +131,7 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [conversationId, setConversationId] = useState<string>('');
-  const [isEmbeddedDrawerOpen, setIsEmbeddedDrawerOpen] =
+  const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile);
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
@@ -174,14 +174,13 @@ export const LightspeedChat = ({
 
   useEffect(() => {
     if (displayMode === ChatbotDisplayMode.embedded) {
-      setIsEmbeddedDrawerOpen(true);
+      setIsChatHistoryDrawerOpen(true);
     } else if (
       displayMode === ChatbotDisplayMode.docked ||
       displayMode === ChatbotDisplayMode.default
     ) {
-      setIsEmbeddedDrawerOpen(false);
+      setIsChatHistoryDrawerOpen(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayMode]);
 
   const queryClient = useQueryClient();
@@ -305,7 +304,7 @@ export const LightspeedChat = ({
         setNewChatCreated(true);
         setCurrentConversationId(undefined);
         if (displayMode !== ChatbotDisplayMode.embedded) {
-          setIsEmbeddedDrawerOpen(false);
+          setIsChatHistoryDrawerOpen(false);
         }
       }
     })();
@@ -538,7 +537,7 @@ export const LightspeedChat = ({
   }, []);
 
   const onEmbeddedDrawerToggle = useCallback(() => {
-    setIsEmbeddedDrawerOpen(isOpen => !isOpen);
+    setIsChatHistoryDrawerOpen(isOpen => !isOpen);
   }, []);
 
   const handleAttach = (data: File[], event: DropEvent) => {
@@ -731,8 +730,7 @@ export const LightspeedChat = ({
           conversationId={targetConversationId}
         />
       )}
-      {chatbot}
-      <Attachment />
+      {chatbot} <Attachment />
     </>
   );
 };

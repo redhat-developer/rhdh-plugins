@@ -86,7 +86,7 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 ## Loading as Dynamic Plugin
 
-#### To install Lightspeed plugin into Red Hat Developer Hub or Janus IDP via Helm use this configuration:
+#### To configure Lightspeed plugin into Red Hat Developer Hub use this configuration:
 
 - Load the lightspeed plugin from the npm registry
 
@@ -116,8 +116,6 @@ global:
                   ref: lightspeedTranslationRef
               dynamicRoutes:
                 - path: /lightspeed
-                  importName: LightspeedPage
-                - path: /lightspeed/conversation/:id
                   importName: LightspeedPage
               mountPoints:
                 - mountPoint: application/listener
@@ -169,8 +167,6 @@ dynamicPlugins:
           ref: lightspeedTranslationRef
       dynamicRoutes:
         - path: /lightspeed
-          importName: LightspeedPage
-        - path: /lightspeed/conversation/:id
           importName: LightspeedPage
       mountPoints:
         - mountPoint: application/listener

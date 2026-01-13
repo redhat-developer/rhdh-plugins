@@ -129,7 +129,6 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/lightspeed" element={<LightspeedPage />} />
-    <Route path="/lightspeed/conversation/:id" element={<LightspeedPage />} />
   </FlatRoutes>
 );
 

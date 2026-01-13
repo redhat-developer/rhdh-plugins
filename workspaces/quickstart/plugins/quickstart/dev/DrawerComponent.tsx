@@ -18,9 +18,9 @@ import { PropsWithChildren, useMemo } from 'react';
 import Drawer from '@mui/material/Drawer';
 import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
-import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
-import { QuickstartItemData } from '../types';
-import { filterQuickstartItemsByRole } from '../utils';
+import { useQuickstartDrawerContext } from '../src/hooks/useQuickstartDrawerContext';
+import { QuickstartItemData } from '../src/types';
+import { filterQuickstartItemsByRole } from '../src/utils';
 // Role is now provided through context to avoid re-fetching on drawer open/close
 
 export const DrawerComponent = ({ children }: PropsWithChildren) => {
