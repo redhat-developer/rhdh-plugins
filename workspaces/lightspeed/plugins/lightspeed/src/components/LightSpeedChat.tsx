@@ -138,13 +138,11 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [conversationId, setConversationId] = useState<string>('');
-  const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
-    useState<boolean>(!isMobile);
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
-  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true);
-  const [pinnedChats, setPinnedChats] = useState<string[]>([]);
+  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true); // read from user settings in future
+  const [pinnedChats, setPinnedChats] = useState<string[]>([]); // read from user settings in future
   const [targetConversationId, setTargetConversationId] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
@@ -158,6 +156,9 @@ export const LightspeedChat = ({
     draftMessage,
     setDraftMessage,
   } = useLightspeedDrawerContext();
+  const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
+    useState<boolean>(!isMobile && isFullscreenMode);
   const {
     uploadError,
     showAlert,
@@ -180,17 +181,6 @@ export const LightspeedChat = ({
       setPinnedChats([]);
     }
   }, [isPinningChatsEnabled]);
-
-  useEffect(() => {
-    if (displayMode === ChatbotDisplayMode.embedded) {
-      setIsChatHistoryDrawerOpen(true);
-    } else if (
-      displayMode === ChatbotDisplayMode.docked ||
-      displayMode === ChatbotDisplayMode.default
-    ) {
-      setIsChatHistoryDrawerOpen(false);
-    }
-  }, [displayMode]);
 
   const queryClient = useQueryClient();
 
@@ -227,7 +217,7 @@ export const LightspeedChat = ({
       !isLoading &&
       !isRefetching &&
       routeConversationId &&
-      displayMode === ChatbotDisplayMode.embedded
+      isFullscreenMode
     ) {
       const conversationExists = conversations.some(
         (c: ConversationSummary) => c.conversation_id === routeConversationId,
@@ -249,6 +239,7 @@ export const LightspeedChat = ({
     displayMode,
     conversationId,
     setCurrentConversationId,
+    isFullscreenMode,
   ]);
 
   useEffect(() => {
@@ -314,7 +305,7 @@ export const LightspeedChat = ({
         setConversationId(TEMP_CONVERSATION_ID);
         setNewChatCreated(true);
         setCurrentConversationId(undefined);
-        if (displayMode !== ChatbotDisplayMode.embedded) {
+        if (!isFullscreenMode) {
           setIsChatHistoryDrawerOpen(false);
         }
       }
@@ -324,8 +315,8 @@ export const LightspeedChat = ({
     setFileContents,
     setUploadError,
     setDraftMessage,
-    displayMode,
     setCurrentConversationId,
+    isFullscreenMode,
   ]);
 
   const openDeleteModal = (conversation_id: string) => {
@@ -521,7 +512,7 @@ export const LightspeedChat = ({
   );
 
   const getMaxPrompts = () => {
-    if (displayMode === ChatbotDisplayMode.embedded) {
+    if (isFullscreenMode) {
       return samplePrompts?.length; // In the Fullscreen mode, show all prompts
     }
     if (displayMode === ChatbotDisplayMode.docked) {
@@ -550,7 +541,7 @@ export const LightspeedChat = ({
     setFilterValue(value);
   }, []);
 
-  const onEmbeddedDrawerToggle = useCallback(() => {
+  const onChatHistoryDrawerToggle = useCallback(() => {
     setIsChatHistoryDrawerOpen(isOpen => !isOpen);
   }, []);
 
@@ -578,160 +569,6 @@ export const LightspeedChat = ({
     });
   };
 
-  const chatbot = (
-    <Chatbot displayMode={ChatbotDisplayMode.embedded} className={classes.body}>
-      <ChatbotHeader className={classes.header}>
-        <ChatbotHeaderMain>
-          <ChatbotHeaderMenu
-            aria-expanded={isEmbeddedDrawerOpen}
-            onMenuToggle={() => setIsEmbeddedDrawerOpen(!isEmbeddedDrawerOpen)}
-            className={classes.headerMenu}
-            tooltipContent={t('tooltip.chatHistoryMenu')}
-            aria-label={t('aria.chatHistoryMenu')}
-          />
-          {displayMode === ChatbotDisplayMode.embedded && (
-            <ChatbotHeaderTitle className={classes.headerTitle}>
-              <Title headingLevel="h1" size="3xl">
-                {t('chatbox.header.title')}
-              </Title>
-            </ChatbotHeaderTitle>
-          )}
-        </ChatbotHeaderMain>
-
-        <LightspeedChatBoxHeader
-          selectedModel={selectedModel}
-          handleSelectedModel={item => {
-            onNewChat();
-            handleSelectedModel(item);
-          }}
-          models={models}
-          isPinningChatsEnabled={isPinningChatsEnabled}
-          onPinnedChatsToggle={setIsPinningChatsEnabled}
-          isModelSelectorDisabled={isSendButtonDisabled}
-          setDisplayMode={setDisplayMode}
-          displayMode={displayMode}
-        />
-      </ChatbotHeader>
-      <Divider />
-      <ChatbotConversationHistoryNav
-        drawerPanelContentProps={{
-          isResizable: displayMode === ChatbotDisplayMode.embedded,
-          hasNoBorder: displayMode !== ChatbotDisplayMode.embedded,
-          style:
-            displayMode === ChatbotDisplayMode.embedded
-              ? undefined
-              : { zIndex: 1300 },
-        }}
-        reverseButtonOrder
-        displayMode={ChatbotDisplayMode.embedded}
-        onDrawerToggle={onEmbeddedDrawerToggle}
-        title=""
-        navTitleIcon={null}
-        isDrawerOpen={isEmbeddedDrawerOpen}
-        drawerCloseButtonProps={{
-          'aria-label': t('aria.closeDrawerPanel'),
-        }}
-        setIsDrawerOpen={setIsEmbeddedDrawerOpen}
-        activeItemId={conversationId}
-        onSelectActiveItem={onSelectActiveItem}
-        conversations={filterConversations(filterValue)}
-        onNewChat={newChatCreated ? undefined : onNewChat}
-        newChatButtonText={t('button.newChat')}
-        newChatButtonProps={{
-          icon: <PlusIcon />,
-        }}
-        handleTextInputChange={handleFilter}
-        searchInputPlaceholder={t('chatbox.search.placeholder')}
-        searchInputAriaLabel={t('aria.search.placeholder')}
-        searchInputProps={{
-          value: filterValue,
-          onClear: () => {
-            setFilterValue('');
-          },
-        }}
-        noResultsState={
-          filterValue &&
-          Object.keys(filterConversations(filterValue)).length === 0
-            ? {
-                bodyText: t('chatbox.emptyState.noResults.body'),
-                titleText: t('chatbox.emptyState.noResults.title'),
-                icon: SearchIcon,
-              }
-            : undefined
-        }
-        drawerContent={
-          <FileDropZone
-            onFileDrop={(e, data) => handleAttach(data, e)}
-            displayMode={ChatbotDisplayMode.embedded}
-            infoText={t('chatbox.fileUpload.infoText')}
-            allowedFileTypes={supportedFileTypes}
-            onAttachRejected={onAttachRejected}
-          >
-            {showAlert && uploadError.message && (
-              <div className={classes.errorContainer}>
-                <ChatbotAlert
-                  component="h4"
-                  title={t('chatbox.fileUpload.failed')}
-                  variant={uploadError.type ?? 'danger'}
-                  isInline
-                  onClose={() => setUploadError({ message: null })}
-                >
-                  {uploadError.message}
-                </ChatbotAlert>
-              </div>
-            )}
-
-            <ChatbotContent>
-              <LightspeedChatBox
-                userName={userName}
-                messages={messages}
-                profileLoading={profileLoading}
-                announcement={announcement}
-                ref={scrollToBottomRef}
-                welcomePrompts={welcomePrompts}
-                conversationId={conversationId}
-                isStreaming={isSendButtonDisabled}
-                topicRestrictionEnabled={topicRestrictionEnabled}
-                displayMode={displayMode}
-              />
-            </ChatbotContent>
-            <ChatbotFooter className={classes.footer}>
-              <FilePreview />
-              <MessageBar
-                onSendMessage={sendMessage}
-                isSendButtonDisabled={isSendButtonDisabled}
-                hasAttachButton
-                handleAttach={handleAttach}
-                hasMicrophoneButton
-                buttonProps={{
-                  attach: {
-                    inputTestId: 'attachment-input',
-                    tooltipContent: t('tooltip.attach'),
-                  },
-                  microphone: {
-                    tooltipContent: {
-                      active: t('tooltip.microphone.active'),
-                      inactive: t('tooltip.microphone.inactive'),
-                    },
-                  },
-                  send: {
-                    tooltipContent: t('tooltip.send'),
-                  },
-                }}
-                allowedFileTypes={supportedFileTypes}
-                onAttachRejected={onAttachRejected}
-                placeholder={t('chatbox.message.placeholder')}
-              />
-              <ChatbotFootnote
-                {...getFootnoteProps(classes.footerPopover, t)}
-              />
-            </ChatbotFooter>
-          </FileDropZone>
-        }
-      />
-    </Chatbot>
-  );
-
   return (
     <>
       {isDeleteModalOpen && (
@@ -749,7 +586,162 @@ export const LightspeedChat = ({
           conversationId={targetConversationId}
         />
       )}
-      {chatbot} <Attachment />
+      <Chatbot
+        displayMode={ChatbotDisplayMode.embedded}
+        className={classes.body}
+      >
+        <ChatbotHeader className={classes.header}>
+          <ChatbotHeaderMain>
+            <ChatbotHeaderMenu
+              aria-expanded={isChatHistoryDrawerOpen}
+              onMenuToggle={() =>
+                setIsChatHistoryDrawerOpen(!isChatHistoryDrawerOpen)
+              }
+              className={classes.headerMenu}
+              tooltipContent={t('tooltip.chatHistoryMenu')}
+              aria-label={t('aria.chatHistoryMenu')}
+            />
+            {isFullscreenMode && (
+              <ChatbotHeaderTitle className={classes.headerTitle}>
+                <Title headingLevel="h1" size="3xl">
+                  {t('chatbox.header.title')}
+                </Title>
+              </ChatbotHeaderTitle>
+            )}
+          </ChatbotHeaderMain>
+
+          <LightspeedChatBoxHeader
+            selectedModel={selectedModel}
+            handleSelectedModel={item => {
+              onNewChat();
+              handleSelectedModel(item);
+            }}
+            models={models}
+            isPinningChatsEnabled={isPinningChatsEnabled}
+            onPinnedChatsToggle={setIsPinningChatsEnabled}
+            isModelSelectorDisabled={isSendButtonDisabled}
+            setDisplayMode={setDisplayMode}
+            displayMode={displayMode}
+          />
+        </ChatbotHeader>
+        <Divider />
+        <ChatbotConversationHistoryNav
+          drawerPanelContentProps={{
+            isResizable: isFullscreenMode,
+            hasNoBorder: !isFullscreenMode,
+            style: isFullscreenMode ? undefined : { zIndex: 1300 },
+          }}
+          reverseButtonOrder
+          displayMode={ChatbotDisplayMode.embedded}
+          onDrawerToggle={onChatHistoryDrawerToggle}
+          title=""
+          navTitleIcon={null}
+          isDrawerOpen={isChatHistoryDrawerOpen}
+          drawerCloseButtonProps={{
+            'aria-label': t('aria.closeDrawerPanel'),
+          }}
+          setIsDrawerOpen={setIsChatHistoryDrawerOpen}
+          activeItemId={conversationId}
+          onSelectActiveItem={onSelectActiveItem}
+          conversations={filterConversations(filterValue)}
+          onNewChat={newChatCreated ? undefined : onNewChat}
+          newChatButtonText={t('button.newChat')}
+          newChatButtonProps={{
+            icon: <PlusIcon />,
+          }}
+          handleTextInputChange={handleFilter}
+          searchInputPlaceholder={t('chatbox.search.placeholder')}
+          searchInputAriaLabel={t('aria.search.placeholder')}
+          searchInputProps={{
+            value: filterValue,
+            onClear: () => {
+              setFilterValue('');
+            },
+          }}
+          noResultsState={
+            filterValue &&
+            Object.keys(filterConversations(filterValue)).length === 0
+              ? {
+                  bodyText: t('chatbox.emptyState.noResults.body'),
+                  titleText: t('chatbox.emptyState.noResults.title'),
+                  icon: SearchIcon,
+                }
+              : undefined
+          }
+          drawerContent={
+            <FileDropZone
+              onFileDrop={(e, data) => handleAttach(data, e)}
+              displayMode={ChatbotDisplayMode.embedded}
+              infoText={t('chatbox.fileUpload.infoText')}
+              allowedFileTypes={supportedFileTypes}
+              onAttachRejected={onAttachRejected}
+            >
+              {showAlert && uploadError.message && (
+                <div className={classes.errorContainer}>
+                  <ChatbotAlert
+                    component="h4"
+                    title={t('chatbox.fileUpload.failed')}
+                    variant={uploadError.type ?? 'danger'}
+                    isInline
+                    onClose={() => setUploadError({ message: null })}
+                  >
+                    {uploadError.message}
+                  </ChatbotAlert>
+                </div>
+              )}
+
+              <ChatbotContent>
+                <LightspeedChatBox
+                  userName={userName}
+                  messages={messages}
+                  profileLoading={profileLoading}
+                  announcement={announcement}
+                  ref={scrollToBottomRef}
+                  welcomePrompts={welcomePrompts}
+                  conversationId={conversationId}
+                  isStreaming={isSendButtonDisabled}
+                  topicRestrictionEnabled={topicRestrictionEnabled}
+                  displayMode={displayMode}
+                />
+              </ChatbotContent>
+              <ChatbotFooter className={classes.footer}>
+                <FilePreview />
+                <MessageBar
+                  onSendMessage={sendMessage}
+                  isSendButtonDisabled={isSendButtonDisabled}
+                  hasAttachButton
+                  handleAttach={handleAttach}
+                  hasMicrophoneButton
+                  value={draftMessage}
+                  onChange={handleDraftMessage}
+                  buttonProps={{
+                    attach: {
+                      inputTestId: 'attachment-input',
+                      tooltipContent: t('tooltip.attach'),
+                    },
+                    microphone: {
+                      tooltipContent: {
+                        active: t('tooltip.microphone.active'),
+                        inactive: t('tooltip.microphone.inactive'),
+                      },
+                    },
+                    send: {
+                      tooltipContent: t('tooltip.send'),
+                    },
+                  }}
+                  allowedFileTypes={supportedFileTypes}
+                  onAttachRejected={onAttachRejected}
+                  placeholder={t('chatbox.message.placeholder')}
+                />
+                <ChatbotFootnote
+                  {...getFootnoteProps(classes.footerPopover, t)}
+                />
+              </ChatbotFooter>
+            </FileDropZone>
+          }
+        />
+      </Chatbot>
+      <Attachment />
     </>
   );
 };

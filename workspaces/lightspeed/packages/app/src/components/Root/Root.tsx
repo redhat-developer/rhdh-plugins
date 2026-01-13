@@ -85,7 +85,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
       id="sidebar"
       sx={{
         // When drawer is open, adjust the content size
-        // This code exists similarly in RHDH:
+        // Similary this code exists in RHDH:
         // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/Root/Root.tsx#L159-L165
         // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/ErrorPages/ErrorPage.tsx#L54-L59
         'body.docked-drawer-open #sidebar&': {

@@ -32,13 +32,6 @@ const useStyles = makeStyles(theme => ({
       theme?.shadows?.[6] ??
       '0px 3px 5px -1px rgba(0,0,0,0.2), 0px 6px 10px 0px rgba(0,0,0,0.14), 0px 1px 18px 0px rgba(0,0,0,0.12)'
     } !important`,
-    '&:hover': {
-      backgroundColor: `${theme?.palette?.primary?.dark ?? '#1565c0'} !important`,
-      boxShadow: `${
-        theme?.shadows?.[8] ??
-        '0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)'
-      } !important`,
-    },
   },
   'fab-button': {
     bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,

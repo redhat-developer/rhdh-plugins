@@ -15,7 +15,7 @@
  */
 
 import { useMemo } from 'react';
-import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { Quickstart } from './Quickstart';
 import { useQuickstartDrawerContext } from '../hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../types';
@@ -25,8 +25,7 @@ export const QuickstartDrawerContent = () => {
   const { isDrawerOpen, closeDrawer, userRole, roleLoading } =
     useQuickstartDrawerContext();
 
-  const apiHolder = useApiHolder();
-  const config = apiHolder.get(configApiRef);
+  const config = useApi(configApiRef);
   const quickstartItems: QuickstartItemData[] = useMemo(() => {
     return config?.has('app.quickstart')
       ? (config.get('app.quickstart') as QuickstartItemData[])

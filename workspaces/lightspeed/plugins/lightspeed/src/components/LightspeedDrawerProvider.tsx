@@ -22,7 +22,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { matchPath, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
@@ -65,9 +65,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
 
   const isLightspeedRoute = location.pathname.startsWith('/lightspeed');
 
-  const conversationMatch = matchPath(
+  const conversationMatch = useMatch(
     '/lightspeed/conversation/:conversationId',
-    location.pathname,
   );
 
   const conversationId = conversationMatch?.params?.conversationId;
