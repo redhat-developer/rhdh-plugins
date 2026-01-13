@@ -105,7 +105,7 @@ const QuickstartTestPage = () => (
 createDevApp()
   .registerPlugin(quickstartPlugin)
   .addTranslationResource(quickstartTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({

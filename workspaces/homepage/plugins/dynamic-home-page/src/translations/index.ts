@@ -26,9 +26,10 @@ export const homepageTranslations = createTranslationResource({
   ref: homepageTranslationRef,
   translations: {
     de: () => import('./de'),
+    es: () => import('./es'),
     fr: () => import('./fr'),
     it: () => import('./it'),
-    es: () => import('./es'),
+    ja: () => import('./ja'),
   },
 });
 

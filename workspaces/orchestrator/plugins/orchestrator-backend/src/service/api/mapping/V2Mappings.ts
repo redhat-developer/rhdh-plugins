@@ -94,7 +94,9 @@ export function mapToProcessInstanceDTO(
     setZone: true,
   });
   const duration = processInstance.end
-    ? Duration.fromMillis(end.diff(start).toMillis()).rescale().toHuman()
+    ? Duration.fromMillis(end.diff(start).toMillis())
+        .shiftTo('hours', 'minutes', 'seconds')
+        .toHuman({ unitDisplay: 'long' })
     : undefined;
 
   let variables: Record<string, unknown> | undefined;

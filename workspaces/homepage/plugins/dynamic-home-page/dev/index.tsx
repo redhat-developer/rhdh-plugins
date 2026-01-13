@@ -440,7 +440,7 @@ const createPage = ({
 createDevApp()
   .registerPlugin(dynamicHomePagePlugin)
   .addTranslationResource(homepageTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'it', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage(

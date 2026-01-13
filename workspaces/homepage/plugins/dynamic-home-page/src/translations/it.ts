@@ -18,57 +18,58 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { homepageTranslationRef } from './ref';
 
 /**
- * Italian translation for Homepage.
+ * Italian translation for plugin.dynamic-home-page.
  * @public
  */
 const homepageTranslationIt = createTranslationMessages({
   ref: homepageTranslationRef,
   messages: {
-    'header.welcome': 'Bentornato!',
-    'header.welcomePersonalized': 'Bentornato, {{name}}!',
+    'header.welcome': 'Bentornato/a!',
+    'header.welcomePersonalized': 'Bentornato/a, {{name}}!',
     'header.local': 'Locale',
     'homePage.empty':
-      'Nessuna scheda della homepage (punti di montaggio) configurata o trovata.',
-    'search.placeholder': 'Cerca',
+      'Nessuna scheda home page (punto di montaggio) configurata o trovata.',
+    'search.placeholder': 'Ricerca',
     'quickAccess.title': 'Accesso rapido',
     'quickAccess.fetchError': 'Impossibile recuperare i dati.',
     'quickAccess.error': 'Errore sconosciuto',
-    'featuredDocs.learnMore': ' Scopri di più',
-    'templates.title': 'Esplora modelli',
+    'featuredDocs.learnMore': ' Per saperne di più',
+    'templates.title': 'Esplora i modelli',
     'templates.fetchError': 'Impossibile recuperare i dati.',
     'templates.error': 'Errore sconosciuto',
-    'templates.empty': 'Nessun modello aggiunto ancora',
+    'templates.empty': 'Non è stato ancora aggiunto alcun modello',
     'templates.emptyDescription':
-      'Una volta aggiunti i modelli, questo spazio mostrerà contenuti rilevanti personalizzati per la tua esperienza.',
+      "Una volta aggiunti i modelli, in quest'area verranno visualizzati contenuti pertinenti e personalizzati in base all'esperienza dell'utente.",
     'templates.register': 'Registra un modello',
     'templates.viewAll': 'Visualizza tutti i {{count}} modelli',
-    'onboarding.greeting.goodMorning': 'Buongiorno',
+    'onboarding.greeting.goodMorning': 'Buon giorno',
     'onboarding.greeting.goodAfternoon': 'Buon pomeriggio',
-    'onboarding.greeting.goodEvening': 'Buonasera',
+    'onboarding.greeting.goodEvening': 'Buona sera',
     'onboarding.guest': 'Ospite',
     'onboarding.getStarted.title': 'Inizia',
-    'onboarding.getStarted.description': 'Scopri Red Hat Developer Hub.',
+    'onboarding.getStarted.description':
+      'Scopri di più su Red Hat Developer Hub.',
     'onboarding.getStarted.buttonText': 'Leggi la documentazione',
     'onboarding.getStarted.ariaLabel':
       'Leggi la documentazione (si apre in una nuova scheda)',
     'onboarding.explore.title': 'Esplora',
     'onboarding.explore.description': 'Esplora componenti, API e modelli.',
-    'onboarding.explore.buttonText': 'Vai al catalogo',
-    'onboarding.explore.ariaLabel': 'Vai al catalogo',
-    'onboarding.learn.title': 'Impara',
+    'onboarding.explore.buttonText': 'Vai al Catalogo',
+    'onboarding.explore.ariaLabel': 'Vai al Catalogo',
+    'onboarding.learn.title': 'Apprendi',
     'onboarding.learn.description': 'Esplora e sviluppa nuove competenze.',
-    'onboarding.learn.buttonText': 'Vai ai percorsi di apprendimento',
-    'onboarding.learn.ariaLabel': 'Vai ai percorsi di apprendimento',
-    'entities.title': 'Esplora il tuo catalogo software',
+    'onboarding.learn.buttonText': 'Vai ai Percorsi di apprendimento',
+    'onboarding.learn.ariaLabel': 'Vai ai Percorsi di apprendimento',
+    'entities.title': 'Esplora il Catalogo software',
     'entities.fetchError': 'Impossibile recuperare i dati.',
     'entities.error': 'Errore sconosciuto',
     'entities.description':
-      'Sfoglia i sistemi, componenti, risorse e API disponibili nella tua organizzazione.',
+      'Esplora i sistemi, i componenti, le risorse e le API disponibili nella tua organizzazione.',
     'entities.close': 'chiudi',
-    'entities.empty': 'Nessun catalogo software aggiunto ancora',
+    'entities.empty': 'Non è stato ancora aggiunto alcun catalogo software',
     'entities.emptyDescription':
-      'Una volta aggiunti i cataloghi software, questo spazio mostrerà contenuti rilevanti personalizzati per la tua esperienza.',
-    'entities.register': 'Registra un componente',
+      "Una volta aggiunti i cataloghi software, in quest'area verranno visualizzati contenuti pertinenti e personalizzati in base all'esperienza dell'utente.",
+    'entities.register': 'Registrare un componente',
     'entities.viewAll': 'Visualizza tutte le {{count}} entità del catalogo',
   },
 });

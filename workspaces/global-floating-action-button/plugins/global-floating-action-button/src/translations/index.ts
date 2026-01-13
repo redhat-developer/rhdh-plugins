@@ -27,8 +27,10 @@ export const globalFloatingActionButtonTranslations = createTranslationResource(
     ref: globalFloatingActionButtonTranslationRef,
     translations: {
       de: () => import('./de'),
-      fr: () => import('./fr'),
       es: () => import('./es'),
+      fr: () => import('./fr'),
+      it: () => import('./it'),
+      ja: () => import('./ja'),
     },
   },
 );

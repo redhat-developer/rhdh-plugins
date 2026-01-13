@@ -32,7 +32,7 @@ export type { QuickstartButtonProps } from './components/QuickstartButton/Quicks
 export const quickstartPlugin = createPlugin({
   id: 'quickstart',
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [quickstartTranslationRef],
   },
 } as any);

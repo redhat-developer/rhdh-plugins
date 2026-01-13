@@ -15,24 +15,27 @@
  */
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
-
 import { globalFloatingActionButtonTranslationRef } from './ref';
 
+/**
+ * fr translation for plugin.global-floating-action-button.
+ * @public
+ */
 const globalFloatingActionButtonTranslationFr = createTranslationMessages({
   ref: globalFloatingActionButtonTranslationRef,
   messages: {
     'fab.create.label': 'Créer',
-    'fab.create.tooltip': 'Créer une entité',
-    'fab.docs.label': 'Documentation',
+    'fab.create.tooltip': "Créer l'entité",
+    'fab.docs.label': 'Docs',
     'fab.docs.tooltip': 'Documentation',
     'fab.apis.label': 'APIs',
     'fab.apis.tooltip': 'Documentation API',
     'fab.github.label': 'GitHub',
-    'fab.github.tooltip': 'Dépôt GitHub',
-    'fab.bulkImport.label': 'Import en lot',
-    'fab.bulkImport.tooltip': 'Enregistrer plusieurs dépôts en une seule fois',
+    'fab.github.tooltip': 'Référentiel GitHub',
+    'fab.bulkImport.label': 'Importation en masse',
+    'fab.bulkImport.tooltip': 'Enregistrer plusieurs référentiel en masse',
     'fab.quay.label': 'Quay',
-    'fab.quay.tooltip': 'Registre de conteneurs Quay',
+    'fab.quay.tooltip': 'Quay Container Registry',
     'fab.menu.tooltip': 'Menu',
   },
 });

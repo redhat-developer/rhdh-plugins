@@ -25,9 +25,10 @@ export const extensionsTranslations = createTranslationResource({
   ref: extensionsTranslationRef,
   translations: {
     de: () => import('./de'),
-    fr: () => import('./fr'),
     es: () => import('./es'),
+    fr: () => import('./fr'),
     it: () => import('./it'),
+    ja: () => import('./ja'),
   },
 });
 

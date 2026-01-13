@@ -119,8 +119,8 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
       setZone: true,
     });
     const duration = Duration.fromMillis(end.diff(start).toMillis())
-      .rescale()
-      .toHuman();
+      .shiftTo('hours', 'minutes', 'seconds')
+      .toHuman({ unitDisplay: 'long' });
     // Act
     const result = mapToProcessInstanceDTO(processIntanceV1);
 
@@ -146,7 +146,6 @@ describe('scenarios to verify mapToProcessInstanceDTO', () => {
     );
     expect(result.end).toEqual(processIntanceV1.end);
     expect(result.duration).toEqual(duration);
-    expect(result.duration).toEqual('1 hour');
     expect(result.description).toEqual(processIntanceV1.description);
     expect(result.workflowdata).toEqual(
       // @ts-ignore
