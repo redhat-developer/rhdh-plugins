@@ -196,7 +196,7 @@ describe('ToolCallContent', () => {
     render(<ToolCallContent toolCall={baseToolCall} />);
 
     // Copy button should be visible
-    const copyButton = screen.getByRole('button', { name: 'Copy Response' });
+    const copyButton = screen.getByRole('button', { name: 'Copy response' });
     expect(copyButton).toBeInTheDocument();
 
     // Click the copy button
@@ -218,7 +218,7 @@ describe('ToolCallContent', () => {
 
     // Copy button should not be visible
     expect(
-      screen.queryByRole('button', { name: 'Copy Response' }),
+      screen.queryByRole('button', { name: 'Copy response' }),
     ).not.toBeInTheDocument();
   });
 });
