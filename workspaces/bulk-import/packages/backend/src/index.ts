@@ -67,9 +67,7 @@ backend.add(
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'),
 );
 
 // for integrating templates with github

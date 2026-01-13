@@ -24,7 +24,7 @@ export interface Config {
      *
      * `scaffolder`: Uses the Scaffolder API to create import jobs.  This option is useful when you need to
      *  customize the import process or integrate it with other Scaffolder actions.
-     * 
+     *
      * `orchestrator`: Uses the Orchestrator API to execute workflows.
      */
     importAPI?: 'open-pull-requests' | 'scaffolder' | 'orchestrator';

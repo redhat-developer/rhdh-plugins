@@ -17,9 +17,7 @@
 import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
 import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
 
-export class OrchestratorBulkImportBackendClientPathProvider
-  implements IBulkImportRESTPathProvider
-{
+export class OrchestratorBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
   getCreateImportJobsPath(dryRun?: boolean): string | undefined {
     return dryRun === true
       ? undefined

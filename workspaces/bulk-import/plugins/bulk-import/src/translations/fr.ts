@@ -239,7 +239,6 @@ const bulkImportTranslationFr = createTranslationMessages({
     'tasks.taskProcessing': 'Traitement de la tâche en cours',
     'tasks.taskSkipped': 'Tâche ignorée',
 
-
     // Workflows
     'workflows.workflowsFor': 'Workflows pour {{importJobStatusId}}',
     'workflows.workflowId': 'ID du workflow',
