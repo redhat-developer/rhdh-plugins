@@ -1,5 +1,12 @@
 ### Dependencies
 
+## 6.10.1
+
+### Patch Changes
+
+- e143e26: Updated dependency `@octokit/auth-app` to `7.2.2`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.10.1
+
 ## 6.10.0
 
 ### Patch Changes
