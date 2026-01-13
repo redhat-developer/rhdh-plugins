@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.14.1
+
+### Patch Changes
+
+- c4f69ee: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+- f74564d: Added 'ja' i18n support and updated 'it' and 'fr' translation strings.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.14.1
+
 ## 0.14.0
 
 ### Minor Changes
