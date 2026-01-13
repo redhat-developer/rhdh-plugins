@@ -135,6 +135,18 @@ readonly "settings.pinned.enable": string;
 readonly "settings.pinned.disable": string;
 readonly "settings.pinned.enabled.description": string;
 readonly "settings.pinned.disabled.description": string;
+readonly "toolCall.header": string;
+readonly "toolCall.thinking": string;
+readonly "toolCall.executionTime": string;
+readonly "toolCall.parameters": string;
+readonly "toolCall.response": string;
+readonly "toolCall.showMore": string;
+readonly "toolCall.showLess": string;
+readonly "toolCall.loading": string;
+readonly "toolCall.executing": string;
+readonly "toolCall.copyResponse": string;
+readonly "toolCall.summary": string;
+readonly "toolCall.mcpServer": string;
 }>;
 
 // @alpha

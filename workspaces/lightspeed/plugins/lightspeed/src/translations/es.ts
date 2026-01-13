@@ -230,6 +230,20 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Los chats fijados están actualmente habilitados',
     'settings.pinned.disabled.description':
       'Los chats fijados están actualmente deshabilitados',
+
+    // Tool calling
+    'toolCall.header': 'Respuesta de herramienta: {{toolName}}',
+    'toolCall.thinking': 'Pensó durante {{seconds}} segundos',
+    'toolCall.executionTime': 'Tiempo de ejecución: ',
+    'toolCall.parameters': 'Parámetros',
+    'toolCall.response': 'Respuesta',
+    'toolCall.showMore': 'mostrar más',
+    'toolCall.showLess': 'mostrar menos',
+    'toolCall.loading': 'Ejecutando herramienta...',
+    'toolCall.executing': 'Ejecutando herramienta...',
+    'toolCall.copyResponse': 'Copiar respuesta',
+    'toolCall.summary': 'Aquí tienes un resumen de tu respuesta',
+    'toolCall.mcpServer': 'Servidor MCP',
   },
 });
 

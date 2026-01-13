@@ -181,6 +181,20 @@ const lightspeedTranslationJa = createTranslationMessages({
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',
+
+    // Tool calling
+    'toolCall.header': 'ツールの応答: {{toolName}}',
+    'toolCall.thinking': '{{seconds}} 秒間考えました',
+    'toolCall.executionTime': '実行時間: ',
+    'toolCall.parameters': 'パラメーター',
+    'toolCall.response': '応答',
+    'toolCall.showMore': 'さらに表示',
+    'toolCall.showLess': '表示を減らす',
+    'toolCall.loading': 'ツールを実行中...',
+    'toolCall.executing': 'ツールを実行中...',
+    'toolCall.copyResponse': '応答をコピー',
+    'toolCall.summary': '応答の概要は次のとおりです',
+    'toolCall.mcpServer': 'MCP サーバー',
   },
 });
 

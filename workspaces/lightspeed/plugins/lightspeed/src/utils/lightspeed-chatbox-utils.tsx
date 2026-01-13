@@ -24,6 +24,7 @@ import {
   LCSConversation,
   ReferencedDocument,
   ReferencedDocuments,
+  ToolCall,
 } from '../types';
 
 export const getFootnoteProps = (
@@ -110,6 +111,7 @@ type MessageProps = {
     title: string;
   };
   sources?: SourcesCardProps;
+  toolCalls?: ToolCall[];
 };
 
 export const createMessage = ({
@@ -121,6 +123,7 @@ export const createMessage = ({
   timestamp,
   error,
   sources,
+  toolCalls,
   defaultUserName = 'Guest',
 }: MessageProps & { role: 'user' | 'bot'; defaultUserName?: string }) => ({
   role,
@@ -131,6 +134,7 @@ export const createMessage = ({
   timestamp,
   error,
   sources,
+  toolCalls,
 });
 
 export const createUserMessage = (
