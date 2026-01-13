@@ -11026,7 +11026,7 @@ __metadata:
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
-    msw: 2.12.4
+    msw: 2.12.7
     node-fetch: 2.7.0
     prettier: 3.6.2
     supertest: 6.3.4
@@ -27497,9 +27497,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.12.4":
-  version: 2.12.4
-  resolution: "msw@npm:2.12.4"
+"msw@npm:2.12.7":
+  version: 2.12.7
+  resolution: "msw@npm:2.12.7"
   dependencies:
     "@inquirer/confirm": ^5.0.0
     "@mswjs/interceptors": ^0.40.0
@@ -27526,7 +27526,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: e8a4021a9dcd158fff13bac442ef1a29f98e02ec8c81143869b4ef04eb60fa37332a0807ab9d6f3d31121325f0f41d3e714851515d54b854c57a529c17da8ed4
+  checksum: 930b8c76e80143684b9dc686e406cf05256cb756624ef264eb630adb722eb7b0166a86cba92242ebbbf6d079ce5dae0396d0cf32963e04f65e094caf0685c73f
   languageName: node
   linkType: hard
 
