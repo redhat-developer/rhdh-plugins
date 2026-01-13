@@ -252,6 +252,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'settings.displayMode.docked': 'Acoplar a ventana',
     'settings.displayMode.fullscreen': 'Pantalla completa',
     
+
     // Sort options
     'sort.label': 'Ordenar conversaciones',
     'sort.newest': 'Fecha (más reciente primero)',

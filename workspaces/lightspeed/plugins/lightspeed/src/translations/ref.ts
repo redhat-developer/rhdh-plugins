@@ -240,6 +240,7 @@ export const lightspeedMessages = {
   'settings.displayMode.docked': 'Dock to window',
   'settings.displayMode.fullscreen': 'Fullscreen',
   
+
   // Sort options
   'sort.label': 'Sort conversations',
   'sort.newest': 'Date (newest first)',

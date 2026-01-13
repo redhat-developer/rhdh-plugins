@@ -249,6 +249,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'settings.displayMode.docked': 'An Fenster andocken',
     'settings.displayMode.fullscreen': 'Vollbild',
     
+
     // Sort options
     'sort.label': 'Konversationen sortieren',
     'sort.newest': 'Datum (neueste zuerst)',
