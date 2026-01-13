@@ -62,7 +62,7 @@ class MockScorecardApi implements ScorecardApi {
 createDevApp()
   .registerPlugin(scorecardPlugin)
   .addTranslationResource(scorecardTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({

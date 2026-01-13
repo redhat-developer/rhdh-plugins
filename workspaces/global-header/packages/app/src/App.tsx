@@ -71,7 +71,7 @@ const app = createApp({
   },
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'es', 'fr', 'it'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [globalHeaderTranslations],
   },
   bindRoutes({ bind }) {

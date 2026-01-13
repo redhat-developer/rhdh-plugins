@@ -104,7 +104,7 @@ const app = createApp({
   },
   themes: getThemes(),
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [orchestratorTranslations],
   },
   /* Hardcoded deployment of the Orchestrator Form Widget library in our DEV-only instance.

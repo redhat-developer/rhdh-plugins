@@ -29,6 +29,7 @@ export const globalHeaderTranslations = createTranslationResource({
     es: () => import('./es'),
     fr: () => import('./fr'),
     it: () => import('./it'),
+    ja: () => import('./ja'),
   },
 });
 

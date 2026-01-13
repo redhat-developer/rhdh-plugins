@@ -172,7 +172,7 @@ const createPage = ({
 createDevApp()
   .registerPlugin(globalFloatingActionButtonPlugin)
   .addTranslationResource(globalFloatingActionButtonTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addPage({
     element: <ExampleComponent floatingButtons={mockFloatingButtons} />,

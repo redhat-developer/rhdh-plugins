@@ -96,7 +96,7 @@ const app = createApp({
   apis,
   themes: getThemes(),
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [homepageTranslations],
   },
   bindRoutes({ bind }) {

@@ -58,7 +58,7 @@ import { searchPage } from './components/search/SearchPage';
 const app = createApp({
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [bulkImportTranslations],
   },
   bindRoutes({ bind }) {

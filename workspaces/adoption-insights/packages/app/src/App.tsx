@@ -59,7 +59,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 const app = createApp({
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'it', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [adoptionInsightsTranslations],
   },
   bindRoutes({ bind }) {

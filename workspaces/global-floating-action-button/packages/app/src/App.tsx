@@ -92,7 +92,7 @@ const app = createApp({
   },
   themes: getThemes(),
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [globalFloatingActionButtonTranslations],
   },
 });

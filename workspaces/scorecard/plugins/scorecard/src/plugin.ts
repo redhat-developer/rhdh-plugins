@@ -36,7 +36,7 @@ export const scorecardPlugin = createPlugin({
     root: rootRouteRef,
   },
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [scorecardTranslationRef],
   },
   apis: [

@@ -111,7 +111,7 @@ createDevApp()
   .registerPlugin(adoptionInsightsPlugin)
   .addThemes(getAllThemes())
   .addTranslationResource(adoptionInsightsTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'it', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addPage({
     element: (
