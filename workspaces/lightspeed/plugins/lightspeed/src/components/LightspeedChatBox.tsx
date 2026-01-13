@@ -29,6 +29,7 @@ import {
   MessageBox,
   MessageBoxHandle,
   MessageProps,
+  ToolCall as PatternFlyToolCall,
   WelcomePrompt,
 } from '@patternfly/chatbot';
 import { Alert } from '@patternfly/react-core';
@@ -38,7 +39,7 @@ import { useBufferedMessages } from '../hooks/useBufferedMessages';
 import { useFeedbackActions } from '../hooks/useFeedbackActions';
 import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
-import { ToolCallCard } from './ToolCallCard';
+import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
@@ -193,29 +194,40 @@ export const LightspeedChatBox = forwardRef(
           <br />
         )}
         {conversationMessages.map((message, index) => {
-          const hasToolCalls =
-            message.toolCalls && message.toolCalls.length > 0;
-
-          // Build extraContent with tool calls rendered after main content
-          const extraContent = hasToolCalls
-            ? {
-                afterMainContent: (
-                  <>
-                    {message.toolCalls?.map(toolCall => (
-                      <ToolCallCard
-                        key={`tool-${toolCall.id}-${toolCall.toolName}`}
-                        toolCall={toolCall}
-                      />
-                    ))}
-                  </>
-                ),
-              }
+          // Map first tool call to PatternFly's toolCall prop
+          const firstToolCall = message.toolCalls?.[0];
+          const toolCallProp = firstToolCall
+            ? mapToPatternFlyToolCall(firstToolCall, t)
             : undefined;
+
+          // Handle additional tool calls (if any) via extraContent
+          const additionalToolCalls = message.toolCalls?.slice(1);
+          const extraContent =
+            additionalToolCalls && additionalToolCalls.length > 0
+              ? {
+                  afterMainContent: (
+                    <>
+                      {additionalToolCalls.map(tc => {
+                        const tcProps = mapToPatternFlyToolCall(tc, t);
+                        return (
+                          <div
+                            key={`tool-${tc.id}-${tc.toolName}`}
+                            style={{ marginTop: '8px' }}
+                          >
+                            <PatternFlyToolCall {...tcProps} />
+                          </div>
+                        );
+                      })}
+                    </>
+                  ),
+                }
+              : undefined;
 
           return (
             <Message
               key={`${message.role}-${index}`}
               {...message}
+              toolCall={toolCallProp}
               extraContent={extraContent}
             />
           );
