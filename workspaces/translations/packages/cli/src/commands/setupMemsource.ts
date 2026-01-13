@@ -236,6 +236,131 @@ function displaySetupInstructions(memsourceRcPath: string): void {
 }
 
 /**
+ * Try to detect common memsource CLI virtual environment locations
+ */
+async function detectMemsourceVenv(): Promise<string | null> {
+  const homeDir = os.homedir();
+  const commonPaths = [
+    // Common installation locations
+    path.join(
+      homeDir,
+      'git',
+      'memsource-cli-client',
+      '.memsource',
+      'bin',
+      'activate',
+    ),
+    path.join(homeDir, 'memsource-cli-client', '.memsource', 'bin', 'activate'),
+    path.join(homeDir, '.memsource', 'bin', 'activate'),
+    path.join(
+      homeDir,
+      '.local',
+      'memsource-cli-client',
+      '.memsource',
+      'bin',
+      'activate',
+    ),
+  ];
+
+  for (const venvPath of commonPaths) {
+    if (venvPath && (await fs.pathExists(venvPath))) {
+      return venvPath;
+    }
+  }
+
+  // If memsource command exists, user might have it installed differently
+  // We'll let them specify the path manually
+  return null;
+}
+
+/**
+ * Prompt for memsource virtual environment path
+ */
+async function promptMemsourceVenv(rl: readline.Interface): Promise<string> {
+  const question = (query: string): Promise<string> => {
+    return new Promise(resolve => {
+      rl.question(query, resolve);
+    });
+  };
+
+  console.log(chalk.yellow('\n📁 Memsource CLI Virtual Environment Path'));
+  console.log(
+    chalk.gray('   The memsource CLI requires a Python virtual environment.'),
+  );
+  console.log(chalk.gray('   Common locations:'));
+  console.log(
+    chalk.gray('     - ~/git/memsource-cli-client/.memsource/bin/activate'),
+  );
+  console.log(
+    chalk.gray('     - ~/memsource-cli-client/.memsource/bin/activate'),
+  );
+  console.log(chalk.gray('     - ~/.memsource/bin/activate'));
+  console.log(
+    chalk.gray(
+      '   Or wherever you installed the memsource-cli-client repository.\n',
+    ),
+  );
+
+  const venvPath = await question(
+    chalk.yellow('Enter path to memsource venv activate script: '),
+  );
+  if (!venvPath || venvPath.trim() === '') {
+    rl.close();
+    throw new Error('Virtual environment path is required');
+  }
+  return venvPath.trim();
+}
+
+/**
+ * Get memsource venv path from options, detection, or prompt
+ */
+async function getMemsourceVenv(
+  providedPath: string | undefined,
+  isInteractive: boolean,
+  noInput: boolean,
+): Promise<string> {
+  // If provided via option, use it
+  if (providedPath) {
+    return providedPath;
+  }
+
+  // Try to detect common locations
+  const detectedPath = await detectMemsourceVenv();
+  if (detectedPath) {
+    console.log(
+      chalk.gray(
+        `   Detected memsource venv at: ${detectedPath.replace(
+          os.homedir(),
+          '~',
+        )}`,
+      ),
+    );
+    return detectedPath;
+  }
+
+  // If interactive, prompt for it
+  if (isInteractive && !noInput) {
+    const rl = readline.createInterface({
+      input: stdin,
+      output: stdout,
+    });
+
+    try {
+      return await promptMemsourceVenv(rl);
+    } finally {
+      rl.close();
+    }
+  }
+
+  // If not interactive or no-input, throw error
+  throw new Error(
+    'Memsource virtual environment path is required. ' +
+      'Provide it via --memsource-venv option, ' +
+      'or run in an interactive terminal to be prompted.',
+  );
+}
+
+/**
  * Check and warn about virtual environment path
  */
 async function checkVirtualEnvironment(memsourceVenv: string): Promise<void> {
@@ -254,6 +379,11 @@ async function checkVirtualEnvironment(memsourceVenv: string): Promise<void> {
         '   Please update the path in ~/.memsourcerc if your venv is located elsewhere.',
       ),
     );
+    console.log(
+      chalk.gray(
+        '   You can edit ~/.memsourcerc and update the "source" line with the correct path.',
+      ),
+    );
   }
 }
 
@@ -266,7 +396,7 @@ export async function setupMemsourceCommand(opts: OptionValues): Promise<void> {
   );
 
   const {
-    memsourceVenv = '${HOME}/git/memsource-cli-client/.memsource/bin/activate',
+    memsourceVenv,
     memsourceUrl = 'https://cloud.memsource.com/web',
     username,
     password,
@@ -276,11 +406,18 @@ export async function setupMemsourceCommand(opts: OptionValues): Promise<void> {
     const isInteractive = isInteractiveTerminal();
     const noInput = opts.noInput === true;
 
+    // Get memsource venv path (detect, prompt, or use provided)
+    const finalMemsourceVenv = await getMemsourceVenv(
+      memsourceVenv,
+      isInteractive,
+      noInput,
+    );
+
     const { username: finalUsername, password: finalPassword } =
       await getCredentials(isInteractive, noInput, username, password);
 
     const memsourceRcContent = generateMemsourceRcContent(
-      memsourceVenv,
+      finalMemsourceVenv,
       memsourceUrl,
       finalUsername,
       finalPassword,
@@ -290,7 +427,7 @@ export async function setupMemsourceCommand(opts: OptionValues): Promise<void> {
     await fs.writeFile(memsourceRcPath, memsourceRcContent, { mode: 0o600 });
 
     displaySetupInstructions(memsourceRcPath);
-    await checkVirtualEnvironment(memsourceVenv);
+    await checkVirtualEnvironment(finalMemsourceVenv);
   } catch (error) {
     console.error(chalk.red('❌ Error setting up .memsourcerc:'), error);
     throw error;
