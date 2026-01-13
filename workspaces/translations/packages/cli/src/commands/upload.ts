@@ -33,14 +33,18 @@ import { countTranslationKeys } from '../lib/utils/translationUtils';
 /**
  * Detect repository name from git or directory
  */
-function detectRepoName(): string {
+function detectRepoName(repoPath?: string): string {
+  const targetPath = repoPath || process.cwd();
+
   try {
     // Try to get repo name from git
-    const gitRepoUrl = safeExecSyncOrThrow('git', [
-      'config',
-      '--get',
-      'remote.origin.url',
-    ]);
+    const gitRepoUrl = safeExecSyncOrThrow(
+      'git',
+      ['config', '--get', 'remote.origin.url'],
+      {
+        cwd: targetPath,
+      },
+    );
     if (gitRepoUrl) {
       // Extract repo name from URL (handles both https and ssh formats)
       // Use a safer regex pattern to avoid ReDoS vulnerability
@@ -58,16 +62,18 @@ function detectRepoName(): string {
     // Git not available or not a git repo
   }
 
-  // Fallback: use current directory name
-  return path.basename(process.cwd());
+  // Fallback: use directory name
+  return path.basename(targetPath);
 }
 
 /**
- * Generate upload filename: {repo-name}-reference-{YYYY-MM-DD}.json
+ * Generate upload filename: {repo-name}-{sprint}.json
+ * Tries to extract sprint from source filename, or uses date as fallback
  */
 function generateUploadFileName(
   sourceFile: string,
   customName?: string,
+  sprint?: string,
 ): string {
   if (customName) {
     // Use custom name if provided, ensure it has the right extension
@@ -75,11 +81,60 @@ function generateUploadFileName(
     return customName.endsWith(ext) ? customName : `${customName}${ext}`;
   }
 
-  // Auto-generate: {repo-name}-reference-{date}.json
-  const repoName = detectRepoName();
-  const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  // Try to extract sprint from source filename if not provided
+  let sprintValue = sprint;
+  if (!sprintValue) {
+    const sourceBasename = path.basename(sourceFile, path.extname(sourceFile));
+    // Try to match pattern: <repo-name>-<sprint> or <repo-name>-reference-<sprint>
+    let sprintMatch = sourceBasename.match(/^[a-z-]+-(s?\d+)$/i);
+    if (!sprintMatch) {
+      // Fallback: try old pattern with "reference"
+      sprintMatch = sourceBasename.match(/-reference-(s?\d+)$/i);
+    }
+    if (sprintMatch) {
+      sprintValue = sprintMatch[1];
+    }
+  }
+
+  // Auto-generate: {repo-name}-{sprint}.json or {repo-name}-{date}.json (fallback)
+  // Try to detect repo name from the source file's git root
+  // This handles cases where we're uploading files from a different repo
+  const sourceFileAbs = path.resolve(sourceFile);
+  const sourceDir = path.dirname(sourceFileAbs);
+
+  // Try to find git root by walking up from source file directory
+  let repoRoot: string | undefined;
+  let currentDir = sourceDir;
+  while (currentDir !== path.dirname(currentDir)) {
+    const gitDir = path.join(currentDir, '.git');
+    try {
+      if (fs.statSync(gitDir).isDirectory()) {
+        repoRoot = currentDir;
+        break;
+      }
+    } catch {
+      // .git doesn't exist, continue walking up
+    }
+    currentDir = path.dirname(currentDir);
+  }
+
+  // Use detected repo root, or fallback to current directory
+  const repoName = repoRoot ? detectRepoName(repoRoot) : detectRepoName();
+
+  // Use sprint if available, otherwise fall back to date
+  let identifier: string;
+  if (sprintValue) {
+    if (sprintValue.startsWith('s') || sprintValue.startsWith('S')) {
+      identifier = sprintValue.toLowerCase();
+    } else {
+      identifier = `s${sprintValue}`;
+    }
+  } else {
+    identifier = new Date().toISOString().split('T')[0]; // YYYY-MM-DD fallback
+  }
+
   const ext = path.extname(sourceFile);
-  return `${repoName}-reference-${date}${ext}`;
+  return `${repoName}-${identifier}${ext}`;
 }
 
 /**
@@ -467,6 +522,7 @@ export async function uploadCommand(opts: OptionValues): Promise<void> {
     sourceFile,
     targetLanguages,
     uploadFileName,
+    uploadFilename, // Commander.js converts --upload-filename to uploadFilename
     dryRun = false,
     force = false,
   } = mergedOpts as {
@@ -476,9 +532,13 @@ export async function uploadCommand(opts: OptionValues): Promise<void> {
     sourceFile?: string;
     targetLanguages?: string;
     uploadFileName?: string;
+    uploadFilename?: string; // Commander.js camelCase conversion
     dryRun?: boolean;
     force?: boolean;
   };
+
+  // Use uploadFilename (from CLI) or uploadFileName (from config), preferring CLI
+  const finalUploadFileNameOption = uploadFilename || uploadFileName;
 
   const tmsConfig = validateTmsConfig(tmsUrl, tmsToken, projectId);
   if (!tmsConfig) {
@@ -498,9 +558,10 @@ export async function uploadCommand(opts: OptionValues): Promise<void> {
   try {
     await validateSourceFile(sourceFileStr);
 
+    // Try to extract sprint from source filename or use provided upload filename
     const finalUploadFileName =
-      uploadFileName && typeof uploadFileName === 'string'
-        ? generateUploadFileName(sourceFileStr, uploadFileName)
+      finalUploadFileNameOption && typeof finalUploadFileNameOption === 'string'
+        ? generateUploadFileName(sourceFileStr, finalUploadFileNameOption)
         : generateUploadFileName(sourceFileStr);
 
     const cachedEntry = await getCachedUpload(

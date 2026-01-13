@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+import path from 'node:path';
+
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 
 import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
+import { safeExecSyncOrThrow } from '../lib/utils/exec';
 
 import { generateCommand } from './generate';
 import { uploadCommand } from './upload';
@@ -28,6 +31,7 @@ interface SyncOptions {
   sourceDir: string;
   outputDir: string;
   localesDir: string;
+  sprint?: string;
   tmsUrl?: string;
   tmsToken?: string;
   projectId?: string;
@@ -72,35 +76,88 @@ function simulateStep(stepName: string): void {
 async function stepGenerate(
   sourceDir: string,
   outputDir: string,
+  sprint: string | undefined,
   dryRun: boolean,
-): Promise<string> {
+): Promise<{ step: string; generatedFile?: string }> {
   console.log(
     chalk.blue('\n📝 Step 1: Generating translation reference files...'),
   );
 
   if (dryRun) {
     simulateStep('generate translation files');
-  } else {
-    await executeStep('generate translation files', async () => {
-      await generateCommand({
-        sourceDir,
-        outputDir,
-        format: 'json',
-        includePattern: '**/*.{ts,tsx,js,jsx}',
-        excludePattern: '**/node_modules/**',
-        extractKeys: true,
-        mergeExisting: false,
-      });
+    return { step: 'Generate' };
+  }
+  let generatedFile: string | undefined;
+  await executeStep('generate translation files', async () => {
+    if (!sprint) {
+      throw new Error(
+        '--sprint is required for generate command. Please provide --sprint option (e.g., --sprint s3285)',
+      );
+    }
+    await generateCommand({
+      sourceDir,
+      outputDir,
+      sprint,
+      format: 'json',
+      includePattern: '**/*.{ts,tsx,js,jsx}',
+      excludePattern: '**/node_modules/**',
+      extractKeys: true,
+      mergeExisting: false,
     });
+
+    // Try to determine the generated filename
+    // Format: {repo}-{sprint}.json
+    const repoName = detectRepoName();
+    const normalizedSprint =
+      sprint.startsWith('s') || sprint.startsWith('S')
+        ? sprint.toLowerCase()
+        : `s${sprint}`;
+    generatedFile = `${repoName.toLowerCase()}-${normalizedSprint}.json`;
+  });
+  return { step: 'Generate', generatedFile };
+}
+
+/**
+ * Detect repository name from git or directory
+ */
+function detectRepoName(repoPath?: string): string {
+  const targetPath = repoPath || process.cwd();
+
+  try {
+    // Try to get repo name from git
+    const gitRepoUrl = safeExecSyncOrThrow(
+      'git',
+      ['config', '--get', 'remote.origin.url'],
+      {
+        cwd: targetPath,
+      },
+    );
+    if (gitRepoUrl) {
+      // Extract repo name from URL (handles both https and ssh formats)
+      let repoName = gitRepoUrl.replace(/\.git$/, '');
+      const lastSlashIndex = repoName.lastIndexOf('/');
+      if (lastSlashIndex >= 0) {
+        repoName = repoName.substring(lastSlashIndex + 1);
+      }
+      if (repoName) {
+        return repoName;
+      }
+    }
+  } catch {
+    // Git not available or not a git repo
   }
 
-  return 'Generate';
+  // Fallback: use directory name
+  return path.basename(targetPath);
 }
 
 /**
  * Step 2: Upload to TMS
  */
-async function stepUpload(options: SyncOptions): Promise<string | null> {
+async function stepUpload(
+  options: SyncOptions,
+  generatedFile?: string,
+): Promise<string | null> {
   if (options.skipUpload) {
     console.log(chalk.yellow('⏭️  Skipping upload: --skip-upload specified'));
     return null;
@@ -117,6 +174,27 @@ async function stepUpload(options: SyncOptions): Promise<string | null> {
 
   console.log(chalk.blue('\n📤 Step 2: Uploading to TMS...'));
 
+  // Determine source file path
+  // Use generated file if available, otherwise try to construct from sprint
+  let sourceFile: string;
+  if (generatedFile) {
+    sourceFile = `${options.outputDir}/${generatedFile}`;
+  } else if (options.sprint) {
+    // Fallback: construct filename from sprint
+    const repoName = detectRepoName();
+    const normalizedSprint =
+      options.sprint.startsWith('s') || options.sprint.startsWith('S')
+        ? options.sprint.toLowerCase()
+        : `s${options.sprint}`;
+    sourceFile = `${
+      options.outputDir
+    }/${repoName.toLowerCase()}-${normalizedSprint}.json`;
+  } else {
+    throw new Error(
+      'Cannot determine source file for upload. Please provide --sprint option or ensure generate step completed successfully.',
+    );
+  }
+
   if (options.dryRun) {
     simulateStep('upload to TMS');
   } else {
@@ -125,7 +203,7 @@ async function stepUpload(options: SyncOptions): Promise<string | null> {
         tmsUrl,
         tmsToken,
         projectId,
-        sourceFile: `${options.outputDir}/reference.json`,
+        sourceFile,
         targetLanguages: options.languages,
         dryRun: false,
       });
@@ -236,6 +314,10 @@ export async function syncCommand(opts: OptionValues): Promise<void> {
     sourceDir: String(mergedOpts.sourceDir || 'src'),
     outputDir: String(mergedOpts.outputDir || 'i18n'),
     localesDir: String(mergedOpts.localesDir || 'src/locales'),
+    sprint:
+      mergedOpts.sprint && typeof mergedOpts.sprint === 'string'
+        ? mergedOpts.sprint
+        : undefined,
     tmsUrl:
       mergedOpts.tmsUrl && typeof mergedOpts.tmsUrl === 'string'
         ? mergedOpts.tmsUrl
@@ -259,15 +341,16 @@ export async function syncCommand(opts: OptionValues): Promise<void> {
   };
 
   try {
-    const generateStep = await stepGenerate(
+    const generateResult = await stepGenerate(
       options.sourceDir,
       options.outputDir,
+      options.sprint,
       options.dryRun,
     );
 
     const allSteps = [
-      generateStep,
-      await stepUpload(options),
+      generateResult.step,
+      await stepUpload(options, generateResult.generatedFile),
       await stepDownload(options),
       await stepDeploy(options),
     ];

@@ -67,15 +67,36 @@ async function deployWithTypeScriptScript(
   }
 
   // Use tsx to run the TypeScript script
+  // Try to find tsx: check global, then try npx/yarn, then check local node_modules
+  let tsxCommand = 'tsx';
+  let tsxArgs: string[] = [scriptPath, sourceDir];
+
   if (!commandExists('tsx')) {
-    throw new Error(
-      'tsx not found. Please install it: npm install -g tsx, or yarn add -D tsx',
-    );
+    // Try npx tsx (uses local or downloads if needed)
+    if (commandExists('npx')) {
+      tsxCommand = 'npx';
+      tsxArgs = ['tsx', scriptPath, sourceDir];
+    } else if (commandExists('yarn')) {
+      // Try yarn tsx (uses local installation)
+      tsxCommand = 'yarn';
+      tsxArgs = ['tsx', scriptPath, sourceDir];
+    } else {
+      // Check for local tsx in node_modules
+      const localTsxPath = path.resolve(repoRoot, 'node_modules/.bin/tsx');
+      if (await fs.pathExists(localTsxPath)) {
+        tsxCommand = localTsxPath;
+        tsxArgs = [scriptPath, sourceDir];
+      } else {
+        throw new Error(
+          'tsx not found. Please install it: npm install -g tsx, or yarn add -D tsx',
+        );
+      }
+    }
   }
 
   // Run the script with tsx
   // Note: scriptPath and sourceDir are validated paths, safe to use
-  safeExecSyncOrThrow('tsx', [scriptPath, sourceDir], {
+  safeExecSyncOrThrow(tsxCommand, tsxArgs, {
     stdio: 'inherit',
     cwd: repoRoot,
     env: { ...process.env },

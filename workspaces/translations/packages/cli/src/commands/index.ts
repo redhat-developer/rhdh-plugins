@@ -39,6 +39,10 @@ export function registerCommands(program: Command) {
   command
     .command('generate')
     .description('Generate translation reference files from source code')
+    .requiredOption(
+      '--sprint <sprint>',
+      'Sprint value for filename (e.g., s3285). Format: <repo-name>-reference-<sprint>.json',
+    )
     .option(
       '--source-dir <path>',
       'Source directory to scan for translatable strings',
@@ -62,6 +66,18 @@ export function registerCommands(program: Command) {
     )
     .option('--extract-keys', 'Extract translation keys from source code', true)
     .option('--merge-existing', 'Merge with existing translation files', false)
+    .option(
+      '--core-plugins',
+      'Generate core-plugins reference (Backstage plugins only) instead of RHDH-specific reference',
+    )
+    .option(
+      '--output-filename <name>',
+      'Custom output filename (overrides sprint-based naming)',
+    )
+    .option(
+      '--backstage-repo-path <path>',
+      'Path to Backstage repository root (for core-plugins mode). Defaults to checking BACKSTAGE_REPO_PATH env var or config',
+    )
     .action(wrapCommand(generateCommand));
 
   // Upload command - upload translation reference files to TMS
@@ -76,7 +92,7 @@ export function registerCommands(program: Command) {
     .option('--source-file <path>', 'Source translation file to upload')
     .option(
       '--upload-filename <name>',
-      'Custom filename for TMS upload (default: {repo-name}-reference-{date}.json)',
+      'Custom filename for TMS upload (default: {repo-name}-{sprint}.json, extracts sprint from source filename)',
     )
     .option(
       '--target-languages <languages>',
@@ -154,6 +170,10 @@ export function registerCommands(program: Command) {
     .description(
       'Complete i18n workflow: generate → upload → download → deploy',
     )
+    .requiredOption(
+      '--sprint <sprint>',
+      'Sprint value for filename (e.g., s3285). Required for generate step.',
+    )
     .option('--source-dir <path>', 'Source directory to scan', 'src')
     .option('--output-dir <path>', 'Output directory for i18n files', 'i18n')
     .option('--locales-dir <path>', 'Target locales directory', 'src/locales')
@@ -181,8 +201,7 @@ export function registerCommands(program: Command) {
     )
     .option(
       '--memsource-venv <path>',
-      'Path to Memsource CLI virtual environment',
-      '${HOME}/git/memsource-cli-client/.memsource/bin/activate',
+      'Path to Memsource CLI virtual environment (will auto-detect or prompt if not provided)',
     )
     .action(wrapCommand(initCommand));
 
@@ -194,8 +213,7 @@ export function registerCommands(program: Command) {
     )
     .option(
       '--memsource-venv <path>',
-      'Path to Memsource CLI virtual environment',
-      '${HOME}/git/memsource-cli-client/.memsource/bin/activate',
+      'Path to Memsource CLI virtual environment (will auto-detect or prompt if not provided)',
     )
     .option(
       '--memsource-url <url>',
