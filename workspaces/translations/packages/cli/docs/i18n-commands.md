@@ -37,7 +37,28 @@ For detailed installation instructions, see: https://github.com/unofficial-memso
 
 ### 3. Configure Memsource Client
 
-Create `~/.memsourcerc` file in your home directory with your account credentials:
+You have two options to configure Memsource authentication:
+
+#### Option A: Automated Setup (Recommended)
+
+Use the CLI's built-in setup command to automatically create the configuration file:
+
+```bash
+# Interactive setup (will prompt for credentials)
+npx translations-cli i18n setup-memsource
+
+# Or provide credentials directly
+npx translations-cli i18n setup-memsource \
+  --username your-username \
+  --password your-password \
+  --memsource-venv "${HOME}/git/memsource-cli-client/.memsource/bin/activate"
+```
+
+This creates `~/.memsourcerc` in the exact format specified by the localization team.
+
+#### Option B: Manual Setup
+
+Create `~/.memsourcerc` file in your home directory manually:
 
 ```bash
 vi ~/.memsourcerc
@@ -72,43 +93,57 @@ This sets up the Memsource environment and generates the authentication token au
 
 ---
 
+**📝 Note:** The `i18n setup-memsource` command is a **one-time setup utility** and is not part of the regular translation workflow. After initial setup, you'll primarily use the workflow commands listed below.
+
+---
+
 ## Available Commands
 
-### 1. `i18n init` - Initialize Configuration
+### Workflow Commands
+
+These are the commands you'll use regularly in your translation workflow:
+
+#### 1. `i18n init` - Initialize Configuration
 
 Creates a default configuration file (`.i18n.config.json`) in your project root.
 
-### 2. `i18n generate` - Extract Translation Keys
+#### 2. `i18n generate` - Extract Translation Keys
 
 Scans your source code and generates a reference translation file containing all translatable strings.
 
-### 3. `i18n upload` - Upload to TMS
+#### 3. `i18n upload` - Upload to TMS
 
 Uploads the reference translation file to your Translation Management System (TMS) for translation.
 
-### 4. `i18n download` - Download Translations
+#### 4. `i18n download` - Download Translations
 
 Downloads completed translations from your TMS.
 
-### 5. `i18n deploy` - Deploy to Application
+#### 5. `i18n deploy` - Deploy to Application
 
 Deploys downloaded translations back to your application's locale files.
 
-### 6. `i18n status` - Check Status
+#### 6. `i18n status` - Check Status
 
 Shows translation completion status and statistics across all languages.
 
-### 7. `i18n clean` - Cleanup
+#### 7. `i18n clean` - Cleanup
 
 Removes temporary files, caches, and backup directories.
 
-### 8. `i18n sync` - All-in-One Workflow
+#### 8. `i18n sync` - All-in-One Workflow
 
 Runs the complete workflow: generate → upload → download → deploy in one command.
 
-### 9. `i18n setup-memsource` - Set Up Memsource Configuration
+### Setup/Utility Commands
 
-Creates `.memsourcerc` file following the localization team's instructions format. This sets up the Memsource CLI environment with virtual environment activation and automatic token generation.
+These commands are for one-time setup or maintenance tasks:
+
+#### `i18n setup-memsource` - Set Up Memsource Configuration ⚙️ **One-Time Setup**
+
+Creates `.memsourcerc` file following the localization team's instructions format. This is a **prerequisite setup command** that should be run once before using the workflow commands.
+
+**Note:** This command is documented in detail in the [Prerequisites](#prerequisites) section above. It's listed here for reference, but you should complete the setup before using the workflow commands.
 
 ---
 
@@ -417,33 +452,11 @@ npx translations-cli i18n init
 npx translations-cli i18n init --setup-memsource
 ```
 
-**For Memsource Users (Localization Team Setup):**
+**For Memsource Users:**
 
-If you're using Memsource, set up your `.memsourcerc` file following the localization team's instructions:
+If you haven't completed the Memsource setup yet, see the [Prerequisites](#prerequisites) section above for detailed setup instructions.
 
-```bash
-# The command will prompt for username and password if not provided
-npx translations-cli i18n setup-memsource
-
-# Or provide credentials directly (password input will be hidden)
-npx translations-cli i18n setup-memsource \
-  --username your-username \
-  --password your-password \
-  --memsource-venv "${HOME}/git/memsource-cli-client/.memsource/bin/activate"
-```
-
-This creates `~/.memsourcerc` in the exact format specified by the localization team:
-
-```bash
-source ${HOME}/git/memsource-cli-client/.memsource/bin/activate
-
-export MEMSOURCE_URL="https://cloud.memsource.com/web"
-export MEMSOURCE_USERNAME=your-username
-export MEMSOURCE_PASSWORD=your-password
-export MEMSOURCE_TOKEN=$(memsource auth login --user-name $MEMSOURCE_USERNAME --password "${MEMSOURCE_PASSWORD}" -c token -f value)
-```
-
-**Important**: After creating `.memsourcerc`, you must source it before using CLI commands:
+**Important**: After creating `.memsourcerc` (via `i18n setup-memsource` or manually), you must source it before using CLI commands:
 
 ```bash
 # Source the file to set MEMSOURCE_TOKEN in your environment
@@ -648,20 +661,28 @@ npx translations-cli i18n sync \
 
 ### For a Typical Repository
 
-#### 1. Initialize Configuration
+#### 1. Complete Prerequisites (One-Time Setup)
+
+**For Memsource Users:**
+
+If you haven't completed the Memsource setup yet, follow the [Prerequisites](#prerequisites) section above:
 
 ```bash
-# For Memsource users (recommended)
+# Complete the one-time setup (see Prerequisites section for details)
 npx translations-cli i18n setup-memsource
 source ~/.memsourcerc
+```
 
-# Or basic initialization
+#### 2. Initialize Project Configuration
+
+```bash
+# Initialize project configuration file
 npx translations-cli i18n init
 ```
 
-**For Memsource Users (Recommended Workflow):**
+**For Memsource Users (Daily Workflow):**
 
-1. **One-time setup**:
+1. **One-time setup** (already completed in Prerequisites):
 
    ```bash
    npx translations-cli i18n setup-memsource

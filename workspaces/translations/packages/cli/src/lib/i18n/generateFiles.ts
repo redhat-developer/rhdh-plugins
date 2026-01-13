@@ -61,9 +61,12 @@ export async function generateTranslationFiles(
 function isNestedStructure(
   data: Record<string, string> | NestedTranslationData,
 ): data is NestedTranslationData {
+  // Empty object should be treated as nested structure (matches reference.json format)
+  const keys = Object.keys(data);
+  if (keys.length === 0) return true;
+
   // Check if it's nested: { plugin: { en: { ... } } }
-  const firstKey = Object.keys(data)[0];
-  if (!firstKey) return false;
+  const firstKey = keys[0];
   const firstValue = data[firstKey];
   return (
     typeof firstValue === 'object' && firstValue !== null && 'en' in firstValue

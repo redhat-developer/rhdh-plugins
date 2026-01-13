@@ -41,6 +41,7 @@ export interface I18nProjectConfig {
     include?: string;
     exclude?: string;
   };
+  backstageRepoPath?: string;
 }
 
 /**

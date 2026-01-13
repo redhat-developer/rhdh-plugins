@@ -24,14 +24,26 @@ export interface TranslationKey {
   column: number;
 }
 
+export interface ExtractResult {
+  keys: Record<string, string>;
+  pluginId: string | null;
+}
+
 /**
  * Extract translation keys from TypeScript/JavaScript source code
  */
 export function extractTranslationKeys(
   content: string,
   filePath: string,
-): Record<string, string> {
+): ExtractResult {
   const keys: Record<string, string> = {};
+  let pluginId: string | null = null;
+
+  // For .d.ts files, use regex extraction as they have declaration syntax
+  // that's harder to parse with AST
+  if (filePath.endsWith('.d.ts')) {
+    return { keys: extractKeysWithRegex(content), pluginId: null };
+  }
 
   try {
     // Parse the source code
@@ -41,6 +53,9 @@ export function extractTranslationKeys(
       ts.ScriptTarget.Latest,
       true,
     );
+
+    // Track invalid keys for warning
+    const invalidKeys: string[] = [];
 
     // Extract from exported object literals (Backstage translation ref pattern)
     // Pattern: export const messages = { key: 'value', nested: { key: 'value' } }
@@ -69,7 +84,26 @@ export function extractTranslationKeys(
     };
 
     /**
+     * Validate that a key is a valid dot-notation identifier
+     * Pattern: validIdentifier(.validIdentifier)*
+     * Each segment must be a valid JavaScript identifier
+     */
+    const isValidKey = (key: string): boolean => {
+      if (!key || key.trim() === '') {
+        return false;
+      }
+
+      // Check if key is valid dot-notation identifier
+      // Each segment must be a valid JavaScript identifier: [a-zA-Z_$][a-zA-Z0-9_$]*
+      // Segments separated by dots
+      return /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(
+        key,
+      );
+    };
+
+    /**
      * Extract translation keys from an object literal expression
+     * Validates keys during extraction for better performance
      */
     const extractFromObjectLiteral = (node: ts.Node, prefix = ''): void => {
       const objectNode = unwrapTypeAssertion(node);
@@ -89,6 +123,16 @@ export function extractTranslationKeys(
         }
 
         const fullKey = prefix ? `${prefix}.${keyName}` : keyName;
+
+        // Validate key before processing (inline validation for better performance)
+        if (!isValidKey(fullKey)) {
+          // Track invalid keys for warning (avoid duplicate warnings)
+          if (!invalidKeys.includes(fullKey)) {
+            invalidKeys.push(fullKey);
+          }
+          continue;
+        }
+
         const initializer = property.initializer;
         if (!initializer) {
           continue;
@@ -98,6 +142,24 @@ export function extractTranslationKeys(
 
         if (ts.isStringLiteral(unwrappedInitializer)) {
           // Leaf node - this is a translation value
+          keys[fullKey] = unwrappedInitializer.text;
+        } else if (ts.isTemplateExpression(unwrappedInitializer)) {
+          // Template literal with substitutions (backticks with ${variable})
+          // Extract the text content
+          let templateText = '';
+          for (const part of unwrappedInitializer.templateSpans) {
+            if (part.literal) {
+              templateText += part.literal.text;
+            }
+          }
+          // Also include the head text if present
+          if (unwrappedInitializer.head) {
+            templateText = unwrappedInitializer.head.text + templateText;
+          }
+          keys[fullKey] = templateText;
+        } else if (ts.isNoSubstitutionTemplateLiteral(unwrappedInitializer)) {
+          // Simple template literal without substitutions (backticks like `{{orgName}} Catalog`)
+          // Extract the raw text content
           keys[fullKey] = unwrappedInitializer.text;
         } else if (ts.isObjectLiteralExpression(unwrappedInitializer)) {
           // Nested object - recurse
@@ -113,11 +175,13 @@ export function extractTranslationKeys(
       property: ts.ObjectLiteralElementLike,
       propertyName: string,
     ): void => {
-      if (
-        !ts.isPropertyAssignment(property) ||
-        !ts.isIdentifier(property.name) ||
-        property.name.text !== propertyName
-      ) {
+      if (!ts.isPropertyAssignment(property)) {
+        return;
+      }
+
+      // Check if property name matches (can be identifier or string literal)
+      const propName = extractPropertyKeyName(property.name);
+      if (propName !== propertyName) {
         return;
       }
 
@@ -129,17 +193,39 @@ export function extractTranslationKeys(
 
     /**
      * Extract from createTranslationRef calls
-     * Pattern: createTranslationRef({ id: '...', messages: { key: 'value' } })
+     * Pattern: createTranslationRef({ id: 'plugin-id', messages: { key: 'value' } })
+     * Returns the plugin ID from the 'id' field and extracts messages
      */
-    const extractFromCreateTranslationRef = (node: ts.CallExpression): void => {
+    const extractFromCreateTranslationRef = (
+      node: ts.CallExpression,
+    ): string | null => {
       const args = node.arguments;
       if (args.length === 0 || !ts.isObjectLiteralExpression(args[0])) {
-        return;
+        return null;
       }
 
+      let extractedPluginId: string | null = null;
+      let foundMessages = false;
+
       for (const property of args[0].properties) {
-        extractMessagesFromProperty(property, 'messages');
+        // Extract plugin ID from 'id' field
+        if (
+          ts.isPropertyAssignment(property) &&
+          ts.isIdentifier(property.name) &&
+          property.name.text === 'id' &&
+          ts.isStringLiteral(property.initializer)
+        ) {
+          extractedPluginId = property.initializer.text;
+        }
+        // Extract messages
+        const propName = extractPropertyKeyName(property.name);
+        if (propName === 'messages') {
+          foundMessages = true;
+          extractMessagesFromProperty(property, 'messages');
+        }
       }
+
+      return extractedPluginId;
     };
 
     /**
@@ -236,6 +322,15 @@ export function extractTranslationKeys(
       }
 
       const key = args[0].text;
+
+      // Validate key before storing (inline validation for better performance)
+      if (!isValidKey(key)) {
+        if (!invalidKeys.includes(key)) {
+          invalidKeys.push(key);
+        }
+        return;
+      }
+
       const value =
         args.length > 1 && ts.isStringLiteral(args[1]) ? args[1].text : key;
       keys[key] = value;
@@ -356,13 +451,57 @@ export function extractTranslationKeys(
     // Visit all nodes in the AST
     const visit = (node: ts.Node) => {
       if (isCallExpressionWithName(node, 'createTranslationRef')) {
-        extractFromCreateTranslationRef(node);
+        const extractedPluginId = extractFromCreateTranslationRef(node);
+        // Use the first plugin ID found (most files have one createTranslationRef)
+        if (extractedPluginId && !pluginId) {
+          pluginId = extractedPluginId;
+        }
       } else if (isCallExpressionWithName(node, 'createTranslationResource')) {
         extractFromCreateTranslationResource(node);
       } else if (isCallExpressionWithName(node, 'createTranslationMessages')) {
         extractFromCreateTranslationMessages(node);
+      } else if (isCallExpressionWithName(node, 'defineMessages')) {
+        extractFromDefineMessages(node);
       } else if (ts.isVariableStatement(node)) {
         extractFromVariableStatement(node);
+        // Also check for TranslationRef type declarations in variable declarations
+        // Pattern: declare const X: TranslationRef<"id", { readonly "key": "value" }>
+        for (const decl of node.declarationList.declarations) {
+          if (decl.type && ts.isTypeReference(decl.type)) {
+            const typeRef = decl.type;
+            if (
+              ts.isIdentifier(typeRef.typeName) &&
+              typeRef.typeName.text === 'TranslationRef' &&
+              typeRef.typeArguments &&
+              typeRef.typeArguments.length >= 2
+            ) {
+              // Second type argument is the messages object type
+              const messagesType = typeRef.typeArguments[1];
+              if (ts.isTypeLiteralNode(messagesType)) {
+                // Extract keys from the type literal
+                for (const member of messagesType.members) {
+                  if (ts.isPropertySignature(member) && member.name) {
+                    const keyName = extractPropertyKeyName(member.name);
+                    if (
+                      keyName &&
+                      member.type &&
+                      ts.isStringLiteralType(member.type)
+                    ) {
+                      // Validate key before storing (inline validation for better performance)
+                      if (isValidKey(keyName)) {
+                        keys[keyName] = member.type.text;
+                      } else {
+                        if (!invalidKeys.includes(keyName)) {
+                          invalidKeys.push(keyName);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       } else if (isCallExpressionWithName(node, 't')) {
         extractFromTFunction(node);
       } else if (ts.isCallExpression(node) && isI18nTCall(node)) {
@@ -378,12 +517,28 @@ export function extractTranslationKeys(
     };
 
     visit(sourceFile);
-  } catch {
+
+    // Log warnings for invalid keys if any were found
+    if (invalidKeys.length > 0) {
+      // Use console.warn instead of chalk to avoid dependency
+      // The calling code can format these warnings if needed
+      console.warn(
+        `⚠️  Skipped ${
+          invalidKeys.length
+        } invalid key(s) in ${filePath}: ${invalidKeys.slice(0, 5).join(', ')}${
+          invalidKeys.length > 5 ? '...' : ''
+        }`,
+      );
+    }
+  } catch (error) {
     // If TypeScript parsing fails, fall back to regex-based extraction
-    return extractKeysWithRegex(content);
+    console.warn(
+      `⚠️  Warning: AST parsing failed for ${filePath}, falling back to regex: ${error}`,
+    );
+    return { keys: extractKeysWithRegex(content), pluginId: null };
   }
 
-  return keys;
+  return { keys, pluginId };
 }
 
 /**
@@ -397,6 +552,9 @@ function extractKeysWithRegex(content: string): Record<string, string> {
   // This regex fallback is for non-TypeScript files or when AST parsing fails
   // Split patterns to avoid nested optional groups that cause ReDoS vulnerabilities
   const patterns = [
+    // TranslationRef type declarations: readonly "key": "value"
+    // Pattern from .d.ts files: readonly "starredEntities.noStarredEntitiesMessage": "Click the star..."
+    /readonly\s+["']([^"']+)["']\s*:\s*["']([^"']*?)["']/g,
     // t('key', 'value') - with second parameter
     /t\s*\(\s*['"`]([^'"`]+?)['"`]\s*,\s*['"`]([^'"`]*?)['"`]\s*\)/g,
     // t('key') - without second parameter
@@ -417,9 +575,23 @@ function extractKeysWithRegex(content: string): Record<string, string> {
     let match;
     // eslint-disable-next-line no-cond-assign
     while ((match = pattern.exec(content)) !== null) {
+      // For readonly pattern, match[1] is key and match[2] is value
+      // For other patterns, match[1] is key and match[2] is optional value
       const key = match[1];
+
+      // Validate key before storing (inline validation for better performance)
+      if (!isValidKeyRegex(key)) {
+        continue; // Skip invalid keys
+      }
+
       const value = match[2] || key;
-      keys[key] = value;
+      // Only add if we have a meaningful value (not just the key repeated)
+      if (value && value !== key) {
+        keys[key] = value;
+      } else if (!keys[key]) {
+        // If no value provided, use key as placeholder
+        keys[key] = key;
+      }
     }
   }
 
