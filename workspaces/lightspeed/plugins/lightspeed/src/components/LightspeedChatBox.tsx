@@ -201,7 +201,7 @@ export const LightspeedChatBox = forwardRef(
             ? {
                 afterMainContent: (
                   <>
-                    {message.toolCalls!.map(toolCall => (
+                    {message.toolCalls?.map(toolCall => (
                       <ToolCallCard
                         key={`tool-${toolCall.id}-${toolCall.toolName}`}
                         toolCall={toolCall}

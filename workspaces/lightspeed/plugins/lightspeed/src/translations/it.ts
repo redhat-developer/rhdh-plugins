@@ -187,6 +187,20 @@ const lightspeedTranslationIt = createTranslationMessages({
       'Le chat bloccate sono attualmente abilitate',
     'settings.pinned.disabled.description':
       'Le chat bloccate sono attualmente disabilitate',
+
+    // Tool calling
+    'toolCall.header': 'Risposta dello strumento: {{toolName}}',
+    'toolCall.thinking': 'Ha pensato per {{seconds}} secondi',
+    'toolCall.executionTime': 'Tempo di esecuzione: ',
+    'toolCall.parameters': 'Parametri',
+    'toolCall.response': 'Risposta',
+    'toolCall.showMore': 'mostra di più',
+    'toolCall.showLess': 'mostra di meno',
+    'toolCall.loading': 'Esecuzione dello strumento...',
+    'toolCall.executing': 'Esecuzione dello strumento...',
+    'toolCall.copyResponse': 'Copia risposta',
+    'toolCall.summary': 'Ecco un riepilogo della tua risposta',
+    'toolCall.mcpServer': 'Server MCP',
   },
 });
 
