@@ -17,6 +17,7 @@
 import {
   ChangeEvent,
   MouseEvent,
+  Ref,
   useCallback,
   useEffect,
   useMemo,
@@ -576,7 +577,7 @@ export const LightspeedChat = ({
   }, []);
 
   const onSortSelect = useCallback(
-    (_event?: React.MouseEvent<Element>, value?: string | number) => {
+    (_event?: MouseEvent<Element>, value?: string | number) => {
       handleSortChange(value as SortOption);
       setIsSortSelectOpen(false);
     },
@@ -597,7 +598,7 @@ export const LightspeedChat = ({
   );
 
   const sortToggle = useCallback(
-    (toggleRef: React.Ref<MenuToggleElement>) => (
+    (toggleRef: Ref<MenuToggleElement>) => (
       <Tooltip content={`${t('sort.label')} - ${getSortLabel(selectedSort)}`}>
         <MenuToggle
           ref={toggleRef}
