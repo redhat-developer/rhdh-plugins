@@ -12248,7 +12248,7 @@ __metadata:
     "@backstage/plugin-proxy-backend": ^0.5.10
     "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^"
     "@types/express": 4.17.25
-    "@types/lodash": 4.17.21
+    "@types/lodash": 4.17.22
     "@types/supertest": ^6.0.0
     express: ^4.17.1
     express-promise-router: ^4.1.0
@@ -15626,10 +15626,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:4.17.21, @types/lodash@npm:^4.17.5":
-  version: 4.17.21
-  resolution: "@types/lodash@npm:4.17.21"
-  checksum: e09e3eaf29b18b6c8e130fcbafd8e3c4ecc2110f35255079245e7d1bd310a5a8f93e4e70266533dce672f253bba899c721bc6870097e0a8c5448e0b628136d39
+"@types/lodash@npm:4.17.22, @types/lodash@npm:^4.17.5":
+  version: 4.17.22
+  resolution: "@types/lodash@npm:4.17.22"
+  checksum: 4da5747a2c3df1da9fa125f64054814bb0f64b004aebe093dd2b5644a80c0d352723b84d7adf054e6f2f5aa02eba52237532549ec27531e9224f7179d9f09596
   languageName: node
   linkType: hard
 
