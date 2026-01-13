@@ -222,10 +222,10 @@ konflux:
   authProvider: serviceAccount # or oidc | impersonationHeaders
   clusters:
     cluster1:
-      apiUrl: https://api.cluster1.example.com
-      uiUrl: https://ui.cluster1.example.com
-      kubearchiveApiUrl: https://archive.cluster1.example.com
-      serviceAccountToken: <token> # if using serviceAccount or impersonationHeaders
+      apiUrl: ${CLUSTER_1_API_URL}
+      uiUrl: ${CLUSTER_1_UI_URL}
+      kubearchiveApiUrl: ${CLUSTER_1_KUBEARCHIVE_API_URL}
+      serviceAccountToken: ${CLUSTER_1_SA_ACCOUNT_TOKEN} # if using serviceAccount or impersonationHeaders
 ```
 
 ## Example Usage
@@ -321,14 +321,14 @@ konflux:
   authProvider: serviceAccount
   clusters:
     cluster1:
-      apiUrl: https://api.cluster1.example.com
-      uiUrl: https://ui.cluster1.example.com
-      kubearchiveApiUrl: https://archive.cluster1.example.com
-      serviceAccountToken: ABC123
+      apiUrl: ${CLUSTER_1_API_URL}
+      uiUrl: ${CLUSTER_1_UI_URL}
+      kubearchiveApiUrl: ${CLUSTER_1_KUBEARCHIVE_API_URL}
+      serviceAccountToken: ${CLUSTER_1_SA_ACCOUNT_TOKEN}
     cluster2:
-      apiUrl: https://api.cluster2.example.com
-      uiUrl: https://ui.cluster2.example.com
-      serviceAccountToken: DEF456
+      apiUrl: ${CLUSTER_2_API_URL}
+      uiUrl: ${CLUSTER_2_UI_URL}
+      serviceAccountToken: ${CLUSTER_2_SA_ACCOUNT_TOKEN}
 ```
 
 #### Entity Definitions (catalog-info.yaml)
