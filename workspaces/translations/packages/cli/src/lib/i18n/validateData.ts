@@ -99,19 +99,33 @@ export async function validateTranslationData(
   }
 
   // Check for HTML tags in translations
-  // Use non-greedy quantifier to prevent ReDoS vulnerability
-  const htmlTags = Object.entries(data).filter(([, value]) =>
-    /<[^>]*?>/.test(value),
-  );
+  // ReDoS protection: use bounded quantifier instead of * to prevent backtracking
+  // Limit tag content to 1000 chars to prevent DoS attacks
+  const htmlTags = Object.entries(data).filter(([, value]) => {
+    // Validate input length first
+    if (value.length > 10000) return false; // Skip very long values
+    // Use bounded quantifier {0,1000} instead of * to prevent ReDoS
+    return /<[^>]{0,1000}>/.test(value);
+  });
   if (htmlTags.length > 0) {
     result.warnings.push(`Found ${htmlTags.length} values with HTML tags`);
   }
 
   // Check for placeholder patterns
-  // Use non-greedy quantifier to prevent ReDoS vulnerability
-  const placeholderPatterns = Object.entries(data).filter(([, value]) =>
-    /\{\{|\$\{|\%\{|\{.*?\}/.test(value),
-  );
+  // ReDoS protection: use bounded quantifiers and simpler alternation
+  // Limit placeholder content to 500 chars to prevent DoS attacks
+  const placeholderPatterns = Object.entries(data).filter(([, value]) => {
+    // Validate input length first
+    if (value.length > 10000) return false; // Skip very long values
+    // Use bounded quantifier {0,500} instead of *? to prevent ReDoS
+    // Simplified pattern: check for common placeholder patterns
+    return (
+      /\{\{/.test(value) ||
+      /\$\{/.test(value) ||
+      /\%\{/.test(value) ||
+      /\{[^}]{0,500}\}/.test(value)
+    );
+  });
   if (placeholderPatterns.length > 0) {
     result.warnings.push(
       `Found ${placeholderPatterns.length} values with placeholder patterns`,

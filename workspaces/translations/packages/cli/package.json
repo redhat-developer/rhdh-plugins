@@ -25,6 +25,7 @@
     "test:quick": "./test/quick-test.sh",
     "test:integration": "./test/integration-test.sh",
     "test:real-repo": "./test/real-repo-test.sh",
+    "test:workflow": "tsx test/workflow-verification.ts",
     "test:manual": "echo 'See test/manual-test-checklist.md for manual testing steps'",
     "clean": "backstage-cli package clean",
     "start": "nodemon --",
