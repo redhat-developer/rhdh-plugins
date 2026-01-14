@@ -22,7 +22,7 @@ import {
   OrchestratorWorkflowDao,
   RepositoryDao,
 } from '../../../database/repositoryDao';
-import { Components, ImportRequest } from '../../../generated/openapi';
+import { ImportRequest } from '../../../generated/openapi';
 import { GithubApiService } from '../../../github';
 import { GitlabApiService } from '../../../gitlab';
 import { createWorkflowImportJobs } from './execute-orchestrator-workflow';
