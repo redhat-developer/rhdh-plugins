@@ -23,6 +23,7 @@ import {
   ProcessInstanceListResultDTO,
   SearchRequest,
   toWorkflowYaml,
+  WorkflowLogsResponse,
   WorkflowOverview,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
@@ -57,6 +58,7 @@ const createMockOrchestratorService = (): OrchestratorService => {
     {} as any, // Mock sonataFlowService
     {} as any, // Mock dataIndexService
     {} as any, // Mock workflowCacheService
+    {} as any, // Mock WorkflowProvider
   );
 
   mockOrchestratorService.fetchWorkflowOverviews = jest.fn();
@@ -69,6 +71,7 @@ const createMockOrchestratorService = (): OrchestratorService => {
   mockOrchestratorService.executeWorkflow = jest.fn();
   mockOrchestratorService.abortWorkflowInstance = jest.fn();
   mockOrchestratorService.pingWorkflowService = jest.fn();
+  mockOrchestratorService.fetchWorkflowLogsByInstance = jest.fn();
 
   return mockOrchestratorService;
 };
@@ -547,5 +550,40 @@ describe('abortWorkflow', () => {
 
     // Assert
     await expect(promise).rejects.toThrow('Simulated abort workflow error');
+  });
+});
+
+describe('getInstanceLogsByInstance', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('Has logs', async () => {
+    // Create the process instance for the log?
+    // Probably need a generate log or something
+    const processInstance = generateProcessInstance(1);
+    const mockedLog = {
+      instanceId: '123456',
+      logs: [
+        '2025-11-14 14:08:52,645 d5932f2cb566 INFO [org.kie.kogito.serverless.workflow.devservices.De....',
+      ],
+    };
+
+    // Mock return value
+    (
+      mockOrchestratorService.fetchWorkflowLogsByInstance as jest.Mock
+    ).mockResolvedValue(mockedLog);
+
+    // Act - call the function to get the logs
+    const instanceLogs: WorkflowLogsResponse =
+      await v2.getInstanceLogsByInstance(processInstance);
+
+    // Assert
+    expect(
+      mockOrchestratorService.fetchWorkflowLogsByInstance,
+    ).toHaveBeenCalledTimes(1);
+    expect(instanceLogs).toBeDefined();
+    expect(instanceLogs.instanceId).toEqual('123456');
+    expect(instanceLogs.logs.length).toEqual(1);
   });
 });
