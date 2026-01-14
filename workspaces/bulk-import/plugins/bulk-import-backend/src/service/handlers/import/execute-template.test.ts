@@ -32,7 +32,7 @@ import { GithubApiService } from '../../../github';
 import { createTaskImportJobs, processTaskEvents } from './execute-template';
 
 // Mock fetch globally
-global.fetch = jest.fn();
+globalThis.fetch = jest.fn();
 
 // Mock createEventSource
 const mockCreateEventSource = jest.fn();

@@ -1517,7 +1517,7 @@ describe('bulkimports.ts unit tests', () => {
         getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
       } as any;
 
-      global.fetch = jest.fn().mockResolvedValue({
+      globalThis.fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue({
           id: 'task-123',
@@ -1676,7 +1676,7 @@ describe('bulkimports.ts unit tests', () => {
         getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
       } as any;
 
-      global.fetch = jest.fn().mockResolvedValue({
+      globalThis.fetch = jest.fn().mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue({
           id: 'task-123',
