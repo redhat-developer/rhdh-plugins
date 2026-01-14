@@ -16470,7 +16470,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^"
     app: "link:../app"
-    better-sqlite3: ^9.0.0
+    better-sqlite3: ^12.0.0
     node-gyp: ^10.0.0
     pg: ^8.11.3
   languageName: unknown
@@ -16623,17 +16623,6 @@ __metadata:
     node-gyp: latest
     prebuild-install: ^7.1.1
   checksum: b752119ea306c5a70d5bacdf5607fd69b39142b7c8c30d72f530047fedad0b651195b37e8a8067f106d3c56d6913dc0077f1d658916f07bcdad6841384d2bb1b
-  languageName: node
-  linkType: hard
-
-"better-sqlite3@npm:^9.0.0":
-  version: 9.6.0
-  resolution: "better-sqlite3@npm:9.6.0"
-  dependencies:
-    bindings: ^1.5.0
-    node-gyp: latest
-    prebuild-install: ^7.1.1
-  checksum: be3a1d2a3f6f9b5141be6607a38c0a51fa5849495b071955e507bc0c2a2fb08430852c1bf03796eec1a53344b25645807db48dcb51c71b0662b74c5a70420bb0
   languageName: node
   linkType: hard
 

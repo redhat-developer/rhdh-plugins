@@ -18003,7 +18003,7 @@ __metadata:
     "@types/express-serve-static-core": ^4.17.5
     "@types/luxon": ^2.0.4
     app: "link:../app"
-    better-sqlite3: ^9.0.0
+    better-sqlite3: ^12.0.0
     custom-authentication-provider-module-backend: "workspace:^"
     node-gyp: ^10.0.0
     pg: ^8.11.3
@@ -18186,17 +18186,6 @@ __metadata:
     node-gyp: latest
     prebuild-install: ^7.1.1
   checksum: 39141f425a661fcb6ad413c791132c58463026f30d652a672ed9e0fa9fd286021826c0d2c3700762d6bafcccef8de5af1f0fb79eb8c2f31f005f7f0b47069292
-  languageName: node
-  linkType: hard
-
-"better-sqlite3@npm:^9.0.0":
-  version: 9.6.0
-  resolution: "better-sqlite3@npm:9.6.0"
-  dependencies:
-    bindings: ^1.5.0
-    node-gyp: latest
-    prebuild-install: ^7.1.1
-  checksum: be3a1d2a3f6f9b5141be6607a38c0a51fa5849495b071955e507bc0c2a2fb08430852c1bf03796eec1a53344b25645807db48dcb51c71b0662b74c5a70420bb0
   languageName: node
   linkType: hard
 
