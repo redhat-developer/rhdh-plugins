@@ -33,6 +33,57 @@ const TEST_DIR = path.join(
 const TEST_OUTPUT_DIR = path.join(TEST_DIR, 'i18n');
 const TEST_SOURCE_DIR = path.join(TEST_DIR, 'src');
 
+/**
+ * Create a safe environment with only fixed, non-writable PATH directories
+ * Filters PATH to only include standard system directories
+ */
+function createSafeEnvironment(): NodeJS.ProcessEnv {
+  const safeEnv = { ...process.env };
+  const currentPath = process.env.PATH || '';
+
+  // Standard system directories that are typically non-writable
+  // These are common across Unix-like systems and Windows
+  const systemPaths = [
+    '/usr/bin',
+    '/usr/sbin',
+    '/bin',
+    '/sbin',
+    '/usr/local/bin',
+    '/usr/local/sbin',
+    '/opt/homebrew/bin', // macOS Homebrew
+    'C:\\Windows\\System32',
+    'C:\\Windows',
+    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0',
+  ];
+
+  // Filter PATH to only include system directories
+  const pathDirs = currentPath.split(path.delimiter);
+  const safePathDirs = pathDirs.filter(dir => {
+    // Normalize paths for comparison
+    const normalizedDir = path.normalize(dir);
+    return systemPaths.some(systemPath =>
+      normalizedDir.startsWith(path.normalize(systemPath)),
+    );
+  });
+
+  // If no safe paths found, use minimal safe defaults
+  if (safePathDirs.length === 0) {
+    safeEnv.PATH = systemPaths
+      .filter(p => {
+        try {
+          return fs.existsSync(p);
+        } catch {
+          return false;
+        }
+      })
+      .join(path.delimiter);
+  } else {
+    safeEnv.PATH = safePathDirs.join(path.delimiter);
+  }
+
+  return safeEnv;
+}
+
 interface TestResult {
   name: string;
   passed: boolean;
@@ -60,10 +111,14 @@ function runCLI(
       .match(/(?:[^\s"]+|"[^"]*")+/g)
       ?.map(arg => arg.replaceAll(/(^"|"$)/g, '')) || [];
 
+  // Create safe environment with only system PATH directories
+  const safeEnv = createSafeEnvironment();
+
   const result = spawnSync(binPath, args, {
     cwd,
     encoding: 'utf-8',
     stdio: 'pipe',
+    env: safeEnv,
   });
 
   return {
@@ -530,9 +585,12 @@ async function main() {
   // Check if CLI is built
   if (!(await fs.pathExists(getBinPath()))) {
     console.log(chalk.yellow('⚠️  CLI not built. Building...'));
+    // Create safe environment with only fixed, non-writable PATH directories
+    const safeEnv = createSafeEnvironment();
     const buildResult = spawnSync('yarn', ['build'], {
       cwd: process.cwd(),
       stdio: 'inherit',
+      env: safeEnv,
     });
     if (buildResult.status !== 0) {
       console.error(chalk.red('❌ Build failed'));
