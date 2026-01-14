@@ -36,6 +36,16 @@ describe('WorkflowLogsProviderRegistry', () => {
       expect(() =>
         registry.register(randomLogProviderThatDoesntExist),
       ).not.toThrow();
+      expect(registry.listProviders()).toEqual([
+        {
+          providerId: 'loki',
+          baseURL: 'https://loki',
+        },
+        {
+          providerId: 'random',
+          baseURL: 'https://random',
+        },
+      ]);
     });
 
     it('should throw a ConflictError when registring providers with duplicate names', () => {

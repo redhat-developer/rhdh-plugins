@@ -40,10 +40,10 @@ export class MockWorkflowLogProviders implements WorkflowLogProvider {
 
 export const lokiLogProvider = new MockWorkflowLogProviders(
   'loki',
-  'http://localhost:9092',
+  'https://loki',
 );
 
 export const randomLogProviderThatDoesntExist = new MockWorkflowLogProviders(
   'random',
-  'http://localhost:random',
+  'https://random',
 );
