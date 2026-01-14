@@ -15,21 +15,14 @@
  */
 
 import path from 'node:path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-// eslint-disable-next-line no-restricted-syntax
-const __dirname = path.dirname(__filename);
 
 // Simplified paths for translations-cli
+// Note: resolveOwn is not currently used, but kept for potential future use
 export const paths = {
   targetDir: process.cwd(),
-  resolveOwn: (relativePath: string) =>
-    path.resolve(
-      // eslint-disable-next-line no-restricted-syntax
-      __dirname,
-      '..',
-      '..',
-      relativePath,
-    ),
+  resolveOwn: (relativePath: string) => {
+    // Use process.cwd() as base since we're typically running from the package root
+    // This avoids issues with import.meta.url in API report generation
+    return path.resolve(process.cwd(), relativePath);
+  },
 };
