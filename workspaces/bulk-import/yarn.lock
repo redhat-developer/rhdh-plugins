@@ -11419,8 +11419,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-bulk-import-backend@workspace:plugins/bulk-import-backend"
   dependencies:
-    "@backstage/backend-defaults": ^0.13.1
-    "@backstage/backend-plugin-api": ^1.5.0
+    "@backstage/backend-defaults": ^0.14.0
+    "@backstage/backend-plugin-api": ^1.6.0
     "@backstage/backend-test-utils": ^1.10.0
     "@backstage/catalog-client": ^1.12.1
     "@backstage/catalog-model": ^1.7.6
@@ -16857,8 +16857,8 @@ __metadata:
   resolution: "backend@workspace:packages/backend"
   dependencies:
     "@backstage-community/plugin-rbac-backend": ^7.5.0
-    "@backstage/backend-defaults": ^0.13.1
-    "@backstage/backend-plugin-api": ^1.5.0
+    "@backstage/backend-defaults": ^0.14.0
+    "@backstage/backend-plugin-api": ^1.6.0
     "@backstage/backend-test-utils": ^1.9.1
     "@backstage/catalog-client": ^1.12.1
     "@backstage/catalog-model": ^1.7.6
