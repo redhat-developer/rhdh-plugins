@@ -16,6 +16,9 @@
 
 import fs from 'fs-extra';
 
+import { escapePoString } from '../utils/translationUtils';
+import { loadPoFile } from './loadFile';
+
 export interface TranslationData {
   [key: string]: string;
 }
@@ -43,6 +46,93 @@ function isNestedStructure(data: unknown): data is NestedTranslationData {
 }
 
 /**
+ * Load existing translation file
+ */
+async function loadExistingFile(
+  existingPath: string,
+  format: string,
+): Promise<unknown> {
+  try {
+    switch (format.toLowerCase()) {
+      case 'json':
+        return await loadJsonFile(existingPath);
+      case 'po':
+        return await loadPoFile(existingPath);
+      default:
+        throw new Error(`Unsupported format: ${format}`);
+    }
+  } catch (error) {
+    console.warn(
+      `Warning: Could not load existing file ${existingPath}: ${error}`,
+    );
+    return {};
+  }
+}
+
+/**
+ * Merge nested structures
+ */
+function mergeNestedStructures(
+  newKeys: NestedTranslationData,
+  existingData: unknown,
+): NestedTranslationData {
+  if (!isNestedStructure(existingData)) {
+    // Existing is flat, new is nested - use new nested structure
+    return newKeys;
+  }
+
+  // Both are nested - merge plugin by plugin
+  const mergedData = { ...existingData };
+  for (const [pluginName, pluginData] of Object.entries(newKeys)) {
+    if (mergedData[pluginName]) {
+      // Merge keys within the plugin
+      mergedData[pluginName] = {
+        en: { ...mergedData[pluginName].en, ...pluginData.en },
+      };
+    } else {
+      // New plugin
+      mergedData[pluginName] = pluginData;
+    }
+  }
+
+  return mergedData;
+}
+
+/**
+ * Merge flat structures
+ */
+function mergeFlatStructures(
+  newKeys: TranslationData,
+  existingData: unknown,
+): TranslationData {
+  const existingFlat = isNestedStructure(existingData)
+    ? {} // Can't merge flat with nested - use new keys only
+    : (existingData as TranslationData);
+
+  return { ...existingFlat, ...newKeys };
+}
+
+/**
+ * Save merged flat data
+ */
+async function saveMergedFlatData(
+  mergedData: TranslationData,
+  existingPath: string,
+  format: string,
+): Promise<void> {
+  switch (format.toLowerCase()) {
+    case 'json':
+      await saveJsonFile(mergedData, existingPath);
+      break;
+    case 'po':
+      await savePoFile(mergedData, existingPath);
+      break;
+    default:
+      throw new Error(`Unsupported format: ${format}`);
+  }
+}
+
+/**
  * Merge translation keys with existing translation file
  * Supports both flat and nested structures
  */
@@ -55,72 +145,14 @@ export async function mergeTranslationFiles(
     throw new Error(`Existing file not found: ${existingPath}`);
   }
 
-  let existingData: unknown = {};
+  const existingData = await loadExistingFile(existingPath, format);
 
-  try {
-    switch (format.toLowerCase()) {
-      case 'json':
-        existingData = await loadJsonFile(existingPath);
-        break;
-      case 'po':
-        existingData = await loadPoFile(existingPath);
-        break;
-      default:
-        throw new Error(`Unsupported format: ${format}`);
-    }
-  } catch (error) {
-    console.warn(
-      `Warning: Could not load existing file ${existingPath}: ${error}`,
-    );
-    existingData = {};
-  }
-
-  // Handle merging based on structure
   if (isNestedStructure(newKeys)) {
-    // New keys are in nested structure
-    let mergedData: NestedTranslationData;
-
-    if (isNestedStructure(existingData)) {
-      // Both are nested - merge plugin by plugin
-      mergedData = { ...existingData };
-      for (const [pluginName, pluginData] of Object.entries(newKeys)) {
-        if (mergedData[pluginName]) {
-          // Merge keys within the plugin
-          mergedData[pluginName] = {
-            en: { ...mergedData[pluginName].en, ...pluginData.en },
-          };
-        } else {
-          // New plugin
-          mergedData[pluginName] = pluginData;
-        }
-      }
-    } else {
-      // Existing is flat, new is nested - convert existing to nested and merge
-      // This is a migration scenario - we'll use the new nested structure
-      mergedData = newKeys;
-    }
-
-    // Save merged nested data
+    const mergedData = mergeNestedStructures(newKeys, existingData);
     await saveNestedJsonFile(mergedData, existingPath);
   } else {
-    // New keys are flat (legacy)
-    const existingFlat = isNestedStructure(existingData)
-      ? {} // Can't merge flat with nested - use new keys only
-      : (existingData as TranslationData);
-
-    const mergedData = { ...existingFlat, ...newKeys };
-
-    // Save merged flat data
-    switch (format.toLowerCase()) {
-      case 'json':
-        await saveJsonFile(mergedData, existingPath);
-        break;
-      case 'po':
-        await savePoFile(mergedData, existingPath);
-        break;
-      default:
-        throw new Error(`Unsupported format: ${format}`);
-    }
+    const mergedData = mergeFlatStructures(newKeys, existingData);
+    await saveMergedFlatData(mergedData, existingPath, format);
   }
 }
 
@@ -180,102 +212,29 @@ async function saveNestedJsonFile(
 }
 
 /**
- * Load PO translation file
- */
-async function loadPoFile(filePath: string): Promise<TranslationData> {
-  const content = await fs.readFile(filePath, 'utf-8');
-  const data: TranslationData = {};
-
-  const lines = content.split('\n');
-  let currentKey = '';
-  let currentValue = '';
-  let inMsgId = false;
-  let inMsgStr = false;
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    if (trimmed.startsWith('msgid ')) {
-      if (currentKey && currentValue) {
-        data[currentKey] = currentValue;
-      }
-      currentKey = unescapePoString(
-        trimmed.substring(6).replaceAll(/(^["']|["']$)/g, ''),
-      );
-      currentValue = '';
-      inMsgId = true;
-      inMsgStr = false;
-    } else if (trimmed.startsWith('msgstr ')) {
-      currentValue = unescapePoString(
-        trimmed.substring(7).replaceAll(/(^["']|["']$)/g, ''),
-      );
-      inMsgId = false;
-      inMsgStr = true;
-    } else if (trimmed.startsWith('"') && (inMsgId || inMsgStr)) {
-      const value = unescapePoString(trimmed.replaceAll(/(^["']|["']$)/g, ''));
-      if (inMsgId) {
-        currentKey += value;
-      } else if (inMsgStr) {
-        currentValue += value;
-      }
-    }
-  }
-
-  // Add the last entry
-  if (currentKey && currentValue) {
-    data[currentKey] = currentValue;
-  }
-
-  return data;
-}
-
-/**
  * Save PO translation file
  */
 async function savePoFile(
   data: TranslationData,
   filePath: string,
 ): Promise<void> {
-  const lines: string[] = [];
-
   // PO file header
-  lines.push('msgid ""');
-  lines.push('msgstr ""');
-  lines.push(String.raw`"Content-Type: text/plain; charset=UTF-8\n"`);
-  lines.push(String.raw`"Generated: ${new Date().toISOString()}\n"`);
-  lines.push(String.raw`"Total-Keys: ${Object.keys(data).length}\n"`);
-  lines.push('');
+  const headerLines = [
+    'msgid ""',
+    'msgstr ""',
+    String.raw`"Content-Type: text/plain; charset=UTF-8\n"`,
+    String.raw`"Generated: ${new Date().toISOString()}\n"`,
+    String.raw`"Total-Keys: ${Object.keys(data).length}\n"`,
+    '',
+  ];
 
   // Translation entries
-  for (const [key, value] of Object.entries(data)) {
-    lines.push(`msgid "${escapePoString(key)}"`);
-    lines.push(`msgstr "${escapePoString(value)}"`);
-    lines.push('');
-  }
+  const translationLines = Object.entries(data).flatMap(([key, value]) => [
+    `msgid "${escapePoString(key)}"`,
+    `msgstr "${escapePoString(value)}"`,
+    '',
+  ]);
 
+  const lines = [...headerLines, ...translationLines];
   await fs.writeFile(filePath, lines.join('\n'), 'utf-8');
-}
-
-/**
- * Escape string for PO format
- */
-function escapePoString(str: string): string {
-  return str
-    .replaceAll(/\\/g, '\\\\')
-    .replaceAll(/"/g, '\\"')
-    .replaceAll(/\n/g, '\\n')
-    .replaceAll(/\r/g, '\\r')
-    .replaceAll(/\t/g, '\\t');
-}
-
-/**
- * Unescape string from PO format
- */
-function unescapePoString(str: string): string {
-  return str
-    .replaceAll(/\\n/g, '\n')
-    .replaceAll(/\\r/g, '\r')
-    .replaceAll(/\\t/g, '\t')
-    .replaceAll(/\\"/g, '"')
-    .replaceAll(/\\\\/g, '\\');
 }

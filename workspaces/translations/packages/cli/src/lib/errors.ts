@@ -36,12 +36,10 @@ export class ExitCodeError extends CustomError {
 }
 
 export function exitWithError(error: Error): never {
-  if (error instanceof ExitCodeError) {
-    process.stderr.write(`\n${chalk.red(error.message)}\n\n`);
-    process.exit(error.code);
-  } else {
-    const errorMessage = String(error);
-    process.stderr.write(`\n${chalk.red(errorMessage)}\n\n`);
-    process.exit(1);
-  }
+  const errorMessage =
+    error instanceof ExitCodeError ? error.message : String(error);
+  const exitCode = error instanceof ExitCodeError ? error.code : 1;
+
+  process.stderr.write(`\n${chalk.red(errorMessage)}\n\n`);
+  process.exit(exitCode);
 }
