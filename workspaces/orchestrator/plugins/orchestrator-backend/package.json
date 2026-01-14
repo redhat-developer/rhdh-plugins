@@ -57,7 +57,8 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack"
+    "postpack": "backstage-cli package postpack",
+    "export-dynamic": "rhdh-cli plugin export"
   },
   "dependencies": {
     "@backstage/backend-defaults": "^0.13.1",
@@ -90,6 +91,7 @@
     "@backstage/backend-test-utils": "^1.10.0",
     "@backstage/cli": "^0.34.5",
     "@janus-idp/backstage-plugin-audit-log-node": "^1.7.1",
+    "@red-hat-developer-hub/cli": "^1.9.1",
     "@types/express": "4.17.25",
     "@types/fs-extra": "11.0.4",
     "@types/json-schema": "7.0.15",
