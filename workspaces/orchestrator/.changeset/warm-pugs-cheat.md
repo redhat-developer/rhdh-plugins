@@ -5,4 +5,6 @@
 '@red-hat-developer-hub/backstage-plugin-orchestrator': patch
 ---
 
-Remove deprecated `@janus-idp/cli` devDependency and `export-dynamic` scripts. Dynamic plugin exports are now handled via the [overlay repository](https://github.com/redhat-developer/rhdh-plugin-export-overlays).
+Replace deprecated `@janus-idp/cli` with `@red-hat-developer-hub/cli` for dynamic plugin exports.
+
+**Potential Breaking change for frontend plugins build systems:** The `--in-place` flag is no longer used. Frontend plugins now build to `dist-dynamic` instead of `dist-scalprum`. The plugin content remains the same, only the output directory has changed.
