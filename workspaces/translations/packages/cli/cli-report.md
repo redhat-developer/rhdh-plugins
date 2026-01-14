@@ -89,6 +89,7 @@ Options:
   --output-dir <path>
   --output-filename <name>
   --source-dir <path>
+  --sprint <sprint>
   -h, --help
 ```
 
@@ -146,6 +147,7 @@ Options:
   --skip-download
   --skip-upload
   --source-dir <path>
+  --sprint <sprint>
   --tms-token <token>
   --tms-url <url>
   -h, --help
