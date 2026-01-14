@@ -15,26 +15,23 @@
  */
 
 import path from 'node:path';
-import { fileURLToPath } from 'url';
 
 import fs from 'fs-extra';
 
 function findVersion(): string {
   try {
-    // Try to find package.json relative to this file
-    // When built, this will be in dist/lib/version.js
-    // When running from bin, we need to go up to the repo root
-    const __filename = fileURLToPath(import.meta.url);
-    // eslint-disable-next-line no-restricted-syntax
-    const __dirname = path.dirname(__filename);
-
-    // Try multiple possible locations
+    // Try to find package.json in multiple possible locations
+    // Use process.cwd() and known package structure to avoid import.meta.url issues
     const possiblePaths = [
-      // eslint-disable-next-line no-restricted-syntax
-      path.resolve(__dirname, '..', '..', 'package.json'), // dist/lib -> dist -> repo root
-      // eslint-disable-next-line no-restricted-syntax
-      path.resolve(__dirname, '..', '..', '..', 'package.json'), // dist/lib -> dist -> repo root (alternative)
-      path.resolve(process.cwd(), 'package.json'), // Current working directory
+      // From package root (most common case)
+      path.resolve(process.cwd(), 'package.json'),
+      // From workspace root if running from translations workspace
+      path.resolve(process.cwd(), '..', '..', 'package.json'),
+      // From repo root if running from monorepo root
+      path.resolve(
+        process.cwd(),
+        'workspaces/translations/packages/cli/package.json',
+      ),
     ];
 
     for (const pkgPath of possiblePaths) {

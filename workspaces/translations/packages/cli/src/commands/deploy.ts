@@ -15,19 +15,12 @@
  */
 
 import path from 'node:path';
-import { fileURLToPath } from 'url';
 
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 
 import { commandExists, safeExecSyncOrThrow } from '../lib/utils/exec';
-
-// Get __dirname equivalent in ES modules
-// eslint-disable-next-line no-restricted-syntax
-const __filename = fileURLToPath(import.meta.url);
-// eslint-disable-next-line no-restricted-syntax
-const __dirname = path.dirname(__filename);
 
 /**
  * Deploy translations using the TypeScript deployment script
@@ -37,19 +30,17 @@ async function deployWithTypeScriptScript(
   repoRoot: string,
 ): Promise<void> {
   // Find the deployment script
-  // Try multiple possible locations
+  // Try multiple possible locations relative to known package structure
   const possibleScriptPaths = [
-    // From built location (dist/commands -> dist -> scripts)
-    // eslint-disable-next-line no-restricted-syntax
-    path.resolve(__dirname, '../../scripts/deploy-translations.ts'),
-    // From source location (src/commands -> src -> scripts)
-    // eslint-disable-next-line no-restricted-syntax
-    path.resolve(__dirname, '../../../scripts/deploy-translations.ts'),
-    // From repo root
+    // From repo root (most reliable)
     path.resolve(
       repoRoot,
       'workspaces/translations/packages/cli/scripts/deploy-translations.ts',
     ),
+    // From current working directory if we're in the package
+    path.resolve(process.cwd(), 'scripts/deploy-translations.ts'),
+    // From package root if cwd is in src
+    path.resolve(process.cwd(), '../scripts/deploy-translations.ts'),
   ];
 
   let scriptPath: string | null = null;
