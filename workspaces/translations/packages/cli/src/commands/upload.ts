@@ -268,7 +268,7 @@ async function cleanupTempFile(tempFile: string): Promise<void> {
  */
 async function executeMemsourceUpload(
   args: string[],
-  fileToUpload: string,
+  _fileToUpload: string,
 ): Promise<void> {
   const output = safeExecSyncOrThrow('memsource', args, {
     encoding: 'utf-8',
@@ -654,7 +654,7 @@ async function performUpload(
   sourceFile: string,
   uploadFileName: string,
   targetLanguages: string | undefined,
-  force: boolean,
+  _force: boolean,
 ): Promise<void> {
   // Check if MEMSOURCE_TOKEN is available (should be set from ~/.memsourcerc)
   if (!process.env.MEMSOURCE_TOKEN && !tmsToken) {

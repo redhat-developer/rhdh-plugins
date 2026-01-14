@@ -57,7 +57,7 @@ function hasTmsConfig(
  * Execute a step (actually perform the action)
  */
 async function executeStep(
-  stepName: string,
+  _stepName: string,
   action: () => Promise<void>,
 ): Promise<void> {
   await action();

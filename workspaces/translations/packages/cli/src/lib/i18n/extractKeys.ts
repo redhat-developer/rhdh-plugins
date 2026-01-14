@@ -205,7 +205,6 @@ export function extractTranslationKeys(
       }
 
       let extractedPluginId: string | null = null;
-      let foundMessages = false;
 
       for (const property of args[0].properties) {
         // Extract plugin ID from 'id' field
@@ -218,10 +217,11 @@ export function extractTranslationKeys(
           extractedPluginId = property.initializer.text;
         }
         // Extract messages
-        const propName = extractPropertyKeyName(property.name);
-        if (propName === 'messages') {
-          foundMessages = true;
-          extractMessagesFromProperty(property, 'messages');
+        if (property.name) {
+          const propName = extractPropertyKeyName(property.name);
+          if (propName === 'messages') {
+            extractMessagesFromProperty(property, 'messages');
+          }
         }
       }
 
@@ -266,6 +266,52 @@ export function extractTranslationKeys(
 
       for (const property of args[0].properties) {
         extractMessagesFromProperty(property, 'messages');
+      }
+    };
+
+    /**
+     * Extract from defineMessages calls
+     * Pattern: defineMessages({ key: { id: 'key', defaultMessage: 'value' } })
+     */
+    const extractFromDefineMessages = (node: ts.CallExpression): void => {
+      const args = node.arguments;
+      if (args.length === 0 || !ts.isObjectLiteralExpression(args[0])) {
+        return;
+      }
+
+      for (const property of args[0].properties) {
+        if (
+          ts.isPropertyAssignment(property) &&
+          property.initializer &&
+          ts.isObjectLiteralExpression(property.initializer)
+        ) {
+          // Extract the key name
+          const keyName = extractPropertyKeyName(property.name);
+          if (!keyName) {
+            continue;
+          }
+
+          // Look for 'defaultMessage' or 'id' property in the message object
+          for (const msgProperty of property.initializer.properties) {
+            if (
+              ts.isPropertyAssignment(msgProperty) &&
+              msgProperty.name &&
+              ts.isIdentifier(msgProperty.name)
+            ) {
+              const propName = msgProperty.name.text;
+              if (
+                (propName === 'defaultMessage' || propName === 'id') &&
+                ts.isStringLiteral(msgProperty.initializer)
+              ) {
+                const value = msgProperty.initializer.text;
+                if (isValidKey(keyName)) {
+                  keys[keyName] = value;
+                }
+                break;
+              }
+            }
+          }
+        }
       }
     };
 
@@ -467,7 +513,7 @@ export function extractTranslationKeys(
         // Also check for TranslationRef type declarations in variable declarations
         // Pattern: declare const X: TranslationRef<"id", { readonly "key": "value" }>
         for (const decl of node.declarationList.declarations) {
-          if (decl.type && ts.isTypeReference(decl.type)) {
+          if (decl.type && ts.isTypeReferenceNode(decl.type)) {
             const typeRef = decl.type;
             if (
               ts.isIdentifier(typeRef.typeName) &&
@@ -482,17 +528,24 @@ export function extractTranslationKeys(
                 for (const member of messagesType.members) {
                   if (ts.isPropertySignature(member) && member.name) {
                     const keyName = extractPropertyKeyName(member.name);
-                    if (
-                      keyName &&
-                      member.type &&
-                      ts.isStringLiteralType(member.type)
-                    ) {
-                      // Validate key before storing (inline validation for better performance)
-                      if (isValidKey(keyName)) {
-                        keys[keyName] = member.type.text;
-                      } else {
-                        if (!invalidKeys.includes(keyName)) {
-                          invalidKeys.push(keyName);
+                    if (keyName && member.type) {
+                      // Check if it's a string literal type
+                      // String literal types are represented as LiteralTypeNode with StringLiteral
+                      if (ts.isLiteralTypeNode(member.type)) {
+                        const literalType = member.type;
+                        if (
+                          literalType.literal &&
+                          ts.isStringLiteral(literalType.literal)
+                        ) {
+                          const stringValue = literalType.literal.text;
+                          // Validate key before storing (inline validation for better performance)
+                          if (isValidKey(keyName)) {
+                            keys[keyName] = stringValue;
+                          } else {
+                            if (!invalidKeys.includes(keyName)) {
+                              invalidKeys.push(keyName);
+                            }
+                          }
                         }
                       }
                     }
@@ -539,6 +592,17 @@ export function extractTranslationKeys(
   }
 
   return { keys, pluginId };
+}
+
+/**
+ * Validate that a key is a valid dot-notation identifier (for regex fallback)
+ */
+function isValidKeyRegex(key: string): boolean {
+  if (!key || key.trim() === '') {
+    return false;
+  }
+  // Check if key is valid dot-notation identifier
+  return /^[a-zA-Z_$][a-zA-Z0-9_$]*(?:\.[a-zA-Z_$][a-zA-Z0-9_$]*)*$/.test(key);
 }
 
 /**

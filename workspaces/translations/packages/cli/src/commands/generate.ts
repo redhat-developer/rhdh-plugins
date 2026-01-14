@@ -21,10 +21,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import glob from 'glob';
 
-import {
-  extractTranslationKeys,
-  type ExtractResult,
-} from '../lib/i18n/extractKeys';
+import { extractTranslationKeys } from '../lib/i18n/extractKeys';
 import { generateTranslationFiles } from '../lib/i18n/generateFiles';
 import { mergeTranslationFiles } from '../lib/i18n/mergeFiles';
 import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
@@ -805,7 +802,7 @@ async function extractKeysFromJsonFile(
           languageData = pluginData.en as Record<string, unknown>;
         } else if (isCorePlugins) {
           // For core-plugins, use first available language to extract key structure
-          for (const [lang, langData] of Object.entries(pluginData)) {
+          for (const [, langData] of Object.entries(pluginData)) {
             if (typeof langData === 'object' && langData !== null) {
               languageData = langData as Record<string, unknown>;
               break;
@@ -1399,7 +1396,6 @@ export async function generateCommand(opts: OptionValues): Promise<void> {
             // 1. Files in the output directory (they might be our generated files)
             // 2. Files with "reference" in the name (those are English reference files, not translated)
             const filteredFiles = files.filter(file => {
-              const relativePath = path.relative(repoRoot, file);
               const fileName = path.basename(file);
 
               // Exclude if it's in the output directory and is a reference file
