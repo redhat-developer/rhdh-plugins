@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import path from 'node:path';
-
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
