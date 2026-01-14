@@ -41,7 +41,7 @@ export class WorkflowLogsProvidersRegistry {
     const provider = this.workfLogsProviders.get(providerId);
     if (!provider) {
       throw new NotFoundError(
-        `Workflow Log Provider with ID \'${providerId}\' is not registered`,
+        `Workflow Log Provider with ID '${providerId}' is not registered`,
       );
     }
     return this.workfLogsProviders.get(providerId);

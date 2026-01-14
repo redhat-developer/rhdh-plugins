@@ -26,8 +26,6 @@ export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
   private readonly selectors: any;
   private constructor(config: Config) {
-    // TODO: will probably also need information regarding auth tokens and stuff for loki
-    // Might Also make sense to separate out the loki http stuff to its own "client"
     this.baseURL = config.getString('baseUrl');
     this.selectors = config.getOptional('logStreamSelectors') || [];
   }
