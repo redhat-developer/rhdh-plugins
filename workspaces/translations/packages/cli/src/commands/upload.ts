@@ -66,6 +66,43 @@ function detectRepoName(repoPath?: string): string {
   return path.basename(targetPath);
 }
 
+function extractSprintFromFilename(sourceFile: string): string | undefined {
+  const sourceBasename = path.basename(sourceFile, path.extname(sourceFile));
+  // Try to match pattern: <repo-name>-<sprint> or <repo-name>-reference-<sprint>
+  let sprintMatch = sourceBasename.match(/^[a-z-]+-(s?\d+)$/i);
+  if (!sprintMatch) {
+    // Fallback: try old pattern with "reference"
+    sprintMatch = sourceBasename.match(/-reference-(s?\d+)$/i);
+  }
+  return sprintMatch ? sprintMatch[1] : undefined;
+}
+
+function findGitRoot(sourceDir: string): string | undefined {
+  let currentDir = sourceDir;
+  while (currentDir !== path.dirname(currentDir)) {
+    const gitDir = path.join(currentDir, '.git');
+    try {
+      if (fs.statSync(gitDir).isDirectory()) {
+        return currentDir;
+      }
+    } catch {
+      // .git doesn't exist, continue walking up
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  return undefined;
+}
+
+function formatIdentifier(sprintValue: string | undefined): string {
+  if (!sprintValue) {
+    return new Date().toISOString().split('T')[0]; // YYYY-MM-DD fallback
+  }
+
+  return sprintValue.startsWith('s') || sprintValue.startsWith('S')
+    ? sprintValue.toLowerCase()
+    : `s${sprintValue}`;
+}
+
 /**
  * Generate upload filename: {repo-name}-{sprint}.json
  * Tries to extract sprint from source filename, or uses date as fallback
@@ -82,57 +119,16 @@ function generateUploadFileName(
   }
 
   // Try to extract sprint from source filename if not provided
-  let sprintValue = sprint;
-  if (!sprintValue) {
-    const sourceBasename = path.basename(sourceFile, path.extname(sourceFile));
-    // Try to match pattern: <repo-name>-<sprint> or <repo-name>-reference-<sprint>
-    let sprintMatch = sourceBasename.match(/^[a-z-]+-(s?\d+)$/i);
-    if (!sprintMatch) {
-      // Fallback: try old pattern with "reference"
-      sprintMatch = sourceBasename.match(/-reference-(s?\d+)$/i);
-    }
-    if (sprintMatch) {
-      sprintValue = sprintMatch[1];
-    }
-  }
+  const sprintValue = sprint || extractSprintFromFilename(sourceFile);
 
   // Auto-generate: {repo-name}-{sprint}.json or {repo-name}-{date}.json (fallback)
   // Try to detect repo name from the source file's git root
-  // This handles cases where we're uploading files from a different repo
   const sourceFileAbs = path.resolve(sourceFile);
   const sourceDir = path.dirname(sourceFileAbs);
-
-  // Try to find git root by walking up from source file directory
-  let repoRoot: string | undefined;
-  let currentDir = sourceDir;
-  while (currentDir !== path.dirname(currentDir)) {
-    const gitDir = path.join(currentDir, '.git');
-    try {
-      if (fs.statSync(gitDir).isDirectory()) {
-        repoRoot = currentDir;
-        break;
-      }
-    } catch {
-      // .git doesn't exist, continue walking up
-    }
-    currentDir = path.dirname(currentDir);
-  }
-
-  // Use detected repo root, or fallback to current directory
+  const repoRoot = findGitRoot(sourceDir);
   const repoName = repoRoot ? detectRepoName(repoRoot) : detectRepoName();
 
-  // Use sprint if available, otherwise fall back to date
-  let identifier: string;
-  if (sprintValue) {
-    if (sprintValue.startsWith('s') || sprintValue.startsWith('S')) {
-      identifier = sprintValue.toLowerCase();
-    } else {
-      identifier = `s${sprintValue}`;
-    }
-  } else {
-    identifier = new Date().toISOString().split('T')[0]; // YYYY-MM-DD fallback
-  }
-
+  const identifier = formatIdentifier(sprintValue);
   const ext = path.extname(sourceFile);
   return `${repoName}-${identifier}${ext}`;
 }

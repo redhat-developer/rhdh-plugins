@@ -18,6 +18,8 @@ import path from 'node:path';
 
 import fs from 'fs-extra';
 
+import { escapePoString } from '../utils/translationUtils';
+
 export interface TranslationData {
   [key: string]: string;
 }
@@ -89,16 +91,4 @@ async function savePoFile(
   }
 
   await fs.writeFile(filePath, lines.join('\n'), 'utf-8');
-}
-
-/**
- * Escape string for PO format
- */
-function escapePoString(str: string): string {
-  return str
-    .replaceAll(/\\/g, '\\\\')
-    .replaceAll(/"/g, '\\"')
-    .replaceAll(/\n/g, '\\n')
-    .replaceAll(/\r/g, '\\r')
-    .replaceAll(/\t/g, '\\t');
 }
