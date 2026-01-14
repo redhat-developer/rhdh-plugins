@@ -78,8 +78,6 @@ test.describe('Bulk Import', () => {
     const maxRetries = 3;
     const waitTimeout = 5000;
 
-    let found = false;
-
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         // Wait for the sidebar to be visible before navigating
@@ -89,7 +87,6 @@ test.describe('Bulk Import', () => {
           timeout: waitTimeout,
         });
 
-        found = true;
         break; // nice catalog loaded
       } catch (error) {
         if (attempt === maxRetries) {

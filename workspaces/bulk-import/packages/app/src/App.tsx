@@ -46,7 +46,10 @@ import {
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
-import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import {
+  OrchestratorPage,
+  orchestratorTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { NotificationsPage } from '@backstage/plugin-notifications';
@@ -57,7 +60,6 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
-import { orchestratorTranslations } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
 const app = createApp({

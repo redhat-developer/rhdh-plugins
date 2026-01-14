@@ -838,7 +838,7 @@ function getFindImportsParams(c: Context<any, any, any, any, any, Document>): {
 
 function getBearerTokenFromReq(req: express.Request): string {
   const header = req.header('authorization') ?? req.headers.authorization;
-  if (header && header.startsWith(`Bearer `)) {
+  if (header?.startsWith(`Bearer `)) {
     return header.replace('Bearer ', '');
   }
   throw new InputError(`Request provided without token`);

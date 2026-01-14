@@ -199,7 +199,10 @@ describe('execute-orchestrator-workflow', () => {
         }),
       );
 
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(1);
       expect(responseBody[0].repository).toEqual(requestBody[0].repository);
       expect(responseBody[0].workflow?.workflowId).toBe(mockWorkflowId);
@@ -257,7 +260,10 @@ describe('execute-orchestrator-workflow', () => {
         expect.any(Object),
       );
 
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody[0].status).toBe('WORKFLOW_COMPLETED');
     });
 
@@ -393,7 +399,10 @@ describe('execute-orchestrator-workflow', () => {
       });
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(1);
       expect(responseBody[0].errors).toContain(errorMessage);
     });
@@ -449,7 +458,10 @@ describe('execute-orchestrator-workflow', () => {
       });
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(2);
       const errorImport = responseBody.find(imp => imp.errors?.length);
       expect(errorImport).toBeDefined();
@@ -503,7 +515,10 @@ describe('execute-orchestrator-workflow', () => {
           gitlabApiService: mockGitlabApiService,
         });
 
-        const responseBody = result.responseBody as Components.Schemas.Import[];
+        const responseBody = result.responseBody;
+        if (!responseBody) {
+          throw new Error('responseBody is undefined');
+        }
         expect(responseBody[0].status).toBe(testCase.expectedStatus);
       }
     });
@@ -569,7 +584,10 @@ describe('execute-orchestrator-workflow', () => {
       });
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(2);
       expect(responseBody[0].workflow?.workflowId).toBe(mockWorkflowId1);
       expect(responseBody[1].workflow?.workflowId).toBe(mockWorkflowId2);

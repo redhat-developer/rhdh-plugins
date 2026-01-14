@@ -174,8 +174,12 @@ describe('execute-template', () => {
       );
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
       expect(responseBody).toHaveLength(1);
+
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody[0].status).toBe('WAIT_PR_APPROVAL');
       expect(responseBody[0].github?.pullRequest?.number).toBe(123);
       expect(mockGithubApiService.updatePullRequest).toHaveBeenCalledWith(
@@ -204,7 +208,7 @@ describe('execute-template', () => {
       const mockCreatedAt = '2024-01-01T00:00:00Z';
       const mockRepositoryId = 123;
 
-      (global.fetch as jest.Mock)
+      (globalThis.fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValue({ id: mockTaskId }),
@@ -236,13 +240,16 @@ describe('execute-template', () => {
       );
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(1);
       expect(responseBody[0].task?.taskId).toBe(mockTaskId);
       expect(responseBody[0].status).toBe('TASK_PROCESSING');
       expect(responseBody[0].lastUpdate).toBe(mockCreatedAt);
 
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://scaffolder.example.com/v2/tasks',
         expect.objectContaining({
           method: 'POST',
@@ -283,7 +290,7 @@ describe('execute-template', () => {
       ];
 
       const errorMessage = 'Failed to start scaffolder task';
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
+      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
         ok: false,
         status: 500,
         statusText: 'Internal Server Error',
@@ -303,7 +310,10 @@ describe('execute-template', () => {
       );
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(1);
       expect(
         responseBody[0].errors?.some(err => err.includes(errorMessage)),
@@ -350,7 +360,10 @@ describe('execute-template', () => {
       );
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(1);
       expect(responseBody[0].errors).toBeDefined();
       expect(responseBody[0].errors?.length).toBeGreaterThan(0);
@@ -374,7 +387,7 @@ describe('execute-template', () => {
       const mockTaskId = 'task-123';
       const mockRepositoryId = 123;
 
-      (global.fetch as jest.Mock)
+      (globalThis.fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValue({ id: mockTaskId }),
@@ -494,7 +507,7 @@ describe('execute-template', () => {
       const mockTaskId = 'task-123';
       const errorMessage = 'Failed to start scaffolder task';
 
-      (global.fetch as jest.Mock)
+      (globalThis.fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValue({ id: mockTaskId }),
@@ -527,9 +540,9 @@ describe('execute-template', () => {
       );
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
       expect(responseBody).toHaveLength(2);
-      const errorImport = responseBody.find(imp => imp.errors?.length);
+      const errorImport = responseBody?.find(imp => imp.errors?.length);
       expect(errorImport).toBeDefined();
       expect(errorImport?.errors?.some(err => err.includes(errorMessage))).toBe(
         true,
@@ -561,7 +574,7 @@ describe('execute-template', () => {
       const mockTaskId1 = 'task-1';
       const mockTaskId2 = 'task-2';
 
-      (global.fetch as jest.Mock)
+      (globalThis.fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
           json: jest.fn().mockResolvedValue({ id: mockTaskId1 }),
@@ -601,7 +614,10 @@ describe('execute-template', () => {
       );
 
       expect(result.statusCode).toBe(202);
-      const responseBody = result.responseBody as Components.Schemas.Import[];
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
       expect(responseBody).toHaveLength(2);
       expect(responseBody[0].task?.taskId).toBe(mockTaskId1);
       expect(responseBody[1].task?.taskId).toBe(mockTaskId2);
