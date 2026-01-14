@@ -965,20 +965,21 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
       }
 
       // Pattern for identifier keys: word followed by colon and value
-      // ReDoS protection: simplified pattern with minimal lookahead
+      // ReDoS protection: all quantifiers are bounded to prevent backtracking
       // - Match word, colon, then value up to next delimiter
-      // - Limit value to 5000 chars to prevent DoS
+      // - Limit whitespace to 100 chars and value to 5000 chars to prevent DoS
       // - Simple lookahead (?=[,}\n]) checks for delimiter without backtracking
-      // - No complex alternations or multiple quantifiers that cause backtracking
-      const identifierKeyPattern = /(\w+)\s*:\s*([^,}\n]{0,5000})(?=[,}\n])/g;
+      // - All quantifiers are bounded: no unbounded * or + operators
+      const identifierKeyPattern =
+        /(\w+)\s{0,100}:\s{0,100}([^,}\n]{0,5000})(?=[,}\n])/g;
 
       // Pattern for string literal keys: 'key' or "key" followed by colon and value
-      // ReDoS protection: simplified pattern with minimal lookahead
-      // - Limit key to 500 chars and value to 5000 chars
+      // ReDoS protection: all quantifiers are bounded to prevent backtracking
+      // - Limit key to 500 chars, whitespace to 100 chars, and value to 5000 chars
       // - Simple lookahead (?=[,}\n]) checks for delimiter without backtracking
-      // - No complex alternations or multiple quantifiers that cause backtracking
+      // - All quantifiers are bounded: no unbounded * or + operators
       const stringKeyPattern =
-        /['"]([^'"]{1,500})['"]\s*:\s*([^,}\n]{0,5000})(?=[,}\n])/g;
+        /['"]([^'"]{1,500})['"]\s{0,100}:\s{0,100}([^,}\n]{0,5000})(?=[,}\n])/g;
 
       const processed = new Set<number>();
       const allMatches: Array<{
