@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ConflictError } from '@backstage/errors';
+import { ConflictError, NotFoundError } from '@backstage/errors';
 
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
@@ -38,6 +38,12 @@ export class WorkflowLogsProvidersRegistry {
   }
 
   getProvider(providerId: string): WorkflowLogProvider | undefined {
+    const provider = this.workfLogsProviders.get(providerId);
+    if (!provider) {
+      throw new NotFoundError(
+        `Workflow Log Provider with ID \'${providerId}\' is not registered`,
+      );
+    }
     return this.workfLogsProviders.get(providerId);
   }
 }
