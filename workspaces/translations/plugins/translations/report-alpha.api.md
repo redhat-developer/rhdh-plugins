@@ -10,21 +10,21 @@ import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 export const translationsPluginTranslationRef: TranslationRef<
   'plugin.translations',
   {
-    readonly 'page.title': string;
-    readonly 'page.subtitle': string;
     readonly 'table.title': string;
+    readonly 'table.headers.refId': string;
+    readonly 'table.headers.key': string;
     readonly 'table.options.pageSize': string;
     readonly 'table.options.pageSizeOptions': string;
-    readonly 'table.headers.key': string;
-    readonly 'table.headers.refId': string;
     readonly 'language.displayFormat': string;
-    readonly 'common.error': string;
-    readonly 'common.loading': string;
-    readonly 'common.refresh': string;
-    readonly 'common.noData': string;
-    readonly 'export.filename': string;
+    readonly 'page.title': string;
+    readonly 'page.subtitle': string;
     readonly 'export.title': string;
     readonly 'export.downloadButton': string;
+    readonly 'export.filename': string;
+    readonly 'common.loading': string;
+    readonly 'common.error': string;
+    readonly 'common.noData': string;
+    readonly 'common.refresh': string;
   }
 >;
 
