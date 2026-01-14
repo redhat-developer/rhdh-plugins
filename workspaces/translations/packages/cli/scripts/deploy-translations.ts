@@ -885,6 +885,7 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
       }
 
       // Helper: Extract matches from a regex pattern
+      // Includes safeguards to prevent ReDoS: iteration limit and timeout protection
       const extractMatches = (
         pattern: RegExp,
         textContent: string,
@@ -901,8 +902,14 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
           index: number;
           endIndex: number;
         }> = [];
+
+        // Limit iterations to prevent ReDoS (max 10000 matches per pattern)
+        const MAX_ITERATIONS = 10000;
+        let iterations = 0;
         let match = pattern.exec(textContent);
-        while (match !== null) {
+
+        while (match !== null && iterations < MAX_ITERATIONS) {
+          iterations++;
           if (!processed.has(match.index)) {
             processed.add(match.index);
             matches.push({
@@ -914,6 +921,13 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
           }
           match = pattern.exec(textContent);
         }
+
+        if (iterations >= MAX_ITERATIONS) {
+          console.warn(
+            `Regex iteration limit reached (${MAX_ITERATIONS}), stopping extraction`,
+          );
+        }
+
         return matches;
       };
 
@@ -940,16 +954,31 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
         return null;
       };
 
+      // Validate input length to prevent ReDoS attacks
+      // Limit total content to 1MB to prevent memory exhaustion
+      const MAX_CONTENT_LENGTH = 1024 * 1024; // 1MB
+      if (nestedContent.length > MAX_CONTENT_LENGTH) {
+        console.warn(
+          `Content too large (${nestedContent.length} chars), skipping extraction`,
+        );
+        return;
+      }
+
       // Pattern for identifier keys: word followed by colon and value
-      // Use non-greedy quantifier with reasonable limit to prevent ReDoS
-      // Limit value to 10000 chars to prevent DoS attacks
-      const identifierKeyPattern =
-        /(\w+)\s*:\s*([^,}]{0,10000}?)(?=\s*,|\s*\w+\s*:|$)/g;
+      // ReDoS protection: simplified pattern with minimal lookahead
+      // - Match word, colon, then value up to next delimiter
+      // - Limit value to 5000 chars to prevent DoS
+      // - Simple lookahead (?=[,}\n]) checks for delimiter without backtracking
+      // - No complex alternations or multiple quantifiers that cause backtracking
+      const identifierKeyPattern = /(\w+)\s*:\s*([^,}\n]{0,5000})(?=[,}\n])/g;
 
       // Pattern for string literal keys: 'key' or "key" followed by colon and value
-      // Limit key to 1000 chars and value to 10000 chars to prevent DoS
+      // ReDoS protection: simplified pattern with minimal lookahead
+      // - Limit key to 500 chars and value to 5000 chars
+      // - Simple lookahead (?=[,}\n]) checks for delimiter without backtracking
+      // - No complex alternations or multiple quantifiers that cause backtracking
       const stringKeyPattern =
-        /['"]([^'"]{0,1000})['"]\s*:\s*([^,}]{0,10000}?)(?=\s*,|\s*(?:\w+|['"])\s*:|$)/g;
+        /['"]([^'"]{1,500})['"]\s*:\s*([^,}\n]{0,5000})(?=[,}\n])/g;
 
       const processed = new Set<number>();
       const allMatches: Array<{
