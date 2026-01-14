@@ -44,11 +44,11 @@ const main = (argv: string[]) => {
 };
 
 process.on('unhandledRejection', rejection => {
-  if (rejection instanceof Error) {
-    exitWithError(rejection);
-  } else {
-    exitWithError(new Error(`Unknown rejection: '${rejection}'`));
-  }
+  const error =
+    rejection instanceof Error
+      ? rejection
+      : new Error(`Unknown rejection: '${rejection}'`);
+  exitWithError(error);
 });
 
 main(process.argv);

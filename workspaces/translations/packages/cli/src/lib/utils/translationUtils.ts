@@ -48,3 +48,29 @@ export function countTranslationKeys(data: unknown): number {
     (data as { translations?: Record<string, unknown> }).translations || data;
   return Object.keys(translations).length;
 }
+
+/**
+ * Escape string for PO format
+ * Escapes backslashes, quotes, newlines, carriage returns, and tabs
+ */
+export function escapePoString(str: string): string {
+  return str
+    .replaceAll(/\\/g, '\\\\')
+    .replaceAll(/"/g, '\\"')
+    .replaceAll(/\n/g, '\\n')
+    .replaceAll(/\r/g, '\\r')
+    .replaceAll(/\t/g, '\\t');
+}
+
+/**
+ * Unescape string from PO format
+ * Reverses the escaping done by escapePoString
+ */
+export function unescapePoString(str: string): string {
+  return str
+    .replaceAll(/\\n/g, '\n')
+    .replaceAll(/\\r/g, '\r')
+    .replaceAll(/\\t/g, '\t')
+    .replaceAll(/\\"/g, '"')
+    .replaceAll(/\\\\/g, '\\');
+}

@@ -18,6 +18,8 @@ import path from 'node:path';
 
 import fs from 'fs-extra';
 
+import { unescapePoString } from '../utils/translationUtils';
+
 export interface TranslationData {
   [key: string]: string;
 }
@@ -71,9 +73,79 @@ async function loadJsonFile(filePath: string): Promise<TranslationData> {
 }
 
 /**
+ * Extract and unescape PO string value
+ */
+function extractPoString(line: string, prefixLength: number): string {
+  return unescapePoString(
+    line.substring(prefixLength).replaceAll(/(^["']|["']$)/g, ''),
+  );
+}
+
+/**
+ * Extract and unescape PO string from continuation line
+ */
+function extractPoContinuation(line: string): string {
+  return unescapePoString(line.replaceAll(/(^["']|["']$)/g, ''));
+}
+
+/**
+ * Process msgid line
+ */
+function processMsgIdLine(
+  line: string,
+  currentKey: string,
+  currentValue: string,
+  data: TranslationData,
+): { key: string; value: string; inMsgId: boolean; inMsgStr: boolean } {
+  // Save previous entry if exists
+  if (currentKey && currentValue) {
+    data[currentKey] = currentValue;
+  }
+
+  return {
+    key: extractPoString(line, 6),
+    value: '',
+    inMsgId: true,
+    inMsgStr: false,
+  };
+}
+
+/**
+ * Process msgstr line
+ */
+function processMsgStrLine(line: string): {
+  value: string;
+  inMsgId: boolean;
+  inMsgStr: boolean;
+} {
+  return {
+    value: extractPoString(line, 7),
+    inMsgId: false,
+    inMsgStr: true,
+  };
+}
+
+/**
+ * Process continuation line
+ */
+function processContinuationLine(
+  line: string,
+  currentKey: string,
+  currentValue: string,
+  inMsgId: boolean,
+  inMsgStr: boolean,
+): { key: string; value: string } {
+  const value = extractPoContinuation(line);
+  return {
+    key: inMsgId ? currentKey + value : currentKey,
+    value: inMsgStr ? currentValue + value : currentValue,
+  };
+}
+
+/**
  * Load PO translation file
  */
-async function loadPoFile(filePath: string): Promise<TranslationData> {
+export async function loadPoFile(filePath: string): Promise<TranslationData> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     const data: TranslationData = {};
@@ -88,32 +160,31 @@ async function loadPoFile(filePath: string): Promise<TranslationData> {
       const trimmed = line.trim();
 
       if (trimmed.startsWith('msgid ')) {
-        // Save previous entry if exists
-        if (currentKey && currentValue) {
-          data[currentKey] = currentValue;
-        }
-
-        currentKey = unescapePoString(
-          trimmed.substring(6).replaceAll(/(^["']|["']$)/g, ''),
+        const result = processMsgIdLine(
+          trimmed,
+          currentKey,
+          currentValue,
+          data,
         );
-        currentValue = '';
-        inMsgId = true;
-        inMsgStr = false;
+        currentKey = result.key;
+        currentValue = result.value;
+        inMsgId = result.inMsgId;
+        inMsgStr = result.inMsgStr;
       } else if (trimmed.startsWith('msgstr ')) {
-        currentValue = unescapePoString(
-          trimmed.substring(7).replaceAll(/(^["']|["']$)/g, ''),
-        );
-        inMsgId = false;
-        inMsgStr = true;
+        const result = processMsgStrLine(trimmed);
+        currentValue = result.value;
+        inMsgId = result.inMsgId;
+        inMsgStr = result.inMsgStr;
       } else if (trimmed.startsWith('"') && (inMsgId || inMsgStr)) {
-        const value = unescapePoString(
-          trimmed.replaceAll(/(^["']|["']$)/g, ''),
+        const result = processContinuationLine(
+          trimmed,
+          currentKey,
+          currentValue,
+          inMsgId,
+          inMsgStr,
         );
-        if (inMsgId) {
-          currentKey += value;
-        } else if (inMsgStr) {
-          currentValue += value;
-        }
+        currentKey = result.key;
+        currentValue = result.value;
       }
     }
 
@@ -126,16 +197,4 @@ async function loadPoFile(filePath: string): Promise<TranslationData> {
   } catch (error) {
     throw new Error(`Failed to load PO file ${filePath}: ${error}`);
   }
-}
-
-/**
- * Unescape string from PO format
- */
-function unescapePoString(str: string): string {
-  return str
-    .replaceAll(/\\n/g, '\n')
-    .replaceAll(/\\r/g, '\r')
-    .replaceAll(/\\t/g, '\t')
-    .replaceAll(/\\"/g, '"')
-    .replaceAll(/\\\\/g, '\\');
 }

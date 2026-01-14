@@ -104,7 +104,7 @@ export function runCLI(
     const args =
       command
         .match(/(?:[^\s"]+|"[^"]*")+/g)
-        ?.map(arg => arg.replaceAll(/^"|"$/g, '')) || [];
+        ?.map(arg => arg.replaceAll(/(^"|"$)/g, '')) || [];
 
     const result = spawnSync(binPath, args, {
       cwd: cwd || process.cwd(),

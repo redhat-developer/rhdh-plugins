@@ -884,54 +884,108 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
         return; // Prevent infinite recursion
       }
 
-      // Match object properties: key: { ... } or key: 'value'
-      // Handle both identifier keys and string literal keys
-      const propertyPattern = /(?:(\w+)|['"]([^'"]+)['"])\s*:\s*([^,}]+)/g;
-      let match = propertyPattern.exec(nestedContent);
-      const processed = new Set<number>();
-
-      while (match !== null) {
-        if (processed.has(match.index)) {
-          match = propertyPattern.exec(nestedContent);
-          continue;
+      // Helper: Extract matches from a regex pattern
+      const extractMatches = (
+        pattern: RegExp,
+        textContent: string,
+        processed: Set<number>,
+      ): Array<{
+        key: string;
+        value: string;
+        index: number;
+        endIndex: number;
+      }> => {
+        const matches: Array<{
+          key: string;
+          value: string;
+          index: number;
+          endIndex: number;
+        }> = [];
+        let match = pattern.exec(textContent);
+        while (match !== null) {
+          if (!processed.has(match.index)) {
+            processed.add(match.index);
+            matches.push({
+              key: match[1],
+              value: match[2].trim(),
+              index: match.index,
+              endIndex: match.index + match[0].length,
+            });
+          }
+          match = pattern.exec(textContent);
         }
-        processed.add(match.index);
+        return matches;
+      };
 
-        const key = match[1] || match[2]; // identifier or string literal
-        const value = match[3].trim();
+      // Helper: Find matching closing brace for nested object
+      const findMatchingBrace = (
+        textContent: string,
+        startIndex: number,
+      ): string | null => {
+        const valueStart = textContent.indexOf('{', startIndex);
+        if (valueStart === -1) {
+          return null;
+        }
 
-        const fullKey = prefix ? `${prefix}.${key}` : key;
-
-        // Check if value is a nested object
-        if (value.startsWith('{')) {
-          // Find the matching closing brace
-          let braceCount = 0;
-          const endIndex = match.index + match[0].length;
-          for (let i = endIndex; i < nestedContent.length; i++) {
-            if (nestedContent[i] === '{') braceCount++;
-            if (nestedContent[i] === '}') {
-              braceCount--;
-              if (braceCount === 0) {
-                const nestedSubContent = nestedContent.substring(
-                  endIndex,
-                  i + 1,
-                );
-                extractNestedKeys(
-                  nestedSubContent,
-                  fullKey,
-                  depth + 1,
-                  maxDepth,
-                );
-                break;
-              }
+        let braceCount = 0;
+        for (let i = valueStart; i < textContent.length; i++) {
+          if (textContent[i] === '{') braceCount++;
+          if (textContent[i] === '}') {
+            braceCount--;
+            if (braceCount === 0) {
+              return textContent.substring(valueStart, i + 1);
             }
           }
-        } else if (value.match(/^['"]/)) {
-          // Leaf node - string value
+        }
+        return null;
+      };
+
+      // Pattern for identifier keys: word followed by colon and value
+      // Use non-greedy quantifier with reasonable limit to prevent ReDoS
+      // Limit value to 10000 chars to prevent DoS attacks
+      const identifierKeyPattern =
+        /(\w+)\s*:\s*([^,}]{0,10000}?)(?=\s*,|\s*\w+\s*:|$)/g;
+
+      // Pattern for string literal keys: 'key' or "key" followed by colon and value
+      // Limit key to 1000 chars and value to 10000 chars to prevent DoS
+      const stringKeyPattern =
+        /['"]([^'"]{0,1000})['"]\s*:\s*([^,}]{0,10000}?)(?=\s*,|\s*(?:\w+|['"])\s*:|$)/g;
+
+      const processed = new Set<number>();
+      const allMatches: Array<{
+        key: string;
+        value: string;
+        index: number;
+        endIndex: number;
+      }> = [];
+
+      // Collect matches from both patterns
+      allMatches.push(
+        ...extractMatches(identifierKeyPattern, nestedContent, processed),
+      );
+      stringKeyPattern.lastIndex = 0;
+      allMatches.push(
+        ...extractMatches(stringKeyPattern, nestedContent, processed),
+      );
+
+      // Sort by index to process in order
+      allMatches.sort((a, b) => a.index - b.index);
+
+      // Process each match
+      for (const matchData of allMatches) {
+        const fullKey = prefix ? `${prefix}.${matchData.key}` : matchData.key;
+
+        if (matchData.value.startsWith('{')) {
+          const nestedSubContent = findMatchingBrace(
+            nestedContent,
+            matchData.index,
+          );
+          if (nestedSubContent) {
+            extractNestedKeys(nestedSubContent, fullKey, depth + 1, maxDepth);
+          }
+        } else if (matchData.value.match(/^['"]/)) {
           keys.add(fullKey);
         }
-
-        match = propertyPattern.exec(nestedContent);
       }
     };
 

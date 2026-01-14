@@ -102,6 +102,54 @@ export function extractTranslationKeys(
     };
 
     /**
+     * Track invalid key for warning (avoid duplicates)
+     */
+    const trackInvalidKey = (key: string): void => {
+      if (!invalidKeys.includes(key)) {
+        invalidKeys.push(key);
+      }
+    };
+
+    /**
+     * Extract text from template expression
+     */
+    const extractTemplateText = (template: ts.TemplateExpression): string => {
+      let templateText = '';
+      for (const part of template.templateSpans) {
+        if (part.literal) {
+          templateText += part.literal.text;
+        }
+      }
+      if (template.head) {
+        templateText = template.head.text + templateText;
+      }
+      return templateText;
+    };
+
+    /**
+     * Extract value from initializer node
+     */
+    const extractValueFromInitializer = (
+      initializer: ts.Node,
+    ): string | null => {
+      const unwrapped = unwrapTypeAssertion(initializer);
+
+      if (ts.isStringLiteral(unwrapped)) {
+        return unwrapped.text;
+      }
+
+      if (ts.isTemplateExpression(unwrapped)) {
+        return extractTemplateText(unwrapped);
+      }
+
+      if (ts.isNoSubstitutionTemplateLiteral(unwrapped)) {
+        return unwrapped.text;
+      }
+
+      return null;
+    };
+
+    /**
      * Extract translation keys from an object literal expression
      * Validates keys during extraction for better performance
      */
@@ -124,12 +172,8 @@ export function extractTranslationKeys(
 
         const fullKey = prefix ? `${prefix}.${keyName}` : keyName;
 
-        // Validate key before processing (inline validation for better performance)
         if (!isValidKey(fullKey)) {
-          // Track invalid keys for warning (avoid duplicate warnings)
-          if (!invalidKeys.includes(fullKey)) {
-            invalidKeys.push(fullKey);
-          }
+          trackInvalidKey(fullKey);
           continue;
         }
 
@@ -140,29 +184,15 @@ export function extractTranslationKeys(
 
         const unwrappedInitializer = unwrapTypeAssertion(initializer);
 
-        if (ts.isStringLiteral(unwrappedInitializer)) {
-          // Leaf node - this is a translation value
-          keys[fullKey] = unwrappedInitializer.text;
-        } else if (ts.isTemplateExpression(unwrappedInitializer)) {
-          // Template literal with substitutions (backticks with ${variable})
-          // Extract the text content
-          let templateText = '';
-          for (const part of unwrappedInitializer.templateSpans) {
-            if (part.literal) {
-              templateText += part.literal.text;
-            }
-          }
-          // Also include the head text if present
-          if (unwrappedInitializer.head) {
-            templateText = unwrappedInitializer.head.text + templateText;
-          }
-          keys[fullKey] = templateText;
-        } else if (ts.isNoSubstitutionTemplateLiteral(unwrappedInitializer)) {
-          // Simple template literal without substitutions (backticks like `{{orgName}} Catalog`)
-          // Extract the raw text content
-          keys[fullKey] = unwrappedInitializer.text;
-        } else if (ts.isObjectLiteralExpression(unwrappedInitializer)) {
-          // Nested object - recurse
+        // Try to extract value from initializer
+        const value = extractValueFromInitializer(unwrappedInitializer);
+        if (value !== null) {
+          keys[fullKey] = value;
+          continue;
+        }
+
+        // Handle nested object literal
+        if (ts.isObjectLiteralExpression(unwrappedInitializer)) {
           extractFromObjectLiteral(unwrappedInitializer, fullKey);
         }
       }
@@ -494,11 +524,75 @@ export function extractTranslationKeys(
       );
     };
 
-    // Visit all nodes in the AST
-    const visit = (node: ts.Node) => {
+    /**
+     * Extract keys from TranslationRef type literal
+     */
+    const extractFromTranslationRefType = (
+      messagesType: ts.TypeLiteralNode,
+    ): void => {
+      for (const member of messagesType.members) {
+        if (!ts.isPropertySignature(member) || !member.name) {
+          continue;
+        }
+
+        const keyName = extractPropertyKeyName(member.name);
+        if (!keyName || !member.type) {
+          continue;
+        }
+
+        if (!ts.isLiteralTypeNode(member.type)) {
+          continue;
+        }
+
+        const literalType = member.type;
+        if (!literalType.literal || !ts.isStringLiteral(literalType.literal)) {
+          continue;
+        }
+
+        const stringValue = literalType.literal.text;
+        if (isValidKey(keyName)) {
+          keys[keyName] = stringValue;
+        } else {
+          trackInvalidKey(keyName);
+        }
+      }
+    };
+
+    /**
+     * Extract from TranslationRef type declarations in variable statements
+     */
+    const extractFromTranslationRefDeclarations = (
+      node: ts.VariableStatement,
+    ): void => {
+      for (const decl of node.declarationList.declarations) {
+        if (!decl.type || !ts.isTypeReferenceNode(decl.type)) {
+          continue;
+        }
+
+        const typeRef = decl.type;
+        if (
+          !ts.isIdentifier(typeRef.typeName) ||
+          typeRef.typeName.text !== 'TranslationRef' ||
+          !typeRef.typeArguments ||
+          typeRef.typeArguments.length < 2
+        ) {
+          continue;
+        }
+
+        // Second type argument is the messages object type
+        const messagesType = typeRef.typeArguments[1];
+        if (ts.isTypeLiteralNode(messagesType)) {
+          extractFromTranslationRefType(messagesType);
+        }
+      }
+    };
+
+    /**
+     * Handle call expression nodes
+     */
+    const handleCallExpression = (node: ts.CallExpression): void => {
       if (isCallExpressionWithName(node, 'createTranslationRef')) {
         const extractedPluginId = extractFromCreateTranslationRef(node);
-        // Use the first plugin ID found (most files have one createTranslationRef)
         if (extractedPluginId && !pluginId) {
           pluginId = extractedPluginId;
         }
@@ -508,61 +602,40 @@ export function extractTranslationKeys(
         extractFromCreateTranslationMessages(node);
       } else if (isCallExpressionWithName(node, 'defineMessages')) {
         extractFromDefineMessages(node);
-      } else if (ts.isVariableStatement(node)) {
-        extractFromVariableStatement(node);
-        // Also check for TranslationRef type declarations in variable declarations
-        // Pattern: declare const X: TranslationRef<"id", { readonly "key": "value" }>
-        for (const decl of node.declarationList.declarations) {
-          if (decl.type && ts.isTypeReferenceNode(decl.type)) {
-            const typeRef = decl.type;
-            if (
-              ts.isIdentifier(typeRef.typeName) &&
-              typeRef.typeName.text === 'TranslationRef' &&
-              typeRef.typeArguments &&
-              typeRef.typeArguments.length >= 2
-            ) {
-              // Second type argument is the messages object type
-              const messagesType = typeRef.typeArguments[1];
-              if (ts.isTypeLiteralNode(messagesType)) {
-                // Extract keys from the type literal
-                for (const member of messagesType.members) {
-                  if (ts.isPropertySignature(member) && member.name) {
-                    const keyName = extractPropertyKeyName(member.name);
-                    if (keyName && member.type) {
-                      // Check if it's a string literal type
-                      // String literal types are represented as LiteralTypeNode with StringLiteral
-                      if (ts.isLiteralTypeNode(member.type)) {
-                        const literalType = member.type;
-                        if (
-                          literalType.literal &&
-                          ts.isStringLiteral(literalType.literal)
-                        ) {
-                          const stringValue = literalType.literal.text;
-                          // Validate key before storing (inline validation for better performance)
-                          if (isValidKey(keyName)) {
-                            keys[keyName] = stringValue;
-                          } else {
-                            if (!invalidKeys.includes(keyName)) {
-                              invalidKeys.push(keyName);
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       } else if (isCallExpressionWithName(node, 't')) {
         extractFromTFunction(node);
-      } else if (ts.isCallExpression(node) && isI18nTCall(node)) {
+      } else if (isI18nTCall(node)) {
         extractFromI18nT(node);
-      } else if (ts.isCallExpression(node) && isUseTranslationTCall(node)) {
+      } else if (isUseTranslationTCall(node)) {
         extractFromUseTranslationT(node);
+      }
+    };
+
+    /**
+     * Handle variable statement nodes
+     */
+    const handleVariableStatement = (node: ts.VariableStatement): void => {
+      extractFromVariableStatement(node);
+      extractFromTranslationRefDeclarations(node);
+    };
+
+    /**
+     * Handle JSX nodes
+     */
+    const handleJsxNode = (
+      node: ts.JsxElement | ts.JsxSelfClosingElement,
+    ): void => {
+      extractFromJsxTrans(node);
+    };
+
+    // Visit all nodes in the AST
+    const visit = (node: ts.Node) => {
+      if (ts.isCallExpression(node)) {
+        handleCallExpression(node);
+      } else if (ts.isVariableStatement(node)) {
+        handleVariableStatement(node);
       } else if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node)) {
-        extractFromJsxTrans(node);
+        handleJsxNode(node);
       }
 
       // Recursively visit child nodes
