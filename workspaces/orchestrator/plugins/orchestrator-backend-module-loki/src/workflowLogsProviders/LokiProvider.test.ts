@@ -21,10 +21,6 @@ import mockWorkflowLog from '../../__fixtures__/mockWorkflowLogs';
 
 describe('LokiProvider', () => {
   describe('FromConfig', () => {
-    it('should do something when nothing in the app-config or it is configured wrong', () => {
-      // TODO
-      expect(true).toEqual(true);
-    });
     it('should create a provider when there is an entry in the app-config', () => {
       const lokiAppConfig = {
         orchestrator: {
@@ -89,9 +85,6 @@ describe('LokiProvider', () => {
     beforeEach(() => {
       jest.clearAllMocks();
     });
-    it('should be somthing wrong', async () => {
-      // TODO
-    });
     it('should pass with defaults', async () => {
       const mockResponse: Partial<Response> = {
         ok: true,
@@ -121,7 +114,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
       const workflowLogs =
         await provider.fetchWorkflowLogsByIntance(workflowInstance);
 
@@ -129,7 +122,9 @@ describe('LokiProvider', () => {
       expect(fetch).toHaveBeenCalledWith(urlToFetch);
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
-      expect(parsedURLToFetch.searchParams.get('end')).toEqual('');
+      expect(parsedURLToFetch.searchParams.get('end')).toEqual(
+        '2026-01-03T16:35:13.621Z',
+      );
       expect(parsedURLToFetch.searchParams.get('start')).toEqual(
         '2025-12-05T16:30:13.621Z',
       ); // should be 5 minutes before
@@ -144,6 +139,45 @@ describe('LokiProvider', () => {
       expect(workflowLogs.logs[0]).toHaveProperty('log');
       // Sorted correctly, this id is the last in the mockdata and should be first when returned
       expect(workflowLogs.logs[0].id).toEqual('1764952546327102000');
+    });
+
+    it('should have an enddate that had 5 minutes added to it', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockWorkflowLog),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+
+      const lokiAppConfig = {
+        orchestrator: {
+          workflowLogProvider: {
+            loki: {
+              baseUrl: 'http://localhost:3100',
+            },
+          },
+        },
+      };
+
+      const lokiConfig = new ConfigReader(lokiAppConfig);
+      const provider = LokiProvider.fromConfig(lokiConfig);
+      const workflowInstance: ProcessInstanceDTO = {
+        id: '12345',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '2025-12-05T17:35:13.621Z',
+        nodes: [],
+      };
+
+      const urlToFetch =
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2025-12-05T17%3A40%3A13.621Z';
+
+      await provider.fetchWorkflowLogsByIntance(workflowInstance);
+      const parsedURLToFetch = new URL(urlToFetch);
+      expect(fetch).toHaveBeenCalledWith(urlToFetch);
+      expect(parsedURLToFetch.searchParams.get('end')).toEqual(
+        '2025-12-05T17:40:13.621Z',
+      ); // Should be 5 minutes after
     });
 
     it('should have a custom log selector and filter', async () => {
@@ -185,7 +219,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
 
       await provider.fetchWorkflowLogsByIntance(workflowInstance);
 
@@ -235,7 +269,7 @@ describe('LokiProvider', () => {
       };
 
       const urlToFetch =
-        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=';
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
 
       await provider.fetchWorkflowLogsByIntance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);

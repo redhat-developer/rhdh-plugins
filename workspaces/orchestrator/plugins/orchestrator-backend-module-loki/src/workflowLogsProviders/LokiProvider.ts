@@ -50,11 +50,16 @@ export class LokiProvider implements WorkflowLogProvider {
     })
       .minus({ minutes: 5 })
       .toISO();
+    // Loki queries time range can't exceeds the limit (query length: 959h37m33.575s, limit: 30d1h)
+    // If there is no end date specified, then just add 29 days to the start date
+    // Assume that if there is an end date the range between start and end isn't more than 30 days
     const endTime = instance.end
       ? DateTime.fromISO(instance.end as string, { setZone: true })
           .plus({ minutes: 5 })
           .toISO()
-      : '';
+      : DateTime.fromISO(instance.start as string, { setZone: true })
+          .plus({ days: 29 })
+          .toISO();
     const lokiApiEndpoint = '/loki/api/v1/query_range';
     // Query is created with a log stream selector and then a log pipeline for more filtering
     // format looks like this: {stream-selector=expression} | log pipeline/log filter expression
