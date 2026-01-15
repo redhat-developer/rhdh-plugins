@@ -63,11 +63,14 @@ function createSafeEnvironment(): NodeJS.ProcessEnv {
   const safePathDirs = pathDirs.filter(dir => {
     if (!dir || dir.trim() === '') return false;
     // Normalize paths for comparison (handle trailing slashes)
-    const normalizedDir = path.normalize(dir.trim()).replace(/[/\\]+$/, '');
+    // ReDoS protection: use bounded quantifier {1,10} instead of + to prevent backtracking
+    // Limit trailing slashes to 10 (more than enough for any real path)
+    let normalizedDir = path.normalize(dir.trim());
+    normalizedDir = normalizedDir.replace(/[/\\]{1,10}$/, '');
     return systemPaths.some(systemPath => {
-      const normalizedSystemPath = path
-        .normalize(systemPath)
-        .replace(/[/\\]+$/, '');
+      let normalizedSystemPath = path.normalize(systemPath);
+      // ReDoS protection: use bounded quantifier
+      normalizedSystemPath = normalizedSystemPath.replace(/[/\\]{1,10}$/, '');
       // Only allow exact matches to prevent subdirectory injection
       return normalizedDir === normalizedSystemPath;
     });
