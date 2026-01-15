@@ -51,12 +51,6 @@ test.describe('Bulk Import', () => {
     context = await browser.newContext();
     sharedPage = await context.newPage();
 
-    // Handle guest authentication dialog
-    // TODO - Remove it after https://issues.redhat.com/browse/RHIDP-2043
-    sharedPage.on('dialog', async dialog => {
-      await dialog.accept();
-    });
-
     await mockBulkImportRepositoriesResponse(sharedPage, mockRepositoriesData);
     await sharedPage.goto('/');
 
