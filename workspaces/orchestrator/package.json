@@ -55,7 +55,8 @@
     "react": "^18",
     "react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0",
-    "zod-to-json-schema": "3.24.6"
+    "zod-to-json-schema": "3.24.6",
+    "@backstage/backend-plugin-api": "1.5.0"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
