@@ -1,5 +1,16 @@
 ### Dependencies
 
+## 6.11.0
+
+### Minor Changes
+
+- 88ac11d: Implement the execution of import orchestrator workflows with the help of the bulk-import plugin.
+
+### Patch Changes
+
+- Updated dependencies [88ac11d]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.11.0
+
 ## 6.10.1
 
 ### Patch Changes
