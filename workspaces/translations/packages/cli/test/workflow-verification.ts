@@ -35,7 +35,7 @@ const TEST_SOURCE_DIR = path.join(TEST_DIR, 'src');
 
 /**
  * Create a safe environment with only fixed, non-writable PATH directories
- * Filters PATH to only include standard system directories
+ * Filters PATH to only include standard system directories (exact matches only)
  */
 function createSafeEnvironment(): NodeJS.ProcessEnv {
   const safeEnv = { ...process.env };
@@ -43,6 +43,7 @@ function createSafeEnvironment(): NodeJS.ProcessEnv {
 
   // Standard system directories that are typically non-writable
   // These are common across Unix-like systems and Windows
+  // Only exact matches are allowed to prevent subdirectory injection
   const systemPaths = [
     '/usr/bin',
     '/usr/sbin',
@@ -56,17 +57,23 @@ function createSafeEnvironment(): NodeJS.ProcessEnv {
     'C:\\Windows\\System32\\WindowsPowerShell\\v1.0',
   ];
 
-  // Filter PATH to only include system directories
+  // Filter PATH to only include exact matches to system directories
+  // This prevents subdirectory injection attacks
   const pathDirs = currentPath.split(path.delimiter);
   const safePathDirs = pathDirs.filter(dir => {
-    // Normalize paths for comparison
-    const normalizedDir = path.normalize(dir);
-    return systemPaths.some(systemPath =>
-      normalizedDir.startsWith(path.normalize(systemPath)),
-    );
+    if (!dir || dir.trim() === '') return false;
+    // Normalize paths for comparison (handle trailing slashes)
+    const normalizedDir = path.normalize(dir.trim()).replace(/[/\\]+$/, '');
+    return systemPaths.some(systemPath => {
+      const normalizedSystemPath = path
+        .normalize(systemPath)
+        .replace(/[/\\]+$/, '');
+      // Only allow exact matches to prevent subdirectory injection
+      return normalizedDir === normalizedSystemPath;
+    });
   });
 
-  // If no safe paths found, use minimal safe defaults
+  // If no safe paths found, use minimal safe defaults that exist
   if (safePathDirs.length === 0) {
     safeEnv.PATH = systemPaths
       .filter(p => {
