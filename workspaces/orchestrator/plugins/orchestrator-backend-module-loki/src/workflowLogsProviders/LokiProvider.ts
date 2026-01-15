@@ -44,7 +44,7 @@ export class LokiProvider implements WorkflowLogProvider {
   async fetchWorkflowLogsByIntance(
     instance: ProcessInstanceDTO,
   ): Promise<WorkflowLogsResponse> {
-    // Becuase of timing issues, subtract 5 mintues from the start and add 5 minutes to the end
+    // Because of timing issues, subtract 5 mintues from the start and add 5 minutes to the end
     const startTime = DateTime.fromISO(instance.start as string, {
       setZone: true,
     })
