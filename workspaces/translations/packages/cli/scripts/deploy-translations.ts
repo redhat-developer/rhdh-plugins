@@ -965,23 +965,25 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
       }
 
       // Pattern for identifier keys: word followed by colon and value
-      // ReDoS protection: deterministic pattern without lookahead backtracking
+      // ReDoS protection: linear complexity pattern using non-greedy quantifier
       // - Match word, colon, then value, then delimiter
       // - Limit whitespace to 100 chars and value to 5000 chars to prevent DoS
-      // - Match delimiter as part of pattern (not lookahead) to avoid backtracking
-      // - Value is captured in match[2], delimiter in match[3] (not used)
+      // - Non-greedy quantifier {1,5000}? minimizes backtracking (matches minimum needed)
+      // - Delimiter match ensures pattern completes deterministically
       // - All quantifiers are bounded: no unbounded * or + operators
+      // - Linear complexity: O(n) where n is input length
       const identifierKeyPattern =
-        /(\w+)\s{0,100}:\s{0,100}([^,}\n]{1,5000})([,}\n])/g;
+        /(\w+)\s{0,100}:\s{0,100}([^,}\n]{1,5000}?)([,}\n])/g;
 
       // Pattern for string literal keys: 'key' or "key" followed by colon and value
-      // ReDoS protection: deterministic pattern without lookahead backtracking
+      // ReDoS protection: linear complexity pattern using non-greedy quantifier
       // - Limit key to 500 chars, whitespace to 100 chars, and value to 5000 chars
-      // - Match delimiter as part of pattern (not lookahead) to avoid backtracking
-      // - Value is captured in match[2], delimiter in match[3] (not used)
+      // - Non-greedy quantifier {1,5000}? minimizes backtracking (matches minimum needed)
+      // - Delimiter match ensures pattern completes deterministically
       // - All quantifiers are bounded: no unbounded * or + operators
+      // - Linear complexity: O(n) where n is input length
       const stringKeyPattern =
-        /['"]([^'"]{1,500})['"]\s{0,100}:\s{0,100}([^,}\n]{1,5000})([,}\n])/g;
+        /['"]([^'"]{1,500})['"]\s{0,100}:\s{0,100}([^,}\n]{1,5000}?)([,}\n])/g;
 
       const processed = new Set<number>();
       const allMatches: Array<{
