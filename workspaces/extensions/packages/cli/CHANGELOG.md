@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/extensions-cli
 
+## 0.14.2
+
+### Patch Changes
+
+- 3b41cf4: update backstage types import
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.14.2
+
 ## 0.14.1
 
 ### Patch Changes
