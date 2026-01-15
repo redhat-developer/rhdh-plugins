@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.8.2
+
+### Patch Changes
+
+- bb8ef80: Added drawer state management utilities for integration with application drawers.
+
 ## 1.8.1
 
 ### Patch Changes
