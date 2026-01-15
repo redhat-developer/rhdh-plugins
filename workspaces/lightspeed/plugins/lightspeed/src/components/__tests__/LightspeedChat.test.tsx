@@ -93,6 +93,22 @@ jest.mock('../../hooks/useTranslation', () => ({
 jest.mock('../../hooks/useLightspeedDrawerContext', () => ({
   useLightspeedDrawerContext: jest.fn(),
 }));
+jest.mock('../../hooks/usePinnedChatsSettings', () => ({
+  usePinnedChatsSettings: jest.fn().mockReturnValue({
+    isPinningChatsEnabled: true,
+    pinnedChats: [],
+    handlePinningChatsToggle: jest.fn(),
+    pinChat: jest.fn(),
+    unpinChat: jest.fn(),
+  }),
+}));
+
+jest.mock('../../hooks/useSortSettings', () => ({
+  useSortSettings: jest.fn().mockReturnValue({
+    selectedSort: 'newest',
+    handleSortChange: jest.fn(),
+  }),
+}));
 
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');

@@ -195,6 +195,13 @@ const lightspeedTranslationJa = createTranslationMessages({
     'toolCall.copyResponse': '応答をコピー',
     'toolCall.summary': '応答の概要は次のとおりです',
     'toolCall.mcpServer': 'MCP サーバー',
+
+    // Sort options
+    'sort.label': '会話を並べ替え',
+    'sort.newest': '日付（新しい順）',
+    'sort.oldest': '日付（古い順）',
+    'sort.alphabeticalAsc': '名前（A-Z）',
+    'sort.alphabeticalDesc': '名前（Z-A）',
   },
 });
 

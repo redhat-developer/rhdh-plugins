@@ -201,6 +201,13 @@ const lightspeedTranslationIt = createTranslationMessages({
     'toolCall.copyResponse': 'Copia risposta',
     'toolCall.summary': 'Ecco un riepilogo della tua risposta',
     'toolCall.mcpServer': 'Server MCP',
+
+    // Sort options
+    'sort.label': 'Ordina conversazioni',
+    'sort.newest': 'Data (più recente prima)',
+    'sort.oldest': 'Data (meno recente prima)',
+    'sort.alphabeticalAsc': 'Nome (A-Z)',
+    'sort.alphabeticalDesc': 'Nome (Z-A)',
   },
 });
 

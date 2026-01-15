@@ -91,6 +91,12 @@ import {
   verifyNoResultsFoundMessage,
   verifyChatUnpinned,
   clearSearch,
+  openSortDropdown,
+  verifySortDropdownOptions,
+  selectSortOption,
+  verifySortDropdownVisible,
+  closeSortDropdown,
+  verifyConversationsSortedAlphabetically,
 } from './utils/chatManagement';
 import { login } from './utils/login';
 import {
@@ -558,6 +564,37 @@ test.describe('Lightspeed tests', () => {
         await verifyUnpinActionAvailable(sharedPage, translations);
         await selectUnpinAction(sharedPage, translations);
         await verifyChatUnpinned(sharedPage, translations);
+      });
+
+      test('Verify sort dropdown is available', async () => {
+        await verifySortDropdownVisible(sharedPage, translations);
+        await openSortDropdown(sharedPage, translations);
+        await verifySortDropdownOptions(sharedPage, translations);
+        await closeSortDropdown(sharedPage);
+      });
+
+      test('Verify conversations are sorted correctly', async () => {
+        // Verify alphabetical ascending sort (A-Z)
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'alphabeticalAsc', translations);
+        await verifyConversationsSortedAlphabetically(
+          sharedPage,
+          translations,
+          'asc',
+        );
+
+        // Verify alphabetical descending sort (Z-A)
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'alphabeticalDesc', translations);
+        await verifyConversationsSortedAlphabetically(
+          sharedPage,
+          translations,
+          'desc',
+        );
+
+        // Reset to newest first
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'newest', translations);
       });
     });
   });

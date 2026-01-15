@@ -153,6 +153,11 @@ readonly "settings.displayMode.label": string;
 readonly "settings.displayMode.overlay": string;
 readonly "settings.displayMode.docked": string;
 readonly "settings.displayMode.fullscreen": string;
+readonly "sort.label": string;
+readonly "sort.newest": string;
+readonly "sort.oldest": string;
+readonly "sort.alphabeticalAsc": string;
+readonly "sort.alphabeticalDesc": string;
 }>;
 
 // @alpha

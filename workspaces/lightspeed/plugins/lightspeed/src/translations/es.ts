@@ -251,6 +251,13 @@ const lightspeedTranslationEs = createTranslationMessages({
     'settings.displayMode.overlay': 'Superposición',
     'settings.displayMode.docked': 'Acoplar a ventana',
     'settings.displayMode.fullscreen': 'Pantalla completa',
+
+    // Sort options
+    'sort.label': 'Ordenar conversaciones',
+    'sort.newest': 'Fecha (más reciente primero)',
+    'sort.oldest': 'Fecha (más antiguo primero)',
+    'sort.alphabeticalAsc': 'Nombre (A-Z)',
+    'sort.alphabeticalDesc': 'Nombre (Z-A)',
   },
 });
 

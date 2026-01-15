@@ -362,3 +362,96 @@ export const verifyChatUnpinned = async (
       .filter({ hasText: translations['chatbox.emptyState.noPinnedChats'] }),
   ).toBeVisible();
 };
+
+export type SortOption =
+  | 'newest'
+  | 'oldest'
+  | 'alphabeticalAsc'
+  | 'alphabeticalDesc';
+
+export const openSortDropdown = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await page.getByRole('button', { name: translations['sort.label'] }).click();
+};
+
+export const verifySortDropdownOptions = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await expect(page.locator('#sort-select')).toMatchAriaSnapshot(`
+    - listbox:
+      - option "${translations['sort.newest']}"
+      - option "${translations['sort.oldest']}"
+      - option "${translations['sort.alphabeticalAsc']}"
+      - option "${translations['sort.alphabeticalDesc']}"
+    `);
+};
+
+export const selectSortOption = async (
+  page: Page,
+  sortOption: SortOption,
+  translations: LightspeedMessages,
+) => {
+  const sortOptionLabels: Record<SortOption, keyof LightspeedMessages> = {
+    newest: 'sort.newest',
+    oldest: 'sort.oldest',
+    alphabeticalAsc: 'sort.alphabeticalAsc',
+    alphabeticalDesc: 'sort.alphabeticalDesc',
+  };
+  await page
+    .getByRole('option', { name: translations[sortOptionLabels[sortOption]] })
+    .click();
+};
+
+export const getConversationNames = async (
+  page: Page,
+  translations: LightspeedMessages,
+): Promise<string[]> => {
+  const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
+  const recentSection = sidePanel.locator(
+    `ul[aria-label="${translations['conversation.category.recent']}"] li.pf-chatbot__menu-item`,
+  );
+
+  const chatItems = await recentSection.all();
+  const names: string[] = [];
+
+  for (const item of chatItems) {
+    const text = await item.textContent();
+    if (text) {
+      names.push(text.trim());
+    }
+  }
+
+  return names;
+};
+
+export const verifyConversationsSortedAlphabetically = async (
+  page: Page,
+  translations: LightspeedMessages,
+  order: 'asc' | 'desc' = 'asc',
+) => {
+  const conversationNames = await getConversationNames(page, translations);
+
+  const sortedNames = [...conversationNames].sort((a, b) =>
+    order === 'asc'
+      ? a.localeCompare(b, undefined, { sensitivity: 'base' })
+      : b.localeCompare(a, undefined, { sensitivity: 'base' }),
+  );
+
+  expect(conversationNames).toEqual(sortedNames);
+};
+
+export const verifySortDropdownVisible = async (
+  page: Page,
+  translations: LightspeedMessages,
+) => {
+  await expect(
+    page.getByRole('button', { name: translations['sort.label'] }),
+  ).toBeVisible();
+};
+
+export const closeSortDropdown = async (page: Page) => {
+  await page.keyboard.press('Escape');
+};
