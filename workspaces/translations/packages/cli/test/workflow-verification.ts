@@ -94,6 +94,45 @@ function createSafeEnvironment(): NodeJS.ProcessEnv {
   return safeEnv;
 }
 
+/**
+ * Find the absolute path to a command in safe PATH directories
+ * Returns the full path to the executable if found in safe directories
+ * @param command - The command to find (e.g., 'yarn', 'node')
+ * @returns Absolute path to the command, or null if not found
+ */
+function findCommandInSafePath(command: string): string | null {
+  const safeEnv = createSafeEnvironment();
+  const safePath = safeEnv.PATH || '';
+  const pathDirs = safePath.split(path.delimiter);
+  const isWindows = os.platform() === 'win32';
+
+  // On Windows, check for .exe, .cmd, .bat extensions
+  const extensions = isWindows ? ['', '.exe', '.cmd', '.bat'] : [''];
+
+  // Check each safe PATH directory for the command
+  for (const dir of pathDirs) {
+    if (!dir || dir.trim() === '') continue;
+
+    for (const ext of extensions) {
+      const commandPath = path.join(dir, `${command}${ext}`);
+      try {
+        if (fs.existsSync(commandPath)) {
+          // Verify it's actually a file (not a directory)
+          const stats = fs.statSync(commandPath);
+          if (stats.isFile()) {
+            return commandPath;
+          }
+        }
+      } catch {
+        // Continue searching if this directory doesn't exist or isn't accessible
+        continue;
+      }
+    }
+  }
+
+  return null;
+}
+
 interface TestResult {
   name: string;
   passed: boolean;
@@ -597,7 +636,19 @@ async function main() {
     console.log(chalk.yellow('⚠️  CLI not built. Building...'));
     // Create safe environment with only fixed, non-writable PATH directories
     const safeEnv = createSafeEnvironment();
-    const buildResult = spawnSync('yarn', ['build'], {
+
+    // Find yarn in safe PATH directories and use absolute path
+    const yarnPath = findCommandInSafePath('yarn');
+    if (!yarnPath) {
+      console.error(
+        chalk.red(
+          '❌ yarn not found in safe PATH directories. Please ensure yarn is installed in a system directory.',
+        ),
+      );
+      process.exit(1);
+    }
+
+    const buildResult = spawnSync(yarnPath, ['build'], {
       cwd: process.cwd(),
       stdio: 'inherit',
       env: safeEnv,
