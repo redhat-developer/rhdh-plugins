@@ -48,20 +48,29 @@ export const useSortSettings = (
   // Determine if we should persist settings (not for guest users)
   const shouldPersist = !isGuestUser(user);
 
-  // Subscribe to storage changes using observe() for proper async support
+  // Initialize from storage and subscribe to changes
   useEffect(() => {
     if (!user) {
       setSelectedSort('newest');
       return undefined;
     }
 
-    // For guest users, use default values without subscribing to storage
+    // For guest users, use default values without loading from storage
     if (isGuestUser(user)) {
       setSelectedSort('newest');
       return undefined;
     }
 
-    // Subscribe to sort order changes
+    // Load initial value from snapshot (works for browser mode)
+    try {
+      const sortSnapshot = bucket.snapshot<SortOption>(SORT_ORDER_KEY);
+      setSelectedSort(sortSnapshot.value ?? 'newest');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error reading sort order from storage:', error);
+    }
+
+    // Subscribe to changes (needed for database mode cross-tab sync)
     const sortSubscription = bucket
       .observe$<SortOption>(SORT_ORDER_KEY)
       .subscribe({

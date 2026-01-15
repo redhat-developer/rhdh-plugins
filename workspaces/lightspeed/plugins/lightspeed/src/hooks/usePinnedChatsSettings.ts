@@ -52,7 +52,7 @@ export const usePinnedChatsSettings = (
   // Determine if we should persist settings (not for guest users)
   const shouldPersist = !isGuestUser(user);
 
-  // Subscribe to storage changes using observe() for proper async support
+  // Initialize from storage and subscribe to changes
   useEffect(() => {
     if (!user) {
       setIsPinningChatsEnabled(true);
@@ -60,14 +60,26 @@ export const usePinnedChatsSettings = (
       return undefined;
     }
 
-    // For guest users, use default values without subscribing to storage
+    // For guest users, use default values without loading from storage
     if (isGuestUser(user)) {
       setIsPinningChatsEnabled(true);
       setPinnedChats([]);
       return undefined;
     }
 
-    // Subscribe to pinned enabled changes
+    // Load initial values from snapshot (works for browser mode)
+    try {
+      const enabledSnapshot = bucket.snapshot<boolean>(PINNED_ENABLED_KEY);
+      const chatsSnapshot = bucket.snapshot<string[]>(PINNED_CHATS_KEY);
+
+      setIsPinningChatsEnabled(enabledSnapshot.value ?? true);
+      setPinnedChats(chatsSnapshot.value ?? []);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Error reading pinned chats settings from storage:', error);
+    }
+
+    // Subscribe to changes (needed for database mode cross-tab sync)
     const enabledSubscription = bucket
       .observe$<boolean>(PINNED_ENABLED_KEY)
       .subscribe({
@@ -80,7 +92,6 @@ export const usePinnedChatsSettings = (
         },
       });
 
-    // Subscribe to pinned chats changes
     const chatsSubscription = bucket
       .observe$<string[]>(PINNED_CHATS_KEY)
       .subscribe({
