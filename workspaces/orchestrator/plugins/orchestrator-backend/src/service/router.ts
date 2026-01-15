@@ -273,8 +273,13 @@ function initPublicServices(
   // Probablt define that WorkflowLoggerService Class/type in the common or perhaps that -node package
   // Get the orchestrator logging config
   // Create that workflow logging class/interface instance here
-  const workflowLogProvider: WorkflowLogProvider | undefined =
-    workflowLogsProvidersRegistry.getProvider('loki');
+  const isWorkflowLogProviderAdded = config.getOptional(
+    'orchestrator.workflowLogProvider',
+  );
+  let workflowLogProvider;
+  if (isWorkflowLogProviderAdded) {
+    workflowLogProvider = workflowLogsProvidersRegistry.getProvider('loki');
+  }
 
   const orchestratorService = new OrchestratorService(
     sonataFlowService,

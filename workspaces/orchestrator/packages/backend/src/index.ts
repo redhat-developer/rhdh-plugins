@@ -75,10 +75,22 @@ backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
 // custom authentication provider module
 backend.add(import('custom-authentication-provider-module-backend'));
 
-// orchestrator Log Provider
-backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki'
-  ),
-);
+// orchestrator Log Provider, uncomment to use
+// If using this, make sure to add something similar to the below in the app-config
+/*
+```
+orchestrator:
+  workflowLogProvider:
+    loki:
+      baseUrl: http://localhost:3100
+      # logStreamSelectors:
+      #   - label: 'app'
+      #     value: '=~".+"'
+```
+*/
+// backend.add(
+//   import(
+//     '@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki'
+//   ),
+// );
 backend.start();
