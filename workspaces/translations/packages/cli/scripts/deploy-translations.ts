@@ -904,6 +904,15 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
         return isIdentifierStart(char) || (char >= '0' && char <= '9');
       };
 
+      // Helper: Skip whitespace characters and return new index
+      const skipWhitespace = (text: string, startIndex: number): number => {
+        let idx = startIndex;
+        while (idx < text.length && isWhitespace(text[idx])) {
+          idx++;
+        }
+        return idx;
+      };
+
       // Helper: Find matching closing brace for nested object
       const findMatchingBrace = (
         textContent: string,
@@ -953,9 +962,7 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
 
         while (i < textToParse.length) {
           // Skip whitespace (no regex - uses character comparison)
-          while (i < textToParse.length && isWhitespace(textToParse[i])) {
-            i++;
-          }
+          i = skipWhitespace(textToParse, i);
           if (i >= textToParse.length) break;
 
           const keyStart = i;
@@ -997,9 +1004,7 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
           }
 
           // Skip whitespace after key (no regex)
-          while (i < textToParse.length && isWhitespace(textToParse[i])) {
-            i++;
-          }
+          i = skipWhitespace(textToParse, i);
 
           // Look for colon
           if (i >= textToParse.length || textToParse[i] !== ':') {
@@ -1009,9 +1014,7 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
           i++; // Skip colon
 
           // Skip whitespace after colon (no regex)
-          while (i < textToParse.length && isWhitespace(textToParse[i])) {
-            i++;
-          }
+          i = skipWhitespace(textToParse, i);
 
           // Parse value: find next delimiter (comma, closing brace, or newline)
           const valueStart = i;
