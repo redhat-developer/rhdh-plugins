@@ -12,6 +12,7 @@ Models/ImportStatus.md
 Models/Import_github.md
 Models/Import_gitlab.md
 Models/Import_task.md
+Models/Import_workflow.md
 Models/Organization.md
 Models/OrganizationList.md
 Models/PullRequest.md
@@ -22,6 +23,7 @@ Models/ScaffolderTask.md
 Models/Source.md
 Models/SourceImport.md
 Models/TaskImportStatus.md
+Models/WorkflowImportStatus.md
 Models/findAllImports_200_response.md
 Models/findAllImports_500_response.md
 Models/ping_200_response.md

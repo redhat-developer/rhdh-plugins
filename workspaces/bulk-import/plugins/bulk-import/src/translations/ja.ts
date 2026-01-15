@@ -45,6 +45,8 @@ const bulkImportTranslationJa = createTranslationMessages({
     'repositories.importedEntitiesCount':
       'インポートされたエンティティー ({{count}})',
     'repositories.noRecordsFound': 'レコードが見つかりません',
+    'repositories.noProjectsFound':
+      'インポート可能なプロジェクトがありません。',
     'repositories.refresh': '更新',
     'repositories.import': 'インポート',
     'repositories.removing': '削除中...',
@@ -54,6 +56,8 @@ const bulkImportTranslationJa = createTranslationMessages({
     'repositories.repositoryText': 'リポジトリー',
     'repositories.removeRepositoryWarningScaffolder':
       'リポジトリーを削除すると、関連するすべての scaffolder タスク情報も削除されます。',
+    'repositories.removeRepositoryWarningOrchestrator':
+      'リポジトリーと関連するオーケストレーターのワークフロー情報を削除します。',
     'repositories.removeRepositoryWarning':
       'リポジトリーを削除すると、関連するすべての情報がカタログページから消去されます。',
     'repositories.removeRepositoryWarningGitlab':
@@ -66,6 +70,8 @@ const bulkImportTranslationJa = createTranslationMessages({
       'このリポジトリーは app-config ファイルに追加されています。削除するにはファイルを直接変更してください',
     'repositories.removeTooltipRepositoryScaffolder':
       'リポジトリーと関連する scaffolder タスク情報を削除します',
+    'repositories.removeTooltipRepositoryOrchestrator':
+      'リポジトリーと関連するオーケストレーターのワークフロー情報を削除します',
     'repositories.errorOccuredWhileFetching':
       'プルリクエストの取得中にエラーが発生しました',
     'repositories.failedToCreatePullRequest':
@@ -81,6 +87,10 @@ const bulkImportTranslationJa = createTranslationMessages({
     'status.waitingForApproval': '承認待ち',
     'status.imported': 'インポート',
     'status.readyToImport': 'インポート準備完了',
+    'status.waitingForPullRequestToStart': 'プルリクエストの開始を待機中',
+    'status.missingConfigurations': '設定が不足しています',
+    'status.failedCreatingPR': 'PR の作成に失敗しました',
+    'status.pullRequestRejected': 'プルリクエストが拒否されました',
     'errors.prErrorPermissions':
       '権限が不十分なため、新しい PR を作成できませんでした。管理者に問い合わせてください。',
     'errors.catalogInfoExists':
@@ -93,6 +103,10 @@ const bulkImportTranslationJa = createTranslationMessages({
       'リポジトリーに CODEOWNERS ファイルがありません。新しい PR を作成するには、CODEOWNERS ファイルを追加してください。',
     'errors.errorOccurred': 'エラーが発生しました',
     'errors.failedToCreatePullRequest': 'プルリクエストの作成に失敗しました',
+    'errors.noIntegrationsConfigured':
+      'GitHub または GitLab の統合が設定されていません。一括インポート機能を使用するには、少なくとも 1 つの統合を追加してください。',
+    'errors.addIntegrationsToConfig':
+      'この問題を解決するには、統合が Backstage 設定ファイル (app-config.yaml) に追加されていることを確認してください。',
     'validation.componentNameInvalid':
       '"{{value}}" は無効です。[a-zA-Z0-9] から成り、[-_.] のいずれかで区切られた一連の文字列 (合計最大 63 文字) が必要です。カタログファイル形式の詳細は、https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md を参照してください',
     'validation.componentNameRequired': 'コンポーネント名は必須です',
@@ -108,6 +122,7 @@ const bulkImportTranslationJa = createTranslationMessages({
     'table.headers.organizationGroup': '組織/グループ',
     'table.headers.group': 'グループ',
     'table.headers.status': 'ステータス',
+    'table.headers.taskStatus': 'タスクステータス',
     'table.headers.lastUpdated': '最終更新',
     'table.headers.actions': 'アクション',
     'table.headers.catalogInfoYaml': 'catalog-info.yaml',
@@ -163,6 +178,7 @@ const bulkImportTranslationJa = createTranslationMessages({
     'common.import': 'インポート',
     'common.remove': '削除',
     'common.save': '保存',
+    'common.documentation': 'ドキュメント',
     'common.select': '選択',
     'common.update': '更新',
     'common.view': '表示',
@@ -219,6 +235,8 @@ const bulkImportTranslationJa = createTranslationMessages({
     'forms.footer.createServiceNowTickets': 'ServiceNow チケットの作成',
     'forms.footer.createPullRequest': 'プルリクエストの作成',
     'forms.footer.createPullRequests': 'プルリクエストの作成',
+    'forms.footer.selectRepositoryTooltip':
+      'インポートするリポジトリーを選択してください。',
     'forms.footer.serviceNowTooltip':
       'ServiceNow チケットを作成する前に、Catalog-info.yaml ファイルを生成する必要があります',
     'forms.footer.importTooltip':
@@ -229,14 +247,27 @@ const bulkImportTranslationJa = createTranslationMessages({
     'tasks.taskId': 'タスク ID',
     'tasks.taskLink': 'タスクのリンク',
     'tasks.viewTask': 'タスクの表示',
-    'tasks.loading': '読み込み中...',
-    'tasks.errorFetchingData': 'データの取得中にエラーが発生しました',
     'tasks.taskCancelled': 'キャンセルされたタスク',
     'tasks.taskCompleted': '完了したタスク',
     'tasks.taskFailed': '失敗したタスク',
     'tasks.taskOpen': '未処理のタスク',
     'tasks.taskProcessing': '処理中のタスク',
     'tasks.taskSkipped': 'スキップされたタスク',
+    'workflows.workflowsFor': '{{importJobStatusId}} のワークフロー',
+    'workflows.workflowId': 'ワークフロー ID',
+    'workflows.workflowLink': 'ワークフローのリンク',
+    'workflows.viewWorkflow': 'ワークフローの表示',
+    'workflows.workflowPending': '保留中',
+    'workflows.workflowActive': 'アクティブ',
+    'workflows.workflowCompleted': '完了',
+    'workflows.workflowAborted': '中止',
+    'workflows.workflowError': 'エラー',
+    'workflows.workflowSuspended': '一時停止',
+    'workflows.workflowFetchError': 'ワークフローの取得エラー',
+    'importActions.loading': '読み込み中...',
+    'importActions.errorFetchingData': 'データの取得中にエラーが発生しました',
+    'importActions.noActions':
+      'このリポジトリーのインポートアクションが見つかりませんでした。',
   },
 });
 

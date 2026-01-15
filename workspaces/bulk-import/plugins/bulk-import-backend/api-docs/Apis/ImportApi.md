@@ -5,12 +5,16 @@ All URIs are relative to *http://localhost:7007/api/bulk-import*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**createImportJobs**](ImportApi.md#createImportJobs) | **POST** /imports | Submit Import Jobs |
+| [**createOrchestratorWorkflowJobs**](ImportApi.md#createOrchestratorWorkflowJobs) | **POST** /orchestrator-workflows | Execute an orchestrator workflow |
 | [**createTaskImportJobs**](ImportApi.md#createTaskImportJobs) | **POST** /task-imports | Execute a scaffolder template for a list of repositories |
 | [**deleteImportByRepo**](ImportApi.md#deleteImportByRepo) | **DELETE** /import/by-repo | Delete Import by repository |
+| [**deleteOrchestratorImportByRepo**](ImportApi.md#deleteOrchestratorImportByRepo) | **DELETE** /orchestrator-import/by-repo | Delete stored orchestrator workflow records for a specific repository |
 | [**deleteTaskImportByRepo**](ImportApi.md#deleteTaskImportByRepo) | **DELETE** /task-import/by-repo | Delete stored scaffolder task records for a specific repository |
 | [**findAllImports**](ImportApi.md#findAllImports) | **GET** /imports | Fetch Import Jobs |
+| [**findAllOrchestratorWorkflowImports**](ImportApi.md#findAllOrchestratorWorkflowImports) | **GET** /orchestrator-workflows | Fetch Import Jobs |
 | [**findAllTaskImports**](ImportApi.md#findAllTaskImports) | **GET** /task-imports | Fetch Import Jobs |
 | [**findImportStatusByRepo**](ImportApi.md#findImportStatusByRepo) | **GET** /import/by-repo | Get Import Status by repository |
+| [**findOrchestratorImportStatusByRepo**](ImportApi.md#findOrchestratorImportStatusByRepo) | **GET** /orchestrator-import/by-repo | Get Import Status by repository |
 | [**findTaskImportStatusByRepo**](ImportApi.md#findTaskImportStatusByRepo) | **GET** /task-import/by-repo | Get Import Status by repository |
 
 
@@ -39,6 +43,31 @@ Submit Import Jobs
 
 - **Content-Type**: application/json
 - **Accept**: application/json
+
+<a name="createOrchestratorWorkflowJobs"></a>
+# **createOrchestratorWorkflowJobs**
+> createOrchestratorWorkflowJobs(ImportRequest)
+
+Execute an orchestrator workflow
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **ImportRequest** | [**List**](../Models/ImportRequest.md)| List of Import jobs to create | |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: Not defined
 
 <a name="createTaskImportJobs"></a>
 # **createTaskImportJobs**
@@ -77,6 +106,32 @@ Delete Import by repository
 |------------- | ------------- | ------------- | -------------|
 | **repo** | **String**| the full URL to the repo | [optional] [default to null] |
 | **defaultBranch** | **String**| the name of the default branch | [optional] [default to main] |
+| **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
+
+### Return type
+
+null (empty response body)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: Not defined
+
+<a name="deleteOrchestratorImportByRepo"></a>
+# **deleteOrchestratorImportByRepo**
+> deleteOrchestratorImportByRepo(repo, approvalTool)
+
+Delete stored orchestrator workflow records for a specific repository
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **repo** | **String**| the full URL to the repo | [optional] [default to null] |
 | **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
 
 ### Return type
@@ -151,6 +206,38 @@ Fetch Import Jobs
 - **Content-Type**: Not defined
 - **Accept**: application/json
 
+<a name="findAllOrchestratorWorkflowImports"></a>
+# **findAllOrchestratorWorkflowImports**
+> findAllImports_200_response findAllOrchestratorWorkflowImports(api-version, pagePerIntegration, sizePerIntegration, page, size, sortOrder, sortColumn, search)
+
+Fetch Import Jobs
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **api-version** | **String**| API version.  ## Changelog  ### v1 (default) Initial version #### Deprecations * GET /imports   * Deprecation of &#39;pagePerIntegration&#39; and &#39;sizePerIntegration&#39; query parameters and introduction of new &#39;page&#39; and &#39;size&#39; parameters     * &#39;page&#39; takes precedence over &#39;pagePerIntegration&#39; if both are passed     * &#39;size&#39; takes precedence over &#39;sizePerIntegration&#39; if both are passed  ### v2 #### Breaking changes * GET /imports   * Query parameters:     * &#39;pagePerIntegration&#39; is ignored in favor of &#39;page&#39;     * &#39;sizePerIntegration&#39; is ignored in favor of &#39;size&#39;   * Response structure changed to include pagination info: instead of returning a simple list of Imports, the response is now an object containing the following fields:     * &#39;imports&#39;: the list of Imports     * &#39;page&#39;: the page requested     * &#39;size&#39;: the requested number of Imports requested per page     * &#39;totalCount&#39;: the total count of Imports  | [optional] [default to v1] [enum: v1, v2] |
+| **pagePerIntegration** | **Integer**| the page number for each Integration. **Deprecated**. Use the &#39;page&#39; query parameter instead. | [optional] [default to 1] |
+| **sizePerIntegration** | **Integer**| the number of items per Integration to return per page. **Deprecated**. Use the &#39;size&#39; query parameter instead. | [optional] [default to 20] |
+| **page** | **Integer**| the requested page number | [optional] [default to 1] |
+| **size** | **Integer**| the number of items to return per page | [optional] [default to 20] |
+| **sortOrder** | **String**| The order of sorting asc for ascending or desc for descending | [optional] [default to asc] [enum: asc, desc] |
+| **sortColumn** | **String**| The allowed values for sorting columns: - repository.name: Sort by repository name. - repository.organization: Sort by organization URL. - repository.url: Sort by repository URL. - lastUpdate: Sort by the last time the catalog-info.yaml was updated. - status: Sort by the status of the catalog-info.yaml.  | [optional] [default to repository.name] [enum: repository.name, repository.organization, repository.url, lastUpdate, status] |
+| **search** | **String**| returns only the items that match the search string | [optional] [default to null] |
+
+### Return type
+
+[**findAllImports_200_response**](../Models/findAllImports_200_response.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
 <a name="findAllTaskImports"></a>
 # **findAllTaskImports**
 > findAllImports_200_response findAllTaskImports(api-version, pagePerIntegration, sizePerIntegration, page, size, sortOrder, sortColumn, search)
@@ -195,6 +282,32 @@ Get Import Status by repository
 |------------- | ------------- | ------------- | -------------|
 | **repo** | **String**| the full URL to the repo | [optional] [default to null] |
 | **defaultBranch** | **String**| the name of the default branch | [optional] [default to main] |
+| **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
+
+### Return type
+
+[**Import**](../Models/Import.md)
+
+### Authorization
+
+[BearerAuth](../README.md#BearerAuth)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+<a name="findOrchestratorImportStatusByRepo"></a>
+# **findOrchestratorImportStatusByRepo**
+> Import findOrchestratorImportStatusByRepo(repo, approvalTool)
+
+Get Import Status by repository
+
+### Parameters
+
+|Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **repo** | **String**| the full URL to the repo | [optional] [default to null] |
 | **approvalTool** | **String**| the approvalTool to use | [optional] [default to GIT] |
 
 ### Return type

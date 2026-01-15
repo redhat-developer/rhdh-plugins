@@ -232,14 +232,32 @@ const bulkImportTranslationFr = createTranslationMessages({
     'tasks.taskId': 'ID de tâche',
     'tasks.taskLink': 'Lien pour les tâches',
     'tasks.viewTask': 'Afficher les tâches',
-    'tasks.loading': 'Chargement en cours...',
-    'tasks.errorFetchingData': 'Erreur lors de la récupération des données',
     'tasks.taskCancelled': 'Tâche annulée',
     'tasks.taskCompleted': 'Tâche complétée',
     'tasks.taskFailed': 'Tâche ayant échoué',
     'tasks.taskOpen': 'Tâche en cours',
     'tasks.taskProcessing': 'Traitement de la tâche en cours',
     'tasks.taskSkipped': 'Tâche ignorée',
+
+    // Workflows
+    'workflows.workflowsFor': 'Workflows pour {{importJobStatusId}}',
+    'workflows.workflowId': 'ID du workflow',
+    'workflows.workflowLink': 'Lien du workflow',
+    'workflows.viewWorkflow': 'Voir le workflow',
+    'workflows.workflowPending': 'En attente',
+    'workflows.workflowActive': 'Actif',
+    'workflows.workflowCompleted': 'Terminé',
+    'workflows.workflowAborted': 'Abandonné',
+    'workflows.workflowError': 'Erreur',
+    'workflows.workflowSuspended': 'Suspendu',
+    'workflows.workflowFetchError': 'Erreur de récupération du workflow',
+
+    // Import Actions
+    'importActions.loading': 'Chargement en cours...',
+    'importActions.errorFetchingData':
+      'Erreur lors de la récupération des données',
+    'importActions.noActions':
+      "Aucune action d'importation trouvée pour ce référentiel.",
   },
 });
 

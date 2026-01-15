@@ -75,4 +75,4 @@ spec:
       action: catalog:register
       input:
         optional: true
-        repoContentsUrl: https://${{ parameters.gitProviderHost }}/${{ parameters.organization }}/${{ parameters.name }}/blob/${{ parameters.branchName }}/catalog-info.yaml
+        repoContentsUrl: https://${{ parameters.gitProviderHost }}/${{ parameters.organization }}/${{ parameters.name }}/blob/${{ parameters.targetBranchName }}/catalog-info.yaml
