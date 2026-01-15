@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.7.2
+
+### Patch Changes
+
+- bb8ef80: updated drawer classname
+
 ## 1.7.1
 
 ### Patch Changes
