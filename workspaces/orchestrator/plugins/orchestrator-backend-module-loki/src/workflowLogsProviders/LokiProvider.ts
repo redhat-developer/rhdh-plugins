@@ -77,7 +77,7 @@ export class LokiProvider implements WorkflowLogProvider {
           index: number,
           arr: string | any[],
         ) => {
-          // somehting about that last comma
+          // something about that last comma
           streamSelector += `${entry.label || 'service_name'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
         },
       );
