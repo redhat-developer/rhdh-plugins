@@ -159,6 +159,14 @@ export const LightspeedChat = ({
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
+
+  // Open the chat history drawer when entering fullscreen mode on desktop
+  useEffect(() => {
+    if (!isMobile && isFullscreenMode) {
+      setIsChatHistoryDrawerOpen(true);
+    }
+  }, [isMobile, isFullscreenMode]);
+
   const {
     uploadError,
     showAlert,
