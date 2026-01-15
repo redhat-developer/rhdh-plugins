@@ -43,7 +43,9 @@ function getCacheFilePath(projectId: string, tmsUrl: string): string {
   const cacheDir = getCacheDir();
   // Create a safe filename from projectId and URL
   const safeProjectId = projectId.replaceAll(/[^a-zA-Z0-9]/g, '_');
-  const urlHash = createHash('md5')
+  // Use SHA-256 instead of MD5 for better security (even in non-sensitive contexts)
+  // Truncate to 8 chars for filename compatibility
+  const urlHash = createHash('sha256')
     .update(tmsUrl)
     .digest('hex')
     .substring(0, 8);
