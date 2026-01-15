@@ -26,7 +26,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import YAML from 'yaml';
 import glob from 'glob';
-import { JsonValue } from '@backstage/types/index';
+import { JsonValue } from '@backstage/types';
 
 /** A simple helper class to generate CSV files */
 class CSVGenerator<T> {

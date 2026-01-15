@@ -476,12 +476,6 @@ test.describe('Lightspeed tests', () => {
 
       test('Verify chat actions menu', async () => {
         await sharedPage.reload();
-        // Ensure the drawer is open after reload
-        const sidePanel = sharedPage.locator('.pf-v6-c-drawer__panel-main');
-        const isVisible = await sidePanel.isVisible();
-        if (!isVisible) {
-          await openChatDrawer(sharedPage, translations);
-        }
         await openChatContextMenu(sharedPage);
         await verifyChatContextMenuOptions(sharedPage, translations);
       });
@@ -545,12 +539,6 @@ test.describe('Lightspeed tests', () => {
 
         test('Verify search results when chats are pinned', async () => {
           await sharedPage.reload();
-          // Ensure the drawer is open after reload
-          const sidePanel = sharedPage.locator('.pf-v6-c-drawer__panel-main');
-          const isVisible = await sidePanel.isVisible();
-          if (!isVisible) {
-            await openChatDrawer(sharedPage, translations);
-          }
           await openChatContextMenu(sharedPage);
           await selectPinAction(sharedPage, translations);
           await searchChats(sharedPage, 'dummy search', translations);
