@@ -239,7 +239,6 @@ export const lightspeedMessages = {
   'settings.displayMode.overlay': 'Overlay',
   'settings.displayMode.docked': 'Dock to window',
   'settings.displayMode.fullscreen': 'Fullscreen',
-  
 
   // Sort options
   'sort.label': 'Sort conversations',

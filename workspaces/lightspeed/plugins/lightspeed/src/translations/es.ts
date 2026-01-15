@@ -251,7 +251,6 @@ const lightspeedTranslationEs = createTranslationMessages({
     'settings.displayMode.overlay': 'Superposición',
     'settings.displayMode.docked': 'Acoplar a ventana',
     'settings.displayMode.fullscreen': 'Pantalla completa',
-    
 
     // Sort options
     'sort.label': 'Ordenar conversaciones',
