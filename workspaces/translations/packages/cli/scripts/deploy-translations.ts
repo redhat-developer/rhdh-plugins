@@ -884,51 +884,24 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
         return; // Prevent infinite recursion
       }
 
-      // Helper: Extract matches from a regex pattern
-      // Includes safeguards to prevent ReDoS: iteration limit and timeout protection
-      const extractMatches = (
-        pattern: RegExp,
-        textContent: string,
-        processed: Set<number>,
-      ): Array<{
-        key: string;
-        value: string;
-        index: number;
-        endIndex: number;
-      }> => {
-        const matches: Array<{
-          key: string;
-          value: string;
-          index: number;
-          endIndex: number;
-        }> = [];
+      // Helper: Check if character is whitespace (without regex)
+      const isWhitespace = (char: string): boolean => {
+        return char === ' ' || char === '\t' || char === '\n' || char === '\r';
+      };
 
-        // Limit iterations to prevent ReDoS (max 10000 matches per pattern)
-        const MAX_ITERATIONS = 10000;
-        let iterations = 0;
-        let match = pattern.exec(textContent);
+      // Helper: Check if character is valid identifier start (without regex)
+      const isIdentifierStart = (char: string): boolean => {
+        return (
+          (char >= 'a' && char <= 'z') ||
+          (char >= 'A' && char <= 'Z') ||
+          char === '_' ||
+          char === '$'
+        );
+      };
 
-        while (match !== null && iterations < MAX_ITERATIONS) {
-          iterations++;
-          if (!processed.has(match.index)) {
-            processed.add(match.index);
-            matches.push({
-              key: match[1],
-              value: match[2].trim(),
-              index: match.index,
-              endIndex: match.index + match[0].length,
-            });
-          }
-          match = pattern.exec(textContent);
-        }
-
-        if (iterations >= MAX_ITERATIONS) {
-          console.warn(
-            `Regex iteration limit reached (${MAX_ITERATIONS}), stopping extraction`,
-          );
-        }
-
-        return matches;
+      // Helper: Check if character is valid identifier part (without regex)
+      const isIdentifierPart = (char: string): boolean => {
+        return isIdentifierStart(char) || (char >= '0' && char <= '9');
       };
 
       // Helper: Find matching closing brace for nested object
@@ -954,7 +927,7 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
         return null;
       };
 
-      // Validate input length to prevent ReDoS attacks
+      // Validate input length to prevent DoS attacks
       // Limit total content to 1MB to prevent memory exhaustion
       const MAX_CONTENT_LENGTH = 1024 * 1024; // 1MB
       if (nestedContent.length > MAX_CONTENT_LENGTH) {
@@ -964,28 +937,8 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
         return;
       }
 
-      // Pattern for identifier keys: word followed by colon and value
-      // ReDoS protection: linear complexity pattern using non-greedy quantifier
-      // - Match word, colon, then value, then delimiter
-      // - Limit whitespace to 100 chars and value to 5000 chars to prevent DoS
-      // - Non-greedy quantifier {1,5000}? minimizes backtracking (matches minimum needed)
-      // - Delimiter match ensures pattern completes deterministically
-      // - All quantifiers are bounded: no unbounded * or + operators
-      // - Linear complexity: O(n) where n is input length
-      const identifierKeyPattern =
-        /(\w+)\s{0,100}:\s{0,100}([^,}\n]{1,5000}?)([,}\n])/g;
-
-      // Pattern for string literal keys: 'key' or "key" followed by colon and value
-      // ReDoS protection: linear complexity pattern using non-greedy quantifier
-      // - Limit key to 500 chars, whitespace to 100 chars, and value to 5000 chars
-      // - Non-greedy quantifier {1,5000}? minimizes backtracking (matches minimum needed)
-      // - Delimiter match ensures pattern completes deterministically
-      // - All quantifiers are bounded: no unbounded * or + operators
-      // - Linear complexity: O(n) where n is input length
-      const stringKeyPattern =
-        /['"]([^'"]{1,500})['"]\s{0,100}:\s{0,100}([^,}\n]{1,5000}?)([,}\n])/g;
-
-      const processed = new Set<number>();
+      // Linear parser: Extract key-value pairs without regex to avoid backtracking
+      // True O(n) complexity using simple string operations
       const allMatches: Array<{
         key: string;
         value: string;
@@ -993,14 +946,112 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
         endIndex: number;
       }> = [];
 
-      // Collect matches from both patterns
-      allMatches.push(
-        ...extractMatches(identifierKeyPattern, nestedContent, processed),
-      );
-      stringKeyPattern.lastIndex = 0;
-      allMatches.push(
-        ...extractMatches(stringKeyPattern, nestedContent, processed),
-      );
+      const parseKeyValuePairs = (textToParse: string): void => {
+        let i = 0;
+        const MAX_VALUE_LENGTH = 5000;
+        const MAX_KEY_LENGTH = 500;
+
+        while (i < textToParse.length) {
+          // Skip whitespace (no regex - uses character comparison)
+          while (i < textToParse.length && isWhitespace(textToParse[i])) {
+            i++;
+          }
+          if (i >= textToParse.length) break;
+
+          const keyStart = i;
+          let key = '';
+          let keyEnd = i;
+
+          // Parse key: either identifier or quoted string
+          if (textToParse[i] === "'" || textToParse[i] === '"') {
+            // Quoted key
+            const quote = textToParse[i];
+            i++; // Skip opening quote
+            const keyStartInner = i;
+            while (i < textToParse.length && textToParse[i] !== quote) {
+              if (i - keyStartInner > MAX_KEY_LENGTH) break;
+              i++;
+            }
+            if (i < textToParse.length && textToParse[i] === quote) {
+              key = textToParse.substring(keyStartInner, i);
+              i++; // Skip closing quote
+              keyEnd = i;
+            } else {
+              // Invalid quoted key, skip
+              i++;
+              continue;
+            }
+          } else if (isIdentifierStart(textToParse[i])) {
+            // Identifier key (no regex - uses character comparison)
+            const keyStartInner = i;
+            while (i < textToParse.length && isIdentifierPart(textToParse[i])) {
+              if (i - keyStartInner > MAX_KEY_LENGTH) break;
+              i++;
+            }
+            key = textToParse.substring(keyStartInner, i);
+            keyEnd = i;
+          } else {
+            // Not a valid key start, skip this character
+            i++;
+            continue;
+          }
+
+          // Skip whitespace after key (no regex)
+          while (i < textToParse.length && isWhitespace(textToParse[i])) {
+            i++;
+          }
+
+          // Look for colon
+          if (i >= textToParse.length || textToParse[i] !== ':') {
+            i = keyEnd + 1;
+            continue;
+          }
+          i++; // Skip colon
+
+          // Skip whitespace after colon (no regex)
+          while (i < textToParse.length && isWhitespace(textToParse[i])) {
+            i++;
+          }
+
+          // Parse value: find next delimiter (comma, closing brace, or newline)
+          const valueStart = i;
+          let valueEnd = i;
+          let foundDelimiter = false;
+
+          while (i < textToParse.length && !foundDelimiter) {
+            if (i - valueStart > MAX_VALUE_LENGTH) {
+              // Value too long, skip this pair
+              break;
+            }
+
+            const char = textToParse[i];
+            if (char === ',' || char === '}' || char === '\n') {
+              valueEnd = i;
+              foundDelimiter = true;
+            } else {
+              i++;
+            }
+          }
+
+          if (foundDelimiter && valueEnd > valueStart) {
+            const value = textToParse.substring(valueStart, valueEnd).trim();
+            if (value.length > 0) {
+              allMatches.push({
+                key,
+                value,
+                index: keyStart,
+                endIndex: valueEnd + 1,
+              });
+            }
+            i = valueEnd + 1;
+          } else {
+            // No delimiter found or value too long, skip
+            i = keyEnd + 1;
+          }
+        }
+      };
+
+      parseKeyValuePairs(nestedContent);
 
       // Sort by index to process in order
       allMatches.sort((a, b) => a.index - b.index);
@@ -1017,7 +1068,10 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
           if (nestedSubContent) {
             extractNestedKeys(nestedSubContent, fullKey, depth + 1, maxDepth);
           }
-        } else if (matchData.value.match(/^['"]/)) {
+        } else if (
+          matchData.value.length > 0 &&
+          (matchData.value[0] === "'" || matchData.value[0] === '"')
+        ) {
           keys.add(fullKey);
         }
       }
