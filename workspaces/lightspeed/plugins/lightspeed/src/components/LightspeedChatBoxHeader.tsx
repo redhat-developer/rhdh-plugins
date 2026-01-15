@@ -52,13 +52,16 @@ type LightspeedChatBoxHeaderProps = {
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles(theme =>
   createStyles({
     dropdown: {
       '& ul, & li': {
         padding: 0,
         margin: 0,
       },
+    },
+    header: {
+      backgroundColor: theme.palette.action.disabled,
     },
     optionsToggle: {
       '& svg': {
@@ -105,6 +108,7 @@ export const LightspeedChatBoxHeader = ({
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <MenuToggle
+      className={isModelSelectorDisabled ? styles.header : ''}
       variant="secondary"
       aria-label={t('aria.chatbotSelector')}
       ref={toggleRef}

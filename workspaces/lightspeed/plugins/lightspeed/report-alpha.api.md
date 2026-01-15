@@ -158,6 +158,7 @@ readonly "sort.newest": string;
 readonly "sort.oldest": string;
 readonly "sort.alphabeticalAsc": string;
 readonly "sort.alphabeticalDesc": string;
+readonly "reasoning.thinking": string;
 }>;
 
 // @alpha

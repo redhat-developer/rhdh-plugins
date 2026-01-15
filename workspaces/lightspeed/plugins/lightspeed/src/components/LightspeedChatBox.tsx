@@ -26,6 +26,8 @@ import { makeStyles } from '@material-ui/core';
 import {
   ChatbotDisplayMode,
   ChatbotWelcomePrompt,
+  DeepThinking,
+  DeepThinkingProps,
   Message,
   MessageBox,
   MessageBoxHandle,
@@ -40,6 +42,7 @@ import { useBufferedMessages } from '../hooks/useBufferedMessages';
 import { useFeedbackActions } from '../hooks/useFeedbackActions';
 import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
+import { parseReasoning } from '../utils/reasoningParser';
 import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
 
 const useStyles = makeStyles(theme => ({
@@ -213,6 +216,9 @@ export const LightspeedChatBox = forwardRef(
           <br />
         )}
         {conversationMessages.map((message, index) => {
+          const messageContent = message.content as string;
+          const parsedReasoning = parseReasoning(messageContent || '');
+
           // Map first tool call to PatternFly's toolCall prop
           const firstToolCall = message.toolCalls?.[0];
           const toolCallProp = firstToolCall
@@ -221,33 +227,73 @@ export const LightspeedChatBox = forwardRef(
 
           // Handle additional tool calls (if any) via extraContent
           const additionalToolCalls = message.toolCalls?.slice(1);
+
+          const extraContentParts: {
+            beforeMainContent?: React.ReactNode;
+            afterMainContent?: React.ReactNode;
+          } = {};
+
+          let deepThinking: DeepThinkingProps | undefined = undefined;
+
+          if (
+            parsedReasoning.isReasoningInProgress ||
+            parsedReasoning.hasReasoning
+          ) {
+            const reasoningContent =
+              parsedReasoning.reasoning ||
+              (() => {
+                const reasoningMatch = messageContent.match(/<think>(.*?)$/s);
+                return reasoningMatch ? reasoningMatch[1].trim() : '';
+              })();
+
+            if (reasoningContent) {
+              deepThinking = {
+                toggleContent: t('reasoning.thinking'),
+                body: reasoningContent,
+                expandableSectionProps: {},
+              };
+              extraContentParts.beforeMainContent = (
+                <DeepThinking {...deepThinking} />
+              );
+            }
+          }
+
+          if (additionalToolCalls && additionalToolCalls.length > 0) {
+            extraContentParts.afterMainContent = (
+              <>
+                {additionalToolCalls.map(tc => {
+                  const tcProps = mapToPatternFlyToolCall(tc, t);
+                  return (
+                    <div
+                      key={`tool-${tc.id}-${tc.toolName}`}
+                      style={{ marginTop: '8px' }}
+                    >
+                      <PatternFlyToolCall {...tcProps} />
+                    </div>
+                  );
+                })}
+              </>
+            );
+          }
+
           const extraContent =
-            additionalToolCalls && additionalToolCalls.length > 0
-              ? {
-                  afterMainContent: (
-                    <>
-                      {additionalToolCalls.map(tc => {
-                        const tcProps = mapToPatternFlyToolCall(tc, t);
-                        return (
-                          <div
-                            key={`tool-${tc.id}-${tc.toolName}`}
-                            style={{ marginTop: '8px' }}
-                          >
-                            <PatternFlyToolCall {...tcProps} />
-                          </div>
-                        );
-                      })}
-                    </>
-                  ),
-                }
+            extraContentParts.beforeMainContent ||
+            extraContentParts.afterMainContent
+              ? extraContentParts
               : undefined;
+
+          const finalMessage =
+            parsedReasoning.hasReasoning ||
+            parsedReasoning.isReasoningInProgress
+              ? { ...message, content: parsedReasoning.mainContent }
+              : message;
 
           return (
             <Message
               key={`${message.role}-${index}`}
-              {...message}
               toolCall={toolCallProp}
               extraContent={extraContent}
+              {...finalMessage}
             />
           );
         })}

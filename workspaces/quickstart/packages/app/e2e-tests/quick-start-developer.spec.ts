@@ -57,7 +57,7 @@ test.describe('Test Quick Start plugin', () => {
       // Header not visible, try to open the drawer
       // First, check if drawer is already open via class
       const drawerOpen = await page.evaluate(() => {
-        return document.body.classList.contains('quickstart-drawer-open');
+        return document.body.classList.contains('docked-drawer-open');
       });
 
       if (!drawerOpen) {

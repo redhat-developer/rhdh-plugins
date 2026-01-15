@@ -246,6 +246,8 @@ export const lightspeedMessages = {
   'sort.oldest': 'Date (oldest first)',
   'sort.alphabeticalAsc': 'Name (A-Z)',
   'sort.alphabeticalDesc': 'Name (Z-A)',
+  // Deep thinking
+  'reasoning.thinking': 'Show thinking',
 };
 
 /**

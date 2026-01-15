@@ -202,6 +202,9 @@ const lightspeedTranslationJa = createTranslationMessages({
     'sort.oldest': '日付（古い順）',
     'sort.alphabeticalAsc': '名前（A-Z）',
     'sort.alphabeticalDesc': '名前（Z-A）',
+
+    // Deep thinking
+    'reasoning.thinking': '思考を表示',
   },
 });
 
