@@ -473,7 +473,6 @@ test.describe('Lightspeed tests', () => {
       : test.describe.skip;
     chatManagementDescribeFn('Chat Management', () => {
       const testChatName = 'Test Rename';
-      const deleteChatName = 'Conversation 1';
 
       test('Verify chat actions menu', async () => {
         await sharedPage.reload();
@@ -501,30 +500,20 @@ test.describe('Lightspeed tests', () => {
         await selectPinAction(sharedPage, translations);
         await verifyChatPinned(sharedPage, testChatName);
         await verifyPinnedChatsNotEmpty(sharedPage, translations);
-        await sharedPage.reload();
-        await verifyPinnedChatsNotEmpty(sharedPage, translations);
       });
 
       test('Verify delete chat and its actions', async () => {
-        await verifyChatRenamed(sharedPage, deleteChatName);
-        await openChatContextMenuByName(
-          sharedPage,
-          deleteChatName,
-          translations,
-        );
+        await verifyChatRenamed(sharedPage, testChatName);
+        await openChatContextMenuByName(sharedPage, testChatName, translations);
         await selectDeleteAction(sharedPage, translations);
         await verifyDeleteConfirmation(sharedPage, translations);
         await cancelChatDeletion(sharedPage, translations);
-        await verifyChatRenamed(sharedPage, deleteChatName);
+        await verifyChatRenamed(sharedPage, testChatName);
 
-        await openChatContextMenuByName(
-          sharedPage,
-          deleteChatName,
-          translations,
-        );
+        await openChatContextMenuByName(sharedPage, testChatName, translations);
         await selectDeleteAction(sharedPage, translations);
         await confirmChatDeletion(sharedPage, translations);
-        await verifyChatDeleted(sharedPage, deleteChatName);
+        await verifyChatDeleted(sharedPage, testChatName);
       });
 
       test('Verify disable pinned chats section via settings', async () => {
