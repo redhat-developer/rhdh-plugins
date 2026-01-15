@@ -209,6 +209,13 @@ const lightspeedTranslationFr = createTranslationMessages({
     'settings.displayMode.overlay': 'Superposition',
     'settings.displayMode.docked': 'Ancrer à la fenêtre',
     'settings.displayMode.fullscreen': 'Plein écran',
+
+    // Sort options
+    'sort.label': 'Trier les conversations',
+    'sort.newest': 'Date (plus récent en premier)',
+    'sort.oldest': 'Date (plus ancien en premier)',
+    'sort.alphabeticalAsc': 'Nom (A-Z)',
+    'sort.alphabeticalDesc': 'Nom (Z-A)',
   },
 });
 

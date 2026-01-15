@@ -17,6 +17,7 @@
 import {
   ChangeEvent,
   MouseEvent,
+  Ref,
   useCallback,
   useEffect,
   useMemo,
@@ -42,8 +43,23 @@ import {
   MessageProps,
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
-import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
-import { PlusIcon, SearchIcon } from '@patternfly/react-icons';
+import {
+  DropdownItem,
+  DropEvent,
+  MenuToggle,
+  MenuToggleElement,
+  Select,
+  SelectList,
+  SelectOption,
+  Title,
+  Tooltip,
+} from '@patternfly/react-core';
+import {
+  PlusIcon,
+  SearchIcon,
+  SortAmountDownAltIcon,
+  SortAmountDownIcon,
+} from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
@@ -54,6 +70,8 @@ import {
   useIsMobile,
   useLastOpenedConversation,
   useLightspeedDeletePermission,
+  usePinnedChatsSettings,
+  useSortSettings,
 } from '../hooks';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
@@ -64,6 +82,7 @@ import { getAttachments } from '../utils/attachment-utils';
 import {
   getCategorizeMessages,
   getFootnoteProps,
+  SortOption,
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
@@ -108,6 +127,10 @@ const useStyles = makeStyles(theme => ({
       maxWidth: '100%',
     },
   },
+  sortDropdown: {
+    padding: 0,
+    margin: 0,
+  },
 }));
 
 type LightspeedChatProps = {
@@ -141,11 +164,10 @@ export const LightspeedChat = ({
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
-  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true); // read from user settings in future
-  const [pinnedChats, setPinnedChats] = useState<string[]>([]); // read from user settings in future
   const [targetConversationId, setTargetConversationId] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
+  const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
   const {
@@ -159,6 +181,16 @@ export const LightspeedChat = ({
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
+  const {
+    isPinningChatsEnabled,
+    pinnedChats,
+    handlePinningChatsToggle,
+    pinChat,
+    unpinChat,
+  } = usePinnedChatsSettings(user);
+
+  const { selectedSort, handleSortChange } = useSortSettings(user);
+
   const {
     uploadError,
     showAlert,
@@ -175,12 +207,6 @@ export const LightspeedChat = ({
       setConversationId(lastOpenedId);
     }
   }, [lastOpenedId, isReady]);
-
-  useEffect(() => {
-    if (!isPinningChatsEnabled) {
-      setPinnedChats([]);
-    }
-  }, [isPinningChatsEnabled]);
 
   const queryClient = useQueryClient();
 
@@ -337,14 +363,6 @@ export const LightspeedChat = ({
     setIsDeleteModalOpen(false);
   }, [clearLastOpenedId, lastOpenedId, onNewChat, targetConversationId]);
 
-  const pinChat = (convId: string) => {
-    setPinnedChats(prev => [...prev, convId]); // write to user settings in future
-  };
-
-  const unpinChat = (convId: string) => {
-    setPinnedChats(prev => prev.filter(id => id !== convId)); // write to user settings in future
-  };
-
   const additionalMessageProps = useCallback(
     (conversationSummary: ConversationSummary) => {
       const isChatFavorite = pinnedChats?.find(
@@ -392,7 +410,15 @@ export const LightspeedChat = ({
         ),
       };
     },
-    [pinnedChats, hasDeleteAccess, isPinningChatsEnabled, hasUpdateAccess, t],
+    [
+      pinnedChats,
+      hasDeleteAccess,
+      isPinningChatsEnabled,
+      hasUpdateAccess,
+      t,
+      pinChat,
+      unpinChat,
+    ],
   );
 
   const categorizedMessages = useMemo(
@@ -402,8 +428,9 @@ export const LightspeedChat = ({
         pinnedChats,
         additionalMessageProps,
         t,
+        selectedSort,
       ),
-    [additionalMessageProps, conversations, pinnedChats, t],
+    [additionalMessageProps, conversations, pinnedChats, t, selectedSort],
   );
 
   const filterConversations = useCallback(
@@ -545,6 +572,86 @@ export const LightspeedChat = ({
     setIsChatHistoryDrawerOpen(isOpen => !isOpen);
   }, []);
 
+  const onSortToggle = useCallback(() => {
+    setIsSortSelectOpen(prev => !prev);
+  }, []);
+
+  const onSortSelect = useCallback(
+    (_event?: MouseEvent<Element>, value?: string | number) => {
+      handleSortChange(value as SortOption);
+      setIsSortSelectOpen(false);
+    },
+    [handleSortChange],
+  );
+
+  const getSortLabel = useCallback(
+    (option: SortOption): string => {
+      const labels: Record<SortOption, string> = {
+        newest: t('sort.newest'),
+        oldest: t('sort.oldest'),
+        alphabeticalAsc: t('sort.alphabeticalAsc'),
+        alphabeticalDesc: t('sort.alphabeticalDesc'),
+      };
+      return labels[option];
+    },
+    [t],
+  );
+
+  const sortToggle = useCallback(
+    (toggleRef: Ref<MenuToggleElement>) => (
+      <Tooltip content={`${t('sort.label')} - ${getSortLabel(selectedSort)}`}>
+        <MenuToggle
+          ref={toggleRef}
+          aria-label={t('sort.label')}
+          variant="plain"
+          onClick={onSortToggle}
+          isExpanded={isSortSelectOpen}
+        >
+          {selectedSort === 'oldest' || selectedSort === 'alphabeticalDesc' ? (
+            <SortAmountDownAltIcon />
+          ) : (
+            <SortAmountDownIcon />
+          )}
+        </MenuToggle>
+      </Tooltip>
+    ),
+    [t, getSortLabel, selectedSort, onSortToggle, isSortSelectOpen],
+  );
+
+  const sortDropdown = useMemo(
+    () => (
+      <Select
+        id="sort-select"
+        isOpen={isSortSelectOpen}
+        selected={selectedSort}
+        onSelect={onSortSelect}
+        onOpenChange={(isOpen: boolean) => setIsSortSelectOpen(isOpen)}
+        popperProps={{ position: 'end' }}
+        toggle={sortToggle}
+        shouldFocusToggleOnSelect
+      >
+        <SelectList className={classes.sortDropdown}>
+          <SelectOption value="newest">{t('sort.newest')}</SelectOption>
+          <SelectOption value="oldest">{t('sort.oldest')}</SelectOption>
+          <SelectOption value="alphabeticalAsc">
+            {t('sort.alphabeticalAsc')}
+          </SelectOption>
+          <SelectOption value="alphabeticalDesc">
+            {t('sort.alphabeticalDesc')}
+          </SelectOption>
+        </SelectList>
+      </Select>
+    ),
+    [
+      isSortSelectOpen,
+      selectedSort,
+      onSortSelect,
+      sortToggle,
+      t,
+      classes.sortDropdown,
+    ],
+  );
+
   const handleAttach = (data: File[], event: DropEvent) => {
     event.preventDefault();
     handleFileUpload(data);
@@ -618,10 +725,10 @@ export const LightspeedChat = ({
             }}
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
-            onPinnedChatsToggle={setIsPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
             setDisplayMode={setDisplayMode}
             displayMode={displayMode}
+            onPinnedChatsToggle={handlePinningChatsToggle}
           />
         </ChatbotHeader>
         <Divider />
@@ -658,6 +765,7 @@ export const LightspeedChat = ({
               setFilterValue('');
             },
           }}
+          searchActionEnd={sortDropdown}
           noResultsState={
             filterValue &&
             Object.keys(filterConversations(filterValue)).length === 0
