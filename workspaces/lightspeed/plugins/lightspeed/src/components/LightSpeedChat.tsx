@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ChangeEvent,
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { FileRejection } from 'react-dropzone/.';
 
 import { makeStyles } from '@material-ui/core';
@@ -48,6 +55,7 @@ import {
   useLastOpenedConversation,
   useLightspeedDeletePermission,
 } from '../hooks';
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
@@ -130,7 +138,6 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [conversationId, setConversationId] = useState<string>('');
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(!isMobile);
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
@@ -141,7 +148,17 @@ export const LightspeedChat = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
-
+  const {
+    displayMode,
+    setDisplayMode,
+    currentConversationId: routeConversationId,
+    setCurrentConversationId,
+    draftMessage,
+    setDraftMessage,
+  } = useLightspeedDrawerContext();
+  const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
+    useState<boolean>(!isMobile && isFullscreenMode);
   const {
     uploadError,
     showAlert,
@@ -196,6 +213,36 @@ export const LightspeedChat = ({
   }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
 
   useEffect(() => {
+    if (
+      !isLoading &&
+      !isRefetching &&
+      routeConversationId &&
+      isFullscreenMode
+    ) {
+      const conversationExists = conversations.some(
+        (c: ConversationSummary) => c.conversation_id === routeConversationId,
+      );
+      if (!conversationExists) {
+        // Conversation from route doesn't exist, start a new chat
+        setConversationId(TEMP_CONVERSATION_ID);
+        setCurrentConversationId(undefined);
+        setNewChatCreated(true);
+      } else if (conversationId !== routeConversationId) {
+        setConversationId(routeConversationId);
+      }
+    }
+  }, [
+    isLoading,
+    isRefetching,
+    routeConversationId,
+    conversations,
+    displayMode,
+    conversationId,
+    setCurrentConversationId,
+    isFullscreenMode,
+  ]);
+
+  useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
     if (conversationId) {
       setLastOpenedId(conversationId);
@@ -204,6 +251,7 @@ export const LightspeedChat = ({
 
   const onStart = (conv_id: string) => {
     setConversationId(conv_id);
+    setCurrentConversationId(conv_id);
   };
 
   const onComplete = (message: string) => {
@@ -244,6 +292,7 @@ export const LightspeedChat = ({
     handleInputPrompt(message.toString(), getAttachments(fileContents));
     setIsSendButtonDisabled(true);
     setFileContents([]);
+    setDraftMessage('');
   };
 
   const onNewChat = useCallback(() => {
@@ -252,16 +301,22 @@ export const LightspeedChat = ({
         setMessages([]);
         setFileContents([]);
         setUploadError({ message: null });
+        setDraftMessage('');
         setConversationId(TEMP_CONVERSATION_ID);
         setNewChatCreated(true);
+        setCurrentConversationId(undefined);
+        if (!isFullscreenMode) {
+          setIsChatHistoryDrawerOpen(false);
+        }
       }
     })();
   }, [
     conversationId,
-    setConversationId,
-    setMessages,
-    setUploadError,
     setFileContents,
+    setUploadError,
+    setDraftMessage,
+    setCurrentConversationId,
+    isFullscreenMode,
   ]);
 
   const openDeleteModal = (conversation_id: string) => {
@@ -429,27 +484,48 @@ export const LightspeedChat = ({
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
       setNewChatCreated(false);
+      const newConvId = String(selectedItem);
       setConversationId((c_id: string) => {
         if (c_id !== selectedItem) {
-          return String(selectedItem);
+          return newConvId;
         }
         return c_id;
       });
+      setCurrentConversationId(newConvId);
       setFileContents([]);
       setUploadError({ message: null });
+      setDraftMessage('');
       scrollToBottomRef.current?.scrollToBottom();
     },
-    [setConversationId, setUploadError, setFileContents, scrollToBottomRef],
+    [
+      setConversationId,
+      setUploadError,
+      setFileContents,
+      setDraftMessage,
+      scrollToBottomRef,
+      setCurrentConversationId,
+    ],
   );
 
   const conversationFound = !!conversations.find(
     (c: ConversationSummary) => c.conversation_id === conversationId,
   );
 
+  const getMaxPrompts = () => {
+    if (isFullscreenMode) {
+      return samplePrompts?.length; // In the Fullscreen mode, show all prompts
+    }
+    if (displayMode === ChatbotDisplayMode.docked) {
+      return 2; // In the docked mode, show 2 prompts
+    }
+    return 1; // In the overlay mode, show 1 prompt
+  };
+  const maxPrompts = getMaxPrompts();
+
   const welcomePrompts =
     (newChatCreated && conversationMessages.length === 0) ||
     (!conversationFound && conversationMessages.length === 0)
-      ? samplePrompts?.map(prompt => {
+      ? samplePrompts?.slice(0, maxPrompts).map(prompt => {
           const p = prompt as { title: string; message: string };
           return {
             title: p.title,
@@ -465,8 +541,8 @@ export const LightspeedChat = ({
     setFilterValue(value);
   }, []);
 
-  const onDrawerToggle = useCallback(() => {
-    setIsDrawerOpen(isOpen => !isOpen);
+  const onChatHistoryDrawerToggle = useCallback(() => {
+    setIsChatHistoryDrawerOpen(isOpen => !isOpen);
   }, []);
 
   const handleAttach = (data: File[], event: DropEvent) => {
@@ -474,9 +550,17 @@ export const LightspeedChat = ({
     handleFileUpload(data);
   };
 
+  const handleDraftMessage = (
+    _e: ChangeEvent<HTMLTextAreaElement>,
+    value: string | number,
+  ) => setDraftMessage(value as any);
+
   const onAttachRejected = (data: FileRejection[]) => {
     data.forEach(attachment => {
-      if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
+      const hasInvalidTypeError = attachment.errors.some(
+        e => e.code === 'file-invalid-type',
+      );
+      if (hasInvalidTypeError) {
         setShowAlert(true);
         setUploadError({
           message: t('file.upload.error.unsupportedType'),
@@ -509,17 +593,21 @@ export const LightspeedChat = ({
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             <ChatbotHeaderMenu
-              aria-expanded={isDrawerOpen}
-              onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
+              aria-expanded={isChatHistoryDrawerOpen}
+              onMenuToggle={() =>
+                setIsChatHistoryDrawerOpen(!isChatHistoryDrawerOpen)
+              }
               className={classes.headerMenu}
               tooltipContent={t('tooltip.chatHistoryMenu')}
               aria-label={t('aria.chatHistoryMenu')}
             />
-            <ChatbotHeaderTitle className={classes.headerTitle}>
-              <Title headingLevel="h1" size="3xl">
-                {t('chatbox.header.title')}
-              </Title>
-            </ChatbotHeaderTitle>
+            {isFullscreenMode && (
+              <ChatbotHeaderTitle className={classes.headerTitle}>
+                <Title headingLevel="h1" size="3xl">
+                  {t('chatbox.header.title')}
+                </Title>
+              </ChatbotHeaderTitle>
+            )}
           </ChatbotHeaderMain>
 
           <LightspeedChatBoxHeader
@@ -532,21 +620,27 @@ export const LightspeedChat = ({
             isPinningChatsEnabled={isPinningChatsEnabled}
             onPinnedChatsToggle={setIsPinningChatsEnabled}
             isModelSelectorDisabled={isSendButtonDisabled}
+            setDisplayMode={setDisplayMode}
+            displayMode={displayMode}
           />
         </ChatbotHeader>
         <Divider />
         <ChatbotConversationHistoryNav
-          drawerPanelContentProps={{ isResizable: true, minSize: '200px' }}
+          drawerPanelContentProps={{
+            isResizable: isFullscreenMode,
+            hasNoBorder: !isFullscreenMode,
+            style: isFullscreenMode ? undefined : { zIndex: 1300 },
+          }}
           reverseButtonOrder
           displayMode={ChatbotDisplayMode.embedded}
-          onDrawerToggle={onDrawerToggle}
+          onDrawerToggle={onChatHistoryDrawerToggle}
           title=""
           navTitleIcon={null}
-          isDrawerOpen={isDrawerOpen}
+          isDrawerOpen={isChatHistoryDrawerOpen}
           drawerCloseButtonProps={{
             'aria-label': t('aria.closeDrawerPanel'),
           }}
-          setIsDrawerOpen={setIsDrawerOpen}
+          setIsDrawerOpen={setIsChatHistoryDrawerOpen}
           activeItemId={conversationId}
           onSelectActiveItem={onSelectActiveItem}
           conversations={filterConversations(filterValue)}
@@ -607,6 +701,7 @@ export const LightspeedChat = ({
                   conversationId={conversationId}
                   isStreaming={isSendButtonDisabled}
                   topicRestrictionEnabled={topicRestrictionEnabled}
+                  displayMode={displayMode}
                 />
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
@@ -617,6 +712,8 @@ export const LightspeedChat = ({
                   hasAttachButton
                   handleAttach={handleAttach}
                   hasMicrophoneButton
+                  value={draftMessage}
+                  onChange={handleDraftMessage}
                   buttonProps={{
                     attach: {
                       inputTestId: 'attachment-input',

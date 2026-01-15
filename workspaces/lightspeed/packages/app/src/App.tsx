@@ -52,8 +52,11 @@ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { lightspeedTranslations } from '@red-hat-developer-hub/backstage-plugin-lightspeed/alpha';
-import { LightspeedPage } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import {
+  LightspeedPage,
+  LightspeedDrawerProvider,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
 
 const githubProvider = {
   id: 'github-auth-provider',
@@ -134,7 +137,9 @@ export default app.createRoot(
     <AlertDisplay />
     <OAuthRequestDialog />
     <AppRouter>
-      <Root>{routes}</Root>
+      <LightspeedDrawerProvider>
+        <Root>{routes}</Root>
+      </LightspeedDrawerProvider>
     </AppRouter>
   </>,
 );

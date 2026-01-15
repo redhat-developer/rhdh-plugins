@@ -46,7 +46,7 @@ export async function mockShields(page: Page, shields: any[] = []) {
 }
 
 export async function mockChatHistory(page: Page, contents?: any[]) {
-  await page.route(`${modelBaseUrl}/v2/conversations/user*`, async route => {
+  await page.route(`${modelBaseUrl}/v2/conversations/*`, async route => {
     const json = contents ? { chat_history: contents } : [];
     await route.fulfill({ json });
   });

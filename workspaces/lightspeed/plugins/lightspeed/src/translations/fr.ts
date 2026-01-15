@@ -119,6 +119,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'aria.scroll.down': 'De haut en bas',
     'aria.scroll.up': 'De bas en haut',
     'aria.settings.label': 'Options Chatbot',
+    'aria.close': 'Fermer le chatbot',
+
     'modal.edit': 'Modifier',
     'modal.save': 'Sauvegarder',
     'modal.close': 'Fermer',
@@ -141,6 +143,8 @@ const lightspeedTranslationFr = createTranslationMessages({
     'tooltip.backToTop': 'De bas en haut',
     'tooltip.backToBottom': 'De haut en bas',
     'tooltip.settings': 'Options Chatbot',
+    'tooltip.close': 'Fermer',
+
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'modal.title.edit': 'Modifier la pièce jointe',
     'icon.lightspeed.alt': 'Icône Lightspeed',
@@ -200,6 +204,11 @@ const lightspeedTranslationFr = createTranslationMessages({
     'toolCall.copyResponse': 'Copier la réponse',
     'toolCall.summary': 'Voici un résumé de votre réponse',
     'toolCall.mcpServer': 'Serveur MCP',
+    // Display modes
+    'settings.displayMode.label': "Mode d'affichage",
+    'settings.displayMode.overlay': 'Superposition',
+    'settings.displayMode.docked': 'Ancrer à la fenêtre',
+    'settings.displayMode.fullscreen': 'Plein écran',
   },
 });
 

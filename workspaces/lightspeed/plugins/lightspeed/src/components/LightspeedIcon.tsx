@@ -19,6 +19,7 @@ import { useTheme } from '@mui/material/styles';
 import { useTranslation } from '../hooks/useTranslation';
 import logoDark from '../images/logo-black.svg';
 import logo from '../images/logo-white.svg';
+import roundedLogo from '../images/rounded-logo.svg';
 
 /**
  * @public
@@ -34,6 +35,26 @@ export const LightspeedIcon = () => {
       src={(isDarkTheme ? logo : logoDark) as any}
       alt={t('icon.lightspeed.alt')}
       style={{ height: '25px' }}
+    />
+  );
+};
+
+/**
+ * @public
+ * Lightspeed FAB Icon */
+export const LightspeedFABIcon = () => {
+  const { t } = useTranslation();
+
+  return (
+    <img
+      data-testid="lightspeed-fab-icon"
+      src={roundedLogo as any}
+      alt={t('icon.lightspeed.alt')}
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'block',
+      }}
     />
   );
 };

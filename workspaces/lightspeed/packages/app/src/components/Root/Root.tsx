@@ -20,8 +20,6 @@ import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
 import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,
@@ -40,12 +38,18 @@ import {
   Link,
 } from '@backstage/core-components';
 import MenuIcon from '@material-ui/icons/Menu';
+import Box from '@mui/material/Box';
 import SearchIcon from '@material-ui/icons/Search';
 import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import GroupIcon from '@material-ui/icons/People';
-
-import { LightspeedIcon } from '@red-hat-developer-hub/backstage-plugin-lightspeed';
-import { IconComponent } from '@backstage/core-plugin-api';
+import {
+  LightspeedChatContainer,
+  LightspeedDrawerStateExposer,
+  LightspeedFAB,
+} from '@red-hat-developer-hub/backstage-plugin-lightspeed';
+import { ApplicationDrawer } from './ApplicationDrawer';
+import LogoFull from './LogoFull';
+import LogoIcon from './LogoIcon';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -75,46 +79,79 @@ const SidebarLogo = () => {
   );
 };
 
-export const Root = ({ children }: PropsWithChildren<{}>) => (
-  <SidebarPage>
-    <Sidebar>
-      <SidebarLogo />
-      <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
-        <SidebarSearchModal />
-      </SidebarGroup>
-      <SidebarDivider />
-      <SidebarGroup label="Menu" icon={<MenuIcon />}>
-        {/* Global nav, not org-specific */}
-        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
-        <MyGroupsSidebarItem
-          singularTitle="My Group"
-          pluralTitle="My Groups"
-          icon={GroupIcon}
+export const Root = ({ children }: PropsWithChildren<{}>) => {
+  return (
+    <Box
+      id="sidebar"
+      sx={{
+        // When drawer is open, adjust the content size
+        // Similary this code exists in RHDH:
+        // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/Root/Root.tsx#L159-L165
+        // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/ErrorPages/ErrorPage.tsx#L54-L59
+        'body.docked-drawer-open #sidebar&': {
+          "> div > main[class*='BackstagePage-root']": {
+            marginRight: 'calc(var(--docked-drawer-width, 500px) + 1.5em)',
+            transition: 'margin-right 0.3s ease',
+          },
+        },
+      }}
+    >
+      <SidebarPage>
+        <LightspeedFAB />
+        <Sidebar>
+          <SidebarLogo />
+          <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+            <SidebarSearchModal />
+          </SidebarGroup>
+          <SidebarDivider />
+          <SidebarGroup label="Menu" icon={<MenuIcon />}>
+            {/* Global nav, not org-specific */}
+            <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
+            <MyGroupsSidebarItem
+              singularTitle="My Group"
+              pluralTitle="My Groups"
+              icon={GroupIcon}
+            />
+            <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+            <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+            <SidebarItem
+              icon={CreateComponentIcon}
+              to="create"
+              text="Create..."
+            />
+            {/* End global nav */}
+            <SidebarDivider />
+            <SidebarScrollWrapper>
+              {/* Items in this group will be scrollable if they run out of space */}
+            </SidebarScrollWrapper>
+          </SidebarGroup>
+          <SidebarSpace />
+          <SidebarDivider />
+          <SidebarGroup
+            label="Settings"
+            icon={<UserSettingsSignInAvatar />}
+            to="/settings"
+          >
+            <SidebarSettings />
+          </SidebarGroup>
+        </Sidebar>
+        {children}
+        <ApplicationDrawer
+          drawerContents={[
+            {
+              Component: LightspeedChatContainer,
+              priority: 100,
+              id: 'lightspeed',
+            },
+          ]}
+          stateExposers={[
+            // In RHDH, these would come from mount points:
+            // - mountPoint: application/drawer-state
+            //   importName: QuickstartDrawerStateExposer
+            { Component: LightspeedDrawerStateExposer },
+          ]}
         />
-        <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
-        <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
-        <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
-        <SidebarItem
-          icon={LightspeedIcon as IconComponent}
-          to="lightspeed"
-          text="Lightspeed"
-        />
-        {/* End global nav */}
-        <SidebarDivider />
-        <SidebarScrollWrapper>
-          {/* Items in this group will be scrollable if they run out of space */}
-        </SidebarScrollWrapper>
-      </SidebarGroup>
-      <SidebarSpace />
-      <SidebarDivider />
-      <SidebarGroup
-        label="Settings"
-        icon={<UserSettingsSignInAvatar />}
-        to="/settings"
-      >
-        <SidebarSettings />
-      </SidebarGroup>
-    </Sidebar>
-    {children}
-  </SidebarPage>
-);
+      </SidebarPage>
+    </Box>
+  );
+};

@@ -14,5 +14,16 @@
  * limitations under the License.
  */
 
-export { lightspeedPlugin, LightspeedPage } from './plugin';
+export {
+  lightspeedPlugin,
+  LightspeedPage,
+  LightspeedDrawerProvider,
+} from './plugin';
 export { LightspeedIcon } from './components/LightspeedIcon';
+export { LightspeedFAB } from './components/LightspeedFAB';
+export { LightspeedChatContainer } from './components/LightspeedChatContainer';
+export { LightspeedDrawerStateExposer } from './components/LightspeedDrawerStateExposer';
+export type {
+  DrawerStateExposerProps,
+  DrawerState,
+} from './components/LightspeedDrawerStateExposer';

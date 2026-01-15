@@ -25,6 +25,8 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Button from '@mui/material/Button';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { QuickstartDrawerContent } from '../src/components/QuickstartDrawerContent';
+import { DrawerComponent } from './DrawerComponent';
 
 const QuickstartTestPageContent = () => {
   const { openDrawer, closeDrawer, isDrawerOpen } =
@@ -99,6 +101,9 @@ const QuickstartTestPageContent = () => {
 const QuickstartTestPage = () => (
   <QuickstartDrawerProvider>
     <QuickstartTestPageContent />
+    <DrawerComponent>
+      <QuickstartDrawerContent />
+    </DrawerComponent>
   </QuickstartDrawerProvider>
 );
 

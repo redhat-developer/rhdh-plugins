@@ -33,6 +33,18 @@ import {
   switchToLocale,
 } from './utils/testHelper';
 import {
+  openChatbot,
+  selectDisplayMode,
+  openChatHistoryDrawer,
+  closeChatHistoryDrawer,
+  expectBackstagePageVisible,
+  expectChatbotControlsVisible,
+  verifyDisplayModeMenuOptions,
+  expectChatInputAreaVisible,
+  expectEmptyChatHistory,
+  expectConversationArea,
+} from './pages/LightspeedPage';
+import {
   uploadFiles,
   uploadAndAssertDuplicate,
   supportedFileTypes,
@@ -131,6 +143,51 @@ test.describe('Lightspeed tests', () => {
 
     await switchToLocale(sharedPage, locale);
     await openLightspeed(sharedPage);
+  });
+
+  test.describe('Chatbot Display Modes', () => {
+    test.beforeEach(async () => {
+      await sharedPage.goto('/');
+    });
+
+    test('should display chatbot in overlay mode with backstage page visible', async () => {
+      await expectBackstagePageVisible(sharedPage);
+      await openChatbot(sharedPage);
+
+      await expectConversationArea(sharedPage, translations, 'Overlay');
+      await expectChatInputAreaVisible(sharedPage, translations);
+      await expectBackstagePageVisible(sharedPage);
+      await expectChatbotControlsVisible(sharedPage, translations);
+
+      await openChatHistoryDrawer(sharedPage, translations);
+      await expectEmptyChatHistory(sharedPage, translations);
+      await closeChatHistoryDrawer(sharedPage, translations);
+
+      await verifyDisplayModeMenuOptions(sharedPage, translations);
+    });
+
+    test('should display chatbot in dock to window mode with backstage page visible', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Dock to window');
+
+      await expectConversationArea(sharedPage, translations, 'Dock to window');
+      await expectBackstagePageVisible(sharedPage);
+      await expectChatInputAreaVisible(sharedPage, translations);
+      await expectChatbotControlsVisible(sharedPage, translations);
+
+      await openChatHistoryDrawer(sharedPage, translations);
+      await expectEmptyChatHistory(sharedPage, translations);
+      await closeChatHistoryDrawer(sharedPage, translations);
+    });
+
+    test('should display chatbot in fullscreen mode with backstage page hidden', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Fullscreen');
+
+      await expectConversationArea(sharedPage, translations, 'Fullscreen');
+      await expectEmptyChatHistory(sharedPage, translations);
+      await expectBackstagePageVisible(sharedPage, false);
+    });
   });
 
   test('Lightspeed is available', async ({ browser }, testInfo) => {
@@ -413,6 +470,12 @@ test.describe('Lightspeed tests', () => {
 
       test('Verify chat actions menu', async () => {
         await sharedPage.reload();
+        // Ensure the drawer is open after reload
+        const sidePanel = sharedPage.locator('.pf-v6-c-drawer__panel-main');
+        const isVisible = await sidePanel.isVisible();
+        if (!isVisible) {
+          await openChatDrawer(sharedPage, translations);
+        }
         await openChatContextMenu(sharedPage);
         await verifyChatContextMenuOptions(sharedPage, translations);
       });
@@ -476,6 +539,12 @@ test.describe('Lightspeed tests', () => {
 
         test('Verify search results when chats are pinned', async () => {
           await sharedPage.reload();
+          // Ensure the drawer is open after reload
+          const sidePanel = sharedPage.locator('.pf-v6-c-drawer__panel-main');
+          const isVisible = await sidePanel.isVisible();
+          if (!isVisible) {
+            await openChatDrawer(sharedPage, translations);
+          }
           await openChatContextMenu(sharedPage);
           await selectPinAction(sharedPage, translations);
           await searchChats(sharedPage, 'dummy search', translations);

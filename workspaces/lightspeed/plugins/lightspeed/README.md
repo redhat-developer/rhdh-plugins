@@ -86,7 +86,7 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 
 ## Loading as Dynamic Plugin
 
-#### To install Lightspeed plugin into Red Hat Developer Hub or Janus IDP via Helm use this configuration:
+#### To configure Lightspeed plugin into Red Hat Developer Hub use this configuration:
 
 - Load the lightspeed plugin from the npm registry
 
@@ -114,17 +114,21 @@ global:
                 - importName: lightspeedTranslations
                   module: Alpha
                   ref: lightspeedTranslationRef
-              appIcons:
-                - name: LightspeedIcon
-                  module: LightspeedPlugin
-                  importName: LightspeedIcon
               dynamicRoutes:
                 - path: /lightspeed
                   importName: LightspeedPage
-                  module: LightspeedPlugin
-                  menuItem:
-                    icon: LightspeedIcon
-                    text: Lightspeed
+              mountPoints:
+                - mountPoint: application/listener
+                  importName: LightspeedFAB
+                - mountPoint: application/provider
+                  importName: LightspeedDrawerProvider
+                - mountPoint: application/drawer-state
+                  importName: LightspeedDrawerStateExposer
+                - mountPoint: application/drawer-content
+                  importName: LightspeedChatContainer
+                  config:
+                    id: lightspeed
+                    priority: 100
 ```
 
 - add the lightspeed configuration in the `app-config.yaml`
@@ -153,8 +157,7 @@ Follow the below steps -
 
 - Add the extension point inside the `app-config.yaml` or `app-config.local.yaml` file.
 
-```
-
+```yaml
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-lightspeed:
@@ -162,16 +165,19 @@ dynamicPlugins:
         - importName: lightspeedTranslations
           module: Alpha
           ref: lightspeedTranslationRef
-      appIcons:
-        - name: LightspeedIcon
-          module: LightspeedPlugin
-          importName: LightspeedIcon
       dynamicRoutes:
         - path: /lightspeed
           importName: LightspeedPage
-          module: LightspeedPlugin
-          menuItem:
-            icon: LightspeedIcon
-            text: Lightspeed
-
+      mountPoints:
+        - mountPoint: application/listener
+          importName: LightspeedFAB
+        - mountPoint: application/provider
+          importName: LightspeedDrawerProvider
+        - mountPoint: application/drawer-state
+          importName: LightspeedDrawerStateExposer
+        - mountPoint: application/drawer-content
+          importName: LightspeedChatContainer
+          config:
+            id: lightspeed
+            priority: 100
 ```

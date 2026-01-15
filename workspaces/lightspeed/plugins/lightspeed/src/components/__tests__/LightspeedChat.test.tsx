@@ -21,6 +21,7 @@ import {
 import { usePermission } from '@backstage/plugin-permission-react';
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
 
+import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   act,
@@ -33,6 +34,7 @@ import userEvent from '@testing-library/user-event';
 
 import { lightspeedApiRef } from '../../api/api';
 import { useConversations } from '../../hooks';
+import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
@@ -88,6 +90,10 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
 }));
 
+jest.mock('../../hooks/useLightspeedDrawerContext', () => ({
+  useLightspeedDrawerContext: jest.fn(),
+}));
+
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');
   return {
@@ -100,6 +106,10 @@ const mockUseConversations = useConversations as jest.Mock;
 const mockUsePermission = usePermission as jest.MockedFunction<
   typeof usePermission
 >;
+const mockUseLightspeedDrawerContext =
+  useLightspeedDrawerContext as jest.MockedFunction<
+    typeof useLightspeedDrawerContext
+  >;
 
 const configAPi = mockApis.config({});
 
@@ -140,6 +150,9 @@ const setupLightspeedChat = () => (
 );
 
 describe('LightspeedChat', () => {
+  const mockSetDisplayMode = jest.fn();
+  const mockSetCurrentConversationId = jest.fn();
+
   beforeEach(() => {
     mockUsePermission.mockReturnValue({ loading: true, allowed: true });
     mockUseConversations.mockReturnValue({
@@ -147,9 +160,27 @@ describe('LightspeedChat', () => {
       isRefetching: false,
       isLoading: false,
     });
+    mockUseLightspeedDrawerContext.mockReturnValue({
+      isChatbotActive: false,
+      toggleChatbot: jest.fn(),
+      displayMode: ChatbotDisplayMode.embedded,
+      setDisplayMode: mockSetDisplayMode,
+      drawerWidth: 500,
+      setDrawerWidth: jest.fn(),
+      currentConversationId: undefined,
+      setCurrentConversationId: mockSetCurrentConversationId,
+      draftMessage: '',
+      setDraftMessage: jest.fn(),
+    });
 
     localStorage.clear();
+    jest.clearAllMocks();
   });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   const localStorageKey = 'lastOpenedConversation';
   const mockUser = 'user:test';
 
@@ -359,6 +390,177 @@ describe('LightspeedChat', () => {
       await userEvent.type(searchInput, 'xyz123nonexistent');
 
       expect(searchInput).toHaveValue('xyz123nonexistent');
+    });
+  });
+
+  describe('displayMode selection from settings dropdown', () => {
+    it('should open settings dropdown when clicking the settings button', async () => {
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      expect(settingsButton).toBeInTheDocument();
+
+      await userEvent.click(settingsButton);
+
+      // Verify dropdown is open with display mode options
+      await waitFor(() => {
+        expect(screen.getByText('Display mode')).toBeInTheDocument();
+      });
+    });
+
+    it('should show all display mode options in the dropdown', async () => {
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Display mode')).toBeInTheDocument();
+        expect(screen.getByText('Overlay')).toBeInTheDocument();
+        expect(screen.getByText('Dock to window')).toBeInTheDocument();
+        expect(screen.getByText('Fullscreen')).toBeInTheDocument();
+      });
+    });
+
+    it('should call setDisplayMode with default when clicking Overlay option', async () => {
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Overlay')).toBeInTheDocument();
+      });
+
+      const overlayOption = screen.getByText('Overlay');
+      await userEvent.click(overlayOption);
+
+      expect(mockSetDisplayMode).toHaveBeenCalledWith(
+        ChatbotDisplayMode.default,
+      );
+    });
+
+    it('should call setDisplayMode with docked when clicking Dock to window option', async () => {
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Dock to window')).toBeInTheDocument();
+      });
+
+      const dockedOption = screen.getByText('Dock to window');
+      await userEvent.click(dockedOption);
+
+      expect(mockSetDisplayMode).toHaveBeenCalledWith(
+        ChatbotDisplayMode.docked,
+      );
+    });
+
+    it('should call setDisplayMode with embedded when clicking Fullscreen option', async () => {
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Fullscreen')).toBeInTheDocument();
+      });
+
+      const fullscreenOption = screen.getByText('Fullscreen');
+      await userEvent.click(fullscreenOption);
+
+      expect(mockSetDisplayMode).toHaveBeenCalledWith(
+        ChatbotDisplayMode.embedded,
+      );
+    });
+
+    it('should show current display mode as selected in full-screen mode', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.embedded,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+      });
+
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Fullscreen')).toBeInTheDocument();
+      });
+
+      const fullscreenOption = screen
+        .getByText('Fullscreen')
+        .closest('button, li, [role="menuitem"]');
+      expect(fullscreenOption).toHaveClass('pf-m-selected');
+    });
+
+    it('should show current display mode as selected in docked mode', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: true,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.docked,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+      });
+
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Dock to window')).toBeInTheDocument();
+      });
+
+      const dockedOption = screen
+        .getByText('Dock to window')
+        .closest('button, li, [role="menuitem"]');
+      expect(dockedOption).toHaveClass('pf-m-selected');
+    });
+
+    it('should show current display mode as selected in overlay mode', async () => {
+      mockUseLightspeedDrawerContext.mockReturnValue({
+        isChatbotActive: false,
+        toggleChatbot: jest.fn(),
+        displayMode: ChatbotDisplayMode.default,
+        setDisplayMode: mockSetDisplayMode,
+        drawerWidth: 500,
+        setDrawerWidth: jest.fn(),
+        currentConversationId: undefined,
+        setCurrentConversationId: mockSetCurrentConversationId,
+        draftMessage: '',
+        setDraftMessage: jest.fn(),
+      });
+
+      render(setupLightspeedChat());
+
+      const settingsButton = screen.getByLabelText('Chatbot options');
+      await userEvent.click(settingsButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Overlay')).toBeInTheDocument();
+      });
+
+      const overlayOption = screen
+        .getByText('Overlay')
+        .closest('button, li, [role="menuitem"]');
+      expect(overlayOption).toHaveClass('pf-m-selected');
     });
   });
 });

@@ -17,9 +17,12 @@
 import '@patternfly/react-core/dist/styles/base-no-reset.css';
 import '@patternfly/chatbot/dist/css/main.css';
 
+import { PropsWithChildren } from 'react';
+
 import {
   configApiRef,
   createApiFactory,
+  createComponentExtension,
   createPlugin,
   createRoutableExtension,
   fetchApiRef,
@@ -27,7 +30,7 @@ import {
 
 import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';
-import { rootRouteRef } from './routes';
+import { addConversationRouteRef, rootRouteRef } from './routes';
 
 /**
  * Lightspeed Plugin
@@ -37,6 +40,7 @@ export const lightspeedPlugin = createPlugin({
   id: 'lightspeed',
   routes: {
     root: rootRouteRef,
+    lightspeedConversation: addConversationRouteRef,
   },
   apis: [
     createApiFactory({
@@ -52,14 +56,80 @@ export const lightspeedPlugin = createPlugin({
 });
 
 /**
- * Lightspeed Page
+ * Lightspeed Page Router
  * @public
  */
 export const LightspeedPage = lightspeedPlugin.provide(
   createRoutableExtension({
     name: 'LightspeedPage',
-    component: () =>
-      import('./components/LightspeedPage').then(m => m.LightspeedPage),
+    component: () => import('./components/Router').then(m => m.Router),
     mountPoint: rootRouteRef,
+  }),
+);
+
+/**
+ * Lightspeed Drawer Provider
+ *
+ * @public
+ */
+export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren> =
+  lightspeedPlugin.provide(
+    createComponentExtension({
+      name: 'LightspeedDrawerProvider',
+      component: {
+        lazy: () =>
+          import('./components/LightspeedDrawerProvider').then(
+            m => m.LightspeedDrawerProvider,
+          ),
+      },
+    }),
+  );
+
+/**
+ * Lightspeed FAB for global floating action button fot LightspeedAI
+ *
+ * @public
+ */
+export const LightspeedFAB: React.ComponentType = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedFAB',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedFAB').then(m => m.LightspeedFAB),
+    },
+  }),
+);
+
+/**
+ * Lightspeed Drawer State Exposer exposes its drawer state
+ *
+ * @public
+ */
+export const LightspeedDrawerStateExposer = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedDrawerStateExposer',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedDrawerStateExposer').then(
+          m => m.LightspeedDrawerStateExposer,
+        ),
+    },
+  }),
+);
+
+/**
+ * Lightspeed Chat Container component extension
+ *
+ * @public
+ */
+export const LightspeedChatContainer = lightspeedPlugin.provide(
+  createComponentExtension({
+    name: 'LightspeedChatContainer',
+    component: {
+      lazy: () =>
+        import('./components/LightspeedChatContainer').then(
+          m => m.LightspeedChatContainer,
+        ),
+    },
   }),
 );

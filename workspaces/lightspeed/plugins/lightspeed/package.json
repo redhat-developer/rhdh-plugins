@@ -57,10 +57,12 @@
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "^6.1.8",
     "@mui/material": "^5.12.2",
+    "@mui/styles": "5.18.0",
     "@patternfly/chatbot": "6.4.1",
     "@patternfly/react-core": "6.4.0",
     "@patternfly/react-icons": "^6.3.1",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
     "@tanstack/react-query": "^5.59.15",
     "react-markdown": "^9.0.1",
     "react-use": "^17.2.4"
@@ -115,7 +117,8 @@
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "maintainers": [
     "@karthikjeeyar",
-    "@rohitkrai03"
+    "@rohitkrai03",
+    "@debsmita1"
   ],
   "author": "Red Hat"
 }
