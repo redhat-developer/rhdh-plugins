@@ -965,23 +965,23 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
       }
 
       // Pattern for identifier keys: word followed by colon and value
-      // ReDoS protection: deterministic pattern with bounded quantifiers
-      // - Match word, colon, then value up to next delimiter
+      // ReDoS protection: deterministic pattern without lookahead backtracking
+      // - Match word, colon, then value, then delimiter
       // - Limit whitespace to 100 chars and value to 5000 chars to prevent DoS
-      // - Pattern matches value characters until delimiter is found (no lookahead backtracking)
+      // - Match delimiter as part of pattern (not lookahead) to avoid backtracking
+      // - Value is captured in match[2], delimiter in match[3] (not used)
       // - All quantifiers are bounded: no unbounded * or + operators
-      // - Uses explicit delimiter matching to avoid lookahead backtracking issues
       const identifierKeyPattern =
-        /(\w+)\s{0,100}:\s{0,100}([^,}\n]{1,5000})(?=[,}\n])/g;
+        /(\w+)\s{0,100}:\s{0,100}([^,}\n]{1,5000})([,}\n])/g;
 
       // Pattern for string literal keys: 'key' or "key" followed by colon and value
-      // ReDoS protection: deterministic pattern with bounded quantifiers
+      // ReDoS protection: deterministic pattern without lookahead backtracking
       // - Limit key to 500 chars, whitespace to 100 chars, and value to 5000 chars
-      // - Pattern matches value characters until delimiter is found (no lookahead backtracking)
+      // - Match delimiter as part of pattern (not lookahead) to avoid backtracking
+      // - Value is captured in match[2], delimiter in match[3] (not used)
       // - All quantifiers are bounded: no unbounded * or + operators
-      // - Uses explicit delimiter matching to avoid lookahead backtracking issues
       const stringKeyPattern =
-        /['"]([^'"]{1,500})['"]\s{0,100}:\s{0,100}([^,}\n]{1,5000})(?=[,}\n])/g;
+        /['"]([^'"]{1,500})['"]\s{0,100}:\s{0,100}([^,}\n]{1,5000})([,}\n])/g;
 
       const processed = new Set<number>();
       const allMatches: Array<{
