@@ -31,7 +31,7 @@ export class MockWorkflowLogProviders implements WorkflowLogProvider {
   getBaseURL(): string {
     return this.baseURL;
   }
-  fetchWorkflowLogsByIntance(
+  fetchWorkflowLogsByInstance(
     _workflowInstance: ProcessInstanceDTO,
   ): Promise<WorkflowLogsResponse> {
     throw new Error('Method not implemented.');

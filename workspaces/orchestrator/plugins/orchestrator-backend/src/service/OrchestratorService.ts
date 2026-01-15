@@ -178,7 +178,7 @@ export class OrchestratorService {
   public async fetchWorkflowLogsByInstance(args: {
     instance: ProcessInstanceDTO;
   }): Promise<WorkflowLogsResponse> {
-    return this.workflowLogProvider?.fetchWorkflowLogsByIntance(
+    return this.workflowLogProvider?.fetchWorkflowLogsByInstance(
       args.instance,
     ) as WorkflowLogsResponse;
   }

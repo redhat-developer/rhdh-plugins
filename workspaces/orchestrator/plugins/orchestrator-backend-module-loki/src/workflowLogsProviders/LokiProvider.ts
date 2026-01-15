@@ -41,7 +41,7 @@ export class LokiProvider implements WorkflowLogProvider {
     return this.selectors;
   }
 
-  async fetchWorkflowLogsByIntance(
+  async fetchWorkflowLogsByInstance(
     instance: ProcessInstanceDTO,
   ): Promise<WorkflowLogsResponse> {
     // Because of timing issues, subtract 5 mintues from the start and add 5 minutes to the end

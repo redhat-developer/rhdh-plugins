@@ -25,7 +25,7 @@ import {
 export interface WorkflowLogProvider {
   getProviderId(): string;
   getBaseURL(): string;
-  fetchWorkflowLogsByIntance(
+  fetchWorkflowLogsByInstance(
     workflowInstance: ProcessInstanceDTO,
   ): Promise<WorkflowLogsResponse>;
 }

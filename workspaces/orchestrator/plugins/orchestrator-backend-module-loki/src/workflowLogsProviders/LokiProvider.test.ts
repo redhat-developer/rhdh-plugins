@@ -81,7 +81,7 @@ describe('LokiProvider', () => {
       );
     });
   });
-  describe('fetchWorkflowLogsByIntance', () => {
+  describe('fetchWorkflowLogsByInstance', () => {
     beforeEach(() => {
       jest.clearAllMocks();
     });
@@ -116,7 +116,7 @@ describe('LokiProvider', () => {
       const urlToFetch =
         'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
       const workflowLogs =
-        await provider.fetchWorkflowLogsByIntance(workflowInstance);
+        await provider.fetchWorkflowLogsByInstance(workflowInstance);
 
       const parsedURLToFetch = new URL(urlToFetch);
       expect(fetch).toHaveBeenCalledWith(urlToFetch);
@@ -172,7 +172,7 @@ describe('LokiProvider', () => {
       const urlToFetch =
         'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2025-12-05T17%3A40%3A13.621Z';
 
-      await provider.fetchWorkflowLogsByIntance(workflowInstance);
+      await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
       expect(fetch).toHaveBeenCalledWith(urlToFetch);
       expect(parsedURLToFetch.searchParams.get('end')).toEqual(
@@ -221,7 +221,7 @@ describe('LokiProvider', () => {
       const urlToFetch =
         'http://localhost:3100/loki/api/v1/query_range?query=%7Bcustom-selector%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
 
-      await provider.fetchWorkflowLogsByIntance(workflowInstance);
+      await provider.fetchWorkflowLogsByInstance(workflowInstance);
 
       const parsedURLToFetch = new URL(urlToFetch);
       expect(fetch).toHaveBeenCalledWith(urlToFetch);
@@ -271,7 +271,7 @@ describe('LokiProvider', () => {
       const urlToFetch =
         'http://localhost:3100/loki/api/v1/query_range?query=%7Bservice_name%3D%7E%22.%2B%22%2Ccustom-selector1%3D%7E%22.%2B%22%7D+%7C%3D%2212345%22&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
 
-      await provider.fetchWorkflowLogsByIntance(workflowInstance);
+      await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
       expect(fetch).toHaveBeenCalledWith(urlToFetch);
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());

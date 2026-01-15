@@ -11,7 +11,7 @@ import { WorkflowLogsResponse } from '@red-hat-developer-hub/backstage-plugin-or
 // @public (undocumented)
 export interface WorkflowLogProvider {
     // (undocumented)
-    fetchWorkflowLogsByIntance(workflowInstance: ProcessInstanceDTO): Promise<WorkflowLogsResponse>;
+    fetchWorkflowLogsByInstance(workflowInstance: ProcessInstanceDTO): Promise<WorkflowLogsResponse>;
     // (undocumented)
     getBaseURL(): string;
     // (undocumented)
@@ -32,7 +32,7 @@ export interface WorkflowLogsExtensionPoint {
 // src/api/WorkflowLogProvider.d.ts:5:1 - (ae-undocumented) Missing documentation for "WorkflowLogProvider".
 // src/api/WorkflowLogProvider.d.ts:6:5 - (ae-undocumented) Missing documentation for "getProviderId".
 // src/api/WorkflowLogProvider.d.ts:7:5 - (ae-undocumented) Missing documentation for "getBaseURL".
-// src/api/WorkflowLogProvider.d.ts:8:5 - (ae-undocumented) Missing documentation for "fetchWorkflowLogsByIntance".
+// src/api/WorkflowLogProvider.d.ts:8:5 - (ae-undocumented) Missing documentation for "fetchWorkflowLogsByInstance".
 // src/extensions.d.ts:5:1 - (ae-undocumented) Missing documentation for "WorkflowLogsExtensionPoint".
 // src/extensions.d.ts:6:5 - (ae-undocumented) Missing documentation for "addWorkflowLogProvider".
 // src/extensions.d.ts:11:22 - (ae-undocumented) Missing documentation for "workflowLogsExtensionEndpoint".
