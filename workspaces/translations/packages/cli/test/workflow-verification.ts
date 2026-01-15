@@ -34,6 +34,16 @@ const TEST_OUTPUT_DIR = path.join(TEST_DIR, 'i18n');
 const TEST_SOURCE_DIR = path.join(TEST_DIR, 'src');
 
 /**
+ * Normalize path by removing trailing slashes (ReDoS-safe)
+ * Uses bounded quantifier {1,10} instead of + to prevent backtracking
+ */
+function normalizePathForComparison(dirPath: string): string {
+  let normalized = path.normalize(dirPath.trim());
+  normalized = normalized.replace(/[/\\]{1,10}$/, '');
+  return normalized;
+}
+
+/**
  * Create a safe environment with only fixed, non-writable PATH directories
  * Filters PATH to only include standard system directories (exact matches only)
  */
@@ -62,15 +72,9 @@ function createSafeEnvironment(): NodeJS.ProcessEnv {
   const pathDirs = currentPath.split(path.delimiter);
   const safePathDirs = pathDirs.filter(dir => {
     if (!dir || dir.trim() === '') return false;
-    // Normalize paths for comparison (handle trailing slashes)
-    // ReDoS protection: use bounded quantifier {1,10} instead of + to prevent backtracking
-    // Limit trailing slashes to 10 (more than enough for any real path)
-    let normalizedDir = path.normalize(dir.trim());
-    normalizedDir = normalizedDir.replace(/[/\\]{1,10}$/, '');
+    const normalizedDir = normalizePathForComparison(dir);
     return systemPaths.some(systemPath => {
-      let normalizedSystemPath = path.normalize(systemPath);
-      // ReDoS protection: use bounded quantifier
-      normalizedSystemPath = normalizedSystemPath.replace(/[/\\]{1,10}$/, '');
+      const normalizedSystemPath = normalizePathForComparison(systemPath);
       // Only allow exact matches to prevent subdirectory injection
       return normalizedDir === normalizedSystemPath;
     });
@@ -98,12 +102,16 @@ function createSafeEnvironment(): NodeJS.ProcessEnv {
  * Find the absolute path to a command in safe PATH directories
  * Returns the full path to the executable if found in safe directories
  * @param command - The command to find (e.g., 'yarn', 'node')
+ * @param safePath - Optional: pre-computed safe PATH string to avoid recreating environment
  * @returns Absolute path to the command, or null if not found
  */
-function findCommandInSafePath(command: string): string | null {
-  const safeEnv = createSafeEnvironment();
-  const safePath = safeEnv.PATH || '';
-  const pathDirs = safePath.split(path.delimiter);
+function findCommandInSafePath(
+  command: string,
+  safePath?: string,
+): string | null {
+  const pathToUse =
+    safePath || createSafeEnvironment().PATH || process.env.PATH || '';
+  const pathDirs = pathToUse.split(path.delimiter);
   const isWindows = os.platform() === 'win32';
 
   // On Windows, check for .exe, .cmd, .bat extensions
@@ -636,9 +644,11 @@ async function main() {
     console.log(chalk.yellow('⚠️  CLI not built. Building...'));
     // Create safe environment with only fixed, non-writable PATH directories
     const safeEnv = createSafeEnvironment();
+    const safePath = safeEnv.PATH || '';
 
     // Find yarn in safe PATH directories and use absolute path
-    const yarnPath = findCommandInSafePath('yarn');
+    // Pass safePath to avoid recreating the environment
+    const yarnPath = findCommandInSafePath('yarn', safePath);
     if (!yarnPath) {
       console.error(
         chalk.red(
