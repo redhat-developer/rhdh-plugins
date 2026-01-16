@@ -53,6 +53,8 @@ export const bulkImportMessages = {
     repositoryText: 'repository',
     removeRepositoryWarningScaffolder:
       'Removing a repository will also remove all associated scaffolder task info.',
+    removeRepositoryWarningOrchestrator:
+      'Delete repository and associated orchestrator workflow info.',
     removeRepositoryWarning:
       'Removing a repository erases all associated information from the Catalog page.',
     removeRepositoryWarningGitlab:
@@ -64,6 +66,8 @@ export const bulkImportMessages = {
       'This repository added to the app-config file. To remove it modify the file directly',
     removeTooltipRepositoryScaffolder:
       'Delete repository and associated scaffolder task info',
+    removeTooltipRepositoryOrchestrator:
+      'Delete repository and associated orchestrator workflow info',
     errorOccuredWhileFetching: 'Error occured while fetching the pull request',
     failedToCreatePullRequest: 'Failed to create pull request',
     errorOccured: 'Error occured',
@@ -265,14 +269,30 @@ export const bulkImportMessages = {
     taskId: 'Task ID',
     taskLink: 'Task Link',
     viewTask: 'View task',
-    loading: 'Loading...',
-    errorFetchingData: 'Error fetching data',
     taskCancelled: 'Cancelled',
     taskCompleted: 'Completed',
     taskFailed: 'Failed',
     taskOpen: 'Open',
     taskProcessing: 'Processing',
     taskSkipped: 'Skipped',
+  },
+  workflows: {
+    workflowsFor: 'Workflows for {{importJobStatusId}}',
+    workflowId: 'Workflow ID',
+    workflowLink: 'Workflow Link',
+    viewWorkflow: 'View workflow',
+    workflowPending: 'Pending',
+    workflowActive: 'Active',
+    workflowCompleted: 'Completed',
+    workflowAborted: 'Aborted',
+    workflowError: 'Error',
+    workflowFetchError: 'Workflow fetch error',
+    workflowSuspended: 'Suspended',
+  },
+  importActions: {
+    loading: 'Loading...',
+    errorFetchingData: 'Error fetching data',
+    noActions: 'No import actions found for this repository.',
   },
 };
 

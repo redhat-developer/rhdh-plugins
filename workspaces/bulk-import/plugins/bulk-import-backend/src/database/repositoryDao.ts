@@ -81,11 +81,14 @@ export async function paginateQuery<T>(
   };
 }
 
+export type RepositoryName = 'repositories' | 'orchestrator_repositories';
+
 // @internal
-export class RepositoryDao {
+export class RepositoryDao<R extends RepositoryName> {
   constructor(
     private readonly knex: Knex<any, any[]>,
     private readonly logger: LoggerService,
+    private readonly tableName: R,
   ) {}
 
   async findRepositories(
@@ -96,20 +99,20 @@ export class RepositoryDao {
     this.logger.debug(
       `Fetching repositories page=${page}, size=${size}, search=${search}`,
     );
-    const query = this.knex('repositories').select('id', 'url', 'approvalTool');
+    const query = this.knex(this.tableName).select('id', 'url', 'approvalTool');
     const searchParam = { column: 'url', term: search };
     return paginateQuery<Repository>(query, page, size, searchParam);
   }
 
   async insertRepository(
     repoUrl: string,
-    taskId: string,
+    taskOrWorkflowId: string,
     approvalTool: string,
   ): Promise<number> {
     this.logger.debug(
-      `Saving task ${taskId} for repo ${repoUrl} to database..`,
+      `Saving repository ${repoUrl} for task/workflow ${taskOrWorkflowId} to database..`,
     );
-    const repository = await this.knex('repositories')
+    const repository = await this.knex(this.tableName)
       .where({ url: repoUrl })
       .first();
 
@@ -117,7 +120,7 @@ export class RepositoryDao {
     if (repository) {
       repositoryId = repository.id;
     } else {
-      const [newRepository] = await this.knex('repositories')
+      const [newRepository] = await this.knex(this.tableName)
         .insert({ url: repoUrl, approvalTool: approvalTool })
         .returning('id');
       repositoryId = newRepository.id;
@@ -127,17 +130,17 @@ export class RepositoryDao {
 
   async findRepositoryByUrl(url: string): Promise<Repository | undefined> {
     this.logger.debug(`Fetching repository from database by url ${url}...`);
-    return await this.knex('repositories').where({ url: url }).first();
+    return await this.knex(this.tableName).where({ url: url }).first();
   }
 
   async deleteRepository(url: string): Promise<void> {
     this.logger.debug(`Deleting repository from database by url ${url}...`);
-    const repository = await this.knex('repositories')
+    const repository = await this.knex(this.tableName)
       .where({ url: url })
       .first();
 
     if (repository) {
-      await this.knex('repositories').where({ id: repository.id }).del();
+      await this.knex(this.tableName).where({ id: repository.id }).del();
     }
   }
 }
@@ -219,5 +222,60 @@ export class TaskLocationsDao {
       'location',
       'type',
     );
+  }
+}
+
+export interface OrchestratorWorkflow {
+  id: number;
+  instanceId: string;
+  repositoryId: number;
+  createdAt: Date;
+  status?: string;
+}
+
+// @internal
+export class OrchestratorWorkflowDao {
+  constructor(private readonly knex: Knex<any, any[]>) {}
+
+  async insertWorkflow(
+    instanceId: string,
+    repositoryId: number,
+  ): Promise<number> {
+    const [newWorkflow] = await this.knex('orchestrator_workflows')
+      .insert({
+        instance_id: instanceId,
+        repositoryId: repositoryId,
+      })
+      .returning('id');
+    return newWorkflow.id;
+  }
+
+  async lastExecutedWorkflowByRepoId(
+    repositoryId: number,
+  ): Promise<OrchestratorWorkflow | undefined> {
+    const result = await this.knex('orchestrator_workflows')
+      .select({
+        id: 'id',
+        instanceId: 'instance_id',
+        repositoryId: 'repositoryId',
+        createdAt: 'created_at',
+      })
+      .where({ repositoryId: repositoryId })
+      .orderBy('created_at', 'desc')
+      .first();
+    return result;
+  }
+
+  async findWorkflowsByRepositoryId(
+    repositoryId: number,
+  ): Promise<OrchestratorWorkflow[]> {
+    return await this.knex('orchestrator_workflows')
+      .where({ repositoryId: repositoryId })
+      .select({
+        id: 'id',
+        instanceId: 'instance_id',
+        repositoryId: 'repositoryId',
+        createdAt: 'created_at',
+      });
   }
 }

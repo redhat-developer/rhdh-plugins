@@ -62,6 +62,16 @@ export enum TaskStatus {
   Skipped = 'TASK_SKIPPED',
 }
 
+export enum WorkflowStatus {
+  Active = 'WORKFLOW_ACTIVE',
+  Completed = 'WORKFLOW_COMPLETED',
+  Aborted = 'WORKFLOW_ABORTED',
+  Suspended = 'WORKFLOW_SUSPENDED',
+  Error = 'WORKFLOW_ERROR',
+  Pending = 'WORKFLOW_PENDING',
+  FetchError = 'WORKFLOW_FETCH_FAILED',
+}
+
 export type AddRepositoryData = {
   id: string;
   defaultBranch?: string;
@@ -84,6 +94,11 @@ export type AddRepositoryData = {
   task?: {
     id: string;
     status: TaskStatus;
+  };
+  // laste executed workflow
+  workflow?: {
+    id: string;
+    status: WorkflowStatus;
   };
   approvalTool?: ApprovalTool;
 };
@@ -141,6 +156,7 @@ export enum ApprovalTool {
 export enum ImportFlow {
   OpenPullRequests = 'open-pull-requests',
   Scaffolder = 'scaffolder',
+  Orchestrator = 'orchestrator',
 }
 
 export type CreateImportJobRepository = {

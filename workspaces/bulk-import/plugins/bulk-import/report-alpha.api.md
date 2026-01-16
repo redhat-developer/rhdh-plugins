@@ -4,8 +4,8 @@
 
 ```ts
 
-import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const bulkImportTranslationRef: TranslationRef<"plugin.bulk-import", {
@@ -51,12 +51,14 @@ readonly "repositories.deleteRepository": string;
 readonly "repositories.removeRepositoryQuestion": string;
 readonly "repositories.repositoryText": string;
 readonly "repositories.removeRepositoryWarningScaffolder": string;
+readonly "repositories.removeRepositoryWarningOrchestrator": string;
 readonly "repositories.removeRepositoryWarning": string;
 readonly "repositories.removeRepositoryWarningGitlab": string;
 readonly "repositories.cannotRemoveRepositoryUrl": string;
 readonly "repositories.unableToRemoveRepository": string;
 readonly "repositories.removeTooltipDisabled": string;
 readonly "repositories.removeTooltipRepositoryScaffolder": string;
+readonly "repositories.removeTooltipRepositoryOrchestrator": string;
 readonly "repositories.errorOccuredWhileFetching": string;
 readonly "repositories.failedToCreatePullRequest": string;
 readonly "repositories.errorOccured": string;
@@ -180,14 +182,26 @@ readonly "tasks.tasksFor": string;
 readonly "tasks.taskId": string;
 readonly "tasks.taskLink": string;
 readonly "tasks.viewTask": string;
-readonly "tasks.loading": string;
-readonly "tasks.errorFetchingData": string;
 readonly "tasks.taskCancelled": string;
 readonly "tasks.taskCompleted": string;
 readonly "tasks.taskFailed": string;
 readonly "tasks.taskOpen": string;
 readonly "tasks.taskProcessing": string;
 readonly "tasks.taskSkipped": string;
+readonly "workflows.workflowsFor": string;
+readonly "workflows.workflowId": string;
+readonly "workflows.workflowLink": string;
+readonly "workflows.viewWorkflow": string;
+readonly "workflows.workflowPending": string;
+readonly "workflows.workflowActive": string;
+readonly "workflows.workflowCompleted": string;
+readonly "workflows.workflowAborted": string;
+readonly "workflows.workflowError": string;
+readonly "workflows.workflowFetchError": string;
+readonly "workflows.workflowSuspended": string;
+readonly "importActions.loading": string;
+readonly "importActions.errorFetchingData": string;
+readonly "importActions.noActions": string;
 }>;
 
 // @public

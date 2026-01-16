@@ -44,6 +44,8 @@ const bulkImportTranslationIt = createTranslationMessages({
     'repositories.addedRepositoriesCount': 'Repository aggiunti ({{count}})',
     'repositories.importedEntitiesCount': 'Entità importate ({{count}})',
     'repositories.noRecordsFound': 'Nessun record trovato',
+    'repositories.noProjectsFound':
+      "Nessun progetto disponibile per l'importazione.",
     'repositories.refresh': 'Aggiorna',
     'repositories.import': 'Importa',
     'repositories.removing': 'Rimozione in corso...',
@@ -53,6 +55,8 @@ const bulkImportTranslationIt = createTranslationMessages({
     'repositories.repositoryText': 'repository',
     'repositories.removeRepositoryWarningScaffolder':
       'La rimozione di un repository rimuove anche tutte le informazioni sulle attività di scaffolding associate.',
+    'repositories.removeRepositoryWarningOrchestrator':
+      "Elimina repository e informazioni sul flusso di lavoro dell'orchestratore associate.",
     'repositories.removeRepositoryWarning':
       'La rimozione di un repository cancella tutte le informazioni associate dalla pagina Catalogo.',
     'repositories.removeRepositoryWarningGitlab':
@@ -65,6 +69,8 @@ const bulkImportTranslationIt = createTranslationMessages({
       'Questo repository è stato aggiunto al file app-config. Per rimuoverlo modificare direttamente il file',
     'repositories.removeTooltipRepositoryScaffolder':
       "Elimina il repository e le informazioni sull'attività di scaffolding associata",
+    'repositories.removeTooltipRepositoryOrchestrator':
+      "Elimina repository e informazioni sul flusso di lavoro dell'orchestratore associate",
     'repositories.errorOccuredWhileFetching':
       'Si è verificato un errore durante il recupero della richiesta pull',
     'repositories.failedToCreatePullRequest':
@@ -80,6 +86,11 @@ const bulkImportTranslationIt = createTranslationMessages({
     'status.waitingForApproval': 'In attesa di approvazione',
     'status.imported': 'Importata',
     'status.readyToImport': "Pronto per l'importazione",
+    'status.waitingForPullRequestToStart':
+      'In attesa che inizi la richiesta pull',
+    'status.missingConfigurations': 'Configurazioni mancanti',
+    'status.failedCreatingPR': 'Impossibile creare la PR',
+    'status.pullRequestRejected': 'Richiesta pull rifiutata',
     'errors.prErrorPermissions':
       "Impossibile creare una nuova richiesta pull a causa di autorizzazioni insufficienti. Contattare l'amministratore.",
     'errors.catalogInfoExists':
@@ -92,6 +103,10 @@ const bulkImportTranslationIt = createTranslationMessages({
       'Il file CODEOWNERS non è presente nel repository. Aggiungere un file CODEOWNERS per creare una nuova richiesta pull.',
     'errors.errorOccurred': 'Si è verificato un errore',
     'errors.failedToCreatePullRequest': 'Impossibile creare la richiesta pull',
+    'errors.noIntegrationsConfigured':
+      "Nessuna integrazione GitHub o GitLab è configurata. Aggiungere almeno un'integrazione per utilizzare la funzionalità di importazione in blocco.",
+    'errors.addIntegrationsToConfig':
+      'Per risolvere questo problema, assicurarsi che le integrazioni siano aggiunte al file di configurazione di Backstage (app-config.yaml).',
     'validation.componentNameInvalid':
       '"{{value}}" non è valido; è prevista una stringa composta da sequenze di [a-zA-Z0-9] separate da uno qualsiasi tra i simboli [-_.], per un massimo di 63 caratteri in totale. Per saperne di più sul formato del file catalogo, visitare: https://github.com/backstage/backstage/blob/master/docs/architecture-decisions/adr002-default-catalog-file-format.md',
     'validation.componentNameRequired': 'Il nome del componente è obbligatorio',
@@ -109,6 +124,7 @@ const bulkImportTranslationIt = createTranslationMessages({
     'table.headers.organizationGroup': 'Organizzazione/gruppo',
     'table.headers.group': 'Gruppo',
     'table.headers.status': 'Stato',
+    'table.headers.taskStatus': 'Stato attività',
     'table.headers.lastUpdated': 'Ultimo aggiornamento',
     'table.headers.actions': 'Azioni',
     'table.headers.catalogInfoYaml': 'catalogo-info.yaml',
@@ -165,6 +181,7 @@ const bulkImportTranslationIt = createTranslationMessages({
     'common.import': 'Importa',
     'common.remove': 'Rimuovi',
     'common.save': 'Salva',
+    'common.documentation': 'Documentazione',
     'common.select': 'Seleziona',
     'common.update': 'Aggiorna',
     'common.view': 'Visualizza',
@@ -220,6 +237,8 @@ const bulkImportTranslationIt = createTranslationMessages({
     'forms.footer.createServiceNowTickets': 'Crea ticket ServiceNow',
     'forms.footer.createPullRequest': 'Crea richiesta pull',
     'forms.footer.createPullRequests': 'Crea richieste pull',
+    'forms.footer.selectRepositoryTooltip':
+      'Selezionare un repository da importare.',
     'forms.footer.serviceNowTooltip':
       'È necessario generare i file catalog-info.yaml prima di creare un ticket ServiceNow',
     'forms.footer.importTooltip':
@@ -230,14 +249,28 @@ const bulkImportTranslationIt = createTranslationMessages({
     'tasks.taskId': 'ID attività',
     'tasks.taskLink': 'Collegamento attività',
     'tasks.viewTask': 'Visualizza attività',
-    'tasks.loading': 'Caricamento...',
-    'tasks.errorFetchingData': 'Errore durante il recupero dei dati',
     'tasks.taskCancelled': 'Attività annullata',
     'tasks.taskCompleted': 'Attività completata',
     'tasks.taskFailed': 'Attività non riuscita',
     'tasks.taskOpen': 'Attività aperta',
     'tasks.taskProcessing': 'Elaborazione delle attività',
     'tasks.taskSkipped': 'Attività ignorata',
+    'workflows.workflowsFor': 'Flussi di lavoro per {{importJobStatusId}}',
+    'workflows.workflowId': 'ID flusso di lavoro',
+    'workflows.workflowLink': 'Collegamento flusso di lavoro',
+    'workflows.viewWorkflow': 'Visualizza flusso di lavoro',
+    'workflows.workflowPending': 'In attesa',
+    'workflows.workflowActive': 'Attivo',
+    'workflows.workflowCompleted': 'Completato',
+    'workflows.workflowAborted': 'Interrotto',
+    'workflows.workflowError': 'Errore',
+    'workflows.workflowSuspended': 'Sospeso',
+    'workflows.workflowFetchError':
+      'Errore durante il recupero del flusso di lavoro',
+    'importActions.loading': 'Caricamento...',
+    'importActions.errorFetchingData': 'Errore durante il recupero dei dati',
+    'importActions.noActions':
+      'Nessuna azione di importazione trovata per questo repository.',
   },
 });
 

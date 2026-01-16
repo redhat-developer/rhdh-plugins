@@ -8,12 +8,16 @@ All URIs are relative to *http://localhost:7007/api/bulk-import*
 | Class | Method | HTTP request | Description |
 |------------ | ------------- | ------------- | -------------|
 | *ImportApi* | [**createImportJobs**](Apis/ImportApi.md#createimportjobs) | **POST** /imports | Submit Import Jobs |
+*ImportApi* | [**createOrchestratorWorkflowJobs**](Apis/ImportApi.md#createorchestratorworkflowjobs) | **POST** /orchestrator-workflows | Execute an orchestrator workflow |
 *ImportApi* | [**createTaskImportJobs**](Apis/ImportApi.md#createtaskimportjobs) | **POST** /task-imports | Execute a scaffolder template for a list of repositories |
 *ImportApi* | [**deleteImportByRepo**](Apis/ImportApi.md#deleteimportbyrepo) | **DELETE** /import/by-repo | Delete Import by repository |
+*ImportApi* | [**deleteOrchestratorImportByRepo**](Apis/ImportApi.md#deleteorchestratorimportbyrepo) | **DELETE** /orchestrator-import/by-repo | Delete stored orchestrator workflow records for a specific repository |
 *ImportApi* | [**deleteTaskImportByRepo**](Apis/ImportApi.md#deletetaskimportbyrepo) | **DELETE** /task-import/by-repo | Delete stored scaffolder task records for a specific repository |
 *ImportApi* | [**findAllImports**](Apis/ImportApi.md#findallimports) | **GET** /imports | Fetch Import Jobs |
+*ImportApi* | [**findAllOrchestratorWorkflowImports**](Apis/ImportApi.md#findallorchestratorworkflowimports) | **GET** /orchestrator-workflows | Fetch Import Jobs |
 *ImportApi* | [**findAllTaskImports**](Apis/ImportApi.md#findalltaskimports) | **GET** /task-imports | Fetch Import Jobs |
 *ImportApi* | [**findImportStatusByRepo**](Apis/ImportApi.md#findimportstatusbyrepo) | **GET** /import/by-repo | Get Import Status by repository |
+*ImportApi* | [**findOrchestratorImportStatusByRepo**](Apis/ImportApi.md#findorchestratorimportstatusbyrepo) | **GET** /orchestrator-import/by-repo | Get Import Status by repository |
 *ImportApi* | [**findTaskImportStatusByRepo**](Apis/ImportApi.md#findtaskimportstatusbyrepo) | **GET** /task-import/by-repo | Get Import Status by repository |
 | *ManagementApi* | [**ping**](Apis/ManagementApi.md#ping) | **GET** /ping | Check the health of the Bulk Import backend router |
 | *OrganizationApi* | [**findAllOrganizations**](Apis/OrganizationApi.md#findallorganizations) | **GET** /organizations | Fetch Organizations accessible by Backstage Github Integrations |
@@ -33,6 +37,7 @@ All URIs are relative to *http://localhost:7007/api/bulk-import*
  - [Import_github](./Models/Import_github.md)
  - [Import_gitlab](./Models/Import_gitlab.md)
  - [Import_task](./Models/Import_task.md)
+ - [Import_workflow](./Models/Import_workflow.md)
  - [Organization](./Models/Organization.md)
  - [OrganizationList](./Models/OrganizationList.md)
  - [PullRequest](./Models/PullRequest.md)
@@ -43,6 +48,7 @@ All URIs are relative to *http://localhost:7007/api/bulk-import*
  - [Source](./Models/Source.md)
  - [SourceImport](./Models/SourceImport.md)
  - [TaskImportStatus](./Models/TaskImportStatus.md)
+ - [WorkflowImportStatus](./Models/WorkflowImportStatus.md)
  - [findAllImports_200_response](./Models/findAllImports_200_response.md)
  - [findAllImports_500_response](./Models/findAllImports_500_response.md)
  - [ping_200_response](./Models/ping_200_response.md)
