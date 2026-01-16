@@ -36,6 +36,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   private readonly discoveryApi: DiscoveryApi;
   private readonly fetchApi: FetchApi;
   private token?: string;
+  private accessCache?: GetCostManagementAccessResponse;
+  private accessCacheExpiry?: number;
 
   constructor(options: { discoveryApi: DiscoveryApi; fetchApi?: FetchApi }) {
     this.discoveryApi = options.discoveryApi;
@@ -45,8 +47,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>> {
-    // Get access permission and authorized clusters
-    const accessAPIResponse = await this.getAccess();
+    // Get access permission and authorized clusters & projects
+    const accessAPIResponse = await this.getCostManagementAccess();
 
     if (accessAPIResponse.decision === AuthorizeResult.DENY) {
       throw new UnauthorizedError();
@@ -76,6 +78,14 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       });
     }
 
+    // Add project filters based on authorized projects
+    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
+    if (authorizedProjects.length > 0) {
+      authorizedProjects.forEach(projectName => {
+        queryParams.append('filter[exact:project]', projectName);
+      });
+    }
+
     const queryString = queryParams.toString();
     const queryPart = queryString ? `?${queryString}` : '';
     const url = `${baseUrl}${uri}${queryPart}`;
@@ -87,7 +97,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     request: DownloadCostManagementRequest,
   ): Promise<void> {
     // Get access permission and authorized clusters
-    const accessAPIResponse = await this.getAccess();
+    const accessAPIResponse = await this.getCostManagementAccess();
 
     if (accessAPIResponse.decision === AuthorizeResult.DENY) {
       throw new UnauthorizedError();
@@ -121,6 +131,14 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     if (authorizedClusters.length > 0) {
       authorizedClusters.forEach(clusterName => {
         queryParams.append('filter[exact:cluster]', clusterName);
+      });
+    }
+
+    // Add project filters based on authorized projects
+    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
+    if (authorizedProjects.length > 0) {
+      authorizedProjects.forEach(projectName => {
+        queryParams.append('filter[exact:project]', projectName);
       });
     }
 
@@ -528,11 +546,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async getOpenShiftTags(
     timeScopeValue: number = -1,
   ): Promise<TypedResponse<{ data: string[]; meta?: any; links?: any }>> {
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[time_scope_value]=${timeScopeValue}&key_only=true&limit=1000`;
-
     // Get access permission
-    const accessAPIResponse = await this.getAccess();
+    const accessAPIResponse = await this.getCostManagementAccess();
 
     if (accessAPIResponse.decision === AuthorizeResult.DENY) {
       throw new UnauthorizedError();
@@ -542,6 +557,25 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     if (!this.token) {
       const { accessToken } = await this.getNewToken();
       this.token = accessToken;
+    }
+
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    let url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[time_scope_value]=${timeScopeValue}&key_only=true&limit=1000`;
+
+    // Add cluster filters based on authorized clusters
+    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
+    if (authorizedClusters.length > 0) {
+      authorizedClusters.forEach(clusterName => {
+        url += `&filter[exact:cluster]=${encodeURIComponent(clusterName)}`;
+      });
+    }
+
+    // Add project filters based on authorized projects
+    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
+    if (authorizedProjects.length > 0) {
+      authorizedProjects.forEach(projectName => {
+        url += `&filter[exact:project]=${encodeURIComponent(projectName)}`;
+      });
     }
 
     return await this.fetchWithTokenAndRetry<{
@@ -567,13 +601,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   > {
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[key]=${encodeURIComponent(
-      tagKey,
-    )}&filter[time_scope_value]=${timeScopeValue}`;
-
     // Get access permission
-    const accessAPIResponse = await this.getAccess();
+    const accessAPIResponse = await this.getCostManagementAccess();
 
     if (accessAPIResponse.decision === AuthorizeResult.DENY) {
       throw new UnauthorizedError();
@@ -583,6 +612,27 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     if (!this.token) {
       const { accessToken } = await this.getNewToken();
       this.token = accessToken;
+    }
+
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+    let url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[key]=${encodeURIComponent(
+      tagKey,
+    )}&filter[time_scope_value]=${timeScopeValue}`;
+
+    // Add cluster filters based on authorized clusters
+    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
+    if (authorizedClusters.length > 0) {
+      authorizedClusters.forEach(clusterName => {
+        url += `&filter[exact:cluster]=${encodeURIComponent(clusterName)}`;
+      });
+    }
+
+    // Add project filters based on authorized projects
+    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
+    if (authorizedProjects.length > 0) {
+      authorizedProjects.forEach(projectName => {
+        url += `&filter[exact:project]=${encodeURIComponent(projectName)}`;
+      });
     }
 
     return await this.fetchWithTokenAndRetry<{
@@ -656,12 +706,30 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     };
   }
 
-  private async getAccess(): Promise<GetCostManagementAccessResponse> {
+  private async getCostManagementAccess(): Promise<GetCostManagementAccessResponse> {
+    const now = Date.now();
+    const CACHE_TTL = 15 * 60 * 1000; // 15 minutes - matches backend cache
+
+    // Return cached access response if still valid
+    if (
+      this.accessCache &&
+      this.accessCacheExpiry &&
+      this.accessCacheExpiry > now
+    ) {
+      return this.accessCache;
+    }
+
+    // Fetch fresh access data
     const baseUrl = await this.discoveryApi.getBaseUrl(`${pluginId}`);
     const response = await this.fetchApi.fetch(
       `${baseUrl}/access/cost-management`,
     );
     const data = (await response.json()) as GetCostManagementAccessResponse;
+
+    // Cache the response
+    this.accessCache = data;
+    this.accessCacheExpiry = now + CACHE_TTL;
+
     return data;
   }
 
