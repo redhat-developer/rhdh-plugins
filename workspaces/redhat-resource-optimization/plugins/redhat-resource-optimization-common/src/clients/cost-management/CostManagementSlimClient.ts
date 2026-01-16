@@ -434,16 +434,29 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   /**
    * Search OpenShift projects
    * @param search - Search term to filter projects
+   * @param options - Optional request options including token and limit
+   * @param options.token - Bearer token for authentication (backend use)
+   * @param options.limit - Maximum number of results to return (default: 10, use large number for all)
    */
   public async searchOpenShiftProjects(
     search: string = '',
-    options?: { token?: string },
+    options?: { token?: string; limit?: number },
   ): Promise<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   > {
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
-    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-projects/${searchParam}`;
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (search) {
+      params.append('search', search);
+    }
+    if (options?.limit !== undefined) {
+      params.append('limit', String(options.limit));
+    }
+    const queryString = params.toString();
+    const queryPart = queryString ? `?${queryString}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-projects/${queryPart}`;
 
     // If token provided externally (backend use), use it directly
     if (options?.token) {
@@ -480,7 +493,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
    */
   public async searchOpenShiftClusters(
     search: string = '',
-    options?: { token?: string },
+    options?: { token?: string; limit?: number },
   ): Promise<
     TypedResponse<{
       data: Array<{ value: string; cluster_alias: string }>;
@@ -489,8 +502,18 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     }>
   > {
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
-    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-clusters/${searchParam}`;
+
+    // Build query parameters
+    const params = new URLSearchParams();
+    if (search) {
+      params.append('search', search);
+    }
+    if (options?.limit !== undefined) {
+      params.append('limit', String(options.limit));
+    }
+    const queryString = params.toString();
+    const queryPart = queryString ? `?${queryString}` : '';
+    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-clusters/${queryPart}`;
 
     // If token provided externally (backend use), use it directly
     if (options?.token) {

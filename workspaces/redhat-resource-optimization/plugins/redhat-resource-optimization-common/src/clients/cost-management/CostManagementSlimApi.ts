@@ -31,13 +31,13 @@ export interface CostManagementSlimApi {
   ): Promise<void>;
   searchOpenShiftProjects(
     search?: string,
-    options?: { token?: string },
+    options?: { token?: string; limit?: number },
   ): Promise<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   >;
   searchOpenShiftClusters(
     search?: string,
-    options?: { token?: string },
+    options?: { token?: string; limit?: number },
   ): Promise<
     TypedResponse<{
       data: Array<{ value: string; cluster_alias: string }>;
