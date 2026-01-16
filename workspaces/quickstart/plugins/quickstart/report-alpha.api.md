@@ -17,6 +17,7 @@ export const quickstartTranslationRef: TranslationRef<
     readonly 'footer.progress': string;
     readonly 'footer.hide': string;
     readonly 'footer.notStarted': string;
+    readonly 'footer.progressBarLabel': string;
     readonly 'header.title': string;
     readonly 'header.subtitle': string;
     readonly 'content.emptyState.title': string;
