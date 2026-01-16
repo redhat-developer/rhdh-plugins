@@ -43,9 +43,7 @@ export type Options = {
   identityApi: IdentityApi;
 };
 
-export class OpenshiftImageRegistryApiClient
-  implements OpenshiftImageRegistryApiV1
-{
+export class OpenshiftImageRegistryApiClient implements OpenshiftImageRegistryApiV1 {
   // @ts-ignore
   private readonly discoveryApi: DiscoveryApi;
 
