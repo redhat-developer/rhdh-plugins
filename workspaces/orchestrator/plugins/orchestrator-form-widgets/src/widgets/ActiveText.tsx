@@ -21,6 +21,7 @@ import type { JSONSchema7 } from 'json-schema';
 import { UiProps } from '../uiPropTypes';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { ErrorText } from './ErrorText';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { useFetchAndEvaluate } from '../utils';
@@ -37,7 +38,7 @@ export const ActiveText: Widget<
   const handleFetchStarted = formContext?.handleFetchStarted;
   const handleFetchEnded = formContext?.handleFetchEnded;
 
-  const { text, error, loading } = useFetchAndEvaluate(
+  const { text, error, loading, waitingForRetrigger } = useFetchAndEvaluate(
     uiProps['ui:text'] ?? '',
     formData ?? {},
     uiProps,
@@ -59,13 +60,21 @@ export const ActiveText: Widget<
     return <ErrorText id={id} text={error} />;
   }
 
-  return (
-    <Box data-testid={id}>
-      {loading ? (
-        <CircularProgress size={20} />
-      ) : (
-        <MarkdownContent content={text || ''} />
-      )}
-    </Box>
-  );
+  let content: React.ReactNode;
+  if (waitingForRetrigger) {
+    content = (
+      <Box display="flex" alignItems="center" gap={1}>
+        <CircularProgress size={16} />
+        <Typography variant="body2" color="textSecondary">
+          Waiting for dependency values to resolve.
+        </Typography>
+      </Box>
+    );
+  } else if (loading) {
+    content = <CircularProgress size={20} />;
+  } else {
+    content = <MarkdownContent content={text || ''} />;
+  }
+
+  return <Box data-testid={id}>{content}</Box>;
 };
