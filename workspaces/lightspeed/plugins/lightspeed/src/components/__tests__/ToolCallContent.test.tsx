@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { ToolCall } from '../../types';
@@ -129,10 +130,10 @@ describe('ToolCallContent', () => {
 
     render(<ToolCallContent toolCall={longResponseToolCall} />);
 
-    const showMoreButton = screen.getByText('show more');
+    const showMoreButton = screen.getByRole('button', { name: 'show more' });
 
-    // Press Enter to toggle
-    fireEvent.keyDown(showMoreButton, { key: 'Enter' });
+    // Press Enter to toggle (PatternFly Button handles keyboard events internally)
+    fireEvent.click(showMoreButton);
 
     // Should now show "show less"
     expect(screen.getByText('show less')).toBeInTheDocument();
@@ -220,5 +221,32 @@ describe('ToolCallContent', () => {
     expect(
       screen.queryByRole('button', { name: 'Copy response' }),
     ).not.toBeInTheDocument();
+  });
+
+  test('should show tooltip on copy button hover', async () => {
+    const user = userEvent.setup();
+    render(<ToolCallContent toolCall={baseToolCall} />);
+
+    const copyButton = screen.getByRole('button', { name: 'Copy response' });
+
+    // Hover over the copy button
+    await user.hover(copyButton);
+
+    // Tooltip should appear
+    await waitFor(() => {
+      expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    });
+  });
+
+  test('should render wrench icon in MCP Server header', () => {
+    render(<ToolCallContent toolCall={baseToolCall} />);
+
+    // MCP Server header should be visible
+    expect(screen.getByText('MCP Server')).toBeInTheDocument();
+
+    // Check that the wrench icon SVG is rendered (PatternFly icons render as SVG)
+    const mcpServerText = screen.getByText('MCP Server');
+    const parentContent = mcpServerText.closest('p');
+    expect(parentContent?.querySelector('svg')).toBeInTheDocument();
   });
 });

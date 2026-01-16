@@ -27,8 +27,9 @@ import {
   Flex,
   FlexItem,
   Label,
+  Tooltip,
 } from '@patternfly/react-core';
-import { CopyIcon } from '@patternfly/react-icons';
+import { CopyIcon, WrenchIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
@@ -95,141 +96,179 @@ export const ToolCallContent = ({ toolCall }: ToolCallContentProps) => {
         <Content component={ContentVariants.p}>{t('toolCall.summary')}</Content>
       </FlexItem>
 
-      {/* Tool Header with MCP Server and Copy Button */}
+      {/* Tool Header with MCP Server */}
       <FlexItem>
-        <Flex alignItems={{ default: 'alignItemsCenter' }}>
-          <FlexItem flex={{ default: 'flex_1' }}>
-            <Content component={ContentVariants.p}>
-              <strong>{t('toolCall.mcpServer')}</strong>
-            </Content>
-            {toolCall.executionTime !== undefined && (
-              <Content component={ContentVariants.small}>
-                {t('toolCall.executionTime')}
-                {formatExecutionTime(toolCall.executionTime)}
-              </Content>
-            )}
-          </FlexItem>
-          {toolCall.response && (
-            <FlexItem>
-              <Button
-                variant="plain"
-                aria-label={t('toolCall.copyResponse')}
-                onClick={handleCopy}
-                icon={<CopyIcon />}
-              />
-            </FlexItem>
-          )}
-        </Flex>
-      </FlexItem>
-
-      {/* Description List for Parameters and Response */}
-      <FlexItem>
-        <DescriptionList
-          style={
-            {
-              '--pf-v6-c-description-list--RowGap':
-                'var(--pf-t--global--spacer--md)',
-            } as any
-          }
-          aria-label="Tool response"
+        <div
+          style={{
+            border: '1px solid var(--pf-t--global--border--color--default)',
+            borderRadius: 'var(--pf-t--global--border--radius--small)',
+            padding: 'var(--pf-t--global--spacer--md)',
+          }}
         >
-          {/* Parameters Section */}
-          {parameterKeys.length > 0 && (
-            <DescriptionListGroup
-              style={
-                {
-                  '--pf-v6-c-description-list__group--RowGap':
-                    'var(--pf-t--global--spacer--xs)',
-                } as any
-              }
+          <Flex
+            direction={{ default: 'column' }}
+            spaceItems={{ default: 'spaceItemsSm' }}
+          >
+            <FlexItem
+              style={{
+                borderBottom:
+                  '1px solid var(--pf-t--global--border--color--default)',
+                paddingBottom: 'var(--pf-t--global--spacer--sm)',
+              }}
             >
-              <DescriptionListTerm>
-                {t('toolCall.parameters' as any, {
-                  defaultValue: 'Parameters',
-                }) || 'Parameters'}
-              </DescriptionListTerm>
-              <DescriptionListDescription style={{ marginInlineStart: 0 }}>
-                <Flex direction={{ default: 'column' }}>
-                  {toolCall.description && (
-                    <FlexItem>
-                      <Content component={ContentVariants.small}>
-                        {toolCall.description}
-                      </Content>
-                    </FlexItem>
-                  )}
-                  <FlexItem>
-                    <Flex
-                      gap={{ default: 'gapSm' }}
-                      flexWrap={{ default: 'wrap' }}
-                    >
-                      {parameterKeys.map(key => (
-                        <FlexItem key={key}>
-                          <Label variant="outline" color="blue">
-                            {key}
-                          </Label>
-                        </FlexItem>
-                      ))}
-                    </Flex>
-                  </FlexItem>
-                </Flex>
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-          )}
+              <Content
+                component={ContentVariants.p}
+                style={{ marginBlockEnd: 0 }}
+              >
+                <WrenchIcon
+                  style={{
+                    color: 'var(--pf-t--global--icon--color--brand--default)',
+                    marginRight: '0.5em',
+                  }}
+                />
+                <strong>{t('toolCall.mcpServer')}</strong>
+              </Content>
+              {toolCall.executionTime !== undefined && (
+                <Content component={ContentVariants.small}>
+                  {t('toolCall.executionTime')}
+                  {formatExecutionTime(toolCall.executionTime)}
+                </Content>
+              )}
+            </FlexItem>
 
-          {/* Response Section */}
-          {toolCall.response && (
-            <DescriptionListGroup
-              style={
-                {
-                  '--pf-v6-c-description-list__group--RowGap':
-                    'var(--pf-t--global--spacer--xs)',
-                } as any
-              }
-            >
-              <DescriptionListTerm>
-                {t('toolCall.response')}
-              </DescriptionListTerm>
-              <DescriptionListDescription style={{ marginInlineStart: 0 }}>
-                <Flex
-                  direction={{ default: 'column' }}
-                  spaceItems={{ default: 'spaceItemsXs' }}
-                >
-                  <FlexItem>
-                    <div
-                      style={{
-                        fontFamily: 'Red Hat Mono, Monaco, Consolas, monospace',
-                        fontSize: '0.875rem',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        padding: 'var(--pf-t--global--spacer--sm)',
-                        borderRadius:
-                          'var(--pf-t--global--border--radius--small)',
-                        maxHeight: isExpanded ? '300px' : '105px',
-                        overflowY: 'auto',
-                        transition: 'max-height 0.3s ease',
-                      }}
+            {/* Description List for Parameters and Response */}
+            <FlexItem>
+              <DescriptionList
+                style={
+                  {
+                    '--pf-v6-c-description-list--RowGap':
+                      'var(--pf-t--global--spacer--md)',
+                  } as any
+                }
+                aria-label="Tool response"
+              >
+                {/* Parameters Section */}
+                {parameterKeys.length > 0 && (
+                  <DescriptionListGroup
+                    style={
+                      {
+                        '--pf-v6-c-description-list__group--RowGap':
+                          'var(--pf-t--global--spacer--xs)',
+                      } as any
+                    }
+                  >
+                    <DescriptionListTerm>
+                      {t('toolCall.parameters' as any, {
+                        defaultValue: 'Parameters',
+                      }) || 'Parameters'}
+                    </DescriptionListTerm>
+                    <DescriptionListDescription
+                      style={{ marginInlineStart: 0 }}
                     >
-                      {toolCall.response}
-                    </div>
-                  </FlexItem>
-                  {toolCall.response.length > 300 && (
-                    <FlexItem>
-                      <Button
-                        variant="link"
-                        isInline
-                        onClick={() => setIsExpanded(!isExpanded)}
+                      <Flex direction={{ default: 'column' }}>
+                        {toolCall.description && (
+                          <FlexItem>
+                            <Content component={ContentVariants.small}>
+                              {toolCall.description}
+                            </Content>
+                          </FlexItem>
+                        )}
+                        <FlexItem>
+                          <Flex
+                            gap={{ default: 'gapSm' }}
+                            flexWrap={{ default: 'wrap' }}
+                          >
+                            {parameterKeys.map(key => (
+                              <FlexItem key={key}>
+                                <Label variant="outline" color="blue">
+                                  {key}
+                                </Label>
+                              </FlexItem>
+                            ))}
+                          </Flex>
+                        </FlexItem>
+                      </Flex>
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                )}
+
+                {/* Response Section */}
+                {toolCall.response && (
+                  <DescriptionListGroup
+                    style={
+                      {
+                        '--pf-v6-c-description-list__group--RowGap':
+                          'var(--pf-t--global--spacer--xs)',
+                      } as any
+                    }
+                  >
+                    {/* <DescriptionListTerm> */}
+                    <Flex
+                      alignItems={{ default: 'alignItemsCenter' }}
+                      justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                    >
+                      <FlexItem flex={{ default: 'flex_1' }}>
+                        <strong> {t('toolCall.response')}</strong>
+                      </FlexItem>
+                      <FlexItem>
+                        <Tooltip content={t('toolCall.copyResponse')}>
+                          <Button
+                            variant="plain"
+                            aria-label={t('toolCall.copyResponse')}
+                            onClick={handleCopy}
+                            icon={<CopyIcon />}
+                          />
+                        </Tooltip>
+                      </FlexItem>
+                    </Flex>
+                    {/* </DescriptionListTerm> */}
+                    <DescriptionListDescription
+                      style={{ marginInlineStart: 0 }}
+                    >
+                      <Flex
+                        direction={{ default: 'column' }}
+                        spaceItems={{ default: 'spaceItemsXs' }}
                       >
-                        {isExpanded
-                          ? t('toolCall.showLess')
-                          : t('toolCall.showMore')}
-                      </Button>
-                    </FlexItem>
-                  )}
-                </Flex>
-              </DescriptionListDescription>
-            </DescriptionListGroup>
-          )}
-        </DescriptionList>
+                        <FlexItem>
+                          <div
+                            style={{
+                              fontFamily:
+                                'Red Hat Mono, Monaco, Consolas, monospace',
+                              fontSize: '0.875rem',
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                              padding: 'var(--pf-t--global--spacer--sm)',
+                              borderRadius:
+                                'var(--pf-t--global--border--radius--small)',
+                              maxHeight: isExpanded ? '300px' : '105px',
+                              overflowY: 'auto',
+                              transition: 'max-height 0.3s ease',
+                            }}
+                          >
+                            {toolCall.response}
+                          </div>
+                        </FlexItem>
+                        {toolCall.response.length > 300 && (
+                          <FlexItem>
+                            <Button
+                              variant="link"
+                              isInline
+                              onClick={() => setIsExpanded(!isExpanded)}
+                            >
+                              {isExpanded
+                                ? t('toolCall.showLess')
+                                : t('toolCall.showMore')}
+                            </Button>
+                          </FlexItem>
+                        )}
+                      </Flex>
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                )}
+              </DescriptionList>
+            </FlexItem>
+          </Flex>
+        </div>
       </FlexItem>
     </Flex>
   );
