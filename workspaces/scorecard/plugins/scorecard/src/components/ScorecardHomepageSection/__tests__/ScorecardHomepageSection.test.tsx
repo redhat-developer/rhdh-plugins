@@ -17,161 +17,178 @@
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { ScorecardHomepageSection } from '../ScorecardHomepageSection';
-import { mockAggregatedScorecardSuccessData } from '../../../../__fixtures__/aggregatedScorecardData';
-import type { AggregatedMetricResult } from '../../../utils/utils';
+import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
+
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // Mock the child components
-jest.mock('../../Common/PermissionRequiredState', () => {
-  return function MockPermissionRequiredState() {
-    return (
-      <div data-testid="permission-required-state">Permission Required</div>
-    );
-  };
-});
-
-jest.mock('../ScorecardHomepageCard', () => ({
-  ScorecardHomepageCard: function MockScorecardHomepageCard({
-    scorecard,
-  }: {
-    scorecard: { id: string; metadata: { title: string } };
-  }) {
-    return (
-      <div data-testid="scorecard-homepage-card" data-id={scorecard.id}>
-        {scorecard.metadata.title}
-      </div>
-    );
-  },
+jest.mock('../../../hooks/useAggregatedScorecard', () => ({
+  useAggregatedScorecard: jest.fn(),
 }));
 
-jest.mock('@backstage/core-components', () => ({
-  ResponseErrorPanel: ({ error }: { error: Error }) => (
-    <div data-testid="response-error-panel">{error?.message ?? 'Error'}</div>
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
+jest.mock('../ScorecardHomepageCardComponent', () => ({
+  ScorecardHomepageCardComponent: ({
+    scorecard,
+  }: {
+    scorecard: AggregatedMetricResult;
+  }) => (
+    <div data-testid="scorecard-homepage-card">{scorecard.metadata.title}</div>
   ),
 }));
 
-jest.mock('../../../hooks/useAggregatedScorecards', () => ({
-  useAggregatedScorecards: jest.fn(),
+jest.mock('../EmptyStatePanel', () => ({
+  EmptyStatePanel: ({
+    error,
+    metricId,
+  }: {
+    error: Error;
+    metricId: string;
+  }) => (
+    <div data-testid="empty-state-panel">
+      <div data-testid="error-message">{error.message}</div>
+      <div data-testid="metric-id">{metricId}</div>
+    </div>
+  ),
 }));
 
-// Get the mocked function
 const {
-  useAggregatedScorecards,
-} = require('../../../hooks/useAggregatedScorecards');
+  useAggregatedScorecard,
+} = require('../../../hooks/useAggregatedScorecard');
 
-const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  const theme = createTheme();
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <ThemeProvider theme={createTheme()}>{children}</ThemeProvider>
+);
+
+const mockScorecard: AggregatedMetricResult = {
+  id: 'github.open_prs',
+  status: 'success',
+  metadata: {
+    title: 'GitHub open PRs',
+    description: 'Open PR count',
+    type: 'number',
+    history: true,
+  },
+  result: {
+    total: 8,
+    values: [{ name: 'success', count: 8 }],
+    timestamp: '2024-01-01T00:00:00Z',
+  },
 };
 
-describe('ScorecardHomepageSection Component', () => {
+describe('ScorecardHomepageCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('should render loading spinner when data is loading', () => {
-    useAggregatedScorecards.mockReturnValue({
-      aggregatedScorecards: undefined,
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: undefined,
       loadingData: true,
       error: undefined,
     });
 
-    render(<ScorecardHomepageSection />);
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
+
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
-  it('should render permission required state when error contains NotAllowedError', () => {
-    useAggregatedScorecards.mockReturnValue({
-      aggregatedScorecards: [],
+  it('should render empty state panel when NotAllowedError occurs', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: undefined,
       loadingData: false,
       error: new Error('NotAllowedError: missing permission'),
     });
 
-    render(<ScorecardHomepageSection />);
-    expect(screen.getByTestId('permission-required-state')).toBeInTheDocument();
-  });
-
-  it('should render error panel for non-permission errors', () => {
-    const error = new Error('Something went wrong');
-
-    useAggregatedScorecards.mockReturnValue({
-      aggregatedScorecards: [],
-      loadingData: false,
-      error,
+    render(<ScorecardHomepageCard metricId="jira.open_issues" />, {
+      wrapper: TestWrapper,
     });
 
-    render(<ScorecardHomepageSection />);
-
-    expect(screen.getByTestId('response-error-panel')).toBeInTheDocument();
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('metric-id')).toHaveTextContent(
+      'jira.open_issues',
+    );
+    expect(screen.getByTestId('error-message')).toHaveTextContent(
+      'NotAllowedError: missing permission',
+    );
   });
 
-  it('should render scorecard cards when data is loaded successfully', () => {
-    useAggregatedScorecards.mockReturnValue({
-      aggregatedScorecards: mockAggregatedScorecardSuccessData,
+  it('should render empty state panel for non-permission errors', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: undefined,
+      loadingData: false,
+      error: new Error('Something went wrong'),
+    });
+
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('error-message')).toHaveTextContent(
+      'Something went wrong',
+    );
+  });
+
+  it('should render scorecard homepage card when data loads successfully', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: [mockScorecard],
       loadingData: false,
       error: undefined,
     });
 
-    render(<ScorecardHomepageSection />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
-    const cards = screen.getAllByTestId('scorecard-homepage-card');
-    expect(cards).toHaveLength(2);
+    expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.getByText('Jira open blocking tickets')).toBeInTheDocument();
   });
 
-  it('should render only first two scorecards when more than two are available', () => {
-    const threeScorecards: AggregatedMetricResult[] = [
-      ...mockAggregatedScorecardSuccessData,
-      {
-        id: 'third.scorecard',
-        status: 'success',
-        metadata: {
-          title: 'Third Scorecard',
-          description: 'Third description',
-          type: 'object',
-          history: true,
+  it('should render only the first scorecard when multiple are returned', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: [
+        mockScorecard,
+        {
+          ...mockScorecard,
+          id: 'second.metric',
+          metadata: {
+            ...mockScorecard.metadata,
+            title: 'Second Metric',
+          },
         },
-        result: {
-          values: [{ count: 5, name: 'success' }],
-          total: 5,
-          timestamp: '2024-01-15T10:30:00Z',
-          lastUpdated: '2024-01-15T10:30:00Z',
-        },
-      },
-    ];
-
-    useAggregatedScorecards.mockReturnValue({
-      aggregatedScorecards: threeScorecards,
+      ],
       loadingData: false,
       error: undefined,
     });
 
-    render(<ScorecardHomepageSection />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
-    const cards = screen.getAllByTestId('scorecard-homepage-card');
-    expect(cards).toHaveLength(2);
+    expect(screen.getAllByTestId('scorecard-homepage-card')).toHaveLength(1);
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.getByText('Jira open blocking tickets')).toBeInTheDocument();
-    expect(screen.queryByText('Third Scorecard')).not.toBeInTheDocument();
+    expect(screen.queryByText('Second Metric')).not.toBeInTheDocument();
   });
 
-  it('should render empty state when there are no scorecards', () => {
-    useAggregatedScorecards.mockReturnValue({
-      aggregatedScorecards: [],
+  it('should render nothing when no scorecards are returned', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: [],
       loadingData: false,
       error: undefined,
     });
 
-    render(<ScorecardHomepageSection />);
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
-    expect(
-      screen.queryByTestId('permission-required-state'),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByTestId('response-error-panel'),
-    ).not.toBeInTheDocument();
     expect(
       screen.queryByTestId('scorecard-homepage-card'),
     ).not.toBeInTheDocument();

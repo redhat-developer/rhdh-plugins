@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "private": true,
   "bundled": true,
   "repository": {
@@ -48,7 +48,7 @@
     "@material-ui/icons": "^4.9.1",
     "@red-hat-developer-hub/backstage-plugin-ai-experience": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-global-header": "^1.4.0",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "react": "^18.0.2",
     "react-dom": "^18.0.2",
     "react-router": "^6.3.0",

@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-ai-experience",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "license": "Apache-2.0",
   "private": true,
   "main": "src/index.ts",
@@ -59,7 +59,7 @@
     "@backstage/core-app-api": "^1.19.2",
     "@backstage/dev-utils": "^1.1.17",
     "@backstage/test-utils": "^1.7.13",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.11.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",

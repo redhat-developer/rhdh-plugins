@@ -59,7 +59,7 @@ const app = createApp({
   apis,
   __experimentalTranslations: {
     defaultLanguage: 'en',
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [quickstartTranslations],
   },
   bindRoutes({ bind }) {
@@ -119,7 +119,7 @@ const routes = (
       </TechDocsAddons>
     </Route>
     <Route path="/create" element={<ScaffolderPage />} />
-    <Route path="/rbac" element={<RbacPage />} />;
+    <Route path="/rbac" element={<RbacPage />} />
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route
       path="/catalog-import"

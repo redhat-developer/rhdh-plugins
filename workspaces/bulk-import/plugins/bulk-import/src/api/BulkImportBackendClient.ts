@@ -33,6 +33,7 @@ import {
   SortingOrderEnum,
 } from '../types';
 import { getApi } from '../utils/repository-utils';
+import { OrchestratorBulkImportBackendClientPathProvider } from './OrchestratorBulkImportBackendClientPathProvider';
 import { PRBulkImportBackendClientPathProvider } from './PRBulkImportBackendClientPathProvider';
 import { ScaffolderBulkImportBackendClientPathProvider } from './ScaffolderBulkImportBackendClientPathProvider';
 
@@ -117,6 +118,10 @@ export class BulkImportBackendClient implements BulkImportAPI {
         break;
       case ImportFlow.OpenPullRequests:
         this.pathProvider = new PRBulkImportBackendClientPathProvider();
+        break;
+      case ImportFlow.Orchestrator:
+        this.pathProvider =
+          new OrchestratorBulkImportBackendClientPathProvider();
         break;
       default:
         throw new Error(`Unsupported API type ${importAPI}`);

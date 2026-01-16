@@ -16,12 +16,79 @@
 
 import { createDevApp } from '@backstage/dev-utils';
 
-import { LightspeedPage, lightspeedPlugin } from '../src/plugin';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+
+import {
+  LightspeedChatContainer,
+  LightspeedDrawerProvider,
+  LightspeedFAB,
+  LightspeedPage,
+  lightspeedPlugin,
+} from '../src/plugin';
+import { DrawerComponent } from './DrawerComponent';
+
+const TestPage = () => {
+  return (
+    <Box
+      sx={{
+        padding: 4,
+        // Adjust content when drawer is open
+        'body.docked-drawer-open &': {
+          marginRight: 'calc(var(--docked-drawer-width, 500px) + 1.5em)',
+          transition: 'margin-right 0.3s ease',
+        },
+      }}
+    >
+      <Typography variant="h4" gutterBottom>
+        Lightspeed Display Modes Test
+      </Typography>
+      <Typography variant="body1" paragraph>
+        Click the Lightspeed FAB button (bottom right) to open the chatbot.
+      </Typography>
+      <Typography variant="body2" paragraph>
+        <strong>Display Modes:</strong>
+      </Typography>
+      <ul>
+        <li>
+          <strong>Overlay (default):</strong> Opens as a modal overlay
+        </li>
+        <li>
+          <strong>Docked:</strong> Opens as a drawer on the right
+        </li>
+        <li>
+          <strong>Fullscreen:</strong> Navigate to /lightspeed route
+        </li>
+      </ul>
+      <Typography variant="body2" color="text.secondary">
+        Use the settings dropdown in the chatbot header to switch between
+        display modes.
+      </Typography>
+    </Box>
+  );
+};
 
 createDevApp()
   .registerPlugin(lightspeedPlugin)
   .addPage({
-    element: <LightspeedPage />,
+    element: (
+      <LightspeedDrawerProvider>
+        <LightspeedFAB />
+        <TestPage />
+        <DrawerComponent>
+          <LightspeedChatContainer />
+        </DrawerComponent>
+      </LightspeedDrawerProvider>
+    ),
+    title: 'Test Page',
+    path: '/',
+  })
+  .addPage({
+    element: (
+      <LightspeedDrawerProvider>
+        <LightspeedPage />
+      </LightspeedDrawerProvider>
+    ),
     title: 'Lightspeed Page',
     path: '/lightspeed',
   })

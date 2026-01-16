@@ -65,7 +65,7 @@ export const EntityScorecardContent = () => {
       {scorecards?.map((metric: MetricResult) => {
         // Check if metric data unavailable
         const isMetricDataError =
-          metric.status === 'error' || metric.result?.value === undefined;
+          metric.status === 'error' || metric.result?.value === null;
 
         // Check if threshold has an error
         const isThresholdError =
@@ -96,7 +96,6 @@ export const EntityScorecardContent = () => {
             key={metric.id}
             cardTitle={finalTitle}
             description={finalDescription}
-            loading={false}
             statusColor={statusConfig.color}
             StatusIcon={statusConfig.icon ?? (() => null)}
             value={metric.result?.value}

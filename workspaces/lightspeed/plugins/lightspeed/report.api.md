@@ -6,7 +6,36 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { PathParams } from '@backstage/core-plugin-api';
+import { PropsWithChildren } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { SubRouteRef } from '@backstage/core-plugin-api';
+
+// @public
+export type DrawerState = {
+    id: string;
+    isDrawerOpen: boolean;
+    drawerWidth: number;
+    setDrawerWidth: (width: number) => void;
+    closeDrawer: () => void;
+};
+
+// @public
+export type DrawerStateExposerProps = {
+    onStateChange: (state: DrawerState) => void;
+};
+
+// @public (undocumented)
+export const LightspeedChatContainer: () => JSX_2.Element;
+
+// @public
+export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren>;
+
+// @public
+export const LightspeedDrawerStateExposer: ({ onStateChange, }: DrawerStateExposerProps) => null;
+
+// @public
+export const LightspeedFAB: () => JSX_2.Element | null;
 
 // @public
 export const LightspeedIcon: () => JSX_2.Element;
@@ -17,6 +46,7 @@ export const LightspeedPage: () => JSX_2.Element;
 // @public
 export const lightspeedPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
+lightspeedConversation: SubRouteRef<PathParams<"/conversation/:conversationId">>;
 }, {}, {}>;
 
 // (No @packageDocumentation comment for this package)

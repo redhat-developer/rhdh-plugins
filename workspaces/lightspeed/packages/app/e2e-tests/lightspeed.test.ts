@@ -33,6 +33,18 @@ import {
   switchToLocale,
 } from './utils/testHelper';
 import {
+  openChatbot,
+  selectDisplayMode,
+  openChatHistoryDrawer,
+  closeChatHistoryDrawer,
+  expectBackstagePageVisible,
+  expectChatbotControlsVisible,
+  verifyDisplayModeMenuOptions,
+  expectChatInputAreaVisible,
+  expectEmptyChatHistory,
+  expectConversationArea,
+} from './pages/LightspeedPage';
+import {
   uploadFiles,
   uploadAndAssertDuplicate,
   supportedFileTypes,
@@ -79,6 +91,12 @@ import {
   verifyNoResultsFoundMessage,
   verifyChatUnpinned,
   clearSearch,
+  openSortDropdown,
+  verifySortDropdownOptions,
+  selectSortOption,
+  verifySortDropdownVisible,
+  closeSortDropdown,
+  verifyConversationsSortedAlphabetically,
 } from './utils/chatManagement';
 import { login } from './utils/login';
 import {
@@ -131,6 +149,51 @@ test.describe('Lightspeed tests', () => {
 
     await switchToLocale(sharedPage, locale);
     await openLightspeed(sharedPage);
+  });
+
+  test.describe('Chatbot Display Modes', () => {
+    test.beforeEach(async () => {
+      await sharedPage.goto('/');
+    });
+
+    test('should display chatbot in overlay mode with backstage page visible', async () => {
+      await expectBackstagePageVisible(sharedPage);
+      await openChatbot(sharedPage);
+
+      await expectConversationArea(sharedPage, translations, 'Overlay');
+      await expectChatInputAreaVisible(sharedPage, translations);
+      await expectBackstagePageVisible(sharedPage);
+      await expectChatbotControlsVisible(sharedPage, translations);
+
+      await openChatHistoryDrawer(sharedPage, translations);
+      await expectEmptyChatHistory(sharedPage, translations);
+      await closeChatHistoryDrawer(sharedPage, translations);
+
+      await verifyDisplayModeMenuOptions(sharedPage, translations);
+    });
+
+    test('should display chatbot in dock to window mode with backstage page visible', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Dock to window');
+
+      await expectConversationArea(sharedPage, translations, 'Dock to window');
+      await expectBackstagePageVisible(sharedPage);
+      await expectChatInputAreaVisible(sharedPage, translations);
+      await expectChatbotControlsVisible(sharedPage, translations);
+
+      await openChatHistoryDrawer(sharedPage, translations);
+      await expectEmptyChatHistory(sharedPage, translations);
+      await closeChatHistoryDrawer(sharedPage, translations);
+    });
+
+    test('should display chatbot in fullscreen mode with backstage page hidden', async () => {
+      await openChatbot(sharedPage);
+      await selectDisplayMode(sharedPage, translations, 'Fullscreen');
+
+      await expectConversationArea(sharedPage, translations, 'Fullscreen');
+      await expectEmptyChatHistory(sharedPage, translations);
+      await expectBackstagePageVisible(sharedPage, false);
+    });
   });
 
   test('Lightspeed is available', async ({ browser }, testInfo) => {
@@ -489,6 +552,37 @@ test.describe('Lightspeed tests', () => {
         await verifyUnpinActionAvailable(sharedPage, translations);
         await selectUnpinAction(sharedPage, translations);
         await verifyChatUnpinned(sharedPage, translations);
+      });
+
+      test('Verify sort dropdown is available', async () => {
+        await verifySortDropdownVisible(sharedPage, translations);
+        await openSortDropdown(sharedPage, translations);
+        await verifySortDropdownOptions(sharedPage, translations);
+        await closeSortDropdown(sharedPage);
+      });
+
+      test('Verify conversations are sorted correctly', async () => {
+        // Verify alphabetical ascending sort (A-Z)
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'alphabeticalAsc', translations);
+        await verifyConversationsSortedAlphabetically(
+          sharedPage,
+          translations,
+          'asc',
+        );
+
+        // Verify alphabetical descending sort (Z-A)
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'alphabeticalDesc', translations);
+        await verifyConversationsSortedAlphabetically(
+          sharedPage,
+          translations,
+          'desc',
+        );
+
+        // Reset to newest first
+        await openSortDropdown(sharedPage, translations);
+        await selectSortOption(sharedPage, 'newest', translations);
       });
     });
   });

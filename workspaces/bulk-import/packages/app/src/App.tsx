@@ -21,7 +21,7 @@ import {
   OAuthRequestDialog,
   SignInPage,
 } from '@backstage/core-components';
-import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { githubAuthApiRef, gitlabAuthApiRef } from '@backstage/core-plugin-api';
 import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
 import {
   CatalogEntityPage,
@@ -46,20 +46,27 @@ import {
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
+import {
+  OrchestratorPage,
+  orchestratorTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
-import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { NotificationsPage } from '@backstage/plugin-notifications';
+import { SignalsDisplay } from '@backstage/plugin-signals';
+import { RbacPage } from '@backstage-community/plugin-rbac';
 import { Navigate, Route } from 'react-router-dom';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
+import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
 const app = createApp({
   apis,
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
-    resources: [bulkImportTranslations],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
+    resources: [bulkImportTranslations, orchestratorTranslations],
   },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
@@ -90,6 +97,12 @@ const app = createApp({
             title: 'GitHub',
             message: 'Sign in using GitHub',
             apiRef: githubAuthApiRef,
+          },
+          {
+            id: 'gitlab-auth-provider',
+            title: 'GitLab',
+            message: 'Sign in using GitLab',
+            apiRef: gitlabAuthApiRef,
           },
         ]}
       />
@@ -133,6 +146,9 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/bulk-import/*" element={<BulkImportPage />} />
+    <Route path="/notifications" element={<NotificationsPage />} />
+    <Route path="/orchestrator" element={<OrchestratorPage />} />
+    <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );
 
@@ -140,6 +156,7 @@ export default app.createRoot(
   <>
     <AlertDisplay />
     <OAuthRequestDialog />
+    <SignalsDisplay />
     <AppRouter>
       <Root>{routes}</Root>
     </AppRouter>

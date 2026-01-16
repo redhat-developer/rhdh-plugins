@@ -17,7 +17,6 @@
 import {
   ForwardedRef,
   forwardRef,
-  Fragment,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -25,11 +24,15 @@ import {
 
 import { makeStyles } from '@material-ui/core';
 import {
+  ChatbotDisplayMode,
   ChatbotWelcomePrompt,
+  DeepThinking,
+  DeepThinkingProps,
   Message,
   MessageBox,
   MessageBoxHandle,
   MessageProps,
+  ToolCall as PatternFlyToolCall,
   WelcomePrompt,
 } from '@patternfly/chatbot';
 import { Alert } from '@patternfly/react-core';
@@ -38,6 +41,9 @@ import { useAutoScroll } from '../hooks/useAutoScroll';
 import { useBufferedMessages } from '../hooks/useBufferedMessages';
 import { useFeedbackActions } from '../hooks/useFeedbackActions';
 import { useTranslation } from '../hooks/useTranslation';
+import { ToolCall } from '../types';
+import { parseReasoning } from '../utils/reasoningParser';
+import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
 
 const useStyles = makeStyles(theme => ({
   prompt: {
@@ -49,6 +55,12 @@ const useStyles = makeStyles(theme => ({
   alert: {
     background: 'unset !important',
   },
+  promptSuggestions: {
+    '& div.pf-chatbot__prompt-suggestions': {
+      'flex-direction': 'column !important',
+    },
+  },
+
   userMessageText: {
     '& div.pf-chatbot__message--user': {
       '& div.pf-chatbot__message-text': {
@@ -60,15 +72,21 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+// Extended message type that includes tool calls
+interface ExtendedMessageProps extends MessageProps {
+  toolCalls?: ToolCall[];
+}
+
 type LightspeedChatBoxProps = {
   userName?: string;
-  messages: MessageProps[];
+  messages: ExtendedMessageProps[];
   profileLoading: boolean;
   announcement: string | undefined;
   topicRestrictionEnabled: boolean;
   welcomePrompts: WelcomePrompt[];
   conversationId: string;
   isStreaming: boolean;
+  displayMode?: ChatbotDisplayMode;
 };
 
 export interface ScrollContainerHandle {
@@ -86,6 +104,7 @@ export const LightspeedChatBox = forwardRef(
       welcomePrompts,
       isStreaming,
       topicRestrictionEnabled,
+      displayMode,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle>,
   ) => {
@@ -144,13 +163,22 @@ export const LightspeedChatBox = forwardRef(
     }, [autoScroll, cmessages, containerRef]);
 
     const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
+    const isEmbeddedMode = displayMode === ChatbotDisplayMode.embedded;
+
+    const getMessageBoxClassName = () => {
+      if (!welcomePrompts.length) {
+        return messageBoxClasses;
+      }
+      const baseClasses = `${messageBoxClasses} ${classes.prompt}`;
+      if (isEmbeddedMode) {
+        return baseClasses;
+      }
+      return `${baseClasses} ${classes.promptSuggestions}`;
+    };
+
     return (
       <MessageBox
-        className={
-          welcomePrompts.length
-            ? `${messageBoxClasses} ${classes.prompt}`
-            : messageBoxClasses
-        }
+        className={getMessageBoxClassName()}
         announcement={announcement}
         ref={containerRef}
         onScrollToTopClick={scrollToTop}
@@ -182,19 +210,92 @@ export const LightspeedChatBox = forwardRef(
             })}
             description={t('chatbox.welcome.description')}
             prompts={welcomePrompts}
+            style={{ paddingBottom: '0' }}
           />
         ) : (
           <br />
         )}
         {conversationMessages.map((message, index) => {
-          if (index === cmessages.length - 1) {
-            return (
-              <Fragment key={`${message.role}-${index}`}>
-                <Message key={`${message.role}-${index}`} {...message} />
-              </Fragment>
+          const messageContent = message.content as string;
+          const parsedReasoning = parseReasoning(messageContent || '');
+
+          // Map first tool call to PatternFly's toolCall prop
+          const firstToolCall = message.toolCalls?.[0];
+          const toolCallProp = firstToolCall
+            ? mapToPatternFlyToolCall(firstToolCall, t)
+            : undefined;
+
+          // Handle additional tool calls (if any) via extraContent
+          const additionalToolCalls = message.toolCalls?.slice(1);
+
+          const extraContentParts: {
+            beforeMainContent?: React.ReactNode;
+            afterMainContent?: React.ReactNode;
+          } = {};
+
+          let deepThinking: DeepThinkingProps | undefined = undefined;
+
+          if (
+            parsedReasoning.isReasoningInProgress ||
+            parsedReasoning.hasReasoning
+          ) {
+            const reasoningContent =
+              parsedReasoning.reasoning ||
+              (() => {
+                const reasoningMatch = messageContent.match(/<think>(.*?)$/s);
+                return reasoningMatch ? reasoningMatch[1].trim() : '';
+              })();
+
+            if (reasoningContent) {
+              deepThinking = {
+                toggleContent: t('reasoning.thinking'),
+                body: reasoningContent,
+                expandableSectionProps: {},
+              };
+              extraContentParts.beforeMainContent = (
+                <DeepThinking {...deepThinking} />
+              );
+            }
+          }
+
+          if (additionalToolCalls && additionalToolCalls.length > 0) {
+            extraContentParts.afterMainContent = (
+              <>
+                {additionalToolCalls.map(tc => {
+                  const tcProps = mapToPatternFlyToolCall(tc, t);
+                  return (
+                    <div
+                      key={`tool-${tc.id}-${tc.toolName}`}
+                      style={{ marginTop: '8px' }}
+                    >
+                      <PatternFlyToolCall {...tcProps} />
+                    </div>
+                  );
+                })}
+              </>
             );
           }
-          return <Message key={`${message.role}-${index}`} {...message} />;
+
+          const extraContent =
+            extraContentParts.beforeMainContent ||
+            extraContentParts.afterMainContent
+              ? extraContentParts
+              : undefined;
+
+          const finalMessage =
+            parsedReasoning.hasReasoning ||
+            parsedReasoning.isReasoningInProgress
+              ? { ...message, content: parsedReasoning.mainContent }
+              : message;
+
+          return (
+            <Message
+              key={`${message.role}-${index}`}
+              toolCall={toolCallProp}
+              extraContent={extraContent}
+              {...finalMessage}
+            />
+          );
         })}
       </MessageBox>
     );

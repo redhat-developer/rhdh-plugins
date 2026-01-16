@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  ChangeEvent,
+  MouseEvent,
+  Ref,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { FileRejection } from 'react-dropzone/.';
 
 import { makeStyles } from '@material-ui/core';
@@ -35,8 +43,23 @@ import {
   MessageProps,
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
-import { DropdownItem, DropEvent, Title } from '@patternfly/react-core';
-import { PlusIcon, SearchIcon } from '@patternfly/react-icons';
+import {
+  DropdownItem,
+  DropEvent,
+  MenuToggle,
+  MenuToggleElement,
+  Select,
+  SelectList,
+  SelectOption,
+  Title,
+  Tooltip,
+} from '@patternfly/react-core';
+import {
+  PlusIcon,
+  SearchIcon,
+  SortAmountDownAltIcon,
+  SortAmountDownIcon,
+} from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { supportedFileTypes, TEMP_CONVERSATION_ID } from '../const';
@@ -47,7 +70,10 @@ import {
   useIsMobile,
   useLastOpenedConversation,
   useLightspeedDeletePermission,
+  usePinnedChatsSettings,
+  useSortSettings,
 } from '../hooks';
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
@@ -56,6 +82,7 @@ import { getAttachments } from '../utils/attachment-utils';
 import {
   getCategorizeMessages,
   getFootnoteProps,
+  SortOption,
 } from '../utils/lightspeed-chatbox-utils';
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
@@ -100,6 +127,10 @@ const useStyles = makeStyles(theme => ({
       maxWidth: '100%',
     },
   },
+  sortDropdown: {
+    padding: 0,
+    margin: 0,
+  },
 }));
 
 type LightspeedChatProps = {
@@ -130,17 +161,43 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [conversationId, setConversationId] = useState<string>('');
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(!isMobile);
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
-  const [isPinningChatsEnabled, setIsPinningChatsEnabled] = useState(true); // read from user settings in future
-  const [pinnedChats, setPinnedChats] = useState<string[]>([]); // read from user settings in future
   const [targetConversationId, setTargetConversationId] = useState<string>('');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
+  const [isSortSelectOpen, setIsSortSelectOpen] = useState<boolean>(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
+  const {
+    displayMode,
+    setDisplayMode,
+    currentConversationId: routeConversationId,
+    setCurrentConversationId,
+    draftMessage,
+    setDraftMessage,
+  } = useLightspeedDrawerContext();
+  const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
+    useState<boolean>(!isMobile && isFullscreenMode);
+
+  // Open the chat history drawer when entering fullscreen mode on desktop
+  useEffect(() => {
+    if (!isMobile && isFullscreenMode) {
+      setIsChatHistoryDrawerOpen(true);
+    }
+  }, [isMobile, isFullscreenMode]);
+
+  const {
+    isPinningChatsEnabled,
+    pinnedChats,
+    handlePinningChatsToggle,
+    pinChat,
+    unpinChat,
+  } = usePinnedChatsSettings(user);
+
+  const { selectedSort, handleSortChange } = useSortSettings(user);
 
   const {
     uploadError,
@@ -158,12 +215,6 @@ export const LightspeedChat = ({
       setConversationId(lastOpenedId);
     }
   }, [lastOpenedId, isReady]);
-
-  useEffect(() => {
-    if (!isPinningChatsEnabled) {
-      setPinnedChats([]);
-    }
-  }, [isPinningChatsEnabled]);
 
   const queryClient = useQueryClient();
 
@@ -196,6 +247,36 @@ export const LightspeedChat = ({
   }, [isLoading, isRefetching, conversations, lastOpenedId, clearLastOpenedId]);
 
   useEffect(() => {
+    if (
+      !isLoading &&
+      !isRefetching &&
+      routeConversationId &&
+      isFullscreenMode
+    ) {
+      const conversationExists = conversations.some(
+        (c: ConversationSummary) => c.conversation_id === routeConversationId,
+      );
+      if (!conversationExists) {
+        // Conversation from route doesn't exist, start a new chat
+        setConversationId(TEMP_CONVERSATION_ID);
+        setCurrentConversationId(undefined);
+        setNewChatCreated(true);
+      } else if (conversationId !== routeConversationId) {
+        setConversationId(routeConversationId);
+      }
+    }
+  }, [
+    isLoading,
+    isRefetching,
+    routeConversationId,
+    conversations,
+    displayMode,
+    conversationId,
+    setCurrentConversationId,
+    isFullscreenMode,
+  ]);
+
+  useEffect(() => {
     // Update last opened conversation whenever `conversationId` changes
     if (conversationId) {
       setLastOpenedId(conversationId);
@@ -204,6 +285,7 @@ export const LightspeedChat = ({
 
   const onStart = (conv_id: string) => {
     setConversationId(conv_id);
+    setCurrentConversationId(conv_id);
   };
 
   const onComplete = (message: string) => {
@@ -244,6 +326,7 @@ export const LightspeedChat = ({
     handleInputPrompt(message.toString(), getAttachments(fileContents));
     setIsSendButtonDisabled(true);
     setFileContents([]);
+    setDraftMessage('');
   };
 
   const onNewChat = useCallback(() => {
@@ -252,16 +335,22 @@ export const LightspeedChat = ({
         setMessages([]);
         setFileContents([]);
         setUploadError({ message: null });
+        setDraftMessage('');
         setConversationId(TEMP_CONVERSATION_ID);
         setNewChatCreated(true);
+        setCurrentConversationId(undefined);
+        if (!isFullscreenMode) {
+          setIsChatHistoryDrawerOpen(false);
+        }
       }
     })();
   }, [
     conversationId,
-    setConversationId,
-    setMessages,
-    setUploadError,
     setFileContents,
+    setUploadError,
+    setDraftMessage,
+    setCurrentConversationId,
+    isFullscreenMode,
   ]);
 
   const openDeleteModal = (conversation_id: string) => {
@@ -281,14 +370,6 @@ export const LightspeedChat = ({
     }
     setIsDeleteModalOpen(false);
   }, [clearLastOpenedId, lastOpenedId, onNewChat, targetConversationId]);
-
-  const pinChat = (convId: string) => {
-    setPinnedChats(prev => [...prev, convId]); // write to user settings in future
-  };
-
-  const unpinChat = (convId: string) => {
-    setPinnedChats(prev => prev.filter(id => id !== convId)); // write to user settings in future
-  };
 
   const additionalMessageProps = useCallback(
     (conversationSummary: ConversationSummary) => {
@@ -337,7 +418,15 @@ export const LightspeedChat = ({
         ),
       };
     },
-    [pinnedChats, hasDeleteAccess, isPinningChatsEnabled, hasUpdateAccess, t],
+    [
+      pinnedChats,
+      hasDeleteAccess,
+      isPinningChatsEnabled,
+      hasUpdateAccess,
+      t,
+      pinChat,
+      unpinChat,
+    ],
   );
 
   const categorizedMessages = useMemo(
@@ -347,8 +436,9 @@ export const LightspeedChat = ({
         pinnedChats,
         additionalMessageProps,
         t,
+        selectedSort,
       ),
-    [additionalMessageProps, conversations, pinnedChats, t],
+    [additionalMessageProps, conversations, pinnedChats, t, selectedSort],
   );
 
   const filterConversations = useCallback(
@@ -429,27 +519,48 @@ export const LightspeedChat = ({
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
       setNewChatCreated(false);
+      const newConvId = String(selectedItem);
       setConversationId((c_id: string) => {
         if (c_id !== selectedItem) {
-          return String(selectedItem);
+          return newConvId;
         }
         return c_id;
       });
+      setCurrentConversationId(newConvId);
       setFileContents([]);
       setUploadError({ message: null });
+      setDraftMessage('');
       scrollToBottomRef.current?.scrollToBottom();
     },
-    [setConversationId, setUploadError, setFileContents, scrollToBottomRef],
+    [
+      setConversationId,
+      setUploadError,
+      setFileContents,
+      setDraftMessage,
+      scrollToBottomRef,
+      setCurrentConversationId,
+    ],
   );
 
   const conversationFound = !!conversations.find(
     (c: ConversationSummary) => c.conversation_id === conversationId,
   );
 
+  const getMaxPrompts = () => {
+    if (isFullscreenMode) {
+      return samplePrompts?.length; // In the Fullscreen mode, show all prompts
+    }
+    if (displayMode === ChatbotDisplayMode.docked) {
+      return 2; // In the docked mode, show 2 prompts
+    }
+    return 1; // In the overlay mode, show 1 prompt
+  };
+  const maxPrompts = getMaxPrompts();
+
   const welcomePrompts =
     (newChatCreated && conversationMessages.length === 0) ||
     (!conversationFound && conversationMessages.length === 0)
-      ? samplePrompts?.map(prompt => {
+      ? samplePrompts?.slice(0, maxPrompts).map(prompt => {
           const p = prompt as { title: string; message: string };
           return {
             title: p.title,
@@ -465,18 +576,106 @@ export const LightspeedChat = ({
     setFilterValue(value);
   }, []);
 
-  const onDrawerToggle = useCallback(() => {
-    setIsDrawerOpen(isOpen => !isOpen);
+  const onChatHistoryDrawerToggle = useCallback(() => {
+    setIsChatHistoryDrawerOpen(isOpen => !isOpen);
   }, []);
+
+  const onSortToggle = useCallback(() => {
+    setIsSortSelectOpen(prev => !prev);
+  }, []);
+
+  const onSortSelect = useCallback(
+    (_event?: MouseEvent<Element>, value?: string | number) => {
+      handleSortChange(value as SortOption);
+      setIsSortSelectOpen(false);
+    },
+    [handleSortChange],
+  );
+
+  const getSortLabel = useCallback(
+    (option: SortOption): string => {
+      const labels: Record<SortOption, string> = {
+        newest: t('sort.newest'),
+        oldest: t('sort.oldest'),
+        alphabeticalAsc: t('sort.alphabeticalAsc'),
+        alphabeticalDesc: t('sort.alphabeticalDesc'),
+      };
+      return labels[option];
+    },
+    [t],
+  );
+
+  const sortToggle = useCallback(
+    (toggleRef: Ref<MenuToggleElement>) => (
+      <Tooltip content={`${t('sort.label')} - ${getSortLabel(selectedSort)}`}>
+        <MenuToggle
+          ref={toggleRef}
+          aria-label={t('sort.label')}
+          variant="plain"
+          onClick={onSortToggle}
+          isExpanded={isSortSelectOpen}
+        >
+          {selectedSort === 'oldest' || selectedSort === 'alphabeticalDesc' ? (
+            <SortAmountDownAltIcon />
+          ) : (
+            <SortAmountDownIcon />
+          )}
+        </MenuToggle>
+      </Tooltip>
+    ),
+    [t, getSortLabel, selectedSort, onSortToggle, isSortSelectOpen],
+  );
+
+  const sortDropdown = useMemo(
+    () => (
+      <Select
+        id="sort-select"
+        isOpen={isSortSelectOpen}
+        selected={selectedSort}
+        onSelect={onSortSelect}
+        onOpenChange={(isOpen: boolean) => setIsSortSelectOpen(isOpen)}
+        popperProps={{ position: 'end' }}
+        toggle={sortToggle}
+        shouldFocusToggleOnSelect
+      >
+        <SelectList className={classes.sortDropdown}>
+          <SelectOption value="newest">{t('sort.newest')}</SelectOption>
+          <SelectOption value="oldest">{t('sort.oldest')}</SelectOption>
+          <SelectOption value="alphabeticalAsc">
+            {t('sort.alphabeticalAsc')}
+          </SelectOption>
+          <SelectOption value="alphabeticalDesc">
+            {t('sort.alphabeticalDesc')}
+          </SelectOption>
+        </SelectList>
+      </Select>
+    ),
+    [
+      isSortSelectOpen,
+      selectedSort,
+      onSortSelect,
+      sortToggle,
+      t,
+      classes.sortDropdown,
+    ],
+  );
 
   const handleAttach = (data: File[], event: DropEvent) => {
     event.preventDefault();
     handleFileUpload(data);
   };
 
+  const handleDraftMessage = (
+    _e: ChangeEvent<HTMLTextAreaElement>,
+    value: string | number,
+  ) => setDraftMessage(value as any);
+
   const onAttachRejected = (data: FileRejection[]) => {
     data.forEach(attachment => {
-      if (!!attachment.errors.find(e => e.code === 'file-invalid-type')) {
+      const hasInvalidTypeError = attachment.errors.some(
+        e => e.code === 'file-invalid-type',
+      );
+      if (hasInvalidTypeError) {
         setShowAlert(true);
         setUploadError({
           message: t('file.upload.error.unsupportedType'),
@@ -509,40 +708,54 @@ export const LightspeedChat = ({
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             <ChatbotHeaderMenu
-              aria-expanded={isDrawerOpen}
-              onMenuToggle={() => setIsDrawerOpen(!isDrawerOpen)}
+              aria-expanded={isChatHistoryDrawerOpen}
+              onMenuToggle={() =>
+                setIsChatHistoryDrawerOpen(!isChatHistoryDrawerOpen)
+              }
               className={classes.headerMenu}
               tooltipContent={t('tooltip.chatHistoryMenu')}
               aria-label={t('aria.chatHistoryMenu')}
             />
-            <ChatbotHeaderTitle className={classes.headerTitle}>
-              <Title headingLevel="h1" size="3xl">
-                {t('chatbox.header.title')}
-              </Title>
-            </ChatbotHeaderTitle>
+            {isFullscreenMode && (
+              <ChatbotHeaderTitle className={classes.headerTitle}>
+                <Title headingLevel="h1" size="3xl">
+                  {t('chatbox.header.title')}
+                </Title>
+              </ChatbotHeaderTitle>
+            )}
           </ChatbotHeaderMain>
 
           <LightspeedChatBoxHeader
             selectedModel={selectedModel}
-            handleSelectedModel={item => handleSelectedModel(item)}
+            handleSelectedModel={item => {
+              onNewChat();
+              handleSelectedModel(item);
+            }}
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
-            onPinnedChatsToggle={setIsPinningChatsEnabled}
+            isModelSelectorDisabled={isSendButtonDisabled}
+            setDisplayMode={setDisplayMode}
+            displayMode={displayMode}
+            onPinnedChatsToggle={handlePinningChatsToggle}
           />
         </ChatbotHeader>
         <Divider />
         <ChatbotConversationHistoryNav
-          drawerPanelContentProps={{ isResizable: true, minSize: '200px' }}
+          drawerPanelContentProps={{
+            isResizable: isFullscreenMode,
+            hasNoBorder: !isFullscreenMode,
+            style: isFullscreenMode ? undefined : { zIndex: 1300 },
+          }}
           reverseButtonOrder
           displayMode={ChatbotDisplayMode.embedded}
-          onDrawerToggle={onDrawerToggle}
+          onDrawerToggle={onChatHistoryDrawerToggle}
           title=""
           navTitleIcon={null}
-          isDrawerOpen={isDrawerOpen}
+          isDrawerOpen={isChatHistoryDrawerOpen}
           drawerCloseButtonProps={{
             'aria-label': t('aria.closeDrawerPanel'),
           }}
-          setIsDrawerOpen={setIsDrawerOpen}
+          setIsDrawerOpen={setIsChatHistoryDrawerOpen}
           activeItemId={conversationId}
           onSelectActiveItem={onSelectActiveItem}
           conversations={filterConversations(filterValue)}
@@ -560,6 +773,7 @@ export const LightspeedChat = ({
               setFilterValue('');
             },
           }}
+          searchActionEnd={sortDropdown}
           noResultsState={
             filterValue &&
             Object.keys(filterConversations(filterValue)).length === 0
@@ -603,6 +817,7 @@ export const LightspeedChat = ({
                   conversationId={conversationId}
                   isStreaming={isSendButtonDisabled}
                   topicRestrictionEnabled={topicRestrictionEnabled}
+                  displayMode={displayMode}
                 />
               </ChatbotContent>
               <ChatbotFooter className={classes.footer}>
@@ -613,6 +828,8 @@ export const LightspeedChat = ({
                   hasAttachButton
                   handleAttach={handleAttach}
                   hasMicrophoneButton
+                  value={draftMessage}
+                  onChange={handleDraftMessage}
                   buttonProps={{
                     attach: {
                       inputTestId: 'attachment-input',

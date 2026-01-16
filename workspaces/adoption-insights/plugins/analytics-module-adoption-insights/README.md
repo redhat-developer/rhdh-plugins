@@ -47,9 +47,7 @@ export const apis: AnyApiFactory[] = [AdoptionInsightsAnalyticsApiFactory];
 
 ## Configuration
 
-### Available Configuration Options
-
-The following is the optional configuration required to fine tune adoption analytics events:
+The following optional configuration parameters are available to fine tune adoption analytics events:
 
 ```yaml
 # app-config.yaml

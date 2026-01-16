@@ -23,13 +23,15 @@ backend.add(
 
 ## Configuration
 
+The following optional configuration parameters are available to fine tune adoption analytics events:
+
 ```yaml
 app:
   analytics:
     adoptionInsights:
-      maxBufferSize: 25
-      flushInterval: 6000
-      debug: false # enable this to debug
+      maxBufferSize: 20 # Optional: Maximum buffer size for event batching (default: 20)
+      flushInterval: 5000 # Optional: Flush interval in milliseconds for event batching (default: 5000ms)
+      debug: false # Optional: Enable debug mode to log every event in the browser console (default: false)
       licensedUsers: 100 # Administrators can set this value to see the user adoption metrics.
 ```
 

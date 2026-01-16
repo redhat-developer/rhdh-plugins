@@ -13,6 +13,20 @@ import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
+export type DrawerPartialState = {
+  id: string;
+  isDrawerOpen: boolean;
+  drawerWidth: number;
+  setDrawerWidth: (width: number) => void;
+  closeDrawer: () => void;
+};
+
+// @public
+export type DrawerStateExposerProps = {
+  onStateChange: (state: DrawerPartialState) => void;
+};
+
+// @public
 export const filterQuickstartItemsByRole: (
   items: QuickstartItemData[],
   userRole: string,
@@ -33,6 +47,9 @@ export interface QuickstartButtonProps {
 }
 
 // @public
+export const QuickstartDrawerContent: () => JSX_2.Element | null;
+
+// @public
 export interface QuickstartDrawerContextType {
   closeDrawer: () => void;
   drawerWidth: number;
@@ -48,6 +65,11 @@ export interface QuickstartDrawerContextType {
 export const QuickstartDrawerProvider: ({
   children,
 }: PropsWithChildren) => JSX_2.Element;
+
+// @public
+export const QuickstartDrawerStateExposer: ({
+  onStateChange,
+}: DrawerStateExposerProps) => null;
 
 // @public
 export interface QuickstartItemCtaData {

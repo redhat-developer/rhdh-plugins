@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.7.2
+
+### Patch Changes
+
+- bb8ef80: updated drawer classname
+
+## 1.7.1
+
+### Patch Changes
+
+- f74564d: Added 'it' and 'ja' i18n support and updated 'fr' translation strings.
+- 8ad44d8: Updated dependency `@scalprum/react-core` to `0.11.1`.
+
 ## 1.7.0
 
 ### Minor Changes

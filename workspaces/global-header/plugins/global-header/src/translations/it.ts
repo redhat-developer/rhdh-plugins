@@ -17,44 +17,50 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { globalHeaderTranslationRef } from './ref';
 
+/**
+ * Italian translation for plugin.global-header.
+ * @public
+ */
 const globalHeaderTranslationIt = createTranslationMessages({
   ref: globalHeaderTranslationRef,
   messages: {
-    'help.tooltip': 'Aiuto',
+    'help.tooltip': 'Guida',
     'help.noSupportLinks': 'Nessun link di supporto',
     'help.noSupportLinksSubtitle':
-      'Il tuo amministratore deve configurare i link di supporto.',
+      "L'amministratore deve impostare i link di supporto.",
     'help.quickStart': 'Avvio rapido',
     'help.supportTitle': 'Supporto',
     'profile.picture': 'Immagine del profilo',
     'profile.settings': 'Impostazioni',
     'profile.myProfile': 'Il mio profilo',
-    'profile.signOut': 'Esci',
+    'profile.signOut': 'Disconnetti',
     'search.placeholder': 'Cerca...',
     'search.noResults': 'Nessun risultato trovato',
-    'search.errorFetching': 'Errore nel recupero dei risultati',
-    'applicationLauncher.tooltip': 'Launcher applicazioni',
-    'applicationLauncher.noLinksTitle': 'Nessun link applicazione configurato',
+    'search.errorFetching': 'Errore durante il recupero dei risultati',
+    'applicationLauncher.tooltip': 'Avvio applicazione',
+    'applicationLauncher.noLinksTitle':
+      "Nessun collegamento all'applicazione configurato",
     'applicationLauncher.noLinksSubtitle':
-      'Configura i link delle applicazioni nella configurazione del plugin dinamico per un accesso rapido da qui.',
+      "Configurare i collegamenti all'applicazione nella configurazione del plugin dinamico per accedere rapidamente da qui.",
     'applicationLauncher.developerHub': 'Developer Hub',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
     'applicationLauncher.sections.documentation': 'Documentazione',
     'applicationLauncher.sections.developerTools': 'Strumenti per sviluppatori',
-    'starred.title': 'I tuoi elementi preferiti',
-    'starred.removeTooltip': 'Rimuovi dalla lista',
-    'starred.noItemsTitle': 'Nessun elemento preferito ancora',
+    'starred.title': 'I tuoi articoli contrassegnati',
+    'starred.removeTooltip': "Rimuovi dall'elenco",
+    'starred.noItemsTitle': 'Non è stato ancora contrassegnato alcun articolo',
     'starred.noItemsSubtitle':
-      "Clicca sull'icona stella accanto al nome di un'entità per salvarla qui per un accesso rapido.",
+      "Fare clic sull'icona a forma di stella accanto al nome di un'entità per salvarla qui e accedervi rapidamente.",
     'notifications.title': 'Notifiche',
     'notifications.unsupportedDismissOption':
-      'Opzione di chiusura non supportata "{{option}}", attualmente supportate "none", "session" o "localstorage"!',
-    'create.title': 'Autoservizio',
-    'create.registerComponent.title': 'Registra un componente',
-    'create.registerComponent.subtitle': 'Importalo nella pagina del catalogo',
-    'create.templates.sectionTitle': 'Usa un modello',
+      'Opzione di esclusione non supportata "{{option}}"; attualmente sono supportate le opzioni "none", "session" o "localstorage"!',
+    'create.title': 'Self-service',
+    'create.registerComponent.title': 'Registrare un componente',
+    'create.registerComponent.subtitle':
+      'Importare il componente nella pagina del catalogo',
+    'create.templates.sectionTitle': 'Utilizzare un modello',
     'create.templates.allTemplates': 'Tutti i modelli',
-    'create.templates.errorFetching': 'Errore nel recupero dei modelli',
+    'create.templates.errorFetching': 'Errore durante il recupero dei modelli',
     'create.templates.noTemplatesAvailable': 'Nessun modello disponibile',
   },
 });

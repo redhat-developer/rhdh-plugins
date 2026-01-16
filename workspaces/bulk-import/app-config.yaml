@@ -11,6 +11,14 @@ backend:
   # information on the format
   auth:
     dangerouslyDisableDefaultAuthPolicy: true
+    allowGuestAccess: true
+    externalAccess:
+      - type: static
+        options:
+          # notsecret
+          # echo mycurlpasswd | base64
+          token: bXljdXJscGFzc3dkCg==
+          subject: my-external-feed
     # keys:
     #   - secret: ${BACKEND_SECRET}
   baseUrl: http://localhost:7007
@@ -121,8 +129,34 @@ catalog:
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
   # setting this to `false` will disable permissions
-  enabled: true
+  enabled: false
 # scaffolder template execution configuration. Disabled by default.
 # bulkImport:
 #   importTemplate: template:default/create-pr-with-catalog-info
 #   importAPI: scaffolder
+
+orchestrator:
+  sonataFlowService:
+    # uncomment the next line to use podman instead of docker
+    # runtime: podman
+    baseUrl: http://localhost
+    port: 8899
+    autoStart: false
+    # If you're using a MacBook with M-series chips, uncomment the line below to use ARM images.
+    # To pull the image, you'll first need to authenticate with the registry.
+    # For more information, visit: https://red.ht/410mMNU.
+    container: registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.36.0
+    # notsecret
+    notificationsBearerToken: bXljdXJscGFzc3dkCg==
+    notificationsUrl: http://host.docker.internal:7007
+    # uncomment the next line if you are using podman:
+    # notificationsUrl: http://host.containers.internal:7007
+    # By default the Dev Mode workflows are Ephemeral. If you want to persist the data across restarts,
+    # uncomment the next two lines, read more: https://www.rhdhorchestrator.io/blog/devmode-vs-prodmode/
+    # persistence:
+    #  path: ./.devModeTemp/db_persistence # this will be under packages/backend
+    workflowsSource:
+      gitRepositoryUrl: https://github.com/AndrienkoAleksandr/backstage-orchestrator-workflows.git
+      localPath: ./.devModeTemp/repository # this will be under packages/backend
+  dataIndexService:
+    url: http://localhost:8899

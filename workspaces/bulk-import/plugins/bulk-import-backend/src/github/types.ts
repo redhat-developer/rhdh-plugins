@@ -127,8 +127,7 @@ export function isGithubAppCredential(
   return 'appId' in credential && credential.type === 'app';
 }
 
-export interface ExtendedGithubCredentialsProvider
-  extends GithubCredentialsProvider {
+export interface ExtendedGithubCredentialsProvider extends GithubCredentialsProvider {
   getAllCredentials: (options: {
     host: string;
   }) => Promise<ExtendedGithubCredentials[]>;

@@ -24,6 +24,11 @@ import {
   LCSModel,
 } from '../types';
 
+/**
+ * @public
+ * Lightspeed API
+ */
+
 export type LightspeedAPI = {
   getAllModels: () => Promise<LCSModel[]>;
   getConversationMessages: (conversation_id: string) => Promise<BaseMessage[]>;
@@ -46,6 +51,11 @@ export type LightspeedAPI = {
   captureFeedback: (payload: CaptureFeedback) => Promise<{ response: string }>;
   isTopicRestrictionEnabled: () => Promise<boolean>;
 };
+
+/**
+ * @public
+ * Lightspeed API interface
+ */
 
 export const lightspeedApiRef = createApiRef<LightspeedAPI>({
   id: 'plugin.lightspeed.service',

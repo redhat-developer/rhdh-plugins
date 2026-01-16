@@ -44,7 +44,71 @@ test.describe('Test Quick Start plugin', () => {
   });
 
   test('Access Quick start as User', async ({ page }, testInfo: TestInfo) => {
-    await page.waitForTimeout(1000);
+    // Wait for the page to be ready
+    await page.waitForLoadState('domcontentloaded');
+
+    // Try to wait for the header text directly first (drawer might already be open)
+    // This is more reliable than checking for the class
+    try {
+      await page
+        .getByText(translations.header.title, { exact: true })
+        .waitFor({ state: 'visible', timeout: 10000 });
+    } catch {
+      // Header not visible, try to open the drawer
+      // First, check if drawer is already open via class
+      const drawerOpen = await page.evaluate(() => {
+        return document.body.classList.contains('docked-drawer-open');
+      });
+
+      if (!drawerOpen) {
+        // Try to open via sidebar
+        try {
+          const quickstartSidebarItem = page
+            .locator('nav')
+            .getByText('Quickstart');
+          await quickstartSidebarItem.waitFor({
+            state: 'visible',
+            timeout: 5000,
+          });
+          await quickstartSidebarItem.click();
+          // Wait for header to appear after clicking
+          await page
+            .getByText(translations.header.title, { exact: true })
+            .waitFor({ state: 'visible', timeout: 10000 });
+        } catch {
+          // Sidebar item not available, try help menu button
+          try {
+            // Look for Quickstart button in help menu
+            const helpButton = page.getByRole('button', { name: /help|menu/i });
+            if (await helpButton.isVisible({ timeout: 3000 })) {
+              await helpButton.click();
+              const quickstartMenuItem = page.getByText('Quick start');
+              await quickstartMenuItem.waitFor({
+                state: 'visible',
+                timeout: 3000,
+              });
+              await quickstartMenuItem.click();
+              await page
+                .getByText(translations.header.title, { exact: true })
+                .waitFor({ state: 'visible', timeout: 10000 });
+            }
+          } catch {
+            // If all else fails, wait for drawer to open automatically
+            // This might happen if role detection is still in progress
+            await page
+              .getByText(translations.header.title, { exact: true })
+              .waitFor({ state: 'visible', timeout: 15000 });
+          }
+        }
+      } else {
+        // Drawer class says it's open, but content might not be rendered yet
+        await page
+          .getByText(translations.header.title, { exact: true })
+          .waitFor({ state: 'visible', timeout: 10000 });
+      }
+    }
+
+    // Verify the header is visible
     await uiHelper.verifyText(translations.header.title);
     await runAccessibilityTests(
       page,

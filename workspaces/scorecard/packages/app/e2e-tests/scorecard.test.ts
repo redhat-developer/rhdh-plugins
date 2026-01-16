@@ -31,6 +31,7 @@ import {
   getTranslations,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
+import { deleteRBAC } from './utils/rbacDelete';
 
 test.describe.serial('Pre-RBAC Access Tests', () => {
   let translations: ScorecardMessages;
@@ -88,6 +89,15 @@ test.describe.serial('Scorecard Plugin Tests', () => {
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
     scorecardPage = new ScorecardPage(page, translations);
+  });
+
+  test.afterAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    await deleteRBAC(page);
+
+    await context.close();
   });
 
   test('Validate scorecard tabs for GitHub PRs and Jira tickets', async ({
@@ -149,22 +159,11 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     );
     expect(isGithubVisible).toBe(true);
 
-    const errorLocator = page.getByRole('heading', {
-      name: translations.errors.metricDataUnavailable,
-    });
+    const errorLocator = page.getByText(
+      translations.errors.metricDataUnavailable,
+    );
     await expect(errorLocator).toBeVisible();
     await runAccessibilityTests(page, testInfo);
-
-    await errorLocator.hover();
-    const errorMetric = unavailableMetricResponse.find(
-      metric => metric.id === 'github.open_prs',
-    );
-
-    if (errorMetric && 'error' in errorMetric) {
-      const errorTooltip = errorMetric.error;
-      expect(errorTooltip).toBeTruthy();
-      await expect(page.getByText(errorTooltip!)).toBeVisible();
-    }
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });
@@ -192,21 +191,9 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     );
     expect(isJiraVisible).toBe(true);
 
-    const errorLocator = page.getByRole('heading', {
-      name: translations.errors.invalidThresholds,
-    });
+    const errorLocator = page.getByText(translations.errors.invalidThresholds);
     await expect(errorLocator).toBeVisible();
     await runAccessibilityTests(page, testInfo);
-
-    await errorLocator.hover();
-    const errorTooltip = invalidThresholdResponse.find(
-      metric => metric.id === 'github.open_prs',
-    )?.result?.thresholdResult;
-
-    if (errorTooltip && 'error' in errorTooltip) {
-      expect(errorTooltip.error).toBeTruthy();
-      await expect(page.getByText(errorTooltip.error)).toBeVisible();
-    }
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });

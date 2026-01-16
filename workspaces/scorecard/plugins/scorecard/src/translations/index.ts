@@ -25,8 +25,10 @@ export const scorecardTranslations = createTranslationResource({
   ref: scorecardTranslationRef,
   translations: {
     de: () => import('./de'),
-    fr: () => import('./fr'),
     es: () => import('./es'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    ja: () => import('./ja'),
   },
 });
 

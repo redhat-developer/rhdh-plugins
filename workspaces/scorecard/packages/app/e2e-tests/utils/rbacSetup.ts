@@ -57,7 +57,7 @@ export async function setupRBAC(page: Page) {
   await page.getByTestId('nextButton-2').click();
   await page.getByRole('button', { name: 'Create' }).click();
 
-  await page.locator('a').filter({ hasText: 'Home' }).click();
+  await page.locator('a').filter({ hasText: 'Catalog' }).click();
   await expect(page.getByRole('button', { name: 'Create' })).toBeVisible();
 }
 async function selectCheckbox(page: Page, label: string) {

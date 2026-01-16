@@ -159,7 +159,7 @@ const mockConfigApi = new MockConfigApi({
 createDevApp()
   .registerPlugin(bulkImportPlugin)
   .addTranslationResource(bulkImportTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({

@@ -138,6 +138,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'aria.scroll.down': 'Nach unten',
     'aria.scroll.up': 'Nach oben',
     'aria.settings.label': 'Chatbot-Optionen',
+    'aria.close': 'Chatbot schließen',
 
     // Modal actions
     'modal.edit': 'Bearbeiten',
@@ -168,6 +169,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'tooltip.backToTop': 'Nach oben',
     'tooltip.backToBottom': 'Nach unten',
     'tooltip.settings': 'Chatbot-Optionen',
+    'tooltip.close': 'Schließen',
 
     // Modal titles
     'modal.title.preview': 'Anhang-Vorschau',
@@ -227,6 +229,35 @@ const lightspeedTranslationDe = createTranslationMessages({
       'Angeheftete Chats sind derzeit aktiviert',
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert',
+
+    // Tool calling
+    'toolCall.header': 'Werkzeugantwort: {{toolName}}',
+    'toolCall.thinking': '{{seconds}} Sekunden nachgedacht',
+    'toolCall.executionTime': 'Ausführungszeit: ',
+    'toolCall.parameters': 'Parameter',
+    'toolCall.response': 'Antwort',
+    'toolCall.showMore': 'mehr anzeigen',
+    'toolCall.showLess': 'weniger anzeigen',
+    'toolCall.loading': 'Werkzeug wird ausgeführt...',
+    'toolCall.executing': 'Werkzeug wird ausgeführt...',
+    'toolCall.copyResponse': 'Antwort kopieren',
+    'toolCall.summary': 'Hier ist eine Zusammenfassung Ihrer Antwort',
+    'toolCall.mcpServer': 'MCP-Server',
+    // Display modes
+    'settings.displayMode.label': 'Anzeigemodus',
+    'settings.displayMode.overlay': 'Überlagerung',
+    'settings.displayMode.docked': 'An Fenster andocken',
+    'settings.displayMode.fullscreen': 'Vollbild',
+
+    // Sort options
+    'sort.label': 'Konversationen sortieren',
+    'sort.newest': 'Datum (neueste zuerst)',
+    'sort.oldest': 'Datum (älteste zuerst)',
+    'sort.alphabeticalAsc': 'Name (A-Z)',
+    'sort.alphabeticalDesc': 'Name (Z-A)',
+
+    // Deep thinking
+    'reasoning.thinking': 'Denkvorgang anzeigen',
   },
 });
 

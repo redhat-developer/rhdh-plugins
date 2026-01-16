@@ -36,7 +36,7 @@ export const scorecardPlugin = createPlugin({
     root: rootRouteRef,
   },
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [scorecardTranslationRef],
   },
   apis: [
@@ -66,16 +66,16 @@ export const EntityScorecardContent = scorecardPlugin.provide(
 );
 
 /**
- * Scorecard homepage section.
+ * Scorecard homepage card.
  * @public
  */
-export const ScorecardHomepageSection = scorecardPlugin.provide(
+export const ScorecardHomepageCard = scorecardPlugin.provide(
   createComponentExtension({
-    name: 'ScorecardHomepageSection',
+    name: 'ScorecardHomepageCard',
     component: {
       lazy: () =>
         import('./components/ScorecardHomepageSection').then(
-          m => m.ScorecardHomepageSection,
+          m => m.ScorecardHomepageCard,
         ),
     },
   }),

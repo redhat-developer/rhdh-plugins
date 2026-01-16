@@ -20,6 +20,8 @@ import { lightspeedMessages } from '../../../../plugins/lightspeed/src/translati
 import lightspeedTranslationDe from '../../../../plugins/lightspeed/src/translations/de.js';
 import lightspeedTranslationFr from '../../../../plugins/lightspeed/src/translations/fr.js';
 import lightspeedTranslationEs from '../../../../plugins/lightspeed/src/translations/es.js';
+import lightspeedTranslationIt from '../../../../plugins/lightspeed/src/translations/it.js';
+import lightspeedTranslationJa from '../../../../plugins/lightspeed/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type LightspeedMessages = typeof lightspeedMessages;
@@ -34,6 +36,10 @@ export function getTranslations(locale: string) {
       return lightspeedTranslationDe.messages;
     case 'es':
       return lightspeedTranslationEs.messages;
+    case 'it':
+      return lightspeedTranslationIt.messages;
+    case 'ja':
+      return lightspeedTranslationJa.messages;
     default:
       return lightspeedMessages;
   }

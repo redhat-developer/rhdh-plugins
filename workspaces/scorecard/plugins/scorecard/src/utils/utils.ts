@@ -26,7 +26,7 @@ export type StatusConfig = {
 export type PieData = {
   name: string;
   value: number;
-  color: string;
+  color?: string;
 };
 
 /**
@@ -39,7 +39,7 @@ export const getStatusConfig = ({
   thresholdStatus,
   metricStatus,
 }: {
-  evaluation: string | undefined;
+  evaluation: string | null;
   thresholdStatus?: 'success' | 'error';
   metricStatus?: 'success' | 'error';
 }): StatusConfig => {
@@ -58,24 +58,15 @@ export const getStatusConfig = ({
   }
 };
 
-export type AggregatedMetricValue = {
-  count: number;
-  name: 'success' | 'warning' | 'error';
-};
+export const getRingColor = (
+  theme: any,
+  statusColor: string,
+  isError: boolean,
+) => {
+  if (isError) {
+    return theme.palette.rhdh.general.cardBorderColor;
+  }
 
-export type AggregatedMetricResult = {
-  id: string;
-  status: 'success' | 'error';
-  metadata: {
-    title: string;
-    description: string;
-    type: 'object';
-    history?: boolean;
-  };
-  result: {
-    values?: AggregatedMetricValue[];
-    total: number;
-    timestamp: string;
-    lastUpdated: string;
-  };
+  const [paletteKey, shade] = statusColor.split('.');
+  return theme.palette?.[paletteKey]?.[shade] ?? statusColor;
 };

@@ -1,28 +1,28 @@
 {
   "packageRules": [
     {
-      "description": "all marketplace minor updates",
-      "matchFileNames": ["workspaces/marketplace/**"],
+      "description": "all extensions minor updates",
+      "matchFileNames": ["workspaces/extensions/**"],
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Marketplace)"
       ],
-      "addLabels": ["team/rhdh", "marketplace"]
+      "addLabels": ["team/rhdh", "extensions"]
     },
     {
-      "description": "all marketplace patch updates",
-      "matchFileNames": ["workspaces/marketplace/**"],
+      "description": "all extensions patch updates",
+      "matchFileNames": ["workspaces/extensions/**"],
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Marketplace)"
       ],
-      "addLabels": ["team/rhdh", "marketplace"]
+      "addLabels": ["team/rhdh", "extensions"]
     },
     {
-      "description": "all marketplace dev dependency updates",
-      "matchFileNames": ["workspaces/marketplace/**"],
+      "description": "all extensions dev dependency updates",
+      "matchFileNames": ["workspaces/extensions/**"],
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Marketplace)"
       ],
-      "addLabels": ["team/rhdh", "marketplace"]
+      "addLabels": ["team/rhdh", "extensions"]
     }
   ]
 }

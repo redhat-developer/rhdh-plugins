@@ -50,6 +50,7 @@ test.describe('Bulk Import', () => {
   test.beforeAll(async ({ browser }) => {
     context = await browser.newContext();
     sharedPage = await context.newPage();
+
     await mockBulkImportRepositoriesResponse(sharedPage, mockRepositoriesData);
     await sharedPage.goto('/');
 
@@ -57,15 +58,47 @@ test.describe('Bulk Import', () => {
     await expect(enterButton).toBeVisible();
     await enterButton.click();
 
+    // Wait for authentication to complete - wait for sidebar or main content to appear
+    await sharedPage.waitForLoadState('networkidle');
+    // Additional wait to ensure auth state is fully initialized
+    await sharedPage.waitForTimeout(500);
+
     const currentLocale = await sharedPage.evaluate(
       () => globalThis.navigator.language,
     );
 
+    // Wait for catalog to load BEFORE switching locale
+    // This ensures catalog is loaded in English, then we switch locale
+    const maxRetries = 3;
+    const waitTimeout = 5000;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        // Wait for the sidebar to be visible before navigating
+        await expect(sharedPage.getByText('My Company Catalog')).toBeVisible();
+        // Wait for catalog to load - use English text since we haven't switched locale yet
+        await expect(sharedPage.getByText('All Components (1)')).toBeVisible({
+          timeout: waitTimeout,
+        });
+
+        break; // nice catalog loaded
+      } catch (error) {
+        if (attempt === maxRetries) {
+          const html = await sharedPage.content();
+          throw new Error(
+            `Catalog not loaded after ${maxRetries} retries. Error: ${error}. HTML snapshot: ${html}`,
+          );
+        }
+
+        await sharedPage.reload();
+        await sharedPage.waitForLoadState('networkidle');
+      }
+    }
+
+    // Now switch locale AFTER catalog is loaded
     await switchToLocale(sharedPage, currentLocale);
     translations = getTranslations(currentLocale);
     previewSidebarSnapshots = getPreviewSidebarSnapshots(translations);
-
-    await expect(sharedPage.getByText('My Company Catalog')).toBeVisible();
 
     await expect(
       sharedPage.getByRole('link', { name: translations.sidebar.bulkImport }),
@@ -110,13 +143,10 @@ test.describe('Bulk Import', () => {
           - row "select all repositories ${translations.table.headers.name} ${translations.table.headers.url} ${translations.table.headers.organization} ${translations.table.headers.status}":
             - columnheader "select all repositories ${translations.table.headers.name}":
               - checkbox "select all repositories"
-              - button "${translations.table.headers.name}"
-            - columnheader "${translations.table.headers.url}":
-              - button "${translations.table.headers.url}"
-            - columnheader "${translations.table.headers.organization}":
-              - button "${translations.table.headers.organization}"
-            - columnheader "${translations.table.headers.status}":
-              - button "${translations.table.headers.status}"
+              - text: ${translations.table.headers.name}
+            - columnheader "${translations.table.headers.url}"
+            - columnheader "${translations.table.headers.organization}"
+            - columnheader "${translations.table.headers.status}"
       `);
 
     await runAccessibilityTests(sharedPage, testInfo);
@@ -155,6 +185,9 @@ test.describe('Bulk Import', () => {
       sharedPage.getByText(translations.status.readyToImport).first(),
     ).toBeVisible();
     await sharedPage.getByTestId('preview-file').first().click();
+
+    // Wait for sidebar to be fully visible and loaded
+    await expect(sidebar).toBeVisible();
     await expect(sidebar.locator('h5')).toContainText('backend-service');
     await expect(sidebar).toMatchAriaSnapshot(`
       - button "${translations.common.save}"
@@ -223,7 +256,6 @@ test.describe('Bulk Import', () => {
       .getByTestId('add-repository-footer')
       .getByRole('button', { name: translations.common.import })
       .click();
-    await sharedPage.waitForTimeout(2000);
     await expect(
       sharedPage.getByText(translations.status.imported),
     ).toBeVisible();

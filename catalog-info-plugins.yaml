@@ -15,7 +15,7 @@ spec:
     - ./workspaces/global-header/catalog-info.yaml
     - ./workspaces/homepage/catalog-info.yaml
     - ./workspaces/lightspeed/catalog-info.yaml
-    - ./workspaces/marketplace/catalog-info.yaml
+    - ./workspaces/extensions/catalog-info.yaml
     - ./workspaces/openshift-image-registry/catalog-info.yaml
     - ./workspaces/orchestrator/catalog-info.yaml
     - ./workspaces/theme/catalog-info.yaml

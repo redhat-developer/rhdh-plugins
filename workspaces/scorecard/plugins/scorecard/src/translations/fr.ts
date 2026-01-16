@@ -17,46 +17,49 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { scorecardTranslationRef } from './ref';
 
+/**
+ * fr translation for plugin.scorecard.
+ * @public
+ */
 const scorecardTranslationFr = createTranslationMessages({
   ref: scorecardTranslationRef,
-  full: true,
   messages: {
-    // Empty state
-    'emptyState.title': 'Aucune scorecard ajoutée pour le moment',
+    'emptyState.title': "Aucune carte de score n'a encore été ajoutée",
     'emptyState.description':
-      "Les scorecards vous aident à surveiller la santé des composants en un coup d'œil. Pour commencer, explorez notre documentation pour les directives de configuration.",
+      'Les tableaux de bord vous aident à surveiller l’état des composants en un coup d’œil. Pour commencer, explorez notre documentation pour obtenir des instructions de configuration.',
     'emptyState.button': 'Voir la documentation',
-    'emptyState.altText': 'Aucune scorecard',
-
-    // Permission required state
-    'permissionRequired.title': 'Permission manquante',
+    'emptyState.altText': 'Pas de tableau de bord',
+    'permissionRequired.title': 'Autorisations manquantes',
     'permissionRequired.description':
-      'Pour voir le plugin Scorecard, contactez votre administrateur pour donner la {{permission}} permission.',
-    'permissionRequired.button': 'Lire plus',
-    'permissionRequired.altText': 'Permission requise',
-
-    // Error messages
+      "Pour afficher le plugin Scorecard, contactez votre administrateur pour lui accorder l'autorisation {{permission}}.",
+    'permissionRequired.button': 'En savoir plus',
+    'permissionRequired.altText': 'Autorisation requise',
     'errors.entityMissingProperties':
-      'Entité manque de propriétés requises pour la recherche de scorecard',
+      "Entité manquant les propriétés requises pour la recherche dans la fiche d'évaluation",
     'errors.invalidApiResponse':
-      "Format de réponse invalide de l'API scorecard",
+      "Format de réponse non valide de l'API de scorecard",
     'errors.fetchError':
-      'Erreur lors de la récupération des scorecards : {{error}}',
-    'errors.metricDataUnavailable': 'Données de métrique indisponibles',
+      'Erreur lors de la récupération des tableaux de bord : {{error}}',
+    'errors.metricDataUnavailable': 'Données métriques indisponibles',
     'errors.invalidThresholds': 'Seuils invalides',
-
+    'errors.missingPermission': 'Permission manquante',
+    'errors.missingPermissionMessage':
+      'Pour voir les métriques de scorecard, votre administrateur doit vous donner la permission requise.',
+    'errors.userNotFoundInCatalogMessage':
+      'Entité utilisateur non trouvée dans le catalogue',
     // Metric translations
-    'metric.github.open_prs.title': 'GitHub PRs ouvertes',
+    'metric.github.open_prs.title': 'GitHub ouvre des PR',
     'metric.github.open_prs.description':
-      'Nombre actuel de Pull Requests ouvertes pour un dépôt GitHub donné.',
-    'metric.jira.open_issues.title': 'Jira tickets bloquants ouverts',
+      "Nombre actuel de requêtes d'extraction ouvertes pour un référentiel GitHub donné.",
+    'metric.jira.open_issues.title': 'Jira ouvre des tickets bloquants',
     'metric.jira.open_issues.description':
       'Met en évidence le nombre de problèmes critiques et bloquants actuellement ouverts dans Jira.',
-
-    // Threshold translations
     'thresholds.success': 'Succès',
-    'thresholds.warning': 'Avertissement',
+    'thresholds.warning': 'Attention',
     'thresholds.error': 'Erreur',
+    'thresholds.noEntities': "Aucune entité dans l'état {{category}}",
+    'thresholds.entities_one': '{{count}} entité',
+    'thresholds.entities_other': '{{count}} entités',
   },
 });
 

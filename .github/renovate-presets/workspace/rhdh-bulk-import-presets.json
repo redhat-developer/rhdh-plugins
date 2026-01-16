@@ -23,13 +23,6 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Bulk Import)"
       ],
       "addLabels": ["team/rhdh", "bulk-import"]
-    },
-    {
-      "enabled": false,
-      "description": "Temporarily disable minor updates for OpenAPI package",
-      "matchFileNames": ["workspaces/bulk-import/**"],
-      "matchPackageNames": ["@openapitools/openapi-generator-cli"],
-      "matchUpdateTypes": ["minor"]
     }
   ]
 }

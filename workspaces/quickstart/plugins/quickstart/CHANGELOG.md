@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.8.2
+
+### Patch Changes
+
+- bb8ef80: Added drawer state management utilities for integration with application drawers.
+
+## 1.8.1
+
+### Patch Changes
+
+- f74564d: Added 'it' and 'ja' i18n support and updated 'fr' translation strings.
+- 98abe8b: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.11.0`.
+- 04630bf: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+
 ## 1.8.0
 
 ### Minor Changes

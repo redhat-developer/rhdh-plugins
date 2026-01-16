@@ -5472,7 +5472,7 @@ __metadata:
     "@lit/react": ^1.0.5
     "@mui/icons-material": ^5.16.14
     "@mui/material": ^5.16.14
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.9.0
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.12.0
     "@rhds/elements": ^2.0.1
     "@rhds/icons": ^1.1.1
     "@segment/analytics-next": ^1.0.0
@@ -5496,19 +5496,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.9.0":
-  version: 0.9.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.9.1"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.12.0":
+  version: 0.12.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.12.0"
   dependencies:
     "@mui/icons-material": ^5.17.1
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.10.7
-    "@backstage/theme": ^0.6.6
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/theme": ^0.7.0
     "@material-ui/icons": ^4.11.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 876923b59c7f7bd6cf56218004770dd5b9c34873ca0a04f7ae9b6b9cbe33214de9f867d27702045785bd865cdc7dee23277cb58711447b5859bd1dae1d4a66db
+  checksum: c8489fa11585c8e57d47c5e3972df90dab01a7de70629ca8c944026a914c98d944837bcfa8ac205c45bbd92f075207dfc4ed560463a933d234649afb8a612fd1
   languageName: node
   linkType: hard
 
@@ -12836,8 +12836,8 @@ __metadata:
   linkType: hard
 
 "glob@npm:^10.2.2, glob@npm:^10.3.10, glob@npm:^10.4.1":
-  version: 10.4.5
-  resolution: "glob@npm:10.4.5"
+  version: 10.5.0
+  resolution: "glob@npm:10.5.0"
   dependencies:
     foreground-child: ^3.1.0
     jackspeak: ^3.1.2
@@ -12847,7 +12847,7 @@ __metadata:
     path-scurry: ^1.11.1
   bin:
     glob: dist/esm/bin.mjs
-  checksum: 0bc725de5e4862f9f387fd0f2b274baf16850dcd2714502ccf471ee401803997983e2c05590cb65f9675a3c6f2a58e7a53f9e365704108c6ad3cbf1d60934c4a
+  checksum: cda96c074878abca9657bd984d2396945cf0d64283f6feeb40d738fe2da642be0010ad5210a1646244a5fc3511b0cab5a374569b3de5a12b8a63d392f18c6043
   languageName: node
   linkType: hard
 
@@ -19107,11 +19107,11 @@ __metadata:
   linkType: hard
 
 "qs@npm:^6.12.3, qs@npm:^6.9.4":
-  version: 6.14.0
-  resolution: "qs@npm:6.14.0"
+  version: 6.14.1
+  resolution: "qs@npm:6.14.1"
   dependencies:
     side-channel: ^1.1.0
-  checksum: 189b52ad4e9a0da1a16aff4c58b2a554a8dad9bd7e287c7da7446059b49ca2e33a49e570480e8be406b87fccebf134f51c373cbce36c8c83859efa0c9b71d635
+  checksum: 7fffab0344fd75bfb6b8c94b8ba17f3d3e823d25b615900f68b473c3a078e497de8eaa08f709eaaa170eedfcee50638a7159b98abef7d8c89c2ede79291522f2
   languageName: node
   linkType: hard
 

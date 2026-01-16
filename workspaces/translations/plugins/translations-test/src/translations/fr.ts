@@ -17,41 +17,44 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsTestTranslationRef } from './ref';
 
-const quickstartTranslationDe = createTranslationMessages({
+/**
+ * fr translation for plugin.translations-test.
+ * @public
+ */
+const quickstartTranslationFr = createTranslationMessages({
   ref: translationsTestTranslationRef,
-  full: false,
   messages: {
-    'context.friend': 'Un ami',
-    'context.friend_female': 'Une petite amie',
-    'context.friend_male': 'Un petit ami',
+    'page.title': 'Plugin de test de traductions',
+    'page.subtitle':
+      "Un plugin pour tester les fonctionnalités de traduction et les fonctionnalités d'i18next",
     'essentials.key': 'valeur de la clé',
     'essentials.look.deep': 'valeur look deep',
-    'formatting.intlDateTime': 'Le {{val, datetime}}',
+    'interpolation.key': '{{what}} est {{how}}',
+    'interpolation.nested.key': '{{what}} est {{how.value}}',
+    'interpolation.complex.message': 'Voici un {{link}}.',
+    'interpolation.complex.linkText': 'lien',
     'formatting.intlNumber': 'Certains {{val, number}}',
     'formatting.intlNumberWithOptions':
       'Certains {{val, number(minimumFractionDigits: 2)}}',
+    'formatting.intlDateTime': 'Le {{val, datetime}}',
     'formatting.intlRelativeTime': 'Lorem {{val, relativetime}}',
     'formatting.intlRelativeTimeWithOptions':
       'Lorem {{val, relativetime(quarter)}}',
     'formatting.intlRelativeTimeWithOptionsExplicit':
       'Lorem {{val, relativetime(range: quarter; style: narrow;)}}',
-    'interpolation.complex.linkText': 'lien',
-    'interpolation.complex.message': 'Voici un {{link}}.',
-    'interpolation.key': '{{what}} est {{how}}',
-    'interpolation.nested.key': '{{what}} est {{how.value}}',
-    'objects.tree.res': 'a ajouté {{something}}',
-    'page.subtitle':
-      "Un plugin pour tester les fonctionnalités de traduction et les fonctionnalités d'i18next",
-    'page.title': 'Plugin de test de traductions',
-    'plurals.keyWithCount_one': '{{count}} article',
-    'plurals.keyWithCount_other': '{{count}} articles',
+    'plurals.key_zero': 'zéro',
+    'plurals.key_one': 'un',
+    'plurals.key_two': 'deux',
     'plurals.key_few': 'peu',
     'plurals.key_many': 'plusieurs',
-    'plurals.key_one': 'un',
     'plurals.key_other': 'autre',
-    'plurals.key_two': 'deux',
-    'plurals.key_zero': 'zéro',
+    'plurals.keyWithCount_one': '{{count}} article',
+    'plurals.keyWithCount_other': '{{count}} articles',
+    'context.friend': 'Un ami',
+    'context.friend_male': 'Un petit ami',
+    'context.friend_female': 'Une petite amie',
+    'objects.tree.res': 'a ajouté {{something}}',
   },
 });
 
-export default quickstartTranslationDe;
+export default quickstartTranslationFr;

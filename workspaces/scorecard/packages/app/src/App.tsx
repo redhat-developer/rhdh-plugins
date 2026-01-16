@@ -54,35 +54,203 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { ScorecardHomepageSection } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import {
   DynamicCustomizableHomePage,
   OnboardingSection,
-  defaultLayouts,
   HomePageCardMountPoint,
   homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+import { ComponentType } from 'react';
 
 const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: OnboardingSection,
     config: {
-      layouts: defaultLayouts.onboarding,
+      id: 'onboarding-section',
+      title: 'Onboarding section',
+      layouts: {
+        xl: { w: 12, h: 5 },
+        lg: { w: 12, h: 5 },
+        md: { w: 12, h: 5 },
+        sm: { w: 12, h: 5 },
+        xs: { w: 12, h: 5 },
+        xxs: { w: 12, h: 5 },
+      },
     },
   },
   {
-    Component: ScorecardHomepageSection,
+    Component: ScorecardHomepageCard as ComponentType,
     config: {
+      id: 'scorecard-jira.open_issues',
+      title: 'Scorecard: Jira open blocking tickets',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
       layouts: {
-        xl: { w: 12, h: 6 },
-        lg: { w: 12, h: 6 },
-        md: { w: 12, h: 7 },
-        sm: { w: 12, h: 8 },
-        xs: { w: 12, h: 9 },
-        xxs: { w: 12, h: 10 },
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        metricId: 'jira.open_issues',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-github.open_prs',
+      title: 'Scorecard: GitHub open PRs',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        metricId: 'github.open_prs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-customizable',
+      title: 'Scorecard: Customizable',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6, x: 8 },
+        lg: { w: 4, h: 6, x: 8 },
+        md: { w: 4, h: 6, x: 8 },
+        sm: { w: 4, h: 6, x: 8 },
+        xs: { w: 4, h: 6, x: 8 },
+        xxs: { w: 4, h: 6, x: 8 },
+      },
+      settings: {
+        schema: {
+          properties: {
+            metricId: {
+              title: 'Metric (Needs currently a page reload after change!)',
+              type: 'string',
+              default: 'jira.open_issues',
+              enum: ['jira.open_issues', 'github.open_prs'],
+            },
+          },
+        },
+        uiSchema: {
+          metricId: {
+            'ui:widget': 'RadioWidget',
+            'ui:enumNames': ['Jira Open Issues', 'GitHub Open PRs'],
+          },
+        },
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-no-metric-id',
+      title: 'Scorecard: No metric id (expected error)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-invalid-metric-id',
+      title: 'Scorecard: Invalid metric id (expected error)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        metricId: 'invalid-metric-id',
       },
     },
   },
@@ -105,7 +273,7 @@ const app = createApp({
   apis,
   themes: getThemes(),
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [scorecardTranslations, homepageTranslations],
   },
   bindRoutes({ bind }) {
@@ -170,7 +338,7 @@ const routes = (
         <ReportIssue />
       </TechDocsAddons>
     </Route>
-    <Route path="/rbac" element={<RbacPage />} />;
+    <Route path="/rbac" element={<RbacPage />} />
     <Route path="/create" element={<ScaffolderPage />} />
     <Route path="/api-docs" element={<ApiExplorerPage />} />
     <Route

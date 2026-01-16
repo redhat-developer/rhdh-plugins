@@ -48,8 +48,9 @@
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf": "workspace:^",
     "app": "link:../app",
-    "better-sqlite3": "^9.0.0",
+    "better-sqlite3": "^12.0.0",
     "node-gyp": "^10.0.0",
     "pg": "^8.11.3"
   },

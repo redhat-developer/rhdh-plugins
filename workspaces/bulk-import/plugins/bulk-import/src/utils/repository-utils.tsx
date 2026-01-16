@@ -44,15 +44,18 @@ import {
   Repository,
   RepositorySelection,
   RepositoryStatus,
+  TaskStatus,
+  WorkflowStatus,
 } from '../types';
+import { getWorkflowStatusInfo } from './orchestratorStatus';
 import { getTaskStatusInfo } from './task-status';
 
-const TaskLink = ({
+export const TaskLink = ({
   taskId,
   t,
 }: {
   taskId?: string;
-  t: (key: string) => string;
+  t: (key: string, ...args: any[]) => string;
 }) => {
   const configApi = useApi(configApiRef);
   const appBaseUrl = configApi.getString('app.baseUrl');
@@ -70,6 +73,33 @@ const TaskLink = ({
       }}
     >
       {t('tasks.viewTask')}
+    </Link>
+  );
+};
+
+export const WorkflowLink = ({
+  workflowId,
+  t,
+}: {
+  workflowId?: string;
+  t: (key: string, ...args: any[]) => string;
+}) => {
+  const configApi = useApi(configApiRef);
+  const appBaseUrl = configApi.getString('app.baseUrl');
+
+  if (!workflowId) return null;
+
+  return (
+    <Link
+      to={`${appBaseUrl}/orchestrator/instances/${workflowId}`}
+      data-testid="view-workflow-link"
+      style={{
+        paddingLeft: '5px',
+        display: 'inline-flex',
+        alignItems: 'center',
+      }}
+    >
+      {t('workflows.viewWorkflow')}
     </Link>
   );
 };
@@ -102,6 +132,13 @@ export const descendingComparator = (
     value1 = order[(value1 as ImportStatus) || RepositoryStatus.NotGenerated];
     value2 = order[(value2 as ImportStatus) || RepositoryStatus.NotGenerated];
   }
+
+  // Convert strings to lowercase for case-insensitive comparison
+  if (typeof value1 === 'string' && typeof value2 === 'string') {
+    value1 = value1.toLowerCase();
+    value2 = value2.toLowerCase();
+  }
+
   if (value2 < value1) {
     return -1;
   }
@@ -265,7 +302,7 @@ export const getImportStatus = (
   t: (key: string) => string,
   showIcon?: boolean,
   prUrl?: string,
-  taskId?: string,
+  taskOrWorkflowId?: string,
 ) => {
   if (!status) {
     return '';
@@ -294,7 +331,7 @@ export const getImportStatus = (
     );
   }
 
-  if (taskId && status.startsWith('TASK')) {
+  if (taskOrWorkflowId && status.startsWith('TASK')) {
     const { taskLabelText, taskIcon } = getTaskStatusInfo(status, t);
     return showIcon ? (
       <Typography
@@ -303,7 +340,7 @@ export const getImportStatus = (
       >
         {taskIcon}
         {taskLabelText}
-        <TaskLink taskId={taskId} t={t} />
+        <TaskLink taskId={taskOrWorkflowId} t={t} />
       </Typography>
     ) : (
       <Typography
@@ -311,7 +348,32 @@ export const getImportStatus = (
         style={{ display: 'flex', alignItems: 'baseline' }}
       >
         {taskLabelText}
-        <TaskLink taskId={taskId} t={t} />
+        <TaskLink taskId={taskOrWorkflowId} t={t} />
+      </Typography>
+    );
+  }
+
+  if (taskOrWorkflowId && status.startsWith('WORKFLOW')) {
+    const { workflowLabelText, workflowIcon } = getWorkflowStatusInfo(
+      status,
+      t,
+    );
+    return showIcon ? (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {workflowIcon}
+        {workflowLabelText}
+        <WorkflowLink workflowId={taskOrWorkflowId} t={t} />
+      </Typography>
+    ) : (
+      <Typography
+        component="span"
+        style={{ display: 'flex', alignItems: 'baseline' }}
+      >
+        {workflowLabelText}
+        <WorkflowLink workflowId={taskOrWorkflowId} t={t} />
       </Typography>
     );
   }
@@ -682,15 +744,12 @@ export const prepareDataForAddedRepositories = (
     importJobs.imports?.reduce((acc, val: ImportJobStatus) => {
       const id = `${val.repository.organization}/${val.repository.name}`;
       const gitProvider = isGithubJob(val) ? 'github' : 'gitlab';
-      return {
+
+      const result: { [id: string]: AddRepositoryData } = {
         ...acc,
         [id]: {
           id,
           source: val.source,
-          task: {
-            id: val.task?.taskId,
-            status: val.status,
-          },
           approvalTool: val.approvalTool,
           repoName: val.repository.name,
           defaultBranch: val.repository.defaultBranch,
@@ -718,6 +777,21 @@ export const prepareDataForAddedRepositories = (
           },
         },
       };
+
+      if (val.task) {
+        result[id].task = {
+          id: val.task.taskId,
+          status: val.status as TaskStatus,
+        };
+      }
+      if (val.workflow) {
+        result[id].workflow = {
+          id: val.workflow.workflowId,
+          status: val.status as WorkflowStatus,
+        };
+      }
+
+      return result;
     }, {});
   return {
     repoData,

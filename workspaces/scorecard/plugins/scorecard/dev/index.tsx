@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// eslint-disable-next-line
 import '@backstage/ui/css/styles.css';
+
 import { createDevApp } from '@backstage/dev-utils';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
 import { TestApiProvider } from '@backstage/test-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import type { Entity } from '@backstage/catalog-model';
-import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { AggregatedMetricResult } from '../src/utils/utils';
+import type {
+  MetricResult,
+  AggregatedMetricResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
@@ -50,8 +55,8 @@ class MockScorecardApi implements ScorecardApi {
   async getScorecards(_entity: Entity): Promise<MetricResult[]> {
     return [...mockScorecardSuccessData, ...mockScorecardErrorData];
   }
-  async getAggregatedScorecards(
-    _metricIds?: string[],
+  async getAggregatedScorecard(
+    _metricId: string,
   ): Promise<AggregatedMetricResult[]> {
     return mockAggregatedScorecardSuccessData;
   }
@@ -60,7 +65,7 @@ class MockScorecardApi implements ScorecardApi {
 createDevApp()
   .registerPlugin(scorecardPlugin)
   .addTranslationResource(scorecardTranslations)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addThemes(getAllThemes())
   .addPage({

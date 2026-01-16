@@ -24,6 +24,7 @@ import {
   LCSConversation,
   ReferencedDocument,
   ReferencedDocuments,
+  ToolCall,
 } from '../types';
 
 export const getFootnoteProps = (
@@ -110,6 +111,7 @@ type MessageProps = {
     title: string;
   };
   sources?: SourcesCardProps;
+  toolCalls?: ToolCall[];
 };
 
 export const createMessage = ({
@@ -121,6 +123,7 @@ export const createMessage = ({
   timestamp,
   error,
   sources,
+  toolCalls,
   defaultUserName = 'Guest',
 }: MessageProps & { role: 'user' | 'bot'; defaultUserName?: string }) => ({
   role,
@@ -131,6 +134,7 @@ export const createMessage = ({
   timestamp,
   error,
   sources,
+  toolCalls,
 });
 
 export const createUserMessage = (
@@ -189,11 +193,41 @@ export const transformDocumentsToSources = (
   };
 };
 
+export type SortOption =
+  | 'newest'
+  | 'oldest'
+  | 'alphabeticalAsc'
+  | 'alphabeticalDesc';
+
+const sortConversations = (
+  messages: ConversationList,
+  sortOption: SortOption,
+): ConversationList => {
+  return [...messages].sort((a, b) => {
+    switch (sortOption) {
+      case 'oldest':
+        return a.last_message_timestamp - b.last_message_timestamp;
+      case 'alphabeticalAsc':
+        return a.topic_summary.localeCompare(b.topic_summary, undefined, {
+          sensitivity: 'base',
+        });
+      case 'alphabeticalDesc':
+        return b.topic_summary.localeCompare(a.topic_summary, undefined, {
+          sensitivity: 'base',
+        });
+      case 'newest':
+      default:
+        return b.last_message_timestamp - a.last_message_timestamp;
+    }
+  });
+};
+
 export const getCategorizeMessages = (
   messages: ConversationList,
   pinnedChats: string[],
   addProps: (c: ConversationSummary) => { [k: string]: any },
   t?: (key: string, params?: any) => string,
+  sortOption: SortOption = 'newest',
 ): { [k: string]: Conversation[] } => {
   const pinnedChatsKey = t?.('conversation.category.pinnedChats') || 'Pinned';
   const recentKey = t?.('conversation.category.recent') || 'Recent';
@@ -201,9 +235,7 @@ export const getCategorizeMessages = (
     [pinnedChatsKey]: [],
     [recentKey]: [],
   };
-  const sortedMessages = [...messages].sort(
-    (a, b) => b.last_message_timestamp - a.last_message_timestamp,
-  );
+  const sortedMessages = sortConversations(messages, sortOption);
   sortedMessages.forEach(c => {
     const message: Conversation = {
       id: c.conversation_id,

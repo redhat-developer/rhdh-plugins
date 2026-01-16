@@ -20,7 +20,7 @@ export const BulkImportPage: () => JSX_2.Element;
 export const bulkImportPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 addRepositories: SubRouteRef<undefined>;
-tasks: SubRouteRef<PathParams<"/tasks/:repoUrl">>;
+tasks: SubRouteRef<PathParams<"/import-history/:repoUrl">>;
 }, {}, {}>;
 
 // @public

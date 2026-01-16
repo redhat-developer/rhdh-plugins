@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-import { createRouteRef } from '@backstage/core-plugin-api';
+import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
 
 export const rootRouteRef = createRouteRef({
   id: 'lightspeed',
+});
+
+export const addConversationRouteRef = createSubRouteRef({
+  id: 'lightspeed-conversation',
+  parent: rootRouteRef,
+  path: '/conversation/:conversationId',
 });

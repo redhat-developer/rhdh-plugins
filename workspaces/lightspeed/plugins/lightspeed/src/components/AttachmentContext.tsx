@@ -21,9 +21,11 @@ import {
   ReactNode,
   SetStateAction,
   useContext,
+  useEffect,
   useState,
 } from 'react';
 
+import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { FileContent } from '../types';
 import { isSupportedFileType, readFileAsText } from '../utils/attachment-utils';
@@ -57,6 +59,8 @@ const FileAttachmentContextProvider: FC<{
   children: ReactNode;
 }> = ({ children }) => {
   const { t } = useTranslation();
+  const { draftFileContents, setDraftFileContents } =
+    useLightspeedDrawerContext();
   const [currentFileContent, setCurrentFileContent] = useState<
     FileContent | undefined
   >();
@@ -68,7 +72,20 @@ const FileAttachmentContextProvider: FC<{
   const [uploadError, setUploadError] = useState<UploadError>({
     message: null,
   });
-  const [fileContents, setFileContents] = useState<FileContent[]>([]);
+  // Initialize from draftFileContents to preserve files across display mode changes
+  const [fileContents, setFileContentsState] = useState<FileContent[]>(
+    () => draftFileContents,
+  );
+
+  // Sync fileContents changes to draftFileContents for persistence across mode changes
+  useEffect(() => {
+    setDraftFileContents(fileContents);
+  }, [fileContents, setDraftFileContents]);
+
+  // Wrapper to update local state (which will sync to draft via useEffect)
+  const setFileContents: Dispatch<SetStateAction<FileContent[]>> = value => {
+    setFileContentsState(value);
+  };
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const handleFileUpload = (fileArr: File[]) => {

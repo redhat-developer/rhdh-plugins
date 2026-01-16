@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+import type { TooltipProps } from 'recharts';
+
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import type { TooltipProps } from 'recharts';
+
 import type { PieData } from '../../utils/utils';
+import { useTranslation } from '../../hooks/useTranslation';
 
 type CustomTooltipPayload = {
   name?: string;
@@ -28,9 +31,18 @@ type CustomTooltipPayload = {
 type CustomTooltipProps = TooltipProps<number, string> & {
   payload?: readonly CustomTooltipPayload[];
   pieData: PieData[];
+  isMissingPermission?: boolean;
+  isUserNotFoundInCatalog?: boolean;
 };
 
-export const CustomTooltip = ({ payload, pieData }: CustomTooltipProps) => {
+export const CustomTooltip = ({
+  payload,
+  pieData,
+  isMissingPermission = false,
+  isUserNotFoundInCatalog = false,
+}: CustomTooltipProps) => {
+  const { t } = useTranslation();
+
   const getPercentage = () => {
     if (!Array.isArray(pieData) || pieData.length === 0) return 0;
     if (!payload || payload.length === 0) return 0;
@@ -50,19 +62,26 @@ export const CustomTooltip = ({ payload, pieData }: CustomTooltipProps) => {
 
   let content = null;
 
-  if (payload?.[0]?.value === 0 || payload?.[0]?.value === undefined) {
+  if (isMissingPermission || isUserNotFoundInCatalog) {
     content = (
       <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-        No entities in {payload?.[0]?.name} state
+        {isMissingPermission
+          ? t('errors.missingPermissionMessage')
+          : t('errors.userNotFoundInCatalogMessage')}
+      </Typography>
+    );
+  } else if (payload?.[0]?.value === 0 || payload?.[0]?.value === undefined) {
+    const translatedState = t(`thresholds.${payload?.[0]?.name}` as any, {});
+    content = (
+      <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
+        {t('thresholds.noEntities', { category: translatedState } as any)}
       </Typography>
     );
   } else {
     content = (
       <>
         <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-          {payload?.[0]?.value === 1
-            ? '1 entity'
-            : `${payload?.[0]?.value} entities`}
+          {t('thresholds.entities', { count: payload?.[0]?.value })}
         </Typography>
         <Typography
           sx={{

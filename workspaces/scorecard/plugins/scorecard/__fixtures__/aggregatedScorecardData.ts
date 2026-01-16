@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AggregatedMetricResult } from '../src/utils/utils';
+import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const mockAggregatedScorecardSuccessData: AggregatedMetricResult[] = [
   {
@@ -24,7 +24,7 @@ export const mockAggregatedScorecardSuccessData: AggregatedMetricResult[] = [
       title: 'GitHub open PRs',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
-      type: 'object',
+      type: 'number',
       history: true,
     },
     result: {
@@ -35,28 +35,46 @@ export const mockAggregatedScorecardSuccessData: AggregatedMetricResult[] = [
       ],
       total: 37,
       timestamp: '2024-01-15T10:30:00Z',
-      lastUpdated: '2024-01-15T10:30:00Z',
     },
   },
   {
     id: 'jira.issues_open',
     status: 'success',
     metadata: {
-      title: 'Jira open blocking tickets',
+      title: 'Open Jira Issues',
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
-      type: 'object',
+      type: 'number',
       history: true,
     },
     result: {
       values: [
-        { count: 0, name: 'success' },
+        { count: 4, name: 'success' },
         { count: 1, name: 'warning' },
-        { count: 3, name: 'error' },
+        { count: 6, name: 'error' },
       ],
-      total: 4,
+      total: 11,
       timestamp: '2024-01-15T10:30:00Z',
-      lastUpdated: '2024-01-15T10:30:00Z',
+    },
+  },
+  {
+    id: 'github.open_prs',
+    status: 'success',
+    metadata: {
+      title: 'GitHub Open PRs',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository.',
+      type: 'number',
+      history: true,
+    },
+    result: {
+      values: [
+        { count: 1, name: 'success' },
+        { count: 3, name: 'warning' },
+        { count: 10, name: 'error' },
+      ],
+      total: 14,
+      timestamp: '2024-01-15T10:30:00Z',
     },
   },
 ];

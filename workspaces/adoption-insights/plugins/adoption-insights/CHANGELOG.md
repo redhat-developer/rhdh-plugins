@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.6.2
+
+### Patch Changes
+
+- f74564d: Added 'ja' i18n support and updated 'it' and 'fr' translation strings.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.6.2
+
+## 0.6.1
+
+### Patch Changes
+
+- 2e866af: Updated to 4-digit year format for all dates
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.6.1
+
 ## 0.6.0
 
 ### Minor Changes

@@ -141,7 +141,7 @@ export interface ConfigurationParameters {
 export const DEFAULT_SONATAFLOW_BASE_URL = "http://localhost";
 
 // @public
-export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE = "quay.io/kubesmarts/incubator-kie-sonataflow-devmode:9.103.x-prod";
+export const DEFAULT_SONATAFLOW_CONTAINER_IMAGE = "quay.io/kubesmarts/incubator-kie-sonataflow-devmode:main";
 
 // Warning: (ae-missing-release-tag) "DEFAULT_SONATAFLOW_PERSISTENCE_PATH" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
@@ -1339,6 +1339,16 @@ export type WorkflowInputSchemaStep = {
     readonlyKeys: string[];
 };
 
+// Warning: (ae-missing-release-tag) "WorkflowInstanceLogsDTO" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export interface WorkflowInstanceLogsDTO {
+    // (undocumented)
+    instanceId: string;
+    // (undocumented)
+    logs: WorkflowLogEntry[];
+}
+
 // Warning: (ae-missing-release-tag) "WorkflowListResult" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
 // @public (undocumented)
@@ -1364,6 +1374,16 @@ export interface WorkflowListResultDTO {
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@type" is not defined in this configuration
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
     'paginationInfo': PaginationInfoDTO;
+}
+
+// Warning: (ae-missing-release-tag) "WorkflowLogEntry" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
+//
+// @public (undocumented)
+export interface WorkflowLogEntry {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    log: string;
 }
 
 // Warning: (ae-missing-release-tag) "WorkflowOverview" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
@@ -2126,6 +2146,12 @@ export interface WorkflowRunStatusDTO {
 // src/types.d.ts:79:5 - (ae-undocumented) Missing documentation for "name".
 // src/types.d.ts:80:5 - (ae-undocumented) Missing documentation for "uniqueId".
 // src/types.d.ts:81:5 - (ae-undocumented) Missing documentation for "nodeDefinitionId".
+// src/types.d.ts:83:1 - (ae-undocumented) Missing documentation for "WorkflowLogEntry".
+// src/types.d.ts:84:5 - (ae-undocumented) Missing documentation for "id".
+// src/types.d.ts:85:5 - (ae-undocumented) Missing documentation for "log".
+// src/types.d.ts:87:1 - (ae-undocumented) Missing documentation for "WorkflowInstanceLogsDTO".
+// src/types.d.ts:88:5 - (ae-undocumented) Missing documentation for "instanceId".
+// src/types.d.ts:89:5 - (ae-undocumented) Missing documentation for "logs".
 // src/utils/StringUtils.d.ts:1:1 - (ae-undocumented) Missing documentation for "Capitalized".
 // src/utils/StringUtils.d.ts:2:22 - (ae-undocumented) Missing documentation for "capitalize".
 // src/utils/StringUtils.d.ts:3:22 - (ae-undocumented) Missing documentation for "ellipsis".

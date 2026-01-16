@@ -41,6 +41,8 @@ export default defineConfig({
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    // Enable visual mode when HEADED environment variable is set
+    headless: process.env.HEADED !== 'true',
   },
 
   outputDir: 'node_modules/.cache/e2e-test-results',

@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "0.0.25",
+  "version": "0.0.27",
   "main": "dist/index.cjs.js",
   "types": "src/index.ts",
   "private": true,
@@ -46,7 +46,7 @@
     "@backstage/plugin-techdocs-backend": "^2.1.2",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-backend": "workspace:^",
     "app": "link:../app",
-    "better-sqlite3": "^9.0.0",
+    "better-sqlite3": "^12.0.0",
     "node-gyp": "^10.0.0",
     "pg": "^8.11.3"
   },

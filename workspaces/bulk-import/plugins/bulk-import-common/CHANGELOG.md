@@ -1,5 +1,21 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 6.11.0
+
+### Minor Changes
+
+- 88ac11d: Implement the execution of import orchestrator workflows with the help of the bulk-import plugin.
+
+## 6.10.1
+
+## 6.10.0
+
+### Patch Changes
+
+- 9e15bf7: Updated dependency `prettier` to `3.7.4`.
+
+## 6.9.1
+
 ## 6.9.0
 
 ## 6.8.0

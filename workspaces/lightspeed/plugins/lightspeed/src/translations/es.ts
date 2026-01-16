@@ -142,6 +142,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'aria.scroll.down': 'Volver abajo',
     'aria.scroll.up': 'Volver arriba',
     'aria.settings.label': 'Opciones del chatbot',
+    'aria.close': 'Cerrar chatbot',
 
     // Modal actions
     'modal.edit': 'Editar',
@@ -172,6 +173,7 @@ const lightspeedTranslationEs = createTranslationMessages({
     'tooltip.backToTop': 'Volver arriba',
     'tooltip.backToBottom': 'Volver abajo',
     'tooltip.settings': 'Opciones del chatbot',
+    'tooltip.close': 'Cerrar',
 
     // Modal titles
     'modal.title.preview': 'Vista previa del adjunto',
@@ -230,6 +232,35 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Los chats fijados están actualmente habilitados',
     'settings.pinned.disabled.description':
       'Los chats fijados están actualmente deshabilitados',
+
+    // Tool calling
+    'toolCall.header': 'Respuesta de herramienta: {{toolName}}',
+    'toolCall.thinking': 'Pensó durante {{seconds}} segundos',
+    'toolCall.executionTime': 'Tiempo de ejecución: ',
+    'toolCall.parameters': 'Parámetros',
+    'toolCall.response': 'Respuesta',
+    'toolCall.showMore': 'mostrar más',
+    'toolCall.showLess': 'mostrar menos',
+    'toolCall.loading': 'Ejecutando herramienta...',
+    'toolCall.executing': 'Ejecutando herramienta...',
+    'toolCall.copyResponse': 'Copiar respuesta',
+    'toolCall.summary': 'Aquí tienes un resumen de tu respuesta',
+    'toolCall.mcpServer': 'Servidor MCP',
+    // Display modes
+    'settings.displayMode.label': 'Modo de visualización',
+    'settings.displayMode.overlay': 'Superposición',
+    'settings.displayMode.docked': 'Acoplar a ventana',
+    'settings.displayMode.fullscreen': 'Pantalla completa',
+
+    // Sort options
+    'sort.label': 'Ordenar conversaciones',
+    'sort.newest': 'Fecha (más reciente primero)',
+    'sort.oldest': 'Fecha (más antiguo primero)',
+    'sort.alphabeticalAsc': 'Nombre (A-Z)',
+    'sort.alphabeticalDesc': 'Nombre (Z-A)',
+
+    // Deep thinking
+    'reasoning.thinking': 'Mostrar razonamiento',
   },
 });
 

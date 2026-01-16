@@ -129,10 +129,8 @@ export const ActiveTextInput: Widget<
             defaultValueSelector,
           );
 
-          // Only override if fetch returns a non-empty value
-          // This ensures static default remains as fallback when fetch returns empty
           if (
-            fetchedValue &&
+            typeof fetchedValue === 'string' &&
             fetchedValue !== 'null' &&
             value !== fetchedValue
           ) {

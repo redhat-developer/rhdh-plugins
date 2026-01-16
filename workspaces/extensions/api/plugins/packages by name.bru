@@ -1,0 +1,15 @@
+meta {
+  name: packages by name
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseURL}}/api/extensions/plugin/default/tekton/packages
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}

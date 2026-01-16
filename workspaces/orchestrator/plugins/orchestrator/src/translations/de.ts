@@ -89,6 +89,10 @@ const orchestratorTranslationDe = createTranslationMessages({
     'run.variables': 'Ausführungsvariablen',
     'run.inputs': 'Eingaben',
     'run.results': 'Ergebnisse',
+    'run.logs.viewLogs': 'Protokolle anzeigen',
+    'run.logs.title': 'Ausführungsprotokolle',
+    'run.logs.noLogsAvailable':
+      'Keine Protokolle für diese Workflow-Ausführung verfügbar.',
     'run.abort.title': 'Ausführung abbrechen?',
     'run.abort.button': 'Abbrechen',
     'run.abort.warning':

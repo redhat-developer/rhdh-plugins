@@ -32,7 +32,7 @@ export type { QuickstartButtonProps } from './components/QuickstartButton/Quicks
 export const quickstartPlugin = createPlugin({
   id: 'quickstart',
   __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'fr', 'es'],
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
     resources: [quickstartTranslationRef],
   },
 } as any);
@@ -56,6 +56,23 @@ export const QuickstartDrawerProvider: React.ComponentType<PropsWithChildren> =
   );
 
 /**
+ * Quickstart Drawer Content component extension
+ *
+ * @public
+ */
+export const QuickstartDrawerContent = quickstartPlugin.provide(
+  createComponentExtension({
+    name: 'QuickstartDrawerContent',
+    component: {
+      lazy: () =>
+        import('./components/QuickstartDrawerContent').then(
+          m => m.QuickstartDrawerContent,
+        ),
+    },
+  }),
+);
+
+/**
  * Quick start button for global header help dropdown
  *
  * @public
@@ -72,3 +89,20 @@ export const QuickstartButton: React.ComponentType<QuickstartButtonProps> =
       },
     }),
   );
+
+/**
+ * Quickstart Drawer State Exposer exposes its drawer state
+ *
+ * @public
+ */
+export const QuickstartDrawerStateExposer = quickstartPlugin.provide(
+  createComponentExtension({
+    name: 'QuickstartDrawerStateExposer',
+    component: {
+      lazy: () =>
+        import('./components/QuickstartDrawerStateExposer').then(
+          m => m.QuickstartDrawerStateExposer,
+        ),
+    },
+  }),
+);

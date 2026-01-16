@@ -47,9 +47,14 @@ import {
   GlobalHeaderComponent,
 } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import Box from '@mui/material/Box';
-import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+import {
+  QuickstartDrawerProvider,
+  QuickstartDrawerContent,
+  QuickstartDrawerStateExposer,
+} from '@red-hat-developer-hub/backstage-plugin-quickstart';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
 import { Administration } from '@backstage-community/plugin-rbac';
+import { ApplicationDrawer } from './ApplicationDrawer';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -88,9 +93,9 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
         // This code exists similarly in RHDH:
         // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/Root/Root.tsx#L159-L165
         // https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/components/ErrorPages/ErrorPage.tsx#L54-L59
-        'body.quickstart-drawer-open #sidebar&': {
+        'body.docked-drawer-open #sidebar&': {
           "> div > main[class*='BackstagePage-root']": {
-            marginRight: 'calc(var(--quickstart-drawer-width, 500px) + 1.5em)',
+            marginRight: 'calc(var(--docked-drawer-width, 500px) + 1.5em)',
             transition: 'margin-right 0.3s ease',
           },
         },
@@ -141,6 +146,16 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             </SidebarGroup>
           </Sidebar>
           {children}
+          <ApplicationDrawer
+            drawerContents={[
+              {
+                Component: QuickstartDrawerContent,
+                priority: 1,
+                id: 'quickstart',
+              },
+            ]}
+            stateExposers={[{ Component: QuickstartDrawerStateExposer }]}
+          />
         </QuickstartDrawerProvider>
       </SidebarPage>
     </Box>

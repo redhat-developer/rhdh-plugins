@@ -144,7 +144,7 @@ const routes = (
       element={<ResourceOptimizationPage />}
     />
     <Route path="/orchestrator" element={<OrchestratorPage />} />
-    <Route path="/rbac" element={<RbacPage />} />;
+    <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>
 );
 

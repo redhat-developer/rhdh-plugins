@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-translations
 
+## 0.2.1
+
+### Patch Changes
+
+- f74564d: Added 'it' and 'ja' i18n translation support and updated 'fr' translations.
+
+## 0.2.0
+
+### Minor Changes
+
+- a698bf0: Backstage version bump to v1.45.3
+
 ## 0.1.0
 
 ### Minor Changes

@@ -28,7 +28,7 @@ createDevApp()
   .registerPlugin(aiExperiencePlugin)
   .addThemes(getAllThemes())
   .addTranslationResource(aiExperienceTranslationsResource)
-  .setAvailableLanguages(['en', 'de', 'fr', 'es'])
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
   .setDefaultLanguage('en')
   .addPage({
     element: <AiExperiencePage />,

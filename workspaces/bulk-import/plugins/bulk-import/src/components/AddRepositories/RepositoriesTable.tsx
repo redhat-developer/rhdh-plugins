@@ -31,7 +31,6 @@ import {
   AddedRepositories,
   AddRepositoriesFormValues,
   AddRepositoryData,
-  Order,
   RepositoryStatus,
 } from '../../types';
 import {
@@ -84,8 +83,6 @@ export const RepositoriesTable = ({
   const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
-  const [order, setOrder] = useState<Order>('asc');
-  const [orderBy, setOrderBy] = useState<string>();
   const [selected, setSelected] = useState<AddedRepositories>({});
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [tableData, setTableData] = useState<AddRepositoryData[]>([]);
@@ -139,17 +136,11 @@ export const RepositoriesTable = ({
       : evaluateRowForOrg(tableData, values.repositories);
 
     filteredRows = [...(filteredRows || [])]?.sort(
-      getComparator(order, orderBy as string),
+      getComparator('asc', 'repoName'),
     );
 
     return filteredRows;
-  }, [tableData, order, orderBy, values?.repositories, showOrganizations]);
-
-  const handleRequestSort = (_event: MouseEvent<unknown>, property: string) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
+  }, [tableData, values?.repositories, showOrganizations]);
 
   const updateSelectedRepositories = useCallback(
     (newSelected: AddedRepositories) => {
@@ -330,10 +321,7 @@ export const RepositoriesTable = ({
                 : selectedRepositoriesOnActivePage.length
             }
             isDataLoading={loading}
-            order={order}
-            orderBy={orderBy}
             onSelectAllClick={handleSelectAllClick}
-            onRequestSort={handleRequestSort}
             rowCount={getRowCount() || 0}
             showOrganizations={drawerOrganization ? false : showOrganizations}
             isRepoSelectDrawer={!!drawerOrganization}
