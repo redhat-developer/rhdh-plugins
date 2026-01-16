@@ -113,6 +113,7 @@ export interface CostManagementSlimApi {
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{
@@ -139,6 +140,7 @@ export interface CostManagementSlimApi {
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{
@@ -187,6 +189,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{
@@ -207,10 +210,13 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   >;
+  // Warning: (tsdoc-param-tag-with-invalid-name) The @param block should be followed by a valid parameter name: The identifier cannot non-word characters
+  // Warning: (tsdoc-param-tag-with-invalid-name) The @param block should be followed by a valid parameter name: The identifier cannot non-word characters
   searchOpenShiftProjects(
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{

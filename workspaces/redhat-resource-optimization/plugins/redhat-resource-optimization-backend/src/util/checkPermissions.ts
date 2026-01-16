@@ -238,12 +238,6 @@ export const filterAuthorizedClustersAndProjects = async (
   const allClusterNames: string[] = Object.keys(clusterDataMap);
   const allClusterIds: string[] = Object.values(clusterDataMap);
 
-  console.log(
-    `[DEBUG] filterAuthorizedClustersAndProjects called with permissionType: ${permissionType}`,
-  );
-  console.log(`[DEBUG] Clusters to check: ${allClusterNames.join(', ')}`);
-  console.log(`[DEBUG] Projects to check: ${allProjects.join(', ')}`);
-
   // Early exit if no data
   if (allClusterNames.length === 0) {
     return {
@@ -269,7 +263,6 @@ export const filterAuthorizedClustersAndProjects = async (
   const clusterPermissionRequests: AuthorizePermissionRequest[] =
     allClusterNames.map(clusterName => {
       const perm = getClusterPermission(clusterName);
-      console.log(`[DEBUG] Checking cluster permission: ${perm.name}`);
       return { permission: perm };
     });
 
@@ -291,42 +284,20 @@ export const filterAuthorizedClustersAndProjects = async (
       permissionType === 'cost' ? clusterName : clusterId;
     const decision = clusterDecisions[i].result;
 
-    console.log(
-      `[DEBUG] Cluster "${clusterName}" (id: ${clusterId}): ${decision}`,
-    );
-
     if (decision === AuthorizeResult.ALLOW) {
       // User has full cluster access
-      console.log(
-        `[DEBUG] Adding "${clusterIdentifier}" to clustersWithFullAccess`,
-      );
       clustersWithFullAccess.add(clusterIdentifier);
     } else {
       // No cluster access - will need to check project-level permissions
-      console.log(
-        `[DEBUG] Adding cluster index ${i} to clustersWithoutFullAccess`,
-      );
       clustersWithoutFullAccess.push(i);
     }
   }
-
-  console.log(
-    `[DEBUG] Clusters with full access: ${Array.from(
-      clustersWithFullAccess,
-    ).join(', ')}`,
-  );
-  console.log(
-    `[DEBUG] Clusters without full access (count): ${clustersWithoutFullAccess.length}`,
-  );
 
   // Step 2: Check project-level permissions only for clusters without full access
   const authorizedClusterProjects: ClusterProjectResult[] = [];
   const clustersGrantedViaProjects = new Set<string>();
 
   if (clustersWithoutFullAccess.length > 0 && allProjects.length > 0) {
-    console.log(
-      `[DEBUG] Checking project-level permissions for ${clustersWithoutFullAccess.length} clusters`,
-    );
     const numProjectChecks =
       clustersWithoutFullAccess.length * allProjects.length;
     const projectPermissionRequests: AuthorizePermissionRequest[] = new Array(
@@ -344,15 +315,9 @@ export const filterAuthorizedClustersAndProjects = async (
       const clusterIdentifier =
         permissionType === 'cost' ? clusterName : clusterId;
 
-      console.log(
-        `[DEBUG] Building project checks for cluster "${clusterName}"`,
-      );
-
       for (let j = 0; j < allProjects.length; j++) {
         const projectName = allProjects[j];
         const perm = getClusterProjectPermission(clusterName, projectName);
-
-        console.log(`[DEBUG] Will check: ${perm.name}`);
 
         projectPermissionRequests[idx] = {
           permission: perm,
@@ -376,44 +341,21 @@ export const filterAuthorizedClustersAndProjects = async (
     // Process project-level results
     for (let i = 0; i < projectDecisions.length; i++) {
       const decision = projectDecisions[i].result;
-      const map = projectPermissionMap[i];
-
-      console.log(
-        `[DEBUG] Project permission "${map.cluster}.${map.project}": ${decision}`,
-      );
 
       if (decision === AuthorizeResult.ALLOW) {
         const result = projectPermissionMap[i];
         authorizedClusterProjects.push(result);
-        console.log(
-          `[DEBUG] Adding cluster "${result.cluster}" to clustersGrantedViaProjects`,
-        );
         // Project-level permission also grants cluster access
         clustersGrantedViaProjects.add(result.cluster);
       }
     }
   }
 
-  console.log(
-    `[DEBUG] Clusters granted via projects: ${Array.from(
-      clustersGrantedViaProjects,
-    ).join(', ')}`,
-  );
-
   // Step 3: Combine clusters from both full access and project-level grants
   const authorizedClusterIds = [
     ...clustersWithFullAccess,
     ...clustersGrantedViaProjects,
   ];
-
-  console.log(
-    `[DEBUG] Final authorized clusters: ${authorizedClusterIds.join(', ')}`,
-  );
-  console.log(
-    `[DEBUG] Final authorized cluster-projects: ${authorizedClusterProjects
-      .map(cp => `${cp.cluster}.${cp.project}`)
-      .join(', ')}`,
-  );
 
   return {
     authorizedClusterIds,
