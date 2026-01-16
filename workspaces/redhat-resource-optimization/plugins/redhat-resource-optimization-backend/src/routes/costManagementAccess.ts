@@ -95,9 +95,6 @@ export const getCostManagementAccess: (
       clustersData.data?.forEach(
         (cluster: { value: string; cluster_alias: string }) => {
           if (cluster.cluster_alias && cluster.value) {
-            logger.info(
-              `Cluster: ${cluster.cluster_alias} -> ${cluster.value}`,
-            );
             clusterDataMap[cluster.cluster_alias] = cluster.value;
           }
         },
@@ -132,13 +129,6 @@ export const getCostManagementAccess: (
   }
 
   // RBAC Filtering: Single batch call for both cluster and cluster-project permissions
-  logger.info(
-    `Checking permissions for ${
-      Object.keys(clusterDataMap).length
-    } clusters and ${allProjects.length} projects`,
-  );
-  logger.info(`Cluster names: ${Object.keys(clusterDataMap).join(', ')}`);
-  logger.info(`Projects: ${allProjects.join(', ')}`);
 
   const { authorizedClusterIds, authorizedClusterProjects } =
     await filterAuthorizedClustersAndProjects(
@@ -149,16 +139,6 @@ export const getCostManagementAccess: (
       allProjects,
       'cost',
     );
-
-  logger.info(
-    `Authorization results: ${authorizedClusterIds.length} clusters, ${authorizedClusterProjects.length} cluster-project combinations`,
-  );
-  logger.info(`Authorized clusters: ${authorizedClusterIds.join(', ')}`);
-  logger.info(
-    `Authorized cluster-projects: ${authorizedClusterProjects
-      .map(cp => `${cp.cluster}.${cp.project}`)
-      .join(', ')}`,
-  );
 
   // Combine cluster names from both cluster-level and project-level permissions
   const finalAuthorizedClusterNames = [
