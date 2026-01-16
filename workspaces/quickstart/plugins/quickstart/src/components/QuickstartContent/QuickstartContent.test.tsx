@@ -117,10 +117,10 @@ describe('QuickstartContent', () => {
     );
 
     const expandIcon1 = screen.getAllByRole('button', {
-      name: /expand item/i,
+      name: /expand.*details/i,
     })[0];
     const expandIcon2 = screen.getAllByRole('button', {
-      name: /expand item/i,
+      name: /expand.*details/i,
     })[1];
 
     fireEvent.click(expandIcon1);
