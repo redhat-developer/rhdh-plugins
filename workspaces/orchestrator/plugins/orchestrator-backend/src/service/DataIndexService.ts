@@ -307,6 +307,7 @@ export class DataIndexService {
     });
 
     this.logger.debug(`GraphQL query: ${graphQlQuery}`);
+    console.log(`GraphQL query: ${graphQlQuery}`);
 
     const result = await this.client.query<{
       ProcessInstances: ProcessInstance[];
