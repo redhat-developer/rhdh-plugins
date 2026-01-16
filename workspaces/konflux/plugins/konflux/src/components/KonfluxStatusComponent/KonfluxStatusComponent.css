@@ -1,0 +1,23 @@
+.status-success {
+  background-color: var(
+    --pf-t--global--color--nonstatus--green--default
+  ) !important;
+}
+
+.status-warning {
+  background-color: var(
+    --pf-t--global--color--nonstatus--yellow--default
+  ) !important;
+}
+
+.status-error {
+  background-color: var(
+    --pf-t--global--color--nonstatus--red--default
+  ) !important;
+}
+
+.status-unknown {
+  background-color: var(
+    --pf-t--global--background--color--disabled--default
+  ) !important;
+}
