@@ -268,10 +268,6 @@ function initPublicServices(
   );
   workflowCacheService.schedule({ scheduler: scheduler });
 
-  // All the workflow logging related stuff should be moved to their respective backend module
-  // Probablt define that WorkflowLoggerService Class/type in the common or perhaps that -node package
-  // Get the orchestrator logging config
-  // Create that workflow logging class/interface instance here
   const isWorkflowLogProviderAdded = config.getOptional(
     'orchestrator.workflowLogProvider',
   );
