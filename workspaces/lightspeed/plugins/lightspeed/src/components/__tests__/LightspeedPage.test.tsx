@@ -34,6 +34,13 @@ jest.mock('@backstage/plugin-permission-react', () => ({
   RequirePermission: jest.fn(),
 }));
 
+jest.mock('../../hooks/useLightspeedDrawerContext', () => ({
+  useLightspeedDrawerContext: () => ({
+    draftFileContents: [],
+    setDraftFileContents: jest.fn(),
+  }),
+}));
+
 const identityApi = {
   async getCredentials() {
     return { token: 'test-token' };
