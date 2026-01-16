@@ -85,8 +85,8 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-jira-homepage-section',
-      title: 'Scorecard Jira homepage section',
+      id: 'scorecard-jira.open_issues',
+      title: 'Scorecard: Jira open blocking tickets',
       // Supported card layout
       cardLayout: {
         width: {
@@ -117,8 +117,8 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github-homepage-section',
-      title: 'Scorecard GitHub homepage section',
+      id: 'scorecard-github.open_prs',
+      title: 'Scorecard: GitHub open PRs',
       // Supported card layout
       cardLayout: {
         width: {
@@ -143,6 +143,114 @@ const mountPoints: HomePageCardMountPoint[] = [
       },
       props: {
         metricId: 'github.open_prs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-customizable',
+      title: 'Scorecard: Customizable',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6, x: 8 },
+        lg: { w: 4, h: 6, x: 8 },
+        md: { w: 4, h: 6, x: 8 },
+        sm: { w: 4, h: 6, x: 8 },
+        xs: { w: 4, h: 6, x: 8 },
+        xxs: { w: 4, h: 6, x: 8 },
+      },
+      settings: {
+        schema: {
+          properties: {
+            metricId: {
+              title: 'Metric (Needs currently a page reload after change!)',
+              type: 'string',
+              default: 'jira.open_issues',
+              enum: ['jira.open_issues', 'github.open_prs'],
+            },
+          },
+        },
+        uiSchema: {
+          metricId: {
+            'ui:widget': 'RadioWidget',
+            'ui:enumNames': ['Jira Open Issues', 'GitHub Open PRs'],
+          },
+        },
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-no-metric-id',
+      title: 'Scorecard: No metric id (expected error)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-invalid-metric-id',
+      title: 'Scorecard: Invalid metric id (expected error)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        metricId: 'invalid-metric-id',
       },
     },
   },
