@@ -1,5 +1,24 @@
 ### Dependencies
 
+## 5.4.0
+
+### Minor Changes
+
+- 3e2c3f7: Adding Workflow Logs endpoint. Loki provider added
+
+### Patch Changes
+
+- f74564d: Added 'ja' i18n support and updated 'fr' and 'it' translation strings.
+- f1b43c5: Add conditional View Logs button based on workflowLogProvider configuration
+  - Add `useLogsEnabled` hook to check if `orchestrator.workflowLogProvider` is configured
+  - Conditionally render View Logs button in WorkflowResult component based on config
+
+- Updated dependencies [3e2c3f7]
+- Updated dependencies [f1b43c5]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.1
+
 ## 5.3.1
 
 ### Patch Changes
