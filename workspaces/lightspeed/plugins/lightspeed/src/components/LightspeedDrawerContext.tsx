@@ -18,6 +18,8 @@ import { createContext } from 'react';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
+import { FileContent } from '../types';
+
 /**
  * Type for LightspeedDrawerContext
  *
@@ -66,6 +68,15 @@ export interface LightspeedDrawerContextType {
    * To save the input message as a draft when switching modes
    */
   setDraftMessage: (message: string) => void;
+  /**
+   * The file attachments in the chat input
+   * Used to preserve file attachments when switching between display modes
+   */
+  draftFileContents: FileContent[];
+  /**
+   * To save file attachments as a draft when switching modes
+   */
+  setDraftFileContents: (files: FileContent[]) => void;
 }
 
 /**

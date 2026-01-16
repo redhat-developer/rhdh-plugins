@@ -27,6 +27,7 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
 
+import { FileContent } from '../types';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 
@@ -61,6 +62,9 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
     string | undefined
   >(undefined);
   const [draftMessage, setDraftMessageState] = useState<string>('');
+  const [draftFileContents, setDraftFileContentsState] = useState<
+    FileContent[]
+  >([]);
   const openedViaFABRef = useRef<boolean>(false);
 
   const isLightspeedRoute = location.pathname.startsWith('/lightspeed');
@@ -152,6 +156,10 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
     setDraftMessageState(message);
   }, []);
 
+  const setDraftFileContents = useCallback((files: FileContent[]) => {
+    setDraftFileContentsState(files);
+  }, []);
+
   // Set display mode with route handling for embedded/fullscreen
   const setDisplayMode = useCallback(
     (mode: ChatbotDisplayMode, conversationIdParam?: string) => {
@@ -205,6 +213,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       setCurrentConversationId,
       draftMessage,
       setDraftMessage,
+      draftFileContents,
+      setDraftFileContents,
     }),
     [
       isOpen,
@@ -217,6 +227,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       setCurrentConversationId,
       draftMessage,
       setDraftMessage,
+      draftFileContents,
+      setDraftFileContents,
     ],
   );
 
