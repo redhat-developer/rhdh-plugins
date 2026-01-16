@@ -32,6 +32,8 @@ describe('useLightspeedDrawerContext', () => {
     setCurrentConversationId: jest.fn(),
     draftMessage: '',
     setDraftMessage: jest.fn(),
+    draftFileContents: [],
+    setDraftFileContents: jest.fn(),
   };
 
   it('should return context value when used within provider', () => {
