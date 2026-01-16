@@ -87,6 +87,20 @@ const mountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'scorecard-jira-homepage-section',
       title: 'Scorecard Jira homepage section',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
       layouts: {
         xl: { w: 4, h: 6 },
         lg: { w: 4, h: 6 },
@@ -105,6 +119,20 @@ const mountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'scorecard-github-homepage-section',
       title: 'Scorecard GitHub homepage section',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
       layouts: {
         xl: { w: 4, h: 6, x: 4 },
         lg: { w: 4, h: 6, x: 4 },
