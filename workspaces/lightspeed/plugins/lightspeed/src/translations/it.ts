@@ -208,6 +208,9 @@ const lightspeedTranslationIt = createTranslationMessages({
     'sort.oldest': 'Data (meno recente prima)',
     'sort.alphabeticalAsc': 'Nome (A-Z)',
     'sort.alphabeticalDesc': 'Nome (Z-A)',
+
+    // Deep thinking
+    'reasoning.thinking': 'Mostra ragionamento',
   },
 });
 

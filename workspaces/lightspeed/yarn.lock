@@ -8608,9 +8608,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@patternfly/chatbot@npm:6.5.0-prerelease.28":
-  version: 6.5.0-prerelease.28
-  resolution: "@patternfly/chatbot@npm:6.5.0-prerelease.28"
+"@patternfly/chatbot@npm:6.5.0":
+  version: 6.5.0
+  resolution: "@patternfly/chatbot@npm:6.5.0"
   dependencies:
     "@patternfly/react-code-editor": ^6.1.0
     "@patternfly/react-core": ^6.1.0
@@ -8638,7 +8638,7 @@ __metadata:
       optional: false
     monaco-editor:
       optional: false
-  checksum: 7e3c3ac13fc2a459ec93d45d448808debe3ac90879ffe889d417042fb880cf4151946dd12682441e9be1811f32c5de44705a275f711c2323c69c9fcf892391f9
+  checksum: fffce2a61555666c6b04361507bfb0dce9788a69627d22d1609cc971b76beb85275e526908b4722b47837925d0f2d3205d14b412c5a3832825749b27e2361390
   languageName: node
   linkType: hard
 
@@ -11122,7 +11122,7 @@ __metadata:
     "@mui/icons-material": ^6.1.8
     "@mui/material": ^5.12.2
     "@mui/styles": 5.18.0
-    "@patternfly/chatbot": 6.5.0-prerelease.28
+    "@patternfly/chatbot": 6.5.0
     "@patternfly/react-core": 6.4.0
     "@patternfly/react-icons": ^6.3.1
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^"

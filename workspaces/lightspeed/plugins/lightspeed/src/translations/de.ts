@@ -255,6 +255,9 @@ const lightspeedTranslationDe = createTranslationMessages({
     'sort.oldest': 'Datum (älteste zuerst)',
     'sort.alphabeticalAsc': 'Name (A-Z)',
     'sort.alphabeticalDesc': 'Name (Z-A)',
+
+    // Deep thinking
+    'reasoning.thinking': 'Denkvorgang anzeigen',
   },
 });
 
