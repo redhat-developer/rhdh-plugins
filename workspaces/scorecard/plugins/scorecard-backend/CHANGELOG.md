@@ -1,5 +1,56 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.3.0
+
+### Minor Changes
+
+- 23e21ad: Added `metricIds` query parameter to the `/metrics` endpoint to filter metrics by metric IDs.
+
+  Scorecard read permission are no longer needed to get available metrics for the `/metrics` endpoint.
+
+- 4e360d5: Implemented endpoint to aggregate metrics for scorecard metrics
+
+  **BREAKING** Update attribute `value` in the `MetricResult` type and update validation to support `null` instead `undefined` for the updated attribute
+
+  ```diff
+  export type MetricResult = {
+    id: string;
+    status: 'success' | 'error';
+    metadata: {
+      title: string;
+      description: string;
+      type: MetricType;
+      history?: boolean;
+    };
+    result: {
+  -    value?: MetricValue;
+  +    value: MetricValue | null;
+      timestamp: string;
+      thresholdResult: ThresholdResult;
+    };
+    error?: string;
+  };
+  ```
+
+  **BREAKING** Update attribute `evaluation` in the `ThresholdResult` type and update validation to support `null` instead `undefined` for the updated attribute
+
+  ```diff
+  export type ThresholdResult = {
+     status: 'success' | 'error';
+  -  definition: ThresholdConfig | undefined;
+  +  definition: ThresholdConfig | null;
+     evaluation: string | undefined; // threshold key the expression evaluated to
+     error?: string;
+  };
+  ```
+
+### Patch Changes
+
+- Updated dependencies [52b60ee]
+- Updated dependencies [4e360d5]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.0
+
 ## 2.2.0
 
 ### Minor Changes
