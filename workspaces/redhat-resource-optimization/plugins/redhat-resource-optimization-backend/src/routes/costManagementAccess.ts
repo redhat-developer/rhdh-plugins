@@ -84,8 +84,8 @@ export const getCostManagementAccess: (
 
       // Fetch clusters and projects in parallel for better performance
       const [clustersResponse, projectsResponse] = await Promise.all([
-        costManagementApi.searchOpenShiftClusters('', { token }),
-        costManagementApi.searchOpenShiftProjects('', { token }),
+        costManagementApi.searchOpenShiftClusters('', { token, limit: 1000 }),
+        costManagementApi.searchOpenShiftProjects('', { token, limit: 1000 }),
       ]);
 
       const clustersData = await clustersResponse.json();
