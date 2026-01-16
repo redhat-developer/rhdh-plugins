@@ -89,6 +89,10 @@ export const FloatingButton = ({
       <FABWithSubmenu className={fabButton[slot]} fabs={fabs} slot={slot} />
     );
   } else {
+    const singleFab = fabs[0];
+    const FabComponent = singleFab.Component;
+
+    // If a custom FAB component is provided, render it instead of CustomFab
     fabDiv = (
       <div
         style={{
@@ -100,10 +104,14 @@ export const FloatingButton = ({
         id="floating-button"
         data-testid="floating-button"
       >
-        <CustomFab
-          actionButton={{ color: 'info', iconColor: 'white', ...fabs[0] }}
-          t={t}
-        />
+        {FabComponent ? (
+          <FabComponent slot={slot} config={singleFab} />
+        ) : (
+          <CustomFab
+            actionButton={{ color: 'info', iconColor: 'white', ...singleFab }}
+            t={t}
+          />
+        )}
       </div>
     );
   }

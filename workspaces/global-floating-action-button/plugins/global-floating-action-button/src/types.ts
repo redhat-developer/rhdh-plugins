@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { ComponentType } from 'react';
+
 /**
  * Slot
  *
@@ -56,9 +58,26 @@ export type FloatingActionButton = {
   to?: string;
   toolTip?: string;
   toolTipKey?: string;
+  /**
+   * Priority for ordering buttons (lower number = higher priority)
+   * The FAB action with the lowest priority will be displayed on top of other FAB actions in the sub-menu
+   */
   priority?: number;
   visibleOnPaths?: string[];
   excludeOnPaths?: string[];
+  /**
+   * Whether the FAB is disabled
+   */
+  isDisabled?: boolean;
+  /**
+   * Tooltip to display when the FAB is disabled
+   */
+  disabledToolTip?: string;
+  disabledToolTipKey?: string;
+  /**
+   * Custom FAB component
+   */
+  Component?: ComponentType<any>;
 };
 
 /**

@@ -6,6 +6,7 @@
 /// <reference types="react" />
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { ComponentType } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
 import { TranslationResource } from '@backstage/core-plugin-api/alpha';
@@ -50,6 +51,10 @@ export type FloatingActionButton = {
   priority?: number;
   visibleOnPaths?: string[];
   excludeOnPaths?: string[];
+  isDisabled?: boolean;
+  disabledToolTip?: string;
+  disabledToolTipKey?: string;
+  Component?: ComponentType<any>;
 };
 
 // @public
