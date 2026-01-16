@@ -72,26 +72,50 @@ const mountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'onboarding-section',
       title: 'Onboarding section',
+      layouts: {
+        xl: { w: 12, h: 5 },
+        lg: { w: 12, h: 5 },
+        md: { w: 12, h: 5 },
+        sm: { w: 12, h: 5 },
+        xs: { w: 12, h: 5 },
+        xxs: { w: 12, h: 5 },
+      },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-jira-homepage-section',
+      title: 'Scorecard Jira homepage section',
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
       props: {
         metricId: 'jira.open_issues',
       },
-      title: 'Scorecard Jira homepage section',
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-github-homepage-section',
+      title: 'Scorecard GitHub homepage section',
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
       props: {
         metricId: 'github.open_prs',
       },
-      title: 'Scorecard GitHub homepage section',
     },
   },
 ];
