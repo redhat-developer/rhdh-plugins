@@ -77,6 +77,11 @@ import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
 import { InfoDialog } from '../ui/InfoDialog';
+import {
+  extractRequiredPermission,
+  isAccessDeniedError,
+  PermissionDeniedPanel,
+} from '../ui/PermissionDeniedPanel';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({
@@ -394,10 +399,31 @@ export const WorkflowInstancePage = () => {
     processName: value?.processName ?? '',
   });
 
+  // Check if this is a permission/access denied error
+  const isPermissionError = isAccessDeniedError(combinedError);
+  const requiredPermission = extractRequiredPermission(combinedError);
+
+  // Render permission denied panel or regular error panel
+  const renderError = () => {
+    if (!combinedError) return null;
+
+    if (isPermissionError) {
+      return (
+        <PermissionDeniedPanel
+          description={combinedError.message}
+          requiredPermission={requiredPermission}
+          onGoBack={() => navigate('/orchestrator')}
+        />
+      );
+    }
+
+    return <ResponseErrorPanel error={combinedError} />;
+  };
+
   return (
     <BaseOrchestratorPage title={title}>
       {loading ? <Progress /> : null}
-      {combinedError ? <ResponseErrorPanel error={combinedError} /> : null}
+      {renderError()}
       {!loading && isNonNullable(value) ? (
         <>
           <ContentHeader title="">

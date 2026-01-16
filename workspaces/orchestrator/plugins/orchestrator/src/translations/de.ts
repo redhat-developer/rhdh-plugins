@@ -78,6 +78,10 @@ const orchestratorTranslationDe = createTranslationMessages({
       'Details für die Workflow-ID {{id}} konnten nicht geladen werden.',
     'workflow.messages.areYouSureYouWantToRunThisWorkflow':
       'Sind Sie sicher, dass Sie diesen Workflow ausführen möchten?',
+    'workflow.messages.userNotAuthorizedExecute':
+      'Benutzer nicht berechtigt, den Workflow auszuführen.',
+    'workflow.messages.workflowDown':
+      'Der Workflow ist derzeit nicht verfügbar oder befindet sich in einem Fehlerzustand. Eine Ausführung kann fehlschlagen oder zu unerwarteten Ergebnissen führen.',
     'workflow.buttons.run': 'Ausführen',
     'workflow.buttons.runWorkflow': 'Workflow ausführen',
     'workflow.buttons.runAgain': 'Erneut ausführen',
@@ -102,6 +106,7 @@ const orchestratorTranslationDe = createTranslationMessages({
       'Es ist nicht möglich, die Ausführung abzubrechen, da sie bereits abgeschlossen wurde.',
     'run.status.completed': 'Ausführung abgeschlossen',
     'run.status.failed': 'Ausführung fehlgeschlagen {{time}}',
+    'run.status.failedAt': 'Ausführung fehlgeschlagen {{time}}',
     'run.status.aborted': 'Ausführung abgebrochen',
     'run.status.completedWithMessage':
       'Ausführung abgeschlossen {{time}} mit Nachricht',
@@ -155,6 +160,17 @@ const orchestratorTranslationDe = createTranslationMessages({
     'common.run': 'Ausführen',
     'common.next': 'Weiter',
     'common.review': 'Überprüfen',
+    'common.goBack': 'Zurück',
+    'permissions.accessDenied': 'Zugriff verweigert',
+    'permissions.accessDeniedDescription':
+      'Sie haben keine Berechtigung, diesen Workflow-Lauf anzuzeigen.',
+    'permissions.requiredPermission': 'Erforderliche Berechtigung',
+    'permissions.contactAdmin':
+      'Bitte kontaktieren Sie Ihren Administrator, um die erforderlichen Berechtigungen anzufordern.',
+    'permissions.missingOwnership':
+      'Für diesen Workflow-Lauf sind keine Eigentümerinformationen aufgezeichnet.',
+    'permissions.notYourRun':
+      'Dieser Workflow-Lauf wurde von einem anderen Benutzer initiiert.',
     'duration.aFewSeconds': 'ein paar Sekunden',
     'duration.aSecond': 'eine Sekunde',
     'duration.seconds': '{{count}} Sekunden',
