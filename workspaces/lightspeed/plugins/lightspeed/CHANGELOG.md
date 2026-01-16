@@ -1,5 +1,22 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.2.0
+
+### Minor Changes
+
+- bb8ef80: Added chatbot display modes (overlay, docked, fullscreen) with the ability to switch between modes via settings dropdown.
+- 275b45e: feat: add conversation sorting with persistence, persisting pinned chats and pinned chats toggle per-user
+
+### Patch Changes
+
+- 7f4be01: Fixed file attachments being lost when changing display mode (overlay, docked, window).
+- c5606c3: Refactor ToolCallContent component to use PatternFly components.
+- e16075b: show expandable card for deep thinking responses
+- fa48491: Added tool call support to display AI tool execution results
+- ea9109f: Fixes an issue where the Chat History Drawer was remaining collapsed when loading the Lightspeed page in fullscreen/embedded mode on desktop.
+- 1d656f2: Added a dark logo for light themes
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.0
+
 ## 1.1.2
 
 ### Patch Changes
