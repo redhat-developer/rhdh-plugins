@@ -147,6 +147,14 @@ catalog:
 dynamicPlugins:
   frontend: {}
 orchestrator:
+  # Uncomment and configure to use the log viewer
+  # workflowLogProvider:
+  #   loki:
+  #     baseUrl: http://localhost:3100
+  # Uncomment if using a custom log stream selector
+  # logStreamSelectors:
+  #   - label: 'selector'
+  #     value: 'value'
   sonataFlowService:
     # uncomment the next line to use podman instead of docker
     # runtime: podman

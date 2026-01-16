@@ -14,4 +14,22 @@
  * limitations under the License.
  */
 
-export { orchestratorPlugin as default } from './plugin';
+import { createExtensionPoint } from '@backstage/backend-plugin-api';
+import { WorkflowLogProvider } from './api';
+
+/**
+ * @public
+ */
+export interface WorkflowLogsExtensionPoint {
+  addWorkflowLogProvider(
+    ...workflowLogProviders: Array<WorkflowLogProvider>
+  ): void;
+}
+
+/**
+ * @public
+ */
+export const workflowLogsExtensionEndpoint =
+  createExtensionPoint<WorkflowLogsExtensionPoint>({
+    id: 'orchestrator.workflowlogs',
+  });

@@ -20,6 +20,12 @@ import {
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
 
+import {
+  WorkflowLogProvider,
+  workflowLogsExtensionEndpoint,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
+
+import { WorkflowLogsProvidersRegistry } from './providers/WorkflowLogsProvidersRegistry';
 import { createRouter } from './routerWrapper';
 
 /**
@@ -29,6 +35,17 @@ import { createRouter } from './routerWrapper';
 export const orchestratorPlugin = createBackendPlugin({
   pluginId: 'orchestrator',
   register(env) {
+    const workflowLogsProvidersRegistry = new WorkflowLogsProvidersRegistry();
+
+    env.registerExtensionPoint(workflowLogsExtensionEndpoint, {
+      addWorkflowLogProvider(
+        ...newWorkflowLogProviders: WorkflowLogProvider[]
+      ) {
+        newWorkflowLogProviders.forEach(workflowLogProvider => {
+          workflowLogsProvidersRegistry.register(workflowLogProvider);
+        });
+      },
+    });
     env.registerInit({
       deps: {
         logger: coreServices.logger,
@@ -45,7 +62,10 @@ export const orchestratorPlugin = createBackendPlugin({
       },
       async init(props) {
         const { http } = props;
-        const router = await createRouter(props);
+        const router = await createRouter({
+          ...props,
+          workflowLogsProvidersRegistry,
+        });
         http.use(router);
         http.addAuthPolicy({
           path: '/health',

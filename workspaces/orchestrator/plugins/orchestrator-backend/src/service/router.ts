@@ -54,6 +54,7 @@ import {
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { RouterOptions } from '../routerWrapper';
 import { buildPagination } from '../types/pagination';
 import { V2 } from './api/v2';
@@ -184,8 +185,14 @@ export async function createBackendRouter(
     permissions,
     httpAuth,
     userInfo,
+    workflowLogsProvidersRegistry,
   } = options;
-  const publicServices = initPublicServices(logger, config, scheduler);
+  const publicServices = initPublicServices(
+    logger,
+    config,
+    scheduler,
+    workflowLogsProvidersRegistry,
+  );
 
   const routerApi = await initRouterApi(publicServices.orchestratorService);
 
@@ -248,6 +255,7 @@ function initPublicServices(
   logger: LoggerService,
   config: Config,
   scheduler: SchedulerService,
+  workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry,
 ): PublicServices {
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
   const dataIndexService = new DataIndexService(dataIndexUrl, logger);
@@ -260,10 +268,19 @@ function initPublicServices(
   );
   workflowCacheService.schedule({ scheduler: scheduler });
 
+  const isWorkflowLogProviderAdded = config.getOptional(
+    'orchestrator.workflowLogProvider',
+  );
+  let workflowLogProvider;
+  if (isWorkflowLogProviderAdded) {
+    workflowLogProvider = workflowLogsProvidersRegistry.getProvider('loki');
+  }
+
   const orchestratorService = new OrchestratorService(
     sonataFlowService,
     dataIndexService,
     workflowCacheService,
+    workflowLogProvider,
   );
 
   const dataInputSchemaService = new DataInputSchemaService();
@@ -937,6 +954,76 @@ function setupInternalRoutes(
 
         auditEvent.success();
         res.status(200).json(instance);
+      } catch (error) {
+        auditEvent.fail({ error });
+        next(error);
+      }
+    },
+  );
+
+  // v2
+  routerApi.openApiBackend.register(
+    'getWorkflowLogById',
+    async (c, request: express.Request, res: express.Response, next) => {
+      const instanceId = c.request.params.instanceId as string;
+      // will probably have to get the raw log at some point
+      // const rawLog = c.request.query.instanceId as Boolean;
+
+      const auditEvent = await auditor.createEvent({
+        eventId: 'get-logs-by-instance',
+        request,
+        meta: {
+          actionType: 'by-id',
+          instanceId,
+        },
+      });
+
+      try {
+        // Check that a log provider has been setup
+        if (!services.orchestratorService.hasLogProvider()) {
+          throw new Error(`No log provider setup`);
+        }
+        const instance = await routerApi.v2.getInstanceById(instanceId);
+        const workflowId = instance.processId;
+
+        const decision = await authorize(
+          request,
+          [
+            orchestratorWorkflowPermission,
+            orchestratorWorkflowSpecificPermission(workflowId),
+          ],
+          permissions,
+          httpAuth,
+        );
+        if (decision.result === AuthorizeResult.DENY) {
+          manageDenyAuthorization(auditEvent);
+        }
+
+        const credentials = await httpAuth.credentials(request);
+        const initiatorEntity = (await userInfo.getUserInfo(credentials))
+          .userEntityRef;
+        // Check if user is authorized to view all instances
+        const isUserAuthorizedForInstanceAdminView =
+          await isUserAuthorizedForInstanceAdminViewPermission(
+            request,
+            permissions,
+            httpAuth,
+          );
+
+        // If not an admin, enforce initiatorEntity check
+        if (!isUserAuthorizedForInstanceAdminView) {
+          const instanceInitiatorEntity = instance.initiatorEntity;
+          if (instanceInitiatorEntity !== initiatorEntity) {
+            throw new Error(
+              `Unauthorized to access instance ${instanceId} not initiated by user.`,
+            );
+          }
+        }
+
+        const logs = await routerApi.v2.getInstanceLogsByInstance(instance);
+
+        auditEvent.success();
+        res.status(200).json(logs);
       } catch (error) {
         auditEvent.fail({ error });
         next(error);

@@ -27,6 +27,7 @@ import {
   RetriggerInstanceRequestDTO,
   WorkflowDTO,
   WorkflowInfo,
+  WorkflowLogsResponse,
   WorkflowOverviewDTO,
   WorkflowOverviewListResultDTO,
   WorkflowRunStatusDTO,
@@ -178,6 +179,15 @@ export class V2 {
     }
 
     return mapToProcessInstanceDTO(instance);
+  }
+
+  public async getInstanceLogsByInstance(
+    instance: ProcessInstanceDTO,
+  ): Promise<WorkflowLogsResponse> {
+    const logs = await this.orchestratorService.fetchWorkflowLogsByInstance({
+      instance,
+    });
+    return logs;
   }
 
   public async executeWorkflow(

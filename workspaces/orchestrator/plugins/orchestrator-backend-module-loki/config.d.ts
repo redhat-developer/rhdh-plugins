@@ -14,4 +14,24 @@
  * limitations under the License.
  */
 
-export { orchestratorPlugin as default } from './plugin';
+export interface Config {
+  /**
+   * Configuration for the Orchestrator plugin.
+   */
+  orchestrator?: {
+    workflowLogProvider?: {
+      loki?: {
+        /**
+         * Base URL of the Loki service.
+         */
+        baseUrl: string;
+        logStreamSelectors?: Array<{
+          // label is the selector, something like 'app' or 'service_name', etc...
+          label: string;
+          // value is the label matching operator, so something like: '=~".+"'
+          value: string;
+        }>;
+      };
+    };
+  };
+}

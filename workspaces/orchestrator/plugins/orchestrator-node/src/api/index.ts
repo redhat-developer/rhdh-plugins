@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export { orchestratorPlugin as default } from './plugin';
+export type { WorkflowLogProvider } from './WorkflowLogProvider';

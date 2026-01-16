@@ -29,6 +29,7 @@ import type { Config } from '@backstage/config';
 
 import express from 'express';
 
+import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { DevModeService } from '../service/DevModeService';
 import { createBackendRouter } from '../service/router';
 
@@ -43,6 +44,7 @@ export interface RouterOptions {
   permissions: PermissionsService;
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
+  workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry;
 }
 
 export async function createRouter(
@@ -74,5 +76,6 @@ export async function createRouter(
     permissions: args.permissions,
     httpAuth: args.httpAuth,
     userInfo: args.userInfo,
+    workflowLogsProvidersRegistry: args.workflowLogsProvidersRegistry,
   });
 }

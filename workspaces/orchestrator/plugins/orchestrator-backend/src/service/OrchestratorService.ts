@@ -18,12 +18,15 @@ import {
   AuthToken,
   Filter,
   ProcessInstance,
+  ProcessInstanceDTO,
   ProcessInstanceVariables,
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowInfo,
+  WorkflowLogsResponse,
   WorkflowOverview,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
@@ -35,6 +38,7 @@ export class OrchestratorService {
     private readonly sonataFlowService: SonataFlowService,
     private readonly dataIndexService: DataIndexService,
     private readonly workflowCacheService: WorkflowCacheService,
+    private readonly workflowLogProvider?: WorkflowLogProvider,
   ) {}
 
   // Data Index Service Wrapper
@@ -169,6 +173,21 @@ export class OrchestratorService {
       await this.sonataFlowService.fetchWorkflowOverview(definitionId);
     if (overview) overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
     return overview;
+  }
+
+  public async fetchWorkflowLogsByInstance(args: {
+    instance: ProcessInstanceDTO;
+  }): Promise<WorkflowLogsResponse> {
+    return this.workflowLogProvider?.fetchWorkflowLogsByInstance(
+      args.instance,
+    ) as WorkflowLogsResponse;
+  }
+
+  public hasLogProvider(): boolean {
+    if (this.workflowLogProvider) {
+      return true;
+    }
+    return false;
   }
 
   public async pingWorkflowService(args: {
