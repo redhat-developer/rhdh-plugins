@@ -6,14 +6,8 @@
 
 import { BackendFeature } from '@backstage/backend-plugin-api';
 
-// Warning: (ae-missing-release-tag) "orchestratorModuleLoki" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 const orchestratorModuleLoki: BackendFeature;
 export default orchestratorModuleLoki;
-
-// Warnings were encountered during analysis:
-//
-// src/module.d.ts:1:22 - (ae-undocumented) Missing documentation for "orchestratorModuleLoki".
 
 ```
