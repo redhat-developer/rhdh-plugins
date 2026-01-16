@@ -67,7 +67,10 @@ export const QuickstartItem = ({
   }, [stepCompleted, setProgress]);
 
   return (
-    <Box sx={{ marginBottom: theme => `${theme.spacing(0.2)}` }}>
+    <Box
+      component="li"
+      sx={{ marginBottom: theme => `${theme.spacing(0.2)}`, listStyle: 'none' }}
+    >
       <ListItem
         key={itemKey}
         onClick={handleOpen}
@@ -122,11 +125,8 @@ export const QuickstartItem = ({
           }}
         />
         <IconButton
-          aria-label={
-            open
-              ? t('item.collapseButtonAriaLabel')
-              : t('item.expandButtonAriaLabel')
-          }
+          aria-hidden="true"
+          tabIndex={-1}
           sx={{
             ...(open
               ? { color: theme => theme.palette.text.primary }

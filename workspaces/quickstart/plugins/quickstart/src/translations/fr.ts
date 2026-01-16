@@ -66,6 +66,7 @@ const quickstartTranslationFr = createTranslationMessages({
     'footer.progress': '{{progress}}% de progrès',
     'footer.notStarted': 'Non démarré',
     'footer.hide': 'Cacher',
+    'footer.progressBarLabel': 'Progression du démarrage rapide',
     'content.emptyState.title':
       "Le contenu de démarrage rapide n'est pas disponible pour votre rôle.",
     'item.expandAriaLabel': 'Développer les détails de {{title}}',

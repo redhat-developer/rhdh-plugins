@@ -61,6 +61,7 @@ const quickstartTranslationDe = createTranslationMessages({
     'footer.progress': '{{progress}}% Fortschritt',
     'footer.notStarted': 'Nicht begonnen',
     'footer.hide': 'Ausblenden',
+    'footer.progressBarLabel': 'Schnellstart-Fortschritt',
     'content.emptyState.title':
       'Schnellstart-Inhalte sind für Ihre Rolle nicht verfügbar.',
     'item.expandAriaLabel': '{{title}} Details erweitern',

@@ -33,7 +33,11 @@ export const QuickstartFooter = ({
 
   return (
     <Box>
-      <LinearProgress variant="determinate" value={progress} />
+      <LinearProgress
+        variant="determinate"
+        value={progress}
+        aria-label={t('footer.progressBarLabel')}
+      />
       <Box
         sx={{
           display: 'flex',
