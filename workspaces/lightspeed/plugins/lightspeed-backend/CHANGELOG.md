@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.2.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes
