@@ -19,7 +19,12 @@ import {
 } from '@backstage/backend-plugin-api';
 import { workflowLogsExtensionEndpoint } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 import { LokiProvider } from './workflowLogsProviders/LokiProvider';
+/**
 
+ * Provides access to the Loki log provider for viewing Orchestrator workflow logs
+ *
+ * @public
+ */
 export const orchestratorModuleLoki = createBackendModule({
   pluginId: 'orchestrator',
   moduleId: 'loki',
