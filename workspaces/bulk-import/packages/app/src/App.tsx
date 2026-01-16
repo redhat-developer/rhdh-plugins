@@ -145,8 +145,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/bulk-import" element={<Navigate to="repositories" />} />
-    <Route path="/bulk-import/repositories" element={<BulkImportPage />} />
+    <Route path="/bulk-import/*" element={<BulkImportPage />} />
     <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/orchestrator" element={<OrchestratorPage />} />
     <Route path="/rbac" element={<RbacPage />} />
