@@ -12,9 +12,7 @@ In `packages/backend/src/index.ts`:
 
 ```ts
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator'),
 );
 ```
 

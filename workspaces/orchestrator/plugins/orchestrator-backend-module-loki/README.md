@@ -43,9 +43,7 @@ backend.add(
 );
 // orchestrator Log Provider
 backend.add(
-  import(
-    '@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki'
-  ),
+  import('@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki'),
 );
 
 backend.start();
