@@ -26,17 +26,7 @@ import { EmptyStatePanel } from './EmptyStatePanel';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
 
-/**
- * Props for the ScorecardHomepageCard component.
- * @public
- */
-export interface ScorecardHomepageCardProps {
-  metricId: string;
-}
-
-export const ScorecardHomepageCard = ({
-  metricId,
-}: ScorecardHomepageCardProps) => {
+export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   const { t } = useTranslation();
 
   const { aggregatedScorecard, loadingData, error } = useAggregatedScorecard({
