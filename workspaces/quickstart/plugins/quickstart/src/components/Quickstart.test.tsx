@@ -103,7 +103,7 @@ describe('Quickstart', () => {
 
       // Complete first admin item
       const expandButtons = screen.getAllByRole('button', {
-        name: /expand item/i,
+        name: /expand.*details/i,
       });
       fireEvent.click(expandButtons[0]);
 
@@ -131,7 +131,7 @@ describe('Quickstart', () => {
 
       // Complete first developer item
       const expandButtons = screen.getAllByRole('button', {
-        name: /expand item/i,
+        name: /expand.*details/i,
       });
       fireEvent.click(expandButtons[0]);
 

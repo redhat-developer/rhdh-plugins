@@ -68,6 +68,7 @@ const quickstartTranslationIt = createTranslationMessages({
     'footer.progress': '{{progress}}% di avanzamento',
     'footer.notStarted': 'Non iniziato',
     'footer.hide': 'Nascondi',
+    'footer.progressBarLabel': "Avanzamento dell'avvio rapido",
     'content.emptyState.title':
       'Contenuto di avvio rapido non disponibile per il ruolo utente.',
     'item.expandAriaLabel': 'Espandi i dettagli di {{title}}',
