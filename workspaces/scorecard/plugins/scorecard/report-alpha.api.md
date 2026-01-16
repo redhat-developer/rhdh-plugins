@@ -10,13 +10,13 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
   {
+    readonly 'emptyState.button': string;
     readonly 'emptyState.title': string;
     readonly 'emptyState.description': string;
-    readonly 'emptyState.button': string;
     readonly 'emptyState.altText': string;
+    readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.title': string;
     readonly 'permissionRequired.description': string;
-    readonly 'permissionRequired.button': string;
     readonly 'permissionRequired.altText': string;
     readonly 'errors.entityMissingProperties': string;
     readonly 'errors.invalidApiResponse': string;
@@ -31,8 +31,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.jira.open_issues.title': string;
     readonly 'metric.jira.open_issues.description': string;
     readonly 'thresholds.success': string;
-    readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;
+    readonly 'thresholds.warning': string;
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;

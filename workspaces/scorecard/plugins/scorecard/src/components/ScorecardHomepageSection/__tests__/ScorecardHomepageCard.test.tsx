@@ -79,8 +79,20 @@ jest.mock('../CustomTooltip', () => ({
 
 jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
-    t: (_key: string, { count }: { count?: number } = {}) =>
-      count !== undefined ? `${count} entities` : _key,
+    t: (key: string, options?: any) => {
+      switch (key) {
+        case 'thresholds.entities':
+          return `${options?.count} entities`;
+        case 'thresholds.noEntities':
+          return `No entities in ${options?.category} state`;
+        case 'thresholds.Test':
+          return 'Test';
+        case 'errors.missingPermissionMessage':
+          return 'Missing permission';
+        default:
+          return key;
+      }
+    },
   }),
 }));
 
