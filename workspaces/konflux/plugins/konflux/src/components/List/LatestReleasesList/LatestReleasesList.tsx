@@ -19,24 +19,29 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { useKonfluxConfig } from '../../../hooks/useKonfluxConfig';
 
 import { useEntitySubcomponents } from '../../../hooks/useEntitySubcomponents';
-import { useDeepCompareMemoize } from '@janus-idp/shared-react';
-
 import { useMemo } from 'react';
 import {
   parseSubcomponentClusterConfigurations,
   ReleaseResource,
+  SubcomponentClusterConfig,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { useReleases } from '../../../hooks/resources/useReleases';
 import { InfoCard, ResponseErrorPanel } from '@backstage/core-components';
 import { getLatestRelease } from './utils';
 import { LatestReleaseItemRow } from './LatestReleaseItemRow';
-import { Entity } from '@backstage/catalog-model';
 import { ResourceListContent } from '../../ResourceListContent/ResourceListContent';
+import { Entity } from '@backstage/catalog-model';
 
 type LatestReleaseItemRowWithPropsProps = ReleaseResource & {
   itemKey: string;
   hasSubcomponents: boolean;
   entity: Entity;
+};
+
+type UniqueCombination = {
+  subcomponent: string;
+  cluster: string;
+  namespace: string;
 };
 
 const LatestReleaseItemRowWithProps = (
@@ -62,47 +67,43 @@ export const LatestReleasesList = () => {
     useEntitySubcomponents(entity);
   const hasSubcomponents = (subcomponentEntities?.length || 0) > 1;
 
-  const subcomponentConfigs = useDeepCompareMemoize(
-    parseSubcomponentClusterConfigurations(
-      konfluxConfig,
-      subcomponentNames?.length > 0
-        ? subcomponentNames
-        : [entity.metadata.name],
-    ),
+  const subcomponentConfigs = useMemo(
+    () =>
+      parseSubcomponentClusterConfigurations(
+        konfluxConfig,
+        subcomponentNames?.length > 0
+          ? subcomponentNames
+          : [entity.metadata.name],
+      ),
+    [entity.metadata.name, konfluxConfig, subcomponentNames],
   );
 
   // Get unique combinations (subcomponent + cluster + namespace)
-  const uniqueCombinations = useDeepCompareMemoize(
-    useMemo(() => {
-      const seen = new Set<string>();
-      const combinations: Array<{
-        subcomponent: string;
-        cluster: string;
-        namespace: string;
-      }> = [];
+  const uniqueCombinations = useMemo(() => {
+    const seen = new Set<string>();
+    const combinations: UniqueCombination[] = [];
 
-      subcomponentConfigs.forEach(config => {
-        const key = `${config.subcomponent}:${config.cluster}:${config.namespace}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          combinations.push({
-            subcomponent: config.subcomponent,
-            cluster: config.cluster,
-            namespace: config.namespace,
-          });
-        }
-      });
+    subcomponentConfigs.forEach((config: SubcomponentClusterConfig) => {
+      const key = `${config.subcomponent}:${config.cluster}:${config.namespace}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        combinations.push({
+          subcomponent: config.subcomponent,
+          cluster: config.cluster,
+          namespace: config.namespace,
+        });
+      }
+    });
 
-      return combinations;
-    }, [subcomponentConfigs]),
-  );
+    return combinations;
+  }, [subcomponentConfigs]);
 
   const filteredReleases = useMemo(() => {
     if (!releases) return [];
 
     const res: ReleaseResource[] = [];
 
-    uniqueCombinations?.forEach(combination => {
+    uniqueCombinations?.forEach((combination: UniqueCombination) => {
       const latestRelease = getLatestRelease(
         combination,
         subcomponentConfigs,
