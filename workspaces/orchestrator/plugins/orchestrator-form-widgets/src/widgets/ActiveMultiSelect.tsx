@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
+import {
+  KeyboardEvent,
+  SyntheticEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import clsx from 'clsx';
 import { makeStyles } from 'tss-react/mui';
 import { Theme } from '@mui/material/styles';
@@ -87,7 +93,7 @@ export const ActiveMultiSelect: Widget<
       ? undefined
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
-  const [inProgressItem, setInProgressItem] = useState<string | undefined>();
+  const [inProgressItem, setInProgressItem] = useState<string>('');
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
@@ -101,8 +107,8 @@ export const ActiveMultiSelect: Widget<
     let options = hasOptions ? baseOptions : (staticDefaultValues ?? []);
 
     // Add in-progress item if allowed
-    if (allowNewItems && inProgressItem) {
-      options = [...new Set([inProgressItem, ...options])];
+    if (allowNewItems && inProgressItem.trim()) {
+      options = [...new Set([inProgressItem.trim(), ...options])];
     }
 
     // Also include current values so they appear as options
@@ -227,8 +233,23 @@ export const ActiveMultiSelect: Widget<
     if (setIsChangedByUser) {
       setIsChangedByUser(id, true);
     }
-    setInProgressItem(undefined);
+    setInProgressItem('');
     onChange(changed);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (allowNewItems && event.key === 'Enter' && inProgressItem.trim()) {
+      event.preventDefault();
+      event.stopPropagation();
+      const newValue = inProgressItem.trim();
+      if (!value.includes(newValue)) {
+        if (setIsChangedByUser) {
+          setIsChangedByUser(id, true);
+        }
+        onChange([...value, newValue]);
+      }
+      setInProgressItem('');
+    }
   };
 
   if (localError ?? error) {
@@ -251,11 +272,21 @@ export const ActiveMultiSelect: Widget<
         <FormControl variant="outlined" fullWidth>
           <Autocomplete
             multiple
+            freeSolo={allowNewItems}
             data-testid={`${id}-autocomplete`}
             disabled={isReadOnly}
             options={allOptions}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}
+            inputValue={inProgressItem}
+            onInputChange={(_, newInputValue, reason) => {
+              // Only update input value for user input, not when selecting/clearing
+              if (reason === 'input') {
+                setInProgressItem(newInputValue);
+              } else if (reason === 'clear') {
+                setInProgressItem('');
+              }
+            }}
             filterSelectedOptions
             onChange={handleChange}
             renderOption={(liProps, item) => {
@@ -276,9 +307,7 @@ export const ActiveMultiSelect: Widget<
                 name={name}
                 variant="outlined"
                 label={label}
-                onChange={event => {
-                  setInProgressItem(event.target.value);
-                }}
+                onKeyDown={handleKeyDown}
               />
             )}
             renderTags={(values, getTagProps) =>
