@@ -43,7 +43,11 @@ const scorecardTranslationEs = createTranslationMessages({
     'errors.fetchError': 'Error al obtener scorecards: {{error}}',
     'errors.metricDataUnavailable': 'Datos de métrica no disponibles',
     'errors.invalidThresholds': 'Umbrales inválidos',
-
+    'errors.missingPermission': 'Permiso faltante',
+    'errors.missingPermissionMessage':
+      'Para ver las métricas de scorecard, tu administrador debe otorgarle el permiso requerido.',
+    'errors.userNotFoundInCatalogMessage':
+      'Entidad de usuario no encontrada en el catálogo',
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs abiertas',
     'metric.github.open_prs.description':
@@ -56,6 +60,9 @@ const scorecardTranslationEs = createTranslationMessages({
     'thresholds.success': 'Éxito',
     'thresholds.warning': 'Advertencia',
     'thresholds.error': 'Error',
+    'thresholds.noEntities': 'No hay entidades en el estado {{category}}',
+    'thresholds.entities_one': '{{count}} entidad',
+    'thresholds.entities_other': '{{count}} entidades',
   },
 });
 

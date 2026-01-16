@@ -19,35 +19,47 @@ import { useApi } from '@backstage/core-plugin-api';
 import useAsync from 'react-use/lib/useAsync';
 
 import { scorecardApiRef } from '../api';
+import { useTranslation } from './useTranslation';
 import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export const useAggregatedScorecards = () => {
+interface UseAggregatedScorecardOptions {
+  metricId: string;
+}
+
+export const useAggregatedScorecard = (
+  options: UseAggregatedScorecardOptions,
+) => {
   const scorecardApi = useApi(scorecardApiRef);
+
+  const { metricId } = options;
+  const { t } = useTranslation();
 
   const { error, loading, value } = useAsync(async () => {
     try {
-      const aggregatedScorecards = await scorecardApi.getAggregatedScorecards();
+      const aggregatedScorecard = await scorecardApi.getAggregatedScorecard(
+        metricId,
+      );
 
-      if (!aggregatedScorecards || !Array.isArray(aggregatedScorecards)) {
-        throw new Error(
-          'Invalid response format from aggregated scorecard API',
-        );
+      if (!aggregatedScorecard || !Array.isArray(aggregatedScorecard)) {
+        throw new Error(t('errors.invalidApiResponse'));
       }
 
-      return aggregatedScorecards;
+      return aggregatedScorecard;
     } catch (err) {
       if (err instanceof Error) {
         throw err;
       }
       throw new Error(
-        `Unexpected error fetching aggregated scorecards: ${String(err)}`,
+        t('errors.fetchError' as any, {
+          error: String(err),
+        }),
       );
     }
   }, [scorecardApi]);
 
   return useMemo(
     () => ({
-      aggregatedScorecards: value as AggregatedMetricResult[],
+      aggregatedScorecard: value as AggregatedMetricResult[],
       loadingData: loading,
       error,
     }),

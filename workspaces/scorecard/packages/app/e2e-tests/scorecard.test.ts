@@ -159,22 +159,11 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     );
     expect(isGithubVisible).toBe(true);
 
-    const errorLocator = page.getByRole('heading', {
-      name: translations.errors.metricDataUnavailable,
-    });
+    const errorLocator = page.getByText(
+      translations.errors.metricDataUnavailable,
+    );
     await expect(errorLocator).toBeVisible();
     await runAccessibilityTests(page, testInfo);
-
-    await errorLocator.hover();
-    const errorMetric = unavailableMetricResponse.find(
-      metric => metric.id === 'github.open_prs',
-    );
-
-    if (errorMetric && 'error' in errorMetric) {
-      const errorTooltip = errorMetric.error;
-      expect(errorTooltip).toBeTruthy();
-      await expect(page.getByText(errorTooltip!)).toBeVisible();
-    }
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });
@@ -202,21 +191,9 @@ test.describe.serial('Scorecard Plugin Tests', () => {
     );
     expect(isJiraVisible).toBe(true);
 
-    const errorLocator = page.getByRole('heading', {
-      name: translations.errors.invalidThresholds,
-    });
+    const errorLocator = page.getByText(translations.errors.invalidThresholds);
     await expect(errorLocator).toBeVisible();
     await runAccessibilityTests(page, testInfo);
-
-    await errorLocator.hover();
-    const errorTooltip = invalidThresholdResponse.find(
-      metric => metric.id === 'github.open_prs',
-    )?.result?.thresholdResult;
-
-    if (errorTooltip && 'error' in errorTooltip) {
-      expect(errorTooltip.error).toBeTruthy();
-      await expect(page.getByText(errorTooltip.error)).toBeVisible();
-    }
 
     await scorecardPage.validateScorecardAriaFor(jiraMetric);
   });

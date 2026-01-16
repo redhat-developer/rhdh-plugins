@@ -48,6 +48,10 @@ export const scorecardMessages = {
     fetchError: 'Error fetching scorecards: {{error}}',
     metricDataUnavailable: 'Metric data unavailable',
     invalidThresholds: 'Invalid thresholds',
+    missingPermission: 'Missing permission',
+    missingPermissionMessage:
+      'To view the scorecard metrics, your administrator must grant you the required permission.',
+    userNotFoundInCatalogMessage: 'User entity not found in catalog',
   },
 
   // Metric translations
@@ -69,6 +73,9 @@ export const scorecardMessages = {
     success: 'Success',
     warning: 'Warning',
     error: 'Error',
+    noEntities: 'No entities in {{category}} state',
+    entities_one: '{{count}} entity',
+    entities_other: '{{count}} entities',
   },
 };
 

@@ -14,162 +14,68 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { Fragment } from 'react';
 
-import {
-  PieChart,
-  Pie,
-  ResponsiveContainer,
-  Cell,
-  Tooltip,
-  Legend,
-} from 'recharts';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
-
-import { CardWrapper } from '../Common/CardWrapper';
-import { CustomTooltip } from './CustomTooltip';
-import CustomLegend from './CustomLegend';
-import type { PieData } from '../../utils/utils';
 import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export const ScorecardHomepageCard = ({
-  scorecard,
-}: {
-  scorecard: AggregatedMetricResult;
-}) => {
-  const theme = useTheme();
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
 
-  const pieData: PieData[] =
-    scorecard.result.values?.map(value => ({
-      name: value.name,
-      value: value.count,
-      color:
-        {
-          success: theme.palette.success.main,
-          warning: theme.palette.warning.main,
-          error: theme.palette.error.main,
-        }[value.name] || theme.palette.success.main,
-    })) ?? [];
+import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
+import { EmptyStatePanel } from './EmptyStatePanel';
+import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
+import { useTranslation } from '../../hooks/useTranslation';
+
+export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
+  const { t } = useTranslation();
+
+  const { aggregatedScorecard, loadingData, error } = useAggregatedScorecard({
+    metricId,
+  });
+
+  if (loadingData) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return <EmptyStatePanel error={error} metricId={metricId} />;
+  }
 
   return (
-    <CardWrapper
-      title={scorecard.metadata.title}
-      subtitle={`${scorecard.result.total} entities`}
-    >
-      <Box sx={{ pb: 2 }}>
-        <Typography
-          variant="body2"
-          color="textSecondary"
-          sx={{ fontSize: '1rem', fontWeight: 400 }}
-        >
-          {scorecard.metadata.description}
-        </Typography>
-      </Box>
+    <Fragment>
+      {aggregatedScorecard
+        ?.slice(0, 1)
+        .map((metric: AggregatedMetricResult) => {
+          const titleKey = `metric.${metric.id}.title`;
+          const descriptionKey = `metric.${metric.id}.description`;
 
-      <Box
-        width="100%"
-        height={160}
-        data-chart-container
-        position="relative"
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          cursor: 'default',
-          '& .recharts-wrapper > svg': {
-            outline: 'none',
-          },
-        }}
-      >
-        <ResponsiveContainer
-          width="100%"
-          height={160}
-          style={{
-            outline: 'none',
-          }}
-        >
-          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              cx="22%"
-              cy="50%"
-              innerRadius={64}
-              outerRadius={74}
-              startAngle={90}
-              endAngle={-270}
-              stroke="none"
-              cursor="pointer"
-              isAnimationActive={false}
-              style={{
-                outline: 'none',
-              }}
-            >
-              {pieData.map(category => (
-                <Cell key={category.name} fill={category.color} />
-              ))}
-            </Pie>
+          const title = t(titleKey as any, {});
+          const description = t(descriptionKey as any, {});
 
-            <Legend
-              layout="vertical"
-              align="center"
-              verticalAlign="middle"
-              wrapperStyle={{
-                position: 'absolute',
-                left: '160px',
-                top: '42px',
-              }}
-              content={props => (
-                <CustomLegend
-                  {...props}
-                  activeIndex={activeIndex}
-                  setActiveIndex={setActiveIndex}
-                  setTooltipPosition={setTooltipPosition}
-                  pieData={pieData}
-                />
-              )}
+          const finalTitle = title === titleKey ? metric.metadata.title : title;
+          const finalDescription =
+            description === descriptionKey
+              ? metric.metadata.description
+              : description;
+
+          return (
+            <ScorecardHomepageCardComponent
+              key={metric.id}
+              cardTitle={finalTitle}
+              description={finalDescription}
+              scorecard={metric}
             />
-
-            <Tooltip
-              content={props => (
-                <CustomTooltip payload={props.payload} pieData={pieData} />
-              )}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-
-        {activeIndex !== null && tooltipPosition && (
-          <Box
-            sx={{
-              position: 'absolute',
-              left: `${tooltipPosition.x}px`,
-              top: `${tooltipPosition.y}px`,
-              transform: 'translate(-50%, -100%)',
-              zIndex: 1000,
-              pointerEvents: 'none',
-            }}
-          >
-            <CustomTooltip
-              payload={[
-                {
-                  name: pieData[activeIndex].name,
-                  value: pieData[activeIndex].value,
-                  payload: pieData[activeIndex],
-                },
-              ]}
-              pieData={pieData}
-            />
-          </Box>
-        )}
-      </Box>
-    </CardWrapper>
+          );
+        })}
+    </Fragment>
   );
 };

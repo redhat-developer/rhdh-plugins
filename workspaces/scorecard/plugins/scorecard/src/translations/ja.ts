@@ -41,6 +41,11 @@ const scorecardTranslationJa = createTranslationMessages({
       'スコアカードの取得中にエラーが発生しました: {{error}}',
     'errors.metricDataUnavailable': 'メトリクスデータがありません',
     'errors.invalidThresholds': '無効なしきい値',
+    'errors.missingPermission': '権限がありません',
+    'errors.missingPermissionMessage':
+      'スコアカードのメトリクスを表示するには、管理者に権限を付与してもらうよう依頼してください。',
+    'errors.userNotFoundInCatalogMessage':
+      'ユーザーエンティティーがカタログに見つかりません',
     'metric.github.open_prs.title': 'GitHub のオープン状態の PR',
     'metric.github.open_prs.description':
       '特定の GitHub リポジトリーにおけるオープン状態のプルリクエストの数。',

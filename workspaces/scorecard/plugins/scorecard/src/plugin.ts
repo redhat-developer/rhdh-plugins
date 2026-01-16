@@ -66,16 +66,16 @@ export const EntityScorecardContent = scorecardPlugin.provide(
 );
 
 /**
- * Scorecard homepage section.
+ * Scorecard homepage card.
  * @public
  */
-export const ScorecardHomepageSection = scorecardPlugin.provide(
+export const ScorecardHomepageCard = scorecardPlugin.provide(
   createComponentExtension({
-    name: 'ScorecardHomepageSection',
+    name: 'ScorecardHomepageCard',
     component: {
       lazy: () =>
         import('./components/ScorecardHomepageSection').then(
-          m => m.ScorecardHomepageSection,
+          m => m.ScorecardHomepageCard,
         ),
     },
   }),

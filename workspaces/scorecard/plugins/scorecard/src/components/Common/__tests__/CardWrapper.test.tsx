@@ -21,18 +21,18 @@ import { CardWrapper } from '../CardWrapper';
 describe('CardWrapper Component', () => {
   it('should render with title, subtitle and children', () => {
     render(
-      <CardWrapper title="Test Title" subtitle="Test Subtitle">
+      <CardWrapper title="Test Title" subheader="Test Subheader">
         <p>Test Content</p>
       </CardWrapper>,
     );
     expect(screen.getByText('Test Title')).toBeInTheDocument();
-    expect(screen.getByText('Test Subtitle')).toBeInTheDocument();
+    expect(screen.getByText('Test Subheader')).toBeInTheDocument();
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
   it('should render with a divider', () => {
     render(
-      <CardWrapper title="Test Title" subtitle="Test Subtitle">
+      <CardWrapper title="Test Title" subheader="Test Subheader">
         <p>Test Content</p>
       </CardWrapper>,
     );

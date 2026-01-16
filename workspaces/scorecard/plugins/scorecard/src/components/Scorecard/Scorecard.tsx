@@ -19,22 +19,26 @@ import {
   ThresholdResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
+import {
+  PieChart,
+  Pie,
+  ResponsiveContainer,
+  Cell,
+  Legend,
+  Tooltip,
+} from 'recharts';
+
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
-import { styled, useTheme } from '@mui/material/styles';
-import Tooltip from '@mui/material/Tooltip';
+import { useTheme } from '@mui/material/styles';
+import MuiTooltip from '@mui/material/Tooltip';
 import { useTranslation } from '../../hooks/useTranslation';
+import { CardWrapper } from '../Common/CardWrapper';
+import CustomLegend from './CustomLegend';
+import { getRingColor } from '../../utils/utils';
 
 interface ScorecardProps {
   cardTitle: string;
   description: string;
-  loading: boolean;
   statusColor: string;
   StatusIcon: React.ElementType;
   value: MetricValue | null;
@@ -45,29 +49,9 @@ interface ScorecardProps {
   thresholdError?: string;
 }
 
-const StyledCircle = styled('circle')(
-  ({
-    theme,
-    statusColor,
-    isError,
-  }: {
-    theme: any;
-    statusColor: string;
-    isError: boolean;
-  }) => {
-    const [paletteKey, shade] = statusColor.split('.');
-    return {
-      stroke: isError
-        ? theme.palette.rhdh.general.cardBorderColor
-        : theme.palette?.[paletteKey]?.[shade] ?? statusColor,
-    };
-  },
-);
-
 const Scorecard = ({
   cardTitle,
   description,
-  loading,
   statusColor,
   StatusIcon,
   value,
@@ -80,225 +64,188 @@ const Scorecard = ({
   const theme = useTheme();
   const { t } = useTranslation();
 
+  const isErrorState = isMetricDataError || isThresholdError;
+
+  const ringColor = getRingColor(theme, statusColor, isErrorState);
+
+  const pieData = [{ name: 'full', value: 100, color: ringColor }];
+
   return (
-    <Card sx={{ width: '405px' }} role="article">
-      <CardHeader title={cardTitle} titleTypographyProps={{ mb: 0 }} />
-      <Divider />
-      <CardContent>
-        <Box sx={{ px: 1, pb: 2 }}>
-          <Typography variant="body2" color="textSecondary">
-            {description}
-          </Typography>
-        </Box>
+    <CardWrapper
+      role="article"
+      title={cardTitle}
+      description={description}
+      width="371px"
+    >
+      <Box
+        width="100%"
+        height={160}
+        data-chart-container
+        position="relative"
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          cursor: 'default',
+          '& .recharts-wrapper > svg': {
+            outline: 'none',
+          },
+        }}
+      >
+        <ResponsiveContainer
+          width="100%"
+          height={160}
+          style={{
+            outline: 'none',
+          }}
+        >
+          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="22%"
+              cy="50%"
+              innerRadius={64}
+              outerRadius={74}
+              startAngle={90}
+              endAngle={-270}
+              stroke="none"
+              cursor={isErrorState ? 'pointer' : 'default'}
+              isAnimationActive={false}
+              style={{
+                outline: 'none',
+              }}
+              labelLine={false}
+              label={({ cx, cy }) => {
+                if (cx === null || cy === null) return null;
 
-        <Box sx={{ px: 2 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={6}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Box
-                  position="relative"
-                  width={160}
-                  height={160}
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    cursor:
-                      isMetricDataError || isThresholdError
-                        ? 'pointer'
-                        : 'default',
-                  }}
-                >
-                  {loading ? (
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                      }}
-                    >
-                      <CircularProgress size={120} />
-                    </Box>
-                  ) : (
-                    <Tooltip
-                      title={
-                        // eslint-disable-next-line no-nested-ternary
-                        isMetricDataError
-                          ? metricDataError
-                          : isThresholdError
-                          ? thresholdError
-                          : undefined
-                      }
-                      arrow
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            cursor:
-                              isMetricDataError || isThresholdError
-                                ? 'pointer'
-                                : 'default',
-                          },
-                        },
-                      }}
-                    >
-                      <Box position="relative" width={160} height={160}>
-                        <svg width="160" height="160">
-                          <StyledCircle
-                            cx="80"
-                            cy="80"
-                            r="75"
-                            strokeWidth="10"
-                            fill="none"
-                            statusColor={statusColor}
-                            theme={theme}
-                            isError={isMetricDataError || isThresholdError}
-                          />
-                        </svg>
-                        <Box
-                          position="absolute"
-                          top="50%"
-                          left="50%"
-                          sx={{
-                            transform: 'translate(-50%, -50%)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                          }}
-                        >
-                          {!isMetricDataError && !isThresholdError && (
-                            <StatusIcon
-                              sx={{
-                                color: (muiTheme: any) =>
-                                  muiTheme.palette[statusColor.split('.')[0]][
-                                    statusColor.split('.')[1]
-                                  ],
-                                fontSize: 20,
-                              }}
-                            />
-                          )}
-                          <Typography
-                            variant="h6"
-                            sx={{
-                              color: (muiTheme: any) => {
-                                if (isMetricDataError || isThresholdError) {
-                                  return muiTheme.palette[
-                                    statusColor.split('.')[0]
-                                  ]?.[statusColor.split('.')[1]]?.[
-                                    statusColor.split('.')[2]
-                                  ];
-                                }
-                                return muiTheme.palette[
-                                  statusColor.split('.')[0]
-                                ]?.[statusColor.split('.')[1]];
-                              },
-                              fontWeight:
-                                isMetricDataError || isThresholdError
-                                  ? 400
-                                  : 500,
-                              textAlign: 'center',
-                              fontSize:
-                                isMetricDataError || isThresholdError ? 14 : 24,
-                            }}
-                          >
-                            {isMetricDataError &&
-                              t('errors.metricDataUnavailable')}
-                            {!isMetricDataError &&
-                              isThresholdError &&
-                              t('errors.invalidThresholds')}
-                            {!isThresholdError && !isMetricDataError && value}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Tooltip>
-                  )}
-                </Box>
-              </Box>
-            </Grid>
+                const palettePath = statusColor.split('.');
+                let color: string | undefined;
+                const paletteRoot =
+                  theme.palette[palettePath[0] as keyof typeof theme.palette];
+                if (palettePath.length === 1) {
+                  color = paletteRoot as string | undefined;
+                } else if (palettePath.length === 2) {
+                  color = (paletteRoot as Record<string, any>)?.[
+                    palettePath[1]
+                  ] as string | undefined;
+                } else if (palettePath.length === 3) {
+                  color = (paletteRoot as Record<string, any>)?.[
+                    palettePath[1]
+                  ]?.[palettePath[2]] as string | undefined;
+                }
 
-            <Grid item xs={12} sm={6} sx={{ p: 2, paddingRight: 0 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1,
-                  pl: 1.5,
-                  pt: 2,
-                }}
-              >
-                {thresholds?.definition?.rules.length === 0 ||
-                thresholds?.definition?.rules === undefined ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 10,
-                        height: 10,
-                        backgroundColor: theme.palette.grey['400'],
-                        flexShrink: 0,
-                      }}
-                    />{' '}
-                    --
-                  </Box>
-                ) : (
-                  thresholds?.definition?.rules.map(({ key, expression }) => (
-                    <Box
-                      key={key}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                      }}
-                    >
-                      <Box
+                return (
+                  <g transform={`translate(${cx}, ${cy})`}>
+                    <foreignObject x={-12} y={-28} width={24} height={24}>
+                      <StatusIcon
                         sx={{
-                          width: 10,
-                          height: 10,
-                          backgroundColor:
-                            {
-                              error: theme.palette.error.main,
-                              warning: theme.palette.warning.main,
-                              success: theme.palette.success.main,
-                            }[key] || theme.palette.success.main,
-                          flexShrink: 0,
+                          fontSize: 24,
+                          color: (muiTheme: any) =>
+                            muiTheme.palette[statusColor.split('.')[0]][
+                              statusColor.split('.')[1]
+                            ],
                         }}
                       />
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          wordBreak: 'break-word',
-                          lineHeight: 1.2,
-                        }}
+                    </foreignObject>
+                    {!isErrorState && (
+                      <text
+                        y={12}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontSize={24}
+                        fontWeight={500}
+                        fill={color}
                       >
-                        {(() => {
-                          const translated = t(`thresholds.${key}` as any, {});
-                          // If translation returns the key itself, fallback to capitalized key
-                          return translated === `thresholds.${key}`
-                            ? key.charAt(0).toUpperCase() + key.slice(1)
-                            : translated;
-                        })()}{' '}
-                        {expression && `${expression}`}
-                      </Typography>
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
-      </CardContent>
-    </Card>
+                        {value}
+                      </text>
+                    )}
+
+                    {isErrorState && (
+                      <foreignObject x={-50} y={-17} width={100} height={40}>
+                        <div
+                          style={{
+                            maxWidth: 100,
+                            fontSize: 14,
+                            fontWeight: 400,
+                            color,
+                            textAlign: 'center',
+                            lineHeight: 1.2,
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {isMetricDataError &&
+                            t('errors.metricDataUnavailable')}
+                          {!isMetricDataError &&
+                            isThresholdError &&
+                            t('errors.invalidThresholds')}
+                        </div>
+                      </foreignObject>
+                    )}
+                  </g>
+                );
+              }}
+            >
+              {pieData.map(entry => (
+                <Cell key={entry.name} fill={entry.color} />
+              ))}
+            </Pie>
+
+            <Legend
+              layout="vertical"
+              align="center"
+              verticalAlign="middle"
+              wrapperStyle={{
+                position: 'absolute',
+                left: '160px',
+                top: '42px',
+                display: 'flex',
+                alignItems: 'center',
+                height: '76px',
+              }}
+              content={props => (
+                <CustomLegend {...props} thresholds={thresholds} />
+              )}
+            />
+
+            <Tooltip
+              position={{ x: 27, y: 136 }}
+              isAnimationActive={false}
+              content={({ active }) => {
+                if (!active) return null;
+
+                return (
+                  <MuiTooltip
+                    open
+                    title={
+                      // eslint-disable-next-line no-nested-ternary
+                      isMetricDataError
+                        ? metricDataError
+                        : isThresholdError
+                        ? thresholdError
+                        : undefined
+                    }
+                    placement="bottom"
+                    arrow
+                    slotProps={{
+                      tooltip: {
+                        sx: {
+                          cursor: isErrorState ? 'pointer' : 'default',
+                        },
+                      },
+                    }}
+                  >
+                    {/* Need to hide the tooltip content because we are using the position prop to position the tooltip */}
+                    <div style={{ visibility: 'hidden' }}>Tooltip content</div>
+                  </MuiTooltip>
+                );
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </Box>
+    </CardWrapper>
   );
 };
 

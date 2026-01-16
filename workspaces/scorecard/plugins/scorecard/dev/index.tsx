@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// eslint-disable-next-line
 import '@backstage/ui/css/styles.css';
+
 import { createDevApp } from '@backstage/dev-utils';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { Page, Header, TabbedLayout } from '@backstage/core-components';
@@ -52,8 +55,8 @@ class MockScorecardApi implements ScorecardApi {
   async getScorecards(_entity: Entity): Promise<MetricResult[]> {
     return [...mockScorecardSuccessData, ...mockScorecardErrorData];
   }
-  async getAggregatedScorecards(
-    _metricIds?: string[],
+  async getAggregatedScorecard(
+    _metricId: string,
   ): Promise<AggregatedMetricResult[]> {
     return mockAggregatedScorecardSuccessData;
   }

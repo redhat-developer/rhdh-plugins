@@ -121,7 +121,7 @@ describe('PermissionRequiredState Component', () => {
     const linkButton = screen.getByRole('link', { name: /read more/i });
     expect(linkButton).toHaveAttribute(
       'href',
-      'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/scorecard/plugins/scorecard/README.md#permission-framework-support',
+      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html-single/understand_and_visualize_red_hat_developer_hub_project_health_using_scorecards/index#proc-authenticating-and-managing-scorecard-plugins_assembly-setting-up-scorecards-to-monitor-your-rhdh-health',
     );
     expect(linkButton).toHaveAttribute('target', '_blank');
   });

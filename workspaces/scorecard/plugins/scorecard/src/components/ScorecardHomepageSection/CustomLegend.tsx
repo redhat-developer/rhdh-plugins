@@ -17,7 +17,9 @@
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
+
 import type { PieData as PieDataProps } from '../../utils/utils';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const StyledLegend = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -33,12 +35,14 @@ const StyledLegendItem = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
 }));
 
-const StyledLegendColorBox = styled(Box)<{ color: string }>(({ color }) => ({
-  width: '10px',
-  height: '10px',
-  backgroundColor: color,
-  flexShrink: 0,
-}));
+const StyledLegendColorBox = styled(Box)<{ color?: string }>(
+  ({ color = 'success.main' }) => ({
+    width: '10px',
+    height: '10px',
+    backgroundColor: color,
+    flexShrink: 0,
+  }),
+);
 
 type CustomLegendProps = {
   pieData: PieDataProps[];
@@ -49,6 +53,7 @@ type CustomLegendProps = {
 
 const CustomLegend = (props: CustomLegendProps) => {
   const { pieData, activeIndex, setActiveIndex, setTooltipPosition } = props;
+  const { t } = useTranslation();
   if (!pieData || pieData.length === 0) return null;
 
   return (
@@ -93,7 +98,11 @@ const CustomLegend = (props: CustomLegendProps) => {
               const relatedTarget = e.relatedTarget as Node | null;
               const currentTarget = e.currentTarget;
 
-              if (!relatedTarget || !currentTarget.contains(relatedTarget)) {
+              if (
+                !relatedTarget ||
+                !(relatedTarget instanceof Node) ||
+                !currentTarget.contains(relatedTarget)
+              ) {
                 setActiveIndex(null);
                 setTooltipPosition(null);
               }
@@ -104,7 +113,13 @@ const CustomLegend = (props: CustomLegendProps) => {
               variant="body2"
               sx={{ fontSize: '0.875rem', fontWeight: 400 }}
             >
-              {category.name.charAt(0).toUpperCase() + category.name.slice(1)}
+              {(() => {
+                const translated = t(`thresholds.${category.name}` as any, {});
+                return translated === `thresholds.${category.name}`
+                  ? category.name.charAt(0).toUpperCase() +
+                      category.name.slice(1)
+                  : translated;
+              })()}
             </Typography>
           </StyledLegendItem>
         );

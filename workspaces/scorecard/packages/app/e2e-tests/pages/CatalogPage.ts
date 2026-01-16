@@ -40,6 +40,6 @@ export class CatalogPage {
     await page.getByRole('link', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'English' }).click();
     await page.getByRole('option', { name: locale }).click();
-    await page.locator('a').filter({ hasText: 'Home' }).click();
+    await page.locator('a').filter({ hasText: 'Catalog' }).click();
   }
 }

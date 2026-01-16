@@ -20,34 +20,104 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   children: ReactNode;
   title: string;
-  subtitle?: ReactNode;
+  subheader?: ReactNode;
+  description?: string;
   width?: string;
+  childrenWidth?: string | number;
+  childrenHeight?: string | number;
+  role?: string;
 }
 
 export const CardWrapper = ({
   children,
   title,
-  subtitle,
-  width = '371px',
+  subheader,
+  description,
+  width,
+  childrenWidth = '100%',
+  childrenHeight = '100%',
+  role = 'article',
 }: CardWrapperProps) => {
   return (
-    <Card sx={{ width }}>
+    <Card
+      elevation={0}
+      sx={{
+        width: width ?? '100%',
+        border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
+        overflow: 'auto',
+      }}
+      role={role}
+    >
       <CardHeader
         title={title}
-        subheader={subtitle ?? undefined}
+        subheader={subheader ?? undefined}
         sx={{
           '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {
             fontSize: '1.25rem',
             fontWeight: 500,
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
           },
         }}
       />
       <Divider />
-      <CardContent>{children}</CardContent>
+      <CardContent
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {description && (
+          <Box sx={{ pb: 2, width: '100%', minWidth: 316 }}>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              sx={{
+                fontSize: '1rem',
+                fontWeight: 400,
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {description}
+            </Typography>
+          </Box>
+        )}
+
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Box
+            sx={{
+              width: childrenWidth,
+              height: childrenHeight,
+              flexShrink: 0,
+            }}
+          >
+            {children}
+          </Box>
+        </Box>
+      </CardContent>
     </Card>
   );
 };

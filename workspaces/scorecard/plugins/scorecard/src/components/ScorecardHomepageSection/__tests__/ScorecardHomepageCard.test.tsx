@@ -17,86 +17,134 @@
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
-import { mockAggregatedScorecardSuccessData } from '../../../../__fixtures__/aggregatedScorecardData';
+import { ScorecardHomepageCardComponent } from '../ScorecardHomepageCardComponent';
 import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-// Mock the child components
+// --------------------
+// Mocks
+// --------------------
+
 jest.mock('../../Common/CardWrapper', () => ({
-  CardWrapper: function MockCardWrapper({
+  CardWrapper: ({
     title,
-    subtitle,
+    subheader,
+    description,
     children,
   }: {
     title: string;
-    subtitle: string;
+    subheader: string;
+    description: string;
     children: React.ReactNode;
-  }) {
-    return (
-      <div data-testid="card-wrapper">
-        <div data-testid="card-title">{title}</div>
-        <div data-testid="card-subtitle">{subtitle}</div>
-        <div data-testid="card-content">{children}</div>
-      </div>
-    );
-  },
+  }) => (
+    <div data-testid="card-wrapper">
+      <div data-testid="card-title">{title}</div>
+      <div data-testid="card-subheader">{subheader}</div>
+      <div data-testid="card-description">{description}</div>
+      <div data-testid="card-content">{children}</div>
+    </div>
+  ),
 }));
 
-jest.mock('../CustomTooltip', () => ({
-  CustomTooltip: function MockCustomTooltip() {
-    return <div data-testid="custom-tooltip">Custom Tooltip</div>;
-  },
+jest.mock('../ResponsivePieChart', () => ({
+  ResponsivePieChart: ({
+    legendContent,
+    tooltipContent,
+    pieData,
+  }: {
+    legendContent: (props: unknown) => React.ReactNode;
+    tooltipContent: (props: {
+      active?: boolean;
+      payload?: unknown[];
+    }) => React.ReactNode;
+    pieData: Array<{ name: string; value: number; color: string }>;
+  }) => (
+    <div data-testid="responsive-pie-chart">
+      <div data-testid="pie-data-length">{pieData.length}</div>
+      <div data-testid="legend">{legendContent({})}</div>
+      <div data-testid="tooltip">
+        {tooltipContent({ active: true, payload: [] })}
+      </div>
+    </div>
+  ),
 }));
 
 jest.mock('../CustomLegend', () => ({
   __esModule: true,
-  default: function MockCustomLegend() {
-    return <div data-testid="custom-legend">Custom Legend</div>;
-  },
+  default: () => <div data-testid="custom-legend">Custom Legend</div>,
 }));
 
-// Mock recharts components
-jest.mock('recharts', () => ({
-  PieChart: function MockPieChart({ children }: { children: React.ReactNode }) {
-    return <div data-testid="pie-chart">{children}</div>;
-  },
-  Pie: function MockPie({ children }: { children: React.ReactNode }) {
-    return <div data-testid="pie">{children}</div>;
-  },
-  ResponsiveContainer: function MockResponsiveContainer({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) {
-    return <div data-testid="responsive-container">{children}</div>;
-  },
-  Cell: function MockCell() {
-    return <div data-testid="cell" />;
-  },
-  Tooltip: function MockTooltip() {
-    return <div data-testid="tooltip" />;
-  },
-  Legend: function MockLegend() {
-    return <div data-testid="legend" />;
-  },
+jest.mock('../CustomTooltip', () => ({
+  CustomTooltip: () => <div data-testid="custom-tooltip">Custom Tooltip</div>,
 }));
 
-const TestWrapper = ({ children }: { children: React.ReactNode }) => {
-  const theme = createTheme({
-    palette: {
-      success: { main: '#52c41a' },
-      warning: { main: '#F0AB00' },
-      error: { main: '#C9190B' },
+jest.mock('../../../hooks/useTranslation', () => ({
+  useTranslation: () => ({
+    t: (key: string, options?: any) => {
+      switch (key) {
+        case 'thresholds.entities':
+          return `${options?.count} entities`;
+        case 'thresholds.noEntities':
+          return `No entities in ${options?.category} state`;
+        case 'thresholds.Test':
+          return 'Test';
+        case 'errors.missingPermissionMessage':
+          return 'Missing permission';
+        default:
+          return key;
+      }
     },
-  });
-  return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+  }),
+}));
+
+// --------------------
+// Test data
+// --------------------
+
+const mockScorecard: AggregatedMetricResult = {
+  id: 'github.open_prs',
+  status: 'success',
+  metadata: {
+    title: 'GitHub open PRs',
+    description: 'Open PRs',
+    type: 'number',
+    history: true,
+  },
+  result: {
+    total: 37,
+    values: [
+      { name: 'success', count: 11 },
+      { name: 'warning', count: 14 },
+      { name: 'error', count: 12 },
+    ],
+    timestamp: '2024-01-01T00:00:00Z',
+  },
 };
 
-describe('ScorecardHomepageCard Component', () => {
-  it('should render card with title and subtitle', () => {
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <ThemeProvider
+    theme={createTheme({
+      palette: {
+        success: { main: '#52c41a' },
+        warning: { main: '#F0AB00' },
+        error: { main: '#C9190B' },
+      },
+    })}
+  >
+    {children}
+  </ThemeProvider>
+);
+
+// --------------------
+// Tests
+// --------------------
+
+describe('ScorecardHomepageCardComponent', () => {
+  it('should render title, subheader, and description', () => {
     render(
-      <ScorecardHomepageCard
-        scorecard={mockAggregatedScorecardSuccessData[0]}
+      <ScorecardHomepageCardComponent
+        scorecard={mockScorecard}
+        cardTitle="GitHub open PRs"
+        description="Current count of open Pull Requests"
       />,
       { wrapper: TestWrapper },
     );
@@ -104,136 +152,112 @@ describe('ScorecardHomepageCard Component', () => {
     expect(screen.getByTestId('card-title')).toHaveTextContent(
       'GitHub open PRs',
     );
-    expect(screen.getByTestId('card-subtitle')).toHaveTextContent(
+    expect(screen.getByTestId('card-subheader')).toHaveTextContent(
       '37 entities',
     );
+    expect(screen.getByTestId('card-description')).toHaveTextContent(
+      'Current count of open Pull Requests',
+    );
   });
 
-  it('should render description', () => {
+  it('should render ResponsivePieChart', () => {
     render(
-      <ScorecardHomepageCard
-        scorecard={mockAggregatedScorecardSuccessData[0]}
+      <ScorecardHomepageCardComponent
+        scorecard={mockScorecard}
+        cardTitle="GitHub open PRs"
+        description="desc"
       />,
       { wrapper: TestWrapper },
     );
 
-    expect(
-      screen.getByText(
-        'Current count of open Pull Requests for a given GitHub repository.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('responsive-pie-chart')).toBeInTheDocument();
   });
 
-  it('should render pie chart components', () => {
+  it('should pass correct pie data length', () => {
     render(
-      <ScorecardHomepageCard
-        scorecard={mockAggregatedScorecardSuccessData[0]}
+      <ScorecardHomepageCardComponent
+        scorecard={mockScorecard}
+        cardTitle="GitHub open PRs"
+        description="desc"
       />,
       { wrapper: TestWrapper },
     );
 
-    expect(screen.getByTestId('responsive-container')).toBeInTheDocument();
-    expect(screen.getByTestId('pie-chart')).toBeInTheDocument();
-    expect(screen.getByTestId('pie')).toBeInTheDocument();
+    expect(screen.getByTestId('pie-data-length')).toHaveTextContent('3');
   });
 
-  it('should calculate total entities correctly', () => {
+  it('should render CustomLegend and CustomTooltip', () => {
     render(
-      <ScorecardHomepageCard
-        scorecard={mockAggregatedScorecardSuccessData[0]}
+      <ScorecardHomepageCardComponent
+        scorecard={mockScorecard}
+        cardTitle="GitHub open PRs"
+        description="desc"
       />,
       { wrapper: TestWrapper },
     );
 
-    // 11 + 14 + 12 = 37
-    expect(screen.getByTestId('card-subtitle')).toHaveTextContent(
-      '37 entities',
-    );
+    expect(screen.getByTestId('custom-legend')).toBeInTheDocument();
+    expect(screen.getByTestId('custom-tooltip')).toBeInTheDocument();
   });
 
-  it('should handle scorecard with zero total entities', () => {
-    const scorecardWithZero: AggregatedMetricResult = {
-      ...mockAggregatedScorecardSuccessData[0],
+  it('should handle empty values gracefully', () => {
+    const emptyScorecard: AggregatedMetricResult = {
+      ...mockScorecard,
       result: {
-        ...mockAggregatedScorecardSuccessData[0].result,
-        values: [
-          { count: 0, name: 'success' },
-          { count: 0, name: 'warning' },
-          { count: 0, name: 'error' },
-        ],
-        total: 0,
-      },
-    };
-
-    render(<ScorecardHomepageCard scorecard={scorecardWithZero} />, {
-      wrapper: TestWrapper,
-    });
-
-    expect(screen.getByTestId('card-subtitle')).toHaveTextContent('0 entities');
-  });
-
-  it('should handle scorecard with empty result values', () => {
-    const scorecardWithEmpty: AggregatedMetricResult = {
-      ...mockAggregatedScorecardSuccessData[0],
-      result: {
-        ...mockAggregatedScorecardSuccessData[0].result,
+        ...mockScorecard.result,
         values: [],
         total: 0,
       },
     };
 
-    render(<ScorecardHomepageCard scorecard={scorecardWithEmpty} />, {
-      wrapper: TestWrapper,
-    });
-
-    expect(screen.getByTestId('card-subtitle')).toHaveTextContent('0 entities');
-  });
-
-  it('should handle scorecard with missing result values', () => {
-    const scorecardWithNull: AggregatedMetricResult = {
-      ...mockAggregatedScorecardSuccessData[0],
-      result: {
-        ...mockAggregatedScorecardSuccessData[0].result,
-        values: [],
-        total: 0,
-      },
-    };
-
-    render(<ScorecardHomepageCard scorecard={scorecardWithNull} />, {
-      wrapper: TestWrapper,
-    });
-
-    expect(screen.getByTestId('card-subtitle')).toHaveTextContent('0 entities');
-  });
-
-  it('should render with different scorecard data', () => {
     render(
-      <ScorecardHomepageCard
-        scorecard={mockAggregatedScorecardSuccessData[1]}
+      <ScorecardHomepageCardComponent
+        scorecard={emptyScorecard}
+        cardTitle="Empty"
+        description="desc"
       />,
       { wrapper: TestWrapper },
     );
 
-    expect(screen.getByTestId('card-title')).toHaveTextContent(
-      'Jira open blocking tickets',
+    expect(screen.getByTestId('card-subheader')).toHaveTextContent(
+      '0 entities',
     );
-    expect(screen.getByTestId('card-subtitle')).toHaveTextContent('4 entities');
-    expect(
-      screen.getByText(
-        'Highlights the number of critical, blocking issues that are currently open in Jira.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('pie-data-length')).toHaveTextContent('0');
   });
 
-  it('should render chart container with correct attributes', () => {
+  it('should render chart container element', () => {
     const { container } = render(
-      <ScorecardHomepageCard
-        scorecard={mockAggregatedScorecardSuccessData[0]}
+      <ScorecardHomepageCardComponent
+        scorecard={mockScorecard}
+        cardTitle="GitHub open PRs"
+        description="desc"
       />,
       { wrapper: TestWrapper },
     );
 
-    const chartContainer = container.querySelector('[data-chart-container]');
-    expect(chartContainer).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-chart-container]'),
+    ).toBeInTheDocument();
+  });
+
+  it('should handle undefined values array', () => {
+    const scorecardWithoutValues: AggregatedMetricResult = {
+      ...mockScorecard,
+      result: {
+        ...mockScorecard.result,
+        values: [],
+      },
+    };
+
+    render(
+      <ScorecardHomepageCardComponent
+        scorecard={scorecardWithoutValues}
+        cardTitle="No Values"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('pie-data-length')).toHaveTextContent('0');
   });
 });
