@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.4.0
+
+### Minor Changes
+
+- 3e2c3f7: Adding Workflow Logs endpoint. Loki provider added
+
+### Patch Changes
+
+- f1b43c5: Add conditional View Logs button based on workflowLogProvider configuration
+  - Add `useLogsEnabled` hook to check if `orchestrator.workflowLogProvider` is configured
+  - Conditionally render View Logs button in WorkflowResult component based on config
+
 ## 3.3.1
 
 ### Patch Changes

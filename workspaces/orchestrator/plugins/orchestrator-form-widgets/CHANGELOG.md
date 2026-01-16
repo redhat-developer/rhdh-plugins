@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.6.1
+
+### Patch Changes
+
+- c51d980: Fix ActiveTextInput not clearing field when API returns empty string
+- Updated dependencies [3e2c3f7]
+- Updated dependencies [f1b43c5]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.2
+
 ## 1.6.0
 
 ### Minor Changes
