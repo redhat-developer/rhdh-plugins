@@ -39,6 +39,8 @@ describe('LightspeedDrawerStateExposer', () => {
     setCurrentConversationId: jest.fn(),
     draftMessage: '',
     setDraftMessage: jest.fn(),
+    draftFileContents: [],
+    setDraftFileContents: jest.fn(),
     ...overrides,
   });
 
