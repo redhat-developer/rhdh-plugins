@@ -37,7 +37,7 @@
     "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "^1.4.4",
+    "@backstage/backend-plugin-api": "^1.5.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^",
     "luxon": "^3.7.2"
