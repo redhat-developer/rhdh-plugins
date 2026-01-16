@@ -32,12 +32,14 @@ type CustomTooltipProps = TooltipProps<number, string> & {
   payload?: readonly CustomTooltipPayload[];
   pieData: PieData[];
   isMissingPermission?: boolean;
+  isUserNotFoundInCatalog?: boolean;
 };
 
 export const CustomTooltip = ({
   payload,
   pieData,
   isMissingPermission = false,
+  isUserNotFoundInCatalog = false,
 }: CustomTooltipProps) => {
   const { t } = useTranslation();
 
@@ -60,10 +62,12 @@ export const CustomTooltip = ({
 
   let content = null;
 
-  if (isMissingPermission) {
+  if (isMissingPermission || isUserNotFoundInCatalog) {
     content = (
       <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-        {t('errors.missingPermissionMessage')}
+        {isMissingPermission
+          ? t('errors.missingPermissionMessage')
+          : t('errors.userNotFoundInCatalogMessage')}
       </Typography>
     );
   } else if (payload?.[0]?.value === 0 || payload?.[0]?.value === undefined) {

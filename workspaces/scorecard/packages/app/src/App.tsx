@@ -54,10 +54,7 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import {
-  ScorecardJiraHomepageCard,
-  ScorecardGitHubHomepageCard,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
@@ -67,6 +64,7 @@ import {
   HomePageCardMountPoint,
   homepageTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+import { ComponentType } from 'react';
 
 const mountPoints: HomePageCardMountPoint[] = [
   {
@@ -77,16 +75,22 @@ const mountPoints: HomePageCardMountPoint[] = [
     },
   },
   {
-    Component: ScorecardJiraHomepageCard,
+    Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-jira-homepage-section',
+      props: {
+        metricId: 'jira.open_issues',
+      },
       title: 'Scorecard Jira homepage section',
     },
   },
   {
-    Component: ScorecardGitHubHomepageCard,
+    Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-github-homepage-section',
+      props: {
+        metricId: 'github.open_prs',
+      },
       title: 'Scorecard GitHub homepage section',
     },
   },

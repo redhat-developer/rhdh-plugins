@@ -26,7 +26,7 @@ export type StatusConfig = {
 export type PieData = {
   name: string;
   value: number;
-  color: string;
+  color?: string;
 };
 
 /**

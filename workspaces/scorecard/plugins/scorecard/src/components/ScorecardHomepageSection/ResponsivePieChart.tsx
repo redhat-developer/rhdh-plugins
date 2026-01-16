@@ -21,16 +21,40 @@ import {
   Cell,
   Legend,
   Tooltip,
-  TooltipProps,
+  PieLabelRenderProps,
 } from 'recharts';
 import { PieData } from '../../utils/utils';
 
+interface PieTooltipPayload {
+  name?: string;
+  value?: number;
+  payload?: {
+    name: string;
+    value: number;
+    color?: string;
+  };
+}
+
+export interface PieLegendItem {
+  value?: string;
+  color?: string;
+}
+
+export interface PieLegendContentProps {
+  payload?: readonly PieLegendItem[];
+}
+
+interface PieTooltipContentProps {
+  active?: boolean;
+  payload?: readonly PieTooltipPayload[];
+  label?: string | number;
+}
 interface ResponsivePieChartProps {
   pieData: PieData[];
   isMissingPermission?: boolean;
-  LabelContent?: any;
-  legendContent: (props: any) => React.ReactNode;
-  tooltipContent: (props: TooltipProps<number, string>) => React.ReactNode;
+  LabelContent?: (props: PieLabelRenderProps) => React.ReactNode;
+  legendContent: (props: PieLegendContentProps) => React.ReactNode;
+  tooltipContent: (props: PieTooltipContentProps) => React.ReactNode;
 }
 
 export const ResponsivePieChart = ({
@@ -56,11 +80,9 @@ export const ResponsivePieChart = ({
           stroke="none"
           cursor="pointer"
           isAnimationActive={false}
-          style={{
-            outline: 'none',
-          }}
           labelLine={false}
-          label={isMissingPermission ? <LabelContent /> : undefined}
+          label={isMissingPermission && LabelContent ? LabelContent : undefined}
+          style={{ outline: 'none' }}
         >
           {pieData.map(category => (
             <Cell key={category.name} fill={category.color} />

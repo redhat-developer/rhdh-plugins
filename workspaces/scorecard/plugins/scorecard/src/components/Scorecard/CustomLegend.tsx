@@ -14,6 +14,11 @@
  * limitations under the License.
  */
 
+import {
+  ThresholdResult,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
@@ -41,7 +46,7 @@ const StyledLegendColorBox = styled(Box)<{ color: string }>(({ color }) => ({
 }));
 
 type CustomLegendProps = {
-  thresholds: any;
+  thresholds?: ThresholdResult;
 };
 
 const CustomLegend = (props: CustomLegendProps) => {
@@ -66,13 +71,7 @@ const CustomLegend = (props: CustomLegendProps) => {
   return (
     <StyledLegend>
       {thresholds?.definition?.rules?.map(
-        ({
-          key: ruleKey,
-          expression: ruleExpression,
-        }: {
-          key: string;
-          expression: string;
-        }) => {
+        ({ key: ruleKey, expression: ruleExpression }: ThresholdRule) => {
           return (
             <StyledLegendItem key={`legend-${ruleKey}`}>
               <StyledLegendColorBox

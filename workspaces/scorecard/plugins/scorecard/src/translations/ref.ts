@@ -51,6 +51,7 @@ export const scorecardMessages = {
     missingPermission: 'Missing permission',
     missingPermissionMessage:
       'To view the scorecard metrics, your administrator must grant you the required permission.',
+    userNotFoundInCatalogMessage: 'User entity not found in catalog',
   },
 
   // Metric translations

@@ -17,7 +17,7 @@
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
+import { ScorecardHomepageCardComponent } from '../ScorecardHomepageCardComponent';
 import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // --------------------
@@ -46,11 +46,24 @@ jest.mock('../../Common/CardWrapper', () => ({
 }));
 
 jest.mock('../ResponsivePieChart', () => ({
-  ResponsivePieChart: ({ legendContent, tooltipContent, pieData }: any) => (
+  ResponsivePieChart: ({
+    legendContent,
+    tooltipContent,
+    pieData,
+  }: {
+    legendContent: (props: unknown) => React.ReactNode;
+    tooltipContent: (props: {
+      active?: boolean;
+      payload?: unknown[];
+    }) => React.ReactNode;
+    pieData: Array<{ name: string; value: number; color: string }>;
+  }) => (
     <div data-testid="responsive-pie-chart">
       <div data-testid="pie-data-length">{pieData.length}</div>
-      <div data-testid="legend">{legendContent?.({})}</div>
-      <div data-testid="tooltip">{tooltipContent?.({ payload: [] })}</div>
+      <div data-testid="legend">{legendContent({})}</div>
+      <div data-testid="tooltip">
+        {tooltipContent({ active: true, payload: [] })}
+      </div>
     </div>
   ),
 }));
@@ -66,7 +79,8 @@ jest.mock('../CustomTooltip', () => ({
 
 jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
-    t: (_key: string, { count }: any) => `${count} entities`,
+    t: (_key: string, { count }: { count?: number } = {}) =>
+      count !== undefined ? `${count} entities` : _key,
   }),
 }));
 
@@ -112,10 +126,10 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 // Tests
 // --------------------
 
-describe('ScorecardHomepageCard', () => {
+describe('ScorecardHomepageCardComponent', () => {
   it('should render title, subheader, and description', () => {
     render(
-      <ScorecardHomepageCard
+      <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
         cardTitle="GitHub open PRs"
         description="Current count of open Pull Requests"
@@ -136,7 +150,7 @@ describe('ScorecardHomepageCard', () => {
 
   it('should render ResponsivePieChart', () => {
     render(
-      <ScorecardHomepageCard
+      <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
         cardTitle="GitHub open PRs"
         description="desc"
@@ -149,7 +163,7 @@ describe('ScorecardHomepageCard', () => {
 
   it('should pass correct pie data length', () => {
     render(
-      <ScorecardHomepageCard
+      <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
         cardTitle="GitHub open PRs"
         description="desc"
@@ -162,7 +176,7 @@ describe('ScorecardHomepageCard', () => {
 
   it('should render CustomLegend and CustomTooltip', () => {
     render(
-      <ScorecardHomepageCard
+      <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
         cardTitle="GitHub open PRs"
         description="desc"
@@ -185,7 +199,7 @@ describe('ScorecardHomepageCard', () => {
     };
 
     render(
-      <ScorecardHomepageCard
+      <ScorecardHomepageCardComponent
         scorecard={emptyScorecard}
         cardTitle="Empty"
         description="desc"
@@ -201,7 +215,7 @@ describe('ScorecardHomepageCard', () => {
 
   it('should render chart container element', () => {
     const { container } = render(
-      <ScorecardHomepageCard
+      <ScorecardHomepageCardComponent
         scorecard={mockScorecard}
         cardTitle="GitHub open PRs"
         description="desc"
@@ -212,5 +226,26 @@ describe('ScorecardHomepageCard', () => {
     expect(
       container.querySelector('[data-chart-container]'),
     ).toBeInTheDocument();
+  });
+
+  it('should handle undefined values array', () => {
+    const scorecardWithoutValues: AggregatedMetricResult = {
+      ...mockScorecard,
+      result: {
+        ...mockScorecard.result,
+        values: [],
+      },
+    };
+
+    render(
+      <ScorecardHomepageCardComponent
+        scorecard={scorecardWithoutValues}
+        cardTitle="No Values"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('pie-data-length')).toHaveTextContent('0');
   });
 });

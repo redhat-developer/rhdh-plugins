@@ -35,12 +35,14 @@ const StyledLegendItem = styled(Box)(({ theme }) => ({
   cursor: 'pointer',
 }));
 
-const StyledLegendColorBox = styled(Box)<{ color: string }>(({ color }) => ({
-  width: '10px',
-  height: '10px',
-  backgroundColor: color,
-  flexShrink: 0,
-}));
+const StyledLegendColorBox = styled(Box)<{ color?: string }>(
+  ({ color = 'success.main' }) => ({
+    width: '10px',
+    height: '10px',
+    backgroundColor: color,
+    flexShrink: 0,
+  }),
+);
 
 type CustomLegendProps = {
   pieData: PieDataProps[];

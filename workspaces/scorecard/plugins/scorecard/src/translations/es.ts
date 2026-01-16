@@ -46,7 +46,8 @@ const scorecardTranslationEs = createTranslationMessages({
     'errors.missingPermission': 'Permiso faltante',
     'errors.missingPermissionMessage':
       'Para ver las métricas de scorecard, tu administrador debe otorgarle el permiso requerido.',
-
+    'errors.userNotFoundInCatalogMessage':
+      'Entidad de usuario no encontrada en el catálogo',
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs abiertas',
     'metric.github.open_prs.description':

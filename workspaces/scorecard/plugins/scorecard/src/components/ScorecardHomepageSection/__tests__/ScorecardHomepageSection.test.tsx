@@ -17,10 +17,7 @@
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import {
-  ScorecardJiraHomepageCard,
-  ScorecardGitHubHomepageCard,
-} from '../ScorecardHomepageSection';
+import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
 
 import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
@@ -35,8 +32,8 @@ jest.mock('../../../hooks/useTranslation', () => ({
   }),
 }));
 
-jest.mock('../ScorecardHomepageCard', () => ({
-  ScorecardHomepageCard: ({
+jest.mock('../ScorecardHomepageCardComponent', () => ({
+  ScorecardHomepageCardComponent: ({
     scorecard,
   }: {
     scorecard: AggregatedMetricResult;
@@ -45,15 +42,18 @@ jest.mock('../ScorecardHomepageCard', () => ({
   ),
 }));
 
-jest.mock('../PermissionRequiredHomepageCard', () => ({
-  PermissionRequiredHomepageCard: ({ metricId }: { metricId: string }) => (
-    <div data-testid="permission-required">{metricId}</div>
-  ),
-}));
-
-jest.mock('@backstage/core-components', () => ({
-  ResponseErrorPanel: ({ error }: { error: Error }) => (
-    <div data-testid="response-error-panel">{error.message}</div>
+jest.mock('../EmptyStatePanel', () => ({
+  EmptyStatePanel: ({
+    error,
+    metricId,
+  }: {
+    error: Error;
+    metricId: string;
+  }) => (
+    <div data-testid="empty-state-panel">
+      <div data-testid="error-message">{error.message}</div>
+      <div data-testid="metric-id">{metricId}</div>
+    </div>
   ),
 }));
 
@@ -81,7 +81,7 @@ const mockScorecard: AggregatedMetricResult = {
   },
 };
 
-describe('ScorecardHomepageWrapper', () => {
+describe('ScorecardHomepageCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -93,35 +93,48 @@ describe('ScorecardHomepageWrapper', () => {
       error: undefined,
     });
 
-    render(<ScorecardGitHubHomepageCard />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
-  it('should render permission required card when NotAllowedError occurs', () => {
+  it('should render empty state panel when NotAllowedError occurs', () => {
     useAggregatedScorecard.mockReturnValue({
       aggregatedScorecard: undefined,
       loadingData: false,
       error: new Error('NotAllowedError: missing permission'),
     });
 
-    render(<ScorecardJiraHomepageCard />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="jira.open_issues" />, {
+      wrapper: TestWrapper,
+    });
 
-    expect(screen.getByTestId('permission-required')).toBeInTheDocument();
-    expect(screen.getByText('jira.open_issues')).toBeInTheDocument();
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('metric-id')).toHaveTextContent(
+      'jira.open_issues',
+    );
+    expect(screen.getByTestId('error-message')).toHaveTextContent(
+      'NotAllowedError: missing permission',
+    );
   });
 
-  it('should render error panel for non-permission errors', () => {
+  it('should render empty state panel for non-permission errors', () => {
     useAggregatedScorecard.mockReturnValue({
       aggregatedScorecard: undefined,
       loadingData: false,
       error: new Error('Something went wrong'),
     });
 
-    render(<ScorecardGitHubHomepageCard />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
-    expect(screen.getByTestId('response-error-panel')).toBeInTheDocument();
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('error-message')).toHaveTextContent(
+      'Something went wrong',
+    );
   });
 
   it('should render scorecard homepage card when data loads successfully', () => {
@@ -131,7 +144,9 @@ describe('ScorecardHomepageWrapper', () => {
       error: undefined,
     });
 
-    render(<ScorecardGitHubHomepageCard />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
     expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
@@ -154,7 +169,9 @@ describe('ScorecardHomepageWrapper', () => {
       error: undefined,
     });
 
-    render(<ScorecardGitHubHomepageCard />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
     expect(screen.getAllByTestId('scorecard-homepage-card')).toHaveLength(1);
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
@@ -168,7 +185,9 @@ describe('ScorecardHomepageWrapper', () => {
       error: undefined,
     });
 
-    render(<ScorecardGitHubHomepageCard />, { wrapper: TestWrapper });
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
 
     expect(
       screen.queryByTestId('scorecard-homepage-card'),

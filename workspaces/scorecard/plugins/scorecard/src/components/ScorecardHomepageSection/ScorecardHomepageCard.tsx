@@ -14,113 +14,78 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { Fragment } from 'react';
 
 import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
+import CircularProgress from '@mui/material/CircularProgress';
 
-import { CardWrapper } from '../Common/CardWrapper';
-import { CustomTooltip } from './CustomTooltip';
-import CustomLegend from './CustomLegend';
-import type { PieData } from '../../utils/utils';
+import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
+import { EmptyStatePanel } from './EmptyStatePanel';
+import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
-import { ResponsivePieChart } from './ResponsivePieChart';
+
+/**
+ * Props for the ScorecardHomepageCard component.
+ * @public
+ */
+export interface ScorecardHomepageCardProps {
+  metricId: string;
+}
 
 export const ScorecardHomepageCard = ({
-  scorecard,
-  cardTitle,
-  description,
-}: {
-  scorecard: AggregatedMetricResult;
-  cardTitle: string;
-  description: string;
-}) => {
-  const theme = useTheme();
+  metricId,
+}: ScorecardHomepageCardProps) => {
   const { t } = useTranslation();
 
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const { aggregatedScorecard, loadingData, error } = useAggregatedScorecard({
+    metricId,
+  });
 
-  const pieData: PieData[] =
-    scorecard.result.values?.map(value => ({
-      name: value.name,
-      value: value.count,
-      color:
-        {
-          success: theme.palette.success.main,
-          warning: theme.palette.warning.main,
-          error: theme.palette.error.main,
-        }[value.name] || theme.palette.success.main,
-    })) ?? [];
+  if (loadingData) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return <EmptyStatePanel error={error} metricId={metricId} />;
+  }
 
   return (
-    <CardWrapper
-      title={cardTitle}
-      subheader={t('thresholds.entities', { count: scorecard.result.total })}
-      description={description}
-    >
-      <Box
-        width="100%"
-        minWidth={311}
-        minHeight={174}
-        height="100%"
-        data-chart-container
-        position="relative"
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          cursor: 'default',
-          '& .recharts-wrapper > svg': {
-            outline: 'none',
-          },
-        }}
-      >
-        <ResponsivePieChart
-          pieData={pieData}
-          legendContent={props => (
-            <CustomLegend
-              {...props}
-              activeIndex={activeIndex}
-              setActiveIndex={setActiveIndex}
-              setTooltipPosition={setTooltipPosition}
-              pieData={pieData}
-            />
-          )}
-          tooltipContent={(props: any) => (
-            <CustomTooltip payload={props?.payload} pieData={pieData} />
-          )}
-        />
+    <Fragment>
+      {aggregatedScorecard
+        ?.slice(0, 1)
+        .map((metric: AggregatedMetricResult) => {
+          const titleKey = `metric.${metric.id}.title`;
+          const descriptionKey = `metric.${metric.id}.description`;
 
-        {activeIndex !== null && tooltipPosition && (
-          <Box
-            sx={{
-              position: 'absolute',
-              left: `${tooltipPosition.x}px`,
-              top: `${tooltipPosition.y}px`,
-              transform: 'translate(-50%, -100%)',
-              zIndex: 1000,
-              pointerEvents: 'none',
-            }}
-          >
-            <CustomTooltip
-              payload={[
-                {
-                  name: pieData[activeIndex].name,
-                  value: pieData[activeIndex].value,
-                  payload: pieData[activeIndex],
-                },
-              ]}
-              pieData={pieData}
+          const title = t(titleKey as any, {});
+          const description = t(descriptionKey as any, {});
+
+          const finalTitle = title === titleKey ? metric.metadata.title : title;
+          const finalDescription =
+            description === descriptionKey
+              ? metric.metadata.description
+              : description;
+
+          return (
+            <ScorecardHomepageCardComponent
+              key={metric.id}
+              cardTitle={finalTitle}
+              description={finalDescription}
+              scorecard={metric}
             />
-          </Box>
-        )}
-      </Box>
-    </CardWrapper>
+          );
+        })}
+    </Fragment>
   );
 };
