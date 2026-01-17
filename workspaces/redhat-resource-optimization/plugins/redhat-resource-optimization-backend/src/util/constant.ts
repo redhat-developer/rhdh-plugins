@@ -15,8 +15,6 @@
  */
 
 export const DEFAULT_SSO_BASE_URL = 'https://sso.redhat.com';
-export const DEFAULT_API_BASE_URL =
-  'https://console.redhat.com/api/cost-management/v1';
 
 // Base URL without the /cost-management/v1 path since the client appends it
 export const DEFAULT_COST_MANAGEMENT_PROXY_BASE_URL =

@@ -18,8 +18,36 @@ import assert from 'assert';
 import { RouterOptions } from '../models/RouterOptions';
 import { DEFAULT_SSO_BASE_URL } from './constant';
 
+// Cache key for token storage
+const TOKEN_CACHE_KEY = 'sso_access_token';
+
 export const getTokenFromApi = async (options: RouterOptions) => {
-  const { logger, config } = options;
+  const { logger, config, cache } = options;
+
+  const now = Date.now();
+
+  // Try to get cached token from cache service
+  const cachedToken = (await cache.get(TOKEN_CACHE_KEY)) as
+    | { token: string; expiresAt: number }
+    | undefined;
+
+  // Debug logging
+  if (cachedToken) {
+    const timeUntilExpiry = cachedToken.expiresAt - now;
+    const timeUntilExpirySeconds = Math.floor(timeUntilExpiry / 1000);
+    logger.info(
+      `Cache check: Token expires in ${timeUntilExpirySeconds}s, needs >60s to be valid`,
+    );
+  } else {
+    logger.info('Cache check: No cached token exists');
+  }
+
+  // Return cached token if still valid (with 60s buffer)
+  if (cachedToken && cachedToken.expiresAt > now + 60000) {
+    logger.info('Using cached access token');
+    return cachedToken.token;
+  }
+
   let accessToken = '';
 
   assert(typeof config !== 'undefined', 'Config is undefined');
@@ -53,8 +81,24 @@ export const getTokenFromApi = async (options: RouterOptions) => {
   });
 
   if (rhSsoResponse.ok) {
-    const { access_token } = await rhSsoResponse.json();
+    const { access_token, expires_in } = await rhSsoResponse.json();
     accessToken = access_token;
+
+    const expiresAt = Date.now() + expires_in * 1000;
+
+    // Cache token with expiry using cache service
+    await cache.set(
+      TOKEN_CACHE_KEY,
+      {
+        token: accessToken,
+        expiresAt,
+      },
+      {
+        ttl: expires_in * 1000, // TTL in milliseconds
+      },
+    );
+
+    logger.info(`Token cached, expires in ${expires_in} seconds`);
   } else {
     throw new Error(rhSsoResponse.statusText);
   }

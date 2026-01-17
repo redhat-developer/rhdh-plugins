@@ -18,16 +18,11 @@ import type { RequestHandler } from 'express';
 import type { RouterOptions } from '../models/RouterOptions';
 import {
   authorize,
-  ClusterProjectResult,
-  filterAuthorizedClusterIds,
-  filterAuthorizedClusterProjectIds,
+  filterAuthorizedClustersAndProjects,
 } from '../util/checkPermissions';
 import { rosPluginPermissions } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
 import { getTokenFromApi } from '../util/tokenUtil';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import { deepMapKeys } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/json-utils';
-import camelCase from 'lodash/camelCase';
-import { RecommendationList } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common';
 
 export const getAccess: (options: RouterOptions) => RequestHandler =
   options => async (_, response) => {
@@ -74,31 +69,43 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
       clusterDataMap = clusterMapDataFromCache;
       allProjects = projectDataFromCache;
     } else {
-      // token
-      const token = await getTokenFromApi(options);
+      try {
+        // token
+        const token = await getTokenFromApi(options);
 
-      // hit /recommendation API endpoint
-      const optimizationResponse = await optimizationApi.getRecommendationList(
-        {
-          query: {
-            limit: -1,
-            orderHow: 'desc',
-            orderBy: 'last_reported',
-          },
-        },
-        { token },
-      );
+        // hit /recommendation API endpoint
+        const optimizationResponse =
+          await optimizationApi.getRecommendationList(
+            {
+              query: {
+                limit: -1,
+                orderHow: 'desc',
+                orderBy: 'last_reported',
+              },
+            },
+            { token },
+          );
 
-      if (optimizationResponse.ok) {
-        const data = await optimizationResponse.json();
-        const camelCaseTransformedResponse = deepMapKeys(
-          data,
-          camelCase as (value: string | number) => string,
-        ) as RecommendationList;
+        // OptimizationsClient already transforms to camelCase when token is provided
+        const recommendationList = await optimizationResponse.json();
+
+        // Check if response contains errors
+        if ((recommendationList as any).errors) {
+          logger.error(
+            'API returned errors:',
+            (recommendationList as any).errors,
+          );
+          return response.status(500).json({
+            decision: AuthorizeResult.DENY,
+            error: 'API returned errors',
+            authorizeClusterIds: [],
+            authorizeProjects: [],
+          });
+        }
 
         // retrive cluster data from the API result
-        if (camelCaseTransformedResponse.data) {
-          camelCaseTransformedResponse.data.map(recommendation => {
+        if (recommendationList.data) {
+          recommendationList.data.map(recommendation => {
             if (recommendation.clusterAlias && recommendation.clusterUuid)
               clusterDataMap[recommendation.clusterAlias] =
                 recommendation.clusterUuid;
@@ -106,7 +113,7 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
 
           allProjects = [
             ...new Set(
-              camelCaseTransformedResponse.data.map(
+              recommendationList.data.map(
                 recommendation => recommendation.project,
               ),
             ),
@@ -120,20 +127,30 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
             ttl: 15 * 60 * 1000,
           });
         }
-      } else {
-        throw new Error(optimizationResponse.statusText);
+      } catch (error) {
+        logger.error('Error fetching recommendations', error);
+
+        // Return unauthorized response on any error
+        return response.status(500).json({
+          decision: AuthorizeResult.DENY,
+          error: 'Failed to fetch cluster data',
+          authorizeClusterIds: [],
+          authorizeProjects: [],
+        });
       }
     }
 
-    let authorizeClusterIds: string[] = await filterAuthorizedClusterIds(
-      _,
-      permissions,
-      httpAuth,
-      clusterDataMap,
+    // RBAC Filtering: Single batch call for both cluster and cluster-project permissions
+    logger.info(
+      `Checking permissions for ${
+        Object.keys(clusterDataMap).length
+      } clusters and ${allProjects.length} projects`,
     );
+    logger.info(`Cluster names: ${Object.keys(clusterDataMap).join(', ')}`);
+    logger.info(`Projects: ${allProjects.join(', ')}`);
 
-    const authorizeClustersProjects: ClusterProjectResult[] =
-      await filterAuthorizedClusterProjectIds(
+    const { authorizedClusterIds, authorizedClusterProjects } =
+      await filterAuthorizedClustersAndProjects(
         _,
         permissions,
         httpAuth,
@@ -141,18 +158,29 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
         allProjects,
       );
 
-    authorizeClusterIds = [
+    logger.info(
+      `Authorization results: ${authorizedClusterIds.length} cluster IDs, ${authorizedClusterProjects.length} cluster-project combinations`,
+    );
+    logger.info(`Authorized cluster IDs: ${authorizedClusterIds.join(', ')}`);
+    logger.info(
+      `Authorized cluster-projects: ${authorizedClusterProjects
+        .map(cp => `${cp.cluster}.${cp.project}`)
+        .join(', ')}`,
+    );
+
+    // Combine cluster IDs from both cluster-level and project-level permissions
+    const finalAuthorizedClusterIds = [
       ...new Set([
-        ...authorizeClusterIds,
-        ...authorizeClustersProjects.map(result => result.cluster),
+        ...authorizedClusterIds,
+        ...authorizedClusterProjects.map(result => result.cluster),
       ]),
     ];
 
-    const authorizeProjects = authorizeClustersProjects.map(
+    const authorizeProjects = authorizedClusterProjects.map(
       result => result.project,
     );
 
-    if (authorizeClusterIds.length > 0) {
+    if (finalAuthorizedClusterIds.length > 0) {
       finalDecision = AuthorizeResult.ALLOW;
     } else {
       finalDecision = AuthorizeResult.DENY;
@@ -160,7 +188,7 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
 
     const body = {
       decision: finalDecision,
-      authorizeClusterIds,
+      authorizeClusterIds: finalAuthorizedClusterIds,
       authorizeProjects,
     };
 
