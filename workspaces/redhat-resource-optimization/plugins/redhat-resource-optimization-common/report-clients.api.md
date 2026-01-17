@@ -398,11 +398,13 @@ export class OptimizationsClient implements OptimizationsApi {
   getRecommendationById(
     request: GetRecommendationByIdRequest,
   ): Promise<TypedResponse<RecommendationBoxPlots>>;
+  // Warning: (ae-forgotten-export) The symbol "RequestOptions" needs to be exported by the entry point index.d.ts
   // Warning: (ae-forgotten-export) The symbol "RecommendationList" needs to be exported by the entry point index.d.ts
   //
   // (undocumented)
   getRecommendationList(
     request: GetRecommendationListRequest,
+    options?: RequestOptions,
   ): Promise<TypedResponse<RecommendationList>>;
 }
 
