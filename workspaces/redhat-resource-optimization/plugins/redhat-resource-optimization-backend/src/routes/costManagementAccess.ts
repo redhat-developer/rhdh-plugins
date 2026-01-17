@@ -123,8 +123,15 @@ export const getCostManagementAccess: (
         }),
       ]);
     } catch (error) {
-      logger.error(`Failed to fetch data from Cost Management API`, error);
-      throw error;
+      logger.error('Error fetching cost management data', error);
+
+      // Return unauthorized response on any error
+      return response.status(500).json({
+        decision: AuthorizeResult.DENY,
+        error: 'Failed to fetch cluster data',
+        authorizedClusterNames: [],
+        authorizeProjects: [],
+      });
     }
   }
 

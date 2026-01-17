@@ -23,9 +23,6 @@ import {
 import { rosPluginPermissions } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/permissions';
 import { getTokenFromApi } from '../util/tokenUtil';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import { deepMapKeys } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/json-utils';
-import camelCase from 'lodash/camelCase';
-import { RecommendationList } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common';
 
 export const getAccess: (options: RouterOptions) => RequestHandler =
   options => async (_, response) => {
@@ -72,31 +69,43 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
       clusterDataMap = clusterMapDataFromCache;
       allProjects = projectDataFromCache;
     } else {
-      // token
-      const token = await getTokenFromApi(options);
+      try {
+        // token
+        const token = await getTokenFromApi(options);
 
-      // hit /recommendation API endpoint
-      const optimizationResponse = await optimizationApi.getRecommendationList(
-        {
-          query: {
-            limit: -1,
-            orderHow: 'desc',
-            orderBy: 'last_reported',
-          },
-        },
-        { token },
-      );
+        // hit /recommendation API endpoint
+        const optimizationResponse =
+          await optimizationApi.getRecommendationList(
+            {
+              query: {
+                limit: -1,
+                orderHow: 'desc',
+                orderBy: 'last_reported',
+              },
+            },
+            { token },
+          );
 
-      if (optimizationResponse.ok) {
-        const data = await optimizationResponse.json();
-        const camelCaseTransformedResponse = deepMapKeys(
-          data,
-          camelCase as (value: string | number) => string,
-        ) as RecommendationList;
+        // OptimizationsClient already transforms to camelCase when token is provided
+        const recommendationList = await optimizationResponse.json();
+
+        // Check if response contains errors
+        if ((recommendationList as any).errors) {
+          logger.error(
+            'API returned errors:',
+            (recommendationList as any).errors,
+          );
+          return response.status(500).json({
+            decision: AuthorizeResult.DENY,
+            error: 'API returned errors',
+            authorizeClusterIds: [],
+            authorizeProjects: [],
+          });
+        }
 
         // retrive cluster data from the API result
-        if (camelCaseTransformedResponse.data) {
-          camelCaseTransformedResponse.data.map(recommendation => {
+        if (recommendationList.data) {
+          recommendationList.data.map(recommendation => {
             if (recommendation.clusterAlias && recommendation.clusterUuid)
               clusterDataMap[recommendation.clusterAlias] =
                 recommendation.clusterUuid;
@@ -104,7 +113,7 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
 
           allProjects = [
             ...new Set(
-              camelCaseTransformedResponse.data.map(
+              recommendationList.data.map(
                 recommendation => recommendation.project,
               ),
             ),
@@ -118,19 +127,16 @@ export const getAccess: (options: RouterOptions) => RequestHandler =
             ttl: 15 * 60 * 1000,
           });
         }
-      } else {
-        const errorText = await optimizationResponse
-          .text()
-          .catch(() => 'No error details');
-        logger.error(
-          `Failed to fetch recommendations: ${optimizationResponse.status} ${optimizationResponse.statusText}`,
-          { errorDetails: errorText },
-        );
-        throw new Error(
-          `Failed to fetch recommendations: ${optimizationResponse.status} ${
-            optimizationResponse.statusText || 'Unknown error'
-          }`,
-        );
+      } catch (error) {
+        logger.error('Error fetching recommendations', error);
+
+        // Return unauthorized response on any error
+        return response.status(500).json({
+          decision: AuthorizeResult.DENY,
+          error: 'Failed to fetch cluster data',
+          authorizeClusterIds: [],
+          authorizeProjects: [],
+        });
       }
     }
 
