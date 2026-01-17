@@ -727,6 +727,7 @@ export class OptimizationsClient implements OptimizationsApi {
   // (undocumented)
   getRecommendationList(
     request: GetRecommendationListRequest,
+    options?: RequestOptions,
   ): Promise<TypedResponse<RecommendationList>>;
 }
 
