@@ -47,18 +47,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async getCostManagementReport(
     request: GetCostManagementRequest,
   ): Promise<TypedResponse<CostManagementReport>> {
-    // Get access permission and authorized clusters & projects
-    const accessAPIResponse = await this.getCostManagementAccess();
-
-    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
-      throw new UnauthorizedError();
-    }
-
-    // Get or refresh token
-    if (!this.token) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-    }
+    // Ensure access and token
+    await this.ensureAccessAndToken();
 
     // Get the proxy base URL for cost-management API
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
@@ -67,24 +57,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     // Build query params from the original request
     const queryParams = this.buildCostManagementQueryParams(request);
 
-    // Add cluster filters based on authorized clusters
-    // Empty array means full access (no filtering needed)
-    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
-    if (authorizedClusters.length > 0) {
-      // Add each authorized cluster as a filter parameter
-      // Cost Management API accepts multiple filter[exact:cluster] params
-      authorizedClusters.forEach(clusterName => {
-        queryParams.append('filter[exact:cluster]', clusterName);
-      });
-    }
-
-    // Add project filters based on authorized projects
-    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
-    if (authorizedProjects.length > 0) {
-      authorizedProjects.forEach(projectName => {
-        queryParams.append('filter[exact:project]', projectName);
-      });
-    }
+    // Add RBAC filters
+    await this.appendRBACFilters(queryParams);
 
     const queryString = queryParams.toString();
     const queryPart = queryString ? `?${queryString}` : '';
@@ -96,18 +70,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async downloadCostManagementReport(
     request: DownloadCostManagementRequest,
   ): Promise<void> {
-    // Get access permission and authorized clusters
-    const accessAPIResponse = await this.getCostManagementAccess();
-
-    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
-      throw new UnauthorizedError();
-    }
-
-    // Get or refresh token
-    if (!this.token) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-    }
+    // Ensure access and token
+    await this.ensureAccessAndToken();
 
     // Get the proxy base URL for cost-management API
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
@@ -125,22 +89,8 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
 
     const queryParams = this.buildCostManagementQueryParams(downloadRequest);
 
-    // Add cluster filters based on authorized clusters
-    // Empty array means full access (no filtering needed)
-    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
-    if (authorizedClusters.length > 0) {
-      authorizedClusters.forEach(clusterName => {
-        queryParams.append('filter[exact:cluster]', clusterName);
-      });
-    }
-
-    // Add project filters based on authorized projects
-    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
-    if (authorizedProjects.length > 0) {
-      authorizedProjects.forEach(projectName => {
-        queryParams.append('filter[exact:project]', projectName);
-      });
-    }
+    // Add RBAC filters
+    await this.appendRBACFilters(queryParams);
 
     const queryString = queryParams.toString();
     const queryPart = queryString ? `?${queryString}` : '';
@@ -444,43 +394,15 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   ): Promise<
     TypedResponse<{ data: Array<{ value: string }>; meta?: any; links?: any }>
   > {
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-
-    // Build query parameters
-    const params = new URLSearchParams();
-    if (search) {
-      params.append('search', search);
-    }
-    if (options?.limit !== undefined) {
-      params.append('limit', String(options.limit));
-    }
-    const queryString = params.toString();
-    const queryPart = queryString ? `?${queryString}` : '';
-    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-projects/${queryPart}`;
+    const url = await this.buildResourceTypeUrl(
+      'openshift-projects',
+      search,
+      options?.limit,
+    );
 
     // If token provided externally (backend use), use it directly
     if (options?.token) {
-      const response = await this.fetchApi.fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${options.token}`,
-        },
-        method: 'GET',
-      });
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
-      return {
-        ok: response.ok,
-        status: response.status,
-        json: async () => response.json(),
-      } as TypedResponse<{
-        data: Array<{ value: string }>;
-        meta?: any;
-        links?: any;
-      }>;
+      return await this.fetchWithExternalToken(url, options.token);
     }
 
     // If no external token, use internal token retrieval
@@ -501,47 +423,18 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   > {
-    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-
-    // Build query parameters
-    const params = new URLSearchParams();
-    if (search) {
-      params.append('search', search);
-    }
-    if (options?.limit !== undefined) {
-      params.append('limit', String(options.limit));
-    }
-    const queryString = params.toString();
-    const queryPart = queryString ? `?${queryString}` : '';
-    const url = `${baseUrl}/cost-management/v1/resource-types/openshift-clusters/${queryPart}`;
+    const url = await this.buildResourceTypeUrl(
+      'openshift-clusters',
+      search,
+      options?.limit,
+    );
 
     // If token provided externally (backend use), use it directly
     if (options?.token) {
-      const response = await this.fetchApi.fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${options.token}`,
-        },
-        method: 'GET',
-      });
-
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-
-      return {
-        ok: response.ok,
-        status: response.status,
-        json: async () => response.json(),
-      } as TypedResponse<{
-        data: Array<{ value: string; cluster_alias: string }>;
-        meta?: any;
-        links?: any;
-      }>;
+      return await this.fetchWithExternalToken(url, options.token);
     }
 
     // If no external token, use internal token retrieval
-
     return await this.fetchResourceType(url);
   }
 
@@ -569,37 +462,13 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
   public async getOpenShiftTags(
     timeScopeValue: number = -1,
   ): Promise<TypedResponse<{ data: string[]; meta?: any; links?: any }>> {
-    // Get access permission
-    const accessAPIResponse = await this.getCostManagementAccess();
-
-    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
-      throw new UnauthorizedError();
-    }
-
-    // Get or refresh token
-    if (!this.token) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-    }
+    // Ensure access and token
+    await this.ensureAccessAndToken();
 
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    let url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[time_scope_value]=${timeScopeValue}&key_only=true&limit=1000`;
-
-    // Add cluster filters based on authorized clusters
-    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
-    if (authorizedClusters.length > 0) {
-      authorizedClusters.forEach(clusterName => {
-        url += `&filter[exact:cluster]=${encodeURIComponent(clusterName)}`;
-      });
-    }
-
-    // Add project filters based on authorized projects
-    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
-    if (authorizedProjects.length > 0) {
-      authorizedProjects.forEach(projectName => {
-        url += `&filter[exact:project]=${encodeURIComponent(projectName)}`;
-      });
-    }
+    const url = await this.buildUrlWithRBACFilters(
+      `${baseUrl}/cost-management/v1/tags/openshift/?filter[time_scope_value]=${timeScopeValue}&key_only=true&limit=1000`,
+    );
 
     return await this.fetchWithTokenAndRetry<{
       data: string[];
@@ -624,39 +493,15 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   > {
-    // Get access permission
-    const accessAPIResponse = await this.getCostManagementAccess();
-
-    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
-      throw new UnauthorizedError();
-    }
-
-    // Get or refresh token
-    if (!this.token) {
-      const { accessToken } = await this.getNewToken();
-      this.token = accessToken;
-    }
+    // Ensure access and token
+    await this.ensureAccessAndToken();
 
     const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
-    let url = `${baseUrl}/cost-management/v1/tags/openshift/?filter[key]=${encodeURIComponent(
-      tagKey,
-    )}&filter[time_scope_value]=${timeScopeValue}`;
-
-    // Add cluster filters based on authorized clusters
-    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
-    if (authorizedClusters.length > 0) {
-      authorizedClusters.forEach(clusterName => {
-        url += `&filter[exact:cluster]=${encodeURIComponent(clusterName)}`;
-      });
-    }
-
-    // Add project filters based on authorized projects
-    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
-    if (authorizedProjects.length > 0) {
-      authorizedProjects.forEach(projectName => {
-        url += `&filter[exact:project]=${encodeURIComponent(projectName)}`;
-      });
-    }
+    const url = await this.buildUrlWithRBACFilters(
+      `${baseUrl}/cost-management/v1/tags/openshift/?filter[key]=${encodeURIComponent(
+        tagKey,
+      )}&filter[time_scope_value]=${timeScopeValue}`,
+    );
 
     return await this.fetchWithTokenAndRetry<{
       data: Array<{ key: string; values: string[]; enabled: boolean }>;
@@ -683,6 +528,117 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       meta?: any;
       links?: any;
     }>(url);
+  }
+
+  /**
+   * Ensures user has access and token is available
+   * @throws UnauthorizedError if access is denied
+   */
+  private async ensureAccessAndToken(): Promise<void> {
+    const accessAPIResponse = await this.getCostManagementAccess();
+
+    if (accessAPIResponse.decision === AuthorizeResult.DENY) {
+      throw new UnauthorizedError();
+    }
+
+    if (!this.token) {
+      const { accessToken } = await this.getNewToken();
+      this.token = accessToken;
+    }
+  }
+
+  /**
+   * Appends RBAC cluster and project filters to URLSearchParams
+   */
+  private async appendRBACFilters(queryParams: URLSearchParams): Promise<void> {
+    const accessAPIResponse = await this.getCostManagementAccess();
+
+    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
+    if (authorizedClusters.length > 0) {
+      authorizedClusters.forEach(clusterName => {
+        queryParams.append('filter[exact:cluster]', clusterName);
+      });
+    }
+
+    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
+    if (authorizedProjects.length > 0) {
+      authorizedProjects.forEach(projectName => {
+        queryParams.append('filter[exact:project]', projectName);
+      });
+    }
+  }
+
+  /**
+   * Builds a URL with RBAC filters appended
+   */
+  private async buildUrlWithRBACFilters(baseUrl: string): Promise<string> {
+    const accessAPIResponse = await this.getCostManagementAccess();
+    let url = baseUrl;
+
+    const authorizedClusters = accessAPIResponse.authorizedClusterNames || [];
+    if (authorizedClusters.length > 0) {
+      authorizedClusters.forEach(clusterName => {
+        url += `&filter[exact:cluster]=${encodeURIComponent(clusterName)}`;
+      });
+    }
+
+    const authorizedProjects = accessAPIResponse.authorizeProjects || [];
+    if (authorizedProjects.length > 0) {
+      authorizedProjects.forEach(projectName => {
+        url += `&filter[exact:project]=${encodeURIComponent(projectName)}`;
+      });
+    }
+
+    return url;
+  }
+
+  /**
+   * Builds resource type URL with search and limit parameters
+   */
+  private async buildResourceTypeUrl(
+    resourceType: string,
+    search?: string,
+    limit?: number,
+  ): Promise<string> {
+    const baseUrl = await this.discoveryApi.getBaseUrl('proxy');
+
+    const params = new URLSearchParams();
+    if (search) {
+      params.append('search', search);
+    }
+    if (limit !== undefined) {
+      params.append('limit', String(limit));
+    }
+    const queryString = params.toString();
+    const queryPart = queryString ? `?${queryString}` : '';
+
+    return `${baseUrl}/cost-management/v1/resource-types/${resourceType}/${queryPart}`;
+  }
+
+  /**
+   * Fetches with externally provided token (for backend use)
+   */
+  private async fetchWithExternalToken<T>(
+    url: string,
+    token: string,
+  ): Promise<TypedResponse<T>> {
+    const response = await this.fetchApi.fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    return {
+      ok: response.ok,
+      status: response.status,
+      json: async () => response.json(),
+    } as TypedResponse<T>;
   }
 
   /**
