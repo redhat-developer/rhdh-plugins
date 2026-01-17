@@ -21,7 +21,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import type { OptimizationsApi } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
 import { OptimizationsClient } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
-import { DEFAULT_API_BASE_URL } from '../util/constant';
+import { DEFAULT_COST_MANAGEMENT_PROXY_BASE_URL } from '../util/constant';
 
 export const optimizationServiceRef = createServiceRef<OptimizationsApi>({
   id: 'optimization-client',
@@ -32,9 +32,10 @@ export const optimizationServiceRef = createServiceRef<OptimizationsApi>({
         configApi: coreServices.rootConfig,
       },
       async factory({ configApi }): Promise<OptimizationsApi> {
+        // Base URL without /cost-management/v1 since OptimizationsClient appends it
         const baseUrl =
           configApi.getOptionalString('optimizationsBaseUrl') ??
-          DEFAULT_API_BASE_URL;
+          DEFAULT_COST_MANAGEMENT_PROXY_BASE_URL;
 
         return new OptimizationsClient({
           discoveryApi: {
