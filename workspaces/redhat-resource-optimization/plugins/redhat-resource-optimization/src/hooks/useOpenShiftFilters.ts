@@ -19,6 +19,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDebouncedCallbackWithAbort } from './useDebouncedCallbackWithAbort';
 
 /**
+ * Filter operation types
+ */
+export type FilterOperation = 'includes' | 'excludes' | 'exact';
+
+/**
  * OpenShift filter state
  */
 export interface OpenShiftFilters {
@@ -27,6 +32,7 @@ export interface OpenShiftFilters {
   timeRange: string;
   currency: string;
   filterBy: string;
+  filterOperation: FilterOperation;
   filterValue: string;
   currentPage: number;
   pageSize: number;
@@ -70,6 +76,7 @@ const DEFAULT_FILTERS: OpenShiftFilters = {
   timeRange: 'month-to-date',
   currency: 'USD',
   filterBy: 'project',
+  filterOperation: 'includes',
   filterValue: '',
   currentPage: 0,
   pageSize: 5,
@@ -90,13 +97,41 @@ function parseFiltersFromUrl(search: string): Partial<OpenShiftFilters> {
     }
   }
 
-  // Extract filterBy and filterValue
+  // Extract filterBy, filterOperation, and filterValue
+  // Check for exact filter first (filter[exact:project], filter[exact:cluster], etc.)
   for (const key of ['project', 'cluster', 'node']) {
-    const filterVal = params.get(`filter[${key}]`);
-    if (filterVal) {
+    const exactFilterVal = params.get(`filter[exact:${key}]`);
+    if (exactFilterVal) {
       filters.filterBy = key;
-      filters.filterValue = filterVal;
+      filters.filterOperation = 'exact';
+      filters.filterValue = exactFilterVal;
       break;
+    }
+  }
+
+  // Check for exclude filter (exclude[project], exclude[cluster], etc.)
+  if (!filters.filterValue) {
+    for (const key of ['project', 'cluster', 'node']) {
+      const excludeFilterVal = params.get(`exclude[${key}]`);
+      if (excludeFilterVal) {
+        filters.filterBy = key;
+        filters.filterOperation = 'excludes';
+        filters.filterValue = excludeFilterVal;
+        break;
+      }
+    }
+  }
+
+  // Check for regular filter (filter[project], filter[cluster], etc.)
+  if (!filters.filterValue) {
+    for (const key of ['project', 'cluster', 'node']) {
+      const filterVal = params.get(`filter[${key}]`);
+      if (filterVal) {
+        filters.filterBy = key;
+        filters.filterOperation = 'includes';
+        filters.filterValue = filterVal;
+        break;
+      }
     }
   }
 
@@ -162,7 +197,15 @@ function buildUrlFromFilters(filters: OpenShiftFilters): string {
 
   // Add filter parameter if filterValue is set
   if (filters.filterValue && filters.filterBy) {
-    params.set(`filter[${filters.filterBy}]`, filters.filterValue);
+    const operation = filters.filterOperation || 'includes';
+    if (operation === 'exact') {
+      params.set(`filter[exact:${filters.filterBy}]`, filters.filterValue);
+    } else if (operation === 'excludes') {
+      params.set(`exclude[${filters.filterBy}]`, filters.filterValue);
+    } else {
+      // 'includes' - default behavior
+      params.set(`filter[${filters.filterBy}]`, filters.filterValue);
+    }
   }
 
   return params.toString();

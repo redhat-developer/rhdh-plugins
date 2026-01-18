@@ -46,6 +46,7 @@ const formatCurrency = (value: number, currencyCode: string): string => {
 interface ProjectCost {
   id: string;
   projectName: string;
+  clusterId?: string;
   cost: number;
   costPercentage: number;
   monthOverMonthChange: number;
@@ -181,12 +182,22 @@ function buildCostManagementQueryParams(
     queryParams[`filter[${groupBy}]`] = specificItemName;
   } else if (filterBy === 'tag' && selectedTagKey && selectedTagValue) {
     // Tag filtering
-    const filterPrefix = filterOperation === 'excludes' ? 'exclude' : 'filter';
-    queryParams[`${filterPrefix}[tag:${selectedTagKey}]`] = selectedTagValue;
+    if (filterOperation === 'exact') {
+      queryParams[`filter[exact:tag:${selectedTagKey}]`] = selectedTagValue;
+    } else if (filterOperation === 'excludes') {
+      queryParams[`exclude[tag:${selectedTagKey}]`] = selectedTagValue;
+    } else {
+      queryParams[`filter[tag:${selectedTagKey}]`] = selectedTagValue;
+    }
   } else if (filterValue) {
     // Regular filtering
-    const filterPrefix = filterOperation === 'excludes' ? 'exclude' : 'filter';
-    queryParams[`${filterPrefix}[${filterBy}]`] = filterValue;
+    if (filterOperation === 'exact') {
+      queryParams[`filter[exact:${filterBy}]`] = filterValue;
+    } else if (filterOperation === 'excludes') {
+      queryParams[`exclude[${filterBy}]`] = filterValue;
+    } else {
+      queryParams[`filter[${filterBy}]`] = filterValue;
+    }
   }
 
   // Add sorting
@@ -380,8 +391,24 @@ export function OpenShiftPage() {
             delta_value?: number;
           }) || {};
 
-        const nameField = groupBy as keyof typeof item;
-        const itemName = (item[nameField] as string) || 'Unknown';
+        // For clusters, prefer values[0].clusters[0] (human-readable) over item.cluster (UUID)
+        let itemName: string;
+        let clusterId: string | undefined;
+        if (groupBy === 'cluster') {
+          const valueItem = item.values?.[0] as
+            | { clusters?: string[]; cluster?: string }
+            | undefined;
+          const clustersArray = valueItem?.clusters;
+          itemName =
+            clustersArray && clustersArray.length > 0
+              ? clustersArray[0]
+              : (item.cluster as string) || 'Unknown';
+          // Store the cluster UUID for display
+          clusterId = (item.cluster as string) || undefined;
+        } else {
+          const nameField = groupBy as keyof typeof item;
+          itemName = (item[nameField] as string) || 'Unknown';
+        }
 
         const costField =
           groupBy === 'project' && overheadDistribution === 'distribute'
@@ -399,6 +426,7 @@ export function OpenShiftPage() {
         return {
           id: `${index}`,
           projectName: itemName,
+          clusterId,
           cost: costValue,
           costPercentage: 0,
           monthOverMonthChange: deltaPercent,
@@ -647,21 +675,41 @@ export function OpenShiftPage() {
           </Typography>
         ),
         field: 'projectName',
+        cellStyle: { minWidth: 350 },
+        headerStyle: { minWidth: 350 },
         render: data => (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Typography variant="body2">{data.projectName}</Typography>
-            {data.includesOverhead && (
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+              }}
+            >
+              <Typography variant="body2">{data.projectName}</Typography>
+              {groupBy === 'project' && data.includesOverhead && (
+                <Typography
+                  variant="caption"
+                  style={{
+                    padding: '2px 6px',
+                    backgroundColor: '#F5F5F5',
+                    border: '1px solid #D2D2D2',
+                    borderRadius: '16px',
+                    color: 'black',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Includes overhead
+                </Typography>
+              )}
+            </div>
+            {groupBy === 'cluster' && data.clusterId && (
               <Typography
                 variant="caption"
-                style={{
-                  padding: '2px 6px',
-                  backgroundColor: '#F5F5F5',
-                  border: '1px solid #D2D2D2',
-                  borderRadius: '16px',
-                  color: 'black',
-                }}
+                style={{ color: '#666', display: 'block', marginTop: 10 }}
               >
-                Includes overhead
+                {data.clusterId}
               </Typography>
             )}
           </div>
@@ -858,6 +906,12 @@ export function OpenShiftPage() {
               if (value !== 'project') {
                 setShowPlatformSum(false);
               }
+              // Sync filterBy with groupBy and reset filter value
+              setFilterBy(value);
+              setFilterValue('');
+              // Reset tag-related filter fields
+              setSelectedTagKey('');
+              setSelectedTagValue('');
             }}
             selectedTag={selectedTag}
             onSelectedTagChange={value => {
