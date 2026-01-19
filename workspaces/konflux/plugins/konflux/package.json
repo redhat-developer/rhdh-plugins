@@ -14,8 +14,7 @@
     "pluginId": "konflux",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-konflux",
-      "@red-hat-developer-hub/backstage-plugin-konflux-backend",
-      "@red-hat-developer-hub/backstage-plugin-konflux-common"
+      "@red-hat-developer-hub/backstage-plugin-konflux-backend"
     ]
   },
   "repository": {
