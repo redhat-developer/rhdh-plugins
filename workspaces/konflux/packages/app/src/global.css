@@ -36,18 +36,17 @@ body {
 }
 
 /* Ensure Backstage page components don't cause horizontal scroll */
-[class*="MuiContainer-root"],
-[class*="MuiGrid-container"],
+[class*='MuiContainer-root'],
+[class*='MuiGrid-container'],
 .backstage-page,
-[data-testid*="page"] {
+[data-testid*='page'] {
   max-width: 100% !important;
   overflow-x: hidden;
 }
 
 /* Ensure SidebarPage doesn't cause overflow */
-[class*="SidebarPage"] {
+[class*='SidebarPage'] {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
 }
-
