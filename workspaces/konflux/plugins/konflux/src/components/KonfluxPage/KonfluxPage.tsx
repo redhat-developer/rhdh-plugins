@@ -29,6 +29,7 @@ import { Divider } from '@patternfly/react-core';
 
 import './KonfluxPage.css';
 
+/** @public */
 export const KonfluxPageComponent = () => {
   const { entity } = useEntity();
   const { loading, hasSubcomponents } = usePageLoading(entity);

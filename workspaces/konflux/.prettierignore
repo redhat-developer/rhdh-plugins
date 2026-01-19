@@ -4,3 +4,4 @@ coverage
 .vscode
 .eslintrc.js
 dist-dynamic
+report.api.md

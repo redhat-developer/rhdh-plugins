@@ -16,11 +16,15 @@
 
 /**
  * Default filter value that represents "all" or "no filter"
+ *
+ * @public
  */
 export const FILTER_ALL_VALUE = 'All' as const;
 
 /**
  * Frontend pagination constants
+ *
+ * @public
  */
 export const FRONTEND_PAGINATION = {
   DEFAULT_PAGE: 0,
@@ -30,6 +34,8 @@ export const FRONTEND_PAGINATION = {
 
 /**
  * Time constants (in milliseconds)
+ *
+ * @public
  */
 export const TIME_CONSTANTS = {
   SECOND_MS: 1000,

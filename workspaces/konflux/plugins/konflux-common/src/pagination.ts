@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/** @public */
 export const PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 25,
 } as const;

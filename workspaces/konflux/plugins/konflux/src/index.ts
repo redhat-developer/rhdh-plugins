@@ -21,17 +21,22 @@ export {
   KonfluxCIPage,
 } from './plugin';
 
+/** @public */
 export { KonfluxCIPageComponent } from './components/KonfluxCIPage/KonfluxCIPage';
+/** @public */
 export { KonfluxPageComponent } from './components/KonfluxPage/KonfluxPage';
 
+/** @public */
 export const isKonfluxOverviewAvailable = (entity: any) => {
   return entity?.metadata?.annotations?.['konflux-ci.dev/overview'] === 'true';
 };
 
+/** @public */
 export const isKonfluxCiTabAvailable = (entity: any) => {
   return entity?.metadata?.annotations?.['konflux-ci.dev/ci'] === 'true';
 };
 
+/** @public */
 export const isKonfluxTabAvailable = (entity: any) => {
   return entity?.metadata?.annotations?.['konflux-ci.dev/konflux'] === 'true';
 };

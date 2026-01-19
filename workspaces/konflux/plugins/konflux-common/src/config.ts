@@ -22,7 +22,11 @@ import {
 } from './types';
 import { Config } from '@backstage/config';
 
-// entity Annotation Parsing Logic
+/**
+ * Parse a Konflux entity annotation as YAML.
+ *
+ * @public
+ */
 export const parseEntityKonfluxConfig = <T>(
   annotation: string | null | undefined,
 ): T | null => {
@@ -37,11 +41,13 @@ export const parseEntityKonfluxConfig = <T>(
 };
 
 /**
- * Parse subcomponent cluster configurations from KonfluxConfig into flattened array.
+ * Parse subcomponent cluster configurations from KonfluxConfig into a flattened array.
  *
  * @param konfluxConfig - The Konflux configuration object
  * @param subcomponentNames - Array of subcomponent names to extract configs for
  * @returns Flattened array of subcomponent cluster configurations
+ *
+ * @public
  */
 export const parseSubcomponentClusterConfigurations = (
   konfluxConfig: KonfluxConfig | undefined,
@@ -57,7 +63,11 @@ export const parseSubcomponentClusterConfigurations = (
   );
 };
 
-//
+/**
+ * Parse cluster configurations from Backstage config.
+ *
+ * @public
+ */
 export const parseClusterConfigs = (
   clustersConfig: Config | undefined,
 ): Record<string, KonfluxClusterConfig> | null => {
@@ -83,7 +93,9 @@ export const parseClusterConfigs = (
 };
 
 /**
- * Parse authProvider from KonfluxConfig
+ * Parse authProvider from KonfluxConfig.
+ *
+ * @public
  */
 export const parseAuthProviderConfig = (
   clustersConfig: Config | undefined,

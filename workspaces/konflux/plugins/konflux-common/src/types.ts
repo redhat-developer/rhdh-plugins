@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-// Common GroupVersionKind type
+/**
+ * Common GroupVersionKind type.
+ *
+ * @public
+ */
 export type GroupVersionKind = {
   kind: string;
   apiVersion: string;
@@ -23,11 +27,13 @@ export type GroupVersionKind = {
 };
 
 // Generic resource data structure
+/** @public */
 export type ResourceData<T = any> = {
   data: T[];
 };
 
 // Cluster and error types
+/** @public */
 export type ClusterError = {
   cluster: string;
   namespace: string;
@@ -40,24 +46,29 @@ export type ClusterError = {
   resourceType?: string;
 };
 
+/** @public */
 export type ClusterErrors = ClusterError[];
 
+/** @public */
 export type ClusterInfo = {
   name: string;
   konfluxUI?: string;
   openshiftConsoleUrl?: string;
 };
 
+/** @public */
 export type SubcomponentInfo = {
   name: string;
 };
 
+/** @public */
 export type K8sResourceIdentifier = {
   apiGroup?: string;
   apiVersion: string;
   kind: string;
 };
 
+/** @public */
 export type OwnerReference = {
   apiVersion: string;
   kind: string;
@@ -67,6 +78,7 @@ export type OwnerReference = {
   blockOwnerDeletion?: boolean;
 };
 
+/** @public */
 export type K8sResourceCommon = K8sResourceIdentifier &
   Partial<{
     metadata: Partial<{
@@ -93,26 +105,31 @@ export type K8sResourceCommon = K8sResourceIdentifier &
     data: { [key: string]: unknown };
   }>;
 
+/** @public */
 export type K8sResourceCommonWithClusterInfo = K8sResourceCommon & {
   cluster: ClusterInfo;
   subcomponent: SubcomponentInfo;
 };
 
+/** @public */
 export type PipelineRunResource = K8sResourceCommonWithClusterInfo & {
   kind: 'PipelineRun';
   [key: string]: any;
 };
 
+/** @public */
 export type ApplicationResource = K8sResourceCommonWithClusterInfo & {
   kind: 'Application';
   [key: string]: any;
 };
 
+/** @public */
 export type ComponentResource = K8sResourceCommonWithClusterInfo & {
   kind: 'Component';
   [key: string]: any;
 };
 
+/** @public */
 export enum runStatus {
   Succeeded = 'Succeeded',
   Failed = 'Failed',
@@ -131,12 +148,14 @@ export enum runStatus {
   Unknown = 'Unknown',
 }
 
+/** @public */
 export enum ReleaseCondition {
   Processed = 'Processed',
   Validated = 'Validated',
   Released = 'Released',
 }
 
+/** @public */
 export type ReleaseResource = K8sResourceCommonWithClusterInfo & {
   kind: 'Release';
   status?: {
@@ -154,6 +173,7 @@ export type ReleaseResource = K8sResourceCommonWithClusterInfo & {
 // Response data types
 
 // Types for subcomponent-based configuration
+/** @public */
 export type SubcomponentClusterConfig = {
   subcomponent: string;
   cluster: string;
@@ -161,6 +181,7 @@ export type SubcomponentClusterConfig = {
   applications: string[];
 };
 
+/** @public */
 export interface KonfluxClusterConfig {
   apiUrl?: string;
   uiUrl?: string;
@@ -168,21 +189,25 @@ export interface KonfluxClusterConfig {
   kubearchiveApiUrl?: string;
 }
 
+/** @public */
 export interface KonfluxComponentClusterConfig {
   cluster?: string;
   namespace?: string;
   applications?: string[];
 }
 
+/** @public */
 export interface KonfluxComponentConfig {
   clusters?: KonfluxComponentClusterConfig[];
 }
+/** @public */
 export interface KonfluxConfig {
   authProvider: 'serviceAccount' | 'oidc' | 'impersonationHeaders';
   clusters: Record<string, KonfluxClusterConfig>;
   subcomponentConfigs: SubcomponentClusterConfig[];
 }
 
+/** @public */
 export interface Filters {
   subcomponent?: string;
   clusters?: string[];

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+/** @public */
 export enum PipelineRunLabel {
   APPLICATION = 'appstudio.openshift.io/application',
   COMPONENT = 'appstudio.openshift.io/component',

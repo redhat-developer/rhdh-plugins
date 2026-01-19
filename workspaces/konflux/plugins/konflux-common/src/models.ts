@@ -16,6 +16,7 @@
 
 import { GroupVersionKind } from './types';
 
+/** @public */
 export const PipelineRunGVK: GroupVersionKind = {
   apiVersion: 'v1',
   apiGroup: 'tekton.dev',
@@ -23,11 +24,13 @@ export const PipelineRunGVK: GroupVersionKind = {
   plural: 'pipelineruns',
 };
 
+/** @public */
 export const PipelineRunModel = {
   ...PipelineRunGVK,
   abbr: 'PLR',
 };
 
+/** @public */
 export const TaskRunGVK: GroupVersionKind = {
   apiVersion: 'v1',
   apiGroup: 'tekton.dev',
@@ -35,6 +38,7 @@ export const TaskRunGVK: GroupVersionKind = {
   plural: 'taskruns',
 };
 
+/** @public */
 export const ApplicationGVK: GroupVersionKind = {
   apiVersion: 'v1alpha1',
   apiGroup: 'appstudio.redhat.com',
@@ -42,6 +46,7 @@ export const ApplicationGVK: GroupVersionKind = {
   plural: 'applications',
 };
 
+/** @public */
 export const ComponentGVK: GroupVersionKind = {
   apiVersion: 'v1alpha1',
   apiGroup: 'appstudio.redhat.com',
@@ -49,6 +54,7 @@ export const ComponentGVK: GroupVersionKind = {
   plural: 'components',
 };
 
+/** @public */
 export const ReleaseGVK: GroupVersionKind = {
   apiVersion: 'v1alpha1',
   apiGroup: 'appstudio.redhat.com',
@@ -56,6 +62,7 @@ export const ReleaseGVK: GroupVersionKind = {
   plural: 'releases',
 };
 
+/** @public */
 export enum ModelsPlural {
   pipelineruns = 'pipelineruns',
   taskruns = 'taskruns',
@@ -65,6 +72,7 @@ export enum ModelsPlural {
   releases = 'releases',
 }
 
+/** @public */
 export const konfluxResourceModels: { [key: string]: GroupVersionKind } = {
   [ModelsPlural.pipelineruns]: PipelineRunGVK,
   [ModelsPlural.taskruns]: TaskRunGVK,

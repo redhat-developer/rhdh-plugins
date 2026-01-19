@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 
+/** @public */
 export const KONFLUX_CLUSTER_CONFIG = 'konflux-ci.dev/clusters';

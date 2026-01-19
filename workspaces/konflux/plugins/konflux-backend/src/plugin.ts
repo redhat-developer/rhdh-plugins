@@ -21,6 +21,7 @@ import {
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { createRouter } from './router';
 
+/** @public */
 export const konfluxPlugin = createBackendPlugin({
   pluginId: 'konflux',
   register(env) {

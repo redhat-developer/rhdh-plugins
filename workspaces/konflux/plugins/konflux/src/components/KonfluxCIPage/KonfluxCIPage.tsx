@@ -25,6 +25,7 @@ import { RefreshButton } from '../RefreshButton';
 import './KonfluxCIPage.css';
 import { Divider } from '@patternfly/react-core';
 
+/** @public */
 export const KonfluxCIPageComponent = () => {
   const { entity } = useEntity();
   const { loading, hasSubcomponents } = usePageLoading(entity);

@@ -22,12 +22,14 @@
 
 // Export all types
 export type {
-  GroupVersionKind,
   ResourceData,
   ClusterError,
   ClusterErrors,
   ClusterInfo,
   SubcomponentInfo,
+  K8sResourceIdentifier,
+  OwnerReference,
+  K8sResourceCommon,
   PipelineRunResource,
   ApplicationResource,
   ComponentResource,
@@ -40,6 +42,13 @@ export type {
   Filters,
   KonfluxComponentClusterConfig,
 } from './types';
+
+/**
+ * Common GroupVersionKind type.
+ *
+ * @public
+ */
+export type GroupVersionKind = import('./types').GroupVersionKind;
 
 export { ReleaseCondition, runStatus } from './types';
 

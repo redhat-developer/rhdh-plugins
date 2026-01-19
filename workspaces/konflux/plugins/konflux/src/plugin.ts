@@ -21,6 +21,7 @@ import {
 
 import { rootRouteRef } from './routes';
 
+/** @public */
 export const konfluxPlugin = createPlugin({
   id: 'konflux',
   routes: {

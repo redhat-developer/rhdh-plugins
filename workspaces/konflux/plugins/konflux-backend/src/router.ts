@@ -27,6 +27,7 @@ import { KonfluxService } from './services/konflux-service';
 import { KonfluxLogger } from './helpers/logger';
 import { isUserEntity } from '@backstage/catalog-model';
 
+/** @public */
 export interface RouterOptions {
   logger: LoggerService;
   config: RootConfigService;
@@ -142,6 +143,11 @@ function handleError(
   res.status(500).json({ error: 'Failed to aggregate resources' });
 }
 
+/**
+ * Create the Konflux backend router.
+ *
+ * @public
+ */
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
