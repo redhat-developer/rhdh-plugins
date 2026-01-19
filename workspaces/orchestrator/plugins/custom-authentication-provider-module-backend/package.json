@@ -54,7 +54,7 @@
     "@backstage/cli": "^0.34.5",
     "@backstage/types": "^1.2.2",
     "@janus-idp/cli": "3.6.1",
-    "prettier": "3.7.4",
+    "prettier": "3.8.0",
     "typescript": "5.6.3"
   },
   "files": [
