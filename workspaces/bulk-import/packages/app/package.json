@@ -52,7 +52,7 @@
     "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-bulk-import-common": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-orchestrator": "5.3.0",
+    "@red-hat-developer-hub/backstage-plugin-orchestrator": "5.3.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "1.5.0",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "@tanstack/react-query": "^4.29.21",
