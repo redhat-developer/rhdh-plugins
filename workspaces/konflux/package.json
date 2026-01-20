@@ -1,6 +1,7 @@
 {
   "name": "@internal/konflux",
   "version": "0.0.0",
+  "private": true,
   "engines": {
     "node": "18 || 20 || 22"
   },
