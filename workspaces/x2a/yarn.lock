@@ -7650,6 +7650,7 @@ __metadata:
     "@backstage/errors": ^1.2.7
     "@backstage/plugin-catalog-node": ^1.20.0
     "@backstage/plugin-kubernetes-backend": ^0.20.4
+    "@backstage/repo-tools": ^0.16.0
     "@backstage/types": ^1.2.2
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
     "@types/express": ^4.17.6
