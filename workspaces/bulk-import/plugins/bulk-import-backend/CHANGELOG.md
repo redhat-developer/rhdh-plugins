@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 6.11.1
+
+### Patch Changes
+
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- Updated dependencies [9c17c36]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@6.11.1
+
 ## 6.11.0
 
 ### Minor Changes
