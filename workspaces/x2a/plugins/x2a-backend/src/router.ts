@@ -13,54 +13,92 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { HttpAuthService } from '@backstage/backend-plugin-api';
+
+import { HttpAuthService, LoggerService } from '@backstage/backend-plugin-api';
 import { InputError } from '@backstage/errors';
 import { z } from 'zod';
 import express from 'express';
-import Router from 'express-promise-router';
+
 import { convertorServiceRef } from './services/ConvertorService';
+import {
+  createOpenApiRouter,
+  ProjectsGet,
+  ProjectsPost,
+} from './schema/openapi';
 
 export async function createRouter({
   httpAuth,
   convertor,
+  logger,
 }: {
   httpAuth: HttpAuthService;
   convertor: typeof convertorServiceRef.T;
+  logger: LoggerService;
 }): Promise<express.Router> {
-  const router = Router();
-  router.use(express.json());
+  const router = await createOpenApiRouter();
 
-  // TEMPLATE NOTE:
-  // Zod is a powerful library for data validation and recommended in particular
-  // for user-defined schemas. In this case we use it for input validation too.
-  //
-  // If you want to define a schema for your API we recommend using Backstage's
-  // OpenAPI tooling: https://backstage.io/docs/next/openapi/01-getting-started
-  const migrationSchema = z.object({
-    name: z.string(),
-    // TODO: add more
-    // entityRef: z.string().optional(),
-  });
-
-  router.post('/migrations', async (req, res) => {
-    const parsed = migrationSchema.safeParse(req.body);
-    if (!parsed.success) {
-      throw new InputError(parsed.error.toString());
-    }
-
-    const result = await convertor.createMigration(parsed.data, {
-      credentials: await httpAuth.credentials(req, { allow: ['user'] }),
+  router.get('/projects', async (req, res) => {
+    const endpoint = 'GET /projects';
+    const projectsGetRequestSchema = z.object({
+      page: z.number().optional(),
+      pageSize: z.number().optional(),
+      sort: z
+        .enum(['createdAt', 'name', 'description', 'createdBy'])
+        .optional(),
     });
 
-    res.status(201).json(result);
+    const parseResult = projectsGetRequestSchema
+      .passthrough()
+      .safeParse(req.query);
+    if (!parseResult.success) {
+      throw new InputError(
+        `Invalid query string ${endpoint}: ${parseResult.error}`,
+      );
+    }
+    const query: ProjectsGet['query'] = parseResult.data;
+
+    logger.info(`${endpoint} request received: query=${JSON.stringify(query)}`);
+
+    const { projects, totalCount } = await convertor.listProjects();
+
+    const response: ProjectsGet['response'] = {
+      totalCount,
+      items: projects,
+    };
+    res.json(response);
   });
 
-  router.get('/migrations', async (_req, res) => {
-    res.json(await convertor.listMigrations());
+  router.post('/projects', async (req, res) => {
+    const endpoint = 'POST /projects';
+    const projectCreateRequestSchema = z.object({
+      name: z.string(),
+      description: z.string(),
+      abbreviation: z.string(),
+    });
+
+    const parsedBody = projectCreateRequestSchema
+      .passthrough()
+      .safeParse(req.body);
+    if (!parsedBody.success) {
+      throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+    }
+    const requestBody: ProjectsPost['body'] = parsedBody.data;
+
+    const newProject = await convertor.createProject(requestBody, {
+      credentials: await httpAuth.credentials(req, { allow: ['user'] }),
+    });
+    // TODO: persist in the DB
+
+    const response: ProjectsPost['response'] = newProject;
+    res.json(response);
   });
 
-  router.get('/migrations/:id', async (req, res) => {
-    res.json(await convertor.getMigration({ id: req.params.id }));
+  router.delete('/projects/:projectId', async (req, res) => {
+    const endpoint = 'DELETE /projects/:projectId';
+    const projectId = req.params.projectId;
+    logger.info(`${endpoint} request received: projectId=${projectId}`);
+    await convertor.deleteProject({ projectId });
+    res.status(200);
   });
 
   return router;

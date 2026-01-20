@@ -13,10 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
- */
-export * from '../client/src/schema/openapi';
+export { ProjectList } from './ProjectList';

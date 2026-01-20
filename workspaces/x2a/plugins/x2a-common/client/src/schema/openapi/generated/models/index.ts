@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
- */
-export * from '../client/src/schema/openapi';
+export * from '../models/Project.model';
+export * from '../models/ProjectsGet200Response.model';
+export * from '../models/ProjectsPostRequest.model';

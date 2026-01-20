@@ -18,29 +18,10 @@ import {
   renderInTestApp,
   TestApiProvider,
 } from '@backstage/test-utils';
-import { MigrationList } from './MigrationList';
+import { ProjectList } from './ProjectList';
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 
-// const mockMigrations: Migration[] = [
-//   {
-//     id: '1',
-//     name: 'Mock Migration 1',
-//     status: 'Created',
-//     sourceRepository: 'https://github.com/org/repo',
-//     createdBy: 'user1',
-//     createdAt: new Date().toISOString(),
-//   },
-//   {
-//     id: '2',
-//     name: 'Mock Migration 2',
-//     status: 'Completed',
-//     sourceRepository: 'https://github.com/org/repo',
-//     createdBy: 'user2',
-//     createdAt: new Date().toISOString(),
-//   },
-// ];
-
-describe('MigrationList component', () => {
+describe('ProjectList component', () => {
   it('renders the progressbar', async () => {
     const discoveryApiMock = mockApis.discovery({
       baseUrl: 'http://localhost:1234',
@@ -56,7 +37,7 @@ describe('MigrationList component', () => {
           [discoveryApiRef, discoveryApiMock],
         ]}
       >
-        <MigrationList />
+        <ProjectList />
       </TestApiProvider>,
     );
 

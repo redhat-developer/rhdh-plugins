@@ -15,8 +15,8 @@
  */
 
 /**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
+ * This is a copy of FetchApi, to avoid importing core-plugin-api.
  */
-export * from '../client/src/schema/openapi';
+export type FetchApi = {
+  fetch: typeof fetch;
+};

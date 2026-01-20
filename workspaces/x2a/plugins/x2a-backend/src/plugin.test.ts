@@ -25,6 +25,7 @@ import {
   ConflictError,
   AuthenticationError,
   NotAllowedError,
+  NotFoundError,
 } from '@backstage/errors';
 
 // TEMPLATE NOTE:
@@ -33,43 +34,45 @@ import {
 // however, just like anyone who installs your plugin might replace the
 // services with their own implementations.
 describe('plugin', () => {
-  it('should create and read Migration items', async () => {
+  it('should create and read Project items', async () => {
     const { server } = await startTestBackend({
       features: [x2APlugin],
     });
 
-    // TODO: so far BE provides mock data for the migrations, so failing here
-    await request(server).get('/api/x2a/migrations').expect(200, {
+    // TODO: so far BE provides mock data for the projects, so failing here
+    await request(server).get('/api/x2a/projects').expect(200, {
       items: [],
     });
 
-    const createRes = await request(server).post('/api/x2a/migrations').send({
-      name: 'My Migration',
+    const createRes = await request(server).post('/api/x2a/projcts').send({
+      name: 'My Project',
       // TODO: more properties
     });
 
     expect(createRes.status).toBe(201);
     expect(createRes.body).toEqual({
       id: expect.any(String),
-      title: 'My Migration',
+      title: 'My Project',
       createdBy: mockCredentials.user().principal.userEntityRef,
       createdAt: expect.any(String),
     });
 
     const createdTodoItem = createRes.body;
 
-    await request(server)
-      .get('/api/x2a/migrations')
-      .expect(200, {
-        items: [createdTodoItem],
-      });
+    await request(server).get('/api/x2a/projects').expect(200, {
+      items: [
+        /* TODO */
+      ],
+    });
 
     await request(server)
-      .get(`/api/x2a/migrations/${createdTodoItem.id}`)
-      .expect(200, createdTodoItem);
+      .get(`/api/x2a/projects/FOO_BAR_PROJECT_ID`)
+      .expect(200, {
+        /* TODO */
+      });
   });
 
-  it('should forward errors from the MigrationService', async () => {
+  it('should forward errors from the ConvertorService', async () => {
     const { server } = await startTestBackend({
       features: [
         x2APlugin,
@@ -77,34 +80,41 @@ describe('plugin', () => {
           service: convertorServiceRef,
           deps: {},
           factory: () => ({
-            createMigration: jest.fn().mockRejectedValue(new ConflictError()),
-            listMigrations: jest
+            createProject: jest.fn().mockRejectedValue(new ConflictError()),
+            deleteProject: jest.fn().mockRejectedValue(new NotAllowedError()),
+            listProjects: jest
               .fn()
               .mockRejectedValue(new AuthenticationError()),
-            getMigration: jest.fn().mockRejectedValue(new NotAllowedError()),
+            getProject: jest.fn().mockRejectedValue(new NotFoundError()),
           }),
         }),
       ],
     });
 
-    const createRes = await request(server)
-      .post('/api/x2a/migrations')
-      .send({ name: 'My Migration' });
-    expect(createRes.status).toBe(409);
-    expect(createRes.body).toMatchObject({
-      error: { name: 'ConflictError' },
-    });
-
-    const listRes = await request(server).get('/api/x2a/migrations');
+    const listRes = await request(server).get('/api/x2a/projects');
     expect(listRes.status).toBe(401);
     expect(listRes.body).toMatchObject({
       error: { name: 'AuthenticationError' },
     });
 
-    const getRes = await request(server).get('/api/x2a/migrations/123');
+    const createRes = await request(server)
+      .post('/api/x2a/projects')
+      .send({ name: 'My Project' });
+    expect(createRes.status).toBe(409);
+    expect(createRes.body).toMatchObject({
+      error: { name: 'ConflictError' },
+    });
+
+    const deleteRes = await request(server).delete('/api/x2a/projects/123');
+    expect(deleteRes.status).toBe(403);
+    expect(deleteRes.body).toMatchObject({
+      error: { name: 'NotAllowedError' },
+    });
+
+    const getRes = await request(server).get('/api/x2a/projects/123');
     expect(getRes.status).toBe(403);
     expect(getRes.body).toMatchObject({
-      error: { name: 'NotAllowedError' },
+      error: { name: 'NotFoundError' },
     });
   });
 });

@@ -13,16 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export type MigrationStatus = 'Created' | 'Pending' | 'Completed' | 'Failed';
 
-export type Migration = {
-  // UUID v4
-  id: string;
-
-  name: string;
-  status: MigrationStatus;
-  sourceRepository: string;
-
-  createdBy: string;
-  createdAt: string;
-};
+export * from './apis';
+export * from './router';

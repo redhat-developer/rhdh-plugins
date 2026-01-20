@@ -22,7 +22,7 @@
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack",
-    "openapi-generate-server": "backstage-repo-tools package schema openapi generate --server"
+    "openapi-generate": "backstage-repo-tools package schema openapi generate --server --client-package plugins/x2a-common/client"
   },
   "dependencies": {
     "@backstage/backend-defaults": "^0.13.1",

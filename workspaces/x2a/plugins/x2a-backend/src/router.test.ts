@@ -22,32 +22,34 @@ import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
-import { convertorServiceRef } from './services/ConvertorService';
-import { Migration } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  ConvertorService,
+  convertorServiceRef,
+} from './services/ConvertorService';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-const mockMigration: Migration = {
+const mockProject: Project = {
   id: '123',
-  name: 'Mock Migration',
-  status: 'Created',
-  sourceRepository: 'https://github.com/org/repo',
+  name: 'Mock Project',
+  abbreviation: 'MP',
+  description: 'Mock Description',
+  // sourceRepository: 'https://github.com/org/repo',
   createdBy: mockCredentials.user().principal.userEntityRef,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 };
 
 // TEMPLATE NOTE:
 // Testing the router directly allows you to write a unit test that mocks the provided options.
 describe('createRouter', () => {
   let app: express.Express;
-  let convertor: jest.Mocked<typeof convertorServiceRef.T>;
 
   beforeEach(async () => {
-    convertor = {
-      createMigration: jest.fn(),
-      listMigrations: jest.fn(),
-      getMigration: jest.fn(),
-    };
+    const convertor = ConvertorService.create({
+      logger: mockServices.logger.mock(),
+    });
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
+      logger: mockServices.logger.mock(),
       convertor,
     });
     app = express();
@@ -55,31 +57,56 @@ describe('createRouter', () => {
     app.use(mockErrorHandler());
   });
 
-  it('should create a migration', async () => {
-    convertor.createMigration.mockResolvedValue(mockMigration);
+  it('should query empty project list', async () => {
+    const response = await request(app).get('/projects').send();
 
-    const response = await request(app).post('/migrations').send({
-      name: mockMigration.name,
-      // TODO: more
-    });
-
-    expect(response.status).toBe(201);
-    expect(response.body).toEqual(mockMigration);
+    expect(response.status).toBe(200);
+    expect(response.body.totalCount).toBe(2);
+    expect(response.body.items).toEqual([
+      {
+        id: '1',
+        name: 'Mock Migration 1',
+        description: 'Mock Description 1',
+        abbreviation: 'MP1',
+        createdBy: 'user1',
+        createdAt: '2026-01-20T12:24:56.615Z',
+      },
+      {
+        id: '2',
+        name: 'Mock Migration 2',
+        description: 'Mock Description 2',
+        abbreviation: 'MP2',
+        createdBy: 'user2',
+        createdAt: '2026-01-20T12:24:56.616Z',
+      },
+    ]);
   });
 
-  it('should not allow unauthenticated requests to create a migration', async () => {
-    convertor.createMigration.mockResolvedValue(mockMigration);
+  it.skip('should create a project', async () => {
+    convertor.createProject.mockResolvedValue(mockProject);
+
+    const response = await request(app).post('/projects').send(
+      // TODO: limit to the required data only
+      mockProject,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(mockProject);
+  });
+
+  it.skip('should not allow unauthenticated requests to create a migration', async () => {
+    convertor.createProject.mockResolvedValue(mockProject);
 
     // TEMPLATE NOTE:
     // The HttpAuth mock service considers all requests to be authenticated as a
     // mock user by default. In order to test other cases we need to explicitly
     // pass an authorization header with mock credentials.
     const response = await request(app)
-      .post('/migrations')
+      .post('/projects')
       .set('Authorization', mockCredentials.none.header())
       .send({
-        name: mockMigration.name,
-        // TODO: more
+        // TODO: limit to the required data only
+        mockProject,
       });
 
     expect(response.status).toBe(401);

@@ -26,16 +26,19 @@ import {
 
 import DeleteIcon from '@material-ui/icons/Delete';
 
-import { Migration } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Project,
+  ProjectsGet200Response,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
-import { Box, Button, Grid } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 
 type DenseTableProps = {
   forceRefresh: () => void;
-  migrations: Migration[];
+  projects: Project[];
 };
 
-export const DenseTable = ({ migrations, forceRefresh }: DenseTableProps) => {
+export const DenseTable = ({ projects, forceRefresh }: DenseTableProps) => {
   const clientService = useClientService();
 
   const [error, setError] = useState<Error | null>(null);
@@ -44,31 +47,31 @@ export const DenseTable = ({ migrations, forceRefresh }: DenseTableProps) => {
     setError(null);
 
     try {
-      await clientService.deleteMigration(id);
+      await clientService.projectsProjectIdDelete({ path: { projectId: id } });
       forceRefresh();
     } catch (e) {
       setError(e as Error);
     }
   };
 
-  const columns: TableColumn<Migration>[] = [
+  const columns: TableColumn<Project>[] = [
     { title: 'Name', field: 'name' },
     { title: 'Status', field: 'status' },
     { title: 'Source Repository', field: 'sourceRepository' },
   ];
 
-  const data = migrations;
+  const data = projects;
 
   const actions = [
-    (rowData: Migration) => ({
+    (rowData: Project) => ({
       icon: DeleteIcon,
       onClick: () => handleDelete(rowData.id),
-      tooltip: 'Delete migration',
+      tooltip: 'Delete project',
     }),
   ];
 
-  const getDetailPanel = ({ rowData }: { rowData: Migration }) => (
-    <div>TODO: Details of {rowData.name} migration</div>
+  const getDetailPanel = ({ rowData }: { rowData: Project }) => (
+    <div>TODO: Details of {rowData.name} project</div>
   );
 
   return (
@@ -81,20 +84,17 @@ export const DenseTable = ({ migrations, forceRefresh }: DenseTableProps) => {
 
       <Grid item>
         <Box display="flex" justifyContent="flex-end">
-          <LinkButton
-            variant="contained"
-            color="primary"
-            to="/x2a/new-migration"
-          >
-            New Migration
+          <LinkButton variant="contained" color="primary" to="/x2a/new-project">
+            New Project
           </LinkButton>
         </Box>
       </Grid>
 
       <Grid item>
-        <Table<Migration>
-          title={`Migrations (${migrations.length})`}
+        <Table<Project>
+          title={`Projects (${projects.length})`}
           options={{
+            // TODO: review the options
             search: false,
             paging: false,
             actionsColumnIndex: -1,
@@ -110,16 +110,21 @@ export const DenseTable = ({ migrations, forceRefresh }: DenseTableProps) => {
   );
 };
 
-export const MigrationList = () => {
+export const ProjectList = () => {
   const [refresh, setRefresh] = useState(0);
   const clientService = useClientService();
 
-  const { value, loading, error } = useAsync(clientService.getAllMigrations, [
-    clientService.isReady,
-    refresh,
-  ]);
+  const { value, loading, error } =
+    useAsync(async (): Promise<ProjectsGet200Response> => {
+      const response = await clientService.projectsGet({
+        query: {
+          /* TODO: pagination */
+        },
+      });
+      return await response.json();
+    }, [refresh, clientService]);
 
-  if (loading || !clientService.isReady) {
+  if (loading) {
     return <Progress />;
   } else if (error) {
     return <ResponseErrorPanel error={error} />;
@@ -127,7 +132,7 @@ export const MigrationList = () => {
 
   return (
     <DenseTable
-      migrations={value || []}
+      projects={value?.items || []}
       forceRefresh={() => setRefresh(refresh + 1)}
     />
   );

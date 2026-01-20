@@ -17,8 +17,8 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
 import { convertorServiceRef } from './services/ConvertorService';
+import { createRouter } from './router';
 
 /**
  * x2APlugin backend plugin
@@ -33,12 +33,15 @@ export const x2APlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         convertor: convertorServiceRef,
+        database: coreServices.database,
+        logger: coreServices.logger,
       },
-      async init({ httpAuth, httpRouter, convertor }) {
+      async init({ httpRouter, convertor, logger, httpAuth }) {
         httpRouter.use(
           await createRouter({
             httpAuth,
             convertor,
+            logger,
           }),
         );
       },

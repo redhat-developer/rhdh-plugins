@@ -15,19 +15,19 @@
  */
 import { Grid } from '@material-ui/core';
 import { Header, Page, Content } from '@backstage/core-components';
-import { MigrationList } from '../MigrationList';
+import { ProjectList } from '../ProjectList';
 
 export const Dashboard = () => (
   <Page themeId="tool">
     <Header
       title="Migration Hub"
-      subtitle="Initiate and track the asynchronous conversations of Chef files into production-ready Ansible Playbooks."
+      subtitle="Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks."
     />
 
     <Content>
       <Grid container spacing={3} direction="column">
         <Grid item>
-          <MigrationList />
+          <ProjectList />
         </Grid>
       </Grid>
     </Content>

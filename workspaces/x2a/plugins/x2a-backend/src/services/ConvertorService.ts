@@ -21,33 +21,35 @@ import {
   createServiceRef,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import { NotFoundError } from '@backstage/errors';
+// import { NotFoundError } from '@backstage/errors';
 import {
   BackstageCredentials,
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
 import { Expand } from '@backstage/types';
-import { Migration } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-const mockMigrations: Migration[] = [
+// TODO: till the DB is ready
+const mockProjects: Project[] = [
   {
     id: '1',
     name: 'Mock Migration 1',
-    status: 'Created',
-    sourceRepository: 'https://github.com/org/repo',
+    description: 'Mock Description 1',
+    abbreviation: 'MP1',
+    // sourceRepository: 'https://github.com/org/repo',
     createdBy: 'user1',
-    createdAt: new Date().toISOString(),
+    createdAt: new Date('2026-01-20T12:24:56.615Z'),
   },
   {
     id: '2',
     name: 'Mock Migration 2',
-    status: 'Completed',
-    sourceRepository: 'https://github.com/org/repo',
+    description: 'Mock Description 2',
+    abbreviation: 'MP2',
+    // sourceRepository: 'https://github.com/org/repo',
     createdBy: 'user2',
-    createdAt: new Date().toISOString(),
+    createdAt: new Date('2026-01-20T12:24:56.616Z'),
   },
 ];
-
 export class ConvertorService {
   readonly #logger: LoggerService;
   // readonly #catalog: typeof catalogServiceRef.T;
@@ -67,16 +69,18 @@ export class ConvertorService {
     // this.#catalog = catalog;
   }
 
-  async createMigration(
+  async createProject(
     input: {
       name: string;
-      // TODO
+      abbreviation: string;
+      description: string;
       // entityRef?: string;
+      // TODO: more
     },
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
     },
-  ): Promise<Migration> {
+  ): Promise<Project> {
     /*
     /* TEMPLATE NOTE:
     // A common pattern for Backstage plugins is to pass an entity reference
@@ -115,37 +119,44 @@ export class ConvertorService {
 
     const id = crypto.randomUUID();
     const createdBy = options.credentials.principal.userEntityRef;
-    const newMigration: Migration = {
-      name: input.name,
-      status: 'Created',
-      sourceRepository: '',
+    const newProject: Project = {
       id,
-      createdBy,
-      createdAt: new Date().toISOString(),
+      name: input.name,
+      abbreviation: input.abbreviation,
+      description: input.description,
+      // sourceRepository: 'https://github.com/org/repo',
+      createdBy: createdBy,
+      createdAt: new Date(),
     };
 
     // TODO: persist in the DB
 
-    this.#logger.info('Created new migration', { ...newMigration });
+    this.#logger.info(`Created new project: ${JSON.stringify(newProject)}`);
 
-    return newMigration;
+    return newProject;
   }
 
-  async listMigrations(): Promise<{ migrations: Migration[] }> {
-    this.#logger.info('listMigrations called');
-    // TODO: fetch from the DB, sync with k8s
-    return { migrations: mockMigrations };
+  async listProjects(): Promise<{ projects: Project[]; totalCount: number }> {
+    this.#logger.info('listProjects called');
+    // TODO: fetch from the DB, sync with k8s, apply pagination
+    const totalCount = mockProjects.length;
+    return { projects: mockProjects, totalCount };
   }
 
-  async getMigration(request: { id: string }): Promise<Migration> {
-    // TODO: fetch from the DB
-    const migration = mockMigrations.find(m => m.id === request.id);
-
-    if (!migration) {
-      throw new NotFoundError(`No migration found with id '${request.id}'`);
-    }
-    return migration;
+  async deleteProject({ projectId }: { projectId: string }) {
+    this.#logger.info('deleteProject called');
+    // TODO: delete from the DB, sync with k8s, apply pagination
   }
+
+  // async getMigration(request: { id: string }): Promise<Migration> {
+  //   // TODO: fetch from the DB
+  //   const migration = mockMigrations.find(m => m.id === request.id);
+
+  //   if (!migration) {
+  //     throw new NotFoundError(`No migration found with id '${request.id}'`);
+  //   }
+  //   return migration;
+  // }
 }
 
 export const convertorServiceRef = createServiceRef<Expand<ConvertorService>>({

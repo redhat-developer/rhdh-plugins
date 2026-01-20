@@ -13,57 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import {
   discoveryApiRef,
   fetchApiRef,
   useApi,
 } from '@backstage/core-plugin-api';
-import { Migration } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { DefaultApiClient } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export const useClientService = () => {
-  const [baseUrl, setBaseUrl] = useState<string | undefined>(undefined);
-  const fetchApi = useApi(fetchApiRef);
   const discoveryApi = useApi(discoveryApiRef);
+  const fetchApi = useApi(fetchApiRef);
 
-  const { fetch } = fetchApi;
-  useEffect(() => {
-    discoveryApi.getBaseUrl('x2a').then(setBaseUrl);
-  }, [discoveryApi]);
-
-  const service = useMemo(
-    () => ({
-      isReady: baseUrl !== undefined,
-
-      getAllMigrations: async (): Promise<Migration[]> => {
-        const response = await fetch(`${baseUrl}/migrations`).then(r =>
-          r.json(),
-        );
-
-        if (response.migrations) {
-          return response.migrations;
-        }
-        throw new Error(
-          `Failed to get migrations with code ${response?.response?.statusCode || response?.status}, message: ${response?.error?.message}`,
-        );
-      },
-
-      deleteMigration: async (id: string): Promise<void> => {
-        // TODO: implement backend API
-        const response = await fetch(`${baseUrl}/migrations/${id}`, {
-          method: 'DELETE',
-        });
-
-        if (response.status !== 200) {
-          throw new Error(
-            `Failed to delete migration with code ${response.status}, message: ${response.statusText}`,
-          );
-        }
-      },
-    }),
-    [fetch, baseUrl],
+  const client = useMemo(
+    () => new DefaultApiClient({ discoveryApi, fetchApi }),
+    [discoveryApi, fetchApi],
   );
 
-  return service;
+  return client;
 };

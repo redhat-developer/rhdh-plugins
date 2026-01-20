@@ -13,4 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { MigrationList } from './MigrationList';
+
+export * from '../models/Project.model';
+export * from '../models/ProjectsGet200Response.model';
+export * from '../models/ProjectsPostRequest.model';

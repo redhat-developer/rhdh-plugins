@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import { Route, Routes } from 'react-router-dom';
-import { newMigrationRouteRef } from '../routes';
+import { newProjectRouteRef } from '../routes';
 
 import { Dashboard } from './Dashboard';
-import { NewMigrationPage } from './NewMigrationPage/NewMigrationPage';
+import { NewMigrationPage } from './NewProjectPage/NewProjectPage';
 
 export const Router = () => {
   return (
@@ -25,7 +25,7 @@ export const Router = () => {
     <Routes>
       <Route path="/*" element={<Dashboard />} />
       <Route
-        path={`${newMigrationRouteRef.path}/*`}
+        path={`${newProjectRouteRef.path}/*`}
         element={<NewMigrationPage />}
       />
     </Routes>

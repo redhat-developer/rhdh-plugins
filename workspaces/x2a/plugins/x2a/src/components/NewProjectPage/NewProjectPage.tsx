@@ -23,6 +23,7 @@ export const NewMigrationPage = () => {
 
   const steps = [
     {
+      // TODO: review the titles
       title: 'Job name and description',
       content: <div>Job name and description</div>,
     },
@@ -38,7 +39,7 @@ export const NewMigrationPage = () => {
 
   return (
     <Page themeId="tool">
-      <Header title="New migration" subtitle="Migration Hub / New migration" />
+      <Header title="New project" subtitle="Migration Hub / New project" />
 
       <Content>
         <Grid container spacing={3} direction="column">
