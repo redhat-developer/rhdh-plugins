@@ -82,13 +82,13 @@ describe('Repository utils', () => {
   });
 
   it('should parse key-value pairs correctly with semicolons', () => {
-    const prKeyValuePairInput = `argocd/app-name: 'guestbook'; github.com/project-slug: janus-idp/backstage-showcase; backstage.io/createdAt: '5/12/2021, 07:03:18 AM'; quay.io/repository-slug: janus-idp/backstage-showcase; backstage.io/kubernetes-id: test-backstage`;
+    const prKeyValuePairInput = `argocd/app-name: 'guestbook'; github.com/project-slug: redhat-developer/rhdh; backstage.io/createdAt: '5/12/2021, 07:03:18 AM'; quay.io/repository-slug: redhat-developer/rhdh; backstage.io/kubernetes-id: test-backstage`;
 
     const expectedOutput = {
       'argocd/app-name': 'guestbook',
-      'github.com/project-slug': 'janus-idp/backstage-showcase',
+      'github.com/project-slug': 'redhat-developer/rhdh',
       'backstage.io/createdAt': '5/12/2021, 07:03:18 AM',
-      'quay.io/repository-slug': 'janus-idp/backstage-showcase',
+      'quay.io/repository-slug': 'redhat-developer/rhdh',
       'backstage.io/kubernetes-id': 'test-backstage',
     };
 
@@ -112,11 +112,11 @@ describe('Repository utils', () => {
   });
 
   it('should handle extra whitespace around key-value pairs', () => {
-    const prKeyValuePairInput = ` argocd/app-name :  'guestbook' ; github.com/project-slug : janus-idp/backstage-showcase ; backstage.io/createdAt : '5/12/2021, 07:03:18 AM' `;
+    const prKeyValuePairInput = ` argocd/app-name :  'guestbook' ; github.com/project-slug : redhat-developer/rhdh ; backstage.io/createdAt : '5/12/2021, 07:03:18 AM' `;
 
     const expectedOutput = {
       'argocd/app-name': 'guestbook',
-      'github.com/project-slug': 'janus-idp/backstage-showcase',
+      'github.com/project-slug': 'redhat-developer/rhdh',
       'backstage.io/createdAt': '5/12/2021, 07:03:18 AM',
     };
 
