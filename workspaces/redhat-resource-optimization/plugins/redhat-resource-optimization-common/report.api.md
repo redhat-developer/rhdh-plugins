@@ -1158,6 +1158,8 @@ export interface WorkflowAvailabilityResult {
   // (undocumented)
   available: boolean;
   // (undocumented)
+  errorMessage?: string;
+  // (undocumented)
   reason?: WorkflowUnavailableReason;
 }
 
