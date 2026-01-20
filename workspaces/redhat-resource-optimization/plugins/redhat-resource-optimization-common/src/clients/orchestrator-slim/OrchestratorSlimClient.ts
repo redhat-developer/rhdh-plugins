@@ -19,7 +19,10 @@ import {
   FetchApi,
   IdentityApi,
 } from '@backstage/core-plugin-api';
-import type { OrchestratorSlimApi } from './OrchestratorSlimApi';
+import type {
+  OrchestratorSlimApi,
+  WorkflowAvailabilityResult,
+} from './OrchestratorSlimApi';
 import type { JsonObject } from '@backstage/types';
 
 /** @public */
@@ -40,6 +43,21 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
   }
 
   async isWorkflowAvailable(workflowId: string): Promise<boolean> {
+    const result = await this.checkWorkflowAvailability(workflowId);
+    return result.available;
+  }
+
+  async checkWorkflowAvailability(
+    workflowId: string,
+  ): Promise<WorkflowAvailabilityResult> {
+    if (!workflowId) {
+      return {
+        available: false,
+        reason: 'not_configured',
+        errorMessage: 'No workflow configured to apply recommendations',
+      };
+    }
+
     if (!this.baseUrl) {
       this.baseUrl = await this.discoveryApi.getBaseUrl('orchestrator');
     }
@@ -48,15 +66,61 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
       workflowId,
     )}/overview`;
 
-    let result = false;
     try {
       const response = await this.fetchApi.fetch(url, { method: 'GET' });
-      result = response.ok;
-    } catch {
-      // Carry on...
-    }
 
-    return result;
+      if (response.ok) {
+        return { available: true };
+      }
+
+      // Try to extract error message from the response
+      let errorMessage: string | undefined;
+      try {
+        const errorResponse = (await response.json()) as {
+          error?: { message?: string };
+          message?: string;
+        };
+        errorMessage =
+          errorResponse?.error?.message || errorResponse?.message || undefined;
+      } catch {
+        // Ignore JSON parsing errors
+      }
+
+      if (response.status === 404) {
+        return {
+          available: false,
+          reason: 'not_found',
+          errorMessage: errorMessage || 'Workflow not found',
+        };
+      }
+
+      if (response.status === 403 || response.status === 401) {
+        return {
+          available: false,
+          reason: 'access_denied',
+          errorMessage:
+            errorMessage ||
+            'You do not have permission to access this workflow',
+        };
+      }
+
+      return {
+        available: false,
+        reason: 'service_unavailable',
+        errorMessage:
+          errorMessage || 'Workflow service is currently unavailable',
+      };
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Unable to connect to workflow service';
+      return {
+        available: false,
+        reason: 'service_unavailable',
+        errorMessage,
+      };
+    }
   }
 
   /** @public */
