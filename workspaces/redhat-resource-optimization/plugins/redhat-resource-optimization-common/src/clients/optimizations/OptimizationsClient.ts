@@ -118,12 +118,34 @@ export class OptimizationsClient implements OptimizationsApi {
 
   public async getRecommendationList(
     request: GetRecommendationListRequest,
+    options?: RequestOptions,
   ): Promise<TypedResponse<RecommendationList>> {
     const snakeCaseTransformedRequest = deepMapKeys(
       request,
       snakeCase as (value: string | number) => string,
     ) as GetRecommendationListRequest;
 
+    // If token is provided in options (backend use case), skip access check
+    if (options?.token) {
+      const response = await this.defaultClient.getRecommendationList(
+        snakeCaseTransformedRequest,
+        options,
+      );
+
+      return {
+        ...response,
+        json: async () => {
+          const data = await response.json();
+          const camelCaseTransformedResponse = deepMapKeys(
+            data,
+            camelCase as (value: string | number) => string,
+          ) as RecommendationList;
+          return camelCaseTransformedResponse;
+        },
+      };
+    }
+
+    // Frontend use case - use fetchWithToken which includes access check
     const response = await this.fetchWithToken(
       this.defaultClient.getRecommendationList,
       snakeCaseTransformedRequest,

@@ -1,0 +1,61 @@
+---
+# Main component entity
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-component
+  description: My Component
+  title: My Component
+  annotations:
+    konflux-ci.dev/overview: 'true'
+    konflux-ci.dev/konflux: 'true'
+    konflux-ci.dev/ci: 'true'
+spec:
+  type: service
+  lifecycle: production
+  owner: user:guest
+---
+# Subcomponent A
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-component-subcomponent-a
+  description: Subcomponent A
+  title: Subcomponent A
+  annotations:
+    konflux-ci.dev/overview: 'true'
+    konflux-ci.dev/konflux: 'true'
+    konflux-ci.dev/ci: 'true'
+    konflux-ci.dev/clusters: |
+      - cluster: cluster1
+        namespace: namespace1
+        applications:
+          - app1
+          - app2
+spec:
+  subcomponentOf: my-component
+  type: service
+  lifecycle: experimental
+  owner: user:guest
+---
+# Subcomponent B
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-component-subcomponent-b
+  description: Subcomponent B
+  title: Subcomponent B
+  annotations:
+    konflux-ci.dev/overview: 'true'
+    konflux-ci.dev/konflux: 'true'
+    konflux-ci.dev/ci: 'true'
+    konflux-ci.dev/clusters: |
+      - cluster: cluster2
+        namespace: namespace2
+        applications:
+          - app3
+spec:
+  subcomponentOf: my-component
+  type: service
+  lifecycle: experimental
+  owner: user:guest

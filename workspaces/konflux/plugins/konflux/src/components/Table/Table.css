@@ -1,0 +1,31 @@
+.wrapper {
+  position: relative;
+}
+
+.spinner-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header {
+  padding: 16px 20px !important;
+  border-top: 1px;
+  border-bottom: 1px;
+  font-weight: 600 !important;
+  position: static;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow: visible !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  background-color: rgba(0, 0, 0, 0.02) !important;
+  min-width: fit-content !important;
+}

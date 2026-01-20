@@ -25,6 +25,7 @@ import {
   UserInfoService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
+import { NotAllowedError } from '@backstage/errors';
 import {
   AuthorizePermissionRequest,
   AuthorizePermissionResponse,
@@ -945,9 +946,29 @@ function setupInternalRoutes(
         // If not an admin, enforce initiatorEntity check
         if (!isUserAuthorizedForInstanceAdminView) {
           const instanceInitiatorEntity = instance.initiatorEntity;
+
+          // If the instance has no initiatorEntity recorded, we cannot determine ownership.
+          // This can happen for:
+          // 1. Workflow instances created before the initiatorEntity feature was added
+          // 2. Workflow instances started externally (not through Backstage)
+          // 3. Workflows that transform/overwrite their input variables
+          if (!instanceInitiatorEntity) {
+            throw new NotAllowedError(
+              `Access denied for instance ${instanceId}. ` +
+                `You have permission to view workflow '${workflowId}', but this workflow run ` +
+                `does not have ownership information recorded. Since we cannot verify you ` +
+                `initiated this run, the 'orchestrator.instanceAdminView' permission is required. ` +
+                `Contact your administrator to grant this permission.`,
+            );
+          }
+
           if (instanceInitiatorEntity !== initiatorEntity) {
-            throw new Error(
-              `Unauthorized to access instance ${instanceId} not initiated by user.`,
+            throw new NotAllowedError(
+              `Access denied for instance ${instanceId}. ` +
+                `This workflow run was initiated by '${instanceInitiatorEntity}', not by you ('${initiatorEntity}'). ` +
+                `With 'orchestrator.workflow' or 'orchestrator.workflow.${workflowId}' permissions, ` +
+                `you can only view instances you created. To view all instances, you need the ` +
+                `'orchestrator.instanceAdminView' permission.`,
             );
           }
         }
