@@ -7866,6 +7866,8 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-x2a-common@workspace:plugins/x2a-common"
   dependencies:
     "@backstage/cli": ^0.34.5
+    cross-fetch: ^4.1.0
+    uri-template: ^2.0.0
   languageName: unknown
   linkType: soft
 
@@ -13317,7 +13319,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-fetch@npm:^4.0.0":
+"cross-fetch@npm:^4.0.0, cross-fetch@npm:^4.1.0":
   version: 4.1.0
   resolution: "cross-fetch@npm:4.1.0"
   dependencies:
