@@ -122,7 +122,7 @@ describe('createRouter', () => {
         .set('Authorization', mockCredentials.none.header())
         .send(mockInputProject);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     },
   );
 });
