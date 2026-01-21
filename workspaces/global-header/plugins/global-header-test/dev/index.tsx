@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 import { createDevApp } from '@backstage/dev-utils';
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
+import '@backstage/ui/css/styles.css';
+
 import {
   globalHeaderTestPlugin,
   TestHeader,
