@@ -32,6 +32,7 @@
     "@backstage/errors": "^1.2.7",
     "@backstage/plugin-catalog-node": "^1.20.0",
     "@backstage/types": "^1.2.2",
+    "@kubernetes/client-node": "^1.4.0",
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
