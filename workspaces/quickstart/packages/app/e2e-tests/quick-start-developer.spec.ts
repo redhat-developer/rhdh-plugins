@@ -121,7 +121,7 @@ test.describe('Test Quick Start plugin', () => {
     await page.getByText(translations.steps.importApplication.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.importApplication.ctaTitle,
-      '/bulk-import/repositories',
+      '/bulk-import',
     );
     await uiHelper.clickButtonByText(
       translations.steps.importApplication.ctaTitle,
