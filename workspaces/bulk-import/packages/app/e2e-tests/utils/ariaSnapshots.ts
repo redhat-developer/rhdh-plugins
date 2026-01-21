@@ -65,7 +65,7 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
     - text: ${prBodyLabel}
     - textbox "${prBodyLabel}":
       - /placeholder: ${t.previewFile.pullRequest.bodyPlaceholder}
-      - text: /This pull request adds a \\*\\*Backstage entity metadata file\\*\\* to this repository so that the component can be added to the \\[software catalog\\]\\(http:\\/\\/localhost:\\d+\\/catalog\\)\\. After this pull request is merged, the component will become available\\. For more information, read an \\[overview of the Backstage software catalog\\]\\(https:\\/\\/backstage\\.io\\/docs\\/features\\/software-catalog\\/\\)\\. View the import job in your app \\[here\\]\\(http:\\/\\/localhost:\\d+\\/bulk-import\\/repositories\\?repository=https:\\/\\/github\\.com\\/test-org\\/backend-service&defaultBranch=main\\)\\./
+      - text: /This pull request adds a \\*\\*Backstage entity metadata file\\*\\* to this repository so that the component can be added to the \\[software catalog\\]\\(http:\\/\\/localhost:\\d+\\/catalog\\)\\. After this pull request is merged, the component will become available\\. For more information, read an \\[overview of the Backstage software catalog\\]\\(https:\\/\\/backstage\\.io\\/docs\\/features\\/software-catalog\\/\\)\\. View the import job in your app \\[here\\]\\(http:\\/\\/localhost:\\d+\\/bulk-import\\?repository=https:\\/\\/github\\.com\\/test-org\\/backend-service&defaultBranch=main\\)\\./
   `,
 
     /**
