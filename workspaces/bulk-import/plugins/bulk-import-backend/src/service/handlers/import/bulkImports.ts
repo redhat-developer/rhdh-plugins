@@ -265,7 +265,7 @@ async function resolveReposDefaultBranches(
   }>[] = [];
   for (const loc of allLocations) {
     // loc has the following format: https://github.com/<org>/<repo>/blob/<default-branch>/catalog-info.yaml
-    // but it can have a more convoluted format like 'https://github.com/janus-idp/backstage-plugins/blob/main/plugins/scaffolder-annotator-action/examples/templates/01-scaffolder-template.yaml'
+    // but it can have a more convoluted format like 'https://github.com/redhat-developer/rhdh-plugins/blob/main/plugins/scaffolder-annotator-action/examples/templates/01-scaffolder-template.yaml'
     // if registered manually from the 'Register existing component' feature in Backstage.
     if (!loc.endsWith(catalogFilename)) {
       logger.debug(

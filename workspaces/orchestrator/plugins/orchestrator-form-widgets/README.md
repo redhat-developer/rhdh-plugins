@@ -21,7 +21,7 @@ const app = createApp({
 
 ### Dynamic (for RHDH production)
 
-For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using Janus CLI a loaded among the other dynamic frontend plugins.
+For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using RHDH CLI a loaded among the other dynamic frontend plugins.
 No explicit configuration is needed.
 
 ## `http-workflow-dev-server` - HTTP server for dynamic widgets development

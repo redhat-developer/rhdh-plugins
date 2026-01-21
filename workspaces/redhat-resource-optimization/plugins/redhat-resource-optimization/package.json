@@ -63,7 +63,7 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "app-config.janus-idp.yaml",
+    "app-config.dynamic.yaml",
     "dist"
   ],
   "license": "Apache-2.0",
