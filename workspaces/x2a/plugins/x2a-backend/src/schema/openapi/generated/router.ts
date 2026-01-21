@@ -23,7 +23,7 @@ import { EndpointMap } from './apis';
 export const spec = {
   openapi: '3.0.4',
   info: {
-    title: 'X2A API',
+    title: 'x2a',
     description:
       'The [X2Ansible](https://github.com/redhat-developer/x2ansible) API.',
     version: '0.0.1',
@@ -138,6 +138,31 @@ export const spec = {
       },
     },
     '/projects/{projectId}': {
+      get: {
+        summary: 'Returns a project by ID.',
+        parameters: [
+          {
+            in: 'path',
+            name: 'projectId',
+            schema: {
+              type: 'string',
+            },
+            required: true,
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Project data.',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Project',
+                },
+              },
+            },
+          },
+        },
+      },
       delete: {
         summary: 'Deletes a project by ID.',
         parameters: [

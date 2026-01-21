@@ -17,9 +17,9 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { resolvePackagePath } from '@backstage/backend-plugin-api';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
+import { migrate } from './services/dbMigrate';
 
 /**
  * x2APlugin backend plugin
@@ -38,16 +38,7 @@ export const x2APlugin = createBackendPlugin({
         logger: coreServices.logger,
       },
       async init({ httpRouter, x2aDatabase, logger, httpAuth, database }) {
-        // Run database migrations
-        const client = await database.getClient();
-        if (!database.migrations?.skip) {
-          await client.migrate.latest({
-            directory: resolvePackagePath(
-              '@red-hat-developer-hub/backstage-plugin-x2a-backend',
-              'migrations',
-            ),
-          });
-        }
+        await migrate(database);
 
         httpRouter.use(
           await createRouter({

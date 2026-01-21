@@ -17,99 +17,112 @@ import {
   mockCredentials,
   mockErrorHandler,
   mockServices,
+  TestDatabaseId,
+  TestDatabases,
 } from '@backstage/backend-test-utils';
 import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
-import {
-  X2ADatabaseService,
-  x2aDatabaseServiceRef,
-} from './services/X2ADatabaseService';
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { X2ADatabaseService } from './services/X2ADatabaseService';
+import { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { migrate } from './services/dbMigrate';
+import { Knex } from 'knex';
 
-const mockProject: Project = {
-  id: '123',
+const databases = TestDatabases.create({
+  ids: ['SQLITE_3', 'POSTGRES_15'],
+});
+
+const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
-  abbreviation: 'MP',
   description: 'Mock Description',
-  // sourceRepository: 'https://github.com/org/repo',
-  createdBy: mockCredentials.user().principal.userEntityRef,
-  createdAt: new Date(),
+  abbreviation: 'MP',
 };
 
-// TEMPLATE NOTE:
-// Testing the router directly allows you to write a unit test that mocks the provided options.
 describe('createRouter', () => {
-  let app: express.Express;
+  // let app: express.Express;
 
-  beforeEach(async () => {
+  async function createDatabase(databaseId: TestDatabaseId) {
+    const client = await databases.init(databaseId);
+    const mockDatabaseService = mockServices.database.mock({
+      getClient: async () => client,
+      migrations: { skip: false },
+    });
+
+    await migrate(mockDatabaseService);
+
+    return {
+      client,
+      // db: new DatabaseMetricValues(client),
+    };
+  }
+
+  async function createApp(client: Knex): Promise<express.Express> {
     const x2aDatabase = X2ADatabaseService.create({
       logger: mockServices.logger.mock(),
-      database: mockServices.database.mock(),
+      dbClient: client,
     });
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       logger: mockServices.logger.mock(),
       x2aDatabase,
     });
-    app = express();
+
+    const app = express();
     app.use(router);
     app.use(mockErrorHandler());
-  });
 
-  it('should query empty project list', async () => {
-    const response = await request(app).get('/projects').send();
+    return app;
+  }
 
-    expect(response.status).toBe(200);
-    expect(response.body.totalCount).toBe(2);
-    expect(response.body.items).toEqual([
-      {
-        id: '1',
-        name: 'Mock Migration 1',
-        description: 'Mock Description 1',
-        abbreviation: 'MP1',
-        createdBy: 'user1',
-        createdAt: '2026-01-20T12:24:56.615Z',
-      },
-      {
-        id: '2',
-        name: 'Mock Migration 2',
-        description: 'Mock Description 2',
-        abbreviation: 'MP2',
-        createdBy: 'user2',
-        createdAt: '2026-01-20T12:24:56.616Z',
-      },
-    ]);
-  });
+  it.each(databases.eachSupportedId())(
+    'should query empty project list - %p',
+    async databaseId => {
+      const { client } = await createDatabase(databaseId);
+      const app = await createApp(client);
 
-  it.skip('should create a project', async () => {
-    x2aDatabase.createProject.mockResolvedValue(mockProject);
+      const response = await request(app).get('/projects').send();
 
-    const response = await request(app).post('/projects').send(
-      // TODO: limit to the required data only
-      mockProject,
-    );
+      expect(response.status).toBe(200);
+      expect(response.body.totalCount).toBe(0);
+      expect(response.body.items).toEqual([]);
+    },
+  );
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual(mockProject);
-  });
+  it.each(databases.eachSupportedId())(
+    'should create a project - %p',
+    async databaseId => {
+      const { client } = await createDatabase(databaseId);
+      const app = await createApp(client);
 
-  it.skip('should not allow unauthenticated requests to create a migration', async () => {
-    x2aDatabase.createProject.mockResolvedValue(mockProject);
+      const response = await request(app)
+        .post('/projects')
+        .send(mockInputProject);
 
-    // TEMPLATE NOTE:
-    // The HttpAuth mock service considers all requests to be authenticated as a
-    // mock user by default. In order to test other cases we need to explicitly
-    // pass an authorization header with mock credentials.
-    const response = await request(app)
-      .post('/projects')
-      .set('Authorization', mockCredentials.none.header())
-      .send({
-        // TODO: limit to the required data only
-        mockProject,
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        ...mockInputProject,
+        createdBy: 'user:default/mock',
       });
+    },
+  );
 
-    expect(response.status).toBe(401);
-  });
+  it.each(databases.eachSupportedId())(
+    'should not allow unauthenticated requests to create a migration - %p',
+    async databaseId => {
+      const { client } = await createDatabase(databaseId);
+      const app = await createApp(client);
+
+      // The HttpAuth mock service considers all requests to be authenticated as a
+      // mock user by default. In order to test other cases we need to explicitly
+      // pass an authorization header with mock credentials.
+
+      const response = await request(app)
+        .post('/projects')
+        .set('Authorization', mockCredentials.none.header())
+        .send(mockInputProject);
+
+      expect(response.status).toBe(400);
+    },
+  );
 });

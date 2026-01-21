@@ -13,5 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+  DatabaseService,
+  resolvePackagePath,
+} from '@backstage/backend-plugin-api';
 
-export const pluginId = 'x2a';
+const migrationsDir = resolvePackagePath(
+  '@red-hat-developer-hub/backstage-plugin-x2a-backend',
+  'migrations',
+);
+
+export async function migrate(databaseManager: DatabaseService) {
+  const knex = await databaseManager.getClient();
+
+  if (!databaseManager.migrations?.skip) {
+    await knex.migrate.latest({
+      directory: migrationsDir,
+    });
+  }
+}

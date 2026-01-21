@@ -15,9 +15,14 @@
  */
 import {
   mockCredentials,
+  mockServices,
   startTestBackend,
 } from '@backstage/backend-test-utils';
-import { createServiceFactory } from '@backstage/backend-plugin-api';
+import {
+  BackendFeature,
+  createServiceFactory,
+} from '@backstage/backend-plugin-api';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { x2APlugin } from './plugin';
 import request from 'supertest';
@@ -27,6 +32,27 @@ import {
   NotAllowedError,
   NotFoundError,
 } from '@backstage/errors';
+import { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+const mockInputProject: ProjectsPostRequest = {
+  name: 'Mock Project',
+  description: 'Mock Description',
+  abbreviation: 'MP',
+};
+
+const mockUserId = `user: default/user1`;
+const BASE_CONFIG = {};
+
+jest.mock('@backstage/backend-plugin-api', () => ({
+  ...jest.requireActual('@backstage/backend-plugin-api'),
+  UserInfoService: jest.fn().mockImplementation(() => ({
+    getUserInfo: jest.fn().mockResolvedValue({
+      BackstageUserInfo: {
+        userEntityRef: mockUserId,
+      },
+    }),
+  })),
+}));
 
 // TEMPLATE NOTE:
 // Plugin tests are integration tests for your plugin, ensuring that all pieces
@@ -34,42 +60,67 @@ import {
 // however, just like anyone who installs your plugin might replace the
 // services with their own implementations.
 describe('plugin', () => {
-  it('should create and read Project items', async () => {
-    const { server } = await startTestBackend({
-      features: [x2APlugin],
-    });
+  async function startBackendServer(
+    config?: Record<PropertyKey, unknown>,
+    authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
+  ) {
+    const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] =
+      [
+        x2APlugin,
+        mockServices.rootLogger.factory(),
+        mockServices.rootConfig.factory({
+          data: { ...BASE_CONFIG, ...(config || {}) },
+        }),
+        mockServices.httpAuth.factory({
+          defaultCredentials: mockCredentials.user(mockUserId),
+        }),
+        mockServices.permissions.mock({
+          authorize: async () => [
+            { result: authorizeResult ?? AuthorizeResult.ALLOW },
+          ],
+        }).factory,
+        mockServices.userInfo.factory(),
+      ];
+    return (await startTestBackend({ features })).server;
+  }
 
-    // TODO: so far BE provides mock data for the projects, so failing here
+  it('should create and read Project items', async () => {
+    const server = await startBackendServer();
+
     await request(server).get('/api/x2a/projects').expect(200, {
+      totalCount: 0,
       items: [],
     });
 
-    const createRes = await request(server).post('/api/x2a/projcts').send({
-      name: 'My Project',
-      // TODO: more properties
+    const createRes = await request(server)
+      .post('/api/x2a/projects')
+      .send(mockInputProject);
+
+    expect(createRes.status).toBe(200);
+    expect(createRes.body).toMatchObject({
+      ...mockInputProject,
+      createdBy: 'user: default/user1',
     });
 
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: 'My Project',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
-    });
-
-    const createdTodoItem = createRes.body;
-
-    await request(server).get('/api/x2a/projects').expect(200, {
+    const listRes = await request(server).get('/api/x2a/projects');
+    expect(listRes.status).toBe(200);
+    expect(listRes.body).toMatchObject({
+      totalCount: 1,
       items: [
-        /* TODO */
+        {
+          ...mockInputProject,
+          createdBy: 'user: default/user1',
+        },
       ],
     });
 
-    await request(server)
-      .get(`/api/x2a/projects/FOO_BAR_PROJECT_ID`)
-      .expect(200, {
-        /* TODO */
-      });
+    const projectId = createRes.body.id;
+    const getRes = await request(server).get(`/api/x2a/projects/${projectId}`);
+    expect(getRes.status).toBe(200);
+    expect(getRes.body).toMatchObject({
+      ...mockInputProject,
+      createdBy: 'user: default/user1',
+    });
   });
 
   it('should forward errors from the X2ADatabaseService', async () => {
@@ -99,7 +150,7 @@ describe('plugin', () => {
 
     const createRes = await request(server)
       .post('/api/x2a/projects')
-      .send({ name: 'My Project' });
+      .send(mockInputProject);
     expect(createRes.status).toBe(409);
     expect(createRes.body).toMatchObject({
       error: { name: 'ConflictError' },
@@ -112,7 +163,7 @@ describe('plugin', () => {
     });
 
     const getRes = await request(server).get('/api/x2a/projects/123');
-    expect(getRes.status).toBe(403);
+    expect(getRes.status).toBe(404);
     expect(getRes.body).toMatchObject({
       error: { name: 'NotFoundError' },
     });

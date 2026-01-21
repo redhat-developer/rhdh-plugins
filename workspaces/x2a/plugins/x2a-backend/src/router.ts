@@ -92,6 +92,14 @@ export async function createRouter({
     res.json(response);
   });
 
+  router.get('/projects/:projectId', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId';
+    const projectId = req.params.projectId;
+    logger.info(`${endpoint} request received: projectId=${projectId}`);
+    const project = await x2aDatabase.getProject({ projectId });
+    res.json(project);
+  });
+
   router.delete('/projects/:projectId', async (req, res) => {
     const endpoint = 'DELETE /projects/:projectId';
     const projectId = req.params.projectId;

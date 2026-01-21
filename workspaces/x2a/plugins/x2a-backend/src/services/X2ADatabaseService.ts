@@ -19,7 +19,6 @@ import {
   coreServices,
   createServiceFactory,
   createServiceRef,
-  DatabaseService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
 // import { NotFoundError } from '@backstage/errors';
@@ -33,30 +32,34 @@ import { Knex } from 'knex';
 
 export class X2ADatabaseService {
   readonly #logger: LoggerService;
-  readonly #database: DatabaseService;
+  // readonly #database: DatabaseService;
+  readonly #dbClient: Knex;
   // readonly #catalog: typeof catalogServiceRef.T;
 
   static create(options: {
     logger: LoggerService;
-    database: DatabaseService;
+    dbClient: Knex;
+    // database: DatabaseService;
     // catalog: typeof catalogServiceRef.T;
   }) {
-    return new X2ADatabaseService(options.logger, options.database);
+    return new X2ADatabaseService(options.logger, options.dbClient);
   }
 
   private constructor(
     logger: LoggerService,
-    database: DatabaseService,
+    dbClient: Knex,
+    // database: DatabaseService,
     // catalog: typeof catalogServiceRef.T,
   ) {
     this.#logger = logger;
-    this.#database = database;
+    this.#dbClient = dbClient;
+    // this.#database = database;
     // this.#catalog = catalog;
   }
 
-  private async getClient(): Promise<Knex> {
-    return await this.#database.getClient();
-  }
+  // private async getClient(): Promise<Knex> {
+  //   return await this.#database.getClient();
+  // }
 
   async createProject(
     input: {
@@ -121,8 +124,8 @@ export class X2ADatabaseService {
     };
 
     // Persist in the database
-    const client = await this.getClient();
-    await client('projects').insert({
+    // const client = await this.getClient();
+    await this.#dbClient('projects').insert({
       id,
       name: input.name,
       abbreviation: input.abbreviation,
@@ -140,8 +143,8 @@ export class X2ADatabaseService {
     this.#logger.info('listProjects called');
 
     // Fetch all records from the database
-    const client = await this.getClient();
-    const rows = await client('projects')
+    // const client = await this.getClient();
+    const rows = await this.#dbClient('projects')
       .select('*')
       .orderBy('created_at', 'desc');
 
@@ -160,12 +163,25 @@ export class X2ADatabaseService {
     return { projects, totalCount };
   }
 
+  async getProject({ projectId }: { projectId: string }): Promise<Project> {
+    this.#logger.info(`getProject called for projectId: ${projectId}`);
+    const row = await this.#dbClient('projects').where('id', projectId).first();
+    return {
+      id: row.id,
+      name: row.name,
+      abbreviation: row.abbreviation,
+      description: row.description,
+      createdBy: row.created_by,
+      createdAt: new Date(row.created_at),
+    };
+  }
+
   async deleteProject({ projectId }: { projectId: string }) {
     this.#logger.info(`deleteProject called for projectId: ${projectId}`);
 
     // Delete from the database
-    const client = await this.getClient();
-    const deletedCount = await client('projects')
+    // const client = await this.getClient();
+    const deletedCount = await this.#dbClient('projects')
       .where('id', projectId)
       .delete();
 
@@ -190,7 +206,10 @@ export const x2aDatabaseServiceRef = createServiceRef<
         // catalog: catalogServiceRef,
       },
       async factory(deps) {
-        return X2ADatabaseService.create(deps);
+        return X2ADatabaseService.create({
+          ...deps,
+          dbClient: await deps.database.getClient(),
+        });
       },
     }),
 });

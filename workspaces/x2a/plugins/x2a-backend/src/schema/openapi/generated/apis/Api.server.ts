@@ -50,6 +50,15 @@ export type ProjectsProjectIdDelete = {
   };
   response: void;
 };
+/**
+ * @public
+ */
+export type ProjectsProjectIdGet = {
+  path: {
+    projectId: string;
+  };
+  response: Project;
+};
 
 export type EndpointMap = {
   '#get|/projects': ProjectsGet;
@@ -57,4 +66,6 @@ export type EndpointMap = {
   '#post|/projects': ProjectsPost;
 
   '#_delete|/projects/{projectId}': ProjectsProjectIdDelete;
+
+  '#get|/projects/{projectId}': ProjectsProjectIdGet;
 };

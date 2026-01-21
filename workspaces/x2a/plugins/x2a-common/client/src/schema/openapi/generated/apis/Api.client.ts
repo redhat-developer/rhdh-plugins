@@ -67,6 +67,14 @@ export type ProjectsProjectIdDelete = {
     projectId: string;
   };
 };
+/**
+ * @public
+ */
+export type ProjectsProjectIdGet = {
+  path: {
+    projectId: string;
+  };
+};
 
 /**
  * @public
@@ -159,6 +167,32 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'DELETE',
+    });
+  }
+
+  /**
+   * Returns a project by ID.
+   * @param projectId -
+   */
+  public async projectsProjectIdGet(
+    // @ts-ignore
+    request: ProjectsProjectIdGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Project>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
     });
   }
 }
