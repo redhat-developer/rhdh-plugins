@@ -32,6 +32,7 @@ export async function createRouter({
   logger,
 }: {
   httpAuth: HttpAuthService;
+  // TODO: rename convertor
   convertor: typeof convertorServiceRef.T;
   logger: LoggerService;
 }): Promise<express.Router> {
@@ -87,7 +88,6 @@ export async function createRouter({
     const newProject = await convertor.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
     });
-    // TODO: persist in the DB
 
     const response: ProjectsPost['response'] = newProject;
     res.json(response);

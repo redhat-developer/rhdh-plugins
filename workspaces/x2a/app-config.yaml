@@ -30,9 +30,13 @@ backend:
   database:
     client: better-sqlite3
     connection: ':memory:'
+    # plugin:
+    #   x2a:
+    #     connection:
+    #       filename: ./data/x2a.db
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
-integrations:
+#integrations:
 #  github:
 #    - host: github.com
 #      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information

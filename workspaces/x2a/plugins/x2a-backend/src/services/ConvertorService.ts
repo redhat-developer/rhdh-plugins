@@ -19,6 +19,7 @@ import {
   coreServices,
   createServiceFactory,
   createServiceRef,
+  DatabaseService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
 // import { NotFoundError } from '@backstage/errors';
@@ -28,45 +29,33 @@ import {
 } from '@backstage/backend-plugin-api';
 import { Expand } from '@backstage/types';
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Knex } from 'knex';
 
-// TODO: till the DB is ready
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'Mock Migration 1',
-    description: 'Mock Description 1',
-    abbreviation: 'MP1',
-    // sourceRepository: 'https://github.com/org/repo',
-    createdBy: 'user1',
-    createdAt: new Date('2026-01-20T12:24:56.615Z'),
-  },
-  {
-    id: '2',
-    name: 'Mock Migration 2',
-    description: 'Mock Description 2',
-    abbreviation: 'MP2',
-    // sourceRepository: 'https://github.com/org/repo',
-    createdBy: 'user2',
-    createdAt: new Date('2026-01-20T12:24:56.616Z'),
-  },
-];
 export class ConvertorService {
   readonly #logger: LoggerService;
+  readonly #database: DatabaseService;
   // readonly #catalog: typeof catalogServiceRef.T;
 
   static create(options: {
     logger: LoggerService;
+    database: DatabaseService;
     // catalog: typeof catalogServiceRef.T;
   }) {
-    return new ConvertorService(options.logger);
+    return new ConvertorService(options.logger, options.database);
   }
 
   private constructor(
     logger: LoggerService,
+    database: DatabaseService,
     // catalog: typeof catalogServiceRef.T,
   ) {
     this.#logger = logger;
+    this.#database = database;
     // this.#catalog = catalog;
+  }
+
+  private async getClient(): Promise<Knex> {
+    return await this.#database.getClient();
   }
 
   async createProject(
@@ -119,17 +108,28 @@ export class ConvertorService {
 
     const id = crypto.randomUUID();
     const createdBy = options.credentials.principal.userEntityRef;
+    const createdAt = new Date();
+
     const newProject: Project = {
       id,
       name: input.name,
       abbreviation: input.abbreviation,
       description: input.description,
       // sourceRepository: 'https://github.com/org/repo',
-      createdBy: createdBy,
-      createdAt: new Date(),
+      createdBy,
+      createdAt,
     };
 
-    // TODO: persist in the DB
+    // Persist in the database
+    const client = await this.getClient();
+    await client('projects').insert({
+      id,
+      name: input.name,
+      abbreviation: input.abbreviation,
+      description: input.description,
+      created_by: createdBy,
+      created_at: createdAt,
+    });
 
     this.#logger.info(`Created new project: ${JSON.stringify(newProject)}`);
 
@@ -138,25 +138,43 @@ export class ConvertorService {
 
   async listProjects(): Promise<{ projects: Project[]; totalCount: number }> {
     this.#logger.info('listProjects called');
-    // TODO: fetch from the DB, sync with k8s, apply pagination
-    const totalCount = mockProjects.length;
-    return { projects: mockProjects, totalCount };
+
+    // Fetch all records from the database
+    const client = await this.getClient();
+    const rows = await client('projects')
+      .select('*')
+      .orderBy('created_at', 'desc');
+
+    const projects: Project[] = rows.map(row => ({
+      id: row.id,
+      name: row.name,
+      abbreviation: row.abbreviation,
+      description: row.description,
+      createdBy: row.created_by,
+      createdAt: new Date(row.created_at),
+    }));
+
+    const totalCount = projects.length;
+    this.#logger.debug(`Fetched ${totalCount} projects from database`);
+
+    return { projects, totalCount };
   }
 
   async deleteProject({ projectId }: { projectId: string }) {
-    this.#logger.info('deleteProject called');
-    // TODO: delete from the DB, sync with k8s, apply pagination
+    this.#logger.info(`deleteProject called for projectId: ${projectId}`);
+
+    // Delete from the database
+    const client = await this.getClient();
+    const deletedCount = await client('projects')
+      .where('id', projectId)
+      .delete();
+
+    if (deletedCount === 0) {
+      this.#logger.warn(`No project found with id: ${projectId}`);
+    } else {
+      this.#logger.info(`Deleted project with id: ${projectId}`);
+    }
   }
-
-  // async getMigration(request: { id: string }): Promise<Migration> {
-  //   // TODO: fetch from the DB
-  //   const migration = mockMigrations.find(m => m.id === request.id);
-
-  //   if (!migration) {
-  //     throw new NotFoundError(`No migration found with id '${request.id}'`);
-  //   }
-  //   return migration;
-  // }
 }
 
 export const convertorServiceRef = createServiceRef<Expand<ConvertorService>>({
@@ -166,6 +184,7 @@ export const convertorServiceRef = createServiceRef<Expand<ConvertorService>>({
       service,
       deps: {
         logger: coreServices.logger,
+        database: coreServices.database,
         // catalog: catalogServiceRef,
       },
       async factory(deps) {
