@@ -47,12 +47,8 @@ g, user:default/<login-id/user-name>, role:default/team_a
    import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
    ...
    /* highlight-add-start */
-   <Route
-        path="/bulk-import"
-        element={<Navigate to="repositories" />}
-    />
     <Route
-        path="/bulk-import/repositories"
+        path="/bulk-import/*"
         element={<BulkImportPage />}
     />
     /* highlight-add-end */

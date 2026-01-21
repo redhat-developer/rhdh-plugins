@@ -149,7 +149,7 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
         - /url: https://backstage.io/docs/features/software-catalog/
       - text: . View the import job in your app
       - link "here":
-        - /url: http://localhost:3000/bulk-import/repositories?repository=https://github.com/test-org/backend-service&defaultBranch=main
+        - /url: http://localhost:3000/bulk-import?repository=https://github.com/test-org/backend-service&defaultBranch=main
       - text: .
   `,
 

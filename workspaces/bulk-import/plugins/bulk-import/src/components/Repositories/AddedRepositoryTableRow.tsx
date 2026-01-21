@@ -90,7 +90,7 @@ export const AddedRepositoryTableRow = ({
         {importFlow === ImportFlow.Scaffolder ||
         importFlow === ImportFlow.Orchestrator ? (
           <Link
-            to={`/bulk-import/repositories/import-history/${encodeURIComponent(
+            to={`/bulk-import/import-history/${encodeURIComponent(
               data.repoUrl || '',
             )}`}
           >
