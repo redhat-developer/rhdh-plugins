@@ -160,8 +160,10 @@ export const ActiveTextInput: Widget<
     wrapProcessing,
   ]);
 
-  if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} id={id} />;
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  const displayError = localError ?? (shouldShowFetchError ? error : undefined);
+  if (displayError) {
+    return <ErrorText text={displayError} id={id} />;
   }
 
   // Show loading only if we don't have a static default value to display
