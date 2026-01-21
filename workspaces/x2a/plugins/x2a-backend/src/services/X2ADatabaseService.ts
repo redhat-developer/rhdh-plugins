@@ -31,7 +31,7 @@ import { Expand } from '@backstage/types';
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Knex } from 'knex';
 
-export class ConvertorService {
+export class X2ADatabaseService {
   readonly #logger: LoggerService;
   readonly #database: DatabaseService;
   // readonly #catalog: typeof catalogServiceRef.T;
@@ -41,7 +41,7 @@ export class ConvertorService {
     database: DatabaseService;
     // catalog: typeof catalogServiceRef.T;
   }) {
-    return new ConvertorService(options.logger, options.database);
+    return new X2ADatabaseService(options.logger, options.database);
   }
 
   private constructor(
@@ -177,8 +177,10 @@ export class ConvertorService {
   }
 }
 
-export const convertorServiceRef = createServiceRef<Expand<ConvertorService>>({
-  id: 'x2a-convertor',
+export const x2aDatabaseServiceRef = createServiceRef<
+  Expand<X2ADatabaseService>
+>({
+  id: 'x2a-database',
   defaultFactory: async service =>
     createServiceFactory({
       service,
@@ -188,7 +190,7 @@ export const convertorServiceRef = createServiceRef<Expand<ConvertorService>>({
         // catalog: catalogServiceRef,
       },
       async factory(deps) {
-        return ConvertorService.create(deps);
+        return X2ADatabaseService.create(deps);
       },
     }),
 });

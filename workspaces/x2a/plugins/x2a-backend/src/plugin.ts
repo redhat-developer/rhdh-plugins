@@ -18,7 +18,7 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { resolvePackagePath } from '@backstage/backend-plugin-api';
-import { convertorServiceRef } from './services/ConvertorService';
+import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
 
 /**
@@ -33,11 +33,11 @@ export const x2APlugin = createBackendPlugin({
       deps: {
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        convertor: convertorServiceRef,
+        x2aDatabase: x2aDatabaseServiceRef,
         database: coreServices.database,
         logger: coreServices.logger,
       },
-      async init({ httpRouter, convertor, logger, httpAuth, database }) {
+      async init({ httpRouter, x2aDatabase, logger, httpAuth, database }) {
         // Run database migrations
         const client = await database.getClient();
         if (!database.migrations?.skip) {
@@ -52,7 +52,7 @@ export const x2APlugin = createBackendPlugin({
         httpRouter.use(
           await createRouter({
             httpAuth,
-            convertor,
+            x2aDatabase,
             logger,
           }),
         );

@@ -18,7 +18,7 @@ import {
   startTestBackend,
 } from '@backstage/backend-test-utils';
 import { createServiceFactory } from '@backstage/backend-plugin-api';
-import { convertorServiceRef } from './services/ConvertorService';
+import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { x2APlugin } from './plugin';
 import request from 'supertest';
 import {
@@ -72,12 +72,12 @@ describe('plugin', () => {
       });
   });
 
-  it('should forward errors from the ConvertorService', async () => {
+  it('should forward errors from the X2ADatabaseService', async () => {
     const { server } = await startTestBackend({
       features: [
         x2APlugin,
         createServiceFactory({
-          service: convertorServiceRef,
+          service: x2aDatabaseServiceRef,
           deps: {},
           factory: () => ({
             createProject: jest.fn().mockRejectedValue(new ConflictError()),

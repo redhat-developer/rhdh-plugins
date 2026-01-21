@@ -19,7 +19,7 @@ import { InputError } from '@backstage/errors';
 import { z } from 'zod';
 import express from 'express';
 
-import { convertorServiceRef } from './services/ConvertorService';
+import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import {
   createOpenApiRouter,
   ProjectsGet,
@@ -28,12 +28,11 @@ import {
 
 export async function createRouter({
   httpAuth,
-  convertor,
+  x2aDatabase,
   logger,
 }: {
   httpAuth: HttpAuthService;
-  // TODO: rename convertor
-  convertor: typeof convertorServiceRef.T;
+  x2aDatabase: typeof x2aDatabaseServiceRef.T;
   logger: LoggerService;
 }): Promise<express.Router> {
   const router = await createOpenApiRouter();
@@ -60,7 +59,7 @@ export async function createRouter({
 
     logger.info(`${endpoint} request received: query=${JSON.stringify(query)}`);
 
-    const { projects, totalCount } = await convertor.listProjects();
+    const { projects, totalCount } = await x2aDatabase.listProjects();
 
     const response: ProjectsGet['response'] = {
       totalCount,
@@ -85,7 +84,7 @@ export async function createRouter({
     }
     const requestBody: ProjectsPost['body'] = parsedBody.data;
 
-    const newProject = await convertor.createProject(requestBody, {
+    const newProject = await x2aDatabase.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
     });
 
@@ -97,7 +96,7 @@ export async function createRouter({
     const endpoint = 'DELETE /projects/:projectId';
     const projectId = req.params.projectId;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
-    await convertor.deleteProject({ projectId });
+    await x2aDatabase.deleteProject({ projectId });
     res.status(200);
   });
 

@@ -23,9 +23,9 @@ import request from 'supertest';
 
 import { createRouter } from './router';
 import {
-  ConvertorService,
-  convertorServiceRef,
-} from './services/ConvertorService';
+  X2ADatabaseService,
+  x2aDatabaseServiceRef,
+} from './services/X2ADatabaseService';
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 const mockProject: Project = {
@@ -44,13 +44,14 @@ describe('createRouter', () => {
   let app: express.Express;
 
   beforeEach(async () => {
-    const convertor = ConvertorService.create({
+    const x2aDatabase = X2ADatabaseService.create({
       logger: mockServices.logger.mock(),
+      database: mockServices.database.mock(),
     });
     const router = await createRouter({
       httpAuth: mockServices.httpAuth(),
       logger: mockServices.logger.mock(),
-      convertor,
+      x2aDatabase,
     });
     app = express();
     app.use(router);
@@ -83,7 +84,7 @@ describe('createRouter', () => {
   });
 
   it.skip('should create a project', async () => {
-    convertor.createProject.mockResolvedValue(mockProject);
+    x2aDatabase.createProject.mockResolvedValue(mockProject);
 
     const response = await request(app).post('/projects').send(
       // TODO: limit to the required data only
@@ -95,7 +96,7 @@ describe('createRouter', () => {
   });
 
   it.skip('should not allow unauthenticated requests to create a migration', async () => {
-    convertor.createProject.mockResolvedValue(mockProject);
+    x2aDatabase.createProject.mockResolvedValue(mockProject);
 
     // TEMPLATE NOTE:
     // The HttpAuth mock service considers all requests to be authenticated as a
