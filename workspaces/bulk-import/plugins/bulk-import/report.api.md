@@ -19,7 +19,6 @@ export const BulkImportPage: () => JSX_2.Element;
 // @public
 export const bulkImportPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
-addRepositories: SubRouteRef<undefined>;
 tasks: SubRouteRef<PathParams<"/import-history/:repoUrl">>;
 }, {}, {}>;
 
