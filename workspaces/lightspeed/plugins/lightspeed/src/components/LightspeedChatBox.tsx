@@ -248,6 +248,10 @@ export const LightspeedChatBox = forwardRef(
 
             if (reasoningContent) {
               deepThinking = {
+                cardBodyProps: {
+                  id: `deep-thinking-${index}`,
+                  style: { whiteSpace: 'pre-line' },
+                },
                 toggleContent: t('reasoning.thinking'),
                 body: reasoningContent,
                 expandableSectionProps: {},
