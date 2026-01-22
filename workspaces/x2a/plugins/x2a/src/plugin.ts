@@ -20,6 +20,7 @@ import {
 
 import { rootRouteRef } from './routes';
 
+/** @public */
 export const x2APlugin = createPlugin({
   id: 'x2a',
   routes: {
@@ -27,6 +28,7 @@ export const x2APlugin = createPlugin({
   },
 });
 
+/** @public */
 export const X2APage = x2APlugin.provide(
   createRoutableExtension({
     name: 'X2APage',
