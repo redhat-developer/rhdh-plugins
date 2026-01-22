@@ -17,7 +17,7 @@
     "build:knip-reports": "backstage-repo-tools knip-reports",
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
-    "test:all": "backstage-cli repo test --coverage && yarn prettier:check && yarn lint:all",
+    "test:all": "yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",

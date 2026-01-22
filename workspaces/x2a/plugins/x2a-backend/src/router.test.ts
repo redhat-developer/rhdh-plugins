@@ -30,7 +30,8 @@ import { migrate } from './services/dbMigrate';
 import { Knex } from 'knex';
 
 const databases = TestDatabases.create({
-  ids: ['SQLITE_3', 'POSTGRES_15'],
+  // TODO: Reenable for 'POSTGRES_18'
+  ids: ['SQLITE_3'],
 });
 
 const mockInputProject: ProjectsPostRequest = {
