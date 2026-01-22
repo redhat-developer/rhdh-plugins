@@ -54,36 +54,35 @@ jest.mock('@backstage/backend-plugin-api', () => ({
   })),
 }));
 
+async function startBackendServer(
+  config?: Record<PropertyKey, unknown>,
+  authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
+) {
+  const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
+    x2APlugin,
+    mockServices.rootLogger.factory(),
+    mockServices.rootConfig.factory({
+      data: { ...BASE_CONFIG, ...(config || {}) },
+    }),
+    mockServices.httpAuth.factory({
+      defaultCredentials: mockCredentials.user(mockUserId),
+    }),
+    mockServices.permissions.mock({
+      authorize: async () => [
+        { result: authorizeResult ?? AuthorizeResult.ALLOW },
+      ],
+    }).factory,
+    mockServices.userInfo.factory(),
+  ];
+  return (await startTestBackend({ features })).server;
+}
+
 // TEMPLATE NOTE:
 // Plugin tests are integration tests for your plugin, ensuring that all pieces
 // work together end-to-end. You can still mock injected backend services
 // however, just like anyone who installs your plugin might replace the
 // services with their own implementations.
 describe('plugin', () => {
-  async function startBackendServer(
-    config?: Record<PropertyKey, unknown>,
-    authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
-  ) {
-    const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] =
-      [
-        x2APlugin,
-        mockServices.rootLogger.factory(),
-        mockServices.rootConfig.factory({
-          data: { ...BASE_CONFIG, ...(config || {}) },
-        }),
-        mockServices.httpAuth.factory({
-          defaultCredentials: mockCredentials.user(mockUserId),
-        }),
-        mockServices.permissions.mock({
-          authorize: async () => [
-            { result: authorizeResult ?? AuthorizeResult.ALLOW },
-          ],
-        }).factory,
-        mockServices.userInfo.factory(),
-      ];
-    return (await startTestBackend({ features })).server;
-  }
-
   it('should create and read Project items', async () => {
     const server = await startBackendServer();
 

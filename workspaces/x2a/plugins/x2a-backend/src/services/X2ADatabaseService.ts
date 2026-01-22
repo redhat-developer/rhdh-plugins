@@ -20,9 +20,6 @@ import {
   createServiceFactory,
   createServiceRef,
   LoggerService,
-} from '@backstage/backend-plugin-api';
-// import { NotFoundError } from '@backstage/errors';
-import {
   BackstageCredentials,
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
@@ -32,83 +29,27 @@ import { Knex } from 'knex';
 
 export class X2ADatabaseService {
   readonly #logger: LoggerService;
-  // readonly #database: DatabaseService;
   readonly #dbClient: Knex;
-  // readonly #catalog: typeof catalogServiceRef.T;
 
-  static create(options: {
-    logger: LoggerService;
-    dbClient: Knex;
-    // database: DatabaseService;
-    // catalog: typeof catalogServiceRef.T;
-  }) {
+  static create(options: { logger: LoggerService; dbClient: Knex }) {
     return new X2ADatabaseService(options.logger, options.dbClient);
   }
 
-  private constructor(
-    logger: LoggerService,
-    dbClient: Knex,
-    // database: DatabaseService,
-    // catalog: typeof catalogServiceRef.T,
-  ) {
+  private constructor(logger: LoggerService, dbClient: Knex) {
     this.#logger = logger;
     this.#dbClient = dbClient;
-    // this.#database = database;
-    // this.#catalog = catalog;
   }
-
-  // private async getClient(): Promise<Knex> {
-  //   return await this.#database.getClient();
-  // }
 
   async createProject(
     input: {
       name: string;
       abbreviation: string;
       description: string;
-      // entityRef?: string;
-      // TODO: more
     },
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
     },
   ): Promise<Project> {
-    /*
-    /* TEMPLATE NOTE:
-    // A common pattern for Backstage plugins is to pass an entity reference
-    // from the frontend to then fetch the entire entity from the catalog in the
-    // backend plugin.
-    if (input.entityRef) {
-      // TEMPLATE NOTE:
-      // Cross-plugin communication uses service-to-service authentication. The
-      // `AuthService` lets you generate a token that is valid for communication
-      // with the target plugin only. You must also provide credentials for the
-      // identity that you are making the request on behalf of.
-      //
-      // If you want to make a request using the plugin backend's own identity,
-      // you can access it via the `auth.getOwnServiceCredentials()` method.
-      // Beware that this bypasses any user permission checks.
-      const entity = await this.#catalog.getEntityByRef(
-        input.entityRef,
-        options,
-      );
-      if (!entity) {
-        throw new NotFoundError(`No entity found for ref '${input.entityRef}'`);
-      }
-
-      // TEMPLATE NOTE:
-      // Here you could read any form of data from the entity. A common use case
-      // is to read the value of a custom annotation for your plugin. You can
-      // read more about how to add custom annotations here:
-      // https://backstage.io/docs/features/software-catalog/extending-the-model#adding-a-new-annotation
-      //
-      // In this example we just use the entity title to decorate the todo item.
-
-      const entityDisplay = entity.metadata.title ?? input.entityRef;
-      title = `[${entityDisplay}] ${input.title}`;
-    }
-    */
-
     const id = crypto.randomUUID();
     const createdBy = options.credentials.principal.userEntityRef;
     const createdAt = new Date();
@@ -124,7 +65,6 @@ export class X2ADatabaseService {
     };
 
     // Persist in the database
-    // const client = await this.getClient();
     await this.#dbClient('projects').insert({
       id,
       name: input.name,
@@ -143,7 +83,6 @@ export class X2ADatabaseService {
     this.#logger.info('listProjects called');
 
     // Fetch all records from the database
-    // const client = await this.getClient();
     const rows = await this.#dbClient('projects')
       .select('*')
       .orderBy('created_at', 'desc');
@@ -180,7 +119,6 @@ export class X2ADatabaseService {
     this.#logger.info(`deleteProject called for projectId: ${projectId}`);
 
     // Delete from the database
-    // const client = await this.getClient();
     const deletedCount = await this.#dbClient('projects')
       .where('id', projectId)
       .delete();
@@ -203,7 +141,6 @@ export const x2aDatabaseServiceRef = createServiceRef<
       deps: {
         logger: coreServices.logger,
         database: coreServices.database,
-        // catalog: catalogServiceRef,
       },
       async factory(deps) {
         return X2ADatabaseService.create({

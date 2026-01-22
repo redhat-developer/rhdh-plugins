@@ -39,9 +39,25 @@ const mockInputProject: ProjectsPostRequest = {
   abbreviation: 'MP',
 };
 
-describe('createRouter', () => {
-  // let app: express.Express;
+async function createApp(client: Knex): Promise<express.Express> {
+  const x2aDatabase = X2ADatabaseService.create({
+    logger: mockServices.logger.mock(),
+    dbClient: client,
+  });
+  const router = await createRouter({
+    httpAuth: mockServices.httpAuth(),
+    logger: mockServices.logger.mock(),
+    x2aDatabase,
+  });
 
+  const app = express();
+  app.use(router);
+  app.use(mockErrorHandler());
+
+  return app;
+}
+
+describe('createRouter', () => {
   async function createDatabase(databaseId: TestDatabaseId) {
     const client = await databases.init(databaseId);
     const mockDatabaseService = mockServices.database.mock({
@@ -53,26 +69,7 @@ describe('createRouter', () => {
 
     return {
       client,
-      // db: new DatabaseMetricValues(client),
     };
-  }
-
-  async function createApp(client: Knex): Promise<express.Express> {
-    const x2aDatabase = X2ADatabaseService.create({
-      logger: mockServices.logger.mock(),
-      dbClient: client,
-    });
-    const router = await createRouter({
-      httpAuth: mockServices.httpAuth(),
-      logger: mockServices.logger.mock(),
-      x2aDatabase,
-    });
-
-    const app = express();
-    app.use(router);
-    app.use(mockErrorHandler());
-
-    return app;
   }
 
   it.each(databases.eachSupportedId())(

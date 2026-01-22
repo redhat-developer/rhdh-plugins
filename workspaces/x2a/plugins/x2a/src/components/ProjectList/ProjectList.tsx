@@ -94,7 +94,6 @@ export const DenseTable = ({ projects, forceRefresh }: DenseTableProps) => {
         <Table<Project>
           title={`Projects (${projects.length})`}
           options={{
-            // TODO: review the options
             search: false,
             paging: false,
             actionsColumnIndex: -1,
