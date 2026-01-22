@@ -16,15 +16,18 @@
 
 import { KubearchiveService } from '../kubearchive-service';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { KubeConfig, CustomObjectsApi } from '@kubernetes/client-node';
+import type { KubeConfig, CustomObjectsApi } from '@kubernetes/client-node';
 import {
   KonfluxConfig,
   K8sResourceCommonWithClusterInfo,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { KonfluxLogger } from '../../helpers/logger';
+import { createKubeConfig } from '../../helpers/client-factory';
+import { getKubeClient } from '../../helpers/kube-client';
 
 jest.mock('../../helpers/logger');
-jest.mock('@kubernetes/client-node');
+jest.mock('../../helpers/client-factory');
+jest.mock('../../helpers/kube-client');
 
 describe('KubearchiveService', () => {
   let mockLogger: jest.Mocked<LoggerService>;
@@ -61,6 +64,25 @@ describe('KubearchiveService', () => {
     subcomponent: { name: 'sub1' },
   });
 
+  const expectHeaderMiddleware = (
+    requestOptions: any,
+    expectedHeaders: Record<string, string>,
+  ) => {
+    expect(requestOptions).toEqual(
+      expect.objectContaining({
+        middlewareMergeStrategy: 'append',
+        middleware: [expect.any(Object)],
+      }),
+    );
+
+    const context = { setHeaderParam: jest.fn() };
+    requestOptions.middleware[0].pre(context);
+
+    Object.entries(expectedHeaders).forEach(([key, value]) => {
+      expect(context.setHeaderParam).toHaveBeenCalledWith(key, value);
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -79,7 +101,7 @@ describe('KubearchiveService', () => {
     } as unknown as jest.Mocked<KonfluxLogger>;
 
     mockCustomObjectsApi = {
-      listNamespacedCustomObject: jest.fn(),
+      listNamespacedCustomObjectWithHttpInfo: jest.fn(),
     } as unknown as jest.Mocked<CustomObjectsApi>;
 
     mockKubeConfig = {
@@ -91,9 +113,22 @@ describe('KubearchiveService', () => {
       KonfluxLogger as jest.MockedClass<typeof KonfluxLogger>
     ).mockImplementation(() => mockKonfluxLogger);
 
-    (KubeConfig as jest.MockedClass<typeof KubeConfig>).mockImplementation(
-      () => mockKubeConfig,
-    );
+    (
+      createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
+    ).mockResolvedValue(mockKubeConfig);
+
+    class MockObservable<T> {
+      constructor(public value: T) {
+        return value as any;
+      }
+    }
+
+    (
+      getKubeClient as jest.MockedFunction<typeof getKubeClient>
+    ).mockResolvedValue({
+      CustomObjectsApi: jest.fn(),
+      Observable: MockObservable,
+    } as any);
 
     service = new KubearchiveService(mockLogger);
   });
@@ -121,12 +156,14 @@ describe('KubearchiveService', () => {
         createMockResource('plr2'),
       ];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchResources({
         konfluxConfig,
@@ -141,28 +178,25 @@ describe('KubearchiveService', () => {
       expect(result.results).toEqual(mockItems);
       expect(result.nextPageToken).toBeUndefined();
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: undefined,
+          labelSelector: undefined,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
       expect(mockKonfluxLogger.debug).toHaveBeenCalledWith(
         'Fetched items from Kubearchive',
         expect.objectContaining({
@@ -180,14 +214,16 @@ describe('KubearchiveService', () => {
       const mockItems = [createMockResource('plr1')];
       const pageToken = 'next-page-token';
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {
-            continue: pageToken,
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {
+              continue: pageToken,
+            },
           },
-        },
-      } as any);
+        } as any,
+      );
 
       const result = await service.fetchResources({
         konfluxConfig,
@@ -206,28 +242,25 @@ describe('KubearchiveService', () => {
       expect(result.results).toEqual(mockItems);
       expect(result.nextPageToken).toBe(pageToken);
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        'current-page-token',
-        undefined,
-        undefined,
-        25,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: 'current-page-token',
+          labelSelector: undefined,
+          limit: 25,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should fetch resources with labelSelector', async () => {
@@ -235,12 +268,14 @@ describe('KubearchiveService', () => {
       const mockItems = [createMockResource('plr1')];
       const labelSelector = 'app=my-app';
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchResources({
         konfluxConfig,
@@ -257,28 +292,25 @@ describe('KubearchiveService', () => {
 
       expect(result.results).toEqual(mockItems);
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        labelSelector,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: undefined,
+          labelSelector,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should use OIDC token when authProvider is oidc', async () => {
@@ -288,12 +320,14 @@ describe('KubearchiveService', () => {
       const oidcToken = 'oidc-token-123';
       const mockItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchResources({
         konfluxConfig,
@@ -309,28 +343,25 @@ describe('KubearchiveService', () => {
 
       expect(result.results).toEqual(mockItems);
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: `Bearer ${oidcToken}`,
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: undefined,
+          labelSelector: undefined,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: `Bearer ${oidcToken}`,
+      });
       expect(mockKonfluxLogger.debug).toHaveBeenCalledWith(
         'Using OIDC token for authentication',
         expect.objectContaining({
@@ -376,12 +407,14 @@ describe('KubearchiveService', () => {
       });
       const mockItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchResources({
         konfluxConfig,
@@ -395,30 +428,27 @@ describe('KubearchiveService', () => {
 
       expect(result.results).toEqual(mockItems);
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            'Impersonate-User': userEmail,
-            'Impersonate-Group': 'system:authenticated',
-            Authorization: 'Bearer service-token-123',
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: undefined,
+          labelSelector: undefined,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        'Impersonate-User': userEmail,
+        'Impersonate-Group': 'system:authenticated',
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should throw error when impersonationHeaders is configured but userEmail is missing', async () => {
@@ -516,6 +546,10 @@ describe('KubearchiveService', () => {
         authProvider: 'oidc',
       });
 
+      (
+        createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
+      ).mockResolvedValue(null);
+
       // provide OIDC token so it passes token check and reaches createKubeConfig
       await expect(
         service.fetchResources({
@@ -553,6 +587,10 @@ describe('KubearchiveService', () => {
         },
       });
 
+      (
+        createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
+      ).mockResolvedValue(null);
+
       await expect(
         service.fetchResources({
           konfluxConfig,
@@ -566,10 +604,12 @@ describe('KubearchiveService', () => {
       ).rejects.toThrow(`Cluster '${cluster}' not found`);
 
       expect(mockKonfluxLogger.error).toHaveBeenCalledWith(
-        'Error creating Kube Config',
-        expect.any(Error),
+        'Failed to create KubeConfig - cluster not found',
+        undefined,
         expect.objectContaining({
           cluster,
+          namespace,
+          resource,
         }),
       );
     });
@@ -578,7 +618,7 @@ describe('KubearchiveService', () => {
       const konfluxConfig = createMockKonfluxConfig();
       const apiError = new Error('API request failed');
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockRejectedValue(
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockRejectedValue(
         apiError,
       );
 
@@ -610,12 +650,14 @@ describe('KubearchiveService', () => {
     it('should return empty results when response has no items', async () => {
       const konfluxConfig = createMockKonfluxConfig();
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: [],
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: [],
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchResources({
         konfluxConfig,
@@ -641,9 +683,11 @@ describe('KubearchiveService', () => {
     it('should handle response with undefined body gracefully', async () => {
       const konfluxConfig = createMockKonfluxConfig();
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: undefined,
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: undefined,
+        } as any,
+      );
 
       const result = await service.fetchResources({
         konfluxConfig,
@@ -655,7 +699,7 @@ describe('KubearchiveService', () => {
         namespace,
       });
 
-      expect(result.results).toBeUndefined();
+      expect(result.results).toEqual([]);
       expect(result.nextPageToken).toBeUndefined();
     });
 
@@ -666,12 +710,14 @@ describe('KubearchiveService', () => {
       const pageSize = 50;
       const pageToken = 'token-123';
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       await service.fetchResources({
         konfluxConfig,
@@ -689,28 +735,25 @@ describe('KubearchiveService', () => {
       });
 
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        pageToken,
-        undefined,
-        labelSelector,
-        pageSize,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: pageToken,
+          labelSelector,
+          limit: pageSize,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should use provided token parameter when creating KubeConfig', async () => {
@@ -720,12 +763,14 @@ describe('KubearchiveService', () => {
       const oidcToken = 'custom-oidc-token';
       const mockItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       await service.fetchResources({
         konfluxConfig,
@@ -741,28 +786,25 @@ describe('KubearchiveService', () => {
 
       // verify that the custom token is used in the Authorization header
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: `Bearer ${oidcToken}`,
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: undefined,
+          labelSelector: undefined,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: `Bearer ${oidcToken}`,
+      });
     });
   });
 });

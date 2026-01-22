@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 import { KonfluxConfig } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { KubeConfig } from '@kubernetes/client-node';
+import type { KubeConfig } from '@kubernetes/client-node';
 import { KonfluxLogger } from './logger';
+import { getKubeClient } from './kube-client';
 
 /**
  * Creates a KubeConfig for connecting to a Kubernetes cluster.
@@ -27,18 +28,19 @@ import { KonfluxLogger } from './logger';
  * @param useKubearchiveUrl - If true, uses kubearchiveApiUrl instead of apiUrl
  * @returns KubeConfig instance or null if creation fails
  */
-export const createKubeConfig = (
+export const createKubeConfig = async (
   konfluxConfig: KonfluxConfig | undefined,
   cluster: string,
   konfluxLogger: KonfluxLogger,
   token?: string,
   useKubearchiveUrl = false,
-): KubeConfig | null => {
+): Promise<KubeConfig | null> => {
   try {
     if (!konfluxConfig) {
       return null;
     }
 
+    const { KubeConfig } = await getKubeClient();
     const kubeConfig = new KubeConfig();
 
     const clusterConfig = konfluxConfig.clusters?.[cluster];

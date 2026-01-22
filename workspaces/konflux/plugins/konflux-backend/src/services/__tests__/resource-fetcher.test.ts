@@ -20,16 +20,17 @@ import {
   FetchOptions,
 } from '../resource-fetcher';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { KubeConfig, CustomObjectsApi } from '@kubernetes/client-node';
+import type { KubeConfig, CustomObjectsApi } from '@kubernetes/client-node';
 import { K8sResourceCommonWithClusterInfo } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 import { KubearchiveService } from '../kubearchive-service';
 import { createKubeConfig } from '../../helpers/client-factory';
 import { KonfluxLogger } from '../../helpers/logger';
+import { getKubeClient } from '../../helpers/kube-client';
 
 jest.mock('../kubearchive-service');
 jest.mock('../../helpers/client-factory');
 jest.mock('../../helpers/logger');
-jest.mock('@kubernetes/client-node');
+jest.mock('../../helpers/kube-client');
 
 describe('ResourceFetcherService', () => {
   let mockLogger: jest.Mocked<LoggerService>;
@@ -77,6 +78,25 @@ describe('ResourceFetcherService', () => {
     subcomponent: { name: 'sub1' },
   });
 
+  const expectHeaderMiddleware = (
+    requestOptions: any,
+    expectedHeaders: Record<string, string>,
+  ) => {
+    expect(requestOptions).toEqual(
+      expect.objectContaining({
+        middlewareMergeStrategy: 'append',
+        middleware: [expect.any(Object)],
+      }),
+    );
+
+    const context = { setHeaderParam: jest.fn() };
+    requestOptions.middleware[0].pre(context);
+
+    Object.entries(expectedHeaders).forEach(([key, value]) => {
+      expect(context.setHeaderParam).toHaveBeenCalledWith(key, value);
+    });
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -99,7 +119,7 @@ describe('ResourceFetcherService', () => {
     } as unknown as jest.Mocked<KubearchiveService>;
 
     mockCustomObjectsApi = {
-      listNamespacedCustomObject: jest.fn(),
+      listNamespacedCustomObjectWithHttpInfo: jest.fn(),
     } as unknown as jest.Mocked<CustomObjectsApi>;
 
     mockKubeConfig = {
@@ -116,7 +136,20 @@ describe('ResourceFetcherService', () => {
 
     (
       createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
-    ).mockReturnValue(mockKubeConfig);
+    ).mockResolvedValue(mockKubeConfig);
+
+    class MockObservable<T> {
+      constructor(public value: T) {
+        return value as any;
+      }
+    }
+
+    (
+      getKubeClient as jest.MockedFunction<typeof getKubeClient>
+    ).mockResolvedValue({
+      CustomObjectsApi: jest.fn(),
+      Observable: MockObservable,
+    } as any);
 
     service = new ResourceFetcherService(mockLogger);
   });
@@ -130,12 +163,14 @@ describe('ResourceFetcherService', () => {
         createMockResource('plr2'),
       ];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromKubernetes(context, options);
 
@@ -148,28 +183,25 @@ describe('ResourceFetcherService', () => {
         'service-token-123',
       );
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'namespace1',
-        'pipelineruns',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        10,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: 'appstudio.redhat.com',
+          version: 'v1alpha1',
+          namespace: 'namespace1',
+          plural: 'pipelineruns',
+          _continue: undefined,
+          labelSelector: undefined,
+          limit: 10,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should fetch resources with pagination token', async () => {
@@ -177,40 +209,39 @@ describe('ResourceFetcherService', () => {
       const options: FetchOptions = { continue: 'continue-token-123' };
       const mockItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: { continue: 'next-token-456' },
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: { continue: 'next-token-456' },
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromKubernetes(context, options);
 
       expect(result.items).toEqual(mockItems);
       expect(result.continueToken).toBe('next-token-456');
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'namespace1',
-        'pipelineruns',
-        undefined,
-        undefined,
-        'continue-token-123',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: 'appstudio.redhat.com',
+          version: 'v1alpha1',
+          namespace: 'namespace1',
+          plural: 'pipelineruns',
+          _continue: 'continue-token-123',
+          labelSelector: undefined,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should fetch resources with labelSelector', async () => {
@@ -219,35 +250,34 @@ describe('ResourceFetcherService', () => {
         labelSelector: 'appstudio.openshift.io/application=app1',
       };
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: { items: [] },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: { items: [] },
+        } as any,
+      );
 
       await service.fetchFromKubernetes(context, options);
 
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'namespace1',
-        'pipelineruns',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        'appstudio.openshift.io/application=app1',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: 'appstudio.redhat.com',
+          version: 'v1alpha1',
+          namespace: 'namespace1',
+          plural: 'pipelineruns',
+          _continue: undefined,
+          labelSelector: 'appstudio.openshift.io/application=app1',
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should use OIDC token when authProvider is oidc', async () => {
@@ -265,9 +295,11 @@ describe('ResourceFetcherService', () => {
         oidcToken: 'oidc-token-456',
       });
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: { items: [] },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: { items: [] },
+        } as any,
+      );
 
       await service.fetchFromKubernetes(context);
 
@@ -319,37 +351,36 @@ describe('ResourceFetcherService', () => {
         userEmail: 'user@example.com',
       });
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: { items: [] },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: { items: [] },
+        } as any,
+      );
 
       await service.fetchFromKubernetes(context);
 
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'namespace1',
-        'pipelineruns',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            'Impersonate-User': 'user@example.com',
-            'Impersonate-Group': 'system:authenticated',
-            Authorization: 'Bearer service-token-123',
-          },
+          group: 'appstudio.redhat.com',
+          version: 'v1alpha1',
+          namespace: 'namespace1',
+          plural: 'pipelineruns',
+          _continue: undefined,
+          labelSelector: undefined,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        'Impersonate-User': 'user@example.com',
+        'Impersonate-Group': 'system:authenticated',
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should throw error when impersonation required but userEmail is missing', async () => {
@@ -395,7 +426,7 @@ describe('ResourceFetcherService', () => {
       const context = createMockFetchContext();
       (
         createKubeConfig as jest.MockedFunction<typeof createKubeConfig>
-      ).mockReturnValue(null);
+      ).mockResolvedValue(null);
 
       await expect(service.fetchFromKubernetes(context)).rejects.toThrow(
         "Cluster 'cluster1' not found",
@@ -405,7 +436,7 @@ describe('ResourceFetcherService', () => {
     it('should handle API errors and rethrow', async () => {
       const context = createMockFetchContext();
       const apiError = new Error('Kubernetes API error');
-      mockCustomObjectsApi.listNamespacedCustomObject.mockRejectedValue(
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockRejectedValue(
         apiError,
       );
 
@@ -421,9 +452,11 @@ describe('ResourceFetcherService', () => {
 
     it('should handle empty response body', async () => {
       const context = createMockFetchContext();
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: undefined,
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: undefined,
+        } as any,
+      );
 
       const result = await service.fetchFromKubernetes(context);
 
@@ -438,12 +471,14 @@ describe('ResourceFetcherService', () => {
         createMockResource('plr2'),
       ];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: { continue: 'next-token' },
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: { continue: 'next-token' },
+          },
+        } as any,
+      );
 
       await service.fetchFromKubernetes(context);
 
@@ -570,12 +605,14 @@ describe('ResourceFetcherService', () => {
       const context = createMockFetchContext();
       const mockItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: { continue: 'k8s-token-123' },
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: { continue: 'k8s-token-123' },
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromSource(context);
 
@@ -587,12 +624,14 @@ describe('ResourceFetcherService', () => {
       const context = createMockFetchContext();
       const mockItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: mockItems,
-          metadata: { continue: 'k8s-token-456' },
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: mockItems,
+            metadata: { continue: 'k8s-token-456' },
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromSource(context, {
         k8sToken: 'k8s-token-123',
@@ -601,28 +640,25 @@ describe('ResourceFetcherService', () => {
       expect(result.items).toEqual(mockItems);
       expect(result.newPaginationState).toEqual({ k8sToken: 'k8s-token-456' });
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'namespace1',
-        'pipelineruns',
-        undefined,
-        undefined,
-        'k8s-token-123',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer service-token-123',
-          },
+          group: 'appstudio.redhat.com',
+          version: 'v1alpha1',
+          namespace: 'namespace1',
+          plural: 'pipelineruns',
+          _continue: 'k8s-token-123',
+          labelSelector: undefined,
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer service-token-123',
+      });
     });
 
     it('should continue from Kubearchive when kubearchiveToken exists and no k8sToken', async () => {
@@ -703,12 +739,14 @@ describe('ResourceFetcherService', () => {
       const k8sItems = [createMockResource('plr1')];
       const kaItems = [createMockResource('plr2'), createMockResource('plr3')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       mockKubearchiveService.fetchResources.mockResolvedValue({
         results: kaItems,
@@ -761,12 +799,14 @@ describe('ResourceFetcherService', () => {
       const k8sItems = [createMockResource('plr1')];
       const kaItems = [createMockResource('plr1'), createMockResource('plr2')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       mockKubearchiveService.fetchResources.mockResolvedValue({
         results: kaItems,
@@ -811,12 +851,14 @@ describe('ResourceFetcherService', () => {
 
       const k8sItems = [createMockResource('plr1'), createMockResource('plr2')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       mockKubearchiveService.fetchResources.mockResolvedValue({
         results: [],
@@ -868,12 +910,14 @@ describe('ResourceFetcherService', () => {
         createMockResource('plr3'),
       ];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromSource(context, {}, { limit: 3 });
 
@@ -904,12 +948,14 @@ describe('ResourceFetcherService', () => {
 
       const k8sItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: { continue: 'k8s-token-123' },
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: { continue: 'k8s-token-123' },
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromSource(context);
 
@@ -941,12 +987,14 @@ describe('ResourceFetcherService', () => {
 
       const k8sItems = [createMockResource('app1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromSource(context);
 
@@ -972,12 +1020,14 @@ describe('ResourceFetcherService', () => {
 
       const k8sItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromSource(context);
 
@@ -1002,12 +1052,14 @@ describe('ResourceFetcherService', () => {
 
       const k8sItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       const result = await service.fetchFromSource(context);
 
@@ -1036,12 +1088,14 @@ describe('ResourceFetcherService', () => {
         },
       });
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: [],
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: [],
+            metadata: {},
+          },
+        } as any,
+      );
 
       mockKubearchiveService.fetchResources.mockResolvedValue({
         results: [],
@@ -1054,28 +1108,25 @@ describe('ResourceFetcherService', () => {
       );
 
       expect(
-        mockCustomObjectsApi.listNamespacedCustomObject,
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo,
       ).toHaveBeenCalledWith(
-        'appstudio.redhat.com',
-        'v1alpha1',
-        'namespace1',
-        'pipelineruns',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        'app=myapp',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
         {
-          headers: {
-            Authorization: 'Bearer token-123',
-          },
+          group: 'appstudio.redhat.com',
+          version: 'v1alpha1',
+          namespace: 'namespace1',
+          plural: 'pipelineruns',
+          _continue: undefined,
+          labelSelector: 'app=myapp',
+          limit: undefined,
         },
+        expect.any(Object),
       );
+      const requestOptions =
+        mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mock
+          .calls[0][1];
+      expectHeaderMiddleware(requestOptions, {
+        Authorization: 'Bearer token-123',
+      });
 
       expect(mockKubearchiveService.fetchResources).toHaveBeenCalledWith({
         konfluxConfig: context.konfluxConfig,
@@ -1117,12 +1168,14 @@ describe('ResourceFetcherService', () => {
 
       const k8sItems = [createMockResource('plr1')];
 
-      mockCustomObjectsApi.listNamespacedCustomObject.mockResolvedValue({
-        body: {
-          items: k8sItems,
-          metadata: {},
-        },
-      } as any);
+      mockCustomObjectsApi.listNamespacedCustomObjectWithHttpInfo.mockResolvedValue(
+        {
+          data: {
+            items: k8sItems,
+            metadata: {},
+          },
+        } as any,
+      );
 
       mockKubearchiveService.fetchResources.mockResolvedValue({
         results: [],
