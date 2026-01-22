@@ -3,3 +3,7 @@ dist-types
 coverage
 .vscode
 .eslintrc.js
+
+generated
+report.api.md
+
