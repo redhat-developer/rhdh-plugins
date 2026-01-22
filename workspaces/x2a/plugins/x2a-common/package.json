@@ -11,9 +11,19 @@
     "module": "dist/index.esm.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/x2a/plugins/x2a-common"
+  },
   "backstage": {
     "role": "common-library",
-    "pluginId": "x2a"
+    "pluginId": "x2a",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-x2a",
+      "@red-hat-developer-hub/backstage-plugin-x2a-backend",
+      "@red-hat-developer-hub/backstage-plugin-x2a-common"
+    ]
   },
   "sideEffects": false,
   "scripts": {
