@@ -149,7 +149,8 @@ const orchestratorTranslationEs = createTranslationMessages({
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'No hay detalles adicionales sobre este error disponibles',
     'reviewStep.hiddenFieldsNote':
-      'Algunos campos están ocultos en esta página pero se incluirán en la solicitud de ejecución del flujo de trabajo.',
+      'Algunos parámetros están ocultos en esta página.',
+    'reviewStep.showHiddenParameters': 'Mostrar parámetros ocultos',
     'common.close': 'Cerrar',
     'common.cancel': 'Cancelar',
     'common.execute': 'Ejecutar',

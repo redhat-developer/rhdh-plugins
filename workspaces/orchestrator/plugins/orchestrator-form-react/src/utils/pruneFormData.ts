@@ -18,6 +18,10 @@ import { JsonObject, JsonValue } from '@backstage/types';
 
 import type { JSONSchema7 } from 'json-schema';
 
+type WorkflowInputSchema = JSONSchema7 & {
+  omitFromWorkflowInput?: boolean;
+};
+
 /**
  * Resolves $ref references in a schema by looking in $defs
  */
@@ -38,6 +42,10 @@ function resolveSchema(
   }
 
   return schema;
+}
+
+function shouldOmitFromWorkflowInput(schema: JSONSchema7): boolean {
+  return (schema as WorkflowInputSchema).omitFromWorkflowInput === true;
 }
 
 /**
@@ -303,4 +311,81 @@ export function pruneFormData(
   }
 
   return pruned;
+}
+
+/**
+ * Removes fields marked with omitFromWorkflowInput from the form data.
+ * This keeps the review UI intact while excluding data from execution payloads.
+ */
+export function omitFromWorkflowInput(
+  formData: JsonObject,
+  schema: JSONSchema7,
+  rootSchema?: JSONSchema7,
+): JsonObject {
+  const root = rootSchema || schema;
+  const filtered: JsonObject = {};
+
+  for (const [key, value] of Object.entries(formData)) {
+    if (value === undefined) continue;
+
+    let propSchema = schema.properties?.[key];
+    if (typeof propSchema === 'boolean' || !propSchema) {
+      filtered[key] = value as JsonValue;
+      continue;
+    }
+
+    propSchema = resolveSchema(propSchema as JSONSchema7, root);
+    if (shouldOmitFromWorkflowInput(propSchema)) {
+      continue;
+    }
+
+    if (
+      propSchema.type === 'object' &&
+      typeof value === 'object' &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
+      filtered[key] = omitFromWorkflowInput(
+        value as JsonObject,
+        propSchema as JSONSchema7,
+        root,
+      );
+      continue;
+    }
+
+    if (propSchema.type === 'array' && Array.isArray(value)) {
+      const itemsSchema =
+        typeof propSchema.items === 'object' && propSchema.items
+          ? resolveSchema(propSchema.items as JSONSchema7, root)
+          : undefined;
+
+      if (itemsSchema && shouldOmitFromWorkflowInput(itemsSchema)) {
+        continue;
+      }
+
+      if (
+        itemsSchema &&
+        itemsSchema.type === 'object' &&
+        itemsSchema.properties
+      ) {
+        filtered[key] = value.map(item => {
+          if (typeof item === 'object' && item !== null) {
+            return omitFromWorkflowInput(
+              item as JsonObject,
+              itemsSchema as JSONSchema7,
+              root,
+            );
+          }
+          return item as JsonValue;
+        });
+      } else {
+        filtered[key] = value as JsonValue;
+      }
+      continue;
+    }
+
+    filtered[key] = value as JsonValue;
+  }
+
+  return filtered;
 }
