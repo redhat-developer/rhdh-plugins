@@ -19,10 +19,11 @@ import {
   K8sResourceCommonWithClusterInfo,
   KonfluxConfig,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { CustomObjectsApi } from '@kubernetes/client-node';
+import type { ObservableMiddleware } from '@kubernetes/client-node';
 import { KonfluxLogger } from '../helpers/logger';
 import { getAuthToken } from '../helpers/auth';
 import { createKubeConfig } from '../helpers/client-factory';
+import { getKubeClient } from '../helpers/kube-client';
 
 /**
  * Options for fetching resources from Kubearchive
@@ -80,7 +81,7 @@ export class KubearchiveService {
         { cluster, namespace, resource },
       );
 
-      const kc = createKubeConfig(
+      const kc = await createKubeConfig(
         konfluxConfig,
         cluster,
         this.logger,
@@ -100,41 +101,75 @@ export class KubearchiveService {
         throw new Error(`Cluster '${cluster}' not found`);
       }
 
-      const customApi = kc.makeApiClient(CustomObjectsApi);
-      const response = await customApi.listNamespacedCustomObject(
-        apiGroup,
-        apiVersion,
-        namespace,
-        resource,
-        undefined,
-        undefined,
-        options.pageToken,
-        undefined,
-        options.labelSelector,
-        options.pageSize,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        {
-          headers: {
-            ...(requiresImpersonation && {
-              'Impersonate-User': userEmail,
-              'Impersonate-Group': 'system:authenticated',
-            }),
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
+      const { CustomObjectsApi, Observable } = await getKubeClient();
 
-      const responseBody = response?.body as {
-        items: K8sResourceCommonWithClusterInfo[];
-        metadata?: {
-          continue?: string;
-        };
+      const requestHeaders = {
+        ...(requiresImpersonation && {
+          'Impersonate-User': userEmail,
+          'Impersonate-Group': 'system:authenticated',
+        }),
+        ...(token && { Authorization: `Bearer ${token}` }),
       };
 
-      const items = responseBody?.items;
+      const headerMiddleware: ObservableMiddleware | undefined =
+        Object.keys(requestHeaders).length > 0
+          ? {
+              pre: context => {
+                Object.entries(requestHeaders).forEach(([key, value]) => {
+                  context.setHeaderParam(key, value);
+                });
+                return new Observable(Promise.resolve(context));
+              },
+              post: context => new Observable(Promise.resolve(context)),
+            }
+          : undefined;
+
+      const requestOptions = headerMiddleware
+        ? {
+            middlewareMergeStrategy: 'append' as const,
+            middleware: [headerMiddleware],
+          }
+        : undefined;
+
+      const customApi = kc.makeApiClient(CustomObjectsApi);
+      const response = await customApi.listNamespacedCustomObjectWithHttpInfo(
+        {
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural: resource,
+          _continue: options.pageToken,
+          labelSelector: options.labelSelector,
+          limit: options.pageSize,
+        },
+        requestOptions,
+      );
+      const responseBody = (
+        typeof response?.data === 'string'
+          ? (() => {
+              try {
+                return JSON.parse(response.data);
+              } catch (error) {
+                this.logger.warn('Failed to parse Kubearchive response data', {
+                  cluster,
+                  namespace,
+                  resource,
+                  error: error instanceof Error ? error.message : String(error),
+                });
+                return undefined;
+              }
+            })()
+          : response?.data
+      ) as
+        | {
+            items: K8sResourceCommonWithClusterInfo[];
+            metadata?: {
+              continue?: string;
+            };
+          }
+        | undefined;
+
+      const items = responseBody?.items ?? [];
       const nextPageToken = responseBody?.metadata?.continue;
 
       this.logger.debug('Fetched items from Kubearchive', {

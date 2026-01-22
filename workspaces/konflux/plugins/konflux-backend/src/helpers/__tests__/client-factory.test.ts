@@ -16,23 +16,16 @@
 
 import { createKubeConfig } from '../client-factory';
 import { KonfluxConfig } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
-import { KubeConfig } from '@kubernetes/client-node';
 import { KonfluxLogger } from '../logger';
+import type { KubeConfig } from '@kubernetes/client-node';
+import { getKubeClient } from '../kube-client';
 
-jest.mock('@kubernetes/client-node', () => {
-  const mockLoadFromOptions = jest.fn();
-  const mockKubeConfig = jest.fn().mockImplementation(() => ({
-    loadFromOptions: mockLoadFromOptions,
-  }));
-
-  return {
-    KubeConfig: mockKubeConfig,
-  };
-});
+jest.mock('../kube-client');
 
 describe('client-factory', () => {
   let mockLogger: KonfluxLogger;
   let mockError: jest.SpyInstance;
+  let mockKubeConfigClass: jest.MockedClass<typeof KubeConfig>;
 
   beforeEach(() => {
     mockLogger = {
@@ -43,6 +36,15 @@ describe('client-factory', () => {
     } as unknown as KonfluxLogger;
     mockError = jest.spyOn(mockLogger, 'error');
     jest.clearAllMocks();
+
+    mockKubeConfigClass = jest.fn() as unknown as jest.MockedClass<
+      typeof KubeConfig
+    >;
+    (
+      getKubeClient as jest.MockedFunction<typeof getKubeClient>
+    ).mockResolvedValue({
+      KubeConfig: mockKubeConfigClass,
+    } as any);
   });
 
   const createMockKonfluxConfig = (
@@ -64,15 +66,15 @@ describe('client-factory', () => {
   });
 
   describe('createKubeConfig', () => {
-    it('should return null when konfluxConfig is undefined', () => {
-      const result = createKubeConfig(undefined, 'cluster1', mockLogger);
+    it('should return null when konfluxConfig is undefined', async () => {
+      const result = await createKubeConfig(undefined, 'cluster1', mockLogger);
       expect(result).toBeNull();
       expect(mockError).not.toHaveBeenCalled();
     });
 
-    it('should return null when cluster config is not found', () => {
+    it('should return null when cluster config is not found', async () => {
       const config = createMockKonfluxConfig();
-      const result = createKubeConfig(
+      const result = await createKubeConfig(
         config,
         'nonexistent-cluster',
         mockLogger,
@@ -85,7 +87,7 @@ describe('client-factory', () => {
       );
     });
 
-    it('should return null when apiUrl is missing', () => {
+    it('should return null when apiUrl is missing', async () => {
       const config = createMockKonfluxConfig({
         clusters: {
           cluster1: {
@@ -93,7 +95,7 @@ describe('client-factory', () => {
           },
         },
       });
-      const result = createKubeConfig(config, 'cluster1', mockLogger);
+      const result = await createKubeConfig(config, 'cluster1', mockLogger);
       expect(result).toBeNull();
       expect(mockError).toHaveBeenCalledWith(
         'Error creating Kube Config',
@@ -102,11 +104,9 @@ describe('client-factory', () => {
       );
     });
 
-    it('should create KubeConfig with serviceAccountToken when token is not provided', () => {
+    it('should create KubeConfig with serviceAccountToken when token is not provided', async () => {
       const config = createMockKonfluxConfig();
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       const mockLoadFromOptions = jest.fn();
       MockedKubeConfig.mockImplementation(
         () =>
@@ -115,7 +115,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      const result = createKubeConfig(config, 'cluster1', mockLogger);
+      const result = await createKubeConfig(config, 'cluster1', mockLogger);
 
       expect(result).not.toBeNull();
       expect(MockedKubeConfig).toHaveBeenCalled();
@@ -144,11 +144,9 @@ describe('client-factory', () => {
       expect(mockError).not.toHaveBeenCalled();
     });
 
-    it('should create KubeConfig with provided token when token is provided', () => {
+    it('should create KubeConfig with provided token when token is provided', async () => {
       const config = createMockKonfluxConfig();
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       const mockLoadFromOptions = jest.fn();
       MockedKubeConfig.mockImplementation(
         () =>
@@ -157,7 +155,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      const result = createKubeConfig(
+      const result = await createKubeConfig(
         config,
         'cluster1',
         mockLogger,
@@ -189,11 +187,9 @@ describe('client-factory', () => {
       });
     });
 
-    it('should use serviceAccountToken when token is undefined', () => {
+    it('should use serviceAccountToken when token is undefined', async () => {
       const config = createMockKonfluxConfig();
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       const mockLoadFromOptions = jest.fn();
       MockedKubeConfig.mockImplementation(
         () =>
@@ -202,7 +198,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      createKubeConfig(config, 'cluster1', mockLogger);
+      await createKubeConfig(config, 'cluster1', mockLogger);
 
       expect(mockLoadFromOptions).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -216,11 +212,9 @@ describe('client-factory', () => {
       );
     });
 
-    it('should handle different cluster names', () => {
+    it('should handle different cluster names', async () => {
       const config = createMockKonfluxConfig();
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       const mockLoadFromOptions = jest.fn();
       MockedKubeConfig.mockImplementation(
         () =>
@@ -229,7 +223,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      const result = createKubeConfig(config, 'cluster2', mockLogger);
+      const result = await createKubeConfig(config, 'cluster2', mockLogger);
 
       expect(result).not.toBeNull();
       expect(mockLoadFromOptions).toHaveBeenCalledWith({
@@ -256,7 +250,7 @@ describe('client-factory', () => {
       });
     });
 
-    it('should handle empty serviceAccountToken', () => {
+    it('should handle empty serviceAccountToken', async () => {
       const config = createMockKonfluxConfig({
         clusters: {
           cluster1: {
@@ -265,9 +259,7 @@ describe('client-factory', () => {
           },
         },
       });
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       const mockLoadFromOptions = jest.fn();
       MockedKubeConfig.mockImplementation(
         () =>
@@ -276,7 +268,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      const result = createKubeConfig(config, 'cluster1', mockLogger);
+      const result = await createKubeConfig(config, 'cluster1', mockLogger);
 
       expect(result).not.toBeNull();
       expect(mockLoadFromOptions).toHaveBeenCalledWith(
@@ -291,7 +283,7 @@ describe('client-factory', () => {
       );
     });
 
-    it('should handle undefined serviceAccountToken', () => {
+    it('should handle undefined serviceAccountToken', async () => {
       const config = createMockKonfluxConfig({
         clusters: {
           cluster1: {
@@ -299,9 +291,7 @@ describe('client-factory', () => {
           },
         },
       });
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       const mockLoadFromOptions = jest.fn();
       MockedKubeConfig.mockImplementation(
         () =>
@@ -310,7 +300,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      const result = createKubeConfig(config, 'cluster1', mockLogger);
+      const result = await createKubeConfig(config, 'cluster1', mockLogger);
 
       expect(result).not.toBeNull();
       expect(mockLoadFromOptions).toHaveBeenCalledWith(
@@ -325,11 +315,9 @@ describe('client-factory', () => {
       );
     });
 
-    it('should return null and log error when KubeConfig throws an error', () => {
+    it('should return null and log error when KubeConfig throws an error', async () => {
       const config = createMockKonfluxConfig();
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       const mockLoadFromOptions = jest.fn().mockImplementation(() => {
         throw new Error('KubeConfig initialization failed');
       });
@@ -340,7 +328,7 @@ describe('client-factory', () => {
           } as any),
       );
 
-      const result = createKubeConfig(config, 'cluster1', mockLogger);
+      const result = await createKubeConfig(config, 'cluster1', mockLogger);
 
       expect(result).toBeNull();
       expect(mockError).toHaveBeenCalledWith(
@@ -350,16 +338,14 @@ describe('client-factory', () => {
       );
     });
 
-    it('should return null and log error when loadFromOptions throws an error', () => {
+    it('should return null and log error when loadFromOptions throws an error', async () => {
       const config = createMockKonfluxConfig();
-      const MockedKubeConfig = KubeConfig as jest.MockedClass<
-        typeof KubeConfig
-      >;
+      const MockedKubeConfig = mockKubeConfigClass;
       MockedKubeConfig.mockImplementation(() => {
         throw new Error('Failed to create KubeConfig');
       });
 
-      const result = createKubeConfig(config, 'cluster1', mockLogger);
+      const result = await createKubeConfig(config, 'cluster1', mockLogger);
 
       expect(result).toBeNull();
       expect(mockError).toHaveBeenCalledWith(
