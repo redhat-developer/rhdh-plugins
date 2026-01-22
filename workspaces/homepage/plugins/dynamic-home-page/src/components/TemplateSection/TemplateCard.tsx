@@ -28,7 +28,6 @@ interface TemplateCardProps {
   link: string;
   title: string;
   description: string;
-  kind: string;
   type?: string;
 }
 
@@ -36,7 +35,6 @@ const TemplateCard: FC<TemplateCardProps> = ({
   link,
   title,
   description,
-  kind,
   type,
 }) => {
   return (
@@ -99,15 +97,6 @@ const TemplateCard: FC<TemplateCardProps> = ({
           </Typography>
         </Box>
         <Box sx={{ pt: 2 }}>
-          <Chip
-            label={
-              <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-                {kind}
-              </Typography>
-            }
-            key={kind}
-            size="small"
-          />
           {type && (
             <Chip
               label={

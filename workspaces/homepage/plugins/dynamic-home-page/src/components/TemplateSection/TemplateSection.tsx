@@ -95,7 +95,6 @@ export const TemplateSection = () => {
                   link={`/create/templates/${item.metadata.namespace}/${item.metadata.name}`}
                   title={item.metadata.title}
                   description={item.metadata.description}
-                  kind="Template"
                   type={item.spec.type}
                 />
               </Grid>
