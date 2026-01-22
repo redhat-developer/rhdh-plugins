@@ -118,9 +118,7 @@ describe('KubearchiveService', () => {
     ).mockResolvedValue(mockKubeConfig);
 
     class MockObservable<T> {
-      constructor(public value: T) {
-        return value as any;
-      }
+      constructor(public value: T) {}
     }
 
     (

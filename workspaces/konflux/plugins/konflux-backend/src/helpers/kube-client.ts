@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-import type {
-  CustomObjectsApi,
-  KubeConfig,
-  Observable,
-  ObservableMiddleware,
-} from '@kubernetes/client-node';
-
 type KubeClientModule = typeof import('@kubernetes/client-node');
 
 let cachedModule: Promise<KubeClientModule> | undefined;
 
 export const getKubeClient = async (): Promise<KubeClientModule> => {
-  if (!cachedModule) {
-    cachedModule = import('@kubernetes/client-node');
-  }
-
+  cachedModule ??= import('@kubernetes/client-node');
   return cachedModule;
 };
 
-export type { CustomObjectsApi, KubeConfig, Observable, ObservableMiddleware };
+export type {
+  CustomObjectsApi,
+  KubeConfig,
+  Observable,
+  ObservableMiddleware,
+} from '@kubernetes/client-node';
