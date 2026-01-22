@@ -32,5 +32,10 @@
   },
   "files": [
     "dist"
+  ],
+  "maintainers": [
+    "@mlibra",
+    "@elai-shalev",
+    "@eloycoto"
   ]
 }

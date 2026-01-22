@@ -60,5 +60,10 @@
     "*.{json,md}": [
       "prettier --write"
     ]
-  }
+  },
+  "maintainers": [
+    "@mlibra",
+    "@elai-shalev",
+    "@eloycoto"
+  ]
 }
