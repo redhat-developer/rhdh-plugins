@@ -92,16 +92,4 @@ export interface RequestOptions {
 export type TypedResponse<T> = Omit<Response, 'json'> & {
   json: () => Promise<T>;
 };
-
-// Warnings were encountered during analysis:
-//
-// client/src/schema/openapi/generated/apis/Api.client.d.ts:18:5 - (ae-undocumented) Missing documentation for "token".
-// client/src/schema/openapi/generated/apis/Api.client.d.ts:23:1 - (ae-undocumented) Missing documentation for "ProjectsGet".
-// client/src/schema/openapi/generated/apis/Api.client.d.ts:33:1 - (ae-undocumented) Missing documentation for "ProjectsPost".
-// client/src/schema/openapi/generated/apis/Api.client.d.ts:39:1 - (ae-undocumented) Missing documentation for "ProjectsProjectIdDelete".
-// client/src/schema/openapi/generated/apis/Api.client.d.ts:47:1 - (ae-undocumented) Missing documentation for "ProjectsProjectIdGet".
-// client/src/schema/openapi/generated/apis/Api.client.d.ts:55:1 - (ae-undocumented) Missing documentation for "DefaultApiClient".
-// client/src/schema/openapi/generated/models/Project.model.d.ts:4:1 - (ae-undocumented) Missing documentation for "Project".
-// client/src/schema/openapi/generated/models/ProjectsGet200Response.model.d.ts:5:1 - (ae-undocumented) Missing documentation for "ProjectsGet200Response".
-// client/src/schema/openapi/generated/models/ProjectsPostRequest.model.d.ts:4:1 - (ae-undocumented) Missing documentation for "ProjectsPostRequest".
 ```
