@@ -16,6 +16,24 @@
 import { Page } from '@playwright/test';
 
 /**
+ * Mapping of locale codes to their native display names
+ */
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+/**
+ * Get the display name for a locale code
+ */
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
+/**
  * Switch to a different locale
  * Extracts base language code (e.g., "en" from "en-US") for locale selection
  */
@@ -23,11 +41,13 @@ export async function switchToLocale(
   page: Page,
   locale: string,
 ): Promise<void> {
-  if (locale !== 'en') {
+  const baseLocale = locale.split('-')[0];
+  if (baseLocale !== 'en') {
+    const displayName = getLocaleDisplayName(locale);
     await page.getByRole('button', { name: 'Guest' }).click();
     await page.getByRole('menuitem', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'English' }).click();
-    await page.getByRole('option', { name: locale }).click();
+    await page.getByRole('option', { name: displayName }).click();
     await page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }

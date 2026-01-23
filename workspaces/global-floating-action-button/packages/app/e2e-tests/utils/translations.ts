@@ -18,8 +18,10 @@
 /* eslint-disable @backstage/no-relative-monorepo-imports */
 import { globalFloatingActionButtonMessages } from '../../../../plugins/global-floating-action-button/src/translations/ref.js';
 import globalFloatingActionButtonTranslationDe from '../../../../plugins/global-floating-action-button/src/translations/de.js';
-import globalFloatingActionButtonTranslationFr from '../../../../plugins/global-floating-action-button/src/translations/fr.js';
 import globalFloatingActionButtonTranslationEs from '../../../../plugins/global-floating-action-button/src/translations/es.js';
+import globalFloatingActionButtonTranslationFr from '../../../../plugins/global-floating-action-button/src/translations/fr.js';
+import globalFloatingActionButtonTranslationIt from '../../../../plugins/global-floating-action-button/src/translations/it.js';
+import globalFloatingActionButtonTranslationJa from '../../../../plugins/global-floating-action-button/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type GlobalFloatingActionButtonMessages =
@@ -48,13 +50,27 @@ export function getTranslations(locale: string) {
   switch (languageCode) {
     case 'en':
       return globalFloatingActionButtonMessages;
-    case 'fr':
-      return transform(globalFloatingActionButtonTranslationFr.messages);
     case 'de':
       return transform(globalFloatingActionButtonTranslationDe.messages);
     case 'es':
       return transform(globalFloatingActionButtonTranslationEs.messages);
+    case 'fr':
+      return transform(globalFloatingActionButtonTranslationFr.messages);
+    case 'it':
+      return transform(globalFloatingActionButtonTranslationIt.messages);
+    case 'ja':
+      return transform(globalFloatingActionButtonTranslationJa.messages);
     default:
       return globalFloatingActionButtonMessages;
   }
 }
+
+/**
+ * Test IDs that are always in English, regardless of locale
+ * Note: Most FAB items use translated labels as test IDs, so use
+ * translations.fab.X.label.toLowerCase() for those instead
+ */
+export const TEST_IDS = {
+  settings: 'settings',
+  search: 'search',
+};

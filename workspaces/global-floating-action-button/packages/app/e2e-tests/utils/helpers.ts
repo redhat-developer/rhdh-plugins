@@ -20,6 +20,24 @@ import {
   GlobalFloatingActionButtonMessages,
 } from './translations.js';
 
+/**
+ * Mapping of locale codes to their native display names
+ */
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+/**
+ * Get the display name for a locale code
+ */
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
 async function getPageTranslations(
   page: Page,
 ): Promise<GlobalFloatingActionButtonMessages> {
@@ -46,10 +64,12 @@ export async function switchToLocale(
   page: Page,
   locale: string,
 ): Promise<void> {
-  if (locale !== 'en') {
+  const baseLocale = locale.split('-')[0];
+  if (baseLocale !== 'en') {
+    const displayName = getLocaleDisplayName(locale);
     await page.getByRole('link', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'English' }).click();
-    await page.getByRole('option', { name: locale }).click();
+    await page.getByRole('option', { name: displayName }).click();
     await page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }
@@ -124,7 +144,7 @@ export async function testApisMenuItem(
   const translations = await getPageTranslations(page);
   await openLeftMenu(page, menuTooltip);
   await page.getByTestId(translations.fab.apis.label.toLowerCase()).click();
-  await expect(page).toHaveURL('/api-docs');
+  await expect(page).toHaveURL(/\/api-docs/);
   await expect(page.locator('h1')).toContainText('APIs');
   await expect(page.locator('header')).toContainText('My Company API Explorer');
   await expect(

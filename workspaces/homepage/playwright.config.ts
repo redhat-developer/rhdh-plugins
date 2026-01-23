@@ -62,5 +62,23 @@ export default defineConfig({
         locale: 'fr',
       },
     },
+    {
+      name: 'it',
+      testDir: 'packages/app/e2e-tests',
+      grep: /Cards/,
+      use: {
+        channel: 'chrome',
+        locale: 'it',
+      },
+    },
+    {
+      name: 'ja',
+      testDir: 'packages/app/e2e-tests',
+      grep: /Cards/,
+      use: {
+        channel: 'chrome',
+        locale: 'ja',
+      },
+    },
   ],
 });

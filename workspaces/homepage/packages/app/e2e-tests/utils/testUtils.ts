@@ -16,6 +16,18 @@
 
 import { Page, expect } from '@playwright/test';
 
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
 export class TestUtils {
   private page: Page;
 
@@ -64,10 +76,14 @@ export class TestUtils {
   }
 
   async switchToLocale(locale: string): Promise<void> {
-    await this.page.getByRole('link', { name: 'Settings' }).click();
-    await this.page.getByRole('button', { name: 'English' }).click();
-    await this.page.getByRole('option', { name: locale }).click();
-    await this.page.locator('a').filter({ hasText: 'Home' }).click();
+    const baseLocale = locale.split('-')[0];
+    if (baseLocale !== 'en') {
+      const displayName = getLocaleDisplayName(locale);
+      await this.page.getByRole('link', { name: 'Settings' }).click();
+      await this.page.getByRole('button', { name: 'English' }).click();
+      await this.page.getByRole('option', { name: displayName }).click();
+      await this.page.locator('a').filter({ hasText: 'Home' }).click();
+    }
   }
 
   async verifyHeading(heading: string): Promise<void> {
