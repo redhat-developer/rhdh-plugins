@@ -273,22 +273,25 @@ For new plugins, it is recommended that your initial PR simply creates the works
 
 ### Checklist to Ensure your Plugin is Ready to Merge
 
-* Workspace `package.json` contains
+* Workspace `package.json`
   * `private: true`
-  * Correct repository url
-  * Few dependencies at workspace-level
-* Plugin `package.json` contains
-  * If intending to publish
-    * No `private: true`
-    * `publishConfig.access: “public”`
-  * Correct `backstage` config with `role`, `pluginId`, and `pluginPackages`
-  * Correct repository url
-* Changeset is present
-* README files are present and appropriate
-* `backstage.json` is present with appropriate Backstage version
-* `config.d.ts` exists at package-level if plugin has configuration
-  * Contains proper visibility annotations
-* `.github/CODEOWNERS` is up to date
+  * Use the correct repository url
+  * Keep workspace-level dependencies minimal
+* Plugin `package.json`
+  * For publishable plugins:
+    * Omit `private: true`
+    * Set `publishConfig.access` to `"public"`
+  * Include a valid `backstage` config with `role`, `pluginId`, and `pluginPackages`
+  * Use the correct repository URL
+* Required files
+  * Changeset is present
+  * README files with relevant documentation
+  * `backstage.json` specifying a compatible Backstage version
+* Configuration (if applicable)
+  * Include `config.d.ts` at the package level
+  * Add proper visibility annotations
+* Ownership
+  * Update `.github/CODEOWNERS` with appropriate maintainers
 
 > [!NOTE]
 > Only [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-cope) can bypass the SonarCloud test. We typically grant a one-time exception for new plugins that require a full application instead of a standalone development server. If this applies to your pull request, please mention it in the description.
