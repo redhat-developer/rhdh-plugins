@@ -549,6 +549,17 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 
 If a template for a field of one of those properties evaluates to just an empty or undefined value, the **field is skipped** from the HTTP request (body, headers).
 
+JSONata expressions are also supported in `fetch:body` and `validate:body`. To evaluate a value as JSONata against the current form data, prefix it with `jsonata:`.
+
+Example:
+
+```json
+"fetch:body": {
+  "platformId": "jsonata:$.appRegistration.xParams.platformProfileID",
+  "fallback": "$${{current.appRegistration.xParams.platformProfileID}}"
+}
+```
+
 ### Authentication
 
 To make the `identityApi` working, the [Backstage authentication](https://backstage.io/docs/auth/#sign-in-configuration) needs to be configured.
