@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Content } from '@backstage/core-components';
 import { JsonObject } from '@backstage/types';
@@ -22,7 +22,10 @@ import { JsonObject } from '@backstage/types';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Paper from '@mui/material/Paper';
+import Switch from '@mui/material/Switch';
+import Typography from '@mui/material/Typography';
 import type { JSONSchema7 } from 'json-schema';
 import { get } from 'lodash';
 import { makeStyles } from 'tss-react/mui';
@@ -59,6 +62,12 @@ const useStyles = makeStyles()(theme => ({
   },
   hiddenFieldsAlert: {
     marginBottom: theme.spacing(2),
+  },
+  hiddenFieldsAction: {
+    marginLeft: theme.spacing(2),
+  },
+  hiddenFieldsText: {
+    fontSize: theme.typography.body1.fontSize,
   },
 }));
 
@@ -115,9 +124,12 @@ const ReviewStep = ({
 
   const { classes } = useStyles();
   const { handleBack } = useStepperContext();
+  const [showHiddenFields, setShowHiddenFields] = useState(false);
   const displayData = useMemo<JsonObject>(() => {
-    return generateReviewTableData(schema, data);
-  }, [schema, data]);
+    return generateReviewTableData(schema, data, {
+      includeHiddenFields: showHiddenFields,
+    });
+  }, [schema, data, showHiddenFields]);
 
   const showHiddenFieldsNote = useMemo(() => {
     return hasHiddenFields(schema);
@@ -127,8 +139,32 @@ const ReviewStep = ({
     <Content noPadding>
       <Paper square elevation={0} className={classes.paper}>
         {showHiddenFieldsNote && (
-          <Alert severity="info" className={classes.hiddenFieldsAlert}>
-            {t('reviewStep.hiddenFieldsNote')}
+          <Alert
+            severity="info"
+            className={classes.hiddenFieldsAlert}
+            action={
+              <FormControlLabel
+                className={classes.hiddenFieldsAction}
+                control={
+                  <Switch
+                    checked={showHiddenFields}
+                    onChange={event =>
+                      setShowHiddenFields(event.target.checked)
+                    }
+                    color="primary"
+                  />
+                }
+                label={
+                  <Typography className={classes.hiddenFieldsText}>
+                    {t('reviewStep.showHiddenParameters')}
+                  </Typography>
+                }
+              />
+            }
+          >
+            <Typography className={classes.hiddenFieldsText}>
+              {t('reviewStep.hiddenFieldsNote')}
+            </Typography>
           </Alert>
         )}
         <NestedReviewTable data={displayData} />
