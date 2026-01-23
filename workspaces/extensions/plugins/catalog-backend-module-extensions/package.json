@@ -51,7 +51,8 @@
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.10.0",
     "@backstage/cli": "^0.34.5",
-    "@types/glob": "^8.1.0"
+    "@types/glob": "^8.1.0",
+    "@types/js-yaml": "^4.0.9"
   },
   "files": [
     "dist"
