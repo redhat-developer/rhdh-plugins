@@ -63,7 +63,7 @@ export const ActiveText: Widget<
 
   let content: React.ReactNode;
   if (waitingForRetrigger) {
-    content = <CircularProgress size={16} />;
+    content = <CircularProgress size={20} />;
   } else if (loading) {
     content = <CircularProgress size={20} />;
   } else {
