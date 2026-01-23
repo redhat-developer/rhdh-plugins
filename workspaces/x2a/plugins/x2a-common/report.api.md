@@ -16,7 +16,7 @@ export class DefaultApiClient {
     });
     projectsGet(request: ProjectsGet, options?: RequestOptions): Promise<TypedResponse<ProjectsGet200Response>>;
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
-    projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<void>>;
+    projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
 }
 
@@ -63,6 +63,11 @@ export type ProjectsProjectIdDelete = {
         projectId: string;
     };
 };
+
+// @public (undocumented)
+export interface ProjectsProjectIdDelete200Response {
+    deletedCount: number;
+}
 
 // @public (undocumented)
 export type ProjectsProjectIdGet = {
