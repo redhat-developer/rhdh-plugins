@@ -37,7 +37,7 @@ export const ActiveText: Widget<
   const handleFetchStarted = formContext?.handleFetchStarted;
   const handleFetchEnded = formContext?.handleFetchEnded;
 
-  const { text, error, loading } = useFetchAndEvaluate(
+  const { text, error, fetchError, loading } = useFetchAndEvaluate(
     uiProps['ui:text'] ?? '',
     formData ?? {},
     uiProps,
@@ -55,8 +55,9 @@ export const ActiveText: Widget<
     );
   }
 
-  if (error) {
-    return <ErrorText id={id} text={error} />;
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  if (error ?? (shouldShowFetchError ? fetchError : undefined)) {
+    return <ErrorText id={id} text={error ?? fetchError ?? ''} />;
   }
 
   return (
