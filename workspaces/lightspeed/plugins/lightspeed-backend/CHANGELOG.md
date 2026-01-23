@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-backend
 
+## 1.2.1
+
+### Patch Changes
+
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- Updated dependencies [9c17c36]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.1
+
 ## 1.2.0
 
 ### Patch Changes
