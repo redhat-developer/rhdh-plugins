@@ -18,8 +18,10 @@
 /* eslint-disable @backstage/no-relative-monorepo-imports */
 import { bulkImportMessages } from '../../../../plugins/bulk-import/src/translations/ref.js';
 import bulkImportTranslationDe from '../../../../plugins/bulk-import/src/translations/de.js';
-import bulkImportTranslationFr from '../../../../plugins/bulk-import/src/translations/fr.js';
 import bulkImportTranslationEs from '../../../../plugins/bulk-import/src/translations/es.js';
+import bulkImportTranslationFr from '../../../../plugins/bulk-import/src/translations/fr.js';
+import bulkImportTranslationIt from '../../../../plugins/bulk-import/src/translations/it.js';
+import bulkImportTranslationJa from '../../../../plugins/bulk-import/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type BulkImportMessages = typeof bulkImportMessages;
@@ -43,12 +45,16 @@ export function getTranslations(locale: string): BulkImportMessages {
   switch (locale) {
     case 'en':
       return bulkImportMessages;
-    case 'fr':
-      return transform(bulkImportTranslationFr.messages);
     case 'de':
       return transform(bulkImportTranslationDe.messages);
     case 'es':
       return transform(bulkImportTranslationEs.messages);
+    case 'fr':
+      return transform(bulkImportTranslationFr.messages);
+    case 'it':
+      return transform(bulkImportTranslationIt.messages);
+    case 'ja':
+      return transform(bulkImportTranslationJa.messages);
     default:
       return bulkImportMessages;
   }

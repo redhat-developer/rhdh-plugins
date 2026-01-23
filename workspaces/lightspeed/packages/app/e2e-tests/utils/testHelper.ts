@@ -18,10 +18,32 @@ import { Page, expect } from '@playwright/test';
 import { mockFeedbackReceived } from './devMode';
 import { LightspeedMessages } from './translations';
 
+/**
+ * Mapping of locale codes to their native display names
+ */
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+/**
+ * Get the display name for a locale code
+ */
+export function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
 export const switchToLocale = async (page: Page, locale: string) => {
+  const baseLocale = locale.split('-')[0];
+  if (baseLocale === 'en') return;
+
+  const displayName = getLocaleDisplayName(locale);
   await page.getByRole('link', { name: 'Settings' }).click();
   await page.getByRole('button', { name: 'English' }).click();
-  await page.getByRole('option', { name: locale }).click();
+  await page.getByRole('option', { name: displayName }).click();
   await page.locator('a').filter({ hasText: 'Home' }).click();
 };
 

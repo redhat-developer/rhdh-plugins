@@ -16,6 +16,24 @@
 import { Page, expect } from '@playwright/test';
 
 /**
+ * Mapping of locale codes to their native display names
+ */
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+/**
+ * Get the display name for a locale code
+ */
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
+/**
  * Navigate to a page using the navigation link text
  */
 export async function navigate(page: Page, link: string) {
@@ -79,10 +97,17 @@ export async function switchToLocale(
   page: Page,
   locale: string,
 ): Promise<void> {
-  await page.getByRole('link', { name: 'Settings' }).click();
-  await page.getByRole('button', { name: 'English' }).click();
-  await page.getByRole('option', { name: locale }).click();
-  await page.locator('a').filter({ hasText: 'Home' }).click();
+  const baseLocale = locale.split('-')[0];
+  if (baseLocale !== 'en') {
+    const displayName = getLocaleDisplayName(locale);
+    // Wait for the Settings link to be visible before clicking
+    const settingsLink = page.getByRole('link', { name: 'Settings' });
+    await settingsLink.waitFor({ state: 'visible', timeout: 10000 });
+    await settingsLink.click();
+    await page.getByRole('button', { name: 'English' }).click();
+    await page.getByRole('option', { name: displayName }).click();
+    await page.locator('a').filter({ hasText: 'Home' }).click();
+  }
 }
 
 /**
