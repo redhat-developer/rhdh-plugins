@@ -80,6 +80,7 @@ export const ActiveMultiSelect: Widget<
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const allowNewItems = uiProps['ui:allowNewItems'] === true;
   const staticDefault = uiProps['fetch:response:default'];
+  const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
   const staticDefaultValues = Array.isArray(staticDefault)
     ? (staticDefault as string[])
     : undefined;
@@ -170,7 +171,7 @@ export const ActiveMultiSelect: Widget<
         }
 
         let defaults: string[] = [];
-        if (!isChangedByUser) {
+        if (!skipInitialValue && !isChangedByUser) {
           // set this just once, when the user has not touched the field
           if (defaultValueSelector) {
             defaults = await applySelectorArray(
@@ -216,6 +217,7 @@ export const ActiveMultiSelect: Widget<
     autocompleteOptions,
     mandatoryValues,
     isChangedByUser,
+    skipInitialValue,
     data,
     props.id,
     value,
