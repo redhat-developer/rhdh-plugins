@@ -20,6 +20,7 @@ import {
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
 import { migrate } from './services/dbMigrate';
+import { kubeServiceRef } from './services/KubeService';
 
 /**
  * x2APlugin backend plugin
@@ -33,18 +34,27 @@ export const x2APlugin = createBackendPlugin({
       deps: {
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        x2aDatabase: x2aDatabaseServiceRef,
         database: coreServices.database,
         logger: coreServices.logger,
+        x2aDatabase: x2aDatabaseServiceRef,
+        kubeService: kubeServiceRef,
       },
-      async init({ httpRouter, x2aDatabase, logger, httpAuth, database }) {
+      async init({
+        httpRouter,
+        x2aDatabase,
+        logger,
+        httpAuth,
+        database,
+        kubeService,
+      }) {
         await migrate(database);
 
         httpRouter.use(
           await createRouter({
             httpAuth,
-            x2aDatabase,
             logger,
+            x2aDatabase,
+            kubeService,
           }),
         );
       },

@@ -25,6 +25,7 @@ import {
   ProjectsGet,
   ProjectsPost,
 } from './schema/openapi';
+import { kubeServiceRef } from './services/KubeService';
 
 export async function createRouter({
   httpAuth,
@@ -33,6 +34,7 @@ export async function createRouter({
 }: {
   httpAuth: HttpAuthService;
   x2aDatabase: typeof x2aDatabaseServiceRef.T;
+  kubeService: typeof kubeServiceRef.T;
   logger: LoggerService;
 }): Promise<express.Router> {
   const router = await createOpenApiRouter();

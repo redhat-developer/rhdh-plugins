@@ -49,6 +49,9 @@ async function createApp(client: Knex): Promise<express.Express> {
     httpAuth: mockServices.httpAuth(),
     logger: mockServices.logger.mock(),
     x2aDatabase,
+    kubeService: {
+      getPods: jest.fn().mockResolvedValue({ items: [] }),
+    },
   });
 
   const app = express();

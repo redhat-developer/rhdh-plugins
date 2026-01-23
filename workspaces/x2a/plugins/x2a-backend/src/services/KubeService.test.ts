@@ -22,12 +22,15 @@ describe('KubeService', () => {
   beforeEach(() => {
     // Reset mocks
     jest.clearAllMocks();
+
+    // mock referenced services for the KubeService for tests
     kubeService = KubeService.create({
-      // logger: mockServices.logger.mock(),
+      // use logger: mockServices.logger.mock() to silence the logger
       logger: console as any,
     });
   });
 
+  // This is a real test, connecting to a real Kubernetes cluster.
   // Make sure you have ~/.kube/config set up and a cluster available before running this test
   it.skip('can connect to Kubernetes cluster', async () => {
     await expect(kubeService.getPods()).resolves.not.toThrow();
