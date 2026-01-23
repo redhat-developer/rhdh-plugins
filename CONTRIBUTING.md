@@ -269,13 +269,34 @@ Each plugin/package has its own API Report which means you might see more than o
 
 When you've got your contribution working, tested, and committed to your branch it's time to create a Pull Request (PR). If you are unsure how to do this GitHub's [Creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) documentation will help you with that.
 
+For new plugins, it is recommended that your initial PR simply creates the workspace for your plugins. In this PR, be sure to add maintainers to the `CODEOWNERS` file for the new workspace. This will streamline the approval process, and also ensure that you have full autonomy over further development of your plugin.
+
+### Checklist to Ensure your Plugin is Ready to Merge
+
+* Workspace `package.json` contains
+  * `private: true`
+  * Correct repository url
+  * Few dependencies at workspace-level
+* Plugin `package.json` contains
+  * If intending to publish
+    * No `private: true`
+    * `publishConfig.access: “public”`
+  * Correct `backstage` config with `role`, `pluginId`, and `pluginPackages`
+  * Correct repository url
+* Changeset is present
+* README files are present and appropriate
+* `backstage.json` is present with appropriate Backstage version
+* `config.d.ts` exists at package-level if plugin has configuration
+  * Contains proper visibility annotations
+* `.github/CODEOWNERS` is up to date
+
 > [!NOTE]
-> Only [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-maintainers) can bypass the SonarCloud test. We typically grant a one-time exception for new plugins that require a full application instead of a standalone development server. If this applies to your pull request, please mention it in the description.
+> Only [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-cope) can bypass the SonarCloud test. We typically grant a one-time exception for new plugins that require a full application instead of a standalone development server. If this applies to your pull request, please mention it in the description.
 
 ## Plugin Owner Responsibilities
 
 > [!NOTE]
-> To carry out your responsibilities as a plugin owner, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-maintainers).
+> To carry out your responsibilities as a plugin owner, you will need write access to the repository. If you are a plugin owner and do not have write access, please reach out to one of the [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-cope).
 
 As a plugin owner, you are responsible for the ongoing health and maintenance of your plugin(s) in this repository.
 
