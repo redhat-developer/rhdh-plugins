@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.3.1
+
+### Patch Changes
+
+- a2c7cce: Fix MUI styling issue
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.1
+
 ## 2.3.0
 
 ### Minor Changes
