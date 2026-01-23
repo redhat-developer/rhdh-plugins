@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "yarn workspaces foreach -A --include @red-hat-developer-hub/backstage-plugin-x2a --include @red-hat-developer-hub/backstage-plugin-x2a-backend --parallel -v -i run start",
-    "start": "yarn workspace app start",
+    "start": "backstage-cli repo start",
     "start-backend": "yarn workspace backend start",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck false --incremental false",
