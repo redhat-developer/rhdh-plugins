@@ -6,7 +6,7 @@ This is a Backstage plugin workspace providing web UI for the [X2Ansible](https:
 
 ### Prerequisites
 
-- Node.js 18 or 20
+- Node.js >20
 - Yarn package manager
 - Kubernetes cluster access (optional, for Kubernetes features)
 
