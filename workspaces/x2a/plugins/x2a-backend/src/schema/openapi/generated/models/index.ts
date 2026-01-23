@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-export * from '../models/ErrorResponse.model';
 export * from '../models/Project.model';
 export * from '../models/ProjectsGet200Response.model';
 export * from '../models/ProjectsPostRequest.model';

@@ -168,14 +168,7 @@ export const spec = {
             }
           },
           "404": {
-            "description": "Project not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
+            "description": "Project not found."
           }
         }
       },
@@ -252,28 +245,6 @@ export const spec = {
           "abbreviation",
           "createdAt",
           "createdBy"
-        ]
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "Machine-readable error code"
-          },
-          "message": {
-            "type": "string",
-            "description": "Human-readable error message"
-          },
-          "details": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Additional error context"
-          }
-        },
-        "required": [
-          "code",
-          "message"
         ]
       }
     }

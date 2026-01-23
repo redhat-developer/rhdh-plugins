@@ -15,7 +15,7 @@
  */
 
 import { HttpAuthService, LoggerService } from '@backstage/backend-plugin-api';
-import { InputError } from '@backstage/errors';
+import { InputError, NotFoundError } from '@backstage/errors';
 import { z } from 'zod';
 import express from 'express';
 
@@ -101,8 +101,7 @@ export async function createRouter({
 
     const project = await x2aDatabase.getProject({ projectId });
     if (!project) {
-      res.status(404).json({ message: 'Project not found', code: 'NOT_FOUND' });
-      return;
+      throw new NotFoundError(`Project not found`);
     }
     res.json(project);
   });

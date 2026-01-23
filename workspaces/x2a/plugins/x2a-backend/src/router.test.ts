@@ -126,4 +126,49 @@ describe('createRouter', () => {
       expect(response.status).toBe(401);
     },
   );
+
+  it.each(databases.eachSupportedId())(
+    'should get a project by id - %p',
+    async databaseId => {
+      const { client } = await createDatabase(databaseId);
+      const app = await createApp(client);
+
+      // First create a project
+      const createResponse = await request(app)
+        .post('/projects')
+        .send(mockInputProject);
+
+      expect(createResponse.status).toBe(200);
+      const projectId = createResponse.body.id;
+
+      // Then get the project by id
+      const response = await request(app).get(`/projects/${projectId}`).send();
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        ...mockInputProject,
+        id: projectId,
+        createdBy: 'user:default/mock',
+      });
+      expect(response.body.createdAt).toBeDefined();
+    },
+  );
+
+  it.each(databases.eachSupportedId())(
+    'should fail for non-existent project - %p',
+    async databaseId => {
+      const { client } = await createDatabase(databaseId);
+      const app = await createApp(client);
+
+      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+      const response = await request(app)
+        .get(`/projects/${nonExistentId}`)
+        .send();
+
+      expect(response.status).toBe(404);
+      expect(response.body).toMatchObject({
+        error: { name: 'NotFoundError', message: 'Project not found' },
+      });
+    },
+  );
 });
