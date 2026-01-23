@@ -17,7 +17,11 @@ import { Page, expect } from '@playwright/test';
 
 function getEventsUrl(page: Page) {
   const url = new URL(page.url());
-  return `${url.protocol}//${url.hostname}:7007/api/adoption-insights/events`;
+  // Map frontend port to backend port:
+  // 3000 -> 7007, 3001 -> 7008, 3002 -> 7009, 3003 -> 7010
+  const frontendPort = parseInt(url.port, 10);
+  const backendPort = frontendPort + 4007;
+  return `${url.protocol}//${url.hostname}:${backendPort}/api/adoption-insights/events`;
 }
 
 export async function visitComponent(

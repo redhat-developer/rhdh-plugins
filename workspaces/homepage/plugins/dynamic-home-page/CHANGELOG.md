@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.4
+
+### Patch Changes
+
+- 2f39369: Fix inconsistent usage of resource kind chip on template homepage
+
 ## 1.10.3
 
 ### Patch Changes

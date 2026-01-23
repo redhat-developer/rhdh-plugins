@@ -28,14 +28,14 @@ interface TemplateCardProps {
   link: string;
   title: string;
   description: string;
-  kind: string;
+  type?: string;
 }
 
 const TemplateCard: FC<TemplateCardProps> = ({
   link,
   title,
   description,
-  kind,
+  type,
 }) => {
   return (
     <Card
@@ -55,17 +55,6 @@ const TemplateCard: FC<TemplateCardProps> = ({
           backgroundColor: 'transparent',
         }}
       >
-        <Box sx={{ padding: '8px 0' }}>
-          <Chip
-            label={
-              <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-                {kind}
-              </Typography>
-            }
-            key={kind}
-            size="small"
-          />
-        </Box>
         <Box sx={{ margin: '8px 0', height: '21px', overflow: 'hidden' }}>
           <Link
             to={link}
@@ -106,6 +95,19 @@ const TemplateCard: FC<TemplateCardProps> = ({
           >
             <MarkdownContent content={description} />
           </Typography>
+        </Box>
+        <Box sx={{ pt: 2 }}>
+          {type && (
+            <Chip
+              label={
+                <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
+                  {type}
+                </Typography>
+              }
+              key={type}
+              size="small"
+            />
+          )}
         </Box>
       </CardContent>
     </Card>

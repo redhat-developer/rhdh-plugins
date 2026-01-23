@@ -21,6 +21,7 @@ import homepageTranslationDe from '../../../../plugins/dynamic-home-page/src/tra
 import homepageTranslationFr from '../../../../plugins/dynamic-home-page/src/translations/fr.js';
 import homepageTranslationEs from '../../../../plugins/dynamic-home-page/src/translations/es.js';
 import homepageTranslationIt from '../../../../plugins/dynamic-home-page/src/translations/it.js';
+import homepageTranslationJa from '../../../../plugins/dynamic-home-page/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type HomepageMessages = typeof homepageMessages;
@@ -52,6 +53,8 @@ export function getTranslations(locale: string) {
       return transform(homepageTranslationEs.messages);
     case 'it':
       return transform(homepageTranslationIt.messages);
+    case 'ja':
+      return transform(homepageTranslationJa.messages);
     default:
       return homepageMessages;
   }

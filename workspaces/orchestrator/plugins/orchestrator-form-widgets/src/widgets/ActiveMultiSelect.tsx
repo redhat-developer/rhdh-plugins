@@ -84,6 +84,7 @@ export const ActiveMultiSelect: Widget<
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const allowNewItems = uiProps['ui:allowNewItems'] === true;
   const staticDefault = uiProps['fetch:response:default'];
+  const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
   const staticDefaultValues = Array.isArray(staticDefault)
     ? (staticDefault as string[])
     : undefined;
@@ -174,7 +175,7 @@ export const ActiveMultiSelect: Widget<
         }
 
         let defaults: string[] = [];
-        if (!isChangedByUser) {
+        if (!skipInitialValue && !isChangedByUser) {
           // set this just once, when the user has not touched the field
           if (defaultValueSelector) {
             defaults = await applySelectorArray(
@@ -219,6 +220,7 @@ export const ActiveMultiSelect: Widget<
     autocompleteOptions,
     mandatoryValues,
     isChangedByUser,
+    skipInitialValue,
     data,
     props.id,
     value,
@@ -252,20 +254,25 @@ export const ActiveMultiSelect: Widget<
     }
   };
 
-  if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} id={id} />;
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  const suppressFetchError = !shouldShowFetchError && !!error;
+  const displayError = localError ?? (shouldShowFetchError ? error : undefined);
+  if (displayError) {
+    return <ErrorText text={displayError} id={id} />;
   }
 
   // Show spinner only if loading AND we don't have static defaults to show
   const hasStaticDefaults =
     staticDefaultValues && staticDefaultValues.length > 0;
-  if (completeLoading && !hasStaticDefaults) {
+  if (completeLoading && !hasStaticDefaults && !suppressFetchError) {
     return <CircularProgress size={20} />;
   }
 
   // Render if we have fetched options, static defaults, or current values
   const hasOptionsToShow =
-    allOptions.length > 0 || autocompleteOptions !== undefined;
+    allOptions.length > 0 ||
+    autocompleteOptions !== undefined ||
+    suppressFetchError;
   if (hasOptionsToShow) {
     return (
       <Box>

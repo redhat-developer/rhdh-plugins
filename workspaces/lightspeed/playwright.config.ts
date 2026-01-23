@@ -61,5 +61,23 @@ export default defineConfig({
         locale: 'fr',
       },
     },
+    // TODO: Enable after translation bugs are fixed
+    // See bug report: [add your bug link here]
+    // {
+    //   name: 'it',
+    //   testDir: 'packages/app/e2e-tests',
+    //   use: {
+    //     channel: 'chrome',
+    //     locale: 'it',
+    //   },
+    // },
+    // {
+    //   name: 'ja',
+    //   testDir: 'packages/app/e2e-tests',
+    //   use: {
+    //     channel: 'chrome',
+    //     locale: 'ja',
+    //   },
+    // },
   ],
 });

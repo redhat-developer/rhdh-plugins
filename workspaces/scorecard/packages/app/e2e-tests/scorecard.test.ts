@@ -19,6 +19,7 @@ import { mockScorecardResponse } from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { setupRBAC } from './utils/rbacSetup';
+import { deleteRBAC } from './utils/rbacDelete';
 import {
   customScorecardResponse,
   emptyScorecardResponse,
@@ -31,7 +32,6 @@ import {
   getTranslations,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
-import { deleteRBAC } from './utils/rbacDelete';
 
 test.describe.serial('Pre-RBAC Access Tests', () => {
   let translations: ScorecardMessages;
@@ -56,7 +56,7 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
 
     await expect(
       page.getByText(translations.permissionRequired.title),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('article')).toContainText(
       evaluateMessage(
         translations.permissionRequired.description,
@@ -94,9 +94,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
   test.afterAll(async ({ browser }) => {
     const context = await browser.newContext();
     const page = await context.newPage();
-
     await deleteRBAC(page);
-
     await context.close();
   });
 

@@ -19,6 +19,8 @@ import { scorecardMessages } from '../../../../plugins/scorecard/src/translation
 import scorecardTranslationDe from '../../../../plugins/scorecard/src/translations/de';
 import scorecardTranslationFr from '../../../../plugins/scorecard/src/translations/fr';
 import scorecardTranslationEs from '../../../../plugins/scorecard/src/translations/es';
+import scorecardTranslationIt from '../../../../plugins/scorecard/src/translations/it';
+import scorecardTranslationJa from '../../../../plugins/scorecard/src/translations/ja';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type ScorecardMessages = typeof scorecardMessages;
@@ -64,6 +66,10 @@ export function getTranslations(locale: string) {
       return transform(scorecardTranslationDe.messages);
     case 'es':
       return transform(scorecardTranslationEs.messages);
+    case 'it':
+      return transform(scorecardTranslationIt.messages);
+    case 'ja':
+      return transform(scorecardTranslationJa.messages);
     default:
       return scorecardMessages;
   }

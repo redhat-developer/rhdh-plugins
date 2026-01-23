@@ -16,10 +16,12 @@
 
 import { defineConfig } from '@playwright/test';
 
+const baseConfig = '../../app-config.yaml';
+const configPath = '../app/e2e-tests/test_yamls';
+
 export default defineConfig({
   timeout: 2 * 60 * 1000,
   fullyParallel: false,
-  workers: 1,
 
   expect: {
     timeout: 10000,
@@ -27,11 +29,32 @@ export default defineConfig({
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
-    : {
-        command: 'yarn start',
-        port: 3000,
-        reuseExistingServer: true,
-      },
+    : [
+        {
+          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-en.yaml`,
+          url: 'http://localhost:7007/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+        },
+        {
+          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-fr.yaml`,
+          url: 'http://localhost:7008/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+        },
+        {
+          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-it.yaml`,
+          url: 'http://localhost:7009/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+        },
+        {
+          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-ja.yaml`,
+          url: 'http://localhost:7010/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+        },
+      ],
 
   retries: process.env.CI ? 2 : 0,
 
@@ -54,6 +77,7 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'en',
+        baseURL: 'http://localhost:3000',
       },
     },
     {
@@ -62,6 +86,25 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'fr',
+        baseURL: 'http://localhost:3001',
+      },
+    },
+    {
+      name: 'it',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'it',
+        baseURL: 'http://localhost:3002',
+      },
+    },
+    {
+      name: 'ja',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'ja',
+        baseURL: 'http://localhost:3003',
       },
     },
   ],
