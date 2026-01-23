@@ -79,32 +79,8 @@ export class X2ADatabaseService {
     return newProject;
   }
 
-  async listProjects(): Promise<{ projects: Project[]; totalCount: number }> {
-    this.#logger.info('listProjects called');
-
-    // Fetch all records from the database
-    const rows = await this.#dbClient('projects')
-      .select('*')
-      .orderBy('created_at', 'desc');
-
-    const projects: Project[] = rows.map(row => ({
-      id: row.id,
-      name: row.name,
-      abbreviation: row.abbreviation,
-      description: row.description,
-      createdBy: row.created_by,
-      createdAt: new Date(row.created_at),
-    }));
-
-    const totalCount = projects.length;
-    this.#logger.debug(`Fetched ${totalCount} projects from database`);
-
-    return { projects, totalCount };
-  }
-
-  async getProject({ projectId }: { projectId: string }): Promise<Project> {
-    this.#logger.info(`getProject called for projectId: ${projectId}`);
-    const row = await this.#dbClient('projects').where('id', projectId).first();
+  // Map a database row to a Project object
+  private mapRowToProject(row: any): Project {
     return {
       id: row.id,
       name: row.name,
@@ -115,7 +91,33 @@ export class X2ADatabaseService {
     };
   }
 
-  async deleteProject({ projectId }: { projectId: string }) {
+  async listProjects(): Promise<{ projects: Project[]; totalCount: number }> {
+    this.#logger.info('listProjects called');
+
+    // Fetch all records from the database
+    const rows = await this.#dbClient('projects')
+      .select('*')
+      .orderBy('created_at', 'desc');
+
+    const projects: Project[] = rows.map(this.mapRowToProject);
+
+    const totalCount = projects.length;
+    this.#logger.debug(`Fetched ${totalCount} projects from database`);
+
+    return { projects, totalCount };
+  }
+
+  async getProject({
+    projectId,
+  }: {
+    projectId: string;
+  }): Promise<Project | undefined> {
+    this.#logger.info(`getProject called for projectId: ${projectId}`);
+    const row = await this.#dbClient('projects').where('id', projectId).first();
+    return row ? this.mapRowToProject(row) : undefined;
+  }
+
+  async deleteProject({ projectId }: { projectId: string }): Promise<number> {
     this.#logger.info(`deleteProject called for projectId: ${projectId}`);
 
     // Delete from the database
@@ -128,6 +130,8 @@ export class X2ADatabaseService {
     } else {
       this.#logger.info(`Deleted project with id: ${projectId}`);
     }
+
+    return deletedCount;
   }
 }
 

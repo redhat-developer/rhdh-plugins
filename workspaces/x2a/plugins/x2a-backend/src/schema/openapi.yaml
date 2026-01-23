@@ -97,6 +97,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Project'
+        '404':
+          description: Project not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     delete:
       summary: Deletes a project by ID.
       parameters:
@@ -108,7 +114,16 @@ paths:
       responses:
         '200':
           description: Project deleted successfully.
-
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deletedCount:
+                    type: integer
+                    description: Number of projects deleted (0 or 1)
+                required:
+                  - deletedCount
 components:
   schemas:
     Project:
@@ -139,3 +154,19 @@ components:
         - abbreviation
         - createdAt
         - createdBy
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          additionalProperties: true
+          description: Additional error context
+      required:
+        - code
+        - message

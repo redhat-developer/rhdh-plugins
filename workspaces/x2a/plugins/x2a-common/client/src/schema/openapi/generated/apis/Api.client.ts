@@ -25,6 +25,7 @@ import * as parser from 'uri-template';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
+import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
 
 /**
  * Wraps the Response type to convey a type on the json call.
@@ -152,7 +153,7 @@ export class DefaultApiClient {
     // @ts-ignore
     request: ProjectsProjectIdDelete,
     options?: RequestOptions,
-  ): Promise<TypedResponse<void>> {
+  ): Promise<TypedResponse<ProjectsProjectIdDelete200Response>> {
     const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
 
     const uriTemplate = `/projects/{projectId}`;
