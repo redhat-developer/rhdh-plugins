@@ -204,6 +204,38 @@ describe('mapSchemaToData', () => {
     expect(result).toEqual(expectedResult);
   });
 
+  it('should include hidden fields when includeHiddenFields is true', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        visibleField: {
+          type: 'string',
+          title: 'Visible Field',
+        },
+        hiddenField: {
+          type: 'string',
+          title: 'Hidden Field',
+          'ui:hidden': true,
+        } as JSONSchema7,
+      },
+    };
+
+    const data = {
+      visibleField: 'shown',
+      hiddenField: 'should appear',
+    };
+
+    const expectedResult = {
+      'Visible Field': 'shown',
+      'Hidden Field': 'should appear',
+    };
+
+    const result = generateReviewTableData(schema, data, {
+      includeHiddenFields: true,
+    });
+    expect(result).toEqual(expectedResult);
+  });
+
   it('should exclude nested hidden fields from review table', () => {
     const schema: JSONSchema7 = {
       type: 'object',

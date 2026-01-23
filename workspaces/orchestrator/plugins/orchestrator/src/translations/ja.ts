@@ -146,6 +146,9 @@ const orchestratorTranslationJa = createTranslationMessages({
       'このワークフローには、入力検証用に定義された JSON スキーマがありません。ワークフローの実行は可能ですが、入力の検証は限定的になります。',
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'このエラーに関する追加情報はありません',
+    'reviewStep.hiddenFieldsNote':
+      'このページでは一部のパラメーターが非表示です。',
+    'reviewStep.showHiddenParameters': '非表示のパラメーターを表示',
     'common.close': '閉じる',
     'common.cancel': 'キャンセル',
     'common.execute': '実行',

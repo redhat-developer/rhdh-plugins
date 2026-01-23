@@ -176,8 +176,8 @@ export const orchestratorMessages = {
       'Additional details about this error are not available',
   },
   reviewStep: {
-    hiddenFieldsNote:
-      'Some fields are hidden on this page but will be included in the workflow execution request.',
+    hiddenFieldsNote: 'Some parameters are hidden on this page.',
+    showHiddenParameters: 'Show hidden parameters',
   },
   common: {
     close: 'Close',

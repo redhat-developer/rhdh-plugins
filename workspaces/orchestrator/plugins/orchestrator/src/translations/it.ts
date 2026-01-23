@@ -152,6 +152,9 @@ const orchestratorTranslationIt = createTranslationMessages({
       "Nessuno schema JSON definito per la convalida dell'input di questo flusso di lavoro. È comunque possibile eseguire il flusso di lavoro, ma la convalida degli input sarà limitata.",
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'Non sono disponibili ulteriori dettagli su questo errore',
+    'reviewStep.hiddenFieldsNote':
+      'Alcuni parametri sono nascosti in questa pagina.',
+    'reviewStep.showHiddenParameters': 'Mostra parametri nascosti',
     'common.close': 'Chiudi',
     'common.cancel': 'Cancella',
     'common.execute': 'Esegui',
