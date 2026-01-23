@@ -35,7 +35,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.35.2",
+    "@backstage/cli": "^0.34.5",
     "cross-fetch": "^4.1.0",
     "uri-template": "^2.0.0"
   },
