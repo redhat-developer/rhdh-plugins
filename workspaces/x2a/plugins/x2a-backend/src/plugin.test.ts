@@ -62,7 +62,7 @@ async function startBackendServer(
     x2APlugin,
     mockServices.rootLogger.factory(),
     mockServices.rootConfig.factory({
-      data: { ...BASE_CONFIG, ...(config || {}) },
+      data: { ...BASE_CONFIG, ...config },
     }),
     mockServices.httpAuth.factory({
       defaultCredentials: mockCredentials.user(mockUserId),

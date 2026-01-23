@@ -29,28 +29,28 @@ const databases = TestDatabases.create({
   ids: ['SQLITE_3'],
 });
 
+async function createDatabase(databaseId: TestDatabaseId) {
+  const client = await databases.init(databaseId);
+  const mockDatabaseService = mockServices.database.mock({
+    getClient: async () => client,
+    migrations: { skip: false },
+  });
+
+  await migrate(mockDatabaseService);
+
+  return {
+    client,
+  };
+}
+
+function createService(client: Knex): X2ADatabaseService {
+  return X2ADatabaseService.create({
+    logger: mockServices.logger.mock(),
+    dbClient: client,
+  });
+}
+
 describe('X2ADatabaseService', () => {
-  async function createDatabase(databaseId: TestDatabaseId) {
-    const client = await databases.init(databaseId);
-    const mockDatabaseService = mockServices.database.mock({
-      getClient: async () => client,
-      migrations: { skip: false },
-    });
-
-    await migrate(mockDatabaseService);
-
-    return {
-      client,
-    };
-  }
-
-  function createService(client: Knex): X2ADatabaseService {
-    return X2ADatabaseService.create({
-      logger: mockServices.logger.mock(),
-      dbClient: client,
-    });
-  }
-
   describe('createProject', () => {
     it.each(databases.eachSupportedId())(
       'should create a project with all required fields - %p',

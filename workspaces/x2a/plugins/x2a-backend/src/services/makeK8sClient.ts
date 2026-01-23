@@ -29,10 +29,10 @@ export const makeK8sClient = (logger: LoggerService): CoreV1Api => {
   try {
     // Set KUBECONFIG to ~/.kube/config as a fallback
     if (!process.env.KUBECONFIG) {
-      const path = require('path');
-      const os = require('os');
+      const path = require('node:path');
+      const os = require('node:os');
       const kubeconfigPath = path.join(os.homedir(), '.kube', 'config');
-      const fs = require('fs');
+      const fs = require('node:fs');
 
       // Check if ~/.kube/config exists
       if (fs.existsSync(kubeconfigPath)) {
