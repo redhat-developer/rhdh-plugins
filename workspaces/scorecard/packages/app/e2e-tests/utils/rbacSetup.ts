@@ -57,6 +57,11 @@ export async function setupRBAC(page: Page) {
   await page.getByTestId('nextButton-2').click();
   await page.getByRole('button', { name: 'Create' }).click();
 
+  await expect(page.getByRole('alert')).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('alert')).toContainText(
+    'Role role:default/rhdh-testing created successfully',
+  );
+
   await page.locator('a').filter({ hasText: 'Catalog' }).click();
   const createButton = page.getByRole('button', { name: 'Create' });
   await expect(createButton).toBeVisible();
