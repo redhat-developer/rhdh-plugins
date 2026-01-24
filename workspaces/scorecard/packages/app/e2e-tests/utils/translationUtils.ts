@@ -95,10 +95,11 @@ export function getEntityCount(
   locale: string,
   count: string,
 ) {
-  const key =
-    locale.startsWith('fr') && count === '0'
-      ? translations.thresholds.entities_one
-      : translations.thresholds.entities_other ?? '{{count}} entities';
+  const useSingular =
+    count === '1' || (locale.startsWith('fr') && count === '0');
+  const key = useSingular
+    ? translations.thresholds.entities_one ?? '{{count}} entity'
+    : translations.thresholds.entities_other ?? '{{count}} entities';
   return evaluateMessage(key, count);
 }
 

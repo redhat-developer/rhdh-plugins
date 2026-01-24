@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
-import { ScorecardMessages } from '../utils/translationUtils';
+import { Locator, Page, expect } from '@playwright/test';
+import { ScorecardMessages, getEntityCount } from '../utils/translationUtils';
+
+type ThresholdState = 'success' | 'warning' | 'error';
 
 export class HomePage {
   readonly page: Page;
   readonly translations: ScorecardMessages;
+  readonly locale: string;
 
-  constructor(page: Page, translations: ScorecardMessages) {
+  constructor(page: Page, translations: ScorecardMessages, locale: string) {
     this.page = page;
     this.translations = translations;
+    this.locale = locale;
   }
 
   async navigateToHome() {
@@ -59,5 +63,30 @@ export class HomePage {
     await expect(
       this.page.getByText(this.translations.metric[metricId].title),
     ).not.toBeVisible();
+  }
+
+  getCard(metricId: 'github.open_prs' | 'jira.open_issues'): Locator {
+    return this.page
+      .locator('article')
+      .filter({ hasText: this.translations.metric[metricId].title });
+  }
+
+  async verifyThresholdTooltip(
+    card: Locator,
+    state: ThresholdState,
+    entityCount: string,
+    percentage: string,
+  ) {
+    const stateLabel = this.translations.thresholds[state];
+    await card.getByText(stateLabel, { exact: true }).hover();
+    await expect(
+      this.page.getByText(
+        getEntityCount(this.translations, this.locale, entityCount),
+        { exact: true },
+      ),
+    ).toBeVisible();
+    await expect(
+      this.page.getByText(percentage, { exact: true }),
+    ).toBeVisible();
   }
 }

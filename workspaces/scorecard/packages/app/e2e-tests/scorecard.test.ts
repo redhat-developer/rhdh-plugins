@@ -58,7 +58,7 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
 
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
-    homePage = new HomePage(page, translations);
+    homePage = new HomePage(page, translations, currentLocale);
   });
 
   test.describe('Entity Scorecards', () => {
@@ -160,7 +160,7 @@ test.describe.serial('Scorecard Plugin Tests', () => {
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
     scorecardPage = new ScorecardPage(page, translations);
-    homePage = new HomePage(page, translations);
+    homePage = new HomePage(page, translations, currentLocale);
   });
 
   test.afterAll(async ({ browser }) => {
@@ -326,6 +326,37 @@ test.describe.serial('Scorecard Plugin Tests', () => {
       await expect(
         page.getByText(translations.metric['jira.open_issues'].title),
       ).not.toBeVisible();
+    });
+
+    test('Verify threshold tooltips on aggregated scorecards', async () => {
+      await mockAggregatedScorecardResponse(
+        homePage.page,
+        githubAggregatedResponse,
+        jiraAggregatedResponse,
+      );
+
+      await catalogPage.loginAndSetLocale(currentLocale);
+      await homePage.navigateToHome();
+
+      await homePage.enterEditMode();
+      await homePage.clearAllWidgets();
+      await homePage.addWidget('Scorecard: GitHub open PRs');
+      await homePage.saveChanges();
+
+      const githubCard = homePage.getCard('github.open_prs');
+      await homePage.verifyThresholdTooltip(githubCard, 'success', '5', '33%');
+      await homePage.verifyThresholdTooltip(githubCard, 'warning', '7', '47%');
+      await homePage.verifyThresholdTooltip(githubCard, 'error', '3', '20%');
+
+      await homePage.enterEditMode();
+      await homePage.clearAllWidgets();
+      await homePage.addWidget('Scorecard: Jira open blocking');
+      await homePage.saveChanges();
+
+      const jiraCard = homePage.getCard('jira.open_issues');
+      await homePage.verifyThresholdTooltip(jiraCard, 'success', '6', '60%');
+      await homePage.verifyThresholdTooltip(jiraCard, 'warning', '3', '30%');
+      await homePage.verifyThresholdTooltip(jiraCard, 'error', '1', '10%');
     });
   });
 });
