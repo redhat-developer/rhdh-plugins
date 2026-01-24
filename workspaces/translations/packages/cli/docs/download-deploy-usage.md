@@ -307,22 +307,50 @@ translations-cli i18n deploy --source-dir ~/translations/downloads
 
 1. **Detects repository type** automatically (rhdh-plugins, community-plugins, or rhdh)
 2. **Finds downloaded files** matching the current repo (filters by repo name in filename)
-3. **Locates plugin translation directories**:
+   - When running from `rhdh` repo, also processes `backstage` and `community-plugins` files
+3. **For backstage/community-plugins files deployed from rhdh:**
+   - **Copies JSON files** to `rhdh/translations/` with format: `<repo_name>-<timestamp>-<locale>.json`
+   - Example: `backstage-2026-01-08-fr.json`, `community-plugins-2025-12-05-fr.json`
+4. **Locates plugin translation directories**:
    - `rhdh-plugins`: `workspaces/*/plugins/*/src/translations/`
    - `community-plugins`: `workspaces/*/plugins/*/src/translations/`
-   - `rhdh`: `packages/app/src/translations/{plugin}/` or flat structure
-4. **Updates existing files** (e.g., `it.ts`) with new translations
-5. **Creates new files** (e.g., `ja.ts`) for plugins that don't have them
-6. **Updates `index.ts`** files to register new translations
-7. **Handles import paths** correctly:
+   - `rhdh`: Intelligently searches for plugins in:
+     - `packages/app/src/translations/{plugin}/` (standard)
+     - `packages/app/src/components/{plugin}/translations/` (alternative, e.g., catalog)
+     - Searches for existing reference files to determine correct path
+5. **Deploys TS files** to appropriate locations:
+   - Standard deployment: `rhdh/translations/{plugin}/` for backstage/community-plugins files
+   - Red Hat owned plugins: Also deploys to `community-plugins/workspaces/{workspace}/plugins/{plugin}/src/translations/`
+6. **Updates existing files** (e.g., `it.ts`) with new translations
+7. **Creates new files** (e.g., `ja.ts`) for plugins that don't have them
+8. **Detects filename patterns** for rhdh plugin overrides:
+   - Checks existing files to determine pattern: `{lang}.ts` or `{plugin}-{lang}.ts`
+   - Uses the same pattern for new files
+9. **Handles import paths** correctly:
    - Local imports: `./ref` or `./translations`
    - External imports: `@backstage/plugin-*/alpha` (for rhdh repo)
 
 **Output:**
 
-- Updated/created TypeScript files in plugin translation directories
+- **JSON files** copied to `rhdh/translations/` (for backstage/community-plugins files)
+- **Updated/created TypeScript files** in plugin translation directories
+- **Red Hat owned plugins** deployed to both rhdh and community-plugins repos
 - Files maintain proper TypeScript format with correct imports
 - All translations registered in `index.ts` files
+
+**Red Hat Owned Plugin Deployment:**
+
+When deploying from `rhdh` repo with `backstage` or `community-plugins` JSON files, the command automatically:
+
+1. Detects if a plugin exists in the community-plugins repo (Red Hat owned)
+2. Deploys TS files to both:
+   - `rhdh/translations/{plugin}/` (standard)
+   - `community-plugins/workspaces/{workspace}/plugins/{plugin}/src/translations/` (additional)
+3. Allows you to create PRs in community-plugins repo with the deployed translations
+
+**Prerequisites:**
+
+- Community-plugins repo cloned locally (sibling directory or set `COMMUNITY_PLUGINS_REPO_PATH` env var)
 
 ### Step 6: Verify Deployment
 

@@ -77,6 +77,45 @@ translations-cli i18n deploy
 ```bash
 cd /path/to/rhdh
 translations-cli i18n deploy
+# Or from shared location:
+translations-cli i18n deploy --source-dir ~/translations/downloads
+```
+
+**Special Feature: Deploying backstage/community-plugins files from rhdh root**
+
+When running the deploy command from the `rhdh` repo root, the command can also process `backstage` and `community-plugins` JSON files:
+
+1. **JSON files are copied** to `rhdh/translations/` with format: `<repo_name>-<timestamp>-<locale>.json`
+
+   - Example: `backstage-2026-01-08-fr.json`, `community-plugins-2025-12-05-fr.json`
+
+2. **TS files are deployed** to `rhdh/translations/{plugin}/` for all plugins
+
+3. **Red Hat owned plugins** (plugins that exist in community-plugins repo) are **automatically detected** and deployed to:
+   - `rhdh/translations/{plugin}/` (standard deployment)
+   - `community-plugins/workspaces/{workspace}/plugins/{plugin}/src/translations/` (additional deployment)
+
+**Prerequisites for Red Hat owned plugin deployment:**
+
+- Community-plugins repo must be cloned locally (typically as sibling directory: `../community-plugins`)
+- Or set `COMMUNITY_PLUGINS_REPO_PATH` environment variable
+- The plugin must exist in the community-plugins repo workspaces
+
+**Example workflow:**
+
+```bash
+# 1. Pull latest community-plugins repo
+cd /path/to/community-plugins && git pull
+
+# 2. Deploy from rhdh root (processes rhdh, backstage, and community-plugins files)
+cd /path/to/rhdh
+translations-cli i18n deploy --source-dir ~/translations/downloads
+
+# 3. Create PR in community-plugins repo with deployed TS files
+cd /path/to/community-plugins
+git add workspaces/*/plugins/*/src/translations/*.ts
+git commit -m "Add translations for Red Hat owned plugins"
+git push
 ```
 
 ## Complete Workflow for All Repos
@@ -119,6 +158,36 @@ cd /path/to/rhdh
 translations-cli i18n deploy --source-dir ~/translations/downloads
 ```
 
+### Option C: Unified deployment from rhdh root (Recommended for backstage/community-plugins)
+
+This option allows you to deploy all translations (rhdh, backstage, and community-plugins) from a single command run from the rhdh repo root. It automatically handles Red Hat owned plugins.
+
+```bash
+# 1. Pull latest community-plugins repo (for Red Hat owned plugin detection)
+cd /path/to/community-plugins && git pull
+
+# 2. Download all translations to shared location
+mkdir -p ~/translations/downloads
+cd /path/to/rhdh-plugins
+translations-cli i18n download --output-dir ~/translations/downloads
+
+# 3. Deploy everything from rhdh root
+cd /path/to/rhdh
+translations-cli i18n deploy --source-dir ~/translations/downloads
+
+# This will:
+# - Deploy rhdh translations to rhdh repo
+# - Copy backstage/community-plugins JSON files to rhdh/translations/
+# - Deploy backstage/community-plugins TS files to rhdh/translations/{plugin}/
+# - Automatically detect and deploy Red Hat owned plugins to community-plugins workspaces
+
+# 4. Create PR in community-plugins repo with Red Hat owned plugin translations
+cd /path/to/community-plugins
+git add workspaces/*/plugins/*/src/translations/*.ts
+git commit -m "Add translations for Red Hat owned plugins"
+git push
+```
+
 ## Auto-Detection Features
 
 ### Repository Detection
@@ -138,10 +207,30 @@ The script automatically finds downloaded files matching:
 
 ### Plugin Location
 
-The script searches for plugins using repo-specific patterns:
+The script intelligently searches for plugins using repo-specific patterns:
 
 - **rhdh-plugins/community-plugins**: `workspaces/*/plugins/{plugin}/src/translations/`
-- **rhdh**: `packages/app/src/translations/{plugin}/` or flat structure
+- **rhdh**:
+  - Standard: `packages/app/src/translations/{plugin}/`
+  - Alternative: `packages/app/src/components/{plugin}/translations/` (for some plugins like catalog)
+  - The script searches for existing reference files (`ref.ts` or `translations.ts`) to determine the correct path
+
+### Intelligent Path Finding
+
+For the `rhdh` repo, the deploy command intelligently finds plugin translation directories by:
+
+1. **Checking standard locations first**: `packages/app/src/translations/{plugin}/`
+2. **Checking alternative locations**: `packages/app/src/components/{plugin}/translations/`
+3. **Searching for existing reference files**: Looks for `ref.ts` or `translations.ts` files to determine where translations were originally extracted
+4. **Matching plugin imports**: Verifies the plugin by checking import statements in existing language files
+
+### Filename Pattern Detection
+
+For plugin overrides in the `rhdh` repo, the deploy command automatically detects the correct filename pattern by checking existing files:
+
+- If existing files use `{plugin}-{lang}.ts` (e.g., `search-it.ts`), new files use the same pattern
+- If existing files use `{lang}.ts` (e.g., `fr.ts`), new files use the same pattern
+- Defaults to `{plugin}-{lang}.ts` for new plugins
 
 ## Troubleshooting
 
@@ -161,3 +250,10 @@ The script searches for plugins using repo-specific patterns:
 - Some plugins might not exist in all repos
 - This is normal - the script skips missing plugins
 - Check that plugin names match between downloaded files and repo structure
+
+### Red Hat owned plugins not deploying to community-plugins
+
+- Ensure community-plugins repo is cloned locally (typically as sibling directory: `../community-plugins`)
+- Or set `COMMUNITY_PLUGINS_REPO_PATH` environment variable to the repo path
+- Verify the plugin exists in `community-plugins/workspaces/*/plugins/{plugin}/`
+- Check that the plugin name matches (the script automatically strips "plugin." prefix)

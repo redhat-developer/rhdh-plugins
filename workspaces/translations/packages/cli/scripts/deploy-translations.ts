@@ -403,6 +403,67 @@ function getTargetRepoRoot(repoRoot: string, repoType: string): string {
 }
 
 /**
+ * Get the community-plugins repository root
+ * Tries to find community-plugins repo in common locations
+ */
+function getCommunityPluginsRepoRoot(repoRoot: string): string | null {
+  // Try to find community-plugins repo - check common locations
+  const possiblePaths = [
+    path.join(path.dirname(repoRoot), 'community-plugins'),
+    // Fallback: Try environment variable or common development location
+    process.env.COMMUNITY_PLUGINS_REPO_PATH ||
+      path.join(os.homedir(), 'redhat', 'community-plugins'),
+  ];
+
+  for (const communityPluginsPath of possiblePaths) {
+    if (fs.existsSync(communityPluginsPath)) {
+      // Verify it's actually a community-plugins repo by checking for workspaces directory
+      const workspacesDir = path.join(communityPluginsPath, 'workspaces');
+      if (fs.existsSync(workspacesDir)) {
+        return communityPluginsPath;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Check if a plugin exists in community-plugins repo (Red Hat owned)
+ */
+function isRedHatOwnedPlugin(
+  pluginName: string,
+  communityPluginsRoot: string,
+): boolean {
+  if (!communityPluginsRoot) {
+    return false;
+  }
+
+  // Strip "plugin." prefix if present
+  const cleanPluginName = pluginName.replace(/^plugin\./, '');
+
+  const workspacesDir = path.join(communityPluginsRoot, 'workspaces');
+  if (!fs.existsSync(workspacesDir)) {
+    return false;
+  }
+
+  const workspaceDirs = fs.readdirSync(workspacesDir);
+  for (const workspace of workspaceDirs) {
+    const pluginDir = path.join(
+      workspacesDir,
+      workspace,
+      'plugins',
+      cleanPluginName,
+    );
+    if (fs.existsSync(pluginDir)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Find plugin translation directory (supports multiple repo structures)
  */
 function findPluginTranslationDir(
@@ -410,8 +471,17 @@ function findPluginTranslationDir(
   repoRoot: string,
   repoType: string,
 ): string | null {
-  // For backstage and community-plugins, deploy to rhdh/translations/{plugin}/
+  // For backstage and community-plugins, check if repoRoot is actually a community-plugins repo
+  // (has workspaces directory) - if so, deploy to workspace, otherwise deploy to rhdh/translations
   if (repoType === 'backstage' || repoType === 'community-plugins') {
+    // Check if repoRoot is actually a community-plugins repo (has workspaces directory)
+    const workspacesDir = path.join(repoRoot, 'workspaces');
+    if (fs.existsSync(workspacesDir)) {
+      // This is a community-plugins repo, deploy to workspace
+      return findPluginInWorkspaces(pluginName, repoRoot);
+    }
+
+    // Otherwise, deploy to rhdh/translations/{plugin}/
     const targetRoot = getTargetRepoRoot(repoRoot, repoType);
     const translationsDir = path.join(targetRoot, 'translations');
 
@@ -619,8 +689,10 @@ function determineTargetFile(
   repoType: string,
   translationDir: string,
 ): string {
-  // For backstage and community-plugins deploying to rhdh/translations/{plugin}/
-  // Use {lang}.ts format
+  // For backstage and community-plugins:
+  // - If deploying to rhdh/translations/{plugin}/: use {lang}.ts format
+  // - If deploying to community-plugins workspace: use {lang}.ts format
+  // Both cases use the same {lang}.ts format
   if (repoType === 'backstage' || repoType === 'community-plugins') {
     return path.join(translationDir, `${lang}.ts`);
   }
@@ -923,6 +995,7 @@ function processLanguageTranslations(
   lang: string,
   repoType: string,
   repoRoot: string,
+  communityPluginsRoot?: string | null,
 ): { updated: number; created: number } {
   let updated = 0;
   let created = 0;
@@ -950,6 +1023,7 @@ function processLanguageTranslations(
       continue;
     }
 
+    // Deploy to rhdh/translations/{plugin}/ (standard deployment)
     const result = processPluginTranslation(
       pluginName,
       translations,
@@ -961,6 +1035,34 @@ function processLanguageTranslations(
     if (result) {
       if (result.updated) updated++;
       if (result.created) created++;
+    }
+
+    // For backstage/community-plugins files deployed from rhdh, also check if plugin is Red Hat owned
+    // and deploy to community-plugins workspace if it exists
+    if (
+      (repoType === 'backstage' || repoType === 'community-plugins') &&
+      communityPluginsRoot &&
+      isRedHatOwnedPlugin(pluginName, communityPluginsRoot)
+    ) {
+      console.log(
+        chalk.cyan(
+          `    🔴 Red Hat owned plugin detected: ${pluginName} → deploying to community-plugins`,
+        ),
+      );
+
+      // Deploy to community-plugins workspace
+      const communityPluginsResult = processPluginTranslation(
+        pluginName,
+        translations,
+        lang,
+        'community-plugins',
+        communityPluginsRoot,
+      );
+
+      if (communityPluginsResult) {
+        if (communityPluginsResult.updated) updated++;
+        if (communityPluginsResult.created) created++;
+      }
     }
   }
 
@@ -1428,6 +1530,7 @@ async function deployTranslations(
     console.log(chalk.gray(`  📄 Processing: ${displayFilename}`));
 
     // Copy JSON file to rhdh_root/translations/ for backstage and community-plugins repos
+    let communityPluginsRoot: string | null = null;
     if (
       effectiveRepoType === 'backstage' ||
       effectiveRepoType === 'community-plugins'
@@ -1462,6 +1565,19 @@ async function deployTranslations(
           ),
         );
       }
+
+      // Find community-plugins repo for Red Hat owned plugins deployment
+      // Only when running from rhdh repo
+      if (repoType === 'rhdh') {
+        communityPluginsRoot = getCommunityPluginsRepoRoot(repoRoot);
+        if (communityPluginsRoot) {
+          console.log(
+            chalk.gray(
+              `  📦 Community-plugins repo found: ${communityPluginsRoot}`,
+            ),
+          );
+        }
+      }
     }
 
     const { updated, created } = processLanguageTranslations(
@@ -1469,6 +1585,7 @@ async function deployTranslations(
       lang,
       effectiveRepoType,
       repoRoot,
+      communityPluginsRoot,
     );
 
     totalUpdated += updated;
