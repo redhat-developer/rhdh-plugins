@@ -244,10 +244,108 @@ function findPluginInWorkspaces(
 
 /**
  * Find plugin translation directory in rhdh repo structure
+ * Intelligently searches for existing reference files to determine the correct path
  */
 function findPluginInRhdh(pluginName: string, repoRoot: string): string | null {
-  // For rhdh repo, plugin overrides go to packages/app/src/translations/{plugin}/
-  const pluginDir = path.join(
+  // Search for existing reference files (ref.ts or translations.ts) to determine the correct path
+  // This ensures we deploy to where the reference files were originally extracted
+
+  // Possible locations to search:
+  const searchPaths = [
+    // Standard location: packages/app/src/translations/{plugin}/
+    path.join(repoRoot, 'packages', 'app', 'src', 'translations', pluginName),
+    // Alternative location: packages/app/src/components/{plugin}/translations/
+    path.join(
+      repoRoot,
+      'packages',
+      'app',
+      'src',
+      'components',
+      pluginName,
+      'translations',
+    ),
+  ];
+
+  // Search for existing reference files in each location
+  for (const searchPath of searchPaths) {
+    if (fs.existsSync(searchPath)) {
+      // Check if reference files exist (ref.ts or translations.ts)
+      const refFile = path.join(searchPath, 'ref.ts');
+      const translationsFile = path.join(searchPath, 'translations.ts');
+
+      if (fs.existsSync(refFile) || fs.existsSync(translationsFile)) {
+        return searchPath;
+      }
+    }
+  }
+
+  // If no existing reference files found, try to find any translation directory
+  // that contains language files (e.g., fr.ts, it.ts) for this plugin
+  const appSrcDir = path.join(repoRoot, 'packages', 'app', 'src');
+  if (fs.existsSync(appSrcDir)) {
+    // Search recursively for translation directories containing language files
+    const findTranslationDir = (dir: string, depth = 0): string | null => {
+      if (depth > 3) return null; // Limit search depth
+
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (entry.isDirectory()) {
+            const subDir = path.join(dir, entry.name);
+            // Check if this directory contains language files (e.g., fr.ts, it.ts)
+            const langFiles = fs
+              .readdirSync(subDir)
+              .filter(f =>
+                /^(fr|it|ja|de|es|ko|zh|pt|ru|ar|hi|nl|pl|sv)\.ts$/.test(f),
+              );
+
+            if (langFiles.length > 0) {
+              // Check if this directory also has ref.ts or translations.ts
+              const refFile = path.join(subDir, 'ref.ts');
+              const translationsFile = path.join(subDir, 'translations.ts');
+              if (fs.existsSync(refFile) || fs.existsSync(translationsFile)) {
+                // Verify this is for the correct plugin by checking import statements
+                const sampleLangFile = path.join(subDir, langFiles[0]);
+                try {
+                  const content = fs.readFileSync(sampleLangFile, 'utf-8');
+                  // Check if the file imports from this plugin (e.g., catalogTranslationRef)
+                  const pluginRefPattern = new RegExp(
+                    `(?:${pluginName}|${pluginName.replace(
+                      /-/g,
+                      '',
+                    )})TranslationRef`,
+                    'i',
+                  );
+                  if (pluginRefPattern.test(content)) {
+                    return subDir;
+                  }
+                } catch {
+                  // Continue searching
+                }
+              }
+            }
+
+            // Recursively search subdirectories
+            const found = findTranslationDir(subDir, depth + 1);
+            if (found) return found;
+          }
+        }
+      } catch {
+        // Continue searching
+      }
+
+      return null;
+    };
+
+    const foundDir = findTranslationDir(appSrcDir);
+    if (foundDir) {
+      return foundDir;
+    }
+  }
+
+  // Fallback: Create directory in standard location if parent exists
+  const standardPluginDir = path.join(
     repoRoot,
     'packages',
     'app',
@@ -256,26 +354,20 @@ function findPluginInRhdh(pluginName: string, repoRoot: string): string | null {
     pluginName,
   );
 
-  // Create directory if it doesn't exist (for new plugin overrides)
-  if (!fs.existsSync(pluginDir)) {
-    const translationsDir = path.join(
-      repoRoot,
-      'packages',
-      'app',
-      'src',
-      'translations',
-    );
+  const translationsDir = path.join(
+    repoRoot,
+    'packages',
+    'app',
+    'src',
+    'translations',
+  );
 
-    // Only create if the parent translations directory exists
-    if (fs.existsSync(translationsDir)) {
-      fs.ensureDirSync(pluginDir);
-      return pluginDir;
-    }
-
-    return null;
+  if (fs.existsSync(translationsDir)) {
+    fs.ensureDirSync(standardPluginDir);
+    return standardPluginDir;
   }
 
-  return pluginDir;
+  return null;
 }
 
 /**
@@ -492,12 +584,17 @@ function detectDownloadedFiles(
       // Only include files that match the current repo
       // Support both old repo names and new ones (e.g., "backstage" for backstage repo)
       // Note: backstage and community-plugins files are deployed to rhdh/translations
+      // So when running from rhdh repo, also accept backstage and community-plugins files
       if (
         (repoType === 'rhdh-plugins' && fileRepo === 'rhdh-plugins') ||
         (repoType === 'community-plugins' &&
           fileRepo === 'community-plugins') ||
         (repoType === 'rhdh' && fileRepo === 'rhdh') ||
-        (repoType === 'backstage' && fileRepo === 'backstage')
+        (repoType === 'backstage' && fileRepo === 'backstage') ||
+        // Allow backstage and community-plugins files when running from rhdh repo
+        // (since they deploy to rhdh/translations)
+        (repoType === 'rhdh' &&
+          (fileRepo === 'backstage' || fileRepo === 'community-plugins'))
       ) {
         // Store the original filename for reading, but use clean name for display
         // The clean name removes -C suffix and -reference for cleaner naming
@@ -514,6 +611,7 @@ function detectDownloadedFiles(
 
 /**
  * Determine target file path for translation file
+ * Intelligently determines the filename pattern based on existing files
  */
 function determineTargetFile(
   pluginName: string,
@@ -534,7 +632,36 @@ function determineTargetFile(
       return path.join(translationDir, `${lang}.ts`);
     }
 
-    // For plugin overrides, try {plugin}-{lang}.ts first, then {lang}.ts
+    // For plugin overrides, check existing files to determine the naming pattern
+    // Look for existing language files in the translation directory
+    if (fs.existsSync(translationDir)) {
+      const existingFiles = fs
+        .readdirSync(translationDir)
+        .filter(
+          f =>
+            f.endsWith('.ts') &&
+            !f.includes('ref') &&
+            !f.includes('translations'),
+        );
+
+      // Check if any existing file uses {plugin}-{lang}.ts pattern
+      const pluginLangPattern = new RegExp(`^${pluginName}-[a-z]{2}\\.ts$`);
+      const pluginLangFile = existingFiles.find(f => pluginLangPattern.test(f));
+      if (pluginLangFile) {
+        // Use the same pattern: {plugin}-{lang}.ts
+        return path.join(translationDir, `${pluginName}-${lang}.ts`);
+      }
+
+      // Check if any existing file uses {lang}.ts pattern
+      const langPattern = /^[a-z]{2}\.ts$/;
+      const langFile = existingFiles.find(f => langPattern.test(f));
+      if (langFile) {
+        // Use the same pattern: {lang}.ts
+        return path.join(translationDir, `${lang}.ts`);
+      }
+    }
+
+    // Default: try {plugin}-{lang}.ts first, then {lang}.ts
     const pluginLangFile = path.join(
       translationDir,
       `${pluginName}-${lang}.ts`,
@@ -802,9 +929,22 @@ function processLanguageTranslations(
 
   for (const [pluginName, pluginData] of Object.entries(data)) {
     // Use the language-specific translations (fr, it, ja, etc.)
-    // The translation file structure is: { plugin: { lang: { key: value } } }
-    const translations =
-      (pluginData as Record<string, Record<string, string>>)[lang] || {};
+    // The translation file structure from Memsource is: { plugin: { "en": { key: value } } }
+    // Note: Memsource uses "en" as the key even for target languages (fr, it, ja, etc.)
+    // The actual target language is determined from the filename (e.g., backstage-2026-01-08-fr.json)
+    // We need to replace "en" with the target language key in the data structure
+    const pluginDataObj = pluginData as Record<string, Record<string, string>>;
+
+    // Try target language key first (in case some files already have the correct structure)
+    let translations = pluginDataObj[lang] || {};
+
+    // If not found, use "en" key (Memsource standard - "en" contains the target language translations)
+    if (Object.keys(translations).length === 0 && pluginDataObj.en) {
+      // Replace "en" key with target language key in the data structure
+      // This ensures the JSON structure has the correct language key for processing
+      pluginDataObj[lang] = pluginDataObj.en;
+      translations = pluginDataObj[lang];
+    }
 
     if (Object.keys(translations).length === 0) {
       continue;
@@ -1235,17 +1375,99 @@ async function deployTranslations(
     displayFilename = displayFilename.replace(/-C\.json$/, '.json');
     displayFilename = displayFilename.replace(/-reference-/, '-');
 
-    const data: TranslationData = JSON.parse(
-      fs.readFileSync(filepath, 'utf-8'),
+    // Detect file repo from filename (backstage, community-plugins, etc.)
+    // If running from rhdh repo but file is backstage/community-plugins, use that repo type for deployment
+    let effectiveRepoType = repoType;
+    const fileRepoMatch = originalFilename.match(
+      /^(backstage|community-plugins|rhdh-plugins|rhdh)-/,
     );
+    if (fileRepoMatch && repoType === 'rhdh') {
+      const fileRepo = fileRepoMatch[1];
+      if (fileRepo === 'backstage' || fileRepo === 'community-plugins') {
+        // These files deploy to rhdh/translations, so use their repo type for deployment logic
+        effectiveRepoType = fileRepo as 'backstage' | 'community-plugins';
+      }
+    }
+
+    // Validate and parse JSON file
+    let data: TranslationData;
+    try {
+      const fileContent = fs.readFileSync(filepath, 'utf-8');
+      data = JSON.parse(fileContent);
+    } catch (error: any) {
+      console.error(
+        chalk.red(`\n❌ Error parsing JSON file: ${displayFilename}`),
+      );
+      console.error(
+        chalk.red(
+          `   ${
+            error instanceof Error ? error.message : 'Invalid JSON format'
+          }`,
+        ),
+      );
+      console.error(
+        chalk.yellow(
+          `   Skipping this file. Please check the file and try again.`,
+        ),
+      );
+      continue;
+    }
+
+    // Validate that data is an object
+    if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+      console.error(
+        chalk.red(`\n❌ Invalid JSON structure in file: ${displayFilename}`),
+      );
+      console.error(
+        chalk.red(`   Expected a JSON object, got: ${typeof data}`),
+      );
+      continue;
+    }
 
     console.log(chalk.cyan(`\n  🌍 Language: ${lang.toUpperCase()}`));
     console.log(chalk.gray(`  📄 Processing: ${displayFilename}`));
 
+    // Copy JSON file to rhdh_root/translations/ for backstage and community-plugins repos
+    if (
+      effectiveRepoType === 'backstage' ||
+      effectiveRepoType === 'community-plugins'
+    ) {
+      const targetRoot = getTargetRepoRoot(repoRoot, effectiveRepoType);
+      const translationsDir = path.join(targetRoot, 'translations');
+
+      if (fs.existsSync(translationsDir)) {
+        // Extract timestamp from filename (date or sprint)
+        let timestamp = '';
+        const dateMatch = displayFilename.match(/(\d{4}-\d{2}-\d{2})/);
+        const sprintMatch = displayFilename.match(/(s\d+)/);
+
+        if (dateMatch) {
+          timestamp = dateMatch[1];
+        } else if (sprintMatch) {
+          timestamp = sprintMatch[1];
+        } else {
+          // Fallback: use current date
+          timestamp = new Date().toISOString().split('T')[0];
+        }
+
+        // Generate clean filename: <repo_name>-<timestamp>-<locale>.json
+        const cleanFilename = `${effectiveRepoType}-${timestamp}-${lang}.json`;
+        const targetJsonPath = path.join(translationsDir, cleanFilename);
+
+        // Copy the JSON file
+        fs.copyFileSync(filepath, targetJsonPath);
+        console.log(
+          chalk.green(
+            `  📋 Copied JSON to: ${path.relative(repoRoot, targetJsonPath)}`,
+          ),
+        );
+      }
+    }
+
     const { updated, created } = processLanguageTranslations(
       data,
       lang,
-      repoType,
+      effectiveRepoType,
       repoRoot,
     );
 
