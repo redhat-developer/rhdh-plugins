@@ -27,6 +27,7 @@ import { cleanCommand } from './clean';
 import { syncCommand } from './sync';
 import { initCommand } from './init';
 import { setupMemsourceCommand } from './setupMemsource';
+import { listCommand } from './list';
 
 export function registerCommands(program: Command) {
   const command = program
@@ -106,6 +107,19 @@ export function registerCommands(program: Command) {
     .option('--force', 'Force upload even if file has not changed', false)
     .action(wrapCommand(uploadCommand));
 
+  // List command - list available translation jobs
+  command
+    .command('list')
+    .description('List available translation jobs from TMS')
+    .option('--project-id <id>', 'TMS project ID')
+    .option('--languages <languages>', 'Filter by languages (e.g., "it,ja,fr")')
+    .option(
+      '--status <status>',
+      'Filter by status (e.g., "COMPLETED", "ASSIGNED", "NEW")',
+    )
+    .option('--format <format>', 'Output format (table, json)', 'table')
+    .action(wrapCommand(listCommand));
+
   // Download command - download translated strings from TMS
   command
     .command('download')
@@ -122,7 +136,17 @@ export function registerCommands(program: Command) {
     )
     .option(
       '--job-ids <ids>',
-      'Comma-separated list of specific job IDs to download (e.g., "13,14,16")',
+      'Comma-separated list of specific job UIDs to download (use "i18n list" to see UIDs)',
+    )
+    .option(
+      '--status <status>',
+      'Filter by status (default: "COMPLETED"). Use "ALL" to download all statuses, or specific status like "ASSIGNED"',
+      'COMPLETED',
+    )
+    .option(
+      '--include-incomplete',
+      'Include incomplete jobs (same as --status ALL)',
+      false,
     )
     .action(wrapCommand(downloadCommand));
 
