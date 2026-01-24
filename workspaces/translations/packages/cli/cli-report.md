@@ -31,6 +31,7 @@ Commands:
   generate [options]
   help [command]
   init [options]
+  list [options]
   setup-memsource [options]
   status [options]
   sync [options]
@@ -66,10 +67,12 @@ Options:
 Usage: translations-cli i18n download [options]
 
 Options:
+  --include-incomplete
   --job-ids <ids>
   --languages <languages>
   --output-dir <path>
   --project-id <id>
+  --status <status>
   -h, --help
 ```
 
@@ -101,6 +104,19 @@ Usage: translations-cli i18n init [options]
 Options:
   --memsource-venv <path>
   --setup-memsource
+  -h, --help
+```
+
+### `translations-cli i18n list`
+
+```
+Usage: translations-cli i18n list [options]
+
+Options:
+  --format <format>
+  --languages <languages>
+  --project-id <id>
+  --status <status>
   -h, --help
 ```
 
