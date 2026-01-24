@@ -129,7 +129,9 @@ function displayJobsTable(
 
   // Display jobs grouped by filename
   let displayIndex = 1;
-  for (const [filename, fileJobs] of Array.from(jobsByFile.entries()).sort()) {
+  for (const [filename, fileJobs] of Array.from(jobsByFile.entries()).sort(
+    (a, b) => a[0].localeCompare(b[0]),
+  )) {
     // Sort jobs by language
     const sortedJobs = fileJobs.sort((a, b) =>
       (a.target_lang || '').localeCompare(b.target_lang || ''),
