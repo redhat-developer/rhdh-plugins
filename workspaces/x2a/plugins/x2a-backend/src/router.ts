@@ -117,7 +117,14 @@ export async function createRouter({
       pageSize: z.number().optional(),
       order: z.enum(['asc', 'desc']).optional(),
       sort: z
-        .enum(['createdAt', 'name', 'description', 'createdBy'])
+        .enum([
+          'createdAt',
+          'name',
+          'abbreviation',
+          'status',
+          'description',
+          'createdBy',
+        ])
         .optional(),
     });
 

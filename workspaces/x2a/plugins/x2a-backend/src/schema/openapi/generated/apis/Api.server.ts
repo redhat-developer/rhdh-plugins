@@ -32,7 +32,13 @@ export type ProjectsGet = {
     page?: number;
     pageSize?: number;
     order?: 'asc' | 'desc';
-    sort?: 'createdAt' | 'name' | 'description' | 'createdBy';
+    sort?:
+      | 'createdAt'
+      | 'name'
+      | 'abbreviation'
+      | 'status'
+      | 'description'
+      | 'createdBy';
   };
   response: ProjectsGet200Response;
 };

@@ -13,12 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useEffect } from 'react';
+import { useClientService } from './ClientService';
 
 /**
- * Common functionalities for the x2a plugin.
+ * Seed the database with test data.
  *
- * @packageDocumentation
+ * Never use in production.
  */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
+export const useSeedTestData = () => {
+  const clientService = useClientService();
+
+  useEffect(() => {
+    const doItAsync = async () => {
+      for (let i = 0; i < 10; i++) {
+        await clientService.projectsPost({
+          body: {
+            name: `Test Project ${i}`,
+            description: `Test Description ${i}`,
+            abbreviation: `TP${i}`,
+          },
+        });
+      }
+    };
+    doItAsync();
+  }, [clientService]);
+};
