@@ -15,10 +15,18 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import type { CoreV1Api } from '@kubernetes/client-node';
+import { CoreV1Api, BatchV1Api, KubeConfig } from '@kubernetes/client-node';
 
 /**
- * TODO: Make this configurable
+ * Kubernetes API clients
+ */
+export interface K8sClients {
+  coreV1Api: CoreV1Api;
+  batchV1Api: BatchV1Api;
+}
+
+/**
+ * TODO: Make this configurable, and allow for using kube secret inherited by service account
  *
  * Load Kubernetes config from default locations
  * This will check KUBECONFIG env var, ~/.kube/config, or ~/.kube/kubeconfig, or in-cluster config
@@ -63,6 +71,8 @@ export const makeK8sClient = async (
     }
   }
 
-  const { CoreV1Api } = await import('@kubernetes/client-node');
-  return kc.makeApiClient(CoreV1Api);
+  return {
+    coreV1Api: kc.makeApiClient(CoreV1Api),
+    batchV1Api: kc.makeApiClient(BatchV1Api),
+  };
 };
