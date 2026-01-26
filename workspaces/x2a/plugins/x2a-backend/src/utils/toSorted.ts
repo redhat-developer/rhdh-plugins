@@ -13,4 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './NewProjectPage';
+export const toSorted = (a: string, b: string) => a.localeCompare(b);

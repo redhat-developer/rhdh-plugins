@@ -54,6 +54,33 @@ jest.mock('@backstage/backend-plugin-api', () => ({
   })),
 }));
 
+const getX2aDatabaseServiceMock = () => ({
+  // projects
+  createProject: jest
+    .fn()
+    .mockRejectedValue(new ConflictError('expected mock error')),
+  deleteProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('expected mock error')),
+  listProjects: jest
+    .fn()
+    .mockRejectedValue(new AuthenticationError('expected mock error')),
+  getProject: jest
+    .fn()
+    .mockRejectedValue(new NotFoundError('expected mock error')),
+  // modules
+  createModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  deleteModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listModules: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getModule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  // jobs
+  createJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  deleteJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listJobs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+});
+
 async function startBackendServer(
   config?: Record<PropertyKey, unknown>,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
@@ -129,14 +156,7 @@ describe('plugin', () => {
         createServiceFactory({
           service: x2aDatabaseServiceRef,
           deps: {},
-          factory: () => ({
-            createProject: jest.fn().mockRejectedValue(new ConflictError()),
-            deleteProject: jest.fn().mockRejectedValue(new NotAllowedError()),
-            listProjects: jest
-              .fn()
-              .mockRejectedValue(new AuthenticationError()),
-            getProject: jest.fn().mockRejectedValue(new NotFoundError()),
-          }),
+          factory: getX2aDatabaseServiceMock,
         }),
       ],
     });
