@@ -45,12 +45,19 @@ export interface Module {
 export type JobStatus = 'pending' | 'running' | 'success' | 'error';
 
 // TODO: model via openapi schema
+export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
+
+// TODO: model via openapi schema
 export interface Job {
   id: string;
   log: string | null;
   startedAt: Date;
   finishedAt: Date | null;
   status: JobStatus;
+  phase: MigrationPhase;
+  errorDetails: string | null;
+  k8sJobName: string | null;
+  callbackToken: string | null;
   moduleId: string;
   artifacts: string[];
 }
@@ -110,6 +117,10 @@ export class X2ADatabaseService {
       startedAt: row.started_at ? new Date(row.started_at) : new Date(),
       finishedAt: row.finished_at ? new Date(row.finished_at) : null,
       status: (row.status || 'pending') as JobStatus,
+      phase: (row.phase || 'init') as MigrationPhase,
+      errorDetails: row.error_details || null,
+      k8sJobName: row.k8s_job_name || null,
+      callbackToken: row.callback_token || null,
       moduleId: row.module_id,
     };
   }
@@ -352,6 +363,10 @@ export class X2ADatabaseService {
     startedAt?: Date;
     finishedAt?: Date | null;
     status?: JobStatus;
+    phase: MigrationPhase;
+    errorDetails?: string | null;
+    k8sJobName?: string | null;
+    callbackToken?: string | null;
     moduleId: string;
     artifacts?: string[];
   }): Promise<Job> {
@@ -368,6 +383,10 @@ export class X2ADatabaseService {
       started_at: startedAt,
       finished_at: finishedAt,
       status,
+      phase: job.phase,
+      error_details: job.errorDetails || null,
+      k8s_job_name: job.k8sJobName || null,
+      callback_token: job.callbackToken || null,
       module_id: job.moduleId,
     });
 
@@ -387,6 +406,10 @@ export class X2ADatabaseService {
       startedAt,
       finishedAt,
       status,
+      phase: job.phase,
+      errorDetails: job.errorDetails || null,
+      k8sJobName: job.k8sJobName || null,
+      callbackToken: job.callbackToken || null,
       moduleId: job.moduleId,
       artifacts,
     };
@@ -471,12 +494,16 @@ export class X2ADatabaseService {
     log,
     finishedAt,
     status,
+    errorDetails,
+    k8sJobName,
     artifacts,
   }: {
     id: string;
     log?: string | null;
     finishedAt?: Date | null;
     status?: JobStatus;
+    errorDetails?: string | null;
+    k8sJobName?: string | null;
     artifacts?: string[];
   }): Promise<Job | undefined> {
     this.#logger.info(`updateJob called for id: ${id}`);
@@ -498,6 +525,12 @@ export class X2ADatabaseService {
     }
     if (status !== undefined) {
       updateData.status = status;
+    }
+    if (errorDetails !== undefined) {
+      updateData.error_details = errorDetails;
+    }
+    if (k8sJobName !== undefined) {
+      updateData.k8s_job_name = k8sJobName;
     }
 
     if (Object.keys(updateData).length > 0) {
