@@ -171,4 +171,58 @@ describe('createRouter', () => {
       });
     },
   );
+
+  it.each(databases.eachSupportedId())(
+    'should delete a project by id - %p',
+    async databaseId => {
+      const { client } = await createDatabase(databaseId);
+      const app = await createApp(client);
+
+      // First create a project
+      const createResponse = await request(app)
+        .post('/projects')
+        .send(mockInputProject);
+
+      expect(createResponse.status).toBe(200);
+      const projectId = createResponse.body.id;
+
+      // Verify project exists
+      const getResponse = await request(app)
+        .get(`/projects/${projectId}`)
+        .send();
+      expect(getResponse.status).toBe(200);
+
+      // Delete the project
+      const deleteResponse = await request(app)
+        .delete(`/projects/${projectId}`)
+        .send();
+
+      expect(deleteResponse.status).toBe(200);
+      expect(deleteResponse.body.deletedCount).toBe(1);
+
+      // Verify project is deleted
+      const getAfterDeleteResponse = await request(app)
+        .get(`/projects/${projectId}`)
+        .send();
+      expect(getAfterDeleteResponse.status).toBe(404);
+    },
+  );
+
+  it.each(databases.eachSupportedId())(
+    'should return 404 when deleting non-existent project - %p',
+    async databaseId => {
+      const { client } = await createDatabase(databaseId);
+      const app = await createApp(client);
+
+      const nonExistentId = '00000000-0000-0000-0000-000000000000';
+      const response = await request(app)
+        .delete(`/projects/${nonExistentId}`)
+        .send();
+
+      expect(response.status).toBe(404);
+      expect(response.body).toMatchObject({
+        error: { name: 'NotFoundError', message: 'Project not found' },
+      });
+    },
+  );
 });

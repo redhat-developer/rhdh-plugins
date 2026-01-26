@@ -111,6 +111,9 @@ export async function createRouter({
     const projectId = req.params.projectId;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
     const deletedCount = await x2aDatabase.deleteProject({ projectId });
+    if (deletedCount === 0) {
+      throw new NotFoundError(`Project not found`);
+    }
     res.status(200).json({ deletedCount });
   });
 
