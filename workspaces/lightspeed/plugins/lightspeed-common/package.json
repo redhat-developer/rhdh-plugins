@@ -42,7 +42,7 @@
     "@backstage/cli": "^0.34.5",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@spotify/prettier-config": "^15.0.0",
-    "prettier": "3.8.0"
+    "prettier": "3.8.1"
   },
   "peerDependencies": {
     "@backstage/plugin-permission-common": "^0.9.3"
