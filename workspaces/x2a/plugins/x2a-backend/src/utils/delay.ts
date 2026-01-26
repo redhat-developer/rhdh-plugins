@@ -13,5 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './toSorted';
-export * from './delay';
+
+/**
+ * Creates a promise that resolves after the specified number of milliseconds.
+ *
+ * @param ms - The number of milliseconds to wait before resolving
+ * @returns A promise that resolves after the specified delay
+ */
+export function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
