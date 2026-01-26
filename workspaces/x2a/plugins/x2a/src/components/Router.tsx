@@ -17,17 +17,17 @@ import { Route, Routes } from 'react-router-dom';
 import { newProjectRouteRef } from '../routes';
 
 import { Dashboard } from './Dashboard';
-import { NewMigrationPage } from './NewProjectPage/NewProjectPage';
+import { NewProjectPage } from './NewProjectPage';
 
 export const Router = () => {
   return (
     // relative to x2a/
     <Routes>
-      <Route path="/*" element={<Dashboard />} />
       <Route
         path={`${newProjectRouteRef.path}/*`}
-        element={<NewMigrationPage />}
+        element={<NewProjectPage />}
       />
+      <Route path="/*" element={<Dashboard />} />
     </Routes>
   );
 };

@@ -18,7 +18,7 @@ import { Grid, Step, StepLabel, Stepper } from '@material-ui/core';
 import { useState } from 'react';
 import { WizardActions } from './WizardActions';
 
-export const NewMigrationPage = () => {
+export const NewProjectPage = () => {
   const [activeStep, setActiveStep] = useState(0);
 
   const steps = [
@@ -39,7 +39,10 @@ export const NewMigrationPage = () => {
 
   return (
     <Page themeId="tool">
-      <Header title="New project" subtitle="Migration Hub / New project" />
+      <Header
+        title="New conversion"
+        subtitle="Migration Hub / New conversion project"
+      />
 
       <Content>
         <Grid container spacing={3} direction="column">

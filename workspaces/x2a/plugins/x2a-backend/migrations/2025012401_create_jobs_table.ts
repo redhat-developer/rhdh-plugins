@@ -17,7 +17,7 @@
 import { Knex } from 'knex';
 
 /**
- * Creates the modules table.
+ * Creates the jobs and artifacts table.
  *
  * @public
  */
@@ -60,7 +60,7 @@ export async function up(knex: Knex): Promise<void> {
 }
 
 /**
- * Drops the modules table.
+ * Drops the jobs and artifacts table.
  *
  * @public
  */
