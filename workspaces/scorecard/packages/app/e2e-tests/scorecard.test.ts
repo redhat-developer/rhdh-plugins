@@ -22,8 +22,6 @@ import {
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { HomePage } from './pages/HomePage';
-import { setupRBAC } from './utils/rbacSetup';
-import { deleteRBAC } from './utils/rbacDelete';
 import {
   customScorecardResponse,
   emptyScorecardResponse,
@@ -42,11 +40,12 @@ import {
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
 
-test.describe.serial('Pre-RBAC Access Tests', () => {
+test.describe('Scorecard Plugin Tests', () => {
+  let catalogPage: CatalogPage;
+  let scorecardPage: ScorecardPage;
+  let homePage: HomePage;
   let translations: ScorecardMessages;
   let currentLocale: string;
-  let catalogPage: CatalogPage;
-  let homePage: HomePage;
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
@@ -58,13 +57,12 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
 
   test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
+    scorecardPage = new ScorecardPage(page, translations);
     homePage = new HomePage(page, translations, currentLocale);
   });
 
   test.describe('Entity Scorecards', () => {
-    test('Verify permission required state on entity scorecard tab', async ({
-      page,
-    }, testInfo) => {
+    test('Verify permission required state', async ({ page }, testInfo) => {
       await catalogPage.loginAndSetLocale(currentLocale);
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
@@ -82,98 +80,8 @@ test.describe.serial('Pre-RBAC Access Tests', () => {
 
       await runAccessibilityTests(page, testInfo);
     });
-  });
 
-  test.describe('Aggregated Scorecards', () => {
-    test('Verify missing permission state on aggregated scorecards', async ({
-      page,
-    }) => {
-      await catalogPage.loginAndSetLocale(currentLocale);
-      await homePage.navigateToHome();
-
-      const entityCount = getEntityCount(translations, currentLocale, '0');
-
-      await expect(page.locator('article')).toMatchAriaSnapshot(
-        getMissingPermissionSnapshot(
-          translations,
-          'jira.open_issues',
-          entityCount,
-        ),
-      );
-
-      await expect(page.locator('article')).toMatchAriaSnapshot(
-        getMissingPermissionSnapshot(
-          translations,
-          'github.open_prs',
-          entityCount,
-        ),
-      );
-    });
-
-    test('Manage scorecards on Home page', async ({ page }) => {
-      await catalogPage.loginAndSetLocale(currentLocale);
-      await homePage.navigateToHome();
-
-      await homePage.enterEditMode();
-      await homePage.clearAllWidgets();
-      await homePage.addWidget('Onboarding section');
-      await homePage.saveChanges();
-
-      await homePage.expectWidgetNotVisible('github.open_prs');
-      await homePage.expectWidgetNotVisible('jira.open_issues');
-
-      await homePage.enterEditMode();
-      await homePage.addWidget('Scorecard: GitHub open PRs');
-      await homePage.saveChanges();
-
-      await homePage.expectWidgetVisible('github.open_prs');
-
-      await homePage.enterEditMode();
-      await homePage.addWidget('Scorecard: Jira open blocking');
-      await homePage.saveChanges();
-
-      await homePage.expectWidgetVisible('github.open_prs');
-      await homePage.expectWidgetVisible('jira.open_issues');
-    });
-  });
-});
-
-test.describe.serial('Scorecard Plugin Tests', () => {
-  let catalogPage: CatalogPage;
-  let scorecardPage: ScorecardPage;
-  let homePage: HomePage;
-  let translations: ScorecardMessages;
-  let currentLocale: string;
-
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
-    await setupRBAC(page);
-
-    currentLocale = await page.evaluate(() => globalThis.navigator.language);
-    translations = getTranslations(currentLocale);
-
-    await context.close();
-  });
-
-  test.beforeEach(async ({ page }) => {
-    catalogPage = new CatalogPage(page);
-    scorecardPage = new ScorecardPage(page, translations);
-    homePage = new HomePage(page, translations, currentLocale);
-  });
-
-  test.afterAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await deleteRBAC(page);
-    await context.close();
-  });
-
-  test.describe('Entity Scorecards', () => {
-    test('Verify scorecard metrics display correctly', async ({
-      page,
-    }, testInfo) => {
+    test('Verify metrics display correctly', async ({ page }, testInfo) => {
       await mockScorecardResponse(page, customScorecardResponse);
 
       await catalogPage.loginAndSetLocale(currentLocale);
@@ -273,6 +181,55 @@ test.describe.serial('Scorecard Plugin Tests', () => {
   });
 
   test.describe('Aggregated Scorecards', () => {
+    test('Verify missing permission state', async ({ page }) => {
+      await catalogPage.loginAndSetLocale(currentLocale);
+      await homePage.navigateToHome();
+
+      const entityCount = getEntityCount(translations, currentLocale, '0');
+
+      await expect(page.locator('article')).toMatchAriaSnapshot(
+        getMissingPermissionSnapshot(
+          translations,
+          'jira.open_issues',
+          entityCount,
+        ),
+      );
+
+      await expect(page.locator('article')).toMatchAriaSnapshot(
+        getMissingPermissionSnapshot(
+          translations,
+          'github.open_prs',
+          entityCount,
+        ),
+      );
+    });
+
+    test('Manage scorecards on Home page', async () => {
+      await catalogPage.loginAndSetLocale(currentLocale);
+      await homePage.navigateToHome();
+
+      await homePage.enterEditMode();
+      await homePage.clearAllCards();
+      await homePage.addCard('Onboarding section');
+      await homePage.saveChanges();
+
+      await homePage.expectCardNotVisible('github.open_prs');
+      await homePage.expectCardNotVisible('jira.open_issues');
+
+      await homePage.enterEditMode();
+      await homePage.addCard('Scorecard: GitHub open PRs');
+      await homePage.saveChanges();
+
+      await homePage.expectCardVisible('github.open_prs');
+
+      await homePage.enterEditMode();
+      await homePage.addCard('Scorecard: Jira open blocking');
+      await homePage.saveChanges();
+
+      await homePage.expectCardVisible('github.open_prs');
+      await homePage.expectCardVisible('jira.open_issues');
+    });
+
     test('Verify entity counts with mocked API response', async ({
       page,
     }, testInfo) => {
@@ -311,24 +268,17 @@ test.describe.serial('Scorecard Plugin Tests', () => {
       await runAccessibilityTests(page, testInfo);
     });
 
-    test('Verify cards hidden when API returns empty response', async ({
-      page,
-    }) => {
-      await mockAggregatedScorecardResponse(page, [], []);
+    test('Verify cards hidden when API returns empty response', async () => {
+      await mockAggregatedScorecardResponse(homePage.page, [], []);
 
       await catalogPage.loginAndSetLocale(currentLocale);
       await homePage.navigateToHome();
 
-      await expect(
-        page.getByText(translations.metric['github.open_prs'].title),
-      ).not.toBeVisible();
-
-      await expect(
-        page.getByText(translations.metric['jira.open_issues'].title),
-      ).not.toBeVisible();
+      await homePage.expectCardNotVisible('github.open_prs');
+      await homePage.expectCardNotVisible('jira.open_issues');
     });
 
-    test('Verify threshold tooltips on aggregated scorecards', async () => {
+    test('Verify threshold tooltips', async () => {
       await mockAggregatedScorecardResponse(
         homePage.page,
         githubAggregatedResponse,
@@ -339,8 +289,8 @@ test.describe.serial('Scorecard Plugin Tests', () => {
       await homePage.navigateToHome();
 
       await homePage.enterEditMode();
-      await homePage.clearAllWidgets();
-      await homePage.addWidget('Scorecard: GitHub open PRs');
+      await homePage.clearAllCards();
+      await homePage.addCard('Scorecard: GitHub open PRs');
       await homePage.saveChanges();
 
       const githubCard = homePage.getCard('github.open_prs');
@@ -349,8 +299,8 @@ test.describe.serial('Scorecard Plugin Tests', () => {
       await homePage.verifyThresholdTooltip(githubCard, 'error', '3', '20%');
 
       await homePage.enterEditMode();
-      await homePage.clearAllWidgets();
-      await homePage.addWidget('Scorecard: Jira open blocking');
+      await homePage.clearAllCards();
+      await homePage.addCard('Scorecard: Jira open blocking');
       await homePage.saveChanges();
 
       const jiraCard = homePage.getCard('jira.open_issues');

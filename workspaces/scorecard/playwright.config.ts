@@ -47,8 +47,6 @@ export default defineConfig({
 
   outputDir: 'node_modules/.cache/e2e-test-results',
 
-  workers: 1,
-
   projects: [
     {
       name: 'en',

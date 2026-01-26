@@ -38,28 +38,26 @@ export class HomePage {
     await this.page.getByRole('button', { name: 'Edit' }).click();
   }
 
-  async clearAllWidgets() {
+  async clearAllCards() {
     await this.page.getByRole('button', { name: 'Clear all' }).click();
   }
 
-  async addWidget(widgetName: string) {
+  async addCard(cardName: string) {
     await this.page.getByRole('button', { name: 'Add widget' }).click();
-    await this.page.getByRole('button', { name: widgetName }).click();
+    await this.page.getByRole('button', { name: cardName }).click();
   }
 
   async saveChanges() {
     await this.page.getByRole('button', { name: 'Save' }).click();
   }
 
-  async expectWidgetVisible(metricId: 'github.open_prs' | 'jira.open_issues') {
+  async expectCardVisible(metricId: 'github.open_prs' | 'jira.open_issues') {
     await expect(
       this.page.getByText(this.translations.metric[metricId].title),
     ).toBeVisible();
   }
 
-  async expectWidgetNotVisible(
-    metricId: 'github.open_prs' | 'jira.open_issues',
-  ) {
+  async expectCardNotVisible(metricId: 'github.open_prs' | 'jira.open_issues') {
     await expect(
       this.page.getByText(this.translations.metric[metricId].title),
     ).not.toBeVisible();
