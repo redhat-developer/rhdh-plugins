@@ -156,8 +156,11 @@ export const ActiveDropdown: Widget<
     }
   }, [handleChange, value, values, isChangedByUser, staticDefaultValue]);
 
-  if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} id={id} />;
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  const suppressFetchError = !shouldShowFetchError && !!error;
+  const displayError = localError ?? (shouldShowFetchError ? error : undefined);
+  if (displayError) {
+    return <ErrorText text={displayError} id={id} />;
   }
 
   // Compute display options: use fetched options, or fall back to static default
@@ -165,12 +168,27 @@ export const ActiveDropdown: Widget<
   const hasFallbackDefault = !hasOptions && staticDefaultValue;
 
   // Show loading only if we have no options AND no fallback default
-  if (completeLoading && !hasFallbackDefault) {
+  if (completeLoading && !hasFallbackDefault && !suppressFetchError) {
     return <CircularProgress size={20} />;
   }
 
   // If still loading but no options yet and no fallback, show spinner
   if (!hasOptions && !hasFallbackDefault) {
+    if (suppressFetchError) {
+      return (
+        <FormControl variant="outlined" fullWidth>
+          <InputLabel id={labelId}>{label}</InputLabel>
+          <Select
+            labelId={labelId}
+            id={id}
+            data-testid={id}
+            value={value ?? ''}
+            label={label}
+            disabled
+          />
+        </FormControl>
+      );
+    }
     return <CircularProgress size={20} />;
   }
 

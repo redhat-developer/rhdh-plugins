@@ -117,8 +117,10 @@ export const SchemaUpdater: Widget<
     doItAsync();
   }, [data, props.id, updateSchema, valueSelector, wrapProcessing]);
 
-  if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} id={id} />;
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  const displayError = localError ?? (shouldShowFetchError ? error : undefined);
+  if (displayError) {
+    return <ErrorText text={displayError} id={id} />;
   }
 
   if (completeLoading) {

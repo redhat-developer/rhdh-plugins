@@ -108,6 +108,7 @@ export const useFetchAndEvaluate = (
   return {
     text: resultText,
     loading: completeLoading,
-    error: error ?? fetchError,
+    error,
+    fetchError,
   };
 };
