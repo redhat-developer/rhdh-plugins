@@ -77,6 +77,15 @@ export interface LightspeedDrawerContextType {
    * To save file attachments as a draft when switching modes
    */
   setDraftFileContents: (files: FileContent[]) => void;
+  /**
+   * Whether the settings dropdown is currently open
+   * Used to prevent Escape key from cycling display modes when dropdown is open
+   */
+  isSettingsDropdownOpen: boolean;
+  /**
+   * Setter for settings dropdown open state
+   */
+  setIsSettingsDropdownOpen: (isOpen: boolean) => void;
 }
 
 /**

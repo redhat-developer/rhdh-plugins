@@ -34,6 +34,8 @@ describe('useLightspeedDrawerContext', () => {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    isSettingsDropdownOpen: false,
+    setIsSettingsDropdownOpen: jest.fn(),
   };
 
   it('should return context value when used within provider', () => {
@@ -257,5 +259,42 @@ describe('useLightspeedDrawerContext', () => {
 
     result.current.setDraftMessage('new draft message');
     expect(mockSetDraftMessage).toHaveBeenCalledWith('new draft message');
+  });
+
+  it('should return isSettingsDropdownOpen from context', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <LightspeedDrawerContext.Provider
+        value={{ ...mockContextValue, isSettingsDropdownOpen: true }}
+      >
+        {children}
+      </LightspeedDrawerContext.Provider>
+    );
+
+    const { result } = renderHook(() => useLightspeedDrawerContext(), {
+      wrapper,
+    });
+
+    expect(result.current.isSettingsDropdownOpen).toBe(true);
+  });
+
+  it('should provide working setIsSettingsDropdownOpen function', () => {
+    const mockSetIsSettingsDropdownOpen = jest.fn();
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <LightspeedDrawerContext.Provider
+        value={{
+          ...mockContextValue,
+          setIsSettingsDropdownOpen: mockSetIsSettingsDropdownOpen,
+        }}
+      >
+        {children}
+      </LightspeedDrawerContext.Provider>
+    );
+
+    const { result } = renderHook(() => useLightspeedDrawerContext(), {
+      wrapper,
+    });
+
+    result.current.setIsSettingsDropdownOpen(true);
+    expect(mockSetIsSettingsDropdownOpen).toHaveBeenCalledWith(true);
   });
 });

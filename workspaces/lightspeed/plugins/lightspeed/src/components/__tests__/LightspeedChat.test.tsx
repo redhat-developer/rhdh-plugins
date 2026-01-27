@@ -189,6 +189,8 @@ describe('LightspeedChat', () => {
       setDraftMessage: jest.fn(),
       draftFileContents: [],
       setDraftFileContents: jest.fn(),
+      isSettingsDropdownOpen: false,
+      setIsSettingsDropdownOpen: jest.fn(),
     });
 
     localStorage.clear();
@@ -508,6 +510,8 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        isSettingsDropdownOpen: false,
+        setIsSettingsDropdownOpen: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -539,6 +543,8 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        isSettingsDropdownOpen: false,
+        setIsSettingsDropdownOpen: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -570,6 +576,8 @@ describe('LightspeedChat', () => {
         setDraftMessage: jest.fn(),
         draftFileContents: [],
         setDraftFileContents: jest.fn(),
+        isSettingsDropdownOpen: false,
+        setIsSettingsDropdownOpen: jest.fn(),
       });
 
       render(setupLightspeedChat());

@@ -177,6 +177,7 @@ export const LightspeedChat = ({
     setCurrentConversationId,
     draftMessage,
     setDraftMessage,
+    setIsSettingsDropdownOpen,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
@@ -737,6 +738,7 @@ export const LightspeedChat = ({
             setDisplayMode={setDisplayMode}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
+            setIsSettingsDropdownOpen={setIsSettingsDropdownOpen}
           />
         </ChatbotHeader>
         <Divider />

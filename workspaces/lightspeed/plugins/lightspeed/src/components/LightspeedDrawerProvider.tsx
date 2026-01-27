@@ -60,6 +60,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const [draftFileContents, setDraftFileContentsState] = useState<
     FileContent[]
   >([]);
+  const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] =
+    useState<boolean>(false);
   const openedViaFABRef = useRef<boolean>(false);
 
   const isLightspeedRoute = location.pathname.startsWith('/lightspeed');
@@ -188,6 +190,57 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
     ],
   );
 
+  // Cycle display mode on Escape: Fullscreen → Docked → Overlay → Close
+  const cycleDisplayModeOnEscape = useCallback(() => {
+    switch (displayModeState) {
+      case ChatbotDisplayMode.embedded: // Fullscreen → Docked
+        setDisplayMode(ChatbotDisplayMode.docked);
+        break;
+      case ChatbotDisplayMode.docked: // Docked → Overlay
+        setDisplayMode(ChatbotDisplayMode.default);
+        break;
+      case ChatbotDisplayMode.default: // Overlay → Close
+        closeChatbot();
+        break;
+      default:
+        break;
+    }
+  }, [displayModeState, setDisplayMode, closeChatbot]);
+
+  // Handle ChatbotModal close (overlay mode only)
+  // Only cycle display mode if no dropdown is open
+  const handleModalClose = useCallback(() => {
+    if (isSettingsDropdownOpen) {
+      // Settings dropdown is open, let it close first
+      // Don't cycle display mode on this Escape press
+      return;
+    }
+    cycleDisplayModeOnEscape();
+  }, [isSettingsDropdownOpen, cycleDisplayModeOnEscape]);
+
+  // Global Escape key listener for display mode cycling
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !isOpen) {
+        return;
+      }
+
+      // Check if any modal dialog is currently visible (Delete, Rename, etc.)
+      const hasOpenModal = document.querySelector('.MuiDialog-root');
+
+      // If settings dropdown or modal is open, let those handle Escape first
+      if (isSettingsDropdownOpen || hasOpenModal) {
+        return;
+      }
+
+      event.preventDefault();
+      cycleDisplayModeOnEscape();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isSettingsDropdownOpen, cycleDisplayModeOnEscape]);
+
   // Only render ChatbotModal for overlay mode
   // Docked mode is handled by ApplicationDrawer in Root
   // Embedded mode is handled by LightspeedPage route
@@ -210,6 +263,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       setDraftMessage,
       draftFileContents,
       setDraftFileContents,
+      isSettingsDropdownOpen,
+      setIsSettingsDropdownOpen,
     }),
     [
       isOpen,
@@ -224,6 +279,8 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       setDraftMessage,
       draftFileContents,
       setDraftFileContents,
+      isSettingsDropdownOpen,
+      setIsSettingsDropdownOpen,
     ],
   );
 
@@ -234,7 +291,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         <ChatbotModal
           isOpen
           displayMode={displayModeState}
-          onClose={closeChatbot}
+          onClose={handleModalClose}
           ouiaId="LightspeedChatbotModal"
           aria-labelledby="lightspeed-chatpopup-modal"
           className={classes.chatbotModal}
