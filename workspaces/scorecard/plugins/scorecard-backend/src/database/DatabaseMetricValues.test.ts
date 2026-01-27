@@ -72,6 +72,7 @@ describe('DatabaseMetricValues', () => {
     it.each(databases.eachSupportedId())(
       'should successfully insert metric values - %p',
       async databaseId => {
+        console.log('---- DEBUG: databaseId', databaseId);
         const { client, db } = await createDatabase(databaseId);
 
         await expect(
