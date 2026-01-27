@@ -34,12 +34,16 @@ export class CatalogPage {
     this.page = page;
   }
 
-  async navigateToCatalog(locale: string) {
+  async loginAndSetLocale(locale: string) {
+    await this.page.goto('/');
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible();
     await enterButton.click();
     await expect(this.page.getByText('Welcome back!')).toBeVisible();
-    await this.switchToLocale(this.page, locale);
+    await this.switchToLocale(locale);
+  }
+
+  async openCatalog() {
     await this.page.getByRole('link', { name: 'Catalog', exact: true }).click();
   }
 
@@ -49,14 +53,14 @@ export class CatalogPage {
     await link.click();
   }
 
-  async switchToLocale(page: Page, locale: string): Promise<void> {
+  async switchToLocale(locale: string): Promise<void> {
     const baseLocale = locale.split('-')[0];
     if (baseLocale === 'en') return;
 
     const displayName = getLocaleDisplayName(locale);
-    await page.getByRole('link', { name: 'Settings' }).click();
-    await page.getByRole('button', { name: 'English' }).click();
-    await page.getByRole('option', { name: displayName }).click();
-    await page.locator('a').filter({ hasText: 'Home' }).click();
+    await this.page.getByRole('link', { name: 'Settings' }).click();
+    await this.page.getByRole('button', { name: 'English' }).click();
+    await this.page.getByRole('option', { name: displayName }).click();
+    await this.page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }
