@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import {
   mockScorecardResponse,
   mockAggregatedScorecardResponse,
@@ -41,6 +41,7 @@ import {
 import { runAccessibilityTests } from './utils/accessibility';
 
 test.describe('Scorecard Plugin Tests', () => {
+  let page: Page;
   let catalogPage: CatalogPage;
   let scorecardPage: ScorecardPage;
   let homePage: HomePage;
@@ -49,21 +50,23 @@ test.describe('Scorecard Plugin Tests', () => {
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
-    const page = await context.newPage();
+    page = await context.newPage();
     currentLocale = await page.evaluate(() => globalThis.navigator.language);
     translations = getTranslations(currentLocale);
-    await context.close();
-  });
 
-  test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
     scorecardPage = new ScorecardPage(page, translations);
     homePage = new HomePage(page, translations, currentLocale);
+
+    await catalogPage.loginAndSetLocale(currentLocale);
+  });
+
+  test.afterAll(async () => {
+    await page.context().close();
   });
 
   test.describe('Entity Scorecards', () => {
-    test('Verify permission required state', async ({ page }, testInfo) => {
-      await catalogPage.loginAndSetLocale(currentLocale);
+    test('Verify permission required state', async ({ browser }, testInfo) => {
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
       await page.getByText('Scorecard', { exact: true }).click();
@@ -81,10 +84,9 @@ test.describe('Scorecard Plugin Tests', () => {
       await runAccessibilityTests(page, testInfo);
     });
 
-    test('Verify metrics display correctly', async ({ page }, testInfo) => {
+    test('Verify metrics display correctly', async ({ browser }, testInfo) => {
       await mockScorecardResponse(page, customScorecardResponse);
 
-      await catalogPage.loginAndSetLocale(currentLocale);
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
@@ -101,11 +103,10 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify empty state when no metrics available', async ({
-      page,
+      browser,
     }, testInfo) => {
       await mockScorecardResponse(page, emptyScorecardResponse);
 
-      await catalogPage.loginAndSetLocale(currentLocale);
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
@@ -116,11 +117,10 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify error state for unavailable metric data', async ({
-      page,
+      browser,
     }, testInfo) => {
       await mockScorecardResponse(page, unavailableMetricResponse);
 
-      await catalogPage.loginAndSetLocale(currentLocale);
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
@@ -148,11 +148,10 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify error state for invalid threshold configuration', async ({
-      page,
+      browser,
     }, testInfo) => {
       await mockScorecardResponse(page, invalidThresholdResponse);
 
-      await catalogPage.loginAndSetLocale(currentLocale);
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
       await scorecardPage.openTab();
@@ -181,8 +180,7 @@ test.describe('Scorecard Plugin Tests', () => {
   });
 
   test.describe('Aggregated Scorecards', () => {
-    test('Verify missing permission state', async ({ page }) => {
-      await catalogPage.loginAndSetLocale(currentLocale);
+    test('Verify missing permission state', async () => {
       await homePage.navigateToHome();
 
       const entityCount = getEntityCount(translations, currentLocale, '0');
@@ -205,7 +203,6 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Manage scorecards on Home page', async () => {
-      await catalogPage.loginAndSetLocale(currentLocale);
       await homePage.navigateToHome();
 
       await homePage.enterEditMode();
@@ -231,7 +228,7 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify entity counts with mocked API response', async ({
-      page,
+      browser,
     }, testInfo) => {
       await mockAggregatedScorecardResponse(
         page,
@@ -239,8 +236,8 @@ test.describe('Scorecard Plugin Tests', () => {
         jiraAggregatedResponse,
       );
 
-      await catalogPage.loginAndSetLocale(currentLocale);
       await homePage.navigateToHome();
+      await page.reload();
 
       const githubEntityCount = getEntityCount(
         translations,
@@ -269,24 +266,23 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify cards hidden when API returns empty response', async () => {
-      await mockAggregatedScorecardResponse(homePage.page, [], []);
+      await mockAggregatedScorecardResponse(page, [], []);
 
-      await catalogPage.loginAndSetLocale(currentLocale);
       await homePage.navigateToHome();
-
+      await page.reload();
       await homePage.expectCardNotVisible('github.open_prs');
       await homePage.expectCardNotVisible('jira.open_issues');
     });
 
     test('Verify threshold tooltips', async () => {
       await mockAggregatedScorecardResponse(
-        homePage.page,
+        page,
         githubAggregatedResponse,
         jiraAggregatedResponse,
       );
 
-      await catalogPage.loginAndSetLocale(currentLocale);
       await homePage.navigateToHome();
+      await page.reload();
 
       await homePage.enterEditMode();
       await homePage.clearAllCards();
