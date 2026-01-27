@@ -80,12 +80,6 @@ const lightspeedTranslationJa = createTranslationMessages({
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
     'footer.accuracy.label':
       'AI によって生成されたコンテンツは、使用する前に必ず確認してください。',
-    'footer.accuracy.popover.title': '正確性の確認',
-    'footer.accuracy.popover.description':
-      'Developer Lightspeed は正確性を期すよう努めておりますが、誤りが生じる可能性は常にあります。特に意思決定や行動に関わる重要な情報については、信頼できる情報源でその情報を確認することを推奨します。',
-    'footer.accuracy.popover.image.alt': '脚注ポップオーバーのサンプル画像',
-    'footer.accuracy.popover.cta.label': '了解しました',
-    'footer.accuracy.popover.link.label': '詳細',
     'common.cancel': 'キャンセル',
     'common.close': '閉じる',
     'common.readMore': 'さらに表示する',

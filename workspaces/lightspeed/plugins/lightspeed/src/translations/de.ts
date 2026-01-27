@@ -92,12 +92,6 @@ const lightspeedTranslationDe = createTranslationMessages({
     // Footer and feedback
     'footer.accuracy.label':
       'Überprüfen Sie KI-generierte Inhalte immer vor der Verwendung.',
-    'footer.accuracy.popover.title': 'Genauigkeit überprüfen',
-    'footer.accuracy.popover.description':
-      'Obwohl Developer Lightspeed sich um Genauigkeit bemüht, besteht immer die Möglichkeit von Fehlern. Es ist eine gute Praxis, kritische Informationen aus zuverlässigen Quellen zu überprüfen, besonders wenn sie für Entscheidungsfindung oder Handlungen entscheidend sind.',
-    'footer.accuracy.popover.image.alt': 'Beispielbild für Fußnoten-Popover',
-    'footer.accuracy.popover.cta.label': 'Verstanden',
-    'footer.accuracy.popover.link.label': 'Mehr erfahren',
 
     // Common actions
     'common.cancel': 'Abbrechen',

@@ -95,13 +95,6 @@ const lightspeedTranslationEs = createTranslationMessages({
     // Footer and feedback
     'footer.accuracy.label':
       'Siempre revisa el contenido generado por IA antes de usarlo.',
-    'footer.accuracy.popover.title': 'Verificar precisión',
-    'footer.accuracy.popover.description':
-      'Si bien Developer Lightspeed se esfuerza por la precisión, siempre existe la posibilidad de errores. Es una buena práctica verificar información crítica de fuentes confiables, especialmente si es crucial para la toma de decisiones o acciones.',
-    'footer.accuracy.popover.image.alt':
-      'Imagen de ejemplo para el popover de nota al pie',
-    'footer.accuracy.popover.cta.label': 'Entendido',
-    'footer.accuracy.popover.link.label': 'Aprende más',
 
     // Common actions
     'common.cancel': 'Cancelar',

@@ -203,7 +203,8 @@ export class LightspeedApiClient implements LightspeedAPI {
           errorMessage = errorBody.error;
         }
       } catch (e) {
-        // If JSON parsing fails, use the default error message
+        // eslint-disable-next-line no-console
+        console.warn(e);
       }
 
       throw new Error(errorMessage);
@@ -234,7 +235,8 @@ export class LightspeedApiClient implements LightspeedAPI {
           errorMessage = errorBody.error;
         }
       } catch (e) {
-        // If JSON parsing fails, use the default error message
+        // eslint-disable-next-line no-console
+        console.warn(e);
       }
 
       throw new Error(errorMessage);

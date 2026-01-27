@@ -70,6 +70,21 @@ const useStyles = makeStyles(theme => ({
       },
     },
   },
+  deepThinking: {
+    animation: '$deepThinking 1.6s ease-in-out infinite',
+  },
+
+  '@keyframes deepThinking': {
+    '0%': {
+      opacity: 0.65,
+    },
+    '50%': {
+      opacity: 1,
+    },
+    '100%': {
+      opacity: 0.65,
+    },
+  },
 }));
 
 // Extended message type that includes tool calls
@@ -239,22 +254,20 @@ export const LightspeedChatBox = forwardRef(
             parsedReasoning.isReasoningInProgress ||
             parsedReasoning.hasReasoning
           ) {
-            const reasoningContent =
-              parsedReasoning.reasoning ||
-              (() => {
-                const reasoningMatch = messageContent.match(/<think>(.*?)$/s);
-                return reasoningMatch ? reasoningMatch[1].trim() : '';
-              })();
+            const reasoningContent = parsedReasoning.reasoning;
 
             if (reasoningContent) {
               deepThinking = {
                 cardBodyProps: {
                   id: `deep-thinking-${index}`,
                   style: { whiteSpace: 'pre-line' },
+                  className: parsedReasoning.isReasoningInProgress
+                    ? classes.deepThinking
+                    : undefined,
                 },
                 toggleContent: t('reasoning.thinking'),
                 body: reasoningContent,
-                expandableSectionProps: {},
+                isDefaultExpanded: false,
               };
             }
           }

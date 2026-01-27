@@ -82,13 +82,6 @@ const lightspeedTranslationIt = createTranslationMessages({
       'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
     'footer.accuracy.label':
       "Esaminare sempre i contenuti generati dall'intelligenza artificiale prima di utilizzarli.",
-    'footer.accuracy.popover.title': "Verificare l'accuratezza",
-    'footer.accuracy.popover.description':
-      "Nonostante l'impegno di Developer Lightspeed a garantire la massima precisione, esiste sempre un margine di errore. È buona norma verificare le informazioni critiche confrontandole con fonti affidabili, soprattutto se sono essenziali per prendere decisioni o intraprendere azioni.",
-    'footer.accuracy.popover.image.alt':
-      'Immagine di esempio per il popover del piè di pagina',
-    'footer.accuracy.popover.cta.label': 'Ho capito',
-    'footer.accuracy.popover.link.label': 'Per saperne di più',
     'common.cancel': 'Cancella',
     'common.close': 'Chiudi',
     'common.readMore': 'Per saperne di più',
