@@ -73,52 +73,51 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
         return { available: true };
       }
 
-      // Try to extract error message from the response
-      let errorMessage: string | undefined;
-      try {
-        const errorResponse = (await response.json()) as {
-          error?: { message?: string };
-          message?: string;
-        };
-        errorMessage =
-          errorResponse?.error?.message || errorResponse?.message || undefined;
-      } catch {
-        // Ignore JSON parsing errors
-      }
+      const statusCode = response.status;
 
-      if (response.status === 404) {
+      if (statusCode === 404) {
         return {
           available: false,
           reason: 'not_found',
-          errorMessage: errorMessage || 'Workflow not found',
+          errorMessage: "Workflow doesn't exist",
         };
       }
 
-      if (response.status === 403 || response.status === 401) {
+      if (statusCode === 503) {
+        return {
+          available: false,
+          reason: 'service_unavailable',
+          errorMessage: 'Workflow is not available',
+        };
+      }
+
+      if (statusCode === 500) {
+        return {
+          available: false,
+          reason: 'service_unavailable',
+          errorMessage: 'Workflow is not available yet or misconfigured',
+        };
+      }
+
+      if (statusCode === 401 || statusCode === 403) {
         return {
           available: false,
           reason: 'access_denied',
-          errorMessage:
-            errorMessage ||
-            'You do not have permission to access this workflow',
+          errorMessage: 'No permission to access the workflow',
         };
       }
 
+      // Handle any other error status codes
       return {
         available: false,
         reason: 'service_unavailable',
-        errorMessage:
-          errorMessage || 'Workflow service is currently unavailable',
+        errorMessage: 'Workflow service is currently unavailable',
       };
     } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : 'Unable to connect to workflow service';
       return {
         available: false,
         reason: 'service_unavailable',
-        errorMessage,
+        errorMessage: 'Unable to connect to workflow service',
       };
     }
   }
