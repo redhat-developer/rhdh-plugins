@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useRef } from 'react';
 import type { MouseEvent } from 'react';
 
 import { Link } from '@backstage/core-components';
@@ -58,6 +59,7 @@ export const RepositoryTableRow = ({
 }) => {
   const classes = useStyles();
   const bulkImportApi = useApi(bulkImportApiRef);
+  const startTimeRef = useRef(Date.now());
 
   const { data: value, isLoading: loading } = useQuery(
     [
@@ -80,7 +82,25 @@ export const RepositoryTableRow = ({
     {
       enabled: !!data.repoUrl,
       staleTime: 30000, // Consider data fresh for 30 seconds
-      refetchInterval: 60000, // Auto-refetch every minute
+      refetchInterval: queryData => {
+        const status = (queryData as ImportJobStatus | null)?.status;
+        const isActiveTask =
+          status === TaskStatus.Processing ||
+          status === WorkflowStatus.Active ||
+          status === WorkflowStatus.Pending;
+
+        if (isActiveTask) {
+          return 10000; // Poll every 10s for active tasks
+        }
+
+        // Calculate time until next 60-second aligned interval
+        const elapsed = Date.now() - startTimeRef.current;
+        const intervalMs = 60000;
+        const remainder = elapsed % intervalMs;
+        // If exactly at boundary, wait full interval; otherwise wait until next boundary
+        return remainder === 0 ? intervalMs : intervalMs - remainder;
+      },
+      refetchOnWindowFocus: false,
     },
   );
 
