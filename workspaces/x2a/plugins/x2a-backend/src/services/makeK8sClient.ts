@@ -42,10 +42,10 @@ export const makeK8sClient = async (
     if (!process.env.KUBECONFIG) {
       const path = require('node:path');
       const os = require('node:os');
-      const kubeconfigPath = path.join(os.homedir(), '.kube', 'config');
+      const kubeconfigPath = path.join(os.homedir(), '.kube', 'kubeconfig');
       const fs = require('node:fs');
 
-      // Check if ~/.kube/config exists
+      // Check if ~/.kube/kubeconfig exists
       if (fs.existsSync(kubeconfigPath)) {
         process.env.KUBECONFIG = kubeconfigPath;
         logger.info(`Setting KUBECONFIG to ${kubeconfigPath}`);

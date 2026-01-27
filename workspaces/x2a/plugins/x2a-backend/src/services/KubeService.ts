@@ -86,7 +86,7 @@ export class KubeService {
       });
       this.#logger.info(`Created secret: ${secret.metadata?.name}`);
     } catch (error: any) {
-      if (error.statusCode === 409) {
+      if (error.statusCode === 409 || error.code === 409) {
         this.#logger.warn(
           `Secret ${secret.metadata?.name} already exists, skipping creation`,
         );
@@ -111,7 +111,7 @@ export class KubeService {
       });
       return response;
     } catch (error: any) {
-      if (error.statusCode === 404) {
+      if (error.statusCode === 404 || error.code === 404) {
         this.#logger.info(`Secret ${secretName} not found`);
         return null;
       }
@@ -134,7 +134,7 @@ export class KubeService {
       });
       this.#logger.info(`Deleted secret: ${secretName}`);
     } catch (error: any) {
-      if (error.statusCode === 404) {
+      if (error.statusCode === 404 || error.code === 404) {
         this.#logger.warn(`Secret ${secretName} not found, nothing to delete`);
       } else {
         this.#logger.error(`Failed to delete secret: ${error.message}`);
@@ -200,7 +200,7 @@ export class KubeService {
       // Job exists but hasn't started yet
       return { status: 'pending', message: 'Job is pending' };
     } catch (error: any) {
-      if (error.statusCode === 404) {
+      if (error.statusCode === 404 || error.code === 404) {
         this.#logger.warn(`Job ${k8sJobName} not found`);
         return { status: 'error', message: 'Job not found' };
       }
@@ -266,7 +266,7 @@ export class KubeService {
       });
       this.#logger.info(`Deleted job: ${k8sJobName}`);
     } catch (error: any) {
-      if (error.statusCode === 404) {
+      if (error.statusCode === 404 || error.code === 404) {
         this.#logger.warn(`Job ${k8sJobName} not found, nothing to delete`);
       } else {
         this.#logger.error(`Failed to delete job: ${error.message}`);
