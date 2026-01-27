@@ -73,7 +73,6 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.rename.confirm.title': 'Rinominare la chat?',
     'conversation.rename.confirm.action': 'Rinomina',
     'conversation.rename.placeholder': 'Nome della chat',
-    'conversation.action.error': 'Si è verificato un errore: {{error}}',
     'permission.required.title': 'Autorizzazioni mancanti',
     'permission.required.description':
       "Per visualizzare il plugin Lightspeed, contattare l'amministratore per ottenere le autorizzazioni <b>lightspeed.chat.read</b> e <b>lightspeed.chat.create</b>.",

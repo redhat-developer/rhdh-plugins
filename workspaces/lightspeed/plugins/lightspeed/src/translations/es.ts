@@ -80,7 +80,6 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.rename.confirm.title': '¿Renombrar chat?',
     'conversation.rename.confirm.action': 'Renombrar',
     'conversation.rename.placeholder': 'Nombre del chat',
-    'conversation.action.error': 'Error ocurrido: {{error}}',
 
     // Permissions
     'permission.required.title': 'Permisos faltantes',

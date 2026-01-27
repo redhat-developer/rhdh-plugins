@@ -38,7 +38,7 @@ export const getFootnoteProps = (
     popoverProps: {
       className: additionalClassName ?? '',
     } as PopoverProps,
-    title: t?.('footer.accuracy.popover.title') || 'Verify accuracy',
+    title: '',
     description:
       t?.('footer.accuracy.popover.description') ||
       `While Developer Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.`,
@@ -51,10 +51,6 @@ export const getFootnoteProps = (
     cta: {
       label: t?.('footer.accuracy.popover.cta.label') || 'Got it',
       onClick: () => {},
-    },
-    link: {
-      label: t?.('footer.accuracy.popover.link.label') || 'Learn more',
-      url: 'https://www.redhat.com/',
     },
   },
 });
@@ -250,7 +246,16 @@ export const getCategorizeMessages = (
     if (pinnedChats.includes(c.conversation_id)) {
       categorizedMessages[pinnedChatsKey].push({
         ...message,
-        icon: <PushPinIcon />,
+        icon: (
+          <PushPinIcon
+            sx={{
+              width: '1rem',
+              height: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          />
+        ),
       });
     } else {
       categorizedMessages[recentKey].push(message);
