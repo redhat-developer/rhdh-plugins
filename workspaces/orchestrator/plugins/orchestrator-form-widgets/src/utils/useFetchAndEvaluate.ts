@@ -34,11 +34,23 @@ export const useFetchAndEvaluate = (
   handleFetchEnded?: () => void,
 ) => {
   const unitEvaluator = useTemplateUnitEvaluator();
+  const hasFetchUrl = !!uiProps['fetch:url'];
+  const hasRetrigger =
+    Array.isArray(uiProps['fetch:retrigger']) &&
+    uiProps['fetch:retrigger'].length > 0;
   const retrigger = useRetriggerEvaluate(
     unitEvaluator,
     formData,
     uiProps['fetch:retrigger'] as string[],
   );
+  const retriggerSatisfied =
+    !hasRetrigger ||
+    (!!retrigger &&
+      retrigger.every(
+        value => value !== undefined && value !== null && value !== '',
+      ));
+  const waitingForRetrigger =
+    hasFetchUrl && hasRetrigger && !retriggerSatisfied;
   const {
     data,
     error: fetchError,
@@ -50,7 +62,7 @@ export const useFetchAndEvaluate = (
   useDebounce(
     () => {
       const evaluate = async () => {
-        if (!retrigger || fetchLoading || fetchError) {
+        if (!retrigger || fetchLoading || fetchError || waitingForRetrigger) {
           return;
         }
         try {
@@ -82,6 +94,7 @@ export const useFetchAndEvaluate = (
       retrigger,
       fetchError,
       fetchLoading,
+      waitingForRetrigger,
       fieldId,
       data,
       formData,
@@ -108,6 +121,7 @@ export const useFetchAndEvaluate = (
   return {
     text: resultText,
     loading: completeLoading,
+    waitingForRetrigger,
     error,
     fetchError,
   };
