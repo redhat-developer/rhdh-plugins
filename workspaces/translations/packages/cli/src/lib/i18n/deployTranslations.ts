@@ -27,13 +27,6 @@ interface TranslationData {
   };
 }
 
-interface PluginInfo {
-  name: string;
-  translationDir: string;
-  refImportName: string;
-  variableName: string;
-}
-
 /**
  * Find the correct import path for translation ref
  */
@@ -1528,7 +1521,7 @@ function extractKeysFromRefFile(refFilePath: string): Set<string> {
  * Validate that all translation files have matching keys with the reference file
  */
 function validateTranslationKeys(
-  repoType: string,
+  _repoType: string,
   repoRoot: string,
 ): { hasErrors: boolean; errors: string[] } {
   const errors: string[] = [];
