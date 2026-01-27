@@ -181,6 +181,11 @@ const lightspeedTranslationJa = createTranslationMessages({
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',
+    // Display modes
+    'settings.displayMode.label': '表示モード',
+    'settings.displayMode.overlay': 'オーバーレイ',
+    'settings.displayMode.docked': 'ウィンドウにドッキング',
+    'settings.displayMode.fullscreen': 'フルスクリーン',
 
     // Tool calling
     'toolCall.header': 'ツールの応答: {{toolName}}',
