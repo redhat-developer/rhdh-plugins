@@ -29,11 +29,12 @@ import { X2ADatabaseService } from './services/X2ADatabaseService';
 import { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { migrate } from './services/dbMigrate';
 import { Knex } from 'knex';
+import { LONG_TEST_TIMEOUT, nonExistentId } from './utils';
 
 const databases = TestDatabases.create({
-  // TODO: Reenable for 'POSTGRES_18'
-  ids: ['SQLITE_3'],
+  ids: ['SQLITE_3', 'POSTGRES_18'],
 });
+const supportedDatabaseIds = databases.eachSupportedId();
 
 const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
@@ -87,8 +88,17 @@ async function createApp(
 }
 
 describe('createRouter', () => {
+  const clientsToDestroy: Knex[] = [];
+
+  afterEach(async () => {
+    await Promise.all(
+      clientsToDestroy.splice(0).map(client => client.destroy()),
+    );
+  });
+
   async function createDatabase(databaseId: TestDatabaseId) {
     const client = await databases.init(databaseId);
+    clientsToDestroy.push(client);
     const mockDatabaseService = mockServices.database.mock({
       getClient: async () => client,
       migrations: { skip: false },
@@ -101,7 +111,7 @@ describe('createRouter', () => {
     };
   }
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should query empty project list - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -113,9 +123,10 @@ describe('createRouter', () => {
       expect(response.body.totalCount).toBe(0);
       expect(response.body.items).toEqual([]);
     },
+    LONG_TEST_TIMEOUT,
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should create a project - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -131,9 +142,10 @@ describe('createRouter', () => {
         createdBy: 'user:default/mock',
       });
     },
+    LONG_TEST_TIMEOUT,
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should not allow unauthenticated requests to create a project - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -152,7 +164,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should allow users with x2aUserPermission to create projects - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -170,7 +182,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should allow users with x2aAdminWritePermission to create projects - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -188,7 +200,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should deny users without permissions from creating projects - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -208,7 +220,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should get a project by id - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -235,13 +247,12 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should fail for non-existent project - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
       const app = await createApp(client);
 
-      const nonExistentId = '00000000-0000-0000-0000-000000000000';
       const response = await request(app)
         .get(`/projects/${nonExistentId}`)
         .send();
@@ -253,7 +264,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should delete a project by id - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -289,13 +300,12 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should return 404 when deleting non-existent project - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
       const app = await createApp(client);
 
-      const nonExistentId = '00000000-0000-0000-0000-000000000000';
       const response = await request(app)
         .delete(`/projects/${nonExistentId}`)
         .send();
@@ -307,7 +317,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should allow users with admin write permission to delete any project - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -388,7 +398,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should allow users without admin write permission to delete their own project - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -424,7 +434,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should return 404 when deletion fails due to permission filtering - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -459,7 +469,7 @@ describe('createRouter', () => {
     },
   );
 
-  it.each(databases.eachSupportedId())(
+  it.each(supportedDatabaseIds)(
     'should return 404 when deleting non-existent project even with admin write permission - %p',
     async databaseId => {
       const { client } = await createDatabase(databaseId);
@@ -470,7 +480,6 @@ describe('createRouter', () => {
         AuthorizeResult.ALLOW,
       );
 
-      const nonExistentId = '00000000-0000-0000-0000-000000000000';
       const response = await request(app)
         .delete(`/projects/${nonExistentId}`)
         .send();
