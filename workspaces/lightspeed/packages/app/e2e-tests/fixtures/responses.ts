@@ -68,6 +68,10 @@ export const moreConversations = [
   },
 ];
 
+export const thinkingContent =
+  'The user wants to start a new conversation. I should respond helpfully and concisely.';
+export const assistantResponse = 'Still a placeholder message';
+
 export const contents = [
   {
     provider: models[1].provider_id,
@@ -78,7 +82,7 @@ export const contents = [
         type: 'user',
       },
       {
-        content: "Still a placeholder message'",
+        content: `<think>\n${thinkingContent}\n</think>\n\n${assistantResponse}`,
         type: 'assistant',
       },
     ],

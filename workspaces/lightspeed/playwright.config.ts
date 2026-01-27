@@ -62,7 +62,6 @@ export default defineConfig({
       },
     },
     // TODO: Enable after translation bugs are fixed
-    // See bug report: [add your bug link here]
     // {
     //   name: 'it',
     //   testDir: 'packages/app/e2e-tests',
