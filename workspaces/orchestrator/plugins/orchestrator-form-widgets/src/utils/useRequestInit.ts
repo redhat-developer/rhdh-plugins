@@ -15,7 +15,9 @@
  */
 import { useEffect, useState } from 'react';
 import { isEqual } from 'lodash';
-import { JsonObject } from '@backstage/types';
+import { JsonObject, JsonValue } from '@backstage/types';
+import jsonata from 'jsonata';
+import { isJsonObject } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import {
   evaluateTemplate,
   evaluateTemplateProps,
@@ -25,6 +27,56 @@ import { useTemplateUnitEvaluator } from './useTemplateUnitEvaluator';
 import { UNDEFINED_VALUE } from './constants';
 
 const ALLOWED_METHODS = ['GET', 'POST'];
+const JSONATA_PREFIX = 'jsonata:';
+
+const getJsonataExpression = (value: string): string | undefined => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+  if (trimmed.startsWith(JSONATA_PREFIX)) {
+    const expression = trimmed.slice(JSONATA_PREFIX.length).trim();
+    if (!expression) {
+      throw new Error('JSONata expression can not be empty');
+    }
+    return expression;
+  }
+  return undefined;
+};
+
+const evaluateJsonataInValue = async (
+  value: JsonValue,
+  formData: JsonObject,
+): Promise<JsonValue> => {
+  if (typeof value === 'string') {
+    const expression = getJsonataExpression(value);
+    if (!expression) {
+      return value;
+    }
+    const compiled = jsonata(expression);
+    const evaluated = await compiled.evaluate(formData);
+    return evaluated === undefined ? UNDEFINED_VALUE : (evaluated as JsonValue);
+  }
+  if (Array.isArray(value)) {
+    const evaluatedArray = await Promise.all(
+      value.map(item => evaluateJsonataInValue(item as JsonValue, formData)),
+    );
+    return evaluatedArray as JsonValue;
+  }
+  if (isJsonObject(value)) {
+    const result: JsonObject = {};
+    await Promise.all(
+      Object.keys(value).map(async key => {
+        result[key] = await evaluateJsonataInValue(
+          value[key] as JsonValue,
+          formData,
+        );
+      }),
+    );
+    return result;
+  }
+  return value;
+};
 
 export const getRequestInit = async (
   uiProps: JsonObject,
@@ -53,14 +105,15 @@ export const getRequestInit = async (
 
         const keys = Object.keys(body);
         const values = await Promise.all(
-          keys.map(key =>
-            evaluateTemplate({
+          keys.map(async key => {
+            const templateEvaluated = await evaluateTemplate({
               unitEvaluator,
               key,
               formData,
               template: bodyObject[key],
-            }),
-          ),
+            });
+            return evaluateJsonataInValue(templateEvaluated, formData);
+          }),
         );
         keys.forEach((key, idx) => {
           if (values[idx] && values[idx] !== UNDEFINED_VALUE) {
