@@ -139,7 +139,8 @@ const orchestratorTranslationDe = createTranslationMessages({
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'Zusätzliche Informationen zu diesem Fehler sind nicht verfügbar',
     'reviewStep.hiddenFieldsNote':
-      'Einige Felder sind auf dieser Seite ausgeblendet, werden aber in die Workflow-Ausführungsanforderung aufgenommen.',
+      'Einige Parameter sind auf dieser Seite ausgeblendet.',
+    'reviewStep.showHiddenParameters': 'Verborgene Parameter anzeigen',
     'common.close': 'Schließen',
     'common.cancel': 'Abbrechen',
     'common.execute': 'Ausführen',

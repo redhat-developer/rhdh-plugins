@@ -147,6 +147,7 @@ readonly "tooltips.workflowDown": string;
 readonly "tooltips.suspended": string;
 readonly "tooltips.userNotAuthorizedAbort": string;
 readonly "reviewStep.hiddenFieldsNote": string;
+readonly "reviewStep.showHiddenParameters": string;
 readonly "stepperObjectField.error": string;
 readonly "formDecorator.error": string;
 readonly "aria.close": string;
@@ -162,7 +163,7 @@ export const orchestratorTranslations: TranslationResource<"plugin.orchestrator"
 // src/components/catalogComponents/CatalogTab.d.ts:1:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
 // src/components/catalogComponents/CatalogTab.d.ts:2:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
 // src/translations/index.d.ts:2:22 - (ae-undocumented) Missing documentation for "orchestratorTranslations".
-// src/translations/ref.d.ts:171:22 - (ae-undocumented) Missing documentation for "orchestratorTranslationRef".
+// src/translations/ref.d.ts:172:22 - (ae-undocumented) Missing documentation for "orchestratorTranslationRef".
 
 // (No @packageDocumentation comment for this package)
 
