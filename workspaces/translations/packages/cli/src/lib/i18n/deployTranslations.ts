@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /*
  * Copyright Red Hat, Inc.
  *
@@ -127,6 +126,28 @@ function getPluginPackageImport(pluginName: string): string | null {
 }
 
 /**
+ * Sanitize plugin name to create valid JavaScript identifier
+ * Handles dots, dashes, and other invalid characters
+ */
+function sanitizePluginName(pluginName: string): string {
+  // If plugin name contains dots (e.g., "plugin.argocd"), extract the last part
+  // Otherwise, convert dashes to camelCase
+  if (pluginName.includes('.')) {
+    const parts = pluginName.split('.');
+    // Use the last part (e.g., "argocd" from "plugin.argocd")
+    return parts[parts.length - 1];
+  }
+
+  // Convert dashes to camelCase (e.g., "user-settings" -> "userSettings")
+  return pluginName
+    .split('-')
+    .map((word, i) =>
+      i === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1),
+    )
+    .join('');
+}
+
+/**
  * Infer ref import name, import path, and variable name from plugin name
  */
 function inferRefInfo(
@@ -139,17 +160,12 @@ function inferRefInfo(
   refImportPath: string;
   variableName: string;
 } {
-  // Convert plugin name to camelCase
-  const camelCase = pluginName
-    .split('-')
-    .map((word, i) =>
-      i === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1),
-    )
-    .join('');
+  // Sanitize plugin name to create valid identifier
+  const sanitized = sanitizePluginName(pluginName);
 
-  const refImportName = `${camelCase}TranslationRef`;
+  const refImportName = `${sanitized}TranslationRef`;
   const langCapitalized = lang.charAt(0).toUpperCase() + lang.slice(1);
-  const variableName = `${camelCase}Translation${langCapitalized}`;
+  const variableName = `${sanitized}Translation${langCapitalized}`;
 
   // Determine import path
   let refImportPath = './ref';
@@ -429,7 +445,7 @@ function getCommunityPluginsRepoRoot(repoRoot: string): string | null {
 }
 
 /**
- * Check if a plugin exists in community-plugins repo (Red Hat owned)
+ * Check if a plugin is Red Hat owned by checking package.json for "author": "Red Hat"
  */
 function isRedHatOwnedPlugin(
   pluginName: string,
@@ -455,8 +471,20 @@ function isRedHatOwnedPlugin(
       'plugins',
       cleanPluginName,
     );
+
     if (fs.existsSync(pluginDir)) {
-      return true;
+      // Check package.json for "author": "Red Hat"
+      const packageJsonPath = path.join(pluginDir, 'package.json');
+      if (fs.existsSync(packageJsonPath)) {
+        try {
+          const packageJson = fs.readJsonSync(packageJsonPath);
+          if (packageJson.author === 'Red Hat') {
+            return true;
+          }
+        } catch {
+          // If package.json can't be read, continue searching
+        }
+      }
     }
   }
 
@@ -525,6 +553,78 @@ function findPluginTranslationDir(
 }
 
 /**
+ * Extract copyright header from an existing file
+ */
+function extractCopyrightHeader(filePath: string): string | null {
+  try {
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    const content = fs.readFileSync(filePath, 'utf-8');
+    // Match copyright header block (from /* to */)
+    const headerMatch = content.match(/\/\*[\s\S]*?\*\//);
+    if (headerMatch) {
+      return headerMatch[0];
+    }
+  } catch {
+    // If file can't be read, return null
+  }
+  return null;
+}
+
+/**
+ * Get copyright header for a plugin translation file
+ * Tries to extract from existing files, falls back to default Backstage copyright
+ */
+function getCopyrightHeader(translationDir: string): string {
+  // Try to extract from ref.ts first
+  const refFile = path.join(translationDir, 'ref.ts');
+  let header = extractCopyrightHeader(refFile);
+
+  if (header) {
+    return header;
+  }
+
+  // Try to extract from any existing language file
+  if (fs.existsSync(translationDir)) {
+    const langFiles = fs
+      .readdirSync(translationDir)
+      .filter(
+        f =>
+          f.endsWith('.ts') &&
+          !f.includes('ref') &&
+          !f.includes('translations') &&
+          !f.includes('index'),
+      );
+
+    for (const langFile of langFiles) {
+      const langFilePath = path.join(translationDir, langFile);
+      header = extractCopyrightHeader(langFilePath);
+      if (header) {
+        return header;
+      }
+    }
+  }
+
+  // Default to Backstage copyright if no existing file found
+  return `/*
+ * Copyright 2024 The Backstage Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */`;
+}
+
+/**
  * Generate TypeScript translation file content
  */
 function generateTranslationFile(
@@ -534,6 +634,7 @@ function generateTranslationFile(
   refImportName: string,
   refImportPath: string,
   variableName: string,
+  translationDir?: string,
 ): string {
   let langName: string;
   if (lang === 'it') {
@@ -555,8 +656,11 @@ function generateTranslationFile(
     })
     .join('\n');
 
-  return `/*
- * Copyright Red Hat, Inc.
+  // Get copyright header from existing files or use default
+  const copyrightHeader = translationDir
+    ? getCopyrightHeader(translationDir)
+    : `/*
+ * Copyright 2024 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -569,7 +673,9 @@ function generateTranslationFile(
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ */`;
+
+  return `${copyrightHeader}
 
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { ${refImportName} } from '${refImportPath}';
@@ -859,6 +965,36 @@ function extractRefInfoFromOtherFiles(
 }
 
 /**
+ * Extract ref info directly from ref.ts file
+ */
+function extractRefInfoFromRefFile(translationDir: string): {
+  refImportName: string;
+  refImportPath: string;
+} | null {
+  const refFile = path.join(translationDir, 'ref.ts');
+  if (!fs.existsSync(refFile)) {
+    return null;
+  }
+
+  try {
+    const content = fs.readFileSync(refFile, 'utf-8');
+    // Match: export const xxxTranslationRef = createTranslationRef
+    const refExportMatch = content.match(
+      /export\s+const\s+(\w+TranslationRef)\s*=/,
+    );
+    if (refExportMatch) {
+      return {
+        refImportName: refExportMatch[1],
+        refImportPath: './ref',
+      };
+    }
+  } catch {
+    // If file can't be read, return null
+  }
+  return null;
+}
+
+/**
  * Get ref info for a plugin translation file
  */
 function getRefInfoForPlugin(
@@ -914,6 +1050,20 @@ function getRefInfoForPlugin(
     }
   }
 
+  // Try to extract directly from ref.ts file
+  const refInfoFromRef = extractRefInfoFromRefFile(translationDir);
+  if (refInfoFromRef) {
+    const langCapitalized = lang.charAt(0).toUpperCase() + lang.slice(1);
+    // Extract base name from ref import (e.g., "argocd" from "argocdTranslationRef")
+    const baseName = refInfoFromRef.refImportName.replace('TranslationRef', '');
+    const variableName = `${baseName}Translation${langCapitalized}`;
+    return {
+      refImportName: refInfoFromRef.refImportName,
+      refImportPath: refInfoFromRef.refImportPath,
+      variableName,
+    };
+  }
+
   // Last resort: infer from plugin name
   return inferRefInfo(pluginName, lang, repoType, translationDir);
 }
@@ -960,19 +1110,53 @@ function processPluginTranslation(
     exists,
   );
 
+  // Filter translations to only include keys that exist in the reference file
+  // This prevents TypeScript errors from invalid keys
+  const refFile = path.join(translationDir, 'ref.ts');
+  let filteredTranslations = translations;
+  let filteredCount = 0;
+
+  if (fs.existsSync(refFile)) {
+    const refKeys = extractKeysFromRefFile(refFile);
+    if (refKeys.size > 0) {
+      const validKeys = new Set(refKeys);
+      const originalCount = Object.keys(translations).length;
+
+      filteredTranslations = Object.fromEntries(
+        Object.entries(translations).filter(([key]) => validKeys.has(key)),
+      );
+
+      filteredCount = originalCount - Object.keys(filteredTranslations).length;
+
+      if (filteredCount > 0) {
+        const invalidKeys = Object.keys(translations).filter(
+          key => !validKeys.has(key),
+        );
+        console.warn(
+          chalk.yellow(
+            `    ⚠️  Filtered out ${filteredCount} invalid key(s) not in ref.ts: ${invalidKeys
+              .slice(0, 3)
+              .join(', ')}${invalidKeys.length > 3 ? '...' : ''}`,
+          ),
+        );
+      }
+    }
+  }
+
   const content = generateTranslationFile(
     pluginName,
     lang,
-    translations,
+    filteredTranslations,
     refInfo.refImportName,
     refInfo.refImportPath,
     refInfo.variableName,
+    translationDir,
   );
 
   fs.writeFileSync(targetFile, content, 'utf-8');
 
   const relativePath = path.relative(repoRoot, targetFile);
-  const keyCount = Object.keys(translations).length;
+  const keyCount = Object.keys(filteredTranslations).length;
 
   if (exists) {
     console.log(
@@ -1023,7 +1207,46 @@ function processLanguageTranslations(
       continue;
     }
 
-    // Deploy to rhdh/translations/{plugin}/ (standard deployment)
+    // For backstage files: Do NOT deploy TS files, only copy JSON (already done)
+    // For community-plugins files: Do NOT deploy TS files to rhdh/translations/{plugin}/
+    // Only deploy TS files for Red Hat owned plugins to community-plugins workspaces
+    if (repoType === 'backstage') {
+      // Backstage files: Only copy JSON, no TS file deployment
+      continue;
+    }
+
+    if (repoType === 'community-plugins') {
+      // Community-plugins files: Only deploy TS files for Red Hat owned plugins to community-plugins workspaces
+      // Do NOT deploy to rhdh/translations/{plugin}/
+      if (
+        communityPluginsRoot &&
+        isRedHatOwnedPlugin(pluginName, communityPluginsRoot)
+      ) {
+        console.log(
+          chalk.cyan(
+            `    🔴 Red Hat owned plugin detected: ${pluginName} → deploying to community-plugins`,
+          ),
+        );
+
+        // Deploy to community-plugins workspace only
+        const communityPluginsResult = processPluginTranslation(
+          pluginName,
+          translations,
+          lang,
+          'community-plugins',
+          communityPluginsRoot,
+        );
+
+        if (communityPluginsResult) {
+          if (communityPluginsResult.updated) updated++;
+          if (communityPluginsResult.created) created++;
+        }
+      }
+      // Skip TS file deployment to rhdh/translations/{plugin}/ for community-plugins files
+      continue;
+    }
+
+    // For other repo types (rhdh-plugins, rhdh), deploy TS files normally
     const result = processPluginTranslation(
       pluginName,
       translations,
@@ -1035,34 +1258,6 @@ function processLanguageTranslations(
     if (result) {
       if (result.updated) updated++;
       if (result.created) created++;
-    }
-
-    // For backstage/community-plugins files deployed from rhdh, also check if plugin is Red Hat owned
-    // and deploy to community-plugins workspace if it exists
-    if (
-      (repoType === 'backstage' || repoType === 'community-plugins') &&
-      communityPluginsRoot &&
-      isRedHatOwnedPlugin(pluginName, communityPluginsRoot)
-    ) {
-      console.log(
-        chalk.cyan(
-          `    🔴 Red Hat owned plugin detected: ${pluginName} → deploying to community-plugins`,
-        ),
-      );
-
-      // Deploy to community-plugins workspace
-      const communityPluginsResult = processPluginTranslation(
-        pluginName,
-        translations,
-        lang,
-        'community-plugins',
-        communityPluginsRoot,
-      );
-
-      if (communityPluginsResult) {
-        if (communityPluginsResult.updated) updated++;
-        if (communityPluginsResult.created) created++;
-      }
     }
   }
 
@@ -1421,7 +1616,7 @@ function validateTranslationKeys(
 /**
  * Deploy translations from downloaded JSON files
  */
-async function deployTranslations(
+export async function deployTranslations(
   downloadDir: string,
   repoRoot: string,
 ): Promise<void> {
@@ -1557,13 +1752,105 @@ async function deployTranslations(
         const cleanFilename = `${effectiveRepoType}-${timestamp}-${lang}.json`;
         const targetJsonPath = path.join(translationsDir, cleanFilename);
 
-        // Copy the JSON file
-        fs.copyFileSync(filepath, targetJsonPath);
-        console.log(
-          chalk.green(
-            `  📋 Copied JSON to: ${path.relative(repoRoot, targetJsonPath)}`,
-          ),
-        );
+        // Only copy if source and target are different (avoid copying file to itself)
+        if (filepath !== targetJsonPath) {
+          // Read the JSON data
+          const jsonData = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+
+          // Update JSON: Replace "en" key with target language key for each plugin
+          const updatedData: Record<
+            string,
+            Record<string, Record<string, string>>
+          > = {};
+          for (const [pluginName, pluginData] of Object.entries(jsonData)) {
+            const pluginDataObj = pluginData as Record<
+              string,
+              Record<string, string>
+            >;
+            updatedData[pluginName] = {};
+
+            // If "en" key exists, replace it with target language key
+            if (pluginDataObj.en) {
+              updatedData[pluginName][lang] = pluginDataObj.en;
+            } else if (pluginDataObj[lang]) {
+              // If target language key already exists, keep it
+              updatedData[pluginName][lang] = pluginDataObj[lang];
+            } else {
+              // If neither exists, keep the original structure
+              updatedData[pluginName] = pluginDataObj;
+            }
+          }
+
+          // Write updated JSON to target location
+          fs.writeFileSync(
+            targetJsonPath,
+            JSON.stringify(updatedData, null, 2),
+            'utf-8',
+          );
+          console.log(
+            chalk.green(
+              `  📋 Copied and updated JSON to: ${path.relative(
+                repoRoot,
+                targetJsonPath,
+              )} (replaced "en" with "${lang}")`,
+            ),
+          );
+        } else {
+          // File is already in target location, but we still need to update it
+          const jsonData = JSON.parse(fs.readFileSync(filepath, 'utf-8'));
+
+          // Update JSON: Replace "en" key with target language key for each plugin
+          const updatedData: Record<
+            string,
+            Record<string, Record<string, string>>
+          > = {};
+          let needsUpdate = false;
+
+          for (const [pluginName, pluginData] of Object.entries(jsonData)) {
+            const pluginDataObj = pluginData as Record<
+              string,
+              Record<string, string>
+            >;
+            updatedData[pluginName] = {};
+
+            // If "en" key exists, replace it with target language key
+            if (pluginDataObj.en) {
+              updatedData[pluginName][lang] = pluginDataObj.en;
+              needsUpdate = true;
+            } else if (pluginDataObj[lang]) {
+              // If target language key already exists, keep it
+              updatedData[pluginName][lang] = pluginDataObj[lang];
+            } else {
+              // If neither exists, keep the original structure
+              updatedData[pluginName] = pluginDataObj;
+            }
+          }
+
+          if (needsUpdate) {
+            fs.writeFileSync(
+              targetJsonPath,
+              JSON.stringify(updatedData, null, 2),
+              'utf-8',
+            );
+            console.log(
+              chalk.green(
+                `  📋 Updated JSON file: ${path.relative(
+                  repoRoot,
+                  targetJsonPath,
+                )} (replaced "en" with "${lang}")`,
+              ),
+            );
+          } else {
+            console.log(
+              chalk.gray(
+                `  📋 JSON already in target location: ${path.relative(
+                  repoRoot,
+                  targetJsonPath,
+                )}`,
+              ),
+            );
+          }
+        }
       }
 
       // Find community-plugins repo for Red Hat owned plugins deployment
@@ -1616,16 +1903,3 @@ async function deployTranslations(
 
   console.log(chalk.blue(`\n🎉 Deployment complete!`));
 }
-
-// Main execution
-(async () => {
-  const downloadDir = process.argv[2] || 'workspaces/i18n/downloads';
-  const repoRoot = process.cwd();
-
-  try {
-    await deployTranslations(downloadDir, repoRoot);
-  } catch (error) {
-    console.error(chalk.red('❌ Error:'), error);
-    process.exit(1);
-  }
-})();

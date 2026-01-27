@@ -32,23 +32,33 @@ describe('generate command', () => {
 
   it('should generate reference.json file', async () => {
     const outputDir = path.join(fixture.path, 'i18n');
-    const outputFile = path.join(outputDir, 'reference.json');
-
+    // Generate command creates files in format: {repo-name}-{sprint}.json
+    // Since we're in a test temp dir, repo name will be detected from the directory
+    // For simplicity, we'll check if any .json file was created
     const result = runCLI(
-      `i18n generate --source-dir ${fixture.path} --output-dir ${outputDir}`,
+      `i18n generate --sprint s9999 --source-dir ${fixture.path} --output-dir ${outputDir}`,
     );
 
     expect(result.exitCode).toBe(0);
-    expect(await fs.pathExists(outputFile)).toBe(true);
+
+    // Check if any JSON file was created in the output directory
+    const files = await fs.readdir(outputDir);
+    const jsonFiles = files.filter(f => f.endsWith('.json'));
+    expect(jsonFiles.length).toBeGreaterThan(0);
   });
 
   it('should only include English reference keys (exclude language files)', async () => {
     const outputDir = path.join(fixture.path, 'i18n');
-    const outputFile = path.join(outputDir, 'reference.json');
 
     runCLI(
-      `i18n generate --source-dir ${fixture.path} --output-dir ${outputDir}`,
+      `i18n generate --sprint s9999 --source-dir ${fixture.path} --output-dir ${outputDir}`,
     );
+
+    // Find the generated JSON file
+    const files = await fs.readdir(outputDir);
+    const jsonFiles = files.filter(f => f.endsWith('.json'));
+    expect(jsonFiles.length).toBeGreaterThan(0);
+    const outputFile = path.join(outputDir, jsonFiles[0]);
 
     const content = await fs.readFile(outputFile, 'utf-8');
     const data = JSON.parse(content);
@@ -68,11 +78,16 @@ describe('generate command', () => {
 
   it('should exclude non-English words from reference file', async () => {
     const outputDir = path.join(fixture.path, 'i18n');
-    const outputFile = path.join(outputDir, 'reference.json');
 
     runCLI(
-      `i18n generate --source-dir ${fixture.path} --output-dir ${outputDir}`,
+      `i18n generate --sprint s9999 --source-dir ${fixture.path} --output-dir ${outputDir}`,
     );
+
+    // Find the generated JSON file
+    const files = await fs.readdir(outputDir);
+    const jsonFiles = files.filter(f => f.endsWith('.json'));
+    expect(jsonFiles.length).toBeGreaterThan(0);
+    const outputFile = path.join(outputDir, jsonFiles[0]);
 
     const content = await fs.readFile(outputFile, 'utf-8');
 
