@@ -214,13 +214,43 @@ describe('LightspeedApiClient', () => {
         ok: false,
         status: 400,
         statusText: 'Bad Request',
+        json: jest.fn().mockResolvedValue({
+          error:
+            'Error from lightspeed-core server: The conversation ID conversationId- has invalid format.',
+        }),
       } as unknown as Response);
 
       await expect(
         client.renameConversation('conv-123', 'New Name'),
       ).rejects.toThrow(
-        'failed to rename conversation, status 400: Bad Request',
+        'Error from lightspeed-core server: The conversation ID conversationId- has invalid format.',
       );
+    });
+
+    it('should throw error with statusText when JSON parsing fails', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: jest.fn().mockRejectedValue(new Error('Invalid JSON')),
+      } as unknown as Response);
+
+      await expect(
+        client.renameConversation('conv-123', 'New Name'),
+      ).rejects.toThrow('Bad Request');
+    });
+
+    it('should throw error with statusText when JSON does not contain error field', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: jest.fn().mockResolvedValue({ message: 'Some other error' }),
+      } as unknown as Response);
+
+      await expect(
+        client.renameConversation('conv-123', 'New Name'),
+      ).rejects.toThrow('Bad Request');
     });
   });
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { TextField } from '@material-ui/core';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
@@ -29,6 +29,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
+import { useConversations } from '../hooks/useConversations';
 import { useRenameConversation } from '../hooks/useRenameConversation';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -47,21 +48,41 @@ export const RenameConversationModal = ({
     isError,
     error,
   } = useRenameConversation();
+  const { data: conversations } = useConversations();
   const [chatName, setChatName] = useState<string>('');
+  const [originalChatName, setOriginalChatName] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen && conversations) {
+      const conversation = conversations.find(
+        c => c.conversation_id === conversationId,
+      );
+      if (conversation) {
+        setChatName(conversation.topic_summary);
+        setOriginalChatName(conversation.topic_summary);
+      } else {
+        setChatName('');
+        setOriginalChatName('');
+      }
+    }
+  }, [isOpen, conversationId, conversations]);
 
   const handleChatNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setChatName(event.target.value);
   };
 
-  const handleRename = () => {
-    (async () => {
+  const handleRename = async () => {
+    try {
       await renameConversation({
         conversation_id: conversationId,
         newName: chatName,
         invalidateCache: false,
       });
       onClose();
-    })();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(e);
+    }
   };
 
   return (
@@ -123,12 +144,8 @@ export const RenameConversationModal = ({
         />
       </DialogContent>
       {isError && (
-        <Box maxWidth="650px" marginLeft="20px">
-          <Alert severity="error">
-            {t('conversation.action.error' as any, {
-              error: String(error),
-            })}
-          </Alert>
+        <Box maxWidth="650px" marginLeft="20px" marginRight="20px">
+          <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
       <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
@@ -137,7 +154,10 @@ export const RenameConversationModal = ({
           sx={{
             textTransform: 'none',
           }}
-          disabled={chatName.trim() === ''}
+          disabled={
+            chatName.trim() === '' ||
+            chatName.trim() === originalChatName.trim()
+          }
           onClick={handleRename}
         >
           {t('conversation.rename.confirm.action')}

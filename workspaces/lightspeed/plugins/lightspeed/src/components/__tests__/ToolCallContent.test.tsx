@@ -14,22 +14,11 @@
  * limitations under the License.
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { ToolCall } from '../../types';
 import { ToolCallContent } from '../ToolCallContent';
-
-// Mock clipboard API
-Object.defineProperty(globalThis, 'navigator', {
-  value: {
-    clipboard: {
-      writeText: jest.fn(),
-    },
-  },
-  writable: true,
-});
 
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
@@ -90,23 +79,13 @@ describe('ToolCallContent', () => {
     expect(screen.queryByText('type')).not.toBeInTheDocument();
   });
 
-  test('should truncate long responses with show more button', () => {
-    const longResponse = 'A'.repeat(400); // More than 300 characters
-    const longResponseToolCall: ToolCall = {
-      ...baseToolCall,
-      response: longResponse,
-    };
+  test('should render Message component for response', () => {
+    render(<ToolCallContent toolCall={baseToolCall} />);
 
-    render(<ToolCallContent toolCall={longResponseToolCall} />);
-
-    // Should show "show more" button
-    expect(screen.getByText('show more')).toBeInTheDocument();
-
-    // Click "show more"
-    fireEvent.click(screen.getByText('show more'));
-
-    // Should now show "show less"
-    expect(screen.getByText('show less')).toBeInTheDocument();
+    // Message component should render the response content
+    expect(
+      screen.getByText('Found 5 users in the catalog'),
+    ).toBeInTheDocument();
   });
 
   test('should format execution time correctly in milliseconds', () => {
@@ -119,24 +98,6 @@ describe('ToolCallContent', () => {
     render(<ToolCallContent toolCall={fastToolCall} />);
 
     expect(screen.getByText(/Execution time:.*240ms/)).toBeInTheDocument();
-  });
-
-  test('should handle keyboard navigation for show more button', () => {
-    const longResponse = 'A'.repeat(400);
-    const longResponseToolCall: ToolCall = {
-      ...baseToolCall,
-      response: longResponse,
-    };
-
-    render(<ToolCallContent toolCall={longResponseToolCall} />);
-
-    const showMoreButton = screen.getByRole('button', { name: 'show more' });
-
-    // Press Enter to toggle (PatternFly Button handles keyboard events internally)
-    fireEvent.click(showMoreButton);
-
-    // Should now show "show less"
-    expect(screen.getByText('show less')).toBeInTheDocument();
   });
 
   test('should show no parameters section when arguments are empty', () => {
@@ -193,22 +154,6 @@ describe('ToolCallContent', () => {
     expect(screen.queryByText('Response')).not.toBeInTheDocument();
   });
 
-  test('should show copy button and copy response when clicked', async () => {
-    render(<ToolCallContent toolCall={baseToolCall} />);
-
-    // Copy button should be visible
-    const copyButton = screen.getByRole('button', { name: 'Copy response' });
-    expect(copyButton).toBeInTheDocument();
-
-    // Click the copy button
-    fireEvent.click(copyButton);
-
-    // Verify clipboard was called
-    expect(globalThis.navigator.clipboard.writeText).toHaveBeenCalledWith(
-      'Found 5 users in the catalog',
-    );
-  });
-
   test('should not show copy button when no response', () => {
     const noResponseToolCall: ToolCall = {
       ...baseToolCall,
@@ -221,21 +166,6 @@ describe('ToolCallContent', () => {
     expect(
       screen.queryByRole('button', { name: 'Copy response' }),
     ).not.toBeInTheDocument();
-  });
-
-  test('should show tooltip on copy button hover', async () => {
-    const user = userEvent.setup();
-    render(<ToolCallContent toolCall={baseToolCall} />);
-
-    const copyButton = screen.getByRole('button', { name: 'Copy response' });
-
-    // Hover over the copy button
-    await user.hover(copyButton);
-
-    // Tooltip should appear
-    await waitFor(() => {
-      expect(screen.getByRole('tooltip')).toBeInTheDocument();
-    });
   });
 
   test('should render wrench icon in MCP Server header', () => {

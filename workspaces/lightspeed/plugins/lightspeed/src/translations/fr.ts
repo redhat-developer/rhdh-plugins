@@ -71,7 +71,6 @@ const lightspeedTranslationFr = createTranslationMessages({
     'conversation.rename.confirm.title': 'Renommer la conversation ?',
     'conversation.rename.confirm.action': 'Renommer',
     'conversation.rename.placeholder': 'Nom de la conversation',
-    'conversation.action.error': 'Erreur: {{error}}',
     'permission.required.title': 'Autorisations manquantes',
     'permission.required.description':
       'Pour afficher le plugin lightspeed, veuillez contacter votre administrateur pour qu’il vous donne les permissions<b>lightspeed.chat.read</b> et <b>lightspeed.chat.create</b> .',

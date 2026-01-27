@@ -71,7 +71,6 @@ const lightspeedTranslationJa = createTranslationMessages({
     'conversation.rename.confirm.title': 'チャットの名前を変更しますか?',
     'conversation.rename.confirm.action': '名前の変更',
     'conversation.rename.placeholder': 'チャット名',
-    'conversation.action.error': 'エラーが発生しました: {{error}}',
     'permission.required.title': '権限の不足',
     'permission.required.description':
       'lightspeed プラグインを表示するには、管理者に連絡して <b>lightspeed.chat.read</b> および <b>lightspeed.chat.create</b> 権限を付与してもらうよう依頼してください。',

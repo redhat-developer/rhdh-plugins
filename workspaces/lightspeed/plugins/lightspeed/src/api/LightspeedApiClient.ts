@@ -195,9 +195,18 @@ export class LightspeedApiClient implements LightspeedAPI {
     );
 
     if (!response.ok) {
-      throw new Error(
-        `failed to delete conversation, status ${response.status}: ${response.statusText}`,
-      );
+      let errorMessage = `failed to delete conversation, status ${response.status}: ${response.statusText}`;
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error) {
+          errorMessage = errorBody.error;
+        }
+      } catch (e) {
+        // If JSON parsing fails, use the default error message
+      }
+
+      throw new Error(errorMessage);
     }
     return { success: true };
   }
@@ -217,9 +226,18 @@ export class LightspeedApiClient implements LightspeedAPI {
     );
 
     if (!response.ok) {
-      throw new Error(
-        `failed to rename conversation, status ${response.status}: ${response.statusText}`,
-      );
+      let errorMessage = `failed to rename conversation, status ${response.status}: ${response.statusText}`;
+
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error) {
+          errorMessage = errorBody.error;
+        }
+      } catch (e) {
+        // If JSON parsing fails, use the default error message
+      }
+
+      throw new Error(errorMessage);
     }
     return { success: true };
   }

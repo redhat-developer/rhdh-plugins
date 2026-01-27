@@ -77,7 +77,6 @@ const lightspeedTranslationDe = createTranslationMessages({
     'conversation.rename.confirm.title': 'Chat umbenennen?',
     'conversation.rename.confirm.action': 'Umbenennen',
     'conversation.rename.placeholder': 'Chat-Name',
-    'conversation.action.error': 'Fehler aufgetreten: {{error}}',
 
     // Permissions
     'permission.required.title': 'Fehlende Berechtigungen',
