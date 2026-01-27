@@ -45,7 +45,6 @@ export const ToolCallContent = ({
   role = 'bot',
 }: ToolCallContentProps) => {
   const { t } = useTranslation();
-  // const [isExpanded, setIsExpanded] = useState(false);
 
   const formatExecutionTime = (seconds?: number): string => {
     if (seconds === undefined) return '';

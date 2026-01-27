@@ -72,10 +72,11 @@ describe('LightspeedDrawerStateExposer', () => {
     });
   });
 
-  it('should set isDrawerOpen to true when displayMode is docked', async () => {
+  it('should set isDrawerOpen to true when displayMode is docked AND chatbot is active', async () => {
     renderWithContext(
       createContextValue({
         displayMode: ChatbotDisplayMode.docked,
+        isChatbotActive: true,
       }),
     );
 
@@ -83,6 +84,23 @@ describe('LightspeedDrawerStateExposer', () => {
       expect(mockOnStateChange).toHaveBeenCalledWith(
         expect.objectContaining({
           isDrawerOpen: true,
+        }),
+      );
+    });
+  });
+
+  it('should set isDrawerOpen to false when displayMode is docked but chatbot is not active', async () => {
+    renderWithContext(
+      createContextValue({
+        displayMode: ChatbotDisplayMode.docked,
+        isChatbotActive: false,
+      }),
+    );
+
+    await waitFor(() => {
+      expect(mockOnStateChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isDrawerOpen: false,
         }),
       );
     });
@@ -170,6 +188,7 @@ describe('LightspeedDrawerStateExposer', () => {
     const { rerender } = renderWithContext(
       createContextValue({
         displayMode: ChatbotDisplayMode.default,
+        isChatbotActive: false,
       }),
     );
 
@@ -185,6 +204,7 @@ describe('LightspeedDrawerStateExposer', () => {
       <LightspeedDrawerContext.Provider
         value={createContextValue({
           displayMode: ChatbotDisplayMode.docked,
+          isChatbotActive: true,
         })}
       >
         <LightspeedDrawerStateExposer onStateChange={mockOnStateChange} />

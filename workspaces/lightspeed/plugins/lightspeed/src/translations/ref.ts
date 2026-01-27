@@ -88,12 +88,6 @@ export const lightspeedMessages = {
 
   // Footer and feedback
   'footer.accuracy.label': 'Always review AI generated content prior to use.',
-  'footer.accuracy.popover.title': 'Verify accuracy',
-  'footer.accuracy.popover.description':
-    "While Developer Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.",
-  'footer.accuracy.popover.image.alt': 'Example image for footnote popover',
-  'footer.accuracy.popover.cta.label': 'Got it',
-  'footer.accuracy.popover.link.label': 'Learn more',
 
   // Common actions
   'common.cancel': 'Cancel',
