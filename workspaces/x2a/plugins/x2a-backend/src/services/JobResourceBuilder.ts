@@ -173,15 +173,19 @@ export class JobResourceBuilder {
           'app.kubernetes.io/component': 'migration',
           'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
           'x2a.redhat.com/project-id': params.projectId,
-          'x2a.redhat.com/project-name': params.projectName,
+          'x2a.redhat.com/project-name': this.sanitizeLabelValue(
+            params.projectName,
+          ),
           'x2a.redhat.com/phase': params.phase,
-          'x2a.redhat.com/user': params.user,
+          'x2a.redhat.com/user': this.sanitizeLabelValue(params.user),
           'x2a.redhat.com/job-id': params.jobId,
           ...(params.moduleId && {
             'x2a.redhat.com/module-id': params.moduleId,
           }),
           ...(params.moduleName && {
-            'x2a.redhat.com/module-name': params.moduleName,
+            'x2a.redhat.com/module-name': this.sanitizeLabelValue(
+              params.moduleName,
+            ),
           }),
         },
         annotations: {
@@ -205,62 +209,11 @@ export class JobResourceBuilder {
           },
           spec: {
             restartPolicy: 'Never',
-            // Init containers to clone git repositories
-            initContainers: [
-              {
-                name: 'git-clone',
-                image: 'alpine/git:latest',
-                command: ['/bin/sh', '-c'],
-                args: [
-                  `
-                  set -e
-                  echo "Cloning source repository..."
-                  git clone --depth 1 --branch "\${SOURCE_REPO_BRANCH}" \
-                    "https://oauth2:\${SOURCE_REPO_TOKEN}@\${SOURCE_REPO_URL#https://}" \
-                    /workspace/source || \
-                  git clone --depth 1 --branch "\${SOURCE_REPO_BRANCH}" \
-                    "\${SOURCE_REPO_URL}" \
-                    /workspace/source
-
-                  echo "Cloning target repository..."
-                  git clone --depth 1 --branch "\${TARGET_REPO_BRANCH}" \
-                    "https://oauth2:\${TARGET_REPO_TOKEN}@\${TARGET_REPO_URL#https://}" \
-                    /workspace/target || \
-                  git clone --depth 1 --branch "\${TARGET_REPO_BRANCH}" \
-                    "\${TARGET_REPO_URL}" \
-                    /workspace/target
-
-                  echo "Git repositories cloned successfully"
-                  `,
-                ],
-                envFrom: [
-                  {
-                    secretRef: {
-                      name: secretName,
-                    },
-                  },
-                ],
-                volumeMounts: [
-                  {
-                    name: 'workspace',
-                    mountPath: '/workspace',
-                  },
-                ],
-              },
-            ],
             containers: [
               {
-                name: 'x2a-convertor',
-                image: `${config.kubernetes.image}:${config.kubernetes.imageTag}`,
+                name: 'x2a-echo',
+                image: 'busybox:latest',
                 command: this.buildCommand(params),
-                // Import all credentials from the project secret
-                envFrom: [
-                  {
-                    secretRef: {
-                      name: secretName,
-                    },
-                  },
-                ],
                 // Additional env vars specific to this job
                 env: [
                   {
@@ -270,6 +223,18 @@ export class JobResourceBuilder {
                   {
                     name: 'PROJECT_ID',
                     value: params.projectId,
+                  },
+                  {
+                    name: 'PROJECT_NAME',
+                    value: params.projectName,
+                  },
+                  {
+                    name: 'JOB_ID',
+                    value: params.jobId,
+                  },
+                  {
+                    name: 'USER',
+                    value: params.user,
                   },
                   {
                     name: 'CALLBACK_URL',
@@ -304,30 +269,6 @@ export class JobResourceBuilder {
                       ]
                     : []),
                 ],
-                resources: {
-                  requests: {
-                    cpu: config.kubernetes.resources.requests.cpu,
-                    memory: config.kubernetes.resources.requests.memory,
-                  },
-                  limits: {
-                    cpu: config.kubernetes.resources.limits.cpu,
-                    memory: config.kubernetes.resources.limits.memory,
-                  },
-                },
-                workingDir: '/workspace',
-                volumeMounts: [
-                  {
-                    name: 'workspace',
-                    mountPath: '/workspace',
-                  },
-                ],
-              },
-            ],
-            // Shared volume for git repos between init container and main container
-            volumes: [
-              {
-                name: 'workspace',
-                emptyDir: {},
               },
             ],
           },
@@ -337,22 +278,47 @@ export class JobResourceBuilder {
   }
 
   /**
+   * Sanitizes a string to be a valid Kubernetes label value
+   * Labels must match: (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
+   * Max length: 63 characters
+   *
+   * @param value - The string to sanitize
+   * @returns A valid Kubernetes label value
+   */
+  private static sanitizeLabelValue(value: string): string {
+    return value
+      .replace(/[^a-zA-Z0-9-_.]/g, '-') // Replace invalid chars with dash
+      .replace(/^[^a-zA-Z0-9]+/, '') // Remove leading non-alphanumeric
+      .replace(/[^a-zA-Z0-9]+$/, '') // Remove trailing non-alphanumeric
+      .substring(0, 63); // Truncate to 63 chars
+  }
+
+  /**
    * Builds the command array for the container based on the migration phase
+   * Currently simplified to echo commands for testing job infrastructure
    *
    * @param params - Job creation parameters
    * @returns Command array to execute in the container
    */
   private static buildCommand(params: JobCreateParams): string[] {
-    const baseCommand = ['uv', 'run', 'app.py', params.phase];
+    const baseEcho = ['/bin/sh', '-c'];
 
     switch (params.phase) {
       case 'init':
         // init phase: scans source repo to create migration plan
         return [
-          ...baseCommand,
-          '--source-dir',
-          '/workspace/source',
-          ...(params.userPrompt ? [params.userPrompt] : []),
+          ...baseEcho,
+          `
+          echo "===== X2A Init Phase ====="
+          echo "Project: ${params.projectName} (${params.projectId})"
+          echo "Job ID: ${params.jobId}"
+          echo "User: ${params.user}"
+          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
+          echo ""
+          echo "Simulating init phase (scanning source repo)..."
+          sleep 10
+          echo "Init phase completed!"
+          `,
         ];
 
       case 'analyze':
@@ -361,10 +327,19 @@ export class JobResourceBuilder {
           throw new Error('moduleName is required for analyze phase');
         }
         return [
-          ...baseCommand,
-          '--source-dir',
-          '/workspace/source',
-          ...(params.userPrompt ? [params.userPrompt] : [params.moduleName]),
+          ...baseEcho,
+          `
+          echo "===== X2A Analyze Phase ====="
+          echo "Project: ${params.projectName} (${params.projectId})"
+          echo "Module: ${params.moduleName} (${params.moduleId})"
+          echo "Job ID: ${params.jobId}"
+          echo "User: ${params.user}"
+          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
+          echo ""
+          echo "Simulating analyze phase for module ${params.moduleName}..."
+          sleep 10
+          echo "Analyze phase completed!"
+          `,
         ];
 
       case 'migrate':
@@ -373,18 +348,20 @@ export class JobResourceBuilder {
           throw new Error('moduleName is required for migrate phase');
         }
         return [
-          ...baseCommand,
-          '--source-dir',
-          '/workspace/source',
-          '--source-technology',
-          'Chef',
-          '--high-level-migration-plan',
-          '/workspace/target/migration-plan.md',
-          '--module-migration-plan',
-          `/workspace/target/modules/${params.moduleName}/module_migration-plan.md`,
-          ...(params.userPrompt
-            ? [params.userPrompt]
-            : [`Convert ${params.moduleName}`]),
+          ...baseEcho,
+          `
+          echo "===== X2A Migrate Phase ====="
+          echo "Project: ${params.projectName} (${params.projectId})"
+          echo "Module: ${params.moduleName} (${params.moduleId})"
+          echo "Job ID: ${params.jobId}"
+          echo "User: ${params.user}"
+          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
+          echo ""
+          echo "Simulating migrate phase for module ${params.moduleName}..."
+          echo "Converting Chef code to Ansible..."
+          sleep 10
+          echo "Migrate phase completed!"
+          `,
         ];
 
       case 'publish':
@@ -393,11 +370,20 @@ export class JobResourceBuilder {
           throw new Error('moduleName is required for publish phase');
         }
         return [
-          ...baseCommand,
-          '--target-dir',
-          '/workspace/target',
-          '--module-name',
-          params.moduleName,
+          ...baseEcho,
+          `
+          echo "===== X2A Publish Phase ====="
+          echo "Project: ${params.projectName} (${params.projectId})"
+          echo "Module: ${params.moduleName} (${params.moduleId})"
+          echo "Job ID: ${params.jobId}"
+          echo "User: ${params.user}"
+          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
+          echo ""
+          echo "Simulating publish phase for module ${params.moduleName}..."
+          echo "Publishing Ansible content to AAP..."
+          sleep 10
+          echo "Publish phase completed!"
+          `,
         ];
 
       default:

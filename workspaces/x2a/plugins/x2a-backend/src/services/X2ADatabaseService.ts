@@ -50,6 +50,8 @@ export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
 // TODO: model via openapi schema
 export interface Job {
   id: string;
+  projectId: string;
+  moduleId: string | null;
   log: string | null;
   startedAt: Date;
   finishedAt: Date | null;
@@ -58,7 +60,6 @@ export interface Job {
   errorDetails: string | null;
   k8sJobName: string | null;
   callbackToken: string | null;
-  moduleId: string;
   artifacts: string[];
 }
 
@@ -113,6 +114,8 @@ export class X2ADatabaseService {
   private mapRowToJob(row: any): Omit<Job, 'artifacts'> {
     return {
       id: row.id,
+      projectId: row.project_id,
+      moduleId: row.module_id || null,
       log: row.log,
       startedAt: row.started_at ? new Date(row.started_at) : new Date(),
       finishedAt: row.finished_at ? new Date(row.finished_at) : null,
@@ -121,7 +124,6 @@ export class X2ADatabaseService {
       errorDetails: row.error_details || null,
       k8sJobName: row.k8s_job_name || null,
       callbackToken: row.callback_token || null,
-      moduleId: row.module_id,
     };
   }
 
@@ -359,6 +361,8 @@ export class X2ADatabaseService {
   }
 
   async createJob(job: {
+    projectId: string;
+    moduleId?: string | null;
     log?: string | null;
     startedAt?: Date;
     finishedAt?: Date | null;
@@ -367,7 +371,6 @@ export class X2ADatabaseService {
     errorDetails?: string | null;
     k8sJobName?: string | null;
     callbackToken?: string | null;
-    moduleId: string;
     artifacts?: string[];
   }): Promise<Job> {
     const id = crypto.randomUUID();
@@ -379,6 +382,8 @@ export class X2ADatabaseService {
     // Persist the job in the database
     await this.#dbClient('jobs').insert({
       id,
+      project_id: job.projectId,
+      module_id: job.moduleId || null,
       log: job.log || null,
       started_at: startedAt,
       finished_at: finishedAt,
@@ -387,7 +392,6 @@ export class X2ADatabaseService {
       error_details: job.errorDetails || null,
       k8s_job_name: job.k8sJobName || null,
       callback_token: job.callbackToken || null,
-      module_id: job.moduleId,
     });
 
     // Insert artifacts if provided
@@ -402,6 +406,8 @@ export class X2ADatabaseService {
 
     const newJob: Job = {
       id,
+      projectId: job.projectId,
+      moduleId: job.moduleId || null,
       log: job.log || null,
       startedAt,
       finishedAt,
@@ -410,7 +416,6 @@ export class X2ADatabaseService {
       errorDetails: job.errorDetails || null,
       k8sJobName: job.k8sJobName || null,
       callbackToken: job.callbackToken || null,
-      moduleId: job.moduleId,
       artifacts,
     };
 

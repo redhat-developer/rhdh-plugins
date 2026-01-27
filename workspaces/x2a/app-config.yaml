@@ -113,3 +113,44 @@ permission:
     admin:
       users:
         - name: user:default/mareklibra
+
+# X2A Configuration
+x2a:
+  kubernetes:
+    # Kubernetes namespace where jobs will be created
+    namespace: default
+    # X2A convertor container image
+    image: quay.io/x2ansible/x2a-convertor
+    imageTag: latest
+    # Auto-delete completed jobs after 24 hours (86400 seconds)
+    ttlSecondsAfterFinished: 86400
+    # Resource requests and limits for job pods
+    resources:
+      requests:
+        cpu: '500m'
+        memory: '1Gi'
+      limits:
+        cpu: '2000m'
+        memory: '4Gi'
+  credentials:
+    # AWS Bedrock LLM credentials
+    # Use EITHER IAM credentials (accessKeyId + secretAccessKey) OR bearerToken
+    llm:
+      model: 'anthropic.claude-v2'
+      region: 'us-east-1'
+      # Option 1: IAM credentials (using dummy values for local testing)
+      accessKeyId: 'DUMMY_KEY_ID_FOR_LOCAL_TESTING'
+      secretAccessKey: 'DUMMY_SECRET_KEY_FOR_LOCAL_TESTING'
+      # Option 2: Bearer token (uncomment and comment out IAM credentials above)
+      # bearerToken: 'DUMMY_BEARER_TOKEN_FOR_LOCAL_TESTING'
+    # Ansible Automation Platform credentials (optional - can be provided by users at runtime)
+    # If not provided here, users must supply AAP credentials when creating projects
+    # Use EITHER oauthToken OR username+password
+    aap:
+      url: 'https://dummy-aap.example.com'
+      orgName: 'DummyOrganization'
+      # Option 1: OAuth token (using dummy value for local testing)
+      oauthToken: 'DUMMY_AAP_OAUTH_TOKEN_FOR_LOCAL_TESTING'
+      # Option 2: Username and password
+      # username: 'DUMMY_USERNAME'
+      # password: 'DUMMY_PASSWORD'
