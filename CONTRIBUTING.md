@@ -295,9 +295,6 @@ Please ping @rhdh-cope in #forum-rhdh on Slack when the PR is ready for review. 
 * Ownership
   * Update `.github/CODEOWNERS` with appropriate maintainers
 
-> [!NOTE]
-> Only [repository maintainers](https://github.com/orgs/redhat-developer/teams/rhdh-cope) can bypass the SonarCloud test. We typically grant a one-time exception for new plugins that require a full application instead of a standalone development server. If this applies to your pull request, please mention it in the description.
-
 ## Plugin Owner Responsibilities
 
 > [!NOTE]
