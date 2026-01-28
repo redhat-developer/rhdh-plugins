@@ -116,6 +116,12 @@ const TemplateCard: FC<TemplateCardProps> = ({
                   </Typography>
                 }
                 key={type}
+                sx={{
+                  border: '1px solid transparent',
+                  '&:hover': {
+                    borderColor: '#9e9e9e',
+                  },
+                }}
                 size="small"
               />
             </Link>

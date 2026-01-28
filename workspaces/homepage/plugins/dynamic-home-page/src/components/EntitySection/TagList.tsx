@@ -63,6 +63,11 @@ const TagList: FC<TagListProps> = ({ tags, kind }) => {
             backgroundColor: KINDS[kind.toLocaleUpperCase() as KindKeys]?.fill,
             color: 'black',
             m: 0,
+            border: '1px solid transparent',
+            '&:hover': {
+              borderColor:
+                KINDS[kind.toLocaleUpperCase() as KindKeys]?.borderColor,
+            },
           }}
           variant="filled"
           size="small"
@@ -87,6 +92,9 @@ const TagList: FC<TagListProps> = ({ tags, kind }) => {
               }
               sx={{
                 m: 0,
+                '&:hover': {
+                  borderColor: '#9e9e9e',
+                },
               }}
               variant="outlined"
               size="small"
