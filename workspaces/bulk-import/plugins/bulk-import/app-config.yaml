@@ -6,7 +6,7 @@ dynamicPlugins:
           module: BulkImportPlugin
           importName: BulkImportIcon
       dynamicRoutes:
-        - path: /bulk-import/repositories
+        - path: /bulk-import
           importName: BulkImportPage
           module: BulkImportPlugin
           menuItem:

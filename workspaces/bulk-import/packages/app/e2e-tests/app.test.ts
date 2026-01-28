@@ -192,7 +192,7 @@ test.describe('Bulk Import', () => {
     await expect(sidebar).toMatchAriaSnapshot(`
       - button "${translations.common.save}"
       - link "${translations.common.cancel}":
-        - /url: /bulk-import/repositories
+        - /url: /bulk-import
         - button "${translations.common.cancel}"
       `);
 
@@ -249,7 +249,7 @@ test.describe('Bulk Import', () => {
     await expect(addRepoFooter).toMatchAriaSnapshot(`
       - button "${translations.common.import}"
       - link "${translations.common.cancel}":
-        - /url: /bulk-import/repositories
+        - /url: /bulk-import
         - button "${translations.common.cancel}"
       `);
     await sharedPage

@@ -244,7 +244,7 @@ describe('Repository utils', () => {
           number: 105,
           url: 'https://github.com/che-electron/client/pull/105',
           title: 'Add catalog-info.yaml config file',
-          body: 'This pull request adds a **Backstage entity metadata file**\nto this repository so that the component can\nbe added to the [software catalog](http://localhost:3000/catalog).\nAfter this pull request is merged, the component will become available.\nFor more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).\nView the import job in your app [here](http://localhost:3000/bulk-import/repositories?repository=https://github.com/che-electron/client&defaultBranch=master).',
+          body: 'This pull request adds a **Backstage entity metadata file**\nto this repository so that the component can\nbe added to the [software catalog](http://localhost:3000/catalog).\nAfter this pull request is merged, the component will become available.\nFor more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).\nView the import job in your app [here](http://localhost:3000/bulk-import?repository=https://github.com/che-electron/client&defaultBranch=master).',
           catalogInfoContent:
             'apiVersion: backstage.io/v1alpha1\nkind: Component\nmetadata:\n  name: client\n  annotations:\n    github.com/project-slug: che-electron/client\nspec:\n  type: other\n  lifecycle: unknown\n  owner: user:default/debsmita1\n',
         },
