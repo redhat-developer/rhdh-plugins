@@ -29,6 +29,7 @@ export function processSchema(
   value: JsonValue | undefined,
   schema: JSONSchema7,
   formState: JsonObject,
+  includeHiddenFields: boolean,
 ): JsonObject {
   const parsedSchema = new JSONSchema(schema);
   const definitionInSchema =
@@ -43,7 +44,7 @@ export function processSchema(
   if (definitionInSchema) {
     // Skip hidden fields in the review table
     const uiHidden = definitionInSchema['ui:hidden'];
-    if (uiHidden !== undefined) {
+    if (!includeHiddenFields && uiHidden !== undefined) {
       // Handle both static boolean and condition objects
       const hiddenCondition = uiHidden as HiddenCondition;
       const isHidden = evaluateHiddenCondition(hiddenCondition, formState);
@@ -63,7 +64,13 @@ export function processSchema(
           const curKey = key ? `${key}/${nestedKey}` : nestedKey;
           return {
             ...prev,
-            ...processSchema(curKey, _nestedValue, schema, formState),
+            ...processSchema(
+              curKey,
+              _nestedValue,
+              schema,
+              formState,
+              includeHiddenFields,
+            ),
           };
         },
         {},
@@ -84,9 +91,16 @@ export function processSchema(
 function generateReviewTableData(
   schema: JSONSchema7,
   data: JsonObject,
+  options?: { includeHiddenFields?: boolean },
 ): JsonObject {
   schema.title = '';
-  const result = processSchema('', data, schema, data);
+  const result = processSchema(
+    '',
+    data,
+    schema,
+    data,
+    options?.includeHiddenFields ?? false,
+  );
   return result[''] as JsonObject;
 }
 

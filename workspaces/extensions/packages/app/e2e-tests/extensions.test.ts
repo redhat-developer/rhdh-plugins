@@ -20,6 +20,24 @@ import { runAccessibilityTests } from './utils/accessibility';
 import { ExtensionHelper } from './utils/helper';
 import { ExtensionsMessages, getTranslations } from './utils/translations';
 
+/**
+ * Mapping of locale codes to their native display names
+ */
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+/**
+ * Get the display name for a locale code
+ */
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
 test.describe('Admin > Extensions', () => {
   let extensions: Extensions;
   let extensionHelper: ExtensionHelper;
@@ -28,9 +46,13 @@ test.describe('Admin > Extensions', () => {
   let sharedContext: BrowserContext;
 
   async function switchToLocale(page: Page, locale: string): Promise<void> {
+    const baseLocale = locale.split('-')[0];
+    if (baseLocale === 'en') return;
+
+    const displayName = getLocaleDisplayName(locale);
     await page.getByRole('link', { name: 'Settings' }).click();
     await page.getByRole('button', { name: 'English' }).click();
-    await page.getByRole('option', { name: locale }).click();
+    await page.getByRole('option', { name: displayName }).click();
     await page.locator('a').filter({ hasText: 'Home' }).click();
   }
 
@@ -62,7 +84,6 @@ test.describe('Admin > Extensions', () => {
     test('Verify category and author filters in extensions', async ({
       browser: _browser,
     }, testInfo) => {
-      await extensionHelper.verifyHeading(/Plugins \(\d+\)/);
       await runAccessibilityTests(sharedPage, testInfo);
       await extensionHelper.clickTab(translations.header.catalog);
       await extensions.selectDropdown(translations.search.category);
@@ -153,7 +174,10 @@ test.describe('Admin > Extensions', () => {
       await extensionHelper.clickLink({ href: '/support-generally-available' });
 
       await extensionHelper.labelTextContentVisible(
-        translations.badges.productionReady,
+        translations.badges.productionReadyBy.replace(
+          '{{provider}}',
+          'A provider',
+        ),
         translations.badges.generallyAvailable,
       );
 

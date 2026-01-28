@@ -37,14 +37,15 @@ export const ActiveText: Widget<
   const handleFetchStarted = formContext?.handleFetchStarted;
   const handleFetchEnded = formContext?.handleFetchEnded;
 
-  const { text, error, loading } = useFetchAndEvaluate(
-    uiProps['ui:text'] ?? '',
-    formData ?? {},
-    uiProps,
-    id,
-    handleFetchStarted,
-    handleFetchEnded,
-  );
+  const { text, error, fetchError, loading, waitingForRetrigger } =
+    useFetchAndEvaluate(
+      uiProps['ui:text'] ?? '',
+      formData ?? {},
+      uiProps,
+      id,
+      handleFetchStarted,
+      handleFetchEnded,
+    );
 
   if (!uiProps['ui:text']) {
     return (
@@ -55,17 +56,19 @@ export const ActiveText: Widget<
     );
   }
 
-  if (error) {
-    return <ErrorText id={id} text={error} />;
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  if (error ?? (shouldShowFetchError ? fetchError : undefined)) {
+    return <ErrorText id={id} text={error ?? fetchError ?? ''} />;
   }
 
-  return (
-    <Box data-testid={id}>
-      {loading ? (
-        <CircularProgress size={20} />
-      ) : (
-        <MarkdownContent content={text || ''} />
-      )}
-    </Box>
-  );
+  let content: React.ReactNode;
+  if (waitingForRetrigger) {
+    content = <CircularProgress size={20} />;
+  } else if (loading) {
+    content = <CircularProgress size={20} />;
+  } else {
+    content = <MarkdownContent content={text || ''} />;
+  }
+
+  return <Box data-testid={id}>{content}</Box>;
 };

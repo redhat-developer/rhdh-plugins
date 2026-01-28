@@ -18,7 +18,7 @@ import {
   LoggerService,
   BackstageCredentials,
 } from '@backstage/backend-plugin-api';
-import { CustomObjectsApi } from '@kubernetes/client-node';
+import type { ObservableMiddleware } from '@kubernetes/client-node';
 import {
   GroupVersionKind,
   K8sResourceCommonWithClusterInfo,
@@ -29,6 +29,7 @@ import uniqBy from 'lodash/uniqBy';
 import { createKubeConfig } from '../helpers/client-factory';
 import { KonfluxLogger } from '../helpers/logger';
 import { getAuthToken } from '../helpers/auth';
+import { getKubeClient } from '../helpers/kube-client';
 
 /**
  * Options for fetching resources from a single source
@@ -124,7 +125,7 @@ export class ResourceFetcherService {
       },
     );
 
-    const kc = createKubeConfig(
+    const kc = await createKubeConfig(
       konfluxConfig,
       cluster,
       this.konfluxLogger,
@@ -146,38 +147,78 @@ export class ResourceFetcherService {
     try {
       const { apiGroup, apiVersion, plural } = resourceModel;
 
+      const { CustomObjectsApi, Observable } = await getKubeClient();
+
+      const requestHeaders = {
+        ...(requiresImpersonation && {
+          'Impersonate-User': userEmail,
+          'Impersonate-Group': 'system:authenticated',
+        }),
+        ...(token && { Authorization: `Bearer ${token}` }),
+      };
+
+      const headerMiddleware: ObservableMiddleware | undefined =
+        Object.keys(requestHeaders).length > 0
+          ? {
+              pre: requestContext => {
+                Object.entries(requestHeaders).forEach(([key, value]) => {
+                  requestContext.setHeaderParam(key, value);
+                });
+                return new Observable(Promise.resolve(requestContext));
+              },
+              post: requestContext =>
+                new Observable(Promise.resolve(requestContext)),
+            }
+          : undefined;
+
+      const requestOptions = headerMiddleware
+        ? {
+            middlewareMergeStrategy: 'append' as const,
+            middleware: [headerMiddleware],
+          }
+        : undefined;
+
       const customApi = kc.makeApiClient(CustomObjectsApi);
 
-      const response = await customApi.listNamespacedCustomObject(
-        apiGroup,
-        apiVersion,
-        namespace,
-        plural,
-        undefined,
-        undefined,
-        options?.continue,
-        undefined,
-        options?.labelSelector,
-        options?.limit,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
+      const response = await customApi.listNamespacedCustomObjectWithHttpInfo(
         {
-          headers: {
-            ...(requiresImpersonation && {
-              'Impersonate-User': userEmail,
-              'Impersonate-Group': 'system:authenticated',
-            }),
-            Authorization: `Bearer ${token}`,
-          },
+          group: apiGroup,
+          version: apiVersion,
+          namespace,
+          plural,
+          _continue: options?.continue,
+          labelSelector: options?.labelSelector,
+          limit: options?.limit,
         },
+        requestOptions,
       );
 
-      const responseBody = response?.body as {
-        items: K8sResourceCommonWithClusterInfo[];
-        metadata?: { continue?: string };
-      };
+      const responseBody = (
+        typeof response?.data === 'string'
+          ? (() => {
+              try {
+                return JSON.parse(response.data);
+              } catch (error) {
+                this.konfluxLogger.warn(
+                  'Failed to parse Kubernetes response data',
+                  {
+                    cluster,
+                    namespace,
+                    resource: plural,
+                    error:
+                      error instanceof Error ? error.message : String(error),
+                  },
+                );
+                return undefined;
+              }
+            })()
+          : response?.data
+      ) as
+        | {
+            items: K8sResourceCommonWithClusterInfo[];
+            metadata?: { continue?: string };
+          }
+        | undefined;
 
       const items = responseBody?.items || [];
       const continueToken = responseBody?.metadata?.continue;

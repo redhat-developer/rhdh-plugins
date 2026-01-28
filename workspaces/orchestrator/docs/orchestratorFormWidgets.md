@@ -217,6 +217,7 @@ The widget supports following `ui:props`:
 - fetch:body
 - fetch:retrigger
 - fetch:error:ignoreUnready
+- fetch:error:silent
 - fetch:response:value
 - fetch:response:mandatory
 
@@ -243,6 +244,7 @@ The data are further re-fetched, if the value of one of the `fetch:retrigger` re
 If the `fetch:retrigger` is omitted, the fetch is issued just once to preload the data.
 
 Because a text input’s default value only applies when the field is initially empty, any changes to the returned value in subsequent requests are ignored if the user has already entered data into that field.
+If you want to keep the field empty until the user interacts with it, set `fetch:skipInitialValue` to `true`.
 
 ### ActiveTextInput Data validation
 
@@ -300,6 +302,8 @@ The widget supports following `ui:props`:
 - fetch:body
 - fetch:retrigger
 - fetch:error:ignoreUnready
+- fetch:error:silent
+- fetch:skipInitialValue
 - fetch:response:value
 - fetch:response:default
 - fetch:response:autocomplete
@@ -340,6 +344,8 @@ The widget supports following `ui:props`:
 - fetch:body
 - fetch:retrigger
 - fetch:error:ignoreUnready
+- fetch:error:silent
+- fetch:skipInitialValue
 - fetch:response:value
 - fetch:response:default
 - fetch:response:label
@@ -389,6 +395,8 @@ The widget supports following `ui:props`:
 - fetch:body
 - fetch:retrigger
 - fetch:error:ignoreUnready
+- fetch:error:silent
+- fetch:skipInitialValue
 - fetch:response:autocomplete
 - fetch:response:mandatory
 - fetch:response:value
@@ -527,7 +535,9 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |         fetch:body          |                                                                                                                                                 An object representing the body of an HTTP POST request. Not used with the GET method. Property value can be a string template or an array of strings. templates.                                                                                                                                                  | `{“foo”: “bar $${{identityApi.token}}”, "myArray": ["constant", "$${{current.solutionName}}"]}` |
 |       fetch:retrigger       |                                                                                                                                                An array of keys/key families as described in the Backstage API Exposed Parts. If the value referenced by any key from this list is changed, the fetch is triggered.                                                                                                                                                |                      `["current.solutionName", "identityApi.profileName"]`                      |
 |  fetch:error:ignoreUnready  |                                                                                                 When set to `true`, suppresses fetch error display until all `fetch:retrigger` dependencies have non-empty values. This is useful when fetch depends on other fields that are not filled yet, preventing expected errors from being displayed during initial load.                                                                                                 |                               `true`, `false` (default: `false`)                                |
-|   fetch:response:default    |                                                                   A static default value that is applied immediately when the widget mounts, before any fetch completes. Acts as a fallback when fetch fails or has not completed yet. Gets overridden by `fetch:response:value` once fetch succeeds. For ActiveTextInput/ActiveDropdown use a string, for ActiveMultiSelect use a string array.                                                                   |                        `"create"` (string) or `["tag1", "tag2"]` (array)                        |
+|     fetch:error:silent      |                                                                                                                         When set to `true`, suppresses fetch error display when the fetch request returns a non-OK status (4xx/5xx). Use this when you want to handle error states via conditional UI instead of showing the widget error.                                                                                                                         |                               `true`, `false` (default: `false`)                                |
+|   fetch:skipInitialValue    |                                                                                                                                                       When set to `true`, prevents applying the initial value from `fetch:response:value`, keeping the field empty until the user selects or types a value.                                                                                                                                                        |                               `true`, `false` (default: `false`)                                |
+|   fetch:response:default    |                                                  A static default value that is applied immediately when the widget mounts, before any fetch completes. Acts as a fallback when fetch fails or has not completed yet. Gets overridden by `fetch:response:value` once fetch succeeds. Empty string defaults are valid. For ActiveTextInput/ActiveDropdown use a string, for ActiveMultiSelect use a string array.                                                   |                        `"create"` (string) or `["tag1", "tag2"]` (array)                        |
 | fetch:response:\[YOUR_KEY\] |                                                                                            A JSONata selector (string) or object value for extracting data from the fetch response. There can be any count of the \[YOUR_KEY\] properties, so a single fetch response can be used to retrieve multiple records. Supports both string selectors and object type values.                                                                                             |                                 Account.Order.Product.ProductID                                 |
 |    fetch:response:label     |                                                                                                                                                                         Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                         |                                                                                                 |
 |    fetch:response:value     |                                                                                                                                                                Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                 |                                                                                                 |
@@ -543,6 +553,17 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 #### Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers
 
 If a template for a field of one of those properties evaluates to just an empty or undefined value, the **field is skipped** from the HTTP request (body, headers).
+
+JSONata expressions are also supported in `fetch:body` and `validate:body`. To evaluate a value as JSONata against the current form data, prefix it with `jsonata:`.
+
+Example:
+
+```json
+"fetch:body": {
+  "platformId": "jsonata:$.appRegistration.xParams.platformProfileID",
+  "fallback": "$${{current.appRegistration.xParams.platformProfileID}}"
+}
+```
 
 ### Authentication
 

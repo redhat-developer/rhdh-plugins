@@ -26,6 +26,7 @@ import {
 import {
   GlobalFloatingActionButtonMessages,
   getTranslations,
+  TEST_IDS,
 } from './utils/translations.js';
 import { runAccessibilityTests } from './utils/accessibility.js';
 
@@ -61,14 +62,23 @@ test.describe('Global Floating Action Button Tests', () => {
     await sharedPage.waitForTimeout(1000);
   });
 
+  /**
+   * Get the menu button - the button itself is always labeled "menu",
+   * the translated label is on the parent element
+   */
+  function getMenuButton(index: number = 0) {
+    const menuButton = sharedPage.getByRole('button', { name: 'menu' });
+    return index === 0 ? menuButton.first() : menuButton.nth(index);
+  }
+
   test('global floating action buttons should be visible', async ({
     browser: _browser,
   }, testInfo) => {
-    const menuButton = sharedPage.getByRole('button', {
-      name: translations.fab.menu.tooltip,
-    });
-    const count = await menuButton.count();
-    expect(count).toBe(2);
+    // Use getMenuButton to get the first one, then check total count
+    const firstMenuButton = getMenuButton(0);
+    await expect(firstMenuButton).toBeVisible();
+    const secondMenuButton = getMenuButton(1);
+    await expect(secondMenuButton).toBeVisible();
     await runAccessibilityTests(sharedPage, testInfo);
   });
 
@@ -76,14 +86,13 @@ test.describe('Global Floating Action Button Tests', () => {
     test('should display menu items with correct accessibility structure', async ({
       browser: _browser,
     }, testInfo) => {
-      await sharedPage
-        .getByRole('button', { name: translations.fab.menu.tooltip })
-        .first()
-        .click();
+      await getMenuButton(0).click();
 
       await runAccessibilityTests(sharedPage, testInfo);
 
-      await expect(sharedPage.getByTestId('settings')).toMatchAriaSnapshot(`
+      // Note: test IDs use translated labels in this component
+      await expect(sharedPage.getByTestId(TEST_IDS.settings))
+        .toMatchAriaSnapshot(`
       - button "Settings":
         - paragraph: Settings
       `);
@@ -95,7 +104,8 @@ test.describe('Global Floating Action Button Tests', () => {
         - paragraph: ${translations.fab.github.label}
       `);
 
-      await expect(sharedPage.getByTestId('search')).toMatchAriaSnapshot(`
+      await expect(sharedPage.getByTestId(TEST_IDS.search))
+        .toMatchAriaSnapshot(`
       - button "Search":
         - paragraph
       `);
@@ -109,20 +119,14 @@ test.describe('Global Floating Action Button Tests', () => {
     });
 
     test('should display correct tooltip texts for floating action button elements', async () => {
-      await sharedPage
-        .getByRole('button', { name: translations.fab.menu.tooltip })
-        .first()
-        .click();
+      await getMenuButton(0).click();
 
-      await sharedPage
-        .getByRole('button', { name: translations.fab.menu.tooltip })
-        .first()
-        .hover();
+      await getMenuButton(0).hover();
       await expect(sharedPage.getByRole('tooltip')).toContainText(
         translations.fab.menu.tooltip,
       );
 
-      await sharedPage.getByTestId('settings').hover();
+      await sharedPage.getByTestId(TEST_IDS.settings).hover();
       await expect(
         sharedPage.getByRole('tooltip', { name: 'Settings' }),
       ).toContainText('Settings');
@@ -136,7 +140,7 @@ test.describe('Global Floating Action Button Tests', () => {
         }),
       ).toContainText(translations.fab.github.tooltip);
 
-      await sharedPage.getByTestId('search').hover();
+      await sharedPage.getByTestId(TEST_IDS.search).hover();
       await expect(
         sharedPage.getByRole('tooltip', { name: 'Search' }),
       ).toContainText('Search');
@@ -152,8 +156,8 @@ test.describe('Global Floating Action Button Tests', () => {
     });
 
     test('test menu items', async () => {
-      await testSettingsMenuItem(sharedPage, translations.fab.menu.tooltip);
-      await testSearchMenuItem(sharedPage, translations.fab.menu.tooltip);
+      await testSettingsMenuItem(sharedPage, 'menu');
+      await testSearchMenuItem(sharedPage, 'menu');
       await testCreateMenuItem(sharedPage);
     });
   });
@@ -162,14 +166,14 @@ test.describe('Global Floating Action Button Tests', () => {
     test('should display menu items with correct accessibility structure', async ({
       browser: _browser,
     }, testInfo) => {
-      await sharedPage
-        .getByRole('button', { name: translations.fab.menu.tooltip })
-        .nth(1)
-        .click();
+      await getMenuButton(1).click();
 
       await runAccessibilityTests(sharedPage, testInfo);
 
-      await expect(sharedPage.getByRole('main')).toMatchAriaSnapshot(`
+      // Note: test IDs use translated labels in this component
+      await expect(
+        sharedPage.getByTestId(translations.fab.apis.label.toLowerCase()),
+      ).toMatchAriaSnapshot(`
       - button "${translations.fab.apis.label}":
         - paragraph
       `);
@@ -183,14 +187,8 @@ test.describe('Global Floating Action Button Tests', () => {
     });
 
     test('should display correct tooltip texts for floating action button elements', async () => {
-      await sharedPage
-        .getByRole('button', { name: translations.fab.menu.tooltip })
-        .nth(1)
-        .click();
-      await sharedPage
-        .getByRole('button', { name: translations.fab.menu.tooltip })
-        .nth(1)
-        .hover();
+      await getMenuButton(1).click();
+      await getMenuButton(1).hover();
       await expect(sharedPage.getByRole('tooltip')).toContainText(
         translations.fab.menu.tooltip,
       );
@@ -214,8 +212,8 @@ test.describe('Global Floating Action Button Tests', () => {
     });
 
     test('test menu items', async () => {
-      await testDocsMenuItem(sharedPage, translations.fab.menu.tooltip);
-      await testApisMenuItem(sharedPage, translations.fab.menu.tooltip);
+      await testDocsMenuItem(sharedPage, 'menu');
+      await testApisMenuItem(sharedPage, 'menu');
     });
   });
 });

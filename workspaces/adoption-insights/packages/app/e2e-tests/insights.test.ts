@@ -248,21 +248,19 @@ test.describe(() => {
   test('New data shows in searches', async () => {
     const panel = getPanel(
       page,
-      new RegExp(
-        replaceTemplate(translations.searches.totalCount, { count: '[1,2]' }),
-      ),
+      replaceTemplate(translations.searches.totalCount, { count: '1' }),
     );
     await panel.scrollIntoViewIfNeeded();
     await expect(panel.locator('.recharts-surface')).toBeVisible();
     const averageTextContent = replaceTemplate(
       translations.searches.averageText,
       {
-        count: '[1,2]',
+        count: '1',
         period: translations.searches.hour,
       },
     );
     const averageText = `${translations.searches.averagePrefix} ${averageTextContent}${translations.searches.averageSuffix}`;
-    await expect(panel).toContainText(new RegExp(averageText));
+    await expect(panel).toContainText(averageText);
   });
 
   test('New data shows in top templates', async ({

@@ -61,6 +61,26 @@ export default defineConfig({
       },
     },
     {
+      name: 'it',
+      testDir: 'packages/app/e2e-tests',
+      testIgnore: '**/quick-start-developer.spec.ts',
+      use: {
+        channel: 'chrome',
+        locale: 'it',
+        baseURL: 'http://localhost:3000',
+      },
+    },
+    {
+      name: 'ja',
+      testDir: 'packages/app/e2e-tests',
+      testIgnore: '**/quick-start-developer.spec.ts',
+      use: {
+        channel: 'chrome',
+        locale: 'ja',
+        baseURL: 'http://localhost:3000',
+      },
+    },
+    {
       name: 'dev-config',
       testDir: 'packages/app/e2e-tests',
       testMatch: '**/quick-start-developer.spec.ts',
@@ -77,6 +97,26 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'fr',
+        baseURL: 'http://localhost:3001',
+      },
+    },
+    {
+      name: 'dev-config-it',
+      testDir: 'packages/app/e2e-tests',
+      testMatch: '**/quick-start-developer.spec.ts',
+      use: {
+        channel: 'chrome',
+        locale: 'it',
+        baseURL: 'http://localhost:3001',
+      },
+    },
+    {
+      name: 'dev-config-ja',
+      testDir: 'packages/app/e2e-tests',
+      testMatch: '**/quick-start-developer.spec.ts',
+      use: {
+        channel: 'chrome',
+        locale: 'ja',
         baseURL: 'http://localhost:3001',
       },
     },

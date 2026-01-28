@@ -18,9 +18,10 @@
 /* eslint-disable @backstage/no-relative-monorepo-imports */
 import { extensionsMessages } from '../../../../plugins/extensions/src/translations/ref.js';
 import extensionsTranslationDe from '../../../../plugins/extensions/src/translations/de.js';
-import extensionsTranslationFr from '../../../../plugins/extensions/src/translations/fr.js';
 import extensionsTranslationEs from '../../../../plugins/extensions/src/translations/es.js';
+import extensionsTranslationFr from '../../../../plugins/extensions/src/translations/fr.js';
 import extensionsTranslationIt from '../../../../plugins/extensions/src/translations/it.js';
+import extensionsTranslationJa from '../../../../plugins/extensions/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type ExtensionsMessages = typeof extensionsMessages;
@@ -44,14 +45,16 @@ export function getTranslations(locale: string) {
   switch (locale) {
     case 'en':
       return extensionsMessages;
-    case 'fr':
-      return transform(extensionsTranslationFr.messages);
     case 'de':
       return transform(extensionsTranslationDe.messages);
     case 'es':
       return transform(extensionsTranslationEs.messages);
+    case 'fr':
+      return transform(extensionsTranslationFr.messages);
     case 'it':
       return transform(extensionsTranslationIt.messages);
+    case 'ja':
+      return transform(extensionsTranslationJa.messages);
     default:
       return extensionsMessages;
   }

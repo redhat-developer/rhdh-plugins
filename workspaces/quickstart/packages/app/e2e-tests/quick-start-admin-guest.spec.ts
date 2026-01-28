@@ -31,16 +31,10 @@ test.describe('Test Quick Start plugin', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Enter' }).click();
 
-    // Switch to French for French projects
-    const projectName = test.info().project.name;
-    if (projectName === 'fr' || projectName === 'dev-config-fr') {
-      await switchToLocale(page, 'Français');
-    }
-
-    const currentLocale = await page.evaluate(
-      () => globalThis.navigator.language.split('-')[0],
-    );
-    translations = getTranslations(currentLocale);
+    // Switch locale for non-English projects
+    const locale = await page.evaluate(() => globalThis.navigator.language);
+    await switchToLocale(page, locale);
+    translations = getTranslations(locale);
   });
 
   test('Access Quick start as Guest or Admin', async ({
@@ -73,7 +67,6 @@ test.describe('Test Quick Start plugin', () => {
     await uiHelper.verifyButtonURL(
       translations.steps.setupAuthentication.ctaTitle,
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/authentication_in_red_hat_developer_hub/',
-      { exact: false },
     );
 
     // Click and verify configureRbac step

@@ -1,6 +1,6 @@
 {
   "name": "@internal/konflux",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "private": true,
   "engines": {
     "node": "18 || 20 || 22"
@@ -23,7 +23,8 @@
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "new": "backstage-cli new --scope @red-hat-developer-hub"
+    "new": "backstage-cli new --scope @red-hat-developer-hub",
+    "postinstall": "cd ../../ && yarn install"
   },
   "workspaces": {
     "packages": [

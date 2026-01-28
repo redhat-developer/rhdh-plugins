@@ -4,4 +4,4 @@
 '@red-hat-developer-hub/backstage-plugin-lightspeed': patch
 ---
 
-Updated dependency `prettier` to `3.8.0`.
+Updated dependency `prettier` to `3.8.1`.

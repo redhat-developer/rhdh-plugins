@@ -1,0 +1,69 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-x2a-backend",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/x2a/plugins/x2a-backend"
+  },
+  "backstage": {
+    "role": "backend-plugin",
+    "pluginId": "x2a",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-x2a",
+      "@red-hat-developer-hub/backstage-plugin-x2a-backend",
+      "@red-hat-developer-hub/backstage-plugin-x2a-common"
+    ]
+  },
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack",
+    "openapi-generate": "backstage-repo-tools package schema openapi generate --server --client-package plugins/x2a-common/client"
+  },
+  "dependencies": {
+    "@backstage/backend-defaults": "^0.15.0",
+    "@backstage/backend-openapi-utils": "^0.6.3",
+    "@backstage/backend-plugin-api": "^1.5.0",
+    "@backstage/catalog-client": "^1.12.1",
+    "@backstage/errors": "^1.2.7",
+    "@backstage/plugin-catalog-node": "^1.20.0",
+    "@backstage/types": "^1.2.2",
+    "@kubernetes/client-node": "^1.4.0",
+    "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*",
+    "express": "^4.17.1",
+    "express-promise-router": "^4.1.0",
+    "knex": "^3.1.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@backstage/backend-test-utils": "^1.10.1",
+    "@backstage/cli": "^0.34.5",
+    "@backstage/plugin-permission-common": "^0.9.4",
+    "@backstage/repo-tools": "^0.16.2",
+    "@types/express": "^4.17.6",
+    "@types/knex": "^0.16.0",
+    "@types/supertest": "^2.0.12",
+    "supertest": "^6.2.4"
+  },
+  "files": [
+    "dist"
+  ],
+  "maintainers": [
+    "@mareklibra",
+    "@elai-shalev",
+    "@eloycoto"
+  ]
+}

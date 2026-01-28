@@ -81,9 +81,9 @@ export class Extensions {
   }
 
   async navigateToExtensions(navText: string) {
-    const navLink = this.page.getByRole('link', { name: `${navText}` }).first();
+    const navLink = this.page.getByRole('link', { name: 'Extensions' }).first();
     await navLink.waitFor({ state: 'visible', timeout: 15_000 });
-    await navLink.dispatchEvent('click');
+    await navLink.click();
     await this.page
       .getByRole('heading', { name: navText })
       .first()

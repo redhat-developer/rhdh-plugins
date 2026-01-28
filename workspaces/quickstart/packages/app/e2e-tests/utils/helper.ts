@@ -15,6 +15,18 @@
  */
 import { Page, expect } from '@playwright/test';
 
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
 export class UIhelper {
   private page: Page;
 
@@ -37,17 +49,10 @@ export class UIhelper {
       .first()
       .click();
   }
-  async verifyButtonURL(
-    label: string | RegExp,
-    url: string,
-    options: { exact: boolean } = { exact: true },
-  ) {
-    expect(
-      await this.page
-        .getByRole('button', { name: label, exact: options.exact })
-        .first()
-        .getAttribute('href'),
-    ).toContain(url);
+  async verifyButtonURL(label: string | RegExp, url: string) {
+    // Use locator('a') to find the actual anchor tag, not getByRole which may see button role
+    const anchor = this.page.locator('a').filter({ hasText: label });
+    expect(await anchor.first().getAttribute('href')).toContain(url);
   }
   async verifyHeading(heading: string | RegExp, exact: boolean = true) {
     await expect(
@@ -63,8 +68,11 @@ export async function switchToLocale(
   page: Page,
   locale: string,
 ): Promise<void> {
+  const baseLocale = locale.split('-')[0];
+  if (baseLocale === 'en') return;
+
+  const displayName = getLocaleDisplayName(locale);
   // Wait for the page to be ready and Settings link to be available
-  // Use a more reliable approach - wait for the Settings link with a reasonable timeout
   await page.waitForLoadState('domcontentloaded');
   await page
     .getByRole('link', { name: 'Settings' })
@@ -75,9 +83,9 @@ export async function switchToLocale(
     .waitFor({ state: 'visible', timeout: 5000 });
   await page.getByRole('button', { name: 'English' }).click();
   await page
-    .getByRole('option', { name: locale })
+    .getByRole('option', { name: displayName })
     .waitFor({ state: 'visible', timeout: 5000 });
-  await page.getByRole('option', { name: locale }).click();
+  await page.getByRole('option', { name: displayName }).click();
   await page
     .locator('a')
     .filter({ hasText: 'Home' })

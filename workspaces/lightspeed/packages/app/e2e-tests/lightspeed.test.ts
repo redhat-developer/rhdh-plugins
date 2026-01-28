@@ -23,6 +23,8 @@ import {
   botResponse,
   moreConversations,
   mockedShields,
+  thinkingContent,
+  assistantResponse,
 } from './fixtures/responses';
 import {
   openLightspeed,
@@ -368,6 +370,23 @@ test.describe('Lightspeed tests', () => {
       await verifySidePanelConversation(sharedPage, translations);
     });
 
+    test('Verify thinking section is displayed in bot response', async () => {
+      const botMessage = sharedPage.locator('.pf-chatbot__message--bot').last();
+      await expect(botMessage).toBeVisible();
+
+      await expect(
+        sharedPage.getByRole('button', {
+          name: translations['reasoning.thinking'],
+        }),
+      ).toBeVisible();
+
+      await expect(sharedPage.locator('#deep-thinking-1')).toBeVisible();
+
+      await expect(
+        sharedPage.getByLabel(translations['reasoning.thinking']),
+      ).toContainText(thinkingContent);
+    });
+
     test('Verify scroll controls in Conversation', async ({
       browser,
     }, testInfo) => {
@@ -464,7 +483,7 @@ test.describe('Lightspeed tests', () => {
         devMode ? contents[0].messages[0].content : 'tell me about Backstage',
       );
       await expect(botMessage).toContainText(
-        devMode ? contents[0].messages[1].content : 'Backstage',
+        devMode ? assistantResponse : 'Backstage',
       );
     });
 

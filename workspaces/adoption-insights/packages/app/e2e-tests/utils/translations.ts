@@ -18,9 +18,10 @@
 /* eslint-disable @backstage/no-relative-monorepo-imports */
 import { adoptionInsightsMessages } from '../../../../plugins/adoption-insights/src/translations/ref.js';
 import adoptionInsightsTranslationDe from '../../../../plugins/adoption-insights/src/translations/de.js';
-import adoptionInsightsTranslationFr from '../../../../plugins/adoption-insights/src/translations/fr.js';
 import adoptionInsightsTranslationEs from '../../../../plugins/adoption-insights/src/translations/es.js';
+import adoptionInsightsTranslationFr from '../../../../plugins/adoption-insights/src/translations/fr.js';
 import adoptionInsightsTranslationIt from '../../../../plugins/adoption-insights/src/translations/it.js';
+import adoptionInsightsTranslationJa from '../../../../plugins/adoption-insights/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type InsightsMessages = typeof adoptionInsightsMessages;
@@ -44,14 +45,16 @@ export function getTranslations(locale: string) {
   switch (locale) {
     case 'en':
       return adoptionInsightsMessages;
-    case 'fr':
-      return transform(adoptionInsightsTranslationFr.messages);
     case 'de':
       return transform(adoptionInsightsTranslationDe.messages);
     case 'es':
       return transform(adoptionInsightsTranslationEs.messages);
+    case 'fr':
+      return transform(adoptionInsightsTranslationFr.messages);
     case 'it':
       return transform(adoptionInsightsTranslationIt.messages);
+    case 'ja':
+      return transform(adoptionInsightsTranslationJa.messages);
     default:
       return adoptionInsightsMessages;
   }
@@ -72,4 +75,13 @@ export function replaceTemplate(
     result = result.replaceAll(`{{${key}}}`, String(value));
   }
   return result;
+}
+
+/**
+ * Escape special regex characters in a string
+ * @param str - String to escape
+ * @returns String with regex special characters escaped
+ */
+export function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

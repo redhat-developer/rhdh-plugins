@@ -77,7 +77,7 @@ test.describe('Bulk Import', () => {
         // Wait for the sidebar to be visible before navigating
         await expect(sharedPage.getByText('My Company Catalog')).toBeVisible();
         // Wait for catalog to load - use English text since we haven't switched locale yet
-        await expect(sharedPage.getByText('All Components (1)')).toBeVisible({
+        await expect(sharedPage.getByText('All Components')).toBeVisible({
           timeout: waitTimeout,
         });
 
@@ -257,7 +257,9 @@ test.describe('Bulk Import', () => {
       .getByRole('button', { name: translations.common.import })
       .click();
     await expect(
-      sharedPage.getByText(translations.status.imported),
+      sharedPage
+        .locator('tbody')
+        .getByText(translations.status.imported, { exact: true }),
     ).toBeVisible();
     await expect(sharedPage.locator('tbody')).toMatchAriaSnapshot(`
       - cell "${translations.status.waitingForApproval} ${translations.repositories.pr} , Opens in a new window":

@@ -18,7 +18,7 @@ import { JsonObject } from '@backstage/types';
 
 import { JSONSchema7 } from 'json-schema';
 
-import { pruneFormData } from './pruneFormData';
+import { omitFromWorkflowInput, pruneFormData } from './pruneFormData';
 
 describe('pruneFormData', () => {
   describe('Basic Property Handling', () => {
@@ -724,6 +724,65 @@ describe('pruneFormData', () => {
       });
       expect(result.step1).not.toHaveProperty('advancedField1');
       expect(result.step1).not.toHaveProperty('advancedField2');
+    });
+  });
+
+  describe('omitFromWorkflowInput', () => {
+    it('should remove properties marked with omitFromWorkflowInput', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          visible: { type: 'string' },
+          hidden: {
+            type: 'string',
+            omitFromWorkflowInput: true,
+          } as JSONSchema7,
+        },
+      };
+
+      const formData = {
+        visible: 'keep',
+        hidden: 'omit',
+      };
+
+      const result = omitFromWorkflowInput(formData, schema);
+
+      expect(result).toEqual({ visible: 'keep' });
+      expect(result).not.toHaveProperty('hidden');
+    });
+
+    it('should remove nested properties marked with omitFromWorkflowInput', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          step: {
+            type: 'object',
+            properties: {
+              visible: { type: 'string' },
+              secret: {
+                type: 'string',
+                omitFromWorkflowInput: true,
+              } as JSONSchema7,
+            },
+          },
+        },
+      };
+
+      const formData = {
+        step: {
+          visible: 'keep',
+          secret: 'omit',
+        },
+      };
+
+      const result = omitFromWorkflowInput(formData, schema);
+
+      expect(result).toEqual({
+        step: {
+          visible: 'keep',
+        },
+      });
+      expect(result.step).not.toHaveProperty('secret');
     });
   });
 });
