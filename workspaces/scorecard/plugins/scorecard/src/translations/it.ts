@@ -56,6 +56,9 @@ const scorecardTranslationIt = createTranslationMessages({
     'thresholds.success': 'Attività riuscita',
     'thresholds.warning': 'Avviso',
     'thresholds.error': 'Errore',
+    'thresholds.noEntities': 'Nessuna entità con stato {{category}}',
+    'thresholds.entities_one': '{{count}} entità',
+    'thresholds.entities_other': '{{count}} entità',
   },
 });
 
