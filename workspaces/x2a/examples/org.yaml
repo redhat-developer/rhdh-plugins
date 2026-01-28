@@ -23,5 +23,5 @@ metadata:
 spec:
   profile:
     displayName: Marek Libra
-    email: marek.libra@gmail.com
+    email: foo@bar.com
   memberOf: []
