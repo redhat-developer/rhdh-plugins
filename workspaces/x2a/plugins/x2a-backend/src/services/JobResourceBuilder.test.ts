@@ -37,12 +37,12 @@ describe('JobResourceBuilder', () => {
           LLM_MODEL: 'anthropic.claude-v2',
           AWS_REGION: 'us-east-1',
           AWS_ACCESS_KEY_ID: 'AKIA_TEST',
-          AWS_SECRET_ACCESS_KEY: 'test-secret-key',
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key', // NOSONAR
         },
         aap: {
           url: 'https://aap.example.com',
           orgName: 'TestOrg',
-          oauthToken: 'test-oauth-token',
+          oauthToken: 'test-oauth-token', // NOSONAR
         },
       },
     };
@@ -64,7 +64,7 @@ describe('JobResourceBuilder', () => {
           LLM_MODEL: 'anthropic.claude-v2',
           AWS_REGION: 'us-east-1',
           AWS_ACCESS_KEY_ID: 'AKIA_TEST',
-          AWS_SECRET_ACCESS_KEY: 'test-secret-key',
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key', // NOSONAR
         });
       });
 
@@ -72,7 +72,7 @@ describe('JobResourceBuilder', () => {
         mockConfig.credentials.llm = {
           LLM_MODEL: 'anthropic.claude-v2',
           AWS_REGION: 'us-east-1',
-          AWS_BEARER_TOKEN_BEDROCK: 'test-bearer-token',
+          AWS_BEARER_TOKEN_BEDROCK: 'test-bearer-token', // NOSONAR
         };
 
         const secret = JobResourceBuilder.buildProjectSecret(
@@ -85,7 +85,7 @@ describe('JobResourceBuilder', () => {
         expect(secret.stringData).toMatchObject({
           LLM_MODEL: 'anthropic.claude-v2',
           AWS_REGION: 'us-east-1',
-          AWS_BEARER_TOKEN_BEDROCK: 'test-bearer-token',
+          AWS_BEARER_TOKEN_BEDROCK: 'test-bearer-token', // NOSONAR
         });
         expect(secret.stringData!.AWS_ACCESS_KEY_ID).toBeUndefined();
         expect(secret.stringData!.AWS_SECRET_ACCESS_KEY).toBeUndefined();
@@ -93,7 +93,7 @@ describe('JobResourceBuilder', () => {
 
       it('should support generic LLM providers (e.g., OpenAI)', () => {
         mockConfig.credentials.llm = {
-          OPENAI_API_KEY: 'sk-test-key',
+          OPENAI_API_KEY: 'sk-test-key', // NOSONAR
           OPENAI_MODEL: 'gpt-4',
           OPENAI_ORG_ID: 'org-test',
         };
@@ -105,7 +105,7 @@ describe('JobResourceBuilder', () => {
         );
 
         expect(secret.stringData).toMatchObject({
-          OPENAI_API_KEY: 'sk-test-key',
+          OPENAI_API_KEY: 'sk-test-key', // NOSONAR
           OPENAI_MODEL: 'gpt-4',
           OPENAI_ORG_ID: 'org-test',
         });
@@ -138,7 +138,7 @@ describe('JobResourceBuilder', () => {
           url: 'https://aap.example.com',
           orgName: 'TestOrg',
           username: 'admin',
-          password: 'admin-password',
+          password: 'admin-password', // NOSONAR
         };
 
         const secret = JobResourceBuilder.buildProjectSecret(
@@ -165,7 +165,7 @@ describe('JobResourceBuilder', () => {
           url: 'https://user-aap.example.com',
           orgName: 'UserOrg',
           username: 'user',
-          password: 'pass',
+          password: 'pass', // NOSONAR
         };
 
         const secret = JobResourceBuilder.buildProjectSecret(
@@ -222,9 +222,9 @@ describe('JobResourceBuilder', () => {
         mockConfig.credentials.aap = {
           url: 'https://aap.example.com',
           orgName: 'TestOrg',
-          oauthToken: 'test-oauth-token',
+          oauthToken: 'test-oauth-token', // NOSONAR
           username: 'admin',
-          password: 'admin-password',
+          password: 'admin-password', // NOSONAR
         };
 
         expect(() =>
@@ -260,7 +260,7 @@ describe('JobResourceBuilder', () => {
         mockConfig.credentials.aap = {
           url: 'https://aap.example.com',
           orgName: 'TestOrg',
-          password: 'admin-password',
+          password: 'admin-password', // NOSONAR
         };
 
         expect(() =>
@@ -352,12 +352,12 @@ describe('JobResourceBuilder', () => {
     const gitCredentials = {
       sourceRepo: {
         url: 'https://github.com/org/source',
-        token: 'source-token',
+        token: 'source-token', // NOSONAR
         branch: 'main',
       },
       targetRepo: {
         url: 'https://github.com/org/target',
-        token: 'target-token',
+        token: 'target-token', // NOSONAR
         branch: 'main',
       },
     };
@@ -465,16 +465,16 @@ describe('JobResourceBuilder', () => {
       projectName: 'Test Project',
       phase: 'init',
       user: 'user:default/test',
-      callbackToken: 'callback-token-123',
+      callbackToken: 'callback-token-123', // NOSONAR
       callbackUrl: 'http://backstage:7007/api/x2a/callback',
       sourceRepo: {
         url: 'https://github.com/org/source',
-        token: 'source-token',
+        token: 'source-token', // NOSONAR
         branch: 'main',
       },
       targetRepo: {
         url: 'https://github.com/org/target',
-        token: 'target-token',
+        token: 'target-token', // NOSONAR
         branch: 'main',
       },
     };
@@ -531,6 +531,35 @@ describe('JobResourceBuilder', () => {
           'x2a.redhat.com/callback-url':
             'http://backstage:7007/api/x2a/callback',
         });
+      });
+
+      it('should handle very long project names without ReDoS (security)', () => {
+        // Create a very long string to test ReDoS protection
+        const veryLongName = `${'a'.repeat(1000)}!!!!${'b'.repeat(1000)}`;
+        const paramsWithLongName: JobCreateParams = {
+          ...baseParams,
+          projectName: veryLongName,
+        };
+
+        // Should complete quickly (not hang due to regex backtracking)
+        const startTime = Date.now();
+        const job = JobResourceBuilder.buildJobSpec(
+          paramsWithLongName,
+          mockConfig,
+        );
+        const duration = Date.now() - startTime;
+
+        // Should complete in reasonable time (less than 100ms)
+        expect(duration).toBeLessThan(100);
+
+        // Should truncate to 63 chars and sanitize properly
+        const projectNameLabel =
+          job.metadata?.labels?.['x2a.redhat.com/project-name'];
+        expect(projectNameLabel).toBeDefined();
+        expect(projectNameLabel!.length).toBeLessThanOrEqual(63);
+        expect(projectNameLabel).toMatch(
+          /^[a-zA-Z0-9][-a-zA-Z0-9_.]*[a-zA-Z0-9]$/,
+        );
       });
     });
 

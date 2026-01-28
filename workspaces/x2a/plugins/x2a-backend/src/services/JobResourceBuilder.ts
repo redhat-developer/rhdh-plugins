@@ -320,15 +320,20 @@ export class JobResourceBuilder {
    * Labels must match: (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
    * Max length: 63 characters
    *
+   * Security: Input is truncated before regex operations to prevent ReDoS attacks
+   *
    * @param value - The string to sanitize
    * @returns A valid Kubernetes label value
    */
   private static sanitizeLabelValue(value: string): string {
-    return value
+    // Truncate early to prevent ReDoS with long inputs
+    const truncated = value.substring(0, 63);
+
+    return truncated
       .replace(/[^a-zA-Z0-9-_.]/g, '-') // Replace invalid chars with dash
       .replace(/^[^a-zA-Z0-9]+/, '') // Remove leading non-alphanumeric
       .replace(/[^a-zA-Z0-9]+$/, '') // Remove trailing non-alphanumeric
-      .substring(0, 63); // Truncate to 63 chars
+      .substring(0, 63); // Final truncate to ensure 63 char limit
   }
 
   /**
