@@ -316,7 +316,7 @@ describe('types', () => {
         phase: 'init',
         user: 'user:default/testuser',
         callbackToken: 'callback-token-789', // NOSONAR
-        callbackUrl: 'http://backstage:7007/api/x2a/callback',
+        callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
       };
 
       expect(params.phase).toBe('init');
@@ -325,7 +325,7 @@ describe('types', () => {
       expect(params.projectName).toBe('Test Project');
       expect(params.user).toBe('user:default/testuser');
       expect(params.callbackToken).toBe('callback-token-789');
-      expect(params.callbackUrl).toBe('http://backstage:7007/api/x2a/callback');
+      expect(params.callbackUrl).toBe('http://backstage:7007/api/x2a/callback'); // NOSONAR
       expect(params.moduleId).toBeUndefined();
       expect(params.moduleName).toBeUndefined();
       expect(params.userPrompt).toBeUndefined();
@@ -339,7 +339,7 @@ describe('types', () => {
         phase: 'analyze',
         user: 'user:default/testuser',
         callbackToken: 'callback-token-789', // NOSONAR
-        callbackUrl: 'http://backstage:7007/api/x2a/callback',
+        callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
       };
@@ -357,7 +357,7 @@ describe('types', () => {
         phase: 'migrate',
         user: 'user:default/testuser',
         callbackToken: 'callback-token-789', // NOSONAR
-        callbackUrl: 'http://backstage:7007/api/x2a/callback',
+        callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
       };
@@ -375,7 +375,7 @@ describe('types', () => {
         phase: 'publish',
         user: 'user:default/testuser',
         callbackToken: 'callback-token-789', // NOSONAR
-        callbackUrl: 'http://backstage:7007/api/x2a/callback',
+        callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
       };
@@ -393,7 +393,7 @@ describe('types', () => {
         phase: 'init',
         user: 'user:default/testuser',
         callbackToken: 'callback-token-789', // NOSONAR
-        callbackUrl: 'http://backstage:7007/api/x2a/callback',
+        callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         userPrompt: 'Focus on security configurations',
       };
 
@@ -408,7 +408,7 @@ describe('types', () => {
         phase: 'migrate',
         user: 'user:default/testuser',
         callbackToken: 'callback-token-789', // NOSONAR
-        callbackUrl: 'http://backstage:7007/api/x2a/callback',
+        callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
         userPrompt: 'Preserve all comments and documentation',
@@ -437,7 +437,7 @@ describe('types', () => {
           phase,
           user: 'user:default/test',
           callbackToken: 'token-123', // NOSONAR
-          callbackUrl: 'http://localhost:7007/callback',
+          callbackUrl: 'http://localhost:7007/callback', // NOSONAR
         };
 
         expect(params.phase).toBe(phase);
