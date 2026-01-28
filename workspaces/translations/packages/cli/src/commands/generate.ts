@@ -1325,6 +1325,14 @@ async function extractKeysFromCorePluginRefs(
     }
   }
 
+  if (isCommunityPluginsRepo && filteredCount > 0) {
+    console.log(
+      chalk.gray(
+        `  Filtered out ${filteredCount} non-Red Hat owned plugin(s) from community-plugins repo`,
+      ),
+    );
+  }
+
   return structuredData;
 }
 
@@ -1428,14 +1436,6 @@ async function extractKeysFromTranslatedFiles(
         }
       }
     }
-  }
-
-  if (isCommunityPluginsRepo && filteredCount > 0) {
-    console.log(
-      chalk.gray(
-        `  Filtered out ${filteredCount} non-Red Hat owned plugin(s) from community-plugins repo`,
-      ),
-    );
   }
 
   return structuredData;
