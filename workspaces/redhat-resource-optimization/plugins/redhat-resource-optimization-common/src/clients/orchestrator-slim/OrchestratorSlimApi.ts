@@ -17,8 +17,25 @@
 import type { JsonObject } from '@backstage/types';
 
 /** @public */
+export type WorkflowUnavailableReason =
+  | 'not_configured'
+  | 'not_found'
+  | 'access_denied'
+  | 'service_unavailable';
+
+/** @public */
+export interface WorkflowAvailabilityResult {
+  available: boolean;
+  reason?: WorkflowUnavailableReason;
+  errorMessage?: string;
+}
+
+/** @public */
 export interface OrchestratorSlimApi {
   isWorkflowAvailable(workflowId: string): Promise<boolean>;
+  checkWorkflowAvailability(
+    workflowId: string,
+  ): Promise<WorkflowAvailabilityResult>;
   executeWorkflow<D = JsonObject>(
     workflowId: string,
     workflowInputData: D,
