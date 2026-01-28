@@ -1,0 +1,21 @@
+name: PR TOML Validator
+
+on:
+  push:
+    paths:
+      - '**.toml'
+  pull_request:
+    paths:
+      - '**.toml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      - uses: tombi-toml/setup-tombi@f7cb38e77d9a62bc27a8445bf50e660e9496b893 # v1.0.7
+        with:
+          version: 'v0.7.22'
+          checksum: '2f96342066b02ac374b2b457c9927264fd086256c1c6ccc817eced8367f1d83c'
+      - name: Validate TOML files
+        run: tombi lint
