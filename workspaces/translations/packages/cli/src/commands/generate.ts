@@ -26,6 +26,7 @@ import { generateTranslationFiles } from '../lib/i18n/generateFiles';
 import { mergeTranslationFiles } from '../lib/i18n/mergeFiles';
 import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
 import { safeExecSyncOrThrow } from '../lib/utils/exec';
+import { isRedHatOwnedPlugin } from '../lib/i18n/deployTranslations';
 
 /**
  * Detect repository name from git or directory
@@ -1269,9 +1270,21 @@ async function extractKeysFromCorePluginRefs(
   pluginRefFiles: string[],
   shouldFilterByUsage: boolean,
   usedPlugins: Set<string>,
+  communityPluginsRoot?: string | null,
 ): Promise<Record<string, { en: Record<string, string> }>> {
   const structuredData: Record<string, { en: Record<string, string> }> = {};
 
+  // Check if we're scanning community-plugins repo (has workspaces/plugins structure, not workspaces/packages)
+  const isCommunityPluginsRepo =
+    communityPluginsRoot &&
+    pluginRefFiles.some(
+      file =>
+        file.includes('workspaces/') &&
+        file.includes('/plugins/') &&
+        !file.includes('/packages/'),
+    );
+
+  let filteredCount = 0;
   for (const refFile of pluginRefFiles) {
     try {
       const { keys, pluginName } = await extractKeysFromRefFile(refFile);
@@ -1281,6 +1294,14 @@ async function extractKeysFromCorePluginRefs(
       }
 
       const mappedPluginName = mapPluginName(pluginName, refFile);
+
+      // Filter: Only include Red Hat owned plugins when scanning community-plugins repo
+      if (isCommunityPluginsRepo && communityPluginsRoot) {
+        if (!isRedHatOwnedPlugin(mappedPluginName, communityPluginsRoot)) {
+          filteredCount++;
+          continue;
+        }
+      }
 
       if (shouldFilterByUsage && !usedPlugins.has(mappedPluginName)) {
         continue;
@@ -1409,6 +1430,14 @@ async function extractKeysFromTranslatedFiles(
     }
   }
 
+  if (isCommunityPluginsRepo && filteredCount > 0) {
+    console.log(
+      chalk.gray(
+        `  Filtered out ${filteredCount} non-Red Hat owned plugin(s) from community-plugins repo`,
+      ),
+    );
+  }
+
   return structuredData;
 }
 
@@ -1476,19 +1505,49 @@ async function processCorePlugins(
     );
   }
 
+  // Check if we're scanning community-plugins repo (has workspaces/plugins structure)
+  // If so, we need to filter to only Red Hat owned plugins
+  const isCommunityPluginsRepo = pluginRefFiles.some(
+    file =>
+      file.includes('workspaces/') &&
+      file.includes('/plugins/') &&
+      !file.includes('/packages/'),
+  );
+  const communityPluginsRoot = isCommunityPluginsRepo
+    ? backstageRepoPath
+    : null;
+
+  if (isCommunityPluginsRepo) {
+    console.log(
+      chalk.yellow(
+        `🔍 Detected community-plugins repo - filtering to Red Hat owned plugins only...`,
+      ),
+    );
+  }
+
   const refData = await extractKeysFromCorePluginRefs(
     pluginRefFiles,
     shouldFilterByUsage,
     usedPlugins,
+    communityPluginsRoot,
   );
 
   Object.assign(structuredData, refData);
 
-  console.log(
-    chalk.green(
-      `✅ Extracted keys from ${usedPlugins.size} Backstage plugin packages used in RHDH`,
-    ),
-  );
+  const pluginCount = Object.keys(structuredData).length;
+  if (isCommunityPluginsRepo) {
+    console.log(
+      chalk.green(
+        `✅ Extracted keys from ${pluginCount} Red Hat owned plugin(s) in community-plugins repo`,
+      ),
+    );
+  } else {
+    console.log(
+      chalk.green(
+        `✅ Extracted keys from ${usedPlugins.size} Backstage plugin packages used in RHDH`,
+      ),
+    );
+  }
 
   const translatedFiles = await findCorePluginsTranslatedFiles(
     repoRoot,
@@ -1507,7 +1566,16 @@ async function processCorePlugins(
       repoRoot,
     );
 
+    // Filter: Only include Red Hat owned plugins when scanning community-plugins repo
+    let filteredTranslatedCount = 0;
     for (const [pluginName, pluginKeys] of Object.entries(translatedData)) {
+      if (isCommunityPluginsRepo && communityPluginsRoot) {
+        if (!isRedHatOwnedPlugin(pluginName, communityPluginsRoot)) {
+          filteredTranslatedCount++;
+          continue;
+        }
+      }
+
       if (!structuredData[pluginName]) {
         structuredData[pluginName] = { en: {} };
       }
@@ -1517,6 +1585,14 @@ async function processCorePlugins(
           structuredData[pluginName].en[key] = value;
         }
       }
+    }
+
+    if (isCommunityPluginsRepo && filteredTranslatedCount > 0) {
+      console.log(
+        chalk.gray(
+          `  Filtered out ${filteredTranslatedCount} non-Red Hat owned plugin(s) from translated files`,
+        ),
+      );
     }
 
     console.log(

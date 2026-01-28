@@ -440,7 +440,7 @@ function getCommunityPluginsRepoRoot(repoRoot: string): string | null {
 /**
  * Check if a plugin is Red Hat owned by checking package.json for "author": "Red Hat"
  */
-function isRedHatOwnedPlugin(
+export function isRedHatOwnedPlugin(
   pluginName: string,
   communityPluginsRoot: string,
 ): boolean {
@@ -1717,12 +1717,10 @@ export async function deployTranslations(
     console.log(chalk.cyan(`\n  🌍 Language: ${lang.toUpperCase()}`));
     console.log(chalk.gray(`  📄 Processing: ${displayFilename}`));
 
-    // Copy JSON file to rhdh_root/translations/ for backstage and community-plugins repos
+    // Copy JSON file to rhdh_root/translations/ for backstage repos only
+    // Note: community-plugins JSON files are NOT copied to rhdh_root/translations/
     let communityPluginsRoot: string | null = null;
-    if (
-      effectiveRepoType === 'backstage' ||
-      effectiveRepoType === 'community-plugins'
-    ) {
+    if (effectiveRepoType === 'backstage') {
       const targetRoot = getTargetRepoRoot(repoRoot, effectiveRepoType);
       const translationsDir = path.join(targetRoot, 'translations');
 
@@ -1845,18 +1843,18 @@ export async function deployTranslations(
           }
         }
       }
+    }
 
-      // Find community-plugins repo for Red Hat owned plugins deployment
-      // Only when running from rhdh repo
-      if (repoType === 'rhdh') {
-        communityPluginsRoot = getCommunityPluginsRepoRoot(repoRoot);
-        if (communityPluginsRoot) {
-          console.log(
-            chalk.gray(
-              `  📦 Community-plugins repo found: ${communityPluginsRoot}`,
-            ),
-          );
-        }
+    // Find community-plugins repo for Red Hat owned plugins deployment
+    // Only when running from rhdh repo and processing community-plugins files
+    if (repoType === 'rhdh' && effectiveRepoType === 'community-plugins') {
+      communityPluginsRoot = getCommunityPluginsRepoRoot(repoRoot);
+      if (communityPluginsRoot) {
+        console.log(
+          chalk.gray(
+            `  📦 Community-plugins repo found: ${communityPluginsRoot}`,
+          ),
+        );
       }
     }
 
