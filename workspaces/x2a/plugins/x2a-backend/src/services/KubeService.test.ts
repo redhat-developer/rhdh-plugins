@@ -65,12 +65,12 @@ describe('KubeService', () => {
           LLM_MODEL: 'anthropic.claude-v2',
           AWS_REGION: 'us-east-1',
           AWS_ACCESS_KEY_ID: 'AKIA_TEST',
-          AWS_SECRET_ACCESS_KEY: 'test-secret-key',
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key', // NOSONAR
         },
         aap: {
           url: 'https://aap.example.com',
           orgName: 'TestOrg',
-          oauthToken: 'test-oauth-token',
+          oauthToken: 'test-oauth-token', // NOSONAR
         },
       },
     };
@@ -105,10 +105,10 @@ describe('KubeService', () => {
             LLM_MODEL: 'anthropic.claude-v2',
             AWS_REGION: 'us-east-1',
             AWS_ACCESS_KEY_ID: 'AKIA_TEST',
-            AWS_SECRET_ACCESS_KEY: 'test-secret-key',
+            AWS_SECRET_ACCESS_KEY: 'test-secret-key', // NOSONAR
             AAP_CONTROLLER_URL: 'https://aap.example.com',
             AAP_ORG_NAME: 'TestOrg',
-            AAP_OAUTH_TOKEN: 'test-oauth-token',
+            AAP_OAUTH_TOKEN: 'test-oauth-token', // NOSONAR
           }),
         }),
       });
@@ -126,7 +126,7 @@ describe('KubeService', () => {
         url: 'https://user-aap.example.com',
         orgName: 'UserOrg',
         username: 'user',
-        password: 'pass',
+        password: 'pass', // NOSONAR
       };
 
       await kubeService.createProjectSecret(projectId, userAapCreds);
@@ -136,7 +136,7 @@ describe('KubeService', () => {
         AAP_CONTROLLER_URL: 'https://user-aap.example.com',
         AAP_ORG_NAME: 'UserOrg',
         AAP_USERNAME: 'user',
-        AAP_PASSWORD: 'pass',
+        AAP_PASSWORD: 'pass', // NOSONAR
       });
       expect(call.body.stringData.AAP_OAUTH_TOKEN).toBeUndefined();
     });
@@ -234,16 +234,16 @@ describe('KubeService', () => {
       projectName: 'Test Project',
       phase: 'init' as const,
       user: 'user:default/test',
-      callbackToken: 'callback-token-123',
+      callbackToken: 'callback-token-123', // NOSONAR
       callbackUrl: 'http://backstage:7007/api/x2a/callback',
       sourceRepo: {
         url: 'https://github.com/org/source',
-        token: 'source-token',
+        token: 'source-token', // NOSONAR
         branch: 'main',
       },
       targetRepo: {
         url: 'https://github.com/org/target',
-        token: 'target-token',
+        token: 'target-token', // NOSONAR
         branch: 'main',
       },
     };

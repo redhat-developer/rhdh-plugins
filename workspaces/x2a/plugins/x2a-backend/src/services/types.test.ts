@@ -72,7 +72,7 @@ describe('types', () => {
           aap: {
             url: 'https://aap.example.com',
             orgName: 'TestOrg',
-            oauthToken: 'test-oauth-token',
+            oauthToken: 'test-oauth-token', // NOSONAR
           },
         },
       };
@@ -99,13 +99,13 @@ describe('types', () => {
           llm: {
             model: 'anthropic.claude-v2',
             region: 'us-east-1',
-            bearerToken: 'test-bearer-token',
+            bearerToken: 'test-bearer-token', // NOSONAR
           },
           aap: {
             url: 'https://aap.example.com',
             orgName: 'TestOrg',
             username: 'admin',
-            password: 'admin-password',
+            password: 'admin-password', // NOSONAR
           },
         },
       };
@@ -163,7 +163,7 @@ describe('types', () => {
           aap: {
             url: 'https://aap.example.com',
             orgName: 'TestOrg',
-            oauthToken: 'test-oauth-token',
+            oauthToken: 'test-oauth-token', // NOSONAR
           },
         },
       };
@@ -196,7 +196,7 @@ describe('types', () => {
             url: 'https://aap.example.com',
             orgName: 'TestOrg',
             username: 'admin',
-            password: 'admin-password',
+            password: 'admin-password', // NOSONAR
           },
         },
       };
@@ -211,7 +211,7 @@ describe('types', () => {
     it('should accept valid git repository credentials', () => {
       const gitCreds: GitRepoCredentials = {
         url: 'https://github.com/org/repo',
-        token: 'ghp_testtoken123',
+        token: 'ghp_testtoken123', // NOSONAR
         branch: 'main',
       };
 
@@ -223,7 +223,7 @@ describe('types', () => {
     it('should accept different branch names', () => {
       const gitCreds: GitRepoCredentials = {
         url: 'https://github.com/org/repo',
-        token: 'ghp_testtoken123',
+        token: 'ghp_testtoken123', // NOSONAR
         branch: 'develop',
       };
 
@@ -236,7 +236,7 @@ describe('types', () => {
       const aapCreds: AAPCredentials = {
         url: 'https://aap.example.com',
         orgName: 'MyOrg',
-        oauthToken: 'oauth-token-123',
+        oauthToken: 'oauth-token-123', // NOSONAR
       };
 
       expect(aapCreds.url).toBe('https://aap.example.com');
@@ -251,7 +251,7 @@ describe('types', () => {
         url: 'https://aap.example.com',
         orgName: 'MyOrg',
         username: 'admin',
-        password: 'secure-password',
+        password: 'secure-password', // NOSONAR
       };
 
       expect(aapCreds.username).toBe('admin');
@@ -265,12 +265,12 @@ describe('types', () => {
       const projectCreds: ProjectCredentials = {
         sourceRepo: {
           url: 'https://github.com/org/source',
-          token: 'ghp_source',
+          token: 'ghp_source', // NOSONAR
           branch: 'main',
         },
         targetRepo: {
           url: 'https://github.com/org/target',
-          token: 'ghp_target',
+          token: 'ghp_target', // NOSONAR
           branch: 'main',
         },
       };
@@ -284,18 +284,18 @@ describe('types', () => {
       const projectCreds: ProjectCredentials = {
         sourceRepo: {
           url: 'https://github.com/org/source',
-          token: 'ghp_source',
+          token: 'ghp_source', // NOSONAR
           branch: 'main',
         },
         targetRepo: {
           url: 'https://github.com/org/target',
-          token: 'ghp_target',
+          token: 'ghp_target', // NOSONAR
           branch: 'main',
         },
         aapCredentials: {
           url: 'https://user-aap.example.com',
           orgName: 'UserOrg',
-          oauthToken: 'user-oauth-token',
+          oauthToken: 'user-oauth-token', // NOSONAR
         },
       };
 
@@ -315,7 +315,7 @@ describe('types', () => {
         projectName: 'Test Project',
         phase: 'init',
         user: 'user:default/testuser',
-        callbackToken: 'callback-token-789',
+        callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback',
       };
 
@@ -338,7 +338,7 @@ describe('types', () => {
         projectName: 'Test Project',
         phase: 'analyze',
         user: 'user:default/testuser',
-        callbackToken: 'callback-token-789',
+        callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback',
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
@@ -356,7 +356,7 @@ describe('types', () => {
         projectName: 'Test Project',
         phase: 'migrate',
         user: 'user:default/testuser',
-        callbackToken: 'callback-token-789',
+        callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback',
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
@@ -374,7 +374,7 @@ describe('types', () => {
         projectName: 'Test Project',
         phase: 'publish',
         user: 'user:default/testuser',
-        callbackToken: 'callback-token-789',
+        callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback',
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
@@ -392,7 +392,7 @@ describe('types', () => {
         projectName: 'Test Project',
         phase: 'init',
         user: 'user:default/testuser',
-        callbackToken: 'callback-token-789',
+        callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback',
         userPrompt: 'Focus on security configurations',
       };
@@ -407,7 +407,7 @@ describe('types', () => {
         projectName: 'Test Project',
         phase: 'migrate',
         user: 'user:default/testuser',
-        callbackToken: 'callback-token-789',
+        callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback',
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
@@ -436,7 +436,7 @@ describe('types', () => {
           projectName: 'Test',
           phase,
           user: 'user:default/test',
-          callbackToken: 'token-123',
+          callbackToken: 'token-123', // NOSONAR
           callbackUrl: 'http://localhost:7007/callback',
         };
 
@@ -467,7 +467,7 @@ describe('types', () => {
           aap: {
             url: 'https://aap.example.com',
             orgName: 'Org',
-            oauthToken: 'token',
+            oauthToken: 'token', // NOSONAR
           },
         },
       };
@@ -488,13 +488,13 @@ describe('types', () => {
           llm: {
             model: 'claude',
             region: 'us-east-1',
-            bearerToken: 'bearer-token',
+            bearerToken: 'bearer-token', // NOSONAR
           },
           aap: {
             url: 'https://aap.example.com',
             orgName: 'Org',
             username: 'user',
-            password: 'pass',
+            password: 'pass', // NOSONAR
           },
         },
       };
