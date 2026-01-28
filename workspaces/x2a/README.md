@@ -34,13 +34,25 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
    yarn install
    ```
 
-2. Start the development environment:
+2. Start the development environment with just the plugin loaded:
 
    ```sh
+   export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
+   export AUTH_GITHUB_CLIENT_SECRET=... # Optional if "guest" user is not enough
+
    yarn dev
    ```
 
    This command runs both the frontend and backend plugins in parallel. The frontend will be available at `http://localhost:3000` and the backend at `http://localhost:7007`.
+
+   Eventually run the full Backstage application for more advanced testing or development, i.e. scaffolder or RBAC:
+
+   ```sh
+   export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
+   export AUTH_GITHUB_CLIENT_SECRET=... # Optional if "guest" user is not enough
+
+   yarn start
+   ```
 
 ## Adding New API Endpoints
 

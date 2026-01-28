@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createDevApp } from '@backstage/dev-utils';
-import { x2APlugin, X2APage } from '../src/plugin';
-import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
-createDevApp()
-  .registerPlugin(x2APlugin)
-  .addPage({
-    element: <X2APage />,
-    title: 'Conversion Hub',
-    path: '/x2a',
-  })
-  .addSignInProvider({
-    id: 'github-auth-provider',
-    title: 'GitHub',
-    message: 'Sign in using GitHub',
-    apiRef: githubAuthApiRef,
-  })
-  .render();
+import { test, expect } from '@playwright/test';
+
+test('App should render the welcome page', async ({ page }) => {
+  await page.goto('/');
+
+  const enterButton = page.getByRole('button', { name: 'Enter' });
+  await expect(enterButton).toBeVisible();
+  await enterButton.click();
+
+  await expect(page.getByText('My Company Catalog')).toBeVisible();
+});

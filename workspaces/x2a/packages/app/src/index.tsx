@@ -13,21 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createDevApp } from '@backstage/dev-utils';
-import { x2APlugin, X2APage } from '../src/plugin';
-import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import '@backstage/cli/asset-types';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import '@backstage/ui/css/styles.css';
 
-createDevApp()
-  .registerPlugin(x2APlugin)
-  .addPage({
-    element: <X2APage />,
-    title: 'Conversion Hub',
-    path: '/x2a',
-  })
-  .addSignInProvider({
-    id: 'github-auth-provider',
-    title: 'GitHub',
-    message: 'Sign in using GitHub',
-    apiRef: githubAuthApiRef,
-  })
-  .render();
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
