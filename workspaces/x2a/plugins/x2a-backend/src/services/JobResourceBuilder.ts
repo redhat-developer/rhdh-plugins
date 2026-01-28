@@ -320,20 +320,47 @@ export class JobResourceBuilder {
    * Labels must match: (([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?
    * Max length: 63 characters
    *
-   * Security: Input is truncated before regex operations to prevent ReDoS attacks
+   * Security: Uses manual character iteration for trimming to prevent ReDoS.
+   * Guaranteed O(n) time complexity where n ≤ 63.
    *
    * @param value - The string to sanitize
    * @returns A valid Kubernetes label value
    */
   private static sanitizeLabelValue(value: string): string {
     // Truncate early to prevent ReDoS with long inputs
-    const truncated = value.substring(0, 63);
+    let sanitized = value.substring(0, 63);
 
-    return truncated
-      .replace(/[^a-zA-Z0-9-_.]/g, '-') // Replace invalid chars with dash
-      .replace(/^[^a-zA-Z0-9]+/, '') // Remove leading non-alphanumeric
-      .replace(/[^a-zA-Z0-9]+$/, '') // Remove trailing non-alphanumeric
-      .substring(0, 63); // Final truncate to ensure 63 char limit
+    // Replace invalid chars with dash (safe - no backtracking)
+    sanitized = sanitized.replace(/[^a-zA-Z0-9-_.]/g, '-');
+
+    // Remove leading non-alphanumeric (manual iteration - guaranteed O(n))
+    let start = 0;
+    while (start < sanitized.length) {
+      const char = sanitized[start];
+      const isAlphaNumeric =
+        (char >= 'a' && char <= 'z') ||
+        (char >= 'A' && char <= 'Z') ||
+        (char >= '0' && char <= '9');
+      if (isAlphaNumeric) break;
+      start++;
+    }
+    sanitized = sanitized.substring(start);
+
+    // Remove trailing non-alphanumeric (manual iteration - guaranteed O(n))
+    let end = sanitized.length;
+    while (end > 0) {
+      const char = sanitized[end - 1];
+      const isAlphaNumeric =
+        (char >= 'a' && char <= 'z') ||
+        (char >= 'A' && char <= 'Z') ||
+        (char >= '0' && char <= '9');
+      if (isAlphaNumeric) break;
+      end--;
+    }
+    sanitized = sanitized.substring(0, end);
+
+    // Final truncate to ensure 63 char limit
+    return sanitized.substring(0, 63);
   }
 
   /**
