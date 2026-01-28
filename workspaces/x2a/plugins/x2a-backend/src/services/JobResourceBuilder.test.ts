@@ -15,11 +15,10 @@
  */
 
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig, ProjectCredentials, JobCreateParams } from './types';
+import { X2AConfig, JobCreateParams } from './types';
 
 describe('JobResourceBuilder', () => {
   let mockConfig: X2AConfig;
-  let projectCredentials: ProjectCredentials;
 
   beforeEach(() => {
     mockConfig = {
@@ -45,19 +44,6 @@ describe('JobResourceBuilder', () => {
           orgName: 'TestOrg',
           oauthToken: 'test-oauth-token',
         },
-      },
-    };
-
-    projectCredentials = {
-      sourceRepo: {
-        url: 'https://github.com/org/source',
-        token: 'source-token',
-        branch: 'main',
-      },
-      targetRepo: {
-        url: 'https://github.com/org/target',
-        token: 'target-token',
-        branch: 'main',
       },
     };
   });
