@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira
 
+## 2.3.2
+
+### Patch Changes
+
+- 1f0b3b7: Include the missing config.d.ts files under the files section defined within the package.json
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.2
+
 ## 2.3.1
 
 ### Patch Changes
