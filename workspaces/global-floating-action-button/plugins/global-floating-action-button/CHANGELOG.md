@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.7.3
+
+### Patch Changes
+
+- 0f684d9: Updated documentation examples to use the new `/bulk-import` route instead of `/bulk-import/repositories`
+
 ## 1.7.2
 
 ### Patch Changes
