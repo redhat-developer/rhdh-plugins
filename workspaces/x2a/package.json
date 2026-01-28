@@ -3,29 +3,30 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "20 || 22"
+    "node": "22 || 24"
   },
   "scripts": {
     "dev": "yarn workspaces foreach -A --include @red-hat-developer-hub/backstage-plugin-x2a --include @red-hat-developer-hub/backstage-plugin-x2a-backend --parallel -v -i run start",
     "start": "backstage-cli repo start",
-    "start-backend": "yarn workspace backend start",
-    "tsc": "tsc",
-    "tsc:full": "tsc --skipLibCheck false --incremental false",
+    "build:backend": "yarn workspace backend build",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only --tsc",
     "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-undocumented --validate-release-tags --exclude client/src/schema/openapi/generated",
     "build:knip-reports": "backstage-repo-tools knip-reports",
+    "build-image": "yarn workspace backend build-image",
+    "tsc": "tsc",
+    "tsc:full": "tsc --skipLibCheck false --incremental false",
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",
+    "test:e2e": "playwright test",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
-    "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "new": "backstage-cli new --scope @red-hat-developer-hub"
   },
   "workspaces": {
     "packages": [
@@ -52,7 +53,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18"
   },
-  "prettier": "@spotify/prettier-config",
+  "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "eslint --fix",
