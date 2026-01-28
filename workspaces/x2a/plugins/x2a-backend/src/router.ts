@@ -310,14 +310,7 @@ export async function createRouter({
       callbackToken,
     });
 
-    // Create project secret with credentials
-    await kubeService.createProjectSecret(projectId, {
-      sourceRepo,
-      targetRepo,
-      aapCredentials,
-    });
-
-    // Create Kubernetes job
+    // Create Kubernetes job (will create both project and job secrets)
     const callbackUrl = `${req.protocol}://${req.get('host')}/api/x2a/projects/${projectId}/collectArtifacts`;
     const { k8sJobName } = await kubeService.createJob({
       jobId: job.id,
@@ -327,6 +320,9 @@ export async function createRouter({
       user: userRef,
       callbackToken,
       callbackUrl,
+      sourceRepo,
+      targetRepo,
+      aapCredentials,
       userPrompt,
     });
 
@@ -451,14 +447,7 @@ export async function createRouter({
         callbackToken,
       });
 
-      // Create/update project secret with credentials
-      await kubeService.createProjectSecret(projectId, {
-        sourceRepo,
-        targetRepo,
-        aapCredentials,
-      });
-
-      // Create Kubernetes job
+      // Create Kubernetes job (will create both project and job secrets)
       const callbackUrl = `${req.protocol}://${req.get('host')}/api/x2a/projects/${projectId}/modules/${moduleId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
@@ -470,6 +459,9 @@ export async function createRouter({
         callbackUrl,
         moduleId,
         moduleName: module.name,
+        sourceRepo,
+        targetRepo,
+        aapCredentials,
         userPrompt,
       });
 

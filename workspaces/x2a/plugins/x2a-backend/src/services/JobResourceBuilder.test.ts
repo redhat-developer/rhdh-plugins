@@ -35,10 +35,10 @@ describe('JobResourceBuilder', () => {
       },
       credentials: {
         llm: {
-          model: 'anthropic.claude-v2',
-          region: 'us-east-1',
-          accessKeyId: 'AKIA_TEST',
-          secretAccessKey: 'test-secret-key',
+          LLM_MODEL: 'anthropic.claude-v2',
+          AWS_REGION: 'us-east-1',
+          AWS_ACCESS_KEY_ID: 'AKIA_TEST',
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key',
         },
         aap: {
           url: 'https://aap.example.com',
@@ -65,39 +65,37 @@ describe('JobResourceBuilder', () => {
   describe('buildProjectSecret', () => {
     const projectId = 'proj-123';
 
-    describe('LLM credential validation', () => {
-      it('should create secret with IAM credentials', () => {
+    describe('LLM credential handling', () => {
+      it('should include all LLM credentials from config', () => {
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
+        // All LLM credentials should be included as-is
         expect(secret.stringData).toMatchObject({
           LLM_MODEL: 'anthropic.claude-v2',
           AWS_REGION: 'us-east-1',
           AWS_ACCESS_KEY_ID: 'AKIA_TEST',
           AWS_SECRET_ACCESS_KEY: 'test-secret-key',
         });
-        expect(secret.stringData!.AWS_BEARER_TOKEN_BEDROCK).toBeUndefined();
-        expect(secret.metadata?.annotations).toMatchObject({
-          'x2a.redhat.com/llm-auth-method': 'iam',
-        });
       });
 
-      it('should create secret with bearer token', () => {
+      it('should support alternative LLM credential formats', () => {
         mockConfig.credentials.llm = {
-          model: 'anthropic.claude-v2',
-          region: 'us-east-1',
-          bearerToken: 'test-bearer-token',
+          LLM_MODEL: 'anthropic.claude-v2',
+          AWS_REGION: 'us-east-1',
+          AWS_BEARER_TOKEN_BEDROCK: 'test-bearer-token',
         };
 
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
+        // Should include exactly what was in the config
         expect(secret.stringData).toMatchObject({
           LLM_MODEL: 'anthropic.claude-v2',
           AWS_REGION: 'us-east-1',
@@ -105,82 +103,26 @@ describe('JobResourceBuilder', () => {
         });
         expect(secret.stringData!.AWS_ACCESS_KEY_ID).toBeUndefined();
         expect(secret.stringData!.AWS_SECRET_ACCESS_KEY).toBeUndefined();
-        expect(secret.metadata?.annotations).toMatchObject({
-          'x2a.redhat.com/llm-auth-method': 'bearer-token',
+      });
+
+      it('should support generic LLM providers (e.g., OpenAI)', () => {
+        mockConfig.credentials.llm = {
+          OPENAI_API_KEY: 'sk-test-key',
+          OPENAI_MODEL: 'gpt-4',
+          OPENAI_ORG_ID: 'org-test',
+        };
+
+        const secret = JobResourceBuilder.buildProjectSecret(
+          projectId,
+          undefined,
+          mockConfig,
+        );
+
+        expect(secret.stringData).toMatchObject({
+          OPENAI_API_KEY: 'sk-test-key',
+          OPENAI_MODEL: 'gpt-4',
+          OPENAI_ORG_ID: 'org-test',
         });
-      });
-
-      it('should throw error when no LLM credentials provided', () => {
-        mockConfig.credentials.llm = {
-          model: 'anthropic.claude-v2',
-          region: 'us-east-1',
-        };
-
-        expect(() =>
-          JobResourceBuilder.buildProjectSecret(
-            projectId,
-            projectCredentials,
-            mockConfig,
-          ),
-        ).toThrow(
-          'LLM credentials must include either AWS IAM credentials (accessKeyId + secretAccessKey) OR bearerToken',
-        );
-      });
-
-      it('should throw error when both IAM and bearer token provided', () => {
-        mockConfig.credentials.llm = {
-          model: 'anthropic.claude-v2',
-          region: 'us-east-1',
-          accessKeyId: 'AKIA_TEST',
-          secretAccessKey: 'test-secret-key',
-          bearerToken: 'test-bearer-token',
-        };
-
-        expect(() =>
-          JobResourceBuilder.buildProjectSecret(
-            projectId,
-            projectCredentials,
-            mockConfig,
-          ),
-        ).toThrow(
-          'LLM credentials should have either IAM credentials OR bearerToken, not both',
-        );
-      });
-
-      it('should throw error when only accessKeyId provided', () => {
-        mockConfig.credentials.llm = {
-          model: 'anthropic.claude-v2',
-          region: 'us-east-1',
-          accessKeyId: 'AKIA_TEST',
-        };
-
-        expect(() =>
-          JobResourceBuilder.buildProjectSecret(
-            projectId,
-            projectCredentials,
-            mockConfig,
-          ),
-        ).toThrow(
-          'LLM credentials must include either AWS IAM credentials (accessKeyId + secretAccessKey) OR bearerToken',
-        );
-      });
-
-      it('should throw error when only secretAccessKey provided', () => {
-        mockConfig.credentials.llm = {
-          model: 'anthropic.claude-v2',
-          region: 'us-east-1',
-          secretAccessKey: 'test-secret-key',
-        };
-
-        expect(() =>
-          JobResourceBuilder.buildProjectSecret(
-            projectId,
-            projectCredentials,
-            mockConfig,
-          ),
-        ).toThrow(
-          'LLM credentials must include either AWS IAM credentials (accessKeyId + secretAccessKey) OR bearerToken',
-        );
       });
     });
 
@@ -188,7 +130,7 @@ describe('JobResourceBuilder', () => {
       it('should create secret with OAuth token from config', () => {
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
@@ -215,7 +157,7 @@ describe('JobResourceBuilder', () => {
 
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
@@ -233,19 +175,16 @@ describe('JobResourceBuilder', () => {
       });
 
       it('should use user-provided AAP credentials over config', () => {
-        const credsWithAAP: ProjectCredentials = {
-          ...projectCredentials,
-          aapCredentials: {
-            url: 'https://user-aap.example.com',
-            orgName: 'UserOrg',
-            username: 'user',
-            password: 'pass',
-          },
+        const userAapCreds = {
+          url: 'https://user-aap.example.com',
+          orgName: 'UserOrg',
+          username: 'user',
+          password: 'pass',
         };
 
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          credsWithAAP,
+          userAapCreds,
           mockConfig,
         );
 
@@ -268,7 +207,7 @@ describe('JobResourceBuilder', () => {
         expect(() =>
           JobResourceBuilder.buildProjectSecret(
             projectId,
-            projectCredentials,
+            undefined,
             mockConfig,
           ),
         ).toThrow(
@@ -285,7 +224,7 @@ describe('JobResourceBuilder', () => {
         expect(() =>
           JobResourceBuilder.buildProjectSecret(
             projectId,
-            projectCredentials,
+            undefined,
             mockConfig,
           ),
         ).toThrow(
@@ -305,7 +244,7 @@ describe('JobResourceBuilder', () => {
         expect(() =>
           JobResourceBuilder.buildProjectSecret(
             projectId,
-            projectCredentials,
+            undefined,
             mockConfig,
           ),
         ).toThrow(
@@ -323,7 +262,7 @@ describe('JobResourceBuilder', () => {
         expect(() =>
           JobResourceBuilder.buildProjectSecret(
             projectId,
-            projectCredentials,
+            undefined,
             mockConfig,
           ),
         ).toThrow(
@@ -341,7 +280,7 @@ describe('JobResourceBuilder', () => {
         expect(() =>
           JobResourceBuilder.buildProjectSecret(
             projectId,
-            projectCredentials,
+            undefined,
             mockConfig,
           ),
         ).toThrow(
@@ -350,41 +289,27 @@ describe('JobResourceBuilder', () => {
       });
     });
 
-    describe('Git repository credentials', () => {
-      it('should include source repository credentials', () => {
-        const secret = JobResourceBuilder.buildProjectSecret(
-          projectId,
-          projectCredentials,
-          mockConfig,
-        );
+    it('should NOT include Git repository credentials in project secret', () => {
+      const secret = JobResourceBuilder.buildProjectSecret(
+        projectId,
+        undefined,
+        mockConfig,
+      );
 
-        expect(secret.stringData).toMatchObject({
-          SOURCE_REPO_URL: 'https://github.com/org/source',
-          SOURCE_REPO_TOKEN: 'source-token',
-          SOURCE_REPO_BRANCH: 'main',
-        });
-      });
-
-      it('should include target repository credentials', () => {
-        const secret = JobResourceBuilder.buildProjectSecret(
-          projectId,
-          projectCredentials,
-          mockConfig,
-        );
-
-        expect(secret.stringData).toMatchObject({
-          TARGET_REPO_URL: 'https://github.com/org/target',
-          TARGET_REPO_TOKEN: 'target-token',
-          TARGET_REPO_BRANCH: 'main',
-        });
-      });
+      // Project secret should only have LLM + AAP credentials
+      expect(secret.stringData!.SOURCE_REPO_URL).toBeUndefined();
+      expect(secret.stringData!.SOURCE_REPO_TOKEN).toBeUndefined();
+      expect(secret.stringData!.SOURCE_REPO_BRANCH).toBeUndefined();
+      expect(secret.stringData!.TARGET_REPO_URL).toBeUndefined();
+      expect(secret.stringData!.TARGET_REPO_TOKEN).toBeUndefined();
+      expect(secret.stringData!.TARGET_REPO_BRANCH).toBeUndefined();
     });
 
     describe('Secret metadata', () => {
       it('should include correct labels', () => {
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
@@ -399,7 +324,7 @@ describe('JobResourceBuilder', () => {
       it('should include correct secret name', () => {
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
@@ -409,20 +334,22 @@ describe('JobResourceBuilder', () => {
       it('should include description annotation', () => {
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
         expect(secret.metadata?.annotations).toMatchObject({
           'x2a.redhat.com/created-by': 'x2a-backend-plugin',
-          'x2a.redhat.com/description': 'Credentials for X2A migration project',
+          'x2a.redhat.com/description':
+            'Long-lived credentials for X2A migration project (LLM + AAP)',
+          'x2a.redhat.com/secret-type': 'project',
         });
       });
 
       it('should be Opaque secret type', () => {
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
-          projectCredentials,
+          undefined,
           mockConfig,
         );
 
@@ -430,6 +357,118 @@ describe('JobResourceBuilder', () => {
         expect(secret.apiVersion).toBe('v1');
         expect(secret.kind).toBe('Secret');
       });
+    });
+  });
+
+  describe('buildJobSecret', () => {
+    const jobId = 'job-456';
+    const projectId = 'proj-123';
+    const gitCredentials = {
+      sourceRepo: {
+        url: 'https://github.com/org/source',
+        token: 'source-token',
+        branch: 'main',
+      },
+      targetRepo: {
+        url: 'https://github.com/org/target',
+        token: 'target-token',
+        branch: 'main',
+      },
+    };
+
+    it('should include source repository credentials', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        gitCredentials,
+      );
+
+      expect(secret.stringData).toMatchObject({
+        SOURCE_REPO_URL: 'https://github.com/org/source',
+        SOURCE_REPO_TOKEN: 'source-token',
+        SOURCE_REPO_BRANCH: 'main',
+      });
+    });
+
+    it('should include target repository credentials', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        gitCredentials,
+      );
+
+      expect(secret.stringData).toMatchObject({
+        TARGET_REPO_URL: 'https://github.com/org/target',
+        TARGET_REPO_TOKEN: 'target-token',
+        TARGET_REPO_BRANCH: 'main',
+      });
+    });
+
+    it('should NOT include LLM or AAP credentials in job secret', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        gitCredentials,
+      );
+
+      // Job secret should only have Git credentials
+      expect(secret.stringData!.LLM_MODEL).toBeUndefined();
+      expect(secret.stringData!.AWS_REGION).toBeUndefined();
+      expect(secret.stringData!.AAP_CONTROLLER_URL).toBeUndefined();
+      expect(secret.stringData!.AAP_ORG_NAME).toBeUndefined();
+    });
+
+    it('should include correct labels', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        gitCredentials,
+      );
+
+      expect(secret.metadata?.labels).toMatchObject({
+        'app.kubernetes.io/name': 'x2a-job-secret',
+        'app.kubernetes.io/component': 'credentials',
+        'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+        'x2a.redhat.com/job-id': jobId,
+        'x2a.redhat.com/project-id': projectId,
+        'x2a.redhat.com/secret-type': 'job',
+      });
+    });
+
+    it('should include correct secret name', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        gitCredentials,
+      );
+
+      expect(secret.metadata?.name).toBe(`x2a-job-secret-${jobId}`);
+    });
+
+    it('should include description annotation', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        gitCredentials,
+      );
+
+      expect(secret.metadata?.annotations).toMatchObject({
+        'x2a.redhat.com/created-by': 'x2a-backend-plugin',
+        'x2a.redhat.com/description':
+          'Ephemeral Git credentials for X2A job (auto-deleted with job)',
+      });
+    });
+
+    it('should be Opaque secret type', () => {
+      const secret = JobResourceBuilder.buildJobSecret(
+        jobId,
+        projectId,
+        gitCredentials,
+      );
+
+      expect(secret.type).toBe('Opaque');
+      expect(secret.apiVersion).toBe('v1');
+      expect(secret.kind).toBe('Secret');
     });
   });
 
@@ -442,6 +481,16 @@ describe('JobResourceBuilder', () => {
       user: 'user:default/test',
       callbackToken: 'callback-token-123',
       callbackUrl: 'http://backstage:7007/api/x2a/callback',
+      sourceRepo: {
+        url: 'https://github.com/org/source',
+        token: 'source-token',
+        branch: 'main',
+      },
+      targetRepo: {
+        url: 'https://github.com/org/target',
+        token: 'target-token',
+        branch: 'main',
+      },
     };
 
     describe('Job metadata', () => {
@@ -548,6 +597,24 @@ describe('JobResourceBuilder', () => {
             { name: 'CALLBACK_TOKEN', value: 'callback-token-123' },
           ]),
         );
+      });
+
+      it('should mount both project and job secrets via envFrom', () => {
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
+
+        const container = job.spec?.template.spec?.containers![0];
+        expect(container!.envFrom).toEqual([
+          {
+            secretRef: {
+              name: 'x2a-project-secret-proj-123',
+            },
+          },
+          {
+            secretRef: {
+              name: 'x2a-job-secret-job-123',
+            },
+          },
+        ]);
       });
 
       it('should include module environment variables when provided', () => {

@@ -16,60 +16,38 @@
 
 import { V1Job, V1Secret } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
-import { X2AConfig, ProjectCredentials, JobCreateParams } from './types';
+import {
+  X2AConfig,
+  JobCreateParams,
+  AAPCredentials,
+  GitRepoCredentials,
+} from './types';
 
 /**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
  */
 export class JobResourceBuilder {
   /**
-   * Builds a Kubernetes Secret for a project containing all necessary credentials
+   * Builds a Kubernetes Secret for a project containing long-lived credentials
+   * This secret contains LLM and AAP credentials only (no Git credentials)
    *
    * @param projectId - The project UUID
-   * @param credentials - Git repository credentials from the user
+   * @param aapCredentials - Optional AAP credentials override from user
    * @param config - X2A configuration from app-config.yaml
    * @returns V1Secret resource ready to be created in Kubernetes
    */
   static buildProjectSecret(
     projectId: string,
-    credentials: ProjectCredentials,
+    aapCredentials: AAPCredentials | undefined,
     config: X2AConfig,
   ): V1Secret {
     const secretName = `x2a-project-secret-${projectId}`;
 
-    // Validate and build LLM credentials - must have either IAM credentials OR bearer token
-    const { model, region, accessKeyId, secretAccessKey, bearerToken } =
-      config.credentials.llm;
-    const hasIAM = !!accessKeyId && !!secretAccessKey;
-    const hasBearerToken = !!bearerToken;
-
-    if (!hasIAM && !hasBearerToken) {
-      throw new Error(
-        'LLM credentials must include either AWS IAM credentials (accessKeyId + secretAccessKey) OR bearerToken',
-      );
-    }
-
-    if (hasIAM && hasBearerToken) {
-      throw new Error(
-        'LLM credentials should have either IAM credentials OR bearerToken, not both',
-      );
-    }
-
-    // Build LLM credentials based on auth method
-    const llmCredentials: Record<string, string> = {
-      LLM_MODEL: model,
-      AWS_REGION: region,
-    };
-
-    if (hasIAM) {
-      llmCredentials.AWS_ACCESS_KEY_ID = accessKeyId!;
-      llmCredentials.AWS_SECRET_ACCESS_KEY = secretAccessKey!;
-    } else {
-      llmCredentials.AWS_BEARER_TOKEN_BEDROCK = bearerToken!;
-    }
+    // Get LLM credentials from config - generic key-value pairs
+    const llmCredentials = config.credentials.llm;
 
     // Determine AAP credentials source - user-provided takes precedence over config
-    const aapSource = credentials.aapCredentials || config.credentials.aap;
+    const aapSource = aapCredentials || config.credentials.aap;
 
     if (!aapSource) {
       throw new Error(
@@ -94,17 +72,17 @@ export class JobResourceBuilder {
       );
     }
 
-    // Build AAP credentials based on auth method
-    const aapCredentials: Record<string, string> = {
+    // Build AAP environment variables based on auth method
+    const aapEnvVars: Record<string, string> = {
       AAP_CONTROLLER_URL: url,
       AAP_ORG_NAME: orgName,
     };
 
     if (hasOAuthToken) {
-      aapCredentials.AAP_OAUTH_TOKEN = oauthToken!;
+      aapEnvVars.AAP_OAUTH_TOKEN = oauthToken!;
     } else {
-      aapCredentials.AAP_USERNAME = username!;
-      aapCredentials.AAP_PASSWORD = password!;
+      aapEnvVars.AAP_USERNAME = username!;
+      aapEnvVars.AAP_PASSWORD = password!;
     }
 
     return {
@@ -120,33 +98,77 @@ export class JobResourceBuilder {
         },
         annotations: {
           'x2a.redhat.com/created-by': 'x2a-backend-plugin',
-          'x2a.redhat.com/description': 'Credentials for X2A migration project',
-          'x2a.redhat.com/llm-auth-method': hasIAM ? 'iam' : 'bearer-token',
+          'x2a.redhat.com/description':
+            'Long-lived credentials for X2A migration project (LLM + AAP)',
           'x2a.redhat.com/aap-auth-method': hasOAuthToken
             ? 'oauth-token'
             : 'basic',
-          'x2a.redhat.com/aap-source': credentials.aapCredentials
+          'x2a.redhat.com/aap-source': aapCredentials
             ? 'user-provided'
             : 'config',
+          'x2a.redhat.com/secret-type': 'project',
         },
       },
       type: 'Opaque',
       stringData: {
-        // AWS Bedrock LLM credentials from config (IAM OR bearer token)
+        // LLM credentials from config (generic key-value env vars)
         ...llmCredentials,
 
-        // AAP credentials from config (oauthToken OR username+password)
-        ...aapCredentials,
+        // AAP credentials (from config or user override)
+        ...aapEnvVars,
+      },
+    };
+  }
 
+  /**
+   * Builds a Kubernetes Secret for a specific job containing ephemeral Git credentials
+   * This secret will be auto-deleted when the job is deleted (via ownerReferences)
+   *
+   * @param jobId - The job UUID
+   * @param projectId - The project UUID
+   * @param gitCredentials - Git repository credentials from the user
+   * @returns V1Secret resource ready to be created in Kubernetes
+   */
+  static buildJobSecret(
+    jobId: string,
+    projectId: string,
+    gitCredentials: {
+      sourceRepo: GitRepoCredentials;
+      targetRepo: GitRepoCredentials;
+    },
+  ): V1Secret {
+    const secretName = `x2a-job-secret-${jobId}`;
+
+    return {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: secretName,
+        labels: {
+          'app.kubernetes.io/name': 'x2a-job-secret',
+          'app.kubernetes.io/component': 'credentials',
+          'app.kubernetes.io/managed-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/job-id': jobId,
+          'x2a.redhat.com/project-id': projectId,
+          'x2a.redhat.com/secret-type': 'job',
+        },
+        annotations: {
+          'x2a.redhat.com/created-by': 'x2a-backend-plugin',
+          'x2a.redhat.com/description':
+            'Ephemeral Git credentials for X2A job (auto-deleted with job)',
+        },
+      },
+      type: 'Opaque',
+      stringData: {
         // Git source repository credentials from user
-        SOURCE_REPO_URL: credentials.sourceRepo.url,
-        SOURCE_REPO_TOKEN: credentials.sourceRepo.token,
-        SOURCE_REPO_BRANCH: credentials.sourceRepo.branch,
+        SOURCE_REPO_URL: gitCredentials.sourceRepo.url,
+        SOURCE_REPO_TOKEN: gitCredentials.sourceRepo.token,
+        SOURCE_REPO_BRANCH: gitCredentials.sourceRepo.branch,
 
         // Git target repository credentials from user
-        TARGET_REPO_URL: credentials.targetRepo.url,
-        TARGET_REPO_TOKEN: credentials.targetRepo.token,
-        TARGET_REPO_BRANCH: credentials.targetRepo.branch,
+        TARGET_REPO_URL: gitCredentials.targetRepo.url,
+        TARGET_REPO_TOKEN: gitCredentials.targetRepo.token,
+        TARGET_REPO_BRANCH: gitCredentials.targetRepo.branch,
       },
     };
   }
@@ -161,7 +183,8 @@ export class JobResourceBuilder {
   static buildJobSpec(params: JobCreateParams, config: X2AConfig): V1Job {
     const shortId = crypto.randomBytes(4).toString('hex');
     const jobName = `job-x2a-${params.phase}-${shortId}`;
-    const secretName = `x2a-project-secret-${params.projectId}`;
+    const projectSecretName = `x2a-project-secret-${params.projectId}`;
+    const jobSecretName = `x2a-job-secret-${params.jobId}`;
 
     return {
       apiVersion: 'batch/v1',
@@ -214,7 +237,22 @@ export class JobResourceBuilder {
                 name: 'x2a-echo',
                 image: 'busybox:latest',
                 command: this.buildCommand(params),
-                // Additional env vars specific to this job
+                // Mount both secrets:
+                // 1. Project secret (LLM + AAP) - long-lived
+                // 2. Job secret (Git credentials) - ephemeral, auto-deleted with job
+                envFrom: [
+                  {
+                    secretRef: {
+                      name: projectSecretName,
+                    },
+                  },
+                  {
+                    secretRef: {
+                      name: jobSecretName,
+                    },
+                  },
+                ],
+                // Additional env vars specific to this job (metadata, not credentials)
                 env: [
                   {
                     name: 'PHASE',

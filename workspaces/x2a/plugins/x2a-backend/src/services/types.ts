@@ -20,7 +20,7 @@
 export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
 
 /**
- * Configuration loaded from app-config.yaml for X2A plugin
+ * Configuration loaded from app-config.yaml for X2A frontend plugin
  */
 export interface X2AConfig {
   kubernetes: {
@@ -41,16 +41,33 @@ export interface X2AConfig {
   };
   credentials: {
     /**
-     * AWS Bedrock credentials for LLM access
-     * Provide EITHER IAM credentials OR bearer token, not both
+     * LLM provider credentials as environment variables
+     * Generic key-value pairs that will be passed to the job container as env vars
+     *
+     * Example for AWS Bedrock with IAM:
+     * {
+     *   "LLM_MODEL": "anthropic.claude-v2",
+     *   "AWS_REGION": "us-east-1",
+     *   "AWS_ACCESS_KEY_ID": "...",
+     *   "AWS_SECRET_ACCESS_KEY": "..."
+     * }
+     *
+     * Example for AWS Bedrock with bearer token:
+     * {
+     *   "LLM_MODEL": "anthropic.claude-v2",
+     *   "AWS_REGION": "us-east-1",
+     *   "AWS_BEARER_TOKEN_BEDROCK": "..."
+     * }
+     *
+     * Example for OpenAI:
+     * {
+     *   "OPENAI_API_KEY": "...",
+     *   "OPENAI_MODEL": "gpt-4"
+     * }
+     *
+     * The job container determines which env vars it needs
      */
-    llm: {
-      model: string;
-      region: string;
-      accessKeyId?: string;
-      secretAccessKey?: string;
-      bearerToken?: string;
-    };
+    llm: Record<string, string>;
     /**
      * Ansible Automation Platform credentials (optional - can be provided by user at runtime)
      * If provided here, these serve as system-wide defaults
@@ -120,4 +137,17 @@ export interface JobCreateParams {
    * Module name - required for analyze, migrate, and publish phases
    */
   moduleName?: string;
+  /**
+   * Git source repository credentials - will be stored in ephemeral job secret
+   */
+  sourceRepo: GitRepoCredentials;
+  /**
+   * Git target repository credentials - will be stored in ephemeral job secret
+   */
+  targetRepo: GitRepoCredentials;
+  /**
+   * Optional AAP credentials override - will be stored in project secret
+   * If not provided, AAP credentials from app-config.yaml will be used
+   */
+  aapCredentials?: AAPCredentials;
 }
