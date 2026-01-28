@@ -139,7 +139,7 @@ describe('ScorecardHomepageCard', () => {
 
   it('should render scorecard homepage card when data loads successfully', () => {
     useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: [mockScorecard],
+      aggregatedScorecard: mockScorecard,
       loadingData: false,
       error: undefined,
     });
@@ -150,47 +150,5 @@ describe('ScorecardHomepageCard', () => {
 
     expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-  });
-
-  it('should render only the first scorecard when multiple are returned', () => {
-    useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: [
-        mockScorecard,
-        {
-          ...mockScorecard,
-          id: 'second.metric',
-          metadata: {
-            ...mockScorecard.metadata,
-            title: 'Second Metric',
-          },
-        },
-      ],
-      loadingData: false,
-      error: undefined,
-    });
-
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
-      wrapper: TestWrapper,
-    });
-
-    expect(screen.getAllByTestId('scorecard-homepage-card')).toHaveLength(1);
-    expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
-    expect(screen.queryByText('Second Metric')).not.toBeInTheDocument();
-  });
-
-  it('should render nothing when no scorecards are returned', () => {
-    useAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: [],
-      loadingData: false,
-      error: undefined,
-    });
-
-    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
-      wrapper: TestWrapper,
-    });
-
-    expect(
-      screen.queryByTestId('scorecard-homepage-card'),
-    ).not.toBeInTheDocument();
   });
 });

@@ -58,6 +58,7 @@ jest.mock('../permissions/permissionUtils', () => {
 import * as getEntitiesOwnedByUserModule from '../utils/getEntitiesOwnedByUser';
 import * as permissionUtilsModule from '../permissions/permissionUtils';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
+import { AggregatedMetricMapper } from './mappers';
 
 const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
   result: AuthorizeResult.CONDITIONAL,
@@ -381,6 +382,24 @@ describe('createRouter', () => {
       expect(response.body).toEqual(mockMetricResults);
     });
 
+    it('should check entity access before returning metrics', async () => {
+      const checkEntityAccessSpy = jest.spyOn(
+        permissionUtilsModule,
+        'checkEntityAccess',
+      );
+      const response = await request(app).get(
+        '/metrics/catalog/component/default/my-service',
+      );
+
+      expect(response.status).toBe(200);
+      expect(checkEntityAccessSpy).toHaveBeenCalledWith(
+        'component:default/my-service',
+        expect.any(Object),
+        permissionsMock,
+        httpAuthMock,
+      );
+    });
+
     it('should handle single metricIds parameter', async () => {
       const response = await request(app).get(
         '/metrics/catalog/component/default/my-service?metricIds=github.open_prs',
@@ -446,32 +465,32 @@ describe('createRouter', () => {
   });
 
   describe('GET /metrics/:metricId/catalog/aggregations', () => {
-    const mockAggregatedMetricResults: AggregatedMetricResult[] = [
-      {
-        id: 'github.open_prs',
-        status: 'success',
-        metadata: {
-          title: 'GitHub open PRs',
-          description:
-            'Current count of open Pull Requests for a given GitHub repository.',
-          type: 'number',
-          history: true,
-        },
-        result: {
-          values: [
-            { count: 5, name: 'success' },
-            { count: 4, name: 'warning' },
-            { count: 3, name: 'error' },
-          ],
-          total: 12,
-          timestamp: '2025-01-01T10:30:00.000Z',
-        },
+    const mockAggregatedMetricResult: AggregatedMetricResult = {
+      id: 'github.open_prs',
+      status: 'success',
+      metadata: {
+        title: 'GitHub Open PRs',
+        description: 'Mock number description.',
+        type: 'number',
+        history: undefined,
       },
-    ];
+      result: {
+        values: [
+          { count: 5, name: 'success' },
+          { count: 4, name: 'warning' },
+          { count: 3, name: 'error' },
+        ],
+        total: 12,
+        timestamp: '2025-01-01T10:30:00.000Z',
+      },
+    };
+
     let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
     let getEntitiesOwnedByUserSpy: jest.SpyInstance;
     let checkEntityAccessSpy: jest.SpyInstance;
     let aggregationApp: express.Express;
+    let toAggregatedMetricResultSpy: jest.SpyInstance;
+    let getAggregatedMetricByEntityRefsSpy: jest.SpyInstance;
 
     beforeEach(async () => {
       const githubProvider = new MockNumberProvider(
@@ -501,9 +520,13 @@ describe('createRouter', () => {
         .build();
       mockCatalog.getEntities.mockResolvedValue({ items: [componentEntity] });
 
-      jest
-        .spyOn(catalogMetricService, 'getAggregatedMetricsByEntityRefs')
-        .mockResolvedValue(mockAggregatedMetricResults);
+      getAggregatedMetricByEntityRefsSpy = jest
+        .spyOn(catalogMetricService, 'getAggregatedMetricByEntityRefs')
+        .mockResolvedValue(mockAggregatedMetricResult.result);
+
+      toAggregatedMetricResultSpy = jest
+        .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
+        .mockReturnValue(mockAggregatedMetricResult);
 
       getEntitiesOwnedByUserSpy = jest
         .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
@@ -575,28 +598,39 @@ describe('createRouter', () => {
       );
     });
 
+    it('should return 404 NotFoundError when metric is not found', async () => {
+      const result = await request(aggregationApp).get(
+        '/metrics/non.existent.metric/catalog/aggregations',
+      );
+
+      expect(result.statusCode).toBe(404);
+      expect(result.body.error.name).toBe('NotFoundError');
+      expect(result.body.error.message).toContain('Metric provider with ID');
+    });
+
     it('should return aggregated metrics for a specific metric', async () => {
       const response = await request(aggregationApp).get(
         '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(response.status).toBe(200);
-      expect(
-        catalogMetricService.getAggregatedMetricsByEntityRefs,
-      ).toHaveBeenCalledWith(
-        ['component:default/my-service', 'component:default/my-other-service'],
-        ['github.open_prs'],
-        undefined,
-      );
-      expect(response.body).toEqual(mockAggregatedMetricResults);
+      expect(response.body).toEqual(mockAggregatedMetricResult);
     });
 
-    it('should get entities owned by user', async () => {
-      const response = await request(aggregationApp).get(
+    it('should call authorizeConditional to check permissions', async () => {
+      await request(aggregationApp).get(
         '/metrics/github.open_prs/catalog/aggregations',
       );
 
-      expect(response.status).toBe(200);
+      expect(permissionsMock.authorizeConditional).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call getEntitiesOwnedByUser to get entities owned by user', async () => {
+      await request(aggregationApp).get(
+        '/metrics/github.open_prs/catalog/aggregations',
+      );
+
+      expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledTimes(1);
       expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledWith(
         'user:default/test-user',
         expect.objectContaining({
@@ -606,21 +640,49 @@ describe('createRouter', () => {
       );
     });
 
-    it('should return empty array when user owns no entities', async () => {
-      getEntitiesOwnedByUserSpy.mockResolvedValue([]);
+    it('should return empty aggregation when user owns no entities', async () => {
+      const emptyAggregatedMetric = AggregatedMetricMapper.toAggregatedMetric();
+      const emptyAggregatedMetricResult =
+        AggregatedMetricMapper.toAggregatedMetricResult(
+          metricProvidersRegistry.getMetric('github.open_prs'),
+          emptyAggregatedMetric,
+        );
+
+      getEntitiesOwnedByUserSpy.mockResolvedValueOnce([]);
+      getAggregatedMetricByEntityRefsSpy.mockResolvedValueOnce(
+        emptyAggregatedMetric,
+      );
+      toAggregatedMetricResultSpy.mockReturnValueOnce(
+        emptyAggregatedMetricResult,
+      );
+
       const response = await request(aggregationApp).get(
         '/metrics/github.open_prs/catalog/aggregations',
       );
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual([]);
-      expect(
-        catalogMetricService.getAggregatedMetricsByEntityRefs,
-      ).not.toHaveBeenCalled();
+      expect(response.body).toEqual(emptyAggregatedMetricResult);
+      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+      );
+      expect(checkEntityAccessSpy).not.toHaveBeenCalled();
+    });
+
+    it('should call getAggregatedMetricByEntityRefs to get aggregated metric', async () => {
+      await request(aggregationApp).get(
+        '/metrics/github.open_prs/catalog/aggregations',
+      );
+
+      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledTimes(1);
+      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'github.open_prs',
+      );
     });
 
     it('should check entity access for each entity owned by user', async () => {
-      const response = await request(aggregationApp).get(
+      await request(aggregationApp).get(
         '/metrics/github.open_prs/catalog/aggregations',
       );
 
@@ -637,44 +699,30 @@ describe('createRouter', () => {
         permissionsMock,
         httpAuthMock,
       );
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockAggregatedMetricResults);
     });
 
-    it('should filter authorized metrics when CONDITIONAL permission', async () => {
-      permissionsMock.authorizeConditional.mockResolvedValue([
-        CONDITIONAL_POLICY_DECISION,
-      ]);
-      const response = await request(aggregationApp).get(
+    it('should get aggregated metric by entity refs', async () => {
+      await request(aggregationApp).get(
         '/metrics/github.open_prs/catalog/aggregations',
       );
 
-      expect(response.status).toBe(200);
-      expect(
-        catalogMetricService.getAggregatedMetricsByEntityRefs,
-      ).toHaveBeenCalledWith(
+      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledTimes(1);
+      expect(getAggregatedMetricByEntityRefsSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/my-other-service'],
-        ['github.open_prs'],
-        {
-          anyOf: [
-            {
-              rule: 'HAS_METRIC_ID',
-              resourceType: 'scorecard-metric',
-              params: { metricIds: ['github.open_prs', 'github.open_issues'] },
-            },
-          ],
-        },
+        'github.open_prs',
       );
     });
 
-    it('should return 404 NotFoundError when metric is not found', async () => {
-      const result = await request(aggregationApp).get(
-        '/metrics/non.existent.metric/catalog/aggregations',
+    it('should call toAggregatedMetricResult to map aggregated metric to result', async () => {
+      await request(aggregationApp).get(
+        '/metrics/github.open_prs/catalog/aggregations',
       );
 
-      expect(result.statusCode).toBe(404);
-      expect(result.body.error.name).toBe('NotFoundError');
-      expect(result.body.error.message).toContain('Metric provider with ID');
+      expect(toAggregatedMetricResultSpy).toHaveBeenCalledTimes(1);
+      expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+        metricProvidersRegistry.getMetric('github.open_prs'),
+        mockAggregatedMetricResult.result,
+      );
     });
   });
 });
