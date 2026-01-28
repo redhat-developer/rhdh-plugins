@@ -16,7 +16,7 @@
 
 import { mockServices } from '@backstage/backend-test-utils';
 import { KubeService } from './KubeService';
-import { X2AConfig, ProjectCredentials } from './types';
+import { X2AConfig } from './types';
 import * as k8sClientModule from './makeK8sClient';
 
 // Mock the Kubernetes client
@@ -62,10 +62,10 @@ describe('KubeService', () => {
       },
       credentials: {
         llm: {
-          model: 'anthropic.claude-v2',
-          region: 'us-east-1',
-          accessKeyId: 'AKIA_TEST',
-          secretAccessKey: 'test-secret-key',
+          LLM_MODEL: 'anthropic.claude-v2',
+          AWS_REGION: 'us-east-1',
+          AWS_ACCESS_KEY_ID: 'AKIA_TEST',
+          AWS_SECRET_ACCESS_KEY: 'test-secret-key',
         },
         aap: {
           url: 'https://aap.example.com',
@@ -83,23 +83,11 @@ describe('KubeService', () => {
 
   describe('createProjectSecret', () => {
     const projectId = 'proj-123';
-    const credentials: ProjectCredentials = {
-      sourceRepo: {
-        url: 'https://github.com/org/source',
-        token: 'source-token',
-        branch: 'main',
-      },
-      targetRepo: {
-        url: 'https://github.com/org/target',
-        token: 'target-token',
-        branch: 'main',
-      },
-    };
 
-    it('should create secret with correct structure', async () => {
+    it('should create project secret with LLM and AAP credentials from config', async () => {
       mockCoreV1Api.createNamespacedSecret.mockResolvedValue({});
 
-      await kubeService.createProjectSecret(projectId, credentials);
+      await kubeService.createProjectSecret(projectId, undefined);
 
       expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith({
         namespace: 'test-namespace',
@@ -121,31 +109,27 @@ describe('KubeService', () => {
             AAP_CONTROLLER_URL: 'https://aap.example.com',
             AAP_ORG_NAME: 'TestOrg',
             AAP_OAUTH_TOKEN: 'test-oauth-token',
-            SOURCE_REPO_URL: 'https://github.com/org/source',
-            SOURCE_REPO_TOKEN: 'source-token',
-            SOURCE_REPO_BRANCH: 'main',
-            TARGET_REPO_URL: 'https://github.com/org/target',
-            TARGET_REPO_TOKEN: 'target-token',
-            TARGET_REPO_BRANCH: 'main',
           }),
         }),
       });
+
+      // Verify Git credentials are NOT in project secret
+      const call = mockCoreV1Api.createNamespacedSecret.mock.calls[0][0];
+      expect(call.body.stringData.SOURCE_REPO_URL).toBeUndefined();
+      expect(call.body.stringData.TARGET_REPO_URL).toBeUndefined();
     });
 
     it('should use user-provided AAP credentials over config', async () => {
       mockCoreV1Api.createNamespacedSecret.mockResolvedValue({});
 
-      const credsWithAAP: ProjectCredentials = {
-        ...credentials,
-        aapCredentials: {
-          url: 'https://user-aap.example.com',
-          orgName: 'UserOrg',
-          username: 'user',
-          password: 'pass',
-        },
+      const userAapCreds = {
+        url: 'https://user-aap.example.com',
+        orgName: 'UserOrg',
+        username: 'user',
+        password: 'pass',
       };
 
-      await kubeService.createProjectSecret(projectId, credsWithAAP);
+      await kubeService.createProjectSecret(projectId, userAapCreds);
 
       const call = mockCoreV1Api.createNamespacedSecret.mock.calls[0][0];
       expect(call.body.stringData).toMatchObject({
@@ -164,19 +148,18 @@ describe('KubeService', () => {
       });
 
       await expect(
-        kubeService.createProjectSecret(projectId, credentials),
+        kubeService.createProjectSecret(projectId, undefined),
       ).resolves.not.toThrow();
     });
 
     it('should throw on other errors', async () => {
-      mockCoreV1Api.createNamespacedSecret.mockRejectedValue({
-        statusCode: 500,
-        message: 'Internal server error',
-      });
+      const mockError = new Error('Internal server error');
+      (mockError as any).statusCode = 500;
+      mockCoreV1Api.createNamespacedSecret.mockRejectedValue(mockError);
 
       await expect(
-        kubeService.createProjectSecret(projectId, credentials),
-      ).rejects.toThrow();
+        kubeService.createProjectSecret(projectId, undefined),
+      ).rejects.toThrow('Internal server error');
     });
   });
 
@@ -208,12 +191,13 @@ describe('KubeService', () => {
     });
 
     it('should throw on other errors', async () => {
-      mockCoreV1Api.readNamespacedSecret.mockRejectedValue({
-        statusCode: 500,
-        message: 'Internal server error',
-      });
+      const mockError = new Error('Internal server error');
+      (mockError as any).statusCode = 500;
+      mockCoreV1Api.readNamespacedSecret.mockRejectedValue(mockError);
 
-      await expect(kubeService.getProjectSecret(projectId)).rejects.toThrow();
+      await expect(kubeService.getProjectSecret(projectId)).rejects.toThrow(
+        'Internal server error',
+      );
     });
   });
 
@@ -252,11 +236,62 @@ describe('KubeService', () => {
       user: 'user:default/test',
       callbackToken: 'callback-token-123',
       callbackUrl: 'http://backstage:7007/api/x2a/callback',
+      sourceRepo: {
+        url: 'https://github.com/org/source',
+        token: 'source-token',
+        branch: 'main',
+      },
+      targetRepo: {
+        url: 'https://github.com/org/target',
+        token: 'target-token',
+        branch: 'main',
+      },
     };
 
-    it('should create job with correct structure', async () => {
+    beforeEach(() => {
+      // Mock createProjectSecret and createJobSecret to succeed
+      mockCoreV1Api.createNamespacedSecret.mockResolvedValue({});
+    });
+
+    it('should create both project and job secrets before creating job', async () => {
       mockBatchV1Api.createNamespacedJob.mockResolvedValue({
-        metadata: { name: 'job-x2a-init-abc123' },
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
+      });
+
+      await kubeService.createJob(params);
+
+      // Should create project secret (LLM + AAP)
+      expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespace: 'test-namespace',
+          body: expect.objectContaining({
+            metadata: expect.objectContaining({
+              name: 'x2a-project-secret-proj-123',
+            }),
+          }),
+        }),
+      );
+
+      // Should create job secret (Git credentials)
+      expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespace: 'test-namespace',
+          body: expect.objectContaining({
+            metadata: expect.objectContaining({
+              name: 'x2a-job-secret-job-123',
+            }),
+            stringData: expect.objectContaining({
+              SOURCE_REPO_URL: 'https://github.com/org/source',
+              TARGET_REPO_URL: 'https://github.com/org/target',
+            }),
+          }),
+        }),
+      );
+    });
+
+    it('should create job with correct structure and mount both secrets', async () => {
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
       });
 
       const result = await kubeService.createJob(params);
@@ -279,19 +314,14 @@ describe('KubeService', () => {
             template: expect.objectContaining({
               spec: expect.objectContaining({
                 restartPolicy: 'Never',
-                initContainers: expect.arrayContaining([
-                  expect.objectContaining({
-                    name: 'git-clone',
-                  }),
-                ]),
                 containers: expect.arrayContaining([
                   expect.objectContaining({
-                    name: 'x2a-convertor',
-                  }),
-                ]),
-                volumes: expect.arrayContaining([
-                  expect.objectContaining({
-                    name: 'workspace',
+                    name: 'x2a-echo',
+                    image: 'busybox:latest',
+                    envFrom: [
+                      { secretRef: { name: 'x2a-project-secret-proj-123' } },
+                      { secretRef: { name: 'x2a-job-secret-job-123' } },
+                    ],
                   }),
                 ]),
               }),
@@ -300,99 +330,6 @@ describe('KubeService', () => {
         }),
       });
       expect(result.k8sJobName).toBeDefined();
-    });
-
-    it('should include init container for git clone', async () => {
-      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
-        metadata: { name: 'job-x2a-init-abc123' },
-      });
-
-      await kubeService.createJob(params);
-
-      const call = mockBatchV1Api.createNamespacedJob.mock.calls[0][0];
-      const initContainers = call.body.spec.template.spec.initContainers;
-
-      expect(initContainers).toHaveLength(1);
-      expect(initContainers[0]).toMatchObject({
-        name: 'git-clone',
-        image: 'alpine/git:latest',
-      });
-      expect(initContainers[0].args[0]).toContain('git clone');
-    });
-
-    it('should mount workspace volume correctly', async () => {
-      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
-        metadata: { name: 'job-x2a-init-abc123' },
-      });
-
-      await kubeService.createJob(params);
-
-      const call = mockBatchV1Api.createNamespacedJob.mock.calls[0][0];
-      const spec = call.body.spec.template.spec;
-
-      // Check init container has volume mount
-      expect(spec.initContainers[0].volumeMounts).toContainEqual({
-        name: 'workspace',
-        mountPath: '/workspace',
-      });
-
-      // Check main container has volume mount
-      expect(spec.containers[0].volumeMounts).toContainEqual({
-        name: 'workspace',
-        mountPath: '/workspace',
-      });
-
-      // Check volume is defined
-      expect(spec.volumes).toContainEqual({
-        name: 'workspace',
-        emptyDir: {},
-      });
-    });
-
-    it('should set correct environment variables', async () => {
-      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
-        metadata: { name: 'job-x2a-init-abc123' },
-      });
-
-      await kubeService.createJob(params);
-
-      const call = mockBatchV1Api.createNamespacedJob.mock.calls[0][0];
-      const container = call.body.spec.template.spec.containers[0];
-
-      expect(container.env).toEqual(
-        expect.arrayContaining([
-          { name: 'PHASE', value: 'init' },
-          { name: 'PROJECT_ID', value: 'proj-123' },
-          { name: 'CALLBACK_TOKEN', value: 'callback-token-123' },
-          {
-            name: 'CALLBACK_URL',
-            value: 'http://backstage:7007/api/x2a/callback',
-          },
-        ]),
-      );
-    });
-
-    it('should include module info for non-init phases', async () => {
-      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
-        metadata: { name: 'job-x2a-analyze-abc123' },
-      });
-
-      await kubeService.createJob({
-        ...params,
-        phase: 'analyze',
-        moduleId: 'module-123',
-        moduleName: 'nginx-cookbook',
-      });
-
-      const call = mockBatchV1Api.createNamespacedJob.mock.calls[0][0];
-      const container = call.body.spec.template.spec.containers[0];
-
-      expect(container.env).toEqual(
-        expect.arrayContaining([
-          { name: 'MODULE_ID', value: 'module-123' },
-          { name: 'MODULE_NAME', value: 'nginx-cookbook' },
-        ]),
-      );
     });
   });
 

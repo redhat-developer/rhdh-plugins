@@ -133,16 +133,22 @@ x2a:
         cpu: '2000m'
         memory: '4Gi'
   credentials:
-    # AWS Bedrock LLM credentials
-    # Use EITHER IAM credentials (accessKeyId + secretAccessKey) OR bearerToken
+    # LLM provider credentials as environment variables
+    # Generic key-value pairs passed to the job container
+    # Use env var names expected by your LLM provider (x2a-convertor container)
     llm:
-      model: 'anthropic.claude-v2'
-      region: 'us-east-1'
-      # Option 1: IAM credentials (using dummy values for local testing)
-      accessKeyId: 'DUMMY_KEY_ID_FOR_LOCAL_TESTING'
-      secretAccessKey: 'DUMMY_SECRET_KEY_FOR_LOCAL_TESTING'
-      # Option 2: Bearer token (uncomment and comment out IAM credentials above)
-      # bearerToken: 'DUMMY_BEARER_TOKEN_FOR_LOCAL_TESTING'
+      # Example for AWS Bedrock with IAM credentials:
+      LLM_MODEL: 'anthropic.claude-v2'
+      AWS_REGION: 'us-east-1'
+      AWS_ACCESS_KEY_ID: 'DUMMY_KEY_ID_FOR_LOCAL_TESTING'
+      AWS_SECRET_ACCESS_KEY: 'DUMMY_SECRET_KEY_FOR_LOCAL_TESTING'
+      # Example for AWS Bedrock with bearer token (uncomment and remove IAM above):
+      # LLM_MODEL: 'anthropic.claude-v2'
+      # AWS_REGION: 'us-east-1'
+      # AWS_BEARER_TOKEN_BEDROCK: 'DUMMY_BEARER_TOKEN_FOR_LOCAL_TESTING'
+      # Example for OpenAI:
+      # OPENAI_API_KEY: 'DUMMY_OPENAI_KEY_FOR_LOCAL_TESTING'
+      # OPENAI_MODEL: 'gpt-4'
     # Ansible Automation Platform credentials (optional - can be provided by users at runtime)
     # If not provided here, users must supply AAP credentials when creating projects
     # Use EITHER oauthToken OR username+password

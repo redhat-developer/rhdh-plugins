@@ -31,7 +31,12 @@ import {
 } from '@kubernetes/client-node';
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig, ProjectCredentials, JobCreateParams } from './types';
+import {
+  X2AConfig,
+  JobCreateParams,
+  AAPCredentials,
+  GitRepoCredentials,
+} from './types';
 
 /**
  * Job status information from Kubernetes
@@ -65,17 +70,18 @@ export class KubeService {
   }
 
   /**
-   * Creates a project secret with all necessary credentials
+   * Creates or updates a project secret with long-lived credentials (LLM + AAP)
+   * This secret persists across multiple jobs for the same project
    */
   async createProjectSecret(
     projectId: string,
-    credentials: ProjectCredentials,
+    aapCredentials?: AAPCredentials,
   ): Promise<void> {
     this.#logger.info(`Creating project secret for project: ${projectId}`);
 
     const secret = JobResourceBuilder.buildProjectSecret(
       projectId,
-      credentials,
+      aapCredentials,
       this.#config,
     );
 
@@ -144,13 +150,59 @@ export class KubeService {
   }
 
   /**
+   * Creates an ephemeral job secret with Git credentials
+   * This secret will be auto-deleted when the job is deleted (via ownerReferences)
+   */
+  async createJobSecret(
+    jobId: string,
+    projectId: string,
+    gitCredentials: {
+      sourceRepo: GitRepoCredentials;
+      targetRepo: GitRepoCredentials;
+    },
+  ): Promise<void> {
+    this.#logger.info(`Creating job secret for job: ${jobId}`);
+
+    const secret = JobResourceBuilder.buildJobSecret(
+      jobId,
+      projectId,
+      gitCredentials,
+    );
+
+    try {
+      await this.#coreV1Api.createNamespacedSecret({
+        namespace: this.#namespace,
+        body: secret,
+      });
+      this.#logger.info(`Created job secret: ${secret.metadata?.name}`);
+    } catch (error: any) {
+      this.#logger.error(`Failed to create job secret: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
    * Creates a Kubernetes job for running an X2A migration phase
+   * This method orchestrates the creation of both secrets and the job:
+   * 1. Creates/updates project secret (LLM + AAP credentials)
+   * 2. Creates ephemeral job secret (Git credentials)
+   * 3. Creates the K8s job
    */
   async createJob(params: JobCreateParams): Promise<{ k8sJobName: string }> {
     this.#logger.info(
       `Creating job for project ${params.projectId}, phase: ${params.phase}`,
     );
 
+    // Step 1: Create/update project secret (LLM + AAP)
+    await this.createProjectSecret(params.projectId, params.aapCredentials);
+
+    // Step 2: Create ephemeral job secret (Git credentials)ok
+    await this.createJobSecret(params.jobId, params.projectId, {
+      sourceRepo: params.sourceRepo,
+      targetRepo: params.targetRepo,
+    });
+
+    // Step 3: Create the Kubernetes job
     const job = JobResourceBuilder.buildJobSpec(params, this.#config);
     const k8sJobName = job.metadata?.name || '';
 
@@ -160,6 +212,7 @@ export class KubeService {
         body: job,
       });
       this.#logger.info(`Created job: ${k8sJobName}`);
+
       return { k8sJobName };
     } catch (error: any) {
       this.#logger.error(`Failed to create job: ${error.message}`);
