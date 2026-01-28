@@ -26,7 +26,8 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
-    "new": "backstage-cli new --scope @red-hat-developer-hub"
+    "new": "backstage-cli new --scope @red-hat-developer-hub",
+    "postinstall": "cd ../../ && yarn install"
   },
   "workspaces": {
     "packages": [
@@ -47,7 +48,7 @@
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^3.7.4",
-    "typescript": "~5.3.0"
+    "typescript": "^5.9.0"
   },
   "resolutions": {
     "@types/react": "^18",
