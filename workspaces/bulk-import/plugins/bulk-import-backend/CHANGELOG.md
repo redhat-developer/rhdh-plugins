@@ -1,5 +1,13 @@
 ### Dependencies
 
+## 7.0.0
+
+### Patch Changes
+
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.0.0
+
 ## 6.11.1
 
 ### Patch Changes

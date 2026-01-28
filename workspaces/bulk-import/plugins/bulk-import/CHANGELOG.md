@@ -1,5 +1,21 @@
 ### Dependencies
 
+## 7.0.0
+
+### Major Changes
+
+- 0f684d9: Simplified bulk-import routing structure:
+  - The plugin now uses a single `/bulk-import` path instead of multiple paths
+  - Removed `/bulk-import/repositories`, `/bulk-import/repositories/repositories`, and `/bulk-import/repositories/add` routes
+  - Any undefined paths under `/bulk-import/*` will redirect to `/bulk-import`
+  - **BREAKING**: Removed `addRepositoriesRouteRef` from plugin exports
+
+### Patch Changes
+
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.0.0
+
 ## 6.11.1
 
 ### Patch Changes
