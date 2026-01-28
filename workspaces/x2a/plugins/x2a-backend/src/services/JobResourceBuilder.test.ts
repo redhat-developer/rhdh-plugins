@@ -151,7 +151,7 @@ describe('JobResourceBuilder', () => {
           AAP_CONTROLLER_URL: 'https://aap.example.com',
           AAP_ORG_NAME: 'TestOrg',
           AAP_USERNAME: 'admin',
-          AAP_PASSWORD: 'admin-password',
+          AAP_PASSWORD: 'admin-password', // NOSONAR
         });
         expect(secret.stringData!.AAP_OAUTH_TOKEN).toBeUndefined();
         expect(secret.metadata?.annotations).toMatchObject({
@@ -178,7 +178,7 @@ describe('JobResourceBuilder', () => {
           AAP_CONTROLLER_URL: 'https://user-aap.example.com',
           AAP_ORG_NAME: 'UserOrg',
           AAP_USERNAME: 'user',
-          AAP_PASSWORD: 'pass',
+          AAP_PASSWORD: 'pass', // NOSONAR
         });
         expect(secret.stringData!.AAP_OAUTH_TOKEN).toBeUndefined();
         expect(secret.metadata?.annotations).toMatchObject({
@@ -466,7 +466,7 @@ describe('JobResourceBuilder', () => {
       phase: 'init',
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR
-      callbackUrl: 'http://backstage:7007/api/x2a/callback',
+      callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
       sourceRepo: {
         url: 'https://github.com/org/source',
         token: 'source-token', // NOSONAR
@@ -529,7 +529,7 @@ describe('JobResourceBuilder', () => {
         expect(job.metadata?.annotations).toMatchObject({
           'x2a.redhat.com/created-by': 'x2a-backend-plugin',
           'x2a.redhat.com/callback-url':
-            'http://backstage:7007/api/x2a/callback',
+            'http://backstage:7007/api/x2a/callback', // NOSONAR
         });
       });
 
@@ -607,7 +607,7 @@ describe('JobResourceBuilder', () => {
             { name: 'USER', value: 'user:default/test' },
             {
               name: 'CALLBACK_URL',
-              value: 'http://backstage:7007/api/x2a/callback',
+              value: 'http://backstage:7007/api/x2a/callback', // NOSONAR
             },
             { name: 'CALLBACK_TOKEN', value: 'callback-token-123' },
           ]),

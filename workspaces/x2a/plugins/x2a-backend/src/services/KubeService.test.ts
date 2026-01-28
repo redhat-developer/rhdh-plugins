@@ -235,7 +235,7 @@ describe('KubeService', () => {
       phase: 'init' as const,
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR
-      callbackUrl: 'http://backstage:7007/api/x2a/callback',
+      callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
       sourceRepo: {
         url: 'https://github.com/org/source',
         token: 'source-token', // NOSONAR
