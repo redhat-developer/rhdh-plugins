@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.0.1
+
+### Patch Changes
+
+- 2adef63: Implemented smart polling for import task status in the repository table. Active tasks now poll every 10 seconds for real-time updates, while completed or idle repositories poll every 60 seconds to reduce API load. Polling intervals are aligned to consistent 60-second marks for efficient batching.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.0.1
+
 ## 7.0.0
 
 ### Major Changes
