@@ -152,6 +152,8 @@ translations-cli i18n generate
 
 **Output**: `i18n/reference.json`
 
+**Note**: When using `--core-plugins` flag with community-plugins repo, only **Red Hat owned plugins** (plugins with `"author": "Red Hat"` in their `package.json`) are included in the generated reference file. Non-Red Hat plugins are automatically filtered out.
+
 #### For rhdh:
 
 ```bash
@@ -167,6 +169,18 @@ translations-cli i18n generate
 - Extracts translation keys from `createTranslationRef` and `createTranslationMessages` calls
 - Generates a flat JSON file with all English reference strings
 - File format: `{ "pluginName": { "en": { "key": "English value" } } }`
+
+**Special behavior for community-plugins with `--core-plugins` flag:**
+
+When using `--core-plugins` flag and pointing to a community-plugins repository, the generate command automatically filters to only include **Red Hat owned plugins**. A plugin is considered Red Hat owned if it has `"author": "Red Hat"` in its `package.json` file. Non-Red Hat plugins are automatically excluded from the generated reference file.
+
+Example:
+
+```bash
+cd /path/to/community-plugins
+translations-cli i18n generate --core-plugins --backstage-repo-path /path/to/community-plugins
+# Only Red Hat owned plugins will be included in the output
+```
 
 ### Step 2: Upload Reference Files to Memsource
 
