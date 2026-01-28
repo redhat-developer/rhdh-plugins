@@ -67,9 +67,25 @@ techdocs:
 
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
+  environment: development
   providers:
     # See https://backstage.io/docs/auth/guest/provider
     guest: {}
+    gitlab:
+      development:
+        clientId: ${AUTH_GITLAB_CLIENT_ID}
+        clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+            # - resolver: usernameMatchingUserEntityName
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
 
 scaffolder: {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -80,3 +96,20 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+  locations:
+    - type: file
+      target: ../../entities/users.yaml
+      rules:
+        - allow: [User]
+
+permission:
+  # Reenable when the RBAC plugin is loaded
+  enabled: false
+  rbac:
+    policies-csv-file: ../../entities/example-rbac-policy.csv
+    policyFileReload: true
+    pluginsWithPermission:
+      - x2a
+    admin:
+      users:
+        - name: user:default/mareklibra
