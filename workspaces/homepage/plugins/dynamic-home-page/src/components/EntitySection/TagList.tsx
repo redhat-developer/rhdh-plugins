@@ -15,6 +15,8 @@
  */
 import type { FC } from 'react';
 
+import { Link } from '@backstage/core-components';
+
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
@@ -29,43 +31,69 @@ interface TagListProps {
 
 const TagList: FC<TagListProps> = ({ tags, kind }) => {
   const hiddenCount = tags.length - 3;
+
+  const params = new URLSearchParams({
+    'filters[kind]': kind,
+    'filters[user]': 'all',
+  });
+  const catalogKindLink = `/catalog?${params.toString()}`;
+
   return (
     <Box
       sx={{
-        height: '72px',
+        height: '77px',
+        pt: 2,
         overflow: 'hidden',
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'flex-end',
-        gap: 0.5,
+        rowGap: 0.5,
+        columnGap: 0.5,
       }}
     >
-      <Chip
-        key={kind}
-        label={
-          <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-            {kind}
-          </Typography>
-        }
-        sx={{
-          backgroundColor: KINDS[kind.toLocaleUpperCase() as KindKeys]?.fill,
-          color: 'black',
-        }}
-        variant="filled"
-        size="small"
-      />
-      {tags.slice(0, 2).map(tag => (
+      <Link to={catalogKindLink}>
         <Chip
-          key={tag}
+          key={kind}
           label={
             <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-              {tag}
+              {kind}
             </Typography>
           }
-          variant="outlined"
+          sx={{
+            backgroundColor: KINDS[kind.toLocaleUpperCase() as KindKeys]?.fill,
+            color: 'black',
+            m: 0,
+          }}
+          variant="filled"
           size="small"
         />
-      ))}
+      </Link>
+      {tags.slice(0, 2).map(tag => {
+        const tagParams = new URLSearchParams({
+          'filters[kind]': kind,
+          'filters[tags]': tag,
+          'filters[user]': 'all',
+        });
+        const catalogLink = `/catalog?${tagParams.toString()}`;
+
+        return (
+          <Link key={tag} to={catalogLink}>
+            <Chip
+              key={tag}
+              label={
+                <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
+                  {tag}
+                </Typography>
+              }
+              sx={{
+                m: 0,
+              }}
+              variant="outlined"
+              size="small"
+            />
+          </Link>
+        );
+      })}
 
       {hiddenCount > 0 && (
         <Chip
@@ -74,8 +102,7 @@ const TagList: FC<TagListProps> = ({ tags, kind }) => {
               sx={{
                 fontSize: '0.8rem',
                 fontWeight: 400,
-                color: theme =>
-                  `${theme.palette.mode === 'light' ? '#0066CC' : '#1FA7F8'}`,
+                color: theme => theme.palette.text.secondary,
               }}
             >
               {`${hiddenCount} more`}
@@ -85,6 +112,7 @@ const TagList: FC<TagListProps> = ({ tags, kind }) => {
           size="small"
           sx={{
             border: 'none',
+            m: 0,
           }}
         />
       )}

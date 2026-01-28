@@ -28,15 +28,25 @@ interface TemplateCardProps {
   link: string;
   title: string;
   description: string;
-  type?: string;
+  kind: string;
+  type: string;
 }
 
 const TemplateCard: FC<TemplateCardProps> = ({
   link,
   title,
   description,
+  kind,
   type,
 }) => {
+  const params = new URLSearchParams({
+    'filters[kind]': kind,
+    'filters[type]': type,
+    'filters[user]': 'all',
+  });
+
+  const catalogLink = `/catalog?${params.toString()}`;
+
   return (
     <Card
       elevation={0}
@@ -98,15 +108,17 @@ const TemplateCard: FC<TemplateCardProps> = ({
         </Box>
         <Box sx={{ pt: 2 }}>
           {type && (
-            <Chip
-              label={
-                <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-                  {type}
-                </Typography>
-              }
-              key={type}
-              size="small"
-            />
+            <Link to={catalogLink}>
+              <Chip
+                label={
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
+                    {type}
+                  </Typography>
+                }
+                key={type}
+                size="small"
+              />
+            </Link>
           )}
         </Box>
       </CardContent>
