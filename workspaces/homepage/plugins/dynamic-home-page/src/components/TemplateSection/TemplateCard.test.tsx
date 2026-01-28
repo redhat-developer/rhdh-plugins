@@ -25,6 +25,7 @@ describe('TemplateCard', () => {
     description:
       'This is a description of the sample template used for testing.',
     type: 'website',
+    kind: 'Template',
   };
 
   const renderComponent = () =>
