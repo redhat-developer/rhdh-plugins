@@ -1795,7 +1795,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobInput = {
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         };
 
         const job = await service.createJob(jobInput);
@@ -1844,7 +1846,9 @@ describe('X2ADatabaseService', () => {
         const startedAt = new Date('2026-01-24T10:00:00Z');
         const finishedAt = new Date('2026-01-24T11:00:00Z');
         const jobInput = {
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           log: 'Job log content',
           startedAt,
           finishedAt,
@@ -1892,7 +1896,9 @@ describe('X2ADatabaseService', () => {
           'http://example.com/artifact3',
         ];
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts,
         });
 
@@ -1933,8 +1939,16 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job1 = await service.createJob({ moduleId: module.id });
-        const job2 = await service.createJob({ moduleId: module.id });
+        const job1 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
+        const job2 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         expect(job1.id).not.toBe(job2.id);
         expect(job1.moduleId).toBe(module.id);
@@ -1969,8 +1983,16 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job1 = await service.createJob({ moduleId: module1.id });
-        const job2 = await service.createJob({ moduleId: module2.id });
+        const job1 = await service.createJob({
+          projectId: project.id,
+          moduleId: module1.id,
+          phase: 'init' as const,
+        });
+        const job2 = await service.createJob({
+          projectId: project.id,
+          moduleId: module2.id,
+          phase: 'init' as const,
+        });
 
         expect(job1.moduleId).toBe(module1.id);
         expect(job2.moduleId).toBe(module2.id);
@@ -1999,7 +2021,11 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job = await service.createJob({ moduleId: module.id });
+        const job = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         expect(job.status).toBe('pending');
       },
@@ -2042,7 +2068,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const createdJob = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           log: 'Test log',
           status: 'running',
         });
@@ -2082,7 +2110,9 @@ describe('X2ADatabaseService', () => {
 
         const artifacts = ['file1.txt', 'file2.json'];
         const createdJob = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts,
         });
 
@@ -2119,11 +2149,15 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'running',
         });
 
@@ -2161,7 +2195,11 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const jobs = await service.listJobs({ moduleId: module.id });
+        const jobs = await service.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         expect(jobs).toEqual([]);
       },
@@ -2190,19 +2228,29 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'running',
         });
         const job3 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'success',
         });
 
-        const jobs = await service.listJobs({ moduleId: module.id });
+        const jobs = await service.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         expect(jobs).toHaveLength(3);
         // Should be ordered by started_at descending
@@ -2235,15 +2283,23 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt', 'artifact2.json'],
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact3.log'],
         });
 
-        const jobs = await service.listJobs({ moduleId: module.id });
+        const jobs = await service.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         expect(jobs).toHaveLength(2);
         const foundJob1 = jobs.find(j => j.id === job1.id);
@@ -2284,12 +2340,32 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        await service.createJob({ moduleId: module1.id });
-        await service.createJob({ moduleId: module1.id });
-        await service.createJob({ moduleId: module2.id });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module1.id,
+          phase: 'init' as const,
+        });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module1.id,
+          phase: 'init' as const,
+        });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module2.id,
+          phase: 'init' as const,
+        });
 
-        const module1Jobs = await service.listJobs({ moduleId: module1.id });
-        const module2Jobs = await service.listJobs({ moduleId: module2.id });
+        const module1Jobs = await service.listJobs({
+          projectId: project.id,
+          moduleId: module1.id,
+          phase: 'init' as const,
+        });
+        const module2Jobs = await service.listJobs({
+          projectId: project.id,
+          moduleId: module2.id,
+          phase: 'init' as const,
+        });
 
         expect(module1Jobs).toHaveLength(2);
         expect(module1Jobs.every(j => j.moduleId === module1.id)).toBe(true);
@@ -2338,7 +2414,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
         });
 
@@ -2376,7 +2454,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           log: 'Initial log',
         });
 
@@ -2413,7 +2493,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         });
 
         const finishedAt = new Date('2026-01-24T12:00:00Z');
@@ -2450,7 +2532,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['old1.txt', 'old2.txt'],
         });
 
@@ -2500,7 +2584,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt', 'artifact2.txt'],
         });
 
@@ -2543,7 +2629,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
           log: 'Initial log',
         });
@@ -2604,7 +2692,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         });
 
         // Verify it exists
@@ -2645,7 +2735,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt', 'artifact2.txt'],
         });
 
@@ -2688,8 +2780,16 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job1 = await service.createJob({ moduleId: module.id });
-        const job2 = await service.createJob({ moduleId: module.id });
+        const job1 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
+        const job2 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         const deletedCount = await service.deleteJob({ id: job1.id });
 
@@ -2705,7 +2805,11 @@ describe('X2ADatabaseService', () => {
         expect(remaining?.id).toBe(job2.id);
 
         // Verify listJobs still returns job2
-        const listResult = await service.listJobs({ moduleId: module.id });
+        const listResult = await service.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
         expect(listResult).toHaveLength(1);
         expect(listResult[0].id).toBe(job2.id);
       },
@@ -2736,15 +2840,21 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt'],
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact2.txt'],
         });
         const job3 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         });
 
         // Verify jobs exist
@@ -2752,7 +2862,11 @@ describe('X2ADatabaseService', () => {
         expect(await service.getJob({ id: job2.id })).toBeDefined();
         expect(await service.getJob({ id: job3.id })).toBeDefined();
 
-        const jobsBefore = await service.listJobs({ moduleId: module.id });
+        const jobsBefore = await service.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
         expect(jobsBefore).toHaveLength(3);
 
         // Delete the module
@@ -2769,7 +2883,11 @@ describe('X2ADatabaseService', () => {
         expect(await service.getJob({ id: job3.id })).toBeUndefined();
 
         // Verify listJobs returns empty for deleted module
-        const jobsAfter = await service.listJobs({ moduleId: module.id });
+        const jobsAfter = await service.listJobs({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
         expect(jobsAfter).toEqual([]);
 
         // Verify jobs are deleted from database directly
@@ -2814,13 +2932,19 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1Module1 = await service.createJob({
+          projectId: project.id,
           moduleId: module1.id,
+          phase: 'init' as const,
         });
         const job2Module1 = await service.createJob({
+          projectId: project.id,
           moduleId: module1.id,
+          phase: 'init' as const,
         });
         const job1Module2 = await service.createJob({
+          projectId: project.id,
           moduleId: module2.id,
+          phase: 'init' as const,
         });
 
         // Delete module1
@@ -2836,7 +2960,11 @@ describe('X2ADatabaseService', () => {
         expect(remainingJob?.moduleId).toBe(module2.id);
 
         // Verify module2 still has its job
-        const module2Jobs = await service.listJobs({ moduleId: module2.id });
+        const module2Jobs = await service.listJobs({
+          projectId: project.id,
+          moduleId: module2.id,
+          phase: 'init' as const,
+        });
         expect(module2Jobs).toHaveLength(1);
         expect(module2Jobs[0].id).toBe(job1Module2.id);
       },
