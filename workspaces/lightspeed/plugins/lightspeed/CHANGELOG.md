@@ -1,5 +1,14 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.2.2
+
+### Patch Changes
+
+- 00a1d21: Added missing display mode translations (`settings.displayMode.*`) for Japanese (ja) and Italian (it) locales.
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.2
+
 ## 1.2.1
 
 ### Patch Changes
