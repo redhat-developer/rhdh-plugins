@@ -1,4 +1,4 @@
-### Dependencies
+# @red-hat-developer-hub/backstage-plugin-bulk-import
 
 ## 7.0.0
 
