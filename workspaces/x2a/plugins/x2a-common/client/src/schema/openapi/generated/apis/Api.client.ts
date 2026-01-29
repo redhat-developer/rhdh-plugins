@@ -51,6 +51,7 @@ export type ProjectsGet = {
   query: {
     page?: number;
     pageSize?: number;
+    order?: 'asc' | 'desc';
     sort?: 'createdAt' | 'name' | 'description' | 'createdBy';
   };
 };
@@ -96,6 +97,7 @@ export class DefaultApiClient {
    * Returns a list of projects.
    * @param page - Page number
    * @param pageSize - Page size
+   * @param order - Sort order, either ascending (\&quot;asc\&quot;) or descending (\&quot;desc\&quot;)
    * @param sort - Sort by field
    */
   public async projectsGet(
@@ -105,7 +107,7 @@ export class DefaultApiClient {
   ): Promise<TypedResponse<ProjectsGet200Response>> {
     const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
 
-    const uriTemplate = `/projects{?page,pageSize,sort}`;
+    const uriTemplate = `/projects{?page,pageSize,order,sort}`;
 
     const uri = parser.parse(uriTemplate).expand({
       ...request.query,

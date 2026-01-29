@@ -23,6 +23,7 @@
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
+    "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },

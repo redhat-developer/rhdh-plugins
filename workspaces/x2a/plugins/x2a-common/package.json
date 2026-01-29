@@ -46,5 +46,8 @@
     "@mareklibra",
     "@elai-shalev",
     "@eloycoto"
-  ]
+  ],
+  "dependencies": {
+    "@backstage/plugin-permission-common": "^0.9.4"
+  }
 }

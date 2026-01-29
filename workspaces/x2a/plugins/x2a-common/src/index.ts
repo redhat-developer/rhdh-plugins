@@ -20,3 +20,4 @@
  * @packageDocumentation
  */
 export * from '../client/src/schema/openapi';
+export * from './permissions';
