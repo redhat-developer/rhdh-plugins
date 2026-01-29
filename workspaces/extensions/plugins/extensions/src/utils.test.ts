@@ -113,6 +113,37 @@ plugins:
 `,
       );
     });
+
+    it('should create minimal YAML when editor is empty', () => {
+      const content = applyContent(
+        '',
+        'backstage-community-plugin-quay',
+        packages,
+        mockNewContent,
+      );
+      expect(content).toContain('plugins:');
+      expect(content).toContain(
+        'package: ./dynamic-plugins/dist/backstage-community-plugin-quay',
+      );
+      expect(content).toContain('disabled: false');
+      expect(content).toContain('pluginConfig:');
+      expect(content).toContain('catalog:');
+    });
+
+    it('should create minimal YAML when editor has only whitespace', () => {
+      const content = applyContent(
+        '   \n  \t  ',
+        'backstage-community-plugin-quay',
+        packages,
+        mockNewContent,
+      );
+      expect(content).toContain('plugins:');
+      expect(content).toContain(
+        'package: ./dynamic-plugins/dist/backstage-community-plugin-quay',
+      );
+      expect(content).toContain('disabled: false');
+      expect(content).toContain('pluginConfig:');
+    });
   });
 
   describe('getExampleAsMarkdown', () => {
