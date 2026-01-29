@@ -14,61 +14,27 @@
  * limitations under the License.
  */
 import { createBackend } from '@backstage/backend-defaults';
-import { mockServices } from '@backstage/backend-test-utils';
-import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-
-// TEMPLATE NOTE:
-// This is the development setup for your plugin that wires up a
-// minimal backend that can use both real and mocked plugins and services.
-//
-// Start up the backend by running `yarn start` in the package directory.
-// Once it's up and running, try out the following requests:
-//
-// Create a new todo item, standalone or for the sample component:
-//
-//   curl http://localhost:7007/api/x2a/todos -H 'Content-Type: application/json' -d '{"title": "My Todo"}'
-//   curl http://localhost:7007/api/x2a/todos -H 'Content-Type: application/json' -d '{"title": "My Todo", "entityRef": "component:default/sample"}'
-//
-// List TODOs:
-//
-//   curl http://localhost:7007/api/x2a/todos
-//
-// Explicitly make an unauthenticated request, or with service auth:
-//
-//   curl http://localhost:7007/api/x2a/todos -H 'Authorization: Bearer mock-none-token'
-//   curl http://localhost:7007/api/x2a/todos -H 'Authorization: Bearer mock-service-token'
+// import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
 const backend = createBackend();
+
+// TODO: Needs more work, failing:
+// - The @backstage/plugin-permission-backend in PluginPermissionMetadataCollector.permissionFactory() calls FetchUrlReader constructor with no params which is not supported (options are mandatory). Causing access to undefined.
+// backend.add(import('@backstage/plugin-permission-backend'));
+// backend.add(import('@backstage-community/plugin-rbac-backend'))
 
 // TEMPLATE NOTE:
 // Mocking the auth and httpAuth service allows you to call your plugin API without
 // having to authenticate.
 //
 // If you want to use real auth, you can install the following instead:
-//   backend.add(import('@backstage/plugin-auth-backend'));
-//   backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
-backend.add(mockServices.auth.factory());
-backend.add(mockServices.httpAuth.factory());
+backend.add(import('@backstage/plugin-auth-backend'));
+backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
+backend.add(import('@backstage/plugin-auth-backend-module-github-provider'));
+// backend.add(mockServices.auth.factory());
+// backend.add(mockServices.httpAuth.factory());
 
-// TEMPLATE NOTE:
-// Rather than using a real catalog you can use a mock with a fixed set of entities.
-backend.add(
-  catalogServiceMock.factory({
-    entities: [
-      {
-        apiVersion: 'backstage.io/v1alpha1',
-        kind: 'Component',
-        metadata: {
-          name: 'sample',
-          title: 'Sample Component',
-        },
-        spec: {
-          type: 'service',
-        },
-      },
-    ],
-  }),
-);
+backend.add(import('@backstage/plugin-catalog-backend'));
 
 backend.add(import('../src'));
 

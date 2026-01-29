@@ -15,6 +15,7 @@
  */
 import { createDevApp } from '@backstage/dev-utils';
 import { x2APlugin, X2APage } from '../src/plugin';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 createDevApp()
   .registerPlugin(x2APlugin)
@@ -22,5 +23,11 @@ createDevApp()
     element: <X2APage />,
     title: 'Root Page',
     path: '/x2a',
+  })
+  .addSignInProvider({
+    id: 'github-auth-provider',
+    title: 'GitHub',
+    message: 'Sign in using GitHub',
+    apiRef: githubAuthApiRef,
   })
   .render();
