@@ -17,7 +17,6 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { KubeService } from './KubeService';
 import { X2AConfig } from '../../config';
-import * as k8sClientModule from './makeK8sClient';
 
 // Mock the Kubernetes client
 const mockCoreV1Api = {
