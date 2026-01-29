@@ -35,12 +35,21 @@ EOF
 
 _pocker="$(command -v podman || command -v docker)"
 
-function _januscli_dynamic_plugins {
+function _export_plugin {
+  local plugin_dir="$1"
+  echo "Exporting plugin: $plugin_dir"
+  cd "$workspace_dir/$plugin_dir"
+  npx @red-hat-developer-hub/cli@latest plugin export \
+    --embed-package @red-hat-developer-hub/plugin-redhat-resource-optimization-common
+  cd "$workspace_dir"
+}
+
+function _package_dynamic_plugins {
   local args=( )
   if [[ "$_pocker" =~ docker$ ]]; then
     args+=( --container-tool docker )
   fi
-  npx @red-hat-developer-hub/cli@latest plugin package --tag "${PLUGIN_CONTAINER_TAG}"
+  npx @red-hat-developer-hub/cli@latest plugin package "${args[@]}" "$@"
 }
 
 function clean {
@@ -69,6 +78,11 @@ function _assert_version_is_set {
     echo "Error: The VERSION environment variable value doesn't match: /^[0-9]\.[0-9]\.[0-9]/" 
     exit 2
   fi
+}
+
+function _is_prerelease_version {
+  # Check if version is a pre-release (contains -rc, -alpha, -beta, etc.)
+  [[ "$VERSION" =~ ^[0-9]\.[0-9]\.[0-9]-[a-zA-Z] ]]
 }
 
 
@@ -106,10 +120,30 @@ EOF
 function oci {
   _assert_version_is_set
   _update_version
+  
+  # Ensure all dependencies are installed
+  echo "Installing dependencies..."
+  yarn install
+  
   yarn tsc
   yarn build:all
-  _januscli_dynamic_plugins --tag $REGISTRY_URL/$ORG_ID/$REPO:$VERSION
-  git restore plugins/*/package.json
+  
+  # Export each plugin as a dynamic plugin
+  _export_plugin "plugins/redhat-resource-optimization"
+  _export_plugin "plugins/redhat-resource-optimization-backend"
+  
+  # Package all exported plugins into OCI image
+  _package_dynamic_plugins --tag $REGISTRY_URL/$ORG_ID/$REPO:$VERSION
+  
+  # For QE/pre-release versions, restore package.json after build
+  # For production versions, keep package.json updated for commit
+  if _is_prerelease_version; then
+    echo "QE version detected ($VERSION). Restoring package.json..."
+    git restore plugins/*/package.json
+  else
+    echo "Production version detected ($VERSION). Keep package.json updated."
+    echo "Remember to commit: git commit -am 'Release v$VERSION' && git tag v$VERSION"
+  fi
 }
 
 function push {
