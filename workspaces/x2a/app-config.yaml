@@ -128,7 +128,7 @@ permission:
   # Reenable when the RBAC plugin is loaded
   enabled: true
   rbac:
-    policies-csv-file: ../../entities/example-rbac-policy.csv
+    policies-csv-file: ../../examples/example-rbac-policy.csv
     policyFileReload: true
     pluginsWithPermission:
       - x2a

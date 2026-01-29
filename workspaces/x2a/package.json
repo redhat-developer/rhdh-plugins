@@ -54,7 +54,10 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "lru-cache": "^8"
+    "lru-cache": "^8",
+    "@backstage/backend-defaults": "0.13.1",
+    "@backstage/backend-plugin-api": "1.5.0",
+    "@backstage-community/plugin-rbac-backend": "~7.4.0"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
