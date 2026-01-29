@@ -42,7 +42,31 @@ const mockInputProject: ProjectsPostRequest = {
 };
 
 const mockUserId = `user: default/user1`;
-const BASE_CONFIG = {};
+const BASE_CONFIG = {
+  x2a: {
+    kubernetes: {
+      namespace: 'test-namespace',
+      image: 'test-image',
+      imageTag: 'test',
+      ttlSecondsAfterFinished: 86400,
+      resources: {
+        requests: {
+          cpu: '100m',
+          memory: '128Mi',
+        },
+        limits: {
+          cpu: '200m',
+          memory: '256Mi',
+        },
+      },
+    },
+    credentials: {
+      llm: {
+        LLM_MODEL: 'test-model',
+      },
+    },
+  },
+};
 
 jest.mock('@backstage/backend-plugin-api', () => ({
   ...jest.requireActual('@backstage/backend-plugin-api'),
@@ -163,6 +187,9 @@ describe('plugin', () => {
     const { server } = await startTestBackend({
       features: [
         x2APlugin,
+        mockServices.rootConfig.factory({
+          data: BASE_CONFIG,
+        }),
         createServiceFactory({
           service: x2aDatabaseServiceRef,
           deps: {},

@@ -17,5 +17,5 @@ metadata:
 spec:
   profile:
     displayName: Elai Shalev
-    email: eshalev@redhat.com
+    email: foo@bar.com
   memberOf: []
