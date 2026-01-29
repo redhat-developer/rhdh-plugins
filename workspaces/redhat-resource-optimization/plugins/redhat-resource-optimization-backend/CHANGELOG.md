@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/plugin-redhat-resource-optimization-backend
 
+## 2.0.3
+
+### Patch Changes
+
+- e6286b6: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@types/lodash` to `4.17.21`.
+- 1b3cace: Updated dependency `lodash` to `4.17.23`.
+- ada127f: Updated dependency `@types/lodash` to `4.17.23`.
+- feac655: Updated dependency `@types/lodash` to `4.17.22`.
+  - @red-hat-developer-hub/plugin-redhat-resource-optimization-common@2.0.3
+
 ## 2.0.2
 
 ### Patch Changes
