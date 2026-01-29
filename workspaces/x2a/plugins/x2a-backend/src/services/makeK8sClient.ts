@@ -15,7 +15,7 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { CoreV1Api, KubeConfig } from '@kubernetes/client-node';
+import type { CoreV1Api } from '@kubernetes/client-node';
 
 /**
  * TODO: Make this configurable
@@ -23,7 +23,10 @@ import { CoreV1Api, KubeConfig } from '@kubernetes/client-node';
  * Load Kubernetes config from default locations
  * This will check KUBECONFIG env var, ~/.kube/config, or ~/.kube/kubeconfig, or in-cluster config
  */
-export const makeK8sClient = (logger: LoggerService): CoreV1Api => {
+export const makeK8sClient = async (
+  logger: LoggerService,
+): Promise<CoreV1Api> => {
+  const { KubeConfig } = await import('@kubernetes/client-node');
   const kc = new KubeConfig();
 
   try {
@@ -60,5 +63,6 @@ export const makeK8sClient = (logger: LoggerService): CoreV1Api => {
     }
   }
 
+  const { CoreV1Api } = await import('@kubernetes/client-node');
   return kc.makeApiClient(CoreV1Api);
 };

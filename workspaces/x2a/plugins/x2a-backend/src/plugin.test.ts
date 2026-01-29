@@ -24,6 +24,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
+import { kubeServiceRef } from './services/KubeService';
 import { x2APlugin } from './plugin';
 import request from 'supertest';
 import {
@@ -81,6 +82,10 @@ const getX2aDatabaseServiceMock = () => ({
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
 });
 
+const getKubeServiceMock = () => ({
+  getPods: jest.fn().mockResolvedValue({ items: [] }),
+});
+
 async function startBackendServer(
   config?: Record<PropertyKey, unknown>,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
@@ -100,6 +105,11 @@ async function startBackendServer(
       ],
     }).factory,
     mockServices.userInfo.factory(),
+    createServiceFactory({
+      service: kubeServiceRef,
+      deps: {},
+      factory: async () => getKubeServiceMock(),
+    }),
   ];
   return (await startTestBackend({ features })).server;
 }
@@ -157,6 +167,11 @@ describe('plugin', () => {
           service: x2aDatabaseServiceRef,
           deps: {},
           factory: getX2aDatabaseServiceMock,
+        }),
+        createServiceFactory({
+          service: kubeServiceRef,
+          deps: {},
+          factory: async () => getKubeServiceMock(),
         }),
       ],
     });
