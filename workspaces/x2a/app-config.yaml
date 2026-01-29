@@ -85,7 +85,7 @@ auth:
         clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
         signIn:
           resolvers:
-            - resolver: emailMatchingUserEntityProfileEmail
+            - resolver: usernameMatchingUserEntityName
 
 scaffolder: {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -118,45 +118,44 @@ permission:
 x2a:
   kubernetes:
     # Kubernetes namespace where jobs will be created
-    namespace: default
+    namespace: ${X2A_KUBERNETES_NAMESPACE:-default}
     # X2A convertor container image
-    image: quay.io/x2ansible/x2a-convertor
-    imageTag: latest
+    image: ${X2A_KUBERNETES_IMAGE:-quay.io/x2ansible/x2a-convertor}
+    imageTag: ${X2A_KUBERNETES_IMAGE_TAG:-latest}
     # Auto-delete completed jobs after 24 hours (86400 seconds)
-    ttlSecondsAfterFinished: 86400
+    ttlSecondsAfterFinished: ${X2A_KUBERNETES_TTL_SECONDS:-86400}
     # Resource requests and limits for job pods
     resources:
       requests:
-        cpu: '500m'
-        memory: '1Gi'
+        cpu: ${X2A_KUBERNETES_CPU_REQUEST:-500m}
+        memory: ${X2A_KUBERNETES_MEMORY_REQUEST:-1Gi}
       limits:
-        cpu: '2000m'
-        memory: '4Gi'
+        cpu: ${X2A_KUBERNETES_CPU_LIMIT:-2000m}
+        memory: ${X2A_KUBERNETES_MEMORY_LIMIT:-4Gi}
   credentials:
     # LLM provider credentials as environment variables
     # Generic key-value pairs passed to the job container
     # Use env var names expected by your LLM provider (x2a-convertor container)
     llm:
+      # LLM_MODEL is required - defaults to anthropic.claude-v2 if not set
+      LLM_MODEL: ${LLM_MODEL:-anthropic.claude-v2}
       # Example for AWS Bedrock with IAM credentials:
-      LLM_MODEL: 'anthropic.claude-v2'
-      AWS_REGION: 'us-east-1'
-      AWS_ACCESS_KEY_ID: 'DUMMY_KEY_ID_FOR_LOCAL_TESTING'
-      AWS_SECRET_ACCESS_KEY: 'DUMMY_SECRET_KEY_FOR_LOCAL_TESTING'
-      # Example for AWS Bedrock with bearer token (uncomment and remove IAM above):
-      # LLM_MODEL: 'anthropic.claude-v2'
-      # AWS_REGION: 'us-east-1'
-      # AWS_BEARER_TOKEN_BEDROCK: 'DUMMY_BEARER_TOKEN_FOR_LOCAL_TESTING'
+      AWS_REGION: ${AWS_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      # Example for AWS Bedrock with bearer token:
+      # AWS_BEARER_TOKEN_BEDROCK: ${AWS_BEARER_TOKEN_BEDROCK}
       # Example for OpenAI:
-      # OPENAI_API_KEY: 'DUMMY_OPENAI_KEY_FOR_LOCAL_TESTING'
-      # OPENAI_MODEL: 'gpt-4'
+      # OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # OPENAI_MODEL: ${OPENAI_MODEL}
     # Ansible Automation Platform credentials (optional - can be provided by users at runtime)
     # If not provided here, users must supply AAP credentials when creating projects
     # Use EITHER oauthToken OR username+password
     aap:
-      url: 'https://dummy-aap.example.com'
-      orgName: 'DummyOrganization'
-      # Option 1: OAuth token (using dummy value for local testing)
-      oauthToken: 'DUMMY_AAP_OAUTH_TOKEN_FOR_LOCAL_TESTING'
+      url: ${AAP_URL}
+      orgName: ${AAP_ORG_NAME}
+      # Option 1: OAuth token
+      oauthToken: ${AAP_OAUTH_TOKEN}
       # Option 2: Username and password
-      # username: 'DUMMY_USERNAME'
-      # password: 'DUMMY_PASSWORD'
+      # username: ${AAP_USERNAME}
+      # password: ${AAP_PASSWORD}

@@ -15,7 +15,8 @@
  */
 
 import { JobResourceBuilder } from './JobResourceBuilder';
-import { X2AConfig, JobCreateParams } from './types';
+import { X2AConfig } from '../../config';
+import { JobCreateParams } from './types';
 
 describe('JobResourceBuilder', () => {
   let mockConfig: X2AConfig;
@@ -271,6 +272,24 @@ describe('JobResourceBuilder', () => {
           ),
         ).toThrow(
           'AAP credentials must include either oauthToken OR username+password',
+        );
+      });
+
+      it('should treat config AAP with undefined auth fields as no config', () => {
+        mockConfig.credentials.aap = {
+          url: undefined,
+          orgName: undefined,
+          oauthToken: undefined,
+        };
+
+        expect(() =>
+          JobResourceBuilder.buildProjectSecret(
+            projectId,
+            undefined, // No user-provided credentials
+            mockConfig,
+          ),
+        ).toThrow(
+          'AAP credentials must be provided either in app-config.yaml or by the user at project creation',
         );
       });
     });

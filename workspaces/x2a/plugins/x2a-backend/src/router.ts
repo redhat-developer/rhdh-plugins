@@ -16,6 +16,7 @@
 
 import { z } from 'zod';
 import express, { Request } from 'express';
+import { randomUUID } from 'node:crypto';
 import {
   BackstageCredentials,
   BackstageUserPrincipal,
@@ -290,18 +291,21 @@ export async function createRouter({
     const { sourceRepo, targetRepo, aapCredentials, userPrompt } =
       parsedBody.data;
 
-    // Verify project exists
-    const project = await x2aDatabase.getProject({ projectId });
-    if (!project) {
-      throw new NotFoundError('Project not found');
-    }
-
     // Get user reference safely
     const credentials = await httpAuth.credentials(req, { allow: ['user'] });
     const userRef = getUserRef(credentials);
 
+    // Verify project exists
+    const project = await x2aDatabase.getProject(
+      { projectId },
+      { credentials },
+    );
+    if (!project) {
+      throw new NotFoundError('Project not found');
+    }
+
     // Generate callback token and create job record
-    const callbackToken = crypto.randomUUID();
+    const callbackToken = randomUUID();
     const job = await x2aDatabase.createJob({
       projectId,
       moduleId: null, // Init jobs have no module
@@ -360,8 +364,14 @@ export async function createRouter({
     }
     const { name, sourcePath } = parsedBody.data;
 
+    // Get user credentials
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
     // Verify project exists
-    const project = await x2aDatabase.getProject({ projectId });
+    const project = await x2aDatabase.getProject(
+      { projectId },
+      { credentials },
+    );
     if (!project) {
       throw new NotFoundError('Project not found');
     }
@@ -421,8 +431,15 @@ export async function createRouter({
       const { phase, sourceRepo, targetRepo, aapCredentials, userPrompt } =
         parsedBody.data;
 
+      // Get user reference safely
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userRef = getUserRef(credentials);
+
       // Verify project exists
-      const project = await x2aDatabase.getProject({ projectId });
+      const project = await x2aDatabase.getProject(
+        { projectId },
+        { credentials },
+      );
       if (!project) {
         throw new NotFoundError('Project not found');
       }
@@ -433,12 +450,8 @@ export async function createRouter({
         throw new NotFoundError('Module not found');
       }
 
-      // Get user reference safely
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userRef = getUserRef(credentials);
-
       // Generate callback token and create job record
-      const callbackToken = crypto.randomUUID();
+      const callbackToken = randomUUID();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId,
