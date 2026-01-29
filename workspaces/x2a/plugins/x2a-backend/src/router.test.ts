@@ -76,6 +76,15 @@ async function createApp(
     }),
     x2aDatabase,
     kubeService: {
+      createProjectSecret: jest.fn().mockResolvedValue(undefined),
+      getProjectSecret: jest.fn().mockResolvedValue(null),
+      deleteProjectSecret: jest.fn().mockResolvedValue(undefined),
+      createJobSecret: jest.fn().mockResolvedValue(undefined),
+      createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
+      getJobStatus: jest.fn().mockResolvedValue('pending'),
+      getJobLogs: jest.fn().mockResolvedValue(''),
+      deleteJob: jest.fn().mockResolvedValue(undefined),
+      listJobsForProject: jest.fn().mockResolvedValue([]),
       getPods: jest.fn().mockResolvedValue({ items: [] }),
     },
   });

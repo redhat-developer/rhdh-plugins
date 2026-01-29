@@ -23,6 +23,19 @@ import {
   AAPCredentials,
 } from './types';
 
+// Test constants for git repository credentials
+const testSourceRepo: GitRepoCredentials = {
+  url: 'https://github.com/org/source',
+  token: 'ghp_src123', // NOSONAR
+  branch: 'main',
+};
+
+const testTargetRepo: GitRepoCredentials = {
+  url: 'https://github.com/org/target',
+  token: 'ghp_tgt456', // NOSONAR
+  branch: 'main',
+};
+
 describe('types', () => {
   describe('MigrationPhase', () => {
     it('should accept all valid phase values', () => {
@@ -317,6 +330,8 @@ describe('types', () => {
         user: 'user:default/testuser',
         callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
+        sourceRepo: testSourceRepo,
+        targetRepo: testTargetRepo,
       };
 
       expect(params.phase).toBe('init');
@@ -342,6 +357,8 @@ describe('types', () => {
         callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
+        sourceRepo: testSourceRepo,
+        targetRepo: testTargetRepo,
       };
 
       expect(params.phase).toBe('analyze');
@@ -360,6 +377,8 @@ describe('types', () => {
         callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
+        sourceRepo: testSourceRepo,
+        targetRepo: testTargetRepo,
       };
 
       expect(params.phase).toBe('migrate');
@@ -378,6 +397,8 @@ describe('types', () => {
         callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
+        sourceRepo: testSourceRepo,
+        targetRepo: testTargetRepo,
       };
 
       expect(params.phase).toBe('publish');
@@ -395,6 +416,8 @@ describe('types', () => {
         callbackToken: 'callback-token-789', // NOSONAR
         callbackUrl: 'http://backstage:7007/api/x2a/callback', // NOSONAR
         userPrompt: 'Focus on security configurations',
+        sourceRepo: testSourceRepo,
+        targetRepo: testTargetRepo,
       };
 
       expect(params.userPrompt).toBe('Focus on security configurations');
@@ -412,6 +435,8 @@ describe('types', () => {
         moduleId: 'module-uuid-999',
         moduleName: 'nginx-cookbook',
         userPrompt: 'Preserve all comments and documentation',
+        sourceRepo: testSourceRepo,
+        targetRepo: testTargetRepo,
       };
 
       expect(params.moduleId).toBe('module-uuid-999');
@@ -438,6 +463,8 @@ describe('types', () => {
           user: 'user:default/test',
           callbackToken: 'token-123', // NOSONAR
           callbackUrl: 'http://localhost:7007/callback', // NOSONAR
+          sourceRepo: testSourceRepo,
+          targetRepo: testTargetRepo,
         };
 
         expect(params.phase).toBe(phase);

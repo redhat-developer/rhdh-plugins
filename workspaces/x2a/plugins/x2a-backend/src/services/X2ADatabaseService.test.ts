@@ -2196,9 +2196,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
-          projectId: project.id,
           moduleId: module.id,
-          phase: 'init' as const,
         });
 
         expect(jobs).toEqual([]);
@@ -2247,9 +2245,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
-          projectId: project.id,
           moduleId: module.id,
-          phase: 'init' as const,
         });
 
         expect(jobs).toHaveLength(3);
@@ -2296,9 +2292,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
-          projectId: project.id,
           moduleId: module.id,
-          phase: 'init' as const,
         });
 
         expect(jobs).toHaveLength(2);
@@ -2357,14 +2351,10 @@ describe('X2ADatabaseService', () => {
         });
 
         const module1Jobs = await service.listJobs({
-          projectId: project.id,
           moduleId: module1.id,
-          phase: 'init' as const,
         });
         const module2Jobs = await service.listJobs({
-          projectId: project.id,
           moduleId: module2.id,
-          phase: 'init' as const,
         });
 
         expect(module1Jobs).toHaveLength(2);
@@ -2806,9 +2796,7 @@ describe('X2ADatabaseService', () => {
 
         // Verify listJobs still returns job2
         const listResult = await service.listJobs({
-          projectId: project.id,
           moduleId: module.id,
-          phase: 'init' as const,
         });
         expect(listResult).toHaveLength(1);
         expect(listResult[0].id).toBe(job2.id);
@@ -2863,9 +2851,7 @@ describe('X2ADatabaseService', () => {
         expect(await service.getJob({ id: job3.id })).toBeDefined();
 
         const jobsBefore = await service.listJobs({
-          projectId: project.id,
           moduleId: module.id,
-          phase: 'init' as const,
         });
         expect(jobsBefore).toHaveLength(3);
 
@@ -2884,9 +2870,7 @@ describe('X2ADatabaseService', () => {
 
         // Verify listJobs returns empty for deleted module
         const jobsAfter = await service.listJobs({
-          projectId: project.id,
           moduleId: module.id,
-          phase: 'init' as const,
         });
         expect(jobsAfter).toEqual([]);
 
@@ -2961,9 +2945,7 @@ describe('X2ADatabaseService', () => {
 
         // Verify module2 still has its job
         const module2Jobs = await service.listJobs({
-          projectId: project.id,
           moduleId: module2.id,
-          phase: 'init' as const,
         });
         expect(module2Jobs).toHaveLength(1);
         expect(module2Jobs[0].id).toBe(job1Module2.id);

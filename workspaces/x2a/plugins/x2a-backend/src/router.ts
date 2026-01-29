@@ -255,88 +255,94 @@ export async function createRouter({
     res.status(200).json({ deletedCount });
   });
 
-  router.post('/projects/:projectId/run', async (req, res) => {
-    const endpoint = 'POST /projects/:projectId/run';
-    const { projectId } = req.params;
-    logger.info(`${endpoint} request received: projectId=${projectId}`);
+  // TODO: Add these endpoints to openapi.yaml and regenerate types
+  (router as any).post(
+    '/projects/:projectId/run',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/run';
+      const { projectId } = req.params;
+      logger.info(`${endpoint} request received: projectId=${projectId}`);
 
-    // Validate request body
-    const runRequestSchema = z.object({
-      sourceRepo: z.object({
-        url: z.string(),
-        token: z.string(),
-        branch: z.string(),
-      }),
-      targetRepo: z.object({
-        url: z.string(),
-        token: z.string(),
-        branch: z.string(),
-      }),
-      aapCredentials: z
-        .object({
+      // Validate request body
+      const runRequestSchema = z.object({
+        sourceRepo: z.object({
           url: z.string(),
-          orgName: z.string(),
-          oauthToken: z.string().optional(),
-          username: z.string().optional(),
-          password: z.string().optional(),
-        })
-        .optional(),
-      userPrompt: z.string().optional(),
-    });
+          token: z.string(),
+          branch: z.string(),
+        }),
+        targetRepo: z.object({
+          url: z.string(),
+          token: z.string(),
+          branch: z.string(),
+        }),
+        aapCredentials: z
+          .object({
+            url: z.string(),
+            orgName: z.string(),
+            oauthToken: z.string().optional(),
+            username: z.string().optional(),
+            password: z.string().optional(),
+          })
+          .optional(),
+        userPrompt: z.string().optional(),
+      });
 
-    const parsedBody = runRequestSchema.passthrough().safeParse(req.body);
-    if (!parsedBody.success) {
-      throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
-    }
-    const { sourceRepo, targetRepo, aapCredentials, userPrompt } =
-      parsedBody.data;
+      const parsedBody = runRequestSchema.passthrough().safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const { sourceRepo, targetRepo, aapCredentials, userPrompt } =
+        parsedBody.data;
 
-    // Get user reference safely
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    const userRef = getUserRef(credentials);
+      // Get user reference safely
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userRef = getUserRef(credentials);
 
-    // Verify project exists
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      { credentials },
-    );
-    if (!project) {
-      throw new NotFoundError('Project not found');
-    }
+      // Verify project exists
+      const project = await x2aDatabase.getProject(
+        { projectId },
+        { credentials },
+      );
+      if (!project) {
+        throw new NotFoundError('Project not found');
+      }
 
-    // Generate callback token and create job record
-    const callbackToken = randomUUID();
-    const job = await x2aDatabase.createJob({
-      projectId,
-      moduleId: null, // Init jobs have no module
-      phase: 'init',
-      status: 'pending',
-      callbackToken,
-    });
+      // Generate callback token and create job record
+      const callbackToken = randomUUID();
+      const job = await x2aDatabase.createJob({
+        projectId,
+        moduleId: null, // Init jobs have no module
+        phase: 'init',
+        status: 'pending',
+        callbackToken,
+      });
 
-    // Create Kubernetes job (will create both project and job secrets)
-    const callbackUrl = `${req.protocol}://${req.get('host')}/api/x2a/projects/${projectId}/collectArtifacts`;
-    const { k8sJobName } = await kubeService.createJob({
-      jobId: job.id,
-      projectId,
-      projectName: project.name,
-      phase: 'init',
-      user: userRef,
-      callbackToken,
-      callbackUrl,
-      sourceRepo,
-      targetRepo,
-      aapCredentials,
-      userPrompt,
-    });
+      // Create Kubernetes job (will create both project and job secrets)
+      const callbackUrl = `${req.protocol}://${req.get('host')}/api/x2a/projects/${projectId}/collectArtifacts`;
+      const { k8sJobName } = await kubeService.createJob({
+        jobId: job.id,
+        projectId,
+        projectName: project.name,
+        phase: 'init',
+        user: userRef,
+        callbackToken,
+        callbackUrl,
+        sourceRepo,
+        targetRepo,
+        aapCredentials,
+        userPrompt,
+      });
 
-    // Update job with k8s job name
-    await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+      // Update job with k8s job name
+      await x2aDatabase.updateJob({ id: job.id, k8sJobName });
 
-    logger.info(`Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`);
+      logger.info(
+        `Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`,
+      );
 
-    res.json({ status: 'pending', jobId: job.id });
-  });
+      res.json({ status: 'pending', jobId: job.id } as any);
+    },
+  );
 
   // TODO: This is a TEMPORARY endpoint for testing only.
   // According to the ADR (lines 202-213), this endpoint should sync modules by:
@@ -345,52 +351,55 @@ export async function createRouter({
   // 3. Generating moduleIds for new ones and deleting missing modules
   // This simple CRUD implementation allows testing the job infrastructure
   // until the init phase integration is complete.
-  router.post('/projects/:projectId/modules', async (req, res) => {
-    const endpoint = 'POST /projects/:projectId/modules';
-    const { projectId } = req.params;
-    logger.info(`${endpoint} request received: projectId=${projectId}`);
+  (router as any).post(
+    '/projects/:projectId/modules',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/modules';
+      const { projectId } = req.params;
+      logger.info(`${endpoint} request received: projectId=${projectId}`);
 
-    // Validate request body
-    const createModuleRequestSchema = z.object({
-      name: z.string(),
-      sourcePath: z.string(),
-    });
+      // Validate request body
+      const createModuleRequestSchema = z.object({
+        name: z.string(),
+        sourcePath: z.string(),
+      });
 
-    const parsedBody = createModuleRequestSchema
-      .passthrough()
-      .safeParse(req.body);
-    if (!parsedBody.success) {
-      throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
-    }
-    const { name, sourcePath } = parsedBody.data;
+      const parsedBody = createModuleRequestSchema
+        .passthrough()
+        .safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const { name, sourcePath } = parsedBody.data;
 
-    // Get user credentials
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      // Get user credentials
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
 
-    // Verify project exists
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      { credentials },
-    );
-    if (!project) {
-      throw new NotFoundError('Project not found');
-    }
+      // Verify project exists
+      const project = await x2aDatabase.getProject(
+        { projectId },
+        { credentials },
+      );
+      if (!project) {
+        throw new NotFoundError('Project not found');
+      }
 
-    // Create module
-    const module = await x2aDatabase.createModule({
-      name,
-      sourcePath,
-      projectId,
-    });
+      // Create module
+      const module = await x2aDatabase.createModule({
+        name,
+        sourcePath,
+        projectId,
+      });
 
-    logger.info(`Module created: moduleId=${module.id}, name=${module.name}`);
+      logger.info(`Module created: moduleId=${module.id}, name=${module.name}`);
 
-    res.status(201).json(module);
-  });
+      res.status(201).json(module as any);
+    },
+  );
 
-  router.post(
+  (router as any).post(
     '/projects/:projectId/modules/:moduleId/run',
-    async (req, res) => {
+    async (req: express.Request, res: express.Response) => {
       const endpoint = 'POST /projects/:projectId/modules/:moduleId/run';
       const { projectId, moduleId } = req.params;
       logger.info(
@@ -485,7 +494,7 @@ export async function createRouter({
         `${phase} job created: jobId=${job.id}, moduleId=${moduleId}, k8sJobName=${k8sJobName}`,
       );
 
-      res.json({ status: 'pending', jobId: job.id });
+      res.json({ status: 'pending', jobId: job.id } as any);
     },
   );
 

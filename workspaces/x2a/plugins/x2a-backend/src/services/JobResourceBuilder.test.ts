@@ -277,8 +277,8 @@ describe('JobResourceBuilder', () => {
 
       it('should treat config AAP with undefined auth fields as no config', () => {
         mockConfig.credentials.aap = {
-          url: undefined,
-          orgName: undefined,
+          url: undefined as any,
+          orgName: undefined as any,
           oauthToken: undefined,
         };
 
