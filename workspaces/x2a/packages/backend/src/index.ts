@@ -51,7 +51,9 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 backend.add(import('@backstage/plugin-permission-backend'));
 // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
 
-// Breaking change in @backstage/backend-defaults@0.15.0, commit 27f9061 is causing the plugin-rbac-backend to fail on FetchUrlReader instantiation.
+// When upgrading to @backstage/backend-defaults@0.15.0, commit 27f9061 be aware of a breaking change that is
+// causing the plugin-rbac-backend to fail on FetchUrlReader instantiation.
+// Fixed by setting resolutions in the root/package.json
 // https://github.com/backstage/backstage/blob/master/packages/backend-defaults/CHANGELOG.md#0150
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 // backend.add(

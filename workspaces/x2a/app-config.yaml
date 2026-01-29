@@ -125,7 +125,7 @@ kubernetes:
 
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
-  # Reenable when the RBAC plugin is loaded
+  # Set to false to disable RBAC checks
   enabled: true
   rbac:
     policies-csv-file: ../../examples/example-rbac-policy.csv
