@@ -29,6 +29,8 @@ import {
   invalidThresholdResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
+  emptyGithubAggregatedResponse,
+  emptyJiraAggregatedResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -265,13 +267,24 @@ test.describe('Scorecard Plugin Tests', () => {
       await runAccessibilityTests(page, testInfo);
     });
 
-    test('Verify cards hidden when API returns empty response', async () => {
-      await mockAggregatedScorecardResponse(page, [], []);
+    test('Verify cards aggregation skipped when API returns empty aggregated response', async () => {
+      await mockAggregatedScorecardResponse(
+        page,
+        emptyGithubAggregatedResponse,
+        emptyJiraAggregatedResponse,
+      );
 
       await homePage.navigateToHome();
       await page.reload();
-      await homePage.expectCardNotVisible('github.open_prs');
-      await homePage.expectCardNotVisible('jira.open_issues');
+      await homePage.expectCardVisible('github.open_prs');
+      await homePage.expectCardVisible('jira.open_issues');
+
+      await expect(page.locator('article')).toContainText(
+        translations.errors.aggregationSkipped,
+      );
+      await expect(page.locator('article')).toContainText(
+        translations.errors.aggregationSkippedMessage,
+      );
     });
 
     test('Verify threshold tooltips', async () => {
