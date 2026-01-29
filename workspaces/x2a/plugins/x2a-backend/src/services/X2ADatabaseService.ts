@@ -24,14 +24,14 @@ import {
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
 import { Expand } from '@backstage/types';
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Knex } from 'knex';
-import { ProjectsGet } from '../schema/openapi';
 import {
+  Project,
   DEFAULT_PAGE_ORDER,
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SORT,
-} from '../constants';
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Knex } from 'knex';
+import { ProjectsGet } from '../schema/openapi';
 
 // TODO: model via openapi schema
 export interface Module {

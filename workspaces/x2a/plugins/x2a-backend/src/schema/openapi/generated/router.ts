@@ -77,6 +77,8 @@ export const spec = {
               "enum": [
                 "createdAt",
                 "name",
+                "abbreviation",
+                "status",
                 "description",
                 "createdBy"
               ]

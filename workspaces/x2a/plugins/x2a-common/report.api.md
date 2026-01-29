@@ -6,6 +6,15 @@
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
+// @public
+export const DEFAULT_PAGE_ORDER = "desc";
+
+// @public
+export const DEFAULT_PAGE_SIZE = 10;
+
+// @public
+export const DEFAULT_PAGE_SORT = "created_at";
+
 // @public (undocumented)
 export class DefaultApiClient {
     constructor(options: {
@@ -38,7 +47,7 @@ export type ProjectsGet = {
         page?: number;
         pageSize?: number;
         order?: 'asc' | 'desc';
-        sort?: 'createdAt' | 'name' | 'description' | 'createdBy';
+        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'createdBy';
     };
 };
 
