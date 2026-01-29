@@ -107,10 +107,10 @@ Returns a list of available metrics. Supports filtering by metric IDs or datasou
 
 #### Query Parameters
 
-| Parameter    | Type   | Required | Description                                                                                  |
-| ------------ | ------ | -------- | -------------------------------------------------------------------------------------------- |
-| `metricIds`  | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,github.open_issues`) |
-| `datasource` | string | No       | Filter metrics by datasource ID (e.g., `github`, `jira`, `sonar`)                            |
+| Parameter    | Type   | Required | Description                                                                                |
+| ------------ | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `metricIds`  | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,jira.open_issues`) |
+| `datasource` | string | No       | Filter metrics by datasource ID (e.g., `github`, `jira`, `sonar`)                          |
 
 #### Behavior
 
@@ -127,7 +127,7 @@ curl -X GET "{{url}}/api/scorecard/metrics" \
   -H "Authorization: Bearer <token>"
 
 # Get specific metrics by IDs
-curl -X GET "{{url}}/api/scorecard/metrics?metricIds=github.open_prs,github.open_issues" \
+curl -X GET "{{url}}/api/scorecard/metrics?metricIds=github.open_prs,jira.open_issues" \
   -H "Authorization: Bearer <token>"
 
 # Get all metrics from a specific datasource
@@ -149,9 +149,9 @@ Returns the latest metric values for a specific catalog entity.
 
 #### Query Parameters
 
-| Parameter   | Type   | Required | Description                                                                                  |
-| ----------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
-| `metricIds` | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,github.open_issues`) |
+| Parameter   | Type   | Required | Description                                                                                |
+| ----------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `metricIds` | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,jira.open_issues`) |
 
 #### Permissions
 

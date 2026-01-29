@@ -21,6 +21,12 @@ import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
 
 import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+jest.mock('@backstage/core-components', () => ({
+  ResponseErrorPanel: ({ error }: { error: Error }) => (
+    <div data-testid="response-error-panel">{error.message}</div>
+  ),
+}));
+
 // Mock the child components
 jest.mock('../../../hooks/useAggregatedScorecard', () => ({
   useAggregatedScorecard: jest.fn(),
@@ -44,15 +50,18 @@ jest.mock('../ScorecardHomepageCardComponent', () => ({
 
 jest.mock('../EmptyStatePanel', () => ({
   EmptyStatePanel: ({
-    error,
+    label,
     metricId,
+    tooltipContent,
   }: {
-    error: Error;
+    label: string;
     metricId: string;
+    tooltipContent: string;
   }) => (
     <div data-testid="empty-state-panel">
-      <div data-testid="error-message">{error.message}</div>
+      <div data-testid="empty-state-label">{label}</div>
       <div data-testid="metric-id">{metricId}</div>
+      <div data-testid="tooltip-content">{tooltipContent}</div>
     </div>
   ),
 }));
@@ -115,8 +124,11 @@ describe('ScorecardHomepageCard', () => {
     expect(screen.getByTestId('metric-id')).toHaveTextContent(
       'jira.open_issues',
     );
-    expect(screen.getByTestId('error-message')).toHaveTextContent(
-      'NotAllowedError: missing permission',
+    expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
+      'errors.missingPermission',
+    );
+    expect(screen.getByTestId('tooltip-content')).toHaveTextContent(
+      'errors.missingPermissionMessage',
     );
   });
 
@@ -131,9 +143,59 @@ describe('ScorecardHomepageCard', () => {
       wrapper: TestWrapper,
     });
 
-    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('error-message')).toHaveTextContent(
+    expect(screen.getByTestId('response-error-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('response-error-panel')).toHaveTextContent(
       'Something went wrong',
+    );
+  });
+
+  it('should render empty state panel when user is not found in catalog', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: undefined,
+      loadingData: false,
+      error: new Error('NotFoundError: User entity reference not found'),
+    });
+
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
+      'errors.metricDataUnavailable',
+    );
+    expect(screen.getByTestId('tooltip-content')).toHaveTextContent(
+      'errors.userNotFoundInCatalogMessage',
+    );
+  });
+
+  it('should render empty state panel when aggregation is skipped', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: {
+        ...mockScorecard,
+        result: {
+          total: 0,
+          values: [],
+          timestamp: '2024-01-01T00:00:00Z',
+        },
+      },
+      loadingData: false,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('metric-id')).toHaveTextContent(
+      'github.open_prs',
+    );
+    expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
+      'errors.aggregationSkipped',
+    );
+    expect(screen.getByTestId('tooltip-content')).toHaveTextContent(
+      'errors.aggregationSkippedMessage',
     );
   });
 

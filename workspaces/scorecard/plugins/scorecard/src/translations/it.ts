@@ -43,10 +43,13 @@ const scorecardTranslationIt = createTranslationMessages({
     'errors.metricDataUnavailable': 'Dati metrici non disponibili',
     'errors.invalidThresholds': 'Soglie non valide',
     'errors.missingPermission': 'Autorizzazione mancante',
+    'errors.aggregationSkipped': 'Aggregazione saltata',
     'errors.missingPermissionMessage':
       "Per visualizzare le metriche della scheda punteggio, il tuo amministratore deve concedere l'autorizzazione richiesta.",
     'errors.userNotFoundInCatalogMessage':
       'Entità utente non trovata nel catalogo',
+    'errors.aggregationSkippedMessage':
+      'Non ci sono metriche da aggregare per questo fornitore di metriche. Verificare se le entità possedute hanno valori metrici',
     'metric.github.open_prs.title': 'Richieste pull aperte su GitHub',
     'metric.github.open_prs.description':
       'Conteggio attuale delle richieste pull aperte per uno specifico repository GitHub.',

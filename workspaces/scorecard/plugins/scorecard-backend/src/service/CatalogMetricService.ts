@@ -17,6 +17,7 @@
 import {
   MetricResult,
   ThresholdConfig,
+  AggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { NotFoundError, stringifyError } from '@backstage/errors';
@@ -30,7 +31,6 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
-import { AggregatedMetric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregatedMetricMapper } from './mappers';
 
 type CatalogMetricServiceOptions = {

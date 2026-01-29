@@ -48,6 +48,8 @@ permission:
     policyFileReload: true
 ```
 
+**Note:** The backend also checks `catalog.entity.read` for each entity. Make sure your users/roles can read the catalog entities they want to view scorecards for.
+
 ### Configuration
 
 1. Add the Scorecard page to you Entity overview page by modifying `packages/app/src/components/catalog/EntityPage.tsx`:

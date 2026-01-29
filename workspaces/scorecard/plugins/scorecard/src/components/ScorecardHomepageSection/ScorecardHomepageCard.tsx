@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import { Fragment } from 'react';
-
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
-import { EmptyStatePanel } from './EmptyStatePanel';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
+import { ErrorStatePanel } from './ErrorStatePanel';
+import { EmptyStatePanel } from './EmptyStatePanel';
 
 export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   const { t } = useTranslation();
@@ -45,11 +44,21 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   }
 
   if (error) {
-    return <EmptyStatePanel error={error} metricId={metricId} />;
+    return <ErrorStatePanel error={error} metricId={metricId} />;
   }
 
   if (!aggregatedScorecard) {
     return null;
+  }
+
+  if (aggregatedScorecard.result?.total === 0) {
+    return (
+      <EmptyStatePanel
+        metricId={metricId}
+        label={t('errors.aggregationSkipped')}
+        tooltipContent={t('errors.aggregationSkippedMessage')}
+      />
+    );
   }
 
   const titleKey = `metric.${aggregatedScorecard.id}.title`;
@@ -66,13 +75,11 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
       : description;
 
   return (
-    <Fragment>
-      <ScorecardHomepageCardComponent
-        key={aggregatedScorecard.id}
-        cardTitle={finalTitle}
-        description={finalDescription}
-        scorecard={aggregatedScorecard}
-      />
-    </Fragment>
+    <ScorecardHomepageCardComponent
+      key={aggregatedScorecard.id}
+      cardTitle={finalTitle}
+      description={finalDescription}
+      scorecard={aggregatedScorecard}
+    />
   );
 };

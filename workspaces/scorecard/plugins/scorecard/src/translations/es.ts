@@ -44,10 +44,13 @@ const scorecardTranslationEs = createTranslationMessages({
     'errors.metricDataUnavailable': 'Datos de métrica no disponibles',
     'errors.invalidThresholds': 'Umbrales inválidos',
     'errors.missingPermission': 'Permiso faltante',
+    'errors.aggregationSkipped': 'Agregación omitida',
     'errors.missingPermissionMessage':
       'Para ver las métricas de scorecard, tu administrador debe otorgarle el permiso requerido.',
     'errors.userNotFoundInCatalogMessage':
       'Entidad de usuario no encontrada en el catálogo',
+    'errors.aggregationSkippedMessage':
+      'No hay métricas que agregar para este proveedor de métricas. Compruebe si las entidades propias tiene valores de métricas',
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs abiertas',
     'metric.github.open_prs.description':
