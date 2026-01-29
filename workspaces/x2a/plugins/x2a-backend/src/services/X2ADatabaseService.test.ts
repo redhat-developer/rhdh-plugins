@@ -23,15 +23,19 @@ import {
 import { Knex } from 'knex';
 import { X2ADatabaseService } from './X2ADatabaseService';
 import { migrate } from './dbMigrate';
-import { delay, toSorted } from '../utils';
+import { delay, LONG_TEST_TIMEOUT, nonExistentId, toSorted } from '../utils';
 
 const databases = TestDatabases.create({
-  // TODO: Reenable for 'POSTGRES_18'
-  ids: ['SQLITE_3'],
+  ids: ['SQLITE_3', 'POSTGRES_18'],
 });
+const supportedDatabaseIds = databases.eachSupportedId();
+console.log('Testing against supportedDatabaseIds:', supportedDatabaseIds);
+
+const clientsToDestroy: Knex[] = [];
 
 async function createDatabase(databaseId: TestDatabaseId) {
   const client = await databases.init(databaseId);
+  clientsToDestroy.push(client);
   const mockDatabaseService = mockServices.database.mock({
     getClient: async () => client,
     migrations: { skip: false },
@@ -52,8 +56,14 @@ function createService(client: Knex): X2ADatabaseService {
 }
 
 describe('X2ADatabaseService', () => {
+  afterEach(async () => {
+    await Promise.all(
+      clientsToDestroy.splice(0).map(client => client.destroy()),
+    );
+  });
+
   describe('createProject', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a project with all required fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -85,9 +95,10 @@ describe('X2ADatabaseService', () => {
         expect(row.description).toBe(input.description);
         expect(row.created_by).toBe('user:default/mock');
       },
+      LONG_TEST_TIMEOUT,
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create multiple projects with different IDs - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -116,9 +127,10 @@ describe('X2ADatabaseService', () => {
         expect(project1.name).toBe('Project 1');
         expect(project2.name).toBe('Project 2');
       },
+      LONG_TEST_TIMEOUT,
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should use the correct user from credentials - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -144,7 +156,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('listProjects', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return empty list when no projects exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -158,7 +170,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return all projects with correct totalCount - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -205,7 +217,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should paginate results with page and pageSize - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -256,7 +268,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should use default pageSize when not specified - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -286,7 +298,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should sort by name ascending - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -320,7 +332,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should sort by name descending - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -354,7 +366,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should sort by createdBy - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -392,7 +404,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should filter by user when canViewAll is false - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -448,7 +460,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return all projects when canViewAll is true - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -493,7 +505,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should filter by user when canViewAll is undefined - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -524,7 +536,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should combine pagination and user filtering - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -572,7 +584,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should use default sort and order when not specified - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -604,7 +616,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should handle empty page gracefully - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -629,7 +641,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('getProject', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined for non-existent project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -638,7 +650,7 @@ describe('X2ADatabaseService', () => {
         const credentials = mockCredentials.user();
         const project = await service.getProject(
           {
-            projectId: 'non-existent-id',
+            projectId: nonExistentId,
           },
           { credentials },
         );
@@ -647,7 +659,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return the correct project by ID - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -682,7 +694,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return correct project when multiple projects exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -722,7 +734,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined when user tries to access project created by another user - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -753,7 +765,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return project when user accesses their own project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -784,7 +796,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return project when canViewAll is true even if created by different user - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -817,7 +829,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should filter by user when canViewAll is undefined - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -850,7 +862,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('deleteProject', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return 0 when deleting non-existent project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -859,7 +871,7 @@ describe('X2ADatabaseService', () => {
         const credentials = mockCredentials.user();
         const deletedCount = await service.deleteProject(
           {
-            projectId: 'non-existent-id',
+            projectId: nonExistentId,
           },
           { credentials },
         );
@@ -868,7 +880,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete a project and return 1 - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -912,7 +924,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only delete the specified project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -967,7 +979,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return 0 when user tries to delete project created by another user - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1008,7 +1020,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete project when user deletes their own project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1046,7 +1058,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete project when canWriteAll is true even if created by different user - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1086,7 +1098,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should filter by user when canWriteAll is undefined - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1129,7 +1141,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('integration tests', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should handle full CRUD lifecycle - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1183,7 +1195,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('createModule', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a module with all required fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1223,7 +1235,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create multiple modules with different IDs - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1257,7 +1269,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create modules for different projects - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1300,19 +1312,19 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('getModule', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined for non-existent module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
-        const module = await service.getModule({ id: 'non-existent-id' });
+        const module = await service.getModule({ id: nonExistentId });
 
         expect(module).toBeUndefined();
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return the correct module by ID - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1346,7 +1358,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return correct module when multiple modules exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1385,7 +1397,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('listModules', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return empty list when no modules exist for project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1407,7 +1419,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return all modules for a project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1449,7 +1461,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only return modules for the specified project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1507,21 +1519,21 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('deleteModule', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return 0 when deleting non-existent module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
         const deletedCount = await service.deleteModule({
-          id: 'non-existent-id',
+          id: nonExistentId,
         });
 
         expect(deletedCount).toBe(0);
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete a module and return 1 - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1558,7 +1570,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only delete the specified module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1609,7 +1621,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('CASCADE delete', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should cascade delete modules when project is deleted - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1688,7 +1700,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only cascade delete modules for the deleted project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1760,7 +1772,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('createJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a job with all required fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1807,7 +1819,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a job with optional fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1852,7 +1864,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a job with artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1899,7 +1911,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create multiple jobs with different IDs - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1930,7 +1942,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create jobs for different modules - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1965,7 +1977,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should default status to pending when not provided - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1995,19 +2007,19 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('getJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined for non-existent job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
-        const job = await service.getJob({ id: 'non-existent-id' });
+        const job = await service.getJob({ id: nonExistentId });
 
         expect(job).toBeUndefined();
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return the correct job by ID - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2046,7 +2058,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return job with artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2084,7 +2096,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return correct job when multiple jobs exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2127,7 +2139,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('listJobs', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return empty list when no jobs exist for module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2155,7 +2167,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return all jobs for a module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2200,7 +2212,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return jobs with their artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2245,7 +2257,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only return jobs for the specified module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2288,14 +2300,14 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('updateJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined when updating non-existent job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
         const updated = await service.updateJob({
-          id: 'non-existent-id',
+          id: nonExistentId,
           status: 'running',
         });
 
@@ -2303,7 +2315,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job status - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2341,7 +2353,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job log - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2378,7 +2390,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job finishedAt - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2415,7 +2427,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2465,7 +2477,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should clear artifacts when updating with empty array - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2508,7 +2520,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update multiple fields at once - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2555,21 +2567,21 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('deleteJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return 0 when deleting non-existent job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
         const deletedCount = await service.deleteJob({
-          id: 'non-existent-id',
+          id: nonExistentId,
         });
 
         expect(deletedCount).toBe(0);
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete a job and return 1 - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2610,7 +2622,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should cascade delete artifacts when job is deleted - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2654,7 +2666,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only delete the specified job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2701,7 +2713,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('CASCADE delete for jobs', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should cascade delete jobs when module is deleted - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2774,7 +2786,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only cascade delete jobs for the deleted module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);

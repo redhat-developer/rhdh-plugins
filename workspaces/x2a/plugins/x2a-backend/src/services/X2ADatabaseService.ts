@@ -205,7 +205,7 @@ export class X2ADatabaseService {
           calledByUserRef,
         ),
       )
-      .first()) as { count: number };
+      .first()) as { count: any };
 
     const projects: Project[] = rows.map(this.mapRowToProject);
 
@@ -213,7 +213,7 @@ export class X2ADatabaseService {
       `Fetched ${projects.length} out of ${totalCount.count} projects from database (permissions applied)`,
     );
 
-    return { projects, totalCount: totalCount.count };
+    return { projects, totalCount: Number.parseInt(totalCount.count, 10) };
   }
 
   async getProject(
