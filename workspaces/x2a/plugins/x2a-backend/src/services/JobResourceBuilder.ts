@@ -16,12 +16,8 @@
 
 import { V1Job, V1Secret } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
-import {
-  X2AConfig,
-  JobCreateParams,
-  AAPCredentials,
-  GitRepoCredentials,
-} from './types';
+import { X2AConfig } from '../../config';
+import { JobCreateParams, AAPCredentials, GitRepoCredentials } from './types';
 
 /**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
@@ -47,7 +43,17 @@ export class JobResourceBuilder {
     const llmCredentials = config.credentials.llm;
 
     // Determine AAP credentials source - user-provided takes precedence over config
-    const aapSource = aapCredentials || config.credentials.aap;
+    let aapSource = aapCredentials;
+
+    // If no user-provided credentials, check if config has AAP credentials
+    if (!aapSource && config.credentials.aap) {
+      const configAap = config.credentials.aap;
+      // Only use config as fallback if it has at least url and orgName defined
+      // (not undefined from missing env vars)
+      if (configAap.url && configAap.orgName) {
+        aapSource = configAap;
+      }
+    }
 
     if (!aapSource) {
       throw new Error(
@@ -220,7 +226,9 @@ export class JobResourceBuilder {
         // Allow 3 retries on failure
         backoffLimit: 3,
         // Auto-delete completed jobs after configured TTL
-        ttlSecondsAfterFinished: config.kubernetes.ttlSecondsAfterFinished,
+        ttlSecondsAfterFinished: Number(
+          config.kubernetes.ttlSecondsAfterFinished,
+        ),
         template: {
           metadata: {
             labels: {

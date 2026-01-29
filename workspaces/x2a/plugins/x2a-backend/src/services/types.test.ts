@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import { X2AConfig } from '../../config';
 import {
   MigrationPhase,
-  X2AConfig,
   ProjectCredentials,
   JobCreateParams,
   GitRepoCredentials,

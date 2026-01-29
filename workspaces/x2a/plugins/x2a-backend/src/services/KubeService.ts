@@ -31,12 +31,9 @@ import {
 } from '@kubernetes/client-node';
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
-import {
-  X2AConfig,
-  JobCreateParams,
-  AAPCredentials,
-  GitRepoCredentials,
-} from './types';
+import { X2AConfig } from '../../config';
+import { JobCreateParams, AAPCredentials, GitRepoCredentials } from './types';
+import { DEFAULT_LLM_MODEL } from './constants';
 
 /**
  * Job status information from Kubernetes
@@ -371,6 +368,11 @@ export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
       async factory(deps) {
         // Load X2A configuration from app-config.yaml
         const x2aConfig = deps.config.get<X2AConfig>('x2a');
+
+        // Ensure LLM_MODEL has a default value if not provided
+        if (!x2aConfig.credentials.llm.LLM_MODEL) {
+          x2aConfig.credentials.llm.LLM_MODEL = DEFAULT_LLM_MODEL;
+        }
 
         return KubeService.create({
           logger: deps.logger,
