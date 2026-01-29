@@ -60,7 +60,7 @@ export const BulkImportSidebarItem = () => {
     return allowed ? (
       <SidebarItem
         text={t('sidebar.bulkImport')}
-        to="bulk-import/repositories"
+        to="bulk-import"
         icon={BulkImportIcon}
       />
     ) : null;
@@ -70,7 +70,7 @@ export const BulkImportSidebarItem = () => {
     return (
       <SidebarItem
         text={t('sidebar.bulkImport')}
-        to="bulk-import/repositories"
+        to="bulk-import"
         icon={BulkImportIcon}
       />
     );

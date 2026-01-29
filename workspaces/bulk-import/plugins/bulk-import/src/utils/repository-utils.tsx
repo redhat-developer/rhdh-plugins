@@ -203,8 +203,8 @@ export const getPRTemplate = (
   gitProvider: 'github' | 'gitlab',
 ): PullRequestPreview => {
   const importJobUrl = repositoryUrl
-    ? `${baseUrl}/bulk-import/repositories?repository=${repositoryUrl}&defaultBranch=${defaultBranch}`
-    : `${baseUrl}/bulk-import/repositories`;
+    ? `${baseUrl}/bulk-import?repository=${repositoryUrl}&defaultBranch=${defaultBranch}`
+    : `${baseUrl}/bulk-import`;
   const name = cleanComponentName(componentName);
   return {
     componentName: name,

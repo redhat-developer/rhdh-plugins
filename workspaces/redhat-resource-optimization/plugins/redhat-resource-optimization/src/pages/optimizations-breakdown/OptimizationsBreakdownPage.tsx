@@ -24,6 +24,7 @@ import {
 } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import type { RecommendationBoxPlots } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/models';
+import type { WorkflowUnavailableReason } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
 import { getTimeFromNow } from '../../utils/dates';
 import { BasePage } from '../../components/BasePage';
 import { type Interval, OptimizationType } from './models/ChartEnums';
@@ -143,6 +144,10 @@ export const OptimizationsBreakdownPage = () => {
       'resourceOptimization.optimizationWorkflowId',
     ) ?? '',
   );
+  const workflowUnavailableReasonRef = useRef<
+    WorkflowUnavailableReason | undefined
+  >(undefined);
+  const workflowErrorMessageRef = useRef<string | undefined>(undefined);
   const orchestratorSlimApi = useApi(orchestratorSlimApiRef);
   const optimizationsApi = useApi(optimizationsApiRef);
   const {
@@ -150,11 +155,17 @@ export const OptimizationsBreakdownPage = () => {
     loading,
     error,
   } = useAsync(async () => {
-    const isWorkflowAvailable = await orchestratorSlimApi.isWorkflowAvailable(
-      workflowIdRef.current,
-    );
-    if (!isWorkflowAvailable) {
+    const availabilityResult =
+      await orchestratorSlimApi.checkWorkflowAvailability(
+        workflowIdRef.current,
+      );
+    if (availabilityResult.available) {
+      workflowUnavailableReasonRef.current = undefined;
+      workflowErrorMessageRef.current = undefined;
+    } else {
       workflowIdRef.current = '';
+      workflowUnavailableReasonRef.current = availabilityResult.reason;
+      workflowErrorMessageRef.current = availabilityResult.errorMessage;
     }
 
     const apiQuery = {
@@ -263,6 +274,8 @@ export const OptimizationsBreakdownPage = () => {
             onRecommendationTermChange={handleRecommendationTermChange}
             onApplyRecommendation={handleApplyRecommendation}
             workflowId={workflowIdRef.current}
+            workflowUnavailableReason={workflowUnavailableReasonRef.current}
+            workflowErrorMessage={workflowErrorMessageRef.current}
           />
         </TabbedLayout.Route>
 
@@ -280,6 +293,8 @@ export const OptimizationsBreakdownPage = () => {
             onRecommendationTermChange={handleRecommendationTermChange}
             onApplyRecommendation={handleApplyRecommendation}
             workflowId={workflowIdRef.current}
+            workflowUnavailableReason={workflowUnavailableReasonRef.current}
+            workflowErrorMessage={workflowErrorMessageRef.current}
           />
         </TabbedLayout.Route>
       </TabbedLayout>

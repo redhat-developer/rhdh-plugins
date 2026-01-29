@@ -50,7 +50,7 @@ app:
       cta:
         text: Import
         textKey: steps.importApplication.ctaTitle
-        link: /bulk-import/repositories
+        link: /bulk-import
     - title: Learn about the Catalog
       titleKey: steps.learnAboutCatalog.title
       roles:

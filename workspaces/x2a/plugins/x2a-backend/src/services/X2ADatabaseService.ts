@@ -24,8 +24,14 @@ import {
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
 import { Expand } from '@backstage/types';
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Project,
+  DEFAULT_PAGE_ORDER,
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE_SORT,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Knex } from 'knex';
+import { ProjectsGet } from '../schema/openapi';
 
 // TODO: model via openapi schema
 export interface Module {
@@ -74,6 +80,18 @@ export class X2ADatabaseService {
     };
   }
 
+  // Map REST sort param to database column name
+  private mapSortToDatabaseColumn(sort?: string): string | undefined {
+    const mapping = {
+      createdAt: 'created_at',
+      createdBy: 'created_by',
+      finishedAt: 'finished_at',
+      startedAt: 'started_at',
+    };
+
+    return sort ? mapping[sort as keyof typeof mapping] || sort : undefined;
+  }
+
   // Map a database row to a Module object
   private mapRowToModule(row: any): Module {
     return {
@@ -94,6 +112,21 @@ export class X2ADatabaseService {
       status: (row.status || 'pending') as JobStatus,
       moduleId: row.module_id,
     };
+  }
+
+  // Filter query by user permissions
+  private filterPermissions(
+    queryBuilder: Knex.QueryBuilder,
+    canDoAll: boolean | undefined,
+    userEntityRef: string,
+  ): void {
+    if (!canDoAll) {
+      // Filter by the user who created the project.
+      // For admins, the WHERE clause is not applied so matching all records.
+      // If multiple non-admin users are allowed to do the action, we need to
+      // either pass their full list here or do the permission check outside of the DB
+      queryBuilder.where('created_by', userEntityRef);
+    }
   }
 
   async createProject(
@@ -135,38 +168,106 @@ export class X2ADatabaseService {
     return newProject;
   }
 
-  async listProjects(): Promise<{ projects: Project[]; totalCount: number }> {
-    this.#logger.info('listProjects called');
+  async listProjects(
+    query: ProjectsGet['query'],
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canViewAll?: boolean;
+    },
+  ): Promise<{ projects: Project[]; totalCount: number }> {
+    const calledByUserRef = options.credentials.principal.userEntityRef;
+    this.#logger.info(`listProjects called by ${calledByUserRef}`);
 
+    const pageSize = query.pageSize || DEFAULT_PAGE_SIZE;
     // Fetch all records from the database
     const rows = await this.#dbClient('projects')
+      .limit(pageSize)
+      .offset((query.page || 0) * pageSize)
       .select('*')
-      .orderBy('created_at', 'desc');
+      .modify(queryBuilder =>
+        this.filterPermissions(
+          queryBuilder,
+          options.canViewAll,
+          calledByUserRef,
+        ),
+      )
+      .orderBy(
+        this.mapSortToDatabaseColumn(query.sort) || DEFAULT_PAGE_SORT,
+        query.order || DEFAULT_PAGE_ORDER,
+      );
+
+    const totalCount = (await this.#dbClient('projects')
+      .count('*', { as: 'count' })
+      .modify(queryBuilder =>
+        this.filterPermissions(
+          queryBuilder,
+          options.canViewAll,
+          calledByUserRef,
+        ),
+      )
+      .first()) as { count: any };
 
     const projects: Project[] = rows.map(this.mapRowToProject);
 
-    const totalCount = projects.length;
-    this.#logger.debug(`Fetched ${totalCount} projects from database`);
+    this.#logger.debug(
+      `Fetched ${projects.length} out of ${totalCount.count} projects from database (permissions applied)`,
+    );
 
-    return { projects, totalCount };
+    return { projects, totalCount: Number.parseInt(totalCount.count, 10) };
   }
 
-  async getProject({
-    projectId,
-  }: {
-    projectId: string;
-  }): Promise<Project | undefined> {
-    this.#logger.info(`getProject called for projectId: ${projectId}`);
-    const row = await this.#dbClient('projects').where('id', projectId).first();
+  async getProject(
+    {
+      projectId,
+    }: {
+      projectId: string;
+    },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canViewAll?: boolean;
+    },
+  ): Promise<Project | undefined> {
+    const calledByUserRef = options.credentials.principal.userEntityRef;
+    this.#logger.info(
+      `getProject called for projectId: ${projectId} by ${calledByUserRef}`,
+    );
+
+    const row = await this.#dbClient('projects')
+      .where('id', projectId)
+      .modify(queryBuilder =>
+        this.filterPermissions(
+          queryBuilder,
+          options.canViewAll,
+          calledByUserRef,
+        ),
+      )
+      .first();
+
     return row ? this.mapRowToProject(row) : undefined;
   }
 
-  async deleteProject({ projectId }: { projectId: string }): Promise<number> {
-    this.#logger.info(`deleteProject called for projectId: ${projectId}`);
+  async deleteProject(
+    { projectId }: { projectId: string },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canWriteAll?: boolean;
+    },
+  ): Promise<number> {
+    const calledByUserRef = options.credentials.principal.userEntityRef;
+    this.#logger.info(
+      `deleteProject called for projectId: ${projectId} by ${calledByUserRef}`,
+    );
 
     // Delete from the database
     const deletedCount = await this.#dbClient('projects')
       .where('id', projectId)
+      .modify(queryBuilder =>
+        this.filterPermissions(
+          queryBuilder,
+          options.canWriteAll,
+          calledByUserRef,
+        ),
+      )
       .delete();
 
     if (deletedCount === 0) {

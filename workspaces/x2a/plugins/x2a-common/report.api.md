@@ -4,6 +4,17 @@
 
 ```ts
 
+import { BasicPermission } from '@backstage/plugin-permission-common';
+
+// @public
+export const DEFAULT_PAGE_ORDER = "desc";
+
+// @public
+export const DEFAULT_PAGE_SIZE = 10;
+
+// @public
+export const DEFAULT_PAGE_SORT = "created_at";
+
 // @public (undocumented)
 export class DefaultApiClient {
     constructor(options: {
@@ -35,7 +46,8 @@ export type ProjectsGet = {
     query: {
         page?: number;
         pageSize?: number;
-        sort?: 'createdAt' | 'name' | 'description' | 'createdBy';
+        order?: 'asc' | 'desc';
+        sort?: 'createdAt' | 'name' | 'abbreviation' | 'status' | 'description' | 'createdBy';
     };
 };
 
@@ -86,5 +98,17 @@ export interface RequestOptions {
 export type TypedResponse<T> = Omit<Response, 'json'> & {
     json: () => Promise<T>;
 };
+
+// @public
+export const x2aAdminViewPermission: BasicPermission;
+
+// @public
+export const x2aAdminWritePermission: BasicPermission;
+
+// @public
+export const x2aPermissions: BasicPermission[];
+
+// @public
+export const x2aUserPermission: BasicPermission;
 
 ```

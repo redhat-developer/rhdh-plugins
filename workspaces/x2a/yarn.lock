@@ -7831,6 +7831,7 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-x2a-common@workspace:plugins/x2a-common"
   dependencies:
     "@backstage/cli": ^0.34.5
+    "@backstage/plugin-permission-common": ^0.9.4
     cross-fetch: ^4.1.0
     uri-template: ^2.0.0
   languageName: unknown

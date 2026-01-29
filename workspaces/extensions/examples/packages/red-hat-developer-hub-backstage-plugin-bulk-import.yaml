@@ -37,7 +37,7 @@ spec:
                 - name: bulkImportIcon
                   importName: BulkImportIcon
               dynamicRoutes:
-                - path: /bulk-import/repositories
+                - path: /bulk-import
                   importName: BulkImportPage
                   menuItem:
                     icon: bulkImportIcon

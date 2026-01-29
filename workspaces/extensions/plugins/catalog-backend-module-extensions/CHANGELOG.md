@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 0.14.3
+
+### Patch Changes
+
+- af77338: Add missing `@types/js-yaml` dependency to the `devDependencies`
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.14.3
+
 ## 0.14.2
 
 ### Patch Changes

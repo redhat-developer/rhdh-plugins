@@ -36,11 +36,13 @@ export const x2APlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         database: coreServices.database,
         logger: coreServices.logger,
+        permissionsSvc: coreServices.permissions,
         x2aDatabase: x2aDatabaseServiceRef,
         kubeService: kubeServiceRef,
       },
       async init({
         httpRouter,
+        permissionsSvc,
         x2aDatabase,
         logger,
         httpAuth,
@@ -53,6 +55,7 @@ export const x2APlugin = createBackendPlugin({
           await createRouter({
             httpAuth,
             logger,
+            permissionsSvc,
             x2aDatabase,
             kubeService,
           }),

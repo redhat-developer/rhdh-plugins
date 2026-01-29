@@ -1,4 +1,4 @@
-# @backstage-community/cli
+# @red-hat-developer-hub/rhdh-repo-tools
 
 ## 0.0.3
 

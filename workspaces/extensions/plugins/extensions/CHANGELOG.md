@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.14.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.14.3
+
 ## 0.14.2
 
 ### Patch Changes

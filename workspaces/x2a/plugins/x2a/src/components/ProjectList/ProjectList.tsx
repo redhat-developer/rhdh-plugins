@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
 
 import {
@@ -25,20 +25,107 @@ import {
 } from '@backstage/core-components';
 
 import DeleteIcon from '@material-ui/icons/Delete';
+import { Box, Grid } from '@material-ui/core';
 
 import {
+  DEFAULT_PAGE_SIZE,
   Project,
+  ProjectsGet,
   ProjectsGet200Response,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
-import { Box, Grid } from '@material-ui/core';
+
+type OrderDirection = ProjectsGet['query']['order'];
+
+const useColumns = (
+  orderBy: number,
+  orderDirection: OrderDirection,
+): TableColumn<Project>[] =>
+  useMemo(() => {
+    const getDefaultSort = (index: number): OrderDirection => {
+      if (index === orderBy) {
+        return orderDirection;
+      }
+      return undefined;
+    };
+
+    const columns: TableColumn<Project>[] = [
+      { title: 'Name', field: 'name', defaultSort: getDefaultSort(0) },
+      {
+        title: 'Abbreviation',
+        field: 'abbreviation',
+        defaultSort: getDefaultSort(1),
+      },
+      { title: 'Status', field: 'status', defaultSort: getDefaultSort(2) },
+      {
+        title: 'Description',
+        field: 'description',
+        defaultSort: getDefaultSort(3),
+      },
+      {
+        title: 'Created At',
+        render: (rowData: Project) => {
+          // TODO: Show human-readable duration instead, make sure sorting still works
+          return <div>{rowData.createdAt.toLocaleString()}</div>;
+        },
+        defaultSort: getDefaultSort(4),
+      },
+      // {
+      //   title: 'Source Repository',
+      //   field: 'sourceRepository',
+      //   defaultSort: getDefaultSort(5),
+      // },
+    ];
+    return columns;
+  }, [orderBy, orderDirection]);
+
+const mapOrderByToSort = (orderBy: number): ProjectsGet['query']['sort'] => {
+  const mapping: ProjectsGet['query']['sort'][] = [
+    'name',
+    'abbreviation',
+    'status',
+    'description',
+    'createdAt',
+  ];
+
+  if (orderBy < 0) {
+    return mapping[0];
+  }
+
+  const result = mapping[orderBy];
+  if (!result) {
+    throw new Error(`Invalid orderBy: ${orderBy}`);
+  }
+  return result;
+};
 
 type DenseTableProps = {
   forceRefresh: () => void;
   projects: Project[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (pageSize: number) => void;
+  orderBy: number;
+  orderDirection: OrderDirection;
+  setOrderBy: (orderBy: number) => void;
+  setOrderDirection: (orderDirection: ProjectsGet['query']['order']) => void;
 };
 
-export const DenseTable = ({ projects, forceRefresh }: DenseTableProps) => {
+export const DenseTable = ({
+  projects,
+  forceRefresh,
+  totalCount,
+  page,
+  pageSize,
+  onPageChange,
+  onRowsPerPageChange,
+  orderBy,
+  orderDirection,
+  setOrderBy,
+  setOrderDirection,
+}: DenseTableProps) => {
   const clientService = useClientService();
 
   const [error, setError] = useState<Error | null>(null);
@@ -54,12 +141,12 @@ export const DenseTable = ({ projects, forceRefresh }: DenseTableProps) => {
     }
   };
 
-  const columns: TableColumn<Project>[] = [
-    { title: 'Name', field: 'name' },
-    { title: 'Status', field: 'status' },
-    { title: 'Source Repository', field: 'sourceRepository' },
-  ];
+  const handleOrderChange = (sortBy: number, od: OrderDirection) => {
+    setOrderBy(sortBy);
+    setOrderDirection(od);
+  };
 
+  const columns = useColumns(orderBy, orderDirection);
   const data = projects;
 
   const actions = [
@@ -95,14 +182,20 @@ export const DenseTable = ({ projects, forceRefresh }: DenseTableProps) => {
           title={`Projects (${projects.length})`}
           options={{
             search: false,
-            paging: false,
-            actionsColumnIndex: -1,
+            paging: true,
+            actionsColumnIndex: -1 /* to the row end */,
             padding: 'default',
+            pageSize: pageSize,
           }}
           columns={columns}
           data={data}
           actions={actions}
           detailPanel={getDetailPanel}
+          onOrderChange={handleOrderChange}
+          page={page}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+          totalCount={totalCount}
         />
       </Grid>
     </Grid>
@@ -110,18 +203,31 @@ export const DenseTable = ({ projects, forceRefresh }: DenseTableProps) => {
 };
 
 export const ProjectList = () => {
-  const [refresh, setRefresh] = useState(0);
   const clientService = useClientService();
+
+  const [refresh, setRefresh] = useState(0);
+
+  const [orderBy, setOrderBy] = useState<number>(0);
+  const [orderDirection, setOrderDirection] = useState<OrderDirection>('asc');
+  const [page, setPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+
+  const forceRefresh = useCallback(() => {
+    setRefresh(refresh + 1);
+  }, [refresh]);
 
   const { value, loading, error } =
     useAsync(async (): Promise<ProjectsGet200Response> => {
       const response = await clientService.projectsGet({
         query: {
-          /* TODO: pagination */
+          order: orderDirection || 'asc',
+          sort: mapOrderByToSort(orderBy),
+          page,
+          pageSize,
         },
       });
       return await response.json();
-    }, [refresh, clientService]);
+    }, [refresh, clientService, orderBy, orderDirection, page, pageSize]);
 
   if (loading) {
     return <Progress />;
@@ -132,7 +238,16 @@ export const ProjectList = () => {
   return (
     <DenseTable
       projects={value?.items || []}
-      forceRefresh={() => setRefresh(refresh + 1)}
+      totalCount={value?.totalCount || 0}
+      forceRefresh={forceRefresh}
+      orderBy={orderBy}
+      orderDirection={orderDirection}
+      setOrderBy={setOrderBy}
+      setOrderDirection={setOrderDirection}
+      page={page}
+      pageSize={pageSize}
+      onPageChange={setPage}
+      onRowsPerPageChange={setPageSize}
     />
   );
 };

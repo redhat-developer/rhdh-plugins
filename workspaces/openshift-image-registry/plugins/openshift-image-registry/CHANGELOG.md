@@ -1,4 +1,4 @@
-### Dependencies
+# @red-hat-developer-hub/backstage-plugin-openshift-image-registry
 
 ## 1.17.1
 

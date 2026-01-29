@@ -14,3 +14,5 @@
  * limitations under the License.
  */
 export * from './toSorted';
+export * from './delay';
+export * from './tests';

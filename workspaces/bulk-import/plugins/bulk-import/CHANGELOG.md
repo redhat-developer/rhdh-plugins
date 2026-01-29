@@ -1,4 +1,27 @@
-### Dependencies
+# @red-hat-developer-hub/backstage-plugin-bulk-import
+
+## 7.0.1
+
+### Patch Changes
+
+- 2adef63: Implemented smart polling for import task status in the repository table. Active tasks now poll every 10 seconds for real-time updates, while completed or idle repositories poll every 60 seconds to reduce API load. Polling intervals are aligned to consistent 60-second marks for efficient batching.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.0.1
+
+## 7.0.0
+
+### Major Changes
+
+- 0f684d9: Simplified bulk-import routing structure:
+  - The plugin now uses a single `/bulk-import` path instead of multiple paths
+  - Removed `/bulk-import/repositories`, `/bulk-import/repositories/repositories`, and `/bulk-import/repositories/add` routes
+  - Any undefined paths under `/bulk-import/*` will redirect to `/bulk-import`
+  - **BREAKING**: Removed `addRepositoriesRouteRef` from plugin exports
+
+### Patch Changes
+
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.0.0
 
 ## 6.11.1
 

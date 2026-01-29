@@ -61,4 +61,27 @@ test.describe('Bulk import plugin', () => {
       timeout: 20000,
     });
   });
+
+  test('Direct navigation to /bulk-import works', async () => {
+    await page.goto('/bulk-import');
+    await expect(
+      page.getByRole('heading', { name: 'Bulk import', exact: true }),
+    ).toBeVisible({
+      timeout: 20000,
+    });
+    // Verify URL is /bulk-import
+    expect(page.url()).toContain('/bulk-import');
+  });
+
+  test('Undefined paths redirect to /bulk-import', async () => {
+    await page.goto('/bulk-import/some-undefined-path');
+    await expect(
+      page.getByRole('heading', { name: 'Bulk import', exact: true }),
+    ).toBeVisible({
+      timeout: 20000,
+    });
+    // Verify URL redirects to /bulk-import
+    expect(page.url()).toContain('/bulk-import');
+    expect(page.url()).not.toContain('some-undefined-path');
+  });
 });
