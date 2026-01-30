@@ -280,10 +280,10 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.expectCardVisible('jira.open_issues');
 
       await expect(page.locator('article')).toContainText(
-        translations.errors.aggregationSkipped,
+        translations.errors.noDataToAggregate,
       );
       await expect(page.locator('article')).toContainText(
-        translations.errors.aggregationSkippedMessage,
+        translations.errors.noDataToAggregateMessage,
       );
     });
 

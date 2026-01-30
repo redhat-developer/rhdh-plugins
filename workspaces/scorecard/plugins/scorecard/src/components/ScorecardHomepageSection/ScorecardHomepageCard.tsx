@@ -55,8 +55,8 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
     return (
       <EmptyStatePanel
         metricId={metricId}
-        label={t('errors.aggregationSkipped')}
-        tooltipContent={t('errors.aggregationSkippedMessage')}
+        label={t('errors.noDataToAggregate')}
+        tooltipContent={t('errors.noDataToAggregateMessage')}
       />
     );
   }

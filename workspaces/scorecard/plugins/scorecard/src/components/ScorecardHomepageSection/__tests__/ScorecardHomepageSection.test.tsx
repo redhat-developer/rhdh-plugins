@@ -192,10 +192,10 @@ describe('ScorecardHomepageCard', () => {
       'github.open_prs',
     );
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
-      'errors.aggregationSkipped',
+      'errors.noDataToAggregate',
     );
     expect(screen.getByTestId('tooltip-content')).toHaveTextContent(
-      'errors.aggregationSkippedMessage',
+      'errors.noDataToAggregateMessage',
     );
   });
 
