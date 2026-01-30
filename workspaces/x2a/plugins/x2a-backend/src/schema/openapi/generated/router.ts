@@ -58,12 +58,27 @@ export const spec = {
           },
           {
             "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            },
+            "required": false,
+            "description": "Sort order, either ascending (\"asc\") or descending (\"desc\")"
+          },
+          {
+            "in": "query",
             "name": "sort",
             "schema": {
               "type": "string",
               "enum": [
                 "createdAt",
                 "name",
+                "abbreviation",
+                "status",
                 "description",
                 "createdBy"
               ]

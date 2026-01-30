@@ -1,0 +1,10 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: mareklibra
+spec:
+  profile:
+    displayName: Marek Libra
+    email: foo@bar.com
+  memberOf: []

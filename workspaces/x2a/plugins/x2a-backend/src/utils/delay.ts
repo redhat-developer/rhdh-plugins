@@ -15,10 +15,16 @@
  */
 
 /**
- * Common functionalities for the x2a plugin.
+ * Creates a promise that resolves after the specified number of milliseconds.
  *
- * @packageDocumentation
+ * @param ms - The number of milliseconds to wait before resolving
+ * @returns A promise that resolves after the specified delay
  */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
+export function delay(ms: number): Promise<void> {
+  return new Promise(resolve => {
+    const t = setTimeout(resolve, ms);
+
+    // for testing purposes, we need to unref the timeout to avoid the test hanging
+    t.unref();
+  });
+}

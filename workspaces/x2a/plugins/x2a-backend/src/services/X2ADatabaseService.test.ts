@@ -23,15 +23,19 @@ import {
 import { Knex } from 'knex';
 import { X2ADatabaseService } from './X2ADatabaseService';
 import { migrate } from './dbMigrate';
-import { toSorted } from '../utils';
+import { delay, LONG_TEST_TIMEOUT, nonExistentId, toSorted } from '../utils';
 
 const databases = TestDatabases.create({
-  // TODO: Reenable for 'POSTGRES_18'
-  ids: ['SQLITE_3'],
+  ids: ['SQLITE_3', 'POSTGRES_18'],
 });
+const supportedDatabaseIds = databases.eachSupportedId();
+console.log('Testing against supportedDatabaseIds:', supportedDatabaseIds);
+
+const clientsToDestroy: Knex[] = [];
 
 async function createDatabase(databaseId: TestDatabaseId) {
   const client = await databases.init(databaseId);
+  clientsToDestroy.push(client);
   const mockDatabaseService = mockServices.database.mock({
     getClient: async () => client,
     migrations: { skip: false },
@@ -52,8 +56,14 @@ function createService(client: Knex): X2ADatabaseService {
 }
 
 describe('X2ADatabaseService', () => {
+  afterEach(async () => {
+    await Promise.all(
+      clientsToDestroy.splice(0).map(client => client.destroy()),
+    );
+  });
+
   describe('createProject', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a project with all required fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -85,9 +95,10 @@ describe('X2ADatabaseService', () => {
         expect(row.description).toBe(input.description);
         expect(row.created_by).toBe('user:default/mock');
       },
+      LONG_TEST_TIMEOUT,
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create multiple projects with different IDs - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -116,9 +127,10 @@ describe('X2ADatabaseService', () => {
         expect(project1.name).toBe('Project 1');
         expect(project2.name).toBe('Project 2');
       },
+      LONG_TEST_TIMEOUT,
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should use the correct user from credentials - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -144,20 +156,21 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('listProjects', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return empty list when no projects exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
-        const result = await service.listProjects();
+        const credentials = mockCredentials.user();
+        const result = await service.listProjects({}, { credentials });
 
         expect(result.projects).toEqual([]);
         expect(result.totalCount).toBe(0);
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return all projects with correct totalCount - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -172,6 +185,7 @@ describe('X2ADatabaseService', () => {
           },
           { credentials },
         );
+        await delay(10); // To make sure the projects are created in the correct order
         await service.createProject(
           {
             name: 'Project 2',
@@ -180,6 +194,7 @@ describe('X2ADatabaseService', () => {
           },
           { credentials },
         );
+        await delay(10);
         await service.createProject(
           {
             name: 'Project 3',
@@ -189,7 +204,10 @@ describe('X2ADatabaseService', () => {
           { credentials },
         );
 
-        const result = await service.listProjects();
+        const result = await service.listProjects(
+          { order: 'desc', sort: 'createdAt' },
+          { credentials },
+        );
 
         expect(result.totalCount).toBe(3);
         expect(result.projects).toHaveLength(3);
@@ -198,24 +216,450 @@ describe('X2ADatabaseService', () => {
         expect(result.projects[2].name).toBe('Project 1');
       },
     );
+
+    it.each(supportedDatabaseIds)(
+      'should paginate results with page and pageSize - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        // Create 5 projects
+        for (let i = 1; i <= 5; i++) {
+          await service.createProject(
+            {
+              name: `Project ${i}`,
+              abbreviation: `P${i}`,
+              description: `Project ${i} description`,
+            },
+            { credentials },
+          );
+          await delay(10);
+        }
+
+        // First page with pageSize 2
+        const page1 = await service.listProjects(
+          { page: 0, pageSize: 2, sort: 'createdAt', order: 'desc' },
+          { credentials },
+        );
+        expect(page1.totalCount).toBe(5);
+        expect(page1.projects).toHaveLength(2);
+        expect(page1.projects[0].name).toBe('Project 5');
+        expect(page1.projects[1].name).toBe('Project 4');
+
+        // Second page
+        const page2 = await service.listProjects(
+          { page: 1, pageSize: 2, sort: 'createdAt', order: 'desc' },
+          { credentials },
+        );
+        expect(page2.totalCount).toBe(5);
+        expect(page2.projects).toHaveLength(2);
+        expect(page2.projects[0].name).toBe('Project 3');
+        expect(page2.projects[1].name).toBe('Project 2');
+
+        // Third page (last page with 1 item)
+        const page3 = await service.listProjects(
+          { page: 2, pageSize: 2, sort: 'createdAt', order: 'desc' },
+          { credentials },
+        );
+        expect(page3.totalCount).toBe(5);
+        expect(page3.projects).toHaveLength(1);
+        expect(page3.projects[0].name).toBe('Project 1');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should use default pageSize when not specified - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        // Create more than DEFAULT_PAGE_SIZE (10) projects
+        for (let i = 1; i <= 15; i++) {
+          await service.createProject(
+            {
+              name: `Project ${i}`,
+              abbreviation: `P${i}`,
+              description: `Project ${i} description`,
+            },
+            { credentials },
+          );
+          if (i < 15) await delay(10);
+        }
+
+        const result = await service.listProjects(
+          { sort: 'createdAt', order: 'desc' },
+          { credentials },
+        );
+
+        expect(result.totalCount).toBe(15);
+        expect(result.projects).toHaveLength(10); // Default page size
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should sort by name ascending - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        await service.createProject(
+          { name: 'Zebra Project', abbreviation: 'ZP', description: 'Z' },
+          { credentials },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Alpha Project', abbreviation: 'AP', description: 'A' },
+          { credentials },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Beta Project', abbreviation: 'BP', description: 'B' },
+          { credentials },
+        );
+
+        const result = await service.listProjects(
+          { sort: 'name', order: 'asc' },
+          { credentials },
+        );
+
+        expect(result.projects).toHaveLength(3);
+        expect(result.projects[0].name).toBe('Alpha Project');
+        expect(result.projects[1].name).toBe('Beta Project');
+        expect(result.projects[2].name).toBe('Zebra Project');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should sort by name descending - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        await service.createProject(
+          { name: 'Alpha Project', abbreviation: 'AP', description: 'A' },
+          { credentials },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Zebra Project', abbreviation: 'ZP', description: 'Z' },
+          { credentials },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Beta Project', abbreviation: 'BP', description: 'B' },
+          { credentials },
+        );
+
+        const result = await service.listProjects(
+          { sort: 'name', order: 'desc' },
+          { credentials },
+        );
+
+        expect(result.projects).toHaveLength(3);
+        expect(result.projects[0].name).toBe('Zebra Project');
+        expect(result.projects[1].name).toBe('Beta Project');
+        expect(result.projects[2].name).toBe('Alpha Project');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should sort by createdBy - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+        const credentials3 = mockCredentials.user('user:default/user3');
+
+        await service.createProject(
+          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          { credentials: credentials3 },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Project 2', abbreviation: 'P2', description: 'D2' },
+          { credentials: credentials1 },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Project 3', abbreviation: 'P3', description: 'D3' },
+          { credentials: credentials2 },
+        );
+
+        const result = await service.listProjects(
+          { sort: 'createdBy', order: 'asc' },
+          { credentials: credentials1, canViewAll: true },
+        );
+
+        expect(result.projects).toHaveLength(3);
+        // Should be sorted by created_by (userEntityRef) ascending
+        expect(result.projects[0].createdBy).toBe('user:default/user1');
+        expect(result.projects[1].createdBy).toBe('user:default/user2');
+        expect(result.projects[2].createdBy).toBe('user:default/user3');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should filter by user when canViewAll is false - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates 2 projects
+        await service.createProject(
+          { name: 'User1 Project 1', abbreviation: 'U1P1', description: 'D1' },
+          { credentials: credentials1 },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'User1 Project 2', abbreviation: 'U1P2', description: 'D2' },
+          { credentials: credentials1 },
+        );
+        await delay(10);
+
+        // User2 creates 2 projects
+        await service.createProject(
+          { name: 'User2 Project 1', abbreviation: 'U2P1', description: 'D3' },
+          { credentials: credentials2 },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'User2 Project 2', abbreviation: 'U2P2', description: 'D4' },
+          { credentials: credentials2 },
+        );
+
+        // User1 should only see their own projects
+        const user1Result = await service.listProjects(
+          { sort: 'createdAt', order: 'desc' },
+          { credentials: credentials1, canViewAll: false },
+        );
+        expect(user1Result.totalCount).toBe(2);
+        expect(user1Result.projects).toHaveLength(2);
+        expect(
+          user1Result.projects.every(p => p.createdBy === 'user:default/user1'),
+        ).toBe(true);
+
+        // User2 should only see their own projects
+        const user2Result = await service.listProjects(
+          { sort: 'createdAt', order: 'desc' },
+          { credentials: credentials2, canViewAll: false },
+        );
+        expect(user2Result.totalCount).toBe(2);
+        expect(user2Result.projects).toHaveLength(2);
+        expect(
+          user2Result.projects.every(p => p.createdBy === 'user:default/user2'),
+        ).toBe(true);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return all projects when canViewAll is true - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+        const credentials3 = mockCredentials.user('user:default/user3');
+
+        await service.createProject(
+          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          { credentials: credentials1 },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Project 2', abbreviation: 'P2', description: 'D2' },
+          { credentials: credentials2 },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Project 3', abbreviation: 'P3', description: 'D3' },
+          { credentials: credentials3 },
+        );
+
+        // User1 with canViewAll should see all projects
+        const result = await service.listProjects(
+          { sort: 'createdAt', order: 'desc' },
+          { credentials: credentials1, canViewAll: true },
+        );
+
+        expect(result.totalCount).toBe(3);
+        expect(result.projects).toHaveLength(3);
+        expect(
+          result.projects.some(p => p.createdBy === 'user:default/user1'),
+        ).toBe(true);
+        expect(
+          result.projects.some(p => p.createdBy === 'user:default/user2'),
+        ).toBe(true);
+        expect(
+          result.projects.some(p => p.createdBy === 'user:default/user3'),
+        ).toBe(true);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should filter by user when canViewAll is undefined - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        await service.createProject(
+          { name: 'User1 Project', abbreviation: 'U1P', description: 'D1' },
+          { credentials: credentials1 },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'User2 Project', abbreviation: 'U2P', description: 'D2' },
+          { credentials: credentials2 },
+        );
+
+        // When canViewAll is undefined, should default to filtering
+        const result = await service.listProjects(
+          { sort: 'createdAt', order: 'desc' },
+          { credentials: credentials1 },
+        );
+
+        expect(result.totalCount).toBe(1);
+        expect(result.projects).toHaveLength(1);
+        expect(result.projects[0].createdBy).toBe('user:default/user1');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should combine pagination and user filtering - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates 5 projects
+        for (let i = 1; i <= 5; i++) {
+          await service.createProject(
+            {
+              name: `User1 Project ${i}`,
+              abbreviation: `U1P${i}`,
+              description: `Description ${i}`,
+            },
+            { credentials: credentials1 },
+          );
+          await delay(10);
+        }
+
+        // User2 creates 3 projects
+        for (let i = 1; i <= 3; i++) {
+          await service.createProject(
+            {
+              name: `User2 Project ${i}`,
+              abbreviation: `U2P${i}`,
+              description: `Description ${i}`,
+            },
+            { credentials: credentials2 },
+          );
+          if (i < 3) await delay(10);
+        }
+
+        // User1 should only see their 5 projects, paginated
+        const page1 = await service.listProjects(
+          { page: 1, pageSize: 2, sort: 'createdAt', order: 'desc' },
+          { credentials: credentials1, canViewAll: false },
+        );
+        expect(page1.totalCount).toBe(5); // Total count should be 5, not 8
+        expect(page1.projects).toHaveLength(2);
+        expect(
+          page1.projects.every(p => p.createdBy === 'user:default/user1'),
+        ).toBe(true);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should use default sort and order when not specified - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        await service.createProject(
+          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          { credentials },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Project 2', abbreviation: 'P2', description: 'D2' },
+          { credentials },
+        );
+        await delay(10);
+        await service.createProject(
+          { name: 'Project 3', abbreviation: 'P3', description: 'D3' },
+          { credentials },
+        );
+
+        const result = await service.listProjects({}, { credentials });
+
+        expect(result.projects).toHaveLength(3);
+        // Should default to created_at desc (newest first)
+        expect(result.projects[0].name).toBe('Project 3');
+        expect(result.projects[1].name).toBe('Project 2');
+        expect(result.projects[2].name).toBe('Project 1');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should handle empty page gracefully - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        await service.createProject(
+          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          { credentials },
+        );
+
+        // Request page 2 which doesn't exist
+        const result = await service.listProjects(
+          { page: 2, pageSize: 10 },
+          { credentials },
+        );
+
+        expect(result.totalCount).toBe(1);
+        expect(result.projects).toHaveLength(0);
+      },
+    );
   });
 
   describe('getProject', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined for non-existent project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
-        const project = await service.getProject({
-          projectId: 'non-existent-id',
-        });
+        const credentials = mockCredentials.user();
+        const project = await service.getProject(
+          {
+            projectId: nonExistentId,
+          },
+          { credentials },
+        );
 
         expect(project).toBeUndefined();
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return the correct project by ID - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -231,9 +675,12 @@ describe('X2ADatabaseService', () => {
           { credentials },
         );
 
-        const retrievedProject = await service.getProject({
-          projectId: createdProject.id,
-        });
+        const retrievedProject = await service.getProject(
+          {
+            projectId: createdProject.id,
+          },
+          { credentials },
+        );
 
         expect(retrievedProject).toBeDefined();
         expect(retrievedProject?.id).toBe(createdProject.id);
@@ -247,7 +694,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return correct project when multiple projects exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -271,8 +718,14 @@ describe('X2ADatabaseService', () => {
           { credentials },
         );
 
-        const retrieved1 = await service.getProject({ projectId: project1.id });
-        const retrieved2 = await service.getProject({ projectId: project2.id });
+        const retrieved1 = await service.getProject(
+          { projectId: project1.id },
+          { credentials },
+        );
+        const retrieved2 = await service.getProject(
+          { projectId: project2.id },
+          { credentials },
+        );
 
         expect(retrieved1?.id).toBe(project1.id);
         expect(retrieved1?.name).toBe('Project 1');
@@ -280,24 +733,154 @@ describe('X2ADatabaseService', () => {
         expect(retrieved2?.name).toBe('Project 2');
       },
     );
+
+    it.each(supportedDatabaseIds)(
+      'should return undefined when user tries to access project created by another user - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates a project
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'Project created by user1',
+          },
+          { credentials: credentials1 },
+        );
+
+        // User2 tries to access user1's project (should be denied)
+        const retrievedProject = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials2, canViewAll: false },
+        );
+
+        expect(retrievedProject).toBeUndefined();
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return project when user accesses their own project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user('user:default/user1');
+
+        const project = await service.createProject(
+          {
+            name: 'My Project',
+            abbreviation: 'MP',
+            description: 'My own project',
+          },
+          { credentials },
+        );
+
+        // User should be able to access their own project
+        const retrievedProject = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials, canViewAll: false },
+        );
+
+        expect(retrievedProject).toBeDefined();
+        expect(retrievedProject?.id).toBe(project.id);
+        expect(retrievedProject?.createdBy).toBe('user:default/user1');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return project when canViewAll is true even if created by different user - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates a project
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'Project created by user1',
+          },
+          { credentials: credentials1 },
+        );
+
+        // User2 with canViewAll should be able to access user1's project
+        const retrievedProject = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials2, canViewAll: true },
+        );
+
+        expect(retrievedProject).toBeDefined();
+        expect(retrievedProject?.id).toBe(project.id);
+        expect(retrievedProject?.createdBy).toBe('user:default/user1');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should filter by user when canViewAll is undefined - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates a project
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'Project created by user1',
+          },
+          { credentials: credentials1 },
+        );
+
+        // When canViewAll is undefined, should default to filtering
+        const retrievedProject = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials2 },
+        );
+
+        expect(retrievedProject).toBeUndefined();
+      },
+    );
   });
 
   describe('deleteProject', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return 0 when deleting non-existent project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
-        const deletedCount = await service.deleteProject({
-          projectId: 'non-existent-id',
-        });
+        const credentials = mockCredentials.user();
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: nonExistentId,
+          },
+          { credentials },
+        );
 
         expect(deletedCount).toBe(0);
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete a project and return 1 - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -314,25 +897,34 @@ describe('X2ADatabaseService', () => {
         );
 
         // Verify it exists
-        const beforeDelete = await service.getProject({
-          projectId: project.id,
-        });
+        const beforeDelete = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials },
+        );
         expect(beforeDelete).toBeDefined();
 
         // Delete it
-        const deletedCount = await service.deleteProject({
-          projectId: project.id,
-        });
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project.id,
+          },
+          { credentials },
+        );
 
         expect(deletedCount).toBe(1);
 
         // Verify it's gone
-        const afterDelete = await service.getProject({ projectId: project.id });
+        const afterDelete = await service.getProject(
+          { projectId: project.id },
+          { credentials },
+        );
         expect(afterDelete).toBeUndefined();
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only delete the specified project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -356,31 +948,200 @@ describe('X2ADatabaseService', () => {
           { credentials },
         );
 
-        const deletedCount = await service.deleteProject({
-          projectId: project1.id,
-        });
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project1.id,
+          },
+          { credentials },
+        );
 
         expect(deletedCount).toBe(1);
 
         // Verify project1 is deleted
-        const deleted = await service.getProject({ projectId: project1.id });
+        const deleted = await service.getProject(
+          { projectId: project1.id },
+          { credentials },
+        );
         expect(deleted).toBeUndefined();
 
         // Verify project2 still exists
-        const remaining = await service.getProject({ projectId: project2.id });
+        const remaining = await service.getProject(
+          { projectId: project2.id },
+          { credentials },
+        );
         expect(remaining).toBeDefined();
         expect(remaining?.name).toBe('Project 2');
 
         // Verify total count
-        const listResult = await service.listProjects();
+        const listResult = await service.listProjects({}, { credentials });
         expect(listResult.totalCount).toBe(1);
         expect(listResult.projects[0].id).toBe(project2.id);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 0 when user tries to delete project created by another user - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates a project
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'Project created by user1',
+          },
+          { credentials: credentials1 },
+        );
+
+        // User2 tries to delete user1's project (should fail - returns 0)
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials2, canWriteAll: false },
+        );
+
+        expect(deletedCount).toBe(0);
+
+        // Verify project still exists
+        const projectAfter = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials1 },
+        );
+        expect(projectAfter).toBeDefined();
+        expect(projectAfter?.id).toBe(project.id);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should delete project when user deletes their own project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user('user:default/user1');
+
+        const project = await service.createProject(
+          {
+            name: 'My Project',
+            abbreviation: 'MP',
+            description: 'My own project',
+          },
+          { credentials },
+        );
+
+        // User should be able to delete their own project
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project.id,
+          },
+          { credentials, canWriteAll: false },
+        );
+
+        expect(deletedCount).toBe(1);
+
+        // Verify project is deleted
+        const projectAfter = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials },
+        );
+        expect(projectAfter).toBeUndefined();
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should delete project when canWriteAll is true even if created by different user - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates a project
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'Project created by user1',
+          },
+          { credentials: credentials1 },
+        );
+
+        // User2 with canWriteAll should be able to delete user1's project
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials2, canWriteAll: true },
+        );
+
+        expect(deletedCount).toBe(1);
+
+        // Verify project is deleted
+        const projectAfter = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials1 },
+        );
+        expect(projectAfter).toBeUndefined();
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should filter by user when canWriteAll is undefined - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials1 = mockCredentials.user('user:default/user1');
+        const credentials2 = mockCredentials.user('user:default/user2');
+
+        // User1 creates a project
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'Project created by user1',
+          },
+          { credentials: credentials1 },
+        );
+
+        // When canWriteAll is undefined, should default to filtering
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials2 },
+        );
+
+        expect(deletedCount).toBe(0);
+
+        // Verify project still exists
+        const projectAfter = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials: credentials1 },
+        );
+        expect(projectAfter).toBeDefined();
+        expect(projectAfter?.id).toBe(project.id);
       },
     );
   });
 
   describe('integration tests', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should handle full CRUD lifecycle - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -399,33 +1160,42 @@ describe('X2ADatabaseService', () => {
         );
 
         // Read
-        const retrieved = await service.getProject({ projectId: project.id });
+        const retrieved = await service.getProject(
+          { projectId: project.id },
+          { credentials },
+        );
         expect(retrieved).toBeDefined();
         expect(retrieved?.name).toBe('Lifecycle Test');
 
         // List
-        const listResult = await service.listProjects();
+        const listResult = await service.listProjects({}, { credentials });
         expect(listResult.totalCount).toBe(1);
         expect(listResult.projects[0].id).toBe(project.id);
 
         // Delete
-        const deletedCount = await service.deleteProject({
-          projectId: project.id,
-        });
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project.id,
+          },
+          { credentials },
+        );
         expect(deletedCount).toBe(1);
 
         // Verify deletion
-        const afterDelete = await service.getProject({ projectId: project.id });
+        const afterDelete = await service.getProject(
+          { projectId: project.id },
+          { credentials },
+        );
         expect(afterDelete).toBeUndefined();
 
-        const finalList = await service.listProjects();
+        const finalList = await service.listProjects({}, { credentials });
         expect(finalList.totalCount).toBe(0);
       },
     );
   });
 
   describe('createModule', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a module with all required fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -465,7 +1235,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create multiple modules with different IDs - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -499,7 +1269,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create modules for different projects - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -542,19 +1312,19 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('getModule', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined for non-existent module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
-        const module = await service.getModule({ id: 'non-existent-id' });
+        const module = await service.getModule({ id: nonExistentId });
 
         expect(module).toBeUndefined();
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return the correct module by ID - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -588,7 +1358,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return correct module when multiple modules exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -627,7 +1397,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('listModules', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return empty list when no modules exist for project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -649,7 +1419,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return all modules for a project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -691,7 +1461,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only return modules for the specified project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -749,21 +1519,21 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('deleteModule', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return 0 when deleting non-existent module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
         const deletedCount = await service.deleteModule({
-          id: 'non-existent-id',
+          id: nonExistentId,
         });
 
         expect(deletedCount).toBe(0);
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete a module and return 1 - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -800,7 +1570,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only delete the specified module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -851,7 +1621,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('CASCADE delete', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should cascade delete modules when project is deleted - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -894,15 +1664,21 @@ describe('X2ADatabaseService', () => {
         expect(modulesBefore).toHaveLength(3);
 
         // Delete the project
-        const deletedCount = await service.deleteProject({
-          projectId: project.id,
-        });
+        const deletedCount = await service.deleteProject(
+          {
+            projectId: project.id,
+          },
+          { credentials },
+        );
         expect(deletedCount).toBe(1);
 
         // Verify project is deleted
-        const projectAfter = await service.getProject({
-          projectId: project.id,
-        });
+        const projectAfter = await service.getProject(
+          {
+            projectId: project.id,
+          },
+          { credentials },
+        );
         expect(projectAfter).toBeUndefined();
 
         // Verify all modules are cascade deleted
@@ -924,7 +1700,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only cascade delete modules for the deleted project - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -965,7 +1741,10 @@ describe('X2ADatabaseService', () => {
         });
 
         // Delete project1
-        await service.deleteProject({ projectId: project1.id });
+        await service.deleteProject(
+          { projectId: project1.id },
+          { credentials },
+        );
 
         // Verify project1 modules are cascade deleted
         expect(
@@ -993,7 +1772,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('createJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a job with all required fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1040,7 +1819,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a job with optional fields - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1085,7 +1864,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create a job with artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1132,7 +1911,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create multiple jobs with different IDs - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1163,7 +1942,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should create jobs for different modules - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1198,7 +1977,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should default status to pending when not provided - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1228,19 +2007,19 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('getJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined for non-existent job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
-        const job = await service.getJob({ id: 'non-existent-id' });
+        const job = await service.getJob({ id: nonExistentId });
 
         expect(job).toBeUndefined();
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return the correct job by ID - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1279,7 +2058,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return job with artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1317,7 +2096,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return correct job when multiple jobs exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1360,7 +2139,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('listJobs', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return empty list when no jobs exist for module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1388,7 +2167,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return all jobs for a module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1433,7 +2212,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return jobs with their artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1478,7 +2257,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only return jobs for the specified module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1521,14 +2300,14 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('updateJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return undefined when updating non-existent job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
         const updated = await service.updateJob({
-          id: 'non-existent-id',
+          id: nonExistentId,
           status: 'running',
         });
 
@@ -1536,7 +2315,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job status - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1574,7 +2353,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job log - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1611,7 +2390,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job finishedAt - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1648,7 +2427,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update job artifacts - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1698,7 +2477,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should clear artifacts when updating with empty array - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1741,7 +2520,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should update multiple fields at once - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1788,21 +2567,21 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('deleteJob', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should return 0 when deleting non-existent job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
 
         const deletedCount = await service.deleteJob({
-          id: 'non-existent-id',
+          id: nonExistentId,
         });
 
         expect(deletedCount).toBe(0);
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should delete a job and return 1 - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1843,7 +2622,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should cascade delete artifacts when job is deleted - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1887,7 +2666,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only delete the specified job - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -1934,7 +2713,7 @@ describe('X2ADatabaseService', () => {
   });
 
   describe('CASCADE delete for jobs', () => {
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should cascade delete jobs when module is deleted - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -2007,7 +2786,7 @@ describe('X2ADatabaseService', () => {
       },
     );
 
-    it.each(databases.eachSupportedId())(
+    it.each(supportedDatabaseIds)(
       'should only cascade delete jobs for the deleted module - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);

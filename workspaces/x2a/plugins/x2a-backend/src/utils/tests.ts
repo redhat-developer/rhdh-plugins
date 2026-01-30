@@ -13,12 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
- */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
+export const LONG_TEST_TIMEOUT = 60 * 1000;
+export const nonExistentId = '00000000-0000-0000-0000-000000000000';

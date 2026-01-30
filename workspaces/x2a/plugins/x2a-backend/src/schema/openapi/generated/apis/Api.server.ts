@@ -31,7 +31,14 @@ export type ProjectsGet = {
   query: {
     page?: number;
     pageSize?: number;
-    sort?: 'createdAt' | 'name' | 'description' | 'createdBy';
+    order?: 'asc' | 'desc';
+    sort?:
+      | 'createdAt'
+      | 'name'
+      | 'abbreviation'
+      | 'status'
+      | 'description'
+      | 'createdBy';
   };
   response: ProjectsGet200Response;
 };
