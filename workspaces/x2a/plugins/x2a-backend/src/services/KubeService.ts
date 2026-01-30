@@ -21,20 +21,26 @@ import {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import { Expand } from '@backstage/types';
-import { CoreV1Api, V1Pod, V1PodList } from '@kubernetes/client-node';
+import type { CoreV1Api, V1Pod, V1PodList } from '@kubernetes/client-node';
 import { makeK8sClient } from './makeK8sClient';
 
 export class KubeService {
   readonly #logger: LoggerService;
   readonly #k8sApi: CoreV1Api;
 
-  static create(options: { logger: LoggerService }) {
-    return new KubeService(options.logger);
+  static async create(options: { logger: LoggerService }) {
+    const service = new KubeService(options.logger);
+    await service.initialize();
+    return service;
   }
 
   private constructor(logger: LoggerService) {
     this.#logger = logger;
-    this.#k8sApi = makeK8sClient(this.#logger);
+    this.#k8sApi = null as any; // Initialized in initialize()
+  }
+
+  private async initialize() {
+    (this.#k8sApi as any) = await makeK8sClient(this.#logger);
   }
 
   // To test it

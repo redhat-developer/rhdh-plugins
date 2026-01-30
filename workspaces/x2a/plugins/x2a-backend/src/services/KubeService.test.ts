@@ -19,12 +19,12 @@ import { KubeService } from './KubeService';
 describe('KubeService', () => {
   let kubeService: KubeService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
     jest.clearAllMocks();
 
     // mock referenced services for the KubeService for tests
-    kubeService = KubeService.create({
+    kubeService = await KubeService.create({
       // use logger: mockServices.logger.mock() to silence the logger
       logger: console as any,
     });
