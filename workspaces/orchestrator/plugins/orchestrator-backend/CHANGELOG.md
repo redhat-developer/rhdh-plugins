@@ -1,4 +1,4 @@
-### Dependencies
+# @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
 ## 8.6.0
 

@@ -56,6 +56,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'thresholds.success': '成功',
     'thresholds.warning': '警告',
     'thresholds.error': 'エラー',
+    'thresholds.noEntities': '{{category}} 状態のエンティティーがありません',
+    'thresholds.entities_one': '{{count}} エンティティー',
+    'thresholds.entities_other': '{{count}} エンティティー',
   },
 });
 

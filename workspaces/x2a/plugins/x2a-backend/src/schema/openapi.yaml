@@ -1,0 +1,163 @@
+openapi: 3.0.4
+info:
+  title: x2a
+  description: The [X2Ansible](https://github.com/redhat-developer/x2ansible) API.
+  version: 0.0.1
+
+servers:
+  - url: /
+
+paths:
+  /projects:
+    get:
+      summary: Returns a list of projects.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          required: false
+          description: Page number
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+          required: false
+          description: Page size
+        - in: query
+          name: order
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+          required: false
+          description: Sort order, either ascending ("asc") or descending ("desc")
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum:
+              - createdAt
+              - name
+              - abbreviation
+              - status
+              - description
+              - createdBy
+          required: false
+          description: Sort by field
+      responses:
+        '200':
+          description: All projects filtered by the user permissions. Sorted and paginated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalCount:
+                    type: integer
+                    description: Total number of projects available after filtering (useful for pagination).
+                  items:
+                    type: array
+                    description: Projects filtered by the user permissions and pagination (if requested).
+                    items:
+                      $ref: '#/components/schemas/Project'
+    post:
+      summary: Creates a new project.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Full name of the project
+                description:
+                  type: string
+                  description: Description of the project
+                abbreviation:
+                  type: string
+                  description: Project abbreviation
+              required:
+                - name
+                - description
+                - abbreviation
+      responses:
+        '201':
+          description: Created project data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+
+  /projects/{projectId}:
+    get:
+      summary: Returns a project by ID.
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Project data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          description: Project not found.
+    delete:
+      summary: Deletes a project by ID.
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Project deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deletedCount:
+                    type: integer
+                    description: Number of projects deleted (0 or 1)
+                required:
+                  - deletedCount
+components:
+  schemas:
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID for the project
+        abbreviation:
+          type: string
+          description: Abbreviation of the project
+        name:
+          type: string
+          description: Full name of the project
+        description:
+          type: string
+          description: Description of the project
+        createdAt:
+          type: string
+          format: date-time
+          description: Date/time when the project was created
+        createdBy:
+          type: string
+          description: The user who created the project (Backstage user reference)
+      required:
+        - id
+        - name
+        - abbreviation
+        - createdAt
+        - createdBy

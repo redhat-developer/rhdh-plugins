@@ -14,185 +14,295 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
-import { mockScorecardResponse } from './utils/apiUtils';
+import { test, expect, Page } from '@playwright/test';
+import {
+  mockScorecardResponse,
+  mockAggregatedScorecardResponse,
+} from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
-import { setupRBAC } from './utils/rbacSetup';
-import { deleteRBAC } from './utils/rbacDelete';
+import { HomePage } from './pages/HomePage';
 import {
   customScorecardResponse,
   emptyScorecardResponse,
   unavailableMetricResponse,
   invalidThresholdResponse,
+  githubAggregatedResponse,
+  jiraAggregatedResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
   evaluateMessage,
   getTranslations,
+  getEntityCount,
+  getMissingPermissionSnapshot,
+  getThresholdsSnapshot,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
 
-test.describe.serial('Pre-RBAC Access Tests', () => {
-  let translations: ScorecardMessages;
-  let currentLocale: string;
-
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    currentLocale = await page.evaluate(() => globalThis.navigator.language);
-    translations = getTranslations(currentLocale);
-    await context.close();
-  });
-
-  test('Display access denied message when RBAC is not configured', async ({
-    page,
-  }, testInfo) => {
-    const catalogPage = new CatalogPage(page);
-    await page.goto('/');
-    await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('Red Hat Developer Hub');
-    await page.getByText('Scorecard', { exact: true }).click();
-
-    await expect(
-      page.getByText(translations.permissionRequired.title),
-    ).toBeVisible({ timeout: 10000 });
-    await expect(page.getByRole('article')).toContainText(
-      evaluateMessage(
-        translations.permissionRequired.description,
-        'scorecard.metric.read',
-      ),
-    );
-
-    await runAccessibilityTests(page, testInfo);
-  });
-});
-
-test.describe.serial('Scorecard Plugin Tests', () => {
+test.describe('Scorecard Plugin Tests', () => {
+  let page: Page;
   let catalogPage: CatalogPage;
   let scorecardPage: ScorecardPage;
+  let homePage: HomePage;
   let translations: ScorecardMessages;
   let currentLocale: string;
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
-    const page = await context.newPage();
-
-    await setupRBAC(page);
-
+    page = await context.newPage();
     currentLocale = await page.evaluate(() => globalThis.navigator.language);
     translations = getTranslations(currentLocale);
 
-    await context.close();
-  });
-
-  test.beforeEach(async ({ page }) => {
     catalogPage = new CatalogPage(page);
     scorecardPage = new ScorecardPage(page, translations);
+    homePage = new HomePage(page, translations, currentLocale);
+
+    await catalogPage.loginAndSetLocale(currentLocale);
   });
 
-  test.afterAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await deleteRBAC(page);
-    await context.close();
+  test.afterAll(async () => {
+    await page.context().close();
   });
 
-  test('Validate scorecard tabs for GitHub PRs and Jira tickets', async ({
-    page,
-  }, testInfo) => {
-    await mockScorecardResponse(page, customScorecardResponse);
+  test.describe('Entity Scorecards', () => {
+    test('Verify permission required state', async ({ browser }, testInfo) => {
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
+      await page.getByText('Scorecard', { exact: true }).click();
 
-    await page.goto('/');
-    await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('Red Hat Developer Hub');
-    await scorecardPage.openTab();
-    await scorecardPage.verifyScorecardValues({
-      [translations.metric['github.open_prs'].title]: '9',
-      [translations.metric['jira.open_issues'].title]: '8',
+      await expect(
+        page.getByText(translations.permissionRequired.title),
+      ).toBeVisible({ timeout: 10000 });
+      await expect(page.getByRole('article')).toContainText(
+        evaluateMessage(
+          translations.permissionRequired.description,
+          'scorecard.metric.read',
+        ),
+      );
+
+      await runAccessibilityTests(page, testInfo);
     });
 
-    for (const metric of scorecardPage.scorecardMetrics) {
-      await scorecardPage.validateScorecardAriaFor(metric);
-    }
+    test('Verify metrics display correctly', async ({ browser }, testInfo) => {
+      await mockScorecardResponse(page, customScorecardResponse);
 
-    await runAccessibilityTests(page, testInfo);
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
+      await scorecardPage.openTab();
+      await scorecardPage.verifyScorecardValues({
+        [translations.metric['github.open_prs'].title]: '9',
+        [translations.metric['jira.open_issues'].title]: '8',
+      });
+
+      for (const metric of scorecardPage.scorecardMetrics) {
+        await scorecardPage.validateScorecardAriaFor(metric);
+      }
+
+      await runAccessibilityTests(page, testInfo);
+    });
+
+    test('Verify empty state when no metrics available', async ({
+      browser,
+    }, testInfo) => {
+      await mockScorecardResponse(page, emptyScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
+      await scorecardPage.openTab();
+
+      await scorecardPage.expectEmptyState();
+
+      await runAccessibilityTests(page, testInfo);
+    });
+
+    test('Verify error state for unavailable metric data', async ({
+      browser,
+    }, testInfo) => {
+      await mockScorecardResponse(page, unavailableMetricResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
+      await scorecardPage.openTab();
+
+      const jiraMetric = scorecardPage.scorecardMetrics[1];
+      const githubMetric = scorecardPage.scorecardMetrics[0];
+
+      const isJiraVisible = await scorecardPage.isScorecardVisible(
+        jiraMetric.title,
+      );
+      expect(isJiraVisible).toBe(true);
+
+      const isGithubVisible = await scorecardPage.isScorecardVisible(
+        githubMetric.title,
+      );
+      expect(isGithubVisible).toBe(true);
+
+      const errorLocator = page.getByText(
+        translations.errors.metricDataUnavailable,
+      );
+      await expect(errorLocator).toBeVisible();
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+
+      await runAccessibilityTests(page, testInfo);
+    });
+
+    test('Verify error state for invalid threshold configuration', async ({
+      browser,
+    }, testInfo) => {
+      await mockScorecardResponse(page, invalidThresholdResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('Red Hat Developer Hub');
+      await scorecardPage.openTab();
+
+      const githubMetric = scorecardPage.scorecardMetrics[0];
+      const jiraMetric = scorecardPage.scorecardMetrics[1];
+
+      const isGithubVisible = await scorecardPage.isScorecardVisible(
+        githubMetric.title,
+      );
+      expect(isGithubVisible).toBe(true);
+
+      const isJiraVisible = await scorecardPage.isScorecardVisible(
+        jiraMetric.title,
+      );
+      expect(isJiraVisible).toBe(true);
+
+      const errorLocator = page.getByText(
+        translations.errors.invalidThresholds,
+      );
+      await expect(errorLocator).toBeVisible();
+      await scorecardPage.validateScorecardAriaFor(jiraMetric);
+
+      await runAccessibilityTests(page, testInfo);
+    });
   });
 
-  test('Display empty state when scorecard API returns no metrics', async ({
-    page,
-  }, testInfo) => {
-    await mockScorecardResponse(page, emptyScorecardResponse);
+  test.describe('Aggregated Scorecards', () => {
+    test('Verify missing permission state', async () => {
+      await homePage.navigateToHome();
 
-    await page.goto('/');
-    await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('Red Hat Developer Hub');
-    await scorecardPage.openTab();
+      const entityCount = getEntityCount(translations, currentLocale, '0');
 
-    await scorecardPage.expectEmptyState();
+      await expect(page.locator('article')).toMatchAriaSnapshot(
+        getMissingPermissionSnapshot(
+          translations,
+          'jira.open_issues',
+          entityCount,
+        ),
+      );
 
-    await runAccessibilityTests(page, testInfo);
-  });
+      await expect(page.locator('article')).toMatchAriaSnapshot(
+        getMissingPermissionSnapshot(
+          translations,
+          'github.open_prs',
+          entityCount,
+        ),
+      );
+    });
 
-  test('Displays error state for unavailable data while rendering metrics', async ({
-    page,
-  }, testInfo) => {
-    await mockScorecardResponse(page, unavailableMetricResponse);
+    test('Manage scorecards on Home page', async () => {
+      await homePage.navigateToHome();
 
-    await page.goto('/');
-    await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('Red Hat Developer Hub');
-    await scorecardPage.openTab();
+      await homePage.enterEditMode();
+      await homePage.clearAllCards();
+      await homePage.addCard('Onboarding section');
+      await homePage.saveChanges();
 
-    const jiraMetric = scorecardPage.scorecardMetrics[1];
-    const githubMetric = scorecardPage.scorecardMetrics[0];
+      await homePage.expectCardNotVisible('github.open_prs');
+      await homePage.expectCardNotVisible('jira.open_issues');
 
-    const isJiraVisible = await scorecardPage.isScorecardVisible(
-      jiraMetric.title,
-    );
-    expect(isJiraVisible).toBe(true);
+      await homePage.enterEditMode();
+      await homePage.addCard('Scorecard: GitHub open PRs');
+      await homePage.saveChanges();
 
-    const isGithubVisible = await scorecardPage.isScorecardVisible(
-      githubMetric.title,
-    );
-    expect(isGithubVisible).toBe(true);
+      await homePage.expectCardVisible('github.open_prs');
 
-    const errorLocator = page.getByText(
-      translations.errors.metricDataUnavailable,
-    );
-    await expect(errorLocator).toBeVisible();
-    await runAccessibilityTests(page, testInfo);
+      await homePage.enterEditMode();
+      await homePage.addCard('Scorecard: Jira open blocking');
+      await homePage.saveChanges();
 
-    await scorecardPage.validateScorecardAriaFor(jiraMetric);
-  });
+      await homePage.expectCardVisible('github.open_prs');
+      await homePage.expectCardVisible('jira.open_issues');
+    });
 
-  test('Display error state for invalid threshold config while rendering metrics', async ({
-    page,
-  }, testInfo) => {
-    await mockScorecardResponse(page, invalidThresholdResponse);
+    test('Verify entity counts with mocked API response', async ({
+      browser,
+    }, testInfo) => {
+      await mockAggregatedScorecardResponse(
+        page,
+        githubAggregatedResponse,
+        jiraAggregatedResponse,
+      );
 
-    await page.goto('/');
-    await catalogPage.navigateToCatalog(currentLocale);
-    await catalogPage.openComponent('Red Hat Developer Hub');
-    await scorecardPage.openTab();
+      await homePage.navigateToHome();
+      await page.reload();
 
-    const githubMetric = scorecardPage.scorecardMetrics[0];
-    const jiraMetric = scorecardPage.scorecardMetrics[1];
+      const githubEntityCount = getEntityCount(
+        translations,
+        currentLocale,
+        '15',
+      );
+      const jiraEntityCount = getEntityCount(translations, currentLocale, '10');
 
-    const isGithubVisible = await scorecardPage.isScorecardVisible(
-      githubMetric.title,
-    );
-    expect(isGithubVisible).toBe(true);
+      await expect(page.locator('article')).toMatchAriaSnapshot(
+        getThresholdsSnapshot(
+          translations,
+          'github.open_prs',
+          githubEntityCount,
+        ),
+      );
 
-    const isJiraVisible = await scorecardPage.isScorecardVisible(
-      jiraMetric.title,
-    );
-    expect(isJiraVisible).toBe(true);
+      await expect(page.locator('article')).toMatchAriaSnapshot(
+        getThresholdsSnapshot(
+          translations,
+          'jira.open_issues',
+          jiraEntityCount,
+        ),
+      );
 
-    const errorLocator = page.getByText(translations.errors.invalidThresholds);
-    await expect(errorLocator).toBeVisible();
-    await runAccessibilityTests(page, testInfo);
+      await runAccessibilityTests(page, testInfo);
+    });
 
-    await scorecardPage.validateScorecardAriaFor(jiraMetric);
+    test('Verify cards hidden when API returns empty response', async () => {
+      await mockAggregatedScorecardResponse(page, [], []);
+
+      await homePage.navigateToHome();
+      await page.reload();
+      await homePage.expectCardNotVisible('github.open_prs');
+      await homePage.expectCardNotVisible('jira.open_issues');
+    });
+
+    test('Verify threshold tooltips', async () => {
+      await mockAggregatedScorecardResponse(
+        page,
+        githubAggregatedResponse,
+        jiraAggregatedResponse,
+      );
+
+      await homePage.navigateToHome();
+      await page.reload();
+
+      await homePage.enterEditMode();
+      await homePage.clearAllCards();
+      await homePage.addCard('Scorecard: GitHub open PRs');
+      await homePage.saveChanges();
+
+      const githubCard = homePage.getCard('github.open_prs');
+      await homePage.verifyThresholdTooltip(githubCard, 'success', '5', '33%');
+      await homePage.verifyThresholdTooltip(githubCard, 'warning', '7', '47%');
+      await homePage.verifyThresholdTooltip(githubCard, 'error', '3', '20%');
+
+      await homePage.enterEditMode();
+      await homePage.clearAllCards();
+      await homePage.addCard('Scorecard: Jira open blocking');
+      await homePage.saveChanges();
+
+      const jiraCard = homePage.getCard('jira.open_issues');
+      await homePage.verifyThresholdTooltip(jiraCard, 'success', '6', '60%');
+      await homePage.verifyThresholdTooltip(jiraCard, 'warning', '3', '30%');
+      await homePage.verifyThresholdTooltip(jiraCard, 'error', '1', '10%');
+    });
   });
 });

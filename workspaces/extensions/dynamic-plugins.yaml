@@ -11,7 +11,7 @@ plugins:
               - name: bulkImportIcon3
                 importName: BulkImportIcon3
             dynamicRoutes:
-              - path: /bulk-import/repositories
+              - path: /bulk-import
                 importName: BulkImportPage
                 menuItem:
                   icon: bulkImportIcon

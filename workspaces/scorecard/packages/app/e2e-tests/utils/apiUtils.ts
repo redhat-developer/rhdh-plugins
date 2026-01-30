@@ -47,3 +47,31 @@ export async function mockScorecardResponse(
     });
   });
 }
+
+const GITHUB_AGGREGATION_ROUTE =
+  '**/api/scorecard/metrics/github.open_prs/catalog/aggregations';
+const JIRA_AGGREGATION_ROUTE =
+  '**/api/scorecard/metrics/jira.open_issues/catalog/aggregations';
+
+export async function mockAggregatedScorecardResponse(
+  page: Page,
+  githubResponse: object,
+  jiraResponse: object,
+  status = 200,
+) {
+  await page.route(GITHUB_AGGREGATION_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(githubResponse),
+    });
+  });
+
+  await page.route(JIRA_AGGREGATION_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(jiraResponse),
+    });
+  });
+}

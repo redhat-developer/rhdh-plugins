@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { Button, Grid } from '@material-ui/core';
+import React, { useMemo } from 'react';
+import { Box, Button, Grid, Tooltip } from '@material-ui/core';
+import type { WorkflowUnavailableReason } from '@red-hat-developer-hub/plugin-redhat-resource-optimization-common/clients';
 import { RecommendationType } from '../../models/ChartEnums';
 import { ChartInfoCard } from './components/chart-info-card/ChartInfoCard';
 import { CodeInfoCard } from './components/CodeInfoCard';
@@ -25,6 +26,13 @@ type ContainerInfoCardProps = Parameters<typeof ContainerInfoCard>[0];
 type CodeInfoCardProps = Parameters<typeof CodeInfoCard>[0];
 type ChartInfoCardProps = Parameters<typeof ChartInfoCard>[0];
 
+const DEFAULT_WORKFLOW_MESSAGES: Record<WorkflowUnavailableReason, string> = {
+  not_configured: 'No workflow configured to apply recommendations',
+  not_found: 'Workflow not found',
+  access_denied: 'You do not have permission to access this workflow',
+  service_unavailable: 'Workflow service is currently unavailable',
+};
+
 interface OptimizationEngineTabProps extends ContainerInfoCardProps {
   currentConfiguration: CodeInfoCardProps['yamlCodeData'];
   recommendedConfiguration: CodeInfoCardProps['yamlCodeData'];
@@ -32,9 +40,32 @@ interface OptimizationEngineTabProps extends ContainerInfoCardProps {
   optimizationType: ChartInfoCardProps['optimizationType'];
   onApplyRecommendation?: React.MouseEventHandler<HTMLButtonElement>;
   workflowId?: string;
+  workflowUnavailableReason?: WorkflowUnavailableReason;
+  workflowErrorMessage?: string;
 }
 
 export const OptimizationEngineTab = (props: OptimizationEngineTabProps) => {
+  const isWorkflowAvailable = !!props.workflowId;
+
+  const tooltipMessage = useMemo(() => {
+    if (isWorkflowAvailable) {
+      return '';
+    }
+    // Prefer the actual error message from the API
+    if (props.workflowErrorMessage) {
+      return props.workflowErrorMessage;
+    }
+    // Fall back to default messages based on reason
+    if (props.workflowUnavailableReason) {
+      return DEFAULT_WORKFLOW_MESSAGES[props.workflowUnavailableReason];
+    }
+    return DEFAULT_WORKFLOW_MESSAGES.not_configured;
+  }, [
+    isWorkflowAvailable,
+    props.workflowErrorMessage,
+    props.workflowUnavailableReason,
+  ]);
+
   return (
     <Grid container>
       <Grid item xs={12}>
@@ -57,14 +88,23 @@ export const OptimizationEngineTab = (props: OptimizationEngineTabProps) => {
           showCopyCodeButton
           yamlCodeData={props.recommendedConfiguration}
           action={
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={props.onApplyRecommendation}
-              disabled={!props.workflowId}
+            <Tooltip
+              title={tooltipMessage}
+              disableHoverListener={isWorkflowAvailable}
+              disableFocusListener={isWorkflowAvailable}
+              disableTouchListener={isWorkflowAvailable}
             >
-              Apply recommendation
-            </Button>
+              <Box component="span" display="inline-block">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={props.onApplyRecommendation}
+                  disabled={!isWorkflowAvailable}
+                >
+                  Apply recommendation
+                </Button>
+              </Box>
+            </Tooltip>
           }
         />
       </Grid>

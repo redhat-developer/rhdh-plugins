@@ -1,0 +1,253 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { useCallback, useMemo, useState } from 'react';
+import useAsync from 'react-use/lib/useAsync';
+
+import {
+  Table,
+  TableColumn,
+  Progress,
+  ResponseErrorPanel,
+  LinkButton,
+} from '@backstage/core-components';
+
+import DeleteIcon from '@material-ui/icons/Delete';
+import { Box, Grid } from '@material-ui/core';
+
+import {
+  DEFAULT_PAGE_SIZE,
+  Project,
+  ProjectsGet,
+  ProjectsGet200Response,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { useClientService } from '../../ClientService';
+
+type OrderDirection = ProjectsGet['query']['order'];
+
+const useColumns = (
+  orderBy: number,
+  orderDirection: OrderDirection,
+): TableColumn<Project>[] =>
+  useMemo(() => {
+    const getDefaultSort = (index: number): OrderDirection => {
+      if (index === orderBy) {
+        return orderDirection;
+      }
+      return undefined;
+    };
+
+    const columns: TableColumn<Project>[] = [
+      { title: 'Name', field: 'name', defaultSort: getDefaultSort(0) },
+      {
+        title: 'Abbreviation',
+        field: 'abbreviation',
+        defaultSort: getDefaultSort(1),
+      },
+      { title: 'Status', field: 'status', defaultSort: getDefaultSort(2) },
+      {
+        title: 'Description',
+        field: 'description',
+        defaultSort: getDefaultSort(3),
+      },
+      {
+        title: 'Created At',
+        render: (rowData: Project) => {
+          // TODO: Show human-readable duration instead, make sure sorting still works
+          return <div>{rowData.createdAt.toLocaleString()}</div>;
+        },
+        defaultSort: getDefaultSort(4),
+      },
+      // {
+      //   title: 'Source Repository',
+      //   field: 'sourceRepository',
+      //   defaultSort: getDefaultSort(5),
+      // },
+    ];
+    return columns;
+  }, [orderBy, orderDirection]);
+
+const mapOrderByToSort = (orderBy: number): ProjectsGet['query']['sort'] => {
+  const mapping: ProjectsGet['query']['sort'][] = [
+    'name',
+    'abbreviation',
+    'status',
+    'description',
+    'createdAt',
+  ];
+
+  if (orderBy < 0) {
+    return mapping[0];
+  }
+
+  const result = mapping[orderBy];
+  if (!result) {
+    throw new Error(`Invalid orderBy: ${orderBy}`);
+  }
+  return result;
+};
+
+type DenseTableProps = {
+  forceRefresh: () => void;
+  projects: Project[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (pageSize: number) => void;
+  orderBy: number;
+  orderDirection: OrderDirection;
+  setOrderBy: (orderBy: number) => void;
+  setOrderDirection: (orderDirection: ProjectsGet['query']['order']) => void;
+};
+
+export const DenseTable = ({
+  projects,
+  forceRefresh,
+  totalCount,
+  page,
+  pageSize,
+  onPageChange,
+  onRowsPerPageChange,
+  orderBy,
+  orderDirection,
+  setOrderBy,
+  setOrderDirection,
+}: DenseTableProps) => {
+  const clientService = useClientService();
+
+  const [error, setError] = useState<Error | null>(null);
+
+  const handleDelete = async (id: string) => {
+    setError(null);
+
+    try {
+      await clientService.projectsProjectIdDelete({ path: { projectId: id } });
+      forceRefresh();
+    } catch (e) {
+      setError(e as Error);
+    }
+  };
+
+  const handleOrderChange = (sortBy: number, od: OrderDirection) => {
+    setOrderBy(sortBy);
+    setOrderDirection(od);
+  };
+
+  const columns = useColumns(orderBy, orderDirection);
+  const data = projects;
+
+  const actions = [
+    (rowData: Project) => ({
+      icon: DeleteIcon,
+      onClick: () => handleDelete(rowData.id),
+      tooltip: 'Delete project',
+    }),
+  ];
+
+  const getDetailPanel = ({ rowData }: { rowData: Project }) => (
+    <div>TODO: Details of {rowData.name} project</div>
+  );
+
+  return (
+    <Grid container spacing={3} direction="column">
+      {error && (
+        <Grid item>
+          <ResponseErrorPanel error={error} />
+        </Grid>
+      )}
+
+      <Grid item>
+        <Box display="flex" justifyContent="flex-end">
+          <LinkButton variant="contained" color="primary" to="/x2a/new-project">
+            New Project
+          </LinkButton>
+        </Box>
+      </Grid>
+
+      <Grid item>
+        <Table<Project>
+          title={`Projects (${projects.length})`}
+          options={{
+            search: false,
+            paging: true,
+            actionsColumnIndex: -1 /* to the row end */,
+            padding: 'default',
+            pageSize: pageSize,
+          }}
+          columns={columns}
+          data={data}
+          actions={actions}
+          detailPanel={getDetailPanel}
+          onOrderChange={handleOrderChange}
+          page={page}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+          totalCount={totalCount}
+        />
+      </Grid>
+    </Grid>
+  );
+};
+
+export const ProjectList = () => {
+  const clientService = useClientService();
+
+  const [refresh, setRefresh] = useState(0);
+
+  const [orderBy, setOrderBy] = useState<number>(0);
+  const [orderDirection, setOrderDirection] = useState<OrderDirection>('asc');
+  const [page, setPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+
+  const forceRefresh = useCallback(() => {
+    setRefresh(refresh + 1);
+  }, [refresh]);
+
+  const { value, loading, error } =
+    useAsync(async (): Promise<ProjectsGet200Response> => {
+      const response = await clientService.projectsGet({
+        query: {
+          order: orderDirection || 'asc',
+          sort: mapOrderByToSort(orderBy),
+          page,
+          pageSize,
+        },
+      });
+      return await response.json();
+    }, [refresh, clientService, orderBy, orderDirection, page, pageSize]);
+
+  if (loading) {
+    return <Progress />;
+  } else if (error) {
+    return <ResponseErrorPanel error={error} />;
+  }
+
+  return (
+    <DenseTable
+      projects={value?.items || []}
+      totalCount={value?.totalCount || 0}
+      forceRefresh={forceRefresh}
+      orderBy={orderBy}
+      orderDirection={orderDirection}
+      setOrderBy={setOrderBy}
+      setOrderDirection={setOrderDirection}
+      page={page}
+      pageSize={pageSize}
+      onPageChange={setPage}
+      onRowsPerPageChange={setPageSize}
+    />
+  );
+};

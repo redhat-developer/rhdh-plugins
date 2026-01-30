@@ -187,6 +187,11 @@ const lightspeedTranslationIt = createTranslationMessages({
       'Le chat bloccate sono attualmente abilitate',
     'settings.pinned.disabled.description':
       'Le chat bloccate sono attualmente disabilitate',
+    // Display modes
+    'settings.displayMode.label': 'Modalità di visualizzazione',
+    'settings.displayMode.overlay': 'Sovrapposizione',
+    'settings.displayMode.docked': 'Aggancia alla finestra',
+    'settings.displayMode.fullscreen': 'Schermo intero',
 
     // Tool calling
     'toolCall.header': 'Risposta dello strumento: {{toolName}}',

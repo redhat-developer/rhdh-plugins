@@ -1,4 +1,4 @@
-### Dependencies
+# @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
 ## 2.5.1
 
