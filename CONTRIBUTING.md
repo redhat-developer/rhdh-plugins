@@ -271,7 +271,7 @@ When you've got your contribution working, tested, and committed to your branch 
 
 For new plugins, it is recommended that your initial PR simply creates the workspace for your plugins. In this PR, be sure to add maintainers to the `CODEOWNERS` file for the new workspace. This will streamline the approval process, and also ensure that you have full autonomy over further development of your plugin.
 
-Please ping @rhdh-cope in #forum-rhdh on Slack when the PR is ready for review. We will do our best to complete an initial review within 5 working days, and address any subsequent updates within 2 working days.
+Please ping @rhdh-cope in #rhdh-plugins-ecosystem on Slack when the PR is ready for review. We will do our best to complete an initial review within 5 working days, and address any subsequent updates within 2 working days.
 
 ### Checklist to Ensure your Plugin is Ready to Merge
 
