@@ -131,6 +131,163 @@ paths:
                     description: Number of projects deleted (0 or 1)
                 required:
                   - deletedCount
+
+  /projects/{projectId}/run:
+    post:
+      summary: Triggers the init phase to produce the migration plan
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sourceRepo:
+                  $ref: '#/components/schemas/GitRepoCredentials'
+                targetRepo:
+                  $ref: '#/components/schemas/GitRepoCredentials'
+                aapCredentials:
+                  $ref: '#/components/schemas/AAPCredentials'
+                userPrompt:
+                  type: string
+                  description: Optional user prompt for customizing the migration
+              required:
+                - sourceRepo
+                - targetRepo
+      responses:
+        '200':
+          description: Init job created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - pending
+                    description: Job status
+                  jobId:
+                    type: string
+                    description: UUID of the created job
+                required:
+                  - status
+                  - jobId
+        '404':
+          description: Project not found
+
+  /projects/{projectId}/modules:
+    post:
+      summary: Creates a new module for a project
+      description: |
+        **TEMPORARY ENDPOINT FOR TESTING ONLY**
+
+        This endpoint provides simple CRUD functionality to create modules for testing the job triggering infrastructure.
+
+        According to the ADR, this endpoint should eventually sync modules by parsing the migration plan (created by the init phase).
+        The proper implementation will be added when the init phase integration is complete.
+
+        TODO: Replace with proper sync logic that parses the migration plan via LLM (see ADR lines 202-213)
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Module name
+                sourcePath:
+                  type: string
+                  description: Path to the module in the source repository
+              required:
+                - name
+                - sourcePath
+      responses:
+        '201':
+          description: Module created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Module'
+        '404':
+          description: Project not found
+
+  /projects/{projectId}/modules/{moduleId}/run:
+    post:
+      summary: Triggers a migration phase for a specific module
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: moduleId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  enum:
+                    - analyze
+                    - migrate
+                    - publish
+                  description: Migration phase to execute
+                sourceRepo:
+                  $ref: '#/components/schemas/GitRepoCredentials'
+                targetRepo:
+                  $ref: '#/components/schemas/GitRepoCredentials'
+                aapCredentials:
+                  $ref: '#/components/schemas/AAPCredentials'
+                userPrompt:
+                  type: string
+                  description: Optional user prompt for customizing the migration
+              required:
+                - phase
+                - sourceRepo
+                - targetRepo
+      responses:
+        '200':
+          description: Migration job created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - pending
+                    description: Job status
+                  jobId:
+                    type: string
+                    description: UUID of the created job
+                required:
+                  - status
+                  - jobId
+        '404':
+          description: Project or module not found
 components:
   schemas:
     Project:
@@ -161,3 +318,63 @@ components:
         - abbreviation
         - createdAt
         - createdBy
+
+    Module:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID for the module
+        name:
+          type: string
+          description: Module name
+        sourcePath:
+          type: string
+          description: Path to the module in the source repository
+        projectId:
+          type: string
+          description: UUID of the parent project
+      required:
+        - id
+        - name
+        - sourcePath
+        - projectId
+
+    GitRepoCredentials:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Git repository URL
+        token:
+          type: string
+          description: Authentication token for the git repository
+        branch:
+          type: string
+          description: Git branch name
+      required:
+        - url
+        - token
+        - branch
+
+    AAPCredentials:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Ansible Automation Platform URL
+        orgName:
+          type: string
+          description: AAP organization name
+        oauthToken:
+          type: string
+          description: OAuth token for AAP authentication
+        username:
+          type: string
+          description: Username for AAP authentication (alternative to OAuth token)
+        password:
+          type: string
+          description: Password for AAP authentication (alternative to OAuth token)
+      required:
+        - url
+        - orgName

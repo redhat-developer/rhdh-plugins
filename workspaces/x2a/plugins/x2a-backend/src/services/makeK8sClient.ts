@@ -15,15 +15,23 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { CoreV1Api, KubeConfig } from '@kubernetes/client-node';
+import { CoreV1Api, BatchV1Api, KubeConfig } from '@kubernetes/client-node';
 
 /**
- * TODO: Make this configurable
+ * Kubernetes API clients
+ */
+export interface K8sClients {
+  coreV1Api: CoreV1Api;
+  batchV1Api: BatchV1Api;
+}
+
+/**
+ * TODO: Make this configurable, and allow for using kube secret inherited by service account
  *
  * Load Kubernetes config from default locations
  * This will check KUBECONFIG env var, ~/.kube/config, or ~/.kube/kubeconfig, or in-cluster config
  */
-export const makeK8sClient = (logger: LoggerService): CoreV1Api => {
+export const makeK8sClient = (logger: LoggerService): K8sClients => {
   const kc = new KubeConfig();
 
   try {
@@ -31,10 +39,10 @@ export const makeK8sClient = (logger: LoggerService): CoreV1Api => {
     if (!process.env.KUBECONFIG) {
       const path = require('node:path');
       const os = require('node:os');
-      const kubeconfigPath = path.join(os.homedir(), '.kube', 'config');
+      const kubeconfigPath = path.join(os.homedir(), '.kube', 'kubeconfig');
       const fs = require('node:fs');
 
-      // Check if ~/.kube/config exists
+      // Check if ~/.kube/kubeconfig exists
       if (fs.existsSync(kubeconfigPath)) {
         process.env.KUBECONFIG = kubeconfigPath;
         logger.info(`Setting KUBECONFIG to ${kubeconfigPath}`);
@@ -60,5 +68,8 @@ export const makeK8sClient = (logger: LoggerService): CoreV1Api => {
     }
   }
 
-  return kc.makeApiClient(CoreV1Api);
+  return {
+    coreV1Api: kc.makeApiClient(CoreV1Api),
+    batchV1Api: kc.makeApiClient(BatchV1Api),
+  };
 };
