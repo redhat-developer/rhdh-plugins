@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.5
+
+### Patch Changes
+
+- 802696c: UI polish and tag interaction improvements on Home page
+
 ## 1.10.4
 
 ### Patch Changes
