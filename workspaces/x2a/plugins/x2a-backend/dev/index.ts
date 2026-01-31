@@ -18,8 +18,6 @@ import { createBackend } from '@backstage/backend-defaults';
 
 const backend = createBackend();
 
-// TODO: Needs more work, failing:
-// - The @backstage/plugin-permission-backend in PluginPermissionMetadataCollector.permissionFactory() calls FetchUrlReader constructor with no params which is not supported (options are mandatory). Causing access to undefined.
 // backend.add(import('@backstage/plugin-permission-backend'));
 // backend.add(import('@backstage-community/plugin-rbac-backend'))
 

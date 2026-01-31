@@ -95,6 +95,9 @@ export interface RequestOptions {
 }
 
 // @public
+export const toSorted: (a: string, b: string) => number;
+
+// @public
 export type TypedResponse<T> = Omit<Response, 'json'> & {
     json: () => Promise<T>;
 };
