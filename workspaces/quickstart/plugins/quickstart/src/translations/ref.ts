@@ -86,6 +86,7 @@ export const quickstartMessages = {
     progress: '{{progress}}% progress',
     notStarted: 'Not started',
     hide: 'Hide',
+    progressBarLabel: 'Quickstart progress',
   },
   content: {
     emptyState: {

@@ -66,6 +66,7 @@ const quickstartTranslationJa = createTranslationMessages({
     'footer.progress': '進捗 {{progress}}%',
     'footer.notStarted': '開始されていません',
     'footer.hide': '非表示',
+    'footer.progressBarLabel': 'クイックスタートの進捗',
     'content.emptyState.title':
       '現在のロールではクイックスタートコンテンツを利用できません。',
     'item.expandAriaLabel': '{{title}} の詳細を展開',

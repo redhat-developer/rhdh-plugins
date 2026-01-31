@@ -61,6 +61,7 @@ const quickstartTranslationEs = createTranslationMessages({
     'footer.progress': '{{progress}}% de progreso',
     'footer.notStarted': 'No iniciado',
     'footer.hide': 'Ocultar',
+    'footer.progressBarLabel': 'Progreso de inicio rápido',
     'content.emptyState.title':
       'El contenido de inicio rápido no está disponible para tu rol.',
     'item.expandAriaLabel': 'Expandir detalles de {{title}}',
