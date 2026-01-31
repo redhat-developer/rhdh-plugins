@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+  useTranslationRef,
+  TranslationFunction,
+} from '@backstage/core-plugin-api/alpha';
+
+import { x2aPluginTranslationRef } from '../translations';
 
 /**
- * Common functionalities for the x2a plugin.
+ * Hook for getting the translation function for the x2a plugin.
  *
- * @packageDocumentation
+ * @public
  */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
-export * from './utils';
+export const useTranslation = (): {
+  t: TranslationFunction<typeof x2aPluginTranslationRef.T>;
+} => useTranslationRef(x2aPluginTranslationRef);
