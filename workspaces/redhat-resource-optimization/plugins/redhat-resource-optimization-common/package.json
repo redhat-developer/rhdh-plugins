@@ -1,7 +1,7 @@
 {
   "name": "@red-hat-developer-hub/plugin-redhat-resource-optimization-common",
   "description": "Common functionalities for the redhat-resource-optimization plugin",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "backstage": {
     "pluginId": "redhat-resource-optimization",
     "pluginPackages": [
