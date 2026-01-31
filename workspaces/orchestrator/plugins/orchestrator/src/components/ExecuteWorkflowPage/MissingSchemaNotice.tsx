@@ -51,6 +51,12 @@ const MissingSchemaNotice = ({
         >
           Run
         </SubmitButton>
+        <SubmitButton
+          submitting={isExecuting}
+          handleClick={() => handleExecute({ isEvent: true })}
+        >
+          Run As Event
+        </SubmitButton>
       </Grid>
     </Grid>
   );
