@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { ResponseErrorPanel } from '@backstage/core-components';
-
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
@@ -27,11 +25,13 @@ import { CustomTooltip } from './CustomTooltip';
 import { ResponsivePieChart } from './ResponsivePieChart';
 
 export const EmptyStatePanel = ({
-  error,
+  label,
   metricId,
+  tooltipContent,
 }: {
-  error: Error;
+  label: string;
   metricId: string;
+  tooltipContent: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -51,97 +51,83 @@ export const EmptyStatePanel = ({
 
   const pieData = [{ name: 'full', value: 100, color: ringColor }];
 
-  const isMissingPermission = error.message?.includes('NotAllowedError');
-
-  const isUserNotFoundInCatalog =
-    error.message?.includes('NotFoundError') &&
-    error.message?.includes('User entity not found in catalog');
-
-  if (isMissingPermission || isUserNotFoundInCatalog) {
-    return (
-      <CardWrapper
-        title={cardTitle}
-        description={cardDescription}
-        subheader={t('thresholds.entities', { count: 0 })}
+  return (
+    <CardWrapper
+      title={cardTitle}
+      description={cardDescription}
+      subheader={t('thresholds.entities', { count: 0 })}
+    >
+      <Box
+        width="100%"
+        minWidth={311}
+        minHeight={174}
+        height="100%"
+        data-chart-container
+        position="relative"
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          cursor: 'default',
+          '& .recharts-wrapper > svg': {
+            outline: 'none',
+          },
+        }}
       >
-        <Box
-          width="100%"
-          minWidth={311}
-          minHeight={174}
-          height="100%"
-          data-chart-container
-          position="relative"
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            cursor: 'default',
-            '& .recharts-wrapper > svg': {
-              outline: 'none',
-            },
+        <ResponsivePieChart
+          pieData={pieData}
+          LabelContent={({ cx, cy }) => {
+            if (cx === null || cy === null) return null;
+
+            const palettePath = statusConfig.color.split('.');
+            let color: string | undefined;
+            const paletteRoot =
+              theme.palette[palettePath[0] as keyof typeof theme.palette];
+            if (palettePath.length === 1) {
+              color = paletteRoot as string | undefined;
+            } else if (palettePath.length === 2) {
+              color = (paletteRoot as Record<string, string>)?.[
+                palettePath[1]
+              ] as string | undefined;
+            } else if (palettePath.length === 3) {
+              color = (paletteRoot as Record<string, any>)?.[palettePath[1]]?.[
+                palettePath[2]
+              ];
+            }
+
+            return (
+              <g transform={`translate(${cx}, ${cy})`}>
+                <foreignObject x={-50} y={-17} width={100} height={40}>
+                  <div
+                    style={{
+                      maxWidth: 100,
+                      fontSize: 14,
+                      fontWeight: 400,
+                      color,
+                      textAlign: 'center',
+                      lineHeight: 1.2,
+                      wordBreak: 'break-word',
+                    }}
+                  >
+                    {label}
+                  </div>
+                </foreignObject>
+              </g>
+            );
           }}
-        >
-          <ResponsivePieChart
-            pieData={pieData}
-            isMissingPermission={isMissingPermission}
-            LabelContent={({ cx, cy }) => {
-              if (cx === null || cy === null) return null;
-
-              const palettePath = statusConfig.color.split('.');
-              let color: string | undefined;
-              const paletteRoot =
-                theme.palette[palettePath[0] as keyof typeof theme.palette];
-              if (palettePath.length === 1) {
-                color = paletteRoot as string | undefined;
-              } else if (palettePath.length === 2) {
-                color = (paletteRoot as Record<string, string>)?.[
-                  palettePath[1]
-                ] as string | undefined;
-              } else if (palettePath.length === 3) {
-                color = (paletteRoot as Record<string, any>)?.[
-                  palettePath[1]
-                ]?.[palettePath[2]];
-              }
-
-              return (
-                <g transform={`translate(${cx}, ${cy})`}>
-                  <foreignObject x={-50} y={-17} width={100} height={40}>
-                    <div
-                      style={{
-                        maxWidth: 100,
-                        fontSize: 14,
-                        fontWeight: 400,
-                        color,
-                        textAlign: 'center',
-                        lineHeight: 1.2,
-                        wordBreak: 'break-word',
-                      }}
-                    >
-                      {isMissingPermission
-                        ? t('errors.missingPermission')
-                        : null}
-                    </div>
-                  </foreignObject>
-                </g>
-              );
-            }}
-            legendContent={props => (
-              <CustomLegend {...props} thresholds={undefined} />
-            )}
-            tooltipContent={props => (
-              <CustomTooltip
-                {...props}
-                payload={undefined}
-                pieData={pieData}
-                isMissingPermission={isMissingPermission}
-                isUserNotFoundInCatalog={isUserNotFoundInCatalog}
-              />
-            )}
-          />
-        </Box>
-      </CardWrapper>
-    );
-  }
-
-  return <ResponseErrorPanel error={error} />;
+          legendContent={props => (
+            <CustomLegend {...props} thresholds={undefined} />
+          )}
+          tooltipContent={props => (
+            <CustomTooltip
+              {...props}
+              payload={undefined}
+              pieData={pieData}
+              customContent={tooltipContent}
+            />
+          )}
+        />
+      </Box>
+    </CardWrapper>
+  );
 };

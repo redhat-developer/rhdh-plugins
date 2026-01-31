@@ -39,6 +39,7 @@ import { validateCatalogMetricsSchema } from '../validation/validateCatalogMetri
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { validateMetricsSchema } from '../validation/validateMetricsSchema';
+import { AggregatedMetricMapper } from './mappers';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
@@ -172,23 +173,19 @@ export async function createRouter({
       credentials,
     });
 
-    if (entitiesOwnedByAUser.length === 0) {
-      res.json([]);
-      return;
-    }
-
     for (const entityRef of entitiesOwnedByAUser) {
       await checkEntityAccess(entityRef, req, permissions, httpAuth);
     }
 
-    const aggregatedMetrics =
-      await catalogMetricService.getAggregatedMetricsByEntityRefs(
+    const aggregatedMetric =
+      await catalogMetricService.getAggregatedMetricByEntityRefs(
         entitiesOwnedByAUser,
-        [metricId],
-        conditions,
+        metricId,
       );
 
-    res.json(aggregatedMetrics);
+    res.json(
+      AggregatedMetricMapper.toAggregatedMetricResult(metric, aggregatedMetric),
+    );
   });
 
   return router;

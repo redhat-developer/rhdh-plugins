@@ -40,7 +40,11 @@ export const useAggregatedScorecard = (
         metricId,
       );
 
-      if (!aggregatedScorecard || !Array.isArray(aggregatedScorecard)) {
+      if (
+        !aggregatedScorecard ||
+        Array.isArray(aggregatedScorecard) ||
+        typeof aggregatedScorecard !== 'object'
+      ) {
         throw new Error(t('errors.invalidApiResponse'));
       }
 
@@ -59,7 +63,7 @@ export const useAggregatedScorecard = (
 
   return useMemo(
     () => ({
-      aggregatedScorecard: value as AggregatedMetricResult[],
+      aggregatedScorecard: value as AggregatedMetricResult,
       loadingData: loading,
       error,
     }),

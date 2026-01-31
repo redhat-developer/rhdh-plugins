@@ -51,7 +51,6 @@ interface PieTooltipContentProps {
 }
 interface ResponsivePieChartProps {
   pieData: PieData[];
-  isMissingPermission?: boolean;
   LabelContent?: (props: PieLabelRenderProps) => React.ReactNode;
   legendContent: (props: PieLegendContentProps) => React.ReactNode;
   tooltipContent: (props: PieTooltipContentProps) => React.ReactNode;
@@ -59,7 +58,6 @@ interface ResponsivePieChartProps {
 
 export const ResponsivePieChart = ({
   pieData,
-  isMissingPermission = false,
   LabelContent,
   legendContent,
   tooltipContent,
@@ -81,7 +79,7 @@ export const ResponsivePieChart = ({
           cursor="pointer"
           isAnimationActive={false}
           labelLine={false}
-          label={isMissingPermission && LabelContent ? LabelContent : undefined}
+          label={LabelContent}
           style={{ outline: 'none' }}
         >
           {pieData.map(category => (

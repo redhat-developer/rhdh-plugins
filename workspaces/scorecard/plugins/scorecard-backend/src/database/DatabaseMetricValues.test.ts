@@ -191,9 +191,9 @@ describe('DatabaseMetricValues', () => {
     );
   });
 
-  describe('readAggregatedMetricsByEntityRefs', () => {
+  describe('readAggregatedMetricByEntityRefs', () => {
     it.each(databases.eachSupportedId())(
-      'should return aggregated metrics by status for multiple entities and metrics - %p',
+      'should return aggregated metrics by status for multiple entities - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
@@ -227,34 +227,21 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readAggregatedMetricsByEntityRefs(
+        const result = await db.readAggregatedMetricByEntityRefs(
           [
             'component:default/test-service',
             'component:default/another-service',
           ],
-          ['github.metric1', 'github.metric2'],
+          'github.metric2',
         );
 
-        expect(result).toHaveLength(2);
-
-        const metric1Result = result.find(
-          r => r.metric_id === 'github.metric1',
-        );
-        const metric2Result = result.find(
-          r => r.metric_id === 'github.metric2',
-        );
-
-        expect(metric1Result).toBeDefined();
-        expect(metric1Result?.total).toBe(2);
-        expect(metric1Result?.success).toBe(2);
-        expect(metric1Result?.warning).toBe(0);
-        expect(metric1Result?.error).toBe(0);
-
-        expect(metric2Result).toBeDefined();
-        expect(metric2Result?.total).toBe(2);
-        expect(metric2Result?.success).toBe(0);
-        expect(metric2Result?.warning).toBe(1);
-        expect(metric2Result?.error).toBe(1);
+        expect(result).toBeDefined();
+        expect(result?.metric_id).toBe('github.metric2');
+        expect(result?.total).toBe(2);
+        expect(result?.success).toBe(0);
+        expect(result?.warning).toBe(1);
+        expect(result?.error).toBe(1);
+        expect(result?.max_timestamp).toEqual(laterTime);
       },
     );
   });

@@ -72,6 +72,15 @@ export type MetricResult = {
 /**
  * @public
  */
+export type AggregatedMetric = {
+  values: AggregatedMetricValue[];
+  total: number;
+  timestamp: string;
+};
+
+/**
+ * @public
+ */
 export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
@@ -81,9 +90,5 @@ export type AggregatedMetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result: {
-    values: AggregatedMetricValue[];
-    total: number;
-    timestamp: string;
-  };
+  result: AggregatedMetric;
 };

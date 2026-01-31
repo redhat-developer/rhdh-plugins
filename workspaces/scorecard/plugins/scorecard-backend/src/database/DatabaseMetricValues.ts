@@ -64,17 +64,17 @@ export class DatabaseMetricValues {
   /**
    * Get aggregated metrics by status for multiple entities and metrics.
    */
-  async readAggregatedMetricsByEntityRefs(
+  async readAggregatedMetricByEntityRefs(
     catalog_entity_refs: string[],
-    metric_ids: string[],
-  ): Promise<DbAggregatedMetric[]> {
+    metric_id: string,
+  ): Promise<DbAggregatedMetric | undefined> {
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
-      .whereIn('metric_id', metric_ids)
+      .where('metric_id', metric_id)
       .whereIn('catalog_entity_ref', catalog_entity_refs)
       .groupBy('metric_id', 'catalog_entity_ref');
 
-    const results = await this.dbClient(this.tableName)
+    const [row] = await this.dbClient(this.tableName)
       .select('metric_id')
       .count('* as total')
       .max('timestamp as max_timestamp')
@@ -101,7 +101,7 @@ export class DatabaseMetricValues {
     // Normalize types for cross-database compatibility
     // PostgreSQL returns COUNT/SUM as strings, SQLite returns numbers
     // PostgreSQL returns MAX(timestamp) as Date, SQLite returns number (milliseconds)
-    return results.map(row => {
+    if (row) {
       let maxTimestamp: Date;
       if (row.max_timestamp instanceof Date) {
         maxTimestamp = row.max_timestamp;
@@ -122,6 +122,8 @@ export class DatabaseMetricValues {
         warning: Number(row.warning),
         error: Number(row.error),
       };
-    });
+    }
+
+    return undefined;
   }
 }
