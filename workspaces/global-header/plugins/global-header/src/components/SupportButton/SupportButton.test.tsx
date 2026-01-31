@@ -52,6 +52,37 @@ const configWithoutSupportUrl = mockApis.config({
   },
 });
 
+const configWithSupportItems = mockApis.config({
+  data: {
+    app: {
+      support: {
+        items: [
+          {
+            title: 'Issues',
+            icon: 'github',
+            links: [
+              {
+                url: 'https://github.com/backstage/backstage/issues',
+                title: 'GitHub Issues',
+              },
+            ],
+          },
+          {
+            title: 'Discord Chatroom',
+            icon: 'chat',
+            links: [
+              {
+                url: 'https://discord.gg/backstage-687207715902193673',
+                title: '#backstage',
+              },
+            ],
+          },
+        ],
+      },
+    },
+  },
+});
+
 describe('SupportButton', () => {
   it('renders a button when the support url is defined', async () => {
     const { getByTestId } = await renderInTestApp(
@@ -102,6 +133,22 @@ describe('SupportButton', () => {
     );
     expect(getByTestId('support-button').getAttribute('target')).toEqual(
       '_blank',
+    );
+  });
+
+  it('renders multiple buttons when support items are defined in config', async () => {
+    const { getAllByTestId } = await renderInTestApp(
+      <TestApiProvider apis={[[configApiRef, configWithSupportItems]]}>
+        <SupportButton />
+      </TestApiProvider>,
+    );
+    const buttons = getAllByTestId('support-button');
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0].getAttribute('href')).toEqual(
+      'https://github.com/backstage/backstage/issues',
+    );
+    expect(buttons[1].getAttribute('href')).toEqual(
+      'https://discord.gg/backstage-687207715902193673',
     );
   });
 });
