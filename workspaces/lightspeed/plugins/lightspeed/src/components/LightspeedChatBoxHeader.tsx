@@ -50,6 +50,7 @@ type LightspeedChatBoxHeaderProps = {
   onPinnedChatsToggle: (state: boolean) => void;
   isModelSelectorDisabled?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
+  setIsSettingsDropdownOpen: (isOpen: boolean) => void;
 };
 
 const useStyles = makeStyles(theme =>
@@ -83,8 +84,10 @@ export const LightspeedChatBoxHeader = ({
   onPinnedChatsToggle,
   isModelSelectorDisabled = false,
   setDisplayMode,
+  setIsSettingsDropdownOpen,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
+  const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const { t } = useTranslation();
 
   const styles = useStyles();
@@ -136,6 +139,19 @@ export const LightspeedChatBoxHeader = ({
     setDisplayMode(ChatbotDisplayMode.default);
   };
 
+  // Toggle settings menu (called when clicking the toggle button)
+  const handleSettingsMenuToggle = () => {
+    const newState = !isSettingsMenuOpen;
+    setIsSettingsMenuOpen(newState);
+    setIsSettingsDropdownOpen(newState);
+  };
+
+  // Handle settings menu close (called on Escape or click outside)
+  const handleSettingsMenuClose = (isOpen: boolean) => {
+    setIsSettingsMenuOpen(isOpen);
+    setIsSettingsDropdownOpen(isOpen);
+  };
+
   return (
     <ChatbotHeaderActions>
       <Dropdown
@@ -177,9 +193,12 @@ export const LightspeedChatBoxHeader = ({
       </Dropdown>
       <ChatbotHeaderOptionsDropdown
         isCompact
+        isOpen={isSettingsMenuOpen}
+        onOpenChange={handleSettingsMenuClose}
         toggleProps={{
           'aria-label': t('aria.settings.label'),
           className: styles.optionsToggle,
+          onClick: handleSettingsMenuToggle,
         }}
         tooltipProps={{
           content: t('tooltip.settings'),

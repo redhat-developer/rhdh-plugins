@@ -41,6 +41,8 @@ describe('LightspeedDrawerStateExposer', () => {
     setDraftMessage: jest.fn(),
     draftFileContents: [],
     setDraftFileContents: jest.fn(),
+    isSettingsDropdownOpen: false,
+    setIsSettingsDropdownOpen: jest.fn(),
     ...overrides,
   });
 
