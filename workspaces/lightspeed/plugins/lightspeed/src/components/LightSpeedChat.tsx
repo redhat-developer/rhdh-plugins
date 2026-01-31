@@ -122,11 +122,6 @@ const useStyles = makeStyles(theme => ({
       maxWidth: 'unset !important',
     },
   },
-  footerPopover: {
-    '& img': {
-      maxWidth: '100%',
-    },
-  },
   sortDropdown: {
     padding: 0,
     margin: 0,
@@ -849,9 +844,7 @@ export const LightspeedChat = ({
                   onAttachRejected={onAttachRejected}
                   placeholder={t('chatbox.message.placeholder')}
                 />
-                <ChatbotFootnote
-                  {...getFootnoteProps(classes.footerPopover, t)}
-                />
+                <ChatbotFootnote {...getFootnoteProps(t)} />
               </ChatbotFooter>
             </FileDropZone>
           }
