@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createDevApp } from '@backstage/dev-utils';
-import { x2APlugin, X2APage } from '../src/plugin';
-import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import {
+  ScmIntegrationsApi,
+  scmIntegrationsApiRef,
+  ScmAuth,
+} from '@backstage/integration-react';
+import {
+  AnyApiFactory,
+  configApiRef,
+  createApiFactory,
+} from '@backstage/core-plugin-api';
 
-createDevApp()
-  .registerPlugin(x2APlugin)
-  .addPage({
-    element: <X2APage />,
-    title: 'Conversion Hub',
-    path: '/x2a',
-  })
-  .addSignInProvider({
-    id: 'github-auth-provider',
-    title: 'GitHub',
-    message: 'Sign in using GitHub',
-    apiRef: githubAuthApiRef,
-  })
-  .render();
+export const apis: AnyApiFactory[] = [
+  createApiFactory({
+    api: scmIntegrationsApiRef,
+    deps: { configApi: configApiRef },
+    factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
+  }),
+  ScmAuth.createDefaultApiFactory(),
+];
