@@ -21,9 +21,12 @@ import {
   TestDatabases,
 } from '@backstage/backend-test-utils';
 import { Knex } from 'knex';
+
+import { toSorted } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import { X2ADatabaseService } from './X2ADatabaseService';
 import { migrate } from './dbMigrate';
-import { delay, LONG_TEST_TIMEOUT, nonExistentId, toSorted } from '../utils';
+import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../utils';
 
 const databases = TestDatabases.create({
   ids: ['SQLITE_3', 'POSTGRES_18'],

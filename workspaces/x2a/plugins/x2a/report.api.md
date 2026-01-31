@@ -7,6 +7,14 @@
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
+
+// @public
+export const useX2ATranslation: () => {
+    t: TranslationFunction<typeof x2aPluginTranslationRef.T>;
+};
 
 // @public (undocumented)
 export const X2APage: () => JSX_2.Element;
@@ -15,6 +23,35 @@ export const X2APage: () => JSX_2.Element;
 export const x2APlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
+
+// @public
+export const x2aPluginTranslationRef: TranslationRef<"plugin.x2a", {
+readonly "page.title": string;
+readonly "page.subtitle": string;
+readonly "page.devTitle": string;
+readonly "table.columns.name": string;
+readonly "table.columns.description": string;
+readonly "table.columns.status": string;
+readonly "table.columns.createdAt": string;
+readonly "table.columns.abbreviation": string;
+readonly "table.actions.deleteProject": string;
+readonly "table.detailPanel": string;
+readonly "table.projectsCount": string;
+readonly "common.newProject": string;
+readonly "sidebar.x2a.title": string;
+readonly "newProjectPage.title": string;
+readonly "newProjectPage.subtitle": string;
+readonly "newProjectPage.steps.jobNameAndDescription": string;
+readonly "newProjectPage.steps.sourceAndTargetRepos": string;
+readonly "newProjectPage.steps.reviewAndStart": string;
+readonly "newProjectPage.steps.lastStep": string;
+readonly "wizard.cancel": string;
+readonly "wizard.next": string;
+readonly "wizard.back": string;
+}>;
+
+// @public
+export const x2aPluginTranslations: TranslationResource<"plugin.x2a">;
 
 // (No @packageDocumentation comment for this package)
 

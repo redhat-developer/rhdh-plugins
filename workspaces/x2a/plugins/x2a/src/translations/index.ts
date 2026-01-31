@@ -14,12 +14,22 @@
  * limitations under the License.
  */
 
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+
+import { x2aPluginTranslationRef } from './ref';
+
 /**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
+ * The translation resource for the x2a plugin.
+ * @public
  */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
-export * from './utils';
+export const x2aPluginTranslations = createTranslationResource({
+  ref: x2aPluginTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    es: () => import('./es'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+  },
+});
+
+export { x2aPluginTranslationRef };

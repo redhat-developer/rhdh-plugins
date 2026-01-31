@@ -13,4 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const toSorted = (a: string, b: string) => a.localeCompare(b);
+import { useApi } from '@backstage/core-plugin-api';
+import { appLanguageApiRef } from '@backstage/core-plugin-api/alpha';
+
+/**
+ * Hook to get the current language setting
+ * @returns The current language code (e.g., 'en', 'de', 'fr')
+ */
+export const useLanguage = (): string =>
+  useApi(appLanguageApiRef).getLanguage().language;

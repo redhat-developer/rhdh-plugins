@@ -15,11 +15,10 @@
  */
 
 /**
- * Common functionalities for the x2a plugin.
+ * Utility function comparing two strings using localeCompare.
  *
- * @packageDocumentation
+ * Useful for sorting arrays of strings.
+ *
+ * @public
  */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
-export * from './utils';
+export const toSorted = (a: string, b: string) => a.localeCompare(b);

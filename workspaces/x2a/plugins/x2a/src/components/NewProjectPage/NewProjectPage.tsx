@@ -15,33 +15,37 @@
  */
 import { Content, Header, InfoCard, Page } from '@backstage/core-components';
 import { Grid, Step, StepLabel, Stepper } from '@material-ui/core';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 import { WizardActions } from './WizardActions';
 
 export const NewProjectPage = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const { t } = useTranslation();
 
-  const steps = [
-    {
-      // TODO: review the titles
-      title: 'Job name and description',
-      content: <div>Job name and description</div>,
-    },
-    {
-      title: 'Source and target repositories',
-      content: <div>Source and target repositories</div>,
-    },
-    {
-      title: 'Review and start',
-      content: <div>Last step</div>,
-    },
-  ];
+  const steps = useMemo(
+    () => [
+      {
+        title: t('newProjectPage.steps.jobNameAndDescription'),
+        content: <div>{t('newProjectPage.steps.jobNameAndDescription')}</div>,
+      },
+      {
+        title: t('newProjectPage.steps.sourceAndTargetRepos'),
+        content: <div>{t('newProjectPage.steps.sourceAndTargetRepos')}</div>,
+      },
+      {
+        title: t('newProjectPage.steps.reviewAndStart'),
+        content: <div>{t('newProjectPage.steps.lastStep')}</div>,
+      },
+    ],
+    [t],
+  );
 
   return (
     <Page themeId="tool">
       <Header
-        title="New conversion"
-        subtitle="Migration Hub / New conversion project"
+        title={t('newProjectPage.title')}
+        subtitle={t('newProjectPage.subtitle')}
       />
 
       <Content>

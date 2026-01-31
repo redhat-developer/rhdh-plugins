@@ -14,12 +14,21 @@
  * limitations under the License.
  */
 
-/**
- * Common functionalities for the x2a plugin.
- *
- * @packageDocumentation
- */
-export * from '../client/src/schema/openapi';
-export * from './permissions';
-export * from './constants';
-export * from './utils';
+import { useTranslation } from '../hooks/useTranslation';
+import { x2aPluginTranslationRef } from '../translations';
+
+type Messages = typeof x2aPluginTranslationRef.T;
+
+interface TransProps<
+  TMessages extends {
+    [key in string]: string;
+  },
+> {
+  message: keyof TMessages;
+  params?: any;
+}
+
+export const Trans = ({ message, params }: TransProps<Messages>) => {
+  const { t } = useTranslation();
+  return t(message, params);
+};
