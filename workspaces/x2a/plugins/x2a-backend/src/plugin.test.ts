@@ -114,9 +114,21 @@ const getX2aDatabaseServiceMock = () => ({
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
 });
 
-const getKubeServiceMock = () => ({
-  getPods: jest.fn().mockResolvedValue({ items: [] }),
-});
+const getKubeServiceMock = () =>
+  ({
+    // Project secret operations
+    createProjectSecret: jest.fn().mockResolvedValue(undefined),
+    getProjectSecret: jest.fn().mockResolvedValue(null),
+    deleteProjectSecret: jest.fn().mockResolvedValue(undefined),
+    // Job operations
+    createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
+    getJobStatus: jest.fn().mockResolvedValue({ status: 'pending' }),
+    getJobLogs: jest.fn().mockResolvedValue(''),
+    deleteJob: jest.fn().mockResolvedValue(undefined),
+    listJobsForProject: jest.fn().mockResolvedValue([]),
+    // Test method
+    getPods: jest.fn().mockResolvedValue({ items: [] }),
+  }) as any;
 
 async function startBackendServer(
   config?: Record<PropertyKey, unknown>,
@@ -140,7 +152,7 @@ async function startBackendServer(
     createServiceFactory({
       service: kubeServiceRef,
       deps: {},
-      factory: async () => getKubeServiceMock(),
+      factory: () => getKubeServiceMock(),
     }),
   ];
   return (await startTestBackend({ features })).server;
@@ -206,7 +218,7 @@ describe('plugin', () => {
         createServiceFactory({
           service: kubeServiceRef,
           deps: {},
-          factory: async () => getKubeServiceMock(),
+          factory: () => getKubeServiceMock(),
         }),
       ],
     });

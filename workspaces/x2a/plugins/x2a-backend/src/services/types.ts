@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-// Re-export types generated from OpenAPI spec
-export type {
+// Import and re-export types generated from OpenAPI spec
+import type {
   GitRepoCredentials,
   AAPCredentials,
 } from '../schema/openapi/generated/models';
+
+export type { GitRepoCredentials, AAPCredentials };
 
 /**
  * Migration phase types
