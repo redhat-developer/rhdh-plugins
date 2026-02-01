@@ -2,6 +2,22 @@
 
 This is a Backstage plugin workspace providing web UI for the [X2Ansible](https://github.com/x2ansible/x2a-convertor) project.
 
+## Plugins in this Workspace
+
+### X2A Backend Plugin
+
+The [X2A Backend Plugin](./plugins/x2a-backend) provides REST API endpoints and Kubernetes job orchestration for migrating applications to Ansible playbooks using LLM-powered conversion. It manages the lifecycle of migration jobs, credential storage (LLM and AAP), and integration with Ansible Automation Platform.
+
+Key features:
+
+- RESTful API for project and job management
+- Kubernetes job orchestration with automatic cleanup
+- Secure credential management via Kubernetes secrets
+- Support for multiple LLM providers (AWS Bedrock, OpenAI)
+- Integration with Ansible Automation Platform
+
+See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed configuration and usage documentation.
+
 ## Development Environment Setup
 
 ### Prerequisites

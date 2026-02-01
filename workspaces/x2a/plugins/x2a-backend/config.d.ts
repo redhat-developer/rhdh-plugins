@@ -17,6 +17,7 @@
 /**
  * X2A configuration structure
  * This is the runtime type extracted from app-config.yaml
+ * Defaults for optional values are defined in src/services/constants.ts
  */
 export interface X2AConfig {
   kubernetes: {
@@ -47,6 +48,11 @@ export interface X2AConfig {
   };
 }
 
+/**
+ * Root configuration schema for Backstage app-config.yaml
+ * This Config interface extends Backstage's configuration structure to include X2A settings.
+ * All X2A configuration values are optional with defaults defined in src/services/constants.ts
+ */
 export interface Config {
   x2a?: {
     /**

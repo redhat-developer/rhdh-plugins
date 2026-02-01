@@ -15,7 +15,7 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { CoreV1Api, BatchV1Api, KubeConfig } from '@kubernetes/client-node';
+import type { CoreV1Api, BatchV1Api } from '@kubernetes/client-node';
 
 /**
  * Kubernetes API clients
@@ -33,7 +33,7 @@ export interface K8sClients {
  */
 export const makeK8sClient = async (
   logger: LoggerService,
-): Promise<CoreV1Api> => {
+): Promise<K8sClients> => {
   const { KubeConfig } = await import('@kubernetes/client-node');
   const kc = new KubeConfig();
 
@@ -42,10 +42,10 @@ export const makeK8sClient = async (
     if (!process.env.KUBECONFIG) {
       const path = require('node:path');
       const os = require('node:os');
-      const kubeconfigPath = path.join(os.homedir(), '.kube', 'kubeconfig');
+      const kubeconfigPath = path.join(os.homedir(), '.kube', 'config');
       const fs = require('node:fs');
 
-      // Check if ~/.kube/kubeconfig exists
+      // Check if ~/.kube/config exists
       if (fs.existsSync(kubeconfigPath)) {
         process.env.KUBECONFIG = kubeconfigPath;
         logger.info(`Setting KUBECONFIG to ${kubeconfigPath}`);
@@ -71,6 +71,8 @@ export const makeK8sClient = async (
     }
   }
 
+  // Dynamic import of API classes to avoid ESM issues
+  const { CoreV1Api, BatchV1Api } = await import('@kubernetes/client-node');
   return {
     coreV1Api: kc.makeApiClient(CoreV1Api),
     batchV1Api: kc.makeApiClient(BatchV1Api),

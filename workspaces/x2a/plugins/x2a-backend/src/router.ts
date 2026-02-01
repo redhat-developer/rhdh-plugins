@@ -318,7 +318,9 @@ export async function createRouter({
       });
 
       // Create Kubernetes job (will create both project and job secrets)
-      const callbackUrl = `${req.protocol}://${req.get('host')}/api/x2a/projects/${projectId}/collectArtifacts`;
+      // Use HTTP for in-cluster service-to-service communication
+      // Jobs call back to Backstage within the same cluster
+      const callbackUrl = `http://${req.get('host')}/api/x2a/projects/${projectId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
@@ -470,7 +472,9 @@ export async function createRouter({
       });
 
       // Create Kubernetes job (will create both project and job secrets)
-      const callbackUrl = `${req.protocol}://${req.get('host')}/api/x2a/projects/${projectId}/modules/${moduleId}/collectArtifacts`;
+      // Use HTTP for in-cluster service-to-service communication
+      // Jobs call back to Backstage within the same cluster
+      const callbackUrl = `http://${req.get('host')}/api/x2a/projects/${projectId}/modules/${moduleId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
@@ -497,6 +501,20 @@ export async function createRouter({
       res.json({ status: 'pending', jobId: job.id } as any);
     },
   );
+
+  // TODO: Implement /collectArtifacts endpoints for callback from Kubernetes jobs
+  // These endpoints should use Backstage service-to-service authentication with static tokens
+  // See: https://backstage.io/docs/auth/service-to-service-auth#static-tokens
+  //
+  // The endpoints should:
+  // 1. Accept POST requests from Kubernetes jobs with static token authentication
+  // 2. Validate the callback token from the job (included in request body)
+  // 3. Update job status in database based on job completion/failure
+  // 4. Store artifacts (logs, results) returned by the job
+  //
+  // Endpoints to implement:
+  // - POST /projects/:projectId/collectArtifacts (for init phase jobs)
+  // - POST /projects/:projectId/modules/:moduleId/collectArtifacts (for analyze/migrate/publish phase jobs)
 
   return router;
 }

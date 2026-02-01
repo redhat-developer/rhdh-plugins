@@ -21,7 +21,7 @@ import {
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import { Expand } from '@backstage/types';
-import {
+import type {
   CoreV1Api,
   BatchV1Api,
   V1Pod,
@@ -33,7 +33,17 @@ import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
 import { X2AConfig } from '../../config';
 import { JobCreateParams, AAPCredentials, GitRepoCredentials } from './types';
-import { DEFAULT_LLM_MODEL } from './constants';
+import {
+  DEFAULT_LLM_MODEL,
+  DEFAULT_KUBERNETES_NAMESPACE,
+  DEFAULT_KUBERNETES_IMAGE,
+  DEFAULT_KUBERNETES_IMAGE_TAG,
+  DEFAULT_TTL_SECONDS_AFTER_FINISHED,
+  DEFAULT_CPU_REQUEST,
+  DEFAULT_MEMORY_REQUEST,
+  DEFAULT_CPU_LIMIT,
+  DEFAULT_MEMORY_LIMIT,
+} from './constants';
 
 /**
  * Job status information from Kubernetes
@@ -50,8 +60,8 @@ export class KubeService {
   readonly #config: X2AConfig;
   readonly #namespace: string;
 
-  static async create(options: { logger: LoggerService }) {
-    const service = new KubeService(options.logger);
+  static async create(options: { logger: LoggerService; config: X2AConfig }) {
+    const service = new KubeService(options.logger, options.config);
     await service.initialize();
     return service;
   }
@@ -60,10 +70,14 @@ export class KubeService {
     this.#logger = logger;
     this.#config = config;
     this.#namespace = config.kubernetes.namespace;
+    this.#coreV1Api = null as any; // Initialized in initialize()
+    this.#batchV1Api = null as any; // Initialized in initialize()
+  }
 
-    const { coreV1Api, batchV1Api } = makeK8sClient(this.#logger);
-    this.#coreV1Api = coreV1Api;
-    this.#batchV1Api = batchV1Api;
+  private async initialize() {
+    const { coreV1Api, batchV1Api } = await makeK8sClient(this.#logger);
+    (this.#coreV1Api as any) = coreV1Api;
+    (this.#batchV1Api as any) = batchV1Api;
   }
 
   /**
@@ -284,6 +298,8 @@ export class KubeService {
 
       const podName = pods.items[0].metadata?.name;
       if (!podName) {
+        // This can happen if a pod is in the process of being created but hasn't been
+        // fully initialized yet, or if the pod metadata is corrupted
         this.#logger.warn(`Pod has no name for job: ${k8sJobName}`);
         return '';
       }
@@ -366,13 +382,71 @@ export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
         config: coreServices.rootConfig,
       },
       async factory(deps) {
-        // Load X2A configuration from app-config.yaml
-        const x2aConfig = deps.config.get<X2AConfig>('x2a');
+        // Load X2A configuration from app-config.yaml with defaults
+        const rawConfig = deps.config.getOptional<X2AConfig>('x2a');
 
-        // Ensure LLM_MODEL has a default value if not provided
+        if (!rawConfig) {
+          throw new Error(
+            'X2A configuration is missing. Please add x2a section to app-config.yaml',
+          );
+        }
+
+        // Apply defaults for all optional values
+        const x2aConfig: X2AConfig = {
+          kubernetes: {
+            namespace:
+              rawConfig?.kubernetes?.namespace ?? DEFAULT_KUBERNETES_NAMESPACE,
+            image: rawConfig?.kubernetes?.image ?? DEFAULT_KUBERNETES_IMAGE,
+            imageTag:
+              rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
+            ttlSecondsAfterFinished:
+              rawConfig?.kubernetes?.ttlSecondsAfterFinished ??
+              DEFAULT_TTL_SECONDS_AFTER_FINISHED,
+            resources: {
+              requests: {
+                cpu:
+                  rawConfig?.kubernetes?.resources?.requests?.cpu ??
+                  DEFAULT_CPU_REQUEST,
+                memory:
+                  rawConfig?.kubernetes?.resources?.requests?.memory ??
+                  DEFAULT_MEMORY_REQUEST,
+              },
+              limits: {
+                cpu:
+                  rawConfig?.kubernetes?.resources?.limits?.cpu ??
+                  DEFAULT_CPU_LIMIT,
+                memory:
+                  rawConfig?.kubernetes?.resources?.limits?.memory ??
+                  DEFAULT_MEMORY_LIMIT,
+              },
+            },
+          },
+          credentials: {
+            llm: rawConfig?.credentials?.llm ?? {},
+            aap: rawConfig?.credentials?.aap,
+          },
+        };
+
+        // Ensure LLM_MODEL has a default value
         if (!x2aConfig.credentials.llm.LLM_MODEL) {
           x2aConfig.credentials.llm.LLM_MODEL = DEFAULT_LLM_MODEL;
         }
+
+        // Boot-time validation: fail fast if critical configs are missing
+        if (!x2aConfig.kubernetes.image) {
+          throw new Error(
+            'X2A configuration error: kubernetes.image is required',
+          );
+        }
+        if (!x2aConfig.kubernetes.namespace) {
+          throw new Error(
+            'X2A configuration error: kubernetes.namespace is required',
+          );
+        }
+
+        deps.logger.info(
+          `X2A KubeService initialized with namespace: ${x2aConfig.kubernetes.namespace}, image: ${x2aConfig.kubernetes.image}:${x2aConfig.kubernetes.imageTag}`,
+        );
 
         return KubeService.create({
           logger: deps.logger,

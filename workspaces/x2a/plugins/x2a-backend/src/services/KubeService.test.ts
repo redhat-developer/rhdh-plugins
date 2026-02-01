@@ -45,7 +45,7 @@ describe('KubeService', () => {
   let kubeService: KubeService;
   let mockConfig: X2AConfig;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
 
     mockConfig = {
@@ -74,7 +74,7 @@ describe('KubeService', () => {
       },
     };
 
-    kubeService = KubeService.create({
+    kubeService = await KubeService.create({
       logger: mockServices.logger.mock(),
       config: mockConfig,
     });

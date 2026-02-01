@@ -35,6 +35,14 @@ import {
 } from '@backstage/errors';
 import { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
+// Mock the Kubernetes client to avoid ES Module import issues
+jest.mock('./services/makeK8sClient', () => ({
+  makeK8sClient: jest.fn(() => ({
+    coreV1Api: {},
+    batchV1Api: {},
+  })),
+}));
+
 const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',

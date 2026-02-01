@@ -14,30 +14,16 @@
  * limitations under the License.
  */
 
+// Re-export types generated from OpenAPI spec
+export type {
+  GitRepoCredentials,
+  AAPCredentials,
+} from '../schema/openapi/generated/models';
+
 /**
  * Migration phase types
  */
 export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
-
-/**
- * Git repository credentials
- */
-export interface GitRepoCredentials {
-  url: string;
-  token: string;
-  branch: string;
-}
-
-/**
- * AAP credentials that can be provided by user at runtime
- */
-export interface AAPCredentials {
-  url: string;
-  orgName: string;
-  oauthToken?: string;
-  username?: string;
-  password?: string;
-}
 
 /**
  * Project credentials provided by user at project creation
