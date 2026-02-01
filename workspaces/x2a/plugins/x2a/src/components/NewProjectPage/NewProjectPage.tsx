@@ -18,6 +18,7 @@ import { Grid, Step, StepLabel, Stepper } from '@material-ui/core';
 import { useMemo, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 import { WizardActions } from './WizardActions';
+import { basePath } from '../../routes';
 
 export const NewProjectPage = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -71,7 +72,7 @@ export const NewProjectPage = () => {
                 <WizardActions
                   canNext={activeStep < steps.length - 1}
                   canBack={activeStep > 0}
-                  onCancelLink="/x2a"
+                  onCancelLink={basePath}
                   onBack={() => setActiveStep(activeStep - 1)}
                   onNext={() => setActiveStep(activeStep + 1)}
                 />
