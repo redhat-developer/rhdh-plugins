@@ -30,6 +30,9 @@ export class DatabaseMetricValues {
    * Insert multiple metric values
    */
   async createMetricValues(metricValues: DbMetricValueCreate[]): Promise<void> {
+    if (metricValues.length === 0) {
+      return;
+    }
     await this.dbClient(this.tableName).insert(metricValues);
   }
 
