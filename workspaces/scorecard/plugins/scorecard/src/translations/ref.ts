@@ -49,12 +49,14 @@ export const scorecardMessages = {
     metricDataUnavailable: 'Metric data unavailable',
     invalidThresholds: 'Invalid thresholds',
     missingPermission: 'Missing permission',
-    noDataToAggregate: 'No data to aggregate',
+    noDataFound: 'No data found',
+    authenticationError: 'Authentication error',
     missingPermissionMessage:
       'To view the scorecard metrics, your administrator must grant you the required permission.',
-    userNotFoundInCatalogMessage: 'User entity not found in catalog',
-    noDataToAggregateMessage:
-      'No entities have metric values for this provider yet. Verify that owned entities are emitting this metric.',
+    userNotFoundInCatalogMessage: 'User entity not found in catalog.',
+    noDataFoundMessage:
+      'To see your data here, check that your entities are reporting values related to this metric.',
+    authenticationErrorMessage: 'Please sign in to view your data.',
   },
 
   // Metric translations

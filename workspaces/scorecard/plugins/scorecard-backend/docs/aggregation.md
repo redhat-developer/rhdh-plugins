@@ -74,8 +74,15 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations"
 
 If the authenticated user doesn't have an entity reference in the catalog:
 
+- **Status Code**: `401 Unauthorized`
+- **Error**: `AuthenticationError: User entity reference not found`
+
+### User Entity Not Found in the Catalog
+
+If the user entity doesn't exist in the catalog.
+
 - **Status Code**: `404 Not Found`
-- **Error**: `NotFoundError: User entity reference not found`
+- **Error**: `NotFoundError: User entity not found in catalog`
 
 ### Permission Denied
 

@@ -42,13 +42,16 @@ const scorecardTranslationJa = createTranslationMessages({
     'errors.metricDataUnavailable': 'メトリクスデータがありません',
     'errors.invalidThresholds': '無効なしきい値',
     'errors.missingPermission': '権限がありません',
-    'errors.noDataToAggregate': '集計するデータがありません',
+    'errors.noDataFound': 'データが見つかりませんでした',
+    'errors.authenticationError': '認証エラー',
     'errors.missingPermissionMessage':
       'スコアカードのメトリクスを表示するには、管理者に権限を付与してもらうよう依頼してください。',
     'errors.userNotFoundInCatalogMessage':
       'ユーザーエンティティーがカタログに見つかりません',
-    'errors.noDataToAggregateMessage':
-      'このプロバイダーに対してメトリック値を持つエンティティはまだ存在しません。所有するエンティティがこのメトリックを送信していることを確認してください。',
+    'errors.noDataFoundMessage':
+      'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
+    'errors.authenticationErrorMessage':
+      'データを確認するにはサインインしてください。',
     'metric.github.open_prs.title': 'GitHub のオープン状態の PR',
     'metric.github.open_prs.description':
       '特定の GitHub リポジトリーにおけるオープン状態のプルリクエストの数。',

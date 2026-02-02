@@ -149,11 +149,31 @@ describe('ScorecardHomepageCard', () => {
     );
   });
 
-  it('should render empty state panel when user is not found in catalog', () => {
+  it('should render empty state panel when authentication error occurs', () => {
     useAggregatedScorecard.mockReturnValue({
       aggregatedScorecard: undefined,
       loadingData: false,
-      error: new Error('NotFoundError: User entity reference not found'),
+      error: new Error('AuthenticationError: User entity reference not found'),
+    });
+
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
+      'errors.authenticationError',
+    );
+    expect(screen.getByTestId('tooltip-content')).toHaveTextContent(
+      'errors.authenticationErrorMessage',
+    );
+  });
+
+  it('should render empty state panel when user entity is not found in catalog', () => {
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: undefined,
+      loadingData: false,
+      error: new Error('NotFoundError: User entity not found in catalog'),
     });
 
     render(<ScorecardHomepageCard metricId="github.open_prs" />, {
@@ -169,7 +189,7 @@ describe('ScorecardHomepageCard', () => {
     );
   });
 
-  it('should render empty state panel when aggregation is skipped', () => {
+  it('should render empty state panel when aggregation data is found', () => {
     useAggregatedScorecard.mockReturnValue({
       aggregatedScorecard: {
         ...mockScorecard,
@@ -192,10 +212,10 @@ describe('ScorecardHomepageCard', () => {
       'github.open_prs',
     );
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
-      'errors.noDataToAggregate',
+      'errors.noDataFound',
     );
     expect(screen.getByTestId('tooltip-content')).toHaveTextContent(
-      'errors.noDataToAggregateMessage',
+      'errors.noDataFoundMessage',
     );
   });
 

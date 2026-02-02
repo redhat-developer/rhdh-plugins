@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useLayoutEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
 
@@ -23,6 +24,89 @@ import { getStatusConfig, getRingColor } from '../../utils/utils';
 import CustomLegend from '../Scorecard/CustomLegend';
 import { CustomTooltip } from './CustomTooltip';
 import { ResponsivePieChart } from './ResponsivePieChart';
+
+const CenterLabel = ({
+  cx,
+  cy,
+  label,
+  color,
+}: {
+  cx: number;
+  cy: number;
+  label: string;
+  color?: string;
+}) => {
+  const fontSize = 14;
+  const lineHeight = 1.2;
+
+  const textRef = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState({ yOffset: -10, height: 40 });
+
+  const getYOffset = (lineCount: number) => {
+    switch (lineCount) {
+      case 2:
+        return -17;
+      case 3:
+        return -24;
+      default:
+        return -8;
+    }
+  };
+
+  const getHeight = (lineCount: number) => {
+    switch (lineCount) {
+      case 2:
+        return 48;
+      case 3:
+        return 56;
+      default:
+        return 40;
+    }
+  };
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const lineHeightPx = fontSize * lineHeight;
+    const lineCount = Math.round(el.scrollHeight / lineHeightPx);
+
+    const nextOffset = getYOffset(lineCount);
+    const nextHeight = getHeight(lineCount);
+
+    setLayout(prev =>
+      prev.yOffset === nextOffset && prev.height === nextHeight
+        ? prev
+        : { yOffset: nextOffset, height: nextHeight },
+    );
+  }, [label]);
+
+  return (
+    <g transform={`translate(${cx}, ${cy})`}>
+      <foreignObject
+        x={-50}
+        y={layout.yOffset}
+        width={100}
+        height={layout.height}
+      >
+        <div
+          ref={textRef}
+          style={{
+            maxWidth: 100,
+            fontSize,
+            fontWeight: 400,
+            color,
+            textAlign: 'center',
+            lineHeight,
+            wordBreak: 'break-word',
+          }}
+        >
+          {label}
+        </div>
+      </foreignObject>
+    </g>
+  );
+};
 
 export const EmptyStatePanel = ({
   label,
@@ -77,7 +161,16 @@ export const EmptyStatePanel = ({
         <ResponsivePieChart
           pieData={pieData}
           LabelContent={({ cx, cy }) => {
-            if (cx === null || cy === null) return null;
+            if (
+              cx === null ||
+              cy === null ||
+              cx === undefined ||
+              cy === undefined
+            )
+              return null;
+
+            const centerX = Number(cx);
+            const centerY = Number(cy);
 
             const palettePath = statusConfig.color.split('.');
             let color: string | undefined;
@@ -96,23 +189,12 @@ export const EmptyStatePanel = ({
             }
 
             return (
-              <g transform={`translate(${cx}, ${cy})`}>
-                <foreignObject x={-50} y={-17} width={100} height={40}>
-                  <div
-                    style={{
-                      maxWidth: 100,
-                      fontSize: 14,
-                      fontWeight: 400,
-                      color,
-                      textAlign: 'center',
-                      lineHeight: 1.2,
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {label}
-                  </div>
-                </foreignObject>
-              </g>
+              <CenterLabel
+                cx={centerX}
+                cy={centerY}
+                label={label}
+                color={color}
+              />
             );
           }}
           legendContent={props => (

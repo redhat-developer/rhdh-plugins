@@ -568,7 +568,7 @@ describe('createRouter', () => {
       expect(result.body.error.name).toEqual('NotAllowedError');
     });
 
-    it('should return 404 NotFoundError when user entity reference is not found', async () => {
+    it('should return 401 AuthenticationError when user entity reference is not found', async () => {
       httpAuthMock.credentials.mockResolvedValue({
         principal: {},
       } as any);
@@ -576,8 +576,8 @@ describe('createRouter', () => {
         '/metrics/github.open_prs/catalog/aggregations',
       );
 
-      expect(result.statusCode).toBe(404);
-      expect(result.body.error.name).toEqual('NotFoundError');
+      expect(result.statusCode).toBe(401);
+      expect(result.body.error.name).toEqual('AuthenticationError');
       expect(result.body.error.message).toContain(
         'User entity reference not found',
       );

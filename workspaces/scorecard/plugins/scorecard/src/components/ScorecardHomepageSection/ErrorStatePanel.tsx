@@ -41,7 +41,7 @@ export const ErrorStatePanel = ({
 
   const isUserNotFoundInCatalog =
     error.message?.includes('NotFoundError') &&
-    error.message?.includes('User entity reference not found');
+    error.message?.includes('User entity not found in catalog');
 
   if (isUserNotFoundInCatalog) {
     return (
@@ -49,6 +49,18 @@ export const ErrorStatePanel = ({
         metricId={metricId}
         label={t('errors.metricDataUnavailable')}
         tooltipContent={t('errors.userNotFoundInCatalogMessage')}
+      />
+    );
+  }
+
+  const isAuthenticationError = error.message?.includes('AuthenticationError');
+
+  if (isAuthenticationError) {
+    return (
+      <EmptyStatePanel
+        metricId={metricId}
+        label={t('errors.authenticationError')}
+        tooltipContent={t('errors.authenticationErrorMessage')}
       />
     );
   }

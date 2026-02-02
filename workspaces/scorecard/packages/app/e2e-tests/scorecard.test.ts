@@ -267,7 +267,7 @@ test.describe('Scorecard Plugin Tests', () => {
       await runAccessibilityTests(page, testInfo);
     });
 
-    test('Verify cards aggregation skipped when API returns empty aggregated response', async () => {
+    test('Verify cards aggregation data is not found when API returns empty aggregated response', async () => {
       await mockAggregatedScorecardResponse(
         page,
         emptyGithubAggregatedResponse,
@@ -280,10 +280,10 @@ test.describe('Scorecard Plugin Tests', () => {
       await homePage.expectCardVisible('jira.open_issues');
 
       await expect(page.locator('article')).toContainText(
-        translations.errors.noDataToAggregate,
+        translations.errors.noDataFound,
       );
       await expect(page.locator('article')).toContainText(
-        translations.errors.noDataToAggregateMessage,
+        translations.errors.noDataFoundMessage,
       );
     });
 

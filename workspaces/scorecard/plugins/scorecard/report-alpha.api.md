@@ -24,10 +24,10 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.metricDataUnavailable': string;
     readonly 'errors.invalidThresholds': string;
     readonly 'errors.missingPermission': string;
-    readonly 'errors.noDataToAggregate': string;
+    readonly 'errors.noDataFound': string;
     readonly 'errors.missingPermissionMessage': string;
     readonly 'errors.userNotFoundInCatalogMessage': string;
-    readonly 'errors.noDataToAggregateMessage': string;
+    readonly 'errors.noDataFoundMessage': string;
     readonly 'metric.github.open_prs.title': string;
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;

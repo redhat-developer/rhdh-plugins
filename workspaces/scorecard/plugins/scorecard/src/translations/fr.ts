@@ -43,13 +43,16 @@ const scorecardTranslationFr = createTranslationMessages({
     'errors.metricDataUnavailable': 'Données métriques indisponibles',
     'errors.invalidThresholds': 'Seuils invalides',
     'errors.missingPermission': 'Permission manquante',
-    'errors.noDataToAggregate': 'Aucune donnée à agréger',
+    'errors.noDataFound': 'Aucune donnée trouvée',
+    'errors.authenticationError': "Erreur d'authentification",
     'errors.missingPermissionMessage':
       'Pour voir les métriques de scorecard, votre administrateur doit vous donner la permission requise.',
     'errors.userNotFoundInCatalogMessage':
       'Entité utilisateur non trouvée dans le catalogue',
-    'errors.noDataToAggregateMessage':
-      'Aucune entité ne dispose encore de valeurs métriques pour ce fournisseur. Vérifiez que les entités détenues émettent cette métrique.',
+    'errors.noDataFoundMessage':
+      'Pour voir vos données ici, vérifiez que vos entités communiquent les valeurs liées à cet indicateur.',
+    'errors.authenticationErrorMessage':
+      'Veuillez vous connecter pour afficher vos données.',
     // Metric translations
     'metric.github.open_prs.title': 'GitHub ouvre des PR',
     'metric.github.open_prs.description':

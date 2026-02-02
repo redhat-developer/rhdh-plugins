@@ -44,13 +44,16 @@ const scorecardTranslationDe = createTranslationMessages({
     'errors.metricDataUnavailable': 'Metrikdaten nicht verfügbar',
     'errors.invalidThresholds': 'Ungültige Schwellenwerte',
     'errors.missingPermission': 'Berechtigung fehlt',
-    'errors.noDataToAggregate': 'Keine Daten zum Aggregieren',
+    'errors.noDataFound': 'Keine Daten gefunden',
+    'errors.authenticationError': 'Authentifizierungsfehler',
     'errors.missingPermissionMessage':
       'Um die Scorecard-Metriken anzuzeigen, muss Ihr Administrator die erforderliche Berechtigung erteilen.',
     'errors.userNotFoundInCatalogMessage':
-      'Benutzer-Entität in Katalog nicht gefunden',
-    'errors.noDataToAggregateMessage':
-      'Für diesen Anbieter liegen noch keine Metrikwerte vor. Überprüfen Sie, ob die zugehörigen Entitäten diese Metrik ausgeben.',
+      'Benutzer-Entität in Katalog nicht gefunden.',
+    'errors.noDataFoundMessage':
+      'Um Ihre Daten hier anzuzeigen, überprüfen Sie, ob Ihre Entitäten Werte melden, die sich auf diese Metrik beziehen.',
+    'errors.authenticationErrorMessage':
+      'Bitte melden Sie sich an, um Ihre Daten anzuzeigen.',
     // Metric translations
     'metric.github.open_prs.title': 'GitHub offene PRs',
     'metric.github.open_prs.description':

@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
+import {
+  AuthenticationError,
+  InputError,
+  NotAllowedError,
+} from '@backstage/errors';
 import express, { Request } from 'express';
 import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
@@ -165,7 +169,7 @@ export async function createRouter({
     const userEntityRef = credentials?.principal?.userEntityRef;
 
     if (!userEntityRef) {
-      throw new NotFoundError('User entity reference not found');
+      throw new AuthenticationError('User entity reference not found');
     }
 
     const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
