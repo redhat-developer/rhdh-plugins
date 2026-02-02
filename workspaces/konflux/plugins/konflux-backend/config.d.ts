@@ -14,41 +14,11 @@
  * limitations under the License.
  */
 export interface Config {
-  /**
-   * Configuration options for the Konflux plugin
-   */
-  /**
-   * @visibility frontend
-   */
   konflux?: {
-    /**
-     * @visibility frontend
-     */
-    authProvider?: 'serviceAccount' | 'oidc' | 'impersonationHeaders';
-    /**
-     * @visibility frontend
-     */
-    clusters: {
-      /**
-       * @visibility frontend
-       */
+    clusters?: {
       [key: string]: {
-        /**
-         * @visibility frontend
-         */
-        uiUrl: string;
-        /**
-         * @visibility frontend
-         */
-        openshiftConsoleUrl?: string;
-        /**
-         * @visibility frontend
-         */
-        kubearchiveApiUrl?: string;
-        /**
-         * @visibility frontend
-         */
-        apiUrl?: string;
+        /** @visibility secret */
+        serviceAccountToken?: string;
       };
     };
   };
