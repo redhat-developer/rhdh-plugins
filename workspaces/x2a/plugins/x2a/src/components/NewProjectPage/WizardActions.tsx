@@ -15,6 +15,7 @@
  */
 import { LinkButton } from '@backstage/core-components';
 import { Button, Grid } from '@material-ui/core';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export type WizardActionsProps = {
   canNext: boolean;
@@ -31,17 +32,18 @@ export const WizardActions = ({
   onBack,
   onNext,
 }: WizardActionsProps) => {
+  const { t } = useTranslation();
   return (
     <Grid container spacing={3} direction="row" justifyContent="space-between">
       <Grid item>
         <LinkButton variant="text" to={onCancelLink}>
-          Cancel
+          {t('wizard.cancel')}
         </LinkButton>
       </Grid>
 
       <Grid item>
         <Button variant="text" disabled={!canBack} onClick={onBack}>
-          Back
+          {t('wizard.back')}
         </Button>
         <Button
           variant="contained"
@@ -49,7 +51,7 @@ export const WizardActions = ({
           disabled={!canNext}
           onClick={onNext}
         >
-          Next
+          {t('wizard.next')}
         </Button>
       </Grid>
     </Grid>

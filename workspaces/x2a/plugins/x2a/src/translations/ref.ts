@@ -1,0 +1,78 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
+
+/**
+ * Messages object containing all English translations.
+ * This is our single source of truth for translations.
+ * @public
+ */
+export const x2aPluginMessages = {
+  sidebar: {
+    x2a: {
+      title: 'Conversion Hub',
+    },
+  },
+  page: {
+    title: 'Migration Hub',
+    subtitle:
+      'Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks.',
+    devTitle: 'Conversion Hub',
+  },
+  newProjectPage: {
+    title: 'New conversion',
+    subtitle: 'Migration Hub / New conversion project',
+    steps: {
+      jobNameAndDescription: 'Job name and description',
+      sourceAndTargetRepos: 'Source and target repositories',
+      reviewAndStart: 'Review and start',
+      lastStep: 'Last step',
+    },
+  },
+  table: {
+    columns: {
+      name: 'Name',
+      abbreviation: 'Abbreviation',
+      status: 'Status',
+      description: 'Description',
+      createdAt: 'Created At',
+    },
+    actions: {
+      deleteProject: 'Delete project',
+    },
+    detailPanel: 'TODO: Details of {{name}} project',
+    projectsCount: 'Projects ({{count}})',
+  },
+  common: {
+    newProject: 'New Project',
+  },
+  wizard: {
+    cancel: 'Cancel',
+    back: 'Back',
+    next: 'Next',
+  },
+};
+
+/**
+ * Reference translation for the x2a plugin.
+ * Defines all the translation keys used in the plugin.
+ * @public
+ */
+export const x2aPluginTranslationRef = createTranslationRef({
+  id: 'plugin.x2a',
+  messages: x2aPluginMessages,
+});

@@ -34,14 +34,16 @@ import {
   ProjectsGet200Response,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
+import { useTranslation } from '../../hooks/useTranslation';
 
 type OrderDirection = ProjectsGet['query']['order'];
 
 const useColumns = (
   orderBy: number,
   orderDirection: OrderDirection,
-): TableColumn<Project>[] =>
-  useMemo(() => {
+): TableColumn<Project>[] => {
+  const { t } = useTranslation();
+  return useMemo(() => {
     const getDefaultSort = (index: number): OrderDirection => {
       if (index === orderBy) {
         return orderDirection;
@@ -50,20 +52,28 @@ const useColumns = (
     };
 
     const columns: TableColumn<Project>[] = [
-      { title: 'Name', field: 'name', defaultSort: getDefaultSort(0) },
       {
-        title: 'Abbreviation',
+        title: t('table.columns.name'),
+        field: 'name',
+        defaultSort: getDefaultSort(0),
+      },
+      {
+        title: t('table.columns.abbreviation'),
         field: 'abbreviation',
         defaultSort: getDefaultSort(1),
       },
-      { title: 'Status', field: 'status', defaultSort: getDefaultSort(2) },
       {
-        title: 'Description',
+        title: t('table.columns.status'),
+        field: 'status',
+        defaultSort: getDefaultSort(2),
+      },
+      {
+        title: t('table.columns.description'),
         field: 'description',
         defaultSort: getDefaultSort(3),
       },
       {
-        title: 'Created At',
+        title: t('table.columns.createdAt'),
         render: (rowData: Project) => {
           // TODO: Show human-readable duration instead, make sure sorting still works
           return <div>{rowData.createdAt.toLocaleString()}</div>;
@@ -77,7 +87,8 @@ const useColumns = (
       // },
     ];
     return columns;
-  }, [orderBy, orderDirection]);
+  }, [orderBy, orderDirection, t]);
+};
 
 const mapOrderByToSort = (orderBy: number): ProjectsGet['query']['sort'] => {
   const mapping: ProjectsGet['query']['sort'][] = [
@@ -149,16 +160,18 @@ export const DenseTable = ({
   const columns = useColumns(orderBy, orderDirection);
   const data = projects;
 
+  const { t } = useTranslation();
+
   const actions = [
     (rowData: Project) => ({
       icon: DeleteIcon,
       onClick: () => handleDelete(rowData.id),
-      tooltip: 'Delete project',
+      tooltip: t('table.actions.deleteProject'),
     }),
   ];
 
   const getDetailPanel = ({ rowData }: { rowData: Project }) => (
-    <div>TODO: Details of {rowData.name} project</div>
+    <div>{t('table.detailPanel' as any, { name: rowData.name })}</div>
   );
 
   return (
@@ -172,14 +185,16 @@ export const DenseTable = ({
       <Grid item>
         <Box display="flex" justifyContent="flex-end">
           <LinkButton variant="contained" color="primary" to="/x2a/new-project">
-            New Project
+            {t('common.newProject')}
           </LinkButton>
         </Box>
       </Grid>
 
       <Grid item>
         <Table<Project>
-          title={`Projects (${projects.length})`}
+          title={t('table.projectsCount' as any, {
+            count: projects.length.toString(),
+          })}
           options={{
             search: false,
             paging: true,

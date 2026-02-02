@@ -52,7 +52,10 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
-import { X2APage } from '@red-hat-developer-hub/backstage-plugin-x2a';
+import {
+  X2APage,
+  x2aPluginTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-x2a';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 const app = createApp({
@@ -90,6 +93,10 @@ const app = createApp({
         ]}
       />
     ),
+  },
+  __experimentalTranslations: {
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it'],
+    resources: [x2aPluginTranslations],
   },
 });
 
