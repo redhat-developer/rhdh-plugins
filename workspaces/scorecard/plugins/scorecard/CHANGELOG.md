@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.3.4
+
+### Patch Changes
+
+- 4a3369f: Fix aggregated scorecard widgets view when entities are missing value or metric fetching fails.
+
+  Refactor the /metrics/:metricId/catalog/aggregations endpoint to return an object of aggregated metrics instead of an array containing a single object.
+
+- Updated dependencies [4a3369f]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.4
+
 ## 2.3.3
 
 ### Patch Changes
