@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 1.2.3
+
 ## 1.2.2
 
 ### Patch Changes
