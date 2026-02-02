@@ -1824,9 +1824,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-defaults@npm:^0.13.1":
-  version: 0.13.1
-  resolution: "@backstage/backend-defaults@npm:0.13.1"
+"@backstage/backend-defaults@npm:^0.13.2":
+  version: 0.13.2
+  resolution: "@backstage/backend-defaults@npm:0.13.2"
   dependencies:
     "@aws-sdk/abort-controller": ^3.347.0
     "@aws-sdk/client-codecommit": ^3.350.0
@@ -1904,7 +1904,7 @@ __metadata:
   peerDependenciesMeta:
     "@google-cloud/cloud-sql-connector":
       optional: true
-  checksum: 8a9a1feca3a1a7dcca8c7cd05e651168b7a2ed485ddc2043b671827f7465fa609ad29416dfdc3b03dfb5ce97494b9d6f945ce921a2a46efbdbd0ce470e1688d0
+  checksum: 8e929bd03316dcfa59cf10689de4b185efa1290d9f00591a6adf4def14591b6f2dce9e7b19e75a4f06b0f9a2af085024bdb7390c797fd7b3eda0929c86b6dea5
   languageName: node
   linkType: hard
 
@@ -15440,7 +15440,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
-    "@backstage/backend-defaults": ^0.13.1
+    "@backstage/backend-defaults": ^0.13.2
     "@backstage/cli": ^0.34.5
     "@backstage/config": ^1.3.6
     "@backstage/plugin-app-backend": ^0.5.8
