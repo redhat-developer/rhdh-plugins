@@ -11553,7 +11553,7 @@ __metadata:
     "@backstage/plugin-auth-backend-module-guest-provider": ^0.2.14
     "@backstage/plugin-catalog-backend": ^3.2.0
     "@backstage/plugin-catalog-node": ^1.20.0
-    "@backstage/plugin-permission-common": ^0.9.3
+    "@backstage/plugin-permission-common": ^0.9.4
     "@backstage/repo-tools": ^0.16.2
     "@backstage/types": ^1.2.2
     "@kubernetes/client-node": ^1.4.0
