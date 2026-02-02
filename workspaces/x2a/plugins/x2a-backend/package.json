@@ -64,7 +64,8 @@
     "supertest": "^6.2.4"
   },
   "files": [
-    "dist"
+    "dist",
+    "migrations"
   ],
   "maintainers": [
     "@mareklibra",
