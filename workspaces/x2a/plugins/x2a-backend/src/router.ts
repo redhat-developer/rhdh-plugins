@@ -255,7 +255,6 @@ export async function createRouter({
     res.status(200).json({ deletedCount });
   });
 
-  // TODO: Add these endpoints to openapi.yaml and regenerate types
   (router as any).post(
     '/projects/:projectId/run',
     async (req: express.Request, res: express.Response) => {
@@ -304,7 +303,7 @@ export async function createRouter({
         { credentials },
       );
       if (!project) {
-        throw new NotFoundError('Project not found');
+        throw new NotFoundError(`Project "${projectId}" not found.`);
       }
 
       // Generate callback token and create job record
@@ -383,7 +382,7 @@ export async function createRouter({
         { credentials },
       );
       if (!project) {
-        throw new NotFoundError('Project not found');
+        throw new NotFoundError(`Project "${projectId}" not found.`);
       }
 
       // Create module
@@ -452,13 +451,15 @@ export async function createRouter({
         { credentials },
       );
       if (!project) {
-        throw new NotFoundError('Project not found');
+        throw new NotFoundError(`Project "${projectId}" not found.`);
       }
 
       // Verify module exists
       const module = await x2aDatabase.getModule({ id: moduleId });
       if (!module) {
-        throw new NotFoundError('Module not found');
+        throw new NotFoundError(
+          `Module "${moduleId}" in project "${projectId}" not found.`,
+        );
       }
 
       // Generate callback token and create job record
