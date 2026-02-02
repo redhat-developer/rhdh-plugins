@@ -28,14 +28,14 @@ export const x2aPluginMessages = {
     },
   },
   page: {
-    title: 'Migration Hub',
+    title: 'Conversion Hub',
     subtitle:
       'Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks.',
     devTitle: 'Conversion Hub',
   },
   newProjectPage: {
     title: 'New conversion',
-    subtitle: 'Migration Hub / New conversion project',
+    subtitle: 'Conversion Hub / New conversion project',
     steps: {
       jobNameAndDescription: 'Job name and description',
       sourceAndTargetRepos: 'Source and target repositories',

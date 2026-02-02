@@ -61,6 +61,6 @@ describe('Dashboard component', () => {
         <Dashboard />
       </TestApiProvider>,
     );
-    expect(screen.getByText('Migration Hub')).toBeInTheDocument();
+    expect(screen.getByText('Conversion Hub')).toBeInTheDocument();
   });
 });
