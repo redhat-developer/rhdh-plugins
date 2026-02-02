@@ -35,7 +35,7 @@
     "openapi-generate": "backstage-repo-tools package schema openapi generate --server --client-package plugins/x2a-common/client"
   },
   "dependencies": {
-    "@backstage/backend-defaults": "^0.15.1",
+    "@backstage/backend-defaults": "^0.13.2",
     "@backstage/backend-openapi-utils": "^0.6.3",
     "@backstage/backend-plugin-api": "^1.5.0",
     "@backstage/catalog-client": "^1.12.1",
