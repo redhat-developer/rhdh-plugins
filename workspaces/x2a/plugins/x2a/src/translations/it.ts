@@ -25,13 +25,13 @@ const x2aPluginTranslationIt = createTranslationMessages({
   ref: x2aPluginTranslationRef,
   messages: {
     'sidebar.x2a.title': 'Hub di conversione',
-    'page.title': 'Hub di migrazione',
+    'page.title': 'Hub di conversione',
     'page.subtitle':
       'Avvia e monitora le conversioni asincrone di file Chef in playbook Ansible pronti per la produzione.',
     'page.devTitle': 'Hub di conversione',
     'newProjectPage.title': 'Nuova conversione',
     'newProjectPage.subtitle':
-      'Hub di migrazione / Nuovo progetto di conversione',
+      'Hub di conversione / Nuovo progetto di conversione',
     'newProjectPage.steps.jobNameAndDescription':
       'Nome e descrizione del lavoro',
     'newProjectPage.steps.sourceAndTargetRepos':

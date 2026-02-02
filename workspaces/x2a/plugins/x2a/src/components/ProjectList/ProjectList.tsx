@@ -35,6 +35,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
+import { EmptyProjectList } from './EmptyProjectList';
 
 type OrderDirection = ProjectsGet['query']['order'];
 
@@ -250,9 +251,13 @@ export const ProjectList = () => {
     return <ResponseErrorPanel error={error} />;
   }
 
+  if (!value?.items || value.items.length === 0) {
+    return <EmptyProjectList />;
+  }
+
   return (
     <DenseTable
-      projects={value?.items || []}
+      projects={value.items}
       totalCount={value?.totalCount || 0}
       forceRefresh={forceRefresh}
       orderBy={orderBy}

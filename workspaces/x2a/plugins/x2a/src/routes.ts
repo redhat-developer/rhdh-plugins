@@ -15,6 +15,8 @@
  */
 import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
 
+export const basePath = '/x2a';
+
 export const rootRouteRef = createRouteRef({
   id: 'x2a',
 });

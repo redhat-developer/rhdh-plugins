@@ -24,13 +24,13 @@ import { x2aPluginTranslationRef } from './ref';
 const x2aPluginTranslationDe = createTranslationMessages({
   ref: x2aPluginTranslationRef,
   messages: {
-    'sidebar.x2a.title': 'Konvertierungs-Hub',
-    'page.title': 'Migration Hub',
+    'sidebar.x2a.title': 'Konversions Hub',
+    'page.title': 'Konversions Hub',
     'page.subtitle':
       'Starten und verfolgen Sie die asynchrone Umwandlung von Chef-Dateien in produktionsreife Ansible Playbooks.',
-    'page.devTitle': 'Conversion Hub',
+    'page.devTitle': 'Konversions Hub',
     'newProjectPage.title': 'Neue Konvertierung',
-    'newProjectPage.subtitle': 'Migration Hub / Neues Konvertierungsprojekt',
+    'newProjectPage.subtitle': 'Konversions Hub / Neues Konvertierungsprojekt',
     'newProjectPage.steps.jobNameAndDescription':
       'Auftragsname und -beschreibung',
     'newProjectPage.steps.sourceAndTargetRepos': 'Quell- und Ziel-Repositorys',
