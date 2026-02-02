@@ -8,3 +8,14 @@ spec:
     displayName: Marek Libra
     email: foo@bar.com
   memberOf: []
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: elai-shalev
+spec:
+  profile:
+    displayName: Elai Shalev
+    email: foo@bar.com
+  memberOf: []

@@ -6,6 +6,15 @@
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
+// @public (undocumented)
+export interface AAPCredentials {
+    oauthToken?: string;
+    orgName: string;
+    password?: string;
+    url: string;
+    username?: string;
+}
+
 // @public
 export const DEFAULT_PAGE_ORDER = "desc";
 
@@ -29,6 +38,24 @@ export class DefaultApiClient {
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
+    projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
+    projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
+}
+
+// @public (undocumented)
+export interface GitRepoCredentials {
+    branch: string;
+    token: string;
+    url: string;
+}
+
+// @public (undocumented)
+export interface Module {
+    id: string;
+    name: string;
+    projectId: string;
+    sourcePath: string;
 }
 
 // @public (undocumented)
@@ -87,6 +114,72 @@ export type ProjectsProjectIdGet = {
         projectId: string;
     };
 };
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdRunPost = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    body: ProjectsProjectIdModulesModuleIdRunPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
+    // (undocumented)
+    aapCredentials?: AAPCredentials;
+    phase: ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum;
+    // (undocumented)
+    sourceRepo: GitRepoCredentials;
+    // (undocumented)
+    targetRepo: GitRepoCredentials;
+    userPrompt?: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum = 'analyze' | 'migrate' | 'publish';
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdModulesPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesPostRequest {
+    name: string;
+    sourcePath: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdRunPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdRunPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdRunPost200Response {
+    jobId: string;
+    status: ProjectsProjectIdRunPost200ResponseStatusEnum;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdRunPost200ResponseStatusEnum = 'pending';
+
+// @public (undocumented)
+export interface ProjectsProjectIdRunPostRequest {
+    // (undocumented)
+    aapCredentials?: AAPCredentials;
+    // (undocumented)
+    sourceRepo: GitRepoCredentials;
+    // (undocumented)
+    targetRepo: GitRepoCredentials;
+    userPrompt?: string;
+}
 
 // @public
 export interface RequestOptions {

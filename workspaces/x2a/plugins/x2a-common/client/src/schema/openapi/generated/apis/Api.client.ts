@@ -22,10 +22,15 @@ import { FetchApi } from '../types/fetch';
 import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
+import { Module } from '../models/Module.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
+import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
+import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
+import { ProjectsProjectIdRunPost200Response } from '../models/ProjectsProjectIdRunPost200Response.model';
+import { ProjectsProjectIdRunPostRequest } from '../models/ProjectsProjectIdRunPostRequest.model';
 
 /**
  * Wraps the Response type to convey a type on the json call.
@@ -82,6 +87,34 @@ export type ProjectsProjectIdGet = {
   path: {
     projectId: string;
   };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdRunPost = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  body: ProjectsProjectIdModulesModuleIdRunPostRequest;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesPost = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdModulesPostRequest;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdRunPost = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdRunPostRequest;
 };
 
 /**
@@ -202,6 +235,93 @@ export class DefaultApiClient {
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
       method: 'GET',
+    });
+  }
+
+  /**
+   * Triggers a migration phase for a specific module
+   * @param projectId -
+   * @param moduleId -
+   * @param projectsProjectIdModulesModuleIdRunPostRequest -
+   */
+  public async projectsProjectIdModulesModuleIdRunPost(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdRunPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}/run`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * **TEMPORARY ENDPOINT FOR TESTING ONLY**  This endpoint provides simple CRUD functionality to create modules for testing the job triggering infrastructure.  According to the ADR, this endpoint should eventually sync modules by parsing the migration plan (created by the init phase). The proper implementation will be added when the init phase integration is complete.  TODO: Replace with proper sync logic that parses the migration plan via LLM (see ADR lines 202-213)
+   * Creates a new module for a project
+   * @param projectId -
+   * @param projectsProjectIdModulesPostRequest -
+   */
+  public async projectsProjectIdModulesPost(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Module>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Triggers the init phase to produce the migration plan
+   * @param projectId -
+   * @param projectsProjectIdRunPostRequest -
+   */
+  public async projectsProjectIdRunPost(
+    // @ts-ignore
+    request: ProjectsProjectIdRunPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/run`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
     });
   }
 }
