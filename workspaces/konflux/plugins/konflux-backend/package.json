@@ -60,6 +60,8 @@
     "@types/node-fetch": "^2.6.13"
   },
   "files": [
-    "dist"
-  ]
+    "dist",
+    "config.d.ts"
+  ],
+  "configSchema": "config.d.ts"
 }
