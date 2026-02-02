@@ -66,7 +66,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations"
 #### Key Features
 
 - **Metric Access Validation**: This endpoint explicitly validates that the user has access to the specified metric and returns `403 Forbidden` if access is denied
-- **Empty Results Handling**: Returns an empty array `[]` when the user owns no entities, avoiding errors when filtering by a single metric
+- **Empty Results Handling**: Returns an empty aggregation object (zero counts with a timestamp) when the user owns no entities
 
 ## Error Handling
 
@@ -74,8 +74,15 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations"
 
 If the authenticated user doesn't have an entity reference in the catalog:
 
+- **Status Code**: `401 Unauthorized`
+- **Error**: `AuthenticationError: User entity reference not found`
+
+### User Entity Not Found in the Catalog
+
+If the user entity doesn't exist in the catalog.
+
 - **Status Code**: `404 Not Found`
-- **Error**: `NotFoundError: User entity reference not found`
+- **Error**: `NotFoundError: User entity not found in catalog`
 
 ### Permission Denied
 
@@ -91,16 +98,9 @@ If the user doesn't have access to the specified metric:
 - **Status Code**: `403 Forbidden`
 - **Error**: `NotAllowedError: To view the scorecard metrics, your administrator must grant you the required permission.`
 
-### Invalid Query Parameters
-
-If invalid query parameters are provided:
-
-- **Status Code**: `400 Bad Request`
-- **Error**: Validation error details
-
 ## Best Practices
 
-1. **Handle Empty Results**: Always check for empty arrays when the user owns no entities
+1. **Handle Empty Results**: Always handle empty aggregations (zero counts) when the user owns no entities
 
 2. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. You currently receive scorecard results only for entities you own and those of your immediate parent group. To include results from _all_ parent
    groups, you can either implement custom logic, restructure your groups, or (if using RHDH), enable transitive parent groups ([see transitive parent group enablement documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.5/html-single/authorization_in_red_hat_developer_hub/index#enabling-transitive-parent-groups)).

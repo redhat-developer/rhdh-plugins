@@ -33,7 +33,7 @@ export interface ScorecardApi {
    * @returns Promise resolving to an array of metric results
    */
   getScorecards(entity: Entity, metricIds?: string[]): Promise<MetricResult[]>;
-  getAggregatedScorecard(metricId: string): Promise<AggregatedMetricResult[]>;
+  getAggregatedScorecard(metricId: string): Promise<AggregatedMetricResult>;
 }
 
 export const scorecardApiRef = createApiRef<ScorecardApi>({
@@ -123,7 +123,7 @@ export class ScorecardApiClient implements ScorecardApi {
 
   async getAggregatedScorecard(
     metricId: string,
-  ): Promise<AggregatedMetricResult[]> {
+  ): Promise<AggregatedMetricResult> {
     if (!metricId) {
       throw new Error('Metric ID is required for aggregated scorecards');
     }
@@ -143,7 +143,7 @@ export class ScorecardApiClient implements ScorecardApi {
 
       const data = await response.json();
 
-      if (!Array.isArray(data)) {
+      if (!data || Array.isArray(data) || typeof data !== 'object') {
         throw new TypeError(
           'Invalid response format from aggregated scorecard API',
         );

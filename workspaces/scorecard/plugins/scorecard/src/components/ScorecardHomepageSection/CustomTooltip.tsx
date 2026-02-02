@@ -31,15 +31,13 @@ type CustomTooltipPayload = {
 type CustomTooltipProps = TooltipProps<number, string> & {
   payload?: readonly CustomTooltipPayload[];
   pieData: PieData[];
-  isMissingPermission?: boolean;
-  isUserNotFoundInCatalog?: boolean;
+  customContent?: string;
 };
 
 export const CustomTooltip = ({
   payload,
   pieData,
-  isMissingPermission = false,
-  isUserNotFoundInCatalog = false,
+  customContent,
 }: CustomTooltipProps) => {
   const { t } = useTranslation();
 
@@ -60,25 +58,23 @@ export const CustomTooltip = ({
     return total > 0 ? Math.round((thresholdValue / total) * 100) : 0;
   };
 
-  let content = null;
+  let contentElement = null;
 
-  if (isMissingPermission || isUserNotFoundInCatalog) {
-    content = (
+  if (customContent) {
+    contentElement = (
       <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-        {isMissingPermission
-          ? t('errors.missingPermissionMessage')
-          : t('errors.userNotFoundInCatalogMessage')}
+        {customContent}
       </Typography>
     );
   } else if (payload?.[0]?.value === 0 || payload?.[0]?.value === undefined) {
     const translatedState = t(`thresholds.${payload?.[0]?.name}` as any, {});
-    content = (
+    contentElement = (
       <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
         {t('thresholds.noEntities', { category: translatedState } as any)}
       </Typography>
     );
   } else {
-    content = (
+    contentElement = (
       <>
         <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
           {t('thresholds.entities', { count: payload?.[0]?.value })}
@@ -111,7 +107,7 @@ export const CustomTooltip = ({
         border: theme => `1px solid ${theme.palette.grey[300]}`,
       }}
     >
-      {content}
+      {contentElement}
     </Paper>
   );
 };
