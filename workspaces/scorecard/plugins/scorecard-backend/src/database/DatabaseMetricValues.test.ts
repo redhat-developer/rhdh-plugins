@@ -104,6 +104,19 @@ describe('DatabaseMetricValues', () => {
         });
       },
     );
+
+    it.each(databases.eachSupportedId())(
+      'should handle empty metric values - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await expect(db.createMetricValues([])).resolves.not.toThrow();
+
+        const insertedValues = await client('metric_values').select('*');
+
+        expect(insertedValues).toHaveLength(0);
+      },
+    );
   });
 
   describe('readLatestEntityMetricValues', () => {
