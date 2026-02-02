@@ -80,7 +80,6 @@ const lightspeedTranslationEs = createTranslationMessages({
     'conversation.rename.confirm.title': '¿Renombrar chat?',
     'conversation.rename.confirm.action': 'Renombrar',
     'conversation.rename.placeholder': 'Nombre del chat',
-    'conversation.action.error': 'Error ocurrido: {{error}}',
 
     // Permissions
     'permission.required.title': 'Permisos faltantes',
@@ -96,13 +95,6 @@ const lightspeedTranslationEs = createTranslationMessages({
     // Footer and feedback
     'footer.accuracy.label':
       'Siempre revisa el contenido generado por IA antes de usarlo.',
-    'footer.accuracy.popover.title': 'Verificar precisión',
-    'footer.accuracy.popover.description':
-      'Si bien Developer Lightspeed se esfuerza por la precisión, siempre existe la posibilidad de errores. Es una buena práctica verificar información crítica de fuentes confiables, especialmente si es crucial para la toma de decisiones o acciones.',
-    'footer.accuracy.popover.image.alt':
-      'Imagen de ejemplo para el popover de nota al pie',
-    'footer.accuracy.popover.cta.label': 'Entendido',
-    'footer.accuracy.popover.link.label': 'Aprende más',
 
     // Common actions
     'common.cancel': 'Cancelar',
@@ -124,8 +116,7 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Ajusta tu consulta de búsqueda e inténtalo de nuevo. Verifica tu ortografía o prueba un término más general.',
     'chatbox.welcome.greeting': 'Hola, {{userName}}',
     'chatbox.welcome.description': '¿Cómo puedo ayudarte hoy?',
-    'chatbox.message.placeholder':
-      'Envía un mensaje y opcionalmente sube un archivo JSON, YAML, o TXT...',
+    'chatbox.message.placeholder': 'Ingrese un prompt para Lightspeed',
     'chatbox.fileUpload.failed': 'La carga del archivo falló',
     'chatbox.fileUpload.infoText':
       'Los tipos de archivo soportados son: .txt, .yaml, y .json. El tamaño máximo del archivo es 25 MB.',

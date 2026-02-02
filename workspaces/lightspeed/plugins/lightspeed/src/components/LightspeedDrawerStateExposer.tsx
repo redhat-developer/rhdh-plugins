@@ -54,10 +54,16 @@ export type DrawerStateExposerProps = {
 export const LightspeedDrawerStateExposer = ({
   onStateChange,
 }: DrawerStateExposerProps) => {
-  const { displayMode, drawerWidth, setDrawerWidth, toggleChatbot } =
-    useLightspeedDrawerContext();
+  const {
+    displayMode,
+    drawerWidth,
+    setDrawerWidth,
+    toggleChatbot,
+    isChatbotActive,
+  } = useLightspeedDrawerContext();
 
-  const isDrawerOpen = displayMode === ChatbotDisplayMode.docked;
+  const isDrawerOpen =
+    displayMode === ChatbotDisplayMode.docked && isChatbotActive;
 
   const toggleChatbotRef = useRef(toggleChatbot);
   toggleChatbotRef.current = toggleChatbot;

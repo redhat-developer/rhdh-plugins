@@ -99,12 +99,8 @@ export const DeleteModal = ({
         {t('conversation.delete.confirm.message')}
       </DialogContent>
       {isError && (
-        <Box maxWidth="650px" marginLeft="20px">
-          <Alert severity="error">
-            {t('conversation.action.error' as any, {
-              error: String(error),
-            })}
-          </Alert>
+        <Box maxWidth="650px" marginLeft="20px" marginRight="20px">
+          <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
       <DialogActions style={{ justifyContent: 'left', padding: '20px' }}>
