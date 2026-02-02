@@ -1,7 +1,0 @@
-p, role:default/x2aAdmin, x2a.admin, read, allow
-p, role:default/x2aAdmin, x2a.admin, update, allow
-
-p, role:default/x2aUser, x2a.user, use, allow
-
-g, user:development/guest, role:default/x2aUser
-g, user:default/mareklibra, role:default/x2aAdmin
