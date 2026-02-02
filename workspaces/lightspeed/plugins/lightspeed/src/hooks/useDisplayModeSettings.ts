@@ -49,12 +49,7 @@ export const useDisplayModeSettings = (
   const shouldPersist = !isGuestUser(user);
 
   useEffect(() => {
-    if (!user) {
-      setDisplayModeState(defaultMode);
-      return undefined;
-    }
-
-    if (isGuestUser(user)) {
+    if (!user || isGuestUser(user)) {
       setDisplayModeState(defaultMode);
       return undefined;
     }

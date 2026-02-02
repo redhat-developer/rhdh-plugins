@@ -86,26 +86,14 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   }, [navigate]);
 
   useEffect(() => {
+    if (conversationId) {
+      setCurrentConversationIdState(conversationId);
+    } else {
+      setCurrentConversationIdState(undefined);
+    }
+
     if (isLightspeedRoute) {
-      if (conversationId) {
-        setCurrentConversationIdState(conversationId);
-      } else {
-        setCurrentConversationIdState(undefined);
-      }
-      // Update this to fullscreen only when it is not already in the docked mode
-      setDisplayModeState(prev => {
-        if (
-          prev === ChatbotDisplayMode.docked ||
-          persistedDisplayMode === ChatbotDisplayMode.docked
-        ) {
-          return ChatbotDisplayMode.docked; // Don't override docked mode preference
-        }
-        return ChatbotDisplayMode.embedded;
-      });
-      // When opening via URL
-      if (persistedDisplayMode !== ChatbotDisplayMode.embedded) {
-        setPersistedDisplayMode(ChatbotDisplayMode.embedded);
-      }
+      setDisplayModeState(ChatbotDisplayMode.embedded);
       setIsOpen(true);
     } else {
       // When leaving lightspeed route, restore the persisted display mode
@@ -116,12 +104,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         setDisplayModeState(persistedDisplayMode);
       }
     }
-  }, [
-    conversationId,
-    isLightspeedRoute,
-    persistedDisplayMode,
-    setPersistedDisplayMode,
-  ]);
+  }, [conversationId, isLightspeedRoute, persistedDisplayMode]);
 
   // Open chatbot using the persisted display mode preference
   const openChatbot = useCallback(() => {
@@ -187,12 +170,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         return;
       }
 
-      setDisplayModeState(mode);
-
-      // Persist the display mode preference when user explicitly changes it, but not for route-based changes to embedded mode
-      if (mode !== ChatbotDisplayMode.embedded || !isLightspeedRoute) {
-        setPersistedDisplayMode(mode);
-      }
+      setPersistedDisplayMode(mode);
 
       // Navigate to fullscreen route with conversation ID if available
       if (mode === ChatbotDisplayMode.embedded) {

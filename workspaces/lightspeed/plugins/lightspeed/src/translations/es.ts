@@ -116,8 +116,7 @@ const lightspeedTranslationEs = createTranslationMessages({
       'Ajusta tu consulta de búsqueda e inténtalo de nuevo. Verifica tu ortografía o prueba un término más general.',
     'chatbox.welcome.greeting': 'Hola, {{userName}}',
     'chatbox.welcome.description': '¿Cómo puedo ayudarte hoy?',
-    'chatbox.message.placeholder':
-      'Envía un mensaje y opcionalmente sube un archivo JSON, YAML, o TXT...',
+    'chatbox.message.placeholder': 'Ingrese un prompt para Lightspeed',
     'chatbox.fileUpload.failed': 'La carga del archivo falló',
     'chatbox.fileUpload.infoText':
       'Los tipos de archivo soportados son: .txt, .yaml, y .json. El tamaño máximo del archivo es 25 MB.',

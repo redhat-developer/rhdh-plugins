@@ -131,6 +131,7 @@ export const RenameConversationModal = ({
           style={{ marginTop: '10px' }}
           variant="outlined"
           InputProps={{
+            autoFocus: true,
             endAdornment: (
               <IconButton
                 aria-label="clear-input"

@@ -95,8 +95,7 @@ const lightspeedTranslationJa = createTranslationMessages({
       '検索クエリーを調整して再試行してください。スペルを確認するか、より一般的な用語をお試しください。',
     'chatbox.welcome.greeting': 'こんにちは、{{userName}}',
     'chatbox.welcome.description': '今日は何をお手伝いしましょうか?',
-    'chatbox.message.placeholder':
-      'メッセージを送信し、必要に応じて JSON、YAML、または TXT ファイルをアップロードします...',
+    'chatbox.message.placeholder': 'Lightspeedのプロンプトを入力してください',
     'chatbox.fileUpload.failed': 'ファイルのアップロードに失敗しました',
     'chatbox.fileUpload.infoText':
       'サポートされているファイルの種類は、.txt、.yaml、.json です。最大ファイルサイズは 25 MB です。',

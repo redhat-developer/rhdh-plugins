@@ -39,7 +39,6 @@ jest.mock('../../hooks/useBackstageUserIdentity', () => ({
   useBackstageUserIdentity: () => mockUseBackstageUserIdentity(),
 }));
 
-// Mock LightspeedChatContainer to avoid complex dependencies
 jest.mock('../LightspeedChatContainer', () => ({
   LightspeedChatContainer: () => (
     <div data-testid="lightspeed-chat-container">Chat Container</div>
@@ -212,7 +211,7 @@ describe('LightspeedDrawerProvider', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.docked,
+          ChatbotDisplayMode.default,
         );
       });
     });
@@ -245,7 +244,7 @@ describe('LightspeedDrawerProvider', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.docked,
+          ChatbotDisplayMode.embedded,
         );
       });
     });
@@ -260,7 +259,7 @@ describe('LightspeedDrawerProvider', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.docked,
+          ChatbotDisplayMode.embedded,
         );
       });
 
@@ -274,7 +273,7 @@ describe('LightspeedDrawerProvider', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
-          ChatbotDisplayMode.docked,
+          ChatbotDisplayMode.embedded,
         );
       });
     });
