@@ -16,6 +16,9 @@ export interface AAPCredentials {
 }
 
 // @public
+export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
+
+// @public
 export const DEFAULT_PAGE_ORDER = "desc";
 
 // @public

@@ -99,6 +99,11 @@ catalog:
       target: ../../examples/org.yaml
       rules:
         - allow: [User, Group]
+    # x2a Create Project template
+    - type: file
+      target: ../../templates/conversion-project-template.yaml
+      rules:
+        - allow: [Template]
 
 kubernetes:
   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options

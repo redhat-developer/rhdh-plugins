@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
+import { createRouteRef } from '@backstage/core-plugin-api';
 
 export const basePath = '/x2a';
 
 export const rootRouteRef = createRouteRef({
   id: 'x2a',
-});
-
-export const newProjectRouteRef = createSubRouteRef({
-  id: 'x2a/new-project',
-  parent: rootRouteRef,
-  path: '/new-project',
 });

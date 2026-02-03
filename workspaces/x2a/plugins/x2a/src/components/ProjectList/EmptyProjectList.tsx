@@ -15,8 +15,8 @@
  */
 import { makeStyles } from '@material-ui/core';
 import { EmptyState, LinkButton } from '@backstage/core-components';
-import { basePath, newProjectRouteRef } from '../../routes';
 import emptyProjectListImage from './EmptyProjectListImage.png';
+import { CREATE_CHEF_PROJECT_TEMPLATE_PATH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 const useStyles = makeStyles({
   top: {
@@ -43,7 +43,7 @@ const NextSteps = () => {
         <LinkButton
           variant="contained"
           color="primary"
-          to={`${basePath}/${newProjectRouteRef.path}`}
+          to={CREATE_CHEF_PROJECT_TEMPLATE_PATH}
         >
           Start first conversion
         </LinkButton>
