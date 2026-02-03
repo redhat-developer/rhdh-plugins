@@ -17,21 +17,12 @@ export interface Config {
   /**
    * Configuration options for the Konflux plugin
    */
-  /**
-   * @visibility frontend
-   */
   konflux?: {
     /**
      * @visibility frontend
      */
     authProvider?: 'serviceAccount' | 'oidc' | 'impersonationHeaders';
-    /**
-     * @visibility frontend
-     */
     clusters: {
-      /**
-       * @visibility frontend
-       */
       [key: string]: {
         /**
          * @visibility frontend
