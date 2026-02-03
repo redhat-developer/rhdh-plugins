@@ -33,22 +33,14 @@ export const x2aPluginMessages = {
       'Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks.',
     devTitle: 'Conversion Hub',
   },
-  newProjectPage: {
-    title: 'New conversion',
-    subtitle: 'Conversion Hub / New conversion project',
-    steps: {
-      jobNameAndDescription: 'Job name and description',
-      sourceAndTargetRepos: 'Source and target repositories',
-      reviewAndStart: 'Review and start',
-      lastStep: 'Last step',
-    },
-  },
   table: {
     columns: {
       name: 'Name',
       abbreviation: 'Abbreviation',
       status: 'Status',
       description: 'Description',
+      sourceRepo: 'Source Repository',
+      targetRepo: 'Target Repository',
       createdAt: 'Created At',
     },
     actions: {

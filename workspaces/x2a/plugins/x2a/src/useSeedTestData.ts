@@ -32,6 +32,10 @@ export const useSeedTestData = () => {
             name: `Test Project ${i}`,
             description: `Test Description ${i}`,
             abbreviation: `TP${i}`,
+            sourceRepoUrl: `https://github.com/org/source-repo${i}`,
+            targetRepoUrl: `https://github.com/org/target-repo${i}`,
+            sourceRepoBranch: `main${i}`,
+            targetRepoBranch: `main${i}`,
           },
         });
       }

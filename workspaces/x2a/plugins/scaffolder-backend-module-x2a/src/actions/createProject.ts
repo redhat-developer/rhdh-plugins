@@ -18,16 +18,34 @@ import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import {
   DefaultApiClient,
   Project,
+  ProjectsProjectIdRunPost200Response,
+  normalizeRepoUrl,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+/**
+ * Options for createProjectAction (e.g. for testing with a mock fetch).
+ *
+ * @public
+ */
+export type CreateProjectActionOptions = {
+  fetchApi?: { fetch: typeof fetch };
+};
 
 /**
  * Creates an `x2a:project:create` Scaffolder action.
  *
  * This action creates a new project in the x2a database.
  *
+ * @param discoveryApi - Backstage discovery service
+ * @param options - Optional; use fetchApi to inject a custom fetch (e.g. in tests)
  * @public
  */
-export function createProjectAction(discoveryApi: DiscoveryService) {
+export function createProjectAction(
+  discoveryApi: DiscoveryService,
+  options?: CreateProjectActionOptions,
+) {
+  const fetchApi = options?.fetchApi ?? { fetch };
+
   return createTemplateAction({
     id: 'x2a:project:create',
     description: 'Create a new conversion project.',
@@ -42,6 +60,8 @@ export function createProjectAction(discoveryApi: DiscoveryService) {
           z.string({ description: 'The abbreviation of the project' }),
         sourceRepoUrl: z =>
           z.string({ description: 'The URL of the source repository' }),
+        sourceRepoBranch: z =>
+          z.string({ description: 'The branch of the source repository' }),
         areTargeAndSourceRepoShared: z =>
           z.boolean({
             description:
@@ -63,6 +83,8 @@ export function createProjectAction(discoveryApi: DiscoveryService) {
       output: {
         projectId: z =>
           z.string({ description: 'The ID of the created project' }),
+        initJobId: z =>
+          z.string({ description: 'The ID of the created init job' }),
         nextUrl: z =>
           z.string({
             description: 'The URL to the next step in the conversion process',
@@ -78,29 +100,46 @@ export function createProjectAction(discoveryApi: DiscoveryService) {
 
       const api = new DefaultApiClient({
         discoveryApi,
-        fetchApi: { fetch },
+        fetchApi,
       });
 
-      console.log('=================================');
+      // Create the project in the x2a database
+      const targetRepoUrl = ctx.input.areTargeAndSourceRepoShared
+        ? ctx.input.sourceRepoUrl
+        : ctx.input.targetRepoUrl;
+      if (!targetRepoUrl) {
+        throw new Error('Target repository URL is required');
+      }
+
+      const sourceRepoToken = ctx.secrets?.SRC_USER_OAUTH_TOKEN;
+      if (!sourceRepoToken) {
+        throw new Error('Source repository token is required');
+      }
+      const targetRepoToken = ctx.input.areTargeAndSourceRepoShared
+        ? sourceRepoToken
+        : ctx.secrets?.TGT_USER_OAUTH_TOKEN;
+      if (!targetRepoToken) {
+        throw new Error('Target repository token is required');
+      }
+
+      const body = {
+        name: ctx.input.name,
+        description: ctx.input.description ?? '',
+        abbreviation: ctx.input.abbreviation,
+        sourceRepoUrl: normalizeRepoUrl(ctx.input.sourceRepoUrl),
+        targetRepoUrl: normalizeRepoUrl(targetRepoUrl),
+        sourceRepoBranch: ctx.input.sourceRepoBranch,
+        targetRepoBranch: ctx.input.targetRepoBranch,
+      };
+      ctx.logger.info(`Creating project ${JSON.stringify(body)}`);
+
       let project: Project;
       try {
-        const response = await api.projectsPost(
-          {
-            body: {
-              name: ctx.input.name,
-              description: ctx.input.description ?? '',
-              abbreviation: ctx.input.abbreviation,
-            },
-          },
-          {
-            token: token,
-          },
-        );
-
+        const response = await api.projectsPost({ body }, { token: token });
         if (!response.ok) {
           const error = (await response.json()) as any;
           ctx.logger.error(
-            `Response status: ${response.status}, error: ${JSON.stringify(error)}`,
+            `Project creation response status: ${response.status}, error: ${JSON.stringify(error)}`,
           );
           throw new Error(error);
         }
@@ -111,9 +150,55 @@ export function createProjectAction(discoveryApi: DiscoveryService) {
         throw new Error(error as string);
       }
 
-      // TODO: The project is created, trigger the init-phase automatically
+      // The project is created, trigger the init-phase automatically
+      ctx.logger.info(
+        `Triggering init-phase for the just-created project ${project.id}`,
+      );
 
+      let initResponseData: ProjectsProjectIdRunPost200Response;
+      try {
+        const initResponse = await api.projectsProjectIdRunPost(
+          {
+            path: {
+              projectId: project.id,
+            },
+            body: {
+              sourceRepoAuth: {
+                token: sourceRepoToken,
+              },
+              targetRepoAuth: {
+                token: targetRepoToken,
+              },
+              // aapCredentials are skipped in favor of the app-config configuration
+              userPrompt: ctx.input.userPrompt,
+            },
+          },
+          { token: token },
+        );
+
+        if (!initResponse.ok) {
+          const error = (await initResponse.json()) as any;
+          ctx.logger.error(
+            `Init-phase response status: ${initResponse.status}, error: ${JSON.stringify(error)}`,
+          );
+          throw new Error(error);
+        }
+
+        initResponseData = await initResponse.json();
+      } catch (error) {
+        ctx.logger.error(
+          `Error triggering init-phase: ${JSON.stringify(error)}`,
+        );
+        throw new Error(error as string);
+      }
+
+      ctx.logger.info(
+        `Init-phase triggered for project ${project.id} with response ${JSON.stringify(initResponseData)}`,
+      );
+
+      // Output the results
       ctx.output('projectId', project.id);
+      ctx.output('initJobId', initResponseData.jobId);
       // TODO: Build proper URL of project detail page once implemented
       ctx.output('nextUrl', `/x2a/projects/${project.id}`);
     },

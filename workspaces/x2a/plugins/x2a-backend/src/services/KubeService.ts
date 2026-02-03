@@ -32,7 +32,7 @@ import type {
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
 import { X2AConfig } from '../../config';
-import { JobCreateParams, AAPCredentials, GitRepoCredentials } from './types';
+import { JobCreateParams, AAPCredentials, GitRepo } from './types';
 import {
   DEFAULT_LLM_MODEL,
   DEFAULT_KUBERNETES_NAMESPACE,
@@ -168,8 +168,8 @@ export class KubeService {
     jobId: string,
     projectId: string,
     gitCredentials: {
-      sourceRepo: GitRepoCredentials;
-      targetRepo: GitRepoCredentials;
+      sourceRepo: GitRepo;
+      targetRepo: GitRepo;
     },
   ): Promise<void> {
     this.#logger.info(`Creating job secret for job: ${jobId}`);
@@ -207,7 +207,7 @@ export class KubeService {
     // Step 1: Create/update project secret (LLM + AAP)
     await this.createProjectSecret(params.projectId, params.aapCredentials);
 
-    // Step 2: Create ephemeral job secret (Git credentials)ok
+    // Step 2: Create ephemeral job secret (Git credentials)
     await this.createJobSecret(params.jobId, params.projectId, {
       sourceRepo: params.sourceRepo,
       targetRepo: params.targetRepo,

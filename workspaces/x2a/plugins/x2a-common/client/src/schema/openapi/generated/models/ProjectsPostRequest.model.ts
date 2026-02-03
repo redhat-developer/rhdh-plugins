@@ -34,4 +34,20 @@ export interface ProjectsPostRequest {
    * Project abbreviation
    */
   abbreviation: string;
+  /**
+   * URL of the source repository
+   */
+  sourceRepoUrl: string;
+  /**
+   * URL of the target repository
+   */
+  targetRepoUrl: string;
+  /**
+   * Branch of the source repository (default to main)
+   */
+  sourceRepoBranch: string;
+  /**
+   * Branch of the target repository (default to main)
+   */
+  targetRepoBranch: string;
 }

@@ -21,17 +21,9 @@
 /**
  * @public
  */
-export interface GitRepoCredentials {
-  /**
-   * Git repository URL
-   */
-  url: string;
+export interface GitRepoAuth {
   /**
    * Authentication token for the git repository
    */
   token: string;
-  /**
-   * Git branch name
-   */
-  branch: string;
 }

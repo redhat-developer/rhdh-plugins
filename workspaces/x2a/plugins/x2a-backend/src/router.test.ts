@@ -40,6 +40,10 @@ const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',
   abbreviation: 'MP',
+  sourceRepoUrl: 'https://github.com/source/repo',
+  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoBranch: 'main',
+  targetRepoBranch: 'main',
 };
 
 async function createApp(
@@ -74,6 +78,10 @@ async function createApp(
         return [{ result: authorizeResult ?? AuthorizeResult.ALLOW }] as any;
       },
     }),
+    discoveryApi: {
+      getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007/api/x2a'),
+      getExternalBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007'),
+    },
     x2aDatabase,
     kubeService: {
       createProjectSecret: jest.fn().mockResolvedValue(undefined),

@@ -13,4 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './NewProjectPage';
+
+export const Repository = ({
+  url,
+  branch,
+}: {
+  url: string;
+  branch: string;
+}) => {
+  return (
+    <div>
+      <b>{branch}</b>
+      <br />
+      {url}
+    </div>
+  );
+};

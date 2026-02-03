@@ -27,6 +27,10 @@ export async function up(knex: Knex): Promise<void> {
     table.string('name').notNullable();
     table.string('abbreviation').notNullable();
     table.text('description');
+    table.string('source_repo_url');
+    table.string('source_repo_branch');
+    table.string('target_repo_url');
+    table.string('target_repo_branch');
     table.string('created_by').notNullable();
     table.timestamp('created_at').defaultTo(knex.fn.now()).notNullable();
 

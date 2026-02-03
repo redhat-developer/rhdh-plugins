@@ -39,6 +39,22 @@ export interface Project {
    */
   description?: string;
   /**
+   * URL of the source repository
+   */
+  sourceRepoUrl: string;
+  /**
+   * URL of the target repository
+   */
+  targetRepoUrl: string;
+  /**
+   * Branch of the source repository
+   */
+  sourceRepoBranch: string;
+  /**
+   * Branch of the target repository
+   */
+  targetRepoBranch: string;
+  /**
    * Date/time when the project was created
    */
   createdAt: Date;

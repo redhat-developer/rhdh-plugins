@@ -29,18 +29,12 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'page.subtitle':
       'Lancez et suivez les conversions asynchrones de fichiers Chef en playbooks Ansible prêts pour la production.',
     'page.devTitle': 'Hub de conversion',
-    'newProjectPage.title': 'Nouvelle conversion',
-    'newProjectPage.subtitle':
-      'Hub de conversion / Nouveau projet de conversion',
-    'newProjectPage.steps.jobNameAndDescription':
-      'Nom et description du travail',
-    'newProjectPage.steps.sourceAndTargetRepos': 'Dépôts source et cible',
-    'newProjectPage.steps.reviewAndStart': 'Vérifier et démarrer',
-    'newProjectPage.steps.lastStep': 'Dernière étape',
     'table.columns.name': 'Nom',
     'table.columns.abbreviation': 'Abréviation',
     'table.columns.status': 'Statut',
     'table.columns.description': 'Description',
+    'table.columns.sourceRepo': 'Dépôt source',
+    'table.columns.targetRepo': 'Dépôt cible',
     'table.columns.createdAt': 'Créé le',
     'table.actions.deleteProject': 'Supprimer le projet',
     'table.detailPanel': 'TODO : Détails du projet {{name}}',

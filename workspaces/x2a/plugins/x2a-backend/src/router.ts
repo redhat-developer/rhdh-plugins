@@ -20,6 +20,7 @@ import { randomUUID } from 'node:crypto';
 import {
   BackstageCredentials,
   BackstageUserPrincipal,
+  DiscoveryService,
   HttpAuthService,
   LoggerService,
   PermissionsService,
@@ -110,6 +111,7 @@ function getUserRef(
 
 export async function createRouter({
   httpAuth,
+  discoveryApi,
   x2aDatabase,
   kubeService,
   logger,
@@ -118,6 +120,7 @@ export async function createRouter({
   httpAuth: HttpAuthService;
   x2aDatabase: typeof x2aDatabaseServiceRef.T;
   kubeService: typeof kubeServiceRef.T;
+  discoveryApi: DiscoveryService;
   logger: LoggerService;
   permissionsSvc: PermissionsService;
 }): Promise<express.Router> {
@@ -193,6 +196,10 @@ export async function createRouter({
       name: z.string(),
       description: z.string(),
       abbreviation: z.string(),
+      sourceRepoUrl: z.string(),
+      targetRepoUrl: z.string(),
+      sourceRepoBranch: z.string(),
+      targetRepoBranch: z.string(),
     });
 
     const parsedBody = projectCreateRequestSchema
@@ -255,7 +262,7 @@ export async function createRouter({
     res.status(200).json({ deletedCount });
   });
 
-  (router as any).post(
+  router.post(
     '/projects/:projectId/run',
     async (req: express.Request, res: express.Response) => {
       const endpoint = 'POST /projects/:projectId/run';
@@ -264,15 +271,11 @@ export async function createRouter({
 
       // Validate request body
       const runRequestSchema = z.object({
-        sourceRepo: z.object({
-          url: z.string(),
+        sourceRepoAuth: z.object({
           token: z.string(),
-          branch: z.string(),
         }),
-        targetRepo: z.object({
-          url: z.string(),
+        targetRepoAuth: z.object({
           token: z.string(),
-          branch: z.string(),
         }),
         aapCredentials: z
           .object({
@@ -290,7 +293,7 @@ export async function createRouter({
       if (!parsedBody.success) {
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
-      const { sourceRepo, targetRepo, aapCredentials, userPrompt } =
+      const { sourceRepoAuth, targetRepoAuth, aapCredentials, userPrompt } =
         parsedBody.data;
 
       // Get user reference safely
@@ -319,7 +322,8 @@ export async function createRouter({
       // Create Kubernetes job (will create both project and job secrets)
       // Use HTTP for in-cluster service-to-service communication
       // Jobs call back to Backstage within the same cluster
-      const callbackUrl = `http://${req.get('host')}/api/x2a/projects/${projectId}/collectArtifacts`;
+      const baseUrl = await discoveryApi.getBaseUrl('x2a');
+      const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
@@ -328,8 +332,16 @@ export async function createRouter({
         user: userRef,
         callbackToken,
         callbackUrl,
-        sourceRepo,
-        targetRepo,
+        sourceRepo: {
+          url: project.sourceRepoUrl,
+          branch: project.sourceRepoBranch,
+          token: sourceRepoAuth.token,
+        },
+        targetRepo: {
+          url: project.targetRepoUrl,
+          branch: project.targetRepoBranch,
+          token: targetRepoAuth.token,
+        },
         aapCredentials,
         userPrompt,
       });
@@ -352,7 +364,7 @@ export async function createRouter({
   // 3. Generating moduleIds for new ones and deleting missing modules
   // This simple CRUD implementation allows testing the job infrastructure
   // until the init phase integration is complete.
-  (router as any).post(
+  router.post(
     '/projects/:projectId/modules',
     async (req: express.Request, res: express.Response) => {
       const endpoint = 'POST /projects/:projectId/modules';
@@ -394,11 +406,11 @@ export async function createRouter({
 
       logger.info(`Module created: moduleId=${module.id}, name=${module.name}`);
 
-      res.status(201).json(module as any);
+      res.status(201).json(module);
     },
   );
 
-  (router as any).post(
+  router.post(
     '/projects/:projectId/modules/:moduleId/run',
     async (req: express.Request, res: express.Response) => {
       const endpoint = 'POST /projects/:projectId/modules/:moduleId/run';
@@ -410,16 +422,8 @@ export async function createRouter({
       // Validate request body
       const runModuleRequestSchema = z.object({
         phase: z.enum(['analyze', 'migrate', 'publish']),
-        sourceRepo: z.object({
-          url: z.string(),
-          token: z.string(),
-          branch: z.string(),
-        }),
-        targetRepo: z.object({
-          url: z.string(),
-          token: z.string(),
-          branch: z.string(),
-        }),
+        sourceRepoToken: z.string(),
+        targetRepoToken: z.string(),
         aapCredentials: z
           .object({
             url: z.string(),
@@ -438,8 +442,13 @@ export async function createRouter({
       if (!parsedBody.success) {
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
-      const { phase, sourceRepo, targetRepo, aapCredentials, userPrompt } =
-        parsedBody.data;
+      const {
+        phase,
+        sourceRepoToken,
+        targetRepoToken,
+        aapCredentials,
+        userPrompt,
+      } = parsedBody.data;
 
       // Get user reference safely
       const credentials = await httpAuth.credentials(req, { allow: ['user'] });
@@ -486,8 +495,16 @@ export async function createRouter({
         callbackUrl,
         moduleId,
         moduleName: module.name,
-        sourceRepo,
-        targetRepo,
+        sourceRepo: {
+          url: project.sourceRepoUrl,
+          branch: project.sourceRepoBranch,
+          token: sourceRepoToken,
+        },
+        targetRepo: {
+          url: project.targetRepoUrl,
+          branch: project.targetRepoBranch,
+          token: targetRepoToken,
+        },
         aapCredentials,
         userPrompt,
       });

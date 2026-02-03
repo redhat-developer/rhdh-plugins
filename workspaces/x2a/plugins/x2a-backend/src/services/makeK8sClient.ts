@@ -73,8 +73,23 @@ export const makeK8sClient = async (
 
   // Dynamic import of API classes to avoid ESM issues
   const { CoreV1Api, BatchV1Api } = await import('@kubernetes/client-node');
-  return {
+  const clients = {
     coreV1Api: kc.makeApiClient(CoreV1Api),
     batchV1Api: kc.makeApiClient(BatchV1Api),
   };
+
+  // Test connection to the cluster. Fail fast...
+  logger.info(
+    'Kubernetes clients created, testing connection to the cluster...',
+  );
+  try {
+    await clients.coreV1Api.listNamespacedPod({ namespace: 'default' });
+  } catch (error) {
+    logger.error(`Failed to connect to the cluster: ${error}`);
+    throw new Error(
+      'Failed to connect to the cluster. Please ensure KUBECONFIG is set or running in a cluster.',
+    );
+  }
+
+  return clients;
 };

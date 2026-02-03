@@ -47,10 +47,8 @@ export class DefaultApiClient {
 }
 
 // @public (undocumented)
-export interface GitRepoCredentials {
-    branch: string;
+export interface GitRepoAuth {
     token: string;
-    url: string;
 }
 
 // @public (undocumented)
@@ -61,6 +59,9 @@ export interface Module {
     sourcePath: string;
 }
 
+// @public
+export function normalizeRepoUrl(url: string): string;
+
 // @public (undocumented)
 export interface Project {
     abbreviation: string;
@@ -69,6 +70,10 @@ export interface Project {
     description?: string;
     id: string;
     name: string;
+    sourceRepoBranch: string;
+    sourceRepoUrl: string;
+    targetRepoBranch: string;
+    targetRepoUrl: string;
 }
 
 // @public (undocumented)
@@ -97,6 +102,10 @@ export interface ProjectsPostRequest {
     abbreviation: string;
     description: string;
     name: string;
+    sourceRepoBranch: string;
+    sourceRepoUrl: string;
+    targetRepoBranch: string;
+    targetRepoUrl: string;
 }
 
 // @public (undocumented)
@@ -133,9 +142,9 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
     aapCredentials?: AAPCredentials;
     phase: ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum;
     // (undocumented)
-    sourceRepo: GitRepoCredentials;
+    sourceRepoAuth?: GitRepoAuth;
     // (undocumented)
-    targetRepo: GitRepoCredentials;
+    targetRepoAuth?: GitRepoAuth;
     userPrompt?: string;
 }
 
@@ -178,9 +187,9 @@ export interface ProjectsProjectIdRunPostRequest {
     // (undocumented)
     aapCredentials?: AAPCredentials;
     // (undocumented)
-    sourceRepo: GitRepoCredentials;
+    sourceRepoAuth: GitRepoAuth;
     // (undocumented)
-    targetRepo: GitRepoCredentials;
+    targetRepoAuth: GitRepoAuth;
     userPrompt?: string;
 }
 

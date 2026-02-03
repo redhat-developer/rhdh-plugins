@@ -15,24 +15,27 @@
  */
 
 // Import and re-export types generated from OpenAPI spec
-import type {
-  GitRepoCredentials,
-  AAPCredentials,
-} from '../schema/openapi/generated/models';
+import type { AAPCredentials } from '../schema/openapi/generated/models';
 
-export type { GitRepoCredentials, AAPCredentials };
+export type { AAPCredentials };
 
 /**
  * Migration phase types
  */
 export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
 
+export type GitRepo = {
+  url: string;
+  branch: string;
+  token: string;
+};
+
 /**
  * Project credentials provided by user at project creation
  */
 export interface ProjectCredentials {
-  sourceRepo: GitRepoCredentials;
-  targetRepo: GitRepoCredentials;
+  sourceRepo: GitRepo;
+  targetRepo: GitRepo;
   /**
    * Optional: AAP credentials provided by user at runtime
    * If not provided, will use credentials from app-config.yaml
@@ -63,11 +66,11 @@ export interface JobCreateParams {
   /**
    * Git source repository credentials - will be stored in ephemeral job secret
    */
-  sourceRepo: GitRepoCredentials;
+  sourceRepo: GitRepo;
   /**
    * Git target repository credentials - will be stored in ephemeral job secret
    */
-  targetRepo: GitRepoCredentials;
+  targetRepo: GitRepo;
   /**
    * Optional AAP credentials override - will be stored in project secret
    * If not provided, AAP credentials from app-config.yaml will be used

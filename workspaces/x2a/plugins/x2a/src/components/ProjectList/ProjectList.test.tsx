@@ -46,6 +46,10 @@ const createMockProjects = (count: number, offset: number = 0): Project[] => {
       name: `Project ${index}`,
       abbreviation: `P${index}`,
       description: `Description ${index}`,
+      sourceRepoUrl: `https://github.com/org/source-repo${index}`,
+      targetRepoUrl: `https://github.com/org/target-repo${index}`,
+      sourceRepoBranch: `main${index}`,
+      targetRepoBranch: `main${index}`,
       createdAt: new Date(
         `2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
       ),

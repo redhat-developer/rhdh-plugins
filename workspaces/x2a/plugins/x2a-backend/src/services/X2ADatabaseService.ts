@@ -83,6 +83,10 @@ export class X2ADatabaseService {
       name: row.name,
       abbreviation: row.abbreviation,
       description: row.description,
+      sourceRepoUrl: row.source_repo_url,
+      targetRepoUrl: row.target_repo_url,
+      sourceRepoBranch: row.source_repo_branch,
+      targetRepoBranch: row.target_repo_branch,
       createdBy: row.created_by,
       createdAt: new Date(row.created_at),
     };
@@ -147,6 +151,10 @@ export class X2ADatabaseService {
       name: string;
       abbreviation: string;
       description: string;
+      sourceRepoUrl: string;
+      targetRepoUrl: string;
+      sourceRepoBranch: string;
+      targetRepoBranch: string;
     },
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
@@ -161,7 +169,10 @@ export class X2ADatabaseService {
       name: input.name,
       abbreviation: input.abbreviation,
       description: input.description,
-      // sourceRepository: 'https://github.com/org/repo',
+      sourceRepoUrl: input.sourceRepoUrl,
+      targetRepoUrl: input.targetRepoUrl,
+      sourceRepoBranch: input.sourceRepoBranch,
+      targetRepoBranch: input.targetRepoBranch,
       createdBy,
       createdAt,
     };
@@ -172,6 +183,10 @@ export class X2ADatabaseService {
       name: input.name,
       abbreviation: input.abbreviation,
       description: input.description,
+      source_repo_url: input.sourceRepoUrl,
+      target_repo_url: input.targetRepoUrl,
+      source_repo_branch: input.sourceRepoBranch,
+      target_repo_branch: input.targetRepoBranch,
       created_by: createdBy,
       created_at: createdAt,
     });

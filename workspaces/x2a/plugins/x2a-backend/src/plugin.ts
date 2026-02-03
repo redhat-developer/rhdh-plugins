@@ -36,6 +36,7 @@ export const x2APlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         database: coreServices.database,
         logger: coreServices.logger,
+        discoveryApi: coreServices.discovery,
         permissionsSvc: coreServices.permissions,
         x2aDatabase: x2aDatabaseServiceRef,
         kubeService: kubeServiceRef,
@@ -45,6 +46,7 @@ export const x2APlugin = createBackendPlugin({
         permissionsSvc,
         x2aDatabase,
         logger,
+        discoveryApi,
         httpAuth,
         database,
         kubeService,
@@ -55,6 +57,7 @@ export const x2APlugin = createBackendPlugin({
           await createRouter({
             httpAuth,
             logger,
+            discoveryApi,
             permissionsSvc,
             x2aDatabase,
             kubeService,
