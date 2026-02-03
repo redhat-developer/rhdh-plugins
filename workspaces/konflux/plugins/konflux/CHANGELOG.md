@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-konflux
 
+## 0.1.4
+
+### Patch Changes
+
+- 74f6ae3: Drop @visibility frontend on konflux and clusters containers so backend secrets don’t inherit frontend visibility during schema merge.
+- Updated dependencies [74f6ae3]
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
