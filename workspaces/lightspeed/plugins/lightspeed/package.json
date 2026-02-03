@@ -60,7 +60,7 @@
     "@mui/material": "^5.12.2",
     "@mui/styles": "5.18.0",
     "@patternfly/chatbot": "6.5.0",
-    "@patternfly/react-core": "6.4.0",
+    "@patternfly/react-core": "6.4.1",
     "@patternfly/react-icons": "^6.3.1",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
