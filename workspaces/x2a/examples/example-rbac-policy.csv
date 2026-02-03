@@ -1,0 +1,19 @@
+p, role:default/x2aAdmin, x2a.admin, read, allow
+p, role:default/x2aAdmin, x2a.admin, update, allow
+
+p, role:default/x2aUser, x2a.user, update, allow
+g, user:development/guest, role:default/x2aUser
+		
+g, user:default/mareklibra, role:default/x2aAdmin
+
+###
+# For Catalog and Scaffolder templates:
+p, role:default/x2aAdmin, scaffolder.task.create, create, allow
+p, role:default/x2aAdmin, scaffolder.task.read, read, allow
+p, role:default/x2aAdmin, catalog.entity.create, create, allow
+p, role:default/x2aAdmin, catalog.entity.read, read, allow
+
+p, role:default/x2aUser, scaffolder.task.create, create, allow
+p, role:default/x2aUser, scaffolder.task.read, read, allow
+p, role:default/x2aUser, catalog.entity.create, create, allow
+p, role:default/x2aUser, catalog.entity.read, read, allow
