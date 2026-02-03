@@ -14,9 +14,23 @@
  * limitations under the License.
  */
 export interface Config {
+  /** @visibility backend */
   konflux?: {
+    /** @visibility backend */
+    authProvider?: 'serviceAccount' | 'oidc' | 'impersonationHeaders';
+
+    /** @visibility backend */
     clusters?: {
       [key: string]: {
+        /** @visibility backend */
+        uiUrl?: string;
+        /** @visibility backend */
+        openshiftConsoleUrl?: string;
+        /** @visibility backend */
+        kubearchiveApiUrl?: string;
+        /** @visibility backend */
+        apiUrl?: string;
+
         /** @visibility secret */
         serviceAccountToken?: string;
       };
