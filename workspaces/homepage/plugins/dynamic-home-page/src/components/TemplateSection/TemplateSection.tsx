@@ -96,7 +96,7 @@ export const TemplateSection = () => {
                   title={item.metadata.title}
                   description={item.metadata.description}
                   kind={item.kind}
-                  type={item.spec.type}
+                  type={item.spec?.type}
                 />
               </Grid>
             ))}
