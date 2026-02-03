@@ -512,6 +512,110 @@ export class X2ADatabaseService {
     return row ? row.log : undefined;
   }
 
+  async listJobsForProject({
+    projectId,
+  }: {
+    projectId: string;
+  }): Promise<Job[]> {
+    this.#logger.info(`listJobsForProject called for projectId: ${projectId}`);
+
+    // Fetch all jobs for the given project
+    const rows = await this.#dbClient('jobs')
+      .where('project_id', projectId)
+      .select('*')
+      .orderBy('started_at', 'desc');
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const jobIds = rows.map(row => row.id);
+
+    // Fetch all artifacts for these jobs in a single query
+    const artifactRows = await this.#dbClient('artifacts')
+      .whereIn('job_id', jobIds)
+      .select('job_id', 'value')
+      .orderBy('id', 'asc');
+
+    // Group artifacts by job_id
+    const artifactsByJobId = new Map<string, string[]>();
+    for (const artifactRow of artifactRows) {
+      if (!artifactsByJobId.has(artifactRow.job_id)) {
+        artifactsByJobId.set(artifactRow.job_id, []);
+      }
+      artifactsByJobId.get(artifactRow.job_id)!.push(artifactRow.value);
+    }
+
+    // Build jobs with their artifacts
+    const jobs: Job[] = rows.map(row => {
+      const job = this.mapRowToJob(row);
+      return {
+        ...job,
+        artifacts: artifactsByJobId.get(job.id) || [],
+      };
+    });
+
+    this.#logger.debug(
+      `Fetched ${jobs.length} jobs from database for project ${projectId}`,
+    );
+
+    return jobs;
+  }
+
+  async listJobsForModule({
+    projectId,
+    moduleId,
+  }: {
+    projectId: string;
+    moduleId: string;
+  }): Promise<Job[]> {
+    this.#logger.info(
+      `listJobsForModule called for projectId: ${projectId}, moduleId: ${moduleId}`,
+    );
+
+    // Fetch all jobs for the given module
+    const rows = await this.#dbClient('jobs')
+      .where({ project_id: projectId, module_id: moduleId })
+      .select('*')
+      .orderBy('started_at', 'desc');
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const jobIds = rows.map(row => row.id);
+
+    // Fetch all artifacts for these jobs in a single query
+    const artifactRows = await this.#dbClient('artifacts')
+      .whereIn('job_id', jobIds)
+      .select('job_id', 'value')
+      .orderBy('id', 'asc');
+
+    // Group artifacts by job_id
+    const artifactsByJobId = new Map<string, string[]>();
+    for (const artifactRow of artifactRows) {
+      if (!artifactsByJobId.has(artifactRow.job_id)) {
+        artifactsByJobId.set(artifactRow.job_id, []);
+      }
+      artifactsByJobId.get(artifactRow.job_id)!.push(artifactRow.value);
+    }
+
+    // Build jobs with their artifacts
+    const jobs: Job[] = rows.map(row => {
+      const job = this.mapRowToJob(row);
+      return {
+        ...job,
+        artifacts: artifactsByJobId.get(job.id) || [],
+      };
+    });
+
+    this.#logger.debug(
+      `Fetched ${jobs.length} jobs from database for module ${moduleId} in project ${projectId}`,
+    );
+
+    return jobs;
+  }
+
   /**
    * List jobs for the given module.
    * If lastJobOnly is true, only the last job will be returned.

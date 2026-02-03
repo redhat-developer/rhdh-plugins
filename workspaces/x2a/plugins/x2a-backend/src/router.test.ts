@@ -50,8 +50,8 @@ const mockProject2: ProjectsPostRequest = {
   name: 'Another Project',
   description: 'Another Description',
   abbreviation: 'AP',
-  sourceRepoUrl: 'https://github.com/source/repo',
-  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoUrl: 'https://github.com/source/repo2',
+  targetRepoUrl: 'https://github.com/target/repo2',
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
 };

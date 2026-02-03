@@ -43,6 +43,8 @@ import {
   DEFAULT_MEMORY_REQUEST,
   DEFAULT_CPU_LIMIT,
   DEFAULT_MEMORY_LIMIT,
+  DEFAULT_GIT_AUTHOR_NAME,
+  DEFAULT_GIT_AUTHOR_EMAIL,
 } from './constants';
 
 /**
@@ -419,6 +421,12 @@ export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
                   rawConfig?.kubernetes?.resources?.limits?.memory ??
                   DEFAULT_MEMORY_LIMIT,
               },
+            },
+          },
+          git: {
+            author: {
+              name: rawConfig?.git?.author?.name ?? DEFAULT_GIT_AUTHOR_NAME,
+              email: rawConfig?.git?.author?.email ?? DEFAULT_GIT_AUTHOR_EMAIL,
             },
           },
           credentials: {

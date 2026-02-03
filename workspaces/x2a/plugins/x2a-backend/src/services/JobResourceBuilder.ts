@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import { V1Job, V1Secret } from '@kubernetes/client-node';
+import { resolvePackagePath } from '@backstage/backend-plugin-api';
+import { V1Job, V1Secret, V1Container } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { X2AConfig } from '../../config';
 import { JobCreateParams, AAPCredentials, GitRepo } from './types';
 
@@ -244,11 +246,14 @@ export class JobResourceBuilder {
           },
           spec: {
             restartPolicy: 'Never',
+            // Init container: Clone source and target repositories
+            initContainers: [this.buildGitFetchInitContainer(params.jobId)],
             containers: [
               {
-                name: 'x2a-echo',
-                image: 'busybox:latest',
-                command: this.buildCommand(params),
+                name: 'x2a',
+                image: `${config.kubernetes.image}:${config.kubernetes.imageTag}`,
+                command: ['/bin/bash', '-c'],
+                args: [this.buildMainContainerScript(params, config)],
                 // Mount both secrets:
                 // 1. Project secret (LLM + AAP) - long-lived
                 // 2. Job secret (Git credentials) - ephemeral, auto-deleted with job
@@ -318,7 +323,42 @@ export class JobResourceBuilder {
                         },
                       ]
                     : []),
+                  {
+                    name: 'PROJECT_ABBREV',
+                    value: params.projectAbbrev,
+                  },
+                  {
+                    name: 'GIT_AUTHOR_NAME',
+                    value: config.git?.author?.name || 'X2A Migration Bot',
+                  },
+                  {
+                    name: 'GIT_AUTHOR_EMAIL',
+                    value: config.git?.author?.email || 'x2a-bot@redhat.com',
+                  },
                 ],
+                volumeMounts: [
+                  {
+                    name: 'workspace',
+                    mountPath: '/workspace',
+                  },
+                ],
+                resources: {
+                  requests: {
+                    cpu: config.kubernetes.resources.requests.cpu,
+                    memory: config.kubernetes.resources.requests.memory,
+                  },
+                  limits: {
+                    cpu: config.kubernetes.resources.limits.cpu,
+                    memory: config.kubernetes.resources.limits.memory,
+                  },
+                },
+              },
+            ],
+            // Shared volume for git repositories
+            volumes: [
+              {
+                name: 'workspace',
+                emptyDir: {},
               },
             ],
           },
@@ -376,100 +416,80 @@ export class JobResourceBuilder {
   }
 
   /**
-   * Builds the command array for the container based on the migration phase
-   * Currently simplified to echo commands for testing job infrastructure
+   * Builds an init container that clones source and target git repositories
+   *
+   * @param jobId - The job UUID (for secret reference)
+   * @returns V1Container for the init container
+   */
+  private static buildGitFetchInitContainer(jobId: string): V1Container {
+    const jobSecretName = `x2a-job-secret-${jobId}`;
+
+    return {
+      name: 'git-fetch',
+      image: 'alpine/git:2.43.0',
+      command: ['/bin/sh', '-c'],
+      args: [
+        `
+set -e
+echo "=== Cloning source repository ==="
+git clone --depth=1 --single-branch --branch=\${SOURCE_REPO_BRANCH} \\
+  https://\${SOURCE_REPO_TOKEN}@\${SOURCE_REPO_URL#https://} \\
+  /workspace/source
+
+echo "=== Cloning target repository ==="
+# Handle case where target repo might be empty or not exist
+if git ls-remote https://\${TARGET_REPO_TOKEN}@\${TARGET_REPO_URL#https://} &>/dev/null; then
+  git clone --depth=1 --single-branch --branch=\${TARGET_REPO_BRANCH} \\
+    https://\${TARGET_REPO_TOKEN}@\${TARGET_REPO_URL#https://} \\
+    /workspace/target
+else
+  echo "Target repo doesn't exist, initializing empty repo"
+  mkdir -p /workspace/target
+  cd /workspace/target
+  git init
+  git checkout -b \${TARGET_REPO_BRANCH}
+fi
+
+echo "=== Git fetch completed ==="
+        `.trim(),
+      ],
+      envFrom: [
+        {
+          secretRef: {
+            name: jobSecretName,
+          },
+        },
+      ],
+      volumeMounts: [
+        {
+          name: 'workspace',
+          mountPath: '/workspace',
+        },
+      ],
+    };
+  }
+
+  /**
+   * Builds the main container script that executes x2a tool, commits, and pushes
    *
    * @param params - Job creation parameters
-   * @returns Command array to execute in the container
+   * @param config - X2A configuration
+   * @returns Bash script as string
    */
-  private static buildCommand(params: JobCreateParams): string[] {
-    const baseEcho = ['/bin/sh', '-c'];
+  private static buildMainContainerScript(
+    _params: JobCreateParams,
+    _config: X2AConfig,
+  ): string {
+    // Read the template file
+    const templatePath = resolvePackagePath(
+      '@red-hat-developer-hub/backstage-plugin-x2a-backend',
+      'templates',
+      'x2a-job-script.sh',
+    );
+    const template = fs.readFileSync(templatePath, 'utf-8');
 
-    switch (params.phase) {
-      case 'init':
-        // init phase: scans source repo to create migration plan
-        return [
-          ...baseEcho,
-          `
-          echo "===== X2A Init Phase ====="
-          echo "Project: ${params.projectName} (${params.projectId})"
-          echo "Job ID: ${params.jobId}"
-          echo "User: ${params.user}"
-          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
-          echo ""
-          echo "Simulating init phase (scanning source repo)..."
-          sleep 10
-          echo "Init phase completed!"
-          `,
-        ];
-
-      case 'analyze':
-        // analyze phase: analyzes a specific module
-        if (!params.moduleName) {
-          throw new Error('moduleName is required for analyze phase');
-        }
-        return [
-          ...baseEcho,
-          `
-          echo "===== X2A Analyze Phase ====="
-          echo "Project: ${params.projectName} (${params.projectId})"
-          echo "Module: ${params.moduleName} (${params.moduleId})"
-          echo "Job ID: ${params.jobId}"
-          echo "User: ${params.user}"
-          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
-          echo ""
-          echo "Simulating analyze phase for module ${params.moduleName}..."
-          sleep 10
-          echo "Analyze phase completed!"
-          `,
-        ];
-
-      case 'migrate':
-        // migrate phase: converts Chef code to Ansible
-        if (!params.moduleName) {
-          throw new Error('moduleName is required for migrate phase');
-        }
-        return [
-          ...baseEcho,
-          `
-          echo "===== X2A Migrate Phase ====="
-          echo "Project: ${params.projectName} (${params.projectId})"
-          echo "Module: ${params.moduleName} (${params.moduleId})"
-          echo "Job ID: ${params.jobId}"
-          echo "User: ${params.user}"
-          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
-          echo ""
-          echo "Simulating migrate phase for module ${params.moduleName}..."
-          echo "Converting Chef code to Ansible..."
-          sleep 10
-          echo "Migrate phase completed!"
-          `,
-        ];
-
-      case 'publish':
-        // publish phase: prepares Ansible content for AAP
-        if (!params.moduleName) {
-          throw new Error('moduleName is required for publish phase');
-        }
-        return [
-          ...baseEcho,
-          `
-          echo "===== X2A Publish Phase ====="
-          echo "Project: ${params.projectName} (${params.projectId})"
-          echo "Module: ${params.moduleName} (${params.moduleId})"
-          echo "Job ID: ${params.jobId}"
-          echo "User: ${params.user}"
-          ${params.userPrompt ? `echo "User Prompt: ${params.userPrompt}"` : ''}
-          echo ""
-          echo "Simulating publish phase for module ${params.moduleName}..."
-          echo "Publishing Ansible content to AAP..."
-          sleep 10
-          echo "Publish phase completed!"
-          `,
-        ];
-
-      default:
-        throw new Error(`Unknown phase: ${params.phase}`);
-    }
+    // Template uses environment variables, no string replacement needed
+    // All variables are passed via environment in the container spec
+    return template;
   }
 }
