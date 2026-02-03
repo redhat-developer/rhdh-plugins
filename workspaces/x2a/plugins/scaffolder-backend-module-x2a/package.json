@@ -2,7 +2,6 @@
   "name": "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a",
   "version": "0.1.0",
   "license": "Apache-2.0",
-  "private": true,
   "description": "The x2a module for @backstage/plugin-scaffolder-backend",
   "main": "src/index.ts",
   "types": "src/index.ts",
