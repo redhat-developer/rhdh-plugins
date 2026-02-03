@@ -99,6 +99,8 @@ export function createProjectAction(discoveryApi: DiscoveryService) {
       });
       const project = await response.json();
 
+      // TODO: The project is created, trigger the init-phase automatically
+
       ctx.output('projectId', project.id);
       // TODO: Build proper URL of project detail page once implemented
       ctx.output('nextUrl', `/x2a/projects/${project.id}`);
