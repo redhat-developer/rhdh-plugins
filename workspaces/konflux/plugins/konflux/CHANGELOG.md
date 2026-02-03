@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-konflux
 
+## 0.1.3
+
+### Patch Changes
+
+- 98ab178: Separate Konflux frontend and backend config schemas to avoid visibility conflicts.
+- Updated dependencies [98ab178]
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
