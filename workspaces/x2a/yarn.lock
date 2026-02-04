@@ -2125,7 +2125,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/backend-test-utils@npm:^1.10.1":
+"@backstage/backend-test-utils@npm:^1.10.1, @backstage/backend-test-utils@npm:^1.10.3":
   version: 1.10.4
   resolution: "@backstage/backend-test-utils@npm:1.10.4"
   dependencies:
@@ -3786,7 +3786,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-node@npm:^0.12.3, @backstage/plugin-scaffolder-node@npm:^0.12.4":
+"@backstage/plugin-scaffolder-node-test-utils@npm:^0.3.5":
+  version: 0.3.7
+  resolution: "@backstage/plugin-scaffolder-node-test-utils@npm:0.3.7"
+  dependencies:
+    "@backstage/backend-plugin-api": ^1.6.1
+    "@backstage/backend-test-utils": ^1.10.3
+    "@backstage/plugin-scaffolder-node": ^0.12.3
+    "@backstage/types": ^1.2.2
+    winston: ^3.2.1
+    winston-transport: ^4.7.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: e12bd400d89b4e00576b9b1a92dea65bd71d6fea0bd1f403b589b4c7989bfbb429485a398e99e493a9acd2f39f2867e5057edded44e2162501b9e60e5506fe19
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-scaffolder-node@npm:^0.12.1, @backstage/plugin-scaffolder-node@npm:^0.12.3, @backstage/plugin-scaffolder-node@npm:^0.12.4":
   version: 0.12.4
   resolution: "@backstage/plugin-scaffolder-node@npm:0.12.4"
   dependencies:
@@ -11537,6 +11559,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a@workspace:^, @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a@workspace:plugins/scaffolder-backend-module-x2a":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a@workspace:plugins/scaffolder-backend-module-x2a"
+  dependencies:
+    "@backstage/backend-plugin-api": 1.5.0
+    "@backstage/cli": ^0.34.5
+    "@backstage/plugin-scaffolder-node": ^0.12.1
+    "@backstage/plugin-scaffolder-node-test-utils": ^0.3.5
+    "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:*, @red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-x2a-backend@workspace:plugins/x2a-backend"
@@ -16723,6 +16757,7 @@ __metadata:
     "@backstage/plugin-search-backend-node": ^1.3.17
     "@backstage/plugin-signals-backend": ^0.3.10
     "@backstage/plugin-techdocs-backend": ^2.1.2
+    "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-x2a-backend": "workspace:*"
     app: "link:../app"
     better-sqlite3: ^12.0.0
