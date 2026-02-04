@@ -18,6 +18,7 @@ import '@backstage/cli/asset-types';
 import ReactDOM from 'react-dom/client';
 // In the new frontend system, App.tsx exports a React element, not a component
 import app from './App';
+import '@backstage/ui/css/styles.css';
 
 // Render the app element directly (not as a component)
 ReactDOM.createRoot(document.getElementById('root')!).render(app);

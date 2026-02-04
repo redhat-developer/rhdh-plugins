@@ -17,14 +17,21 @@
 import { createApp } from '@backstage/frontend-defaults';
 import {
   SignInPageBlueprint,
+  ThemeBlueprint,
   createFrontendModule,
   githubAuthApiRef,
   gitlabAuthApiRef,
 } from '@backstage/frontend-plugin-api';
 import { SignInPage } from '@backstage/core-components';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 // Import the new frontend system plugin for bulk-import
 import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+
+// Import core Backstage plugins (NFS versions)
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
+import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 
 // Create sign-in page extension with GitHub and GitLab providers
 const signInPageExtension = SignInPageBlueprint.make({
@@ -59,6 +66,23 @@ const signInModule = createFrontendModule({
   extensions: [signInPageExtension],
 });
 
+// Create theme extensions from RHDH themes
+const rhdhThemes = getThemes();
+const themeExtensions = rhdhThemes.map(theme =>
+  ThemeBlueprint.make({
+    name: theme.id,
+    params: {
+      theme: theme,
+    },
+  }),
+);
+
+// Wrap themes in a module
+const themesModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: themeExtensions,
+});
+
 /**
  * app-next: A Backstage app using the New Frontend System (NFS)
  *
@@ -77,6 +101,12 @@ const app = createApp({
     bulkImportPlugin,
     // Sign-in module with GitHub and GitLab providers
     signInModule,
+    // RHDH themes (light/dark modes)
+    themesModule,
+    // Core Backstage plugins
+    catalogPlugin,
+    scaffolderPlugin,
+    userSettingsPlugin,
   ],
 });
 
