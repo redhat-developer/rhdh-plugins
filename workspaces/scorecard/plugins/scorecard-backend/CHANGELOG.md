@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.3.5
+
+### Patch Changes
+
+- ab5f85a: Updated default schedule for pulling metrics to have `initialDelay` of 1 minute
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.5
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.5
+
 ## 2.3.4
 
 ### Patch Changes
