@@ -47,18 +47,19 @@ export * from './translations';
  * Provides the BulkImportAPI for communicating with the bulk-import backend.
  */
 const bulkImportApi = ApiBlueprint.make({
-  params: {
-    factory: createApiFactory({
-      api: bulkImportApiRef,
-      deps: {
-        configApi: configApiRef,
-        identityApi: identityApiRef,
-      },
-      factory: ({ configApi, identityApi }) => {
-        return new BulkImportBackendClient({ configApi, identityApi });
-      },
-    }),
-  },
+  params: defineParams =>
+    defineParams(
+      createApiFactory({
+        api: bulkImportApiRef,
+        deps: {
+          configApi: configApiRef,
+          identityApi: identityApiRef,
+        },
+        factory: ({ configApi, identityApi }) => {
+          return new BulkImportBackendClient({ configApi, identityApi });
+        },
+      }),
+    ),
 });
 
 /**
@@ -68,7 +69,7 @@ const bulkImportApi = ApiBlueprint.make({
  */
 const bulkImportPage = PageBlueprint.make({
   params: {
-    defaultPath: '/bulk-import',
+    path: '/bulk-import',
     routeRef: convertLegacyRouteRef(rootRouteRef),
     loader: () => import('./components').then(m => compatWrapper(<m.Router />)),
   },

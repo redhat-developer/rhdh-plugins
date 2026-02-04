@@ -15,33 +15,68 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
+import {
+  SignInPageBlueprint,
+  createFrontendModule,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
+} from '@backstage/frontend-plugin-api';
+import { SignInPage } from '@backstage/core-components';
 
 // Import the new frontend system plugin for bulk-import
-// This provides:
-// - NavItemBlueprint: Adds "Bulk import" to the sidebar
-// - PageBlueprint: Provides the /bulk-import page
-// - ApiBlueprint: Provides the BulkImportAPI
 import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
+// Create sign-in page extension with GitHub and GitLab providers
+const signInPageExtension = SignInPageBlueprint.make({
+  params: {
+    loader: async () => props => (
+      <SignInPage
+        {...props}
+        auto
+        providers={[
+          'guest',
+          {
+            id: 'github-auth-provider',
+            title: 'GitHub',
+            message: 'Sign in using GitHub',
+            apiRef: githubAuthApiRef,
+          },
+          {
+            id: 'gitlab-auth-provider',
+            title: 'GitLab',
+            message: 'Sign in using GitLab',
+            apiRef: gitlabAuthApiRef,
+          },
+        ]}
+      />
+    ),
+  },
+});
+
+// Wrap in a module to make it a FrontendFeature
+const signInModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [signInPageExtension],
+});
+
 /**
- * app-next: A minimal Backstage app using the New Frontend System (NFS)
+ * app-next: A Backstage app using the New Frontend System (NFS)
  *
  * This app is used to test the migrated bulk-import plugin with:
  * - createFrontendPlugin
  * - PageBlueprint
  * - NavItemBlueprint
  * - ApiBlueprint
+ * - SignInPageBlueprint
  *
- * To run: yarn --cwd packages/app-next start
+ * To run: yarn start:nfs
  */
 const app = createApp({
   features: [
     // The bulk-import plugin for the new frontend system
-    // This automatically registers:
-    // - Nav item in sidebar (via NavItemBlueprint)
-    // - Page at /bulk-import (via PageBlueprint)
-    // - API for backend communication (via ApiBlueprint)
     bulkImportPlugin,
+    // Sign-in module with GitHub and GitLab providers
+    signInModule,
   ],
 });
 

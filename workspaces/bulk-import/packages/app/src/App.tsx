@@ -60,7 +60,7 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
-import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
 
 const app = createApp({
   apis,
