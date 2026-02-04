@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start",
+    "start:nfs": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start backend app-next",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
