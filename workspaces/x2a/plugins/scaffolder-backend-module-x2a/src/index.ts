@@ -13,30 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Default table page size in the UI.
- * @public
- */
-export const DEFAULT_PAGE_SIZE = 10;
 
 /**
- * Default table page sort in the UI.
- * @public
- */
-export const DEFAULT_PAGE_SORT = 'created_at';
-
-/**
- * Default table page order in the UI.
- * @public
- */
-export const DEFAULT_PAGE_ORDER = 'desc';
-
-/**
- * Path to the default chef conversion project scaffolder template.
+ * The x2a module for \@backstage/plugin-scaffolder-backend.
  *
- * This might be subject to exposing as a plugin configuration option in the future.
- *
- * @public
+ * @packageDocumentation
  */
-export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
-  '/create/templates/default/chef-conversion-project-template';
+
+export { scaffolderModule as default } from './module';

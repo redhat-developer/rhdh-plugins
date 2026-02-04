@@ -28,6 +28,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import { Box, Grid } from '@material-ui/core';
 
 import {
+  CREATE_CHEF_PROJECT_TEMPLATE_PATH,
   DEFAULT_PAGE_SIZE,
   Project,
   ProjectsGet,
@@ -185,7 +186,11 @@ export const DenseTable = ({
 
       <Grid item>
         <Box display="flex" justifyContent="flex-end">
-          <LinkButton variant="contained" color="primary" to="/x2a/new-project">
+          <LinkButton
+            variant="contained"
+            color="primary"
+            to={CREATE_CHEF_PROJECT_TEMPLATE_PATH}
+          >
             {t('common.newProject')}
           </LinkButton>
         </Box>
