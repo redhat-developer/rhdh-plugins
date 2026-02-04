@@ -15,7 +15,10 @@
  */
 import { DiscoveryService } from '@backstage/backend-plugin-api';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import { DefaultApiClient } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  DefaultApiClient,
+  Project,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
  * Creates an `x2a:project:create` Scaffolder action.
@@ -75,29 +78,38 @@ export function createProjectAction(discoveryApi: DiscoveryService) {
 
       const api = new DefaultApiClient({
         discoveryApi,
-        fetchApi: {
-          fetch: (url, options = {}) => {
-            // Ensure headers exist and are an object
-            const mergedHeaders = {
-              ...(options.headers || {}),
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            };
-            return fetch(url, {
-              ...options,
-              headers: mergedHeaders,
-            });
-          },
-        },
+        fetchApi: { fetch },
       });
 
-      const response = await api.projectsPost({
-        body: {
-          name: ctx.input.name,
-          description: ctx.input.description ?? '',
-          abbreviation: ctx.input.abbreviation,
-        },
-      });
-      const project = await response.json();
+      console.log('=================================');
+      let project: Project;
+      try {
+        const response = await api.projectsPost(
+          {
+            body: {
+              name: ctx.input.name,
+              description: ctx.input.description ?? '',
+              abbreviation: ctx.input.abbreviation,
+            },
+          },
+          {
+            token: token,
+          },
+        );
+
+        if (!response.ok) {
+          const error = (await response.json()) as any;
+          ctx.logger.error(
+            `Response status: ${response.status}, error: ${JSON.stringify(error)}`,
+          );
+          throw new Error(error);
+        }
+
+        project = await response.json();
+      } catch (error) {
+        ctx.logger.error(`Error creating project: ${JSON.stringify(error)}`);
+        throw new Error(error as string);
+      }
 
       // TODO: The project is created, trigger the init-phase automatically
 
