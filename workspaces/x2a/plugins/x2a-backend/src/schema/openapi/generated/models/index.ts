@@ -17,6 +17,7 @@
 export * from '../models/AAPCredentials.model';
 export * from '../models/GitRepoCredentials.model';
 export * from '../models/Module.model';
+export * from '../models/Phase.model';
 export * from '../models/Project.model';
 export * from '../models/ProjectsGet200Response.model';
 export * from '../models/ProjectsPostRequest.model';

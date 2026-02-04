@@ -448,12 +448,23 @@ export class X2ADatabaseService {
     };
   }
 
-  async listJobs({ moduleId }: { moduleId: string }): Promise<Job[]> {
+  async listJobs({
+    moduleId,
+    phase = null,
+  }: {
+    moduleId: string;
+    phase?: MigrationPhase | null;
+  }): Promise<Job[]> {
     this.#logger.info(`listJobs called for moduleId: ${moduleId}`);
 
     // Fetch all jobs for the given module
     const rows = await this.#dbClient('jobs')
       .where('module_id', moduleId)
+      .modify(queryBuilder => {
+        if (phase) {
+          queryBuilder.where('phase', phase);
+        }
+      })
       .select('*')
       .orderBy('started_at', 'desc');
 
@@ -461,7 +472,7 @@ export class X2ADatabaseService {
       return [];
     }
 
-    const jobIds = rows.map(row => row.id);
+    const jobIds = rows.map((row: any) => row.id);
 
     // Fetch all artifacts for these jobs in a single query
     const artifactRows = await this.#dbClient('artifacts')
@@ -479,7 +490,7 @@ export class X2ADatabaseService {
     }
 
     // Build jobs with their artifacts
-    const jobs: Job[] = rows.map(row => {
+    const jobs: Job[] = rows.map((row: any) => {
       const job = this.mapRowToJob(row);
       return {
         ...job,
