@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "license": "Apache-2.0",
   "description": "The github backend module for the scorecard plugin.",
   "main": "src/index.ts",
