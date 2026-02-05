@@ -142,7 +142,7 @@ test.describe('Homepage Card Individual Tests', () => {
 
     await testUtils.verifyLinkInCard(
       translations.entities.title,
-      evaluateMessage(translations.entities.viewAll, '4'),
+      evaluateMessage(translations.entities.viewAll, '5'),
     );
   });
 
