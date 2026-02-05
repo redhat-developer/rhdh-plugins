@@ -4,9 +4,19 @@
 p, role:default/x2aAdmin, x2a.admin, read, allow
 p, role:default/x2aAdmin, x2a.admin, update, allow
 
+<<<<<<< Updated upstream
 p, role:default/x2aUser, x2a.user, use, allow
 
 g, user:development/guest, role:default/x2aUser
+=======
+p, role:default/x2aUser, x2a.user, update, allow
+p, role:default/x2aUser, x2a.user, use, allow
+
+g, user:development/guest, role:default/x2aAdmin
+g, user:default/guest, role:default/x2aAdmin
+g, user:default/eshalev, role:default/x2aAdmin
+
+>>>>>>> Stashed changes
 g, user:default/mareklibra, role:default/x2aAdmin
 g, user:default/elai-shalev, role:default/x2aAdmin
 

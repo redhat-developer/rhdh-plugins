@@ -6,19 +6,17 @@ set -eo pipefail
 #
 # Directory Structure:
 # /workspace/
-# ├── source/          # Cloned source repo (Chef cookbooks) - READ ONLY
-# │   └── [chef repo contents]
-# └── target/          # Cloned target repo (Ansible output) - READ/WRITE
+# ├── source/              # Cloned source repo (input)
+# │   ├── [source code]    # Original Chef/Puppet/etc code
+# │   └── [x2a outputs]    # x2a tool writes here (migration-plan.md, etc)
+# └── target/              # Cloned target repo (output, committed to git)
 #     └── [PROJECT_ID].[PROJECT_ABBREV]/
-#         ├── migration-plan.md           # Created by init phase
-#         └── modules/
-#             └── [MODULE_NAME]/
-#                 ├── module_migration-plan.md  # Created by analyze phase
-#                 ├── migrated_ansible/         # Created by migrate phase
-#                 └── aap_ansible/              # Created by publish phase
+#         ├── migration-plan.md
+#         └── modules/[MODULE_NAME]/
+#             ├── module_migration-plan.md
+#             └── migrated_ansible/
 #
-# /app/                # x2a tool installation (in container)
-# └── app.py           # Main entry point
+# /app/                    # x2a tool installation
 #
 
 echo "=========================================="
@@ -34,19 +32,6 @@ echo "  Job ID:        ${JOB_ID}"
 echo "  Phase:         ${PHASE}"
 echo ""
 
-# Debug: Show directory structure
-echo "=== Directory Structure ==="
-echo ""
-echo "Source repo (/workspace/source):"
-ls -la /workspace/source/ 2>/dev/null || echo "  (not found)"
-echo ""
-echo "Target repo (/workspace/target):"
-ls -la /workspace/target/ 2>/dev/null || echo "  (not found)"
-echo ""
-echo "X2A app (/app):"
-ls -la /app/ 2>/dev/null || echo "  (not found - will use local python)"
-echo ""
-
 # Configure git
 git config --global user.name "${GIT_AUTHOR_NAME}"
 git config --global user.email "${GIT_AUTHOR_EMAIL}"
@@ -56,13 +41,6 @@ TARGET_BASE="/workspace/target"
 SOURCE_BASE="/workspace/source"
 PROJECT_DIR="${PROJECT_ID}.${PROJECT_ABBREV}"
 PROJECT_PATH="${TARGET_BASE}/${PROJECT_DIR}"
-
-echo "=== Working Paths ==="
-echo "  SOURCE_BASE:  ${SOURCE_BASE}"
-echo "  TARGET_BASE:  ${TARGET_BASE}"
-echo "  PROJECT_DIR:  ${PROJECT_DIR}"
-echo "  PROJECT_PATH: ${PROJECT_PATH}"
-echo ""
 
 # Create project directory in target
 mkdir -p "${PROJECT_PATH}"
@@ -94,11 +72,12 @@ case "${PHASE}" in
       eval ${CMD}
 
       # Copy output to target location
+      # Note: x2a tool writes files to the source directory (--source-dir)
       echo "Copying output to ${PROJECT_PATH}/"
-      cp -v migration-plan.md "${PROJECT_PATH}/"
+      cp -v "${SOURCE_BASE}/migration-plan.md" "${PROJECT_PATH}/"
       # Copy any other generated files (like metadata)
-      cp -v *.json "${PROJECT_PATH}/" 2>/dev/null || true
-      cp -v *.yaml "${PROJECT_PATH}/" 2>/dev/null || true
+      cp -v "${SOURCE_BASE}"/*.json "${PROJECT_PATH}/" 2>/dev/null || true
+      cp -v "${SOURCE_BASE}"/*.yaml "${PROJECT_PATH}/" 2>/dev/null || true
     else
       echo "WARNING: /app/app.py not found - creating placeholder output for testing"
       echo "# Migration Plan" > "${PROJECT_PATH}/migration-plan.md"
@@ -141,22 +120,17 @@ case "${PHASE}" in
       cd /app
       echo "Working directory: $(pwd)"
 
-      # Show available options
-      echo ""
-      echo "=== X2A analyze help ==="
-      uv run app.py analyze --help || true
-      echo ""
-
       USER_REQ="${USER_PROMPT:-Analyze this module for migration}"
       CMD="uv run app.py analyze --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
       echo "Command: ${CMD}"
       eval ${CMD}
 
       # Copy output to target location
+      # Note: x2a tool writes files to the source directory (--source-dir)
       echo "Copying output to ${OUTPUT_DIR}/"
-      cp -v module_migration-plan.md "${OUTPUT_DIR}/" 2>/dev/null || true
-      cp -v *.json "${OUTPUT_DIR}/" 2>/dev/null || true
-      cp -v *.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
+      cp -v "${SOURCE_BASE}/module_migration-plan.md" "${OUTPUT_DIR}/" 2>/dev/null || true
+      cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
+      cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
     else
       echo "WARNING: /app/app.py not found - creating placeholder output for testing"
       echo "# Module Migration Plan: ${MODULE_NAME}" > "${OUTPUT_DIR}/module_migration-plan.md"
@@ -193,12 +167,6 @@ case "${PHASE}" in
       cd /app
       echo "Working directory: $(pwd)"
 
-      # Show available options
-      echo ""
-      echo "=== X2A migrate help ==="
-      uv run app.py migrate --help || true
-      echo ""
-
       USER_REQ="${USER_PROMPT:-Migrate this module to Ansible}"
       CMD="uv run app.py migrate \
         --source-dir ${SOURCE_BASE} \
@@ -210,10 +178,11 @@ case "${PHASE}" in
       eval ${CMD}
 
       # Copy output to target location
+      # Note: x2a tool writes files to the source directory (--source-dir)
       echo "Copying output to ${OUTPUT_DIR}/"
-      cp -rv migrated_ansible "${OUTPUT_DIR}/" 2>/dev/null || true
-      cp -v *.json "${OUTPUT_DIR}/" 2>/dev/null || true
-      cp -v *.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
+      cp -rv "${SOURCE_BASE}/migrated_ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
+      cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
+      cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
     else
       echo "WARNING: /app/app.py not found - creating placeholder output for testing"
       mkdir -p "${OUTPUT_DIR}/migrated_ansible"
