@@ -202,6 +202,9 @@ test.describe('Scorecard Plugin Tests', () => {
           entityCount,
         ),
       );
+
+      await homePage.expectCardHasMissingPermission('github.open_prs');
+      await homePage.expectCardHasMissingPermission('jira.open_issues');
     });
 
     test('Manage scorecards on Home page', async () => {
@@ -276,15 +279,9 @@ test.describe('Scorecard Plugin Tests', () => {
 
       await homePage.navigateToHome();
       await page.reload();
-      await homePage.expectCardVisible('github.open_prs');
-      await homePage.expectCardVisible('jira.open_issues');
 
-      await expect(page.locator('article')).toContainText(
-        translations.errors.noDataFound,
-      );
-      await expect(page.locator('article')).toContainText(
-        translations.errors.noDataFoundMessage,
-      );
+      await homePage.expectCardHasNoDataFound('github.open_prs');
+      await homePage.expectCardHasNoDataFound('jira.open_issues');
     });
 
     test('Verify threshold tooltips', async () => {
