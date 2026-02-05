@@ -20,7 +20,6 @@ import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-
 
 import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import fetch from 'node-fetch';
 
 import {
   lightspeedChatCreatePermission,
