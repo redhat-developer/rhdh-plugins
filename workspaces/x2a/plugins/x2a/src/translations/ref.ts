@@ -49,6 +49,12 @@ export const x2aPluginMessages = {
     detailPanel: 'TODO: Details of {{name}} project',
     projectsCount: 'Projects ({{count}})',
   },
+  project: {
+    description: 'Description',
+    id: 'ID',
+    abbreviation: 'Abbreviation',
+    createdBy: 'Created By',
+  },
   common: {
     newProject: 'New Project',
   },
@@ -56,6 +62,30 @@ export const x2aPluginMessages = {
     cancel: 'Cancel',
     back: 'Back',
     next: 'Next',
+  },
+  module: {
+    phases: {
+      init: 'Init',
+      none: '-',
+      analyze: 'Analyze',
+      migrate: 'Migrate',
+      publish: 'Publish',
+    },
+    actions: {
+      runNextPhase: 'Run Next Phase',
+    },
+    lastPhase: 'Last Phase',
+    name: 'Name',
+    status: 'Status',
+    sourcePath: 'Source Path',
+    artifacts: 'Artifacts',
+  },
+  artifact: {
+    types: {
+      migration_plan: 'Project Migration Plan',
+      module_migration_plan: 'Module Migration Plan',
+      migrated_sources: 'Migrated Sources',
+    },
   },
 };
 

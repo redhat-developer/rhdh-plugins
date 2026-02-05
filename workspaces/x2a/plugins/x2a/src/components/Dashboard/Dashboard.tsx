@@ -20,6 +20,7 @@ import { ProjectList } from '../ProjectList';
 
 export const Dashboard = () => {
   const { t } = useTranslation();
+
   return (
     <Page themeId="tool">
       <Header title={t('page.title')} subtitle={t('page.subtitle')} />

@@ -452,8 +452,8 @@ export const spec = {
                 },
                 "required": [
                   "phase",
-                  "sourceRepo",
-                  "targetRepo"
+                  "sourceRepoAuth",
+                  "targetRepoAuth"
                 ]
               }
             }
@@ -597,6 +597,10 @@ export const spec = {
           "createdBy": {
             "type": "string",
             "description": "The user who created the project (Backstage user reference)"
+          },
+          "migrationPlan": {
+            "$ref": "#/components/schemas/Artifact",
+            "description": "Project migration plan artifact (by init phase)"
           }
         },
         "required": [
@@ -713,6 +717,14 @@ export const spec = {
           }
         }
       },
+      "ArtifactType": {
+        "type": "string",
+        "enum": [
+          "migration_plan",
+          "module_migration_plan",
+          "migrated_sources"
+        ]
+      },
       "Artifact": {
         "type": "object",
         "properties": {
@@ -721,7 +733,7 @@ export const spec = {
             "description": "UUID for the artifact"
           },
           "type": {
-            "type": "string",
+            "$ref": "#/components/schemas/ArtifactType",
             "description": "Type of the artifact"
           },
           "value": {
