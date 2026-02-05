@@ -1239,6 +1239,9 @@ export const setupInformer = async () => {
       }
     }
   }
+  if (process.env.K8S_TOKEN && process.env.K8S_TOKEN.length > 0) {
+    k8sToken = process.env.K8S_TOKEN;
+  }
 
   // Initialize configuration from environment variables
   const config: ReconcilerConfig = {

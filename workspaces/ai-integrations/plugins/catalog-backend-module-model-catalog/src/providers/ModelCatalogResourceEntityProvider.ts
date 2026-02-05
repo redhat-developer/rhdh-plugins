@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import type {
+  DiscoveryService,
   LoggerService,
   SchedulerService,
   SchedulerServiceTaskRunner,
@@ -44,8 +45,10 @@ import { GenerateCatalogEntities } from '../clients/ModelCatalogGenerator';
  */
 export class ModelCatalogResourceEntityProvider implements EntityProvider {
   private readonly env: string;
+  private readonly name: string;
   private readonly baseUrl: string;
   private readonly logger: LoggerService;
+  private readonly discovery: DiscoveryService;
   private readonly scheduleFn: () => Promise<void>;
   private connection?: EntityProviderConnection;
 
@@ -57,12 +60,13 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
     deps: {
       config: Config;
       logger: LoggerService;
+      discovery: DiscoveryService;
     },
     options:
       | { schedule: SchedulerServiceTaskRunner }
       | { scheduler: SchedulerService },
   ): ModelCatalogResourceEntityProvider[] {
-    const { config, logger } = deps;
+    const { config, logger, discovery } = deps;
 
     const providerConfigs = readModelCatalogApiEntityConfigs(config);
 
@@ -83,6 +87,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       return new ModelCatalogResourceEntityProvider(
         providerConfig,
         logger,
+        discovery,
         taskRunner,
       );
     });
@@ -91,10 +96,13 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
   private constructor(
     config: ModelCatalogConfig,
     logger: LoggerService,
+    discovery: DiscoveryService,
     taskRunner: SchedulerServiceTaskRunner,
   ) {
     this.env = config.id;
+    this.name = config.name;
     this.baseUrl = config.baseUrl;
+    this.discovery = discovery;
     this.logger = logger.child({
       target: this.getProviderName(),
     });
@@ -116,7 +124,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
             if (isError(error)) {
               // Ensure that we don't log any sensitive internal data:
               this.logger.error(
-                `Error while syncing resources from Model Catalog ${this.baseUrl}`,
+                `Error while syncing resources from Model Catalog ${this.name}`,
                 {
                   // Default Error properties:
                   name: error.name,
@@ -150,11 +158,16 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       throw new Error('Not initialized');
     }
     this.logger.info(
-      `Discovering ResourceEntities from Model Server ${this.baseUrl}`,
+      `Discovering ResourceEntities from Model Server ${this.name}`,
     );
 
     /** [5]: Fetch the model catalog keys from the bridge and fetch the corresponding catalog entries. */
-    let catalogKeys = await fetchModelCatalogKeys(this.baseUrl);
+    const svcUrl = await this.discovery.getBaseUrl(this.name);
+    let url = this.baseUrl;
+    if (svcUrl.length > 0 && url.length === 0) {
+      url = svcUrl;
+    }
+    let catalogKeys = await fetchModelCatalogKeys(url);
     // If no models are registered yet, the catalogKeys array may be null, so handle it by setting it to be an emptyList
     if (catalogKeys === null || catalogKeys === undefined) {
       catalogKeys = [];
@@ -165,7 +178,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
 
     await Promise.all(
       catalogKeys.map(async key => {
-        const catalog = await fetchModelCatalogFromKey(this.baseUrl, key);
+        const catalog = await fetchModelCatalogFromKey(url, key);
         const catalogEntities = GenerateCatalogEntities(catalog);
         entityList = entityList.concat(catalogEntities);
       }),

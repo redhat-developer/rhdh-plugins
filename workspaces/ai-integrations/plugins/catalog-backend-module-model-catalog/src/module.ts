@@ -35,13 +35,14 @@ export const catalogModuleModelCatalogResourceEntityProvider =
         deps: {
           catalog: catalogProcessingExtensionPoint,
           config: coreServices.rootConfig,
+          discovery: coreServices.discovery,
           logger: coreServices.logger,
           scheduler: coreServices.scheduler,
         },
-        async init({ catalog, config, logger, scheduler }) {
+        async init({ catalog, config, discovery, logger, scheduler }) {
           catalog.addEntityProvider(
             ModelCatalogResourceEntityProvider.fromConfig(
-              { config, logger },
+              { config, logger, discovery },
               {
                 schedule: scheduler.createScheduledTaskRunner({
                   frequency: { seconds: 30 },

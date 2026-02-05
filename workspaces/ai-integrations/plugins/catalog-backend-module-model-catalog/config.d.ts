@@ -23,8 +23,8 @@ export interface Config {
           /**
            * ModelCatalogConfig
            */
-          baseUrl: string;
-          name?: string;
+          name: string;
+          baseUrl?: string;
           system?: string;
           owner?: string;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
