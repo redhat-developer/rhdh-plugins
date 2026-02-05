@@ -80,10 +80,26 @@ paths:
                 abbreviation:
                   type: string
                   description: Project abbreviation
+                sourceRepoUrl:
+                  type: string
+                  description: URL of the source repository
+                targetRepoUrl:
+                  type: string
+                  description: URL of the target repository
+                sourceRepoBranch:
+                  type: string
+                  description: Branch of the source repository (default to main)
+                targetRepoBranch:
+                  type: string
+                  description: Branch of the target repository (default to main)
               required:
                 - name
                 - description
                 - abbreviation
+                - sourceRepoUrl
+                - targetRepoUrl
+                - sourceRepoBranch
+                - targetRepoBranch
       responses:
         '201':
           description: Created project data.
@@ -148,18 +164,18 @@ paths:
             schema:
               type: object
               properties:
-                sourceRepo:
-                  $ref: '#/components/schemas/GitRepoCredentials'
-                targetRepo:
-                  $ref: '#/components/schemas/GitRepoCredentials'
+                sourceRepoAuth:
+                  $ref: '#/components/schemas/GitRepoAuth'
+                targetRepoAuth:
+                  $ref: '#/components/schemas/GitRepoAuth'
                 aapCredentials:
                   $ref: '#/components/schemas/AAPCredentials'
                 userPrompt:
                   type: string
                   description: Optional user prompt for customizing the migration
               required:
-                - sourceRepo
-                - targetRepo
+                - sourceRepoAuth
+                - targetRepoAuth
       responses:
         '200':
           description: Init job created successfully
@@ -254,11 +270,12 @@ paths:
                     - migrate
                     - publish
                   description: Migration phase to execute
-                sourceRepo:
-                  $ref: '#/components/schemas/GitRepoCredentials'
-                targetRepo:
-                  $ref: '#/components/schemas/GitRepoCredentials'
+                sourceRepoAuth:
+                  $ref: '#/components/schemas/GitRepoAuth'
+                targetRepoAuth:
+                  $ref: '#/components/schemas/GitRepoAuth'
                 aapCredentials:
+                  # TODO: reuse from project's init phase
                   $ref: '#/components/schemas/AAPCredentials'
                 userPrompt:
                   type: string
@@ -305,6 +322,19 @@ components:
         description:
           type: string
           description: Description of the project
+        sourceRepoUrl:
+          type: string
+          description: URL of the source repository
+        targetRepoUrl:
+          type: string
+          description: URL of the target repository
+        sourceRepoBranch:
+          description: Branch of the source repository
+          type: string
+        targetRepoBranch:
+          description: Branch of the target repository
+          type: string
+        # TODO: status as optional field
         createdAt:
           type: string
           format: date-time
@@ -316,6 +346,10 @@ components:
         - id
         - name
         - abbreviation
+        - sourceRepoUrl
+        - targetRepoUrl
+        - sourceRepoBranch
+        - targetRepoBranch
         - createdAt
         - createdBy
 
@@ -340,22 +374,14 @@ components:
         - sourcePath
         - projectId
 
-    GitRepoCredentials:
+    GitRepoAuth:
       type: object
       properties:
-        url:
-          type: string
-          description: Git repository URL
         token:
           type: string
           description: Authentication token for the git repository
-        branch:
-          type: string
-          description: Git branch name
       required:
-        - url
         - token
-        - branch
 
     AAPCredentials:
       type: object

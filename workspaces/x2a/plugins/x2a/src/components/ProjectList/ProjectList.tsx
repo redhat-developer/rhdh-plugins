@@ -37,6 +37,7 @@ import {
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyProjectList } from './EmptyProjectList';
+import { Repository } from './Repository';
 
 type OrderDirection = ProjectsGet['query']['order'];
 
@@ -75,18 +76,37 @@ const useColumns = (
         defaultSort: getDefaultSort(3),
       },
       {
+        title: t('table.columns.sourceRepo'),
+        render: (rowData: Project) => {
+          return (
+            <Repository
+              url={rowData.sourceRepoUrl}
+              branch={rowData.sourceRepoBranch}
+            />
+          );
+        },
+        sorting: false,
+      },
+      {
+        title: t('table.columns.targetRepo'),
+        render: (rowData: Project) => {
+          return (
+            <Repository
+              url={rowData.targetRepoUrl}
+              branch={rowData.targetRepoBranch}
+            />
+          );
+        },
+        sorting: false,
+      },
+      {
         title: t('table.columns.createdAt'),
         render: (rowData: Project) => {
           // TODO: Show human-readable duration instead, make sure sorting still works
           return <div>{rowData.createdAt.toLocaleString()}</div>;
         },
-        defaultSort: getDefaultSort(4),
+        defaultSort: getDefaultSort(6),
       },
-      // {
-      //   title: 'Source Repository',
-      //   field: 'sourceRepository',
-      //   defaultSort: getDefaultSort(5),
-      // },
     ];
     return columns;
   }, [orderBy, orderDirection, t]);
@@ -98,6 +118,8 @@ const mapOrderByToSort = (orderBy: number): ProjectsGet['query']['sort'] => {
     'abbreviation',
     'status',
     'description',
+    undefined,
+    undefined,
     'createdAt',
   ];
 

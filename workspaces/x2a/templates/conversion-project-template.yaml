@@ -36,11 +36,13 @@ spec:
     - title: Source and target repositories
       ui:order:
         - sourceRepoUrl
+        - sourceRepoBranch
         - areTargeAndSourceRepoShared
         - targetRepoUrl
         - targetRepoBranch
       required:
         - sourceRepoUrl
+        - sourceRepoBranch
         - targetRepoBranch
       properties:
         sourceRepoUrl:
@@ -51,12 +53,17 @@ spec:
           ui:field: RepoUrlPicker
           ui:options:
             requestUserCredentials:
-              secretsKey: USER_OAUTH_TOKEN
+              secretsKey: SRC_USER_OAUTH_TOKEN
               #additionalScopes:
               #  github:
               #    - workflow
             allowedHosts:
               - github.com
+        sourceRepoBranch:
+          title: Conversion source repository branch
+          type: string
+          description: The branch of the source repository to use for the conversion.
+          default: 'main'
         areTargeAndSourceRepoShared:
           title: Use the same repository for target and source
           type: boolean
@@ -86,7 +93,7 @@ spec:
                     ui:field: RepoUrlPicker
                     ui:options:
                       requestUserCredentials:
-                        secretsKey: USER_OAUTH_TOKEN
+                        secretsKey: TGT_USER_OAUTH_TOKEN
                       allowedHosts:
                         - github.com
 
@@ -109,6 +116,7 @@ spec:
         description: ${{ parameters.description }}
         abbreviation: ${{ parameters.abbreviation }}
         sourceRepoUrl: ${{ parameters.sourceRepoUrl }}
+        sourceRepoBranch: ${{ parameters.sourceRepoBranch }}
         areTargeAndSourceRepoShared: ${{ parameters.areTargeAndSourceRepoShared }}
         targetRepoUrl: ${{ parameters.targetRepoUrl }}
         targetRepoBranch: ${{ parameters.targetRepoBranch }}

@@ -133,12 +133,32 @@ export const spec = {
                   "abbreviation": {
                     "type": "string",
                     "description": "Project abbreviation"
+                  },
+                  "sourceRepoUrl": {
+                    "type": "string",
+                    "description": "URL of the source repository"
+                  },
+                  "targetRepoUrl": {
+                    "type": "string",
+                    "description": "URL of the target repository"
+                  },
+                  "sourceRepoBranch": {
+                    "type": "string",
+                    "description": "Branch of the source repository (default to main)"
+                  },
+                  "targetRepoBranch": {
+                    "type": "string",
+                    "description": "Branch of the target repository (default to main)"
                   }
                 },
                 "required": [
                   "name",
                   "description",
-                  "abbreviation"
+                  "abbreviation",
+                  "sourceRepoUrl",
+                  "targetRepoUrl",
+                  "sourceRepoBranch",
+                  "targetRepoBranch"
                 ]
               }
             }
@@ -242,11 +262,11 @@ export const spec = {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "sourceRepo": {
-                    "$ref": "#/components/schemas/GitRepoCredentials"
+                  "sourceRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
                   },
-                  "targetRepo": {
-                    "$ref": "#/components/schemas/GitRepoCredentials"
+                  "targetRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
                   },
                   "aapCredentials": {
                     "$ref": "#/components/schemas/AAPCredentials"
@@ -257,8 +277,8 @@ export const spec = {
                   }
                 },
                 "required": [
-                  "sourceRepo",
-                  "targetRepo"
+                  "sourceRepoAuth",
+                  "targetRepoAuth"
                 ]
               }
             }
@@ -390,11 +410,11 @@ export const spec = {
                     ],
                     "description": "Migration phase to execute"
                   },
-                  "sourceRepo": {
-                    "$ref": "#/components/schemas/GitRepoCredentials"
+                  "sourceRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
                   },
-                  "targetRepo": {
-                    "$ref": "#/components/schemas/GitRepoCredentials"
+                  "targetRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
                   },
                   "aapCredentials": {
                     "$ref": "#/components/schemas/AAPCredentials"
@@ -469,6 +489,22 @@ export const spec = {
             "type": "string",
             "description": "Description of the project"
           },
+          "sourceRepoUrl": {
+            "type": "string",
+            "description": "URL of the source repository"
+          },
+          "targetRepoUrl": {
+            "type": "string",
+            "description": "URL of the target repository"
+          },
+          "sourceRepoBranch": {
+            "description": "Branch of the source repository",
+            "type": "string"
+          },
+          "targetRepoBranch": {
+            "description": "Branch of the target repository",
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -483,6 +519,10 @@ export const spec = {
           "id",
           "name",
           "abbreviation",
+          "sourceRepoUrl",
+          "targetRepoUrl",
+          "sourceRepoBranch",
+          "targetRepoBranch",
           "createdAt",
           "createdBy"
         ]
@@ -514,26 +554,16 @@ export const spec = {
           "projectId"
         ]
       },
-      "GitRepoCredentials": {
+      "GitRepoAuth": {
         "type": "object",
         "properties": {
-          "url": {
-            "type": "string",
-            "description": "Git repository URL"
-          },
           "token": {
             "type": "string",
             "description": "Authentication token for the git repository"
-          },
-          "branch": {
-            "type": "string",
-            "description": "Git branch name"
           }
         },
         "required": [
-          "url",
-          "token",
-          "branch"
+          "token"
         ]
       },
       "AAPCredentials": {

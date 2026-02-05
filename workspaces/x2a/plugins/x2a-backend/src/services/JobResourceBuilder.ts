@@ -17,7 +17,7 @@
 import { V1Job, V1Secret } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
 import { X2AConfig } from '../../config';
-import { JobCreateParams, AAPCredentials, GitRepoCredentials } from './types';
+import { JobCreateParams, AAPCredentials, GitRepo } from './types';
 
 /**
  * Builds Kubernetes Job and Secret resources for X2A migration jobs
@@ -143,8 +143,8 @@ export class JobResourceBuilder {
     jobId: string,
     projectId: string,
     gitCredentials: {
-      sourceRepo: GitRepoCredentials;
-      targetRepo: GitRepoCredentials;
+      sourceRepo: GitRepo;
+      targetRepo: GitRepo;
     },
   ): V1Secret {
     const secretName = `x2a-job-secret-${jobId}`;
