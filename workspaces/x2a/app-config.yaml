@@ -74,8 +74,8 @@ auth:
         clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
         signIn:
           resolvers:
-            - resolver: emailMatchingUserEntityProfileEmail
-            # - resolver: usernameMatchingUserEntityName
+            # - resolver: emailMatchingUserEntityProfileEmail
+            - resolver: usernameMatchingUserEntityName
     github:
       development:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
@@ -111,7 +111,7 @@ kubernetes:
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
   # Set to false to disable RBAC checks
-  enabled: true
+  enabled: false
   rbac:
     policies-csv-file: ../../examples/example-rbac-policy.csv
     policyFileReload: true
@@ -140,11 +140,6 @@ x2a:
       limits:
         cpu: ${X2A_KUBERNETES_CPU_LIMIT:-2000m}
         memory: ${X2A_KUBERNETES_MEMORY_LIMIT:-4Gi}
-  git:
-    # Git commit author configuration for migration artifacts
-    author:
-      name: ${X2A_GIT_AUTHOR_NAME:-X2A Migration Bot}
-      email: ${X2A_GIT_AUTHOR_EMAIL:-x2a-bot@redhat.com}
   credentials:
     # LLM provider credentials as environment variables
     # Generic key-value pairs passed to the job container
