@@ -23,10 +23,12 @@ import {
   gitlabAuthApiRef,
 } from '@backstage/frontend-plugin-api';
 import { SignInPage } from '@backstage/core-components';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 // Import the new frontend system plugin for bulk-import
 import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
 
 // Import core Backstage plugins (NFS versions)
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
@@ -83,6 +85,21 @@ const themesModule = createFrontendModule({
   extensions: themeExtensions,
 });
 
+// Create translation extension using TranslationBlueprint
+// Language selector is configured via app-config.yaml (api:app/app-language extension)
+const bulkImportTranslation = TranslationBlueprint.make({
+  name: 'bulkImportTranslation',
+  params: {
+    resource: bulkImportTranslations,
+  },
+});
+
+// Wrap translations in a module
+const translationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [bulkImportTranslation],
+});
+
 /**
  * app-next: A Backstage app using the New Frontend System (NFS)
  *
@@ -93,7 +110,7 @@ const themesModule = createFrontendModule({
  * - ApiBlueprint
  * - SignInPageBlueprint
  *
- * To run: yarn start:nfs
+ * To run: yarn start:next
  */
 const app = createApp({
   features: [
@@ -103,6 +120,8 @@ const app = createApp({
     signInModule,
     // RHDH themes (light/dark modes)
     themesModule,
+    // Translations module (language selector configured via app-config.yaml)
+    translationsModule,
     // Core Backstage plugins
     catalogPlugin,
     scaffolderPlugin,
