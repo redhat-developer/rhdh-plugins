@@ -162,6 +162,25 @@ async function createApp(
       getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007/api/x2a'),
       getExternalBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007'),
     },
+    config: mockServices.rootConfig({
+      data: {
+        x2a: {
+          kubernetes: {
+            namespace: 'test-namespace',
+            image: 'test-image',
+            imageTag: 'test',
+            ttlSecondsAfterFinished: 86400,
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '200m', memory: '256Mi' },
+            },
+          },
+          credentials: {
+            llm: { LLM_MODEL: 'test-model' },
+          },
+        },
+      },
+    }),
     x2aDatabase,
     kubeService: {
       createProjectSecret: jest.fn().mockResolvedValue(undefined),
