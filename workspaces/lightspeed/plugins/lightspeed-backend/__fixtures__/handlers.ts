@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, type HttpHandler } from 'msw';
 
 const localHostAndPort = 'localhost:443';
 export const LOCAL_AI_ADDR = `http://${localHostAndPort}/v1`;
@@ -23,7 +23,7 @@ function loadTestFixture(filePathFromFixturesDir: string) {
   return require(`${__dirname}/${filePathFromFixturesDir}`);
 }
 
-export const handlers = [
+export const handlers: HttpHandler[] = [
   http.post(`${LOCAL_AI_ADDR}/chat/completions`, () => {
     const textEncoder = new TextEncoder();
     const mockData = loadTestFixture('chatResponse.json');

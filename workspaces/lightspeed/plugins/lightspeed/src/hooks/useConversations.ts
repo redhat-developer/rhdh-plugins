@@ -16,12 +16,13 @@
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
+import { ConversationList } from '../types';
 
 // Fetch all conversations
-export const useConversations = () => {
+export const useConversations = (): UseQueryResult<ConversationList, Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['conversations'],

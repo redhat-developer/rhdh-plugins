@@ -121,7 +121,7 @@ export const LightspeedChatBox = forwardRef(
       topicRestrictionEnabled,
       displayMode,
     }: LightspeedChatBoxProps,
-    ref: ForwardedRef<ScrollContainerHandle>,
+    ref: ForwardedRef<ScrollContainerHandle | null>,
   ) => {
     const classes = useStyles();
     const scrollQueued = useRef(false);

@@ -15,12 +15,12 @@
  */
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 
 // Fetch feedback status
-export const useFeedbackStatus = () => {
+export const useFeedbackStatus = (): UseQueryResult<boolean, Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['feedbackStatus'],
