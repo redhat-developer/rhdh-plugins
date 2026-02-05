@@ -44,9 +44,8 @@ export function normalizeRepoUrl(url: string): string {
     if (owner && repo) {
       return `https://${host}/${owner}/${repo}.git`;
     }
-  } catch {
-    // eslint-disable-next-line no-console
-    console.error(`Unexpected git repo URL format: ${url}`);
+  } catch (error) {
+    // eslint-disable-next-line no-useless-catch
   }
 
   // Not in RepoUrlPicker form; return as-is (e.g. already a full clone URL)

@@ -92,8 +92,8 @@ const useColumns = (
         render: (rowData: Project) => {
           return (
             <Repository
-              url={rowData.sourceRepoUrl}
-              branch={rowData.sourceRepoBranch}
+              url={rowData.targetRepoUrl}
+              branch={rowData.targetRepoBranch}
             />
           );
         },
