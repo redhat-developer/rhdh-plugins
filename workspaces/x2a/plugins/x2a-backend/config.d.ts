@@ -122,6 +122,30 @@ export interface Config {
          */
         email?: string;
       };
+      /**
+       * Source repository configuration
+       * @visibility backend
+       */
+      sourceRepo?: {
+        /**
+         * Fallback token for source repository authentication.
+         * Used when the UI doesn't provide a token in the /run request.
+         * @visibility secret
+         */
+        token?: string;
+      };
+      /**
+       * Target repository configuration
+       * @visibility backend
+       */
+      targetRepo?: {
+        /**
+         * Fallback token for target repository authentication.
+         * Used when the UI doesn't provide a token in the /run request.
+         * @visibility secret
+         */
+        token?: string;
+      };
     };
     /**
      * Credentials configuration for X2A
