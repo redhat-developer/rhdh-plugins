@@ -226,3 +226,91 @@ export function tearDownRouters(): Promise<void> {
     clientsToDestroy.splice(0).map(client => client.destroy()),
   ).then(() => undefined);
 }
+
+export interface MockRouterDeps {
+  httpAuth: ReturnType<typeof mockServices.httpAuth>;
+  discoveryApi: { getBaseUrl: jest.Mock; getExternalBaseUrl: jest.Mock };
+  x2aDatabase: {
+    getJob: jest.Mock;
+    updateJob: jest.Mock;
+    listProjects: jest.Mock;
+    createProject: jest.Mock;
+    getProject: jest.Mock;
+    deleteProject: jest.Mock;
+    listModules: jest.Mock;
+    createModule: jest.Mock;
+    getModule: jest.Mock;
+    listJobs: jest.Mock;
+    listJobsForProject: jest.Mock;
+    listJobsForModule: jest.Mock;
+    createJob: jest.Mock;
+    getJobLogs: jest.Mock;
+  };
+  kubeService: {
+    createJob: jest.Mock;
+    getJobLogs: jest.Mock;
+    getJobStatus: jest.Mock;
+    deleteJob: jest.Mock;
+    createProjectSecret: jest.Mock;
+    getProjectSecret: jest.Mock;
+    deleteProjectSecret: jest.Mock;
+    createJobSecret: jest.Mock;
+    listJobsForProject: jest.Mock;
+    getPods: jest.Mock;
+  };
+  logger: ReturnType<typeof mockServices.logger.mock>;
+  permissionsSvc: ReturnType<typeof mockServices.permissions.mock>;
+  config: ReturnType<typeof mockServices.rootConfig>;
+}
+
+export function createMockRouterDeps(): MockRouterDeps {
+  return {
+    httpAuth: mockServices.httpAuth(),
+    discoveryApi: {
+      getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007/api/x2a'),
+      getExternalBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007'),
+    },
+    x2aDatabase: {
+      getJob: jest.fn(),
+      updateJob: jest.fn(),
+      listProjects: jest.fn(),
+      createProject: jest.fn(),
+      getProject: jest.fn(),
+      deleteProject: jest.fn(),
+      listModules: jest.fn(),
+      createModule: jest.fn(),
+      getModule: jest.fn(),
+      listJobs: jest.fn(),
+      listJobsForProject: jest.fn(),
+      listJobsForModule: jest.fn(),
+      createJob: jest.fn(),
+      getJobLogs: jest.fn(),
+    },
+    kubeService: {
+      createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
+      getJobLogs: jest.fn().mockResolvedValue(''),
+      getJobStatus: jest.fn().mockResolvedValue('pending'),
+      deleteJob: jest.fn().mockResolvedValue(undefined),
+      createProjectSecret: jest.fn().mockResolvedValue(undefined),
+      getProjectSecret: jest.fn().mockResolvedValue(null),
+      deleteProjectSecret: jest.fn().mockResolvedValue(undefined),
+      createJobSecret: jest.fn().mockResolvedValue(undefined),
+      listJobsForProject: jest.fn().mockResolvedValue([]),
+      getPods: jest.fn().mockResolvedValue({ items: [] }),
+    },
+    logger: mockServices.logger.mock(),
+    permissionsSvc: mockServices.permissions.mock(),
+    config: mockServices.rootConfig({
+      data: {
+        x2a: {
+          kubernetes: {
+            namespace: 'test-namespace',
+            image: 'test-image',
+            imageTag: 'test',
+            ttlSecondsAfterFinished: 86400,
+          },
+        },
+      },
+    }),
+  };
+}

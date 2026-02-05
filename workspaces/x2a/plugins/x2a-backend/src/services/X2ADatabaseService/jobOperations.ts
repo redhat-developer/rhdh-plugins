@@ -22,6 +22,7 @@ import {
   JobStatusEnum,
   MigrationPhase,
   Artifact,
+  Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { mapRowToJob, mapRowToArtifact } from './mappers';
@@ -137,6 +138,7 @@ export class JobOperations {
         'error_details',
         'k8s_job_name',
         'callback_token',
+        'telemetry',
       )
       .first();
     if (!row) {
@@ -266,6 +268,7 @@ export class JobOperations {
         'error_details',
         'k8s_job_name',
         'callback_token',
+        'telemetry',
       )
       .orderBy('started_at', 'desc')
       .modify(queryBuilder => {
@@ -291,6 +294,7 @@ export class JobOperations {
     errorDetails,
     k8sJobName,
     artifacts,
+    telemetry,
   }: {
     id: string;
     log?: string | null;
@@ -299,6 +303,7 @@ export class JobOperations {
     errorDetails?: string | null;
     k8sJobName?: string | null;
     artifacts?: Artifact[];
+    telemetry?: Telemetry | null;
   }): Promise<Job | undefined> {
     this.#logger.info(`updateJob called for id: ${id}`);
 
@@ -323,6 +328,9 @@ export class JobOperations {
     }
     if (k8sJobName !== undefined) {
       updateData.k8s_job_name = k8sJobName;
+    }
+    if (telemetry !== undefined) {
+      updateData.telemetry = telemetry ? JSON.stringify(telemetry) : null;
     }
 
     if (Object.keys(updateData).length > 0) {

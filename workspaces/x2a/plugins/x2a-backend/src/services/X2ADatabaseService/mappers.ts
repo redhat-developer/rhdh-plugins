@@ -22,6 +22,7 @@ import {
   Artifact,
   ArtifactType,
   MigrationPhase,
+  Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export function mapRowToProject(row: Record<string, unknown>): Project {
@@ -66,7 +67,20 @@ export function mapRowToJob(
     errorDetails: row.error_details as string | undefined,
     k8sJobName: (row.k8s_job_name as string) ?? undefined,
     callbackToken: row.callback_token as string | undefined,
+    telemetry: parseTelemetry(row.telemetry as string | undefined),
   };
+}
+
+function parseTelemetry(raw: string | undefined): Telemetry | undefined {
+  if (!raw) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(raw) as Telemetry;
+  } catch {
+    return undefined;
+  }
 }
 
 export function mapRowToArtifact(row: Record<string, unknown>): Artifact {
