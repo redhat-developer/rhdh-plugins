@@ -32,7 +32,7 @@ export const LightspeedChatContainer: () => JSX_2.Element;
 export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren>;
 
 // @public
-export const LightspeedDrawerStateExposer: ({ onStateChange, }: DrawerStateExposerProps) => null;
+export const LightspeedDrawerStateExposer: (input: DrawerStateExposerProps) => null;
 
 // @public
 export const LightspeedFAB: () => JSX_2.Element | null;

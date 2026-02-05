@@ -16,11 +16,11 @@
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 
-export const useTopicRestrictionStatus = () => {
+export const useTopicRestrictionStatus = (): UseQueryResult<boolean, Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['topicRestrictionStatus'],
