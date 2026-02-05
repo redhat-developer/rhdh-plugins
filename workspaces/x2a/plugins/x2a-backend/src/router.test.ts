@@ -46,10 +46,74 @@ const mockInputProject: ProjectsPostRequest = {
   targetRepoBranch: 'main',
 };
 
+const mockProject2: ProjectsPostRequest = {
+  name: 'Another Project',
+  description: 'Another Description',
+  abbreviation: 'AP',
+};
+
+// Helper functions for test data setup
+async function createTestProject(
+  x2aDatabase: X2ADatabaseService,
+  projectData: ProjectsPostRequest = mockInputProject,
+  userRef: string = 'user:default/mock',
+) {
+  return x2aDatabase.createProject(projectData, {
+    credentials: mockCredentials.user(userRef),
+  });
+}
+
+async function createTestModule(
+  x2aDatabase: X2ADatabaseService,
+  projectId: string,
+  moduleData: { name: string; sourcePath: string } = {
+    name: 'Test Module',
+    sourcePath: '/test/path',
+  },
+) {
+  return x2aDatabase.createModule({
+    ...moduleData,
+    projectId,
+  });
+}
+
+async function createTestJob(
+  x2aDatabase: X2ADatabaseService,
+  jobData: {
+    projectId: string;
+    moduleId: string | null;
+    phase: 'init' | 'analyze' | 'migrate' | 'publish';
+    status?: 'pending' | 'running' | 'success' | 'error';
+    log?: string;
+    k8sJobName?: string;
+  },
+) {
+  const job = await x2aDatabase.createJob({
+    projectId: jobData.projectId,
+    moduleId: jobData.moduleId,
+    phase: jobData.phase,
+    status: jobData.status || 'pending',
+    callbackToken: 'test-token',
+  });
+
+  if (jobData.log || jobData.k8sJobName || jobData.status) {
+    await x2aDatabase.updateJob({
+      id: job.id,
+      ...(jobData.log && { log: jobData.log }),
+      ...(jobData.k8sJobName && { k8sJobName: jobData.k8sJobName }),
+      ...(jobData.status && { status: jobData.status }),
+    });
+  }
+
+  return job;
+}
+
 async function createApp(
   client: Knex,
   authorizeResult?: AuthorizeResult,
   adminWriteResult?: AuthorizeResult,
+  kubeServiceOverrides?: any,
+  adminViewResult?: AuthorizeResult,
 ): Promise<express.Express> {
   const x2aDatabase = X2ADatabaseService.create({
     logger: mockServices.logger.mock(),
@@ -74,6 +138,18 @@ async function createApp(
             },
           ] as any;
         }
+        if (
+          permission?.name === 'x2a.admin' &&
+          permission?.attributes?.action === 'read'
+        ) {
+          // This is x2aAdminViewPermission
+          return [
+            {
+              result:
+                adminViewResult ?? authorizeResult ?? AuthorizeResult.ALLOW,
+            },
+          ] as any;
+        }
         // Default to the provided authorizeResult or ALLOW
         return [{ result: authorizeResult ?? AuthorizeResult.ALLOW }] as any;
       },
@@ -94,6 +170,7 @@ async function createApp(
       deleteJob: jest.fn().mockResolvedValue(undefined),
       listJobsForProject: jest.fn().mockResolvedValue([]),
       getPods: jest.fn().mockResolvedValue({ items: [] }),
+      ...kubeServiceOverrides,
     },
   });
 
@@ -505,6 +582,364 @@ describe('createRouter', () => {
       expect(response.body).toMatchObject({
         error: { name: 'NotFoundError', message: 'Project not found' },
       });
+    },
+  );
+
+  describe.each(supportedDatabaseIds)(
+    'GET /projects/:projectId/modules/:moduleId/log - %p',
+    databaseId => {
+      let client: Knex;
+      let x2aDatabase: X2ADatabaseService;
+      let project: any;
+      let module: any;
+
+      beforeEach(async () => {
+        const dbSetup = await createDatabase(databaseId);
+        client = dbSetup.client;
+        x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+
+        project = await createTestProject(x2aDatabase);
+        module = await createTestModule(x2aDatabase, project.id);
+      });
+
+      it(
+        'should return logs from database for finished job with success status',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'success',
+            log: 'Test log output from database',
+          });
+
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=analyze`,
+            )
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.type).toBe('text/plain');
+          expect(response.text).toBe('Test log output from database');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return logs from database for finished job with error status',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'migrate',
+            status: 'error',
+            log: 'Error: Migration failed',
+          });
+
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=migrate`,
+            )
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.type).toBe('text/plain');
+          expect(response.text).toBe('Error: Migration failed');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return logs from Kubernetes for running job',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'publish',
+            status: 'running',
+            k8sJobName: 'test-k8s-job',
+          });
+
+          const mockGetJobLogs = jest
+            .fn()
+            .mockResolvedValue('Kubernetes logs output');
+          const app = await createApp(client, undefined, undefined, {
+            getJobLogs: mockGetJobLogs,
+          });
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=publish`,
+            )
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.type).toBe('text/plain');
+          expect(response.text).toBe('Kubernetes logs output');
+          expect(mockGetJobLogs).toHaveBeenCalledWith('test-k8s-job', false);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should call getJobLogs with correct job name for running job',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'running',
+            k8sJobName: 'test-k8s-job',
+          });
+
+          const mockGetJobLogs = jest
+            .fn()
+            .mockResolvedValue('Streaming logs content');
+          const app = await createApp(client, undefined, undefined, {
+            getJobLogs: mockGetJobLogs,
+          });
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=analyze&streaming=true`,
+            )
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.type).toBe('text/plain');
+          expect(mockGetJobLogs).toHaveBeenCalledWith(
+            'test-k8s-job',
+            expect.any(Boolean),
+          );
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return empty logs when job has no k8sJobName',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'pending',
+          });
+
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=analyze`,
+            )
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.type).toBe('text/plain');
+          expect(response.text).toBe('');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return 400 when phase parameter is missing',
+        async () => {
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(`/projects/${project.id}/modules/${module.id}/log`)
+            .send();
+
+          expect(response.status).toBe(400);
+          expect(response.body.error.name).toBe('InputError');
+          expect(response.body.error.message).toContain('phase');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return 404 when project does not exist',
+        async () => {
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${nonExistentId}/modules/module-id/log?phase=analyze`,
+            )
+            .send();
+
+          expect(response.status).toBe(404);
+          expect(response.body).toMatchObject({
+            error: { name: 'NotFoundError', message: 'Project not found' },
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return 404 when module does not exist',
+        async () => {
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${nonExistentId}/log?phase=analyze`,
+            )
+            .send();
+
+          expect(response.status).toBe(404);
+          expect(response.body).toMatchObject({
+            error: { name: 'NotFoundError', message: 'Module not found' },
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return 404 when module does not belong to project',
+        async () => {
+          const project2 = await createTestProject(x2aDatabase, mockProject2);
+          const module2 = await createTestModule(x2aDatabase, project2.id);
+
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module2.id}/log?phase=analyze`,
+            )
+            .send();
+
+          expect(response.status).toBe(404);
+          expect(response.body).toMatchObject({
+            error: {
+              name: 'NotFoundError',
+              message: 'Module does not belong to project',
+            },
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return 404 when no jobs found for module with given phase',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'success',
+          });
+
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=migrate`,
+            )
+            .send();
+
+          expect(response.status).toBe(404);
+          expect(response.body).toMatchObject({
+            error: {
+              name: 'NotFoundError',
+              message: "No jobs found for module with phase 'migrate'",
+            },
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return latest job logs when multiple jobs exist for same phase',
+        async () => {
+          // Create first job (older)
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'success',
+            log: 'Old job logs',
+          });
+
+          // Wait to ensure different timestamps
+          await new Promise(resolve => setTimeout(resolve, 10));
+
+          // Create second job (newer)
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'success',
+            log: 'New job logs',
+          });
+
+          const app = await createApp(client);
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=analyze`,
+            )
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.text).toBe('New job logs');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should deny access for users without permission to view project',
+        async () => {
+          // Create project as user1
+          const user1Project = await createTestProject(
+            x2aDatabase,
+            mockInputProject,
+            'user:default/user1',
+          );
+          const user1Module = await createTestModule(
+            x2aDatabase,
+            user1Project.id,
+          );
+          await createTestJob(x2aDatabase, {
+            projectId: user1Project.id,
+            moduleId: user1Module.id,
+            phase: 'analyze',
+            status: 'success',
+            log: 'Test logs',
+          });
+
+          // Try to access logs as user2 without admin view permission
+          const user2CredentialsHeader =
+            mockCredentials.user.header('user:default/user2');
+          const appNoPermission = await createApp(
+            client,
+            AuthorizeResult.ALLOW, // Can create projects
+            AuthorizeResult.DENY, // No admin write permission
+            undefined, // No kube service overrides
+            AuthorizeResult.DENY, // No admin view permission
+          );
+
+          const response = await request(appNoPermission)
+            .get(
+              `/projects/${user1Project.id}/modules/${user1Module.id}/log?phase=analyze`,
+            )
+            .set('Authorization', user2CredentialsHeader)
+            .send();
+
+          expect(response.status).toBe(404);
+          expect(response.body).toMatchObject({
+            error: { name: 'NotFoundError', message: 'Project not found' },
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
     },
   );
 });

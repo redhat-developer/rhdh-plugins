@@ -41,6 +41,7 @@ export class DefaultApiClient {
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
@@ -61,6 +62,9 @@ export interface Module {
 
 // @public
 export function normalizeRepoUrl(url: string): string;
+
+// @public (undocumented)
+export type Phase = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export interface Project {
@@ -124,6 +128,18 @@ export interface ProjectsProjectIdDelete200Response {
 export type ProjectsProjectIdGet = {
     path: {
         projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdLogGet = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    query: {
+        streaming?: boolean;
+        phase: Phase;
     };
 };
 

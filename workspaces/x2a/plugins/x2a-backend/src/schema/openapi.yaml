@@ -305,6 +305,43 @@ paths:
                   - jobId
         '404':
           description: Project or module not found
+  /projects/{projectId}/modules/{moduleId}/log:
+    get:
+      summary: Returns logs for the latest job of a module
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+          description: Project UUID
+        - in: path
+          name: moduleId
+          schema:
+            type: string
+          required: true
+          description: Module UUID
+        - in: query
+          name: streaming
+          schema:
+            type: boolean
+          required: false
+          description: Whether to stream logs (text/plain) or return all at once
+        - in: query
+          name: phase
+          schema:
+            $ref: '#/components/schemas/Phase'
+          required: true
+          description: Migration phase to filter
+      responses:
+        '200':
+          description: Module logs
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Module not found or no jobs exist
 components:
   schemas:
     Project:
@@ -404,3 +441,11 @@ components:
       required:
         - url
         - orgName
+
+    Phase:
+      type: string
+      enum:
+        - analyze
+        - migrate
+        - publish
+      description: Migration phases to execute

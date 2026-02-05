@@ -23,6 +23,7 @@ import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
 import { Module } from '../models/Module.model';
+import { Phase } from '../models/Phase.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
@@ -86,6 +87,19 @@ export type ProjectsProjectIdDelete = {
 export type ProjectsProjectIdGet = {
   path: {
     projectId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdLogGet = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  query: {
+    streaming?: boolean;
+    phase: Phase;
   };
 };
 /**
@@ -227,6 +241,37 @@ export class DefaultApiClient {
 
     const uri = parser.parse(uriTemplate).expand({
       projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns logs for the latest job of a module
+   * @param projectId - Project UUID
+   * @param moduleId - Module UUID
+   * @param phase - Migration phase to filter
+   * @param streaming - Whether to stream logs (text/plain) or return all at once
+   */
+  public async projectsProjectIdModulesModuleIdLogGet(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdLogGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<string>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}/log{?streaming,phase}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
+      ...request.query,
     });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {

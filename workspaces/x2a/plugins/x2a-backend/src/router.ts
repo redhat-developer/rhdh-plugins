@@ -520,6 +520,102 @@ export async function createRouter({
     },
   );
 
+  router.get('/projects/:projectId/modules/:moduleId/log', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId/modules/:moduleId/log';
+    const { projectId, moduleId } = req.params;
+    const streaming = req.query.streaming === true;
+    const phase = req.query.phase as string | undefined;
+
+    // Validate phase parameter (required)
+    if (!phase) {
+      throw new InputError('phase query parameter is required');
+    }
+
+    logger.info(
+      `${endpoint} request: projectId=${projectId}, moduleId=${moduleId}, streaming=${streaming}, phase=${phase}`,
+    );
+
+    // Get credentials and permissions
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const canViewAll = await isUserOfAdminViewPermission(
+      req as unknown as Request,
+      permissionsSvc,
+      httpAuth,
+    );
+
+    // Verify project exists and user has access
+    const project = await x2aDatabase.getProject(
+      { projectId },
+      { credentials, canViewAll },
+    );
+    if (!project) {
+      throw new NotFoundError(`Project not found`);
+    }
+
+    // Verify module exists
+    const module = await x2aDatabase.getModule({ id: moduleId });
+    if (!module) {
+      throw new NotFoundError(`Module not found`);
+    }
+
+    // Verify module belongs to project
+    if (module.projectId !== projectId) {
+      throw new NotFoundError(`Module does not belong to project`);
+    }
+
+    // Get latest job for module filtered by requested phase
+    const jobs = await x2aDatabase.listJobs({
+      moduleId,
+      phase: phase as any,
+    });
+
+    if (jobs.length === 0) {
+      throw new NotFoundError(`No jobs found for module with phase '${phase}'`);
+    }
+
+    const latestJob = jobs[0]; // Already sorted by started_at DESC in listJobs
+
+    // Validate the latest job phase matches requested phase (sanity check)
+    if (latestJob.phase !== phase) {
+      throw new InputError(
+        `Latest job phase '${latestJob.phase}' does not match requested phase '${phase}'`,
+      );
+    }
+
+    // If job is finished, return logs from database
+    if (latestJob.status === 'success' || latestJob.status === 'error') {
+      logger.info(
+        `Job ${latestJob.id} is finished (status: ${latestJob.status}), returning logs from database`,
+      );
+      res.setHeader('Content-Type', 'text/plain');
+      res.send(latestJob.log || '');
+      return;
+    }
+
+    // Check if job has k8sJobName
+    if (!latestJob.k8sJobName) {
+      logger.warn(
+        `Job ${latestJob.id} has no k8sJobName, returning empty logs`,
+      );
+      res.setHeader('Content-Type', 'text/plain');
+      res.send('');
+      return;
+    }
+
+    // Get logs from Kubernetes
+    const logs = await kubeService.getJobLogs(latestJob.k8sJobName, streaming);
+
+    // Set content type
+    res.setHeader('Content-Type', 'text/plain');
+
+    // Handle streaming vs non-streaming
+    if (streaming && typeof logs !== 'string') {
+      logs.pipe(res);
+    } else {
+      res.send(logs as string);
+    }
+  });
+
   // TODO: Implement /collectArtifacts endpoints for callback from Kubernetes jobs
   // These endpoints should use Backstage service-to-service authentication with static tokens
   // See: https://backstage.io/docs/auth/service-to-service-auth#static-tokens
