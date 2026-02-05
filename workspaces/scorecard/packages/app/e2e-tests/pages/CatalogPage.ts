@@ -49,7 +49,9 @@ export class CatalogPage {
 
   async openComponent(componentName: string) {
     const link = this.page.getByRole('link', { name: componentName });
-    await this.page.getByRole("textbox", { name: "Search" }).fill(componentName);
+    await this.page
+      .getByRole('textbox', { name: 'Search' })
+      .fill(componentName);
     await expect(link).toBeVisible({ timeout: 10000 });
     await link.click();
   }
