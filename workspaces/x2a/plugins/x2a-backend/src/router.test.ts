@@ -1095,4 +1095,99 @@ describe('createRouter', () => {
       );
     },
   );
+  // This is only the sanaty check, completed test on collectArtifacts.test.ts
+  describe.each(supportedDatabaseIds)(
+    'POST /projects/:projectId/collectArtifacts - %p',
+    databaseId => {
+      let client: Knex;
+      let x2aDatabase: X2ADatabaseService;
+      let app: express.Express;
+
+      beforeEach(async () => {
+        const { client: dbClient } = await createDatabase(databaseId);
+        client = dbClient;
+        x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        app = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.ALLOW,
+        );
+      });
+
+      it(
+        'should collect artifacts and update job',
+        async () => {
+          const project = await createTestProject(x2aDatabase);
+          const job = await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: null,
+            phase: 'init',
+            status: 'running',
+            k8sJobName: 'init-job-123',
+          });
+
+          const requestBody = {
+            status: 'Success',
+            jobId: job.id,
+            artifacts: {
+              telemetry: {
+                summary: 'Init phase completed successfully',
+                phase: 'init',
+                startedAt: '2026-02-06T10:00:00Z',
+                endedAt: '2026-02-06T10:05:00Z',
+              },
+              externalLinks: {
+                Dashboard: 'https://dashboard.example.com',
+              },
+            },
+          };
+
+          const response = await request(app)
+            .post(`/projects/${project.id}/collectArtifacts?phase=init`)
+            .send(requestBody);
+
+          expect(response.status).toBe(200);
+          expect(response.body).toEqual({
+            message: 'Artifacts collected successfully',
+          });
+
+          // Verify job was updated
+          const updatedJob = await x2aDatabase.getJob({ id: job.id });
+          expect(updatedJob?.status).toBe('success');
+          expect(updatedJob?.finishedAt).toBeDefined();
+          expect(updatedJob?.artifacts).toHaveLength(2);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should return 404 for non-existent job',
+        async () => {
+          const project = await createTestProject(x2aDatabase);
+
+          const requestBody = {
+            status: 'Success',
+            jobId: nonExistentId,
+            artifacts: {},
+          };
+
+          const response = await request(app)
+            .post(`/projects/${project.id}/collectArtifacts?phase=init`)
+            .send(requestBody);
+
+          expect(response.status).toBe(404);
+          expect(response.body).toMatchObject({
+            error: {
+              name: 'NotFoundError',
+              message: expect.stringContaining('not found'),
+            },
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+    },
+  );
 });
