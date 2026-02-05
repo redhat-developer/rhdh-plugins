@@ -319,6 +319,37 @@ export const spec = {
       }
     },
     "/projects/{projectId}/modules": {
+      "get": {
+        "summary": "Returns a list of modules for a project",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Modules list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Module"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      },
       "post": {
         "summary": "Creates a new module for a project",
         "description": "**TEMPORARY ENDPOINT FOR TESTING ONLY**\n\nThis endpoint provides simple CRUD functionality to create modules for testing the job triggering infrastructure.\n\nAccording to the ADR, this endpoint should eventually sync modules by parsing the migration plan (created by the init phase).\nThe proper implementation will be added when the init phase integration is complete.\n\nTODO: Replace with proper sync logic that parses the migration plan via LLM (see ADR lines 202-213)\n",
@@ -402,12 +433,7 @@ export const spec = {
                 "type": "object",
                 "properties": {
                   "phase": {
-                    "type": "string",
-                    "enum": [
-                      "analyze",
-                      "migrate",
-                      "publish"
-                    ],
+                    "$ref": "#/components/schemas/ModulePhase",
                     "description": "Migration phase to execute"
                   },
                   "sourceRepoAuth": {
@@ -502,10 +528,10 @@ export const spec = {
             "in": "query",
             "name": "phase",
             "schema": {
-              "$ref": "#/components/schemas/Phase"
+              "$ref": "#/components/schemas/ModulePhase"
             },
             "required": true,
-            "description": "Migration phase to filter"
+            "description": "Migration module phase to filter"
           }
         ],
         "responses": {
@@ -602,7 +628,16 @@ export const spec = {
           },
           "projectId": {
             "type": "string",
-            "description": "UUID of the parent project"
+            "description": "UUID of the owning project"
+          },
+          "analyze": {
+            "$ref": "#/components/schemas/Job"
+          },
+          "migrate": {
+            "$ref": "#/components/schemas/Job"
+          },
+          "publish": {
+            "$ref": "#/components/schemas/Job"
           }
         },
         "required": [
@@ -610,6 +645,94 @@ export const spec = {
           "name",
           "sourcePath",
           "projectId"
+        ]
+      },
+      "JobStatusEnum": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "success",
+          "error"
+        ]
+      },
+      "Job": {
+        "type": "object",
+        "required": [
+          "id",
+          "projectId",
+          "startedAt",
+          "phase",
+          "k8sJobName",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID for the job"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "UUID of the owning project"
+          },
+          "moduleId": {
+            "type": "string",
+            "description": "UUID of the owning module (optional)"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/time when the job started"
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/time when the job finished"
+          },
+          "phase": {
+            "$ref": "#/components/schemas/MigrationPhase",
+            "description": "Migration phase of the job"
+          },
+          "k8sJobName": {
+            "type": "string",
+            "description": "Name of the Kubernetes job"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatusEnum"
+          },
+          "errorDetails": {
+            "type": "string",
+            "description": "Detailed error information if the job failed to execute"
+          },
+          "artifacts": {
+            "type": "array",
+            "description": "List of artifacts produced by the job",
+            "items": {
+              "$ref": "#/components/schemas/Artifact"
+            }
+          }
+        }
+      },
+      "Artifact": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID for the artifact"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of the artifact"
+          },
+          "value": {
+            "type": "string",
+            "description": "Value of the artifact"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "value"
         ]
       },
       "GitRepoAuth": {
@@ -653,14 +776,24 @@ export const spec = {
           "orgName"
         ]
       },
-      "Phase": {
+      "MigrationPhase": {
+        "type": "string",
+        "enum": [
+          "init",
+          "analyze",
+          "migrate",
+          "publish"
+        ],
+        "description": "All migration phases"
+      },
+      "ModulePhase": {
         "type": "string",
         "enum": [
           "analyze",
           "migrate",
           "publish"
         ],
-        "description": "Migration phases to execute"
+        "description": "Phases to execute on a module"
       }
     }
   }

@@ -199,6 +199,25 @@ paths:
           description: Project not found
 
   /projects/{projectId}/modules:
+    get:
+      summary: Returns a list of modules for a project
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Modules list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Module'
+        '404':
+          description: Project not found
     post:
       summary: Creates a new module for a project
       description: |
@@ -264,11 +283,7 @@ paths:
               type: object
               properties:
                 phase:
-                  type: string
-                  enum:
-                    - analyze
-                    - migrate
-                    - publish
+                  $ref: '#/components/schemas/ModulePhase'
                   description: Migration phase to execute
                 sourceRepoAuth:
                   $ref: '#/components/schemas/GitRepoAuth'
@@ -330,9 +345,9 @@ paths:
         - in: query
           name: phase
           schema:
-            $ref: '#/components/schemas/Phase'
+            $ref: '#/components/schemas/ModulePhase'
           required: true
-          description: Migration phase to filter
+          description: Migration module phase to filter
       responses:
         '200':
           description: Module logs
@@ -393,6 +408,7 @@ components:
     Module:
       type: object
       properties:
+        # Module's status is status of its last job, no matter of the phase the job is from.
         id:
           type: string
           description: UUID for the module
@@ -404,12 +420,88 @@ components:
           description: Path to the module in the source repository
         projectId:
           type: string
-          description: UUID of the parent project
+          description: UUID of the owning project
+        analyze:
+          $ref: '#/components/schemas/Job'
+        migrate:
+          $ref: '#/components/schemas/Job'
+        publish:
+          $ref: '#/components/schemas/Job'
+        # TODO: module status
       required:
         - id
         - name
         - sourcePath
         - projectId
+
+    JobStatusEnum:
+      type: string
+      enum:
+        - pending
+        - running
+        - success
+        - error
+
+    Job:
+      type: object
+      required:
+        - id
+        - projectId
+        - startedAt
+        - phase
+        - k8sJobName
+        - status
+      properties:
+        id:
+          type: string
+          description: UUID for the job
+        projectId:
+          type: string
+          description: UUID of the owning project
+        moduleId:
+          type: string
+          description: UUID of the owning module (optional)
+        startedAt:
+          type: string
+          format: date-time
+          description: Date/time when the job started
+        finishedAt:
+          type: string
+          format: date-time
+          description: Date/time when the job finished
+        phase:
+          $ref: '#/components/schemas/MigrationPhase'
+          description: Migration phase of the job
+        k8sJobName:
+          type: string
+          description: Name of the Kubernetes job
+        status:
+          $ref: '#/components/schemas/JobStatusEnum'
+        errorDetails:
+          type: string
+          description: Detailed error information if the job failed to execute
+        artifacts:
+          type: array
+          description: List of artifacts produced by the job
+          items:
+            $ref: '#/components/schemas/Artifact'
+
+    Artifact:
+      type: object
+      properties:
+        id:
+          type: string
+          description: UUID for the artifact
+        type:
+          type: string
+          description: Type of the artifact
+        value:
+          type: string
+          description: Value of the artifact
+      required:
+        - id
+        - type
+        - value
 
     GitRepoAuth:
       type: object
@@ -442,10 +534,19 @@ components:
         - url
         - orgName
 
-    Phase:
+    MigrationPhase:
+      type: string
+      enum:
+        - init
+        - analyze
+        - migrate
+        - publish
+      description: All migration phases
+
+    ModulePhase:
       type: string
       enum:
         - analyze
         - migrate
         - publish
-      description: Migration phases to execute
+      description: Phases to execute on a module

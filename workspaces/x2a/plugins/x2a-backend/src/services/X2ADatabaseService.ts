@@ -29,39 +29,14 @@ import {
   DEFAULT_PAGE_ORDER,
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SORT,
+  JobStatusEnum,
+  Module,
+  Job,
+  MigrationPhase,
+  Artifact,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Knex } from 'knex';
 import { ProjectsGet } from '../schema/openapi';
-
-// TODO: model via openapi schema
-export interface Module {
-  id: string;
-  name: string;
-  sourcePath: string;
-  projectId: string;
-}
-
-// TODO: model via openapi schema
-export type JobStatus = 'pending' | 'running' | 'success' | 'error';
-
-// TODO: model via openapi schema
-export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
-
-// TODO: model via openapi schema
-export interface Job {
-  id: string;
-  projectId: string;
-  moduleId: string | null;
-  log: string | null;
-  startedAt: Date;
-  finishedAt: Date | null;
-  status: JobStatus;
-  phase: MigrationPhase;
-  errorDetails: string | null;
-  k8sJobName: string | null;
-  callbackToken: string | null;
-  artifacts: string[];
-}
 
 export class X2ADatabaseService {
   readonly #logger: LoggerService;
@@ -115,19 +90,27 @@ export class X2ADatabaseService {
   }
 
   // Map a database row to a Job object (without artifacts)
-  private mapRowToJob(row: any): Omit<Job, 'artifacts'> {
+  private mapRowToJob(row: any): Job & { callbackToken?: string } {
     return {
       id: row.id,
       projectId: row.project_id,
-      moduleId: row.module_id || null,
-      log: row.log,
+      moduleId: row.module_id,
       startedAt: row.started_at ? new Date(row.started_at) : new Date(),
-      finishedAt: row.finished_at ? new Date(row.finished_at) : null,
-      status: (row.status || 'pending') as JobStatus,
-      phase: (row.phase || 'init') as MigrationPhase,
-      errorDetails: row.error_details || null,
-      k8sJobName: row.k8s_job_name || null,
-      callbackToken: row.callback_token || null,
+      finishedAt: row.finished_at ? new Date(row.finished_at) : undefined,
+      status: (row.status || 'pending') as JobStatusEnum,
+      phase: row.phase,
+      errorDetails: row.error_details,
+      k8sJobName: row.k8s_job_name,
+      callbackToken: row.callback_token,
+    };
+  }
+
+  // Map a database row to an Artifact object
+  private mapRowToArtifact(row: any): Artifact {
+    return {
+      id: row.id,
+      type: row.type,
+      value: row.value,
     };
   }
 
@@ -340,6 +323,9 @@ export class X2ADatabaseService {
     return row ? this.mapRowToModule(row) : undefined;
   }
 
+  /**
+   * List modules for the given project without loading jobs
+   */
   async listModules({ projectId }: { projectId: string }): Promise<Module[]> {
     this.#logger.info(`listModules called for projectId: ${projectId}`);
 
@@ -381,12 +367,12 @@ export class X2ADatabaseService {
     log?: string | null;
     startedAt?: Date;
     finishedAt?: Date | null;
-    status?: JobStatus;
+    status?: JobStatusEnum;
     phase: MigrationPhase;
     errorDetails?: string | null;
     k8sJobName?: string | null;
     callbackToken?: string | null;
-    artifacts?: string[];
+    artifacts?: Artifact[];
   }): Promise<Job> {
     const id = crypto.randomUUID();
     const startedAt = job.startedAt || new Date();
@@ -413,36 +399,57 @@ export class X2ADatabaseService {
     if (artifacts.length > 0) {
       const artifactRows = artifacts.map(artifact => ({
         id: crypto.randomUUID(),
-        value: artifact,
+        value: artifact.value,
+        type: artifact.type,
         job_id: id,
       }));
       await this.#dbClient('artifacts').insert(artifactRows);
     }
 
-    const newJob: Job = {
-      id,
-      projectId: job.projectId,
-      moduleId: job.moduleId || null,
-      log: job.log || null,
-      startedAt,
-      finishedAt,
-      status,
-      phase: job.phase,
-      errorDetails: job.errorDetails || null,
-      k8sJobName: job.k8sJobName || null,
-      callbackToken: job.callbackToken || null,
-      artifacts,
-    };
-
+    const newJob = await this.getJob({ id });
+    if (!newJob) {
+      throw new Error(`Failed to read the job after creation: ${id}`);
+    }
     this.#logger.info(`Created new job: ${JSON.stringify(newJob)}`);
+    return newJob as Job;
+  }
 
-    return newJob;
+  async getJobWithLog({
+    id,
+  }: {
+    id: string;
+  }): Promise<(Job & { log?: string | null }) | undefined> {
+    const job = await this.getJob({ id });
+    if (!job) {
+      return undefined;
+    }
+    const log = await this.getJobLogs({ jobId: id });
+    return {
+      ...job,
+      log,
+    };
   }
 
   async getJob({ id }: { id: string }): Promise<Job | undefined> {
     this.#logger.info(`getJob called for id: ${id}`);
 
-    const row = await this.#dbClient('jobs').where('id', id).first();
+    // Fetches log as well
+    const row = await this.#dbClient('jobs')
+      .where('id', id)
+      // we need to name all the columns to avoid the expensive "log" column to be loaded
+      .select(
+        'id',
+        'project_id',
+        'module_id',
+        'started_at',
+        'finished_at',
+        'status',
+        'phase',
+        'error_details',
+        'k8s_job_name',
+        'callback_token',
+      )
+      .first();
     if (!row) {
       return undefined;
     }
@@ -452,10 +459,10 @@ export class X2ADatabaseService {
     // Fetch artifacts for this job
     const artifactRows = await this.#dbClient('artifacts')
       .where('job_id', id)
-      .select('value')
+      .select('*')
       .orderBy('id', 'asc');
 
-    const artifacts = artifactRows.map(artifactRow => artifactRow.value);
+    const artifacts: Artifact[] = artifactRows.map(this.mapRowToArtifact);
 
     return {
       ...job,
@@ -463,25 +470,60 @@ export class X2ADatabaseService {
     };
   }
 
+  /**
+   * Logs can be pretty large, we do not load them unless requested.
+   */
+  async getJobLogs({ jobId }: { jobId: string }): Promise<string | undefined> {
+    this.#logger.info(`getJobLogs called for id: ${jobId}`);
+    const row = await this.#dbClient('jobs').where('id', jobId).first();
+    return row ? row.log : undefined;
+  }
+
+  /**
+   * List jobs for the given module.
+   * If lastJobOnly is true, only the last job will be returned.
+   * Otherwise, all jobs will be returned.
+   *
+   * @returns List of jobs for the given module
+   */
   async listJobs({
     moduleId,
-    phase = null,
+    phase,
+    lastJobOnly = false,
   }: {
     moduleId: string;
-    phase?: MigrationPhase | null;
+    phase?: MigrationPhase;
+    lastJobOnly?: boolean;
   }): Promise<Job[]> {
     this.#logger.info(`listJobs called for moduleId: ${moduleId}`);
 
     // Fetch all jobs for the given module
-    const rows = await this.#dbClient('jobs')
+    const rows: Job[] = await this.#dbClient('jobs')
       .where('module_id', moduleId)
       .modify(queryBuilder => {
         if (phase) {
           queryBuilder.where('phase', phase);
         }
       })
-      .select('*')
-      .orderBy('started_at', 'desc');
+      // we need to name all the columns to avoid the expensive "log" column to be loaded
+      .select(
+        'id',
+        'project_id',
+        'module_id',
+        'started_at',
+        'finished_at',
+        'status',
+        'phase',
+        'error_details',
+        'k8s_job_name',
+        'callback_token',
+      )
+      .orderBy('started_at', 'desc')
+      .modify(queryBuilder => {
+        if (lastJobOnly) {
+          queryBuilder.limit(1);
+        }
+      });
 
     if (rows.length === 0) {
       return [];
@@ -490,19 +532,23 @@ export class X2ADatabaseService {
     const jobIds = rows.map((row: any) => row.id);
 
     // Fetch all artifacts for these jobs in a single query
-    const artifactRows = await this.#dbClient('artifacts')
-      .whereIn('job_id', jobIds)
-      .select('job_id', 'value')
-      .orderBy('id', 'asc');
+    const artifactRows: (Artifact & { job_id: string })[] =
+      await this.#dbClient('artifacts')
+        .whereIn('job_id', jobIds)
+        .select('*')
+        .orderBy('id', 'asc');
 
     // Group artifacts by job_id
-    const artifactsByJobId = new Map<string, string[]>();
-    for (const artifactRow of artifactRows) {
-      if (!artifactsByJobId.has(artifactRow.job_id)) {
-        artifactsByJobId.set(artifactRow.job_id, []);
+    const artifactsByJobId = new Map<string, Artifact[]>();
+    artifactRows.forEach(artifact => {
+      const jobId = artifact.job_id;
+      if (jobId) {
+        artifactsByJobId.set(jobId, [
+          ...(artifactsByJobId.get(jobId) || []),
+          artifact,
+        ]);
       }
-      artifactsByJobId.get(artifactRow.job_id)!.push(artifactRow.value);
-    }
+    });
 
     // Build jobs with their artifacts
     const jobs: Job[] = rows.map((row: any) => {
@@ -532,10 +578,10 @@ export class X2ADatabaseService {
     id: string;
     log?: string | null;
     finishedAt?: Date | null;
-    status?: JobStatus;
+    status?: JobStatusEnum;
     errorDetails?: string | null;
     k8sJobName?: string | null;
-    artifacts?: string[];
+    artifacts?: Artifact[];
   }): Promise<Job | undefined> {
     this.#logger.info(`updateJob called for id: ${id}`);
 
@@ -576,8 +622,9 @@ export class X2ADatabaseService {
       // Insert new artifacts
       if (artifacts.length > 0) {
         const artifactRows = artifacts.map(artifact => ({
-          id: crypto.randomUUID(),
-          value: artifact,
+          id: artifact.id ?? crypto.randomUUID(),
+          type: artifact.type,
+          value: artifact.value,
           job_id: id,
         }));
         await this.#dbClient('artifacts').insert(artifactRows);

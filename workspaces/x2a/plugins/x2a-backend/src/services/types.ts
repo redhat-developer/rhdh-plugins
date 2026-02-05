@@ -15,14 +15,10 @@
  */
 
 // Import and re-export types generated from OpenAPI spec
+import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import type { AAPCredentials } from '../schema/openapi/generated/models';
 
 export type { AAPCredentials };
-
-/**
- * Migration phase types
- */
-export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
 
 export type GitRepo = {
   url: string;

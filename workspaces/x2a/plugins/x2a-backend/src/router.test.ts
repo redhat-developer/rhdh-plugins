@@ -50,6 +50,10 @@ const mockProject2: ProjectsPostRequest = {
   name: 'Another Project',
   description: 'Another Description',
   abbreviation: 'AP',
+  sourceRepoUrl: 'https://github.com/source/repo',
+  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoBranch: 'main',
+  targetRepoBranch: 'main',
 };
 
 // Helper functions for test data setup
@@ -204,159 +208,308 @@ describe('createRouter', () => {
       client,
     };
   }
+  describe('projects endpoints', () => {
+    it.each(supportedDatabaseIds)(
+      'should query empty project list - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
 
-  it.each(supportedDatabaseIds)(
-    'should query empty project list - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client);
+        const response = await request(app).get('/projects').send();
 
-      const response = await request(app).get('/projects').send();
+        expect(response.status).toBe(200);
+        expect(response.body.totalCount).toBe(0);
+        expect(response.body.items).toEqual([]);
+      },
+      LONG_TEST_TIMEOUT,
+    );
 
-      expect(response.status).toBe(200);
-      expect(response.body.totalCount).toBe(0);
-      expect(response.body.items).toEqual([]);
-    },
-    LONG_TEST_TIMEOUT,
-  );
+    it.each(supportedDatabaseIds)(
+      'should create a project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
 
-  it.each(supportedDatabaseIds)(
-    'should create a project - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client);
+        const response = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
 
-      const response = await request(app)
-        .post('/projects')
-        .send(mockInputProject);
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+          ...mockInputProject,
+          createdBy: 'user:default/mock',
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
 
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        ...mockInputProject,
-        createdBy: 'user:default/mock',
-      });
-    },
-    LONG_TEST_TIMEOUT,
-  );
+    it.each(supportedDatabaseIds)(
+      'should not allow unauthenticated requests to create a project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
 
-  it.each(supportedDatabaseIds)(
-    'should not allow unauthenticated requests to create a project - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client);
+        // The HttpAuth mock service considers all requests to be authenticated as a
+        // mock user by default. In order to test other cases we need to explicitly
+        // pass an authorization header with mock credentials.
 
-      // The HttpAuth mock service considers all requests to be authenticated as a
-      // mock user by default. In order to test other cases we need to explicitly
-      // pass an authorization header with mock credentials.
+        const response = await request(app)
+          .post('/projects')
+          .set('Authorization', mockCredentials.none.header())
+          .send(mockInputProject);
 
-      const response = await request(app)
-        .post('/projects')
-        .set('Authorization', mockCredentials.none.header())
-        .send(mockInputProject);
+        expect(response.status).toBe(401);
+      },
+    );
 
-      expect(response.status).toBe(401);
-    },
-  );
+    it.each(supportedDatabaseIds)(
+      'should allow users with x2aUserPermission to create projects - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client, AuthorizeResult.ALLOW);
 
-  it.each(supportedDatabaseIds)(
-    'should allow users with x2aUserPermission to create projects - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client, AuthorizeResult.ALLOW);
+        const response = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
 
-      const response = await request(app)
-        .post('/projects')
-        .send(mockInputProject);
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+          ...mockInputProject,
+          createdBy: 'user:default/mock',
+        });
+      },
+    );
 
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        ...mockInputProject,
-        createdBy: 'user:default/mock',
-      });
-    },
-  );
+    it.each(supportedDatabaseIds)(
+      'should allow users with x2aAdminWritePermission to create projects - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client, AuthorizeResult.ALLOW);
 
-  it.each(supportedDatabaseIds)(
-    'should allow users with x2aAdminWritePermission to create projects - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client, AuthorizeResult.ALLOW);
+        const response = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
 
-      const response = await request(app)
-        .post('/projects')
-        .send(mockInputProject);
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+          ...mockInputProject,
+          createdBy: 'user:default/mock',
+        });
+      },
+    );
 
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        ...mockInputProject,
-        createdBy: 'user:default/mock',
-      });
-    },
-  );
+    it.each(supportedDatabaseIds)(
+      'should deny users without permissions from creating projects - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client, AuthorizeResult.DENY);
 
-  it.each(supportedDatabaseIds)(
-    'should deny users without permissions from creating projects - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client, AuthorizeResult.DENY);
+        const response = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
 
-      const response = await request(app)
-        .post('/projects')
-        .send(mockInputProject);
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotAllowedError',
+            message: 'You are not allowed to create a project',
+          },
+        });
+      },
+    );
 
-      expect(response.status).toBe(403);
-      expect(response.body).toMatchObject({
-        error: {
-          name: 'NotAllowedError',
-          message: 'You are not allowed to create a project',
-        },
-      });
-    },
-  );
+    it.each(supportedDatabaseIds)(
+      'should get a project by id - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
 
-  it.each(supportedDatabaseIds)(
-    'should get a project by id - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client);
+        // First create a project
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
 
-      // First create a project
-      const createResponse = await request(app)
-        .post('/projects')
-        .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
 
-      expect(createResponse.status).toBe(200);
-      const projectId = createResponse.body.id;
+        // Then get the project by id
+        const response = await request(app)
+          .get(`/projects/${projectId}`)
+          .send();
 
-      // Then get the project by id
-      const response = await request(app).get(`/projects/${projectId}`).send();
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+          ...mockInputProject,
+          id: projectId,
+          createdBy: 'user:default/mock',
+        });
+        expect(response.body.createdAt).toBeDefined();
+      },
+    );
 
-      expect(response.status).toBe(200);
-      expect(response.body).toMatchObject({
-        ...mockInputProject,
-        id: projectId,
-        createdBy: 'user:default/mock',
-      });
-      expect(response.body.createdAt).toBeDefined();
-    },
-  );
+    it.each(supportedDatabaseIds)(
+      'should fail for non-existent project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
 
-  it.each(supportedDatabaseIds)(
-    'should fail for non-existent project - %p',
-    async databaseId => {
-      const { client } = await createDatabase(databaseId);
-      const app = await createApp(client);
+        const response = await request(app)
+          .get(`/projects/${nonExistentId}`)
+          .send();
 
-      const response = await request(app)
-        .get(`/projects/${nonExistentId}`)
-        .send();
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: { name: 'NotFoundError', message: 'Project not found' },
+        });
+      },
+    );
+  });
 
-      expect(response.status).toBe(404);
-      expect(response.body).toMatchObject({
-        error: { name: 'NotFoundError', message: 'Project not found' },
-      });
-    },
-  );
+  describe('GET /projects/:projectId/modules', () => {
+    it.each(supportedDatabaseIds)(
+      'should return 200 and empty array when project has no modules - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const createResponse = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createResponse.status).toBe(200);
+        const projectId = createResponse.body.id;
+
+        const response = await request(app)
+          .get(`/projects/${projectId}/modules`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body).toHaveLength(0);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when project does not exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const response = await request(app)
+          .get(`/projects/${nonExistentId}/modules`)
+          .send();
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: expect.stringContaining('not found'),
+          },
+        });
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should include last analyze/migrate/publish job per module when jobs exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id, {
+          name: 'Analyzed Module',
+          sourcePath: '/analyzed',
+        });
+
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          status: 'success',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate',
+          status: 'running',
+        });
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveLength(1);
+        const mod = response.body[0];
+        expect(mod.name).toBe('Analyzed Module');
+        expect(mod.analyze).toBeDefined();
+        expect(mod.analyze.status).toBe('success');
+        expect(mod.migrate).toBeDefined();
+        expect(mod.migrate.status).toBe('running');
+        expect(mod.publish).toBeUndefined();
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should never return callbackToken in analyze, migrate or publish jobs - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id, {
+          name: 'Module With Jobs',
+          sourcePath: '/with-jobs',
+        });
+
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          status: 'success',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate',
+          status: 'running',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'publish',
+          status: 'pending',
+        });
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveLength(1);
+        const mod = response.body[0];
+
+        expect(mod.analyze).toBeDefined();
+        expect(mod.analyze).not.toHaveProperty('callbackToken');
+
+        expect(mod.migrate).toBeDefined();
+        expect(mod.migrate).not.toHaveProperty('callbackToken');
+
+        expect(mod.publish).toBeDefined();
+        expect(mod.publish).not.toHaveProperty('callbackToken');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+  });
 
   it.each(supportedDatabaseIds)(
     'should delete a project by id - %p',
