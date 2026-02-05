@@ -74,8 +74,8 @@ auth:
         clientSecret: ${AUTH_GITLAB_CLIENT_SECRET}
         signIn:
           resolvers:
-            # - resolver: emailMatchingUserEntityProfileEmail
-            - resolver: usernameMatchingUserEntityName
+            - resolver: emailMatchingUserEntityProfileEmail
+            # - resolver: usernameMatchingUserEntityName
     github:
       development:
         clientId: ${AUTH_GITHUB_CLIENT_ID}
@@ -111,7 +111,7 @@ kubernetes:
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
   # Set to false to disable RBAC checks
-  enabled: false
+  enabled: true
   rbac:
     policies-csv-file: ../../examples/example-rbac-policy.csv
     policyFileReload: true
@@ -160,10 +160,10 @@ x2a:
     # If not provided here, users must supply AAP credentials when creating projects
     # Use EITHER oauthToken OR username+password
     aap:
-      url: ${AAP_URL:-https://aap.example.com}
-      orgName: ${AAP_ORG_NAME:-MyOrganization}
+      url: ${AAP_URL}
+      orgName: ${AAP_ORG_NAME}
       # Option 1: OAuth token
-      oauthToken: ${AAP_OAUTH_TOKEN:-your-oauth-token}
+      oauthToken: ${AAP_OAUTH_TOKEN}
       # Option 2: Username and password
       # username: ${AAP_USERNAME}
       # password: ${AAP_PASSWORD}
