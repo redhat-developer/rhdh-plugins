@@ -15,7 +15,6 @@ import { IconComponent } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { PathParams } from '@backstage/core-plugin-api';
 import { RouteRef } from '@backstage/frontend-plugin-api';
 import { SubRouteRef } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
@@ -224,7 +223,9 @@ export const bulkImportTranslations: TranslationResource<"plugin.bulk-import">;
 // @public
 const _default: OverridableFrontendPlugin<    {
 root: RouteRef<undefined>;
-tasks: SubRouteRef<PathParams<"/import-history/:repoUrl">>;
+tasks: SubRouteRef<    {
+repoUrl: string;
+}>;
 }, {}, {
 "api:bulk-import": OverridableExtensionDefinition<    {
 kind: "api";
