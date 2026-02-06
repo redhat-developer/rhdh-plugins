@@ -1239,6 +1239,14 @@ export function getDiscoveryUris(): DiscoveryResponse {
   return { uris };
 }
 
+export function getModelCatalog(id: string): ModelCatalog | undefined {
+  const mcm = modelCatalog.get(id);
+  if (mcm) {
+    return mcm.catalogData;
+  }
+  return undefined;
+}
+
 export const setupInformer = async () => {
   const kc = new k8s.KubeConfig();
   kc.loadFromDefault();

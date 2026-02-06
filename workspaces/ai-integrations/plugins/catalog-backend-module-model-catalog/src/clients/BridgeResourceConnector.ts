@@ -60,7 +60,9 @@ export async function fetchModelCatalogFromKey(
   if (token) {
     tok = token?.token;
   }
-  const res = await fetch(`${baseUrl}${modelCatalogKey}`, {
+  const url = `${baseUrl}/models/${modelCatalogKey}`;
+  console.log(`Fetching model catalog key ${url}`);
+  const res = await fetch(url, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${tok}`,

@@ -18,7 +18,7 @@
 import express from 'express';
 import Router from 'express-promise-router';
 // import { todoListServiceRef } from './services/TodoListService';
-import { getDiscoveryUris } from './services/InformerService';
+import { getDiscoveryUris, getModelCatalog } from './services/InformerService';
 
 export async function createRouter(): Promise<express.Router> {
   const router = Router();
@@ -48,12 +48,25 @@ export async function createRouter(): Promise<express.Router> {
     }
   });
 
-  router.get('/modelcard', async (_req, res) => {
-    res.json(_req.body); // await todoList.listTodos());
-  });
+  // router.get('/modelcard/:id', async (_req, res) => {
+  //   res.json(_req.body); // await todoList.listTodos());
+  // });
 
-  router.get('/:models/:version/:format', async (req, res) => {
-    res.json(req.body); // await todoList.getTodo({ id: req.params.id }));
+  router.get('/models/:model/:version', async (req, res) => {
+    // res.json(await todoList.getTodo({ id: req.params.id }));
+    try {
+      console.log(`GGM get models url ${req.url}`);
+      const key = `${req.params.model}/${req.params.version}`;
+      const modelCatalog = getModelCatalog(key);
+      if (modelCatalog) {
+        res.status(200).json(modelCatalog);
+      } else {
+        res.status(404).json({ error: 'Not Found' });
+      }
+    } catch (error) {
+      console.error('Error getting model catalog:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   return router;
