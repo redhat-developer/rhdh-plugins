@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.0.1
+
+### Patch Changes
+
+- 3c49eed: The Create Project action collects source and target repos. Internally, both are persisted on the Project's level, while the /run endpoints receive fresh (non-expired) tokens only.
+- 877acc1: added GET '/projects/:projectId/modules' endpoint
+- Updated dependencies [2fc6542]
+- Updated dependencies [3c49eed]
+- Updated dependencies [877acc1]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
