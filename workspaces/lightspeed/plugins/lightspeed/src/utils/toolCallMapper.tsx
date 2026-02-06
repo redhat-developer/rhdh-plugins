@@ -25,13 +25,14 @@ import { ToolCall } from '../types';
 export const mapToPatternFlyToolCall = (
   toolCall: ToolCall,
   t: (key: any, options?: any) => string,
+  role?: 'user' | 'bot',
 ): ToolCallProps => {
   return {
     titleText: t('toolCall.header' as any, { toolName: toolCall.toolName }),
     isLoading: toolCall.isLoading,
     loadingText: t('toolCall.executing'),
     expandableContent: !toolCall.isLoading ? (
-      <ToolCallContent toolCall={toolCall} />
+      <ToolCallContent toolCall={toolCall} role={role} />
     ) : undefined,
     actions: [],
   };

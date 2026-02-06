@@ -29,6 +29,8 @@ import {
   invalidThresholdResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
+  emptyGithubAggregatedResponse,
+  emptyJiraAggregatedResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -200,6 +202,9 @@ test.describe('Scorecard Plugin Tests', () => {
           entityCount,
         ),
       );
+
+      await homePage.expectCardHasMissingPermission('github.open_prs');
+      await homePage.expectCardHasMissingPermission('jira.open_issues');
     });
 
     test('Manage scorecards on Home page', async () => {
@@ -265,13 +270,18 @@ test.describe('Scorecard Plugin Tests', () => {
       await runAccessibilityTests(page, testInfo);
     });
 
-    test('Verify cards hidden when API returns empty response', async () => {
-      await mockAggregatedScorecardResponse(page, [], []);
+    test('Verify cards aggregation data is not found when API returns empty aggregated response', async () => {
+      await mockAggregatedScorecardResponse(
+        page,
+        emptyGithubAggregatedResponse,
+        emptyJiraAggregatedResponse,
+      );
 
       await homePage.navigateToHome();
       await page.reload();
-      await homePage.expectCardNotVisible('github.open_prs');
-      await homePage.expectCardNotVisible('jira.open_issues');
+
+      await homePage.expectCardHasNoDataFound('github.open_prs');
+      await homePage.expectCardHasNoDataFound('jira.open_issues');
     });
 
     test('Verify threshold tooltips', async () => {

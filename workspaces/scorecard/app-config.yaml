@@ -159,3 +159,19 @@ permission:
     admin:
       users:
         - name: user:development/guest
+
+# Scorecard development configuration
+scorecard:
+  plugins:
+    jira:
+      open_issues:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 5 }
+    github:
+      open_prs:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 5 }

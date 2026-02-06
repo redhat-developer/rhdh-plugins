@@ -21,9 +21,12 @@ import {
   TestDatabases,
 } from '@backstage/backend-test-utils';
 import { Knex } from 'knex';
+
+import { toSorted } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import { X2ADatabaseService } from './X2ADatabaseService';
 import { migrate } from './dbMigrate';
-import { delay, LONG_TEST_TIMEOUT, nonExistentId, toSorted } from '../utils';
+import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../utils';
 
 const databases = TestDatabases.create({
   ids: ['SQLITE_3', 'POSTGRES_18'],
@@ -55,6 +58,13 @@ function createService(client: Knex): X2ADatabaseService {
   });
 }
 
+const defaultProjectRepoFields = {
+  sourceRepoUrl: 'https://github.com/source/repo',
+  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoBranch: 'main',
+  targetRepoBranch: 'main',
+};
+
 describe('X2ADatabaseService', () => {
   afterEach(async () => {
     await Promise.all(
@@ -73,6 +83,7 @@ describe('X2ADatabaseService', () => {
           name: 'Test Project',
           abbreviation: 'TP',
           description: 'A test project description',
+          ...defaultProjectRepoFields,
         };
 
         const credentials = mockCredentials.user();
@@ -82,6 +93,10 @@ describe('X2ADatabaseService', () => {
           name: input.name,
           abbreviation: input.abbreviation,
           description: input.description,
+          sourceRepoUrl: input.sourceRepoUrl,
+          targetRepoUrl: input.targetRepoUrl,
+          sourceRepoBranch: input.sourceRepoBranch,
+          targetRepoBranch: input.targetRepoBranch,
           createdBy: 'user:default/mock',
         });
         expect(project.id).toBeDefined();
@@ -93,6 +108,10 @@ describe('X2ADatabaseService', () => {
         expect(row.name).toBe(input.name);
         expect(row.abbreviation).toBe(input.abbreviation);
         expect(row.description).toBe(input.description);
+        expect(row.source_repo_url).toBe(input.sourceRepoUrl);
+        expect(row.target_repo_url).toBe(input.targetRepoUrl);
+        expect(row.source_repo_branch).toBe(input.sourceRepoBranch);
+        expect(row.target_repo_branch).toBe(input.targetRepoBranch);
         expect(row.created_by).toBe('user:default/mock');
       },
       LONG_TEST_TIMEOUT,
@@ -110,6 +129,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 1',
             abbreviation: 'P1',
             description: 'First project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -119,6 +139,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 2',
             abbreviation: 'P2',
             description: 'Second project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -144,6 +165,7 @@ describe('X2ADatabaseService', () => {
             name: 'Custom User Project',
             abbreviation: 'CUP',
             description: 'Project by custom user',
+            ...defaultProjectRepoFields,
           },
           { credentials: customCredentials },
         );
@@ -182,6 +204,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 1',
             abbreviation: 'P1',
             description: 'First project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -191,6 +214,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 2',
             abbreviation: 'P2',
             description: 'Second project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -200,6 +224,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 3',
             abbreviation: 'P3',
             description: 'Third project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -231,6 +256,7 @@ describe('X2ADatabaseService', () => {
               name: `Project ${i}`,
               abbreviation: `P${i}`,
               description: `Project ${i} description`,
+              ...defaultProjectRepoFields,
             },
             { credentials },
           );
@@ -282,6 +308,7 @@ describe('X2ADatabaseService', () => {
               name: `Project ${i}`,
               abbreviation: `P${i}`,
               description: `Project ${i} description`,
+              ...defaultProjectRepoFields,
             },
             { credentials },
           );
@@ -306,17 +333,32 @@ describe('X2ADatabaseService', () => {
 
         const credentials = mockCredentials.user();
         await service.createProject(
-          { name: 'Zebra Project', abbreviation: 'ZP', description: 'Z' },
+          {
+            name: 'Zebra Project',
+            abbreviation: 'ZP',
+            description: 'Z',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Alpha Project', abbreviation: 'AP', description: 'A' },
+          {
+            name: 'Alpha Project',
+            abbreviation: 'AP',
+            description: 'A',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Beta Project', abbreviation: 'BP', description: 'B' },
+          {
+            name: 'Beta Project',
+            abbreviation: 'BP',
+            description: 'B',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
 
@@ -340,17 +382,32 @@ describe('X2ADatabaseService', () => {
 
         const credentials = mockCredentials.user();
         await service.createProject(
-          { name: 'Alpha Project', abbreviation: 'AP', description: 'A' },
+          {
+            name: 'Alpha Project',
+            abbreviation: 'AP',
+            description: 'A',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Zebra Project', abbreviation: 'ZP', description: 'Z' },
+          {
+            name: 'Zebra Project',
+            abbreviation: 'ZP',
+            description: 'Z',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Beta Project', abbreviation: 'BP', description: 'B' },
+          {
+            name: 'Beta Project',
+            abbreviation: 'BP',
+            description: 'B',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
 
@@ -377,17 +434,32 @@ describe('X2ADatabaseService', () => {
         const credentials3 = mockCredentials.user('user:default/user3');
 
         await service.createProject(
-          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          {
+            name: 'Project 1',
+            abbreviation: 'P1',
+            description: 'D1',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials3 },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Project 2', abbreviation: 'P2', description: 'D2' },
+          {
+            name: 'Project 2',
+            abbreviation: 'P2',
+            description: 'D2',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials1 },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Project 3', abbreviation: 'P3', description: 'D3' },
+          {
+            name: 'Project 3',
+            abbreviation: 'P3',
+            description: 'D3',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials2 },
         );
 
@@ -415,24 +487,44 @@ describe('X2ADatabaseService', () => {
 
         // User1 creates 2 projects
         await service.createProject(
-          { name: 'User1 Project 1', abbreviation: 'U1P1', description: 'D1' },
+          {
+            name: 'User1 Project 1',
+            abbreviation: 'U1P1',
+            description: 'D1',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials1 },
         );
         await delay(10);
         await service.createProject(
-          { name: 'User1 Project 2', abbreviation: 'U1P2', description: 'D2' },
+          {
+            name: 'User1 Project 2',
+            abbreviation: 'U1P2',
+            description: 'D2',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials1 },
         );
         await delay(10);
 
         // User2 creates 2 projects
         await service.createProject(
-          { name: 'User2 Project 1', abbreviation: 'U2P1', description: 'D3' },
+          {
+            name: 'User2 Project 1',
+            abbreviation: 'U2P1',
+            description: 'D3',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials2 },
         );
         await delay(10);
         await service.createProject(
-          { name: 'User2 Project 2', abbreviation: 'U2P2', description: 'D4' },
+          {
+            name: 'User2 Project 2',
+            abbreviation: 'U2P2',
+            description: 'D4',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials2 },
         );
 
@@ -471,17 +563,32 @@ describe('X2ADatabaseService', () => {
         const credentials3 = mockCredentials.user('user:default/user3');
 
         await service.createProject(
-          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          {
+            name: 'Project 1',
+            abbreviation: 'P1',
+            description: 'D1',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials1 },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Project 2', abbreviation: 'P2', description: 'D2' },
+          {
+            name: 'Project 2',
+            abbreviation: 'P2',
+            description: 'D2',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials2 },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Project 3', abbreviation: 'P3', description: 'D3' },
+          {
+            name: 'Project 3',
+            abbreviation: 'P3',
+            description: 'D3',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials3 },
         );
 
@@ -515,12 +622,22 @@ describe('X2ADatabaseService', () => {
         const credentials2 = mockCredentials.user('user:default/user2');
 
         await service.createProject(
-          { name: 'User1 Project', abbreviation: 'U1P', description: 'D1' },
+          {
+            name: 'User1 Project',
+            abbreviation: 'U1P',
+            description: 'D1',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials1 },
         );
         await delay(10);
         await service.createProject(
-          { name: 'User2 Project', abbreviation: 'U2P', description: 'D2' },
+          {
+            name: 'User2 Project',
+            abbreviation: 'U2P',
+            description: 'D2',
+            ...defaultProjectRepoFields,
+          },
           { credentials: credentials2 },
         );
 
@@ -552,6 +669,7 @@ describe('X2ADatabaseService', () => {
               name: `User1 Project ${i}`,
               abbreviation: `U1P${i}`,
               description: `Description ${i}`,
+              ...defaultProjectRepoFields,
             },
             { credentials: credentials1 },
           );
@@ -565,6 +683,7 @@ describe('X2ADatabaseService', () => {
               name: `User2 Project ${i}`,
               abbreviation: `U2P${i}`,
               description: `Description ${i}`,
+              ...defaultProjectRepoFields,
             },
             { credentials: credentials2 },
           );
@@ -592,17 +711,32 @@ describe('X2ADatabaseService', () => {
 
         const credentials = mockCredentials.user();
         await service.createProject(
-          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          {
+            name: 'Project 1',
+            abbreviation: 'P1',
+            description: 'D1',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Project 2', abbreviation: 'P2', description: 'D2' },
+          {
+            name: 'Project 2',
+            abbreviation: 'P2',
+            description: 'D2',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
         await delay(10);
         await service.createProject(
-          { name: 'Project 3', abbreviation: 'P3', description: 'D3' },
+          {
+            name: 'Project 3',
+            abbreviation: 'P3',
+            description: 'D3',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
 
@@ -624,7 +758,12 @@ describe('X2ADatabaseService', () => {
 
         const credentials = mockCredentials.user();
         await service.createProject(
-          { name: 'Project 1', abbreviation: 'P1', description: 'D1' },
+          {
+            name: 'Project 1',
+            abbreviation: 'P1',
+            description: 'D1',
+            ...defaultProjectRepoFields,
+          },
           { credentials },
         );
 
@@ -671,6 +810,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -689,6 +829,18 @@ describe('X2ADatabaseService', () => {
           createdProject.abbreviation,
         );
         expect(retrievedProject?.description).toBe(createdProject.description);
+        expect(retrievedProject?.sourceRepoUrl).toBe(
+          createdProject.sourceRepoUrl,
+        );
+        expect(retrievedProject?.targetRepoUrl).toBe(
+          createdProject.targetRepoUrl,
+        );
+        expect(retrievedProject?.sourceRepoBranch).toBe(
+          createdProject.sourceRepoBranch,
+        );
+        expect(retrievedProject?.targetRepoBranch).toBe(
+          createdProject.targetRepoBranch,
+        );
         expect(retrievedProject?.createdBy).toBe(createdProject.createdBy);
         expect(retrievedProject?.createdAt).toEqual(createdProject.createdAt);
       },
@@ -706,6 +858,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 1',
             abbreviation: 'P1',
             description: 'First project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -714,6 +867,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 2',
             abbreviation: 'P2',
             description: 'Second project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -749,6 +903,7 @@ describe('X2ADatabaseService', () => {
             name: 'User1 Project',
             abbreviation: 'U1P',
             description: 'Project created by user1',
+            ...defaultProjectRepoFields,
           },
           { credentials: credentials1 },
         );
@@ -778,6 +933,7 @@ describe('X2ADatabaseService', () => {
             name: 'My Project',
             abbreviation: 'MP',
             description: 'My own project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -811,6 +967,7 @@ describe('X2ADatabaseService', () => {
             name: 'User1 Project',
             abbreviation: 'U1P',
             description: 'Project created by user1',
+            ...defaultProjectRepoFields,
           },
           { credentials: credentials1 },
         );
@@ -844,6 +1001,7 @@ describe('X2ADatabaseService', () => {
             name: 'User1 Project',
             abbreviation: 'U1P',
             description: 'Project created by user1',
+            ...defaultProjectRepoFields,
           },
           { credentials: credentials1 },
         );
@@ -892,6 +1050,7 @@ describe('X2ADatabaseService', () => {
             name: 'To Delete',
             abbreviation: 'TD',
             description: 'Project to be deleted',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -936,6 +1095,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 1',
             abbreviation: 'P1',
             description: 'First project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -944,6 +1104,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 2',
             abbreviation: 'P2',
             description: 'Second project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -994,6 +1155,7 @@ describe('X2ADatabaseService', () => {
             name: 'User1 Project',
             abbreviation: 'U1P',
             description: 'Project created by user1',
+            ...defaultProjectRepoFields,
           },
           { credentials: credentials1 },
         );
@@ -1033,6 +1195,7 @@ describe('X2ADatabaseService', () => {
             name: 'My Project',
             abbreviation: 'MP',
             description: 'My own project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1073,6 +1236,7 @@ describe('X2ADatabaseService', () => {
             name: 'User1 Project',
             abbreviation: 'U1P',
             description: 'Project created by user1',
+            ...defaultProjectRepoFields,
           },
           { credentials: credentials1 },
         );
@@ -1113,6 +1277,7 @@ describe('X2ADatabaseService', () => {
             name: 'User1 Project',
             abbreviation: 'U1P',
             description: 'Project created by user1',
+            ...defaultProjectRepoFields,
           },
           { credentials: credentials1 },
         );
@@ -1155,6 +1320,7 @@ describe('X2ADatabaseService', () => {
             name: 'Lifecycle Test',
             abbreviation: 'LT',
             description: 'Testing full lifecycle',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1207,6 +1373,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1247,6 +1414,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1281,6 +1449,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 1',
             abbreviation: 'P1',
             description: 'First project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1289,6 +1458,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 2',
             abbreviation: 'P2',
             description: 'Second project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1336,6 +1506,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1370,6 +1541,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1409,6 +1581,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1431,6 +1604,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1473,6 +1647,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 1',
             abbreviation: 'P1',
             description: 'First project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1481,6 +1656,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 2',
             abbreviation: 'P2',
             description: 'Second project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1545,6 +1721,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1582,6 +1759,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1633,6 +1811,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1712,6 +1891,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 1',
             abbreviation: 'P1',
             description: 'First project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1720,6 +1900,7 @@ describe('X2ADatabaseService', () => {
             name: 'Project 2',
             abbreviation: 'P2',
             description: 'Second project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1784,6 +1965,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1795,7 +1977,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobInput = {
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         };
 
         const job = await service.createJob(jobInput);
@@ -1831,6 +2015,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1844,7 +2029,9 @@ describe('X2ADatabaseService', () => {
         const startedAt = new Date('2026-01-24T10:00:00Z');
         const finishedAt = new Date('2026-01-24T11:00:00Z');
         const jobInput = {
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           log: 'Job log content',
           startedAt,
           finishedAt,
@@ -1876,6 +2063,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1892,7 +2080,9 @@ describe('X2ADatabaseService', () => {
           'http://example.com/artifact3',
         ];
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts,
         });
 
@@ -1923,6 +2113,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1933,8 +2124,16 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job1 = await service.createJob({ moduleId: module.id });
-        const job2 = await service.createJob({ moduleId: module.id });
+        const job1 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
+        const job2 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         expect(job1.id).not.toBe(job2.id);
         expect(job1.moduleId).toBe(module.id);
@@ -1954,6 +2153,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1969,8 +2169,16 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job1 = await service.createJob({ moduleId: module1.id });
-        const job2 = await service.createJob({ moduleId: module2.id });
+        const job1 = await service.createJob({
+          projectId: project.id,
+          moduleId: module1.id,
+          phase: 'init' as const,
+        });
+        const job2 = await service.createJob({
+          projectId: project.id,
+          moduleId: module2.id,
+          phase: 'init' as const,
+        });
 
         expect(job1.moduleId).toBe(module1.id);
         expect(job2.moduleId).toBe(module2.id);
@@ -1989,6 +2197,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'A test project',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -1999,7 +2208,11 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job = await service.createJob({ moduleId: module.id });
+        const job = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         expect(job.status).toBe('pending');
       },
@@ -2031,6 +2244,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2042,7 +2256,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const createdJob = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           log: 'Test log',
           status: 'running',
         });
@@ -2070,6 +2286,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2082,7 +2299,9 @@ describe('X2ADatabaseService', () => {
 
         const artifacts = ['file1.txt', 'file2.json'];
         const createdJob = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts,
         });
 
@@ -2108,6 +2327,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2119,11 +2339,15 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'running',
         });
 
@@ -2151,6 +2375,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2161,7 +2386,9 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const jobs = await service.listJobs({ moduleId: module.id });
+        const jobs = await service.listJobs({
+          moduleId: module.id,
+        });
 
         expect(jobs).toEqual([]);
       },
@@ -2179,6 +2406,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2190,19 +2418,27 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'running',
         });
         const job3 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'success',
         });
 
-        const jobs = await service.listJobs({ moduleId: module.id });
+        const jobs = await service.listJobs({
+          moduleId: module.id,
+        });
 
         expect(jobs).toHaveLength(3);
         // Should be ordered by started_at descending
@@ -2224,6 +2460,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2235,15 +2472,21 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt', 'artifact2.json'],
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact3.log'],
         });
 
-        const jobs = await service.listJobs({ moduleId: module.id });
+        const jobs = await service.listJobs({
+          moduleId: module.id,
+        });
 
         expect(jobs).toHaveLength(2);
         const foundJob1 = jobs.find(j => j.id === job1.id);
@@ -2269,6 +2512,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2284,12 +2528,28 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        await service.createJob({ moduleId: module1.id });
-        await service.createJob({ moduleId: module1.id });
-        await service.createJob({ moduleId: module2.id });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module1.id,
+          phase: 'init' as const,
+        });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module1.id,
+          phase: 'init' as const,
+        });
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module2.id,
+          phase: 'init' as const,
+        });
 
-        const module1Jobs = await service.listJobs({ moduleId: module1.id });
-        const module2Jobs = await service.listJobs({ moduleId: module2.id });
+        const module1Jobs = await service.listJobs({
+          moduleId: module1.id,
+        });
+        const module2Jobs = await service.listJobs({
+          moduleId: module2.id,
+        });
 
         expect(module1Jobs).toHaveLength(2);
         expect(module1Jobs.every(j => j.moduleId === module1.id)).toBe(true);
@@ -2327,6 +2587,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2338,7 +2599,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
         });
 
@@ -2365,6 +2628,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2376,7 +2640,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           log: 'Initial log',
         });
 
@@ -2402,6 +2668,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2413,7 +2680,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         });
 
         const finishedAt = new Date('2026-01-24T12:00:00Z');
@@ -2439,6 +2708,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2450,7 +2720,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['old1.txt', 'old2.txt'],
         });
 
@@ -2489,6 +2761,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2500,7 +2773,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt', 'artifact2.txt'],
         });
 
@@ -2532,6 +2807,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2543,7 +2819,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           status: 'pending',
           log: 'Initial log',
         });
@@ -2593,6 +2871,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2604,7 +2883,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         });
 
         // Verify it exists
@@ -2634,6 +2915,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2645,7 +2927,9 @@ describe('X2ADatabaseService', () => {
         });
 
         const job = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt', 'artifact2.txt'],
         });
 
@@ -2678,6 +2962,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2688,8 +2973,16 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const job1 = await service.createJob({ moduleId: module.id });
-        const job2 = await service.createJob({ moduleId: module.id });
+        const job1 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
+        const job2 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+        });
 
         const deletedCount = await service.deleteJob({ id: job1.id });
 
@@ -2705,7 +2998,9 @@ describe('X2ADatabaseService', () => {
         expect(remaining?.id).toBe(job2.id);
 
         // Verify listJobs still returns job2
-        const listResult = await service.listJobs({ moduleId: module.id });
+        const listResult = await service.listJobs({
+          moduleId: module.id,
+        });
         expect(listResult).toHaveLength(1);
         expect(listResult[0].id).toBe(job2.id);
       },
@@ -2725,6 +3020,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2736,15 +3032,21 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact1.txt'],
         });
         const job2 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
           artifacts: ['artifact2.txt'],
         });
         const job3 = await service.createJob({
+          projectId: project.id,
           moduleId: module.id,
+          phase: 'init' as const,
         });
 
         // Verify jobs exist
@@ -2752,7 +3054,9 @@ describe('X2ADatabaseService', () => {
         expect(await service.getJob({ id: job2.id })).toBeDefined();
         expect(await service.getJob({ id: job3.id })).toBeDefined();
 
-        const jobsBefore = await service.listJobs({ moduleId: module.id });
+        const jobsBefore = await service.listJobs({
+          moduleId: module.id,
+        });
         expect(jobsBefore).toHaveLength(3);
 
         // Delete the module
@@ -2769,7 +3073,9 @@ describe('X2ADatabaseService', () => {
         expect(await service.getJob({ id: job3.id })).toBeUndefined();
 
         // Verify listJobs returns empty for deleted module
-        const jobsAfter = await service.listJobs({ moduleId: module.id });
+        const jobsAfter = await service.listJobs({
+          moduleId: module.id,
+        });
         expect(jobsAfter).toEqual([]);
 
         // Verify jobs are deleted from database directly
@@ -2798,6 +3104,7 @@ describe('X2ADatabaseService', () => {
             name: 'Test Project',
             abbreviation: 'TP',
             description: 'Test description',
+            ...defaultProjectRepoFields,
           },
           { credentials },
         );
@@ -2814,13 +3121,19 @@ describe('X2ADatabaseService', () => {
         });
 
         const job1Module1 = await service.createJob({
+          projectId: project.id,
           moduleId: module1.id,
+          phase: 'init' as const,
         });
         const job2Module1 = await service.createJob({
+          projectId: project.id,
           moduleId: module1.id,
+          phase: 'init' as const,
         });
         const job1Module2 = await service.createJob({
+          projectId: project.id,
           moduleId: module2.id,
+          phase: 'init' as const,
         });
 
         // Delete module1
@@ -2836,7 +3149,9 @@ describe('X2ADatabaseService', () => {
         expect(remainingJob?.moduleId).toBe(module2.id);
 
         // Verify module2 still has its job
-        const module2Jobs = await service.listJobs({ moduleId: module2.id });
+        const module2Jobs = await service.listJobs({
+          moduleId: module2.id,
+        });
         expect(module2Jobs).toHaveLength(1);
         expect(module2Jobs[0].id).toBe(job1Module2.id);
       },

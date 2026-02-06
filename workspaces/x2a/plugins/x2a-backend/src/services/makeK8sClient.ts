@@ -15,17 +15,25 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import type { CoreV1Api } from '@kubernetes/client-node';
+import type { CoreV1Api, BatchV1Api } from '@kubernetes/client-node';
 
 /**
- * TODO: Make this configurable
+ * Kubernetes API clients
+ */
+export interface K8sClients {
+  coreV1Api: CoreV1Api;
+  batchV1Api: BatchV1Api;
+}
+
+/**
+ * TODO: Make this configurable, and allow for using kube secret inherited by service account
  *
  * Load Kubernetes config from default locations
  * This will check KUBECONFIG env var, ~/.kube/config, or ~/.kube/kubeconfig, or in-cluster config
  */
 export const makeK8sClient = async (
   logger: LoggerService,
-): Promise<CoreV1Api> => {
+): Promise<K8sClients> => {
   const { KubeConfig } = await import('@kubernetes/client-node');
   const kc = new KubeConfig();
 
@@ -63,6 +71,25 @@ export const makeK8sClient = async (
     }
   }
 
-  const { CoreV1Api } = await import('@kubernetes/client-node');
-  return kc.makeApiClient(CoreV1Api);
+  // Dynamic import of API classes to avoid ESM issues
+  const { CoreV1Api, BatchV1Api } = await import('@kubernetes/client-node');
+  const clients = {
+    coreV1Api: kc.makeApiClient(CoreV1Api),
+    batchV1Api: kc.makeApiClient(BatchV1Api),
+  };
+
+  // Test connection to the cluster. Fail fast...
+  logger.info(
+    'Kubernetes clients created, testing connection to the cluster...',
+  );
+  try {
+    await clients.coreV1Api.listNamespacedPod({ namespace: 'default' });
+  } catch (error) {
+    logger.error(`Failed to connect to the cluster: ${error}`);
+    throw new Error(
+      'Failed to connect to the cluster. Please ensure KUBECONFIG is set or running in a cluster.',
+    );
+  }
+
+  return clients;
 };

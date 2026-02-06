@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.14.4
+
+### Patch Changes
+
+- 7249d31: Fix extension plugin Apply button to apply minimal YAML when the YAML section is empty
+- 82c1d30: show error in the UI when toggle action fails
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.14.4
+
 ## 0.14.3
 
 ### Patch Changes

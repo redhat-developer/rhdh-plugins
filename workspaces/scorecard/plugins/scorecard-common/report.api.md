@@ -6,6 +6,13 @@
 import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public (undocumented)
+export type AggregatedMetric = {
+  values: AggregatedMetricValue[];
+  total: number;
+  timestamp: string;
+};
+
+// @public (undocumented)
 export type AggregatedMetricResult = {
   id: string;
   status: 'success' | 'error';
@@ -15,11 +22,7 @@ export type AggregatedMetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result: {
-    values: AggregatedMetricValue[];
-    total: number;
-    timestamp: string;
-  };
+  result: AggregatedMetric;
 };
 
 // @public (undocumented)

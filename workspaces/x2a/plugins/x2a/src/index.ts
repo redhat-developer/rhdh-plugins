@@ -14,3 +14,5 @@
  * limitations under the License.
  */
 export { x2APlugin, X2APage } from './plugin';
+export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
+export { useTranslation as useX2ATranslation } from './hooks/useTranslation';

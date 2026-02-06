@@ -45,13 +45,21 @@ export interface Module {
 export type JobStatus = 'pending' | 'running' | 'success' | 'error';
 
 // TODO: model via openapi schema
+export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
+
+// TODO: model via openapi schema
 export interface Job {
   id: string;
+  projectId: string;
+  moduleId: string | null;
   log: string | null;
   startedAt: Date;
   finishedAt: Date | null;
   status: JobStatus;
-  moduleId: string;
+  phase: MigrationPhase;
+  errorDetails: string | null;
+  k8sJobName: string | null;
+  callbackToken: string | null;
   artifacts: string[];
 }
 
@@ -75,6 +83,10 @@ export class X2ADatabaseService {
       name: row.name,
       abbreviation: row.abbreviation,
       description: row.description,
+      sourceRepoUrl: row.source_repo_url,
+      targetRepoUrl: row.target_repo_url,
+      sourceRepoBranch: row.source_repo_branch,
+      targetRepoBranch: row.target_repo_branch,
       createdBy: row.created_by,
       createdAt: new Date(row.created_at),
     };
@@ -106,11 +118,16 @@ export class X2ADatabaseService {
   private mapRowToJob(row: any): Omit<Job, 'artifacts'> {
     return {
       id: row.id,
+      projectId: row.project_id,
+      moduleId: row.module_id || null,
       log: row.log,
       startedAt: row.started_at ? new Date(row.started_at) : new Date(),
       finishedAt: row.finished_at ? new Date(row.finished_at) : null,
       status: (row.status || 'pending') as JobStatus,
-      moduleId: row.module_id,
+      phase: (row.phase || 'init') as MigrationPhase,
+      errorDetails: row.error_details || null,
+      k8sJobName: row.k8s_job_name || null,
+      callbackToken: row.callback_token || null,
     };
   }
 
@@ -134,6 +151,10 @@ export class X2ADatabaseService {
       name: string;
       abbreviation: string;
       description: string;
+      sourceRepoUrl: string;
+      targetRepoUrl: string;
+      sourceRepoBranch: string;
+      targetRepoBranch: string;
     },
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
@@ -148,7 +169,10 @@ export class X2ADatabaseService {
       name: input.name,
       abbreviation: input.abbreviation,
       description: input.description,
-      // sourceRepository: 'https://github.com/org/repo',
+      sourceRepoUrl: input.sourceRepoUrl,
+      targetRepoUrl: input.targetRepoUrl,
+      sourceRepoBranch: input.sourceRepoBranch,
+      targetRepoBranch: input.targetRepoBranch,
       createdBy,
       createdAt,
     };
@@ -159,6 +183,10 @@ export class X2ADatabaseService {
       name: input.name,
       abbreviation: input.abbreviation,
       description: input.description,
+      source_repo_url: input.sourceRepoUrl,
+      target_repo_url: input.targetRepoUrl,
+      source_repo_branch: input.sourceRepoBranch,
+      target_repo_branch: input.targetRepoBranch,
       created_by: createdBy,
       created_at: createdAt,
     });
@@ -348,11 +376,16 @@ export class X2ADatabaseService {
   }
 
   async createJob(job: {
+    projectId: string;
+    moduleId?: string | null;
     log?: string | null;
     startedAt?: Date;
     finishedAt?: Date | null;
     status?: JobStatus;
-    moduleId: string;
+    phase: MigrationPhase;
+    errorDetails?: string | null;
+    k8sJobName?: string | null;
+    callbackToken?: string | null;
     artifacts?: string[];
   }): Promise<Job> {
     const id = crypto.randomUUID();
@@ -364,11 +397,16 @@ export class X2ADatabaseService {
     // Persist the job in the database
     await this.#dbClient('jobs').insert({
       id,
+      project_id: job.projectId,
+      module_id: job.moduleId || null,
       log: job.log || null,
       started_at: startedAt,
       finished_at: finishedAt,
       status,
-      module_id: job.moduleId,
+      phase: job.phase,
+      error_details: job.errorDetails || null,
+      k8s_job_name: job.k8sJobName || null,
+      callback_token: job.callbackToken || null,
     });
 
     // Insert artifacts if provided
@@ -383,11 +421,16 @@ export class X2ADatabaseService {
 
     const newJob: Job = {
       id,
+      projectId: job.projectId,
+      moduleId: job.moduleId || null,
       log: job.log || null,
       startedAt,
       finishedAt,
       status,
-      moduleId: job.moduleId,
+      phase: job.phase,
+      errorDetails: job.errorDetails || null,
+      k8sJobName: job.k8sJobName || null,
+      callbackToken: job.callbackToken || null,
       artifacts,
     };
 
@@ -420,12 +463,23 @@ export class X2ADatabaseService {
     };
   }
 
-  async listJobs({ moduleId }: { moduleId: string }): Promise<Job[]> {
+  async listJobs({
+    moduleId,
+    phase = null,
+  }: {
+    moduleId: string;
+    phase?: MigrationPhase | null;
+  }): Promise<Job[]> {
     this.#logger.info(`listJobs called for moduleId: ${moduleId}`);
 
     // Fetch all jobs for the given module
     const rows = await this.#dbClient('jobs')
       .where('module_id', moduleId)
+      .modify(queryBuilder => {
+        if (phase) {
+          queryBuilder.where('phase', phase);
+        }
+      })
       .select('*')
       .orderBy('started_at', 'desc');
 
@@ -433,7 +487,7 @@ export class X2ADatabaseService {
       return [];
     }
 
-    const jobIds = rows.map(row => row.id);
+    const jobIds = rows.map((row: any) => row.id);
 
     // Fetch all artifacts for these jobs in a single query
     const artifactRows = await this.#dbClient('artifacts')
@@ -451,7 +505,7 @@ export class X2ADatabaseService {
     }
 
     // Build jobs with their artifacts
-    const jobs: Job[] = rows.map(row => {
+    const jobs: Job[] = rows.map((row: any) => {
       const job = this.mapRowToJob(row);
       return {
         ...job,
@@ -471,12 +525,16 @@ export class X2ADatabaseService {
     log,
     finishedAt,
     status,
+    errorDetails,
+    k8sJobName,
     artifacts,
   }: {
     id: string;
     log?: string | null;
     finishedAt?: Date | null;
     status?: JobStatus;
+    errorDetails?: string | null;
+    k8sJobName?: string | null;
     artifacts?: string[];
   }): Promise<Job | undefined> {
     this.#logger.info(`updateJob called for id: ${id}`);
@@ -498,6 +556,12 @@ export class X2ADatabaseService {
     }
     if (status !== undefined) {
       updateData.status = status;
+    }
+    if (errorDetails !== undefined) {
+      updateData.error_details = errorDetails;
+    }
+    if (k8sJobName !== undefined) {
+      updateData.k8s_job_name = k8sJobName;
     }
 
     if (Object.keys(updateData).length > 0) {

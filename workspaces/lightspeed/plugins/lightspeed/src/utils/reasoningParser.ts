@@ -29,15 +29,6 @@ export interface ParsedReasoning {
   isReasoningInProgress: boolean;
 }
 
-export const isReasoningInProgress = (content: string): boolean => {
-  if (!content) return false;
-
-  const hasOpeningTag = content.includes('<think>');
-  const hasClosingTag = content.includes('</think>');
-
-  return hasOpeningTag && !hasClosingTag;
-};
-
 export const parseReasoning = (content: string): ParsedReasoning => {
   if (!content) {
     return {
@@ -48,36 +39,34 @@ export const parseReasoning = (content: string): ParsedReasoning => {
     };
   }
 
-  const reasoningInProgress = isReasoningInProgress(content);
+  const lastOpenIndex = content.lastIndexOf('<think>');
+  const lastCloseIndex = content.lastIndexOf('</think>');
 
-  const reasoningPattern = /<think>(.*?)<\/think>/s;
-  const match = content.match(reasoningPattern);
+  const isReasoningInProgress =
+    lastOpenIndex !== -1 && lastOpenIndex > lastCloseIndex;
 
-  if (match) {
-    const reasoning = (match[1] || '').trim();
-    const mainContent = content.replace(reasoningPattern, '').trim();
+  const reasoningPattern = /<think>(.*?)<\/think>/gs;
+  const matches = Array.from(content.matchAll(reasoningPattern));
 
-    return {
-      reasoning,
-      mainContent,
-      hasReasoning: true,
-      isReasoningInProgress: false,
-    };
+  const extractedReasoning = matches
+    .map(m => (m[1] || '').trim())
+    .filter(reasoning => reasoning.length > 0);
+
+  if (isReasoningInProgress && lastOpenIndex !== -1) {
+    const partial = content.substring(lastOpenIndex + '<think>'.length).trim();
+    if (partial.length > 0) {
+      extractedReasoning.push(partial);
+    }
   }
 
-  if (reasoningInProgress) {
-    return {
-      reasoning: null,
-      mainContent: '',
-      hasReasoning: false,
-      isReasoningInProgress: true,
-    };
-  }
+  const mainContent = content.replaceAll(reasoningPattern, '').trim();
+
+  const hasValidReasoning = extractedReasoning.length > 0;
 
   return {
-    reasoning: null,
-    mainContent: content,
-    hasReasoning: false,
-    isReasoningInProgress: false,
+    reasoning: hasValidReasoning ? extractedReasoning.join('\n\n') : null,
+    mainContent: isReasoningInProgress ? '' : mainContent,
+    hasReasoning: hasValidReasoning,
+    isReasoningInProgress: isReasoningInProgress,
   };
 };

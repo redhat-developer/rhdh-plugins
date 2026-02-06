@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.2.3
+
+### Patch Changes
+
+- da2e71d: some ux improvements and persisting the display mode preference
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.3
+
 ## 1.2.2
 
 ### Patch Changes

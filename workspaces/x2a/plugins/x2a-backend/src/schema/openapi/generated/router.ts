@@ -133,12 +133,32 @@ export const spec = {
                   "abbreviation": {
                     "type": "string",
                     "description": "Project abbreviation"
+                  },
+                  "sourceRepoUrl": {
+                    "type": "string",
+                    "description": "URL of the source repository"
+                  },
+                  "targetRepoUrl": {
+                    "type": "string",
+                    "description": "URL of the target repository"
+                  },
+                  "sourceRepoBranch": {
+                    "type": "string",
+                    "description": "Branch of the source repository (default to main)"
+                  },
+                  "targetRepoBranch": {
+                    "type": "string",
+                    "description": "Branch of the target repository (default to main)"
                   }
                 },
                 "required": [
                   "name",
                   "description",
-                  "abbreviation"
+                  "abbreviation",
+                  "sourceRepoUrl",
+                  "targetRepoUrl",
+                  "sourceRepoBranch",
+                  "targetRepoBranch"
                 ]
               }
             }
@@ -221,6 +241,289 @@ export const spec = {
           }
         }
       }
+    },
+    "/projects/{projectId}/run": {
+      "post": {
+        "summary": "Triggers the init phase to produce the migration plan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sourceRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
+                  },
+                  "targetRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
+                  },
+                  "aapCredentials": {
+                    "$ref": "#/components/schemas/AAPCredentials"
+                  },
+                  "userPrompt": {
+                    "type": "string",
+                    "description": "Optional user prompt for customizing the migration"
+                  }
+                },
+                "required": [
+                  "sourceRepoAuth",
+                  "targetRepoAuth"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Init job created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending"
+                      ],
+                      "description": "Job status"
+                    },
+                    "jobId": {
+                      "type": "string",
+                      "description": "UUID of the created job"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "jobId"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/modules": {
+      "post": {
+        "summary": "Creates a new module for a project",
+        "description": "**TEMPORARY ENDPOINT FOR TESTING ONLY**\n\nThis endpoint provides simple CRUD functionality to create modules for testing the job triggering infrastructure.\n\nAccording to the ADR, this endpoint should eventually sync modules by parsing the migration plan (created by the init phase).\nThe proper implementation will be added when the init phase integration is complete.\n\nTODO: Replace with proper sync logic that parses the migration plan via LLM (see ADR lines 202-213)\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Module name"
+                  },
+                  "sourcePath": {
+                    "type": "string",
+                    "description": "Path to the module in the source repository"
+                  }
+                },
+                "required": [
+                  "name",
+                  "sourcePath"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Module created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Module"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/modules/{moduleId}/run": {
+      "post": {
+        "summary": "Triggers a migration phase for a specific module",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phase": {
+                    "type": "string",
+                    "enum": [
+                      "analyze",
+                      "migrate",
+                      "publish"
+                    ],
+                    "description": "Migration phase to execute"
+                  },
+                  "sourceRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
+                  },
+                  "targetRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
+                  },
+                  "aapCredentials": {
+                    "$ref": "#/components/schemas/AAPCredentials"
+                  },
+                  "userPrompt": {
+                    "type": "string",
+                    "description": "Optional user prompt for customizing the migration"
+                  }
+                },
+                "required": [
+                  "phase",
+                  "sourceRepo",
+                  "targetRepo"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Migration job created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "pending"
+                      ],
+                      "description": "Job status"
+                    },
+                    "jobId": {
+                      "type": "string",
+                      "description": "UUID of the created job"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "jobId"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or module not found"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/modules/{moduleId}/log": {
+      "get": {
+        "summary": "Returns logs for the latest job of a module",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Project UUID"
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Module UUID"
+          },
+          {
+            "in": "query",
+            "name": "streaming",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Whether to stream logs (text/plain) or return all at once"
+          },
+          {
+            "in": "query",
+            "name": "phase",
+            "schema": {
+              "$ref": "#/components/schemas/Phase"
+            },
+            "required": true,
+            "description": "Migration phase to filter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Module logs",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Module not found or no jobs exist"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -244,6 +547,22 @@ export const spec = {
             "type": "string",
             "description": "Description of the project"
           },
+          "sourceRepoUrl": {
+            "type": "string",
+            "description": "URL of the source repository"
+          },
+          "targetRepoUrl": {
+            "type": "string",
+            "description": "URL of the target repository"
+          },
+          "sourceRepoBranch": {
+            "description": "Branch of the source repository",
+            "type": "string"
+          },
+          "targetRepoBranch": {
+            "description": "Branch of the target repository",
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -258,9 +577,90 @@ export const spec = {
           "id",
           "name",
           "abbreviation",
+          "sourceRepoUrl",
+          "targetRepoUrl",
+          "sourceRepoBranch",
+          "targetRepoBranch",
           "createdAt",
           "createdBy"
         ]
+      },
+      "Module": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "UUID for the module"
+          },
+          "name": {
+            "type": "string",
+            "description": "Module name"
+          },
+          "sourcePath": {
+            "type": "string",
+            "description": "Path to the module in the source repository"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "UUID of the parent project"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "sourcePath",
+          "projectId"
+        ]
+      },
+      "GitRepoAuth": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Authentication token for the git repository"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "AAPCredentials": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Ansible Automation Platform URL"
+          },
+          "orgName": {
+            "type": "string",
+            "description": "AAP organization name"
+          },
+          "oauthToken": {
+            "type": "string",
+            "description": "OAuth token for AAP authentication"
+          },
+          "username": {
+            "type": "string",
+            "description": "Username for AAP authentication (alternative to OAuth token)"
+          },
+          "password": {
+            "type": "string",
+            "description": "Password for AAP authentication (alternative to OAuth token)"
+          }
+        },
+        "required": [
+          "url",
+          "orgName"
+        ]
+      },
+      "Phase": {
+        "type": "string",
+        "enum": [
+          "analyze",
+          "migrate",
+          "publish"
+        ],
+        "description": "Migration phases to execute"
       }
     }
   }

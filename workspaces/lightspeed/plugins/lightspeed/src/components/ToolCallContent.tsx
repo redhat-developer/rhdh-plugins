@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
-
+import { Message } from '@patternfly/chatbot';
 import {
-  Button,
   Content,
   ContentVariants,
   DescriptionList,
@@ -27,30 +25,26 @@ import {
   Flex,
   FlexItem,
   Label,
-  Tooltip,
 } from '@patternfly/react-core';
-import { CopyIcon, WrenchIcon } from '@patternfly/react-icons';
+import { WrenchIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
 
 interface ToolCallContentProps {
   toolCall: ToolCall;
+  role?: 'user' | 'bot';
 }
 
 /**
  * Lightweight component for rendering tool call expandable content.
  * Used inside PatternFly's ToolCall component's expandableContent prop.
  */
-export const ToolCallContent = ({ toolCall }: ToolCallContentProps) => {
+export const ToolCallContent = ({
+  toolCall,
+  role = 'bot',
+}: ToolCallContentProps) => {
   const { t } = useTranslation();
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const handleCopy = async () => {
-    if (toolCall.response) {
-      await globalThis.navigator.clipboard.writeText(toolCall.response);
-    }
-  };
 
   const formatExecutionTime = (seconds?: number): string => {
     if (seconds === undefined) return '';
@@ -210,16 +204,6 @@ export const ToolCallContent = ({ toolCall }: ToolCallContentProps) => {
                       <FlexItem flex={{ default: 'flex_1' }}>
                         <strong> {t('toolCall.response')}</strong>
                       </FlexItem>
-                      <FlexItem>
-                        <Tooltip content={t('toolCall.copyResponse')}>
-                          <Button
-                            variant="plain"
-                            aria-label={t('toolCall.copyResponse')}
-                            onClick={handleCopy}
-                            icon={<CopyIcon />}
-                          />
-                        </Tooltip>
-                      </FlexItem>
                     </Flex>
                     {/* </DescriptionListTerm> */}
                     <DescriptionListDescription
@@ -230,37 +214,17 @@ export const ToolCallContent = ({ toolCall }: ToolCallContentProps) => {
                         spaceItems={{ default: 'spaceItemsXs' }}
                       >
                         <FlexItem>
-                          <div
-                            style={{
-                              fontFamily:
-                                'Red Hat Mono, Monaco, Consolas, monospace',
-                              fontSize: '0.875rem',
-                              whiteSpace: 'pre-wrap',
-                              wordBreak: 'break-word',
-                              padding: 'var(--pf-t--global--spacer--sm)',
-                              borderRadius:
-                                'var(--pf-t--global--border--radius--small)',
-                              maxHeight: isExpanded ? '300px' : '105px',
-                              overflowY: 'auto',
-                              transition: 'max-height 0.3s ease',
+                          <Message
+                            content={toolCall.response}
+                            role={role}
+                            codeBlockProps={{
+                              isExpandable: true,
+                              expandableSectionProps: {
+                                truncateMaxLines: 1,
+                              },
                             }}
-                          >
-                            {toolCall.response}
-                          </div>
+                          />
                         </FlexItem>
-                        {toolCall.response.length > 300 && (
-                          <FlexItem>
-                            <Button
-                              variant="link"
-                              isInline
-                              onClick={() => setIsExpanded(!isExpanded)}
-                            >
-                              {isExpanded
-                                ? t('toolCall.showLess')
-                                : t('toolCall.showMore')}
-                            </Button>
-                          </FlexItem>
-                        )}
                       </Flex>
                     </DescriptionListDescription>
                   </DescriptionListGroup>

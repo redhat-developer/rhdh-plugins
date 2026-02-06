@@ -41,12 +41,12 @@
     "directory": "workspaces/lightspeed"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5",
+    "@backstage/cli": "^0.35.3",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.16.0",
+    "@backstage/repo-tools": "^0.16.3",
     "@changesets/cli": "^2.27.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
-    "@playwright/test": "1.58.0",
+    "@playwright/test": "1.58.1",
     "@spotify/prettier-config": "^12.0.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -59,8 +59,6 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@backstage/plugin-catalog-backend": "2.0.0",
-    "@backstage/plugin-scaffolder-backend": "1.33.0",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "prettier": "@spotify/prettier-config",

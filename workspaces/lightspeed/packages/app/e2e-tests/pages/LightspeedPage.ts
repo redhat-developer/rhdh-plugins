@@ -94,9 +94,6 @@ export async function expectChatInputAreaVisible(
   await expect(
     page.getByRole('textbox', { name: t['chatbox.message.placeholder'] }),
   ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: t['footer.accuracy.label'] }),
-  ).toBeVisible();
 }
 
 export async function expectEmptyChatHistory(

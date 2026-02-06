@@ -14,7 +14,7 @@ export const ScorecardHomepageCard: ({
   metricId,
 }: {
   metricId: string;
-}) => JSX_2.Element;
+}) => JSX_2.Element | null;
 
 // @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;

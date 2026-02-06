@@ -35,14 +35,50 @@ import {
 } from '@backstage/errors';
 import { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
+// Mock the Kubernetes client to avoid ES Module import issues
+jest.mock('./services/makeK8sClient', () => ({
+  makeK8sClient: jest.fn(() => ({
+    coreV1Api: {},
+    batchV1Api: {},
+  })),
+}));
+
 const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',
   abbreviation: 'MP',
+  sourceRepoUrl: 'https://github.com/source/repo',
+  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoBranch: 'main',
+  targetRepoBranch: 'main',
 };
 
 const mockUserId = `user: default/user1`;
-const BASE_CONFIG = {};
+const BASE_CONFIG = {
+  x2a: {
+    kubernetes: {
+      namespace: 'test-namespace',
+      image: 'test-image',
+      imageTag: 'test',
+      ttlSecondsAfterFinished: 86400,
+      resources: {
+        requests: {
+          cpu: '100m',
+          memory: '128Mi',
+        },
+        limits: {
+          cpu: '200m',
+          memory: '256Mi',
+        },
+      },
+    },
+    credentials: {
+      llm: {
+        LLM_MODEL: 'test-model',
+      },
+    },
+  },
+};
 
 jest.mock('@backstage/backend-plugin-api', () => ({
   ...jest.requireActual('@backstage/backend-plugin-api'),
@@ -82,9 +118,21 @@ const getX2aDatabaseServiceMock = () => ({
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
 });
 
-const getKubeServiceMock = () => ({
-  getPods: jest.fn().mockResolvedValue({ items: [] }),
-});
+const getKubeServiceMock = () =>
+  ({
+    // Project secret operations
+    createProjectSecret: jest.fn().mockResolvedValue(undefined),
+    getProjectSecret: jest.fn().mockResolvedValue(null),
+    deleteProjectSecret: jest.fn().mockResolvedValue(undefined),
+    // Job operations
+    createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
+    getJobStatus: jest.fn().mockResolvedValue({ status: 'pending' }),
+    getJobLogs: jest.fn().mockResolvedValue(''),
+    deleteJob: jest.fn().mockResolvedValue(undefined),
+    listJobsForProject: jest.fn().mockResolvedValue([]),
+    // Test method
+    getPods: jest.fn().mockResolvedValue({ items: [] }),
+  }) as any;
 
 async function startBackendServer(
   config?: Record<PropertyKey, unknown>,
@@ -108,7 +156,7 @@ async function startBackendServer(
     createServiceFactory({
       service: kubeServiceRef,
       deps: {},
-      factory: async () => getKubeServiceMock(),
+      factory: () => getKubeServiceMock(),
     }),
   ];
   return (await startTestBackend({ features })).server;
@@ -163,6 +211,9 @@ describe('plugin', () => {
     const { server } = await startTestBackend({
       features: [
         x2APlugin,
+        mockServices.rootConfig.factory({
+          data: BASE_CONFIG,
+        }),
         createServiceFactory({
           service: x2aDatabaseServiceRef,
           deps: {},
@@ -171,7 +222,7 @@ describe('plugin', () => {
         createServiceFactory({
           service: kubeServiceRef,
           deps: {},
-          factory: async () => getKubeServiceMock(),
+          factory: () => getKubeServiceMock(),
         }),
       ],
     });

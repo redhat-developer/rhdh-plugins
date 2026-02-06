@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 
 /**
  * Creates the jobs and artifacts table.
@@ -33,8 +33,23 @@ export async function up(knex: Knex): Promise<void> {
       .defaultTo('pending')
       .checkIn(['pending', 'running', 'success', 'error']);
     table
-      .uuid('module_id')
+      .string('phase')
       .notNullable()
+      .defaultTo('init')
+      .checkIn(['init', 'analyze', 'migrate', 'publish']);
+    table.text('error_details');
+    table.string('k8s_job_name');
+    table.string('callback_token');
+    table
+      .uuid('project_id')
+      .notNullable()
+      .references('id')
+      .inTable('projects')
+      .onDelete('CASCADE')
+      .index();
+    table
+      .uuid('module_id')
+      .nullable()
       .references('id')
       .inTable('modules')
       .onDelete('CASCADE')
@@ -44,6 +59,8 @@ export async function up(knex: Knex): Promise<void> {
     table.index('started_at');
     table.index('finished_at');
     table.index('status');
+    table.index('phase');
+    table.index('k8s_job_name');
   });
 
   await knex.schema.createTable('artifacts', table => {

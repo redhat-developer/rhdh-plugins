@@ -6,6 +6,18 @@
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
+// @public (undocumented)
+export interface AAPCredentials {
+    oauthToken?: string;
+    orgName: string;
+    password?: string;
+    url: string;
+    username?: string;
+}
+
+// @public
+export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
+
 // @public
 export const DEFAULT_PAGE_ORDER = "desc";
 
@@ -29,7 +41,30 @@ export class DefaultApiClient {
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
+    projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
+    projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
+    projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public (undocumented)
+export interface GitRepoAuth {
+    token: string;
+}
+
+// @public (undocumented)
+export interface Module {
+    id: string;
+    name: string;
+    projectId: string;
+    sourcePath: string;
+}
+
+// @public
+export function normalizeRepoUrl(url: string): string;
+
+// @public (undocumented)
+export type Phase = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export interface Project {
@@ -39,6 +74,10 @@ export interface Project {
     description?: string;
     id: string;
     name: string;
+    sourceRepoBranch: string;
+    sourceRepoUrl: string;
+    targetRepoBranch: string;
+    targetRepoUrl: string;
 }
 
 // @public (undocumented)
@@ -67,6 +106,10 @@ export interface ProjectsPostRequest {
     abbreviation: string;
     description: string;
     name: string;
+    sourceRepoBranch: string;
+    sourceRepoUrl: string;
+    targetRepoBranch: string;
+    targetRepoUrl: string;
 }
 
 // @public (undocumented)
@@ -88,11 +131,92 @@ export type ProjectsProjectIdGet = {
     };
 };
 
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdLogGet = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    query: {
+        streaming?: boolean;
+        phase: Phase;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdRunPost = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    body: ProjectsProjectIdModulesModuleIdRunPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
+    // (undocumented)
+    aapCredentials?: AAPCredentials;
+    phase: ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum;
+    // (undocumented)
+    sourceRepoAuth?: GitRepoAuth;
+    // (undocumented)
+    targetRepoAuth?: GitRepoAuth;
+    userPrompt?: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum = 'analyze' | 'migrate' | 'publish';
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdModulesPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesPostRequest {
+    name: string;
+    sourcePath: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdRunPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdRunPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdRunPost200Response {
+    jobId: string;
+    status: ProjectsProjectIdRunPost200ResponseStatusEnum;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdRunPost200ResponseStatusEnum = 'pending';
+
+// @public (undocumented)
+export interface ProjectsProjectIdRunPostRequest {
+    // (undocumented)
+    aapCredentials?: AAPCredentials;
+    // (undocumented)
+    sourceRepoAuth: GitRepoAuth;
+    // (undocumented)
+    targetRepoAuth: GitRepoAuth;
+    userPrompt?: string;
+}
+
 // @public
 export interface RequestOptions {
     // (undocumented)
     token?: string;
 }
+
+// @public
+export const toSorted: (a: string, b: string) => number;
 
 // @public
 export type TypedResponse<T> = Omit<Response, 'json'> & {

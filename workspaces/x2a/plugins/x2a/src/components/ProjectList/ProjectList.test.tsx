@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { mockUseTranslation } from '../../test-utils/mockTranslations';
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
 import {
   mockApis,
   renderInTestApp,
@@ -40,6 +46,10 @@ const createMockProjects = (count: number, offset: number = 0): Project[] => {
       name: `Project ${index}`,
       abbreviation: `P${index}`,
       description: `Description ${index}`,
+      sourceRepoUrl: `https://github.com/org/source-repo${index}`,
+      targetRepoUrl: `https://github.com/org/target-repo${index}`,
+      sourceRepoBranch: `main${index}`,
+      targetRepoBranch: `main${index}`,
       createdAt: new Date(
         `2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
       ),

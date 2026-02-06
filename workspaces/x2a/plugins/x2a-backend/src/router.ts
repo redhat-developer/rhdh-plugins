@@ -16,7 +16,11 @@
 
 import { z } from 'zod';
 import express, { Request } from 'express';
+import { randomUUID } from 'node:crypto';
 import {
+  BackstageCredentials,
+  BackstageUserPrincipal,
+  DiscoveryService,
   HttpAuthService,
   LoggerService,
   PermissionsService,
@@ -92,16 +96,31 @@ const authorize = async (
     }
   );
 };
+/**
+ * Safely extracts user reference from credentials with fallback
+ */
+function getUserRef(
+  credentials: BackstageCredentials<BackstageUserPrincipal>,
+): string {
+  try {
+    return credentials.principal.userEntityRef;
+  } catch {
+    return 'user:default/system';
+  }
+}
 
 export async function createRouter({
   httpAuth,
+  discoveryApi,
   x2aDatabase,
+  kubeService,
   logger,
   permissionsSvc,
 }: {
   httpAuth: HttpAuthService;
   x2aDatabase: typeof x2aDatabaseServiceRef.T;
   kubeService: typeof kubeServiceRef.T;
+  discoveryApi: DiscoveryService;
   logger: LoggerService;
   permissionsSvc: PermissionsService;
 }): Promise<express.Router> {
@@ -177,6 +196,10 @@ export async function createRouter({
       name: z.string(),
       description: z.string(),
       abbreviation: z.string(),
+      sourceRepoUrl: z.string(),
+      targetRepoUrl: z.string(),
+      sourceRepoBranch: z.string(),
+      targetRepoBranch: z.string(),
     });
 
     const parsedBody = projectCreateRequestSchema
@@ -238,6 +261,374 @@ export async function createRouter({
     }
     res.status(200).json({ deletedCount });
   });
+
+  router.post(
+    '/projects/:projectId/run',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/run';
+      const { projectId } = req.params;
+      logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      // Validate request body
+      const runRequestSchema = z.object({
+        sourceRepoAuth: z.object({
+          token: z.string(),
+        }),
+        targetRepoAuth: z.object({
+          token: z.string(),
+        }),
+        aapCredentials: z
+          .object({
+            url: z.string(),
+            orgName: z.string(),
+            oauthToken: z.string().optional(),
+            username: z.string().optional(),
+            password: z.string().optional(),
+          })
+          .optional(),
+        userPrompt: z.string().optional(),
+      });
+
+      const parsedBody = runRequestSchema.passthrough().safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const { sourceRepoAuth, targetRepoAuth, aapCredentials, userPrompt } =
+        parsedBody.data;
+
+      // Get user reference safely
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userRef = getUserRef(credentials);
+
+      // Verify project exists
+      const project = await x2aDatabase.getProject(
+        { projectId },
+        { credentials },
+      );
+      if (!project) {
+        throw new NotFoundError(`Project "${projectId}" not found.`);
+      }
+
+      // Generate callback token and create job record
+      const callbackToken = randomUUID();
+      const job = await x2aDatabase.createJob({
+        projectId,
+        moduleId: null, // Init jobs have no module
+        phase: 'init',
+        status: 'pending',
+        callbackToken,
+      });
+
+      // Create Kubernetes job (will create both project and job secrets)
+      // Use HTTP for in-cluster service-to-service communication
+      // Jobs call back to Backstage within the same cluster
+      const baseUrl = await discoveryApi.getBaseUrl('x2a');
+      const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
+      const { k8sJobName } = await kubeService.createJob({
+        jobId: job.id,
+        projectId,
+        projectName: project.name,
+        phase: 'init',
+        user: userRef,
+        callbackToken,
+        callbackUrl,
+        sourceRepo: {
+          url: project.sourceRepoUrl,
+          branch: project.sourceRepoBranch,
+          token: sourceRepoAuth.token,
+        },
+        targetRepo: {
+          url: project.targetRepoUrl,
+          branch: project.targetRepoBranch,
+          token: targetRepoAuth.token,
+        },
+        aapCredentials,
+        userPrompt,
+      });
+
+      // Update job with k8s job name
+      await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+
+      logger.info(
+        `Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`,
+      );
+
+      res.json({ status: 'pending', jobId: job.id } as any);
+    },
+  );
+
+  // TODO: This is a TEMPORARY endpoint for testing only.
+  // According to the ADR (lines 202-213), this endpoint should sync modules by:
+  // 1. Fetching the migration project plan from the target repo
+  // 2. Parsing it via LLM to extract the list of modules
+  // 3. Generating moduleIds for new ones and deleting missing modules
+  // This simple CRUD implementation allows testing the job infrastructure
+  // until the init phase integration is complete.
+  router.post(
+    '/projects/:projectId/modules',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/modules';
+      const { projectId } = req.params;
+      logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      // Validate request body
+      const createModuleRequestSchema = z.object({
+        name: z.string(),
+        sourcePath: z.string(),
+      });
+
+      const parsedBody = createModuleRequestSchema
+        .passthrough()
+        .safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const { name, sourcePath } = parsedBody.data;
+
+      // Get user credentials
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
+      // Verify project exists
+      const project = await x2aDatabase.getProject(
+        { projectId },
+        { credentials },
+      );
+      if (!project) {
+        throw new NotFoundError(`Project "${projectId}" not found.`);
+      }
+
+      // Create module
+      const module = await x2aDatabase.createModule({
+        name,
+        sourcePath,
+        projectId,
+      });
+
+      logger.info(`Module created: moduleId=${module.id}, name=${module.name}`);
+
+      res.status(201).json(module);
+    },
+  );
+
+  router.post(
+    '/projects/:projectId/modules/:moduleId/run',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/modules/:moduleId/run';
+      const { projectId, moduleId } = req.params;
+      logger.info(
+        `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
+      );
+
+      // Validate request body
+      const runModuleRequestSchema = z.object({
+        phase: z.enum(['analyze', 'migrate', 'publish']),
+        sourceRepoToken: z.string(),
+        targetRepoToken: z.string(),
+        aapCredentials: z
+          .object({
+            url: z.string(),
+            orgName: z.string(),
+            oauthToken: z.string().optional(),
+            username: z.string().optional(),
+            password: z.string().optional(),
+          })
+          .optional(),
+        userPrompt: z.string().optional(),
+      });
+
+      const parsedBody = runModuleRequestSchema
+        .passthrough()
+        .safeParse(req.body);
+      if (!parsedBody.success) {
+        throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
+      }
+      const {
+        phase,
+        sourceRepoToken,
+        targetRepoToken,
+        aapCredentials,
+        userPrompt,
+      } = parsedBody.data;
+
+      // Get user reference safely
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userRef = getUserRef(credentials);
+
+      // Verify project exists
+      const project = await x2aDatabase.getProject(
+        { projectId },
+        { credentials },
+      );
+      if (!project) {
+        throw new NotFoundError(`Project "${projectId}" not found.`);
+      }
+
+      // Verify module exists
+      const module = await x2aDatabase.getModule({ id: moduleId });
+      if (!module) {
+        throw new NotFoundError(
+          `Module "${moduleId}" in project "${projectId}" not found.`,
+        );
+      }
+
+      // Generate callback token and create job record
+      const callbackToken = randomUUID();
+      const job = await x2aDatabase.createJob({
+        projectId,
+        moduleId,
+        phase,
+        status: 'pending',
+        callbackToken,
+      });
+
+      // Create Kubernetes job (will create both project and job secrets)
+      // Use HTTP for in-cluster service-to-service communication
+      // Jobs call back to Backstage within the same cluster
+      const callbackUrl = `http://${req.get('host')}/api/x2a/projects/${projectId}/modules/${moduleId}/collectArtifacts`;
+      const { k8sJobName } = await kubeService.createJob({
+        jobId: job.id,
+        projectId,
+        projectName: project.name,
+        phase,
+        user: userRef,
+        callbackToken,
+        callbackUrl,
+        moduleId,
+        moduleName: module.name,
+        sourceRepo: {
+          url: project.sourceRepoUrl,
+          branch: project.sourceRepoBranch,
+          token: sourceRepoToken,
+        },
+        targetRepo: {
+          url: project.targetRepoUrl,
+          branch: project.targetRepoBranch,
+          token: targetRepoToken,
+        },
+        aapCredentials,
+        userPrompt,
+      });
+
+      // Update job with k8s job name
+      await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+
+      logger.info(
+        `${phase} job created: jobId=${job.id}, moduleId=${moduleId}, k8sJobName=${k8sJobName}`,
+      );
+
+      res.json({ status: 'pending', jobId: job.id } as any);
+    },
+  );
+
+  router.get('/projects/:projectId/modules/:moduleId/log', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId/modules/:moduleId/log';
+    const { projectId, moduleId } = req.params;
+    const streaming = req.query.streaming === true;
+    const phase = req.query.phase as string | undefined;
+
+    // Validate phase parameter (required)
+    if (!phase) {
+      throw new InputError('phase query parameter is required');
+    }
+
+    logger.info(
+      `${endpoint} request: projectId=${projectId}, moduleId=${moduleId}, streaming=${streaming}, phase=${phase}`,
+    );
+
+    // Get credentials and permissions
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const canViewAll = await isUserOfAdminViewPermission(
+      req as unknown as Request,
+      permissionsSvc,
+      httpAuth,
+    );
+
+    // Verify project exists and user has access
+    const project = await x2aDatabase.getProject(
+      { projectId },
+      { credentials, canViewAll },
+    );
+    if (!project) {
+      throw new NotFoundError(`Project not found`);
+    }
+
+    // Verify module exists
+    const module = await x2aDatabase.getModule({ id: moduleId });
+    if (!module) {
+      throw new NotFoundError(`Module not found`);
+    }
+
+    // Verify module belongs to project
+    if (module.projectId !== projectId) {
+      throw new NotFoundError(`Module does not belong to project`);
+    }
+
+    // Get latest job for module filtered by requested phase
+    const jobs = await x2aDatabase.listJobs({
+      moduleId,
+      phase: phase as any,
+    });
+
+    if (jobs.length === 0) {
+      throw new NotFoundError(`No jobs found for module with phase '${phase}'`);
+    }
+
+    const latestJob = jobs[0]; // Already sorted by started_at DESC in listJobs
+
+    // Validate the latest job phase matches requested phase (sanity check)
+    if (latestJob.phase !== phase) {
+      throw new InputError(
+        `Latest job phase '${latestJob.phase}' does not match requested phase '${phase}'`,
+      );
+    }
+
+    // If job is finished, return logs from database
+    if (latestJob.status === 'success' || latestJob.status === 'error') {
+      logger.info(
+        `Job ${latestJob.id} is finished (status: ${latestJob.status}), returning logs from database`,
+      );
+      res.setHeader('Content-Type', 'text/plain');
+      res.send(latestJob.log || '');
+      return;
+    }
+
+    // Check if job has k8sJobName
+    if (!latestJob.k8sJobName) {
+      logger.warn(
+        `Job ${latestJob.id} has no k8sJobName, returning empty logs`,
+      );
+      res.setHeader('Content-Type', 'text/plain');
+      res.send('');
+      return;
+    }
+
+    // Get logs from Kubernetes
+    const logs = await kubeService.getJobLogs(latestJob.k8sJobName, streaming);
+
+    // Set content type
+    res.setHeader('Content-Type', 'text/plain');
+
+    // Handle streaming vs non-streaming
+    if (streaming && typeof logs !== 'string') {
+      logs.pipe(res);
+    } else {
+      res.send(logs as string);
+    }
+  });
+
+  // TODO: Implement /collectArtifacts endpoints for callback from Kubernetes jobs
+  // These endpoints should use Backstage service-to-service authentication with static tokens
+  // See: https://backstage.io/docs/auth/service-to-service-auth#static-tokens
+  //
+  // The endpoints should:
+  // 1. Accept POST requests from Kubernetes jobs with static token authentication
+  // 2. Validate the callback token from the job (included in request body)
+  // 3. Update job status in database based on job completion/failure
+  // 4. Store artifacts (logs, results) returned by the job
+  //
+  // Endpoints to implement:
+  // - POST /projects/:projectId/collectArtifacts (for init phase jobs)
+  // - POST /projects/:projectId/modules/:moduleId/collectArtifacts (for analyze/migrate/publish phase jobs)
 
   return router;
 }

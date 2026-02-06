@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-konflux-common",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "license": "Apache-2.0",
   "description": "Common functionalities for the konflux-common plugin",
   "main": "src/index.ts",
@@ -44,8 +44,6 @@
     "@types/js-yaml": "^4.0.1"
   },
   "files": [
-    "dist",
-    "config.d.ts"
-  ],
-  "configSchema": "config.d.ts"
+    "dist"
+  ]
 }

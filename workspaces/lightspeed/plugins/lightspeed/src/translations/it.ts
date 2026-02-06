@@ -73,7 +73,6 @@ const lightspeedTranslationIt = createTranslationMessages({
     'conversation.rename.confirm.title': 'Rinominare la chat?',
     'conversation.rename.confirm.action': 'Rinomina',
     'conversation.rename.placeholder': 'Nome della chat',
-    'conversation.action.error': 'Si è verificato un errore: {{error}}',
     'permission.required.title': 'Autorizzazioni mancanti',
     'permission.required.description':
       "Per visualizzare il plugin Lightspeed, contattare l'amministratore per ottenere le autorizzazioni <b>lightspeed.chat.read</b> e <b>lightspeed.chat.create</b>.",
@@ -83,13 +82,6 @@ const lightspeedTranslationIt = createTranslationMessages({
       'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
     'footer.accuracy.label':
       "Esaminare sempre i contenuti generati dall'intelligenza artificiale prima di utilizzarli.",
-    'footer.accuracy.popover.title': "Verificare l'accuratezza",
-    'footer.accuracy.popover.description':
-      "Nonostante l'impegno di Developer Lightspeed a garantire la massima precisione, esiste sempre un margine di errore. È buona norma verificare le informazioni critiche confrontandole con fonti affidabili, soprattutto se sono essenziali per prendere decisioni o intraprendere azioni.",
-    'footer.accuracy.popover.image.alt':
-      'Immagine di esempio per il popover del piè di pagina',
-    'footer.accuracy.popover.cta.label': 'Ho capito',
-    'footer.accuracy.popover.link.label': 'Per saperne di più',
     'common.cancel': 'Cancella',
     'common.close': 'Chiudi',
     'common.readMore': 'Per saperne di più',
@@ -105,8 +97,7 @@ const lightspeedTranslationIt = createTranslationMessages({
       "Modificare la query di ricerca e riprovare. Controllare l'ortografia o provare un termine più generico.",
     'chatbox.welcome.greeting': 'Ciao {{userName}},',
     'chatbox.welcome.description': 'come posso aiutarti oggi?',
-    'chatbox.message.placeholder':
-      'Invia un messaggio e, facoltativamente, carica un file JSON, YAML o TXT...',
+    'chatbox.message.placeholder': 'Inserisci un prompt per Lightspeed',
     'chatbox.fileUpload.failed': 'Caricamento del file non riuscito',
     'chatbox.fileUpload.infoText':
       'I tipi di file supportati sono: .txt, .yaml e .json. La dimensione massima del file è 25 MB.',

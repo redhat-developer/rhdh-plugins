@@ -55,6 +55,7 @@ import { TabPanel } from './TabPanel';
 import { useInstallationContext } from './InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { ExtensionsStatus, getPluginActionTooltipMessage } from '../utils';
+import { InstallationWarning } from './InstallationWarning';
 
 interface TabItem {
   label: string;
@@ -197,6 +198,13 @@ export const ExtensionsPackageEditContent = ({
 
   const showRightCard = hasPackageExamples;
 
+  const showEditWarning =
+    (pkgConfig.data as any)?.error?.message &&
+    (pkgConfig.data as any)?.error?.reason !==
+      ExtensionsStatus.INSTALLATION_DISABLED &&
+    (pkgConfig.data as any)?.error?.reason !==
+      ExtensionsStatus.INSTALLATION_DISABLED_IN_PRODUCTION;
+
   const handleSave = async () => {
     try {
       setSaveError(null);
@@ -279,6 +287,12 @@ export const ExtensionsPackageEditContent = ({
 
   return (
     <>
+      {showEditWarning && <InstallationWarning configData={pkgConfig.data} />}
+      {saveError && (
+        <Alert severity="error" sx={{ mb: '1rem' }}>
+          {saveError}
+        </Alert>
+      )}
       {!pkg.spec?.dynamicArtifact && (
         <Alert severity="error" sx={{ mb: '1rem' }}>
           <AlertTitle>{t('alert.missingDynamicArtifactTitle')}</AlertTitle>

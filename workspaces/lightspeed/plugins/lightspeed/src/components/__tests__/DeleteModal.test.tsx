@@ -142,7 +142,7 @@ describe('DeleteModal', () => {
     );
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.getByText(/Error occured/i)).toBeInTheDocument();
+    expect(screen.getByText(/Error/i)).toBeInTheDocument();
   });
 
   test('should not call onConfirm when delete fails', async () => {
