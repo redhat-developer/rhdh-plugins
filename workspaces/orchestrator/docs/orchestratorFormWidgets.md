@@ -334,6 +334,10 @@ Therefore, both arrays must be of equal length.
 
 The final value of the field is determined by the values provided by the `fetch:response:value` selector.
 
+When a selector references `response` or `current`, it is evaluated against a combined context:
+`{ response: fetchResponse, current: formData }`. Use `response.*` for the fetch payload and `current.*` for form data.
+Selectors that do not reference `response` or `current` continue to evaluate directly against the fetch response for backwards compatibility.
+
 ### ActiveDropdown widget ui:props
 
 The widget supports following `ui:props`:
