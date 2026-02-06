@@ -28,7 +28,7 @@ import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 // Import the new frontend system plugin for bulk-import
 import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
-import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
 // Import core Backstage plugins (NFS versions)
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
