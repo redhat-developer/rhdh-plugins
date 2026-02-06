@@ -85,7 +85,6 @@ export async function verifyFeedbackButtons(page: Page) {
 export async function submitFeedback(
   page: Page,
   ratingButtonName: string,
-  devMode: boolean,
   translations: LightspeedMessages,
 ) {
   // Click the Good/Bad response button
@@ -106,10 +105,8 @@ export async function submitFeedback(
 
   await quickFeedbackLabels.first().click();
 
-  if (devMode) {
-    // Mock API response for v1/feedback
-    await mockFeedbackReceived(page);
-  }
+  // Mock API response for v1/feedback
+  await mockFeedbackReceived(page);
 
   await feedbackCard
     .getByRole('button', { name: translations['feedback.form.submitWord'] })
