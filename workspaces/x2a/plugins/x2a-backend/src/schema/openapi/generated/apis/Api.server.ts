@@ -24,6 +24,8 @@ import { ModulePhase } from '../models/ModulePhase.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
+import { ProjectsProjectIdCollectArtifactsPost200Response } from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
+import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
@@ -54,6 +56,20 @@ export type ProjectsGet = {
 export type ProjectsPost = {
   body: ProjectsPostRequest;
   response: Project;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdCollectArtifactsPost = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdCollectArtifactsPostRequest;
+  query: {
+    moduleId?: string;
+    phase: 'init' | 'analyze' | 'migrate' | 'publish';
+  };
+  response: ProjectsProjectIdCollectArtifactsPost200Response | void | void;
 };
 /**
  * @public
@@ -132,6 +148,8 @@ export type EndpointMap = {
   '#get|/projects': ProjectsGet;
 
   '#post|/projects': ProjectsPost;
+
+  '#post|/projects/{projectId}/collectArtifacts': ProjectsProjectIdCollectArtifactsPost;
 
   '#_delete|/projects/{projectId}': ProjectsProjectIdDelete;
 

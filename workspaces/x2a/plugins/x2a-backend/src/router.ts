@@ -35,6 +35,7 @@ import {
   Job,
   Module,
   ModulePhase,
+  MigrationPhase,
   x2aAdminViewPermission,
   x2aAdminWritePermission,
   x2aUserPermission,
@@ -47,6 +48,7 @@ import {
   ProjectsPost,
 } from './schema/openapi';
 import { kubeServiceRef } from './services/KubeService';
+import { CollectArtifactsHandler } from './router/collectArtifacts';
 
 const isUserOfAdminViewPermission = async (
   request: Request,
@@ -701,19 +703,33 @@ export async function createRouter({
     }
   });
 
-  // TODO: Implement /collectArtifacts endpoints for callback from Kubernetes jobs
-  // These endpoints should use Backstage service-to-service authentication with static tokens
-  // See: https://backstage.io/docs/auth/service-to-service-auth#static-tokens
-  //
-  // The endpoints should:
-  // 1. Accept POST requests from Kubernetes jobs with static token authentication
-  // 2. Validate the callback token from the job (included in request body)
-  // 3. Update job status in database based on job completion/failure
-  // 4. Store artifacts (logs, results) returned by the job
-  //
-  // Endpoints to implement:
-  // - POST /projects/:projectId/collectArtifacts (for init phase jobs)
-  // - POST /projects/:projectId/modules/:moduleId/collectArtifacts (for analyze/migrate/publish phase jobs)
+  router.post(
+    '/projects/:projectId/collectArtifacts',
+    async (req: express.Request, res: express.Response) => {
+      const endpoint = 'POST /projects/:projectId/collectArtifacts';
+      const { projectId } = req.params;
+      const { moduleId, phase } = req.query;
+
+      logger.info(
+        `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}, phase=${phase}`,
+      );
+
+      const handler = new CollectArtifactsHandler({
+        logger,
+        x2aDatabase,
+        kubeService,
+      });
+
+      const result = await handler.handleCollectArtifacts(
+        projectId,
+        moduleId as string | undefined,
+        phase as MigrationPhase,
+        req.body,
+      );
+
+      res.json(result);
+    },
+  );
 
   return router;
 }
