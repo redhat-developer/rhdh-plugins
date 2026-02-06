@@ -302,8 +302,8 @@ test.describe('Lightspeed tests', () => {
     }
 
     test(`Multiple file upload`, async () => {
-      const file1 = 'packages/app/package.json';
-      const file2 = 'packages/backend/package.json';
+      const file1 = `packages/app/e2e-tests/fixtures/uploads/${locale}.upload1.json`;
+      const file2 = `packages/app/e2e-tests/fixtures/uploads/${locale}.upload2.json`;
       await uploadFiles(sharedPage, [file1, file2]);
 
       const heading = sharedPage.getByRole('heading', {
