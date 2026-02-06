@@ -26,7 +26,14 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "cd ../../ && yarn install",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:webkit": "playwright test --project=webkit"
   },
   "workspaces": {
     "packages": [
@@ -47,6 +54,7 @@
     "@microsoft/api-extractor-model": "^7.29.2",
     "@microsoft/tsdoc": "^0.16.0",
     "@microsoft/tsdoc-config": "^0.18.0",
+    "@playwright/test": "1.55.1",
     "@useoptic/optic": "^0.55.0",
     "concurrently": "^9.0.0",
     "knip": "^5.27.4",
