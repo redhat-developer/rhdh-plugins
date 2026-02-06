@@ -52,7 +52,7 @@
     "prettier:fix": "prettier --ignore-unknown --write .",
     "lint:check": "backstage-cli package lint",
     "lint:fix": "backstage-cli package lint --fix",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --embed-package '@red-hat-developer-hub/backstage-plugin-orchestrator-common'"
+    "export-dynamic": "rhdh-cli plugin export --embed-package @red-hat-developer-hub/backstage-plugin-orchestrator-common"
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.5.0",
@@ -67,15 +67,13 @@
   "devDependencies": {
     "@backstage/cli": "^0.34.5",
     "@backstage/plugin-scaffolder-node-test-utils": "^0.3.5",
-    "@janus-idp/cli": "3.6.1",
+    "@red-hat-developer-hub/cli": "^1.9.1",
     "@spotify/prettier-config": "^15.0.0",
     "@types/js-yaml": "^4.0.0"
   },
   "files": [
     "app-config.yaml",
     "dist",
-    "dist-dynamic/*.*",
-    "dist-dynamic/dist/**",
     "static"
   ],
   "maintainers": [
