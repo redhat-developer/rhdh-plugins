@@ -16,6 +16,8 @@
 
 // Converted from kfmr.go in model-catalog-bridge
 
+import { Agent } from 'undici';
+
 import {
   ModelCatalog,
   Model,
@@ -23,6 +25,13 @@ import {
   API,
   Type as APIType,
 } from './types'; // '@redhat-ai-dev/model-catalog-types';
+
+// Agent to skip TLS verification
+const tlsSkipAgent = new Agent({
+  connect: {
+    rejectUnauthorized: false,
+  },
+});
 
 import {
   type ReconcilerConfig,
@@ -85,6 +94,8 @@ async function getFromModelRegistry(url: string, token: string): Promise<any> {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
+    // @ts-ignore - dispatcher is a valid option for Node.js fetch via undici
+    dispatcher: tlsSkipAgent,
   });
 
   if (!response.ok) {

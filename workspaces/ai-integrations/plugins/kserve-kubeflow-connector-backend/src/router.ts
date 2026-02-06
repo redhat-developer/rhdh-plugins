@@ -36,11 +36,15 @@ export async function createRouter(): Promise<express.Router> {
     res.status(201).json(req.body); // result);
   });
 
-  router.get('/todos', async (_req, res) => {
+  router.get('/list', async (_req, res) => {
     res.json(_req.body); // await todoList.listTodos());
   });
 
-  router.get('/todos/:id', async (req, res) => {
+  router.get('/modelcard', async (_req, res) => {
+    res.json(_req.body); // await todoList.listTodos());
+  });
+
+  router.get('/:models/:version/:format', async (req, res) => {
     res.json(req.body); // await todoList.getTodo({ id: req.params.id }));
   });
 

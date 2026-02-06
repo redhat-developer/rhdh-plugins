@@ -44,7 +44,6 @@ import { GenerateCatalogEntities } from '../clients/ModelCatalogGenerator';
  * @public
  */
 export class ModelCatalogResourceEntityProvider implements EntityProvider {
-  private readonly env: string;
   private readonly name: string;
   private readonly baseUrl: string;
   private readonly logger: LoggerService;
@@ -99,8 +98,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
     discovery: DiscoveryService,
     taskRunner: SchedulerServiceTaskRunner,
   ) {
-    this.env = config.id;
-    this.name = config.name;
+    this.name = config.id;
     this.baseUrl = config.baseUrl;
     this.discovery = discovery;
     this.logger = logger.child({
@@ -143,7 +141,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
 
   /** [2]: Model Catalog entity provider must have a unique name */
   getProviderName(): string {
-    return `ModelCatalogResourceEntityProvider:${this.env}`;
+    return `ModelCatalogResourceEntityProvider:${this.name}`;
   }
 
   /** [3]: Connect Backstage catalog engine to ModelCatalogEntityProvider */

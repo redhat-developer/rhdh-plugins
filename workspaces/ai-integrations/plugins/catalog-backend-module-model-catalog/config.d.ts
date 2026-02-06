@@ -23,7 +23,6 @@ export interface Config {
           /**
            * ModelCatalogConfig
            */
-          name: string;
           baseUrl?: string;
           system?: string;
           owner?: string;

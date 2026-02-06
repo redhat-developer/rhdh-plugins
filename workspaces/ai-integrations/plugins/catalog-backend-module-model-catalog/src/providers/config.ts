@@ -43,7 +43,10 @@ function readModelCatalogApiEntityConfig(
   id: string,
   config: Config,
 ): ModelCatalogConfig {
-  const baseUrl = config.getString('baseUrl');
+  let baseUrl = '';
+  if (config.has('baseurl')) {
+    baseUrl = config.getString('baseurl');
+  }
 
   const schedule = config.has('schedule')
     ? readSchedulerServiceTaskScheduleDefinitionFromConfig(

@@ -22,7 +22,6 @@ import type { SchedulerServiceTaskScheduleDefinition } from '@backstage/backend-
  */
 export type ModelCatalogConfig = {
   id: string;
-  name: string;
   baseUrl: string;
   schedule?: SchedulerServiceTaskScheduleDefinition;
 };

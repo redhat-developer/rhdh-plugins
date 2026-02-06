@@ -40,8 +40,8 @@ export const catalogModuleModelCatalogResourceEntityProvider =
           scheduler: coreServices.scheduler,
         },
         async init({ catalog, config, discovery, logger, scheduler }) {
-          catalog.addEntityProvider(
-            ModelCatalogResourceEntityProvider.fromConfig(
+          try {
+            const ep = ModelCatalogResourceEntityProvider.fromConfig(
               { config, logger, discovery },
               {
                 schedule: scheduler.createScheduledTaskRunner({
@@ -50,8 +50,12 @@ export const catalogModuleModelCatalogResourceEntityProvider =
                 }),
                 scheduler: scheduler,
               },
-            ),
-          );
+            );
+            catalog.addEntityProvider(ep);
+          } catch (error) {
+            console.error(error);
+            throw error;
+          }
         },
       });
     },
