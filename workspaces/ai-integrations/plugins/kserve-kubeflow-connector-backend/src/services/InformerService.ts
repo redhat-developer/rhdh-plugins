@@ -24,6 +24,7 @@ import {
   type KFMRInferenceService,
   type ServingEnvironment,
   type KServeInferenceService,
+  type DiscoveryResponse,
   KFMRClient,
   InferenceServiceState,
 } from './types';
@@ -1217,6 +1218,25 @@ async function innerStart(
   }
 
   console.log('innerStart: Reconciliation sync complete');
+}
+
+// Get discovery URIs from model catalog (matching Go handleCatalogDiscoveryGet, server.go lines 162-182)
+// Returns all URIs from modelCatalog that have valid catalog data
+export function getDiscoveryUris(): DiscoveryResponse {
+  const uris: string[] = [];
+
+  // Iterate over model catalog entries
+  // Since we cannot delete handlers in some routing frameworks, when we delete a location,
+  // rather than removing from the map, we might set contents to null/undefined,
+  // so we check for that before deciding to include the URI
+  for (const [uri, metadata] of modelCatalog.entries()) {
+    // Only include URIs where catalogData exists and is valid
+    if (metadata.catalogData) {
+      uris.push(uri);
+    }
+  }
+
+  return { uris };
 }
 
 export const setupInformer = async () => {

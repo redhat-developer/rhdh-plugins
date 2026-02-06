@@ -18,6 +18,7 @@
 import express from 'express';
 import Router from 'express-promise-router';
 // import { todoListServiceRef } from './services/TodoListService';
+import { getDiscoveryUris } from './services/InformerService';
 
 export async function createRouter(): Promise<express.Router> {
   const router = Router();
@@ -36,8 +37,15 @@ export async function createRouter(): Promise<express.Router> {
     res.status(201).json(req.body); // result);
   });
 
+  // List all model catalog URIs (matching Go handleCatalogDiscoveryGet, server.go lines 162-182)
   router.get('/list', async (_req, res) => {
-    res.json(_req.body); // await todoList.listTodos());
+    try {
+      const discoveryResponse = getDiscoveryUris();
+      res.status(200).json(discoveryResponse);
+    } catch (error) {
+      console.error('Error getting discovery URIs:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   });
 
   router.get('/modelcard', async (_req, res) => {

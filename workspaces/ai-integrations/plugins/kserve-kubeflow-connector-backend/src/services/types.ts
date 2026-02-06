@@ -418,4 +418,9 @@ export interface Model {
   usage?: string;
 }
 
+// DiscoveryResponse type matching Go DicoveryResponse (server.go line 158-160)
+export interface DiscoveryResponse {
+  uris: string[];
+}
+
 // e GGM
