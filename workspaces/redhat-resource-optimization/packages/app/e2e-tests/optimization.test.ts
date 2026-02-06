@@ -99,6 +99,7 @@ test.describe('Resource Optimization Plugin', () => {
   });
 
   test('should display empty state when no optimizations', async ({ page }) => {
+    test.skip(!devMode, 'Cannot mock empty state on a live cluster');
     if (devMode) {
       await mockEmptyOptimizationsResponse(page);
     }
@@ -263,7 +264,7 @@ test.describe('Resource Optimization Plugin', () => {
       await page.waitForLoadState('domcontentloaded');
 
       // Verify we navigated to the details page
-      await expect(page).toHaveURL(/\/redhat-resource-optimization\/rec-/);
+      await expect(page).toHaveURL(/\/redhat-resource-optimization\/[a-f0-9]/);
 
       // Wait for details page to load
       await page.waitForTimeout(1000);

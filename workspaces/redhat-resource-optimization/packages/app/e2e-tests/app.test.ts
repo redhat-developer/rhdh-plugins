@@ -17,14 +17,20 @@
 import { test, expect } from '@playwright/test';
 import { performGuestLogin } from './fixtures/auth';
 
-test('App should render the welcome page', async ({ page }) => {
-  await page.goto('/');
+const devMode = !process.env.PLAYWRIGHT_URL;
 
-  // Perform guest login - no mocks needed, real auth works fine
+test('App should render the welcome page', async ({ page }) => {
   await performGuestLogin(page);
 
-  // The app redirects to /catalog and shows the Red Hat Catalog heading
-  await expect(
-    page.getByRole('heading', { name: 'Red Hat Catalog' }),
-  ).toBeVisible({ timeout: 10000 });
+  if (devMode) {
+    // Local dev server shows "Red Hat Catalog"
+    await expect(
+      page.getByRole('heading', { name: 'Red Hat Catalog' }),
+    ).toBeVisible({ timeout: 10000 });
+  } else {
+    // Live RHDH cluster shows "Welcome back!" on the home page
+    await expect(
+      page.getByRole('heading', { name: 'Welcome back!' }),
+    ).toBeVisible({ timeout: 10000 });
+  }
 });

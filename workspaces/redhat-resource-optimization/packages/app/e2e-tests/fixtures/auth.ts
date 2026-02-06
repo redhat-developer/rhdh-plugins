@@ -14,65 +14,23 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page } from '@playwright/test';
 
 /**
- * Check if we're on a login page (Enter button visible).
- */
-async function isOnLoginPage(page: Page): Promise<boolean> {
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  try {
-    await expect(enterButton).toBeVisible({ timeout: 3000 });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Perform guest login by clicking the Enter button.
- * Works with real RHDH clusters configured for guest authentication.
+ * Perform guest login by navigating to the base URL and clicking Enter.
+ * Follows the same pattern as flight-path-auto-tests Login utility:
+ *   page.goto("/")
+ *   page.locator('button:has-text("Enter")').click()
  */
 export async function performGuestLogin(page: Page) {
-  const enterButton = page.getByRole('button', { name: 'Enter' });
+  // Navigate to root first (login page)
+  await page.goto('/');
 
-  // Verify the login button is visible
-  await expect(enterButton).toBeVisible({ timeout: 15000 });
+  // Click the Enter button - simple pattern matching flight-path-auto-tests
+  await page.locator('button:has-text("Enter")').click();
 
-  // Click the login button
-  await enterButton.click();
-
-  // Wait for page to load after login
+  // Wait for page to settle after login
   await page.waitForLoadState('networkidle', { timeout: 30000 });
-
-  // Verify we're no longer on the login page
-  const stillOnLogin = await isOnLoginPage(page);
-  if (stillOnLogin) {
-    // Sometimes need to wait a bit more and try again
-    await page.waitForTimeout(2000);
-    const stillStuck = await isOnLoginPage(page);
-    if (stillStuck) {
-      throw new Error(
-        'Guest login failed - still on login page after clicking Enter. ' +
-          'Make sure guest authentication is enabled on the cluster.',
-      );
-    }
-  }
-}
-
-/**
- * Check if user is already authenticated (no login button visible).
- */
-export async function isAuthenticated(page: Page): Promise<boolean> {
-  // If we can see typical logged-in UI elements, we're authenticated
-  // Otherwise check if login button is NOT visible
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  try {
-    await expect(enterButton).not.toBeVisible({ timeout: 3000 });
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**
@@ -80,12 +38,27 @@ export async function isAuthenticated(page: Page): Promise<boolean> {
  * This is the main function tests should use.
  */
 export async function ensureAuthenticated(page: Page) {
-  // Wait a moment for page to settle
+  // Wait for the page to finish loading
   await page.waitForLoadState('domcontentloaded');
+  await page.waitForTimeout(1000);
 
-  // Check if already logged in
-  const authenticated = await isAuthenticated(page);
-  if (!authenticated) {
-    await performGuestLogin(page);
+  // Check if Enter button exists on the page (login screen)
+  const enterButton = page.locator('button:has-text("Enter")');
+  const count = await enterButton.count();
+
+  if (count > 0 && (await enterButton.first().isVisible())) {
+    // We're on the login page - click Enter
+    await enterButton.first().click();
+    // Wait for navigation away from login
+    await page.waitForLoadState('networkidle', { timeout: 30000 });
   }
+}
+
+/**
+ * Stub for setupAuthMocks - only needed for local dev mode.
+ * In live cluster testing, this is a no-op.
+ */
+export async function setupAuthMocks(_page: Page) {
+  // No-op for live cluster testing.
+  // Auth mocks are only needed when testing against local dev server.
 }

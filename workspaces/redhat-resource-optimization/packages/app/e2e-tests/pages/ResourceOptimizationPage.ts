@@ -15,7 +15,7 @@
  */
 
 import { Page, expect, Locator } from '@playwright/test';
-import { ensureAuthenticated } from '../fixtures/auth';
+import { performGuestLogin, ensureAuthenticated } from '../fixtures/auth';
 
 export class ResourceOptimizationPage {
   readonly page: Page;
@@ -26,16 +26,16 @@ export class ResourceOptimizationPage {
 
   /**
    * Navigate to the Resource Optimization page.
-   * Handles authentication if needed and verifies page loads successfully.
+   * Follows the flight-path pattern: goto root, login, then navigate.
    */
   async navigateToOptimization() {
-    // Navigate to the page
+    // Login first (goes to / and clicks Enter)
+    await performGuestLogin(this.page);
+
+    // Now navigate to the Resource Optimization page
     await this.page.goto('/redhat-resource-optimization', {
       waitUntil: 'domcontentloaded',
     });
-
-    // Handle authentication if the login screen appears
-    await ensureAuthenticated(this.page);
 
     // Wait for the page to fully load
     await this.waitForPageLoad();
@@ -45,8 +45,8 @@ export class ResourceOptimizationPage {
    * Navigate to the home page and click through sidebar to Resource Optimization
    */
   async navigateFromSidebar() {
-    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
-    await ensureAuthenticated(this.page);
+    // Login first (goes to / and clicks Enter)
+    await performGuestLogin(this.page);
 
     // Click on "Cost management" in the sidebar
     const costManagement = this.page.getByRole('button', {
@@ -227,9 +227,12 @@ export class ResourceOptimizationPage {
    */
   async verifyDetailsPage() {
     // URL should contain /redhat-resource-optimization/rec-
-    await expect(this.page).toHaveURL(/\/redhat-resource-optimization\/rec-/, {
-      timeout: 10000,
-    });
+    await expect(this.page).toHaveURL(
+      /\/redhat-resource-optimization\/[a-f0-9]/,
+      {
+        timeout: 10000,
+      },
+    );
 
     // Details section should be visible
     await expect(this.page.getByText('Details')).toBeVisible({
