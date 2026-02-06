@@ -15,11 +15,6 @@
  */
 
 import {
-  compatWrapper,
-  convertLegacyRouteRef,
-  convertLegacyRouteRefs,
-} from '@backstage/core-compat-api';
-import {
   configApiRef,
   createApiFactory,
   identityApiRef,
@@ -27,6 +22,8 @@ import {
 import {
   ApiBlueprint,
   createFrontendPlugin,
+  createRouteRef,
+  createSubRouteRef,
   NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
@@ -36,7 +33,14 @@ import {
   BulkImportBackendClient,
 } from './api/BulkImportBackendClient';
 import BulkImportIcon from './components/BulkImportSidebarItem';
-import { importHistoryRouteRef, rootRouteRef } from './routes';
+
+// NFS Route References - created using @backstage/frontend-plugin-api
+// These are separate from the legacy route refs in routes.ts
+const rootRouteRef = createRouteRef();
+const importHistoryRouteRef = createSubRouteRef({
+  parent: rootRouteRef,
+  path: '/import-history/:repoUrl',
+});
 
 // Re-export translations for backward compatibility
 export * from './translations';
@@ -70,8 +74,8 @@ const bulkImportApi = ApiBlueprint.make({
 const bulkImportPage = PageBlueprint.make({
   params: {
     path: '/bulk-import',
-    routeRef: convertLegacyRouteRef(rootRouteRef),
-    loader: () => import('./components').then(m => compatWrapper(<m.Router />)),
+    routeRef: rootRouteRef,
+    loader: () => import('./components').then(m => <m.Router />),
   },
 });
 
@@ -100,7 +104,7 @@ const bulkImportPage = PageBlueprint.make({
 const bulkImportNavItem = NavItemBlueprint.make({
   params: {
     title: 'Bulk import',
-    routeRef: convertLegacyRouteRef(rootRouteRef),
+    routeRef: rootRouteRef,
     icon: BulkImportIcon,
   },
 });
@@ -113,8 +117,8 @@ const bulkImportNavItem = NavItemBlueprint.make({
 export default createFrontendPlugin({
   pluginId: 'bulk-import',
   extensions: [bulkImportApi, bulkImportPage, bulkImportNavItem],
-  routes: convertLegacyRouteRefs({
+  routes: {
     root: rootRouteRef,
     tasks: importHistoryRouteRef,
-  }),
+  },
 });
