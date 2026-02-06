@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-lightspeed-common
 
+## 1.3.0
+
+### Minor Changes
+
+- 0a7c742: Backstage version bump to v1.47.3
+
 ## 1.2.3
 
 ## 1.2.2
