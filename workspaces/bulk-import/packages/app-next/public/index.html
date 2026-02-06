@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Backstage NFS Test App - Testing the New Frontend System"
+    />
+    <link rel="icon" href="<%= publicPath %>/favicon.ico" />
+    <link rel="shortcut icon" href="<%= publicPath %>/favicon.ico" />
+    <title>
+      <%= config.getOptionalString('app.title') ?? 'Backstage NFS' %>
+    </title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      app-next: New Frontend System (NFS) Test App
+
+      This is a minimal Backstage app using the new frontend system
+      to test the migrated bulk-import plugin.
+
+      To start: yarn --cwd packages/app-next start
+    -->
+  </body>
+</html>
