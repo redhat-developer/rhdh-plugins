@@ -43,7 +43,11 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: 'e2e-test-report' }],
+    ['junit', { outputFile: 'playwright-results.xml' }],
+  ],
 
   use: {
     actionTimeout: 0,
@@ -53,7 +57,7 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: 'test-results',
 
   projects: generateProjects(), // Find all packages with e2e-test folders
 });
