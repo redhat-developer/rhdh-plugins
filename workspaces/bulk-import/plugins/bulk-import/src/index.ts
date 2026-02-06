@@ -29,6 +29,3 @@ export {
 } from './plugin';
 
 export { default as BulkImportIcon } from './components/BulkImportSidebarItem';
-
-// Export translations for use in legacy apps
-export * from './translations';
