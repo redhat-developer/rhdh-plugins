@@ -1,5 +1,4 @@
 {
-  "token": "ghs_16C7e42F292c6912E7710c838347Ae178B4a",
   "expires_at": "2016-07-11T22:14:10Z",
   "permissions": {
     "issues": "write",
@@ -106,7 +105,6 @@
       },
       "allow_rebase_merge": true,
       "template_repository": null,
-      "temp_clone_token": "ABTLWHOULUVAXGTRYU7OC2876QJ2O",
       "allow_squash_merge": true,
       "allow_auto_merge": false,
       "delete_branch_on_merge": true,
