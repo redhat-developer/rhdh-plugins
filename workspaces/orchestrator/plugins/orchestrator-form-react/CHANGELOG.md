@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.5.2
+
+### Patch Changes
+
+- 85b873d: Exclude omitFromWorkflowInput fields from execution payloads and add a review
+  toggle to show hidden parameters.
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [9c17c36]
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.3
+
 ## 2.5.1
 
 ### Patch Changes
