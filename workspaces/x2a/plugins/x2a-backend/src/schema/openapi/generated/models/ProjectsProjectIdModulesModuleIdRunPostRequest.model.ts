@@ -19,15 +19,13 @@
 // ******************************************************************
 import { AAPCredentials } from '../models/AAPCredentials.model';
 import { GitRepoAuth } from '../models/GitRepoAuth.model';
+import { ModulePhase } from '../models/ModulePhase.model';
 
 /**
  * @public
  */
 export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
-  /**
-   * Migration phase to execute
-   */
-  phase: ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum;
+  phase: ModulePhase;
   sourceRepoAuth?: GitRepoAuth;
   targetRepoAuth?: GitRepoAuth;
   aapCredentials?: AAPCredentials;
@@ -36,11 +34,3 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
    */
   userPrompt?: string;
 }
-
-/**
- * @public
- */
-export type ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum =
-  | 'analyze'
-  | 'migrate'
-  | 'publish';

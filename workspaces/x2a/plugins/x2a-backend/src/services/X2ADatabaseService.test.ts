@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import crypto from 'node:crypto';
 
 import {
   mockCredentials,
@@ -22,7 +23,10 @@ import {
 } from '@backstage/backend-test-utils';
 import { Knex } from 'knex';
 
-import { toSorted } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Artifact,
+  toSorted,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { X2ADatabaseService } from './X2ADatabaseService';
 import { migrate } from './dbMigrate';
@@ -64,6 +68,11 @@ const defaultProjectRepoFields = {
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
 };
+
+/** Build Artifact[] from value strings (type defaults to 'file'). */
+function artifactsFromValues(values: string[], type = 'file'): Artifact[] {
+  return values.map(value => ({ id: crypto.randomUUID(), type, value }));
+}
 
 describe('X2ADatabaseService', () => {
   afterEach(async () => {
@@ -1991,8 +2000,7 @@ describe('X2ADatabaseService', () => {
         });
         expect(job.id).toBeDefined();
         expect(job.startedAt).toBeInstanceOf(Date);
-        expect(job.finishedAt).toBeNull();
-        expect(job.log).toBeNull();
+        expect(job.finishedAt).toBeUndefined();
 
         // Verify it was persisted in the database
         const row = await client('jobs').where('id', job.id).first();
@@ -2042,12 +2050,18 @@ describe('X2ADatabaseService', () => {
 
         expect(job).toMatchObject({
           moduleId: module.id,
-          log: 'Job log content',
+          // log is not set in the job input by default
           status: 'success',
           artifacts: [],
         });
+        expect(job).not.toHaveProperty('log');
         expect(job.startedAt).toEqual(startedAt);
         expect(job.finishedAt).toEqual(finishedAt);
+
+        // Verify it was persisted in the database
+        const row = await client('jobs').where('id', job.id).first();
+        expect(row).toBeDefined();
+        expect(row.log).toBe(jobInput.log);
       },
     );
 
@@ -2075,10 +2089,10 @@ describe('X2ADatabaseService', () => {
         });
 
         const artifacts = [
-          'http://example.com/artifact1.md',
-          'http://example.com/artifact2.json',
-          'http://example.com/artifact3',
-        ];
+          { type: 'markdown', value: 'http://example.com/artifact1.md' },
+          { type: 'json', value: 'http://example.com/artifact2.json' },
+          { type: 'binary', value: 'http://example.com/artifact3' },
+        ].map((a, i) => ({ id: `placeholder-${i}`, ...a }));
         const job = await service.createJob({
           projectId: project.id,
           moduleId: module.id,
@@ -2086,18 +2100,39 @@ describe('X2ADatabaseService', () => {
           artifacts,
         });
 
-        expect(job.artifacts).toEqual(artifacts);
         expect(job.artifacts).toHaveLength(3);
+        for (const expected of artifacts) {
+          const found = job.artifacts!.find(
+            a => a.type === expected.type && a.value === expected.value,
+          );
+          expect(found).toBeDefined();
+          expect(found!.id).toBeDefined();
+          expect(typeof found!.id).toBe('string');
+          expect(found!.id.length).toBeGreaterThan(0);
+        }
 
-        // Verify artifacts were persisted in the database
+        // Verify artifacts were persisted in the database (type + value)
         const artifactRows = await client('artifacts')
           .where('job_id', job.id)
-          .select('value')
+          .select('id', 'type', 'value')
           .orderBy('id', 'asc');
         expect(artifactRows).toHaveLength(3);
-        expect(artifactRows.map(r => r.value).sort(toSorted)).toEqual(
-          artifacts.sort(toSorted),
-        );
+        const sortByTypeThenValue = (
+          a: { type: string; value: string },
+          b: { type: string; value: string },
+        ) => toSorted(a.type, b.type) || toSorted(a.value, b.value);
+        const persistedPairs = artifactRows
+          .map(r => ({ type: r.type, value: r.value }))
+          .sort(sortByTypeThenValue);
+        const expectedPairs = artifacts
+          .map(a => ({ type: a.type, value: a.value }))
+          .sort(sortByTypeThenValue);
+        expect(persistedPairs).toEqual(expectedPairs);
+        artifactRows.forEach(r => {
+          expect(r.id).toBeDefined();
+          expect(r.type).toBeDefined();
+          expect(r.value).toBeDefined();
+        });
       },
     );
 
@@ -2268,7 +2303,6 @@ describe('X2ADatabaseService', () => {
         expect(retrievedJob).toBeDefined();
         expect(retrievedJob?.id).toBe(createdJob.id);
         expect(retrievedJob?.moduleId).toBe(module.id);
-        expect(retrievedJob?.log).toBe('Test log');
         expect(retrievedJob?.status).toBe('running');
         expect(retrievedJob?.artifacts).toEqual([]);
       },
@@ -2297,7 +2331,7 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const artifacts = ['file1.txt', 'file2.json'];
+        const artifacts = artifactsFromValues(['file1.txt', 'file2.json']);
         const createdJob = await service.createJob({
           projectId: project.id,
           moduleId: module.id,
@@ -2308,10 +2342,11 @@ describe('X2ADatabaseService', () => {
         const retrievedJob = await service.getJob({ id: createdJob.id });
 
         expect(retrievedJob).toBeDefined();
-        expect(retrievedJob?.artifacts.sort(toSorted)).toEqual(
-          artifacts.sort(toSorted),
-        );
         expect(retrievedJob?.artifacts).toHaveLength(2);
+        const values = (retrievedJob?.artifacts ?? [])
+          .map(a => a.value)
+          .sort(toSorted);
+        expect(values).toEqual(['file1.txt', 'file2.json'].sort(toSorted));
       },
     );
 
@@ -2475,13 +2510,13 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
           moduleId: module.id,
           phase: 'init' as const,
-          artifacts: ['artifact1.txt', 'artifact2.json'],
+          artifacts: artifactsFromValues(['artifact1.txt', 'artifact2.json']),
         });
         const job2 = await service.createJob({
           projectId: project.id,
           moduleId: module.id,
           phase: 'init' as const,
-          artifacts: ['artifact3.log'],
+          artifacts: artifactsFromValues(['artifact3.log']),
         });
 
         const jobs = await service.listJobs({
@@ -2492,11 +2527,13 @@ describe('X2ADatabaseService', () => {
         const foundJob1 = jobs.find(j => j.id === job1.id);
         const foundJob2 = jobs.find(j => j.id === job2.id);
 
-        expect(foundJob1?.artifacts.sort(toSorted)).toEqual([
+        expect(foundJob1?.artifacts?.map(a => a.value).sort(toSorted)).toEqual([
           'artifact1.txt',
           'artifact2.json',
         ]);
-        expect(foundJob2?.artifacts).toEqual(['artifact3.log']);
+        expect(foundJob2?.artifacts?.map(a => a.value)).toEqual([
+          'artifact3.log',
+        ]);
       },
     );
 
@@ -2555,6 +2592,146 @@ describe('X2ADatabaseService', () => {
         expect(module1Jobs.every(j => j.moduleId === module1.id)).toBe(true);
         expect(module2Jobs).toHaveLength(1);
         expect(module2Jobs[0].moduleId).toBe(module2.id);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return only the most recent job when lastJobOnly is true - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'Test description',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const module = await service.createModule({
+          name: 'Test Module',
+          sourcePath: '/path/to/module',
+          projectId: project.id,
+        });
+
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+          status: 'pending',
+        });
+        await delay(5);
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze' as const,
+          status: 'running',
+        });
+        await delay(5);
+        const job3 = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate' as const,
+          status: 'success',
+        });
+
+        const jobs = await service.listJobs({
+          moduleId: module.id,
+          lastJobOnly: true,
+        });
+
+        expect(jobs).toHaveLength(1);
+        // Most recent by started_at desc is job3 (created last)
+        expect(jobs[0].id).toBe(job3.id);
+        expect(jobs[0].phase).toBe('migrate');
+        expect(jobs[0].status).toBe('success');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return single job with artifacts when lastJobOnly is true - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'Test description',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const module = await service.createModule({
+          name: 'Test Module',
+          sourcePath: '/path/to/module',
+          projectId: project.id,
+        });
+
+        await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+          artifacts: artifactsFromValues(['old.txt']),
+        });
+        await delay(5);
+        const latestJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'init' as const,
+          artifacts: artifactsFromValues(['artifact1.txt', 'artifact2.json']),
+        });
+
+        const jobs = await service.listJobs({
+          moduleId: module.id,
+          lastJobOnly: true,
+        });
+
+        expect(jobs).toHaveLength(1);
+        expect(jobs[0].id).toBe(latestJob.id);
+        expect(jobs[0].artifacts?.map(a => a.value).sort(toSorted)).toEqual([
+          'artifact1.txt',
+          'artifact2.json',
+        ]);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return empty list when lastJobOnly is true and module has no jobs - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'Test description',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const module = await service.createModule({
+          name: 'Test Module',
+          sourcePath: '/path/to/module',
+          projectId: project.id,
+        });
+
+        const jobs = await service.listJobs({
+          moduleId: module.id,
+          lastJobOnly: true,
+        });
+
+        expect(jobs).toEqual([]);
       },
     );
   });
@@ -2652,7 +2829,10 @@ describe('X2ADatabaseService', () => {
         });
 
         expect(updated).toBeDefined();
-        expect(updated?.log).toBe('Updated log content');
+
+        const retrievedJob = await service.getJobWithLog({ id: job.id });
+        expect(retrievedJob).toBeDefined();
+        expect(retrievedJob?.log).toBe('Updated log content');
       },
     );
 
@@ -2723,28 +2903,33 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
           moduleId: module.id,
           phase: 'init' as const,
-          artifacts: ['old1.txt', 'old2.txt'],
+          artifacts: artifactsFromValues(['old1.txt', 'old2.txt']),
         });
 
-        const newArtifacts = ['new1.txt', 'new2.txt', 'new3.txt'];
+        const newArtifacts = artifactsFromValues([
+          'new1.txt',
+          'new2.txt',
+          'new3.txt',
+        ]);
         const updated = await service.updateJob({
           id: job.id,
           artifacts: newArtifacts,
         });
 
         expect(updated).toBeDefined();
-        expect(updated?.artifacts.sort(toSorted)).toEqual(
-          newArtifacts.sort(toSorted),
-        );
         expect(updated?.artifacts).toHaveLength(3);
+        const updatedValues = (updated?.artifacts ?? []).map(a => a.value);
+        expect(updatedValues.sort(toSorted)).toEqual(
+          ['new1.txt', 'new2.txt', 'new3.txt'].sort(toSorted),
+        );
 
         // Verify old artifacts are deleted and new ones are inserted
         const artifactRows = await client('artifacts')
           .where('job_id', job.id)
-          .select('value')
+          .select('type', 'value')
           .orderBy('id', 'asc');
         expect(artifactRows.map(r => r.value).sort(toSorted)).toEqual(
-          newArtifacts.sort(toSorted),
+          ['new1.txt', 'new2.txt', 'new3.txt'].sort(toSorted),
         );
       },
     );
@@ -2776,7 +2961,7 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
           moduleId: module.id,
           phase: 'init' as const,
-          artifacts: ['artifact1.txt', 'artifact2.txt'],
+          artifacts: artifactsFromValues(['artifact1.txt', 'artifact2.txt']),
         });
 
         const updated = await service.updateJob({
@@ -2785,7 +2970,7 @@ describe('X2ADatabaseService', () => {
         });
 
         expect(updated).toBeDefined();
-        expect(updated?.artifacts).toEqual([]);
+        expect(updated?.artifacts ?? []).toEqual([]);
 
         // Verify artifacts are deleted from database
         const artifactRows = await client('artifacts')
@@ -2832,14 +3017,15 @@ describe('X2ADatabaseService', () => {
           status: 'success',
           log: 'Final log',
           finishedAt,
-          artifacts: ['result.txt'],
+          artifacts: artifactsFromValues(['result.txt']),
         });
 
         expect(updated).toBeDefined();
         expect(updated?.status).toBe('success');
-        expect(updated?.log).toBe('Final log');
         expect(updated?.finishedAt).toEqual(finishedAt);
-        expect(updated?.artifacts).toEqual(['result.txt']);
+        expect((updated?.artifacts ?? []).map(a => a.value)).toEqual([
+          'result.txt',
+        ]);
       },
     );
   });
@@ -2930,7 +3116,7 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
           moduleId: module.id,
           phase: 'init' as const,
-          artifacts: ['artifact1.txt', 'artifact2.txt'],
+          artifacts: artifactsFromValues(['artifact1.txt', 'artifact2.txt']),
         });
 
         // Verify artifacts exist
@@ -3035,13 +3221,13 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
           moduleId: module.id,
           phase: 'init' as const,
-          artifacts: ['artifact1.txt'],
+          artifacts: artifactsFromValues(['artifact1.txt']),
         });
         const job2 = await service.createJob({
           projectId: project.id,
           moduleId: module.id,
           phase: 'init' as const,
-          artifacts: ['artifact2.txt'],
+          artifacts: artifactsFromValues(['artifact2.txt']),
         });
         const job3 = await service.createJob({
           projectId: project.id,

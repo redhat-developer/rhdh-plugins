@@ -23,7 +23,7 @@ import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
 import { Module } from '../models/Module.model';
-import { Phase } from '../models/Phase.model';
+import { ModulePhase } from '../models/ModulePhase.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
@@ -92,6 +92,14 @@ export type ProjectsProjectIdGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdModulesGet = {
+  path: {
+    projectId: string;
+  };
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesModuleIdLogGet = {
   path: {
     projectId: string;
@@ -99,7 +107,7 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
   };
   query: {
     streaming?: boolean;
-    phase: Phase;
+    phase: ModulePhase;
   };
 };
 /**
@@ -253,10 +261,36 @@ export class DefaultApiClient {
   }
 
   /**
+   * Returns a list of modules for a project
+   * @param projectId -
+   */
+  public async projectsProjectIdModulesGet(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Array<Module>>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
    * Returns logs for the latest job of a module
    * @param projectId - Project UUID
    * @param moduleId - Module UUID
-   * @param phase - Migration phase to filter
+   * @param phase - Migration module phase to filter
    * @param streaming - Whether to stream logs (text/plain) or return all at once
    */
   public async projectsProjectIdModulesModuleIdLogGet(

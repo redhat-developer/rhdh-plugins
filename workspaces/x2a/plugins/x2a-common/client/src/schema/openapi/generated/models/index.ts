@@ -15,9 +15,13 @@
  */
 
 export * from '../models/AAPCredentials.model';
+export * from '../models/Artifact.model';
 export * from '../models/GitRepoAuth.model';
+export * from '../models/Job.model';
+export * from '../models/JobStatusEnum.model';
+export * from '../models/MigrationPhase.model';
 export * from '../models/Module.model';
-export * from '../models/Phase.model';
+export * from '../models/ModulePhase.model';
 export * from '../models/Project.model';
 export * from '../models/ProjectsGet200Response.model';
 export * from '../models/ProjectsPostRequest.model';

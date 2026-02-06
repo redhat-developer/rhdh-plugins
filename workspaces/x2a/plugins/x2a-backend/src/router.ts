@@ -32,6 +32,9 @@ import {
   BasicPermission,
 } from '@backstage/plugin-permission-common';
 import {
+  Job,
+  Module,
+  ModulePhase,
   x2aAdminViewPermission,
   x2aAdminWritePermission,
   x2aUserPermission,
@@ -108,6 +111,17 @@ function getUserRef(
     return 'user:default/system';
   }
 }
+
+type UnsecureJob = Job & { callbackToken?: string };
+const removeSensitiveFromJob = (job?: UnsecureJob): Job | undefined => {
+  if (!job) {
+    return undefined;
+  }
+
+  const newJob: UnsecureJob = { ...job };
+  delete newJob.callbackToken;
+  return newJob;
+};
 
 export async function createRouter({
   httpAuth,
@@ -313,7 +327,7 @@ export async function createRouter({
       const callbackToken = randomUUID();
       const job = await x2aDatabase.createJob({
         projectId,
-        moduleId: null, // Init jobs have no module
+        moduleId: undefined, // Init jobs have no module
         phase: 'init',
         status: 'pending',
         callbackToken,
@@ -356,6 +370,69 @@ export async function createRouter({
       res.json({ status: 'pending', jobId: job.id } as any);
     },
   );
+
+  router.get('/projects/:projectId/modules', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId/modules';
+    const { projectId } = req.params;
+    logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+    // Get user credentials
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
+    // Verify project exists and the user is permitted to access it
+    const project = await x2aDatabase.getProject(
+      { projectId },
+      { credentials },
+    );
+    if (!project) {
+      throw new NotFoundError(`Project "${projectId}" not found.`);
+    }
+
+    // List modules
+    const modules = await x2aDatabase.listModules({ projectId });
+
+    // TODO: This can be optimized by using a single query to list all jobs for all modules.
+    const lastAnalyzeJobsOfModules = await Promise.all(
+      modules.map(module =>
+        x2aDatabase.listJobs({
+          moduleId: module.id,
+          phase: 'analyze',
+          lastJobOnly: true,
+        }),
+      ),
+    );
+    const lastMigrateJobsOfModules = await Promise.all(
+      modules.map(module =>
+        x2aDatabase.listJobs({
+          moduleId: module.id,
+          phase: 'migrate',
+          lastJobOnly: true,
+        }),
+      ),
+    );
+    const lastPublishJobsOfModules = await Promise.all(
+      modules.map(module =>
+        x2aDatabase.listJobs({
+          moduleId: module.id,
+          phase: 'publish',
+          lastJobOnly: true,
+        }),
+      ),
+    );
+
+    const response: Array<Module> = modules.map((module, idxModule) => {
+      return {
+        ...module,
+        analyze: removeSensitiveFromJob(lastAnalyzeJobsOfModules[idxModule][0]),
+        migrate: removeSensitiveFromJob(lastMigrateJobsOfModules[idxModule][0]),
+        publish: removeSensitiveFromJob(lastPublishJobsOfModules[idxModule][0]),
+
+        // TODO: calculate module's status from the last job
+      };
+    });
+
+    res.json(response);
+  });
 
   // TODO: This is a TEMPORARY endpoint for testing only.
   // According to the ADR (lines 202-213), this endpoint should sync modules by:
@@ -520,15 +597,19 @@ export async function createRouter({
     },
   );
 
+  // TODO: Add /projects/:projectId/log
+
   router.get('/projects/:projectId/modules/:moduleId/log', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules/:moduleId/log';
     const { projectId, moduleId } = req.params;
     const streaming = req.query.streaming === true;
-    const phase = req.query.phase as string | undefined;
+    const phase = req.query.phase as ModulePhase;
 
     // Validate phase parameter (required)
-    if (!phase) {
-      throw new InputError('phase query parameter is required');
+    if (!phase || !['analyze', 'migrate', 'publish'].includes(phase)) {
+      throw new InputError(
+        'phase query parameter is required and must be one of: analyze, migrate, publish',
+      );
     }
 
     logger.info(
@@ -566,7 +647,7 @@ export async function createRouter({
     // Get latest job for module filtered by requested phase
     const jobs = await x2aDatabase.listJobs({
       moduleId,
-      phase: phase as any,
+      phase,
     });
 
     if (jobs.length === 0) {
@@ -588,7 +669,11 @@ export async function createRouter({
         `Job ${latestJob.id} is finished (status: ${latestJob.status}), returning logs from database`,
       );
       res.setHeader('Content-Type', 'text/plain');
-      res.send(latestJob.log || '');
+      const log = await x2aDatabase.getJobLogs({ jobId: latestJob.id });
+      if (!log) {
+        logger.error(`Log not found for a finished job ${latestJob.id}`);
+      }
+      res.send(log || '');
       return;
     }
 

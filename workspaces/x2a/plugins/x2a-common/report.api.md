@@ -15,6 +15,13 @@ export interface AAPCredentials {
     username?: string;
 }
 
+// @public (undocumented)
+export interface Artifact {
+    id: string;
+    type: string;
+    value: string;
+}
+
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
 
@@ -41,6 +48,7 @@ export class DefaultApiClient {
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
@@ -53,18 +61,46 @@ export interface GitRepoAuth {
 }
 
 // @public (undocumented)
-export interface Module {
+export interface Job {
+    artifacts?: Array<Artifact>;
+    errorDetails?: string;
+    finishedAt?: Date;
     id: string;
+    k8sJobName: string;
+    moduleId?: string;
+    // (undocumented)
+    phase: MigrationPhase;
+    projectId: string;
+    startedAt: Date;
+    // (undocumented)
+    status: JobStatusEnum;
+}
+
+// @public (undocumented)
+export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+
+// @public (undocumented)
+export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
+
+// @public (undocumented)
+export interface Module {
+    // (undocumented)
+    analyze?: Job;
+    id: string;
+    // (undocumented)
+    migrate?: Job;
     name: string;
     projectId: string;
+    // (undocumented)
+    publish?: Job;
     sourcePath: string;
 }
 
+// @public (undocumented)
+export type ModulePhase = 'analyze' | 'migrate' | 'publish';
+
 // @public
 export function normalizeRepoUrl(url: string): string;
-
-// @public (undocumented)
-export type Phase = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export interface Project {
@@ -132,6 +168,13 @@ export type ProjectsProjectIdGet = {
 };
 
 // @public (undocumented)
+export type ProjectsProjectIdModulesGet = {
+    path: {
+        projectId: string;
+    };
+};
+
+// @public (undocumented)
 export type ProjectsProjectIdModulesModuleIdLogGet = {
     path: {
         projectId: string;
@@ -139,7 +182,7 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
     };
     query: {
         streaming?: boolean;
-        phase: Phase;
+        phase: ModulePhase;
     };
 };
 
@@ -156,16 +199,14 @@ export type ProjectsProjectIdModulesModuleIdRunPost = {
 export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
     // (undocumented)
     aapCredentials?: AAPCredentials;
-    phase: ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum;
+    // (undocumented)
+    phase: ModulePhase;
     // (undocumented)
     sourceRepoAuth?: GitRepoAuth;
     // (undocumented)
     targetRepoAuth?: GitRepoAuth;
     userPrompt?: string;
 }
-
-// @public (undocumented)
-export type ProjectsProjectIdModulesModuleIdRunPostRequestPhaseEnum = 'analyze' | 'migrate' | 'publish';
 
 // @public (undocumented)
 export type ProjectsProjectIdModulesPost = {

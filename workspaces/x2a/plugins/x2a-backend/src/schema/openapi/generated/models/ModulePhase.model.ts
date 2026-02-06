@@ -21,4 +21,4 @@
 /**
  * @public
  */
-export type Phase = 'analyze' | 'migrate' | 'publish';
+export type ModulePhase = 'analyze' | 'migrate' | 'publish';
