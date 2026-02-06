@@ -972,6 +972,47 @@ Hidden fields (regardless of hiding method):
 
 If all inputs within a multi-step form's step are marked with `ui:hidden` (either statically or dynamically), the entire step will be automatically hidden from the stepper navigation. The step and its hidden fields will still be processed during form submission.
 
+## Omitting Fields from Workflow Input
+
+Use `omitFromWorkflowInput` to exclude fields from the **execution payload** while
+keeping them in form state (and therefore still visible in the review step).
+
+The property supports the same formats as `ui:hidden`:
+
+### Static Omit
+
+```json
+{
+  "secret": {
+    "type": "string",
+    "title": "Secret",
+    "omitFromWorkflowInput": true
+  }
+}
+```
+
+### Conditional Omit
+
+```json
+{
+  "mode": {
+    "type": "string",
+    "enum": ["simple", "advanced"]
+  },
+  "advancedSecret": {
+    "type": "string",
+    "title": "Advanced Secret",
+    "omitFromWorkflowInput": {
+      "when": "mode",
+      "is": "advanced"
+    }
+  }
+}
+```
+
+Supported condition patterns are identical to `ui:hidden` (e.g., `when/is`,
+`when/isNot`, `when/isEmpty`, `allOf`, `anyOf`).
+
 ## Customization
 
 The recommended approach for introducing customizations or other modifications is to contribute directly to [the library on GitHub](https://github.com/redhat-developer/rhdh-plugins/tree/main/workspaces/orchestrator/plugins/orchestrator-form-widgets).
