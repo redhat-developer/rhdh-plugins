@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Knex } from 'knex';
 import crypto from 'node:crypto';
 import {
   coreServices,
@@ -35,7 +36,7 @@ import {
   MigrationPhase,
   Artifact,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Knex } from 'knex';
+
 import { ProjectsGet } from '../schema/openapi';
 
 export class X2ADatabaseService {
@@ -112,6 +113,24 @@ export class X2ADatabaseService {
       type: row.type,
       value: row.value,
     };
+  }
+
+  /**
+   * Load the migration plan artifact for a project (from the latest init job).
+   * Reused by getProject() and listProjects().
+   */
+  private async getMigrationPlanForProject(
+    projectId: string,
+  ): Promise<Artifact | undefined> {
+    const lastInitJob = await this.listJobs({
+      projectId,
+      phase: 'init',
+      lastJobOnly: true,
+    });
+    if (lastInitJob.length === 0) return undefined;
+    return lastInitJob[0].artifacts?.find(
+      artifact => artifact.type === 'migration_plan',
+    );
   }
 
   // Filter query by user permissions
@@ -220,6 +239,16 @@ export class X2ADatabaseService {
 
     const projects: Project[] = rows.map(this.mapRowToProject);
 
+    // This can be optimized by using a single query to get all the migration plan artifacts for all projects but the query is pretty complex to maintain.
+    // Thanks to pagination, this should not be a bottleneck.
+    await Promise.all(
+      projects.map(async project => {
+        project.migrationPlan = await this.getMigrationPlanForProject(
+          project.id,
+        );
+      }),
+    );
+
     this.#logger.debug(
       `Fetched ${projects.length} out of ${totalCount.count} projects from database (permissions applied)`,
     );
@@ -253,8 +282,12 @@ export class X2ADatabaseService {
         ),
       )
       .first();
-
-    return row ? this.mapRowToProject(row) : undefined;
+    if (!row) {
+      return undefined;
+    }
+    const project = this.mapRowToProject(row);
+    project.migrationPlan = await this.getMigrationPlanForProject(project.id);
+    return project;
   }
 
   async deleteProject(
@@ -372,7 +405,7 @@ export class X2ADatabaseService {
     errorDetails?: string | null;
     k8sJobName?: string | null;
     callbackToken?: string | null;
-    artifacts?: Artifact[];
+    artifacts?: Pick<Artifact, 'type' | 'value'>[];
   }): Promise<Job> {
     const id = crypto.randomUUID();
     const startedAt = job.startedAt || new Date();
@@ -487,19 +520,28 @@ export class X2ADatabaseService {
    * @returns List of jobs for the given module
    */
   async listJobs({
+    projectId,
     moduleId,
     phase,
     lastJobOnly = false,
   }: {
-    moduleId: string;
+    projectId: string;
+    moduleId?: string;
     phase?: MigrationPhase;
     lastJobOnly?: boolean;
   }): Promise<Job[]> {
-    this.#logger.info(`listJobs called for moduleId: ${moduleId}`);
+    this.#logger.info(
+      `listJobs called for projectId: ${projectId}, moduleId: ${moduleId}, phase: ${phase}, lastJobOnly: ${lastJobOnly}`,
+    );
 
     // Fetch all jobs for the given module
     const rows: Job[] = await this.#dbClient('jobs')
-      .where('module_id', moduleId)
+      .where('project_id', projectId)
+      .modify(queryBuilder => {
+        if (moduleId) {
+          queryBuilder.where('module_id', moduleId);
+        }
+      })
       .modify(queryBuilder => {
         if (phase) {
           queryBuilder.where('phase', phase);

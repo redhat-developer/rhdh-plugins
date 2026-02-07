@@ -395,6 +395,7 @@ export async function createRouter({
     const lastAnalyzeJobsOfModules = await Promise.all(
       modules.map(module =>
         x2aDatabase.listJobs({
+          projectId,
           moduleId: module.id,
           phase: 'analyze',
           lastJobOnly: true,
@@ -404,6 +405,7 @@ export async function createRouter({
     const lastMigrateJobsOfModules = await Promise.all(
       modules.map(module =>
         x2aDatabase.listJobs({
+          projectId,
           moduleId: module.id,
           phase: 'migrate',
           lastJobOnly: true,
@@ -413,6 +415,7 @@ export async function createRouter({
     const lastPublishJobsOfModules = await Promise.all(
       modules.map(module =>
         x2aDatabase.listJobs({
+          projectId,
           moduleId: module.id,
           phase: 'publish',
           lastJobOnly: true,
@@ -492,15 +495,16 @@ export async function createRouter({
     async (req: express.Request, res: express.Response) => {
       const endpoint = 'POST /projects/:projectId/modules/:moduleId/run';
       const { projectId, moduleId } = req.params;
-      logger.info(
-        `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
-      );
 
       // Validate request body
       const runModuleRequestSchema = z.object({
         phase: z.enum(['analyze', 'migrate', 'publish']),
-        sourceRepoToken: z.string(),
-        targetRepoToken: z.string(),
+        sourceRepoAuth: z.object({
+          token: z.string(),
+        }),
+        targetRepoAuth: z.object({
+          token: z.string(),
+        }),
         aapCredentials: z
           .object({
             url: z.string(),
@@ -521,8 +525,8 @@ export async function createRouter({
       }
       const {
         phase,
-        sourceRepoToken,
-        targetRepoToken,
+        sourceRepoAuth,
+        targetRepoAuth,
         aapCredentials,
         userPrompt,
       } = parsedBody.data;
@@ -575,12 +579,12 @@ export async function createRouter({
         sourceRepo: {
           url: project.sourceRepoUrl,
           branch: project.sourceRepoBranch,
-          token: sourceRepoToken,
+          token: sourceRepoAuth.token,
         },
         targetRepo: {
           url: project.targetRepoUrl,
           branch: project.targetRepoBranch,
-          token: targetRepoToken,
+          token: targetRepoAuth.token,
         },
         aapCredentials,
         userPrompt,
@@ -646,6 +650,7 @@ export async function createRouter({
 
     // Get latest job for module filtered by requested phase
     const jobs = await x2aDatabase.listJobs({
+      projectId,
       moduleId,
       phase,
     });

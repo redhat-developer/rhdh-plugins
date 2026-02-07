@@ -18,9 +18,13 @@ export interface AAPCredentials {
 // @public (undocumented)
 export interface Artifact {
     id: string;
-    type: string;
+    // (undocumented)
+    type: ArtifactType;
     value: string;
 }
+
+// @public (undocumented)
+export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources';
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
@@ -109,6 +113,8 @@ export interface Project {
     createdBy: string;
     description?: string;
     id: string;
+    // (undocumented)
+    migrationPlan?: Artifact;
     name: string;
     sourceRepoBranch: string;
     sourceRepoUrl: string;
@@ -202,9 +208,9 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
     // (undocumented)
     phase: ModulePhase;
     // (undocumented)
-    sourceRepoAuth?: GitRepoAuth;
+    sourceRepoAuth: GitRepoAuth;
     // (undocumented)
-    targetRepoAuth?: GitRepoAuth;
+    targetRepoAuth: GitRepoAuth;
     userPrompt?: string;
 }
 

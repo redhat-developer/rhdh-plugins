@@ -297,8 +297,8 @@ paths:
                   description: Optional user prompt for customizing the migration
               required:
                 - phase
-                - sourceRepo
-                - targetRepo
+                - sourceRepoAuth
+                - targetRepoAuth
       responses:
         '200':
           description: Migration job created successfully
@@ -394,6 +394,9 @@ components:
         createdBy:
           type: string
           description: The user who created the project (Backstage user reference)
+        migrationPlan:
+          $ref: '#/components/schemas/Artifact'
+          description: Project migration plan artifact (by init phase)
       required:
         - id
         - name
@@ -486,6 +489,13 @@ components:
           items:
             $ref: '#/components/schemas/Artifact'
 
+    ArtifactType:
+      type: string
+      enum:
+        - migration_plan
+        - module_migration_plan
+        - migrated_sources
+
     Artifact:
       type: object
       properties:
@@ -493,7 +503,7 @@ components:
           type: string
           description: UUID for the artifact
         type:
-          type: string
+          $ref: '#/components/schemas/ArtifactType'
           description: Type of the artifact
         value:
           type: string
