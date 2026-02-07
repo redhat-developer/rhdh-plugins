@@ -7,12 +7,12 @@ This guide explains how to test the `translations-cli` locally before publishing
 1. Build the project:
 
    ```bash
-   npm run build
+   yarn build
    ```
 
 2. Ensure dependencies are installed:
    ```bash
-   npm install
+   yarn install
    ```
 
 ## Method 1: Using npm link (Recommended)
