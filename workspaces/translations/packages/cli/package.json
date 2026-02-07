@@ -1,11 +1,10 @@
 {
   "name": "@red-hat-developer-hub/translations-cli",
   "description": "CLI tools for translation workflows with our TMS.",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "backstage": {
     "role": "cli"
   },
-  "private": true,
   "homepage": "https://red.ht/rhdh",
   "repository": {
     "type": "git",
