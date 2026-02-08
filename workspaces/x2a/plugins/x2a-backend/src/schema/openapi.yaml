@@ -293,8 +293,6 @@ paths:
                   $ref: '#/components/schemas/AAPCredentials'
               required:
                 - phase
-                - sourceRepoAuth
-                - targetRepoAuth
       responses:
         '200':
           description: Migration job created successfully

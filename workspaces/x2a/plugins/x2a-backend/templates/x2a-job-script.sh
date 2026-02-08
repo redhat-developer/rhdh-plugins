@@ -30,7 +30,7 @@ trap on_error ERR
 #     └── [PROJECT_ID].[PROJECT_ABBREV]/
 #         ├── migration-plan.md
 #         └── modules/[MODULE_NAME]/
-#             ├── module_migration-plan.md
+#             ├── migration-plan-{module_name}.md
 #             └── migrated_ansible/
 #
 # /app/                    # x2a tool installation
@@ -115,13 +115,24 @@ case "${PHASE}" in
 
   analyze)
     echo "=== Running x2a analyze phase ==="
+    MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
     mkdir -p "${OUTPUT_DIR}"
 
     echo ""
     echo "Will read from:  ${SOURCE_BASE}"
-    echo "Will write to:   ${OUTPUT_DIR}/module_migration-plan.md"
+    echo "Will write to:   ${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md"
     echo ""
+
+    # Copy migration-plan.md from target repo to source dir
+    # The x2a tool does os.chdir(source_dir) and reads migration-plan.md from there
+    if [ ! -f "${PROJECT_PATH}/migration-plan.md" ]; then
+      echo "ERROR: migration-plan.md not found in ${PROJECT_PATH}/"
+      echo "The init phase must be run first to generate migration-plan.md"
+      exit 1
+    fi
+    echo "Copying migration-plan.md from target to source directory..."
+    cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
@@ -135,14 +146,14 @@ case "${PHASE}" in
     cd /app
     echo "Working directory: $(pwd)"
 
-    USER_REQ="${USER_PROMPT:-Analyze this module for migration}"
+    USER_REQ="${USER_PROMPT:-Analyze the module '${MODULE_NAME}' for migration to Ansible}"
     echo "Command: uv run app.py analyze --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
     uv run app.py analyze --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
     # Copy output to target location
-    # Note: x2a tool writes files to the source directory (--source-dir)
+    # Note: x2a tool produces migration-plan-{module_name}.md (spaces replaced with underscores)
     echo "Copying output to ${OUTPUT_DIR}/"
-    cp -v "${SOURCE_BASE}/module_migration-plan.md" "${OUTPUT_DIR}/" 2>/dev/null || true
+    cp -v "${SOURCE_BASE}/migration-plan-${MODULE_NAME_SANITIZED}.md" "${OUTPUT_DIR}/"
     cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
 
@@ -150,12 +161,12 @@ case "${PHASE}" in
     echo "=== Output directory contents ==="
     ls -la "${OUTPUT_DIR}/"
 
-    if [ ! -f "${OUTPUT_DIR}/module_migration-plan.md" ]; then
-      echo "ERROR: module_migration-plan.md not created"
+    if [ ! -f "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" ]; then
+      echo "ERROR: migration-plan-${MODULE_NAME_SANITIZED}.md not created"
       exit 1
     fi
 
-    ARTIFACT_PATH="${PROJECT_DIR}/modules/${MODULE_NAME}/module_migration-plan.md"
+    ARTIFACT_PATH="${PROJECT_DIR}/modules/${MODULE_NAME}/migration-plan-${MODULE_NAME_SANITIZED}.md"
     ;;
 
   migrate)
@@ -242,6 +253,9 @@ Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 "
 
 # Git push
+echo "=== Pulling latest changes ==="
+git pull --rebase origin "${TARGET_REPO_BRANCH}"
+
 echo "=== Pushing to remote repository ==="
 git push --force-with-lease origin "${TARGET_REPO_BRANCH}"
 
@@ -259,10 +273,14 @@ HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/callback_response.json -X POST "${
   -H "Authorization: Bearer ${CALLBACK_TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{
-    \"status\": \"success\",
-    \"phase\": \"${PHASE}\",
-    \"artifacts\": [\"${ARTIFACT_URL}\"]
-  }")
+    \"status\": \"Success\",
+    \"jobId\": \"${JOB_ID}\",
+    \"artifacts\": {
+      \"externalLinks\": {
+        \"artifact\": \"${ARTIFACT_URL}\"
+      }
+    }
+  }") || true
 
 if [ "${HTTP_CODE}" != "200" ] && [ "${HTTP_CODE}" != "201" ]; then
   echo "WARNING: Callback failed with HTTP ${HTTP_CODE}"

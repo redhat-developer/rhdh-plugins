@@ -132,9 +132,8 @@ export class JobResourceBuilder {
    * Builds a Kubernetes Secret for a specific job containing ephemeral Git credentials
    *
    * Note: ownerReferences are NOT set here because the job doesn't exist yet at secret
-   * creation time. The job secret will be cleaned up by Kubernetes TTL after the job
-   * completes (via ttlSecondsAfterFinished setting on the job). For explicit cleanup,
-   * the deleteJobSecret method can be called.
+   * creation time. After job creation, KubeService.createJob() sets the ownerReference
+   * on this secret so it is automatically garbage-collected when the Job is deleted.
    *
    * @param jobId - The job UUID
    * @param projectId - The project UUID

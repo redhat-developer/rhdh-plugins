@@ -447,9 +447,7 @@ export const spec = {
                   }
                 },
                 "required": [
-                  "phase",
-                  "sourceRepoAuth",
-                  "targetRepoAuth"
+                  "phase"
                 ]
               }
             }
