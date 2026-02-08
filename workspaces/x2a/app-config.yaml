@@ -160,10 +160,10 @@ x2a:
     # If not provided here, users must supply AAP credentials when creating projects
     # Use EITHER oauthToken OR username+password
     aap:
-      url: ${AAP_URL}
-      orgName: ${AAP_ORG_NAME}
+      url: ${AAP_URL:-https://aap.example.com}
+      orgName: ${AAP_ORG_NAME:-MyOrganization}
       # Option 1: OAuth token
-      oauthToken: ${AAP_OAUTH_TOKEN}
+      oauthToken: ${AAP_OAUTH_TOKEN:-your-oauth-token}
       # Option 2: Username and password
       # username: ${AAP_USERNAME}
       # password: ${AAP_PASSWORD}
