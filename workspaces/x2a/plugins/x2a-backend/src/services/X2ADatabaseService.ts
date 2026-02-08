@@ -133,6 +133,43 @@ export class X2ADatabaseService {
     );
   }
 
+  // Fetch artifacts for a list of jobs and attach them to each job
+  private async attachArtifactsToJobs(rows: any[]): Promise<Job[]> {
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const jobIds = rows.map(row => row.id);
+
+    // Fetch all artifacts for these jobs in a single query
+    const artifactRows: (Artifact & { job_id: string })[] =
+      await this.#dbClient('artifacts')
+        .whereIn('job_id', jobIds)
+        .select('*')
+        .orderBy('id', 'asc');
+
+    // Group artifacts by job_id
+    const artifactsByJobId = new Map<string, Artifact[]>();
+    artifactRows.forEach(artifact => {
+      const jobId = artifact.job_id;
+      if (jobId) {
+        artifactsByJobId.set(jobId, [
+          ...(artifactsByJobId.get(jobId) || []),
+          this.mapRowToArtifact(artifact),
+        ]);
+      }
+    });
+
+    // Build jobs with their artifacts
+    return rows.map(row => {
+      const job = this.mapRowToJob(row);
+      return {
+        ...job,
+        artifacts: artifactsByJobId.get(job.id) || [],
+      };
+    });
+  }
+
   // Filter query by user permissions
   private filterPermissions(
     queryBuilder: Knex.QueryBuilder,
@@ -525,39 +562,7 @@ export class X2ADatabaseService {
       .select('*')
       .orderBy('started_at', 'desc');
 
-    if (rows.length === 0) {
-      return [];
-    }
-
-    const jobIds = rows.map(row => row.id);
-
-    // Fetch all artifacts for these jobs in a single query
-    const artifactRows: (Artifact & { job_id: string })[] =
-      await this.#dbClient('artifacts')
-        .whereIn('job_id', jobIds)
-        .select('*')
-        .orderBy('id', 'asc');
-
-    // Group artifacts by job_id
-    const artifactsByJobId = new Map<string, Artifact[]>();
-    artifactRows.forEach(artifact => {
-      const jobId = artifact.job_id;
-      if (jobId) {
-        artifactsByJobId.set(jobId, [
-          ...(artifactsByJobId.get(jobId) || []),
-          this.mapRowToArtifact(artifact),
-        ]);
-      }
-    });
-
-    // Build jobs with their artifacts
-    const jobs: Job[] = rows.map(row => {
-      const job = this.mapRowToJob(row);
-      return {
-        ...job,
-        artifacts: artifactsByJobId.get(job.id) || [],
-      };
-    });
+    const jobs = await this.attachArtifactsToJobs(rows);
 
     this.#logger.debug(
       `Fetched ${jobs.length} jobs from database for project ${projectId}`,
@@ -583,39 +588,7 @@ export class X2ADatabaseService {
       .select('*')
       .orderBy('started_at', 'desc');
 
-    if (rows.length === 0) {
-      return [];
-    }
-
-    const jobIds = rows.map(row => row.id);
-
-    // Fetch all artifacts for these jobs in a single query
-    const artifactRows: (Artifact & { job_id: string })[] =
-      await this.#dbClient('artifacts')
-        .whereIn('job_id', jobIds)
-        .select('*')
-        .orderBy('id', 'asc');
-
-    // Group artifacts by job_id
-    const artifactsByJobId = new Map<string, Artifact[]>();
-    artifactRows.forEach(artifact => {
-      const jobId = artifact.job_id;
-      if (jobId) {
-        artifactsByJobId.set(jobId, [
-          ...(artifactsByJobId.get(jobId) || []),
-          this.mapRowToArtifact(artifact),
-        ]);
-      }
-    });
-
-    // Build jobs with their artifacts
-    const jobs: Job[] = rows.map(row => {
-      const job = this.mapRowToJob(row);
-      return {
-        ...job,
-        artifacts: artifactsByJobId.get(job.id) || [],
-      };
-    });
+    const jobs = await this.attachArtifactsToJobs(rows);
 
     this.#logger.debug(
       `Fetched ${jobs.length} jobs from database for module ${moduleId} in project ${projectId}`,
@@ -679,39 +652,7 @@ export class X2ADatabaseService {
         }
       });
 
-    if (rows.length === 0) {
-      return [];
-    }
-
-    const jobIds = rows.map((row: any) => row.id);
-
-    // Fetch all artifacts for these jobs in a single query
-    const artifactRows: (Artifact & { job_id: string })[] =
-      await this.#dbClient('artifacts')
-        .whereIn('job_id', jobIds)
-        .select('*')
-        .orderBy('id', 'asc');
-
-    // Group artifacts by job_id
-    const artifactsByJobId = new Map<string, Artifact[]>();
-    artifactRows.forEach(artifact => {
-      const jobId = artifact.job_id;
-      if (jobId) {
-        artifactsByJobId.set(jobId, [
-          ...(artifactsByJobId.get(jobId) || []),
-          artifact,
-        ]);
-      }
-    });
-
-    // Build jobs with their artifacts
-    const jobs: Job[] = rows.map((row: any) => {
-      const job = this.mapRowToJob(row);
-      return {
-        ...job,
-        artifacts: artifactsByJobId.get(job.id) || [],
-      };
-    });
+    const jobs = await this.attachArtifactsToJobs(rows);
 
     this.#logger.debug(
       `Fetched ${jobs.length} jobs from database for module ${moduleId}`,
