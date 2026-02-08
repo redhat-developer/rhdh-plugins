@@ -53,7 +53,7 @@ The procedure involves the following steps:
               target: https://console.redhat.com/api/cost-management/v1
               allowedHeaders: ['Authorization']
               credentials: dangerously-allow-unauthenticated
-        resourceOptimization:
+        costManagement:
           clientId: ${ROS_CLIENT_ID}
           clientSecret: ${ROS_CLIENT_SECRET}
           optimizationWorkflowId: 'patch-k8s-resource'
