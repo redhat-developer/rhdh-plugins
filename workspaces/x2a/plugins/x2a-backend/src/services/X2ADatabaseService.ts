@@ -532,19 +532,23 @@ export class X2ADatabaseService {
     const jobIds = rows.map(row => row.id);
 
     // Fetch all artifacts for these jobs in a single query
-    const artifactRows = await this.#dbClient('artifacts')
-      .whereIn('job_id', jobIds)
-      .select('job_id', 'value')
-      .orderBy('id', 'asc');
+    const artifactRows: (Artifact & { job_id: string })[] =
+      await this.#dbClient('artifacts')
+        .whereIn('job_id', jobIds)
+        .select('*')
+        .orderBy('id', 'asc');
 
     // Group artifacts by job_id
-    const artifactsByJobId = new Map<string, string[]>();
-    for (const artifactRow of artifactRows) {
-      if (!artifactsByJobId.has(artifactRow.job_id)) {
-        artifactsByJobId.set(artifactRow.job_id, []);
+    const artifactsByJobId = new Map<string, Artifact[]>();
+    artifactRows.forEach(artifact => {
+      const jobId = artifact.job_id;
+      if (jobId) {
+        artifactsByJobId.set(jobId, [
+          ...(artifactsByJobId.get(jobId) || []),
+          this.mapRowToArtifact(artifact),
+        ]);
       }
-      artifactsByJobId.get(artifactRow.job_id)!.push(artifactRow.value);
-    }
+    });
 
     // Build jobs with their artifacts
     const jobs: Job[] = rows.map(row => {
@@ -586,19 +590,23 @@ export class X2ADatabaseService {
     const jobIds = rows.map(row => row.id);
 
     // Fetch all artifacts for these jobs in a single query
-    const artifactRows = await this.#dbClient('artifacts')
-      .whereIn('job_id', jobIds)
-      .select('job_id', 'value')
-      .orderBy('id', 'asc');
+    const artifactRows: (Artifact & { job_id: string })[] =
+      await this.#dbClient('artifacts')
+        .whereIn('job_id', jobIds)
+        .select('*')
+        .orderBy('id', 'asc');
 
     // Group artifacts by job_id
-    const artifactsByJobId = new Map<string, string[]>();
-    for (const artifactRow of artifactRows) {
-      if (!artifactsByJobId.has(artifactRow.job_id)) {
-        artifactsByJobId.set(artifactRow.job_id, []);
+    const artifactsByJobId = new Map<string, Artifact[]>();
+    artifactRows.forEach(artifact => {
+      const jobId = artifact.job_id;
+      if (jobId) {
+        artifactsByJobId.set(jobId, [
+          ...(artifactsByJobId.get(jobId) || []),
+          this.mapRowToArtifact(artifact),
+        ]);
       }
-      artifactsByJobId.get(artifactRow.job_id)!.push(artifactRow.value);
-    }
+    });
 
     // Build jobs with their artifacts
     const jobs: Job[] = rows.map(row => {
