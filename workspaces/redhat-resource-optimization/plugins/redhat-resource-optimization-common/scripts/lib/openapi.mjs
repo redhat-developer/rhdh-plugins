@@ -19,7 +19,7 @@ import { fetchJson } from './fetch.mjs';
 import { toYaml } from './yaml.mjs';
 
 function patchTitle(spec) {
-  spec.info.title = 'redhat-resource-optimization';
+  spec.info.title = 'cost-management';
   return spec;
 }
 

@@ -1,0 +1,182 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { useCallback, useMemo, useState } from 'react';
+import {
+  Artifact,
+  MigrationPhase,
+  Module,
+  ModulePhase,
+  Project,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Table, TableColumn } from '@backstage/core-components';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import { MaterialTableProps } from '@material-table/core/types';
+import Alert from '@material-ui/lab/Alert';
+import AlertTitle from '@material-ui/lab/AlertTitle';
+
+import { useTranslation } from '../../hooks/useTranslation';
+import { useClientService } from '../../ClientService';
+import { Artifacts } from './Artifacts';
+
+const getLastJob = (rowData: Module) => {
+  const phases: ('publish' | 'migrate' | 'analyze')[] = [
+    'publish',
+    'migrate',
+    'analyze',
+  ];
+  for (const phase of phases) {
+    if (rowData[phase]?.phase) {
+      return rowData[phase];
+    }
+  }
+  return undefined;
+};
+
+export const getNextPhase = (module: Module): ModulePhase | undefined => {
+  const lastJob = getLastJob(module);
+  const lastPhase: MigrationPhase = lastJob?.phase || 'init';
+
+  const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
+    init: 'analyze',
+    analyze: 'migrate',
+    migrate: 'publish',
+    publish: undefined,
+  };
+  return nextPhases[lastPhase];
+};
+
+const useColumns = ({
+  targetRepoUrl,
+}: {
+  targetRepoUrl: string;
+}): TableColumn<Module>[] => {
+  const { t } = useTranslation();
+
+  const lastPhaseCell = useCallback(
+    (rowData: Module) => {
+      const lastPhase = getLastJob(rowData)?.phase || 'none';
+      return <div>{t(`module.phases.${lastPhase}`)}</div>;
+    },
+    [t],
+  );
+
+  // List the artifacts for the last phase
+  const artifactsCell = useCallback(
+    (module: Module) => {
+      const artifacts: Artifact[] = [];
+      artifacts.push(...(module.analyze?.artifacts || []));
+      artifacts.push(...(module.migrate?.artifacts || []));
+      artifacts.push(...(module.publish?.artifacts || []));
+      return <Artifacts artifacts={artifacts} targetRepoUrl={targetRepoUrl} />;
+    },
+    [targetRepoUrl],
+  );
+
+  return useMemo(() => {
+    return [
+      { field: 'name', title: t('module.name') },
+      { field: 'status', title: t('module.status') },
+      { field: 'sourcePath', title: t('module.sourcePath') },
+      { render: lastPhaseCell, title: t('module.lastPhase') },
+      { render: artifactsCell, title: t('module.artifacts') },
+    ];
+  }, [t, lastPhaseCell, artifactsCell]);
+};
+
+export const ModuleTable = ({
+  modules,
+  forceRefresh,
+  project,
+}: {
+  modules: Module[];
+  forceRefresh: () => void;
+  project: Project;
+}) => {
+  const { t } = useTranslation();
+  const columns = useColumns({ targetRepoUrl: project.targetRepoUrl });
+  const data: Module[] = modules;
+  const clientService = useClientService();
+
+  const [error, setError] = useState<string | undefined>();
+
+  const handleRunNext = useCallback(
+    async (module: Module) => {
+      setError(undefined);
+      const nextPhase = getNextPhase(module);
+      if (!nextPhase) {
+        return;
+      }
+
+      const response =
+        await clientService.projectsProjectIdModulesModuleIdRunPost({
+          path: { projectId: module.projectId, moduleId: module.id },
+          body: {
+            phase: nextPhase,
+            sourceRepoAuth: {
+              token:
+                'TODO:placeholder - the token needs to be renewed for each run',
+            },
+            targetRepoAuth: {
+              token:
+                'TODO:placeholder - the token needs to be renewed for each run',
+            },
+            userPrompt: 'TODO: user prompt - collect per run',
+            // skipping AAP credentials in favor of app-config.yaml
+          },
+        });
+
+      const responseData = await response.json();
+      if (!responseData.jobId) {
+        setError('Failed to run next phase for module');
+      }
+
+      forceRefresh();
+    },
+    [clientService, forceRefresh],
+  );
+
+  const actions: MaterialTableProps<Module>['actions'] = [
+    (rowData: Module) => ({
+      // Idea: this can be a drop-down to select the phase to run
+      icon: PlayArrowIcon,
+      onClick: () => handleRunNext(rowData),
+      tooltip: t('module.actions.runNextPhase'),
+      disabled: !getNextPhase(rowData),
+    }),
+  ];
+
+  return (
+    <>
+      {error && (
+        <Alert severity="error">
+          <AlertTitle>{error}</AlertTitle>
+        </Alert>
+      )}
+      <Table<Module>
+        options={{
+          search: false,
+          paging: false,
+          actionsColumnIndex: -1,
+          padding: 'dense',
+          toolbar: false,
+        }}
+        columns={columns}
+        data={data}
+        actions={actions}
+      />
+    </>
+  );
+};

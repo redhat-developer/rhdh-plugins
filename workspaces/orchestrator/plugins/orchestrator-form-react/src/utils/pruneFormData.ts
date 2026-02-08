@@ -18,8 +18,11 @@ import { JsonObject, JsonValue } from '@backstage/types';
 
 import type { JSONSchema7 } from 'json-schema';
 
+import { HiddenCondition } from '../types/HiddenCondition';
+import { evaluateHiddenCondition } from './evaluateHiddenCondition';
+
 type WorkflowInputSchema = JSONSchema7 & {
-  omitFromWorkflowInput?: boolean;
+  omitFromWorkflowInput?: HiddenCondition;
 };
 
 /**
@@ -44,8 +47,18 @@ function resolveSchema(
   return schema;
 }
 
-function shouldOmitFromWorkflowInput(schema: JSONSchema7): boolean {
-  return (schema as WorkflowInputSchema).omitFromWorkflowInput === true;
+function shouldOmitFromWorkflowInput(
+  schema: JSONSchema7,
+  rootFormData: JsonObject,
+): boolean {
+  const omitFlag = (schema as WorkflowInputSchema).omitFromWorkflowInput;
+  if (omitFlag === undefined) {
+    return false;
+  }
+  if (typeof omitFlag === 'boolean') {
+    return omitFlag;
+  }
+  return evaluateHiddenCondition(omitFlag, rootFormData);
 }
 
 /**
@@ -321,8 +334,10 @@ export function omitFromWorkflowInput(
   formData: JsonObject,
   schema: JSONSchema7,
   rootSchema?: JSONSchema7,
+  rootFormData?: JsonObject,
 ): JsonObject {
   const root = rootSchema || schema;
+  const rootData = rootFormData || formData;
   const filtered: JsonObject = {};
 
   for (const [key, value] of Object.entries(formData)) {
@@ -335,7 +350,7 @@ export function omitFromWorkflowInput(
     }
 
     propSchema = resolveSchema(propSchema as JSONSchema7, root);
-    if (shouldOmitFromWorkflowInput(propSchema)) {
+    if (shouldOmitFromWorkflowInput(propSchema, rootData)) {
       continue;
     }
 
@@ -349,6 +364,7 @@ export function omitFromWorkflowInput(
         value as JsonObject,
         propSchema as JSONSchema7,
         root,
+        rootData,
       );
       continue;
     }
@@ -359,7 +375,7 @@ export function omitFromWorkflowInput(
           ? resolveSchema(propSchema.items as JSONSchema7, root)
           : undefined;
 
-      if (itemsSchema && shouldOmitFromWorkflowInput(itemsSchema)) {
+      if (itemsSchema && shouldOmitFromWorkflowInput(itemsSchema, rootData)) {
         continue;
       }
 
@@ -374,6 +390,7 @@ export function omitFromWorkflowInput(
               item as JsonObject,
               itemsSchema as JSONSchema7,
               root,
+              rootData,
             );
           }
           return item as JsonValue;

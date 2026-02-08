@@ -231,6 +231,7 @@ describe('KubeService', () => {
       jobId: 'job-123',
       projectId: 'proj-123',
       projectName: 'Test Project',
+      projectAbbrev: 'TP',
       phase: 'init' as const,
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR
@@ -315,8 +316,7 @@ describe('KubeService', () => {
                 restartPolicy: 'Never',
                 containers: expect.arrayContaining([
                   expect.objectContaining({
-                    name: 'x2a-echo',
-                    image: 'busybox:latest',
+                    name: 'x2a',
                     envFrom: [
                       { secretRef: { name: 'x2a-project-secret-proj-123' } },
                       { secretRef: { name: 'x2a-job-secret-job-123' } },

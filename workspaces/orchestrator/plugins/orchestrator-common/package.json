@@ -55,7 +55,6 @@
     "openapi:check": "./scripts/openapi.sh check"
   },
   "dependencies": {
-    "@backstage/core-plugin-api": "^1.12.0",
     "@backstage/plugin-permission-common": "^0.9.3",
     "@backstage/types": "^1.2.2",
     "@serverlessworkflow/sdk-typescript": "^0.8.4",

@@ -12479,7 +12479,6 @@ __metadata:
   resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-common@workspace:plugins/orchestrator-common"
   dependencies:
     "@backstage/cli": ^0.34.5
-    "@backstage/core-plugin-api": ^1.12.0
     "@backstage/plugin-permission-common": ^0.9.3
     "@backstage/types": ^1.2.2
     "@openapitools/openapi-generator-cli": 2.25.2

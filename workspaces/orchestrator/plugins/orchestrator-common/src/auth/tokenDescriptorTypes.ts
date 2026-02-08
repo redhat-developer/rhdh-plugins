@@ -13,7 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { OAuthScope } from '@backstage/core-plugin-api';
+
+/**
+ *
+ * @public
+ * An array of scopes, or a scope string formatted according to the
+ * auth provider, which is typically a space separated list.
+ */
+export type OAuthScope = string | string[];
 
 /**
  * Descriptor for authentication token configuration

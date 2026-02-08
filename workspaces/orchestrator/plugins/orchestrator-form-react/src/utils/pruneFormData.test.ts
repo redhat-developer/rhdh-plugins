@@ -784,5 +784,56 @@ describe('pruneFormData', () => {
       });
       expect(result.step).not.toHaveProperty('secret');
     });
+
+    it('should remove properties when omitFromWorkflowInput condition matches', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          mode: { type: 'string' },
+          conditional: {
+            type: 'string',
+            omitFromWorkflowInput: {
+              when: 'mode',
+              is: 'advanced',
+            },
+          } as JSONSchema7,
+        },
+      };
+
+      const formData = {
+        mode: 'advanced',
+        conditional: 'omit',
+      };
+
+      const result = omitFromWorkflowInput(formData, schema);
+
+      expect(result).toEqual({ mode: 'advanced' });
+      expect(result).not.toHaveProperty('conditional');
+    });
+
+    it('should keep properties when omitFromWorkflowInput condition does not match', () => {
+      const schema: JSONSchema7 = {
+        type: 'object',
+        properties: {
+          mode: { type: 'string' },
+          conditional: {
+            type: 'string',
+            omitFromWorkflowInput: {
+              when: 'mode',
+              is: 'advanced',
+            },
+          } as JSONSchema7,
+        },
+      };
+
+      const formData = {
+        mode: 'simple',
+        conditional: 'keep',
+      };
+
+      const result = omitFromWorkflowInput(formData, schema);
+
+      expect(result).toEqual({ mode: 'simple', conditional: 'keep' });
+    });
   });
 });

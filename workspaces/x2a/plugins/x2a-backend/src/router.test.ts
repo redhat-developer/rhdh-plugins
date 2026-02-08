@@ -50,8 +50,8 @@ const mockProject2: ProjectsPostRequest = {
   name: 'Another Project',
   description: 'Another Description',
   abbreviation: 'AP',
-  sourceRepoUrl: 'https://github.com/source/repo',
-  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoUrl: 'https://github.com/source/repo2',
+  targetRepoUrl: 'https://github.com/target/repo2',
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
 };
@@ -162,6 +162,25 @@ async function createApp(
       getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007/api/x2a'),
       getExternalBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007'),
     },
+    config: mockServices.rootConfig({
+      data: {
+        x2a: {
+          kubernetes: {
+            namespace: 'test-namespace',
+            image: 'test-image',
+            imageTag: 'test',
+            ttlSecondsAfterFinished: 86400,
+            resources: {
+              requests: { cpu: '100m', memory: '128Mi' },
+              limits: { cpu: '200m', memory: '256Mi' },
+            },
+          },
+          credentials: {
+            llm: { LLM_MODEL: 'test-model' },
+          },
+        },
+      },
+    }),
     x2aDatabase,
     kubeService: {
       createProjectSecret: jest.fn().mockResolvedValue(undefined),

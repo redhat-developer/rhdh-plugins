@@ -140,9 +140,7 @@ export const OptimizationsBreakdownPage = () => {
   const { id } = useParams();
   const configApi = useApi(configApiRef);
   const workflowIdRef = useRef<string>(
-    configApi.getOptionalString(
-      'resourceOptimization.optimizationWorkflowId',
-    ) ?? '',
+    configApi.getOptionalString('costManagement.optimizationWorkflowId') ?? '',
   );
   const workflowUnavailableReasonRef = useRef<
     WorkflowUnavailableReason | undefined

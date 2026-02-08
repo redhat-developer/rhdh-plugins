@@ -482,6 +482,7 @@ describe('JobResourceBuilder', () => {
       jobId: 'job-123',
       projectId: 'proj-123',
       projectName: 'Test Project',
+      projectAbbrev: 'TP',
       phase: 'init',
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR
@@ -604,13 +605,13 @@ describe('JobResourceBuilder', () => {
       });
     });
 
-    describe('Main container - busybox echo', () => {
-      it('should use busybox:latest image', () => {
+    describe('Main container', () => {
+      it('should use configured image', () => {
         const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.name).toBe('x2a-echo');
-        expect(container!.image).toBe('busybox:latest');
+        expect(container!.name).toBe('x2a');
+        expect(container!.image).toBe('quay.io/x2ansible/x2a-convertor:latest');
       });
 
       it('should set base environment variables', () => {
@@ -694,40 +695,30 @@ describe('JobResourceBuilder', () => {
     });
 
     describe('Command generation for init phase', () => {
-      it('should generate echo command for init phase', () => {
+      it('should use bash with template script', () => {
         const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.command).toHaveLength(3);
-        expect(container!.command![0]).toBe('/bin/sh');
+        expect(container!.command).toHaveLength(2);
+        expect(container!.command![0]).toBe('/bin/bash');
         expect(container!.command![1]).toBe('-c');
-        expect(container!.command![2]).toContain('===== X2A Init Phase =====');
-        expect(container!.command![2]).toContain('Project: Test Project');
-        expect(container!.command![2]).toContain('Job ID: job-123');
-        expect(container!.command![2]).toContain('User: user:default/test');
-        expect(container!.command![2]).toContain('Simulating init phase');
+        // Script is passed as args[0]
+        expect(container!.args).toHaveLength(1);
+        expect(container!.args![0]).toContain('X2A ${PHASE} Phase');
+        expect(container!.args![0]).toContain('case "${PHASE}"');
       });
 
-      it('should include user prompt in init command when provided', () => {
-        const paramsWithPrompt: JobCreateParams = {
-          ...baseParams,
-          userPrompt: 'Focus on security',
-        };
-
-        const job = JobResourceBuilder.buildJobSpec(
-          paramsWithPrompt,
-          mockConfig,
-        );
+      it('should include init phase case in script', () => {
+        const job = JobResourceBuilder.buildJobSpec(baseParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.command![2]).toContain(
-          'User Prompt: Focus on security',
-        );
+        expect(container!.args![0]).toContain('init)');
+        expect(container!.args![0]).toContain('=== Running x2a init phase ===');
       });
     });
 
     describe('Command generation for analyze phase', () => {
-      it('should generate echo command for analyze phase', () => {
+      it('should use bash with template script for analyze', () => {
         const analyzeParams: JobCreateParams = {
           ...baseParams,
           phase: 'analyze',
@@ -738,46 +729,33 @@ describe('JobResourceBuilder', () => {
         const job = JobResourceBuilder.buildJobSpec(analyzeParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.command![0]).toBe('/bin/sh');
+        expect(container!.command![0]).toBe('/bin/bash');
         expect(container!.command![1]).toBe('-c');
-        expect(container!.command![2]).toContain(
-          '===== X2A Analyze Phase =====',
+        expect(container!.args![0]).toContain('analyze)');
+        expect(container!.args![0]).toContain(
+          '=== Running x2a analyze phase ===',
         );
-        expect(container!.command![2]).toContain('Module: nginx-cookbook');
-        expect(container!.command![2]).toContain('Simulating analyze phase');
       });
 
-      it('should include user prompt in analyze command when provided', () => {
+      it('should set phase env var to analyze', () => {
         const analyzeParams: JobCreateParams = {
           ...baseParams,
           phase: 'analyze',
           moduleId: 'module-123',
           moduleName: 'nginx-cookbook',
-          userPrompt: 'Focus on nginx config files',
         };
 
         const job = JobResourceBuilder.buildJobSpec(analyzeParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.command![2]).toContain(
-          'User Prompt: Focus on nginx config files',
+        expect(container!.env).toEqual(
+          expect.arrayContaining([{ name: 'PHASE', value: 'analyze' }]),
         );
-      });
-
-      it('should throw error when analyze phase has no module name', () => {
-        const invalidParams: JobCreateParams = {
-          ...baseParams,
-          phase: 'analyze',
-        };
-
-        expect(() =>
-          JobResourceBuilder.buildJobSpec(invalidParams, mockConfig),
-        ).toThrow('moduleName is required for analyze phase');
       });
     });
 
     describe('Command generation for migrate phase', () => {
-      it('should generate echo command for migrate phase', () => {
+      it('should use bash with template script for migrate', () => {
         const migrateParams: JobCreateParams = {
           ...baseParams,
           phase: 'migrate',
@@ -788,49 +766,33 @@ describe('JobResourceBuilder', () => {
         const job = JobResourceBuilder.buildJobSpec(migrateParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.command![0]).toBe('/bin/sh');
+        expect(container!.command![0]).toBe('/bin/bash');
         expect(container!.command![1]).toBe('-c');
-        expect(container!.command![2]).toContain(
-          '===== X2A Migrate Phase =====',
+        expect(container!.args![0]).toContain('migrate)');
+        expect(container!.args![0]).toContain(
+          '=== Running x2a migrate phase ===',
         );
-        expect(container!.command![2]).toContain('Module: nginx-cookbook');
-        expect(container!.command![2]).toContain(
-          'Converting Chef code to Ansible',
-        );
-        expect(container!.command![2]).toContain('Simulating migrate phase');
       });
 
-      it('should include user prompt in migrate command when provided', () => {
+      it('should set phase env var to migrate', () => {
         const migrateParams: JobCreateParams = {
           ...baseParams,
           phase: 'migrate',
           moduleId: 'module-123',
           moduleName: 'nginx-cookbook',
-          userPrompt: 'Preserve all comments',
         };
 
         const job = JobResourceBuilder.buildJobSpec(migrateParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.command![2]).toContain(
-          'User Prompt: Preserve all comments',
+        expect(container!.env).toEqual(
+          expect.arrayContaining([{ name: 'PHASE', value: 'migrate' }]),
         );
-      });
-
-      it('should throw error when migrate phase has no module name', () => {
-        const invalidParams: JobCreateParams = {
-          ...baseParams,
-          phase: 'migrate',
-        };
-
-        expect(() =>
-          JobResourceBuilder.buildJobSpec(invalidParams, mockConfig),
-        ).toThrow('moduleName is required for migrate phase');
       });
     });
 
     describe('Command generation for publish phase', () => {
-      it('should generate echo command for publish phase', () => {
+      it('should set phase env var to publish', () => {
         const publishParams: JobCreateParams = {
           ...baseParams,
           phase: 'publish',
@@ -841,27 +803,24 @@ describe('JobResourceBuilder', () => {
         const job = JobResourceBuilder.buildJobSpec(publishParams, mockConfig);
 
         const container = job.spec?.template.spec?.containers![0];
-        expect(container!.command![0]).toBe('/bin/sh');
-        expect(container!.command![1]).toBe('-c');
-        expect(container!.command![2]).toContain(
-          '===== X2A Publish Phase =====',
+        expect(container!.env).toEqual(
+          expect.arrayContaining([{ name: 'PHASE', value: 'publish' }]),
         );
-        expect(container!.command![2]).toContain('Module: nginx-cookbook');
-        expect(container!.command![2]).toContain(
-          'Publishing Ansible content to AAP',
-        );
-        expect(container!.command![2]).toContain('Simulating publish phase');
       });
 
-      it('should throw error when publish phase has no module name', () => {
-        const invalidParams: JobCreateParams = {
+      it('should handle unknown phase in script (exits with error)', () => {
+        const publishParams: JobCreateParams = {
           ...baseParams,
           phase: 'publish',
+          moduleId: 'module-123',
+          moduleName: 'nginx-cookbook',
         };
 
-        expect(() =>
-          JobResourceBuilder.buildJobSpec(invalidParams, mockConfig),
-        ).toThrow('moduleName is required for publish phase');
+        const job = JobResourceBuilder.buildJobSpec(publishParams, mockConfig);
+
+        const container = job.spec?.template.spec?.containers![0];
+        // Script handles unknown phases with exit 1
+        expect(container!.args![0]).toContain('ERROR: Unknown phase');
       });
     });
   });

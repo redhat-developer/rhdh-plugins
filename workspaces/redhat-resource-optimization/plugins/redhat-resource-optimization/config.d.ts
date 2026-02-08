@@ -15,7 +15,7 @@
  */
 
 export interface Config {
-  resourceOptimization?: {
+  costManagement?: {
     /** @visibility frontend */
     optimizationWorkflowId?: string;
   };

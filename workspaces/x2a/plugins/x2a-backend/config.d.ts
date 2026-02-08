@@ -36,6 +36,12 @@ export interface X2AConfig {
       };
     };
   };
+  git?: {
+    author?: {
+      name: string;
+      email: string;
+    };
+  };
   credentials: {
     llm: Record<string, string>;
     aap?: {
@@ -92,6 +98,53 @@ export interface Config {
           cpu?: string;
           memory?: string;
         };
+      };
+    };
+    /**
+     * Git configuration for X2A migrations
+     */
+    git?: {
+      /**
+       * Git commit author configuration for migration artifacts
+       * @visibility backend
+       */
+      author?: {
+        /**
+         * Git commit author name (e.g., "X2A Migration Bot")
+         * Default: "X2A Migration Bot"
+         * @visibility backend
+         */
+        name?: string;
+        /**
+         * Git commit author email (e.g., "x2a-bot@redhat.com")
+         * Default: "x2a-bot@redhat.com"
+         * @visibility backend
+         */
+        email?: string;
+      };
+      /**
+       * Source repository configuration
+       * @visibility backend
+       */
+      sourceRepo?: {
+        /**
+         * Fallback token for source repository authentication.
+         * Used when the UI doesn't provide a token in the /run request.
+         * @visibility secret
+         */
+        token?: string;
+      };
+      /**
+       * Target repository configuration
+       * @visibility backend
+       */
+      targetRepo?: {
+        /**
+         * Fallback token for target repository authentication.
+         * Used when the UI doesn't provide a token in the /run request.
+         * @visibility secret
+         */
+        token?: string;
       };
     };
     /**

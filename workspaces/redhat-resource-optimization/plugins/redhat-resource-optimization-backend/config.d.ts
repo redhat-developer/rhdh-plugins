@@ -15,7 +15,7 @@
  */
 
 export interface Config {
-  resourceOptimization: {
+  costManagement: {
     /**
      * @default "https://sso.redhat.com"
      *

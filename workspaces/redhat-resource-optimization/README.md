@@ -69,7 +69,7 @@ This method requires vanilla backstage to be used:
          credentials: dangerously-allow-unauthenticated
 
    # Replace `${RHHCC_SA_CLIENT_ID}` and `${RHHCC_SA_CLIENT_SECRET}` with the service account credentials.
-   resourceOptimization:
+   costManagement:
      clientId: ${RHHCC_SA_CLIENT_ID}
      clientSecret: ${RHHCC_SA_CLIENT_SECRET}
      optimizationWorkflowId: 'patch-k8s-resource'

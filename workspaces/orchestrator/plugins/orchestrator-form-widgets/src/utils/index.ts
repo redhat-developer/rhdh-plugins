@@ -23,3 +23,4 @@ export * from './useFetch';
 export * from './useFetchAndEvaluate';
 export * from './applySelector';
 export * from './useProcessingState';
+export * from './resolveDropdownDefault';

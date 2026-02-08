@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: redhat-resource-optimization
+  title: cost-management
   description: GO Echo API for Resource Optimization OCP Backend Service
   version: v1
   license:

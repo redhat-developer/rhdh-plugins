@@ -21,8 +21,58 @@ import { DEFAULT_SSO_BASE_URL } from './constant';
 // Cache key for token storage
 const TOKEN_CACHE_KEY = 'sso_access_token';
 
+/**
+ * Requests an access token from Red Hat SSO using costManagement config.
+ * Shared by the token route and getTokenFromApi (cached).
+ */
+export const requestTokenFromSso = async (
+  options: RouterOptions,
+): Promise<{ accessToken: string; expiresAt: number }> => {
+  const { logger, config } = options;
+
+  assert(typeof config !== 'undefined', 'Config is undefined');
+
+  logger.info('Requesting new access token');
+
+  const ssoBaseUrl =
+    config.getOptionalString('costManagement.ssoBaseUrl') ??
+    DEFAULT_SSO_BASE_URL;
+  const params = {
+    tokenUrl: `${ssoBaseUrl}/auth/realms/redhat-external/protocol/openid-connect/token`,
+    clientId: config.getString('costManagement.clientId'),
+    clientSecret: config.getString('costManagement.clientSecret'),
+    scope: 'api.console',
+    grantType: 'client_credentials',
+  } as const;
+
+  const rhSsoResponse = await fetch(params.tokenUrl, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(
+      Object.entries({
+        client_id: params.clientId,
+        client_secret: params.clientSecret,
+        scope: params.scope,
+        grant_type: params.grantType,
+      }).map(([k, v]) => [encodeURIComponent(k), encodeURIComponent(v)]),
+    ),
+    method: 'POST',
+  });
+
+  if (!rhSsoResponse.ok) {
+    throw new Error(rhSsoResponse.statusText);
+  }
+
+  const { access_token, expires_in } = await rhSsoResponse.json();
+  return {
+    accessToken: access_token,
+    expiresAt: Date.now() + expires_in * 1000,
+  };
+};
+
 export const getTokenFromApi = async (options: RouterOptions) => {
-  const { logger, config, cache } = options;
+  const { logger, cache } = options;
 
   const now = Date.now();
 
@@ -48,60 +98,20 @@ export const getTokenFromApi = async (options: RouterOptions) => {
     return cachedToken.token;
   }
 
-  let accessToken = '';
+  const { accessToken: token, expiresAt } = await requestTokenFromSso(options);
 
-  assert(typeof config !== 'undefined', 'Config is undefined');
-
-  logger.info('Requesting new access token');
-
-  const ssoBaseUrl =
-    config.getOptionalString('resourceOptimization.ssoBaseUrl') ??
-    DEFAULT_SSO_BASE_URL;
-  const params = {
-    tokenUrl: `${ssoBaseUrl}/auth/realms/redhat-external/protocol/openid-connect/token`,
-    clientId: config.getString('resourceOptimization.clientId'),
-    clientSecret: config.getString('resourceOptimization.clientSecret'),
-    scope: 'api.console',
-    grantType: 'client_credentials',
-  } as const;
-
-  const rhSsoResponse = await fetch(params.tokenUrl, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+  // Cache token with expiry using cache service
+  await cache.set(
+    TOKEN_CACHE_KEY,
+    {
+      token,
+      expiresAt,
     },
-    body: new URLSearchParams(
-      Object.entries({
-        client_id: params.clientId,
-        client_secret: params.clientSecret,
-        scope: params.scope,
-        grant_type: params.grantType,
-      }).map(([k, v]) => [encodeURIComponent(k), encodeURIComponent(v)]),
-    ),
-    method: 'POST',
-  });
+    {
+      ttl: expiresAt - Date.now(), // TTL in milliseconds
+    },
+  );
 
-  if (rhSsoResponse.ok) {
-    const { access_token, expires_in } = await rhSsoResponse.json();
-    accessToken = access_token;
-
-    const expiresAt = Date.now() + expires_in * 1000;
-
-    // Cache token with expiry using cache service
-    await cache.set(
-      TOKEN_CACHE_KEY,
-      {
-        token: accessToken,
-        expiresAt,
-      },
-      {
-        ttl: expires_in * 1000, // TTL in milliseconds
-      },
-    );
-
-    logger.info(`Token cached, expires in ${expires_in} seconds`);
-  } else {
-    throw new Error(rhSsoResponse.statusText);
-  }
-
-  return accessToken;
+  logger.info(`Token cached, expires at ${new Date(expiresAt).toISOString()}`);
+  return token;
 };
