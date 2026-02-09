@@ -32,6 +32,7 @@ import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
   applySelectorArray,
+  resolveDropdownDefault,
   useProcessingState,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
@@ -159,33 +160,51 @@ export const ActiveDropdown: Widget<
   );
 
   // Set default value from fetched options
-  // Priority: static default (if valid option) > first fetched option
+  // Priority: selector default (if valid option) > static default (if valid) > first fetched option
   // Note: Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
-    if (
-      !skipInitialValue &&
-      !isChangedByUser &&
-      !value &&
-      values &&
-      values.length > 0
-    ) {
-      // If static default is provided and is a valid option, use it
-      if (hasStaticDefault && values.includes(staticDefault)) {
-        handleChange(staticDefault, false);
-      } else {
-        // Otherwise use the first fetched value
-        handleChange(values[0], false);
+    let isActive = true;
+    const applyDefault = async () => {
+      if (
+        skipInitialValue ||
+        isChangedByUser ||
+        !values ||
+        values.length === 0
+      ) {
+        return;
       }
-    }
+
+      const defaultValue = await resolveDropdownDefault({
+        data,
+        values,
+        staticDefault: staticDefaultValue,
+      });
+
+      if (!isActive || defaultValue === undefined) {
+        return;
+      }
+
+      const shouldApplyDefault =
+        !value || (hasStaticDefault && value === staticDefaultValue);
+      if (shouldApplyDefault && defaultValue !== value) {
+        handleChange(defaultValue, false);
+      }
+    };
+
+    applyDefault();
+
+    return () => {
+      isActive = false;
+    };
   }, [
     handleChange,
     value,
     values,
     isChangedByUser,
-    staticDefault,
     staticDefaultValue,
     hasStaticDefault,
     skipInitialValue,
+    data,
   ]);
 
   const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
