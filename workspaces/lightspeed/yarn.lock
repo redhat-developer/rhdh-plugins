@@ -6841,9 +6841,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mswjs/interceptors@npm:^0.40.0":
-  version: 0.40.0
-  resolution: "@mswjs/interceptors@npm:0.40.0"
+"@mswjs/interceptors@npm:^0.41.0":
+  version: 0.41.2
+  resolution: "@mswjs/interceptors@npm:0.41.2"
   dependencies:
     "@open-draft/deferred-promise": ^2.2.0
     "@open-draft/logger": ^0.3.0
@@ -6851,7 +6851,7 @@ __metadata:
     is-node-process: ^1.2.0
     outvariant: ^1.4.3
     strict-event-emitter: ^0.5.1
-  checksum: b9d9bd80d2c26d4603a9bf449f5b1379cb039482cfa459e49290f3ddcafa6e4a75b5d9cd4a6283cee6af3df0fa13b7f2556958ef307b390f7e56961c05e2ab57
+  checksum: 58e46cec5d86b744d11f160c6272cc3aac30ea5e14bbf104a4f7a5a498d16343fd102cddcbf3aca6ff77f56549738440b0bfc89d25de1491ce88c52b66c8354c
   languageName: node
   linkType: hard
 
@@ -10367,7 +10367,7 @@ __metadata:
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
-    msw: 2.12.7
+    msw: 2.12.8
     node-fetch: 2.7.0
     prettier: 3.8.1
     supertest: 6.3.4
@@ -25927,12 +25927,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.12.7":
-  version: 2.12.7
-  resolution: "msw@npm:2.12.7"
+"msw@npm:2.12.8":
+  version: 2.12.8
+  resolution: "msw@npm:2.12.8"
   dependencies:
     "@inquirer/confirm": ^5.0.0
-    "@mswjs/interceptors": ^0.40.0
+    "@mswjs/interceptors": ^0.41.0
     "@open-draft/deferred-promise": ^2.2.0
     "@types/statuses": ^2.0.6
     cookie: ^1.0.2
@@ -25942,7 +25942,7 @@ __metadata:
     outvariant: ^1.4.3
     path-to-regexp: ^6.3.0
     picocolors: ^1.1.1
-    rettime: ^0.7.0
+    rettime: ^0.10.1
     statuses: ^2.0.2
     strict-event-emitter: ^0.5.1
     tough-cookie: ^6.0.0
@@ -25956,7 +25956,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: 930b8c76e80143684b9dc686e406cf05256cb756624ef264eb630adb722eb7b0166a86cba92242ebbbf6d079ce5dae0396d0cf32963e04f65e094caf0685c73f
+  checksum: fd5aefef960af57f644e8f0e5fbf9f72c30678055a3991c95d45bf5bc939fc26c9ee1562318de273b90011bc81e00bcdd5e8fa88375e69269286b70f24adb56f
   languageName: node
   linkType: hard
 
@@ -30178,10 +30178,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rettime@npm:^0.7.0":
-  version: 0.7.0
-  resolution: "rettime@npm:0.7.0"
-  checksum: 1ad3984a4f8000adf56c623882170115d7453b3bbaed56429a40077b067fad98c1c5db9a58e63793add15a97006fa7c817516d985c3347df40b5d274dc087803
+"rettime@npm:^0.10.1":
+  version: 0.10.1
+  resolution: "rettime@npm:0.10.1"
+  checksum: c804d5847f5d1189055fa6c46ecbe9a06832e5776b9a1352b7349aa84e09ee96373404748770ad0e3c4e69c688a9df5eff9bcd84224b6384d1aa93bc2947ee21
   languageName: node
   linkType: hard
 
