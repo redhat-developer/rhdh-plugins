@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all X2a minor updates",
+      "matchFileNames": ["workspaces/x2a/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(X2a)"
+      ],
+      "addLabels": ["team/rhdh", "x2a"]
+    },
+    {
+      "description": "all X2a patch updates",
+      "matchFileNames": ["workspaces/x2a/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(X2a)"
+      ],
+      "addLabels": ["team/rhdh", "x2a"]
+    },
+    {
+      "description": "all X2a dev dependency updates",
+      "matchFileNames": ["workspaces/x2a/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(X2a)"
+      ],
+      "addLabels": ["team/rhdh", "x2a"]
+    }
+  ]
+}
