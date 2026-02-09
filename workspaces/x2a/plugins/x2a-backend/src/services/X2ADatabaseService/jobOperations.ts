@@ -26,6 +26,20 @@ import {
 
 import { mapRowToJob, mapRowToArtifact } from './mappers';
 
+export interface CreateJobInput {
+  projectId: string;
+  moduleId?: string | null;
+  log?: string | null;
+  startedAt?: Date;
+  finishedAt?: Date | null;
+  status?: JobStatusEnum;
+  phase: MigrationPhase;
+  errorDetails?: string | null;
+  k8sJobName?: string | null;
+  callbackToken?: string | null;
+  artifacts?: Pick<Artifact, 'type' | 'value'>[];
+}
+
 export class JobOperations {
   readonly #logger: LoggerService;
   readonly #dbClient: Knex;
@@ -67,19 +81,7 @@ export class JobOperations {
     });
   }
 
-  async createJob(job: {
-    projectId: string;
-    moduleId?: string | null;
-    log?: string | null;
-    startedAt?: Date;
-    finishedAt?: Date | null;
-    status?: JobStatusEnum;
-    phase: MigrationPhase;
-    errorDetails?: string | null;
-    k8sJobName?: string | null;
-    callbackToken?: string | null;
-    artifacts?: Pick<Artifact, 'type' | 'value'>[];
-  }): Promise<Job> {
+  async createJob(job: CreateJobInput): Promise<Job> {
     const id = crypto.randomUUID();
     this.#logger.info(`createJob called for job: ${JSON.stringify(job)}`);
     const startedAt = job.startedAt || new Date();

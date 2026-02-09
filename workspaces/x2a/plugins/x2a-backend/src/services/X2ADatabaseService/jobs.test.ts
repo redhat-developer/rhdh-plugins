@@ -28,8 +28,8 @@ import {
   defaultProjectRepoFields,
   supportedDatabaseIds,
   tearDownDatabases,
-} from './__testUtils__/X2ADatabaseService.testHelpers';
-import { delay, nonExistentId } from '../utils';
+} from './__testUtils__/testHelpers';
+import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../../utils';
 
 describe('X2ADatabaseService – jobs', () => {
   afterEach(async () => {
@@ -80,6 +80,7 @@ describe('X2ADatabaseService – jobs', () => {
         expect(row.status).toBe('pending');
         expect(row.log).toBeNull();
       },
+      LONG_TEST_TIMEOUT,
     );
 
     it.each(supportedDatabaseIds)(
@@ -127,6 +128,7 @@ describe('X2ADatabaseService – jobs', () => {
         const row = await client('jobs').where('id', job.id).first();
         expect(row.log).toBe(jobInput.log);
       },
+      LONG_TEST_TIMEOUT,
     );
 
     it.each(supportedDatabaseIds)(

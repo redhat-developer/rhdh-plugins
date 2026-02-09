@@ -35,7 +35,7 @@ import {
 
 import { ProjectsGet } from '../../schema/openapi';
 
-import { JobOperations } from './jobOperations';
+import { JobOperations, CreateJobInput } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
 
@@ -161,19 +161,7 @@ export class X2ADatabaseService {
 
   // Jobs
 
-  async createJob(job: {
-    projectId: string;
-    moduleId?: string | null;
-    log?: string | null;
-    startedAt?: Date;
-    finishedAt?: Date | null;
-    status?: JobStatusEnum;
-    phase: MigrationPhase;
-    errorDetails?: string | null;
-    k8sJobName?: string | null;
-    callbackToken?: string | null;
-    artifacts?: Pick<Artifact, 'type' | 'value'>[];
-  }): Promise<Job> {
+  async createJob(job: CreateJobInput): Promise<Job> {
     return this.#jobOps.createJob(job);
   }
 

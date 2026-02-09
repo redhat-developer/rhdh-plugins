@@ -22,8 +22,8 @@ import {
   defaultProjectRepoFields,
   supportedDatabaseIds,
   tearDownDatabases,
-} from './__testUtils__/X2ADatabaseService.testHelpers';
-import { nonExistentId } from '../utils';
+} from './__testUtils__/testHelpers';
+import { nonExistentId } from '../../utils';
 
 describe('X2ADatabaseService – logs', () => {
   afterEach(async () => {

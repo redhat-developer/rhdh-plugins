@@ -27,8 +27,8 @@ import {
   ArtifactType,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { X2ADatabaseService } from '../X2ADatabaseService';
-import { migrate } from '../dbMigrate';
+import { X2ADatabaseService } from '..';
+import { migrate } from '../../dbMigrate';
 
 const databases = TestDatabases.create({
   ids: ['SQLITE_3', 'POSTGRES_18'],

@@ -17,13 +17,14 @@
 import { mockCredentials } from '@backstage/backend-test-utils';
 
 import {
+  artifactsFromValues,
   createDatabase,
   createService,
   defaultProjectRepoFields,
   supportedDatabaseIds,
   tearDownDatabases,
-} from './__testUtils__/X2ADatabaseService.testHelpers';
-import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../utils';
+} from './__testUtils__/testHelpers';
+import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../../utils';
 
 describe('X2ADatabaseService – projects', () => {
   afterEach(async () => {
@@ -632,6 +633,36 @@ describe('X2ADatabaseService – projects', () => {
         expect(result.projects).toHaveLength(0);
       },
     );
+
+    it.each(supportedDatabaseIds)(
+      'attaches migrationPlan to each project from latest init job - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Project with plan',
+            abbreviation: 'PWP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const planUrl = 'http://example.com/plan.md';
+        await service.createJob({
+          projectId: project.id,
+          phase: 'init',
+          artifacts: artifactsFromValues([planUrl], 'migration_plan'),
+        });
+
+        const result = await service.listProjects({}, { credentials });
+        expect(result.projects).toHaveLength(1);
+        expect(result.projects[0].migrationPlan).toBeDefined();
+        expect(result.projects[0].migrationPlan?.type).toBe('migration_plan');
+        expect(result.projects[0].migrationPlan?.value).toBe(planUrl);
+      },
+    );
   });
 
   describe('getProject', () => {
@@ -678,6 +709,39 @@ describe('X2ADatabaseService – projects', () => {
         expect(retrieved?.targetRepoUrl).toBe(created.targetRepoUrl);
         expect(retrieved?.createdBy).toBe(created.createdBy);
         expect(retrieved?.createdAt).toEqual(created.createdAt);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'attaches migrationPlan from latest init job when present - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Project with plan',
+            abbreviation: 'PWP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const planUrl = 'http://example.com/migration-plan.md';
+        await service.createJob({
+          projectId: project.id,
+          phase: 'init',
+          artifacts: artifactsFromValues([planUrl], 'migration_plan'),
+        });
+
+        const retrieved = await service.getProject(
+          { projectId: project.id },
+          { credentials },
+        );
+        expect(retrieved).toBeDefined();
+        expect(retrieved?.migrationPlan).toBeDefined();
+        expect(retrieved?.migrationPlan?.type).toBe('migration_plan');
+        expect(retrieved?.migrationPlan?.value).toBe(planUrl);
       },
     );
 
