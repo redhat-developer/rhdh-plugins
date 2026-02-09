@@ -61,6 +61,13 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'artifact.types.migration_plan': 'Migrationsplan',
     'artifact.types.module_migration_plan': 'Modulplan',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
+    'userPromptDialog.title': 'Nächste Phase ausführen',
+    'userPromptDialog.promptLabel': 'Benutzereingabe',
+    'userPromptDialog.promptPlaceholder':
+      'Optional Anweisungen oder Kontext für diesen Lauf angeben. Lassen Sie es leer für Standardverhalten.',
+    'userPromptDialog.run': 'Ausführen',
+    'userPromptDialog.moduleName':
+      'Geben Sie vor dem Start der nächsten Phase für das Modul {{moduleName}} zusätzliche Anforderungen an.',
   },
 });
 

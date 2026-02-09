@@ -87,6 +87,15 @@ export const x2aPluginMessages = {
       migrated_sources: 'Migrated Sources',
     },
   },
+  userPromptDialog: {
+    title: 'Run next phase',
+    promptLabel: 'User prompt',
+    promptPlaceholder:
+      'Optionally add instructions or context for this run. Leave it blank for default behavior.',
+    run: 'Run',
+    moduleName:
+      'Provide additional requirements before triggering the next phase for the {{moduleName}} module',
+  },
 };
 
 /**

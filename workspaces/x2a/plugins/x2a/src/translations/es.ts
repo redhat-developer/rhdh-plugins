@@ -61,6 +61,13 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'artifact.types.migration_plan': 'Plan de migración',
     'artifact.types.module_migration_plan': 'Plan del módulo',
     'artifact.types.migrated_sources': 'Fuentes migradas',
+    'userPromptDialog.title': 'Ejecutar siguiente fase',
+    'userPromptDialog.promptLabel': 'Prompt de usuario',
+    'userPromptDialog.promptPlaceholder':
+      'Opcionalmente añada instrucciones o contexto para esta ejecución. Déjelo en blanco para el comportamiento predeterminado.',
+    'userPromptDialog.run': 'Ejecutar',
+    'userPromptDialog.moduleName':
+      'Proporcione requisitos adicionales antes de activar la siguiente fase para el módulo {{moduleName}}.',
   },
 });
 

@@ -30,6 +30,7 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Artifacts } from './Artifacts';
+import { UserPromptDialog } from './UserPromptDialog';
 
 const getLastJob = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
@@ -111,14 +112,21 @@ export const ModuleTable = ({
   const clientService = useClientService();
 
   const [error, setError] = useState<string | undefined>();
+  const [userPromptOpen, setUserPromptOpen] = useState<
+    { module: Module; nextPhase: ModulePhase } | undefined
+  >();
 
-  const handleRunNext = useCallback(
-    async (module: Module) => {
+  const runNextPhase = useCallback(
+    async ({
+      module,
+      nextPhase,
+      userPrompt,
+    }: {
+      module: Module;
+      nextPhase: ModulePhase;
+      userPrompt: string;
+    }) => {
       setError(undefined);
-      const nextPhase = getNextPhase(module);
-      if (!nextPhase) {
-        return;
-      }
 
       const response =
         await clientService.projectsProjectIdModulesModuleIdRunPost({
@@ -133,7 +141,7 @@ export const ModuleTable = ({
               token:
                 'TODO:placeholder - the token needs to be renewed for each run',
             },
-            userPrompt: 'TODO: user prompt - collect per run',
+            userPrompt,
             // skipping AAP credentials in favor of app-config.yaml
           },
         });
@@ -146,6 +154,31 @@ export const ModuleTable = ({
       forceRefresh();
     },
     [clientService, forceRefresh],
+  );
+
+  const handleRunNext = useCallback((module: Module) => {
+    const nextPhase = getNextPhase(module);
+    if (!nextPhase) {
+      return;
+    }
+    setUserPromptOpen({ module, nextPhase });
+  }, []);
+
+  const handleUserPromptConfirm = useCallback(
+    async (userPrompt: string) => {
+      if (!userPromptOpen) {
+        return;
+      }
+
+      const nextPhaseParams = {
+        module: userPromptOpen.module,
+        nextPhase: userPromptOpen.nextPhase,
+        userPrompt,
+      };
+      setUserPromptOpen(undefined);
+      await runNextPhase(nextPhaseParams);
+    },
+    [runNextPhase, userPromptOpen],
   );
 
   const actions: MaterialTableProps<Module>['actions'] = [
@@ -176,6 +209,13 @@ export const ModuleTable = ({
         columns={columns}
         data={data}
         actions={actions}
+      />
+      <UserPromptDialog
+        open={!!userPromptOpen}
+        onClose={() => setUserPromptOpen(undefined)}
+        onConfirm={handleUserPromptConfirm}
+        phaseName={userPromptOpen?.nextPhase}
+        moduleName={userPromptOpen?.module.name}
       />
     </>
   );

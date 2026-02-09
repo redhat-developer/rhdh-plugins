@@ -62,6 +62,11 @@ readonly "sidebar.x2a.title": string;
 readonly "wizard.cancel": string;
 readonly "wizard.next": string;
 readonly "wizard.back": string;
+readonly "userPromptDialog.title": string;
+readonly "userPromptDialog.promptLabel": string;
+readonly "userPromptDialog.promptPlaceholder": string;
+readonly "userPromptDialog.run": string;
+readonly "userPromptDialog.moduleName": string;
 }>;
 
 // @public
