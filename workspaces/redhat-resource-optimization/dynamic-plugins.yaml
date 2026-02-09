@@ -9,18 +9,24 @@ plugins:
               - name: costManagementIcon
                 importName: ResourceOptimizationIcon
             dynamicRoutes:
-              - path: /resource-optimization
+              - path: /redhat-resource-optimization
                 importName: ResourceOptimizationPage
-              - path: /resource-optimization/openshift
+                menuItem:
+                  icon: costManagementIcon
+                  text: Optimizations
+              - path: /redhat-resource-optimization/ocp
                 importName: OpenShiftPage
+                menuItem:
+                  icon: costManagementIcon
+                  text: OpenShift
             menuItems:
+              redhat-resource-optimization:
+                parent: cost-management
+                priority: 10
+              redhat-resource-optimization.ocp:
+                parent: cost-management
+                priority: 20
               cost-management:
-                text: Cost management
                 icon: costManagementIcon
-                children:
-                  openshift:
-                    text: OpenShift
-                    route: /resource-optimization/openshift
-                  optimizations:
-                    text: Optimizations
-                    route: /resource-optimization
+                title: Cost management
+                priority: 100
