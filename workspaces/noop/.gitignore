@@ -1,4 +1,4 @@
-# Yarn 3 files
+# Yarn files
 .pnp.*
 .yarn/*
 !.yarn/patches

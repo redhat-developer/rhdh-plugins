@@ -22,7 +22,7 @@ node_modules/
 # Corepack cache directory
 .cache/
 
-# Yarn 3 files
+# Yarn files
 .pnp.*
 .yarn/*
 !.yarn/patches
