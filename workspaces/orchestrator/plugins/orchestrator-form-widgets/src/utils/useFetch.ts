@@ -16,7 +16,7 @@
 
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api';
 import { JsonObject } from '@backstage/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UiProps } from '../uiPropTypes';
 import { getErrorMessage } from './errorUtils';
 import { useEvaluateTemplate } from './evaluateTemplate';
@@ -67,6 +67,27 @@ export const useFetch = (
     formData,
     setError,
   });
+
+  useEffect(() => {
+    if (
+      !fetchUrl ||
+      !evaluatedFetchUrl ||
+      !evaluatedRequestInit ||
+      !retrigger
+    ) {
+      setLoading(false);
+      return;
+    }
+
+    if (!areRetriggerDependenciesSatisfied(retrigger)) {
+      setLoading(false);
+      return;
+    }
+
+    // Mark loading immediately when a retrigger change is detected so widgets
+    // can show the spinner during the debounce window before the fetch starts.
+    setLoading(true);
+  }, [fetchUrl, evaluatedFetchUrl, evaluatedRequestInit, retrigger]);
 
   useDebounce(
     () => {
