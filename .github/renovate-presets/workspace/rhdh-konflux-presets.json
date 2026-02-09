@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Konflux minor updates",
+      "matchFileNames": ["workspaces/konflux/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Konflux)"
+      ],
+      "addLabels": ["team/rhdh", "konflux"]
+    },
+    {
+      "description": "all Konflux patch updates",
+      "matchFileNames": ["workspaces/konflux/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Konflux)"
+      ],
+      "addLabels": ["team/rhdh", "konflux"]
+    },
+    {
+      "description": "all Konflux dev dependency updates",
+      "matchFileNames": ["workspaces/konflux/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Konflux)"
+      ],
+      "addLabels": ["team/rhdh", "konflux"]
+    }
+  ]
+}
