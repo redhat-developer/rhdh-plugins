@@ -31,6 +31,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Artifacts } from './Artifacts';
 import { humanizeDate } from '../tools';
+import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
 
 const getLastJob = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
@@ -147,6 +148,8 @@ export const ModuleTable = ({
   project: Project;
 }) => {
   const { t } = useTranslation();
+  const repoAuthentication = useRepoAuthentication();
+
   const columns = useColumns({ targetRepoUrl: project.targetRepoUrl });
   const data: Module[] = modules;
   const clientService = useClientService();
@@ -161,18 +164,23 @@ export const ModuleTable = ({
         return;
       }
 
+      // Authenticate the repositories
+      const authTokens = await repoAuthentication.authenticate([
+        getAuthTokenDescriptor(project.sourceRepoUrl),
+        getAuthTokenDescriptor(project.targetRepoUrl),
+      ]);
+
+      // Call the phase-run action
       const response =
         await clientService.projectsProjectIdModulesModuleIdRunPost({
           path: { projectId: module.projectId, moduleId: module.id },
           body: {
             phase: nextPhase,
             sourceRepoAuth: {
-              token:
-                'TODO:placeholder - the token needs to be renewed for each run',
+              token: authTokens[0].token,
             },
             targetRepoAuth: {
-              token:
-                'TODO:placeholder - the token needs to be renewed for each run',
+              token: authTokens[1].token,
             },
             // skipping AAP credentials in favor of the app-config.yaml
           },
@@ -185,7 +193,13 @@ export const ModuleTable = ({
 
       forceRefresh();
     },
-    [clientService, forceRefresh],
+    [
+      clientService,
+      forceRefresh,
+      repoAuthentication,
+      project.sourceRepoUrl,
+      project.targetRepoUrl,
+    ],
   );
 
   const actions: MaterialTableProps<Module>['actions'] = [
