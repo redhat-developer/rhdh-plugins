@@ -111,10 +111,26 @@ export const ActiveDropdown: Widget<
       return;
     }
 
+    const getSelectorContext = (selector: string) => {
+      if (/\b(current|response)\b/.test(selector)) {
+        return {
+          response: data,
+          current: formData ?? {},
+        };
+      }
+      return data;
+    };
+
     const doItAsync = async () => {
       await wrapProcessing(async () => {
-        const selectedLabels = await applySelectorArray(data, labelSelector);
-        const selectedValues = await applySelectorArray(data, valueSelector);
+        const selectedLabels = await applySelectorArray(
+          getSelectorContext(labelSelector),
+          labelSelector,
+        );
+        const selectedValues = await applySelectorArray(
+          getSelectorContext(valueSelector),
+          valueSelector,
+        );
 
         if (selectedLabels.length !== selectedValues.length) {
           setLocalError(
@@ -129,7 +145,7 @@ export const ActiveDropdown: Widget<
     };
 
     doItAsync();
-  }, [labelSelector, valueSelector, data, props.id, wrapProcessing]);
+  }, [labelSelector, valueSelector, data, formData, props.id, wrapProcessing]);
 
   const handleChange = useCallback(
     (changed: string, isByUser: boolean) => {
