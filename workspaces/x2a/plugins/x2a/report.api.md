@@ -26,6 +26,17 @@ root: RouteRef<undefined>;
 
 // @public
 export const x2aPluginTranslationRef: TranslationRef<"plugin.x2a", {
+readonly "module.name": string;
+readonly "module.status": string;
+readonly "module.actions.runNextPhase": string;
+readonly "module.artifacts": string;
+readonly "module.phases.none": string;
+readonly "module.phases.analyze": string;
+readonly "module.phases.init": string;
+readonly "module.phases.migrate": string;
+readonly "module.phases.publish": string;
+readonly "module.lastPhase": string;
+readonly "module.sourcePath": string;
 readonly "page.title": string;
 readonly "page.subtitle": string;
 readonly "page.devTitle": string;
@@ -40,6 +51,13 @@ readonly "table.actions.deleteProject": string;
 readonly "table.detailPanel": string;
 readonly "table.projectsCount": string;
 readonly "common.newProject": string;
+readonly "project.id": string;
+readonly "project.description": string;
+readonly "project.abbreviation": string;
+readonly "project.createdBy": string;
+readonly "artifact.types.migration_plan": string;
+readonly "artifact.types.module_migration_plan": string;
+readonly "artifact.types.migrated_sources": string;
 readonly "sidebar.x2a.title": string;
 readonly "wizard.cancel": string;
 readonly "wizard.next": string;

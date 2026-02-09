@@ -26,8 +26,8 @@ import { ModulePhase } from '../models/ModulePhase.model';
  */
 export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
   phase: ModulePhase;
-  sourceRepoAuth?: GitRepoAuth;
-  targetRepoAuth?: GitRepoAuth;
+  sourceRepoAuth: GitRepoAuth;
+  targetRepoAuth: GitRepoAuth;
   aapCredentials?: AAPCredentials;
   /**
    * Optional user prompt for customizing the migration

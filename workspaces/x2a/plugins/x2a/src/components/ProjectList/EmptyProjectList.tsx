@@ -24,6 +24,9 @@ const useStyles = makeStyles({
       margin: 'auto',
     },
   },
+  nextSteps: {
+    marginTop: '16px',
+  },
 });
 
 export const EmptyProjectListImage = () => (
@@ -35,11 +38,13 @@ export const EmptyProjectListImage = () => (
 );
 
 const NextSteps = () => {
+  const styles = useStyles();
+
   return (
     <div>
       Initiate and track conversion of Chef files into production-ready Ansible
       Playbooks.
-      <p>
+      <div className={styles.nextSteps}>
         <LinkButton
           variant="contained"
           color="primary"
@@ -47,7 +52,7 @@ const NextSteps = () => {
         >
           Start first conversion
         </LinkButton>
-      </p>
+      </div>
     </div>
   );
 };

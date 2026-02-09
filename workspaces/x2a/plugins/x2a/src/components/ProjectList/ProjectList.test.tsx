@@ -33,7 +33,6 @@ import {
   ProjectsGet200Response,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-// Mock useSeedTestData to prevent it from making API calls during tests
 jest.mock('../../useSeedTestData', () => ({
   useSeedTestData: jest.fn(),
 }));
@@ -66,7 +65,7 @@ const createMockResponse = (
   totalCount,
 });
 
-describe('ProjectList component', () => {
+describe('ProjectList', () => {
   let fetchApiMock: jest.Mock;
   let discoveryApiMock: ReturnType<typeof mockApis.discovery>;
 
@@ -81,27 +80,56 @@ describe('ProjectList component', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the progressbar', async () => {
-    fetchApiMock.mockReturnValue(new Promise(() => {}));
+  describe('loading and data fetching', () => {
+    it('renders the progress bar while loading', async () => {
+      fetchApiMock.mockReturnValue(new Promise(() => {}));
 
-    const { findByRole } = await renderInTestApp(
-      <TestApiProvider
-        apis={[
-          [fetchApiRef, { fetch: fetchApiMock }],
-          [discoveryApiRef, discoveryApiMock],
-        ]}
-      >
-        <ProjectList />
-      </TestApiProvider>,
-    );
+      const { findByRole } = await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+          ]}
+        >
+          <ProjectList />
+        </TestApiProvider>,
+      );
 
-    // Wait for the progressbar to render
-    const progressbar = await findByRole('progressbar');
-    expect(progressbar).toBeInTheDocument();
+      const progressbar = await findByRole('progressbar');
+      expect(progressbar).toBeInTheDocument();
+    });
+
+    it('renders empty state when no projects are returned', async () => {
+      fetchApiMock.mockResolvedValue({
+        ok: true,
+        json: async () => createMockResponse([], 0),
+      } as Response);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+          ]}
+        >
+          <ProjectList />
+        </TestApiProvider>,
+      );
+
+      await waitFor(() => {
+        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      });
+
+      // EmptyProjectList is shown
+      expect(
+        screen.getByText('No conversion initiated yet'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('Start first conversion')).toBeInTheDocument();
+    });
   });
 
-  describe('Columns', () => {
-    it('renders all expected columns', async () => {
+  describe('when data is loaded', () => {
+    it('fetches projects and renders ProjectTable with data', async () => {
       const mockProjects = createMockProjects(5);
       const mockResponse = createMockResponse(mockProjects, 5);
 
@@ -125,134 +153,11 @@ describe('ProjectList component', () => {
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
       });
 
-      // Check that all column headers are present
-      expect(screen.getByText('Name')).toBeInTheDocument();
-      expect(screen.getByText('Abbreviation')).toBeInTheDocument();
-      expect(screen.getByText('Status')).toBeInTheDocument();
-      expect(screen.getByText('Description')).toBeInTheDocument();
-      expect(screen.getByText('Created At')).toBeInTheDocument();
-    });
-
-    it('displays project data in columns', async () => {
-      const mockProjects = createMockProjects(2);
-      const mockResponse = createMockResponse(mockProjects, 2);
-
-      fetchApiMock.mockResolvedValue({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectList />
-        </TestApiProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-      });
-
-      // Check that project data is displayed
+      // ProjectList delegates to ProjectTable; table shows project data
       expect(screen.getByText('Project 0')).toBeInTheDocument();
-      expect(screen.getByText('P0')).toBeInTheDocument();
-      expect(screen.getByText('Description 0')).toBeInTheDocument();
       expect(screen.getByText('Project 1')).toBeInTheDocument();
-      expect(screen.getByText('P1')).toBeInTheDocument();
-    });
-  });
-
-  describe('Sorting', () => {
-    it('calls API with correct sort parameters when Name column is clicked', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(5);
-      const mockResponse = createMockResponse(mockProjects, 5);
-
-      fetchApiMock.mockResolvedValue({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectList />
-        </TestApiProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-      });
-
-      // Clear previous calls
-      fetchApiMock.mockClear();
-
-      // Click on Name column header to sort
-      const nameHeader = screen.getByText('Name');
-      await user.click(nameHeader);
-
-      await waitFor(() => {
-        expect(fetchApiMock).toHaveBeenCalled();
-      });
-
-      // Verify the API was called with sort=name
-      const lastCall =
-        fetchApiMock.mock.calls[fetchApiMock.mock.calls.length - 1];
-      const url = lastCall[0] as string;
-      expect(url).toContain('sort=name');
     });
 
-    it('calls API with correct sort parameters when Abbreviation column is clicked', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(5);
-      const mockResponse = createMockResponse(mockProjects, 5);
-
-      fetchApiMock.mockResolvedValue({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectList />
-        </TestApiProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-      });
-
-      fetchApiMock.mockClear();
-
-      // Click on Abbreviation column header
-      const abbreviationHeader = screen.getByText('Abbreviation');
-      await user.click(abbreviationHeader);
-
-      await waitFor(() => {
-        expect(fetchApiMock).toHaveBeenCalled();
-      });
-
-      const lastCall =
-        fetchApiMock.mock.calls[fetchApiMock.mock.calls.length - 1];
-      const url = lastCall[0] as string;
-      expect(url).toContain('sort=abbreviation');
-    });
-  });
-
-  describe('Pagination', () => {
     it('calls API with default page and pageSize on initial load', async () => {
       const mockProjects = createMockProjects(10);
       const mockResponse = createMockResponse(mockProjects, 25);
@@ -277,14 +182,13 @@ describe('ProjectList component', () => {
         expect(fetchApiMock).toHaveBeenCalled();
       });
 
-      // Verify initial call has page=0 and pageSize=10 (DEFAULT_PAGE_SIZE)
       const firstCall = fetchApiMock.mock.calls[0];
       const url = firstCall[0] as string;
       expect(url).toContain('page=0');
       expect(url).toContain('pageSize=10');
     });
 
-    it('calls API with updated page when navigating to next page', async () => {
+    it('calls API with updated page when user navigates to next page', async () => {
       const user = userEvent.setup();
       const mockProjects = createMockProjects(10);
       const mockResponse = createMockResponse(mockProjects, 25);
@@ -311,8 +215,6 @@ describe('ProjectList component', () => {
 
       fetchApiMock.mockClear();
 
-      // Find and click the "Next Page" button
-      // Material Table uses aria-label for navigation buttons
       const nextPageButton = screen.getByLabelText(/next page/i);
       await user.click(nextPageButton);
 
@@ -326,81 +228,6 @@ describe('ProjectList component', () => {
       expect(url).toContain('page=1');
     });
 
-    it('calls API with updated pageSize when changing rows per page', async () => {
-      const user = userEvent.setup();
-      const mockProjects = createMockProjects(10);
-      const mockResponse = createMockResponse(mockProjects, 25);
-
-      fetchApiMock.mockResolvedValue({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectList />
-        </TestApiProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-      });
-
-      fetchApiMock.mockClear();
-
-      // Find the rows per page selector and change it
-      // Material Table typically uses a select element for page size
-      const rowsPerPageSelect = screen.getByLabelText(/rows per page/i);
-      await user.click(rowsPerPageSelect);
-
-      const option20 = await screen.findByText('20');
-      await user.click(option20);
-
-      await waitFor(() => {
-        expect(fetchApiMock).toHaveBeenCalled();
-      });
-
-      const lastCall =
-        fetchApiMock.mock.calls[fetchApiMock.mock.calls.length - 1];
-      const url = lastCall[0] as string;
-      expect(url).toContain('pageSize=20');
-    });
-
-    it('displays correct total count in table title', async () => {
-      const mockProjects = createMockProjects(10);
-      const mockResponse = createMockResponse(mockProjects, 20);
-
-      fetchApiMock.mockResolvedValue({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
-
-      await renderInTestApp(
-        <TestApiProvider
-          apis={[
-            [fetchApiRef, { fetch: fetchApiMock }],
-            [discoveryApiRef, discoveryApiMock],
-          ]}
-        >
-          <ProjectList />
-        </TestApiProvider>,
-      );
-
-      await waitFor(() => {
-        expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-      });
-
-      // The table title should show the number of items on current page, not totalCount
-      expect(screen.getByText(/Projects \(10\)/)).toBeInTheDocument();
-    });
-  });
-
-  describe('Combined functionality', () => {
     it('maintains sort order when changing pages', async () => {
       const user = userEvent.setup();
       const mockProjects = createMockProjects(10);
@@ -428,7 +255,6 @@ describe('ProjectList component', () => {
 
       fetchApiMock.mockClear();
 
-      // Sort by name descending
       const nameHeader = screen.getByText('Name');
       await user.click(nameHeader);
       await waitFor(() => {
@@ -437,7 +263,6 @@ describe('ProjectList component', () => {
 
       fetchApiMock.mockClear();
 
-      // Navigate to next page
       const nextPageButton = screen.getByLabelText(/next page/i);
       await user.click(nextPageButton);
 
@@ -445,7 +270,6 @@ describe('ProjectList component', () => {
         expect(fetchApiMock).toHaveBeenCalled();
       });
 
-      // Verify that sort parameters are still present
       const lastCall =
         fetchApiMock.mock.calls[fetchApiMock.mock.calls.length - 1];
       const url = lastCall[0] as string;

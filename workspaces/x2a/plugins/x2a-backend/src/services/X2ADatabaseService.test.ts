@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import crypto from 'node:crypto';
-
 import {
   mockCredentials,
   mockServices,
@@ -25,6 +23,7 @@ import { Knex } from 'knex';
 
 import {
   Artifact,
+  ArtifactType,
   toSorted,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -69,9 +68,12 @@ const defaultProjectRepoFields = {
   targetRepoBranch: 'main',
 };
 
-/** Build Artifact[] from value strings (type defaults to 'file'). */
-function artifactsFromValues(values: string[], type = 'file'): Artifact[] {
-  return values.map(value => ({ id: crypto.randomUUID(), type, value }));
+/** Build Artifact[] from value strings (type defaults to 'migrated_sources'). */
+function artifactsFromValues(
+  values: string[],
+  type: ArtifactType = 'migrated_sources',
+): Pick<Artifact, 'type' | 'value'>[] {
+  return values.map(value => ({ type, value }));
 }
 
 describe('X2ADatabaseService', () => {
@@ -2088,11 +2090,14 @@ describe('X2ADatabaseService', () => {
           projectId: project.id,
         });
 
-        const artifacts = [
-          { type: 'markdown', value: 'http://example.com/artifact1.md' },
-          { type: 'json', value: 'http://example.com/artifact2.json' },
-          { type: 'binary', value: 'http://example.com/artifact3' },
-        ].map((a, i) => ({ id: `placeholder-${i}`, ...a }));
+        const artifacts: Pick<Artifact, 'type' | 'value'>[] = [
+          { type: 'migration_plan', value: 'http://example.com/artifact1.md' },
+          {
+            type: 'module_migration_plan',
+            value: 'http://example.com/artifact2.md',
+          },
+          { type: 'migrated_sources', value: 'http://example.com/artifact3' },
+        ];
         const job = await service.createJob({
           projectId: project.id,
           moduleId: module.id,
@@ -2422,6 +2427,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
         });
 
@@ -2472,6 +2478,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
         });
 
@@ -2520,6 +2527,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
         });
 
@@ -2582,9 +2590,11 @@ describe('X2ADatabaseService', () => {
         });
 
         const module1Jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module1.id,
         });
         const module2Jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module2.id,
         });
 
@@ -2640,6 +2650,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
           lastJobOnly: true,
         });
@@ -2690,6 +2701,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
           lastJobOnly: true,
         });
@@ -2727,6 +2739,7 @@ describe('X2ADatabaseService', () => {
         });
 
         const jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
           lastJobOnly: true,
         });
@@ -2913,7 +2926,7 @@ describe('X2ADatabaseService', () => {
         ]);
         const updated = await service.updateJob({
           id: job.id,
-          artifacts: newArtifacts,
+          artifacts: newArtifacts as Artifact[],
         });
 
         expect(updated).toBeDefined();
@@ -3017,7 +3030,7 @@ describe('X2ADatabaseService', () => {
           status: 'success',
           log: 'Final log',
           finishedAt,
-          artifacts: artifactsFromValues(['result.txt']),
+          artifacts: artifactsFromValues(['result.txt']) as Artifact[],
         });
 
         expect(updated).toBeDefined();
@@ -3185,6 +3198,7 @@ describe('X2ADatabaseService', () => {
 
         // Verify listJobs still returns job2
         const listResult = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
         });
         expect(listResult).toHaveLength(1);
@@ -3241,6 +3255,7 @@ describe('X2ADatabaseService', () => {
         expect(await service.getJob({ id: job3.id })).toBeDefined();
 
         const jobsBefore = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
         });
         expect(jobsBefore).toHaveLength(3);
@@ -3260,6 +3275,7 @@ describe('X2ADatabaseService', () => {
 
         // Verify listJobs returns empty for deleted module
         const jobsAfter = await service.listJobs({
+          projectId: project.id,
           moduleId: module.id,
         });
         expect(jobsAfter).toEqual([]);
@@ -3336,6 +3352,7 @@ describe('X2ADatabaseService', () => {
 
         // Verify module2 still has its job
         const module2Jobs = await service.listJobs({
+          projectId: project.id,
           moduleId: module2.id,
         });
         expect(module2Jobs).toHaveLength(1);
