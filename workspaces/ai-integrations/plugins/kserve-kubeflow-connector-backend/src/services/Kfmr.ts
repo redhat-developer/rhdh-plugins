@@ -64,7 +64,7 @@ const TAG_REGEXP = '^[a-z0-9:+#]+(\\-[a-z0-9:+#]+)*$';
 const MODEL_REGISTRY_ROUTE_ENV_VAR = 'MODEL_REGISTRY_ROUTE';
 const MODEL_REGISTRY_TOKEN_ENV_VAR = 'MODEL_REGISTRY_TOKEN';
 const KFMR_BASE_URI = '/api/model_registry/v1alpha3';
-const KFMR_CATALOG_BASE_URI = '/api/model_catalog/v1';
+const KFMR_CATALOG_BASE_URI = '/api/model_catalog/v1alpha1';
 
 // REST API URI constants (from pkg/rest/kfmr.go)
 const LIST_REG_MODEL_URI = '/registered_models';
@@ -83,7 +83,7 @@ const GET_MODEL_ARTIFACT_URI = '/model_artifacts/%s';
 // @ts-ignore
 const GET_MODEL_VERSION_URI = '/model_versions/%s';
 // Catalog API URI (from pkg/rest/kfmr.go line 25)
-const GET_CATALOG_MODEL_URI = '/sources/%s/models/%s/%s';
+const GET_CATALOG_MODEL_URI = '/sources/%s/models/%s';
 
 // Helper function for making GET requests to the model registry
 // Converted from Go getFromModelRegistry method (rest.go line 57-71)
@@ -354,7 +354,6 @@ export async function setupKFMR(
       // Converted from GetModelCard (catalogmodel.go line 44-50)
       getModelCard: async (
         sourceId: string,
-        repositoryName: string,
         modelName: string,
       ): Promise<string | undefined> => {
         if (!rootCatalogURL) {
@@ -363,13 +362,13 @@ export async function setupKFMR(
         }
         // URL-encode spaces (Go line 27-30)
         const encodedSourceId = sourceId.replace(/ /g, '%20');
-        const encodedRepoName = repositoryName.replace(/ /g, '%20');
         const encodedModelName = modelName.replace(/ /g, '%20');
         const url =
           rootCatalogURL +
-          GET_CATALOG_MODEL_URI.replace('%s', encodedSourceId)
-            .replace('%s', encodedRepoName)
-            .replace('%s', encodedModelName);
+          GET_CATALOG_MODEL_URI.replace('%s', encodedSourceId).replace(
+            '%s',
+            encodedModelName,
+          );
         const data: CatalogModel = await getFromModelRegistry(url, kfmrToken);
         return data.readme;
       },
@@ -394,7 +393,7 @@ export enum NormalizerFormat {
 // Custom property keys (from brdgtypes package)
 export const PropertyKeys = {
   LicenseKey: 'license',
-  TechDocsKey: 'techdocs',
+  TechDocsKey: 'TechDocs',
   RHOAIModelCatalogSourceModelVersion:
     'rhoai-model-catalog-source-model-version',
   RHOAIModelCatalogSourceModelKey: 'rhoai-model-catalog-source-model',
@@ -616,6 +615,23 @@ function generateModelCatalog(
       'model-name': `${sanitizeName(rm.name)}-${sanitizeModelVersion(mv.name)}`,
     },
   };
+
+  let techdocsUrl = getStringPropVal(PropertyKeys.TechDocsKey, mv, rm);
+  if (techdocsUrl === undefined) {
+    const replacer = (str: string) => str.replace(/ /g, '');
+    let modelCardKey = '';
+    for (const ma of mas) {
+      if (ma.modelSourceClass && ma.modelSourceName) {
+        modelCardKey =
+          replacer(ma.modelSourceClass) + replacer(ma.modelSourceName);
+        break;
+      }
+    }
+    techdocsUrl = `/modelcard/${modelCardKey}`;
+  }
+
+  // @ts-ignore
+  model.annotations[PropertyKeys.TechDocsKey] = techdocsUrl;
 
   const modelServer: ModelServer = {
     name: '',

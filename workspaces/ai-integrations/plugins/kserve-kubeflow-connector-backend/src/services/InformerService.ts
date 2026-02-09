@@ -420,20 +420,14 @@ async function processKFMR(
               let modelCardKey = '';
               if (kfmr.rootCatalogURL) {
                 for (const ma of mas) {
-                  if (
-                    ma.modelSourceClass &&
-                    ma.modelSourceGroup &&
-                    ma.modelSourceName
-                  ) {
+                  if (ma.modelSourceClass && ma.modelSourceName) {
                     try {
                       modelCard = await kfmr.getModelCard(
                         ma.modelSourceClass,
-                        ma.modelSourceGroup,
                         ma.modelSourceName,
                       );
                       modelCardKey =
                         replacer(ma.modelSourceClass) +
-                        replacer(ma.modelSourceGroup) +
                         replacer(ma.modelSourceName);
                       console.log(
                         `processKFMR: Built modelCardKey ${modelCardKey}`,
@@ -586,18 +580,13 @@ async function processKFMR(
             let modelCardKey = '';
             if (kfmr.rootCatalogURL) {
               for (const ma of mas) {
-                if (
-                  ma.modelSourceClass &&
-                  ma.modelSourceGroup &&
-                  ma.modelSourceName
-                ) {
+                if (ma.modelSourceClass && ma.modelSourceName) {
                   try {
                     modelCard = await kfmr.getModelCard(
                       ma.modelSourceClass,
-                      ma.modelSourceGroup,
                       ma.modelSourceName,
                     );
-                    modelCardKey = ma.modelSourceGroup + ma.modelSourceName;
+                    modelCardKey = ma.modelSourceClass + ma.modelSourceName;
                     console.log(
                       `processKFMR: Built modelCardKey ${modelCardKey}`,
                     );
@@ -904,17 +893,14 @@ async function innerStartCallBackstagePrinters(
   let modelCardKey = '';
   if (kfmr.rootCatalogURL) {
     for (const ma of maa) {
-      if (ma.modelSourceClass && ma.modelSourceGroup && ma.modelSourceName) {
+      if (ma.modelSourceClass && ma.modelSourceName) {
         try {
           modelCard = await kfmr.getModelCard(
             ma.modelSourceClass,
-            ma.modelSourceGroup,
             ma.modelSourceName,
           );
           modelCardKey =
-            replacer(ma.modelSourceClass) +
-            replacer(ma.modelSourceGroup) +
-            replacer(ma.modelSourceName);
+            replacer(ma.modelSourceClass) + replacer(ma.modelSourceName);
           console.log(`innerStart: built modelCardKey ${modelCardKey}`);
           break;
         } catch (error) {
@@ -1243,6 +1229,14 @@ export function getModelCatalog(id: string): ModelCatalog | undefined {
   const mcm = modelCatalog.get(id);
   if (mcm) {
     return mcm.catalogData;
+  }
+  return undefined;
+}
+
+export function getModelCard(id: string): string | undefined {
+  const mcm = modelCards.get(id);
+  if (mcm) {
+    return mcm?.content;
   }
   return undefined;
 }

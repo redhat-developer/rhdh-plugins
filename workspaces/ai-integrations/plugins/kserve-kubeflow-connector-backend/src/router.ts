@@ -18,24 +18,24 @@
 import express from 'express';
 import Router from 'express-promise-router';
 // import { todoListServiceRef } from './services/TodoListService';
-import { getDiscoveryUris, getModelCatalog } from './services/InformerService';
+import {
+  getDiscoveryUris,
+  getModelCatalog,
+  getModelCard,
+} from './services/InformerService';
 
 export async function createRouter(): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
 
-  router.post('/todos', async (req, res) => {
-    // const parsed = todoSchema.safeParse(req.body);
-    // if (!parsed.success) {
-    //   throw new InputError(parsed.error.toString());
-    // }
-    //
-    // const result = await todoList.createTodo(parsed.data, {
-    //   credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-    // });
-
-    res.status(201).json(req.body); // result);
-  });
+  // router.use('/', async (req, res, next) => {
+  //   console.log(`${req.method} ${req.originalUrl}`);
+  //   if ('/foo'.includes(req.path)) {
+  //     res.status(200);
+  //   } else {
+  //     return next();
+  //   }
+  // });
 
   // List all model catalog URIs (matching Go handleCatalogDiscoveryGet, server.go lines 162-182)
   router.get('/list', async (_req, res) => {
@@ -48,14 +48,25 @@ export async function createRouter(): Promise<express.Router> {
     }
   });
 
-  // router.get('/modelcard/:id', async (_req, res) => {
-  //   res.json(_req.body); // await todoList.listTodos());
-  // });
+  router.get('/modelcard/:sourceId/:modelName', async (req, res) => {
+    try {
+      const sourceId = req.params.sourceId;
+      const modelName = req.params.modelName;
+      const modelCard = getModelCard(`${sourceId}/${modelName}`);
+      if (modelCard) {
+        res.setHeader('Content-Type', 'text/markdown');
+        res.status(200).send(modelCard);
+      } else {
+        res.status(404).json({ error: 'Not Found' });
+      }
+    } catch (error) {
+      console.error('Error getting model card:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
   router.get('/models/:model/:version', async (req, res) => {
-    // res.json(await todoList.getTodo({ id: req.params.id }));
     try {
-      console.log(`GGM get models url ${req.url}`);
       const key = `${req.params.model}/${req.params.version}`;
       const modelCatalog = getModelCatalog(key);
       if (modelCatalog) {

@@ -195,7 +195,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
           key,
           this.backendToken,
         );
-        const catalogEntities = GenerateCatalogEntities(catalog);
+        const catalogEntities = GenerateCatalogEntities(catalog, url);
         entityList = entityList.concat(catalogEntities);
       }),
     );

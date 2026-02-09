@@ -46,13 +46,19 @@ export function ParseCatalogJSON(jsonStr: string): ModelCatalog {
 // An optional logger parameter can be passed if you wish log output from the generator
 export function GenerateCatalogEntities(
   modelCatalog: ModelCatalog,
+  svcUrl?: string,
   logger?: LoggerService,
 ): Entity[] {
   // Generate the Resource entities for the Model(s)
   let modelCatalogEntities: Entity[] = [];
   const models: Model[] = modelCatalog.models;
   modelCatalogEntities = modelCatalogEntities.concat(
-    GenerateModelResourceEntities(models, modelCatalog.modelServer, logger),
+    GenerateModelResourceEntities(
+      models,
+      modelCatalog.modelServer,
+      logger,
+      svcUrl,
+    ),
   );
 
   // Generate the Model Server and Model Server APi entity, if present
@@ -82,6 +88,7 @@ export function GenerateModelResourceEntities(
   models: Model[],
   modelServer?: ModelServer,
   logger?: LoggerService,
+  svcUrl?: string,
 ): ResourceEntity[] {
   const modelResourceEntities: ResourceEntity[] = [];
   models.forEach(model => {
@@ -142,7 +149,11 @@ export function GenerateModelResourceEntities(
         if (key === 'TechDocs') {
           let techdocsUrl: string = model.annotations![key];
           techdocsUrl = techdocsUrl.trim();
+          // TODO GGM prepend svc URL
           if (techdocsUrl !== '') {
+            if (svcUrl !== undefined) {
+              techdocsUrl = svcUrl + techdocsUrl;
+            }
             modelResourceEntity.metadata.annotations![
               'backstage.io/techdocs-ref'
             ] = `url:${techdocsUrl}`;

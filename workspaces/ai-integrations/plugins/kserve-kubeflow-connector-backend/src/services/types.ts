@@ -98,7 +98,6 @@ export interface KFMRClient {
   getModelVersion(modelVersionId: string): Promise<ModelVersion>;
   getModelCard(
     sourceId: string,
-    repositoryName: string,
     modelName: string,
   ): Promise<string | undefined>;
 }
