@@ -368,6 +368,7 @@ describe('JobResourceBuilder', () => {
   describe('buildJobSecret', () => {
     const jobId = 'job-456';
     const projectId = 'proj-123';
+    const phase = 'init';
     const gitCredentials = {
       sourceRepo: {
         url: 'https://github.com/org/source',
@@ -385,6 +386,7 @@ describe('JobResourceBuilder', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
+        phase,
         gitCredentials,
       );
 
@@ -399,6 +401,7 @@ describe('JobResourceBuilder', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
+        phase,
         gitCredentials,
       );
 
@@ -413,6 +416,7 @@ describe('JobResourceBuilder', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
+        phase,
         gitCredentials,
       );
 
@@ -427,6 +431,7 @@ describe('JobResourceBuilder', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
+        phase,
         gitCredentials,
       );
 
@@ -444,16 +449,18 @@ describe('JobResourceBuilder', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
+        phase,
         gitCredentials,
       );
 
-      expect(secret.metadata?.name).toBe(`x2a-job-secret-${jobId}`);
+      expect(secret.metadata?.name).toBe(`x2a-job-secret-${phase}-${jobId}`);
     });
 
     it('should include description annotation', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
+        phase,
         gitCredentials,
       );
 
@@ -468,6 +475,7 @@ describe('JobResourceBuilder', () => {
       const secret = JobResourceBuilder.buildJobSecret(
         jobId,
         projectId,
+        phase,
         gitCredentials,
       );
 
@@ -646,7 +654,7 @@ describe('JobResourceBuilder', () => {
           },
           {
             secretRef: {
-              name: 'x2a-job-secret-job-123',
+              name: 'x2a-job-secret-init-job-123',
             },
           },
         ]);

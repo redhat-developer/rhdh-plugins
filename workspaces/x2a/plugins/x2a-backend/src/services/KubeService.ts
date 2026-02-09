@@ -169,6 +169,7 @@ export class KubeService {
   async createJobSecret(
     jobId: string,
     projectId: string,
+    phase: string,
     gitCredentials: {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
@@ -179,6 +180,7 @@ export class KubeService {
     const secret = JobResourceBuilder.buildJobSecret(
       jobId,
       projectId,
+      phase,
       gitCredentials,
     );
 
@@ -210,7 +212,7 @@ export class KubeService {
     await this.createProjectSecret(params.projectId, params.aapCredentials);
 
     // Step 2: Create ephemeral job secret (Git credentials)
-    await this.createJobSecret(params.jobId, params.projectId, {
+    await this.createJobSecret(params.jobId, params.projectId, params.phase, {
       sourceRepo: params.sourceRepo,
       targetRepo: params.targetRepo,
     });
@@ -229,7 +231,12 @@ export class KubeService {
       // Set ownerReference on the job secret so it is garbage-collected when the Job is deleted
       const jobUid = createdJob.metadata?.uid;
       if (jobUid) {
-        await this.setJobSecretOwnerReference(params.jobId, k8sJobName, jobUid);
+        await this.setJobSecretOwnerReference(
+          params.jobId,
+          params.phase,
+          k8sJobName,
+          jobUid,
+        );
       }
 
       return { k8sJobName };
@@ -245,10 +252,11 @@ export class KubeService {
    */
   private async setJobSecretOwnerReference(
     jobId: string,
+    phase: string,
     k8sJobName: string,
     jobUid: string,
   ): Promise<void> {
-    const jobSecretName = `x2a-job-secret-${jobId}`;
+    const jobSecretName = `x2a-job-secret-${phase}-${jobId}`;
 
     try {
       const secret = await this.#coreV1Api.readNamespacedSecret({

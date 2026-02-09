@@ -257,7 +257,7 @@ describe('KubeService', () => {
         apiVersion: 'v1',
         kind: 'Secret',
         metadata: {
-          name: 'x2a-job-secret-job-123',
+          name: 'x2a-job-secret-init-job-123',
           namespace: 'test-namespace',
         },
       });
@@ -289,7 +289,7 @@ describe('KubeService', () => {
           namespace: 'test-namespace',
           body: expect.objectContaining({
             metadata: expect.objectContaining({
-              name: 'x2a-job-secret-job-123',
+              name: 'x2a-job-secret-init-job-123',
             }),
             stringData: expect.objectContaining({
               SOURCE_REPO_URL: 'https://github.com/org/source',
@@ -330,7 +330,7 @@ describe('KubeService', () => {
                     name: 'x2a',
                     envFrom: [
                       { secretRef: { name: 'x2a-project-secret-proj-123' } },
-                      { secretRef: { name: 'x2a-job-secret-job-123' } },
+                      { secretRef: { name: 'x2a-job-secret-init-job-123' } },
                     ],
                   }),
                 ]),
@@ -351,7 +351,7 @@ describe('KubeService', () => {
 
       // Should read the job secret
       expect(mockCoreV1Api.readNamespacedSecret).toHaveBeenCalledWith({
-        name: 'x2a-job-secret-job-123',
+        name: 'x2a-job-secret-init-job-123',
         namespace: 'test-namespace',
       });
 
@@ -359,7 +359,7 @@ describe('KubeService', () => {
       expect(mockCoreV1Api.replaceNamespacedSecret).toHaveBeenCalled();
       const replaceCall =
         mockCoreV1Api.replaceNamespacedSecret.mock.calls[0][0];
-      expect(replaceCall.name).toBe('x2a-job-secret-job-123');
+      expect(replaceCall.name).toBe('x2a-job-secret-init-job-123');
       expect(replaceCall.namespace).toBe('test-namespace');
       const ownerRefs = replaceCall.body.metadata.ownerReferences;
       expect(ownerRefs).toHaveLength(1);

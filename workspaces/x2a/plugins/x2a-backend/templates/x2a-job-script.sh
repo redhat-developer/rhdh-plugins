@@ -269,7 +269,7 @@ echo "=== Calling collectArtifacts callback ==="
 echo "Callback URL: ${CALLBACK_URL}"
 echo "Artifact URL: ${ARTIFACT_URL}"
 
-HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/callback_response.json -X POST "${CALLBACK_URL}" \
+HTTP_CODE=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" -o /tmp/callback_response.json -X POST "${CALLBACK_URL}" \
   -H "Authorization: Bearer ${CALLBACK_TOKEN}" \
   -H "Content-Type: application/json" \
   -d "{
@@ -284,7 +284,7 @@ HTTP_CODE=$(curl -s -w "%{http_code}" -o /tmp/callback_response.json -X POST "${
 
 if [ "${HTTP_CODE}" != "200" ] && [ "${HTTP_CODE}" != "201" ]; then
   echo "WARNING: Callback failed with HTTP ${HTTP_CODE}"
-  cat /tmp/callback_response.json
+  cat /tmp/callback_response.json 2>/dev/null || true
   # Don't exit with error - the work was done, just callback failed
 fi
 
