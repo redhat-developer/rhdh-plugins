@@ -118,6 +118,12 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   getJobWithLog: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   getJobLogs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForModule: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
 });
 
 const getKubeServiceMock = () =>

@@ -24,6 +24,7 @@ import {
   HttpAuthService,
   LoggerService,
   PermissionsService,
+  RootConfigService,
 } from '@backstage/backend-plugin-api';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
@@ -130,6 +131,7 @@ export async function createRouter({
   kubeService,
   logger,
   permissionsSvc,
+  config,
 }: {
   httpAuth: HttpAuthService;
   x2aDatabase: typeof x2aDatabaseServiceRef.T;
@@ -137,6 +139,7 @@ export async function createRouter({
   discoveryApi: DiscoveryService;
   logger: LoggerService;
   permissionsSvc: PermissionsService;
+  config: RootConfigService;
 }): Promise<express.Router> {
   const router = await createOpenApiRouter();
 
@@ -285,12 +288,16 @@ export async function createRouter({
 
       // Validate request body
       const runRequestSchema = z.object({
-        sourceRepoAuth: z.object({
-          token: z.string(),
-        }),
-        targetRepoAuth: z.object({
-          token: z.string(),
-        }),
+        sourceRepoAuth: z
+          .object({
+            token: z.string(),
+          })
+          .optional(),
+        targetRepoAuth: z
+          .object({
+            token: z.string(),
+          })
+          .optional(),
         aapCredentials: z
           .object({
             url: z.string(),
@@ -310,6 +317,25 @@ export async function createRouter({
       const { sourceRepoAuth, targetRepoAuth, aapCredentials, userPrompt } =
         parsedBody.data;
 
+      // Get tokens with config-based fallback
+      const sourceToken =
+        sourceRepoAuth?.token ??
+        config.getOptionalString('x2a.git.sourceRepo.token');
+      const targetToken =
+        targetRepoAuth?.token ??
+        config.getOptionalString('x2a.git.targetRepo.token');
+
+      if (!sourceToken) {
+        throw new InputError(
+          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
+        );
+      }
+      if (!targetToken) {
+        throw new InputError(
+          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
+        );
+      }
+
       // Get user reference safely
       const credentials = await httpAuth.credentials(req, { allow: ['user'] });
       const userRef = getUserRef(credentials);
@@ -321,6 +347,22 @@ export async function createRouter({
       );
       if (!project) {
         throw new NotFoundError(`Project "${projectId}" not found.`);
+      }
+
+      // Check for existing running init job
+      const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
+      const hasActiveInitJob = existingJobs.some(
+        job =>
+          job.phase === 'init' && ['pending', 'running'].includes(job.status),
+      );
+
+      if (hasActiveInitJob) {
+        return res.status(409).json({
+          error: 'JobAlreadyRunning',
+          message: 'An init job is already running for this project',
+          details:
+            'Please wait for the current job to complete or cancel it before starting a new one',
+        });
       }
 
       // Generate callback token and create job record
@@ -342,6 +384,7 @@ export async function createRouter({
         jobId: job.id,
         projectId,
         projectName: project.name,
+        projectAbbrev: project.abbreviation,
         phase: 'init',
         user: userRef,
         callbackToken,
@@ -349,12 +392,12 @@ export async function createRouter({
         sourceRepo: {
           url: project.sourceRepoUrl,
           branch: project.sourceRepoBranch,
-          token: sourceRepoAuth.token,
+          token: sourceToken,
         },
         targetRepo: {
           url: project.targetRepoUrl,
           branch: project.targetRepoBranch,
-          token: targetRepoAuth.token,
+          token: targetToken,
         },
         aapCredentials,
         userPrompt,
@@ -367,7 +410,7 @@ export async function createRouter({
         `Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`,
       );
 
-      res.json({ status: 'pending', jobId: job.id } as any);
+      return res.json({ status: 'pending', jobId: job.id } as any);
     },
   );
 
@@ -495,16 +538,23 @@ export async function createRouter({
     async (req: express.Request, res: express.Response) => {
       const endpoint = 'POST /projects/:projectId/modules/:moduleId/run';
       const { projectId, moduleId } = req.params;
+      logger.info(
+        `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
+      );
 
       // Validate request body
       const runModuleRequestSchema = z.object({
         phase: z.enum(['analyze', 'migrate', 'publish']),
-        sourceRepoAuth: z.object({
-          token: z.string(),
-        }),
-        targetRepoAuth: z.object({
-          token: z.string(),
-        }),
+        sourceRepoAuth: z
+          .object({
+            token: z.string(),
+          })
+          .optional(),
+        targetRepoAuth: z
+          .object({
+            token: z.string(),
+          })
+          .optional(),
         aapCredentials: z
           .object({
             url: z.string(),
@@ -531,6 +581,25 @@ export async function createRouter({
         userPrompt,
       } = parsedBody.data;
 
+      // Get tokens with config-based fallback
+      const sourceToken =
+        sourceRepoAuth?.token ??
+        config.getOptionalString('x2a.git.sourceRepo.token');
+      const targetToken =
+        targetRepoAuth?.token ??
+        config.getOptionalString('x2a.git.targetRepo.token');
+
+      if (!sourceToken) {
+        throw new InputError(
+          'Source repository token is required. Provide it in the request or configure x2a.git.sourceRepo.token.',
+        );
+      }
+      if (!targetToken) {
+        throw new InputError(
+          'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
+        );
+      }
+
       // Get user reference safely
       const credentials = await httpAuth.credentials(req, { allow: ['user'] });
       const userRef = getUserRef(credentials);
@@ -552,6 +621,28 @@ export async function createRouter({
         );
       }
 
+      // Check for existing running job for this module
+      const existingJobs = await x2aDatabase.listJobsForModule({
+        projectId,
+        moduleId,
+      });
+      const hasActiveJob = existingJobs.some(job =>
+        ['pending', 'running'].includes(job.status),
+      );
+
+      if (hasActiveJob) {
+        const activeJob = existingJobs.find(job =>
+          ['pending', 'running'].includes(job.status),
+        );
+        return res.status(409).json({
+          error: 'JobAlreadyRunning',
+          message: `A ${activeJob!.phase} job is already running for this module`,
+          details: 'Please wait for the current job to complete or cancel it',
+          activeJobId: activeJob!.id,
+          activeJobPhase: activeJob!.phase,
+        });
+      }
+
       // Generate callback token and create job record
       const callbackToken = randomUUID();
       const job = await x2aDatabase.createJob({
@@ -563,13 +654,14 @@ export async function createRouter({
       });
 
       // Create Kubernetes job (will create both project and job secrets)
-      // Use HTTP for in-cluster service-to-service communication
-      // Jobs call back to Backstage within the same cluster
-      const callbackUrl = `http://${req.get('host')}/api/x2a/projects/${projectId}/modules/${moduleId}/collectArtifacts`;
+      // Use discoveryApi for consistent URL resolution
+      const moduleBaseUrl = await discoveryApi.getBaseUrl('x2a');
+      const callbackUrl = `${moduleBaseUrl}/projects/${projectId}/modules/${moduleId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
         projectId,
         projectName: project.name,
+        projectAbbrev: project.abbreviation,
         phase,
         user: userRef,
         callbackToken,
@@ -579,12 +671,12 @@ export async function createRouter({
         sourceRepo: {
           url: project.sourceRepoUrl,
           branch: project.sourceRepoBranch,
-          token: sourceRepoAuth.token,
+          token: sourceToken,
         },
         targetRepo: {
           url: project.targetRepoUrl,
           branch: project.targetRepoBranch,
-          token: targetRepoAuth.token,
+          token: targetToken,
         },
         aapCredentials,
         userPrompt,
@@ -597,7 +689,7 @@ export async function createRouter({
         `${phase} job created: jobId=${job.id}, moduleId=${moduleId}, k8sJobName=${k8sJobName}`,
       );
 
-      res.json({ status: 'pending', jobId: job.id } as any);
+      return res.json({ status: 'pending', jobId: job.id } as any);
     },
   );
 
@@ -653,6 +745,7 @@ export async function createRouter({
       projectId,
       moduleId,
       phase,
+      lastJobOnly: true,
     });
 
     if (jobs.length === 0) {
@@ -660,13 +753,6 @@ export async function createRouter({
     }
 
     const latestJob = jobs[0]; // Already sorted by started_at DESC in listJobs
-
-    // Validate the latest job phase matches requested phase (sanity check)
-    if (latestJob.phase !== phase) {
-      throw new InputError(
-        `Latest job phase '${latestJob.phase}' does not match requested phase '${phase}'`,
-      );
-    }
 
     // If job is finished, return logs from database
     if (latestJob.status === 'success' || latestJob.status === 'error') {

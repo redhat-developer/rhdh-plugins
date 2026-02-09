@@ -120,6 +120,7 @@ permission:
     admin:
       users:
         - name: user:default/mareklibra
+        - name: user:default/elai-shalev
 
 # X2A Configuration
 x2a:
@@ -146,12 +147,12 @@ x2a:
     llm:
       # LLM_MODEL is required - defaults to anthropic.claude-v2 if not set
       LLM_MODEL: ${LLM_MODEL:-anthropic.claude-v2}
-      # Example for AWS Bedrock with IAM credentials:
-      AWS_REGION: ${AWS_REGION}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       # Example for AWS Bedrock with bearer token:
-      # AWS_BEARER_TOKEN_BEDROCK: ${AWS_BEARER_TOKEN_BEDROCK}
+      AWS_REGION: ${AWS_REGION}
+      AWS_BEARER_TOKEN_BEDROCK: ${AWS_BEARER_TOKEN_BEDROCK}
+      # Example for AWS Bedrock with IAM credentials:
+      #AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      #AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       # Example for OpenAI:
       # OPENAI_API_KEY: ${OPENAI_API_KEY}
       # OPENAI_MODEL: ${OPENAI_MODEL}
