@@ -46,10 +46,10 @@ You can follow one of these options for installing `Cost Management` plugin depe
 
 #### Dependency on Orchestrator plugin and Workflow details
 
-The Resource Optimization plugin is dependent on [Orchestrator plugin](https://www.rhdhorchestrator.io/main/docs/) to run the workflow for applying the recommendation. Make sure you have installed the [Orchestrator plugin](https://www.rhdhorchestrator.io/main/docs/) by following one of these options depending on your environment:
+The Cost Management plugin's Optimizations section is dependent on [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/index) to run the workflow for applying the recommendation. Make sure you have installed the [Orchestrator plugin](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/index) by following one of these options depending on your environment:
 
-- [Install Orchestrator plugin on an exisiting RHDH instance](https://www.rhdhorchestrator.io/main/docs/installation/installation-on-existing-rhdh/)
-- [Install Orchestrator plugin with an RHDH instance](https://www.rhdhorchestrator.io/main/docs/installation/orchestrator/)
+- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Operator](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-operator)
+- [Installing Red Hat Developer Hub with Orchestrator by using the Red Hat Developer Hub Helm chart](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.8/html/orchestrator_in_red_hat_developer_hub/assembly-install-rhdh-orchestrator-helm)
 
 This method requires vanilla backstage to be used:
 
@@ -99,22 +99,36 @@ This method requires vanilla backstage to be used:
 
 1. Add the `ResourceOptimizationPage` extension to your `App.tsx` routes
 
-   ```ts
+   Add the import and a single route. The plugin handles its own sub-routes:
+
+   - `/redhat-resource-optimization` — Optimizations list
+   - `/redhat-resource-optimization/ocp` — OpenShift cost management
+   - `/redhat-resource-optimization/:id` — Optimization breakdown
+
+   ```tsx
    // packages/app/src/App.tsx
 
    import { ResourceOptimizationPage } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
 
-   <FlatRoutes>
-     ...
-     <Route
-       path="/redhat-resource-optimization"
-       element={<ResourceOptimizationPage />}
-     />
-     ...
-   </FlatRoutes>;
+   const routes = (
+     <FlatRoutes>
+       {/* ... other routes ... */}
+       <Route
+         path="/redhat-resource-optimization"
+         element={<ResourceOptimizationPage />}
+       />
+       {/* ... */}
+     </FlatRoutes>
+   );
    ```
 
-1. Add a link to the Resource Optimization page in the side bar
+   ```
+
+   ```
+
+1. Add a link to the Cost Management page in the side bar
+
+   The plugin provides a single sidebar item that gives access to the Cost Management plugin. The plugin internally handles navigation between the OpenShift and Optimizations sections through tabs within the plugin interface.
 
    ```diff
    // packages/app/src/components/Root/Root.tsx
@@ -143,7 +157,7 @@ This method requires vanilla backstage to be used:
    +       <SidebarItem
    +         icon={ResourceOptimizationIconOutlined}
    +         to="/redhat-resource-optimization"
-   +         text="Optimizations"
+   +         text="Cost Management"
    +       />
          </SidebarGroup>
          <SidebarSpace />
@@ -160,6 +174,8 @@ This method requires vanilla backstage to be used:
      </SidebarPage>
    );
    ```
+
+   Once added to the sidebar, users can navigate between sections using the plugin's internal navigation tabs.
 
 ## RBAC Permissions
 
