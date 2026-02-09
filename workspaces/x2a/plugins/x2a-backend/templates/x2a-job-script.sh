@@ -1,6 +1,23 @@
 #!/bin/bash
 set -eo pipefail
 
+# Error handler: notify backend on failure
+on_error() {
+  local exit_code=$?
+  echo "ERROR: Script failed with exit code ${exit_code}"
+  if [ -n "${CALLBACK_URL}" ] && [ -n "${CALLBACK_TOKEN}" ]; then
+    curl -s -X POST "${CALLBACK_URL}" \
+      -H "Authorization: Bearer ${CALLBACK_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d "{
+        \"status\": \"error\",
+        \"phase\": \"${PHASE}\",
+        \"errorDetails\": \"Job script failed with exit code ${exit_code}\"
+      }" || true
+  fi
+}
+trap on_error ERR
+
 #
 # X2A Job Script
 #
@@ -71,9 +88,8 @@ case "${PHASE}" in
     # Usage: app.py init [OPTIONS] USER_REQUIREMENTS
     #   --source-dir DIRECTORY  Source directory to analyze
     USER_REQ="${USER_PROMPT:-Analyze the Chef cookbooks and create a migration plan}"
-    CMD="uv run app.py init --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
-    echo "Command: ${CMD}"
-    eval ${CMD}
+    echo "Command: uv run app.py init --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
+    uv run app.py init --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
     # Copy output to target location
     # Note: x2a tool writes files to the source directory (--source-dir)
@@ -120,9 +136,8 @@ case "${PHASE}" in
     echo "Working directory: $(pwd)"
 
     USER_REQ="${USER_PROMPT:-Analyze this module for migration}"
-    CMD="uv run app.py analyze --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
-    echo "Command: ${CMD}"
-    eval ${CMD}
+    echo "Command: uv run app.py analyze --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
+    uv run app.py analyze --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
     # Copy output to target location
     # Note: x2a tool writes files to the source directory (--source-dir)
@@ -166,14 +181,13 @@ case "${PHASE}" in
     echo "Working directory: $(pwd)"
 
     USER_REQ="${USER_PROMPT:-Migrate this module to Ansible}"
-    CMD="uv run app.py migrate \
-      --source-dir ${SOURCE_BASE} \
+    echo "Command: uv run app.py migrate --source-dir ${SOURCE_BASE} --source-technology Chef --high-level-migration-plan ${PROJECT_PATH}/migration-plan.md --module-migration-plan ${OUTPUT_DIR}/module_migration-plan.md \"${USER_REQ}\""
+    uv run app.py migrate \
+      --source-dir "${SOURCE_BASE}" \
       --source-technology Chef \
-      --high-level-migration-plan ${PROJECT_PATH}/migration-plan.md \
-      --module-migration-plan ${OUTPUT_DIR}/module_migration-plan.md \
-      \"${USER_REQ}\""
-    echo "Command: ${CMD}"
-    eval ${CMD}
+      --high-level-migration-plan "${PROJECT_PATH}/migration-plan.md" \
+      --module-migration-plan "${OUTPUT_DIR}/module_migration-plan.md" \
+      "${USER_REQ}"
 
     # Copy output to target location
     # Note: x2a tool writes files to the source directory (--source-dir)
@@ -230,19 +244,6 @@ Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 # Git push
 echo "=== Pushing to remote repository ==="
 git push --force-with-lease origin "${TARGET_REPO_BRANCH}"
-
-if [ $? -ne 0 ]; then
-  echo "ERROR: Git push failed - possible concurrent modification"
-  curl -s -X POST "${CALLBACK_URL}" \
-    -H "Authorization: Bearer ${CALLBACK_TOKEN}" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"status\": \"error\",
-      \"phase\": \"${PHASE}\",
-      \"errorDetails\": \"GitPushConflict: Remote repository changed during job execution. Please retry.\"
-    }" || true
-  exit 1
-fi
 
 echo "=== Git push successful ==="
 

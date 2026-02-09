@@ -329,11 +329,11 @@ export class JobResourceBuilder {
                   },
                   {
                     name: 'GIT_AUTHOR_NAME',
-                    value: config.git?.author?.name || 'X2A Migration Bot',
+                    value: config.git?.author?.name,
                   },
                   {
                     name: 'GIT_AUTHOR_EMAIL',
-                    value: config.git?.author?.email || 'x2a-bot@redhat.com',
+                    value: config.git?.author?.email,
                   },
                 ],
                 volumeMounts: [
