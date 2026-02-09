@@ -538,6 +538,9 @@ export async function createRouter({
     async (req: express.Request, res: express.Response) => {
       const endpoint = 'POST /projects/:projectId/modules/:moduleId/run';
       const { projectId, moduleId } = req.params;
+      logger.info(
+        `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
+      );
 
       // Validate request body
       const runModuleRequestSchema = z.object({

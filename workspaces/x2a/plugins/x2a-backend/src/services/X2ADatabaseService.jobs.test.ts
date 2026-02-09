@@ -26,11 +26,10 @@ import {
   createDatabase,
   createService,
   defaultProjectRepoFields,
-  delay,
-  nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/X2ADatabaseService.testHelpers';
+import { delay, nonExistentId } from '../utils';
 
 describe('X2ADatabaseService – jobs', () => {
   afterEach(async () => {
@@ -297,7 +296,7 @@ describe('X2ADatabaseService – jobs', () => {
 
         expect(job.id).toBeDefined();
         expect(job.projectId).toBe(project.id);
-        expect(job.moduleId).toBeNull();
+        expect(job.moduleId).toBeUndefined();
         const row = await client('jobs').where('id', job.id).first();
         expect(row.module_id).toBeNull();
       },

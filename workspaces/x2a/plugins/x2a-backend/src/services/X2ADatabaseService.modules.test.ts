@@ -20,10 +20,10 @@ import {
   createDatabase,
   createService,
   defaultProjectRepoFields,
-  nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/X2ADatabaseService.testHelpers';
+import { nonExistentId } from '../utils';
 
 describe('X2ADatabaseService – modules', () => {
   afterEach(async () => {

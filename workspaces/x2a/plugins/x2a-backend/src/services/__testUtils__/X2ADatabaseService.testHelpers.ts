@@ -29,9 +29,6 @@ import {
 
 import { X2ADatabaseService } from '../X2ADatabaseService';
 import { migrate } from '../dbMigrate';
-import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../../utils';
-
-export { delay, LONG_TEST_TIMEOUT, nonExistentId };
 
 const databases = TestDatabases.create({
   ids: ['SQLITE_3', 'POSTGRES_18'],

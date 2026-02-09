@@ -96,7 +96,7 @@ export const useSeedTestData = () => {
       console.log(
         `Running analyze, migrate, publish for modules, after init job ${initJobId}`,
       );
-      for (let i = 0; i < moduleIds.length; i++) {
+      for (let i = 0; i < moduleIds.length / 2; i++) {
         let phases: Array<'analyze' | 'migrate' | 'publish'> = [];
         if (i === 0) {
           phases = ['analyze', 'migrate', 'publish'];

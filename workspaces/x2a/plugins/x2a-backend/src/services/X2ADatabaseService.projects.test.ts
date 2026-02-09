@@ -20,12 +20,10 @@ import {
   createDatabase,
   createService,
   defaultProjectRepoFields,
-  delay,
-  LONG_TEST_TIMEOUT,
-  nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/X2ADatabaseService.testHelpers';
+import { delay, LONG_TEST_TIMEOUT, nonExistentId } from '../utils';
 
 describe('X2ADatabaseService – projects', () => {
   afterEach(async () => {
