@@ -101,7 +101,7 @@ const useColumns = (
       {
         title: t('table.columns.status'),
         field: 'status',
-        defaultSort: getDefaultSort(2),
+        defaultSort: getDefaultSort(1),
       },
       {
         title: t('table.columns.sourceRepo'),
@@ -120,8 +120,8 @@ const useColumns = (
         render: (rowData: Project) => {
           return (
             <Repository
-              url={rowData.sourceRepoUrl}
-              branch={rowData.sourceRepoBranch}
+              url={rowData.targetRepoUrl}
+              branch={rowData.targetRepoBranch}
             />
           );
         },
@@ -133,7 +133,7 @@ const useColumns = (
           // TODO: Show human-readable duration instead, make sure sorting still works
           return <div>{rowData.createdAt.toLocaleString()}</div>;
         },
-        defaultSort: getDefaultSort(5),
+        defaultSort: getDefaultSort(4),
       },
     ];
     return columns;
