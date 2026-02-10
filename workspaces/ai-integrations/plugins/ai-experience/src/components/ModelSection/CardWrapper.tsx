@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -29,7 +29,7 @@ interface CardWrapperProps {
   tags: string[];
 }
 
-const CardWrapper: React.FC<CardWrapperProps> = ({
+const CardWrapper: FC<CardWrapperProps> = ({
   link,
   title,
   description,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Tooltip from '@mui/material/Tooltip';
@@ -36,7 +36,7 @@ type NewsCardProps = {
   article: Article;
 };
 
-export const NewsCard: React.FC<NewsCardProps> = ({
+export const NewsCard: FC<NewsCardProps> = ({
   key,
   article: { title, description, link, thumbnail },
 }) => {
