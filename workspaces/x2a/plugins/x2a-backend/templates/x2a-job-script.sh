@@ -1,20 +1,11 @@
 #!/bin/bash
 set -eo pipefail
 
-# Error handler: notify backend on failure
+# Error handler
 on_error() {
   local exit_code=$?
   echo "ERROR: Script failed with exit code ${exit_code}"
-  if [ -n "${CALLBACK_URL}" ] && [ -n "${CALLBACK_TOKEN}" ]; then
-    curl -s -X POST "${CALLBACK_URL}" \
-      -H "Authorization: Bearer ${CALLBACK_TOKEN}" \
-      -H "Content-Type: application/json" \
-      -d "{
-        \"status\": \"error\",
-        \"phase\": \"${PHASE}\",
-        \"errorDetails\": \"Job script failed with exit code ${exit_code}\"
-      }" || true
-  fi
+  # TODO: Report error back to backend via: uv run app.py report --status error --phase "${PHASE}" --error "Job script failed with exit code ${exit_code}"
 }
 trap on_error ERR
 
@@ -272,32 +263,10 @@ git push --force-with-lease origin "${TARGET_REPO_BRANCH}"
 
 echo "=== Git push successful ==="
 
-# Build artifact URL
-ARTIFACT_URL="https://${TARGET_REPO_URL#https://}/blob/${TARGET_REPO_BRANCH}/${ARTIFACT_PATH}"
-
-# Callback to backend
-echo "=== Calling collectArtifacts callback ==="
-echo "Callback URL: ${CALLBACK_URL}"
-echo "Artifact URL: ${ARTIFACT_URL}"
-
-HTTP_CODE=$(curl -s --connect-timeout 10 --max-time 30 -w "%{http_code}" -o /tmp/callback_response.json -X POST "${CALLBACK_URL}" \
-  -H "Authorization: Bearer ${CALLBACK_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"status\": \"Success\",
-    \"jobId\": \"${JOB_ID}\",
-    \"artifacts\": {
-      \"externalLinks\": {
-        \"artifact\": \"${ARTIFACT_URL}\"
-      }
-    }
-  }") || true
-
-if [ "${HTTP_CODE}" != "200" ] && [ "${HTTP_CODE}" != "201" ]; then
-  echo "WARNING: Callback failed with HTTP ${HTTP_CODE}"
-  cat /tmp/callback_response.json 2>/dev/null || true
-  # Don't exit with error - the work was done, just callback failed
-fi
+# TODO: Report success and artifacts back to backend via:
+#   uv run app.py report --status success --phase "${PHASE}" --artifact-path "${ARTIFACT_PATH}"
+# The report command will replace the previous curl-based callback mechanism.
+echo "Artifact path: ${ARTIFACT_PATH}"
 
 echo ""
 echo "=========================================="
