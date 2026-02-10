@@ -199,7 +199,7 @@ export interface ProjectsProjectIdCollectArtifactsPostRequest {
 }
 
 // @public (undocumented)
-export type ProjectsProjectIdCollectArtifactsPostRequestStatusEnum = 'Success' | 'Error';
+export type ProjectsProjectIdCollectArtifactsPostRequestStatusEnum = 'success' | 'error';
 
 // @public (undocumented)
 export type ProjectsProjectIdDelete = {

@@ -49,7 +49,7 @@ describe('collectArtifacts routes', () => {
     it('should return error when jobId is missing', async () => {
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', artifacts: [] });
+        .send({ status: 'success', artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('jobId');
@@ -58,7 +58,7 @@ describe('collectArtifacts routes', () => {
     it('should return error when jobId is not a valid UUID', async () => {
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId: 'not-a-uuid', artifacts: [] });
+        .send({ status: 'success', jobId: 'not-a-uuid', artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('UUID');
@@ -69,7 +69,7 @@ describe('collectArtifacts routes', () => {
         .post(
           `/projects/${projectId}/collectArtifacts?phase=init&moduleId=${moduleId}`,
         )
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('moduleId must not be provided');
@@ -78,7 +78,7 @@ describe('collectArtifacts routes', () => {
     it('should return error when moduleId is missing for analyze phase', async () => {
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=analyze`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('moduleId is required');
@@ -87,7 +87,7 @@ describe('collectArtifacts routes', () => {
     it('should return error when moduleId is missing for migrate phase', async () => {
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=migrate`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('moduleId is required');
@@ -96,7 +96,7 @@ describe('collectArtifacts routes', () => {
     it('should return error when status is Error but errorDetails is missing', async () => {
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Error', jobId, artifacts: [] });
+        .send({ status: 'error', jobId, artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('errorDetails field is required');
@@ -107,7 +107,7 @@ describe('collectArtifacts routes', () => {
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(404);
       expect(res.text).toContain('not found');
@@ -127,7 +127,7 @@ describe('collectArtifacts routes', () => {
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(404);
       expect(res.text).toContain('does not belong to project');
@@ -149,7 +149,7 @@ describe('collectArtifacts routes', () => {
         .post(
           `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
         )
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('phase mismatch');
@@ -171,7 +171,7 @@ describe('collectArtifacts routes', () => {
         .post(
           `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
         )
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('moduleId mismatch');
@@ -206,7 +206,7 @@ describe('collectArtifacts routes', () => {
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId, artifacts });
+        .send({ status: 'success', jobId, artifacts });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -247,7 +247,7 @@ describe('collectArtifacts routes', () => {
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
         .send({
-          status: 'Error',
+          status: 'error',
           errorDetails: 'Failed to initialize project',
           jobId,
           artifacts: [],
@@ -294,7 +294,7 @@ describe('collectArtifacts routes', () => {
         .post(
           `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
         )
-        .send({ status: 'Success', jobId, artifacts });
+        .send({ status: 'success', jobId, artifacts });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -320,7 +320,7 @@ describe('collectArtifacts routes', () => {
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.updateJob).toHaveBeenCalledWith(
@@ -351,7 +351,7 @@ describe('collectArtifacts routes', () => {
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -381,7 +381,7 @@ describe('collectArtifacts routes', () => {
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -414,7 +414,7 @@ describe('collectArtifacts routes', () => {
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'Success', jobId, artifacts: [] });
+        .send({ status: 'success', jobId, artifacts: [] });
 
       expect(res.status).toBe(500);
     });

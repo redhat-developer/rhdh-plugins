@@ -594,8 +594,8 @@ export const spec = {
                   "status": {
                     "type": "string",
                     "enum": [
-                      "Success",
-                      "Error"
+                      "success",
+                      "error"
                     ],
                     "description": "Execution status of the job"
                   },

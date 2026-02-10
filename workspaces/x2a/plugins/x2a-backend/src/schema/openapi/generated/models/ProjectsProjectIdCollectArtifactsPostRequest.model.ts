@@ -47,5 +47,5 @@ export interface ProjectsProjectIdCollectArtifactsPostRequest {
  * @public
  */
 export type ProjectsProjectIdCollectArtifactsPostRequestStatusEnum =
-  | 'Success'
-  | 'Error';
+  | 'success'
+  | 'error';

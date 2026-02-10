@@ -78,7 +78,8 @@ function parseTelemetry(raw: string | undefined): Telemetry | undefined {
 
   try {
     return JSON.parse(raw) as Telemetry;
-  } catch {
+  } catch (error) {
+    console.error('Failed to parse telemetry JSON:', error);
     return undefined;
   }
 }

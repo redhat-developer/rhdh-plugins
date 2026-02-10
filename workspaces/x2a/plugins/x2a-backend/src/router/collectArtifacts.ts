@@ -50,7 +50,7 @@ const artifactSchema = z.object({
 });
 
 const collectArtifactsRequestSchema = z.object({
-  status: z.enum(['Success', 'Error']),
+  status: z.enum(['success', 'error']),
   errorDetails: z.string().optional(),
   jobId: z.string().uuid('Job ID must be a valid UUID'),
   artifacts: z.array(artifactSchema),
@@ -58,7 +58,7 @@ const collectArtifactsRequestSchema = z.object({
 });
 
 export interface CollectArtifactsRequestBody {
-  status: 'Success' | 'Error';
+  status: 'success' | 'error';
   errorDetails?: string;
   jobId: string;
   artifacts: Artifact[];
@@ -92,10 +92,15 @@ export function registerCollectArtifactsRoutes(
           `Processing collectArtifacts for projectId=${projectId}, moduleId=${moduleId}, phase=${phase}`,
         );
 
-        const validatedRequest = validateRequest(req.body, {
-          moduleId,
-          phase,
-        });
+        if (phase === 'init' && moduleId) {
+          throw new InputError('moduleId must not be provided for init phase');
+        }
+
+        if (phase !== 'init' && !moduleId) {
+          throw new InputError(`moduleId is required for ${phase} phase`);
+        }
+
+        const validatedRequest = validateRequest(req.body);
 
         const job = await x2aDatabase.getJob({ id: validatedRequest.jobId });
         if (!job) {
@@ -123,7 +128,7 @@ export function registerCollectArtifactsRoutes(
         }
 
         const status: JobStatusEnum =
-          validatedRequest.status === 'Success' ? 'success' : 'error';
+          validatedRequest.status === 'success' ? 'success' : 'error';
         const logs = await fetchJobLogs(kubeService, logger, job.k8sJobName);
 
         await x2aDatabase.updateJob({
@@ -139,7 +144,6 @@ export function registerCollectArtifactsRoutes(
         logger.info(
           `Successfully processed collectArtifacts for job ${validatedRequest.jobId}`,
         );
-        // TODO here when the init/migrate/analyze/publish phase some status&healt should be calculated, no? I guess that an event can be sent.
         res.json({ message: 'Artifacts collected successfully' });
       } catch (err) {
         next(err);
@@ -148,22 +152,7 @@ export function registerCollectArtifactsRoutes(
   );
 }
 
-function validateRequest(
-  requestBody: unknown,
-  queryParams: { moduleId?: string; phase: MigrationPhase },
-): CollectArtifactsRequestBody {
-  if (queryParams.phase === 'init' && queryParams.moduleId !== undefined) {
-    throw new InputError(
-      'moduleId must not be provided for init phase requests',
-    );
-  }
-
-  if (queryParams.phase !== 'init' && queryParams.moduleId === undefined) {
-    throw new InputError(
-      `moduleId is required for ${queryParams.phase} phase requests`,
-    );
-  }
-
+function validateRequest(requestBody: unknown): CollectArtifactsRequestBody {
   let validatedBody: CollectArtifactsRequestBody;
   try {
     validatedBody = collectArtifactsRequestSchema.parse(
@@ -179,7 +168,7 @@ function validateRequest(
     throw error;
   }
 
-  if (validatedBody.status === 'Error' && !validatedBody.errorDetails) {
+  if (validatedBody.status === 'error' && !validatedBody.errorDetails) {
     throw new InputError('errorDetails field is required when status is Error');
   }
 
