@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ComponentProps } from 'react';
 
 import { useUserProfile } from '@backstage/plugin-user-settings';
 import { useApi } from '@backstage/core-plugin-api';
@@ -93,7 +93,9 @@ export const OnboardingSection = () => {
         spacing={1}
       >
         <Grid
-          size={{ xs: 12, md: 6, lg: 3 }}
+          {...({
+            size: { xs: 12, md: 6, lg: 3 },
+          } as ComponentProps<typeof Grid>)}
           sx={{
             display: 'flex',
             justifyContent: 'center',
@@ -113,7 +115,9 @@ export const OnboardingSection = () => {
         </Grid>
         {getLearningItems(t).map((item: LearningSectionItem) => (
           <Grid
-            size={{ xs: 12, md: 6, lg: 3 }}
+            {...({
+              size: { xs: 12, md: 6, lg: 3 },
+            } as ComponentProps<typeof Grid>)}
             sx={{
               display: 'flex',
               justifyContent: 'left',
