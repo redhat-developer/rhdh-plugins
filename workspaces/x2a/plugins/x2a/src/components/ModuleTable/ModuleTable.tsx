@@ -148,8 +148,7 @@ export const ModuleTable = ({
               token:
                 'TODO:placeholder - the token needs to be renewed for each run',
             },
-            userPrompt: 'TODO: user prompt - collect per run',
-            // skipping AAP credentials in favor of app-config.yaml
+            // skipping AAP credentials in favor of the app-config.yaml
           },
         });
 

@@ -211,7 +211,6 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
     sourceRepoAuth: GitRepoAuth;
     // (undocumented)
     targetRepoAuth: GitRepoAuth;
-    userPrompt?: string;
 }
 
 // @public (undocumented)

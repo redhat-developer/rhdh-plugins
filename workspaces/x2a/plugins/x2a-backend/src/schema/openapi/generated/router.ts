@@ -444,10 +444,6 @@ export const spec = {
                   },
                   "aapCredentials": {
                     "$ref": "#/components/schemas/AAPCredentials"
-                  },
-                  "userPrompt": {
-                    "type": "string",
-                    "description": "Optional user prompt for customizing the migration"
                   }
                 },
                 "required": [
