@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
-
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 
@@ -33,7 +31,7 @@ export const TemplateSection = () => {
   const catalogTemplatesLink = `/catalog?${params.toString()}`;
 
   return (
-    <React.Fragment>
+    <>
       <Grid container spacing={1} alignItems="stretch">
         {templates?.items.map(item => (
           <Grid item xs={12} md={3} key={item.title}>
@@ -55,6 +53,6 @@ export const TemplateSection = () => {
           })}
         </ViewMoreLink>
       </Box>
-    </React.Fragment>
+    </>
   );
 };

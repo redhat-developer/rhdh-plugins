@@ -11235,11 +11235,12 @@ __metadata:
     "@types/xml2js": ^0.4.14
     he: ^1.2.0
     msw: ^1.0.0
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react: ^16.14.0 || ^17.0.0 || ^18.0.0
     react-use: ^17.2.4
     xml2js: ^0.6.2
   peerDependencies:
-    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react: ^16.14.0 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.0.0
   languageName: unknown
   linkType: soft
 
@@ -30624,7 +30625,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react@npm:^16.13.1 || ^17.0.0 || ^18.0.0, react@npm:^18.0.2":
+"react@npm:^16.14.0 || ^17.0.0 || ^18.0.0, react@npm:^18.0.2":
   version: 18.3.1
   resolution: "react@npm:18.3.1"
   dependencies:
