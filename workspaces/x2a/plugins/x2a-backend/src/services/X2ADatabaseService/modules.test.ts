@@ -23,7 +23,7 @@ import {
   supportedDatabaseIds,
   tearDownDatabases,
 } from './__testUtils__/testHelpers';
-import { nonExistentId } from '../../utils';
+import { LONG_TEST_TIMEOUT, nonExistentId } from '../../utils';
 
 describe('X2ADatabaseService – modules', () => {
   afterEach(async () => {
@@ -67,6 +67,7 @@ describe('X2ADatabaseService – modules', () => {
         expect(row.source_path).toBe(moduleInput.sourcePath);
         expect(row.project_id).toBe(moduleInput.projectId);
       },
+      LONG_TEST_TIMEOUT,
     );
 
     it.each(supportedDatabaseIds)(
@@ -100,6 +101,7 @@ describe('X2ADatabaseService – modules', () => {
         expect(module1.name).toBe('Module 1');
         expect(module2.name).toBe('Module 2');
       },
+      LONG_TEST_TIMEOUT,
     );
 
     it.each(supportedDatabaseIds)(
