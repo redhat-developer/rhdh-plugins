@@ -171,13 +171,24 @@ case "${PHASE}" in
 
   migrate)
     echo "=== Running x2a migrate phase ==="
+    MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
     mkdir -p "${OUTPUT_DIR}"
 
     echo ""
     echo "Will read from:  ${SOURCE_BASE}"
-    echo "Will write to:   ${OUTPUT_DIR}/migrated_ansible/"
+    echo "Will write to:   ${OUTPUT_DIR}/ansible/"
     echo ""
+
+    # Copy migration-plan.md from target repo to source dir
+    # The x2a tool does os.chdir(source_dir) and reads migration-plan.md from there
+    if [ ! -f "${PROJECT_PATH}/migration-plan.md" ]; then
+      echo "ERROR: migration-plan.md not found in ${PROJECT_PATH}/"
+      echo "The init phase must be run first to generate migration-plan.md"
+      exit 1
+    fi
+    echo "Copying migration-plan.md from target to source directory..."
+    cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
@@ -192,32 +203,32 @@ case "${PHASE}" in
     echo "Working directory: $(pwd)"
 
     USER_REQ="${USER_PROMPT:-Migrate this module to Ansible}"
-    echo "Command: uv run app.py migrate --source-dir ${SOURCE_BASE} --source-technology Chef --high-level-migration-plan ${PROJECT_PATH}/migration-plan.md --module-migration-plan ${OUTPUT_DIR}/module_migration-plan.md \"${USER_REQ}\""
+    echo "Command: uv run app.py migrate --source-dir ${SOURCE_BASE} --source-technology Chef --high-level-migration-plan ${PROJECT_PATH}/migration-plan.md --module-migration-plan ${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md \"${USER_REQ}\""
     uv run app.py migrate \
       --source-dir "${SOURCE_BASE}" \
       --source-technology Chef \
       --high-level-migration-plan "${PROJECT_PATH}/migration-plan.md" \
-      --module-migration-plan "${OUTPUT_DIR}/module_migration-plan.md" \
+      --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" \
       "${USER_REQ}"
 
     # Copy output to target location
-    # Note: x2a tool writes files to the source directory (--source-dir)
+    # Note: x2a tool writes to ansible/roles/{module}/ in the source directory
     echo "Copying output to ${OUTPUT_DIR}/"
-    cp -rv "${SOURCE_BASE}/migrated_ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
+    cp -rv "${SOURCE_BASE}/ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
     cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
 
     echo ""
     echo "=== Output directory contents ==="
     ls -la "${OUTPUT_DIR}/"
-    ls -la "${OUTPUT_DIR}/migrated_ansible/" 2>/dev/null || true
+    ls -la "${OUTPUT_DIR}/ansible/roles/" 2>/dev/null || true
 
-    if [ ! -d "${OUTPUT_DIR}/migrated_ansible" ]; then
-      echo "ERROR: migrated_ansible directory not created"
+    if [ ! -d "${OUTPUT_DIR}/ansible" ]; then
+      echo "ERROR: ansible output directory not created"
       exit 1
     fi
 
-    ARTIFACT_PATH="${PROJECT_DIR}/modules/${MODULE_NAME}/migrated_ansible"
+    ARTIFACT_PATH="${PROJECT_DIR}/modules/${MODULE_NAME}/ansible"
     ;;
 
   *)
