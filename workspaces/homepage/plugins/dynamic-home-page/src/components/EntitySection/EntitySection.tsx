@@ -136,6 +136,7 @@ export const EntitySection = () => {
                     display: 'flex',
                     flexDirection: 'row',
                     alignItems: 'center',
+                    height: '100%',
                     position: 'relative',
                     transition:
                       'opacity 0.5s ease-out, transform 0.5s ease-in-out',
@@ -197,6 +198,7 @@ export const EntitySection = () => {
                   md={6}
                   lg={isRemoveFirstCard ? 3 : 3.5}
                   key={item.metadata.name}
+                  display="flex"
                 >
                   <EntityCard
                     entity={item}
