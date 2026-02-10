@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import { createDevApp } from '@backstage/dev-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
