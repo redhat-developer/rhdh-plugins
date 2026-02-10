@@ -13,24 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import '@backstage/cli/asset-types';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import '@backstage/ui/css/styles.css';
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-
-import { adoptionInsightsTranslationRef } from './ref';
-
-/**
- * The translation resource for the Adoption Insights plugin.
- * @alpha
- */
-export const adoptionInsightsTranslations = createTranslationResource({
-  ref: adoptionInsightsTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
-});
-
-export { adoptionInsightsTranslationRef };
+ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
