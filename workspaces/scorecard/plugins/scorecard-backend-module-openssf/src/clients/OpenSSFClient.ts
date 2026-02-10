@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@backstage/catalog-model';
+
 import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
   private readonly baseUrl: string;
-  private readonly gitServiceHost: string;
 
-  constructor(
-    baseUrl: string = 'https://api.securityscorecards.dev/projects',
-    gitServiceHost: string = 'github.com',
-  ) {
-    this.baseUrl = baseUrl;
-    this.gitServiceHost = gitServiceHost;
+  constructor(entity: Entity) {
+    this.baseUrl = entity.metadata.annotations?.['openssf/baseUrl'] ?? '';
   }
 
-  async getScorecard(owner: string, repo: string): Promise<OpenSSFResponse> {
-    const apiUrl = `${this.baseUrl}/${this.gitServiceHost}/${owner}/${repo}`;
-
-    const response = await fetch(apiUrl, {
+  async getScorecard(): Promise<OpenSSFResponse> {
+    const response = await fetch(this.baseUrl, {
       method: 'GET',
       headers: {
         Accept: 'application/json',

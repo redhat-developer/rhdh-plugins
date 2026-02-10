@@ -15,8 +15,7 @@
  */
 import { createBackendModule } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { createDefaultOpenSSFMetricProviders } from './metricProviders/DefaultOpenSSFMetricProvider';
-import { OPENSSF_THRESHOLDS } from './metricProviders/OpenSSFConfig';
+import { createOpenSSFMetricProvider } from './metricProviders/OpenSSFMetricProvider';
 
 export const scorecardOpenSFFModule = createBackendModule({
   pluginId: 'scorecard',
@@ -27,10 +26,7 @@ export const scorecardOpenSFFModule = createBackendModule({
         metrics: scorecardMetricsExtensionPoint,
       },
       async init({ metrics }) {
-        // Register all default OpenSSF metric providers
-        metrics.addMetricProvider(
-          ...createDefaultOpenSSFMetricProviders(OPENSSF_THRESHOLDS),
-        );
+        metrics.addMetricProvider(...createOpenSSFMetricProvider());
       },
     });
   },
