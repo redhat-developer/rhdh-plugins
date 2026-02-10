@@ -115,6 +115,10 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   private readonly logger: LoggerService;
   private readonly bridgeConfigs: BridgeConfig[];
 
+  // TODO we are limited in which core services can be passed into the ReaderFactory, so as a work around we
+  // define these globals that are set in the plugin init method; if we merge this plugin with the
+  // kserve-kubeflow-connector plugins, and bypass the need for plugin to plug REST calls, we can
+  // bypass the need for the discover and auth services.
   static discovery: DiscoveryService;
   static auth: AuthService;
 
@@ -155,6 +159,15 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     this.logger.info(`ModelCatalogBridgeTechdocUrlReader.readUrl of ${url}`);
     let response: Response;
     try {
+      // TODO so the token obtained here looks like a toke, but it still got
+      // 401 / unauthorized when trying to access the router REST endpoints
+      // of the kserve-kubeflow-connector; hence, are using of the static
+      // admin token 'RHDH_TOKEN' that immediately follows; *IF* we determin
+      // that the model card integration works with the upstream version
+      // of kubeflow model catalog/registry, we'll need to dive into possible
+      // alternatives to this work around.  Possibly merging the techdoc
+      // reader extension into the kserve-kubeflow-connector and byppassing
+      // the need for the plugin to plugin REST call might be required here.
       const token =
         await ModeCatalogBridgeTechdocUrlReader.auth.getPluginRequestToken({
           onBehalfOf:
