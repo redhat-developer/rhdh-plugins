@@ -7,6 +7,11 @@ app:
       flushInterval: 5000
       debug: true
       licensedUsers: 100
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'fr']
+          defaultLanguage: 'en'
 
 organization:
   name: My Company
