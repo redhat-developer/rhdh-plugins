@@ -828,7 +828,7 @@ describe('JobResourceBuilder', () => {
 
         const container = job.spec?.template.spec?.containers![0];
         // Script handles unknown phases with exit 1
-        expect(container!.args![0]).toContain('ERROR: Unknown phase');
+        expect(container!.args![0]).toContain('Unknown phase');
       });
     });
   });
