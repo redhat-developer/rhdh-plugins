@@ -290,11 +290,7 @@ paths:
                 targetRepoAuth:
                   $ref: '#/components/schemas/GitRepoAuth'
                 aapCredentials:
-                  # TODO: reuse from project's init phase
                   $ref: '#/components/schemas/AAPCredentials'
-                userPrompt:
-                  type: string
-                  description: Optional user prompt for customizing the migration
               required:
                 - phase
                 - sourceRepoAuth
