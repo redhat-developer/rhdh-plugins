@@ -258,6 +258,10 @@ export const EntitySection = () => {
         padding: '24px',
         border: muitheme => `1px solid ${muitheme.palette.grey[300]}`,
         overflow: 'auto',
+        flex: 1,
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Typography
@@ -267,21 +271,24 @@ export const EntitySection = () => {
           alignItems: 'center',
           fontWeight: '500',
           fontSize: '1.5rem',
+          flexShrink: 0,
         }}
       >
         {t('entities.title')}
       </Typography>
-      {content}
-      {entities?.length > 0 && (
-        <Box sx={{ pt: 2 }}>
-          <ViewMoreLink to="/catalog">
-            <Trans
-              message="entities.viewAll"
-              params={{ count: data?.totalItems?.toString() || '' }}
-            />
-          </ViewMoreLink>
-        </Box>
-      )}
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        {content}
+        {entities?.length > 0 && (
+          <Box sx={{ pt: 2 }}>
+            <ViewMoreLink to="/catalog">
+              <Trans
+                message="entities.viewAll"
+                params={{ count: data?.totalItems?.toString() || '' }}
+              />
+            </ViewMoreLink>
+          </Box>
+        )}
+      </Box>
     </Card>
   );
 };
