@@ -54,7 +54,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       expect(provider.getMetricName()).toBe('Maintained');
     });
@@ -63,7 +62,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       expect(provider.getMetricDisplayTitle()).toBe('OpenSSF Maintained');
       expect(provider.getMetricDescription()).toContain('actively maintained');
@@ -73,7 +71,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       expect(provider.getProviderId()).toBe('openssf.maintained');
     });
@@ -82,7 +79,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       expect(provider.getProviderDatasourceId()).toBe('openssf');
     });
@@ -91,7 +87,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       expect(provider.getMetricType()).toBe('number');
     });
@@ -100,7 +95,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       const metric = provider.getMetric();
       expect(metric.id).toBe('openssf.maintained');
@@ -113,7 +107,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
     });
@@ -122,7 +115,6 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
       expect(provider.getCatalogFilter()).toEqual({
         'metadata.annotations.openssf/baseUrl': CATALOG_FILTER_EXISTS,
@@ -154,9 +146,8 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
-      const result = await provider.calculateMetric();
+      const result = await provider.calculateMetric(entity);
 
       expect(result).toBe(8);
       expect(fetch).toHaveBeenCalledWith(scorecardUrl, expect.any(Object));
@@ -185,10 +176,9 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
 
-      await expect(provider.calculateMetric()).rejects.toThrow(
+      await expect(provider.calculateMetric(entity)).rejects.toThrow(
         "OpenSSF check 'Maintained' not found in scorecard",
       );
     });
@@ -216,10 +206,9 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
-        entity,
       );
 
-      await expect(provider.calculateMetric()).rejects.toThrow(
+      await expect(provider.calculateMetric(entity)).rejects.toThrow(
         "OpenSSF check 'Maintained' has invalid score 11",
       );
     });

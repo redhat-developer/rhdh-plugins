@@ -37,11 +37,10 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   constructor(
     readonly config: OpenSSFMetricConfig,
     thresholds: ThresholdConfig,
-    entity: Entity,
   ) {
     this.thresholds = thresholds;
     this.config = config;
-    this.openSSFClient = new OpenSSFClient(entity);
+    this.openSSFClient = new OpenSSFClient();
   }
 
   getMetricName(): string {
@@ -91,8 +90,8 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
     };
   }
 
-  async calculateMetric(): Promise<number> {
-    const scorecard = await this.openSSFClient.getScorecard();
+  async calculateMetric(entity: Entity): Promise<number> {
+    const scorecard = await this.openSSFClient.getScorecard(entity);
 
     const metricName = this.getMetricName();
     const metric = scorecard.checks.find(c => c.name === metricName);
@@ -113,11 +112,8 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
  * @param clientOptions Optional base URL and git service host (from app-config)
  * @returns Array of OpenSSF metric providers
  */
-export function createOpenSSFMetricProvider(
-  clientOptions?: OpenSSFClientOptions,
-): MetricProvider<'number'>[] {
+export function createOpenSSFMetricProvider(): MetricProvider<'number'>[] {
   return OPENSSF_METRICS.map(
-    config =>
-      new OpenSSFMetricProvider(config, OPENSSF_THRESHOLDS, clientOptions),
+    config => new OpenSSFMetricProvider(config, OPENSSF_THRESHOLDS),
   );
 }

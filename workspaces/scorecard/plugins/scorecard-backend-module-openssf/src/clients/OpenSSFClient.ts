@@ -19,14 +19,13 @@ import type { Entity } from '@backstage/catalog-model';
 import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
-  private readonly baseUrl: string;
+  async getScorecard(entity: Entity): Promise<OpenSSFResponse> {
+    const baseUrl = entity.metadata.annotations?.['openssf/baseUrl'] ?? '';
+    if (!baseUrl || baseUrl.trim() === '' || !baseUrl.startsWith('https://')) {
+      throw new Error(`Invalid annotation 'openssf/baseUrl' value`);
+    }
 
-  constructor(entity: Entity) {
-    this.baseUrl = entity.metadata.annotations?.['openssf/baseUrl'] ?? '';
-  }
-
-  async getScorecard(): Promise<OpenSSFResponse> {
-    const response = await fetch(this.baseUrl, {
+    const response = await fetch(baseUrl, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
