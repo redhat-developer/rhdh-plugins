@@ -5592,7 +5592,7 @@ __metadata:
     "@backstage/repo-tools": ^0.16.3
     "@changesets/cli": ^2.27.1
     "@ianvs/prettier-plugin-sort-imports": ^4.4.0
-    "@playwright/test": 1.58.1
+    "@playwright/test": 1.58.2
     "@spotify/prettier-config": ^12.0.0
     knip: ^5.27.4
     node-gyp: ^9.0.0
@@ -6841,7 +6841,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mswjs/interceptors@npm:^0.41.0":
+"@mswjs/interceptors@npm:^0.41.2":
   version: 0.41.2
   resolution: "@mswjs/interceptors@npm:0.41.2"
   dependencies:
@@ -8010,14 +8010,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.58.1":
-  version: 1.58.1
-  resolution: "@playwright/test@npm:1.58.1"
+"@playwright/test@npm:1.58.2":
+  version: 1.58.2
+  resolution: "@playwright/test@npm:1.58.2"
   dependencies:
-    playwright: 1.58.1
+    playwright: 1.58.2
   bin:
     playwright: cli.js
-  checksum: 001b9968f0b54cc961908f97646bbfb25de189f52b0ca6f10e6a1be90c7a017f66512a0eb430106af06caeb8e7b8824440925940ac14f1d63e6476d37f4da060
+  checksum: 4169d8484081d24de132d10e960bb83159a751dd81d00ed8b21ddf68266c024a51eaf5329c3943d5f023009d3af9c72649016d7a1919d634f787292e97a980f0
   languageName: node
   linkType: hard
 
@@ -10367,7 +10367,7 @@ __metadata:
     "@types/supertest": 2.0.16
     express: ^4.21.1
     http-proxy-middleware: ^3.0.2
-    msw: 2.12.8
+    msw: 2.12.9
     node-fetch: 2.7.0
     prettier: 3.8.1
     supertest: 6.3.4
@@ -14900,7 +14900,7 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@mui/material": ^5.12.2
-    "@playwright/test": 1.58.1
+    "@playwright/test": 1.58.2
     "@red-hat-developer-hub/backstage-plugin-lightspeed": "*"
     "@red-hat-developer-hub/backstage-plugin-theme": ^0.12.0
     "@testing-library/dom": ^9.0.0
@@ -25927,12 +25927,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:2.12.8":
-  version: 2.12.8
-  resolution: "msw@npm:2.12.8"
+"msw@npm:2.12.9":
+  version: 2.12.9
+  resolution: "msw@npm:2.12.9"
   dependencies:
     "@inquirer/confirm": ^5.0.0
-    "@mswjs/interceptors": ^0.41.0
+    "@mswjs/interceptors": ^0.41.2
     "@open-draft/deferred-promise": ^2.2.0
     "@types/statuses": ^2.0.6
     cookie: ^1.0.2
@@ -25956,7 +25956,7 @@ __metadata:
       optional: true
   bin:
     msw: cli/index.js
-  checksum: fd5aefef960af57f644e8f0e5fbf9f72c30678055a3991c95d45bf5bc939fc26c9ee1562318de273b90011bc81e00bcdd5e8fa88375e69269286b70f24adb56f
+  checksum: 2ee260b717e31a69b266226679fc3f1a66f8437781b42aeaa387b42a25ebd63a77f8d73b8eeac37d5718a2b1495fd7968b167a442c97cea2fc37f930117ffbd7
   languageName: node
   linkType: hard
 
@@ -27706,27 +27706,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.58.1":
-  version: 1.58.1
-  resolution: "playwright-core@npm:1.58.1"
+"playwright-core@npm:1.58.2":
+  version: 1.58.2
+  resolution: "playwright-core@npm:1.58.2"
   bin:
     playwright-core: cli.js
-  checksum: 8c74e1cb6f2fb5bec038704efd35332f99d6f6a239be5792fe23416575433ff52082a22295758783f1461a0a8dc87638ef9f6ecdb811dbcb4c850532ecdec359
+  checksum: fd8c4c6658b80f5db90af36db9f560e7bf461f704d0ffe706e8858570af0321312fff9c44a5ee49552df3e3cce981e1f8dd9e8b09e6d7bdd62e094639b68bddd
   languageName: node
   linkType: hard
 
-"playwright@npm:1.58.1":
-  version: 1.58.1
-  resolution: "playwright@npm:1.58.1"
+"playwright@npm:1.58.2":
+  version: 1.58.2
+  resolution: "playwright@npm:1.58.2"
   dependencies:
     fsevents: 2.3.2
-    playwright-core: 1.58.1
+    playwright-core: 1.58.2
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 0dfcfded17a1bc9a0e48044582e31809c65c51c30b3c8cfd4dfd4e7ff3688065af2d071568095dd0aadbeca2eee82eccb91081f485e9fe2026994d3834216d86
+  checksum: 3536138633135bdd62eb3aa63c653036b944fbb6fb2d57f4d936baaad9d706c11bde13ef11b307677fba061bad2f4ad68256f84978cc9280667437d1106d12e6
   languageName: node
   linkType: hard
 
