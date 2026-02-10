@@ -58,6 +58,9 @@ const EntityCard: FC<EntityCardProps> = ({
             pb: 2,
           },
           backgroundColor: 'transparent',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
         }}
       >
         <Box sx={{ overflow: 'hidden' }}>

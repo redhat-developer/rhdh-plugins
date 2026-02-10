@@ -128,13 +128,12 @@ export const EntitySection = () => {
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {!isRemoveFirstCard && !profileLoading && (
-              <Grid item xs={12} md={6} lg={5} key="entities illustration">
+              <Grid item xs={12} md={6} lg={4} key="entities illustration">
                 <Card
                   elevation={0}
                   sx={{
                     border: `1px solid ${theme.palette.grey[400]}`,
                     display: 'flex',
-                    flexDirection: 'row',
                     alignItems: 'center',
                     height: '100%',
                     position: 'relative',
@@ -149,10 +148,10 @@ export const EntitySection = () => {
                   {!imgLoaded && (
                     <Skeleton
                       variant="rectangular"
-                      height={300}
+                      height={231}
                       sx={{
                         borderRadius: 3,
-                        width: 'clamp(140px, 14vw, 266px)',
+                        width: 'clamp(126px, 12.6vw, 210px)',
                       }}
                     />
                   )}
@@ -161,9 +160,9 @@ export const EntitySection = () => {
                     src={HomePageEntityIllustration}
                     onLoad={() => setImgLoaded(true)}
                     alt=""
-                    height={300}
+                    height={231}
                     sx={{
-                      width: 'clamp(140px, 14vw, 266px)',
+                      width: 'clamp(126px, 12.6vw, 210px)',
                     }}
                   />
                   <Box sx={{ p: 2 }}>
@@ -196,7 +195,7 @@ export const EntitySection = () => {
                   item
                   xs={12}
                   md={6}
-                  lg={isRemoveFirstCard ? 3 : 3.5}
+                  lg={isRemoveFirstCard ? 3 : 4}
                   key={item.metadata.name}
                   display="flex"
                 >
