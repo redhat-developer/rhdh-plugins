@@ -29,8 +29,4 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
   sourceRepoAuth: GitRepoAuth;
   targetRepoAuth: GitRepoAuth;
   aapCredentials?: AAPCredentials;
-  /**
-   * Optional user prompt for customizing the migration
-   */
-  userPrompt?: string;
 }
