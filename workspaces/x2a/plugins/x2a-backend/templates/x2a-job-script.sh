@@ -1,13 +1,36 @@
 #!/bin/bash
 set -eo pipefail
 
-# Error handler
-on_error() {
-  local exit_code=$?
-  echo "ERROR: Script failed with exit code ${exit_code}"
-  # TODO: Report error back to backend via: uv run app.py report --status error --phase "${PHASE}" --error "Job script failed with exit code ${exit_code}"
+# Track error context for the cleanup trap
+ERROR_MESSAGE=""
+ARTIFACT_PATH=""
+
+# Report job result back to the backend.
+# TODO: Replace echo with actual report command once implemented:
+#   cd /app && uv run app.py report \
+#     --status "${status}" \
+#     --phase "${PHASE}" \
+#     --job-id "${JOB_ID}" \
+#     --module-id "${MODULE_ID:-}" \
+#     --artifact-path "${ARTIFACT_PATH:-}" \
+#     --error "${message}"
+report_result() {
+  local status="$1"    # "success" or "error"
+  local message="$2"   # error message (empty for success)
+  echo "REPORT: status=${status}, phase=${PHASE}, job=${JOB_ID}, module=${MODULE_ID:-none}, artifact=${ARTIFACT_PATH:-none}, error=${message:-none}"
 }
-trap on_error ERR
+
+# Cleanup trap: fires on every exit (success or failure).
+# Guarantees exactly one report_result call regardless of how the script ends.
+cleanup() {
+  local exit_code=$?
+  if [ ${exit_code} -ne 0 ]; then
+    report_result "error" "${ERROR_MESSAGE:-Script failed with exit code ${exit_code}}"
+  else
+    report_result "success" ""
+  fi
+}
+trap cleanup EXIT
 
 #
 # X2A Job Script
@@ -64,7 +87,7 @@ case "${PHASE}" in
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
-      echo "ERROR: /app/app.py not found - x2a tool is required"
+      ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
       exit 1
     fi
 
@@ -97,7 +120,7 @@ case "${PHASE}" in
 
     # Verify output
     if [ ! -f "${PROJECT_PATH}/migration-plan.md" ]; then
-      echo "ERROR: migration-plan.md not created"
+      ERROR_MESSAGE="migration-plan.md not created by init phase"
       exit 1
     fi
 
@@ -118,8 +141,7 @@ case "${PHASE}" in
     # Copy migration-plan.md from target repo to source dir
     # The x2a tool does os.chdir(source_dir) and reads migration-plan.md from there
     if [ ! -f "${PROJECT_PATH}/migration-plan.md" ]; then
-      echo "ERROR: migration-plan.md not found in ${PROJECT_PATH}/"
-      echo "The init phase must be run first to generate migration-plan.md"
+      ERROR_MESSAGE="migration-plan.md not found in ${PROJECT_PATH}/ - init phase must be run first"
       exit 1
     fi
     echo "Copying migration-plan.md from target to source directory..."
@@ -127,7 +149,7 @@ case "${PHASE}" in
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
-      echo "ERROR: /app/app.py not found - x2a tool is required"
+      ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
       exit 1
     fi
 
@@ -153,7 +175,7 @@ case "${PHASE}" in
     ls -la "${OUTPUT_DIR}/"
 
     if [ ! -f "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" ]; then
-      echo "ERROR: migration-plan-${MODULE_NAME_SANITIZED}.md not created"
+      ERROR_MESSAGE="migration-plan-${MODULE_NAME_SANITIZED}.md not created by analyze phase"
       exit 1
     fi
 
@@ -174,8 +196,7 @@ case "${PHASE}" in
     # Copy migration-plan.md from target repo to source dir
     # The x2a tool does os.chdir(source_dir) and reads migration-plan.md from there
     if [ ! -f "${PROJECT_PATH}/migration-plan.md" ]; then
-      echo "ERROR: migration-plan.md not found in ${PROJECT_PATH}/"
-      echo "The init phase must be run first to generate migration-plan.md"
+      ERROR_MESSAGE="migration-plan.md not found in ${PROJECT_PATH}/ - init phase must be run first"
       exit 1
     fi
     echo "Copying migration-plan.md from target to source directory..."
@@ -183,7 +204,7 @@ case "${PHASE}" in
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
-      echo "ERROR: /app/app.py not found - x2a tool is required"
+      ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
       exit 1
     fi
 
@@ -215,7 +236,7 @@ case "${PHASE}" in
     ls -la "${OUTPUT_DIR}/ansible/roles/" 2>/dev/null || true
 
     if [ ! -d "${OUTPUT_DIR}/ansible" ]; then
-      echo "ERROR: ansible output directory not created"
+      ERROR_MESSAGE="ansible output directory not created by migrate phase"
       exit 1
     fi
 
@@ -223,7 +244,7 @@ case "${PHASE}" in
     ;;
 
   *)
-    echo "ERROR: Unknown phase ${PHASE}"
+    ERROR_MESSAGE="Unknown phase: ${PHASE}"
     exit 1
     ;;
 esac
@@ -262,11 +283,6 @@ echo "=== Pushing to remote repository ==="
 git push --force-with-lease origin "${TARGET_REPO_BRANCH}"
 
 echo "=== Git push successful ==="
-
-# TODO: Report success and artifacts back to backend via:
-#   uv run app.py report --status success --phase "${PHASE}" --artifact-path "${ARTIFACT_PATH}"
-# The report command will replace the previous curl-based callback mechanism.
-echo "Artifact path: ${ARTIFACT_PATH}"
 
 echo ""
 echo "=========================================="
