@@ -208,9 +208,10 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
     // (undocumented)
     phase: ModulePhase;
     // (undocumented)
-    sourceRepoAuth: GitRepoAuth;
+    sourceRepoAuth?: GitRepoAuth;
     // (undocumented)
-    targetRepoAuth: GitRepoAuth;
+    targetRepoAuth?: GitRepoAuth;
+    userPrompt?: string;
 }
 
 // @public (undocumented)
