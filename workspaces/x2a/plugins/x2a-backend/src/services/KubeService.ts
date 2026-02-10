@@ -169,6 +169,7 @@ export class KubeService {
   async createJobSecret(
     jobId: string,
     projectId: string,
+    phase: string,
     gitCredentials: {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
@@ -179,6 +180,7 @@ export class KubeService {
     const secret = JobResourceBuilder.buildJobSecret(
       jobId,
       projectId,
+      phase,
       gitCredentials,
     );
 
@@ -210,7 +212,7 @@ export class KubeService {
     await this.createProjectSecret(params.projectId, params.aapCredentials);
 
     // Step 2: Create ephemeral job secret (Git credentials)
-    await this.createJobSecret(params.jobId, params.projectId, {
+    await this.createJobSecret(params.jobId, params.projectId, params.phase, {
       sourceRepo: params.sourceRepo,
       targetRepo: params.targetRepo,
     });
@@ -220,16 +222,73 @@ export class KubeService {
     const k8sJobName = job.metadata?.name || '';
 
     try {
-      await this.#batchV1Api.createNamespacedJob({
+      const createdJob = await this.#batchV1Api.createNamespacedJob({
         namespace: this.#namespace,
         body: job,
       });
       this.#logger.info(`Created job: ${k8sJobName}`);
 
+      // Set ownerReference on the job secret so it is garbage-collected when the Job is deleted
+      const jobUid = createdJob.metadata?.uid;
+      if (jobUid) {
+        await this.setJobSecretOwnerReference(
+          params.jobId,
+          params.phase,
+          k8sJobName,
+          jobUid,
+        );
+      }
+
       return { k8sJobName };
     } catch (error: any) {
       this.#logger.error(`Failed to create job: ${error.message}`);
       throw error;
+    }
+  }
+
+  /**
+   * Sets ownerReference on the job secret so it is garbage-collected when the Job is deleted.
+   * This is non-fatal — if it fails, the job still works but the secret won't be auto-cleaned.
+   */
+  private async setJobSecretOwnerReference(
+    jobId: string,
+    phase: string,
+    k8sJobName: string,
+    jobUid: string,
+  ): Promise<void> {
+    const jobSecretName = `x2a-job-secret-${phase}-${jobId}`;
+
+    try {
+      const secret = await this.#coreV1Api.readNamespacedSecret({
+        name: jobSecretName,
+        namespace: this.#namespace,
+      });
+
+      secret.metadata = secret.metadata || {};
+      secret.metadata.ownerReferences = [
+        {
+          apiVersion: 'batch/v1',
+          kind: 'Job',
+          name: k8sJobName,
+          uid: jobUid,
+          blockOwnerDeletion: true,
+        },
+      ];
+
+      await this.#coreV1Api.replaceNamespacedSecret({
+        name: jobSecretName,
+        namespace: this.#namespace,
+        body: secret,
+      });
+
+      this.#logger.info(
+        `Set ownerReference on secret ${jobSecretName} -> job ${k8sJobName}`,
+      );
+    } catch (error: any) {
+      this.#logger.warn(
+        `Failed to set ownerReference on job secret ${jobSecretName}: ${error.message}. ` +
+          `The job will still run but the secret may not be auto-cleaned.`,
+      );
     }
   }
 

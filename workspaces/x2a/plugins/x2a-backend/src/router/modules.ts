@@ -21,7 +21,11 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
-import { getUserRef, removeSensitiveFromJob } from './common';
+import {
+  getUserRef,
+  reconcileJobStatus,
+  removeSensitiveFromJob,
+} from './common';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -236,7 +240,16 @@ export function registerModuleRoutes(
         projectId,
         moduleId,
       });
-      const hasActiveJob = existingJobs.some(job =>
+
+      // Reconcile jobs that appear active against K8s
+      const reconciledJobs = await Promise.all(
+        existingJobs
+          .filter(job => ['pending', 'running'].includes(job.status))
+          .map(job =>
+            reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
+          ),
+      );
+      const hasActiveJob = reconciledJobs.some(job =>
         ['pending', 'running'].includes(job.status),
       );
 

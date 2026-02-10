@@ -132,9 +132,8 @@ export class JobResourceBuilder {
    * Builds a Kubernetes Secret for a specific job containing ephemeral Git credentials
    *
    * Note: ownerReferences are NOT set here because the job doesn't exist yet at secret
-   * creation time. The job secret will be cleaned up by Kubernetes TTL after the job
-   * completes (via ttlSecondsAfterFinished setting on the job). For explicit cleanup,
-   * the deleteJobSecret method can be called.
+   * creation time. After job creation, KubeService.createJob() sets the ownerReference
+   * on this secret so it is automatically garbage-collected when the Job is deleted.
    *
    * @param jobId - The job UUID
    * @param projectId - The project UUID
@@ -144,12 +143,13 @@ export class JobResourceBuilder {
   static buildJobSecret(
     jobId: string,
     projectId: string,
+    phase: string,
     gitCredentials: {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
     },
   ): V1Secret {
-    const secretName = `x2a-job-secret-${jobId}`;
+    const secretName = `x2a-job-secret-${phase}-${jobId}`;
 
     return {
       apiVersion: 'v1',
@@ -196,7 +196,7 @@ export class JobResourceBuilder {
     const shortId = crypto.randomBytes(4).toString('hex');
     const jobName = `job-x2a-${params.phase}-${shortId}`;
     const projectSecretName = `x2a-project-secret-${params.projectId}`;
-    const jobSecretName = `x2a-job-secret-${params.jobId}`;
+    const jobSecretName = `x2a-job-secret-${params.phase}-${params.jobId}`;
 
     return {
       apiVersion: 'batch/v1',
@@ -247,7 +247,9 @@ export class JobResourceBuilder {
           spec: {
             restartPolicy: 'Never',
             // Init container: Clone source and target repositories
-            initContainers: [this.buildGitFetchInitContainer(params.jobId)],
+            initContainers: [
+              this.buildGitFetchInitContainer(params.jobId, params.phase),
+            ],
             containers: [
               {
                 name: 'x2a',
@@ -421,8 +423,11 @@ export class JobResourceBuilder {
    * @param jobId - The job UUID (for secret reference)
    * @returns V1Container for the init container
    */
-  private static buildGitFetchInitContainer(jobId: string): V1Container {
-    const jobSecretName = `x2a-job-secret-${jobId}`;
+  private static buildGitFetchInitContainer(
+    jobId: string,
+    phase: string,
+  ): V1Container {
+    const jobSecretName = `x2a-job-secret-${phase}-${jobId}`;
 
     return {
       name: 'git-fetch',
