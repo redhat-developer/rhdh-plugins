@@ -96,6 +96,21 @@ const useColumns = ({
   }, [t, lastPhaseCell, artifactsCell]);
 };
 
+const canRunNextPhase = ({ module }: { module: Module }) => {
+  const nextPhase = getNextPhase(module);
+  if (!nextPhase) {
+    return false;
+  }
+
+  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
+  const lastJob = getLastJob(module);
+  if (!lastJob || lastJob.status === 'success') {
+    return true;
+  }
+
+  return false;
+};
+
 export const ModuleTable = ({
   modules,
   forceRefresh,
@@ -154,7 +169,7 @@ export const ModuleTable = ({
       icon: PlayArrowIcon,
       onClick: () => handleRunNext(rowData),
       tooltip: t('module.actions.runNextPhase'),
-      disabled: !getNextPhase(rowData),
+      disabled: !canRunNextPhase({ module: rowData }),
     }),
   ];
 
