@@ -180,7 +180,6 @@ export function registerModuleRoutes(
             password: z.string().optional(),
           })
           .optional(),
-        userPrompt: z.string().optional(),
       });
 
       const parsedBody = runModuleRequestSchema
@@ -189,13 +188,8 @@ export function registerModuleRoutes(
       if (!parsedBody.success) {
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
-      const {
-        phase,
-        sourceRepoAuth,
-        targetRepoAuth,
-        aapCredentials,
-        userPrompt,
-      } = parsedBody.data;
+      const { phase, sourceRepoAuth, targetRepoAuth, aapCredentials } =
+        parsedBody.data;
 
       // Get tokens with config-based fallback
       const sourceToken =
@@ -295,7 +289,6 @@ export function registerModuleRoutes(
           token: targetToken,
         },
         aapCredentials,
-        userPrompt,
       });
 
       // Update job with k8s job name

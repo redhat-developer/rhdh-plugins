@@ -96,6 +96,21 @@ const useColumns = ({
   }, [t, lastPhaseCell, artifactsCell]);
 };
 
+const canRunNextPhase = ({ module }: { module: Module }) => {
+  const nextPhase = getNextPhase(module);
+  if (!nextPhase) {
+    return false;
+  }
+
+  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
+  const lastJob = getLastJob(module);
+  if (!lastJob || lastJob.status === 'success') {
+    return true;
+  }
+
+  return false;
+};
+
 export const ModuleTable = ({
   modules,
   forceRefresh,
@@ -133,8 +148,7 @@ export const ModuleTable = ({
               token:
                 'TODO:placeholder - the token needs to be renewed for each run',
             },
-            userPrompt: 'TODO: user prompt - collect per run',
-            // skipping AAP credentials in favor of app-config.yaml
+            // skipping AAP credentials in favor of the app-config.yaml
           },
         });
 
@@ -154,7 +168,7 @@ export const ModuleTable = ({
       icon: PlayArrowIcon,
       onClick: () => handleRunNext(rowData),
       tooltip: t('module.actions.runNextPhase'),
-      disabled: !getNextPhase(rowData),
+      disabled: !canRunNextPhase({ module: rowData }),
     }),
   ];
 
