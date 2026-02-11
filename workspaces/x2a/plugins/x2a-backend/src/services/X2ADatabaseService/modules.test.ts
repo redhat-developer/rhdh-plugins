@@ -336,6 +336,83 @@ describe('X2ADatabaseService – modules', () => {
         expect(project1Modules.map(m => m.id)).toContain(module1Project1.id);
       },
     );
+
+    it.each(supportedDatabaseIds)(
+      'returns each module with status and optional analyze, migrate, publish - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        await service.createModule({
+          name: 'Module A',
+          sourcePath: '/a',
+          projectId: project.id,
+        });
+
+        const modules = await service.listModules({ projectId: project.id });
+
+        expect(modules).toHaveLength(1);
+        expect(modules[0]).toHaveProperty('status');
+        expect(modules[0].status).toBe('pending');
+        expect(modules[0].id).toBeDefined();
+        expect(modules[0].name).toBe('Module A');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'enriches each module with last analyze, migrate, publish when jobs exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'Module With Jobs',
+          sourcePath: '/with-jobs',
+          projectId: project.id,
+        });
+        const analyzeJob = await service.createJob({
+          projectId: project.id,
+          moduleId: mod.id,
+          phase: 'analyze',
+          status: 'pending',
+          callbackToken: 'tk',
+        });
+        await service.updateJob({
+          id: analyzeJob.id,
+          status: 'success',
+        });
+
+        const modules = await service.listModules({ projectId: project.id });
+
+        expect(modules).toHaveLength(1);
+        expect(modules[0].analyze).toBeDefined();
+        expect(modules[0].analyze?.id).toBe(analyzeJob.id);
+        expect(modules[0].analyze?.phase).toBe('analyze');
+        expect(modules[0].analyze).not.toHaveProperty('callbackToken');
+        expect(modules[0].migrate).toBeUndefined();
+        expect(modules[0].publish).toBeUndefined();
+      },
+      LONG_TEST_TIMEOUT,
+    );
   });
 
   describe('deleteModule', () => {

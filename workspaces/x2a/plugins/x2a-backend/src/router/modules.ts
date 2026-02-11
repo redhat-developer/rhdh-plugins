@@ -18,14 +18,9 @@ import { z } from 'zod';
 import express from 'express';
 import { randomUUID } from 'node:crypto';
 import { InputError, NotFoundError } from '@backstage/errors';
-import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
-import {
-  getUserRef,
-  reconcileJobStatus,
-  removeSensitiveFromJob,
-} from './common';
+import { getUserRef, reconcileJobStatus } from './common';
 
 export function registerModuleRoutes(
   router: express.Router,
@@ -54,50 +49,7 @@ export function registerModuleRoutes(
     // List modules
     const modules = await x2aDatabase.listModules({ projectId });
 
-    // TODO: This can be optimized by using a single query to list all jobs for all modules.
-    const lastAnalyzeJobsOfModules = await Promise.all(
-      modules.map(module =>
-        x2aDatabase.listJobs({
-          projectId,
-          moduleId: module.id,
-          phase: 'analyze',
-          lastJobOnly: true,
-        }),
-      ),
-    );
-    const lastMigrateJobsOfModules = await Promise.all(
-      modules.map(module =>
-        x2aDatabase.listJobs({
-          projectId,
-          moduleId: module.id,
-          phase: 'migrate',
-          lastJobOnly: true,
-        }),
-      ),
-    );
-    const lastPublishJobsOfModules = await Promise.all(
-      modules.map(module =>
-        x2aDatabase.listJobs({
-          projectId,
-          moduleId: module.id,
-          phase: 'publish',
-          lastJobOnly: true,
-        }),
-      ),
-    );
-
-    const response: Array<Module> = modules.map((module, idxModule) => {
-      return {
-        ...module,
-        analyze: removeSensitiveFromJob(lastAnalyzeJobsOfModules[idxModule][0]),
-        migrate: removeSensitiveFromJob(lastMigrateJobsOfModules[idxModule][0]),
-        publish: removeSensitiveFromJob(lastPublishJobsOfModules[idxModule][0]),
-
-        // TODO: calculate module's status from the last job
-      };
-    });
-
-    res.json(response);
+    res.json(modules);
   });
 
   // TODO: This is a TEMPORARY endpoint for testing only.

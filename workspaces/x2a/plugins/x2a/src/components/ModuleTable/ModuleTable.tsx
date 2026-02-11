@@ -87,6 +87,13 @@ const useColumns = ({
     [targetRepoUrl],
   );
 
+  const statusCell = useCallback(
+    (rowData: Module) => {
+      return <div>{t(`module.statuses.${rowData.status || 'none'}`)}</div>;
+    },
+    [t],
+  );
+
   const startedAtCell = useCallback(
     (rowData: Module) => {
       const lastJob = getLastJob(rowData);
@@ -110,17 +117,25 @@ const useColumns = ({
     [t],
   );
 
-  return useMemo(() => {
+  return useMemo((): TableColumn<Module>[] => {
     return [
       { field: 'name', title: t('module.name') },
-      { field: 'status', title: t('module.status') },
+      // TODO: errorDetail
+      { field: 'status', render: statusCell, title: t('module.status') },
       { field: 'sourcePath', title: t('module.sourcePath') },
       { render: lastPhaseCell, title: t('module.lastPhase') },
       { render: artifactsCell, title: t('module.artifacts') },
       { render: startedAtCell, title: t('module.startedAt') },
       { render: finishedAtCell, title: t('module.finishedAt') },
     ];
-  }, [t, lastPhaseCell, artifactsCell, startedAtCell, finishedAtCell]);
+  }, [
+    t,
+    lastPhaseCell,
+    artifactsCell,
+    statusCell,
+    startedAtCell,
+    finishedAtCell,
+  ]);
 };
 
 const canRunNextPhase = ({ module }: { module: Module }) => {
