@@ -36,18 +36,18 @@ export function calculateModuleStatus({
   analyze?: Job;
   migrate?: Job;
   publish?: Job;
-}): ModuleStatus {
+}): { status: ModuleStatus; errorDetails?: string } {
   if (publish) {
-    return publish.status;
+    return { status: publish.status, errorDetails: publish.errorDetails };
   }
   if (migrate) {
-    return migrate.status;
+    return { status: migrate.status, errorDetails: migrate.errorDetails };
   }
   if (analyze) {
-    return analyze.status;
+    return { status: analyze.status, errorDetails: analyze.errorDetails };
   }
 
-  return 'pending';
+  return { status: 'pending', errorDetails: undefined };
 }
 
 /**
@@ -96,17 +96,16 @@ export function calculateProjectStatus(
     state = 'failed';
   } else if (['pending', 'running'].includes(initJob?.status ?? '')) {
     state = 'initializing';
-  } else {
-    if (initJob?.status === 'success') {
-      state = 'initialized';
-      if (finished === total) {
-        state = 'completed';
-      } else {
-        state = 'inProgress';
-      }
+  } else if (initJob?.status === 'success') {
+    if (finished === total) {
+      state = 'completed';
+    } else if (pending || waiting || running) {
+      state = 'inProgress';
     } else {
-      state = 'failed';
+      state = 'initialized';
     }
+  } else {
+    state = 'failed';
   }
 
   return {

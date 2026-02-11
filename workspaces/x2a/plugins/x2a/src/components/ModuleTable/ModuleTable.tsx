@@ -32,6 +32,7 @@ import { useClientService } from '../../ClientService';
 import { Artifacts } from './Artifacts';
 import { humanizeDate } from '../tools';
 import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
+import { ModuleStatusCell } from './ModuleStatusCell';
 
 const getLastJob = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
@@ -87,13 +88,6 @@ const useColumns = ({
     [targetRepoUrl],
   );
 
-  const statusCell = useCallback(
-    (rowData: Module) => {
-      return <div>{t(`module.statuses.${rowData.status || 'none'}`)}</div>;
-    },
-    [t],
-  );
-
   const startedAtCell = useCallback(
     (rowData: Module) => {
       const lastJob = getLastJob(rowData);
@@ -116,26 +110,26 @@ const useColumns = ({
     },
     [t],
   );
-
   return useMemo((): TableColumn<Module>[] => {
     return [
       { field: 'name', title: t('module.name') },
-      // TODO: errorDetail
-      { field: 'status', render: statusCell, title: t('module.status') },
+      {
+        field: 'status',
+        render: (rowData: Module) => (
+          <ModuleStatusCell
+            status={rowData.status}
+            errorDetails={rowData.errorDetails}
+          />
+        ),
+        title: t('module.status'),
+      },
       { field: 'sourcePath', title: t('module.sourcePath') },
       { render: lastPhaseCell, title: t('module.lastPhase') },
       { render: artifactsCell, title: t('module.artifacts') },
       { render: startedAtCell, title: t('module.startedAt') },
       { render: finishedAtCell, title: t('module.finishedAt') },
     ];
-  }, [
-    t,
-    lastPhaseCell,
-    artifactsCell,
-    statusCell,
-    startedAtCell,
-    finishedAtCell,
-  ]);
+  }, [t, lastPhaseCell, artifactsCell, startedAtCell, finishedAtCell]);
 };
 
 const canRunNextPhase = ({ module }: { module: Module }) => {

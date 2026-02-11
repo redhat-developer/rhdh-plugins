@@ -215,7 +215,7 @@ export class X2ADatabaseService {
       return {
         ...module,
         ...lastJobs,
-        status: calculateModuleStatus(lastJobs),
+        ...calculateModuleStatus(lastJobs),
       };
     });
 

@@ -44,4 +44,8 @@ export interface Module {
   migrate?: Job;
   publish?: Job;
   status?: ModuleStatus;
+  /**
+   * Detailed error information if the module failed to execute
+   */
+  errorDetails?: string;
 }

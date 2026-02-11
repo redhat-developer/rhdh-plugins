@@ -748,6 +748,10 @@ export const spec = {
           },
           "status": {
             "$ref": "#/components/schemas/ModuleStatus"
+          },
+          "errorDetails": {
+            "type": "string",
+            "description": "Detailed error information if the module failed to execute"
           }
         },
         "required": [

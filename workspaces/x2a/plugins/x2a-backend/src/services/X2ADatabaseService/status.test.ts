@@ -22,7 +22,7 @@ import type {
 
 import { calculateModuleStatus, calculateProjectStatus } from './status';
 
-function job(status: Job['status']): Job {
+function job(status: Job['status'], options?: { errorDetails?: string }): Job {
   return {
     id: 'job-id',
     projectId: 'project-id',
@@ -30,29 +30,51 @@ function job(status: Job['status']): Job {
     phase: 'analyze',
     k8sJobName: 'k8s-job',
     status,
+    ...(options?.errorDetails !== undefined && {
+      errorDetails: options.errorDetails,
+    }),
   };
 }
 
 describe('calculateModuleStatus', () => {
   it('returns pending when no jobs are provided', () => {
-    expect(calculateModuleStatus({})).toBe('pending');
+    expect(calculateModuleStatus({})).toEqual({
+      status: 'pending',
+      errorDetails: undefined,
+    });
   });
 
   it('returns analyze status when only analyze job is provided', () => {
-    expect(calculateModuleStatus({ analyze: job('pending') })).toBe('pending');
-    expect(calculateModuleStatus({ analyze: job('running') })).toBe('running');
-    expect(calculateModuleStatus({ analyze: job('success') })).toBe('success');
-    expect(calculateModuleStatus({ analyze: job('error') })).toBe('error');
+    expect(calculateModuleStatus({ analyze: job('pending') }).status).toBe(
+      'pending',
+    );
+    expect(calculateModuleStatus({ analyze: job('running') }).status).toBe(
+      'running',
+    );
+    expect(calculateModuleStatus({ analyze: job('success') }).status).toBe(
+      'success',
+    );
+    expect(calculateModuleStatus({ analyze: job('error') }).status).toBe(
+      'error',
+    );
   });
 
   it('returns migrate status when only migrate job is provided', () => {
-    expect(calculateModuleStatus({ migrate: job('success') })).toBe('success');
-    expect(calculateModuleStatus({ migrate: job('error') })).toBe('error');
+    expect(calculateModuleStatus({ migrate: job('success') }).status).toBe(
+      'success',
+    );
+    expect(calculateModuleStatus({ migrate: job('error') }).status).toBe(
+      'error',
+    );
   });
 
   it('returns publish status when only publish job is provided', () => {
-    expect(calculateModuleStatus({ publish: job('success') })).toBe('success');
-    expect(calculateModuleStatus({ publish: job('running') })).toBe('running');
+    expect(calculateModuleStatus({ publish: job('success') }).status).toBe(
+      'success',
+    );
+    expect(calculateModuleStatus({ publish: job('running') }).status).toBe(
+      'running',
+    );
   });
 
   it('prefers migrate over analyze when both are provided', () => {
@@ -60,13 +82,13 @@ describe('calculateModuleStatus', () => {
       calculateModuleStatus({
         analyze: job('success'),
         migrate: job('error'),
-      }),
+      }).status,
     ).toBe('error');
     expect(
       calculateModuleStatus({
         analyze: job('error'),
         migrate: job('success'),
-      }),
+      }).status,
     ).toBe('success');
   });
 
@@ -76,14 +98,14 @@ describe('calculateModuleStatus', () => {
         analyze: job('success'),
         migrate: job('success'),
         publish: job('error'),
-      }),
+      }).status,
     ).toBe('error');
     expect(
       calculateModuleStatus({
         analyze: job('error'),
         migrate: job('error'),
         publish: job('success'),
-      }),
+      }).status,
     ).toBe('success');
   });
 
@@ -95,8 +117,59 @@ describe('calculateModuleStatus', () => {
         analyze: job('error'),
         migrate: job('success'),
         publish: job('success'),
-      }),
+      }).status,
     ).toBe('success');
+  });
+
+  describe('errorDetails', () => {
+    it('returns errorDetails from analyze job when only analyze is provided', () => {
+      const result = calculateModuleStatus({
+        analyze: job('error', { errorDetails: 'Analyze failed: timeout' }),
+      });
+      expect(result.status).toBe('error');
+      expect(result.errorDetails).toBe('Analyze failed: timeout');
+    });
+
+    it('returns errorDetails from migrate job when migrate is the last phase', () => {
+      const result = calculateModuleStatus({
+        analyze: job('success'),
+        migrate: job('error', { errorDetails: 'Migration failed' }),
+      });
+      expect(result.status).toBe('error');
+      expect(result.errorDetails).toBe('Migration failed');
+    });
+
+    it('returns errorDetails from publish job when publish is the last phase', () => {
+      const result = calculateModuleStatus({
+        analyze: job('success'),
+        migrate: job('success'),
+        publish: job('error', { errorDetails: 'Publish failed' }),
+      });
+      expect(result.status).toBe('error');
+      expect(result.errorDetails).toBe('Publish failed');
+    });
+
+    it('returns undefined errorDetails when the chosen phase job has none', () => {
+      expect(
+        calculateModuleStatus({ analyze: job('error') }).errorDetails,
+      ).toBeUndefined();
+      expect(
+        calculateModuleStatus({ publish: job('success') }).errorDetails,
+      ).toBeUndefined();
+    });
+
+    it('prefers errorDetails from last phase when multiple phases have errorDetails', () => {
+      const result = calculateModuleStatus({
+        analyze: job('error', { errorDetails: 'Analyze error' }),
+        migrate: job('error', { errorDetails: 'Migrate error' }),
+        publish: job('error', { errorDetails: 'Publish error' }),
+      });
+      expect(result.errorDetails).toBe('Publish error');
+    });
+
+    it('returns undefined errorDetails when no jobs are provided', () => {
+      expect(calculateModuleStatus({}).errorDetails).toBeUndefined();
+    });
   });
 });
 

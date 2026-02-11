@@ -401,15 +401,42 @@ describe('X2ADatabaseService – modules', () => {
           status: 'success',
         });
 
+        const modError = await service.createModule({
+          name: 'Module With Error',
+          sourcePath: '/with-error',
+          projectId: project.id,
+        });
+        const errorJob = await service.createJob({
+          projectId: project.id,
+          moduleId: modError.id,
+          phase: 'analyze',
+          status: 'pending',
+          callbackToken: 'tk2',
+        });
+        await service.updateJob({
+          id: errorJob.id,
+          status: 'error',
+          errorDetails: 'Analyze failed: timeout',
+        });
+
         const modules = await service.listModules({ projectId: project.id });
 
-        expect(modules).toHaveLength(1);
-        expect(modules[0].analyze).toBeDefined();
-        expect(modules[0].analyze?.id).toBe(analyzeJob.id);
-        expect(modules[0].analyze?.phase).toBe('analyze');
-        expect(modules[0].analyze).not.toHaveProperty('callbackToken');
-        expect(modules[0].migrate).toBeUndefined();
-        expect(modules[0].publish).toBeUndefined();
+        expect(modules).toHaveLength(2);
+        const successModule = modules.find(m => m.name === 'Module With Jobs');
+        expect(successModule).toBeDefined();
+        expect(successModule?.analyze).toBeDefined();
+        expect(successModule?.analyze?.id).toBe(analyzeJob.id);
+        expect(successModule?.analyze?.phase).toBe('analyze');
+        expect(successModule?.analyze).not.toHaveProperty('callbackToken');
+        expect(successModule?.migrate).toBeUndefined();
+        expect(successModule?.publish).toBeUndefined();
+        expect(successModule?.status).toBe('success');
+        expect(successModule?.errorDetails ?? undefined).toBeUndefined();
+
+        const errorModule = modules.find(m => m.name === 'Module With Error');
+        expect(errorModule).toBeDefined();
+        expect(errorModule?.status).toBe('error');
+        expect(errorModule?.errorDetails).toBe('Analyze failed: timeout');
       },
       LONG_TEST_TIMEOUT,
     );

@@ -107,6 +107,7 @@ export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
 export interface Module {
     // (undocumented)
     analyze?: Job;
+    errorDetails?: string;
     id: string;
     // (undocumented)
     migrate?: Job;
