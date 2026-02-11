@@ -58,6 +58,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.status': 'Estado',
     'module.sourcePath': 'Ruta de origen',
     'module.artifacts': 'Artefactos',
+    'module.startedAt': 'Iniciado el',
+    'module.finishedAt': 'Finalizado el',
     'artifact.types.migration_plan': 'Plan de migración',
     'artifact.types.module_migration_plan': 'Plan del módulo',
     'artifact.types.migrated_sources': 'Fuentes migradas',
