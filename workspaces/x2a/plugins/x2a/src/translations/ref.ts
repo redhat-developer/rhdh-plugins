@@ -79,6 +79,8 @@ export const x2aPluginMessages = {
     status: 'Status',
     sourcePath: 'Source Path',
     artifacts: 'Artifacts',
+    startedAt: 'Started At',
+    finishedAt: 'Finished At',
   },
   artifact: {
     types: {
