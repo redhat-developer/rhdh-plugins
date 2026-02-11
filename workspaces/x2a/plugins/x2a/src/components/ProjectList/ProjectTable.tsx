@@ -129,10 +129,8 @@ const useColumns = (
       },
       {
         title: t('table.columns.createdAt'),
-        render: (rowData: Project) => {
-          // TODO: Show human-readable duration instead, make sure sorting still works
-          return <div>{rowData.createdAt.toLocaleString()}</div>;
-        },
+        field: 'createdAt',
+        type: 'datetime',
         defaultSort: getDefaultSort(4),
       },
     ];

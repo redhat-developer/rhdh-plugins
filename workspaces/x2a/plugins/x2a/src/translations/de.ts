@@ -58,6 +58,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.status': 'Status',
     'module.sourcePath': 'Quellpfad',
     'module.artifacts': 'Artefakte',
+    'module.startedAt': 'Gestartet am',
+    'module.finishedAt': 'Beendet am',
     'artifact.types.migration_plan': 'Migrationsplan',
     'artifact.types.module_migration_plan': 'Modulplan',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
