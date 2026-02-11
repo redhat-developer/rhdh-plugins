@@ -5,11 +5,10 @@
 ```ts
 import { AnalyticsApi } from '@backstage/core-plugin-api';
 import { AnalyticsEvent } from '@backstage/core-plugin-api';
-import { ApiFactory } from '@backstage/frontend-plugin-api';
-import { Config } from '@backstage/config';
+import { ApiFactory } from '@backstage/core-plugin-api';
+import { Config } from '@backstage/config/index';
 import { ConfigApi } from '@backstage/core-plugin-api';
 import { IdentityApi } from '@backstage/core-plugin-api';
-import { IdentityApi as IdentityApi_2 } from '@backstage/frontend-plugin-api';
 
 // @public
 export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
@@ -28,7 +27,7 @@ export const AdoptionInsightsAnalyticsApiFactory: ApiFactory<
   AdoptionInsightsAnalyticsApi,
   {
     configApi: Config;
-    identityApi: IdentityApi_2;
+    identityApi: IdentityApi;
   }
 >;
 

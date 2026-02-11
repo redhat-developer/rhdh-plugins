@@ -16,6 +16,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { ChangeEvent } from 'react';
 
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import { ResponseErrorPanel } from '@backstage/core-components';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -33,6 +34,7 @@ import CardWrapper from '../CardWrapper';
 import { PLUGINS_TABLE_HEADERS } from '../../utils/constants';
 
 import { usePlugins } from '../../hooks/usePlugins';
+import { useEntityMetadataMap } from '../../hooks/useEntityMetadataMap';
 import TableFooterPagination from '../CardFooter';
 import { Line, LineChart, ResponsiveContainer } from 'recharts';
 import EmptyChartState from '../Common/EmptyChartState';
@@ -45,6 +47,21 @@ const Plugins = () => {
   const { t } = useTranslation();
 
   const { plugins, loading, error } = usePlugins({ limit });
+
+  const pluginRefs = useMemo(
+    () =>
+      plugins.data
+        ?.filter(plugin => Boolean(plugin.plugin_id))
+        .map(plugin =>
+          stringifyEntityRef({
+            kind: 'Plugin',
+            namespace: 'default',
+            name: plugin.plugin_id,
+          }),
+        ) ?? [],
+    [plugins],
+  );
+  const { entityMetadataMap } = useEntityMetadataMap(pluginRefs);
 
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -127,70 +144,99 @@ const Plugins = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              visiblePlugins?.map(plugin => (
-                <TableRow
-                  key={plugin.plugin_id}
-                  sx={{
-                    '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
-                    borderBottom: theme =>
-                      `1px solid ${theme.palette.grey[300]}`,
-                  }}
-                >
-                  <TableCell
+              visiblePlugins?.map(plugin => {
+                const entityRef = plugin.plugin_id
+                  ? stringifyEntityRef({
+                      kind: 'Plugin',
+                      namespace: 'default',
+                      name: plugin.plugin_id,
+                    })
+                  : '';
+                const displayName =
+                  (entityRef && entityMetadataMap[entityRef]?.title) ??
+                  plugin.plugin_id ??
+                  '--';
+
+                return (
+                  <TableRow
+                    key={plugin.plugin_id}
                     sx={{
-                      width: '20%',
+                      '&:nth-of-type(odd)': { backgroundColor: 'inherit' },
+                      borderBottom: theme =>
+                        `1px solid ${theme.palette.grey[300]}`,
                     }}
                   >
-                    {plugin.plugin_id ?? '--'}
-                  </TableCell>
-                  <TableCell sx={{ width: '40%' }}>
-                    {plugin.trend?.length > 1 ? (
-                      <ResponsiveContainer width="100%" height={50}>
-                        <LineChart data={plugin.trend}>
-                          <Line
-                            type="monotone"
-                            dataKey="count"
-                            stroke="#9370DB"
-                            strokeWidth={2}
-                            dot={false}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      '--'
-                    )}
-                  </TableCell>
-                  <TableCell sx={{ width: '20%' }}>
-                    <Box
+                    <TableCell
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
+                        width: '20%',
                         minWidth: 0,
                       }}
                     >
-                      {Math.round(Number(plugin.trend_percentage)) < 0 ? (
-                        <TrendingDownIcon
-                          sx={{ color: 'red', flexShrink: 0 }}
-                        />
-                      ) : (
-                        <TrendingUpIcon
-                          sx={{ color: 'green', flexShrink: 0 }}
-                        />
-                      )}
                       <Typography
                         variant="body2"
-                        sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        sx={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                        title={plugin.plugin_id ?? ''}
                       >
-                        {Math.abs(Math.round(Number(plugin.trend_percentage)))}%
+                        {displayName}
                       </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ width: '20%' }}>
-                    {Number(plugin.visit_count).toLocaleString('en-US') ?? '--'}
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    <TableCell sx={{ width: '40%' }}>
+                      {plugin.trend?.length > 1 ? (
+                        <ResponsiveContainer width="100%" height={50}>
+                          <LineChart data={plugin.trend}>
+                            <Line
+                              type="monotone"
+                              dataKey="count"
+                              stroke="#9370DB"
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        '--'
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ width: '20%' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          minWidth: 0,
+                        }}
+                      >
+                        {Math.round(Number(plugin.trend_percentage)) < 0 ? (
+                          <TrendingDownIcon
+                            sx={{ color: 'red', flexShrink: 0 }}
+                          />
+                        ) : (
+                          <TrendingUpIcon
+                            sx={{ color: 'green', flexShrink: 0 }}
+                          />
+                        )}
+                        <Typography
+                          variant="body2"
+                          sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
+                        >
+                          {Math.abs(
+                            Math.round(Number(plugin.trend_percentage)),
+                          )}
+                          %
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ width: '20%' }}>
+                      {Number(plugin.visit_count).toLocaleString('en-US') ??
+                        '--'}
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
           <TableFooter>

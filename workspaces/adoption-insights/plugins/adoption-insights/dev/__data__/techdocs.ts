@@ -33,5 +33,14 @@ export default {
       namespace: 'default',
       site_name: 'nationalparks-doc',
     },
+    {
+      entityref: 'techdocs:example-go-template-1',
+      count: 2,
+      last_used: '2025-03-06T06:25:16.708Z',
+      kind: '',
+      name: '',
+      namespace: '',
+      site_name: '',
+    },
   ],
 };

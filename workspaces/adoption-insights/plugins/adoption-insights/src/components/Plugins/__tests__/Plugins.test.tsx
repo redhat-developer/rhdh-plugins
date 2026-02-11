@@ -46,6 +46,15 @@ jest.mock('../../../hooks/usePlugins', () => ({
   usePlugins: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useEntityMetadataMap', () => ({
+  useEntityMetadataMap: () => ({
+    entityMetadataMap: {
+      'plugin:default/plugin-1': { title: 'Plugin One' },
+      'plugin:default/plugin-2': { title: 'Plugin Two' },
+    },
+  }),
+}));
+
 jest.mock('../../CardFooter', () => () => <div data-testid="pagination" />);
 
 jest.mock('recharts', () => {
@@ -110,8 +119,8 @@ describe('Plugins Component', () => {
 
     render(<Plugins />);
 
-    expect(screen.getByText('plugin-1')).toBeInTheDocument();
-    expect(screen.getByText('plugin-2')).toBeInTheDocument();
+    expect(screen.getByText('Plugin One')).toBeInTheDocument();
+    expect(screen.getByText('Plugin Two')).toBeInTheDocument();
     expect(screen.getByText('120')).toBeInTheDocument();
     expect(screen.getByText('80')).toBeInTheDocument();
   });

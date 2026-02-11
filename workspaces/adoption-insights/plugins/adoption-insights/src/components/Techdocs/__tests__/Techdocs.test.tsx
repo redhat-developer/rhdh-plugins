@@ -61,11 +61,27 @@ jest.mock('../../../hooks/useTechdocs', () => ({
   }),
 }));
 
+jest.mock('../../../hooks/useEntityMetadataMap', () => ({
+  useEntityMetadataMap: () => ({
+    entityMetadataMap: {
+      'Component:default/test-doc-1': { title: 'Test Doc One' },
+      'Component:default/test-doc-2': { title: 'Test Doc Two' },
+      'Service:default/test-doc-3': { title: 'Test Doc Three' },
+      'Website:default/test-doc-4': { title: 'Test Doc Four' },
+    },
+  }),
+}));
+
 jest.mock('@backstage/catalog-model', () => ({
   parseEntityRef: (ref: string) => {
     const [kind, name] = ref.split(':')[0].split('/');
     return { kind, name: name || ref.split('/')[1] };
   },
+  stringifyEntityRef: (entity: {
+    kind: string;
+    namespace?: string;
+    name: string;
+  }) => `${entity.kind}:${entity.namespace || 'default'}/${entity.name}`,
 }));
 
 jest.mock('@backstage/plugin-catalog-react', () => ({
