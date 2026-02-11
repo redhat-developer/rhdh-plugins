@@ -15,6 +15,7 @@
  */
 
 export * from '../models/AAPCredentials.model';
+export * from '../models/AgentMetrics.model';
 export * from '../models/Artifact.model';
 export * from '../models/ArtifactType.model';
 export * from '../models/GitRepoAuth.model';
@@ -26,8 +27,11 @@ export * from '../models/ModulePhase.model';
 export * from '../models/Project.model';
 export * from '../models/ProjectsGet200Response.model';
 export * from '../models/ProjectsPostRequest.model';
+export * from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
+export * from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 export * from '../models/ProjectsProjectIdDelete200Response.model';
 export * from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 export * from '../models/ProjectsProjectIdModulesPostRequest.model';
 export * from '../models/ProjectsProjectIdRunPost200Response.model';
 export * from '../models/ProjectsProjectIdRunPostRequest.model';
+export * from '../models/Telemetry.model';
