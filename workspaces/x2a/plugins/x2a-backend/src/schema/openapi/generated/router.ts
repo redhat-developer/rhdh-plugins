@@ -447,9 +447,7 @@ export const spec = {
                   }
                 },
                 "required": [
-                  "phase",
-                  "sourceRepoAuth",
-                  "targetRepoAuth"
+                  "phase"
                 ]
               }
             }
@@ -543,6 +541,111 @@ export const spec = {
           },
           "404": {
             "description": "Module not found or no jobs exist"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/collectArtifacts": {
+      "post": {
+        "summary": "Collects artifacts from a completed X2Ansible job",
+        "description": "Callback endpoint for X2Ansible jobs to submit execution artifacts and results.\nThis endpoint is called by the X2Ansible job runner when a migration phase completes.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "UUID of the project"
+          },
+          {
+            "in": "query",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "UUID of the module.\n- Required for analyze, migrate, and publish phases\n- Should be omitted for init phase\n"
+          },
+          {
+            "in": "query",
+            "name": "phase",
+            "schema": {
+              "$ref": "#/components/schemas/MigrationPhase"
+            },
+            "required": true,
+            "description": "Migration phase that completed"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "success",
+                      "error"
+                    ],
+                    "description": "Execution status of the job"
+                  },
+                  "errorDetails": {
+                    "type": "string",
+                    "description": "Error details if status is Error"
+                  },
+                  "jobId": {
+                    "type": "string",
+                    "description": "UUID of the completed job"
+                  },
+                  "artifacts": {
+                    "type": "array",
+                    "description": "List of artifacts produced by the job",
+                    "items": {
+                      "$ref": "#/components/schemas/Artifact"
+                    }
+                  },
+                  "telemetry": {
+                    "$ref": "#/components/schemas/Telemetry"
+                  }
+                },
+                "required": [
+                  "status",
+                  "jobId",
+                  "artifacts"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Artifacts collected successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Success confirmation message"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "404": {
+            "description": "Project or job not found"
           }
         }
       }
@@ -710,6 +813,9 @@ export const spec = {
             "items": {
               "$ref": "#/components/schemas/Artifact"
             }
+          },
+          "telemetry": {
+            "$ref": "#/components/schemas/Telemetry"
           }
         }
       },
@@ -802,6 +908,83 @@ export const spec = {
           "publish"
         ],
         "description": "Phases to execute on a module"
+      },
+      "Telemetry": {
+        "type": "object",
+        "description": "Execution telemetry and metrics for a migration phase",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Execution summary from x2aconvertor"
+          },
+          "phase": {
+            "type": "string",
+            "description": "Phase name (init, analyze, migrate, publish)"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the phase started (ISO 8601 format)"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the phase completed (ISO 8601 format)"
+          },
+          "agents": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AgentMetrics"
+            },
+            "description": "Per-agent execution metrics (agent name to metrics mapping)"
+          }
+        },
+        "required": [
+          "summary",
+          "phase",
+          "startedAt"
+        ]
+      },
+      "AgentMetrics": {
+        "type": "object",
+        "description": "Telemetry data for a single agent execution within a phase",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Agent identifier (e.g., \"PlanningAgent\", \"WriteAgent\")"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When agent execution started (ISO 8601 format)"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When agent execution completed (ISO 8601 format)"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "format": "double",
+            "description": "Execution duration in seconds"
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom key-value metrics recorded by the agent"
+          },
+          "toolCalls": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Tool call counts (tool name to count mapping)"
+          }
+        },
+        "required": [
+          "name",
+          "durationSeconds"
+        ]
       }
     }
   }

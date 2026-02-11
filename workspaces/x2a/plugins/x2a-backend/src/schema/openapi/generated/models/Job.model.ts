@@ -20,6 +20,7 @@
 import { Artifact } from '../models/Artifact.model';
 import { JobStatusEnum } from '../models/JobStatusEnum.model';
 import { MigrationPhase } from '../models/MigrationPhase.model';
+import { Telemetry } from '../models/Telemetry.model';
 
 /**
  * @public
@@ -59,4 +60,5 @@ export interface Job {
    * List of artifacts produced by the job
    */
   artifacts?: Array<Artifact>;
+  telemetry?: Telemetry;
 }

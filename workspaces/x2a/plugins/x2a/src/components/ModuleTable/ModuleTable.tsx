@@ -30,6 +30,8 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Artifacts } from './Artifacts';
+import { humanizeDate } from '../tools';
+import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
 
 const getLastJob = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
@@ -85,6 +87,29 @@ const useColumns = ({
     [targetRepoUrl],
   );
 
+  const startedAtCell = useCallback(
+    (rowData: Module) => {
+      const lastJob = getLastJob(rowData);
+      if (!lastJob) {
+        return <div>{t('module.phases.none')}</div>;
+      }
+      const formatted = humanizeDate(new Date(lastJob.startedAt));
+      return <div>{formatted}</div>;
+    },
+    [t],
+  );
+  const finishedAtCell = useCallback(
+    (rowData: Module) => {
+      const lastJob = getLastJob(rowData);
+      if (!lastJob?.finishedAt) {
+        return <div>{t('module.phases.none')}</div>;
+      }
+      const formatted = humanizeDate(new Date(lastJob.finishedAt));
+      return <div>{formatted}</div>;
+    },
+    [t],
+  );
+
   return useMemo(() => {
     return [
       { field: 'name', title: t('module.name') },
@@ -92,8 +117,10 @@ const useColumns = ({
       { field: 'sourcePath', title: t('module.sourcePath') },
       { render: lastPhaseCell, title: t('module.lastPhase') },
       { render: artifactsCell, title: t('module.artifacts') },
+      { render: startedAtCell, title: t('module.startedAt') },
+      { render: finishedAtCell, title: t('module.finishedAt') },
     ];
-  }, [t, lastPhaseCell, artifactsCell]);
+  }, [t, lastPhaseCell, artifactsCell, startedAtCell, finishedAtCell]);
 };
 
 const canRunNextPhase = ({ module }: { module: Module }) => {
@@ -121,6 +148,8 @@ export const ModuleTable = ({
   project: Project;
 }) => {
   const { t } = useTranslation();
+  const repoAuthentication = useRepoAuthentication();
+
   const columns = useColumns({ targetRepoUrl: project.targetRepoUrl });
   const data: Module[] = modules;
   const clientService = useClientService();
@@ -135,18 +164,35 @@ export const ModuleTable = ({
         return;
       }
 
+      // Authenticate the repositories
+      const sourceRepoAuthToken = (
+        await repoAuthentication.authenticate([
+          getAuthTokenDescriptor({
+            repoUrl: project.sourceRepoUrl,
+            readOnly: true,
+          }),
+        ])
+      )[0].token;
+      const targetRepoAuthToken = (
+        await repoAuthentication.authenticate([
+          getAuthTokenDescriptor({
+            repoUrl: project.targetRepoUrl,
+            readOnly: false,
+          }),
+        ])
+      )[0].token;
+
+      // Call the phase-run action
       const response =
         await clientService.projectsProjectIdModulesModuleIdRunPost({
           path: { projectId: module.projectId, moduleId: module.id },
           body: {
             phase: nextPhase,
             sourceRepoAuth: {
-              token:
-                'TODO:placeholder - the token needs to be renewed for each run',
+              token: sourceRepoAuthToken,
             },
             targetRepoAuth: {
-              token:
-                'TODO:placeholder - the token needs to be renewed for each run',
+              token: targetRepoAuthToken,
             },
             // skipping AAP credentials in favor of the app-config.yaml
           },
@@ -159,7 +205,13 @@ export const ModuleTable = ({
 
       forceRefresh();
     },
-    [clientService, forceRefresh],
+    [
+      clientService,
+      forceRefresh,
+      repoAuthentication,
+      project.sourceRepoUrl,
+      project.targetRepoUrl,
+    ],
   );
 
   const actions: MaterialTableProps<Module>['actions'] = [

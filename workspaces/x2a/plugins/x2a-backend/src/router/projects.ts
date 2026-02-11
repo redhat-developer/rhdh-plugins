@@ -30,6 +30,7 @@ import {
   getUserRef,
   isUserOfAdminViewPermission,
   isUserOfAdminWritePermission,
+  reconcileJobStatus,
 } from './common';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
 
@@ -255,9 +256,17 @@ export function registerProjectRoutes(
 
       // Check for existing running init job
       const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
-      const hasActiveInitJob = existingJobs.some(
+      const activeInitJobs = existingJobs.filter(
         job =>
           job.phase === 'init' && ['pending', 'running'].includes(job.status),
+      );
+      const reconciledInitJobs = await Promise.all(
+        activeInitJobs.map(job =>
+          reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
+        ),
+      );
+      const hasActiveInitJob = reconciledInitJobs.some(job =>
+        ['pending', 'running'].includes(job.status),
       );
 
       if (hasActiveInitJob) {

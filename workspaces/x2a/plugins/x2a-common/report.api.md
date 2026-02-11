@@ -15,6 +15,20 @@ export interface AAPCredentials {
     username?: string;
 }
 
+// @public
+export interface AgentMetrics {
+    durationSeconds: number;
+    endedAt?: Date;
+    metrics?: {
+        [key: string]: any;
+    };
+    name: string;
+    startedAt?: Date;
+    toolCalls?: {
+        [key: string]: number;
+    };
+}
+
 // @public (undocumented)
 export interface Artifact {
     id: string;
@@ -50,6 +64,7 @@ export class DefaultApiClient {
     });
     projectsGet(request: ProjectsGet, options?: RequestOptions): Promise<TypedResponse<ProjectsGet200Response>>;
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdCollectArtifactsPost(request: ProjectsProjectIdCollectArtifactsPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
@@ -78,6 +93,8 @@ export interface Job {
     startedAt: Date;
     // (undocumented)
     status: JobStatusEnum;
+    // (undocumented)
+    telemetry?: Telemetry;
 }
 
 // @public (undocumented)
@@ -155,6 +172,36 @@ export interface ProjectsPostRequest {
 }
 
 // @public (undocumented)
+export type ProjectsProjectIdCollectArtifactsPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdCollectArtifactsPostRequest;
+    query: {
+        moduleId?: string;
+        phase: MigrationPhase;
+    };
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdCollectArtifactsPost200Response {
+    message: string;
+}
+
+// @public (undocumented)
+export interface ProjectsProjectIdCollectArtifactsPostRequest {
+    artifacts: Array<Artifact>;
+    errorDetails?: string;
+    jobId: string;
+    status: ProjectsProjectIdCollectArtifactsPostRequestStatusEnum;
+    // (undocumented)
+    telemetry?: Telemetry;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdCollectArtifactsPostRequestStatusEnum = 'success' | 'error';
+
+// @public (undocumented)
 export type ProjectsProjectIdDelete = {
     path: {
         projectId: string;
@@ -208,9 +255,9 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
     // (undocumented)
     phase: ModulePhase;
     // (undocumented)
-    sourceRepoAuth: GitRepoAuth;
+    sourceRepoAuth?: GitRepoAuth;
     // (undocumented)
-    targetRepoAuth: GitRepoAuth;
+    targetRepoAuth?: GitRepoAuth;
 }
 
 // @public (undocumented)
@@ -259,6 +306,17 @@ export interface ProjectsProjectIdRunPostRequest {
 export interface RequestOptions {
     // (undocumented)
     token?: string;
+}
+
+// @public
+export interface Telemetry {
+    agents?: {
+        [key: string]: AgentMetrics;
+    };
+    endedAt?: Date;
+    phase: string;
+    startedAt: Date;
+    summary: string;
 }
 
 // @public

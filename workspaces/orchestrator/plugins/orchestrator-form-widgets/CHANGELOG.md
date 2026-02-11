@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.6.2
+
+### Patch Changes
+
+- db243d1: Allow ActiveDropdown fetch selectors to reference current form data via the combined response/current context.
+- bb02bdb: Allow ActiveDropdown fetch:response:default to be a JSONata selector evaluated against the fetch response.
+- 8fabecd: Clarify ActiveText retrigger loading by showing a spinner while dependencies resolve.
+- 2adc3d8: Add fetch:error:silent support to suppress fetch errors in widgets.
+- e6987f1: Fixed ActiveMultiSelect Enter key behavior when `ui:allowNewItems` is enabled. Pressing Enter now adds a new chip instead of submitting the form to the next step.
+- 6877513: Evaluate JSONata expressions in fetch/validate request bodies on the client before sending.
+- 490d0a3: Add fetch:skipInitialValue to keep fields empty until user input and treat empty-string defaults as valid.
+- Updated dependencies [858963d]
+- Updated dependencies [9c17c36]
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.3
+
 ## 1.6.1
 
 ### Patch Changes

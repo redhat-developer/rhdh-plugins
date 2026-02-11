@@ -37,6 +37,8 @@ readonly "module.phases.migrate": string;
 readonly "module.phases.publish": string;
 readonly "module.lastPhase": string;
 readonly "module.sourcePath": string;
+readonly "module.startedAt": string;
+readonly "module.finishedAt": string;
 readonly "page.title": string;
 readonly "page.subtitle": string;
 readonly "page.devTitle": string;

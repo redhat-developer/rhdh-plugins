@@ -15,3 +15,4 @@
  */
 export * from './buildArtifactUrl';
 export * from './humanizeArtifactType';
+export * from './humanizeDate';
