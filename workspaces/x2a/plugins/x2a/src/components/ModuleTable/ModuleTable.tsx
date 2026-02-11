@@ -165,10 +165,22 @@ export const ModuleTable = ({
       }
 
       // Authenticate the repositories
-      const authTokens = await repoAuthentication.authenticate([
-        getAuthTokenDescriptor(project.sourceRepoUrl),
-        getAuthTokenDescriptor(project.targetRepoUrl),
-      ]);
+      const sourceRepoAuthToken = (
+        await repoAuthentication.authenticate([
+          getAuthTokenDescriptor({
+            repoUrl: project.sourceRepoUrl,
+            readOnly: true,
+          }),
+        ])
+      )[0].token;
+      const targetRepoAuthToken = (
+        await repoAuthentication.authenticate([
+          getAuthTokenDescriptor({
+            repoUrl: project.targetRepoUrl,
+            readOnly: false,
+          }),
+        ])
+      )[0].token;
 
       // Call the phase-run action
       const response =
@@ -177,10 +189,10 @@ export const ModuleTable = ({
           body: {
             phase: nextPhase,
             sourceRepoAuth: {
-              token: authTokens[0].token,
+              token: sourceRepoAuthToken,
             },
             targetRepoAuth: {
-              token: authTokens[1].token,
+              token: targetRepoAuthToken,
             },
             // skipping AAP credentials in favor of the app-config.yaml
           },

@@ -14,16 +14,29 @@ import { AuthTokenDescriptor } from './tokenDescriptorTypes';
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific governing permissions and limitations under the License.
  */
-export const getAuthTokenDescriptor = (
-  repoUrl: string,
-): AuthTokenDescriptor => {
+export const getAuthTokenDescriptor = ({
+  repoUrl,
+  readOnly,
+}: {
+  repoUrl: string;
+  readOnly: boolean;
+}): AuthTokenDescriptor => {
+  // Based on https://docs.github.com/en/enterprise-cloud[@latest](https://github.com/latest)/admin/managing-your-enterprise-account/changing-the-url-for-your-enterprise
+  // the GH URL should always contain github.com.
   const provider = repoUrl.includes('github.com') ? 'github' : 'gitlab';
 
+  if (provider === 'github') {
+    return {
+      provider,
+      tokenType: 'oauth',
+      scope: 'repo',
+    };
+  }
+
+  // Must be Gitlab then:
   return {
     provider,
-    // oauth for both GitHub and GitLab
     tokenType: 'oauth',
-    // to be revised later
-    scope: 'repo',
+    scope: readOnly ? 'read_repository' : 'write_repository',
   };
 };
