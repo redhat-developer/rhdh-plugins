@@ -31,6 +31,7 @@ import {
   JobStatusEnum,
   MigrationPhase,
   Artifact,
+  Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { ProjectsGet } from '../../schema/openapi';
@@ -226,6 +227,7 @@ export class X2ADatabaseService {
     errorDetails?: string | null;
     k8sJobName?: string | null;
     artifacts?: Artifact[];
+    telemetry?: Telemetry | null;
   }): Promise<Job | undefined> {
     return this.#jobOps.updateJob(update);
   }
