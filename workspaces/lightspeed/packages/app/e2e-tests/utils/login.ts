@@ -16,7 +16,14 @@
 import { Page } from '@playwright/test';
 
 export const loginAsGuest = async (page: Page) => {
+  // Wait for the login page to be ready
+  await page
+    .getByRole('button', { name: 'Enter' })
+    .waitFor({ state: 'visible' });
   await page.getByRole('button', { name: 'Enter' }).click();
+  await page
+    .getByRole('heading', { name: 'Red Hat Catalog' })
+    .waitFor({ state: 'visible', timeout: 5000 });
 };
 
 export const keycloakLogin = async (

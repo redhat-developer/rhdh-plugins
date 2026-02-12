@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.6.1
+
+### Patch Changes
+
+- 0f60a00: feat: Improve permission denied error handling for workflow instances
+  - Add PermissionDeniedPanel component for clean access denied UI
+  - Improve backend error messages when user lacks instanceAdminView permission
+  - Provide detailed error messages explaining why access is denied:
+    - When instance has no ownership info (external/legacy runs)
+    - When instance was created by another user
+
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [858963d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.0.1
+
 ## 8.6.0
 
 ### Minor Changes

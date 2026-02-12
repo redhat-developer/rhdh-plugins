@@ -91,7 +91,7 @@ jest.mock('@backstage/backend-plugin-api', () => ({
   })),
 }));
 
-const getX2aDatabaseServiceMock = () => ({
+const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   // projects
   createProject: jest
     .fn()
@@ -116,6 +116,14 @@ const getX2aDatabaseServiceMock = () => ({
   listJobs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   getJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobWithLog: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobLogs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForModule: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
 });
 
 const getKubeServiceMock = () =>
@@ -205,6 +213,21 @@ describe('plugin', () => {
       ...mockInputProject,
       createdBy: 'user: default/user1',
     });
+  });
+
+  it('should allow unauthenticated access to collectArtifacts callback', async () => {
+    const server = await startBackendServer();
+    const fakeProjectId = '00000000-0000-0000-0000-000000000000';
+    const fakeJobId = '00000000-0000-0000-0000-000000000001';
+
+    const res = await request(server)
+      .post(`/api/x2a/projects/${fakeProjectId}/collectArtifacts?phase=init`)
+      .send({ status: 'success', jobId: fakeJobId, artifacts: [] });
+
+    // Should NOT be 401/403 — the endpoint allows unauthenticated access.
+    // 404 is expected because the job doesn't exist.
+    expect(res.status).not.toBe(401);
+    expect(res.status).not.toBe(403);
   });
 
   it('should forward errors from the X2ADatabaseService', async () => {

@@ -1,5 +1,30 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.4.1
+
+### Patch Changes
+
+- 24ff5f4: Make the workflow run Details card title bold and consistent with other InfoCard titles.
+- 85b873d: Exclude omitFromWorkflowInput fields from execution payloads and add a review
+  toggle to show hidden parameters.
+- 0f60a00: feat: Improve permission denied error handling for workflow instances
+  - Add PermissionDeniedPanel component for clean access denied UI
+  - Improve backend error messages when user lacks instanceAdminView permission
+  - Provide detailed error messages explaining why access is denied:
+    - When instance has no ownership info (external/legacy runs)
+    - When instance was created by another user
+
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [858963d]
+- Updated dependencies [e16baff]
+- Updated dependencies [85b873d]
+- Updated dependencies [9c17c36]
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.5.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.3
+
 ## 5.4.0
 
 ### Minor Changes

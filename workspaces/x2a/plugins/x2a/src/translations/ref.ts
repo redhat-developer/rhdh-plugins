@@ -49,6 +49,21 @@ export const x2aPluginMessages = {
     detailPanel: 'TODO: Details of {{name}} project',
     projectsCount: 'Projects ({{count}})',
   },
+  project: {
+    description: 'Description',
+    id: 'ID',
+    abbreviation: 'Abbreviation',
+    createdBy: 'Created By',
+    statuses: {
+      none: '-',
+      created: 'Created',
+      initializing: 'Initializing',
+      initialized: 'Initialized',
+      inProgress: 'In progress',
+      completed: 'Completed',
+      failed: 'Failed',
+    },
+  },
   common: {
     newProject: 'New Project',
   },
@@ -56,6 +71,47 @@ export const x2aPluginMessages = {
     cancel: 'Cancel',
     back: 'Back',
     next: 'Next',
+  },
+  module: {
+    phases: {
+      init: 'Init',
+      none: '-',
+      analyze: 'Analyze',
+      migrate: 'Migrate',
+      publish: 'Publish',
+    },
+    summary: {
+      total: 'Total',
+      finished: 'Finished',
+      waiting: 'Waiting',
+      pending: 'Pending',
+      running: 'Running',
+      error: 'Error',
+    },
+    actions: {
+      runNextPhase: 'Run Next Phase',
+    },
+    lastPhase: 'Last Phase',
+    name: 'Name',
+    status: 'Status',
+    sourcePath: 'Source Path',
+    artifacts: 'Artifacts',
+    startedAt: 'Started At',
+    finishedAt: 'Finished At',
+    statuses: {
+      none: '-',
+      pending: 'Pending',
+      running: 'Running',
+      success: 'Success',
+      error: 'Error',
+    },
+  },
+  artifact: {
+    types: {
+      migration_plan: 'Project Migration Plan',
+      module_migration_plan: 'Module Migration Plan',
+      migrated_sources: 'Migrated Sources',
+    },
   },
 };
 

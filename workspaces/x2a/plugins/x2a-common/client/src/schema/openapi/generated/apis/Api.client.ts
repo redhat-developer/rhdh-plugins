@@ -22,11 +22,14 @@ import { FetchApi } from '../types/fetch';
 import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
+import { MigrationPhase } from '../models/MigrationPhase.model';
 import { Module } from '../models/Module.model';
-import { Phase } from '../models/Phase.model';
+import { ModulePhase } from '../models/ModulePhase.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
+import { ProjectsProjectIdCollectArtifactsPost200Response } from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
+import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
@@ -76,6 +79,19 @@ export type ProjectsPost = {
 /**
  * @public
  */
+export type ProjectsProjectIdCollectArtifactsPost = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdCollectArtifactsPostRequest;
+  query: {
+    moduleId?: string;
+    phase: MigrationPhase;
+  };
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdDelete = {
   path: {
     projectId: string;
@@ -92,6 +108,14 @@ export type ProjectsProjectIdGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdModulesGet = {
+  path: {
+    projectId: string;
+  };
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesModuleIdLogGet = {
   path: {
     projectId: string;
@@ -99,7 +123,7 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
   };
   query: {
     streaming?: boolean;
-    phase: Phase;
+    phase: ModulePhase;
   };
 };
 /**
@@ -201,6 +225,38 @@ export class DefaultApiClient {
   }
 
   /**
+   * Callback endpoint for X2Ansible jobs to submit execution artifacts and results. This endpoint is called by the X2Ansible job runner when a migration phase completes.
+   * Collects artifacts from a completed X2Ansible job
+   * @param projectId - UUID of the project
+   * @param phase - Migration phase that completed
+   * @param projectsProjectIdCollectArtifactsPostRequest -
+   * @param moduleId - UUID of the module. - Required for analyze, migrate, and publish phases - Should be omitted for init phase
+   */
+  public async projectsProjectIdCollectArtifactsPost(
+    // @ts-ignore
+    request: ProjectsProjectIdCollectArtifactsPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/collectArtifacts{?moduleId,phase}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      ...request.query,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
    * Deletes a project by ID.
    * @param projectId -
    */
@@ -253,10 +309,36 @@ export class DefaultApiClient {
   }
 
   /**
+   * Returns a list of modules for a project
+   * @param projectId -
+   */
+  public async projectsProjectIdModulesGet(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Array<Module>>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
    * Returns logs for the latest job of a module
    * @param projectId - Project UUID
    * @param moduleId - Module UUID
-   * @param phase - Migration phase to filter
+   * @param phase - Migration module phase to filter
    * @param streaming - Whether to stream logs (text/plain) or return all at once
    */
   public async projectsProjectIdModulesModuleIdLogGet(

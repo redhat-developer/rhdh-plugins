@@ -91,6 +91,9 @@ const useStyles = makeStyles()(() => ({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  detailsTitle: {
+    fontWeight: 700,
+  },
 }));
 
 export const WorkflowInstancePageContent: React.FC<{
@@ -170,7 +173,13 @@ export const WorkflowInstancePageContent: React.FC<{
           <InfoCard
             title={
               <div className={classes.titleContainer}>
-                <Typography component="span">{t('common.details')}</Typography>
+                <Typography
+                  component="span"
+                  variant="h5"
+                  className={classes.detailsTitle}
+                >
+                  {t('common.details')}
+                </Typography>
                 {viewVariables}
               </div>
             }
