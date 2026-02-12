@@ -71,18 +71,29 @@ git_clone_repos() {
     /workspace/source
 
   echo "=== Cloning target repository ==="
-  if git ls-remote "https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}" &>/dev/null; then
-    ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
-    git clone --depth=1 --single-branch --branch="${TARGET_REPO_BRANCH}" \
-      "https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}" \
-      /workspace/target
+  local target_auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
+
+  if git ls-remote "${target_auth_url}" &>/dev/null; then
+    if git ls-remote --exit-code --heads "${target_auth_url}" "${TARGET_REPO_BRANCH}" &>/dev/null; then
+      # Repo exists, branch exists — clone normally
+      ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
+      git clone --depth=1 --single-branch --branch="${TARGET_REPO_BRANCH}" \
+        "${target_auth_url}" /workspace/target
+    else
+      # Repo exists, branch doesn't — clone default branch, create target branch locally
+      echo "Branch '${TARGET_REPO_BRANCH}' not found on remote, creating it"
+      ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
+      git clone --depth=1 "${target_auth_url}" /workspace/target
+      cd /workspace/target
+      git checkout -b "${TARGET_REPO_BRANCH}"
+    fi
   else
     echo "Target repo doesn't exist, initializing empty repo"
     mkdir -p /workspace/target
     cd /workspace/target
     git init
     git checkout -b "${TARGET_REPO_BRANCH}"
-    git remote add origin "https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
+    git remote add origin "${target_auth_url}"
   fi
 
   ERROR_MESSAGE=""
