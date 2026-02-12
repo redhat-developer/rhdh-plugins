@@ -64,7 +64,7 @@ export function registerModuleRoutes(
 
     // Verify project exists and the user is permitted to access it
     const project = await x2aDatabase.getProject(
-      { projectId },
+      { projectId, skipEnrichment: true },
       { credentials },
     );
     if (!project) {
@@ -72,7 +72,10 @@ export function registerModuleRoutes(
     }
 
     // Get module
-    const module = await x2aDatabase.getModule({ id: moduleId });
+    const module = await x2aDatabase.getModule({
+      id: moduleId,
+      skipEnrichment: false,
+    });
     if (!module) {
       throw new NotFoundError(`Module "${moduleId}" not found.`);
     }

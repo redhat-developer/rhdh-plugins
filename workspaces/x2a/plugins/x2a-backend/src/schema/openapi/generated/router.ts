@@ -1038,7 +1038,7 @@ export const spec = {
         "properties": {
           "summary": {
             "type": "string",
-            "description": "Execution summary from x2aconvertor"
+            "description": "Execution summary from x2a convertor"
           },
           "phase": {
             "type": "string",

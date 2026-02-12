@@ -117,8 +117,14 @@ export class X2ADatabaseService {
     return result;
   }
 
+  /**
+   *  Use skipEnrichment to avoid fetching the migration plan and status for a project.
+   */
   async getProject(
-    { projectId }: { projectId: string },
+    {
+      projectId,
+      skipEnrichment = false,
+    }: { projectId: string; skipEnrichment?: boolean },
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canViewAll?: boolean;
@@ -130,7 +136,9 @@ export class X2ADatabaseService {
     this.#logger.debug(
       `this.#projectOps.getProject finished, adding migration plan and status to project`,
     );
-    await this.enrichProject(project);
+    if (!skipEnrichment) {
+      await this.enrichProject(project);
+    }
     return project;
   }
 
@@ -156,15 +164,15 @@ export class X2ADatabaseService {
 
   async getModule({
     id,
-    skipJobs = false,
+    skipEnrichment = false,
   }: {
     id: string;
-    skipJobs?: boolean;
+    skipEnrichment?: boolean;
   }): Promise<Module | undefined> {
     const module = await this.#moduleOps.getModule({ id });
     if (!module) return undefined;
 
-    if (!skipJobs) {
+    if (!skipEnrichment) {
       // Fetch last jobs
       const lastAnalyzeJobsOfModule = await this.listJobs({
         projectId: module.projectId,
@@ -189,6 +197,14 @@ export class X2ADatabaseService {
       module.analyze = removeSensitiveFromJob(lastAnalyzeJobsOfModule[0]);
       module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
       module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
+
+      const { status, errorDetails } = calculateModuleStatus({
+        analyze: module.analyze,
+        migrate: module.migrate,
+        publish: module.publish,
+      });
+      module.status = status;
+      module.errorDetails = errorDetails;
     }
 
     return module;
