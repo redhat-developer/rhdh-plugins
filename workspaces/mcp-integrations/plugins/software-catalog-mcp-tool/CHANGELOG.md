@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool
 
+## 0.4.2
+
+### Patch Changes
+
+- cde5f8f: Bump mcp-integrations workspace to Backstage 1.47.3
+
 ## 0.4.1
 
 ### Patch Changes
