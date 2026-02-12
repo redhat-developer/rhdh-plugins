@@ -175,8 +175,6 @@ export const EntitySection = () => {
                       justifyContent: 'center',
                       alignItems: 'center',
                       flexDirection: contentWidth > 350 ? 'row' : 'column',
-                      minWidth: contentWidth > 350 ? '300px' : 0,
-                      // width: contentWidth > 350 ? 'auto' : '100%',
                       width: '100%',
                       maxWidth: '550px',
                       minHeight: '100%',
@@ -204,7 +202,7 @@ export const EntitySection = () => {
                     />
                     <Box sx={{ p: 2, display: 'flex' }}>
                       <Box sx={{ display: 'flex', minWidth: 0 }}>
-                        <Typography variant="body2" paragraph>
+                        <Typography variant="body2" component="div">
                           {t('entities.description')}
                         </Typography>
                       </Box>
@@ -212,15 +210,13 @@ export const EntitySection = () => {
                         <IconButton
                           onClick={handleClose}
                           aria-label={t('entities.close')}
-                          style={{
+                          sx={{
                             position: 'absolute',
                             top: '8px',
                             right: '8px',
                           }}
                         >
-                          <CloseIcon
-                            style={{ width: '16px', height: '16px' }}
-                          />
+                          <CloseIcon sx={{ width: '16px', height: '16px' }} />
                         </IconButton>
                       )}
                     </Box>
