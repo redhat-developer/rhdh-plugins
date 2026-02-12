@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 0.7.0
+
+### Minor Changes
+
+- 0f66c7c: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- e2ae776: Add missing direct dependencies to package
+- Updated dependencies [0f66c7c]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.0
+
 ## 0.6.2
 
 ### Patch Changes
