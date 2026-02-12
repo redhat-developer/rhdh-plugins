@@ -4,6 +4,19 @@
 
 ```ts
 
+/// <reference types="react" />
+
+import { AnyApiFactory } from '@backstage/frontend-plugin-api';
+import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
+import { ApiFactory } from '@backstage/frontend-plugin-api';
+import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
+import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { IconComponent } from '@backstage/frontend-plugin-api';
+import { JSX as JSX_2 } from 'react';
+import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
+import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { RouteRef } from '@backstage/frontend-plugin-api';
+import { SubRouteRef } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
@@ -206,6 +219,64 @@ readonly "importActions.noActions": string;
 
 // @public
 export const bulkImportTranslations: TranslationResource<"plugin.bulk-import">;
+
+// @public
+const _default: OverridableFrontendPlugin<    {
+root: RouteRef<undefined>;
+tasks: SubRouteRef<    {
+repoUrl: string;
+}>;
+}, {}, {
+"api:bulk-import": OverridableExtensionDefinition<    {
+kind: "api";
+name: undefined;
+config: {};
+configInput: {};
+output: ExtensionDataRef<AnyApiFactory, "core.api.factory", {}>;
+inputs: {};
+params: <TApi, TImpl extends TApi, TDeps extends {
+[x: string]: unknown;
+}>(params: ApiFactory<TApi, TImpl, TDeps>) => ExtensionBlueprintParams<AnyApiFactory>;
+}>;
+"nav-item:bulk-import": OverridableExtensionDefinition<    {
+kind: "nav-item";
+name: undefined;
+config: {};
+configInput: {};
+output: ExtensionDataRef<    {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef<undefined>;
+}, "core.nav-item.target", {}>;
+inputs: {};
+params: {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef<undefined>;
+};
+}>;
+"page:bulk-import": OverridableExtensionDefinition<    {
+kind: "page";
+name: undefined;
+config: {
+path: string | undefined;
+};
+configInput: {
+path?: string | undefined;
+};
+output: ExtensionDataRef<string, "core.routing.path", {}> | ExtensionDataRef<JSX_2.Element, "core.reactElement", {}> | ExtensionDataRef<RouteRef<AnyRouteRefParams>, "core.routing.ref", {
+optional: true;
+}>;
+inputs: {};
+params: {
+defaultPath?: [Error: "Use the 'path' param instead"] | undefined;
+path: string;
+loader: () => Promise<JSX.Element>;
+routeRef?: RouteRef<AnyRouteRefParams> | undefined;
+};
+}>;
+}>;
+export default _default;
 
 // @public (undocumented)
 export type Messages = typeof bulkImportTranslationRef.T;
