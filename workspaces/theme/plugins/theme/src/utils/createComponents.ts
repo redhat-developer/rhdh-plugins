@@ -143,8 +143,8 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
         rounded: {
           '& > :last-child': {
-            borderBottomLeftRadius: 4,
-            borderBottomRightRadius: 4,
+            borderBottomLeftRadius: 16,
+            borderBottomRightRadius: 16,
           },
         },
         elevation0: noElevationStyle,

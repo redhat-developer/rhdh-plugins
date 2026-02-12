@@ -91,7 +91,7 @@ jest.mock('@backstage/backend-plugin-api', () => ({
   })),
 }));
 
-const getX2aDatabaseServiceMock = () => ({
+const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   // projects
   createProject: jest
     .fn()
@@ -116,6 +116,14 @@ const getX2aDatabaseServiceMock = () => ({
   listJobs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   getJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobWithLog: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobLogs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForModule: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
 });
 
 const getKubeServiceMock = () =>

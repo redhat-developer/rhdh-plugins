@@ -22,6 +22,7 @@ import { X2AConfig } from '../../config';
 const mockCoreV1Api = {
   createNamespacedSecret: jest.fn(),
   readNamespacedSecret: jest.fn(),
+  replaceNamespacedSecret: jest.fn(),
   deleteNamespacedSecret: jest.fn(),
   listNamespacedPod: jest.fn(),
   readNamespacedPodLog: jest.fn(),
@@ -231,6 +232,7 @@ describe('KubeService', () => {
       jobId: 'job-123',
       projectId: 'proj-123',
       projectName: 'Test Project',
+      projectAbbrev: 'TP',
       phase: 'init' as const,
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR
@@ -250,6 +252,16 @@ describe('KubeService', () => {
     beforeEach(() => {
       // Mock createProjectSecret and createJobSecret to succeed
       mockCoreV1Api.createNamespacedSecret.mockResolvedValue({});
+      // Mock readNamespacedSecret and replaceNamespacedSecret for ownerReference patching
+      mockCoreV1Api.readNamespacedSecret.mockResolvedValue({
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+          name: 'x2a-job-secret-init-job-123',
+          namespace: 'test-namespace',
+        },
+      });
+      mockCoreV1Api.replaceNamespacedSecret.mockResolvedValue({});
     });
 
     it('should create both project and job secrets before creating job', async () => {
@@ -277,7 +289,7 @@ describe('KubeService', () => {
           namespace: 'test-namespace',
           body: expect.objectContaining({
             metadata: expect.objectContaining({
-              name: 'x2a-job-secret-job-123',
+              name: 'x2a-job-secret-init-job-123',
             }),
             stringData: expect.objectContaining({
               SOURCE_REPO_URL: 'https://github.com/org/source',
@@ -315,11 +327,10 @@ describe('KubeService', () => {
                 restartPolicy: 'Never',
                 containers: expect.arrayContaining([
                   expect.objectContaining({
-                    name: 'x2a-echo',
-                    image: 'busybox:latest',
+                    name: 'x2a',
                     envFrom: [
                       { secretRef: { name: 'x2a-project-secret-proj-123' } },
-                      { secretRef: { name: 'x2a-job-secret-job-123' } },
+                      { secretRef: { name: 'x2a-job-secret-init-job-123' } },
                     ],
                   }),
                 ]),
@@ -329,6 +340,53 @@ describe('KubeService', () => {
         }),
       });
       expect(result.k8sJobName).toBeDefined();
+    });
+
+    it('should set ownerReference on job secret after job creation', async () => {
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-456' },
+      });
+
+      await kubeService.createJob(params);
+
+      // Should read the job secret
+      expect(mockCoreV1Api.readNamespacedSecret).toHaveBeenCalledWith({
+        name: 'x2a-job-secret-init-job-123',
+        namespace: 'test-namespace',
+      });
+
+      // Should replace the secret with ownerReference set
+      expect(mockCoreV1Api.replaceNamespacedSecret).toHaveBeenCalled();
+      const replaceCall =
+        mockCoreV1Api.replaceNamespacedSecret.mock.calls[0][0];
+      expect(replaceCall.name).toBe('x2a-job-secret-init-job-123');
+      expect(replaceCall.namespace).toBe('test-namespace');
+      const ownerRefs = replaceCall.body.metadata.ownerReferences;
+      expect(ownerRefs).toHaveLength(1);
+      expect(ownerRefs[0]).toEqual(
+        expect.objectContaining({
+          apiVersion: 'batch/v1',
+          kind: 'Job',
+          uid: 'uid-456',
+          blockOwnerDeletion: true,
+        }),
+      );
+      expect(ownerRefs[0].name).toMatch(/^job-x2a-init-/);
+    });
+
+    it('should succeed even if ownerReference patching fails', async () => {
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123', uid: 'uid-456' },
+      });
+      mockCoreV1Api.readNamespacedSecret.mockRejectedValue(
+        new Error('Secret read failed'),
+      );
+
+      const result = await kubeService.createJob(params);
+
+      // Job creation should still succeed
+      expect(result.k8sJobName).toBeDefined();
+      expect(mockBatchV1Api.createNamespacedJob).toHaveBeenCalled();
     });
   });
 

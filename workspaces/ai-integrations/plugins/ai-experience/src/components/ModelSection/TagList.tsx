@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -24,7 +24,7 @@ interface TagListProps {
   tags: string[];
 }
 
-const TagList: React.FC<TagListProps> = ({ tags }) => {
+const TagList: FC<TagListProps> = ({ tags }) => {
   const { t } = useTranslation();
   const hiddenCount = tags.length - 3;
   return (

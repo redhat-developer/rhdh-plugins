@@ -288,7 +288,8 @@ const entities /* : Entity[]*/ = [
     kind: 'Component',
     metadata: {
       name: 'service-a',
-      description: 'Hello, I am service A',
+      description: 'Hello, I am service A with a title',
+      title: 'Service A',
     },
   },
   {

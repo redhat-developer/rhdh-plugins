@@ -241,9 +241,7 @@ export const EntitySection = () => {
                 >
                   <EntityCard
                     entity={item}
-                    title={
-                      item.spec?.profile?.displayName ?? item.metadata.name
-                    }
+                    title={item.metadata.title ?? item.metadata.name}
                     version="latest"
                     description={item.metadata.description ?? ''}
                     tags={item.metadata?.tags ?? []}

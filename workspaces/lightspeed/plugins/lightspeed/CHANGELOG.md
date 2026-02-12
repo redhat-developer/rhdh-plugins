@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.3.0
+
+### Minor Changes
+
+- 0a7c742: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- cc12a51: Updated dependency `@patternfly/react-core` to `6.4.1`.
+- Updated dependencies [0a7c742]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.3.0
+
 ## 1.2.3
 
 ### Patch Changes

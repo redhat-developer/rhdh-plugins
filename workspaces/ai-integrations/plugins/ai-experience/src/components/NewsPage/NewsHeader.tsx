@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { Header } from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
 
-export const NewsHeader: React.FC = () => {
+export const NewsHeader: FC = () => {
   const theme = useTheme();
   const { t } = useTranslation();
   return (
