@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-backend
 
+## 1.0.1
+
+### Patch Changes
+
+- 3c49eed: The Create Project action collects source and target repos. Internally, both are persisted on the Project's level, while the /run endpoints receive fresh (non-expired) tokens only.
+- 4aae07f: Splitting X2ADatabaseService tests into multiple files. Adding coverige for some of the missing flows.
+- b7862f2: Adding collapsible row detail to the Project List.
+- bf9212b: Add module and project status.
+- e9964fb: The user prompt is removed except for the project init phase.
+- a97b036: Add GET /projects/:projectId/modules/:moduleId handler
+- 877acc1: added GET '/projects/:projectId/modules' endpoint
+- f4f63b9: Refactor router for better maintainability - split to multiple files.
+- Updated dependencies [2fc6542]
+- Updated dependencies [3c49eed]
+- Updated dependencies [b7862f2]
+- Updated dependencies [bf9212b]
+- Updated dependencies [e9964fb]
+- Updated dependencies [a97b036]
+- Updated dependencies [877acc1]
+  - @red-hat-developer-hub/backstage-plugin-x2a-common@1.0.1
+
 ## 1.0.0
 
 ### Major Changes
