@@ -700,6 +700,10 @@ export const spec = {
           "migrationPlan": {
             "$ref": "#/components/schemas/Artifact",
             "description": "Project migration plan artifact (by init phase)"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProjectStatus",
+            "description": "Project status calculated from the status of its modules"
           }
         },
         "required": [
@@ -741,6 +745,13 @@ export const spec = {
           },
           "publish": {
             "$ref": "#/components/schemas/Job"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatus"
+          },
+          "errorDetails": {
+            "type": "string",
+            "description": "Detailed error information if the module failed to execute"
           }
         },
         "required": [
@@ -757,6 +768,80 @@ export const spec = {
           "running",
           "success",
           "error"
+        ]
+      },
+      "ModuleStatus": {
+        "type": "string",
+        "description": "Module status is the status of the last job of its last phase.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that are scheduled for execution but not yet actually running. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\n",
+        "enum": [
+          "pending",
+          "running",
+          "success",
+          "error"
+        ]
+      },
+      "ProjectStatusState": {
+        "type": "string",
+        "description": "Project status state.\nIt is calculated from the status of its modules.\n- created: Project is created but not yet initialized\n- initializing: Project's init job is running or scheduling\n- initialized: Project's init job finished successfully. Either module list is empty or all modules are in pending state.\n- inProgress: At least one module is beyond the pending state.\n- completed: All modules are in success state\n- failed: At least one module is in error state\n",
+        "enum": [
+          "created",
+          "initializing",
+          "initialized",
+          "inProgress",
+          "completed",
+          "failed"
+        ]
+      },
+      "ModulesStatusSummary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of modules in the project"
+          },
+          "finished": {
+            "type": "integer",
+            "description": "Number of modules in success state of the publish phase (no more work is needed)"
+          },
+          "waiting": {
+            "type": "integer",
+            "description": "Number of modules in success state of a non-publish phase (means waiting for human interaction)"
+          },
+          "pending": {
+            "type": "integer",
+            "description": "Number of modules in pending state (scheduled for execution but not actually running)"
+          },
+          "running": {
+            "type": "integer",
+            "description": "Number of modules in running state (actually running)"
+          },
+          "error": {
+            "type": "integer",
+            "description": "Number of modules in error state (execution is over but failed)"
+          }
+        },
+        "required": [
+          "total",
+          "finished",
+          "waiting",
+          "pending",
+          "running",
+          "error"
+        ]
+      },
+      "ProjectStatus": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/ProjectStatusState"
+          },
+          "modulesSummary": {
+            "$ref": "#/components/schemas/ModulesStatusSummary"
+          }
+        },
+        "required": [
+          "state",
+          "modulesSummary"
         ]
       },
       "Job": {
