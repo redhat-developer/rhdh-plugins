@@ -32,6 +32,7 @@ import { useClientService } from '../../ClientService';
 import { Artifacts } from './Artifacts';
 import { humanizeDate } from '../tools';
 import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
+import { ModuleStatusCell } from './ModuleStatusCell';
 
 const getLastJob = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
@@ -109,11 +110,19 @@ const useColumns = ({
     },
     [t],
   );
-
-  return useMemo(() => {
+  return useMemo((): TableColumn<Module>[] => {
     return [
       { field: 'name', title: t('module.name') },
-      { field: 'status', title: t('module.status') },
+      {
+        field: 'status',
+        render: (rowData: Module) => (
+          <ModuleStatusCell
+            status={rowData.status}
+            errorDetails={rowData.errorDetails}
+          />
+        ),
+        title: t('module.status'),
+      },
       { field: 'sourcePath', title: t('module.sourcePath') },
       { render: lastPhaseCell, title: t('module.lastPhase') },
       { render: artifactsCell, title: t('module.artifacts') },

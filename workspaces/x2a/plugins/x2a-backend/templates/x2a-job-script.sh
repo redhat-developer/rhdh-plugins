@@ -3,33 +3,103 @@ set -eo pipefail
 
 # Track error context for the cleanup trap
 ERROR_MESSAGE=""
-ARTIFACT_PATH=""
+ARTIFACTS=()
 
 # Report job result back to the backend.
-# TODO: Replace echo with actual report command once implemented:
-#   cd /app && uv run app.py report \
-#     --status "${status}" \
-#     --phase "${PHASE}" \
-#     --job-id "${JOB_ID}" \
-#     --module-id "${MODULE_ID:-}" \
-#     --artifact-path "${ARTIFACT_PATH:-}" \
-#     --error "${message}"
+# TODO: Incorporate CALLBACK_TOKEN for request signing (HMAC-SHA256).
+# See collectArtifacts.ts:85-90 for the planned signature validation.
 report_result() {
-  local status="$1"    # "success" or "error"
-  local message="$2"   # error message (empty for success)
-  echo "REPORT: status=${status}, phase=${PHASE}, job=${JOB_ID}, module=${MODULE_ID:-none}, artifact=${ARTIFACT_PATH:-none}, error=${message:-none}"
+  local status="$1"
+  local message="$2"
+
+  # CALLBACK_URL already contains projectId in path
+  # Append phase (required) and moduleId (required for non-init) as query params
+  local url="${CALLBACK_URL}?phase=${PHASE}"
+  if [ -n "${MODULE_ID:-}" ]; then
+    url="${url}&moduleId=${MODULE_ID}"
+  fi
+
+  local cmd=(uv run app.py report --url "${url}" --job-id "${JOB_ID}")
+
+  for artifact in "${ARTIFACTS[@]}"; do
+    cmd+=(--artifacts "${artifact}")
+  done
+
+  if [ "${status}" = "error" ] && [ -n "${message}" ]; then
+    cmd+=(--error-message "${message}")
+  fi
+
+  echo "Reporting result: status=${status}, phase=${PHASE}"
+  cd /app && "${cmd[@]}" || echo "WARNING: Failed to report result to backend"
 }
 
 # Cleanup trap: fires on every exit (success or failure).
 # Guarantees exactly one report_result call regardless of how the script ends.
 cleanup() {
   local exit_code=$?
+  set +e
+
+  # Always try to commit and push whatever is in the working directory
+  if [ -d /workspace/target/.git ]; then
+    cd /workspace/target
+    git add "${PROJECT_DIR:-${PROJECT_ID}.${PROJECT_ABBREV}}" 2>/dev/null || git add -A || true
+    git commit -m "x2a: ${PHASE} phase for ${MODULE_NAME:-project}
+
+Phase: ${PHASE}
+Project: ${PROJECT_ID}
+Module: ${MODULE_NAME:-N/A}
+Job: ${JOB_ID}
+
+Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
+" || true
+    git pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    git push origin "${TARGET_REPO_BRANCH}" || true
+  fi
+
   if [ ${exit_code} -ne 0 ]; then
     report_result "error" "${ERROR_MESSAGE:-Script failed with exit code ${exit_code}}"
   else
     report_result "success" ""
   fi
 }
+
+git_clone_repos() {
+  echo "=== Cloning source repository ==="
+  ERROR_MESSAGE="Failed to clone source repository from ${SOURCE_REPO_URL}"
+  git clone --depth=1 --single-branch --branch="${SOURCE_REPO_BRANCH}" \
+    "https://${SOURCE_REPO_TOKEN}@${SOURCE_REPO_URL#https://}" \
+    /workspace/source
+
+  echo "=== Cloning target repository ==="
+  local target_auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
+
+  if git ls-remote "${target_auth_url}" &>/dev/null; then
+    if git ls-remote --exit-code --heads "${target_auth_url}" "${TARGET_REPO_BRANCH}" &>/dev/null; then
+      # Repo exists, branch exists — clone normally
+      ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
+      git clone --depth=1 --single-branch --branch="${TARGET_REPO_BRANCH}" \
+        "${target_auth_url}" /workspace/target
+    else
+      # Repo exists, branch doesn't — clone default branch, create target branch locally
+      echo "Branch '${TARGET_REPO_BRANCH}' not found on remote, creating it"
+      ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
+      git clone --depth=1 "${target_auth_url}" /workspace/target
+      cd /workspace/target
+      git checkout -b "${TARGET_REPO_BRANCH}"
+    fi
+  else
+    echo "Target repo doesn't exist, initializing empty repo"
+    mkdir -p /workspace/target
+    cd /workspace/target
+    git init
+    git checkout -b "${TARGET_REPO_BRANCH}"
+    git remote add origin "${target_auth_url}"
+  fi
+
+  ERROR_MESSAGE=""
+  echo "=== Git clone completed ==="
+}
+
 trap cleanup EXIT
 
 #
@@ -66,6 +136,9 @@ echo ""
 # Configure git
 git config --global user.name "${GIT_AUTHOR_NAME}"
 git config --global user.email "${GIT_AUTHOR_EMAIL}"
+
+# Clone repositories
+git_clone_repos
 
 # Define paths
 TARGET_BASE="/workspace/target"
@@ -124,7 +197,7 @@ case "${PHASE}" in
       exit 1
     fi
 
-    ARTIFACT_PATH="${PROJECT_DIR}/migration-plan.md"
+    ARTIFACTS+=("migration_plan:${PROJECT_DIR}/migration-plan.md")
     ;;
 
   analyze)
@@ -179,7 +252,7 @@ case "${PHASE}" in
       exit 1
     fi
 
-    ARTIFACT_PATH="${PROJECT_DIR}/modules/${MODULE_NAME}/migration-plan-${MODULE_NAME_SANITIZED}.md"
+    ARTIFACTS+=("module_migration_plan:${PROJECT_DIR}/modules/${MODULE_NAME}/migration-plan-${MODULE_NAME_SANITIZED}.md")
     ;;
 
   migrate)
@@ -240,7 +313,7 @@ case "${PHASE}" in
       exit 1
     fi
 
-    ARTIFACT_PATH="${PROJECT_DIR}/modules/${MODULE_NAME}/ansible"
+    ARTIFACTS+=("migrated_sources:${PROJECT_DIR}/modules/${MODULE_NAME}/ansible")
     ;;
 
   *)
@@ -251,39 +324,6 @@ esac
 
 echo ""
 echo "=== X2A execution completed successfully ==="
-echo ""
-
-# Show final target structure
-echo "=== Final target repo structure ==="
-cd ${TARGET_BASE}
-find "${PROJECT_DIR}" -type f 2>/dev/null | head -20 || ls -laR "${PROJECT_DIR}"
-echo ""
-
-# Git commit
-echo "=== Committing changes to git ==="
-cd ${TARGET_BASE}
-git add "${PROJECT_DIR}"
-git status
-
-git commit -m "feat(x2a): ${PHASE} phase for ${MODULE_NAME:-project}
-
-Phase: ${PHASE}
-Project: ${PROJECT_ID}
-Module: ${MODULE_NAME:-N/A}
-Job: ${JOB_ID}
-
-Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
-"
-
-# Git push
-echo "=== Pulling latest changes ==="
-git pull --rebase origin "${TARGET_REPO_BRANCH}"
-
-echo "=== Pushing to remote repository ==="
-git push --force-with-lease origin "${TARGET_REPO_BRANCH}"
-
-echo "=== Git push successful ==="
-
 echo ""
 echo "=========================================="
 echo "  X2A ${PHASE} phase completed!"

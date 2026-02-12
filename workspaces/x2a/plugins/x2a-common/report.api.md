@@ -107,6 +107,7 @@ export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
 export interface Module {
     // (undocumented)
     analyze?: Job;
+    errorDetails?: string;
     id: string;
     // (undocumented)
     migrate?: Job;
@@ -115,10 +116,25 @@ export interface Module {
     // (undocumented)
     publish?: Job;
     sourcePath: string;
+    // (undocumented)
+    status?: ModuleStatus;
 }
 
 // @public (undocumented)
 export type ModulePhase = 'analyze' | 'migrate' | 'publish';
+
+// @public (undocumented)
+export interface ModulesStatusSummary {
+    error: number;
+    finished: number;
+    pending: number;
+    running: number;
+    total: number;
+    waiting: number;
+}
+
+// @public (undocumented)
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -135,6 +151,8 @@ export interface Project {
     name: string;
     sourceRepoBranch: string;
     sourceRepoUrl: string;
+    // (undocumented)
+    status?: ProjectStatus;
     targetRepoBranch: string;
     targetRepoUrl: string;
 }
@@ -301,6 +319,17 @@ export interface ProjectsProjectIdRunPostRequest {
     targetRepoAuth: GitRepoAuth;
     userPrompt?: string;
 }
+
+// @public (undocumented)
+export interface ProjectStatus {
+    // (undocumented)
+    modulesSummary: ModulesStatusSummary;
+    // (undocumented)
+    state: ProjectStatusState;
+}
+
+// @public (undocumented)
+export type ProjectStatusState = 'created' | 'initializing' | 'initialized' | 'inProgress' | 'completed' | 'failed';
 
 // @public
 export interface RequestOptions {
