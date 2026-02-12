@@ -19,7 +19,7 @@ import { adoptionInsightsTranslationRef } from './ref';
 
 /**
  * Japanese translation for plugin.adoption-insights.
- * @public
+ * @alpha
  */
 const adoptionInsightsTranslationJa = createTranslationMessages({
   ref: adoptionInsightsTranslationRef,

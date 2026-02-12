@@ -13,24 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-
-import { adoptionInsightsTranslationRef } from './ref';
-
-/**
- * The translation resource for the Adoption Insights plugin.
- * @alpha
- */
-export const adoptionInsightsTranslations = createTranslationResource({
-  ref: adoptionInsightsTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
-});
-
-export { adoptionInsightsTranslationRef };
+import '@testing-library/jest-dom';

@@ -19,7 +19,7 @@ import { adoptionInsightsTranslationRef } from './ref';
 
 /**
  * fr translation for plugin.adoption-insights.
- * @public
+ * @alpha
  */
 const adoptionInsightsTranslationFr = createTranslationMessages({
   ref: adoptionInsightsTranslationRef,

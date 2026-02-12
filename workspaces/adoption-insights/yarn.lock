@@ -2035,7 +2035,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-defaults@npm:^0.3.6":
+"@backstage/frontend-defaults@npm:^0.3.5, @backstage/frontend-defaults@npm:^0.3.6":
   version: 0.3.6
   resolution: "@backstage/frontend-defaults@npm:0.3.6"
   dependencies:
@@ -2079,7 +2079,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-test-utils@npm:^0.4.5":
+"@backstage/frontend-test-utils@npm:^0.4.3, @backstage/frontend-test-utils@npm:^0.4.5":
   version: 0.4.5
   resolution: "@backstage/frontend-test-utils@npm:0.4.5"
   dependencies:
@@ -2246,6 +2246,28 @@ __metadata:
     "@types/react":
       optional: true
   checksum: 83ebe5f55a378a67c77236aa940eff89233c40518b1b32929b3c377e89859fbd69715e5c58a6d2b62bf678b531d82d6023d7e685ffbe93622dd53811bcbf87a8
+  languageName: node
+  linkType: hard
+
+"@backstage/plugin-app-visualizer@npm:^0.1.27":
+  version: 0.1.27
+  resolution: "@backstage/plugin-app-visualizer@npm:0.1.27"
+  dependencies:
+    "@backstage/core-components": ^0.18.5
+    "@backstage/core-plugin-api": ^1.12.1
+    "@backstage/frontend-plugin-api": ^0.13.3
+    "@backstage/ui": ^0.11.0
+    "@remixicon/react": ^4.6.0
+    react-aria-components: ^1.13.0
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0
+    react: ^17.0.0 || ^18.0.0
+    react-dom: ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.3.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: a2c5d6a4850dbca1a4fc09af83c143fa63724e37fa0e1211544745ba5f94d812e87e298a4e6b19698e587f11531475dd916b993d836d155ea01bdc4ad1ed502b
   languageName: node
   linkType: hard
 
@@ -10128,6 +10150,8 @@ __metadata:
     "@backstage/core-components": ^0.18.6
     "@backstage/core-plugin-api": ^1.12.2
     "@backstage/dev-utils": ^1.1.19
+    "@backstage/frontend-plugin-api": ^0.13.4
+    "@backstage/plugin-app-react": ^0.1.0
     "@backstage/plugin-catalog": ^1.32.2
     "@backstage/plugin-catalog-react": ^1.21.6
     "@backstage/plugin-permission-react": ^0.4.39
@@ -10165,6 +10189,7 @@ __metadata:
     "@backstage/core-components": ^0.18.6
     "@backstage/core-plugin-api": ^1.12.2
     "@backstage/dev-utils": ^1.1.19
+    "@backstage/frontend-plugin-api": ^0.13.4
     "@backstage/test-utils": ^1.7.14
     "@backstage/theme": ^0.7.1
     "@material-ui/core": ^4.9.13
@@ -14445,15 +14470,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
+"app-legacy@workspace:packages/app-legacy":
   version: 0.0.0-use.local
-  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
-  languageName: node
-  linkType: soft
-
-"app@workspace:packages/app":
-  version: 0.0.0-use.local
-  resolution: "app@workspace:packages/app"
+  resolution: "app-legacy@workspace:packages/app-legacy"
   dependencies:
     "@axe-core/playwright": ^4.10.0
     "@backstage/app-defaults": ^1.7.4
@@ -14485,6 +14504,47 @@ __metadata:
     "@material-ui/core": ^4.12.2
     "@material-ui/icons": ^4.9.1
     "@mui/icons-material": 5.18.0
+    "@playwright/test": 1.58.1
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
+    "@testing-library/dom": ^9.0.0
+    "@testing-library/jest-dom": ^6.0.0
+    "@testing-library/react": ^14.0.0
+    "@testing-library/user-event": ^14.0.0
+    "@types/react-dom": "*"
+    cross-env: ^7.0.0
+    react: ^18.0.2
+    react-dom: ^18.0.2
+    react-router: ^6.3.0
+    react-router-dom: ^6.3.0
+  languageName: unknown
+  linkType: soft
+
+"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
+  version: 0.0.0-use.local
+  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
+  languageName: node
+  linkType: soft
+
+"app@workspace:packages/app":
+  version: 0.0.0-use.local
+  resolution: "app@workspace:packages/app"
+  dependencies:
+    "@backstage/cli": ^0.35.3
+    "@backstage/core-compat-api": ^0.5.6
+    "@backstage/core-components": ^0.18.6
+    "@backstage/core-plugin-api": ^1.12.2
+    "@backstage/frontend-defaults": ^0.3.5
+    "@backstage/frontend-plugin-api": ^0.13.4
+    "@backstage/frontend-test-utils": ^0.4.3
+    "@backstage/integration-react": ^1.2.14
+    "@backstage/plugin-app-visualizer": ^0.1.27
+    "@backstage/plugin-catalog": ^1.32.2
+    "@backstage/plugin-search": ^1.5.3
+    "@backstage/plugin-user-settings": ^0.8.31
+    "@backstage/ui": ^0.11.2
+    "@material-ui/core": ^4.12.2
+    "@material-ui/icons": ^4.9.1
     "@playwright/test": 1.58.1
     "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"

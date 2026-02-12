@@ -4,7 +4,9 @@
 
 ```ts
 import { AnalyticsApi } from '@backstage/core-plugin-api';
-import { AnalyticsEvent } from '@backstage/core-plugin-api';
+import { AnalyticsEvent } from '@backstage/frontend-plugin-api';
+import { AnalyticsEvent as AnalyticsEvent_2 } from '@backstage/core-plugin-api';
+import { AnalyticsImplementation } from '@backstage/frontend-plugin-api';
 import { ApiFactory } from '@backstage/frontend-plugin-api';
 import { Config } from '@backstage/config';
 import { ConfigApi } from '@backstage/core-plugin-api';
@@ -12,8 +14,10 @@ import { IdentityApi } from '@backstage/core-plugin-api';
 import { IdentityApi as IdentityApi_2 } from '@backstage/frontend-plugin-api';
 
 // @public
-export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
-  captureEvent(event: AnalyticsEvent): Promise<void>;
+export class AdoptionInsightsAnalyticsApi
+  implements AnalyticsApi, AnalyticsImplementation
+{
+  captureEvent(event: AnalyticsEvent | AnalyticsEvent_2): Promise<void>;
   static fromConfig(
     config: ConfigApi,
     options: {
