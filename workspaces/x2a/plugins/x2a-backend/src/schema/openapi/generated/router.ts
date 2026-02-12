@@ -547,6 +547,7 @@ export const spec = {
     },
     "/projects/{projectId}/collectArtifacts": {
       "post": {
+        "security": [],
         "summary": "Collects artifacts from a completed X2Ansible job",
         "description": "Callback endpoint for X2Ansible jobs to submit execution artifacts and results.\nThis endpoint is called by the X2Ansible job runner when a migration phase completes.\n",
         "parameters": [

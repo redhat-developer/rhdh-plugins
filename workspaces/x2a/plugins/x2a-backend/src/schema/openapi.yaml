@@ -355,6 +355,7 @@ paths:
 
   /projects/{projectId}/collectArtifacts:
     post:
+      security: []
       summary: Collects artifacts from a completed X2Ansible job
       description: |
         Callback endpoint for X2Ansible jobs to submit execution artifacts and results.
