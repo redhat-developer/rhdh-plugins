@@ -60,6 +60,33 @@ describe('createRouter – modules', () => {
     );
 
     it.each(supportedDatabaseIds)(
+      'should return each module with status field from service enrichment - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        await createTestModule(x2aDatabase, project.id, {
+          name: 'Module A',
+          sourcePath: '/a',
+        });
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveLength(1);
+        expect(response.body[0]).toHaveProperty('status');
+        expect(response.body[0].status).toBe('pending');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
       'should return 404 when project does not exist - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
@@ -356,6 +383,50 @@ describe('createRouter – modules', () => {
           /sourceRepoAuth|targetRepoAuth|token/i,
         );
       },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should accept optional aapCredentials and pass them to kubeService.createJob - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const mockCreateJob = jest
+          .fn()
+          .mockResolvedValue({ k8sJobName: 'k8s-job' });
+        const appWithMock = await createApp(client, undefined, undefined, {
+          createJob: mockCreateJob,
+        });
+
+        const aapCredentials = {
+          url: 'https://aap.example.com',
+          orgName: 'Default',
+          oauthToken: 'oauth-token',
+        };
+        const response = await request(appWithMock)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send({
+            ...runBody,
+            aapCredentials,
+          });
+
+        expect(response.status).toBe(200);
+        expect(mockCreateJob).toHaveBeenCalledTimes(1);
+        expect(mockCreateJob).toHaveBeenCalledWith(
+          expect.objectContaining({
+            aapCredentials,
+            phase: 'analyze',
+            moduleId: module.id,
+            moduleName: module.name,
+          }),
+        );
+      },
+      LONG_TEST_TIMEOUT,
     );
   });
 });

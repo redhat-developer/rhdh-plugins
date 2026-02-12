@@ -336,6 +336,110 @@ describe('X2ADatabaseService – modules', () => {
         expect(project1Modules.map(m => m.id)).toContain(module1Project1.id);
       },
     );
+
+    it.each(supportedDatabaseIds)(
+      'returns each module with status and optional analyze, migrate, publish - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        await service.createModule({
+          name: 'Module A',
+          sourcePath: '/a',
+          projectId: project.id,
+        });
+
+        const modules = await service.listModules({ projectId: project.id });
+
+        expect(modules).toHaveLength(1);
+        expect(modules[0]).toHaveProperty('status');
+        expect(modules[0].status).toBe('pending');
+        expect(modules[0].id).toBeDefined();
+        expect(modules[0].name).toBe('Module A');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'enriches each module with last analyze, migrate, publish when jobs exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'Module With Jobs',
+          sourcePath: '/with-jobs',
+          projectId: project.id,
+        });
+        const analyzeJob = await service.createJob({
+          projectId: project.id,
+          moduleId: mod.id,
+          phase: 'analyze',
+          status: 'pending',
+          callbackToken: 'tk',
+        });
+        await service.updateJob({
+          id: analyzeJob.id,
+          status: 'success',
+        });
+
+        const modError = await service.createModule({
+          name: 'Module With Error',
+          sourcePath: '/with-error',
+          projectId: project.id,
+        });
+        const errorJob = await service.createJob({
+          projectId: project.id,
+          moduleId: modError.id,
+          phase: 'analyze',
+          status: 'pending',
+          callbackToken: 'tk2',
+        });
+        await service.updateJob({
+          id: errorJob.id,
+          status: 'error',
+          errorDetails: 'Analyze failed: timeout',
+        });
+
+        const modules = await service.listModules({ projectId: project.id });
+
+        expect(modules).toHaveLength(2);
+        const successModule = modules.find(m => m.name === 'Module With Jobs');
+        expect(successModule).toBeDefined();
+        expect(successModule?.analyze).toBeDefined();
+        expect(successModule?.analyze?.id).toBe(analyzeJob.id);
+        expect(successModule?.analyze?.phase).toBe('analyze');
+        expect(successModule?.analyze).not.toHaveProperty('callbackToken');
+        expect(successModule?.migrate).toBeUndefined();
+        expect(successModule?.publish).toBeUndefined();
+        expect(successModule?.status).toBe('success');
+        expect(successModule?.errorDetails ?? undefined).toBeUndefined();
+
+        const errorModule = modules.find(m => m.name === 'Module With Error');
+        expect(errorModule).toBeDefined();
+        expect(errorModule?.status).toBe('error');
+        expect(errorModule?.errorDetails).toBe('Analyze failed: timeout');
+      },
+      LONG_TEST_TIMEOUT,
+    );
   });
 
   describe('deleteModule', () => {

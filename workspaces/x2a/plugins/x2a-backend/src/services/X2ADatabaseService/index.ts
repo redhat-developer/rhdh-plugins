@@ -39,6 +39,8 @@ import { ProjectsGet } from '../../schema/openapi';
 import { JobOperations, CreateJobInput } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
+import { removeSensitiveFromJob } from '../../router/common';
+import { calculateModuleStatus, calculateProjectStatus } from './status';
 
 export class X2ADatabaseService {
   readonly #logger: LoggerService;
@@ -57,16 +59,25 @@ export class X2ADatabaseService {
     this.#jobOps = new JobOperations(logger, dbClient);
   }
 
-  private async getMigrationPlanForProject(
-    projectId: string,
-  ): Promise<Artifact | undefined> {
-    const lastInitJob = await this.#jobOps.listJobs({
+  /**
+   * Enriches a project with migration plan and status (used by listProjects and getProject).
+   */
+  private async enrichProject(project: Project): Promise<void> {
+    const projectId = project.id;
+
+    const initJob = await this.listJobs({
       projectId,
       phase: 'init',
       lastJobOnly: true,
     });
-    if (lastInitJob.length === 0) return undefined;
-    return lastInitJob[0].artifacts?.find(
+    const lastInitJob = initJob[0];
+
+    project.status = calculateProjectStatus(
+      await this.listModules({ projectId }),
+      lastInitJob,
+    );
+
+    project.migrationPlan = lastInitJob?.artifacts?.find(
       artifact => artifact.type === 'migration_plan',
     );
   }
@@ -102,13 +113,7 @@ export class X2ADatabaseService {
     this.#logger.info(
       `this.#projectOps.listProjects finished, adding migration plans to projects`,
     );
-    await Promise.all(
-      result.projects.map(async project => {
-        project.migrationPlan = await this.getMigrationPlanForProject(
-          project.id,
-        );
-      }),
-    );
+    await Promise.all(result.projects.map(p => this.enrichProject(p)));
     return result;
   }
 
@@ -121,10 +126,11 @@ export class X2ADatabaseService {
   ): Promise<Project | undefined> {
     const project = await this.#projectOps.getProject({ projectId }, options);
     if (!project) return undefined;
-    this.#logger.info(
-      `this.#projectOps.getProject finished, adding migration plan to project`,
+
+    this.#logger.debug(
+      `this.#projectOps.getProject finished, adding migration plan and status to project`,
     );
-    project.migrationPlan = await this.getMigrationPlanForProject(project.id);
+    await this.enrichProject(project);
     return project;
   }
 
@@ -153,7 +159,58 @@ export class X2ADatabaseService {
   }
 
   async listModules({ projectId }: { projectId: string }): Promise<Module[]> {
-    return this.#moduleOps.listModules({ projectId });
+    const modules = await this.#moduleOps.listModules({ projectId });
+    // TODO: This can be optimized by using a single query to list all jobs for all modules.
+    const lastAnalyzeJobsOfModules = await Promise.all(
+      modules.map(module =>
+        this.listJobs({
+          projectId,
+          moduleId: module.id,
+          phase: 'analyze',
+          lastJobOnly: true,
+        }),
+      ),
+    );
+    const lastMigrateJobsOfModules = await Promise.all(
+      modules.map(module =>
+        this.listJobs({
+          projectId,
+          moduleId: module.id,
+          phase: 'migrate',
+          lastJobOnly: true,
+        }),
+      ),
+    );
+    const lastPublishJobsOfModules = await Promise.all(
+      modules.map(module =>
+        this.listJobs({
+          projectId,
+          moduleId: module.id,
+          phase: 'publish',
+          lastJobOnly: true,
+        }),
+      ),
+    );
+
+    const response: Array<Module> = modules.map((module, idxModule) => {
+      const analyze = removeSensitiveFromJob(
+        lastAnalyzeJobsOfModules[idxModule][0],
+      );
+      const migrate = removeSensitiveFromJob(
+        lastMigrateJobsOfModules[idxModule][0],
+      );
+      const publish = removeSensitiveFromJob(
+        lastPublishJobsOfModules[idxModule][0],
+      );
+      const lastJobs = { analyze, migrate, publish };
+      return {
+        ...module,
+        ...lastJobs,
+        ...calculateModuleStatus(lastJobs),
+      };
+    });
+
+    return response;
   }
 
   async deleteModule({ id }: { id: string }): Promise<number> {
