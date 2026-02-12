@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.12.1
+
+### Patch Changes
+
+- 29042bc: Fixing the inconsitent edges of filter section on catalog page
+
 ## 0.12.0
 
 ### Minor Changes
