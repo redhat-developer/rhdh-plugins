@@ -14,14 +14,21 @@
  * limitations under the License.
  */
 
-export const humanizeDate = (date: Date | string): string => {
-  return new Date(date).toLocaleString(undefined, {
-    month: 'numeric',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
+import { AboutField } from '@backstage/plugin-catalog';
+import { Typography } from '@material-ui/core';
+
+export const ItemField = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | React.ReactNode;
+}) => {
+  return (
+    <AboutField label={label}>
+      <Typography variant="subtitle2" component="div">
+        {typeof value === 'string' ? <b>{value}</b> : value}
+      </Typography>
+    </AboutField>
+  );
 };
