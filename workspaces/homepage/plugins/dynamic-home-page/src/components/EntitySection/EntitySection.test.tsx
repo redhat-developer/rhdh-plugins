@@ -72,6 +72,14 @@ jest.mock('../../utils/utils', () => ({
 
 jest.mock('../../images/homepage-entities-1.svg', () => 'mock-image.svg');
 
+// ResizeObserver is not available in JSDOM
+class ResizeObserverMock {
+  observe = jest.fn();
+  unobserve = jest.fn();
+  disconnect = jest.fn();
+}
+window.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
+
 const theme = createTheme();
 
 const renderComponent = () =>
