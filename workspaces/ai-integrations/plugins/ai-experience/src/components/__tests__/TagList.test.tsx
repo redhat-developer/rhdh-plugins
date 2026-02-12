@@ -15,7 +15,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import TagList from '../ModelSection/TagList';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { lightTheme } from '@backstage/theme';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 
@@ -24,10 +24,8 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: () => mockUseTranslation(),
 }));
 
-const theme = createTheme(lightTheme);
-
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);
+  return render(<ThemeProvider theme={lightTheme}>{component}</ThemeProvider>);
 };
 
 describe('TagList', () => {

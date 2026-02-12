@@ -15,7 +15,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import { LearnSection } from '../LearnSection/LearnSection';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { lightTheme } from '@backstage/theme';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 
@@ -32,10 +32,8 @@ jest.mock('../LearnSection/CardWrapper', () => ({
   ),
 }));
 
-const theme = createTheme(lightTheme);
-
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);
+  return render(<ThemeProvider theme={lightTheme}>{component}</ThemeProvider>);
 };
 
 // Mock dependencies

@@ -15,7 +15,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import { NewsCard, Article } from '../NewsPage/NewsCard';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { lightTheme } from '@backstage/theme';
 import { MemoryRouter } from 'react-router-dom'; // Import MemoryRouter
 
@@ -29,14 +29,12 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-const theme = createTheme(lightTheme);
-
 const renderInTheme = (children: React.ReactNode) =>
   render(
     <MemoryRouter>
       {' '}
       {/* Wrap with MemoryRouter */}
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <ThemeProvider theme={lightTheme}>{children}</ThemeProvider>
     </MemoryRouter>,
   );
 
