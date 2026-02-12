@@ -18,7 +18,7 @@ import { NewsGrid } from '../NewsPage/NewsGrid';
 import { useApi } from '@backstage/core-plugin-api';
 import { parseStringPromise } from 'xml2js';
 import { sanitizeXML, extractImageFromHTML } from '../../utils/rss-utils';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { lightTheme } from '@backstage/theme';
 import { TestApiProvider } from '@backstage/test-utils';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
@@ -45,12 +45,10 @@ const mockRssApi = {
   fetch: jest.fn(),
 };
 
-const theme = createTheme(lightTheme);
-
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
     <TestApiProvider apis={[]}>
-      <ThemeProvider theme={theme}>{component}</ThemeProvider>
+      <ThemeProvider theme={lightTheme}>{component}</ThemeProvider>
     </TestApiProvider>,
   );
 };

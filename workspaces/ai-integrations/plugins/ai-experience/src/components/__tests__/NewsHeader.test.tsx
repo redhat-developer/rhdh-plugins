@@ -15,7 +15,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import { NewsHeader } from '../NewsPage/NewsHeader';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import { lightTheme } from '@backstage/theme';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 
@@ -34,10 +34,8 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-const theme = createTheme(lightTheme);
-
 const renderWithTheme = (component: React.ReactElement) => {
-  return render(<ThemeProvider theme={theme}>{component}</ThemeProvider>);
+  return render(<ThemeProvider theme={lightTheme}>{component}</ThemeProvider>);
 };
 
 describe('NewsHeader', () => {
