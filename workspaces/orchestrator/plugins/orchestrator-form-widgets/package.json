@@ -45,7 +45,7 @@
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
+    "export-dynamic": "rhdh-cli plugin export"
   },
   "dependencies": {
     "@backstage/core-components": "^0.18.3",
@@ -82,7 +82,7 @@
     "@backstage/core-app-api": "^1.19.2",
     "@backstage/dev-utils": "^1.1.17",
     "@backstage/test-utils": "^1.7.13",
-    "@janus-idp/cli": "3.6.1",
+    "@red-hat-developer-hub/cli": "^1.9.1",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
@@ -94,7 +94,6 @@
   },
   "files": [
     "app-config.yaml",
-    "dist",
-    "dist-scalprum"
+    "dist"
   ]
 }
