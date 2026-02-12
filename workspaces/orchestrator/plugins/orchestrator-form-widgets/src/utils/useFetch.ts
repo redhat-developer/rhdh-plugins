@@ -68,13 +68,12 @@ export const useFetch = (
     setError,
   });
 
+  const hasFetchInputs =
+    !!fetchUrl && !!evaluatedFetchUrl && !!evaluatedRequestInit && !!retrigger;
+
+  // Set loading immediately on dependency changes so UI shows a spinner during debounce.
   useEffect(() => {
-    if (
-      !fetchUrl ||
-      !evaluatedFetchUrl ||
-      !evaluatedRequestInit ||
-      !retrigger
-    ) {
+    if (!hasFetchInputs) {
       setLoading(false);
       return;
     }
@@ -87,7 +86,13 @@ export const useFetch = (
     // Mark loading immediately when a retrigger change is detected so widgets
     // can show the spinner during the debounce window before the fetch starts.
     setLoading(true);
-  }, [fetchUrl, evaluatedFetchUrl, evaluatedRequestInit, retrigger]);
+  }, [
+    hasFetchInputs,
+    fetchUrl,
+    evaluatedFetchUrl,
+    evaluatedRequestInit,
+    retrigger,
+  ]);
 
   useDebounce(
     () => {
