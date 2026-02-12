@@ -16,11 +16,14 @@
 import { Route, Routes } from 'react-router-dom';
 
 import { Dashboard } from './Dashboard';
+import { ModulePage } from './ModulePage';
+import { moduleRouteRef } from '../routes';
 
 export const Router = () => {
   return (
     // relative to x2a/
     <Routes>
+      <Route path={moduleRouteRef.path} element={<ModulePage />} />
       <Route path="/*" element={<Dashboard />} />
     </Routes>
   );

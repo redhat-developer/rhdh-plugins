@@ -17,6 +17,7 @@ import { makeStyles } from '@material-ui/core';
 import { EmptyState, LinkButton } from '@backstage/core-components';
 import emptyProjectListImage from './EmptyProjectListImage.png';
 import { CREATE_CHEF_PROJECT_TEMPLATE_PATH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { useSeedTestData } from '../../useSeedTestData';
 
 const useStyles = makeStyles({
   top: {
@@ -59,6 +60,9 @@ const NextSteps = () => {
 
 export const EmptyProjectList = () => {
   const styles = useStyles();
+
+  // Do not merge
+  useSeedTestData();
 
   return (
     <div className={styles.top}>

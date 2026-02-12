@@ -32,6 +32,7 @@ export const ArtifactLink = ({
   targetRepoUrl,
 }: {
   artifact: Artifact;
+  // TODO: the targetRepoUrl is probably not needed, the artifact.value should contain full URL
   targetRepoUrl: string;
 }) => {
   const classes = styles();
