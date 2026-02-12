@@ -10,7 +10,7 @@ app:
   extensions:
     - api:app/app-language:
         config:
-          availableLanguages: ['en', 'de', 'fr']
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
           defaultLanguage: 'en'
 
 organization:

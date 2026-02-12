@@ -22,6 +22,6 @@ describe('analytics-module-adoption-insights alpha', () => {
   });
 
   it('should have the correct plugin id', () => {
-    expect(plugin.id).toBe('analytics-provider-adoption-insights');
+    expect(plugin.id).toBe('analytics-module-adoption-insights');
   });
 });

@@ -2253,12 +2253,12 @@ __metadata:
   version: 0.1.27
   resolution: "@backstage/plugin-app-visualizer@npm:0.1.27"
   dependencies:
-    "@backstage/core-components": ^0.18.5
-    "@backstage/core-plugin-api": ^1.12.1
-    "@backstage/frontend-plugin-api": ^0.13.3
-    "@backstage/ui": ^0.11.0
-    "@remixicon/react": ^4.6.0
-    react-aria-components: ^1.13.0
+    "@backstage/core-components": "npm:^0.18.5"
+    "@backstage/core-plugin-api": "npm:^1.12.1"
+    "@backstage/frontend-plugin-api": "npm:^0.13.3"
+    "@backstage/ui": "npm:^0.11.0"
+    "@remixicon/react": "npm:^4.6.0"
+    react-aria-components: "npm:^1.13.0"
   peerDependencies:
     "@types/react": ^17.0.0 || ^18.0.0
     react: ^17.0.0 || ^18.0.0
@@ -2267,7 +2267,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: a2c5d6a4850dbca1a4fc09af83c143fa63724e37fa0e1211544745ba5f94d812e87e298a4e6b19698e587f11531475dd916b993d836d155ea01bdc4ad1ed502b
+  checksum: 10c0/855d64cce0d10dad3379dec3c0b4a79ce9488258a3685c87489077f96ad712b39e172b73c396605d1b79f77c6568732462f05ecf7864398e5bb0ab610332ced2
   languageName: node
   linkType: hard
 
@@ -14470,50 +14470,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-next@workspace:packages/app-next":
+"app-legacy@workspace:packages/app-legacy":
   version: 0.0.0-use.local
-  resolution: "app-next@workspace:packages/app-next"
-  dependencies:
-    "@backstage/cli": ^0.35.3
-    "@backstage/core-compat-api": ^0.5.6
-    "@backstage/core-components": ^0.18.6
-    "@backstage/core-plugin-api": ^1.12.2
-    "@backstage/frontend-defaults": ^0.3.5
-    "@backstage/frontend-plugin-api": ^0.13.4
-    "@backstage/frontend-test-utils": ^0.4.3
-    "@backstage/integration-react": ^1.2.14
-    "@backstage/plugin-app-visualizer": ^0.1.27
-    "@backstage/plugin-catalog": ^1.32.2
-    "@backstage/plugin-search": ^1.5.3
-    "@backstage/plugin-user-settings": ^0.8.31
-    "@backstage/ui": ^0.11.2
-    "@material-ui/core": ^4.12.2
-    "@material-ui/icons": ^4.9.1
-    "@playwright/test": 1.58.1
-    "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
-    "@testing-library/dom": ^9.0.0
-    "@testing-library/jest-dom": ^6.0.0
-    "@testing-library/react": ^14.0.0
-    "@testing-library/user-event": ^14.0.0
-    "@types/react-dom": "*"
-    cross-env: ^7.0.0
-    react: ^18.0.2
-    react-dom: ^18.0.2
-    react-router: ^6.3.0
-    react-router-dom: ^6.3.0
-  languageName: unknown
-  linkType: soft
-
-"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
-  version: 0.0.0-use.local
-  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
-  languageName: node
-  linkType: soft
-
-"app@workspace:packages/app":
-  version: 0.0.0-use.local
-  resolution: "app@workspace:packages/app"
+  resolution: "app-legacy@workspace:packages/app-legacy"
   dependencies:
     "@axe-core/playwright": "npm:^4.10.0"
     "@backstage/app-defaults": "npm:^1.7.4"
@@ -14545,6 +14504,47 @@ __metadata:
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@mui/icons-material": "npm:5.18.0"
+    "@playwright/test": "npm:1.58.1"
+    "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"
+    "@testing-library/dom": "npm:^9.0.0"
+    "@testing-library/jest-dom": "npm:^6.0.0"
+    "@testing-library/react": "npm:^14.0.0"
+    "@testing-library/user-event": "npm:^14.0.0"
+    "@types/react-dom": "npm:*"
+    cross-env: "npm:^7.0.0"
+    react: "npm:^18.0.2"
+    react-dom: "npm:^18.0.2"
+    react-router: "npm:^6.3.0"
+    react-router-dom: "npm:^6.3.0"
+  languageName: unknown
+  linkType: soft
+
+"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
+  version: 0.0.0-use.local
+  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
+  languageName: node
+  linkType: soft
+
+"app@workspace:packages/app":
+  version: 0.0.0-use.local
+  resolution: "app@workspace:packages/app"
+  dependencies:
+    "@backstage/cli": "npm:^0.35.3"
+    "@backstage/core-compat-api": "npm:^0.5.6"
+    "@backstage/core-components": "npm:^0.18.6"
+    "@backstage/core-plugin-api": "npm:^1.12.2"
+    "@backstage/frontend-defaults": "npm:^0.3.5"
+    "@backstage/frontend-plugin-api": "npm:^0.13.4"
+    "@backstage/frontend-test-utils": "npm:^0.4.3"
+    "@backstage/integration-react": "npm:^1.2.14"
+    "@backstage/plugin-app-visualizer": "npm:^0.1.27"
+    "@backstage/plugin-catalog": "npm:^1.32.2"
+    "@backstage/plugin-search": "npm:^1.5.3"
+    "@backstage/plugin-user-settings": "npm:^0.8.31"
+    "@backstage/ui": "npm:^0.11.2"
+    "@material-ui/core": "npm:^4.12.2"
+    "@material-ui/icons": "npm:^4.9.1"
     "@playwright/test": "npm:1.58.1"
     "@red-hat-developer-hub/backstage-plugin-adoption-insights": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights": "workspace:^"

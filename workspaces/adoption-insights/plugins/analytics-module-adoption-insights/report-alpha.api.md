@@ -14,9 +14,9 @@ const _default: OverridableFrontendPlugin<
   {},
   {},
   {
-    'analytics:analytics-module-adoption-insights': OverridableExtensionDefinition<{
+    'analytics:analytics-module-adoption-insights/analytics-module-adoption-insights': OverridableExtensionDefinition<{
       kind: 'analytics';
-      name: undefined;
+      name: 'analytics-module-adoption-insights';
       config: {};
       configInput: {};
       output: ExtensionDataRef<

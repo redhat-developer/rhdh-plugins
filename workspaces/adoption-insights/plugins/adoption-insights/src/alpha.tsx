@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 import {
+  configApiRef,
+  createApiFactory,
   createFrontendPlugin,
   createFrontendModule,
+  fetchApiRef,
+  ApiBlueprint,
   PageBlueprint,
   NavItemBlueprint,
-  ApiBlueprint,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import {
-  createApiFactory,
-  configApiRef,
-  fetchApiRef,
-} from '@backstage/core-plugin-api';
 import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
 import { rootRouteRef } from './routes';
 import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';

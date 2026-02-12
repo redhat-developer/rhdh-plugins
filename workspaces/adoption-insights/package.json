@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "backstage-cli repo start",
-    "start:next": "backstage-cli repo start packages/app-next packages/backend",
+    "start:legacy": "backstage-cli repo start packages/app-legacy packages/backend",
     "start-backend": "yarn workspace backend start",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",

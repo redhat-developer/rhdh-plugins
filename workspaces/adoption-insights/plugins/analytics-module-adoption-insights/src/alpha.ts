@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 import {
-  createFrontendPlugin,
   AnalyticsImplementationBlueprint,
+  configApiRef,
+  createFrontendPlugin,
+  identityApiRef,
 } from '@backstage/frontend-plugin-api';
-import { configApiRef, identityApiRef } from '@backstage/core-plugin-api';
 import { AdoptionInsightsAnalyticsApi } from './api/AdoptionInsightsAnalyticsApi';
 
 const adoptionInsightsAnalyticsImplementation =
   AnalyticsImplementationBlueprint.make({
+    name: 'analytics-module-adoption-insights',
     params: defineParams =>
       defineParams({
         deps: { configApi: configApiRef, identityApi: identityApiRef },
