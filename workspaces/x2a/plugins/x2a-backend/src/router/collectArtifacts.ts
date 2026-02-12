@@ -25,6 +25,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
+import { executePhaseActions } from './phaseActions';
 
 const agentMetricsSchema = z.object({
   name: z.string(),
@@ -45,7 +46,12 @@ const telemetrySchema = z.object({
 
 const artifactSchema = z.object({
   id: z.string(),
-  type: z.enum(['migration_plan', 'module_migration_plan', 'migrated_sources']),
+  type: z.enum([
+    'migration_plan',
+    'module_migration_plan',
+    'migrated_sources',
+    'project_metadata',
+  ]),
   value: z.string(),
 });
 
@@ -140,6 +146,15 @@ export function registerCollectArtifactsRoutes(
           artifacts: validatedRequest.artifacts,
           telemetry: validatedRequest.telemetry || null,
         });
+
+        if (status === 'success') {
+          await executePhaseActions(phase, {
+            projectId,
+            artifacts: validatedRequest.artifacts,
+            x2aDatabase,
+            logger,
+          });
+        }
 
         logger.info(
           `Successfully processed collectArtifacts for job ${validatedRequest.jobId}`,

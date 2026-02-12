@@ -240,6 +240,7 @@ export interface MockRouterDeps {
     listModules: jest.Mock;
     createModule: jest.Mock;
     getModule: jest.Mock;
+    deleteModule: jest.Mock;
     listJobs: jest.Mock;
     listJobsForProject: jest.Mock;
     listJobsForModule: jest.Mock;
@@ -277,9 +278,10 @@ export function createMockRouterDeps(): MockRouterDeps {
       createProject: jest.fn(),
       getProject: jest.fn(),
       deleteProject: jest.fn(),
-      listModules: jest.fn(),
-      createModule: jest.fn(),
+      listModules: jest.fn().mockResolvedValue([]),
+      createModule: jest.fn().mockResolvedValue({ id: 'mock-module-id' }),
       getModule: jest.fn(),
+      deleteModule: jest.fn().mockResolvedValue(1),
       listJobs: jest.fn(),
       listJobsForProject: jest.fn(),
       listJobsForModule: jest.fn(),
