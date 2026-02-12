@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 2.3.6
+
 ## 2.3.5
 
 ## 2.3.4
