@@ -1,0 +1,62 @@
+app:
+  title: DCM
+  baseUrl: http://localhost:3000
+  support:
+    url: https://github.com/redhat-developer/rhdh-plugins/issues
+    items:
+      - title: Issues
+        icon: github
+        links:
+          - url: https://github.com/redhat-developer/rhdh-plugins/issues
+            title: GitHub Issues
+
+organization:
+  name: DCM
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'docker'
+  publisher:
+    type: 'local'
+
+auth:
+  providers:
+    guest: {}
+
+scaffolder: {}
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+  locations:
+    - type: file
+      target: ../../examples/entities.yaml
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]

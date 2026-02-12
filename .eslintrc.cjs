@@ -265,5 +265,11 @@ module.exports = {
         ],
       },
     },
+    {
+      files: ['workspaces/dcm/**/*.[jt]s?(x)'],
+      rules: {
+        '@backstage/no-undeclared-imports': 'off',
+      },
+    },
   ],
 };

@@ -2,7 +2,11 @@
   "name": "@redhat-developer/rhdh-plugins",
   "private": true,
   "version": "0.0.0",
-  "repository": "git@github.com:redhat-developer/rhdh-plugins.git",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:redhat-developer/rhdh-plugins.git",
+    "directory": "."
+  },
   "engines": {
     "node": "22"
   },
