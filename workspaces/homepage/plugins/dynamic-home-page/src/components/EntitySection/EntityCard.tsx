@@ -48,7 +48,8 @@ const EntityCard: FC<EntityCardProps> = ({
       sx={{
         border: theme => `1px solid ${theme.palette.grey[400]}`,
         overflow: 'auto',
-        maxHeight: '100%',
+        height: '100%',
+        width: '100%',
       }}
     >
       <CardContent
