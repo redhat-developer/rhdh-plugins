@@ -54,6 +54,15 @@ export const x2aPluginMessages = {
     id: 'ID',
     abbreviation: 'Abbreviation',
     createdBy: 'Created By',
+    statuses: {
+      none: '-',
+      created: 'Created',
+      initializing: 'Initializing',
+      initialized: 'Initialized',
+      inProgress: 'In progress',
+      completed: 'Completed',
+      failed: 'Failed',
+    },
   },
   common: {
     newProject: 'New Project',
@@ -71,6 +80,14 @@ export const x2aPluginMessages = {
       migrate: 'Migrate',
       publish: 'Publish',
     },
+    summary: {
+      total: 'Total',
+      finished: 'Finished',
+      waiting: 'Waiting',
+      pending: 'Pending',
+      running: 'Running',
+      error: 'Error',
+    },
     actions: {
       runNextPhase: 'Run Next Phase',
     },
@@ -81,6 +98,13 @@ export const x2aPluginMessages = {
     artifacts: 'Artifacts',
     startedAt: 'Started At',
     finishedAt: 'Finished At',
+    statuses: {
+      none: '-',
+      pending: 'Pending',
+      running: 'Running',
+      success: 'Success',
+      error: 'Error',
+    },
   },
   artifact: {
     types: {
