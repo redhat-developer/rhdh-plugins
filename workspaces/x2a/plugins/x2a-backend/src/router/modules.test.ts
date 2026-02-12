@@ -25,6 +25,7 @@ import {
   createTestModule,
   createTestProject,
   mockInputProject,
+  mockProject2,
   supportedDatabaseIds,
   tearDownRouters,
 } from './__testUtils__/routerTestHelpers';
@@ -176,6 +177,222 @@ describe('createRouter – modules', () => {
 
         expect(mod.publish).toBeDefined();
         expect(mod.publish).not.toHaveProperty('callbackToken');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+  });
+
+  describe('GET /projects/:projectId/modules/:moduleId', () => {
+    it.each(supportedDatabaseIds)(
+      'should return 200 and module when project and module exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id, {
+          name: 'Single Module',
+          sourcePath: '/single',
+        });
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules/${module.id}`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+          id: module.id,
+          name: 'Single Module',
+          sourcePath: '/single',
+          projectId: project.id,
+        });
+        expect(response.body.analyze).toBeUndefined();
+        expect(response.body.migrate).toBeUndefined();
+        expect(response.body.publish).toBeUndefined();
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should include last analyze/migrate/publish jobs when jobs exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id, {
+          name: 'Module With Jobs',
+          sourcePath: '/with-jobs',
+        });
+
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          status: 'success',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate',
+          status: 'running',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'publish',
+          status: 'pending',
+        });
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules/${module.id}`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body.name).toBe('Module With Jobs');
+        expect(response.body.analyze).toBeDefined();
+        expect(response.body.analyze.status).toBe('success');
+        expect(response.body.migrate).toBeDefined();
+        expect(response.body.migrate.status).toBe('running');
+        expect(response.body.publish).toBeDefined();
+        expect(response.body.publish.status).toBe('pending');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should never return callbackToken in analyze, migrate or publish jobs - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze',
+          status: 'success',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate',
+          status: 'success',
+        });
+        await createTestJob(x2aDatabase, {
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'publish',
+          status: 'success',
+        });
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules/${module.id}`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body.analyze).toBeDefined();
+        expect(response.body.analyze).not.toHaveProperty('callbackToken');
+        expect(response.body.migrate).toBeDefined();
+        expect(response.body.migrate).not.toHaveProperty('callbackToken');
+        expect(response.body.publish).toBeDefined();
+        expect(response.body.publish).not.toHaveProperty('callbackToken');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when project does not exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const response = await request(app)
+          .get(`/projects/${nonExistentId}/modules/${module.id}`)
+          .send();
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: expect.stringContaining('not found'),
+          },
+        });
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when module does not exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project = await createTestProject(x2aDatabase);
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules/${nonExistentId}`)
+          .send();
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: expect.stringContaining('not found'),
+          },
+        });
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when module belongs to different project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const app = await createApp(client);
+        const project1 = await createTestProject(x2aDatabase);
+        const project2 = await createTestProject(x2aDatabase, mockProject2);
+        const moduleOfProject2 = await createTestModule(
+          x2aDatabase,
+          project2.id,
+          { name: 'Other Project Module', sourcePath: '/other' },
+        );
+
+        const response = await request(app)
+          .get(`/projects/${project1.id}/modules/${moduleOfProject2.id}`)
+          .send();
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: expect.stringMatching(
+              /does not belong to project|not found/,
+            ),
+          },
+        });
       },
       LONG_TEST_TIMEOUT,
     );

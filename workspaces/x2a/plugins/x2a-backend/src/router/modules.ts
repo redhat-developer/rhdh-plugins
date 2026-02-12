@@ -100,6 +100,65 @@ export function registerModuleRoutes(
     res.json(response);
   });
 
+  router.get('/projects/:projectId/modules/:moduleId', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId/modules/:moduleId';
+    const { projectId, moduleId } = req.params;
+    logger.info(
+      `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
+    );
+
+    // Get user credentials
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
+    // Verify project exists and the user is permitted to access it
+    const project = await x2aDatabase.getProject(
+      { projectId },
+      { credentials },
+    );
+    if (!project) {
+      throw new NotFoundError(`Project "${projectId}" not found.`);
+    }
+
+    // Get module
+    const module = await x2aDatabase.getModule({ id: moduleId });
+    if (!module) {
+      throw new NotFoundError(`Module "${moduleId}" not found.`);
+    }
+    if (module.projectId !== projectId) {
+      throw new NotFoundError(
+        `Module "${moduleId}" does not belong to project "${projectId}".`,
+      );
+    }
+
+    // Fetch last jobs
+    const lastAnalyzeJobsOfModule = await x2aDatabase.listJobs({
+      projectId,
+      moduleId,
+      phase: 'analyze',
+      lastJobOnly: true,
+    });
+    const lastMigrateJobsOfModule = await x2aDatabase.listJobs({
+      projectId,
+      moduleId,
+      phase: 'migrate',
+      lastJobOnly: true,
+    });
+    const lastPublishJobsOfModule = await x2aDatabase.listJobs({
+      projectId,
+      moduleId,
+      phase: 'publish',
+      lastJobOnly: true,
+    });
+
+    // Update module with last jobs
+    module.analyze = removeSensitiveFromJob(lastAnalyzeJobsOfModule[0]);
+    module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
+    module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
+
+    // TODO: calculate module's status from the last jobs
+    res.json(module);
+  });
+
   // TODO: This is a TEMPORARY endpoint for testing only.
   // According to the ADR (lines 202-213), this endpoint should sync modules by:
   // 1. Fetching the migration project plan from the target repo

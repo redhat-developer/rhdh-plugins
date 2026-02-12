@@ -102,6 +102,16 @@ export type ProjectsProjectIdModulesGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdModulesModuleIdGet = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  response: Module | void;
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesModuleIdLogGet = {
   path: {
     projectId: string;
@@ -157,6 +167,8 @@ export type EndpointMap = {
   '#get|/projects/{projectId}': ProjectsProjectIdGet;
 
   '#get|/projects/{projectId}/modules': ProjectsProjectIdModulesGet;
+
+  '#get|/projects/{projectId}/modules/{moduleId}': ProjectsProjectIdModulesModuleIdGet;
 
   '#get|/projects/{projectId}/modules/{moduleId}/log': ProjectsProjectIdModulesModuleIdLogGet;
 

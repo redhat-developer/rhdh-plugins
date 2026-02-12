@@ -404,6 +404,44 @@ export const spec = {
         }
       }
     },
+    "/projects/{projectId}/modules/{moduleId}": {
+      "get": {
+        "summary": "Returns a module by ID",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single module by ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Module"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or module not found"
+          }
+        }
+      }
+    },
     "/projects/{projectId}/modules/{moduleId}/run": {
       "post": {
         "summary": "Triggers a migration phase for a specific module",
