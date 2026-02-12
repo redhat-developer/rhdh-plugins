@@ -52,6 +52,42 @@ export function registerModuleRoutes(
     res.json(modules);
   });
 
+  router.get('/projects/:projectId/modules/:moduleId', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId/modules/:moduleId';
+    const { projectId, moduleId } = req.params;
+    logger.info(
+      `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
+    );
+
+    // Get user credentials
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
+    // Verify project exists and the user is permitted to access it
+    const project = await x2aDatabase.getProject(
+      { projectId, skipEnrichment: true },
+      { credentials },
+    );
+    if (!project) {
+      throw new NotFoundError(`Project "${projectId}" not found.`);
+    }
+
+    // Get module
+    const module = await x2aDatabase.getModule({
+      id: moduleId,
+      skipEnrichment: false,
+    });
+    if (!module) {
+      throw new NotFoundError(`Module "${moduleId}" not found.`);
+    }
+    if (module.projectId !== projectId) {
+      throw new NotFoundError(
+        `Module "${moduleId}" does not belong to project "${projectId}".`,
+      );
+    }
+
+    res.json(module);
+  });
+
   // TODO: This is a TEMPORARY endpoint for testing only.
   // According to the ADR (lines 202-213), this endpoint should sync modules by:
   // 1. Fetching the migration project plan from the target repo
