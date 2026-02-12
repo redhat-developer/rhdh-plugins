@@ -542,9 +542,9 @@ components:
         Project status state.
         It is calculated from the status of its modules.
         - created: Project is created but not yet initialized
-        - initializing: Project's init job is running
-        - initialized: Project's init job finished successfully, pending next phase execution
-        - inProgress: A non-init phase is running
+        - initializing: Project's init job is running or scheduling
+        - initialized: Project's init job finished successfully. Either module list is empty or all modules are in pending state.
+        - inProgress: At least one module is beyond the pending state.
         - completed: All modules are in success state
         - failed: At least one module is in error state
       enum:
@@ -580,7 +580,6 @@ components:
         - total
         - finished
         - waiting
-        - completed
         - pending
         - running
         - error

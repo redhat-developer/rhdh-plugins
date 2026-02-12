@@ -59,35 +59,26 @@ export class X2ADatabaseService {
     this.#jobOps = new JobOperations(logger, dbClient);
   }
 
-  private async getMigrationPlanForProject(
-    projectId: string,
-  ): Promise<Artifact | undefined> {
-    const lastInitJob = await this.#jobOps.listJobs({
-      projectId,
-      phase: 'init',
-      lastJobOnly: true,
-    });
-    if (lastInitJob.length === 0) return undefined;
-    return lastInitJob[0].artifacts?.find(
-      artifact => artifact.type === 'migration_plan',
-    );
-  }
-
   /**
    * Enriches a project with migration plan and status (used by listProjects and getProject).
    */
   private async enrichProject(project: Project): Promise<void> {
     const projectId = project.id;
-    project.migrationPlan = await this.getMigrationPlanForProject(projectId);
 
     const initJob = await this.listJobs({
       projectId,
       phase: 'init',
       lastJobOnly: true,
     });
+    const lastInitJob = initJob[0];
+
     project.status = calculateProjectStatus(
       await this.listModules({ projectId }),
-      initJob[0],
+      lastInitJob,
+    );
+
+    project.migrationPlan = lastInitJob?.artifacts?.find(
+      artifact => artifact.type === 'migration_plan',
     );
   }
 

@@ -93,23 +93,23 @@ export function calculateProjectStatus(
 
   let state: ProjectStatusState;
   if (error > 0) {
-    state = 'failed';
+    state = 'failed'; // At least one module is in error state
   } else if (['pending', 'running'].includes(initJob?.status ?? '')) {
-    state = 'initializing';
+    state = 'initializing'; // Project's init job is running or scheduling
   } else if (initJob?.status === 'success') {
-    if (finished === total) {
-      state = 'completed';
-    } else if (pending || waiting || running) {
-      state = 'inProgress';
+    if (total > 0 && finished === total) {
+      state = 'completed'; // All modules are in success state
+    } else if (total === 0 || pending === total) {
+      state = 'initialized'; // Module list is empty or all modules are in pending state
     } else {
-      state = 'initialized';
+      state = 'inProgress'; // At least one module is beyond the pending state
     }
   } else {
     state = 'failed';
   }
 
   return {
-    state: state,
+    state,
     modulesSummary: {
       total,
       finished,

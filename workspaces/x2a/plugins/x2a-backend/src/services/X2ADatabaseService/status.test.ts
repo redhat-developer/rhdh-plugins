@@ -195,9 +195,18 @@ function initJob(status: Job['status']): Job {
   return job(status);
 }
 
+/**
+ * Project state tests follow OpenAPI ProjectStatusState (openapi.yaml 543–549):
+ * - created: Project is created but not yet initialized
+ * - initializing: Project's init job is running or scheduling
+ * - initialized: Project's init job finished successfully. Either module list is empty or all modules are in pending state.
+ * - inProgress: At least one module is beyond the pending state.
+ * - completed: All modules are in success state
+ * - failed: At least one module is in error state (or init failed / no init with modules)
+ */
 describe('calculateProjectStatus', () => {
   describe('state: created', () => {
-    it('returns created when no init job and no modules', () => {
+    it('returns created when no init job and no modules (project created but not yet initialized)', () => {
       const result = calculateProjectStatus([], undefined);
       expect(result.state).toBe('created');
       expect(result.modulesSummary).toEqual({
@@ -209,10 +218,19 @@ describe('calculateProjectStatus', () => {
         error: 0,
       });
     });
+
+    it('does not return created when init job exists even with no modules', () => {
+      expect(calculateProjectStatus([], initJob('pending')).state).toBe(
+        'initializing',
+      );
+      expect(calculateProjectStatus([], initJob('success')).state).toBe(
+        'initialized',
+      );
+    });
   });
 
   describe('state: failed', () => {
-    it('returns failed when at least one module has status error', () => {
+    it('returns failed when at least one module is in error state', () => {
       const result = calculateProjectStatus([
         module('success', { publishStatus: 'success' }),
         module('error'),
@@ -221,7 +239,20 @@ describe('calculateProjectStatus', () => {
       expect(result.modulesSummary.error).toBe(1);
     });
 
-    it('returns failed when no init job is provided (init never ran)', () => {
+    it('returns failed when only one module and it is in error', () => {
+      const result = calculateProjectStatus([module('error')]);
+      expect(result.state).toBe('failed');
+      expect(result.modulesSummary.error).toBe(1);
+      expect(result.modulesSummary.total).toBe(1);
+    });
+
+    it('returns failed when all modules are in error', () => {
+      const result = calculateProjectStatus([module('error'), module('error')]);
+      expect(result.state).toBe('failed');
+      expect(result.modulesSummary.error).toBe(2);
+    });
+
+    it('returns failed when no init job is provided but project has modules (init never ran)', () => {
       const result = calculateProjectStatus([
         module('pending'),
         module('pending'),
@@ -237,7 +268,7 @@ describe('calculateProjectStatus', () => {
       expect(result.state).toBe('failed');
     });
 
-    it('returns failed even when init succeeded if any module is in error', () => {
+    it('returns failed even when init succeeded if any module is in error (failed takes precedence)', () => {
       const result = calculateProjectStatus(
         [module('success', { publishStatus: 'success' }), module('error')],
         initJob('success'),
@@ -248,7 +279,7 @@ describe('calculateProjectStatus', () => {
   });
 
   describe('state: initializing', () => {
-    it('returns initializing when init job is pending', () => {
+    it('returns initializing when init job is pending (scheduling)', () => {
       const result = calculateProjectStatus(
         [module('pending'), module('pending')],
         initJob('pending'),
@@ -263,10 +294,58 @@ describe('calculateProjectStatus', () => {
       );
       expect(result.state).toBe('initializing');
     });
+
+    it('returns initializing with empty module list when init is pending', () => {
+      const result = calculateProjectStatus([], initJob('pending'));
+      expect(result.state).toBe('initializing');
+    });
+
+    it('returns initializing with empty module list when init is running', () => {
+      const result = calculateProjectStatus([], initJob('running'));
+      expect(result.state).toBe('initializing');
+    });
+  });
+
+  describe('state: initialized', () => {
+    it('returns initialized when init succeeded and module list is empty', () => {
+      const result = calculateProjectStatus([], initJob('success'));
+      expect(result.state).toBe('initialized');
+      expect(result.modulesSummary.total).toBe(0);
+      expect(result.modulesSummary.finished).toBe(0);
+    });
+
+    it('returns initialized when init succeeded and all modules are in pending state', () => {
+      const result = calculateProjectStatus(
+        [module('pending'), module('pending')],
+        initJob('success'),
+      );
+      expect(result.state).toBe('initialized');
+      expect(result.modulesSummary.pending).toBe(2);
+      expect(result.modulesSummary.total).toBe(2);
+    });
+
+    it('returns initialized when init succeeded and single module is pending', () => {
+      const result = calculateProjectStatus(
+        [module('pending')],
+        initJob('success'),
+      );
+      expect(result.state).toBe('initialized');
+      expect(result.modulesSummary.pending).toBe(1);
+    });
   });
 
   describe('state: inProgress', () => {
-    it('returns inProgress when init succeeded but not all modules have finished publish', () => {
+    it('returns inProgress when at least one module is running (beyond pending)', () => {
+      const result = calculateProjectStatus(
+        [module('pending'), module('running')],
+        initJob('success'),
+      );
+      expect(result.state).toBe('inProgress');
+      expect(result.modulesSummary.running).toBe(1);
+      expect(result.modulesSummary.pending).toBe(1);
+    });
+
+    it('returns inProgress when at least one module has success but not all finished publish', () => {
       const result = calculateProjectStatus(
         [
           module('success', { publishStatus: 'success' }),
@@ -276,28 +355,52 @@ describe('calculateProjectStatus', () => {
       );
       expect(result.state).toBe('inProgress');
       expect(result.modulesSummary.finished).toBe(1);
+      expect(result.modulesSummary.waiting).toBe(1);
       expect(result.modulesSummary.total).toBe(2);
     });
 
-    it('returns inProgress when init succeeded and no module has finished publish', () => {
+    it('returns inProgress when one running and rest pending', () => {
       const result = calculateProjectStatus(
-        [module('pending'), module('running')],
+        [module('running'), module('pending'), module('pending')],
         initJob('success'),
       );
       expect(result.state).toBe('inProgress');
-      expect(result.modulesSummary.finished).toBe(0);
+      expect(result.modulesSummary.running).toBe(1);
+      expect(result.modulesSummary.pending).toBe(2);
+    });
+
+    it('returns inProgress when mix of success (waiting), running and pending', () => {
+      const result = calculateProjectStatus(
+        [
+          module('success'), // waiting for publish
+          module('running'),
+          module('pending'),
+        ],
+        initJob('success'),
+      );
+      expect(result.state).toBe('inProgress');
+      expect(result.modulesSummary.waiting).toBe(1);
+      expect(result.modulesSummary.running).toBe(1);
+      expect(result.modulesSummary.pending).toBe(1);
+    });
+
+    it('returns inProgress when one module finished publish but others have not', () => {
+      const result = calculateProjectStatus(
+        [
+          module('success', { publishStatus: 'success' }),
+          module('pending'),
+          module('pending'),
+        ],
+        initJob('success'),
+      );
+      expect(result.state).toBe('inProgress');
+      expect(result.modulesSummary.finished).toBe(1);
+      expect(result.modulesSummary.pending).toBe(2);
     });
   });
 
   describe('state: completed', () => {
-    it('returns completed when init succeeded and there are no modules', () => {
-      const result = calculateProjectStatus([], initJob('success'));
-      expect(result.state).toBe('completed');
-      expect(result.modulesSummary.finished).toBe(0);
-      expect(result.modulesSummary.total).toBe(0);
-    });
-
-    it('returns completed when init succeeded and every module has finished publish', () => {
+    it('returns completed only when init succeeded and all modules are in success state (finished publish)', () => {
       const result = calculateProjectStatus(
         [
           module('success', { publishStatus: 'success' }),
@@ -318,6 +421,43 @@ describe('calculateProjectStatus', () => {
       expect(result.state).toBe('completed');
       expect(result.modulesSummary.finished).toBe(1);
       expect(result.modulesSummary.total).toBe(1);
+    });
+
+    it('does not return completed when module list is empty (that is initialized)', () => {
+      const result = calculateProjectStatus([], initJob('success'));
+      expect(result.state).not.toBe('completed');
+      expect(result.state).toBe('initialized');
+    });
+  });
+
+  describe('state precedence (per spec)', () => {
+    it('failed overrides initializing when init is running but a module is error', () => {
+      // In practice init running implies modules might not have run yet; if they do have error, failed wins.
+      const result = calculateProjectStatus(
+        [module('error'), module('pending')],
+        initJob('running'),
+      );
+      expect(result.state).toBe('failed');
+    });
+
+    it('failed overrides completed when any module is in error', () => {
+      const result = calculateProjectStatus(
+        [
+          module('success', { publishStatus: 'success' }),
+          module('success', { publishStatus: 'success' }),
+          module('error'),
+        ],
+        initJob('success'),
+      );
+      expect(result.state).toBe('failed');
+    });
+
+    it('initializing overrides initialized when init is pending even if all modules pending', () => {
+      const result = calculateProjectStatus(
+        [module('pending'), module('pending')],
+        initJob('pending'),
+      );
+      expect(result.state).toBe('initializing');
     });
   });
 

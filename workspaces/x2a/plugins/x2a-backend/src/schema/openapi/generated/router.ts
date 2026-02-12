@@ -782,7 +782,7 @@ export const spec = {
       },
       "ProjectStatusState": {
         "type": "string",
-        "description": "Project status state.\nIt is calculated from the status of its modules.\n- created: Project is created but not yet initialized\n- initializing: Project's init job is running\n- initialized: Project's init job finished successfully, pending next phase execution\n- inProgress: A non-init phase is running\n- completed: All modules are in success state\n- failed: At least one module is in error state\n",
+        "description": "Project status state.\nIt is calculated from the status of its modules.\n- created: Project is created but not yet initialized\n- initializing: Project's init job is running or scheduling\n- initialized: Project's init job finished successfully. Either module list is empty or all modules are in pending state.\n- inProgress: At least one module is beyond the pending state.\n- completed: All modules are in success state\n- failed: At least one module is in error state\n",
         "enum": [
           "created",
           "initializing",
@@ -824,7 +824,6 @@ export const spec = {
           "total",
           "finished",
           "waiting",
-          "completed",
           "pending",
           "running",
           "error"
