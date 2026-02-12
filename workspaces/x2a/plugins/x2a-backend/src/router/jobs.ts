@@ -64,7 +64,10 @@ export function registerJobRoutes(
     }
 
     // Verify module exists
-    const module = await x2aDatabase.getModule({ id: moduleId });
+    const module = await x2aDatabase.getModule({
+      id: moduleId,
+      skipJobs: true,
+    });
     if (!module) {
       throw new NotFoundError(`Module not found`);
     }

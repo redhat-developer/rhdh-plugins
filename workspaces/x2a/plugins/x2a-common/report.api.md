@@ -68,6 +68,7 @@ export class DefaultApiClient {
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
+    projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
@@ -242,6 +243,14 @@ export type ProjectsProjectIdGet = {
 export type ProjectsProjectIdModulesGet = {
     path: {
         projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdGet = {
+    path: {
+        projectId: string;
+        moduleId: string;
     };
 };
 

@@ -154,8 +154,44 @@ export class X2ADatabaseService {
     return this.#moduleOps.createModule(module);
   }
 
-  async getModule({ id }: { id: string }): Promise<Module | undefined> {
-    return this.#moduleOps.getModule({ id });
+  async getModule({
+    id,
+    skipJobs = false,
+  }: {
+    id: string;
+    skipJobs?: boolean;
+  }): Promise<Module | undefined> {
+    const module = await this.#moduleOps.getModule({ id });
+    if (!module) return undefined;
+
+    if (!skipJobs) {
+      // Fetch last jobs
+      const lastAnalyzeJobsOfModule = await this.listJobs({
+        projectId: module.projectId,
+        moduleId: id,
+        phase: 'analyze',
+        lastJobOnly: true,
+      });
+      const lastMigrateJobsOfModule = await this.listJobs({
+        projectId: module.projectId,
+        moduleId: id,
+        phase: 'migrate',
+        lastJobOnly: true,
+      });
+      const lastPublishJobsOfModule = await this.listJobs({
+        projectId: module.projectId,
+        moduleId: id,
+        phase: 'publish',
+        lastJobOnly: true,
+      });
+
+      // Update module with last jobs
+      module.analyze = removeSensitiveFromJob(lastAnalyzeJobsOfModule[0]);
+      module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
+      module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
+    }
+
+    return module;
   }
 
   async listModules({ projectId }: { projectId: string }): Promise<Module[]> {
