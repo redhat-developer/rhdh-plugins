@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,4 @@
  * limitations under the License.
  */
 
-export const humanizeDate = (date: Date | string): string => {
-  return new Date(date).toLocaleString(undefined, {
-    month: 'numeric',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
-};
+export { ModulePage } from './ModulePage';

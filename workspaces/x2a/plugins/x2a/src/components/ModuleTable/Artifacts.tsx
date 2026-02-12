@@ -33,6 +33,7 @@ export const ArtifactLink = ({
   targetRepoBranch,
 }: {
   artifact: Artifact;
+  // TODO: the targetRepoUrl is probably not needed, the artifact.value should contain full URL
   targetRepoUrl: string;
   targetRepoBranch: string;
 }) => {

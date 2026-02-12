@@ -21,7 +21,8 @@ import {
   ModulePhase,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Table, TableColumn } from '@backstage/core-components';
+import { Link, Table, TableColumn } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { MaterialTableProps } from '@material-table/core/types';
 import Alert from '@material-ui/lab/Alert';
@@ -33,6 +34,7 @@ import { Artifacts } from './Artifacts';
 import { humanizeDate } from '../tools';
 import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
 import { ModuleStatusCell } from './ModuleStatusCell';
+import { moduleRouteRef } from '../../routes';
 
 const getLastJob = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
@@ -69,6 +71,7 @@ const useColumns = ({
   targetRepoBranch: string;
 }): TableColumn<Module>[] => {
   const { t } = useTranslation();
+  const modulePath = useRouteRef(moduleRouteRef);
 
   const lastPhaseCell = useCallback(
     (rowData: Module) => {
@@ -102,7 +105,7 @@ const useColumns = ({
       if (!lastJob) {
         return <div>{t('module.phases.none')}</div>;
       }
-      const formatted = humanizeDate(new Date(lastJob.startedAt));
+      const formatted = humanizeDate(lastJob.startedAt);
       return <div>{formatted}</div>;
     },
     [t],
@@ -113,14 +116,31 @@ const useColumns = ({
       if (!lastJob?.finishedAt) {
         return <div>{t('module.phases.none')}</div>;
       }
-      const formatted = humanizeDate(new Date(lastJob.finishedAt));
+      const formatted = humanizeDate(lastJob.finishedAt);
       return <div>{formatted}</div>;
     },
     [t],
   );
+
+  const nameCell = useCallback(
+    (rowData: Module) => {
+      return (
+        <Link
+          to={modulePath({
+            projectId: rowData.projectId,
+            moduleId: rowData.id,
+          })}
+        >
+          {rowData.name}
+        </Link>
+      );
+    },
+    [modulePath],
+  );
+
   return useMemo((): TableColumn<Module>[] => {
     return [
-      { field: 'name', title: t('module.name') },
+      { render: nameCell, title: t('module.name') },
       {
         field: 'status',
         render: (rowData: Module) => (
@@ -137,7 +157,14 @@ const useColumns = ({
       { render: startedAtCell, title: t('module.startedAt') },
       { render: finishedAtCell, title: t('module.finishedAt') },
     ];
-  }, [t, lastPhaseCell, artifactsCell, startedAtCell, finishedAtCell]);
+  }, [
+    t,
+    lastPhaseCell,
+    artifactsCell,
+    startedAtCell,
+    finishedAtCell,
+    nameCell,
+  ]);
 };
 
 const canRunNextPhase = ({ module }: { module: Module }) => {

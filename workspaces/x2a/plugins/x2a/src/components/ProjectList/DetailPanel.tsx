@@ -24,6 +24,7 @@ import { useClientService } from '../../ClientService';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
 import { ArtifactLink } from '../ModuleTable/Artifacts';
+import { ItemField } from '../ItemField';
 
 const useStyles = makeStyles(() => ({
   detailPanel: {
@@ -34,22 +35,6 @@ const useStyles = makeStyles(() => ({
 const gridItemProps: GridProps = {
   xs: 4,
   item: true,
-};
-
-const ItemField = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | React.ReactNode;
-}) => {
-  return (
-    <AboutField label={label}>
-      <Typography variant="subtitle2" component="div">
-        {typeof value === 'string' ? <b>{value}</b> : value}
-      </Typography>
-    </AboutField>
-  );
 };
 
 export const DetailPanel = ({ project }: { project: Project }) => {
