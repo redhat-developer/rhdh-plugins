@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool
 
+## 0.3.3
+
+### Patch Changes
+
+- cde5f8f: Bump mcp-integrations workspace to Backstage 1.47.3
+
 ## 0.3.2
 
 ### Patch Changes
