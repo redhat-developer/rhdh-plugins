@@ -277,7 +277,7 @@ test.describe('Resource Optimization - Live Cluster Tests @live @ro', () => {
 
       if (count && count > 0) {
         // Verify table structure
-        await expect(page.getByRole('table')).toBeVisible();
+        await expect(page.getByRole('table').first()).toBeVisible();
         await expect(
           page.getByRole('columnheader', { name: 'Container' }),
         ).toBeVisible();
@@ -303,7 +303,9 @@ test.describe('Resource Optimization - Apply Recommendation Flow @live @ro @work
   });
 
   test('should click Apply recommendation button', async ({ page }) => {
-    await optimizationPage.navigateToOptimization();
+    const user = process.env.RBAC_FULL_USER ?? 'costmgmt-full-access';
+    const pass = process.env.RBAC_FULL_PASS ?? 'test';
+    await optimizationPage.navigateToOptimizationAsOIDC(user, pass);
 
     const count = await optimizationPage.getOptimizableContainerCount();
     test.skip(!count || count === 0, 'No optimization data available');
