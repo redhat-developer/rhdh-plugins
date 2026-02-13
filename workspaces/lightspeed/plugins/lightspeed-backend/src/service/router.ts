@@ -105,18 +105,31 @@ export async function createRouter(
       target: `http://0.0.0.0:${port}`,
       changeOrigin: true,
       pathRewrite: (path, _) => {
-        // Add user query parameter from the authenticated user
-        const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
-        // Check if there are already query parameters
-        let newPath = path.includes('?')
-          ? `${path}&${userQueryParam}`
-          : `${path}?${userQueryParam}`;
+        // Skip adding user_id for endpoints that don't accept it as query param
+        const skipUserIdEndpoints = ['/v1/models', '/v1/shields'];
+        const shouldSkipUserId = skipUserIdEndpoints.some(endpoint =>
+          path.startsWith(endpoint),
+        );
+
+        let newPath = path;
+
+        // Add user query parameter for endpoints that need it
+        if (!shouldSkipUserId) {
+          const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
+          // Check if there are already query parameters
+          newPath = path.includes('?')
+            ? `${path}&${userQueryParam}`
+            : `${path}?${userQueryParam}`;
+        }
+
         if (
           !path.includes('history_length') &&
           path.includes('conversation_id')
         ) {
           const historyLengthQuery = `history_length=${DEFAULT_HISTORY_LENGTH}`;
-          newPath = `${newPath}&${historyLengthQuery}`;
+          newPath = newPath.includes('?')
+            ? `${newPath}&${historyLengthQuery}`
+            : `${newPath}?${historyLengthQuery}`;
         }
         logger.info(`Rewriting path from ${path} to ${newPath}`);
         return newPath;
