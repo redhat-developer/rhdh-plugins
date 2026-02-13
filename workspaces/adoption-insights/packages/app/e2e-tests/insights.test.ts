@@ -273,7 +273,7 @@ test.describe(() => {
     ]);
 
     await panel.scrollIntoViewIfNeeded();
-    await verifyTableEntries(panel, 1, 'example-nodejs-template');
+    await verifyTableEntries(panel, 1, 'Example Node.js Template');
 
     await runAccessibilityTests(page, testInfo);
   });

@@ -16,6 +16,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { ChangeEvent } from 'react';
 
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import { ResponseErrorPanel } from '@backstage/core-components';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -26,11 +27,13 @@ import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
+import Tooltip from '@mui/material/Tooltip';
 
 import CardWrapper from '../CardWrapper';
 import { TECHDOCS_TABLE_HEADERS } from '../../utils/constants';
 import TableFooterPagination from '../CardFooter';
 import { useTechdocs } from '../../hooks/useTechdocs';
+import { useEntityMetadataMap } from '../../hooks/useEntityMetadataMap';
 import { getLastUsedDay } from '../../utils/utils';
 import EmptyChartState from '../Common/EmptyChartState';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -42,6 +45,21 @@ const Techdocs = () => {
   const { t } = useTranslation();
 
   const { techdocs, loading, error } = useTechdocs({ limit });
+
+  const entityRefs = useMemo(
+    () =>
+      techdocs.data
+        ?.filter(techdoc => Boolean(techdoc.name))
+        .map(techdoc =>
+          stringifyEntityRef({
+            kind: techdoc.kind,
+            namespace: techdoc.namespace,
+            name: techdoc.name,
+          }),
+        ) ?? [],
+    [techdocs],
+  );
+  const { entityMetadataMap } = useEntityMetadataMap(entityRefs);
 
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -93,7 +111,10 @@ const Techdocs = () => {
           : t('techDocs.topNTitle' as any, { count: rowsPerPage.toString() })
       }
     >
-      <Table aria-labelledby="TechDocs" sx={{ width: '100%' }}>
+      <Table
+        aria-labelledby="TechDocs"
+        sx={{ width: '100%', tableLayout: 'fixed' }}
+      >
         <TableHead>
           <TableRow>
             {TECHDOCS_TABLE_HEADERS.map(header => (
@@ -118,6 +139,25 @@ const Techdocs = () => {
             </TableRow>
           ) : (
             visibleTechdocs?.map(techdoc => {
+              const entityRef = techdoc.name
+                ? stringifyEntityRef({
+                    kind: techdoc.kind,
+                    namespace: techdoc.namespace,
+                    name: techdoc.name,
+                  })
+                : '';
+              const displayName =
+                (entityRef && entityMetadataMap[entityRef]?.title) ??
+                techdoc.name ??
+                '--';
+              const tooltipTitle = [
+                entityRef,
+                entityMetadataMap[entityRef]?.kind ?? techdoc.kind,
+                entityMetadataMap[entityRef]?.description,
+              ]
+                .filter(Boolean)
+                .join(' | ');
+
               return (
                 <TableRow
                   key={techdoc.name ?? 'index-page'}
@@ -127,7 +167,7 @@ const Techdocs = () => {
                       `1px solid ${theme.palette.grey[300]}`,
                   }}
                 >
-                  <TableCell>
+                  <TableCell sx={{ width: '25%' }}>
                     <Link
                       component="a"
                       target="_blank"
@@ -149,34 +189,40 @@ const Techdocs = () => {
                         : techdoc?.site_name || '--'}
                     </Link>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ width: '25%', minWidth: 0 }}>
                     {techdoc?.name ? (
-                      <Link
-                        component="a"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={
-                          !techdoc?.name
-                            ? '/docs'
-                            : `/catalog/${techdoc?.namespace}/${techdoc?.kind}/${techdoc?.name}`
-                        }
-                        sx={{
-                          textDecoration: 'none',
-                          '&:hover': {
+                      <Tooltip title={tooltipTitle}>
+                        <Link
+                          component="a"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={
+                            !techdoc?.name
+                              ? '/docs'
+                              : `/catalog/${techdoc?.namespace}/${techdoc?.kind}/${techdoc?.name}`
+                          }
+                          sx={{
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                             textDecoration: 'none',
-                          },
-                        }}
-                      >
-                        {techdoc?.name ?? '--'}
-                      </Link>
+                            whiteSpace: 'nowrap',
+                            '&:hover': {
+                              textDecoration: 'none',
+                            },
+                          }}
+                        >
+                          {displayName}
+                        </Link>
+                      </Tooltip>
                     ) : (
                       '--'
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ width: '25%' }}>
                     {getLastUsedDay(techdoc.last_used, t) ?? '--'}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ width: '25%' }}>
                     {Number(techdoc.count).toLocaleString('en-US') ?? '--'}
                   </TableCell>
                 </TableRow>
