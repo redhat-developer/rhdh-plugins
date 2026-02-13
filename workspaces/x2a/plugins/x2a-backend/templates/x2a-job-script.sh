@@ -197,7 +197,10 @@ case "${PHASE}" in
       exit 1
     fi
 
+    echo "Retrieving project metadata"
+    METADATA=$(cat ${PROJECT_PATH}/generated-project-metadata.json)
     ARTIFACTS+=("migration_plan:${PROJECT_DIR}/migration-plan.md")
+    ARTIFACTS+=("project_metadata:${METADATA}")
     ;;
 
   analyze)
@@ -213,12 +216,13 @@ case "${PHASE}" in
 
     # Copy migration-plan.md from target repo to source dir
     # The x2a tool does os.chdir(source_dir) and reads migration-plan.md from there
-    if [ ! -f "${PROJECT_PATH}/migration-plan.md" ]; then
+    if [ ! -f "${SOURCE_BASE}/${PROJECT_DIR}/migration-plan.md" ]; then
       ERROR_MESSAGE="migration-plan.md not found in ${PROJECT_PATH}/ - init phase must be run first"
       exit 1
     fi
+
     echo "Copying migration-plan.md from target to source directory..."
-    cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
+    cp -v "${SOURCE_BASE}/${PROJECT_DIR}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
