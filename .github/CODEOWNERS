@@ -23,7 +23,7 @@
 /workspaces/global-header                           @redhat-developer/rhdh-ui @ciiay @divyanshiGupta
 /workspaces/homepage                                @redhat-developer/rhdh-ui @christoph-jerolimov @eswaraiahsapram
 /workspaces/lightspeed                              @redhat-developer/rhdh-ui @karthikjeeyar @rohitkrai03   @yangcao77
-/workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk
+/workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk @redhat-developer/rhdh-ai
 /workspaces/openshift-image-registry                @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
 /workspaces/orchestrator                            @batzionb @mareklibra @gciavarrini
 /workspaces/quickstart                              @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
