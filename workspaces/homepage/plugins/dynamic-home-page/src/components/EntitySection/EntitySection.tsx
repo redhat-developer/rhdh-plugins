@@ -15,7 +15,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useRef } from 'react';
 
 import {
   CodeSnippet,
@@ -66,6 +66,22 @@ export const EntitySection = () => {
   const [isMediumBreakpoint, setIsMediumBreakpoint] = useState(false);
 
   const isMd = useMediaQuery(theme.breakpoints.only('md'));
+
+  const [contentWidth, setContentWidth] = useState(0);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
+  const setContentNode = (node: HTMLDivElement | null) => {
+    if (!node) return;
+
+    resizeObserverRef.current?.disconnect();
+
+    resizeObserverRef.current = new ResizeObserver(entries => {
+      const width = entries[0].contentRect.width;
+      setContentWidth(width);
+    });
+
+    resizeObserverRef.current.observe(node);
+  };
 
   useEffect(() => {
     if (isMd) {
@@ -126,17 +142,24 @@ export const EntitySection = () => {
     content = (
       <Box sx={{ padding: '8px 8px 8px 0' }}>
         <Fragment>
-          <Grid container spacing={1} alignItems="stretch">
+          <Grid
+            container
+            sx={{
+              display: 'flex',
+            }}
+            spacing={1}
+            alignItems="stretch"
+          >
             {!isRemoveFirstCard && !profileLoading && (
-              <Grid item xs={12} md={6} lg={5} key="entities illustration">
+              <Grid item xs={12} md={6} lg={4} key="entities illustration">
                 <Card
                   elevation={0}
                   sx={{
                     border: `1px solid ${theme.palette.grey[400]}`,
                     display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
                     position: 'relative',
+                    width: '100%',
+                    height: '100%',
                     transition:
                       'opacity 0.5s ease-out, transform 0.5s ease-in-out',
                     opacity: showDiscoveryCard ? 1 : 0,
@@ -145,45 +168,58 @@ export const EntitySection = () => {
                       : 'translateX(-50px)',
                   }}
                 >
-                  {!imgLoaded && (
-                    <Skeleton
-                      variant="rectangular"
+                  <Box
+                    ref={setContentNode}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: contentWidth > 350 ? 'row' : 'column',
+                      width: '100%',
+                      maxWidth: '550px',
+                      minHeight: '100%',
+                    }}
+                  >
+                    {!imgLoaded && (
+                      <Skeleton
+                        variant="rectangular"
+                        height={300}
+                        sx={{
+                          borderRadius: 3,
+                          width: 'clamp(140px, 14vw, 266px)',
+                        }}
+                      />
+                    )}
+                    <Box
+                      component="img"
+                      src={HomePageEntityIllustration}
+                      onLoad={() => setImgLoaded(true)}
+                      alt=""
                       height={300}
                       sx={{
-                        borderRadius: 3,
                         width: 'clamp(140px, 14vw, 266px)',
                       }}
                     />
-                  )}
-                  <Box
-                    component="img"
-                    src={HomePageEntityIllustration}
-                    onLoad={() => setImgLoaded(true)}
-                    alt=""
-                    height={300}
-                    sx={{
-                      width: 'clamp(140px, 14vw, 266px)',
-                    }}
-                  />
-                  <Box sx={{ p: 2 }}>
-                    <Box>
-                      <Typography variant="body2" paragraph>
-                        {t('entities.description')}
-                      </Typography>
+                    <Box sx={{ p: 2, display: 'flex' }}>
+                      <Box sx={{ display: 'flex', minWidth: 0 }}>
+                        <Typography variant="body2" component="div">
+                          {t('entities.description')}
+                        </Typography>
+                      </Box>
+                      {entities?.length > 0 && (
+                        <IconButton
+                          onClick={handleClose}
+                          aria-label={t('entities.close')}
+                          sx={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                          }}
+                        >
+                          <CloseIcon sx={{ width: '16px', height: '16px' }} />
+                        </IconButton>
+                      )}
                     </Box>
-                    {entities?.length > 0 && (
-                      <IconButton
-                        onClick={handleClose}
-                        aria-label={t('entities.close')}
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                        }}
-                      >
-                        <CloseIcon style={{ width: '16px', height: '16px' }} />
-                      </IconButton>
-                    )}
                   </Box>
                 </Card>
               </Grid>
@@ -195,8 +231,9 @@ export const EntitySection = () => {
                   item
                   xs={12}
                   md={6}
-                  lg={isRemoveFirstCard ? 3 : 3.5}
+                  lg={isRemoveFirstCard ? 3 : 4}
                   key={item.metadata.name}
+                  display="flex"
                 >
                   <EntityCard
                     entity={item}
@@ -209,20 +246,33 @@ export const EntitySection = () => {
                 </Grid>
               ))}
             {entities?.length === 0 && (
-              <Grid item md={isRemoveFirstCard ? 12 : 7}>
+              <Grid
+                item
+                xs={12}
+                md={6}
+                lg={isRemoveFirstCard ? 3 : 4}
+                display="flex"
+              >
                 <Box
                   sx={{
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    flexDirection: 'column',
                     minHeight: 300,
+                    height: '100%',
+                    width: '100%',
                     border: muiTheme =>
                       `1px solid ${muiTheme.palette.grey[400]}`,
                     borderRadius: 3,
                     overflow: 'hidden',
                   }}
                 >
-                  <CardContent>
+                  <CardContent
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      flex: 1,
+                    }}
+                  >
                     <Typography sx={{ fontSize: '1.125rem', fontWeight: 500 }}>
                       {t('entities.empty')}
                     </Typography>
@@ -236,9 +286,11 @@ export const EntitySection = () => {
                     >
                       {t('entities.emptyDescription')}
                     </Typography>
-                    <StyledLink to="/catalog-import" underline="none">
-                      {t('entities.register')}
-                    </StyledLink>
+                    <Box sx={{ mt: 'auto', pt: 2 }}>
+                      <StyledLink to="/catalog-import" underline="none">
+                        {t('entities.register')}
+                      </StyledLink>
+                    </Box>
                   </CardContent>
                 </Box>
               </Grid>
@@ -256,6 +308,10 @@ export const EntitySection = () => {
         padding: '24px',
         border: muitheme => `1px solid ${muitheme.palette.grey[300]}`,
         overflow: 'auto',
+        flex: 1,
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Typography
@@ -265,21 +321,24 @@ export const EntitySection = () => {
           alignItems: 'center',
           fontWeight: '500',
           fontSize: '1.5rem',
+          flexShrink: 0,
         }}
       >
         {t('entities.title')}
       </Typography>
-      {content}
-      {entities?.length > 0 && (
-        <Box sx={{ pt: 2 }}>
-          <ViewMoreLink to="/catalog">
-            <Trans
-              message="entities.viewAll"
-              params={{ count: data?.totalItems?.toString() || '' }}
-            />
-          </ViewMoreLink>
-        </Box>
-      )}
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        {content}
+        {entities?.length > 0 && (
+          <Box sx={{ pt: 2 }}>
+            <ViewMoreLink to="/catalog">
+              <Trans
+                message="entities.viewAll"
+                params={{ count: data?.totalItems?.toString() || '' }}
+              />
+            </ViewMoreLink>
+          </Box>
+        )}
+      </Box>
     </Card>
   );
 };

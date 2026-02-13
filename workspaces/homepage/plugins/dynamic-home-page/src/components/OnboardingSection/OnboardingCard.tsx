@@ -44,8 +44,8 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
     <Box>
       <CardContent sx={{ backgroundColor: 'transparent' }}>
         <Typography
+          variant="h3"
           sx={{
-            fontSize: '1.75rem',
             fontWeight: 500,
             m: 0,
           }}

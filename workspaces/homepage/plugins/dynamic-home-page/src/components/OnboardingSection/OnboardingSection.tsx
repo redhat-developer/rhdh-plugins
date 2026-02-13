@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ComponentProps } from 'react';
 
 import { useUserProfile } from '@backstage/plugin-user-settings';
 import { useApi } from '@backstage/core-plugin-api';
@@ -81,15 +81,26 @@ export const OnboardingSection = () => {
 
   const content = (
     <Box>
-      <Grid container margin="auto">
+      <Grid
+        container
+        margin="auto"
+        sx={{
+          display: 'flex',
+          justifyContent: 'left',
+          alignItems: 'center',
+          overflow: 'auto',
+        }}
+        spacing={1}
+      >
         <Grid
-          item
-          xs={12}
-          md={6}
-          lg={3}
-          display="flex"
-          justifyContent="left"
-          alignItems="center"
+          {...({
+            size: { xs: 12, md: 6, lg: 3 },
+          } as ComponentProps<typeof Grid>)}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
         >
           <Box
             component="img"
@@ -104,14 +115,15 @@ export const OnboardingSection = () => {
         </Grid>
         {getLearningItems(t).map((item: LearningSectionItem) => (
           <Grid
-            item
-            xs={12}
-            md={6}
-            lg={3}
+            {...({
+              size: { xs: 12, md: 6, lg: 3 },
+            } as ComponentProps<typeof Grid>)}
+            sx={{
+              display: 'flex',
+              justifyContent: 'left',
+              alignItems: 'center',
+            }}
             key={item.title}
-            display="flex"
-            justifyContent="left"
-            alignItems="center"
           >
             <OnboardingCard
               title={item.title}
@@ -135,6 +147,8 @@ export const OnboardingSection = () => {
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
         overflow: 'auto',
+        flex: 1,
+        minHeight: 0,
       }}
     >
       {!profileLoading && (
@@ -145,12 +159,13 @@ export const OnboardingSection = () => {
             alignItems: 'center',
             fontWeight: '500',
             fontSize: '1.5rem',
+            flexShrink: 0,
           }}
         >
           {`${greeting}, ${profileDisplayName() || t('onboarding.guest')}!`}
         </Typography>
       )}
-      {content}
+      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>{content}</Box>
     </Card>
   );
 };

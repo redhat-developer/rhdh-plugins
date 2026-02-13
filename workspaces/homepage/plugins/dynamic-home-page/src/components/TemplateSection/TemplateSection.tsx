@@ -107,6 +107,7 @@ export const TemplateSection = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    maxWidth: 550,
                     border: muiTheme =>
                       `1px solid ${muiTheme.palette.grey[400]}`,
                     borderRadius: 3,
