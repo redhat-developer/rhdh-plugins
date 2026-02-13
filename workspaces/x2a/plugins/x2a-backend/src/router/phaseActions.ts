@@ -49,9 +49,15 @@ class InitPhaseAction implements PhaseAction {
       return;
     }
 
-    const metadataModules: MetadataModule[] = JSON.parse(
-      metadataArtifact.value,
-    );
+    let metadataModules: MetadataModule[];
+    try {
+      metadataModules = JSON.parse(metadataArtifact.value);
+    } catch (error) {
+      context.logger.warn(
+        `Failed to parse project_metadata artifact, skipping module sync: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return;
+    }
 
     await this.syncModules(context, metadataModules);
   }

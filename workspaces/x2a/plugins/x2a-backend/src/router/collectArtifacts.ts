@@ -133,28 +133,38 @@ export function registerCollectArtifactsRoutes(
           );
         }
 
-        const status: JobStatusEnum =
+        let status: JobStatusEnum =
           validatedRequest.status === 'success' ? 'success' : 'error';
+        let errorDetails = validatedRequest.errorDetails || null;
+
+        if (status === 'success') {
+          try {
+            await executePhaseActions(phase, {
+              projectId,
+              artifacts: validatedRequest.artifacts,
+              x2aDatabase,
+              logger,
+            });
+          } catch (error) {
+            logger.error(
+              `Phase actions failed for job ${validatedRequest.jobId}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            status = 'error';
+            errorDetails = `Phase actions failed: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        }
+
         const logs = await fetchJobLogs(kubeService, logger, job.k8sJobName);
 
         await x2aDatabase.updateJob({
           id: validatedRequest.jobId,
           status,
           finishedAt: new Date(),
-          errorDetails: validatedRequest.errorDetails || null,
+          errorDetails,
           log: logs,
           artifacts: validatedRequest.artifacts,
           telemetry: validatedRequest.telemetry || null,
         });
-
-        if (status === 'success') {
-          await executePhaseActions(phase, {
-            projectId,
-            artifacts: validatedRequest.artifacts,
-            x2aDatabase,
-            logger,
-          });
-        }
 
         logger.info(
           `Successfully processed collectArtifacts for job ${validatedRequest.jobId}`,
