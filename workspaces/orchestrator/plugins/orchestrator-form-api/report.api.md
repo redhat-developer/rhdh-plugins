@@ -4,7 +4,7 @@
 
 ```ts
 
-import { ApiRef } from '@backstage/core-plugin-api';
+import { ApiRef } from '@backstage/frontend-plugin-api';
 import { AuthTokenDescriptor } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { ErrorSchema } from '@rjsf/utils';
 import { FormProps } from '@rjsf/core';
