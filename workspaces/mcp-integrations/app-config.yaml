@@ -7,6 +7,10 @@ organization:
 
 backend:
   actions:
+    filter:
+      include:
+        - attributes:
+            readOnly: true
     pluginSources:
       - 'software-catalog-mcp-tool'
       - 'techdocs-mcp-tool'
@@ -86,7 +90,7 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Location, Component, System, API, Group, User, Resource]
+    - allow: [Location, Component, System, API, Group, User, Resource, Template]
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
@@ -97,12 +101,6 @@ catalog:
       target: ../../examples/template/template.yaml
       rules:
         - allow: [Template]
-
-    # AI Lab Template Data
-    - type: url
-      target: https://github.com/redhat-ai-dev/ai-lab-template/blob/main/all.yaml
-      rules:
-        - allow: [Template, Location]
 
     # Local example organizational data
     - type: file
