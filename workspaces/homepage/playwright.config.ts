@@ -17,7 +17,7 @@
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  timeout: 2 * 60 * 1000,
+  timeout: 10 * 1000,
 
   expect: {
     timeout: 5000,
@@ -60,6 +60,24 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'fr',
+      },
+    },
+    {
+      name: 'it',
+      testDir: 'packages/app/e2e-tests',
+      grep: /Cards/,
+      use: {
+        channel: 'chrome',
+        locale: 'it',
+      },
+    },
+    {
+      name: 'ja',
+      testDir: 'packages/app/e2e-tests',
+      grep: /Cards/,
+      use: {
+        channel: 'chrome',
+        locale: 'ja',
       },
     },
   ],

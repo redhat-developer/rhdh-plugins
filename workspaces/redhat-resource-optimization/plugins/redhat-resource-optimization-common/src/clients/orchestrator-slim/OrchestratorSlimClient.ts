@@ -19,7 +19,10 @@ import {
   FetchApi,
   IdentityApi,
 } from '@backstage/core-plugin-api';
-import type { OrchestratorSlimApi } from './OrchestratorSlimApi';
+import type {
+  OrchestratorSlimApi,
+  WorkflowAvailabilityResult,
+} from './OrchestratorSlimApi';
 import type { JsonObject } from '@backstage/types';
 
 /** @public */
@@ -40,6 +43,21 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
   }
 
   async isWorkflowAvailable(workflowId: string): Promise<boolean> {
+    const result = await this.checkWorkflowAvailability(workflowId);
+    return result.available;
+  }
+
+  async checkWorkflowAvailability(
+    workflowId: string,
+  ): Promise<WorkflowAvailabilityResult> {
+    if (!workflowId) {
+      return {
+        available: false,
+        reason: 'not_configured',
+        errorMessage: 'No workflow configured to apply recommendations',
+      };
+    }
+
     if (!this.baseUrl) {
       this.baseUrl = await this.discoveryApi.getBaseUrl('orchestrator');
     }
@@ -48,15 +66,60 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
       workflowId,
     )}/overview`;
 
-    let result = false;
     try {
       const response = await this.fetchApi.fetch(url, { method: 'GET' });
-      result = response.ok;
-    } catch {
-      // Carry on...
-    }
 
-    return result;
+      if (response.ok) {
+        return { available: true };
+      }
+
+      const statusCode = response.status;
+
+      if (statusCode === 404) {
+        return {
+          available: false,
+          reason: 'not_found',
+          errorMessage: "Workflow doesn't exist",
+        };
+      }
+
+      if (statusCode === 503) {
+        return {
+          available: false,
+          reason: 'service_unavailable',
+          errorMessage: 'Workflow is not available',
+        };
+      }
+
+      if (statusCode === 500) {
+        return {
+          available: false,
+          reason: 'service_unavailable',
+          errorMessage: 'Workflow is not available yet or misconfigured',
+        };
+      }
+
+      if (statusCode === 401 || statusCode === 403) {
+        return {
+          available: false,
+          reason: 'access_denied',
+          errorMessage: 'No permission to access the workflow',
+        };
+      }
+
+      // Handle any other error status codes
+      return {
+        available: false,
+        reason: 'service_unavailable',
+        errorMessage: 'Workflow service is currently unavailable',
+      };
+    } catch (err) {
+      return {
+        available: false,
+        reason: 'service_unavailable',
+        errorMessage: 'Unable to connect to workflow service',
+      };
+    }
   }
 
   /** @public */

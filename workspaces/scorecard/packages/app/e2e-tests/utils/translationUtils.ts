@@ -19,6 +19,8 @@ import { scorecardMessages } from '../../../../plugins/scorecard/src/translation
 import scorecardTranslationDe from '../../../../plugins/scorecard/src/translations/de';
 import scorecardTranslationFr from '../../../../plugins/scorecard/src/translations/fr';
 import scorecardTranslationEs from '../../../../plugins/scorecard/src/translations/es';
+import scorecardTranslationIt from '../../../../plugins/scorecard/src/translations/it';
+import scorecardTranslationJa from '../../../../plugins/scorecard/src/translations/ja';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type ScorecardMessages = typeof scorecardMessages;
@@ -55,7 +57,8 @@ function transform(messages: typeof scorecardTranslationDe.messages) {
 }
 
 export function getTranslations(locale: string) {
-  switch (locale) {
+  const lang = locale.split('-')[0];
+  switch (lang) {
     case 'en':
       return scorecardMessages;
     case 'fr':
@@ -64,6 +67,10 @@ export function getTranslations(locale: string) {
       return transform(scorecardTranslationDe.messages);
     case 'es':
       return transform(scorecardTranslationEs.messages);
+    case 'it':
+      return transform(scorecardTranslationIt.messages);
+    case 'ja':
+      return transform(scorecardTranslationJa.messages);
     default:
       return scorecardMessages;
   }
@@ -81,4 +88,49 @@ export function evaluateMessage(message: string, value: string) {
   return (
     message.substring(0, startIndex) + value + message.substring(endIndex + 2)
   );
+}
+
+export function getEntityCount(
+  translations: ScorecardMessages,
+  locale: string,
+  count: string,
+) {
+  const useSingular =
+    count === '1' || (locale.startsWith('fr') && count === '0');
+  const key = useSingular
+    ? translations.thresholds.entities_one ?? '{{count}} entity'
+    : translations.thresholds.entities_other ?? '{{count}} entities';
+  return evaluateMessage(key, count);
+}
+
+export function getMissingPermissionSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+  entityCount: string,
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title} ${entityCount}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - text: "--"
+          - application: ${translations.errors.missingPermission}
+        `;
+}
+
+export function getThresholdsSnapshot(
+  translations: ScorecardMessages,
+  metricId: 'jira.open_issues' | 'github.open_prs',
+  entityCount: string,
+) {
+  return `
+        - article:
+          - text: ${translations.metric[metricId].title} ${entityCount}
+          - separator
+          - paragraph: ${translations.metric[metricId].description}
+          - paragraph: ${translations.thresholds.success}
+          - paragraph: ${translations.thresholds.warning}
+          - paragraph: ${translations.thresholds.error}
+          - application
+        `;
 }

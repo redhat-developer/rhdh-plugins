@@ -20,12 +20,6 @@ export const rootRouteRef = createRouteRef({
   id: 'bulk-import',
 });
 
-export const addRepositoriesRouteRef = createSubRouteRef({
-  id: 'bulk-import-repositories-add',
-  parent: rootRouteRef,
-  path: '/add',
-});
-
 export const importHistoryRouteRef = createSubRouteRef({
   id: 'bulk-import-actions',
   parent: rootRouteRef,

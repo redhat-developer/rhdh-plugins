@@ -113,6 +113,7 @@ export interface CostManagementSlimApi {
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{
@@ -139,6 +140,7 @@ export interface CostManagementSlimApi {
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{
@@ -187,6 +189,7 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{
@@ -207,10 +210,13 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
       links?: any;
     }>
   >;
+  // Warning: (tsdoc-param-tag-with-invalid-name) The @param block should be followed by a valid parameter name: The identifier cannot non-word characters
+  // Warning: (tsdoc-param-tag-with-invalid-name) The @param block should be followed by a valid parameter name: The identifier cannot non-word characters
   searchOpenShiftProjects(
     search?: string,
     options?: {
       token?: string;
+      limit?: number;
     },
   ): Promise<
     TypedResponse<{
@@ -392,16 +398,22 @@ export class OptimizationsClient implements OptimizationsApi {
   getRecommendationById(
     request: GetRecommendationByIdRequest,
   ): Promise<TypedResponse<RecommendationBoxPlots>>;
+  // Warning: (ae-forgotten-export) The symbol "RequestOptions" needs to be exported by the entry point index.d.ts
   // Warning: (ae-forgotten-export) The symbol "RecommendationList" needs to be exported by the entry point index.d.ts
   //
   // (undocumented)
   getRecommendationList(
     request: GetRecommendationListRequest,
+    options?: RequestOptions,
   ): Promise<TypedResponse<RecommendationList>>;
 }
 
 // @public (undocumented)
 export interface OrchestratorSlimApi {
+  // (undocumented)
+  checkWorkflowAvailability(
+    workflowId: string,
+  ): Promise<WorkflowAvailabilityResult>;
   // (undocumented)
   executeWorkflow<D = JsonObject>(
     workflowId: string,
@@ -420,6 +432,10 @@ export class OrchestratorSlimClient implements OrchestratorSlimApi {
     fetchApi: FetchApi;
     identityApi: IdentityApi;
   });
+  // (undocumented)
+  checkWorkflowAvailability(
+    workflowId: string,
+  ): Promise<WorkflowAvailabilityResult>;
   // (undocumented)
   executeWorkflow<D = JsonObject>(
     workflowId: string,
@@ -478,6 +494,23 @@ export interface Tag {
   // (undocumented)
   values: ProjectValue[];
 }
+
+// @public (undocumented)
+export interface WorkflowAvailabilityResult {
+  // (undocumented)
+  available: boolean;
+  // (undocumented)
+  errorMessage?: string;
+  // (undocumented)
+  reason?: WorkflowUnavailableReason;
+}
+
+// @public (undocumented)
+export type WorkflowUnavailableReason =
+  | 'not_configured'
+  | 'not_found'
+  | 'access_denied'
+  | 'service_unavailable';
 
 // (No @packageDocumentation comment for this package)
 ```

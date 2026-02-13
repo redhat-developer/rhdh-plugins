@@ -30,8 +30,8 @@ dynamicPlugins:
 
                 * [Website](https://developers.redhat.com/rhdh/overview)
                 * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
-                * [GitHub Showcase](https://github.com/janus-idp/backstage-showcase)
-                * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
+                * [GitHub RHDH](https://github.com/redhat-developer/rhdh)
+                * [GitHub RHDH Plugins](https://github.com/redhat-developer/rhdh-plugins)
         - mountPoint: home.page/cards
           importName: Markdown
           config:
@@ -49,8 +49,8 @@ dynamicPlugins:
 
                 * [Website](https://developers.redhat.com/rhdh/overview)
                 * [Documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/)
-                * [GitHub Showcase](https://github.com/janus-idp/backstage-showcase)
-                * [GitHub Plugins](https://github.com/janus-idp/backstage-plugins)
+                * [GitHub RHDH](https://github.com/redhat-developer/rhdh)
+                * [GitHub RHDH Plugins](https://github.com/redhat-developer/rhdh-plugins)
 ```
 
 ## Available props

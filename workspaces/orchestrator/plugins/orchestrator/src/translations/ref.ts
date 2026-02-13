@@ -176,8 +176,8 @@ export const orchestratorMessages = {
       'Additional details about this error are not available',
   },
   reviewStep: {
-    hiddenFieldsNote:
-      'Some fields are hidden on this page but will be included in the workflow execution request.',
+    hiddenFieldsNote: 'Some parameters are hidden on this page.',
+    showHiddenParameters: 'Show hidden parameters',
   },
   common: {
     close: 'Close',
@@ -191,6 +191,18 @@ export const orchestratorMessages = {
     next: 'Next',
     review: 'Review',
     unavailable: '---',
+    goBack: 'Go back',
+  },
+  permissions: {
+    accessDenied: 'Access Denied',
+    accessDeniedDescription:
+      'You do not have permission to view this workflow run.',
+    requiredPermission: 'Required permission',
+    contactAdmin:
+      'Please contact your administrator to request the necessary permissions.',
+    missingOwnership:
+      'This workflow run does not have ownership information recorded.',
+    notYourRun: 'This workflow run was initiated by another user.',
   },
   duration: {
     aFewSeconds: 'a few seconds',

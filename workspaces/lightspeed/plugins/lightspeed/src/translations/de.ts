@@ -77,7 +77,6 @@ const lightspeedTranslationDe = createTranslationMessages({
     'conversation.rename.confirm.title': 'Chat umbenennen?',
     'conversation.rename.confirm.action': 'Umbenennen',
     'conversation.rename.placeholder': 'Chat-Name',
-    'conversation.action.error': 'Fehler aufgetreten: {{error}}',
 
     // Permissions
     'permission.required.title': 'Fehlende Berechtigungen',
@@ -93,12 +92,6 @@ const lightspeedTranslationDe = createTranslationMessages({
     // Footer and feedback
     'footer.accuracy.label':
       'Überprüfen Sie KI-generierte Inhalte immer vor der Verwendung.',
-    'footer.accuracy.popover.title': 'Genauigkeit überprüfen',
-    'footer.accuracy.popover.description':
-      'Obwohl Developer Lightspeed sich um Genauigkeit bemüht, besteht immer die Möglichkeit von Fehlern. Es ist eine gute Praxis, kritische Informationen aus zuverlässigen Quellen zu überprüfen, besonders wenn sie für Entscheidungsfindung oder Handlungen entscheidend sind.',
-    'footer.accuracy.popover.image.alt': 'Beispielbild für Fußnoten-Popover',
-    'footer.accuracy.popover.cta.label': 'Verstanden',
-    'footer.accuracy.popover.link.label': 'Mehr erfahren',
 
     // Common actions
     'common.cancel': 'Abbrechen',
@@ -121,7 +114,7 @@ const lightspeedTranslationDe = createTranslationMessages({
     'chatbox.welcome.greeting': 'Hallo, {{userName}}',
     'chatbox.welcome.description': 'Wie kann ich Ihnen heute helfen?',
     'chatbox.message.placeholder':
-      'Senden Sie eine Nachricht und laden Sie optional eine JSON-, YAML-, oder TXT-Datei hoch...',
+      'Geben Sie eine Eingabeaufforderung für Lightspeed ein',
     'chatbox.fileUpload.failed': 'Datei-Upload fehlgeschlagen',
     'chatbox.fileUpload.infoText':
       'Unterstützte Dateitypen sind: .txt, .yaml, und .json. Die maximale Dateigröße beträgt 25 MB.',

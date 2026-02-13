@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-orchestrator-backend",
-  "version": "8.6.0",
+  "version": "8.6.1",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -98,7 +98,7 @@
     "@types/fs-extra": "11.0.4",
     "@types/json-schema": "7.0.15",
     "@types/luxon": "^3.7.1",
-    "prettier": "3.7.4"
+    "prettier": "3.8.1"
   },
   "peerDependencies": {
     "@backstage-community/plugin-rbac-common": "^1.12.1",

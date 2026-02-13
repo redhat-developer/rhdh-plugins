@@ -77,6 +77,10 @@ const orchestratorTranslationEs = createTranslationMessages({
       'Error al cargar los detalles para el ID de flujo de trabajo: {{id}}',
     'workflow.messages.areYouSureYouWantToRunThisWorkflow':
       '¿Estás seguro de que quieres ejecutar este flujo de trabajo?',
+    'workflow.messages.userNotAuthorizedExecute':
+      'Usuario no autorizado para ejecutar el flujo de trabajo.',
+    'workflow.messages.workflowDown':
+      'El flujo de trabajo está actualmente inactivo o en estado de error. Ejecutarlo ahora puede fallar o producir resultados inesperados.',
     'workflow.buttons.run': 'Ejecutar',
     'workflow.buttons.runWorkflow': 'Ejecutar flujo de trabajo',
     'workflow.buttons.runAgain': 'Ejecutar de nuevo',
@@ -101,6 +105,7 @@ const orchestratorTranslationEs = createTranslationMessages({
       'No es posible abortar la ejecución ya que ha sido completada.',
     'run.status.completed': 'Ejecución completada',
     'run.status.failed': 'La ejecución ha fallado {{time}}',
+    'run.status.failedAt': 'La ejecución ha fallado {{time}}',
     'run.status.aborted': 'La ejecución ha sido abortada',
     'run.status.completedWithMessage':
       'Ejecución completada {{time}} con mensaje',
@@ -144,7 +149,8 @@ const orchestratorTranslationEs = createTranslationMessages({
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'No hay detalles adicionales sobre este error disponibles',
     'reviewStep.hiddenFieldsNote':
-      'Algunos campos están ocultos en esta página pero se incluirán en la solicitud de ejecución del flujo de trabajo.',
+      'Algunos parámetros están ocultos en esta página.',
+    'reviewStep.showHiddenParameters': 'Mostrar parámetros ocultos',
     'common.close': 'Cerrar',
     'common.cancel': 'Cancelar',
     'common.execute': 'Ejecutar',
@@ -156,6 +162,17 @@ const orchestratorTranslationEs = createTranslationMessages({
     'common.run': 'Ejecutar',
     'common.next': 'Siguiente',
     'common.review': 'Revisar',
+    'common.goBack': 'Volver',
+    'permissions.accessDenied': 'Acceso denegado',
+    'permissions.accessDeniedDescription':
+      'No tiene permiso para ver esta ejecución del flujo de trabajo.',
+    'permissions.requiredPermission': 'Permiso requerido',
+    'permissions.contactAdmin':
+      'Por favor, contacte a su administrador para solicitar los permisos necesarios.',
+    'permissions.missingOwnership':
+      'Esta ejecución del flujo de trabajo no tiene información de propiedad registrada.',
+    'permissions.notYourRun':
+      'Esta ejecución del flujo de trabajo fue iniciada por otro usuario.',
     'duration.aFewSeconds': 'unos segundos',
     'duration.aSecond': 'un segundo',
     'duration.seconds': '{{count}} segundos',

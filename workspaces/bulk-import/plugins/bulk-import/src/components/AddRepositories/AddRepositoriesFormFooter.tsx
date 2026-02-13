@@ -114,7 +114,7 @@ export const AddRepositoriesFormFooter = () => {
       ) : (
         submitButton
       )}
-      <Link to="/bulk-import/repositories">
+      <Link to="/bulk-import">
         <Button variant="outlined">{t('common.cancel')}</Button>
       </Link>
     </Box>

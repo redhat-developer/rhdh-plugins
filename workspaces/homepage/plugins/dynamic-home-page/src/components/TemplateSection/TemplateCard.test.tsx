@@ -24,6 +24,7 @@ describe('TemplateCard', () => {
     title: 'Sample Template',
     description:
       'This is a description of the sample template used for testing.',
+    type: 'website',
     kind: 'Template',
   };
 
@@ -52,8 +53,8 @@ describe('TemplateCard', () => {
     expect(screen.getByText(/this is a description/i)).toBeInTheDocument();
   });
 
-  it('should display the correct kind in the Chip', () => {
+  it('should display the correct type in the Chip', () => {
     renderComponent();
-    expect(screen.getByText(props.kind)).toBeInTheDocument();
+    expect(screen.getByText(props.type)).toBeInTheDocument();
   });
 });

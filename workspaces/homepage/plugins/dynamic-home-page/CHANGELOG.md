@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.6
+
+### Patch Changes
+
+- b0d352a: Fixed entity cards in "Explore Your Software Catalog" section to display `metadata.title` when available, falling back to `metadata.name` only if title is not set
+
+## 1.10.5
+
+### Patch Changes
+
+- 802696c: UI polish and tag interaction improvements on Home page
+
+## 1.10.4
+
+### Patch Changes
+
+- 2f39369: Fix inconsistent usage of resource kind chip on template homepage
+
 ## 1.10.3
 
 ### Patch Changes

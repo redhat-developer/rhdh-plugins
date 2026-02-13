@@ -123,7 +123,7 @@ Red Hat Developer Hub (RHDH) leverages dynamic plugins to efficiently deploy plu
 
 The procedure involves the following steps:
 
-1. First and foremost, you must follow [these instructions](https://github.com/janus-idp/backstage-showcase/blob/main/docs/dynamic-plugins/export-derived-package.md) to understand how to export this plugin as a dynamic plugin.
+1. First and foremost, you must follow [these instructions](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/export-derived-package.md) to understand how to export this plugin as a dynamic plugin.
 1. Ensure you are familiar with the [RHDH configuration docs](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.3/html/administration_guide_for_red_hat_developer_hub/assembly-add-custom-app-file-openshift_admin-rhdh#proc-add-custom-app-config-file-ocp-operator_admin-rhdh)
 1. Specially, make sure you have configured
 

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { HTMLProps, ReactNode } from 'react';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 
-interface SectionWrapperProps extends React.HTMLProps<HTMLDivElement> {
-  children: React.ReactNode;
+interface SectionWrapperProps extends HTMLProps<HTMLDivElement> {
+  children: ReactNode;
   title: string;
 }
 

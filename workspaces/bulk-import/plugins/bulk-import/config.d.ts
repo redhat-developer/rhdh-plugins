@@ -26,6 +26,8 @@ export interface Config {
      *  customize the import process or integrate it with other Scaffolder actions.
      *
      * `orchestrator`: Uses the Orchestrator API to execute workflows.
+     *
+     * @visibility frontend
      */
     importAPI?: 'open-pull-requests' | 'scaffolder' | 'orchestrator';
 

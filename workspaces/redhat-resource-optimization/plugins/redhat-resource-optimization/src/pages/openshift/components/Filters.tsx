@@ -390,7 +390,7 @@ export function Filters(props: FiltersProps) {
               handleHomeEndKeys
               filterSelectedOptions
               label=""
-              options={['includes', 'excludes']}
+              options={['includes', 'excludes', 'exact']}
               value={filterOperation}
               placeholder=""
               onChange={(event): void => {

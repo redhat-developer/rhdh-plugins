@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Pair, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
+import { Pair, parse, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 import { ExtensionsPluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
@@ -80,13 +80,29 @@ export const applyContent = (
   otherPackageNames: { [key: string]: string },
   newContent: string | JsonObject,
 ) => {
-  if (!editorContent) {
-    return null;
+  if (!editorContent || !editorContent.trim()) {
+    const packagePath = otherPackageNames[packageName];
+    if (!packagePath) {
+      return null;
+    }
+
+    const minimalYaml = {
+      plugins: [
+        {
+          package: packagePath,
+          disabled: false,
+          pluginConfig:
+            typeof newContent === 'string' ? parse(newContent) : newContent,
+        },
+      ],
+    };
+    return stringify(minimalYaml);
   }
   const content = parseDocument(editorContent);
   const plugins = content.get('plugins');
 
   if (plugins instanceof YAMLSeq && Array.isArray(plugins?.items)) {
+    let foundPackage = false;
     (plugins?.items || []).forEach((plugin: any) => {
       if (plugin instanceof Object) {
         const pluginPackage = plugin.items?.find((i: Pair<Scalar, Scalar>) => {
@@ -96,6 +112,7 @@ export const applyContent = (
           );
         });
         if (pluginPackage) {
+          foundPackage = true;
           if (typeof newContent === 'string') {
             plugin.set('pluginConfig', parseDocument(newContent));
           } else {
@@ -104,6 +121,36 @@ export const applyContent = (
         }
       }
     });
+
+    if (!foundPackage) {
+      const packagePath = otherPackageNames[packageName];
+      if (packagePath) {
+        const newPlugin: any = {
+          package: packagePath,
+          disabled: false,
+        };
+        if (typeof newContent === 'string') {
+          newPlugin.pluginConfig = parseDocument(newContent);
+        } else {
+          newPlugin.pluginConfig = newContent;
+        }
+        plugins.add(newPlugin);
+      }
+    }
+  } else {
+    const packagePath = otherPackageNames[packageName];
+    if (packagePath) {
+      const newPlugin: any = {
+        package: packagePath,
+        disabled: false,
+      };
+      if (typeof newContent === 'string') {
+        newPlugin.pluginConfig = parseDocument(newContent);
+      } else {
+        newPlugin.pluginConfig = newContent;
+      }
+      content.set('plugins', [newPlugin]);
+    }
   }
   return content.toString();
 };

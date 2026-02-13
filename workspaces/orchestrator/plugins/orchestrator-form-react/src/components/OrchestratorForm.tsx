@@ -28,7 +28,7 @@ import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-p
 import { TranslationFunction } from '../hooks/useTranslation';
 import extractStaticDefaults from '../utils/extractStaticDefaults';
 import generateUiSchema from '../utils/generateUiSchema';
-import { pruneFormData } from '../utils/pruneFormData';
+import { omitFromWorkflowInput, pruneFormData } from '../utils/pruneFormData';
 import { StepperContextProvider } from '../utils/StepperContext';
 import OrchestratorFormWrapper from './OrchestratorFormWrapper';
 import ReviewStep from './ReviewStep';
@@ -149,10 +149,14 @@ const OrchestratorForm = ({
     return pruneFormData(formData, schema);
   }, [formData, schema]);
 
+  const workflowInputData = useMemo(() => {
+    return omitFromWorkflowInput(prunedFormData, schema);
+  }, [prunedFormData, schema]);
+
   const _handleExecute = useCallback(() => {
     // Use pruned data for execution to avoid submitting stale properties
-    handleExecute(prunedFormData);
-  }, [prunedFormData, handleExecute]);
+    handleExecute(workflowInputData);
+  }, [workflowInputData, handleExecute]);
 
   const onSubmit = useCallback(
     (_formData: JsonObject) => {

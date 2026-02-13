@@ -18,9 +18,10 @@
 /* eslint-disable @backstage/no-relative-monorepo-imports */
 import { globalHeaderMessages } from '../../../../plugins/global-header/src/translations/ref.js';
 import globalHeaderTranslationDe from '../../../../plugins/global-header/src/translations/de.js';
-import globalHeaderTranslationFr from '../../../../plugins/global-header/src/translations/fr.js';
 import globalHeaderTranslationEs from '../../../../plugins/global-header/src/translations/es.js';
+import globalHeaderTranslationFr from '../../../../plugins/global-header/src/translations/fr.js';
 import globalHeaderTranslationIt from '../../../../plugins/global-header/src/translations/it.js';
+import globalHeaderTranslationJa from '../../../../plugins/global-header/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type GlobalHeaderMessages = typeof globalHeaderMessages;
@@ -44,14 +45,16 @@ export function getTranslations(locale: string) {
   switch (locale) {
     case 'en':
       return globalHeaderMessages;
-    case 'fr':
-      return transform(globalHeaderTranslationFr.messages);
     case 'de':
       return transform(globalHeaderTranslationDe.messages);
     case 'es':
       return transform(globalHeaderTranslationEs.messages);
+    case 'fr':
+      return transform(globalHeaderTranslationFr.messages);
     case 'it':
       return transform(globalHeaderTranslationIt.messages);
+    case 'ja':
+      return transform(globalHeaderTranslationJa.messages);
     default:
       return globalHeaderMessages;
   }

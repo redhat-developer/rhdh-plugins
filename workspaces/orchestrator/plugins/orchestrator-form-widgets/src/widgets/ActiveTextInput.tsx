@@ -70,14 +70,14 @@ export const ActiveTextInput: Widget<
   const autocompleteSelector =
     uiProps['fetch:response:autocomplete']?.toString();
   const staticDefault = uiProps['fetch:response:default'];
-  const staticDefaultValue =
-    typeof staticDefault === 'string' ? staticDefault : undefined;
+  const hasStaticDefault = typeof staticDefault === 'string';
+  const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
   const hasFetchUrl = !!uiProps['fetch:url'];
 
   // If fetch:url is configured, either fetch:response:value OR fetch:response:default should be set
   // to provide meaningful behavior. Without fetch:url, the widget works as a plain text input.
   const [localError] = useState<string | undefined>(
-    hasFetchUrl && !defaultValueSelector && !staticDefaultValue
+    hasFetchUrl && !defaultValueSelector && !hasStaticDefault
       ? `When fetch:url is configured, either fetch:response:value or fetch:response:default should be set for ${props.id}.`
       : undefined,
   );
@@ -123,7 +123,7 @@ export const ActiveTextInput: Widget<
     const doItAsync = async () => {
       await wrapProcessing(async () => {
         // Only apply fetched value if user hasn't changed the field
-        if (!isChangedByUser && defaultValueSelector) {
+        if (!skipInitialValue && !isChangedByUser && defaultValueSelector) {
           const fetchedValue = await applySelectorString(
             data,
             defaultValueSelector,
@@ -157,16 +157,19 @@ export const ActiveTextInput: Widget<
     value,
     handleChange,
     isChangedByUser,
+    skipInitialValue,
     wrapProcessing,
   ]);
 
-  if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} id={id} />;
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  const displayError = localError ?? (shouldShowFetchError ? error : undefined);
+  if (displayError) {
+    return <ErrorText text={displayError} id={id} />;
   }
 
   // Show loading only if we don't have a static default value to display
   // This ensures the default is shown instantly while fetch happens in background
-  if (completeLoading && !staticDefaultValue) {
+  if (completeLoading && !hasStaticDefault) {
     return <CircularProgress size={20} />;
   }
 

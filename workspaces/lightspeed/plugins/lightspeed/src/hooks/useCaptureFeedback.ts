@@ -15,12 +15,16 @@
  */
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { CaptureFeedback } from '../types';
 
-export const useCaptureFeedback = () => {
+export const useCaptureFeedback = (): UseMutationResult<
+  { response: string },
+  Error,
+  CaptureFeedback
+> => {
   const lightspeedApi = useApi(lightspeedApiRef);
 
   return useMutation({

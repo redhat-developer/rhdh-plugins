@@ -1,0 +1,6 @@
+.trigger-column-branch-link-wrapper {
+  background-color: var(--pf-t--global--color--nonstatus--blue--default);
+  padding: var(--pf-t--global--spacer--xs);
+  border-radius: var(--pf-t--global--spacer--lg);
+  color: var(--pf-t--global--text--color--link--default) !important;
+}

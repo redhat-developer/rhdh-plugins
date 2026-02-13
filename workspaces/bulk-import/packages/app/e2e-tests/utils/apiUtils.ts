@@ -201,7 +201,7 @@ to this repository so that the component can
 be added to the [software catalog](http://localhost:3000/catalog).
 After this pull request is merged, the component will become available.
 For more information, read an [overview of the Backstage software catalog](https://backstage.io/docs/features/software-catalog/).
-View the import job in your app [here](http://localhost:3000/bulk-import/repositories?repository=${repositories.frontendApp.url}&defaultBranch=${repositories.frontendApp.defaultBranch}).`,
+View the import job in your app [here](http://localhost:3000/bulk-import?repository=${repositories.frontendApp.url}&defaultBranch=${repositories.frontendApp.defaultBranch}).`,
       catalogInfoContent: `apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:

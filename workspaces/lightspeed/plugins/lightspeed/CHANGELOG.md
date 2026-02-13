@@ -1,5 +1,44 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.3.0
+
+### Minor Changes
+
+- 0a7c742: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- cc12a51: Updated dependency `@patternfly/react-core` to `6.4.1`.
+- Updated dependencies [0a7c742]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.3.0
+
+## 1.2.3
+
+### Patch Changes
+
+- da2e71d: some ux improvements and persisting the display mode preference
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.3
+
+## 1.2.2
+
+### Patch Changes
+
+- 00a1d21: Added missing display mode translations (`settings.displayMode.*`) for Japanese (ja) and Italian (it) locales.
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [aaac497]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.2
+
+## 1.2.1
+
+### Patch Changes
+
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- b0f22e5: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+  Updated dependency `monaco-editor` to `^0.55.0`.
+- 98bb56f: Render new lines in deepThinking component
+- Updated dependencies [9c17c36]
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.2.1
+
 ## 1.2.0
 
 ### Minor Changes

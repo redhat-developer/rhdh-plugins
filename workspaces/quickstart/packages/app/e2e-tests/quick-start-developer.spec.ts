@@ -31,16 +31,10 @@ test.describe('Test Quick Start plugin', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Enter' }).click();
 
-    // Switch to French for French projects
-    const projectName = test.info().project.name;
-    if (projectName === 'fr' || projectName === 'dev-config-fr') {
-      await switchToLocale(page, 'Français');
-    }
-
-    const currentLocale = await page.evaluate(
-      () => globalThis.navigator.language.split('-')[0],
-    );
-    translations = getTranslations(currentLocale);
+    // Switch locale for non-English projects
+    const locale = await page.evaluate(() => globalThis.navigator.language);
+    await switchToLocale(page, locale);
+    translations = getTranslations(locale);
   });
 
   test('Access Quick start as User', async ({ page }, testInfo: TestInfo) => {
@@ -121,7 +115,7 @@ test.describe('Test Quick Start plugin', () => {
     await page.getByText(translations.steps.importApplication.title).click();
     await uiHelper.verifyButtonURL(
       translations.steps.importApplication.ctaTitle,
-      '/bulk-import/repositories',
+      '/bulk-import',
     );
     await uiHelper.clickButtonByText(
       translations.steps.importApplication.ctaTitle,

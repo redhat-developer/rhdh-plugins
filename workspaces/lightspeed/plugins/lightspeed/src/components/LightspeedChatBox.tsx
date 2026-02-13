@@ -70,6 +70,21 @@ const useStyles = makeStyles(theme => ({
       },
     },
   },
+  deepThinking: {
+    animation: '$deepThinking 1.6s ease-in-out infinite',
+  },
+
+  '@keyframes deepThinking': {
+    '0%': {
+      opacity: 0.65,
+    },
+    '50%': {
+      opacity: 1,
+    },
+    '100%': {
+      opacity: 0.65,
+    },
+  },
 }));
 
 // Extended message type that includes tool calls
@@ -106,7 +121,7 @@ export const LightspeedChatBox = forwardRef(
       topicRestrictionEnabled,
       displayMode,
     }: LightspeedChatBoxProps,
-    ref: ForwardedRef<ScrollContainerHandle>,
+    ref: ForwardedRef<ScrollContainerHandle | null>,
   ) => {
     const classes = useStyles();
     const scrollQueued = useRef(false);
@@ -222,7 +237,7 @@ export const LightspeedChatBox = forwardRef(
           // Map first tool call to PatternFly's toolCall prop
           const firstToolCall = message.toolCalls?.[0];
           const toolCallProp = firstToolCall
-            ? mapToPatternFlyToolCall(firstToolCall, t)
+            ? mapToPatternFlyToolCall(firstToolCall, t, message.role)
             : undefined;
 
           // Handle additional tool calls (if any) via extraContent
@@ -239,39 +254,63 @@ export const LightspeedChatBox = forwardRef(
             parsedReasoning.isReasoningInProgress ||
             parsedReasoning.hasReasoning
           ) {
-            const reasoningContent =
-              parsedReasoning.reasoning ||
-              (() => {
-                const reasoningMatch = messageContent.match(/<think>(.*?)$/s);
-                return reasoningMatch ? reasoningMatch[1].trim() : '';
-              })();
+            const reasoningContent = parsedReasoning.reasoning;
 
             if (reasoningContent) {
               deepThinking = {
+                cardBodyProps: {
+                  id: `deep-thinking-${index}`,
+                  style: { whiteSpace: 'pre-line' },
+                  className: parsedReasoning.isReasoningInProgress
+                    ? classes.deepThinking
+                    : undefined,
+                },
                 toggleContent: t('reasoning.thinking'),
                 body: reasoningContent,
-                expandableSectionProps: {},
+                isDefaultExpanded: false,
               };
-              extraContentParts.beforeMainContent = (
-                <DeepThinking {...deepThinking} />
-              );
             }
           }
 
+          const allToolCalls: React.ReactNode[] = [];
+
+          // Add first tool call if it exists
+          if (toolCallProp && firstToolCall) {
+            allToolCalls.push(
+              <div
+                key={`tool-${firstToolCall.id}-${firstToolCall.toolName}`}
+                style={{ marginTop: '8px' }}
+              >
+                <PatternFlyToolCall {...toolCallProp} />
+              </div>,
+            );
+          }
+
+          // Add additional tool calls
           if (additionalToolCalls && additionalToolCalls.length > 0) {
-            extraContentParts.afterMainContent = (
+            additionalToolCalls.forEach(tc => {
+              const tcProps = mapToPatternFlyToolCall(tc, t, message.role);
+              allToolCalls.push(
+                <div
+                  key={`tool-${tc.id}-${tc.toolName}`}
+                  style={{ marginTop: '8px' }}
+                >
+                  <PatternFlyToolCall {...tcProps} />
+                </div>,
+              );
+            });
+          }
+
+          // Show Thinking first, then tool calls
+          if (deepThinking || allToolCalls.length > 0) {
+            extraContentParts.beforeMainContent = (
               <>
-                {additionalToolCalls.map(tc => {
-                  const tcProps = mapToPatternFlyToolCall(tc, t);
-                  return (
-                    <div
-                      key={`tool-${tc.id}-${tc.toolName}`}
-                      style={{ marginTop: '8px' }}
-                    >
-                      <PatternFlyToolCall {...tcProps} />
-                    </div>
-                  );
-                })}
+                {deepThinking && <DeepThinking {...deepThinking} />}
+                {allToolCalls.length > 0 && (
+                  <div style={{ marginTop: deepThinking ? '8px' : '0' }}>
+                    {allToolCalls}
+                  </div>
+                )}
               </>
             );
           }
@@ -291,7 +330,6 @@ export const LightspeedChatBox = forwardRef(
           return (
             <Message
               key={`${message.role}-${index}`}
-              toolCall={toolCallProp}
               extraContent={extraContent}
               {...finalMessage}
             />

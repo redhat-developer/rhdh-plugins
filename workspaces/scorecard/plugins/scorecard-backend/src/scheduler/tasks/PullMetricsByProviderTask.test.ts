@@ -164,7 +164,7 @@ describe('PullMetricsByProviderTask', () => {
       expect(config).toEqual({
         frequency: { hours: 1 },
         timeout: { minutes: 15 },
-        initialDelay: { seconds: 3 },
+        initialDelay: { minutes: 1 },
       });
     });
 

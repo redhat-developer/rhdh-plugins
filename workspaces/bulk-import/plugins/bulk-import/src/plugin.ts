@@ -27,11 +27,7 @@ import {
   bulkImportApiRef,
   BulkImportBackendClient,
 } from './api/BulkImportBackendClient';
-import {
-  addRepositoriesRouteRef,
-  importHistoryRouteRef,
-  rootRouteRef,
-} from './routes';
+import { importHistoryRouteRef, rootRouteRef } from './routes';
 
 /**
  * @public
@@ -41,7 +37,6 @@ export const bulkImportPlugin = createPlugin({
   id: 'bulk-import',
   routes: {
     root: rootRouteRef,
-    addRepositories: addRepositoriesRouteRef,
     tasks: importHistoryRouteRef,
   },
   apis: [

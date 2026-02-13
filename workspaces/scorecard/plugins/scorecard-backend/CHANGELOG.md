@@ -1,5 +1,48 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.3.5
+
+### Patch Changes
+
+- ab5f85a: Updated default schedule for pulling metrics to have `initialDelay` of 1 minute
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.5
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.5
+
+## 2.3.4
+
+### Patch Changes
+
+- c964f4f: Fixed an issue when PullMetricsByProviderTask would fail when no entities in Catalog supported metric provider that was processed
+- 4a3369f: Fix aggregated scorecard widgets view when entities are missing value or metric fetching fails.
+
+  Refactor the /metrics/:metricId/catalog/aggregations endpoint to return an object of aggregated metrics instead of an array containing a single object.
+
+- Updated dependencies [4a3369f]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.4
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.4
+
+## 2.3.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.3
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.3
+
+## 2.3.2
+
+### Patch Changes
+
+- 1f0b3b7: Include the missing config.d.ts files under the files section defined within the package.json
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.2
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.2
+
+## 2.3.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@2.3.1
+
 ## 2.3.0
 
 ### Minor Changes

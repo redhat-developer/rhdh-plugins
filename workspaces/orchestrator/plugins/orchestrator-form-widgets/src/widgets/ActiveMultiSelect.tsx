@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { SyntheticEvent, useEffect, useMemo, useState } from 'react';
+import {
+  KeyboardEvent,
+  SyntheticEvent,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import clsx from 'clsx';
 import { makeStyles } from 'tss-react/mui';
 import { Theme } from '@mui/material/styles';
@@ -78,6 +84,7 @@ export const ActiveMultiSelect: Widget<
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
   const allowNewItems = uiProps['ui:allowNewItems'] === true;
   const staticDefault = uiProps['fetch:response:default'];
+  const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
   const staticDefaultValues = Array.isArray(staticDefault)
     ? (staticDefault as string[])
     : undefined;
@@ -87,7 +94,7 @@ export const ActiveMultiSelect: Widget<
       ? undefined
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
-  const [inProgressItem, setInProgressItem] = useState<string | undefined>();
+  const [inProgressItem, setInProgressItem] = useState<string>('');
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
@@ -101,8 +108,8 @@ export const ActiveMultiSelect: Widget<
     let options = hasOptions ? baseOptions : (staticDefaultValues ?? []);
 
     // Add in-progress item if allowed
-    if (allowNewItems && inProgressItem) {
-      options = [...new Set([inProgressItem, ...options])];
+    if (allowNewItems && inProgressItem.trim()) {
+      options = [...new Set([inProgressItem.trim(), ...options])];
     }
 
     // Also include current values so they appear as options
@@ -168,7 +175,7 @@ export const ActiveMultiSelect: Widget<
         }
 
         let defaults: string[] = [];
-        if (!isChangedByUser) {
+        if (!skipInitialValue && !isChangedByUser) {
           // set this just once, when the user has not touched the field
           if (defaultValueSelector) {
             defaults = await applySelectorArray(
@@ -213,6 +220,7 @@ export const ActiveMultiSelect: Widget<
     autocompleteOptions,
     mandatoryValues,
     isChangedByUser,
+    skipInitialValue,
     data,
     props.id,
     value,
@@ -227,35 +235,65 @@ export const ActiveMultiSelect: Widget<
     if (setIsChangedByUser) {
       setIsChangedByUser(id, true);
     }
-    setInProgressItem(undefined);
+    setInProgressItem('');
     onChange(changed);
   };
 
-  if (localError ?? error) {
-    return <ErrorText text={localError ?? error ?? ''} id={id} />;
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (allowNewItems && event.key === 'Enter' && inProgressItem.trim()) {
+      event.preventDefault();
+      event.stopPropagation();
+      const newValue = inProgressItem.trim();
+      if (!value.includes(newValue)) {
+        if (setIsChangedByUser) {
+          setIsChangedByUser(id, true);
+        }
+        onChange([...value, newValue]);
+      }
+      setInProgressItem('');
+    }
+  };
+
+  const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
+  const suppressFetchError = !shouldShowFetchError && !!error;
+  const displayError = localError ?? (shouldShowFetchError ? error : undefined);
+  if (displayError) {
+    return <ErrorText text={displayError} id={id} />;
   }
 
   // Show spinner only if loading AND we don't have static defaults to show
   const hasStaticDefaults =
     staticDefaultValues && staticDefaultValues.length > 0;
-  if (completeLoading && !hasStaticDefaults) {
+  if (completeLoading && !hasStaticDefaults && !suppressFetchError) {
     return <CircularProgress size={20} />;
   }
 
   // Render if we have fetched options, static defaults, or current values
   const hasOptionsToShow =
-    allOptions.length > 0 || autocompleteOptions !== undefined;
+    allOptions.length > 0 ||
+    autocompleteOptions !== undefined ||
+    suppressFetchError;
   if (hasOptionsToShow) {
     return (
       <Box>
         <FormControl variant="outlined" fullWidth>
           <Autocomplete
             multiple
+            freeSolo={allowNewItems}
             data-testid={`${id}-autocomplete`}
             disabled={isReadOnly}
             options={allOptions}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}
+            inputValue={inProgressItem}
+            onInputChange={(_, newInputValue, reason) => {
+              // Only update input value for user input, not when selecting/clearing
+              if (reason === 'input') {
+                setInProgressItem(newInputValue);
+              } else if (reason === 'clear') {
+                setInProgressItem('');
+              }
+            }}
             filterSelectedOptions
             onChange={handleChange}
             renderOption={(liProps, item) => {
@@ -276,9 +314,7 @@ export const ActiveMultiSelect: Widget<
                 name={name}
                 variant="outlined"
                 label={label}
-                onChange={event => {
-                  setInProgressItem(event.target.value);
-                }}
+                onKeyDown={handleKeyDown}
               />
             )}
             renderTags={(values, getTagProps) =>

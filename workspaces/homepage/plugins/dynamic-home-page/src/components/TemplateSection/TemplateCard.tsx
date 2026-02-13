@@ -29,6 +29,7 @@ interface TemplateCardProps {
   title: string;
   description: string;
   kind: string;
+  type: string;
 }
 
 const TemplateCard: FC<TemplateCardProps> = ({
@@ -36,7 +37,16 @@ const TemplateCard: FC<TemplateCardProps> = ({
   title,
   description,
   kind,
+  type,
 }) => {
+  const params = new URLSearchParams({
+    'filters[kind]': kind,
+    'filters[type]': type,
+    'filters[user]': 'all',
+  });
+
+  const catalogLink = `/catalog?${params.toString()}`;
+
   return (
     <Card
       elevation={0}
@@ -55,17 +65,6 @@ const TemplateCard: FC<TemplateCardProps> = ({
           backgroundColor: 'transparent',
         }}
       >
-        <Box sx={{ padding: '8px 0' }}>
-          <Chip
-            label={
-              <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
-                {kind}
-              </Typography>
-            }
-            key={kind}
-            size="small"
-          />
-        </Box>
         <Box sx={{ margin: '8px 0', height: '21px', overflow: 'hidden' }}>
           <Link
             to={link}
@@ -106,6 +105,27 @@ const TemplateCard: FC<TemplateCardProps> = ({
           >
             <MarkdownContent content={description} />
           </Typography>
+        </Box>
+        <Box sx={{ pt: 2 }}>
+          {type && (
+            <Link to={catalogLink}>
+              <Chip
+                label={
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 400 }}>
+                    {type}
+                  </Typography>
+                }
+                key={type}
+                sx={{
+                  border: '1px solid transparent',
+                  '&:hover': {
+                    borderColor: '#9e9e9e',
+                  },
+                }}
+                size="small"
+              />
+            </Link>
+          )}
         </Box>
       </CardContent>
     </Card>

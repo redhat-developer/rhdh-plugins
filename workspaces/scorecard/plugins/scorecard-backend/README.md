@@ -71,6 +71,19 @@ This policy would allow users to read only the GitHub Open PRs metric, while res
 
 The Scorecard plugin collects metrics from third-party data sources using metric providers. The Scorecard node plugin provides `scorecardMetricsExtensionPoint` extension point that is used to connect your backend plugin module that exports custom metrics via metric providers to the Scorecard backend plugin. For detailed information on creating metric providers, see [providers.md](./docs/providers.md).
 
+### Metric Collection Scheduling
+
+The Scorecard plugin automatically collects metrics on a scheduled basis. You can customize the schedule for any metric provider in your `app-config.yaml`. If no schedule is configured, metric providers use the following default schedule:
+
+```yaml
+schedule:
+  frequency: { hours: 1 }
+  timeout: { minutes: 15 }
+  initialDelay: { minutes: 1 }
+```
+
+For more information about schedule configuration options, see the [Metric Collection Scheduling](./docs/providers.md#metric-collection-scheduling) section in providers.md.
+
 ### Available Metric Providers
 
 The following metric providers are available:
@@ -107,10 +120,10 @@ Returns a list of available metrics. Supports filtering by metric IDs or datasou
 
 #### Query Parameters
 
-| Parameter    | Type   | Required | Description                                                                                  |
-| ------------ | ------ | -------- | -------------------------------------------------------------------------------------------- |
-| `metricIds`  | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,github.open_issues`) |
-| `datasource` | string | No       | Filter metrics by datasource ID (e.g., `github`, `jira`, `sonar`)                            |
+| Parameter    | Type   | Required | Description                                                                                |
+| ------------ | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `metricIds`  | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,jira.open_issues`) |
+| `datasource` | string | No       | Filter metrics by datasource ID (e.g., `github`, `jira`, `sonar`)                          |
 
 #### Behavior
 
@@ -127,7 +140,7 @@ curl -X GET "{{url}}/api/scorecard/metrics" \
   -H "Authorization: Bearer <token>"
 
 # Get specific metrics by IDs
-curl -X GET "{{url}}/api/scorecard/metrics?metricIds=github.open_prs,github.open_issues" \
+curl -X GET "{{url}}/api/scorecard/metrics?metricIds=github.open_prs,jira.open_issues" \
   -H "Authorization: Bearer <token>"
 
 # Get all metrics from a specific datasource
@@ -149,9 +162,9 @@ Returns the latest metric values for a specific catalog entity.
 
 #### Query Parameters
 
-| Parameter   | Type   | Required | Description                                                                                  |
-| ----------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
-| `metricIds` | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,github.open_issues`) |
+| Parameter   | Type   | Required | Description                                                                                |
+| ----------- | ------ | -------- | ------------------------------------------------------------------------------------------ |
+| `metricIds` | string | No       | Comma-separated list of metric IDs to filter by (e.g., `github.open_prs,jira.open_issues`) |
 
 #### Permissions
 

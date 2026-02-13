@@ -72,14 +72,14 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.fields.workflowId': "ID d'exécution",
     'workflow.fields.workflowIdCopied':
       "ID d'exécution copié dans le presse-papiers",
-    'workflow.errors.retriggerFailed': 'Échec du re-déclenchement : {{reason}}',
+    'workflow.errors.retriggerFailed': 'Échec du re-déclenchement : {{reason}}',
     'workflow.errors.abortFailed':
-      "Échec de l'abandon : l'exécution a déjà été terminée.",
-    'workflow.errors.abortFailedWithReason': "Échec de l'abandon : {{reason}}",
+      "Échec de l'abandon : l'exécution a déjà été terminée.",
+    'workflow.errors.abortFailedWithReason': "Échec de l'abandon : {{reason}}",
     'workflow.errors.failedToLoadDetails':
-      "Échec du chargement des détails de l'ID de workflow : {{id}}",
+      "Échec du chargement des détails de l'ID de workflow : {{id}}",
     'workflow.messages.areYouSureYouWantToRunThisWorkflow':
-      'Êtes-vous sûr de vouloir exécuter ce workflow ?',
+      'Êtes-vous sûr de vouloir exécuter ce workflow ?',
     'workflow.messages.userNotAuthorizedExecute':
       "L'utilisateur n'est pas autorisé à exécuter le workflow.",
     'workflow.messages.workflowDown':
@@ -108,21 +108,21 @@ const orchestratorTranslationFr = createTranslationMessages({
       "Il n'est pas possible d'interrompre l'exécution car elle est déjà terminée.",
     'run.status.completed': 'Exécution terminée',
     'run.status.failed': "L'exécution a échoué {{time}}",
+    'run.status.failedAt': "L'exécution a échoué {{time}}",
     'run.status.aborted': "L'exécution a été interrompue",
     'run.status.completedWithMessage':
       'Exécution terminée {{time}} avec message',
-    'run.status.failedAt': "L'exécution a échoué {{time}}",
     'run.status.completedAt': 'Exécution terminée {{time}}',
     'run.status.running':
       "Le flux de travail est en cours d'exécution. Démarré {{time}}",
     'run.status.runningWaitingAtNode':
-      "Le workflow est en cours d'exécution – en attente au nœud {{node}} depuis {{formattedTime}}",
+      "Le workflow est en cours d'exécution – en attente au nœud {{node}} depuis {{formattedTime}}",
     'run.status.workflowIsRunning':
       "Le flux de travail est en cours d'exécution. Démarré {{time}}",
     'run.status.noAdditionalInfo':
       "Le flux de travail n'a fourni aucune information supplémentaire sur le statut.",
     'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
-      'Les résultats seront affichés ici une fois l’exécution terminée.',
+      "Les résultats seront affichés ici une fois l'exécution terminée.",
     'run.retrigger': 'Re-déclencher',
     'run.viewVariables': 'Afficher les variables',
     'run.suggestedNextWorkflow': 'Prochain flux de travail suggéré',
@@ -151,6 +151,9 @@ const orchestratorTranslationFr = createTranslationMessages({
       "Ce workflow n'a pas de schéma JSON défini pour la validation des entrées. Vous pouvez toujours exécuter le workflow, mais la validation des entrées sera limitée.",
     'messages.additionalDetailsAboutThisErrorAreNotAvailable':
       'Des détails supplémentaires sur cette erreur ne sont pas disponibles',
+    'reviewStep.hiddenFieldsNote':
+      'Certains paramètres sont masqués sur cette page.',
+    'reviewStep.showHiddenParameters': 'Afficher les paramètres masqués',
     'common.close': 'Fermer',
     'common.cancel': 'Annuler',
     'common.execute': 'Exécuter',
@@ -162,6 +165,30 @@ const orchestratorTranslationFr = createTranslationMessages({
     'common.next': 'Suivant',
     'common.review': 'Revue',
     'common.unavailable': '---',
+    'common.goBack': 'Retour',
+    'permissions.accessDenied': 'Accès refusé',
+    'permissions.accessDeniedDescription':
+      "Vous n'avez pas la permission de visualiser cette exécution de workflow.",
+    'permissions.requiredPermission': 'Permission requise',
+    'permissions.contactAdmin':
+      'Veuillez contacter votre administrateur pour demander les permissions nécessaires.',
+    'permissions.missingOwnership':
+      "Cette exécution de workflow n'a pas d'informations de propriété enregistrées.",
+    'permissions.notYourRun':
+      'Cette exécution de workflow a été initiée par un autre utilisateur.',
+    'duration.aFewSeconds': 'quelques secondes',
+    'duration.aSecond': 'une seconde',
+    'duration.seconds': '{{count}} secondes',
+    'duration.aMinute': 'une minute',
+    'duration.minutes': '{{count}} minutes',
+    'duration.anHour': 'une heure',
+    'duration.hours': '{{count}} heures',
+    'duration.aDay': 'un jour',
+    'duration.days': '{{count}} jours',
+    'duration.aMonth': 'un mois',
+    'duration.months': '{{count}} mois',
+    'duration.aYear': 'un an',
+    'duration.years': '{{count}} ans',
     'stepperObjectField.error':
       "Le champ d'objet Stepper n'est pas pris en charge pour les schémas qui ne contiennent pas de propriétés",
     'formDecorator.error':

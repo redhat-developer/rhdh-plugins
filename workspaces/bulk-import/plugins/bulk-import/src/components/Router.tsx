@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import { addRepositoriesRouteRef, importHistoryRouteRef } from '../routes';
+import { importHistoryRouteRef } from '../routes';
 import { AddRepositoriesPage } from './AddRepositories/AddRepositoriesPage';
 import { ImportHistoryPage } from './Repositories/ImportHistoryPage';
 
@@ -32,15 +32,12 @@ export const Router = () => (
   <QueryClientProvider client={queryClient}>
     <Routes>
       <Route path="/" element={<AddRepositoriesPage />} />
-      <Route path="repositories" element={<AddRepositoriesPage />} />
-      <Route
-        path={addRepositoriesRouteRef.path}
-        element={<AddRepositoriesPage />}
-      />
       <Route
         path={importHistoryRouteRef.path}
         element={<ImportHistoryPage />}
       />
+      {/* Redirect any undefined paths to the root */}
+      <Route path="*" element={<Navigate to="/bulk-import" replace />} />
     </Routes>
   </QueryClientProvider>
 );

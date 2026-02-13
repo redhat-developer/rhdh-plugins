@@ -153,7 +153,7 @@ Follow the below steps -
 
 `yarn build`
 
-`npx @janus-idp/cli@latest package package-dynamic-plugins --export-to <path-to>/rhdh/dynamic-plugins-root`
+`npx @red-hat-developer-hub/cli plugin export --dynamic-plugins-root <path-to>/rhdh/dynamic-plugins-root`
 
 - Add the extension point inside the `app-config.yaml` or `app-config.local.yaml` file.
 

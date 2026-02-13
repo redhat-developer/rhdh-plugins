@@ -12,7 +12,6 @@ import { JsonObject } from '@backstage/types';
 import type { JSONSchema7 } from 'json-schema';
 import type { JSONSchema7Definition } from 'json-schema';
 import { JsonValue } from '@backstage/types';
-import { OAuthScope } from '@backstage/core-plugin-api';
 import type { RawAxiosRequestConfig } from 'axios';
 import type { Specification } from '@serverlessworkflow/sdk-typescript';
 
@@ -801,6 +800,9 @@ export interface NodeInstanceDTO {
     // Warning: (tsdoc-undefined-tag) The TSDoc tag "@memberof" is not defined in this configuration
     'type'?: string;
 }
+
+// @public
+export type OAuthScope = string | string[];
 
 // Warning: (ae-forgotten-export) The symbol "OmitDistributive" needs to be exported by the entry point index.d.ts
 // Warning: (ae-missing-release-tag) "OmitRecursively" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)

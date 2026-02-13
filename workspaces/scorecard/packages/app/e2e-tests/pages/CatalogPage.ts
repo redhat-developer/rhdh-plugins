@@ -15,6 +15,18 @@
  */
 import { Page, expect } from '@playwright/test';
 
+const LOCALE_DISPLAY_NAMES: Record<string, string> = {
+  en: 'English',
+  fr: 'Français',
+  it: 'Italiano',
+  ja: '日本語',
+};
+
+function getLocaleDisplayName(locale: string): string {
+  const baseLocale = locale.split('-')[0];
+  return LOCALE_DISPLAY_NAMES[baseLocale] || locale;
+}
+
 export class CatalogPage {
   readonly page: Page;
 
@@ -22,24 +34,36 @@ export class CatalogPage {
     this.page = page;
   }
 
-  async navigateToCatalog(locale: string) {
+  async loginAndSetLocale(locale: string) {
+    await this.page.goto('/');
     const enterButton = this.page.getByRole('button', { name: 'Enter' });
     await expect(enterButton).toBeVisible();
     await enterButton.click();
     await expect(this.page.getByText('Welcome back!')).toBeVisible();
-    await this.switchToLocale(this.page, locale);
+    await this.switchToLocale(locale);
+  }
+
+  async openCatalog() {
+    await this.page.getByRole('link', { name: 'Catalog', exact: true }).click();
   }
 
   async openComponent(componentName: string) {
     const link = this.page.getByRole('link', { name: componentName });
-    await expect(link).toBeVisible();
+    await this.page
+      .getByRole('textbox', { name: 'Search' })
+      .fill(componentName);
+    await expect(link).toBeVisible({ timeout: 10000 });
     await link.click();
   }
 
-  async switchToLocale(page: Page, locale: string): Promise<void> {
-    await page.getByRole('link', { name: 'Settings' }).click();
-    await page.getByRole('button', { name: 'English' }).click();
-    await page.getByRole('option', { name: locale }).click();
-    await page.locator('a').filter({ hasText: 'Catalog' }).click();
+  async switchToLocale(locale: string): Promise<void> {
+    const baseLocale = locale.split('-')[0];
+    if (baseLocale === 'en') return;
+
+    const displayName = getLocaleDisplayName(locale);
+    await this.page.getByRole('link', { name: 'Settings' }).click();
+    await this.page.getByRole('button', { name: 'English' }).click();
+    await this.page.getByRole('option', { name: displayName }).click();
+    await this.page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }

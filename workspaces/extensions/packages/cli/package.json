@@ -1,7 +1,7 @@
 {
   "name": "@red-hat-developer-hub/extensions-cli",
   "description": "CLI for the Extensions",
-  "version": "0.14.2",
+  "version": "0.14.4",
   "backstage": {
     "role": "cli"
   },

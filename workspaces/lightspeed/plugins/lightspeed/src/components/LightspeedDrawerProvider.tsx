@@ -27,6 +27,7 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 import { makeStyles } from '@mui/styles';
 import { ChatbotDisplayMode, ChatbotModal } from '@patternfly/chatbot';
 
+import { useBackstageUserIdentity, useDisplayModeSettings } from '../hooks';
 import { FileContent } from '../types';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
@@ -47,10 +48,14 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   const classes = useStyles();
   const navigate = useNavigate();
   const location = useLocation();
+  const user = useBackstageUserIdentity();
+  const {
+    displayMode: persistedDisplayMode,
+    setDisplayMode: setPersistedDisplayMode,
+  } = useDisplayModeSettings(user, ChatbotDisplayMode.default);
 
-  const [displayModeState, setDisplayModeState] = useState<ChatbotDisplayMode>(
-    ChatbotDisplayMode.default,
-  );
+  const [displayModeState, setDisplayModeState] =
+    useState<ChatbotDisplayMode>(persistedDisplayMode);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [drawerWidth, setDrawerWidth] = useState<number>(400);
   const [currentConversationIdState, setCurrentConversationIdState] = useState<
@@ -81,46 +86,50 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
   }, [navigate]);
 
   useEffect(() => {
+    if (conversationId) {
+      setCurrentConversationIdState(conversationId);
+    } else {
+      setCurrentConversationIdState(undefined);
+    }
+
     if (isLightspeedRoute) {
-      if (conversationId) {
-        setCurrentConversationIdState(conversationId);
-      } else {
-        setCurrentConversationIdState(undefined);
-      }
-      // Update this to fullscreen only when it is not already in the docked mode
-      setDisplayModeState(prev => {
-        if (prev === ChatbotDisplayMode.docked) {
-          return prev; // Don't override docked mode
-        }
-        return ChatbotDisplayMode.embedded;
-      });
+      setDisplayModeState(ChatbotDisplayMode.embedded);
       setIsOpen(true);
     } else {
-      // When leaving lightspeed route, update this only when the current mode is fullscreen
-      setDisplayModeState(prev => {
-        if (prev === ChatbotDisplayMode.embedded) {
-          return ChatbotDisplayMode.default;
-        }
-        return prev;
-      });
+      // When leaving lightspeed route, restore the persisted display mode
+      // If persisted mode is embedded, reset to default
+      if (persistedDisplayMode === ChatbotDisplayMode.embedded) {
+        setDisplayModeState(ChatbotDisplayMode.default);
+      } else {
+        setDisplayModeState(persistedDisplayMode);
+      }
     }
-  }, [conversationId, isLightspeedRoute]);
+  }, [conversationId, isLightspeedRoute, persistedDisplayMode]);
 
-  // Open chatbot in overlay mode
+  // Open chatbot using the persisted display mode preference
   const openChatbot = useCallback(() => {
     openedViaFABRef.current = true;
-    setDisplayModeState(ChatbotDisplayMode.default);
-    setIsOpen(true);
-  }, []);
 
-  // Close chatbot
+    const modeToUse = persistedDisplayMode || ChatbotDisplayMode.default;
+    setDisplayModeState(modeToUse);
+
+    if (modeToUse === ChatbotDisplayMode.embedded) {
+      const convId = currentConversationIdState;
+      const path = convId
+        ? `/lightspeed/conversation/${convId}`
+        : '/lightspeed';
+      navigate(path);
+    }
+
+    setIsOpen(true);
+  }, [persistedDisplayMode, currentConversationIdState, navigate]);
+
   const closeChatbot = useCallback(() => {
     // If in embedded mode on the lightspeed route, navigate back
     if (displayModeState === ChatbotDisplayMode.embedded && isLightspeedRoute) {
       navigateBackOrGoToCatalog();
     }
     setIsOpen(false);
-    setDisplayModeState(ChatbotDisplayMode.default);
   }, [displayModeState, isLightspeedRoute, navigateBackOrGoToCatalog]);
 
   const toggleChatbot = useCallback(() => {
@@ -135,7 +144,6 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
     (id: string | undefined) => {
       setCurrentConversationIdState(id);
 
-      // Update route if in embedded mode
       if (
         displayModeState === ChatbotDisplayMode.embedded &&
         isLightspeedRoute
@@ -162,7 +170,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         return;
       }
 
-      setDisplayModeState(mode);
+      setPersistedDisplayMode(mode);
 
       // Navigate to fullscreen route with conversation ID if available
       if (mode === ChatbotDisplayMode.embedded) {
@@ -185,6 +193,7 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       currentConversationIdState,
       displayModeState,
       navigateBackOrGoToCatalog,
+      setPersistedDisplayMode,
     ],
   );
 

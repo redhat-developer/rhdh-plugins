@@ -16,13 +16,15 @@
 
 import { test, expect, Page } from '@playwright/test';
 import {
-  models as fakeModels,
+  models,
   conversations,
   contents,
   demoChatContent,
   botResponse,
   moreConversations,
   mockedShields,
+  thinkingContent,
+  assistantResponse,
 } from './fixtures/responses';
 import {
   openLightspeed,
@@ -116,8 +118,6 @@ import { runAccessibilityTests } from './utils/accessibility';
 
 test.describe('Lightspeed tests', () => {
   const botQuery = 'Please respond';
-  const devMode = !process.env.PLAYWRIGHT_URL;
-  let models = fakeModels;
   let translations: LightspeedMessages;
   let sharedPage: Page;
   let locale: string;
@@ -128,21 +128,12 @@ test.describe('Lightspeed tests', () => {
     locale = await sharedPage.evaluate(() => globalThis.navigator.language);
     translations = getTranslations(locale);
 
-    if (!devMode) {
-      const response = await fetch(`${process.env.LIGHTSPEED_URL}/models`, {
-        headers: {
-          Authorization: `Bearer ${process.env.LIGHTSPEED_API_KEY}`,
-        },
-      });
-      models = (await response.json()).data;
-    } else {
-      await mockModels(sharedPage, models);
-      await mockConversations(sharedPage);
-      await mockChatHistory(sharedPage);
-      await mockQuery(sharedPage, botQuery, conversations);
-      await mockShields(sharedPage, mockedShields);
-      await mockFeedbackStatus(sharedPage);
-    }
+    await mockModels(sharedPage, models);
+    await mockConversations(sharedPage);
+    await mockChatHistory(sharedPage);
+    await mockQuery(sharedPage, botQuery, conversations);
+    await mockShields(sharedPage, mockedShields);
+    await mockFeedbackStatus(sharedPage);
 
     await sharedPage.goto('/');
     await login(sharedPage, process.env.RHDH_USER, process.env.RHDH_PASSWORD);
@@ -198,11 +189,6 @@ test.describe('Lightspeed tests', () => {
 
   test('Lightspeed is available', async ({ browser }, testInfo) => {
     expect(sharedPage.url()).toContain('/lightspeed');
-    if (devMode) {
-      expect(await sharedPage.title()).toContain(
-        translations['chatbox.header.title'],
-      );
-    }
 
     const headings = sharedPage.getByRole('heading');
     await expect(headings.first()).toContainText(
@@ -239,7 +225,7 @@ test.describe('Lightspeed tests', () => {
     browser,
   }, testInfo) => {
     await test.step('Verify initial state of sidebar', async () => {
-      await assertChatDialogInitialState(sharedPage, translations, devMode);
+      await assertChatDialogInitialState(sharedPage, translations);
     });
 
     await test.step('Close the sidebar and verify elements are hidden', async () => {
@@ -255,15 +241,22 @@ test.describe('Lightspeed tests', () => {
   });
 
   test('verify default prompts are visible', async () => {
+    const greeting = evaluateMessage(
+      translations['chatbox.welcome.greeting'],
+      translations['user.guest'],
+    );
     await expect(sharedPage.getByLabel('Scrollable message log'))
       .toMatchAriaSnapshot(`
-      - heading /${evaluateMessage(translations['chatbox.welcome.greeting'], '')}.+ ${translations['chatbox.welcome.description']}/ [level=1]
-      - button 
-      - text: ''
-      - button 
-      - text: ''
-      - button 
-      - text: ''
+      - region "Scrollable message log":
+        - 'heading "Info alert: ${translations['aria.important']}" [level=4]'
+        - text: ${translations['disclaimer.withValidation']}
+        - heading "${greeting} ${translations['chatbox.welcome.description']}" [level=1]
+        - button /.+/
+        - text: /.+/
+        - button /.+/
+        - text: /.+/
+        - button /.+/
+        - text: /.+/
     `);
     const messageLog = sharedPage.locator('div.pf-v6-c-card__title-text');
     const textContents = await messageLog.allTextContents();
@@ -331,14 +324,11 @@ test.describe('Lightspeed tests', () => {
     });
   });
 
-  const describeFn = devMode ? test.describe : test.describe.serial;
-  describeFn('Conversation', () => {
-    if (devMode) {
-      test.beforeEach(async () => {
-        await mockConversations(sharedPage, conversations, true);
-        await mockChatHistory(sharedPage, contents);
-      });
-    }
+  test.describe('Conversation', () => {
+    test.beforeEach(async () => {
+      await mockConversations(sharedPage, conversations, true);
+      await mockChatHistory(sharedPage, contents);
+    });
 
     test('Bot response, feedback submission, and copy to clipboard', async () => {
       await sendMessage(botQuery, sharedPage, translations);
@@ -350,17 +340,13 @@ test.describe('Lightspeed tests', () => {
       await expect(userMessage).toBeVisible();
       await expect(userMessage).toContainText(botQuery);
 
-      const response = devMode
-        ? botResponse
-        : `I'm the Red Hat Developer Hub Lightspeed assistant`;
-
       await expect(botMessage).toBeVisible();
-      await expect(botMessage).toContainText(response);
+      await expect(botMessage).toContainText(botResponse);
       await verifyFeedbackButtons(sharedPage);
-      await submitFeedback(sharedPage, 'Good response', devMode, translations);
-      await submitFeedback(sharedPage, 'Bad response', devMode, translations);
+      await submitFeedback(sharedPage, 'Good response', translations);
+      await submitFeedback(sharedPage, 'Bad response', translations);
       await copyButton.click();
-      await assertClipboardContains(sharedPage, response);
+      await assertClipboardContains(sharedPage, botResponse);
     });
 
     test('Conversation is created and shown in side panel', async () => {
@@ -368,20 +354,29 @@ test.describe('Lightspeed tests', () => {
       await verifySidePanelConversation(sharedPage, translations);
     });
 
+    test('Verify thinking section is displayed in bot response', async () => {
+      const botMessage = sharedPage.locator('.pf-chatbot__message--bot').last();
+      await expect(botMessage).toBeVisible();
+
+      await expect(
+        sharedPage.getByRole('button', {
+          name: translations['reasoning.thinking'],
+        }),
+      ).toBeVisible();
+
+      await expect(sharedPage.locator('#deep-thinking-1')).toBeVisible();
+
+      await expect(
+        sharedPage.getByLabel(translations['reasoning.thinking']),
+      ).toContainText(thinkingContent);
+    });
+
     test('Verify scroll controls in Conversation', async ({
       browser,
     }, testInfo) => {
-      if (devMode) {
-        await mockChatHistory(sharedPage, demoChatContent);
-      }
+      await mockChatHistory(sharedPage, demoChatContent);
 
-      let message = demoChatContent[0].messages[0].content;
-      if (!devMode) {
-        message =
-          (await sharedPage
-            .locator('.pf-v6-c-card__body', { hasText: 'Tekton' })
-            .textContent()) || '';
-      }
+      const message = demoChatContent[0].messages[0].content;
       await sendMessage(message, sharedPage, translations, false);
 
       const jumpTopButton = sharedPage.getByRole('button', {
@@ -403,44 +398,28 @@ test.describe('Lightspeed tests', () => {
       await expect(jumpBottomButton).toBeVisible();
       await jumpBottomButton.click();
 
-      const responseText = devMode ? /OpenShift deployment/ : /Tekton/;
       const responseMessage = sharedPage
         .locator('div.pf-chatbot__message-response')
         .last();
-      await expect(responseMessage).toHaveText(responseText);
+      await expect(responseMessage).toHaveText(/OpenShift deployment/);
     });
 
     test('Filter and switch conversations', async () => {
-      if (devMode) {
-        await mockConversations(sharedPage, moreConversations);
-      }
+      await mockConversations(sharedPage, moreConversations);
       await sendMessage('test', sharedPage, translations);
       const sidePanel = sharedPage.locator('.pf-v6-c-drawer__panel-main');
 
       const currentChat = sidePanel.locator('li.pf-chatbot__menu-item--active');
-      await expect(currentChat).toHaveText(
-        devMode ? moreConversations[0].topic_summary : /<[\w\s]+topic[\w\s]*>/,
-      );
+      await expect(currentChat).toHaveText(moreConversations[0].topic_summary);
 
       const chats = sidePanel.locator('li.pf-chatbot__menu-item');
-      if (devMode) {
-        await expect(chats).toHaveCount(3);
-      } else {
-        expect(await chats.count()).toBeGreaterThanOrEqual(1);
-        await sharedPage
-          .getByRole('button', { name: translations['button.newChat'] })
-          .click();
-        await sendMessage('tell me about Backstage', sharedPage, translations);
-        await verifySidePanelConversation(sharedPage, translations);
-      }
+      await expect(chats).toHaveCount(3);
 
-      const searchText = devMode
-        ? moreConversations[1].topic_summary
-        : 'Backstage';
+      const searchText = moreConversations[1].topic_summary;
       const searchBox = sidePanel.getByPlaceholder(
         translations['chatbox.search.placeholder'],
       );
-      await searchBox.fill(devMode ? 'new' : 'Backstage');
+      await searchBox.fill('new');
       const validChat = sidePanel
         .locator('li.pf-chatbot__menu-item')
         .filter({ hasText: searchText })
@@ -460,18 +439,11 @@ test.describe('Lightspeed tests', () => {
       const userMessage = sharedPage.locator('.pf-chatbot__message--user');
       const botMessage = sharedPage.locator('.pf-chatbot__message--bot');
 
-      await expect(userMessage).toContainText(
-        devMode ? contents[0].messages[0].content : 'tell me about Backstage',
-      );
-      await expect(botMessage).toContainText(
-        devMode ? contents[0].messages[1].content : 'Backstage',
-      );
+      await expect(userMessage).toContainText(contents[0].messages[0].content);
+      await expect(botMessage).toContainText(assistantResponse);
     });
 
-    const chatManagementDescribeFn = devMode
-      ? test.describe
-      : test.describe.skip;
-    chatManagementDescribeFn('Chat Management', () => {
+    test.describe('Chat Management', () => {
       const testChatName = 'Test Rename';
 
       test('Verify chat actions menu', async () => {
