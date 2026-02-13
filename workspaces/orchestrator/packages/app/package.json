@@ -52,7 +52,7 @@
     "@mui/styles": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.10.0",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",
     "custom-authentication-provider-module": "workspace:^",
     "history": "^5.3.0",
     "react": "^18.0.2",
@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@backstage/test-utils": "^1.7.13",
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.58.2",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
