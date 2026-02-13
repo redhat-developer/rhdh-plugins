@@ -9,9 +9,17 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/mcp-integrations/plugins/software-catalog-mcp-extras"
+  },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "software-catalog-mcp-extras"
+    "pluginId": "software-catalog-mcp-extras",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",

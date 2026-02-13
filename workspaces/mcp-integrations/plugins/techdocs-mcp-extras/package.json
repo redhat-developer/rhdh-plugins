@@ -9,9 +9,17 @@
     "main": "dist/index.cjs.js",
     "types": "dist/index.d.ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/mcp-integrations/plugins/techdocs-mcp-extras"
+  },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "techdocs-mcp-extras"
+    "pluginId": "techdocs-mcp-extras",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-techdocs-mcp-extras"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",
