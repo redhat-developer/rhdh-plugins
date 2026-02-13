@@ -12,7 +12,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "mcp-techdocs-extras"
+    "pluginId": "techdocs-mcp-extras"
   },
   "scripts": {
     "start": "backstage-cli package start",

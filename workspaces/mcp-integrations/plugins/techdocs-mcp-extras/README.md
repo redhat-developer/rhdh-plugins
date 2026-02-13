@@ -1,4 +1,4 @@
-# mcp-techdocs-extras
+# techdocs-mcp-extras
 
 This plugin backend was templated using the Backstage CLI. You should replace this text with a description of your plugin backend.
 

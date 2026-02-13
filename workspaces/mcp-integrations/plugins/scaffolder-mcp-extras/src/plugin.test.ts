@@ -39,12 +39,12 @@ describe('plugin', () => {
       features: [mcpScaffolderExtrasPlugin],
     });
 
-    await request(server).get('/api/mcp-scaffolder-extras/todos').expect(200, {
+    await request(server).get('/api/scaffolder-mcp-extras/todos').expect(200, {
       items: [],
     });
 
     const createRes = await request(server)
-      .post('/api/mcp-scaffolder-extras/todos')
+      .post('/api/scaffolder-mcp-extras/todos')
       .send({ title: 'My Todo' });
 
     expect(createRes.status).toBe(201);
@@ -58,13 +58,13 @@ describe('plugin', () => {
     const createdTodoItem = createRes.body;
 
     await request(server)
-      .get('/api/mcp-scaffolder-extras/todos')
+      .get('/api/scaffolder-mcp-extras/todos')
       .expect(200, {
         items: [createdTodoItem],
       });
 
     await request(server)
-      .get(`/api/mcp-scaffolder-extras/todos/${createdTodoItem.id}`)
+      .get(`/api/scaffolder-mcp-extras/todos/${createdTodoItem.id}`)
       .expect(200, createdTodoItem);
   });
 
@@ -93,7 +93,7 @@ describe('plugin', () => {
     });
 
     const createRes = await request(server)
-      .post('/api/mcp-scaffolder-extras/todos')
+      .post('/api/scaffolder-mcp-extras/todos')
       .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
 
     expect(createRes.status).toBe(201);
@@ -122,7 +122,7 @@ describe('plugin', () => {
     });
 
     const createRes = await request(server)
-      .post('/api/mcp-scaffolder-extras/todos')
+      .post('/api/scaffolder-mcp-extras/todos')
       .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
     expect(createRes.status).toBe(409);
     expect(createRes.body).toMatchObject({
@@ -130,7 +130,7 @@ describe('plugin', () => {
     });
 
     const listRes = await request(server).get(
-      '/api/mcp-scaffolder-extras/todos',
+      '/api/scaffolder-mcp-extras/todos',
     );
     expect(listRes.status).toBe(401);
     expect(listRes.body).toMatchObject({
@@ -138,7 +138,7 @@ describe('plugin', () => {
     });
 
     const getRes = await request(server).get(
-      '/api/mcp-scaffolder-extras/todos/123',
+      '/api/scaffolder-mcp-extras/todos/123',
     );
     expect(getRes.status).toBe(403);
     expect(getRes.body).toMatchObject({

@@ -26,17 +26,17 @@ import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 //
 // Create a new todo item, standalone or for the sample component:
 //
-//   curl http://localhost:7007/api/mcp-techdocs-extras/todos -H 'Content-Type: application/json' -d '{"title": "My Todo"}'
-//   curl http://localhost:7007/api/mcp-techdocs-extras/todos -H 'Content-Type: application/json' -d '{"title": "My Todo", "entityRef": "component:default/sample"}'
+//   curl http://localhost:7007/api/techdocs-mcp-extras/todos -H 'Content-Type: application/json' -d '{"title": "My Todo"}'
+//   curl http://localhost:7007/api/techdocs-mcp-extras/todos -H 'Content-Type: application/json' -d '{"title": "My Todo", "entityRef": "component:default/sample"}'
 //
 // List TODOs:
 //
-//   curl http://localhost:7007/api/mcp-techdocs-extras/todos
+//   curl http://localhost:7007/api/techdocs-mcp-extras/todos
 //
 // Explicitly make an unauthenticated request, or with service auth:
 //
-//   curl http://localhost:7007/api/mcp-techdocs-extras/todos -H 'Authorization: Bearer mock-none-token'
-//   curl http://localhost:7007/api/mcp-techdocs-extras/todos -H 'Authorization: Bearer mock-service-token'
+//   curl http://localhost:7007/api/techdocs-mcp-extras/todos -H 'Authorization: Bearer mock-none-token'
+//   curl http://localhost:7007/api/techdocs-mcp-extras/todos -H 'Authorization: Bearer mock-service-token'
 
 const backend = createBackend();
 

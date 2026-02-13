@@ -12,7 +12,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "mcp-scaffolder-extras"
+    "pluginId": "scaffolder-mcp-extras"
   },
   "scripts": {
     "start": "backstage-cli package start",

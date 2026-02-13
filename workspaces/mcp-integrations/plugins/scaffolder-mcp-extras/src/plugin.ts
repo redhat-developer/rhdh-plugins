@@ -26,7 +26,7 @@ import { todoListServiceRef } from './services/TodoListService';
  * @public
  */
 export const mcpScaffolderExtrasPlugin = createBackendPlugin({
-  pluginId: 'mcp-scaffolder-extras',
+  pluginId: 'scaffolder-mcp-extras',
   register(env) {
     env.registerInit({
       deps: {

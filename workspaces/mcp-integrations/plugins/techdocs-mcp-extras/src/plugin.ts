@@ -26,7 +26,7 @@ import { todoListServiceRef } from './services/TodoListService';
  * @public
  */
 export const mcpTechdocsExtrasPlugin = createBackendPlugin({
-  pluginId: 'mcp-techdocs-extras',
+  pluginId: 'techdocs-mcp-extras',
   register(env) {
     env.registerInit({
       deps: {

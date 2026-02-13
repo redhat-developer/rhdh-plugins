@@ -39,12 +39,12 @@ describe('plugin', () => {
       features: [mcpTechdocsExtrasPlugin],
     });
 
-    await request(server).get('/api/mcp-techdocs-extras/todos').expect(200, {
+    await request(server).get('/api/techdocs-mcp-extras/todos').expect(200, {
       items: [],
     });
 
     const createRes = await request(server)
-      .post('/api/mcp-techdocs-extras/todos')
+      .post('/api/techdocs-mcp-extras/todos')
       .send({ title: 'My Todo' });
 
     expect(createRes.status).toBe(201);
@@ -58,13 +58,13 @@ describe('plugin', () => {
     const createdTodoItem = createRes.body;
 
     await request(server)
-      .get('/api/mcp-techdocs-extras/todos')
+      .get('/api/techdocs-mcp-extras/todos')
       .expect(200, {
         items: [createdTodoItem],
       });
 
     await request(server)
-      .get(`/api/mcp-techdocs-extras/todos/${createdTodoItem.id}`)
+      .get(`/api/techdocs-mcp-extras/todos/${createdTodoItem.id}`)
       .expect(200, createdTodoItem);
   });
 
@@ -93,7 +93,7 @@ describe('plugin', () => {
     });
 
     const createRes = await request(server)
-      .post('/api/mcp-techdocs-extras/todos')
+      .post('/api/techdocs-mcp-extras/todos')
       .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
 
     expect(createRes.status).toBe(201);
@@ -122,21 +122,21 @@ describe('plugin', () => {
     });
 
     const createRes = await request(server)
-      .post('/api/mcp-techdocs-extras/todos')
+      .post('/api/techdocs-mcp-extras/todos')
       .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
     expect(createRes.status).toBe(409);
     expect(createRes.body).toMatchObject({
       error: { name: 'ConflictError' },
     });
 
-    const listRes = await request(server).get('/api/mcp-techdocs-extras/todos');
+    const listRes = await request(server).get('/api/techdocs-mcp-extras/todos');
     expect(listRes.status).toBe(401);
     expect(listRes.body).toMatchObject({
       error: { name: 'AuthenticationError' },
     });
 
     const getRes = await request(server).get(
-      '/api/mcp-techdocs-extras/todos/123',
+      '/api/techdocs-mcp-extras/todos/123',
     );
     expect(getRes.status).toBe(403);
     expect(getRes.body).toMatchObject({
