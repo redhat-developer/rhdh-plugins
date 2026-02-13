@@ -67,7 +67,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.34.5",
     "@backstage/plugin-scaffolder-node-test-utils": "^0.3.5",
-    "@janus-idp/cli": "3.6.1",
+    "@janus-idp/cli": "3.7.0",
     "@spotify/prettier-config": "^15.0.0",
     "@types/js-yaml": "^4.0.0"
   },
