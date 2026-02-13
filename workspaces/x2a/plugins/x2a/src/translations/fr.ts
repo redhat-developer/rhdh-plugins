@@ -81,6 +81,25 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.statuses.success': 'Succès',
     'module.statuses.error': 'Erreur',
     'artifact.types.migrated_sources': 'Sources migrées',
+    'modulePage.title': 'Détails du module',
+    'modulePage.artifacts.title': 'Artefacts',
+    'modulePage.artifacts.migration_plan': 'Plan de migration global du projet',
+    'modulePage.artifacts.module_migration_plan': 'Plan du module par analyse',
+    'modulePage.artifacts.migrated_sources': 'Sources migrées',
+    'modulePage.artifacts.description':
+      'Ces artefacts sont générés par le processus de conversion et sont disponibles pour examen.',
+    'modulePage.phases.id': 'ID',
+    'modulePage.phases.duration': 'Durée',
+    'modulePage.phases.k8sJobName': 'Nom du job Kubernetes',
+    'modulePage.phases.startedAt': 'Démarré le',
+    'modulePage.phases.status': 'Statut',
+    'modulePage.phases.errorDetails': "Détails de l'erreur",
+    'modulePage.phases.reanalyzeInstructions':
+      "Le plan de migration du module est déjà présent. Si le plan de migration global du projet a été mis à jour, relancez l'analyse pour refléter les changements.",
+    'modulePage.phases.rerunAnalyze': 'Recréer le plan de migration du module',
+    'modulePage.phases.analyzeInstructions':
+      "Avant de lancer l'analyse, consultez d'abord le plan de migration global du projet ; son contenu guidera l'analyse du module.",
+    'modulePage.phases.runAnalyze': 'Créer le plan de migration du module',
   },
 });
 

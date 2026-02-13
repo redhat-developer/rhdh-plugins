@@ -16,10 +16,8 @@
 
 import { Card, CardBody, CardHeader } from '@backstage/ui';
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { useTranslation } from '../../hooks/useTranslation';
 
-export const ModuleDetailsCard = ({ module }: { module?: Module }) => {
-  const { t } = useTranslation();
+export const ModuleDetailsCard = (_props: { module?: Module }) => {
   return (
     <Card>
       <CardHeader>Module Details</CardHeader>

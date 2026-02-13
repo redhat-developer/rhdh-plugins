@@ -31,11 +31,7 @@ export const ModulePage = () => {
   const clientService = useClientService();
   const { t } = useTranslation();
 
-  const {
-    loading: moduleLoading,
-    error: moduleError,
-    value: module,
-  } = useAsync(async () => {
+  const { value: module } = useAsync(async () => {
     const response = await clientService.projectsProjectIdModulesModuleIdGet({
       path: { projectId, moduleId },
     });
