@@ -303,6 +303,33 @@ describe('collectArtifacts routes', () => {
       expect(mockDeps.x2aDatabase.getJob).toHaveBeenCalledWith({ id: jobId });
     });
 
+    it('should handle omitted artifacts field', async () => {
+      const job: Job = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .send({ status: 'success', jobId });
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.updateJob).toHaveBeenCalledWith(
+        expect.objectContaining({
+          artifacts: [],
+        }),
+      );
+    });
+
     it('should handle empty artifacts correctly', async () => {
       const job: Job = {
         id: jobId,

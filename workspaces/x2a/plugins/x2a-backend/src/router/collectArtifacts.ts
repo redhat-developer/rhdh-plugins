@@ -53,7 +53,7 @@ const collectArtifactsRequestSchema = z.object({
   status: z.enum(['success', 'error']),
   errorDetails: z.string().optional(),
   jobId: z.string().uuid('Job ID must be a valid UUID'),
-  artifacts: z.array(artifactSchema),
+  artifacts: z.array(artifactSchema).optional(),
   telemetry: telemetrySchema.optional(),
 });
 
@@ -61,7 +61,7 @@ export interface CollectArtifactsRequestBody {
   status: 'success' | 'error';
   errorDetails?: string;
   jobId: string;
-  artifacts: Artifact[];
+  artifacts?: Artifact[];
   telemetry?: Telemetry;
 }
 
@@ -137,7 +137,7 @@ export function registerCollectArtifactsRoutes(
           finishedAt: new Date(),
           errorDetails: validatedRequest.errorDetails || null,
           log: logs,
-          artifacts: validatedRequest.artifacts,
+          artifacts: validatedRequest.artifacts || [],
           telemetry: validatedRequest.telemetry || null,
         });
 

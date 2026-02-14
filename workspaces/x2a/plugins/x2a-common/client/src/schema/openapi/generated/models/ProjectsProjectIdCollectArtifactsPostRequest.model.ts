@@ -39,7 +39,7 @@ export interface ProjectsProjectIdCollectArtifactsPostRequest {
   /**
    * List of artifacts produced by the job
    */
-  artifacts: Array<Artifact>;
+  artifacts?: Array<Artifact>;
   telemetry?: Telemetry;
 }
 

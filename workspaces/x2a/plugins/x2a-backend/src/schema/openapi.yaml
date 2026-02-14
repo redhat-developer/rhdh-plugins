@@ -435,7 +435,6 @@ paths:
               required:
                 - status
                 - jobId
-                - artifacts
       responses:
         '200':
           description: Artifacts collected successfully
