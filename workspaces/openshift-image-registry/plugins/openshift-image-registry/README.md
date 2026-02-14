@@ -8,7 +8,7 @@ The OpenShift Image Registry plugin displays all ImageStreams in an Openshift cl
 
 The OpenShift Image Registry plugin requires read access to **_all_** `ImageStreams` and `ImageStreamTags` on a cluster. (Currently only a single cluster is supported.)
 
-You can create a `ServiceAccount`, `ClusterRole` and `ClusterRoleBinding` with this commands.
+You can create a `ServiceAccount`, `ClusterRole` and `ClusterRoleBinding` with these commands.
 
 Please notice that the ServiceAccount will be created in your current namespace while the `ClusterRole` and `ClusterRoleBinding` giving access to all namespaces are cluster-wide resources.
 
