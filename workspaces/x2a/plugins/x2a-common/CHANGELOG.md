@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 1.0.1
+
+### Patch Changes
+
+- 2fc6542: Adding scaffolder software template for creating conversion projects and corresponding action.
+- 3c49eed: The Create Project action collects source and target repos. Internally, both are persisted on the Project's level, while the /run endpoints receive fresh (non-expired) tokens only.
+- b7862f2: Adding collapsible row detail to the Project List.
+- bf9212b: Add module and project status.
+- e9964fb: The user prompt is removed except for the project init phase.
+- a97b036: Add GET /projects/:projectId/modules/:moduleId handler
+- 877acc1: added GET '/projects/:projectId/modules' endpoint
+
 ## 1.0.0
 
 ### Major Changes
