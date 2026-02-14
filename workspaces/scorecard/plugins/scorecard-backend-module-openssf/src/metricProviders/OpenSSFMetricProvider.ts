@@ -16,42 +16,44 @@
 
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { type Entity } from '@backstage/catalog-model';
+
 import {
-  DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 import { OpenSSFClient } from '../clients/OpenSSFClient';
-import { getRepositoryInformationFromEntity } from '../clients/utils';
+import {
+  OPENSSF_METRICS,
+  OPENSSF_THRESHOLDS,
+  OpenSSFMetricConfig,
+} from './OpenSSFConfig';
 
-/**
- * Abstract base class for OpenSSF metric providers.
- * Extracts a specific check from the OpenSSF scorecard response.
- *
- * Subclasses must implement:
- * - getCheckName(): The name of the check to extract (e.g., "Maintained", "Code-Review")
- * - getMetricName(): The metric name for the provider ID (e.g., "maintained", "code_review")
- * - getMetricTitle(): Display title for the metric
- * - getMetricDescription(): Description of what the metric measures
- */
-export abstract class AbstractMetricProvider
-  implements MetricProvider<'number'>
-{
+export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   protected readonly openSSFClient: OpenSSFClient;
   protected readonly thresholds: ThresholdConfig;
 
-  constructor(thresholds?: ThresholdConfig) {
+  constructor(
+    readonly config: OpenSSFMetricConfig,
+    thresholds: ThresholdConfig,
+  ) {
+    this.thresholds = thresholds;
+    this.config = config;
     this.openSSFClient = new OpenSSFClient();
-    this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
   }
 
-  abstract getMetricName(): string;
+  getMetricName(): string {
+    return this.config.name;
+  }
 
-  abstract getMetricDisplayTitle(): string;
+  getMetricDisplayTitle(): string {
+    return this.config.displayTitle;
+  }
 
-  abstract getMetricDescription(): string;
+  getMetricDescription(): string {
+    return this.config.description;
+  }
 
   getProviderDatasourceId(): string {
     return 'openssf';
@@ -84,30 +86,34 @@ export abstract class AbstractMetricProvider
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
-      'metadata.annotations.openssf/project': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.openssf/baseUrl': CATALOG_FILTER_EXISTS,
     };
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
-    const { owner, repo } = getRepositoryInformationFromEntity(entity);
-    const scorecard = await this.openSSFClient.getScorecard(owner, repo);
+    const scorecard = await this.openSSFClient.getScorecard(entity);
 
     const metricName = this.getMetricName();
     const metric = scorecard.checks.find(c => c.name === metricName);
 
     if (!metric) {
-      throw new Error(
-        `OpenSSF check '${metricName}' not found in scorecard for ${owner}/${repo}`,
-      );
+      throw new Error(`OpenSSF check '${metricName}' not found in scorecard`);
     } else if (metric.score < 0 || metric.score > 10) {
       throw new Error(
-        `OpenSSF check '${metricName}' has invalid score ${
-          metric.score
-        } for ${owner}/${repo}. Reason: ${
-          metric.reason ?? 'No reason provided'
-        }`,
+        `OpenSSF check '${metricName}' has invalid score ${metric.score}`,
       );
     }
     return metric.score;
   }
+}
+
+/**
+ * Creates all default OpenSSF metric providers.
+ * @param clientOptions Optional base URL and git service host (from app-config)
+ * @returns Array of OpenSSF metric providers
+ */
+export function createOpenSSFMetricProvider(): MetricProvider<'number'>[] {
+  return OPENSSF_METRICS.map(
+    config => new OpenSSFMetricProvider(config, OPENSSF_THRESHOLDS),
+  );
 }

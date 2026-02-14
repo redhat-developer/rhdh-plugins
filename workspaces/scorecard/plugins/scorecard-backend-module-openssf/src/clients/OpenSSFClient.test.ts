@@ -14,65 +14,92 @@
  * limitations under the License.
  */
 
+import type { Entity } from '@backstage/catalog-model';
+
 import { OpenSSFClient } from './OpenSSFClient';
-import { OpenSSFResponse } from './types';
+import type { OpenSSFResponse } from './types';
+
+const mockScorecardUrl =
+  'https://api.securityscorecards.dev/projects/github.com/owner/repo';
+
+function createEntity(baseUrl: string): Entity {
+  return {
+    apiVersion: 'backstage.io/v1beta1',
+    kind: 'Component',
+    metadata: {
+      name: 'my-service',
+      annotations: {
+        'openssf/baseUrl': baseUrl,
+      },
+    },
+    spec: {},
+  } as Entity;
+}
+
+const mockOpenSSFResponse: OpenSSFResponse = {
+  date: '2024-01-15',
+  repo: { name: 'github.com/owner/repo', commit: 'abc123' },
+  scorecard: { version: '4.0.0', commit: 'def456' },
+  score: 7.5,
+  checks: [
+    {
+      name: 'Maintained',
+      score: 8,
+      reason: null,
+      details: null,
+      documentation: { short: '', url: '' },
+    },
+  ],
+};
 
 describe('OpenSSFClient', () => {
-  let client: OpenSSFClient;
-
-  const mockOpenSSFResponse: OpenSSFResponse = {
-    date: '2024-01-15',
-    repo: {
-      name: 'github.com/owner/test',
-      commit: 'abc123',
-    },
-    scorecard: {
-      version: '4.0.0',
-      commit: 'def456',
-    },
-    score: 7.5,
-    checks: [],
-  };
+  const entity = createEntity(mockScorecardUrl);
 
   beforeEach(() => {
     jest.clearAllMocks();
-    client = new OpenSSFClient();
     globalThis.fetch = jest.fn();
   });
 
   describe('getScorecard', () => {
-    it('should return the scorecard', async () => {
-      // mocked fetch behaviour for the test
+    it('fetches the scorecard from the entity baseUrl', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue(mockOpenSSFResponse),
       });
 
-      const scorecard = await client.getScorecard('owner', 'test');
-      expect(scorecard).toEqual(mockOpenSSFResponse);
+      const client = new OpenSSFClient();
+      const result = await client.getScorecard(entity);
+
+      expect(fetch).toHaveBeenCalledWith(mockScorecardUrl, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+      expect(result).toEqual(mockOpenSSFResponse);
     });
 
-    it('should throw an error if the API returns a non-ok response', async () => {
-      // mock response from the API
+    it('throws when the response is not ok', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: false,
         status: 404,
         statusText: 'Not Found',
       });
 
-      await expect(client.getScorecard('wrong', 'test')).rejects.toThrow(
+      const client = new OpenSSFClient();
+
+      await expect(client.getScorecard(entity)).rejects.toThrow(
         'OpenSSF API request failed with status 404: Not Found',
       );
     });
 
-    it('should throw an error if API request fails', async () => {
-      // mocked fetch behaviour for the test
+    it('throws when fetch rejects', async () => {
       (globalThis.fetch as jest.Mock).mockRejectedValue(
-        new Error('API request failed'),
+        new Error('Network error'),
       );
 
-      await expect(client.getScorecard('owner', 'test')).rejects.toThrow(
-        'API request failed',
+      const client = new OpenSSFClient();
+
+      await expect(client.getScorecard(entity)).rejects.toThrow(
+        'Network error',
       );
     });
   });
