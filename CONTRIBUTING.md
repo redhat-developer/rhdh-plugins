@@ -35,7 +35,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
 
 ## License
 
-The rhdh plugins repository is under [Apache 2.0](../LICENSE) license. All plugins added & moved to the repository will be kept under the same license. If you are moving a plugin over make sure that no other license file is in the plugin workspace & all `package.json` files either have no version defined or explicitly use _“Apache 2.0”_.
+The rhdh plugins repository is under [Apache 2.0](./LICENSE) license. All plugins added & moved to the repository will be kept under the same license. If you are moving a plugin over make sure that no other license file is in the plugin workspace & all `package.json` files either have no version defined or explicitly use _“Apache 2.0”_.
 
 ## Get Started
 
@@ -109,7 +109,7 @@ As soon as a plugin is part of the rhdh plugins repository every PR with a chang
 
 A release is automatically triggered by merging the plugins “Version Packages” PR.
 
-> [!Important]
+> [!IMPORTANT]
 > Please note that plugins with the private property set to 'true' will not be published upon merging the "Version Packages" PR. If you want full autonomy over the release process, you can mark your plugin as private. In this case, the release process will be managed by the plugin maintainer.
 
 ## Creating a new Workspace
@@ -129,11 +129,11 @@ yarn install
 yarn create-workspace
 ```
 
-From there, once the script has finished, you should have a new `yarn workspace` with it's own changesets and releases. You can navigate to the workspace and start developing your plugin.
+From there, once the script has finished, you should have a new `yarn workspace` with its own changesets and releases. You can navigate to the workspace and start developing your plugin.
 
 ## Creating new plugins or packages in a Workspace
 
-Once you have a workspace setup, the creation of new plugins and packages is just like any other Backstage repository. You can use the `yarn new` command to run the prompt for creating new plugins or packages.
+Once you have a workspace set up, the creation of new plugins and packages is just like any other Backstage repository. You can use the `yarn new` command to run the prompt for creating new plugins or packages.
 
 ```bash
 cd workspaces/openshift-image-registry
@@ -163,7 +163,7 @@ git clone https://github.com/source-repo/existing-plugins.git
 git clone https://github.com/redhat-developer/rhdh-plugins.git
 ```
 
-2. Identify the plugin(s) you wish to migrate. If you're migrating multiple plugins, is recommended to group the migration of these by workspace.
+2. Identify the plugin(s) you wish to migrate. If you're migrating multiple plugins, it is recommended to group the migration of these by workspace.
 
 3. Within the `redhat-developer/rhdh-plugins` repository create a new branch for your changes:
 
@@ -171,34 +171,34 @@ git clone https://github.com/redhat-developer/rhdh-plugins.git
 git checkout -b migrate-workspace
 ```
 
-1. Create a new workspace in the rhdh plugins repository.
+4. Create a new workspace in the rhdh plugins repository.
 
 ```sh
 yarn create-workspace
 ```
 
-2. Copy the plugin files from the source repository to the `redhat-developer/rhdh-plugins` repository.
+5. Copy the plugin files from the source repository to the `redhat-developer/rhdh-plugins` repository.
 
 ```sh
 cd your-workspace-name
 cp -r ../existing-plugins/plugins/plugin-name plugins/
 ```
 
-5. Ensure all metadata files (`package.json`) are updated to reflect the new repository. This includes updating repository URLs, issues URLs, and other references.
+6. Ensure all metadata files (`package.json`) are updated to reflect the new repository. This includes updating repository URLs, issues URLs, and other references.
 
-6. Add maintainers to the `CODEOWNERS` file for the new workspace.
+7. Add maintainers to the `CODEOWNERS` file for the new workspace.
 
 > **Note:** The `CODEOWNERS` file will have errors until you are a member of the Red Hat Developer GitHub organization. However, it is still useful to add `CODEOWNERS` at this point as it provides a documented reference as to who owns/maintains the plugin.
 
-7. Create a new pull request from your branch.
+8. Create a new pull request from your branch.
 
-8. Update external references to the old plugin location such as documentation to point to the new location in the `redhat-developer/rhdh-plugins` repository.
+9. Update external references to the old plugin location such as documentation to point to the new location in the `redhat-developer/rhdh-plugins` repository.
 
-9. In the original repository, update the plugin to indicate that it has been moved to the `redhat-developer/rhdh-plugins` repository. You may wish to deprecate the old version on npm.
+10. In the original repository, update the plugin to indicate that it has been moved to the `redhat-developer/rhdh-plugins` repository. You may wish to deprecate the old version on npm.
 
 ### Using the cli to migrate plugins from janus-idp/backstage-plugins
 
-1. Prepare your environment by cloning a fork of both the `janus-idp/backstage-plugins` and the `backstage/rhdh-plugins` repositories
+1. Prepare your environment by cloning a fork of both the `janus-idp/backstage-plugins` and the `redhat-developer/rhdh-plugins` repositories
 
 2. In both repositories, create a new branch:
 
@@ -208,13 +208,13 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
      git checkout -b "deprecate-workspace-name"
      ```
 
-   - For `backstage/rhdh-plugins`:
+   - For `redhat-developer/rhdh-plugins`:
 
      ```bash
      git checkout -b "migrate-workspace-name"
      ```
 
-3. In the `backstage/rhdh-plugins` repository, execute the janus-plugin migrate command.- Usage:`yarn rhdh-cli janus-plugin migrate --monorepo-path [path_to_backstage_plugins]--workspace-name [workspace_name] --branch [branch_name] --maintainers [maintainer1],[maintainer2],[maintainer3],...`
+3. In the `redhat-developer/rhdh-plugins` repository, execute the janus-plugin migrate command. - Usage:`yarn rhdh-cli janus-plugin migrate --monorepo-path [path_to_backstage_plugins] --workspace-name [workspace_name] --branch [branch_name] --maintainers [maintainer1],[maintainer2],[maintainer3],...`
 
    - The `path_to_backstage_plugins` is the path to the `backstage-plugins` project where the plugin(s) you want to migrate live.
    - The `workspace-name` is the name of the workspace you wish to create in the `rhdh-plugins` project. All plugins in the `backstage-plugins` that either are exactly or start with `@janus-idp/backstage-plugin-[workspace_name]` will be migrated to this new workspace.
@@ -236,10 +236,10 @@ cp -r ../existing-plugins/plugins/plugin-name plugins/
 
 6. Check if the migrated plugins need to be added to janus-idp/backstage-showcase. If they do, create a wrapper for them following the steps below:
 
-- In `dynamic-plugins> wrappers` create a directory, name it based on your plugin (eg: `backstage-community-plugin-3scale-backend`)
+- In `dynamic-plugins/wrappers` create a directory, name it based on your plugin (e.g.: `backstage-community-plugin-3scale-backend`)
 - Create a `src` directory within it
-- Add a `index.ts` file to this src directory and export from the plugin package here. Eg: `export * from '@backstage-community/plugin-3scale-backend';`
-- In `dynamic-plugins> wrappers > backstage-community-plugin-3scale-backend` (or whatever you named your wrapper directory), add a `package.json` file. Add your plugin package in dependencies.
+- Add a `index.ts` file to this src directory and export from the plugin package here. E.g.: `export * from '@backstage-community/plugin-3scale-backend';`
+- In `dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend` (or whatever you named your wrapper directory), add a `package.json` file. Add your plugin package in dependencies.
   - [Frontend plugin `package.json` example](https://github.com/janus-idp/backstage-showcase/blob/main/dynamic-plugins/wrappers/backstage-community-plugin-redhat-argocd/package.json)
   - [Backend plugin `package.json` example](https://github.com/janus-idp/backstage-showcase/blob/main/dynamic-plugins/wrappers/backstage-community-plugin-3scale-backend/package.json)
 - run `yarn export-dynamic` to generate dist-dynamic directory
@@ -261,7 +261,7 @@ There are two ways you can do this:
 1. You can run `yarn build:api-reports` from the root of the project and it will go through all of the existing API Reports and update them or create new ones as needed. This may take a while but is generally the best method if you are new to this.
 2. You can run `yarn build:api-reports plugins/<your-plugin-with-changes>` from the workspace root and it will update the existing API Report or create a new one.
 
-> Note: the above commands assume you've run `yarn install` before hand or recently
+> Note: the above commands assume you've run `yarn install` beforehand or recently
 
 Each plugin/package has its own API Report which means you might see more than one file updated or created depending on your changes. These changes will then need to be committed as well.
 
@@ -308,7 +308,7 @@ When a Plugin Owner wants to upgrade their workspace(s) to the latest version of
 3. In the menu that appears use the following:
    1. For "Use workflow from" use the default "Branch: main"
    2. For "Release Line" use the default "main"
-   3. For "Workspace (this much be a JSON array)" you will enter the name(s) of the workspace(s). For example for a single workspace it would look like this: `["bulk-import"]` and for multiple workspaces it would look like this: `["lightspeed", "homepage", "extensions"]`
+   3. For "Workspace (this must be a JSON array)" you will enter the name(s) of the workspace(s). For example for a single workspace it would look like this: `["bulk-import"]` and for multiple workspaces it would look like this: `["lightspeed", "homepage", "extensions"]`
    4. For "Specifies the type of version update to apply" use the default "minor"
 4. Now click the "Run workflow" button
 5. The workflow will then run and create a PR to upgrade each of the specified workspaces to the latest `main` release of Backstage
@@ -327,7 +327,7 @@ This repository uses [Renovate](https://docs.renovatebot.com/) to automatically 
 
 ##### Security Fixes
 
-- PRs can also be opened for security alerts. These PRs are distinguishable with a `[security]`suffix in its title and will also have a `security` label.
+- PRs can also be opened for security alerts. These PRs are distinguishable with a `[security]` suffix in its title and will also have a `security` label.
 
 ### Opt-in to Knip Reports Check
 

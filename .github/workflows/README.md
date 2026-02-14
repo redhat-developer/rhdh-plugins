@@ -12,6 +12,6 @@ Handles the release process for a specific workspace from a specified branch (de
 
 Responsible for releasing all workspaces in parallel by invoking the `release_workspace.yml` workflow for each workspace. It runs on the main branch whenever new changes are pushed. The workflow relies on `release_workspace.yml` to determine if a workspace requires publishing.
 
-## [version_bump.yml](./version_bump.yml)
+## [version_bump.yml](./version-bump.yml)
 
 Handles version bumping for specific workspaces. It creates a new branch for the version bump, updates the necessary files, commits the changes, and creates a pull request to merge the updates into the main branch.
