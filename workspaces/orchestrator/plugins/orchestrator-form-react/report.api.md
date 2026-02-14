@@ -29,7 +29,7 @@ export interface HiddenConditionObject {
 }
 
 // @public
-export const OrchestratorForm: ({ schema: rawSchema, updateSchema, handleExecute, isExecuting, initialFormData, setAuthTokenDescriptors, t, }: OrchestratorFormProps) => JSX_2.Element;
+export const OrchestratorForm: (input: OrchestratorFormProps) => JSX_2.Element;
 
 // @public
 export type OrchestratorFormProps = {
@@ -43,7 +43,7 @@ export type OrchestratorFormProps = {
 };
 
 // @public
-export const SubmitButton: ({ submitting, handleClick, children, focusOnMount, }: {
+export const SubmitButton: (input: {
     submitting: boolean;
     handleClick?: () => void;
     children: ReactNode;
