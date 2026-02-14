@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { Readable } from 'node:stream';
+
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import { NotAllowedError } from '@backstage/errors';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
@@ -243,7 +245,12 @@ export async function createRouter(
         }
 
         // Pipe the response back to the original response
-        fetchResponse.body.pipe(response);
+        if (fetchResponse.body) {
+          const nodeStream = Readable.fromWeb(fetchResponse.body as any);
+          nodeStream.pipe(response);
+        } else {
+          throw new Error("fetch response empty");
+        }
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
         logger.error(errormsg);
