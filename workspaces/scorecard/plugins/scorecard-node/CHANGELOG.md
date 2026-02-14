@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 2.3.6
+
+### Patch Changes
+
+- dc5e31a: Added missing @backstage/backend-test-utils devDependency to fix lint error
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.6
+
 ## 2.3.5
 
 ### Patch Changes
