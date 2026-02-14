@@ -37,7 +37,7 @@ You can follow one of these options depending on your environment and how you ch
          credentials: dangerously-allow-unauthenticated
 
    # Replace `${RHHCC_SA_CLIENT_ID}` and `${RHHCC_SA_CLIENT_SECRET}` with the service account credentials.
-   resourceOptimization:
+   costManagement:
      clientId: ${RHHCC_SA_CLIENT_ID}
      clientSecret: ${RHHCC_SA_CLIENT_SECRET}
    ```
@@ -148,7 +148,7 @@ The procedure involves the following steps:
          target: https://console.redhat.com/api/cost-management/v1
          allowedHeaders: ['Authorization']
          credentials: dangerously-allow-unauthenticated
-     resourceOptimization:
+     costManagement:
        clientId: '${RHHCC_SA_CLIENT_ID}'
        clientSecret: '${RHHCC_SA_CLIENT_SECRET}'
      dynamicPlugins:

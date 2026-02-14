@@ -38,6 +38,8 @@ import { generateClientPackageSync } from './lib/yarn.mjs';
 import { SourceFileMutator } from './lib/typescript.mjs';
 
 const DEFAULT_PLUGIN_DIRECTORY = 'plugins/redhat-resource-optimization-common';
+// Generates the recommendations (ROS) API client. A cost-management API client could be
+// added by supporting a second OpenAPI spec URL when one is available.
 const DEFAULT_OPENAPI_SPEC_URL =
   'https://raw.githubusercontent.com/RedHatInsights/ros-ocp-backend/main/openapi.json';
 
