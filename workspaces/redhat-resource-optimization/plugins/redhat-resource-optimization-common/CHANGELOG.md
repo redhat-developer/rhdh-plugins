@@ -1,5 +1,7 @@
 # @red-hat-developer-hub/plugin-redhat-resource-optimization-common
 
+## 2.0.3
+
 ## 2.0.1
 
 ### Patch Changes
