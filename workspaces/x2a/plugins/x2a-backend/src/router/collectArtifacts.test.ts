@@ -331,6 +331,230 @@ describe('collectArtifacts routes', () => {
     });
   });
 
+  describe('phase actions', () => {
+    it('should create modules from project_metadata artifact on init success', async () => {
+      const metadataModules = [
+        {
+          name: 'module-a',
+          path: '/cookbooks/a',
+          description: 'A',
+          technology: 'chef',
+        },
+        {
+          name: 'module-b',
+          path: '/cookbooks/b',
+          description: 'B',
+          technology: 'chef',
+        },
+      ];
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'project_metadata',
+          value: JSON.stringify(metadataModules),
+        },
+      ];
+
+      const job: Job = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+      mockDeps.x2aDatabase.listModules.mockResolvedValue([]);
+      mockDeps.x2aDatabase.createModule.mockResolvedValue({ id: randomUUID() });
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .send({ status: 'success', jobId, artifacts });
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledTimes(2);
+      expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledWith({
+        name: 'module-a',
+        sourcePath: '/cookbooks/a',
+        projectId,
+      });
+      expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledWith({
+        name: 'module-b',
+        sourcePath: '/cookbooks/b',
+        projectId,
+      });
+    });
+
+    it('should sync modules: create new, delete removed, preserve existing', async () => {
+      const metadataModules = [
+        { name: 'kept-module', path: '/cookbooks/kept' },
+        { name: 'new-module', path: '/cookbooks/new' },
+      ];
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'project_metadata',
+          value: JSON.stringify(metadataModules),
+        },
+      ];
+
+      const existingModules = [
+        {
+          id: 'existing-1',
+          name: 'kept-module',
+          sourcePath: '/cookbooks/kept',
+          projectId,
+        },
+        {
+          id: 'existing-2',
+          name: 'removed-module',
+          sourcePath: '/cookbooks/removed',
+          projectId,
+        },
+      ];
+
+      const job: Job = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+      mockDeps.x2aDatabase.listModules.mockResolvedValue(existingModules);
+      mockDeps.x2aDatabase.createModule.mockResolvedValue({ id: randomUUID() });
+      mockDeps.x2aDatabase.deleteModule.mockResolvedValue(1);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .send({ status: 'success', jobId, artifacts });
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledTimes(1);
+      expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledWith({
+        name: 'new-module',
+        sourcePath: '/cookbooks/new',
+        projectId,
+      });
+      expect(mockDeps.x2aDatabase.deleteModule).toHaveBeenCalledTimes(1);
+      expect(mockDeps.x2aDatabase.deleteModule).toHaveBeenCalledWith({
+        id: 'existing-2',
+      });
+    });
+
+    it('should not trigger phase actions when no project_metadata artifact', async () => {
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'migration_plan',
+          value: 'https://repo.example.com/plan.md',
+        },
+      ];
+
+      const job: Job = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .send({ status: 'success', jobId, artifacts });
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
+      expect(mockDeps.x2aDatabase.createModule).not.toHaveBeenCalled();
+    });
+
+    it('should not trigger phase actions on error status', async () => {
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'project_metadata',
+          value: JSON.stringify([{ name: 'mod', path: '/p' }]),
+        },
+      ];
+
+      const job: Job = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .send({
+          status: 'error',
+          errorDetails: 'Init failed',
+          jobId,
+          artifacts,
+        });
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
+      expect(mockDeps.x2aDatabase.createModule).not.toHaveBeenCalled();
+    });
+
+    it('should not trigger module creation for non-init phases', async () => {
+      const artifacts = [
+        {
+          id: randomUUID(),
+          type: 'module_migration_plan',
+          value: 'https://repo.example.com/module-plan.md',
+        },
+      ];
+
+      const job: Job = {
+        id: jobId,
+        projectId,
+        moduleId,
+        phase: 'analyze',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+
+      const res = await request(app)
+        .post(
+          `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
+        )
+        .send({ status: 'success', jobId, artifacts });
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
+      expect(mockDeps.x2aDatabase.createModule).not.toHaveBeenCalled();
+    });
+  });
+
   describe('graceful failure', () => {
     it('should continue when k8s log retrieval fails', async () => {
       const job: Job = {
