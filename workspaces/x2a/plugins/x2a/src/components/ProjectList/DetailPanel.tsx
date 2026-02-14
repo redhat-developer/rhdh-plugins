@@ -15,15 +15,15 @@
  */
 import { useCallback, useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
-import { Grid, GridProps, makeStyles, Typography } from '@material-ui/core';
+import { Grid, GridProps, makeStyles } from '@material-ui/core';
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { AboutField } from '@backstage/plugin-catalog';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
 import { ArtifactLink } from '../ModuleTable/Artifacts';
+import { ItemField } from '../ItemField';
 
 const useStyles = makeStyles(() => ({
   detailPanel: {
@@ -34,22 +34,6 @@ const useStyles = makeStyles(() => ({
 const gridItemProps: GridProps = {
   xs: 4,
   item: true,
-};
-
-const ItemField = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | React.ReactNode;
-}) => {
-  return (
-    <AboutField label={label}>
-      <Typography variant="subtitle2" component="div">
-        {typeof value === 'string' ? <b>{value}</b> : value}
-      </Typography>
-    </AboutField>
-  );
 };
 
 export const DetailPanel = ({ project }: { project: Project }) => {

@@ -11711,6 +11711,7 @@ __metadata:
     "@backstage/plugin-catalog": "npm:^1.32.0"
     "@backstage/test-utils": "npm:^1.7.13"
     "@backstage/theme": "npm:^0.7.0"
+    "@backstage/ui": "npm:^0.9.1"
     "@material-ui/core": "npm:^4.12.2"
     "@material-ui/icons": "npm:^4.9.1"
     "@material-ui/lab": "npm:4.0.0-alpha.61"

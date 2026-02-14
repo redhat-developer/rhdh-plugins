@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-export const humanizeDate = (date: Date | string): string => {
-  return new Date(date).toLocaleString(undefined, {
-    month: 'numeric',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
+import { Card, CardBody, CardHeader } from '@backstage/ui';
+import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+export const ModuleDetailsCard = (_props: { module?: Module }) => {
+  return (
+    <Card>
+      <CardHeader>Module Details</CardHeader>
+      <CardBody>TODO: Module details, Expected next action hint.</CardBody>
+    </Card>
+  );
 };
