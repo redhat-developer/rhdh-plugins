@@ -65,14 +65,14 @@ export const Artifacts = ({
   return (
     <div>
       {artifacts.map(artifact => (
-        <>
+        <span key={artifact.id}>
           <ArtifactLink
             artifact={artifact}
             targetRepoUrl={targetRepoUrl}
             targetRepoBranch={targetRepoBranch}
           />
           <br />
-        </>
+        </span>
       ))}
     </div>
   );

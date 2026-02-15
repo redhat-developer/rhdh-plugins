@@ -39,6 +39,21 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const computeDuration = (phase?: Job): string => {
+  if (!phase?.startedAt) {
+    return '-';
+  }
+  const end = phase.finishedAt ? new Date(phase.finishedAt) : new Date();
+  const diffMs = end.getTime() - new Date(phase.startedAt).getTime();
+  const totalSeconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
+};
+
 const AnalyzeRunAction = ({
   phase,
   onRunPhase,
@@ -81,11 +96,7 @@ const PhaseDetails = ({
   const { t } = useTranslation();
   const empty = t('module.phases.none');
 
-  // TODO: preselect the last tab when entering the page
-  /*
-          Details:Duration, logs
-*/
-  const duration = 'TODO: Duration';
+  const duration = computeDuration(phase);
 
   return (
     <Grid container direction="row" spacing={3}>

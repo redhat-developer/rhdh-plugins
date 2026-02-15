@@ -29,9 +29,11 @@ import { buildArtifactUrl, humanizeArtifactType } from '../tools';
 const ArtifactLink = ({
   artifact,
   targetRepoUrl,
+  targetRepoBranch,
 }: {
   artifact?: Artifact;
   targetRepoUrl: string;
+  targetRepoBranch: string;
 }) => {
   const { t } = useTranslation();
   if (!artifact) {
@@ -39,10 +41,9 @@ const ArtifactLink = ({
   }
   return (
     <Link
-      to={buildArtifactUrl(artifact.value, targetRepoUrl)}
+      to={buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch)}
       target="_blank"
       rel="noopener noreferrer"
-      key={artifact.id}
     >
       {humanizeArtifactType(t, artifact.type)}
     </Link>
@@ -52,13 +53,15 @@ const ArtifactLink = ({
 export const ArtifactsCard = ({
   module,
   targetRepoUrl,
+  targetRepoBranch,
+  migrationPlanArtifact,
 }: {
   module?: Module;
   targetRepoUrl: string;
+  targetRepoBranch: string;
+  migrationPlanArtifact?: Artifact;
 }) => {
   const { t } = useTranslation();
-
-  const migrationPlanArtifact = undefined; // TODO: from project
   const moduleMigrationPlanArtifact = module?.analyze?.artifacts?.find(
     artifact => artifact.type === 'module_migration_plan',
   );
@@ -78,6 +81,7 @@ export const ArtifactsCard = ({
                 <ArtifactLink
                   artifact={migrationPlanArtifact}
                   targetRepoUrl={targetRepoUrl}
+                  targetRepoBranch={targetRepoBranch}
                 />
               }
             />
@@ -89,6 +93,7 @@ export const ArtifactsCard = ({
                 <ArtifactLink
                   artifact={moduleMigrationPlanArtifact}
                   targetRepoUrl={targetRepoUrl}
+                  targetRepoBranch={targetRepoBranch}
                 />
               }
             />
@@ -100,6 +105,7 @@ export const ArtifactsCard = ({
                 <ArtifactLink
                   artifact={migratedSourcesArtifact}
                   targetRepoUrl={targetRepoUrl}
+                  targetRepoBranch={targetRepoBranch}
                 />
               }
             />

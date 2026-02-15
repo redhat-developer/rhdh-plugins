@@ -16,7 +16,13 @@
 import { useCallback, useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
 import { useRouteRefParams } from '@backstage/core-plugin-api';
-import { Content, Header, Page } from '@backstage/core-components';
+import {
+  Content,
+  Header,
+  Page,
+  Progress,
+  ResponseErrorPanel,
+} from '@backstage/core-components';
 import { Grid } from '@material-ui/core';
 import { ModulePhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
@@ -39,14 +45,22 @@ export const ModulePage = () => {
   const [error, setError] = useState<string | undefined>();
   const [refresh, setRefresh] = useState(0);
 
-  const { value: project } = useAsync(async () => {
+  const {
+    value: project,
+    loading: projectLoading,
+    error: projectError,
+  } = useAsync(async () => {
     const response = await clientService.projectsProjectIdGet({
       path: { projectId },
     });
     return await response.json();
   }, [projectId]);
 
-  const { value: module } = useAsync(async () => {
+  const {
+    value: module,
+    loading: moduleLoading,
+    error: moduleError,
+  } = useAsync(async () => {
     const response = await clientService.projectsProjectIdModulesModuleIdGet({
       path: { projectId, moduleId },
     });
@@ -60,42 +74,62 @@ export const ModulePage = () => {
       }
       setError(undefined);
 
-      const sourceRepoAuthToken = (
-        await repoAuthentication.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.sourceRepoUrl,
-            readOnly: true,
-          }),
-        ])
-      )[0].token;
-      const targetRepoAuthToken = (
-        await repoAuthentication.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.targetRepoUrl,
-            readOnly: false,
-          }),
-        ])
-      )[0].token;
+      try {
+        const sourceRepoAuthToken = (
+          await repoAuthentication.authenticate([
+            getAuthTokenDescriptor({
+              repoUrl: project.sourceRepoUrl,
+              readOnly: true,
+            }),
+          ])
+        )[0].token;
+        const targetRepoAuthToken = (
+          await repoAuthentication.authenticate([
+            getAuthTokenDescriptor({
+              repoUrl: project.targetRepoUrl,
+              readOnly: false,
+            }),
+          ])
+        )[0].token;
 
-      const response =
-        await clientService.projectsProjectIdModulesModuleIdRunPost({
-          path: { projectId, moduleId },
-          body: {
-            phase,
-            sourceRepoAuth: { token: sourceRepoAuthToken },
-            targetRepoAuth: { token: targetRepoAuthToken },
-          },
-        });
+        const response =
+          await clientService.projectsProjectIdModulesModuleIdRunPost({
+            path: { projectId, moduleId },
+            body: {
+              phase,
+              sourceRepoAuth: { token: sourceRepoAuthToken },
+              targetRepoAuth: { token: targetRepoAuthToken },
+            },
+          });
 
-      const responseData = await response.json();
-      if (!responseData.jobId) {
-        setError('Failed to run phase for module');
+        const responseData = await response.json();
+        if (!responseData.jobId) {
+          setError('Failed to run phase for module');
+        }
+
+        setRefresh(prev => prev + 1);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to run phase for module',
+        );
       }
-
-      setRefresh(prev => prev + 1);
     },
     [clientService, projectId, moduleId, repoAuthentication, project],
   );
+
+  const fetchError = projectError || moduleError;
+  if (fetchError) {
+    return (
+      <Page themeId="tool">
+        <Header title={t('modulePage.title')} />
+        <Content>
+          <ResponseErrorPanel error={fetchError} />
+        </Content>
+      </Page>
+    );
+  }
+
+  const isLoading = projectLoading || moduleLoading;
 
   return (
     <Page themeId="tool">
@@ -114,20 +148,25 @@ export const ModulePage = () => {
             <AlertTitle>{error}</AlertTitle>
           </Alert>
         )}
-        <Grid container spacing={3} direction="column">
-          <Grid item>
-            <ArtifactsCard
-              module={module}
-              targetRepoUrl={project?.targetRepoUrl || ''}
-            />
+        {isLoading && <Progress />}
+        {!isLoading && (
+          <Grid container spacing={3} direction="column">
+            <Grid item>
+              <ArtifactsCard
+                module={module}
+                targetRepoUrl={project?.targetRepoUrl || ''}
+                targetRepoBranch={project?.targetRepoBranch || ''}
+                migrationPlanArtifact={project?.migrationPlan}
+              />
+            </Grid>
+            <Grid item>
+              <ModuleDetailsCard module={module} />
+            </Grid>
+            <Grid item>
+              <PhasesCard module={module} onRunPhase={handleRunPhase} />
+            </Grid>
           </Grid>
-          <Grid item>
-            <ModuleDetailsCard module={module} />
-          </Grid>
-          <Grid item>
-            <PhasesCard module={module} onRunPhase={handleRunPhase} />
-          </Grid>
-        </Grid>
+        )}
       </Content>
     </Page>
   );
