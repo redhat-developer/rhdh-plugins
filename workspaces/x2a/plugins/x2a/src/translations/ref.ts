@@ -111,6 +111,7 @@ export const x2aPluginMessages = {
       migration_plan: 'Project Migration Plan',
       module_migration_plan: 'Module Migration Plan',
       migrated_sources: 'Migrated Sources',
+      project_metadata: 'Project Metadata',
     },
   },
 };

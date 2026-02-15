@@ -55,6 +55,11 @@ export const x2APlugin = createBackendPlugin({
       }) {
         await migrate(database);
 
+        httpRouter.addAuthPolicy({
+          path: '/projects/:projectId/collectArtifacts',
+          allow: 'unauthenticated',
+        });
+
         httpRouter.use(
           await createRouter({
             httpAuth,
