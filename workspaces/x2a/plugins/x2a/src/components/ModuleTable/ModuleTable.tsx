@@ -63,8 +63,10 @@ export const getNextPhase = (module: Module): ModulePhase | undefined => {
 
 const useColumns = ({
   targetRepoUrl,
+  targetRepoBranch,
 }: {
   targetRepoUrl: string;
+  targetRepoBranch: string;
 }): TableColumn<Module>[] => {
   const { t } = useTranslation();
 
@@ -83,9 +85,15 @@ const useColumns = ({
       artifacts.push(...(module.analyze?.artifacts || []));
       artifacts.push(...(module.migrate?.artifacts || []));
       artifacts.push(...(module.publish?.artifacts || []));
-      return <Artifacts artifacts={artifacts} targetRepoUrl={targetRepoUrl} />;
+      return (
+        <Artifacts
+          artifacts={artifacts}
+          targetRepoUrl={targetRepoUrl}
+          targetRepoBranch={targetRepoBranch}
+        />
+      );
     },
-    [targetRepoUrl],
+    [targetRepoUrl, targetRepoBranch],
   );
 
   const startedAtCell = useCallback(
@@ -159,7 +167,10 @@ export const ModuleTable = ({
   const { t } = useTranslation();
   const repoAuthentication = useRepoAuthentication();
 
-  const columns = useColumns({ targetRepoUrl: project.targetRepoUrl });
+  const columns = useColumns({
+    targetRepoUrl: project.targetRepoUrl,
+    targetRepoBranch: project.targetRepoBranch,
+  });
   const data: Module[] = modules;
   const clientService = useClientService();
 

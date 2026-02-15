@@ -104,6 +104,7 @@ export const DetailPanel = ({ project }: { project: Project }) => {
               <ArtifactLink
                 artifact={project.migrationPlan}
                 targetRepoUrl={project.targetRepoUrl}
+                targetRepoBranch={project.targetRepoBranch}
               />
             }
           />

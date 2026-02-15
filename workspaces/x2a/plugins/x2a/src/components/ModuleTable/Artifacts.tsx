@@ -30,15 +30,17 @@ const styles = makeStyles({
 export const ArtifactLink = ({
   artifact,
   targetRepoUrl,
+  targetRepoBranch,
 }: {
   artifact: Artifact;
   targetRepoUrl: string;
+  targetRepoBranch: string;
 }) => {
   const classes = styles();
   const { t } = useTranslation();
   return (
     <Link
-      to={buildArtifactUrl(artifact.value, targetRepoUrl)}
+      to={buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch)}
       target="_blank"
       rel="noopener noreferrer"
       key={artifact.id}
@@ -52,16 +54,22 @@ export const ArtifactLink = ({
 export const Artifacts = ({
   artifacts,
   targetRepoUrl,
+  targetRepoBranch,
 }: {
   artifacts: Artifact[];
   targetRepoUrl: string;
+  targetRepoBranch: string;
 }) => {
   // Keep it dense
   return (
     <div>
       {artifacts.map(artifact => (
         <>
-          <ArtifactLink artifact={artifact} targetRepoUrl={targetRepoUrl} />
+          <ArtifactLink
+            artifact={artifact}
+            targetRepoUrl={targetRepoUrl}
+            targetRepoBranch={targetRepoBranch}
+          />
           <br />
         </>
       ))}
