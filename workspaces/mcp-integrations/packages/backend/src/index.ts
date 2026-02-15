@@ -70,4 +70,13 @@ backend.add(
 backend.add(
   import('@red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool'),
 );
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-techdocs-mcp-extras'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras'),
+);
 backend.start();

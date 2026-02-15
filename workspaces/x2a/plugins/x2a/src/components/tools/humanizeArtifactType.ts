@@ -33,6 +33,8 @@ export const humanizeArtifactType = (
       return t('artifact.types.module_migration_plan');
     case 'migrated_sources':
       return t('artifact.types.migrated_sources');
+    case 'project_metadata':
+      return t('artifact.types.project_metadata');
     default:
       // Do not fail but let developers know...
       // eslint-disable-next-line no-console
