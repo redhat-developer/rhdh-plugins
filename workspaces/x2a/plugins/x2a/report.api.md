@@ -82,6 +82,7 @@ readonly "module.finishedAt": string;
 readonly "artifact.types.migration_plan": string;
 readonly "artifact.types.module_migration_plan": string;
 readonly "artifact.types.migrated_sources": string;
+readonly "artifact.types.project_metadata": string;
 }>;
 
 // @public

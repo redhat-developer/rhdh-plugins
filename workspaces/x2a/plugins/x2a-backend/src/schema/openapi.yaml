@@ -673,6 +673,7 @@ components:
         - migration_plan
         - module_migration_plan
         - migrated_sources
+        - project_metadata
 
     Artifact:
       type: object

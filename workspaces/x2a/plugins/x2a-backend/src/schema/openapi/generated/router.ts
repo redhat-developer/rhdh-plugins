@@ -948,7 +948,8 @@ export const spec = {
         "enum": [
           "migration_plan",
           "module_migration_plan",
-          "migrated_sources"
+          "migrated_sources",
+          "project_metadata"
         ]
       },
       "Artifact": {

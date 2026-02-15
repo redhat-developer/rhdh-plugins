@@ -81,6 +81,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.statuses.success': 'Éxito',
     'module.statuses.error': 'Error',
     'artifact.types.migrated_sources': 'Fuentes migradas',
+    'artifact.types.project_metadata': 'Metadatos del proyecto',
   },
 });
 
