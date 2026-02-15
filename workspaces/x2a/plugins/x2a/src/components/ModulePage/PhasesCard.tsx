@@ -27,6 +27,7 @@ import { Grid, makeStyles, Typography } from '@material-ui/core';
 import {
   Job,
   Module,
+  ModulePhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
@@ -38,17 +39,28 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const RunAction = ({
-  instructions,
-  actionText,
+const AnalyzeRunAction = ({
+  phase,
+  onRunPhase,
 }: {
-  instructions: string;
-  actionText: string;
+  phase?: Job;
+  onRunPhase?: (phase: ModulePhase) => void;
 }) => {
+  const { t } = useTranslation();
+
+  const instructions = phase
+    ? t('modulePage.phases.reanalyzeInstructions')
+    : t('modulePage.phases.analyzeInstructions');
+  const actionText = phase
+    ? t('modulePage.phases.rerunAnalyze')
+    : t('modulePage.phases.runAnalyze');
+
   return (
     <>
       <Grid item xs={12}>
-        <Button variant="primary">{actionText}</Button>
+        <Button variant="primary" onPress={() => onRunPhase?.('analyze')}>
+          {actionText}
+        </Button>
       </Grid>
       <Grid item xs={12}>
         <Typography>{instructions}</Typography>
@@ -57,7 +69,15 @@ const RunAction = ({
   );
 };
 
-const PhaseDetails = ({ phase }: { phase?: Job }) => {
+const PhaseDetails = ({
+  phase,
+  phaseName,
+  onRunPhase,
+}: {
+  phase?: Job;
+  phaseName: ModulePhase;
+  onRunPhase?: (phase: ModulePhase) => void;
+}) => {
   const { t } = useTranslation();
   const empty = t('module.phases.none');
 
@@ -69,17 +89,8 @@ const PhaseDetails = ({ phase }: { phase?: Job }) => {
 
   return (
     <Grid container direction="row" spacing={3}>
-      {phase && (
-        <RunAction
-          instructions={t('modulePage.phases.reanalyzeInstructions')}
-          actionText={t('modulePage.phases.rerunAnalyze')}
-        />
-      )}
-      {!phase && (
-        <RunAction
-          instructions={t('modulePage.phases.analyzeInstructions')}
-          actionText={t('modulePage.phases.runAnalyze')}
-        />
+      {phaseName === 'analyze' && (
+        <AnalyzeRunAction phase={phase} onRunPhase={onRunPhase} />
       )}
       {/* TODO: Button for canceling the current job execution */}
 
@@ -99,7 +110,7 @@ const PhaseDetails = ({ phase }: { phase?: Job }) => {
       <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.startedAt')}
-          value={humanizeDate(phase?.startedAt || empty)}
+          value={phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
         />
       </Grid>
       <Grid item xs={3}>
@@ -123,7 +134,13 @@ const PhaseDetails = ({ phase }: { phase?: Job }) => {
   );
 };
 
-export const PhasesCard = ({ module }: { module?: Module }) => {
+export const PhasesCard = ({
+  module,
+  onRunPhase,
+}: {
+  module?: Module;
+  onRunPhase?: (phase: ModulePhase) => void;
+}) => {
   const { t } = useTranslation();
   const classes = useStyles();
 
@@ -162,13 +179,25 @@ export const PhasesCard = ({ module }: { module?: Module }) => {
             </Tab>
           </TabList>
           <TabPanel id="tab1">
-            <PhaseDetails phase={analyzePhase} />
+            <PhaseDetails
+              phase={analyzePhase}
+              phaseName="analyze"
+              onRunPhase={onRunPhase}
+            />
           </TabPanel>
           <TabPanel id="tab2">
-            <PhaseDetails phase={migratePhase} />
+            <PhaseDetails
+              phase={migratePhase}
+              phaseName="migrate"
+              onRunPhase={onRunPhase}
+            />
           </TabPanel>
           <TabPanel id="tab3">
-            <PhaseDetails phase={publishPhase} />
+            <PhaseDetails
+              phase={publishPhase}
+              phaseName="publish"
+              onRunPhase={onRunPhase}
+            />
           </TabPanel>
         </Tabs>
       </CardBody>

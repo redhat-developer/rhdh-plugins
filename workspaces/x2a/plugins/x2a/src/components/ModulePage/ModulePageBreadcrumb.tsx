@@ -36,9 +36,8 @@ export const ModulePageBreadcrumb = () => {
       separator=">"
       className={classes.breadcrumbs}
     >
-      <Link to="/">{t('page.title')}</Link>
+      <Link to="/x2a/api">{t('page.title')}</Link>
       <Typography>{t('modulePage.title')}</Typography>
-      <Typography>Breadcrumbs</Typography>
     </Breadcrumbs>
   );
 };

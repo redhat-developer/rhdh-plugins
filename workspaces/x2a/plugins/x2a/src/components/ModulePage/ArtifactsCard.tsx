@@ -26,14 +26,20 @@ import { ItemField } from '../ItemField';
 import { Link } from '@backstage/core-components';
 import { buildArtifactUrl, humanizeArtifactType } from '../tools';
 
-const ArtifactLink = ({ artifact }: { artifact?: Artifact }) => {
+const ArtifactLink = ({
+  artifact,
+  targetRepoUrl,
+}: {
+  artifact?: Artifact;
+  targetRepoUrl: string;
+}) => {
   const { t } = useTranslation();
   if (!artifact) {
     return t('module.phases.none');
   }
   return (
     <Link
-      to={buildArtifactUrl(artifact.value, '')}
+      to={buildArtifactUrl(artifact.value, targetRepoUrl)}
       target="_blank"
       rel="noopener noreferrer"
       key={artifact.id}
@@ -43,7 +49,13 @@ const ArtifactLink = ({ artifact }: { artifact?: Artifact }) => {
   );
 };
 
-export const ArtifactsCard = ({ module }: { module?: Module }) => {
+export const ArtifactsCard = ({
+  module,
+  targetRepoUrl,
+}: {
+  module?: Module;
+  targetRepoUrl: string;
+}) => {
   const { t } = useTranslation();
 
   const migrationPlanArtifact = undefined; // TODO: from project
@@ -62,19 +74,34 @@ export const ArtifactsCard = ({ module }: { module?: Module }) => {
           <Grid item xs={4}>
             <ItemField
               label={t('modulePage.artifacts.migration_plan')}
-              value={<ArtifactLink artifact={migrationPlanArtifact} />}
+              value={
+                <ArtifactLink
+                  artifact={migrationPlanArtifact}
+                  targetRepoUrl={targetRepoUrl}
+                />
+              }
             />
           </Grid>
           <Grid item xs={4}>
             <ItemField
               label={t('modulePage.artifacts.module_migration_plan')}
-              value={<ArtifactLink artifact={moduleMigrationPlanArtifact} />}
+              value={
+                <ArtifactLink
+                  artifact={moduleMigrationPlanArtifact}
+                  targetRepoUrl={targetRepoUrl}
+                />
+              }
             />
           </Grid>
           <Grid item xs={4}>
             <ItemField
               label={t('modulePage.artifacts.migrated_sources')}
-              value={<ArtifactLink artifact={migratedSourcesArtifact} />}
+              value={
+                <ArtifactLink
+                  artifact={migratedSourcesArtifact}
+                  targetRepoUrl={targetRepoUrl}
+                />
+              }
             />
           </Grid>
           <Grid item xs={12}>
