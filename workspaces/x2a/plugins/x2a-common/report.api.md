@@ -209,7 +209,7 @@ export interface ProjectsProjectIdCollectArtifactsPost200Response {
 
 // @public (undocumented)
 export interface ProjectsProjectIdCollectArtifactsPostRequest {
-    artifacts: Array<Artifact>;
+    artifacts?: Array<Artifact>;
     errorDetails?: string;
     jobId: string;
     status: ProjectsProjectIdCollectArtifactsPostRequestStatusEnum;

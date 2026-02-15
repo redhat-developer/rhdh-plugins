@@ -653,8 +653,7 @@ export const spec = {
                 },
                 "required": [
                   "status",
-                  "jobId",
-                  "artifacts"
+                  "jobId"
                 ]
               }
             }
