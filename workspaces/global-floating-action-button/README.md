@@ -2,4 +2,4 @@ This is where your own applications and centrally managed libraries live, each i
 
 From the start there's an app folder (for the frontend) and a backend folder (for the Node backend), but you can also add more modules in here that house your core additions and adaptations, such as themes, common React component libraries, utilities, and similar.
 
-The gloabl floating action button can be accessed by running `yarn start` from this directory.
+The global floating action button can be accessed by running `yarn start` from this directory.
