@@ -62,7 +62,7 @@ async function fetchTeamMembers() {
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch team members: ${response.status} ${response.statusText}`,
+        `Failed to fetch team members: ${response.status} ${response.statusText}, url: ${url}`,
       );
     }
 
