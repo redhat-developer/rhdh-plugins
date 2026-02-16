@@ -4,7 +4,7 @@
 
 ```ts
 
-import { ApiFactory } from '@backstage/core-plugin-api';
+import { ApiFactory } from '@backstage/frontend-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { OrchestratorFormApi } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 

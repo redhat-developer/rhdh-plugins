@@ -8,8 +8,8 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@mui/material/SvgIcon';
-import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // Warning: (ae-missing-release-tag) "IsOrchestratorCatalogTabAvailable" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
 //
