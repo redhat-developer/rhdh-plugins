@@ -21,12 +21,12 @@ plugins:
                   text: OpenShift
             menuItems:
               cost-management:
+                icon: costManagementIcon
+                title: Cost management
+                priority: 100
+              cost-management.optimizations:
                 parent: cost-management
                 priority: 10
               cost-management.ocp:
                 parent: cost-management
                 priority: 20
-              cost-management:
-                icon: costManagementIcon
-                title: Cost management
-                priority: 100
