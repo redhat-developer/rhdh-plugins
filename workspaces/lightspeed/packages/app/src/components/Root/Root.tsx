@@ -146,8 +146,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           ]}
           stateExposers={[
             // In RHDH, these would come from mount points:
-            // - mountPoint: application/drawer-state
-            //   importName: QuickstartDrawerStateExposer
+            // - mountPoint: application/internal/drawer-state
+            //   importName: LightspeedDrawerStateExposer
             { Component: LightspeedDrawerStateExposer },
           ]}
         />
