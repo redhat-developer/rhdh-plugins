@@ -82,7 +82,7 @@
     "@backstage/core-app-api": "^1.19.4",
     "@backstage/dev-utils": "^1.1.19",
     "@backstage/test-utils": "^1.7.14",
-    "@janus-idp/cli": "3.6.1",
+    "@janus-idp/cli": "3.7.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",
