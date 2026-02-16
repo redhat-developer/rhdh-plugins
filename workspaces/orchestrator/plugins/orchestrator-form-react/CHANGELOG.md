@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.6.1
+
+### Patch Changes
+
+- Updated dependencies [b7f8a3c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.1
+
 ## 2.6.0
 
 ### Minor Changes
