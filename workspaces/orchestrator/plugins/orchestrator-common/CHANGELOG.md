@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.5.0
+
+### Minor Changes
+
+- 3648a62: Backstage version bump to v1.47.3
+
+## 3.4.1
+
+### Patch Changes
+
+- 858963d: remove web-library(core-plugin-api) import in a common-library
+
 ## 3.4.0
 
 ### Minor Changes

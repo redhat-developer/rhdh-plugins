@@ -61,10 +61,10 @@ describe('CustomTooltip Component', () => {
     expect(screen.getByText('No entities in Test state')).toBeInTheDocument();
   });
 
-  it('should render missing permission message when isMissingPermission is true', () => {
+  it('should render custom content when provided', () => {
     render(
       <CustomTooltip
-        isMissingPermission
+        customContent="Missing permission"
         payload={[{ name: 'Test', value: 10 }]}
         pieData={[{ name: 'Test', value: 10, color: 'red' }]}
       />,

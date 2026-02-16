@@ -92,17 +92,21 @@ export const KINDS = {
   COMPONENT: {
     label: 'Component',
     fill: '#FFE082',
+    borderColor: '#FFCA28',
   },
   API: {
     label: 'API',
     fill: '#FFAB91',
+    borderColor: '#FF8A65',
   },
   RESOURCE: {
     label: 'Resource',
     fill: '#FFD180',
+    borderColor: '#FFB74D',
   },
   SYSTEM: {
     label: 'System',
     fill: '#FF9E80',
+    borderColor: '#FF7043',
   },
 };

@@ -19,7 +19,7 @@ import React from 'react';
 import { useApi } from '@backstage/core-plugin-api';
 
 import { MessageProps } from '@patternfly/chatbot';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { ScrollContainerHandle } from '../components/LightspeedChatBox';
@@ -28,6 +28,7 @@ import botAvatar from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
 import {
   Attachment,
+  BaseMessage,
   LCSConversation,
   ReferencedDocument,
   ToolCall,
@@ -42,7 +43,9 @@ import {
 import { useCreateConversationMessage } from './useCreateCoversationMessage';
 
 // Fetch all conversation messages
-export const useFetchConversationMessages = (currentConversation: string) => {
+export const useFetchConversationMessages = (
+  currentConversation: string,
+): UseQueryResult<BaseMessage[] | undefined, Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['conversationMessages', currentConversation],
@@ -65,6 +68,24 @@ interface ExtendedMessageProps extends MessageProps {
 
 type Conversations = { [_key: string]: ExtendedMessageProps[] };
 
+export type UseConversationMessagesReturn = {
+  conversationMessages: ExtendedMessageProps[];
+  handleInputPrompt: (
+    prompt: string,
+    attachments?: Attachment[],
+  ) => Promise<void>;
+  conversations: Conversations;
+  scrollToBottomRef: React.RefObject<ScrollContainerHandle | null>;
+  data?: BaseMessage[] | undefined;
+  error: Error | null;
+  isPending: boolean;
+  isFetching: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  status: 'pending' | 'error' | 'success';
+  refetch: () => void;
+};
+
 /**
  * Fetches all the messages for given conversation_id
  * @param conversationId
@@ -82,7 +103,7 @@ export const useConversationMessages = (
   avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
-) => {
+): UseConversationMessagesReturn => {
   const { mutateAsync: createMessage } = useCreateConversationMessage();
   const scrollToBottomRef = React.useRef<ScrollContainerHandle>(null);
 

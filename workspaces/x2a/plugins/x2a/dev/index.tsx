@@ -16,12 +16,16 @@
 import { createDevApp } from '@backstage/dev-utils';
 import { x2APlugin, X2APage } from '../src/plugin';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import { x2aPluginTranslations } from '../src/translations';
 
 createDevApp()
   .registerPlugin(x2APlugin)
+  .addTranslationResource(x2aPluginTranslations)
+  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it'])
+  .setDefaultLanguage('en')
   .addPage({
     element: <X2APage />,
-    title: 'Root Page',
+    title: 'Conversion Hub',
     path: '/x2a',
   })
   .addSignInProvider({

@@ -61,7 +61,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     {
       frequency: { hours: 1 },
       timeout: { minutes: 15 },
-      initialDelay: { seconds: 3 },
+      initialDelay: { minutes: 1 },
     };
 
   constructor(options: Options, provider: MetricProvider) {

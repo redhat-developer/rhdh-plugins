@@ -15,12 +15,14 @@
  */
 import { createRouteRef, createSubRouteRef } from '@backstage/core-plugin-api';
 
+export const basePath = '/x2a';
+
 export const rootRouteRef = createRouteRef({
   id: 'x2a',
 });
 
-export const newProjectRouteRef = createSubRouteRef({
-  id: 'x2a/new-project',
+export const moduleRouteRef = createSubRouteRef({
+  id: 'x2a.module',
   parent: rootRouteRef,
-  path: '/new-project',
+  path: '/projects/:projectId/modules/:moduleId',
 });

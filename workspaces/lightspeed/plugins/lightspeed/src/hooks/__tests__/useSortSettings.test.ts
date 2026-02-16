@@ -15,8 +15,8 @@
  */
 import { createElement, ReactNode } from 'react';
 
-import { storageApiRef } from '@backstage/core-plugin-api';
-import { MockStorageApi, TestApiProvider } from '@backstage/test-utils';
+import { StorageApi, storageApiRef } from '@backstage/core-plugin-api';
+import { mockApis, TestApiProvider } from '@backstage/test-utils';
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 
@@ -26,9 +26,9 @@ describe('useSortSettings', () => {
   // Use a non-guest user for most tests (guest users don't persist)
   const mockUser = 'user:default/john';
   const guestUser = 'user:default/guest';
-  let mockStorageApi: MockStorageApi;
+  let mockStorageApi: StorageApi;
 
-  const createWrapper = (storageApi: MockStorageApi) => {
+  const createWrapper = (storageApi: StorageApi) => {
     return ({ children }: { children: ReactNode }) =>
       createElement(TestApiProvider, {
         apis: [[storageApiRef, storageApi]],
@@ -37,7 +37,7 @@ describe('useSortSettings', () => {
   };
 
   beforeEach(() => {
-    mockStorageApi = MockStorageApi.create();
+    mockStorageApi = mockApis.storage();
   });
 
   describe('initialization', () => {

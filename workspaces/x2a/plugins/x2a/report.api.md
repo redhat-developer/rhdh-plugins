@@ -7,6 +7,14 @@
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
+import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
+
+// @public
+export const useX2ATranslation: () => {
+    t: TranslationFunction<typeof x2aPluginTranslationRef.T>;
+};
 
 // @public (undocumented)
 export const X2APage: () => JSX_2.Element;
@@ -15,6 +23,94 @@ export const X2APage: () => JSX_2.Element;
 export const x2APlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;
+
+// @public
+export const x2aPluginTranslationRef: TranslationRef<"plugin.x2a", {
+readonly "table.columns.name": string;
+readonly "table.columns.description": string;
+readonly "table.columns.status": string;
+readonly "table.columns.abbreviation": string;
+readonly "table.columns.sourceRepo": string;
+readonly "table.columns.targetRepo": string;
+readonly "table.columns.createdAt": string;
+readonly "table.actions.deleteProject": string;
+readonly "table.detailPanel": string;
+readonly "table.projectsCount": string;
+readonly "page.title": string;
+readonly "page.subtitle": string;
+readonly "page.devTitle": string;
+readonly "sidebar.x2a.title": string;
+readonly "modulePage.title": string;
+readonly "modulePage.artifacts.title": string;
+readonly "modulePage.artifacts.description": string;
+readonly "modulePage.artifacts.migration_plan": string;
+readonly "modulePage.artifacts.module_migration_plan": string;
+readonly "modulePage.artifacts.migrated_sources": string;
+readonly "modulePage.phases.id": string;
+readonly "modulePage.phases.duration": string;
+readonly "modulePage.phases.k8sJobName": string;
+readonly "modulePage.phases.startedAt": string;
+readonly "modulePage.phases.status": string;
+readonly "modulePage.phases.errorDetails": string;
+readonly "modulePage.phases.reanalyzeInstructions": string;
+readonly "modulePage.phases.rerunAnalyze": string;
+readonly "modulePage.phases.analyzeInstructions": string;
+readonly "modulePage.phases.runAnalyze": string;
+readonly "modulePage.phases.migrateInstructions": string;
+readonly "modulePage.phases.runMigrate": string;
+readonly "modulePage.phases.remigrateInstructions": string;
+readonly "modulePage.phases.rerunMigrate": string;
+readonly "modulePage.phases.publishInstructions": string;
+readonly "modulePage.phases.runPublish": string;
+readonly "modulePage.phases.republishInstructions": string;
+readonly "modulePage.phases.rerunPublish": string;
+readonly "project.id": string;
+readonly "project.description": string;
+readonly "project.abbreviation": string;
+readonly "project.createdBy": string;
+readonly "project.statuses.none": string;
+readonly "project.statuses.created": string;
+readonly "project.statuses.initializing": string;
+readonly "project.statuses.initialized": string;
+readonly "project.statuses.inProgress": string;
+readonly "project.statuses.completed": string;
+readonly "project.statuses.failed": string;
+readonly "common.newProject": string;
+readonly "wizard.cancel": string;
+readonly "wizard.back": string;
+readonly "wizard.next": string;
+readonly "module.summary.running": string;
+readonly "module.summary.total": string;
+readonly "module.summary.error": string;
+readonly "module.summary.finished": string;
+readonly "module.summary.waiting": string;
+readonly "module.summary.pending": string;
+readonly "module.name": string;
+readonly "module.artifacts": string;
+readonly "module.phases.none": string;
+readonly "module.phases.init": string;
+readonly "module.phases.analyze": string;
+readonly "module.phases.migrate": string;
+readonly "module.phases.publish": string;
+readonly "module.startedAt": string;
+readonly "module.status": string;
+readonly "module.actions.runNextPhase": string;
+readonly "module.statuses.none": string;
+readonly "module.statuses.running": string;
+readonly "module.statuses.error": string;
+readonly "module.statuses.pending": string;
+readonly "module.statuses.success": string;
+readonly "module.lastPhase": string;
+readonly "module.sourcePath": string;
+readonly "module.finishedAt": string;
+readonly "artifact.types.migration_plan": string;
+readonly "artifact.types.module_migration_plan": string;
+readonly "artifact.types.migrated_sources": string;
+readonly "artifact.types.project_metadata": string;
+}>;
+
+// @public
+export const x2aPluginTranslations: TranslationResource<"plugin.x2a">;
 
 // (No @packageDocumentation comment for this package)
 

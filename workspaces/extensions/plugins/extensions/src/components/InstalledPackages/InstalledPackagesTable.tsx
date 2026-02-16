@@ -27,6 +27,8 @@ import { Query, QueryResult } from '@material-table/core';
 import { useQuery } from '@tanstack/react-query';
 
 import Box from '@mui/material/Box';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 import {
   ExtensionsPackage,
   ExtensionsPackageInstallStatus,
@@ -58,6 +60,8 @@ import {
 
 export const InstalledPackagesTable = () => {
   const { t } = useTranslation();
+  const [rowActionError, setRowActionError] = useState<string | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const extensionsConfig = useExtensionsConfiguration();
   const { installedPackages } = useInstallationContext();
   const nodeEnvironment = useNodeEnvironment();
@@ -187,11 +191,19 @@ export const InstalledPackagesTable = () => {
             <DownloadPackageYaml
               pkg={row}
               isProductionEnv={isProductionEnvironment}
+              onError={(err: string) => {
+                setRowActionError(err);
+                setSnackbarOpen(true);
+              }}
             />
             <TogglePackage
               pkg={row}
               isProductionEnv={isProductionEnvironment}
               isInstallationEnabled={extensionsConfig.data?.enabled ?? false}
+              onError={(err: string) => {
+                setRowActionError(err);
+                setSnackbarOpen(true);
+              }}
             />
           </Box>
         );
@@ -359,6 +371,31 @@ export const InstalledPackagesTable = () => {
         onClose={setOpenInstalledPackagesDialog}
         showPackages
       />
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => {
+          setSnackbarOpen(false);
+          setRowActionError(null);
+        }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{
+          top: '80px !important',
+        }}
+      >
+        <Alert
+          onClose={() => {
+            setSnackbarOpen(false);
+            setRowActionError(null);
+          }}
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {Array.isArray(rowActionError)
+            ? rowActionError.map((err, idx) => <div key={idx}>{err}</div>)
+            : rowActionError}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

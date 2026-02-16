@@ -1,0 +1,79 @@
+/**
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { Link } from '@backstage/core-components';
+import { makeStyles } from '@material-ui/core';
+import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+import { useTranslation } from '../../hooks/useTranslation';
+import { buildArtifactUrl, humanizeArtifactType } from '../tools';
+
+const styles = makeStyles({
+  artifact: {
+    margin: 0,
+    padding: 0,
+  },
+});
+
+export const ArtifactLink = ({
+  artifact,
+  targetRepoUrl,
+  targetRepoBranch,
+}: {
+  artifact: Artifact;
+  // TODO: the targetRepoUrl is probably not needed, the artifact.value should contain full URL
+  targetRepoUrl: string;
+  targetRepoBranch: string;
+}) => {
+  const classes = styles();
+  const { t } = useTranslation();
+  return (
+    <Link
+      to={buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch)}
+      target="_blank"
+      rel="noopener noreferrer"
+      key={artifact.id}
+      className={classes.artifact}
+    >
+      {humanizeArtifactType(t, artifact.type)}
+    </Link>
+  );
+};
+
+export const Artifacts = ({
+  artifacts,
+  targetRepoUrl,
+  targetRepoBranch,
+}: {
+  artifacts: Artifact[];
+  targetRepoUrl: string;
+  targetRepoBranch: string;
+}) => {
+  // Keep it dense
+  return (
+    <div>
+      {artifacts.map(artifact => (
+        <span key={artifact.id}>
+          <ArtifactLink
+            artifact={artifact}
+            targetRepoUrl={targetRepoUrl}
+            targetRepoBranch={targetRepoBranch}
+          />
+          <br />
+        </span>
+      ))}
+    </div>
+  );
+};

@@ -3,14 +3,14 @@ the RBAC plugin. The result is control over what users can see or execute.
 
 ## Orchestrator Permissions
 
-| Name                                     | Resource Type  | Policy | Description                                                                                    | Requirements |
-| ---------------------------------------- | -------------- | ------ | ---------------------------------------------------------------------------------------------- | ------------ |
-| orchestrator.workflow                    | named resource | read   | Allows the user to list and read any workflow definition and their instances that they created |              |
-| orchestrator.workflow.[`workflowId`]     | named resource | read   | Allows the user to list and read the details of a _single_ workflow definition                 |              |
-| orchestrator.workflow.use                | named resource | update | Allows the user to run or abort _any_ workflow                                                 |              |
-| orchestrator.workflow.use.[`workflowId`] | named resource | update | Allows the user to run or abort the _single_ workflow                                          |              |
-| orchestrator.workflowAdminView           | named resource | read   | Allows the user to view instance variables and workflow definition editor                      |              |
-| orchestrator.instanceAdminView           | named resource | read   | Allows the user to view all workflow instances, including those not created by them            |              |
+| Name                                     | Resource Type  | Policy | Description                                                                                         | Requirements |
+| ---------------------------------------- | -------------- | ------ | --------------------------------------------------------------------------------------------------- | ------------ |
+| orchestrator.workflow                    | named resource | read   | Allows the user to list and read any workflow definition and their instances that they created      |              |
+| orchestrator.workflow.[`workflowId`]     | named resource | read   | Allows the user to list and read a _single_ workflow definition and its instances that they created |              |
+| orchestrator.workflow.use                | named resource | update | Allows the user to run or abort _any_ workflow                                                      |              |
+| orchestrator.workflow.use.[`workflowId`] | named resource | update | Allows the user to run or abort the _single_ workflow                                               |              |
+| orchestrator.workflowAdminView           | named resource | read   | Allows the user to view instance variables and workflow definition editor                           |              |
+| orchestrator.instanceAdminView           | named resource | read   | Allows the user to view all workflow instances, including those not created by them                 |              |
 
 The user is permitted to do an action if either the generic permission or the specific one allows it.
 In other words, it is not possible to grant generic `orchestrator.workflow` and then selectively disable it for a specific workflow via `orchestrator.workflow.use.[workflowId]` with `deny`.

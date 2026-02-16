@@ -7,6 +7,7 @@
   },
   "scripts": {
     "start": "backstage-cli repo start",
+    "start:legacy": "backstage-cli repo start packages/app-legacy packages/backend",
     "start-backend": "yarn workspace backend start",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
@@ -19,6 +20,11 @@
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
+    "test:e2e": "yarn test:e2e:all",
+    "test:e2e:legacy": "APP_MODE=legacy playwright test",
+    "test:e2e:nfs": "APP_MODE=nfs playwright test",
+    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
+    "playwright": "bash -c 'if [[ $1 == install ]]; then npx playwright \"$@\"; else yarn test:e2e:all; fi' _",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
@@ -38,11 +44,11 @@
     "directory": "workspaces/adoption-insights"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5",
+    "@backstage/cli": "^0.35.3",
     "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.16.0",
+    "@backstage/repo-tools": "^0.16.3",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.58.0",
+    "@playwright/test": "1.58.1",
     "@spotify/prettier-config": "^15.0.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
@@ -52,8 +58,6 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@backstage/plugin-catalog-backend": "2.0.0",
-    "@backstage/plugin-scaffolder-backend": "1.33.0",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "prettier": "@spotify/prettier-config",

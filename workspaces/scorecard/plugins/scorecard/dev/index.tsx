@@ -57,7 +57,7 @@ class MockScorecardApi implements ScorecardApi {
   }
   async getAggregatedScorecard(
     _metricId: string,
-  ): Promise<AggregatedMetricResult[]> {
+  ): Promise<AggregatedMetricResult> {
     return mockAggregatedScorecardSuccessData;
   }
 }

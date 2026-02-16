@@ -15,21 +15,23 @@
  */
 import { Grid } from '@material-ui/core';
 import { Header, Page, Content } from '@backstage/core-components';
+import { useTranslation } from '../../hooks/useTranslation';
 import { ProjectList } from '../ProjectList';
 
-export const Dashboard = () => (
-  <Page themeId="tool">
-    <Header
-      title="Migration Hub"
-      subtitle="Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks."
-    />
+export const Dashboard = () => {
+  const { t } = useTranslation();
 
-    <Content>
-      <Grid container spacing={3} direction="column">
-        <Grid item>
-          <ProjectList />
+  return (
+    <Page themeId="tool">
+      <Header title={t('page.title')} subtitle={t('page.subtitle')} />
+
+      <Content>
+        <Grid container spacing={3} direction="column">
+          <Grid item>
+            <ProjectList />
+          </Grid>
         </Grid>
-      </Grid>
-    </Content>
-  </Page>
-);
+      </Content>
+    </Page>
+  );
+};

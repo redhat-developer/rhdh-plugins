@@ -15,9 +15,9 @@
  */
 
 import {
-  AggregatedMetricResult,
   MetricResult,
   ThresholdConfig,
+  AggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { NotFoundError, stringifyError } from '@backstage/errors';
@@ -31,6 +31,7 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { mergeEntityAndProviderThresholds } from '../utils/mergeEntityAndProviderThresholds';
+import { AggregatedMetricMapper } from './mappers';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -144,65 +145,26 @@ export class CatalogMetricService {
   }
 
   /**
-   * Get aggregated metrics for multiple entities and metrics
+   * Get an aggregated metric for multiple entities and a single metric ID.
    *
    * @param entityRefs - Array of entity references in format "kind:namespace/name"
-   * @param metricIds - Optional array of metric IDs to get aggregated metrics of.
-   *                    If not provided, gets all available aggregated metrics.
+   * @param metricId - Metric ID to aggregate.
    * @returns Aggregated metric results
    */
-  async getAggregatedMetricsByEntityRefs(
+  async getAggregatedMetricByEntityRefs(
     entityRefs: string[],
-    metricIds?: string[],
-    filter?: PermissionCriteria<
-      PermissionCondition<string, PermissionRuleParams>
-    >,
-  ): Promise<AggregatedMetricResult[]> {
-    const metricsToFetch = this.registry.listMetrics(metricIds);
+    metricId: string,
+  ): Promise<AggregatedMetric> {
+    if (entityRefs.length !== 0) {
+      const aggregatedMetric =
+        await this.database.readAggregatedMetricByEntityRefs(
+          entityRefs,
+          metricId,
+        );
 
-    const authorizedMetricsToFetch = filterAuthorizedMetrics(
-      metricsToFetch,
-      filter,
-    );
+      return AggregatedMetricMapper.toAggregatedMetric(aggregatedMetric);
+    }
 
-    const aggregatedMetrics =
-      await this.database.readAggregatedMetricsByEntityRefs(
-        entityRefs,
-        authorizedMetricsToFetch.map(m => m.id),
-      );
-
-    return aggregatedMetrics.map(row => {
-      const metricId = row.metric_id;
-      const success = row.success || 0;
-      const warning = row.warning || 0;
-      const error = row.error || 0;
-      const total = row.total || 0;
-      const timestamp = row.max_timestamp
-        ? new Date(row.max_timestamp).toISOString()
-        : new Date().toISOString();
-
-      const provider = this.registry.getProvider(metricId);
-      const metric = provider.getMetric();
-
-      return {
-        id: metricId,
-        status: 'success',
-        metadata: {
-          title: metric.title,
-          description: metric.description,
-          type: metric.type,
-          history: metric.history,
-        },
-        result: {
-          values: [
-            { count: success, name: 'success' },
-            { count: warning, name: 'warning' },
-            { count: error, name: 'error' },
-          ],
-          total,
-          timestamp,
-        },
-      };
-    });
+    return AggregatedMetricMapper.toAggregatedMetric();
   }
 }

@@ -16,12 +16,24 @@
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, type UseMutationResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { Attachment } from '../types';
 
-export const useCreateConversationMessage = () => {
+type CreateMessageVariables = {
+  prompt: string;
+  selectedModel: string;
+  selectedProvider: string;
+  currentConversation: string;
+  attachments: Attachment[];
+};
+
+export const useCreateConversationMessage = (): UseMutationResult<
+  ReadableStreamDefaultReader<Uint8Array>,
+  Error,
+  CreateMessageVariables
+> => {
   const lightspeedApi = useApi(lightspeedApiRef);
 
   return useMutation({

@@ -15,7 +15,6 @@
  */
 import PushPinIcon from '@mui/icons-material/PushPin';
 import { Conversation, SourcesCardProps } from '@patternfly/chatbot';
-import { PopoverProps } from '@patternfly/react-core';
 
 import {
   BaseMessage,
@@ -28,35 +27,11 @@ import {
 } from '../types';
 
 export const getFootnoteProps = (
-  additionalClassName: string,
   t?: (key: string, params?: any) => string,
 ) => ({
   label:
     t?.('footer.accuracy.label') ||
     'Always review AI generated content prior to use.',
-  popover: {
-    popoverProps: {
-      className: additionalClassName ?? '',
-    } as PopoverProps,
-    title: t?.('footer.accuracy.popover.title') || 'Verify accuracy',
-    description:
-      t?.('footer.accuracy.popover.description') ||
-      `While Developer Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.`,
-    bannerImage: {
-      src: 'https://cdn.dribbble.com/userupload/10651749/file/original-8a07b8e39d9e8bf002358c66fce1223e.gif',
-      alt:
-        t?.('footer.accuracy.popover.image.alt') ||
-        'Example image for footnote popover',
-    },
-    cta: {
-      label: t?.('footer.accuracy.popover.cta.label') || 'Got it',
-      onClick: () => {},
-    },
-    link: {
-      label: t?.('footer.accuracy.popover.link.label') || 'Learn more',
-      url: 'https://www.redhat.com/',
-    },
-  },
 });
 
 export const getTimestampVariablesString = (v: number) => {
@@ -250,7 +225,16 @@ export const getCategorizeMessages = (
     if (pinnedChats.includes(c.conversation_id)) {
       categorizedMessages[pinnedChatsKey].push({
         ...message,
-        icon: <PushPinIcon />,
+        icon: (
+          <PushPinIcon
+            sx={{
+              width: '1rem',
+              height: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          />
+        ),
       });
     } else {
       categorizedMessages[recentKey].push(message);

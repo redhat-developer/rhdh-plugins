@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-import { Fragment } from 'react';
-
-import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
-import { EmptyStatePanel } from './EmptyStatePanel';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
+import { ErrorStatePanel } from './ErrorStatePanel';
+import { EmptyStatePanel } from './EmptyStatePanel';
 
 export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   const { t } = useTranslation();
@@ -47,35 +44,42 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   }
 
   if (error) {
-    return <EmptyStatePanel error={error} metricId={metricId} />;
+    return <ErrorStatePanel error={error} metricId={metricId} />;
   }
 
+  if (!aggregatedScorecard) {
+    return null;
+  }
+
+  if (aggregatedScorecard.result?.total === 0) {
+    return (
+      <EmptyStatePanel
+        metricId={metricId}
+        label={t('errors.noDataFound')}
+        tooltipContent={t('errors.noDataFoundMessage')}
+      />
+    );
+  }
+
+  const titleKey = `metric.${aggregatedScorecard.id}.title`;
+  const descriptionKey = `metric.${aggregatedScorecard.id}.description`;
+
+  const title = t(titleKey as any, {});
+  const description = t(descriptionKey as any, {});
+
+  const finalTitle =
+    title === titleKey ? aggregatedScorecard.metadata.title : title;
+  const finalDescription =
+    description === descriptionKey
+      ? aggregatedScorecard.metadata.description
+      : description;
+
   return (
-    <Fragment>
-      {aggregatedScorecard
-        ?.slice(0, 1)
-        .map((metric: AggregatedMetricResult) => {
-          const titleKey = `metric.${metric.id}.title`;
-          const descriptionKey = `metric.${metric.id}.description`;
-
-          const title = t(titleKey as any, {});
-          const description = t(descriptionKey as any, {});
-
-          const finalTitle = title === titleKey ? metric.metadata.title : title;
-          const finalDescription =
-            description === descriptionKey
-              ? metric.metadata.description
-              : description;
-
-          return (
-            <ScorecardHomepageCardComponent
-              key={metric.id}
-              cardTitle={finalTitle}
-              description={finalDescription}
-              scorecard={metric}
-            />
-          );
-        })}
-    </Fragment>
+    <ScorecardHomepageCardComponent
+      key={aggregatedScorecard.id}
+      cardTitle={finalTitle}
+      description={finalDescription}
+      scorecard={aggregatedScorecard}
+    />
   );
 };

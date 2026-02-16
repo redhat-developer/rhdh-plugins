@@ -36,7 +36,9 @@ export const x2APlugin = createBackendPlugin({
         httpRouter: coreServices.httpRouter,
         database: coreServices.database,
         logger: coreServices.logger,
+        discoveryApi: coreServices.discovery,
         permissionsSvc: coreServices.permissions,
+        config: coreServices.rootConfig,
         x2aDatabase: x2aDatabaseServiceRef,
         kubeService: kubeServiceRef,
       },
@@ -45,19 +47,28 @@ export const x2APlugin = createBackendPlugin({
         permissionsSvc,
         x2aDatabase,
         logger,
+        discoveryApi,
         httpAuth,
         database,
         kubeService,
+        config,
       }) {
         await migrate(database);
+
+        httpRouter.addAuthPolicy({
+          path: '/projects/:projectId/collectArtifacts',
+          allow: 'unauthenticated',
+        });
 
         httpRouter.use(
           await createRouter({
             httpAuth,
             logger,
+            discoveryApi,
             permissionsSvc,
             x2aDatabase,
             kubeService,
+            config,
           }),
         );
       },

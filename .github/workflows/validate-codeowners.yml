@@ -1,0 +1,28 @@
+name: Validate CODEOWNERS
+
+on:
+  pull_request:
+    paths:
+      - '.github/CODEOWNERS'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-codeowners:
+    name: Validate CODEOWNERS members
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Validate CODEOWNERS entries against team membership
+        run: node scripts/ci/validate-codeowners.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

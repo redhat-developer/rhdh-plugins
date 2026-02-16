@@ -35,7 +35,7 @@ const PackageEditHeader = () => {
 
   const pkg = usePackage(params.namespace, params.name);
 
-  const displayName = pkg.data?.metadata.title ?? params.name;
+  const displayName = pkg.data?.metadata?.title ?? params.name;
   const title =
     location?.state?.viewOnly || !pkg.data?.spec?.dynamicArtifact
       ? displayName

@@ -24,6 +24,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
+import { kubeServiceRef } from './services/KubeService';
 import { x2APlugin } from './plugin';
 import request from 'supertest';
 import {
@@ -34,14 +35,50 @@ import {
 } from '@backstage/errors';
 import { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
+// Mock the Kubernetes client to avoid ES Module import issues
+jest.mock('./services/makeK8sClient', () => ({
+  makeK8sClient: jest.fn(() => ({
+    coreV1Api: {},
+    batchV1Api: {},
+  })),
+}));
+
 const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',
   abbreviation: 'MP',
+  sourceRepoUrl: 'https://github.com/source/repo',
+  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoBranch: 'main',
+  targetRepoBranch: 'main',
 };
 
 const mockUserId = `user: default/user1`;
-const BASE_CONFIG = {};
+const BASE_CONFIG = {
+  x2a: {
+    kubernetes: {
+      namespace: 'test-namespace',
+      image: 'test-image',
+      imageTag: 'test',
+      ttlSecondsAfterFinished: 86400,
+      resources: {
+        requests: {
+          cpu: '100m',
+          memory: '128Mi',
+        },
+        limits: {
+          cpu: '200m',
+          memory: '256Mi',
+        },
+      },
+    },
+    credentials: {
+      llm: {
+        LLM_MODEL: 'test-model',
+      },
+    },
+  },
+};
 
 jest.mock('@backstage/backend-plugin-api', () => ({
   ...jest.requireActual('@backstage/backend-plugin-api'),
@@ -54,7 +91,7 @@ jest.mock('@backstage/backend-plugin-api', () => ({
   })),
 }));
 
-const getX2aDatabaseServiceMock = () => ({
+const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   // projects
   createProject: jest
     .fn()
@@ -79,7 +116,31 @@ const getX2aDatabaseServiceMock = () => ({
   listJobs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   getJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobWithLog: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobLogs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForModule: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
 });
+
+const getKubeServiceMock = () =>
+  ({
+    // Project secret operations
+    createProjectSecret: jest.fn().mockResolvedValue(undefined),
+    getProjectSecret: jest.fn().mockResolvedValue(null),
+    deleteProjectSecret: jest.fn().mockResolvedValue(undefined),
+    // Job operations
+    createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
+    getJobStatus: jest.fn().mockResolvedValue({ status: 'pending' }),
+    getJobLogs: jest.fn().mockResolvedValue(''),
+    deleteJob: jest.fn().mockResolvedValue(undefined),
+    listJobsForProject: jest.fn().mockResolvedValue([]),
+    // Test method
+    getPods: jest.fn().mockResolvedValue({ items: [] }),
+  }) as any;
 
 async function startBackendServer(
   config?: Record<PropertyKey, unknown>,
@@ -100,6 +161,11 @@ async function startBackendServer(
       ],
     }).factory,
     mockServices.userInfo.factory(),
+    createServiceFactory({
+      service: kubeServiceRef,
+      deps: {},
+      factory: () => getKubeServiceMock(),
+    }),
   ];
   return (await startTestBackend({ features })).server;
 }
@@ -149,14 +215,37 @@ describe('plugin', () => {
     });
   });
 
+  it('should allow unauthenticated access to collectArtifacts callback', async () => {
+    const server = await startBackendServer();
+    const fakeProjectId = '00000000-0000-0000-0000-000000000000';
+    const fakeJobId = '00000000-0000-0000-0000-000000000001';
+
+    const res = await request(server)
+      .post(`/api/x2a/projects/${fakeProjectId}/collectArtifacts?phase=init`)
+      .send({ status: 'success', jobId: fakeJobId, artifacts: [] });
+
+    // Should NOT be 401/403 — the endpoint allows unauthenticated access.
+    // 404 is expected because the job doesn't exist.
+    expect(res.status).not.toBe(401);
+    expect(res.status).not.toBe(403);
+  });
+
   it('should forward errors from the X2ADatabaseService', async () => {
     const { server } = await startTestBackend({
       features: [
         x2APlugin,
+        mockServices.rootConfig.factory({
+          data: BASE_CONFIG,
+        }),
         createServiceFactory({
           service: x2aDatabaseServiceRef,
           deps: {},
           factory: getX2aDatabaseServiceMock,
+        }),
+        createServiceFactory({
+          service: kubeServiceRef,
+          deps: {},
+          factory: () => getKubeServiceMock(),
         }),
       ],
     });

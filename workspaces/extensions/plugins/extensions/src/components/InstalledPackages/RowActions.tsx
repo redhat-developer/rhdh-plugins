@@ -32,6 +32,7 @@ import { ExtensionsPackageInstallStatus } from '@red-hat-developer-hub/backstage
 import { useTranslation } from '../../hooks/useTranslation';
 import { packageInstallRouteRef, packageRouteRef } from '../../routes';
 import { usePackageConfig } from '../../hooks/usePackageConfig';
+import { usePackage } from '../../hooks/usePackage';
 import { downloadPackageYAML } from '../../utils/downloadPackageYaml';
 import { usePluginConfigurationPermissions } from '../../hooks/usePluginConfigurationPermissions';
 import { useEnablePlugin } from '../../hooks/useEnablePlugin';
@@ -53,12 +54,15 @@ export type InstalledPackageRow = {
 export const DownloadPackageYaml = ({
   pkg,
   isProductionEnv,
+  onError,
 }: {
   pkg: InstalledPackageRow;
   isProductionEnv: boolean;
+  onError?: (error: string) => void;
 }) => {
   const { t } = useTranslation();
   const pkgConfig = usePackageConfig(pkg.namespace!, pkg.name!);
+  const packageEntity = usePackage(pkg.namespace!, pkg.name!);
   const packageConfigPermission = usePluginConfigurationPermissions(
     pkg.namespace!,
     pkg.parentPlugin ?? '',
@@ -108,10 +112,31 @@ export const DownloadPackageYaml = ({
         size="small"
         sx={{ color: theme => theme.palette.text.primary }}
         onClick={async () => {
-          await downloadPackageYAML(
-            pkgConfig.data?.configYaml ?? '',
-            pkg.name!,
-          );
+          try {
+            const configYaml = pkgConfig.data?.configYaml ?? '';
+            if (!configYaml) {
+              const dynamicArtifact =
+                packageEntity.data?.spec?.dynamicArtifact ??
+                `./dynamic-plugins/dist/${pkg.packageName}`;
+              const minimalYaml = `plugins:
+  - package: ${JSON.stringify(dynamicArtifact)}
+    disabled: false
+`;
+              // eslint-disable-next-line no-console
+              console.info(
+                `No configuration found for package ${pkg.name}, downloaded a minimal YAML`,
+              );
+              await downloadPackageYAML(minimalYaml, pkg.name!);
+              return;
+            }
+            await downloadPackageYAML(configYaml, pkg.name!);
+          } catch (err: any) {
+            const errorMessage =
+              err?.message || err?.toString() || 'Unknown error occurred';
+            onError?.(
+              `Failed to download package ${pkg.name}: ${errorMessage}`,
+            );
+          }
         }}
       >
         <FileDownloadOutlinedIcon />
@@ -235,10 +260,12 @@ export const TogglePackage = ({
   pkg,
   isProductionEnv,
   isInstallationEnabled,
+  onError,
 }: {
   pkg: InstalledPackageRow;
   isProductionEnv: boolean;
   isInstallationEnabled: boolean;
+  onError?: (error: string) => void;
 }) => {
   const { t } = useTranslation();
   const { installedPackages, setInstalledPackages } = useInstallationContext();
@@ -323,17 +350,20 @@ export const TogglePackage = ({
         };
         setInstalledPackages(updated);
       } else {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `[Package Toggle] Package toggle responded with non-OK status:`,
-          (res as any)?.error?.message ?? res,
+        const errorMessage =
+          (res as any)?.error?.message ?? res?.toString() ?? 'Unknown error';
+        onError?.(
+          `Failed to ${isPackageEnabled ? 'disable' : 'enable'} package ${pkg.name}: ${errorMessage}`,
         );
       }
     } catch (err: any) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `[Package Toggle] Failed to toggle package}:`,
-        err?.error?.message ?? err,
+      const errorMessage =
+        err?.error?.message ??
+        err?.message ??
+        err?.toString() ??
+        'Unknown error';
+      onError?.(
+        `Failed to ${isPackageEnabled ? 'disable' : 'enable'} package ${pkg.name}: ${errorMessage}`,
       );
     }
   };

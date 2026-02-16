@@ -1,0 +1,39 @@
+# All the content in this file is just an example
+# Set x2a.admin and x2a.user permissions per individual needs.
+
+p, role:default/x2aAdmin, x2a.admin, read, allow
+p, role:default/x2aAdmin, x2a.admin, update, allow
+
+p, role:default/x2aUser, x2a.user, use, allow
+
+g, user:development/guest, role:default/x2aUser
+g, user:default/mareklibra, role:default/x2aAdmin
+g, user:default/elai-shalev, role:default/x2aAdmin
+
+########################################################
+# Catalog and Scaffolder templates permissions
+# Following settings are for development only.
+
+p, role:default/x2aAdmin, catalog.entity.read, read, allow
+p, role:default/x2aAdmin, catalog.entity.create, create, allow
+p, role:default/x2aAdmin, catalog.location.read, read, allow
+p, role:default/x2aAdmin, catalog.location.create, create, allow
+
+p, role:default/x2aAdmin, scaffolder.action.execute, use, allow
+p, role:default/x2aAdmin, scaffolder.template.parameter.read, read, allow
+p, role:default/x2aAdmin, scaffolder.template.step.read, read, allow
+p, role:default/x2aAdmin, scaffolder.task.create, create, allow
+p, role:default/x2aAdmin, scaffolder.task.cancel, cancel, allow
+p, role:default/x2aAdmin, scaffolder.task.read, read, allow
+
+p, role:default/x2aUser, catalog.entity.read, read, allow
+p, role:default/x2aUser, catalog.entity.create, create, allow
+p, role:default/x2aUser, catalog.location.read, read, allow
+p, role:default/x2aUser, catalog.location.create, create, allow
+
+p, role:default/x2aUser, scaffolder.action.execute, use, allow
+p, role:default/x2aUser, scaffolder.template.parameter.read, read, allow
+p, role:default/x2aUser, scaffolder.template.step.read, read, allow
+p, role:default/x2aUser, scaffolder.task.create, create, allow
+p, role:default/x2aUser, scaffolder.task.cancel, cancel, allow
+p, role:default/x2aUser, scaffolder.task.read, read, allow

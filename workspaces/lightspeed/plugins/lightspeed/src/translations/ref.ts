@@ -74,7 +74,6 @@ export const lightspeedMessages = {
   'conversation.rename.confirm.title': 'Rename chat?',
   'conversation.rename.confirm.action': 'Rename',
   'conversation.rename.placeholder': 'Chat name',
-  'conversation.action.error': 'Error occured: {{error}}',
 
   // Permissions
   'permission.required.title': 'Missing permissions',
@@ -89,12 +88,6 @@ export const lightspeedMessages = {
 
   // Footer and feedback
   'footer.accuracy.label': 'Always review AI generated content prior to use.',
-  'footer.accuracy.popover.title': 'Verify accuracy',
-  'footer.accuracy.popover.description':
-    "While Developer Lightspeed strives for accuracy, there's always a possibility of errors. It's a good practice to verify critical information from reliable sources, especially if it's crucial for decision-making or actions.",
-  'footer.accuracy.popover.image.alt': 'Example image for footnote popover',
-  'footer.accuracy.popover.cta.label': 'Got it',
-  'footer.accuracy.popover.link.label': 'Learn more',
 
   // Common actions
   'common.cancel': 'Cancel',
@@ -116,8 +109,7 @@ export const lightspeedMessages = {
     'Adjust your search query and try again. Check your spelling or try a more general term.',
   'chatbox.welcome.greeting': 'Hello, {{userName}}',
   'chatbox.welcome.description': 'How can I help you today?',
-  'chatbox.message.placeholder':
-    'Send a message and optionally upload a JSON, YAML, or TXT file...',
+  'chatbox.message.placeholder': 'Enter a prompt for Lightspeed',
   'chatbox.fileUpload.failed': 'File upload failed',
   'chatbox.fileUpload.infoText':
     'Supported file types are: .txt, .yaml, and .json. The maximum file size is 25 MB.',

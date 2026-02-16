@@ -4,8 +4,8 @@
 
 ```ts
 
-import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @alpha
 export const lightspeedTranslationRef: TranslationRef<"plugin.lightspeed", {
@@ -43,15 +43,9 @@ readonly "conversation.delete.confirm.action": string;
 readonly "conversation.rename.confirm.title": string;
 readonly "conversation.rename.confirm.action": string;
 readonly "conversation.rename.placeholder": string;
-readonly "conversation.action.error": string;
 readonly "permission.required.title": string;
 readonly "permission.required.description": string;
 readonly "footer.accuracy.label": string;
-readonly "footer.accuracy.popover.title": string;
-readonly "footer.accuracy.popover.description": string;
-readonly "footer.accuracy.popover.image.alt": string;
-readonly "footer.accuracy.popover.cta.label": string;
-readonly "footer.accuracy.popover.link.label": string;
 readonly "common.cancel": string;
 readonly "common.close": string;
 readonly "common.readMore": string;

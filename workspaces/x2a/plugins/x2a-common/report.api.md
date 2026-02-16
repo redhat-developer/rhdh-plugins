@@ -6,6 +6,43 @@
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
+// @public (undocumented)
+export interface AAPCredentials {
+    oauthToken?: string;
+    orgName: string;
+    password?: string;
+    url: string;
+    username?: string;
+}
+
+// @public
+export interface AgentMetrics {
+    durationSeconds: number;
+    endedAt?: Date;
+    metrics?: {
+        [key: string]: any;
+    };
+    name: string;
+    startedAt?: Date;
+    toolCalls?: {
+        [key: string]: number;
+    };
+}
+
+// @public (undocumented)
+export interface Artifact {
+    id: string;
+    // (undocumented)
+    type: ArtifactType;
+    value: string;
+}
+
+// @public (undocumented)
+export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata';
+
+// @public
+export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
+
 // @public
 export const DEFAULT_PAGE_ORDER = "desc";
 
@@ -27,9 +64,81 @@ export class DefaultApiClient {
     });
     projectsGet(request: ProjectsGet, options?: RequestOptions): Promise<TypedResponse<ProjectsGet200Response>>;
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdCollectArtifactsPost(request: ProjectsProjectIdCollectArtifactsPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
+    projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
+    projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
+    projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
+    projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
+    projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public (undocumented)
+export interface GitRepoAuth {
+    token: string;
+}
+
+// @public (undocumented)
+export interface Job {
+    artifacts?: Array<Artifact>;
+    errorDetails?: string;
+    finishedAt?: Date;
+    id: string;
+    k8sJobName: string;
+    moduleId?: string;
+    // (undocumented)
+    phase: MigrationPhase;
+    projectId: string;
+    startedAt: Date;
+    // (undocumented)
+    status: JobStatusEnum;
+    // (undocumented)
+    telemetry?: Telemetry;
+}
+
+// @public (undocumented)
+export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+
+// @public (undocumented)
+export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
+
+// @public (undocumented)
+export interface Module {
+    // (undocumented)
+    analyze?: Job;
+    errorDetails?: string;
+    id: string;
+    // (undocumented)
+    migrate?: Job;
+    name: string;
+    projectId: string;
+    // (undocumented)
+    publish?: Job;
+    sourcePath: string;
+    // (undocumented)
+    status?: ModuleStatus;
+}
+
+// @public (undocumented)
+export type ModulePhase = 'analyze' | 'migrate' | 'publish';
+
+// @public (undocumented)
+export interface ModulesStatusSummary {
+    error: number;
+    finished: number;
+    pending: number;
+    running: number;
+    total: number;
+    waiting: number;
+}
+
+// @public (undocumented)
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
+
+// @public
+export function normalizeRepoUrl(url: string): string;
 
 // @public (undocumented)
 export interface Project {
@@ -38,7 +147,15 @@ export interface Project {
     createdBy: string;
     description?: string;
     id: string;
+    // (undocumented)
+    migrationPlan?: Artifact;
     name: string;
+    sourceRepoBranch: string;
+    sourceRepoUrl: string;
+    // (undocumented)
+    status?: ProjectStatus;
+    targetRepoBranch: string;
+    targetRepoUrl: string;
 }
 
 // @public (undocumented)
@@ -67,7 +184,41 @@ export interface ProjectsPostRequest {
     abbreviation: string;
     description: string;
     name: string;
+    sourceRepoBranch: string;
+    sourceRepoUrl: string;
+    targetRepoBranch: string;
+    targetRepoUrl: string;
 }
+
+// @public (undocumented)
+export type ProjectsProjectIdCollectArtifactsPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdCollectArtifactsPostRequest;
+    query: {
+        moduleId?: string;
+        phase: MigrationPhase;
+    };
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdCollectArtifactsPost200Response {
+    message: string;
+}
+
+// @public (undocumented)
+export interface ProjectsProjectIdCollectArtifactsPostRequest {
+    artifacts?: Array<Artifact>;
+    errorDetails?: string;
+    jobId: string;
+    status: ProjectsProjectIdCollectArtifactsPostRequestStatusEnum;
+    // (undocumented)
+    telemetry?: Telemetry;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdCollectArtifactsPostRequestStatusEnum = 'success' | 'error';
 
 // @public (undocumented)
 export type ProjectsProjectIdDelete = {
@@ -88,11 +239,126 @@ export type ProjectsProjectIdGet = {
     };
 };
 
+// @public (undocumented)
+export type ProjectsProjectIdModulesGet = {
+    path: {
+        projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdGet = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdLogGet = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    query: {
+        streaming?: boolean;
+        phase: ModulePhase;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdRunPost = {
+    path: {
+        projectId: string;
+        moduleId: string;
+    };
+    body: ProjectsProjectIdModulesModuleIdRunPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
+    // (undocumented)
+    aapCredentials?: AAPCredentials;
+    // (undocumented)
+    phase: ModulePhase;
+    // (undocumented)
+    sourceRepoAuth?: GitRepoAuth;
+    // (undocumented)
+    targetRepoAuth?: GitRepoAuth;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdModulesPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdModulesPostRequest {
+    name: string;
+    sourcePath: string;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdRunPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdRunPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdRunPost200Response {
+    jobId: string;
+    status: ProjectsProjectIdRunPost200ResponseStatusEnum;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdRunPost200ResponseStatusEnum = 'pending';
+
+// @public (undocumented)
+export interface ProjectsProjectIdRunPostRequest {
+    // (undocumented)
+    aapCredentials?: AAPCredentials;
+    // (undocumented)
+    sourceRepoAuth: GitRepoAuth;
+    // (undocumented)
+    targetRepoAuth: GitRepoAuth;
+    userPrompt?: string;
+}
+
+// @public (undocumented)
+export interface ProjectStatus {
+    // (undocumented)
+    modulesSummary: ModulesStatusSummary;
+    // (undocumented)
+    state: ProjectStatusState;
+}
+
+// @public (undocumented)
+export type ProjectStatusState = 'created' | 'initializing' | 'initialized' | 'inProgress' | 'completed' | 'failed';
+
 // @public
 export interface RequestOptions {
     // (undocumented)
     token?: string;
 }
+
+// @public
+export interface Telemetry {
+    agents?: {
+        [key: string]: AgentMetrics;
+    };
+    endedAt?: Date;
+    phase: string;
+    startedAt: Date;
+    summary: string;
+}
+
+// @public
+export const toSorted: (a: string, b: string) => number;
 
 // @public
 export type TypedResponse<T> = Omit<Response, 'json'> & {
