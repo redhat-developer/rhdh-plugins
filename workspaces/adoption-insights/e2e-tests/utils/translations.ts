@@ -16,12 +16,12 @@
 
 // These translation files are not exported by the package, so relative imports are necessary for e2e tests
 /* eslint-disable @backstage/no-relative-monorepo-imports */
-import { adoptionInsightsMessages } from '../../../../plugins/adoption-insights/src/translations/ref.js';
-import adoptionInsightsTranslationDe from '../../../../plugins/adoption-insights/src/translations/de.js';
-import adoptionInsightsTranslationEs from '../../../../plugins/adoption-insights/src/translations/es.js';
-import adoptionInsightsTranslationFr from '../../../../plugins/adoption-insights/src/translations/fr.js';
-import adoptionInsightsTranslationIt from '../../../../plugins/adoption-insights/src/translations/it.js';
-import adoptionInsightsTranslationJa from '../../../../plugins/adoption-insights/src/translations/ja.js';
+import { adoptionInsightsMessages } from '../../plugins/adoption-insights/src/translations/ref.js';
+import adoptionInsightsTranslationDe from '../../plugins/adoption-insights/src/translations/de.js';
+import adoptionInsightsTranslationEs from '../../plugins/adoption-insights/src/translations/es.js';
+import adoptionInsightsTranslationFr from '../../plugins/adoption-insights/src/translations/fr.js';
+import adoptionInsightsTranslationIt from '../../plugins/adoption-insights/src/translations/it.js';
+import adoptionInsightsTranslationJa from '../../plugins/adoption-insights/src/translations/ja.js';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type InsightsMessages = typeof adoptionInsightsMessages;
