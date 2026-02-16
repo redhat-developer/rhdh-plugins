@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { rest } from 'msw';
+import { DefaultBodyType, MockedRequest, rest, RestHandler } from 'msw';
 
 const localHostAndPort = 'localhost:8765';
 export const LOCAL_ADDR = `http://${localHostAndPort}`;
@@ -36,7 +36,9 @@ function normalizeUrlsForTest(filePath: string) {
   );
 }
 
-export const DEFAULT_TEST_HANDLERS = [
+export const DEFAULT_TEST_HANDLERS: RestHandler<
+  MockedRequest<DefaultBodyType>
+>[] = [
   rest.get(`${LOCAL_ADDR}/app/installations`, (_, res, ctx) => {
     return res(
       ctx.status(200),
