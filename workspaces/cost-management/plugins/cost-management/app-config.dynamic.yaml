@@ -1,0 +1,12 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.plugin-cost-management:
+      appIcons:
+        - name: resourceOptimizationIconOutlined
+          importName: ResourceOptimizationIconOutlined
+      dynamicRoutes:
+        - path: /cost-management
+          importName: ResourceOptimizationPage
+          menuItem:
+            icon: resourceOptimizationIconOutlined
+            text: Optimizations
