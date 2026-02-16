@@ -101,6 +101,19 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.analyzeInstructions':
       'Überprüfen Sie vor der Analyse zunächst den gesamten Projektmigrationsplan. Sein Inhalt bestimmt die Analyse des Moduls.',
     'modulePage.phases.runAnalyze': 'Modulmigrationsplan erstellen',
+    'modulePage.phases.migrateInstructions':
+      'Überprüfen Sie vor der Migration den Modulmigrationsplan. Der Migrationsprozess konvertiert den Chef-Code basierend auf dem Plan in Ansible.',
+    'modulePage.phases.runMigrate': 'Modulquellen migrieren',
+    'modulePage.phases.remigrateInstructions':
+      'Die migrierten Quellen sind bereits vorhanden. Lösen Sie die Migration erneut aus, um den konvertierten Ansible-Code neu zu erstellen.',
+    'modulePage.phases.rerunMigrate': 'Migrierte Quellen neu erstellen',
+    'modulePage.phases.publishInstructions':
+      'Überprüfen Sie vor der Veröffentlichung die migrierten Quellen. Der Veröffentlichungsprozess committet den konvertierten Code in das Ziel-Repository.',
+    'modulePage.phases.runPublish': 'Im Ziel-Repository veröffentlichen',
+    'modulePage.phases.republishInstructions':
+      'Das Modul wurde bereits veröffentlicht. Lösen Sie die Veröffentlichung erneut aus, um das Ziel-Repository zu aktualisieren.',
+    'modulePage.phases.rerunPublish':
+      'Im Ziel-Repository erneut veröffentlichen',
   },
 });
 

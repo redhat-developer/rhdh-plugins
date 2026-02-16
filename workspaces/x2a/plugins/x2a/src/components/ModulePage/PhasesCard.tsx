@@ -54,31 +54,64 @@ const computeDuration = (phase?: Job): string => {
   return `${seconds}s`;
 };
 
-const AnalyzeRunAction = ({
+const PhaseRunAction = ({
   phase,
+  phaseName,
   onRunPhase,
 }: {
   phase?: Job;
+  phaseName: ModulePhase;
   onRunPhase?: (phase: ModulePhase) => void;
 }) => {
   const { t } = useTranslation();
 
-  const instructions = phase
-    ? t('modulePage.phases.reanalyzeInstructions')
-    : t('modulePage.phases.analyzeInstructions');
-  const actionText = phase
-    ? t('modulePage.phases.rerunAnalyze')
-    : t('modulePage.phases.runAnalyze');
+  const getInstructions = () => {
+    if (phaseName === 'analyze') {
+      return phase
+        ? t('modulePage.phases.reanalyzeInstructions')
+        : t('modulePage.phases.analyzeInstructions');
+    }
+    if (phaseName === 'migrate') {
+      return phase
+        ? t('modulePage.phases.remigrateInstructions')
+        : t('modulePage.phases.migrateInstructions');
+    }
+    if (phaseName === 'publish') {
+      return phase
+        ? t('modulePage.phases.republishInstructions')
+        : t('modulePage.phases.publishInstructions');
+    }
+    return '';
+  };
+
+  const getActionText = () => {
+    if (phaseName === 'analyze') {
+      return phase
+        ? t('modulePage.phases.rerunAnalyze')
+        : t('modulePage.phases.runAnalyze');
+    }
+    if (phaseName === 'migrate') {
+      return phase
+        ? t('modulePage.phases.rerunMigrate')
+        : t('modulePage.phases.runMigrate');
+    }
+    if (phaseName === 'publish') {
+      return phase
+        ? t('modulePage.phases.rerunPublish')
+        : t('modulePage.phases.runPublish');
+    }
+    return '';
+  };
 
   return (
     <>
       <Grid item xs={12}>
-        <Button variant="primary" onPress={() => onRunPhase?.('analyze')}>
-          {actionText}
+        <Button variant="primary" onPress={() => onRunPhase?.(phaseName)}>
+          {getActionText()}
         </Button>
       </Grid>
       <Grid item xs={12}>
-        <Typography>{instructions}</Typography>
+        <Typography>{getInstructions()}</Typography>
       </Grid>
     </>
   );
@@ -100,9 +133,11 @@ const PhaseDetails = ({
 
   return (
     <Grid container direction="row" spacing={3}>
-      {phaseName === 'analyze' && (
-        <AnalyzeRunAction phase={phase} onRunPhase={onRunPhase} />
-      )}
+      <PhaseRunAction
+        phase={phase}
+        phaseName={phaseName}
+        onRunPhase={onRunPhase}
+      />
       {/* TODO: Button for canceling the current job execution */}
 
       <Grid item xs={3}>

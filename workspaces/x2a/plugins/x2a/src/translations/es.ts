@@ -103,6 +103,19 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.analyzeInstructions':
       'Antes de ejecutar el análisis, revise primero el plan de migración general del proyecto; su contenido guiará el análisis del módulo.',
     'modulePage.phases.runAnalyze': 'Crear plan de migración del módulo',
+    'modulePage.phases.migrateInstructions':
+      'Antes de ejecutar la migración, revise el plan de migración del módulo. El proceso de migración convertirá el código Chef a Ansible basado en el plan.',
+    'modulePage.phases.runMigrate': 'Migrar fuentes del módulo',
+    'modulePage.phases.remigrateInstructions':
+      'Las fuentes migradas ya existen. Vuelva a ejecutar la migración para recrear el código Ansible convertido.',
+    'modulePage.phases.rerunMigrate': 'Recrear fuentes migradas',
+    'modulePage.phases.publishInstructions':
+      'Antes de publicar, revise las fuentes migradas. El proceso de publicación confirmará el código convertido en el repositorio de destino.',
+    'modulePage.phases.runPublish': 'Publicar en el repositorio de destino',
+    'modulePage.phases.republishInstructions':
+      'El módulo ya ha sido publicado. Vuelva a ejecutar la publicación para actualizar el repositorio de destino.',
+    'modulePage.phases.rerunPublish':
+      'Volver a publicar en el repositorio de destino',
   },
 });
 

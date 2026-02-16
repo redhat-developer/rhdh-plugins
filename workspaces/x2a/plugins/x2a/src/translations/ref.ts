@@ -57,6 +57,18 @@ export const x2aPluginMessages = {
       analyzeInstructions:
         'Before running the analysis, review the overall project migration plan first, its content will drive the analysis of the module.',
       runAnalyze: 'Create module migration plan',
+      migrateInstructions:
+        'Before running the migration, review the module migration plan. The migration process will convert the Chef code to Ansible based on the plan.',
+      runMigrate: 'Migrate module sources',
+      remigrateInstructions:
+        'The migrated sources are already present. Retrigger the migration to recreate the converted Ansible code.',
+      rerunMigrate: 'Recreate migrated sources',
+      publishInstructions:
+        'Before publishing, review the migrated sources. The publish process will commit the converted code to the target repository.',
+      runPublish: 'Publish to target repository',
+      republishInstructions:
+        'The module has already been published. Retrigger the publish to update the target repository.',
+      rerunPublish: 'Republish to target repository',
     },
   },
   table: {
