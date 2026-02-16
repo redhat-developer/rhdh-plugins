@@ -120,7 +120,7 @@ export const getLegendData = (
 
   const result: any = [];
 
-  series.map((s, index) => {
+  series.forEach((s, index) => {
     if (s.legendItem) {
       const data = {
         childName: s.childName,
