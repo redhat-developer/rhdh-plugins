@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - '.github/renovate.json'
+      - '.github/renovate-presets/workspace/*.json'
     # Renovate always uses the config from the repository default branch
     # https://docs.renovatebot.com/configuration-options/
     branches: [ 'main' ]
