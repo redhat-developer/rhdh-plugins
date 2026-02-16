@@ -43,7 +43,10 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import { AnalyticsIconOutlined } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
+import {
+  AnalyticsIconOutlined,
+  useResourceOptimizationAccess,
+} from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { useRhdhTheme } from '../../hooks/useRhdhTheme';
 import { Administration } from '@backstage-community/plugin-rbac';
@@ -157,6 +160,11 @@ const SidebarLogo = () => {
 export const Root = ({ children }: PropsWithChildren<{}>) => {
   const classes = useSidebarItemStyles();
   const location = useLocation();
+  const {
+    optimizationsAllowed,
+    costManagementAllowed,
+    loading: accessLoading,
+  } = useResourceOptimizationAccess();
 
   const isOpenShiftActive = useMemo(() => {
     const pathname = location.pathname;
@@ -177,6 +185,9 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
     }
     return false;
   }, [location.pathname]);
+
+  const showCostManagementSubmenu =
+    !accessLoading && (optimizationsAllowed || costManagementAllowed);
 
   return (
     <SidebarPage>
@@ -199,27 +210,33 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           {/* End global nav */}
           <SidebarDivider />
 
-          <CollapsibleSubmenu
-            icon={<AnalyticsIconOutlined />}
-            text="Cost management"
-          >
-            <SidebarItem
-              icon={EmptyIcon}
-              to="/redhat-resource-optimization/ocp"
-              text="OpenShift"
-              className={`${classes.costManagementItem} ${
-                isOpenShiftActive ? '' : classes.inactiveItem
-              }`}
-            />
-            <SidebarItem
-              icon={EmptyIcon}
-              to="/redhat-resource-optimization"
-              text="Optimizations"
-              className={`${classes.costManagementItem} ${
-                isOptimizationsActive ? '' : classes.inactiveItem
-              }`}
-            />
-          </CollapsibleSubmenu>
+          {showCostManagementSubmenu && (
+            <CollapsibleSubmenu
+              icon={<AnalyticsIconOutlined />}
+              text="Cost management"
+            >
+              {costManagementAllowed && (
+                <SidebarItem
+                  icon={EmptyIcon}
+                  to="/redhat-resource-optimization/ocp"
+                  text="OpenShift"
+                  className={`${classes.costManagementItem} ${
+                    isOpenShiftActive ? '' : classes.inactiveItem
+                  }`}
+                />
+              )}
+              {optimizationsAllowed && (
+                <SidebarItem
+                  icon={EmptyIcon}
+                  to="/redhat-resource-optimization"
+                  text="Optimizations"
+                  className={`${classes.costManagementItem} ${
+                    isOptimizationsActive ? '' : classes.inactiveItem
+                  }`}
+                />
+              )}
+            </CollapsibleSubmenu>
+          )}
 
           <SidebarItem
             icon={OrchestratorIcon}

@@ -14,13 +14,58 @@
  * limitations under the License.
  */
 
-import { ErrorPage } from '@backstage/core-components';
+import { ErrorPage, Progress } from '@backstage/core-components';
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 import { OptimizationsPage } from './pages/optimizations/OptimizationsPage';
 import { OptimizationsBreakdownPage } from './pages/optimizations-breakdown/OptimizationsBreakdownPage';
 import { OpenShiftPage } from './pages/openshift/OpenShiftPage';
 import { usePatternFlyTheme } from './hooks/usePatternFlyTheme';
+import { useResourceOptimizationAccess } from './hooks/useResourceOptimizationAccess';
+
+function RequireOptimizationsAccess({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const { optimizationsAllowed, costManagementAllowed, loading } =
+    useResourceOptimizationAccess();
+
+  if (loading) {
+    return <Progress />;
+  }
+  if (!optimizationsAllowed) {
+    return (
+      <Navigate
+        to={
+          costManagementAllowed
+            ? '/redhat-resource-optimization/ocp'
+            : '/catalog'
+        }
+        replace
+      />
+    );
+  }
+  return <>{children}</>;
+}
+
+function RequireCostManagementAccess({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const { optimizationsAllowed, costManagementAllowed, loading } =
+    useResourceOptimizationAccess();
+
+  if (loading) {
+    return <Progress />;
+  }
+  if (!costManagementAllowed) {
+    return (
+      <Navigate
+        to={optimizationsAllowed ? '/redhat-resource-optimization' : '/catalog'}
+        replace
+      />
+    );
+  }
+  return <>{children}</>;
+}
 
 /** @public */
 export function Router() {
@@ -29,9 +74,30 @@ export function Router() {
 
   return (
     <Routes>
-      <Route path="/" element={<OptimizationsPage />} />
-      <Route path="/ocp" element={<OpenShiftPage />} />
-      <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
+      <Route
+        path="/"
+        element={
+          <RequireOptimizationsAccess>
+            <OptimizationsPage />
+          </RequireOptimizationsAccess>
+        }
+      />
+      <Route
+        path="/ocp"
+        element={
+          <RequireCostManagementAccess>
+            <OpenShiftPage />
+          </RequireCostManagementAccess>
+        }
+      />
+      <Route
+        path="/:id/*"
+        element={
+          <RequireOptimizationsAccess>
+            <OptimizationsBreakdownPage />
+          </RequireOptimizationsAccess>
+        }
+      />
       <Route
         path="*"
         element={<ErrorPage status="404" statusMessage="Page not found" />}

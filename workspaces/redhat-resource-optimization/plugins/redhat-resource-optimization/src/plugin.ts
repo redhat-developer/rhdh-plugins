@@ -31,7 +31,11 @@ import {
   optimizationsApiRef,
   orchestratorSlimApiRef,
   costManagementSlimApiRef,
+  resourceOptimizationAccessApiRef,
+  type ResourceOptimizationAccessApi,
 } from './apis';
+
+const resourceOptimizationPluginId = 'redhat-resource-optimization';
 import { optimizationsBreakdownRouteRef, rootRouteRef } from './routes';
 
 /** @public */
@@ -77,6 +81,35 @@ export const resourceOptimizationPlugin = createPlugin({
           discoveryApi,
           fetchApi,
         });
+      },
+    }),
+    createApiFactory({
+      api: resourceOptimizationAccessApiRef,
+      deps: {
+        discoveryApi: discoveryApiRef,
+        fetchApi: fetchApiRef,
+      },
+      factory({ discoveryApi, fetchApi }): ResourceOptimizationAccessApi {
+        return {
+          async getOptimizationsAccess() {
+            const baseUrl = await discoveryApi.getBaseUrl(
+              resourceOptimizationPluginId,
+            );
+            const res = await fetchApi.fetch(`${baseUrl}/access`);
+            const data = (await res.json()) as { decision: string };
+            return data.decision === 'ALLOW';
+          },
+          async getCostManagementAccess() {
+            const baseUrl = await discoveryApi.getBaseUrl(
+              resourceOptimizationPluginId,
+            );
+            const res = await fetchApi.fetch(
+              `${baseUrl}/access/cost-management`,
+            );
+            const data = (await res.json()) as { decision: string };
+            return data.decision === 'ALLOW';
+          },
+        };
       },
     }),
   ],

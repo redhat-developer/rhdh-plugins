@@ -17,3 +17,7 @@
 export * from './components/icon';
 export { Router } from './Router';
 export { resourceOptimizationPlugin, ResourceOptimizationPage } from './plugin';
+export { useResourceOptimizationAccess } from './hooks/useResourceOptimizationAccess';
+export type { UseResourceOptimizationAccessResult } from './hooks/useResourceOptimizationAccess';
+export { resourceOptimizationAccessApiRef } from './apis';
+export type { ResourceOptimizationAccessApi } from './apis';

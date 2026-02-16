@@ -35,3 +35,24 @@ export const orchestratorSlimApiRef = createApiRef<OrchestratorSlimApi>({
 export const costManagementSlimApiRef = createApiRef<CostManagementSlimApi>({
   id: 'plugin.redhat-cost-management-slim.api',
 });
+
+/**
+ * API for checking RBAC access to Optimizations and OpenShift (Cost Management) sections.
+ * Used by the sidebar to show/hide items and by the Router to guard routes.
+ * @public
+ */
+export interface ResourceOptimizationAccessApi {
+  /** Returns true if the user has access to the Optimizations section. */
+  getOptimizationsAccess(): Promise<boolean>;
+  /** Returns true if the user has access to the OpenShift (Cost Management) section. */
+  getCostManagementAccess(): Promise<boolean>;
+}
+
+/**
+ * API ref for {@link ResourceOptimizationAccessApi}.
+ * @public
+ */
+export const resourceOptimizationAccessApiRef =
+  createApiRef<ResourceOptimizationAccessApi>({
+    id: 'plugin.redhat-resource-optimization.access',
+  });
