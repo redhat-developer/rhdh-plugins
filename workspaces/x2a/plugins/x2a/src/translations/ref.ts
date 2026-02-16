@@ -18,102 +18,69 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 
 /**
  * Messages object containing all English translations.
- * This is our single source of truth for translations.
+ * Keys are flattened (dot-notation) to produce a deterministic key order
+ * in the API report across different build environments.
  * @public
  */
 export const x2aPluginMessages = {
-  sidebar: {
-    x2a: {
-      title: 'Conversion Hub',
-    },
-  },
-  page: {
-    title: 'Conversion Hub',
-    subtitle:
-      'Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks.',
-    devTitle: 'Conversion Hub',
-  },
-  table: {
-    columns: {
-      name: 'Name',
-      abbreviation: 'Abbreviation',
-      status: 'Status',
-      description: 'Description',
-      sourceRepo: 'Source Repository',
-      targetRepo: 'Target Repository',
-      createdAt: 'Created At',
-    },
-    actions: {
-      deleteProject: 'Delete project',
-    },
-    detailPanel: 'TODO: Details of {{name}} project',
-    projectsCount: 'Projects ({{count}})',
-  },
-  project: {
-    description: 'Description',
-    id: 'ID',
-    abbreviation: 'Abbreviation',
-    createdBy: 'Created By',
-    statuses: {
-      none: '-',
-      created: 'Created',
-      initializing: 'Initializing',
-      initialized: 'Initialized',
-      inProgress: 'In progress',
-      completed: 'Completed',
-      failed: 'Failed',
-    },
-  },
-  common: {
-    newProject: 'New Project',
-  },
-  wizard: {
-    cancel: 'Cancel',
-    back: 'Back',
-    next: 'Next',
-  },
-  module: {
-    phases: {
-      init: 'Init',
-      none: '-',
-      analyze: 'Analyze',
-      migrate: 'Migrate',
-      publish: 'Publish',
-    },
-    summary: {
-      total: 'Total',
-      finished: 'Finished',
-      waiting: 'Waiting',
-      pending: 'Pending',
-      running: 'Running',
-      error: 'Error',
-    },
-    actions: {
-      runNextPhase: 'Run Next Phase',
-    },
-    lastPhase: 'Last Phase',
-    name: 'Name',
-    status: 'Status',
-    sourcePath: 'Source Path',
-    artifacts: 'Artifacts',
-    startedAt: 'Started At',
-    finishedAt: 'Finished At',
-    statuses: {
-      none: '-',
-      pending: 'Pending',
-      running: 'Running',
-      success: 'Success',
-      error: 'Error',
-    },
-  },
-  artifact: {
-    types: {
-      migration_plan: 'Project Migration Plan',
-      module_migration_plan: 'Module Migration Plan',
-      migrated_sources: 'Migrated Sources',
-      project_metadata: 'Project Metadata',
-    },
-  },
+  'artifact.types.migrated_sources': 'Migrated Sources',
+  'artifact.types.migration_plan': 'Project Migration Plan',
+  'artifact.types.module_migration_plan': 'Module Migration Plan',
+  'artifact.types.project_metadata': 'Project Metadata',
+  'common.newProject': 'New Project',
+  'module.actions.runNextPhase': 'Run Next Phase',
+  'module.artifacts': 'Artifacts',
+  'module.finishedAt': 'Finished At',
+  'module.lastPhase': 'Last Phase',
+  'module.name': 'Name',
+  'module.phases.analyze': 'Analyze',
+  'module.phases.init': 'Init',
+  'module.phases.migrate': 'Migrate',
+  'module.phases.none': '-',
+  'module.phases.publish': 'Publish',
+  'module.sourcePath': 'Source Path',
+  'module.startedAt': 'Started At',
+  'module.status': 'Status',
+  'module.statuses.error': 'Error',
+  'module.statuses.none': '-',
+  'module.statuses.pending': 'Pending',
+  'module.statuses.running': 'Running',
+  'module.statuses.success': 'Success',
+  'module.summary.error': 'Error',
+  'module.summary.finished': 'Finished',
+  'module.summary.pending': 'Pending',
+  'module.summary.running': 'Running',
+  'module.summary.total': 'Total',
+  'module.summary.waiting': 'Waiting',
+  'page.devTitle': 'Conversion Hub',
+  'page.subtitle':
+    'Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks.',
+  'page.title': 'Conversion Hub',
+  'project.abbreviation': 'Abbreviation',
+  'project.createdBy': 'Created By',
+  'project.description': 'Description',
+  'project.id': 'ID',
+  'project.statuses.completed': 'Completed',
+  'project.statuses.created': 'Created',
+  'project.statuses.failed': 'Failed',
+  'project.statuses.initialized': 'Initialized',
+  'project.statuses.initializing': 'Initializing',
+  'project.statuses.inProgress': 'In progress',
+  'project.statuses.none': '-',
+  'sidebar.x2a.title': 'Conversion Hub',
+  'table.actions.deleteProject': 'Delete project',
+  'table.columns.abbreviation': 'Abbreviation',
+  'table.columns.createdAt': 'Created At',
+  'table.columns.description': 'Description',
+  'table.columns.name': 'Name',
+  'table.columns.sourceRepo': 'Source Repository',
+  'table.columns.status': 'Status',
+  'table.columns.targetRepo': 'Target Repository',
+  'table.detailPanel': 'TODO: Details of {{name}} project',
+  'table.projectsCount': 'Projects ({{count}})',
+  'wizard.back': 'Back',
+  'wizard.cancel': 'Cancel',
+  'wizard.next': 'Next',
 };
 
 /**

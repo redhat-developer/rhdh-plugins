@@ -217,11 +217,11 @@ case "${PHASE}" in
     # Copy migration-plan.md from target repo to source dir
     # The x2a tool does os.chdir(source_dir) and reads migration-plan.md from there
     if [ ! -f "${SOURCE_BASE}/${PROJECT_DIR}/migration-plan.md" ]; then
-      ERROR_MESSAGE="migration-plan.md not found in ${PROJECT_PATH}/ - init phase must be run first"
+      ERROR_MESSAGE="migration-plan.md not found in ${SOURCE_BASE}/${PROJECT_DIR}/ - init phase must be run first"
       exit 1
     fi
 
-    echo "Copying migration-plan.md from target to source directory..."
+    echo "Copying migration-plan.md from source project directory to source root..."
     cp -v "${SOURCE_BASE}/${PROJECT_DIR}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
     # Check if x2a tool is available (required)

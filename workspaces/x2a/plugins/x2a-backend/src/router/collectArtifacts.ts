@@ -141,7 +141,7 @@ export function registerCollectArtifactsRoutes(
           try {
             await executePhaseActions(phase, {
               projectId,
-              artifacts: validatedRequest.artifacts,
+              artifacts: validatedRequest.artifacts ?? [],
               x2aDatabase,
               logger,
             });
