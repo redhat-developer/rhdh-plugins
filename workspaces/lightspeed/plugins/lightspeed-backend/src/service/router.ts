@@ -37,6 +37,8 @@ import {
 } from './types';
 import { validateCompletionsRequest } from './validation';
 
+const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
+
 /**
  * @public
  * The lightspeed backend router
@@ -105,23 +107,23 @@ export async function createRouter(
       target: `http://0.0.0.0:${port}`,
       changeOrigin: true,
       pathRewrite: (path, _) => {
-        // Skip adding user_id for endpoints that don't accept it as query param
-        const skipUserIdEndpoints = ['/v1/models', '/v1/shields'];
-        const shouldSkipUserId = skipUserIdEndpoints.some(endpoint =>
+        const isSkippable = Array.from(SKIP_USER_ID_ENDPOINTS).some(endpoint =>
           path.startsWith(endpoint),
         );
 
-        let newPath = path;
-
-        // Add user query parameter for endpoints that need it
-        if (!shouldSkipUserId) {
-          const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
-          // Check if there are already query parameters
-          newPath = path.includes('?')
-            ? `${path}&${userQueryParam}`
-            : `${path}?${userQueryParam}`;
+        if (isSkippable) {
+          return path;
         }
 
+        let newPath = path;
+
+        // Add user_id
+        const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
+        newPath = path.includes('?')
+          ? `${path}&${userQueryParam}`
+          : `${path}?${userQueryParam}`;
+
+        // Add history_length if needed
         if (
           !path.includes('history_length') &&
           path.includes('conversation_id')
@@ -131,6 +133,7 @@ export async function createRouter(
             ? `${newPath}&${historyLengthQuery}`
             : `${newPath}?${historyLengthQuery}`;
         }
+
         logger.info(`Rewriting path from ${path} to ${newPath}`);
         return newPath;
       },
