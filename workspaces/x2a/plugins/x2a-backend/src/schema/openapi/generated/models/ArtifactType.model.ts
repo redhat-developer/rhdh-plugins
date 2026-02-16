@@ -24,4 +24,5 @@
 export type ArtifactType =
   | 'migration_plan'
   | 'module_migration_plan'
-  | 'migrated_sources';
+  | 'migrated_sources'
+  | 'project_metadata';

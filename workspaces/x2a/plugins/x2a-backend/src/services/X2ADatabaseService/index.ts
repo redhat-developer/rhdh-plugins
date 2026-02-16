@@ -117,8 +117,14 @@ export class X2ADatabaseService {
     return result;
   }
 
+  /**
+   *  Use skipEnrichment to avoid fetching the migration plan and status for a project.
+   */
   async getProject(
-    { projectId }: { projectId: string },
+    {
+      projectId,
+      skipEnrichment = false,
+    }: { projectId: string; skipEnrichment?: boolean },
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canViewAll?: boolean;
@@ -130,7 +136,9 @@ export class X2ADatabaseService {
     this.#logger.debug(
       `this.#projectOps.getProject finished, adding migration plan and status to project`,
     );
-    await this.enrichProject(project);
+    if (!skipEnrichment) {
+      await this.enrichProject(project);
+    }
     return project;
   }
 
@@ -154,8 +162,52 @@ export class X2ADatabaseService {
     return this.#moduleOps.createModule(module);
   }
 
-  async getModule({ id }: { id: string }): Promise<Module | undefined> {
-    return this.#moduleOps.getModule({ id });
+  async getModule({
+    id,
+    skipEnrichment = false,
+  }: {
+    id: string;
+    skipEnrichment?: boolean;
+  }): Promise<Module | undefined> {
+    const module = await this.#moduleOps.getModule({ id });
+    if (!module) return undefined;
+
+    if (!skipEnrichment) {
+      // Fetch last jobs
+      const lastAnalyzeJobsOfModule = await this.listJobs({
+        projectId: module.projectId,
+        moduleId: id,
+        phase: 'analyze',
+        lastJobOnly: true,
+      });
+      const lastMigrateJobsOfModule = await this.listJobs({
+        projectId: module.projectId,
+        moduleId: id,
+        phase: 'migrate',
+        lastJobOnly: true,
+      });
+      const lastPublishJobsOfModule = await this.listJobs({
+        projectId: module.projectId,
+        moduleId: id,
+        phase: 'publish',
+        lastJobOnly: true,
+      });
+
+      // Update module with last jobs
+      module.analyze = removeSensitiveFromJob(lastAnalyzeJobsOfModule[0]);
+      module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
+      module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
+
+      const { status, errorDetails } = calculateModuleStatus({
+        analyze: module.analyze,
+        migrate: module.migrate,
+        publish: module.publish,
+      });
+      module.status = status;
+      module.errorDetails = errorDetails;
+    }
+
+    return module;
   }
 
   async listModules({ projectId }: { projectId: string }): Promise<Module[]> {

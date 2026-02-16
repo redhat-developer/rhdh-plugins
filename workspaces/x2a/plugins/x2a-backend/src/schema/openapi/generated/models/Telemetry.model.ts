@@ -25,7 +25,7 @@ import { AgentMetrics } from '../models/AgentMetrics.model';
  */
 export interface Telemetry {
   /**
-   * Execution summary from x2aconvertor
+   * Execution summary from x2a convertor
    */
   summary: string;
   /**

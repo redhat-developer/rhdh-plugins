@@ -404,6 +404,44 @@ export const spec = {
         }
       }
     },
+    "/projects/{projectId}/modules/{moduleId}": {
+      "get": {
+        "summary": "Returns a module by ID",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single module by ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Module"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or module not found"
+          }
+        }
+      }
+    },
     "/projects/{projectId}/modules/{moduleId}/run": {
       "post": {
         "summary": "Triggers a migration phase for a specific module",
@@ -547,6 +585,7 @@ export const spec = {
     },
     "/projects/{projectId}/collectArtifacts": {
       "post": {
+        "security": [],
         "summary": "Collects artifacts from a completed X2Ansible job",
         "description": "Callback endpoint for X2Ansible jobs to submit execution artifacts and results.\nThis endpoint is called by the X2Ansible job runner when a migration phase completes.\n",
         "parameters": [
@@ -614,8 +653,7 @@ export const spec = {
                 },
                 "required": [
                   "status",
-                  "jobId",
-                  "artifacts"
+                  "jobId"
                 ]
               }
             }
@@ -909,7 +947,8 @@ export const spec = {
         "enum": [
           "migration_plan",
           "module_migration_plan",
-          "migrated_sources"
+          "migrated_sources",
+          "project_metadata"
         ]
       },
       "Artifact": {
@@ -1000,7 +1039,7 @@ export const spec = {
         "properties": {
           "summary": {
             "type": "string",
-            "description": "Execution summary from x2aconvertor"
+            "description": "Execution summary from x2a convertor"
           },
           "phase": {
             "type": "string",

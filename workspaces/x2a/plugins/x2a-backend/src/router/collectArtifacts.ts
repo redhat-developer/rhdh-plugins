@@ -25,6 +25,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
+import { executePhaseActions } from './phaseActions';
 
 const agentMetricsSchema = z.object({
   name: z.string(),
@@ -45,7 +46,12 @@ const telemetrySchema = z.object({
 
 const artifactSchema = z.object({
   id: z.string(),
-  type: z.enum(['migration_plan', 'module_migration_plan', 'migrated_sources']),
+  type: z.enum([
+    'migration_plan',
+    'module_migration_plan',
+    'migrated_sources',
+    'project_metadata',
+  ]),
   value: z.string(),
 });
 
@@ -53,7 +59,7 @@ const collectArtifactsRequestSchema = z.object({
   status: z.enum(['success', 'error']),
   errorDetails: z.string().optional(),
   jobId: z.string().uuid('Job ID must be a valid UUID'),
-  artifacts: z.array(artifactSchema),
+  artifacts: z.array(artifactSchema).optional(),
   telemetry: telemetrySchema.optional(),
 });
 
@@ -61,7 +67,7 @@ export interface CollectArtifactsRequestBody {
   status: 'success' | 'error';
   errorDetails?: string;
   jobId: string;
-  artifacts: Artifact[];
+  artifacts?: Artifact[];
   telemetry?: Telemetry;
 }
 
@@ -127,17 +133,36 @@ export function registerCollectArtifactsRoutes(
           );
         }
 
-        const status: JobStatusEnum =
+        let status: JobStatusEnum =
           validatedRequest.status === 'success' ? 'success' : 'error';
+        let errorDetails = validatedRequest.errorDetails || null;
+
+        if (status === 'success') {
+          try {
+            await executePhaseActions(phase, {
+              projectId,
+              artifacts: validatedRequest.artifacts ?? [],
+              x2aDatabase,
+              logger,
+            });
+          } catch (error) {
+            logger.error(
+              `Phase actions failed for job ${validatedRequest.jobId}: ${error instanceof Error ? error.message : String(error)}`,
+            );
+            status = 'error';
+            errorDetails = `Phase actions failed: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        }
+
         const logs = await fetchJobLogs(kubeService, logger, job.k8sJobName);
 
         await x2aDatabase.updateJob({
           id: validatedRequest.jobId,
           status,
           finishedAt: new Date(),
-          errorDetails: validatedRequest.errorDetails || null,
+          errorDetails,
           log: logs,
-          artifacts: validatedRequest.artifacts,
+          artifacts: validatedRequest.artifacts || [],
           telemetry: validatedRequest.telemetry || null,
         });
 

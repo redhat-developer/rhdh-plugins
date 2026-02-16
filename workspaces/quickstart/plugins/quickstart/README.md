@@ -34,9 +34,9 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: application/provider
           importName: QuickstartDrawerProvider
-        - mountPoint: application/drawer-state
+        - mountPoint: application/internal/drawer-state
           importName: QuickstartDrawerStateExposer
-        - mountPoint: application/drawer-content
+        - mountPoint: application/internal/drawer-content
           importName: QuickstartDrawerContent
           config:
             id: quickstart

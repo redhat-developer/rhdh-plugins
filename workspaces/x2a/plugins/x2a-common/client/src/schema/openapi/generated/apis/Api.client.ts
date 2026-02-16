@@ -116,6 +116,15 @@ export type ProjectsProjectIdModulesGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdModulesModuleIdGet = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesModuleIdLogGet = {
   path: {
     projectId: string;
@@ -323,6 +332,34 @@ export class DefaultApiClient {
 
     const uri = parser.parse(uriTemplate).expand({
       projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns a module by ID
+   * @param projectId -
+   * @param moduleId -
+   */
+  public async projectsProjectIdModulesModuleIdGet(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Module>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
     });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {

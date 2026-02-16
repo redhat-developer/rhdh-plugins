@@ -38,7 +38,7 @@ export interface Artifact {
 }
 
 // @public (undocumented)
-export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources';
+export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata';
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
@@ -68,6 +68,7 @@ export class DefaultApiClient {
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
+    projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
@@ -208,7 +209,7 @@ export interface ProjectsProjectIdCollectArtifactsPost200Response {
 
 // @public (undocumented)
 export interface ProjectsProjectIdCollectArtifactsPostRequest {
-    artifacts: Array<Artifact>;
+    artifacts?: Array<Artifact>;
     errorDetails?: string;
     jobId: string;
     status: ProjectsProjectIdCollectArtifactsPostRequestStatusEnum;
@@ -242,6 +243,14 @@ export type ProjectsProjectIdGet = {
 export type ProjectsProjectIdModulesGet = {
     path: {
         projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdGet = {
+    path: {
+        projectId: string;
+        moduleId: string;
     };
 };
 
