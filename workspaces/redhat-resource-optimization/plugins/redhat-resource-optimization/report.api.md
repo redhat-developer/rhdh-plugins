@@ -29,13 +29,11 @@ export const AnalyticsIconOutlined: (
 
 // @public
 export interface ResourceOptimizationAccessApi {
-  // (undocumented)
   getCostManagementAccess(): Promise<boolean>;
-  // (undocumented)
   getOptimizationsAccess(): Promise<boolean>;
 }
 
-// @public (undocumented)
+// @public
 export const resourceOptimizationAccessApiRef: ApiRef<ResourceOptimizationAccessApi>;
 
 // @public
@@ -74,17 +72,11 @@ export function Router(): React_2.JSX.Element;
 // @public
 export function useResourceOptimizationAccess(): UseResourceOptimizationAccessResult;
 
-// Warning: (ae-missing-release-tag) "UseResourceOptimizationAccessResult" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
+// @public
 export interface UseResourceOptimizationAccessResult {
-  // (undocumented)
   costManagementAllowed: boolean;
-  // (undocumented)
   error?: Error;
-  // (undocumented)
   loading: boolean;
-  // (undocumented)
   optimizationsAllowed: boolean;
 }
 
