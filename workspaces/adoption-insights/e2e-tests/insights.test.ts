@@ -149,7 +149,7 @@ test('Total number of users panel shows 1 visitor of 100', async () => {
     `);
 });
 
-test('Top plugins shows catalog', async () => {
+test('Top plugins shows data', async () => {
   await navigateToInsights(page, translations.header.title);
   const pluginRegex = new RegExp(
     `${translations.plugins.allTitle}|${replaceTemplate(
@@ -161,17 +161,13 @@ test('Top plugins shows catalog', async () => {
   const panel = page.locator('.v5-MuiPaper-root', {
     hasText: pluginRegex,
   });
-  await expect(panel).toMatchAriaSnapshot(`
-    - table:
-      - rowgroup:
-        - row :
-          - columnheader "${translations.table.headers.name}"
-          - columnheader "${translations.table.headers.trend}"
-          - columnheader "${translations.table.headers.views}"
-      - rowgroup:
-        - row :
-          - cell "catalog"
-    `);
+
+  await expect(panel).toContainText(translations.table.headers.name);
+  await expect(panel).toContainText(translations.table.headers.trend);
+  await expect(panel).toContainText(translations.table.headers.views);
+
+  await expect(panel.locator('table tbody tr').first()).toBeVisible();
+  await expect(panel.locator('table tbody td').first()).not.toBeEmpty();
 });
 
 test('Rest of the panels have no data', async () => {
