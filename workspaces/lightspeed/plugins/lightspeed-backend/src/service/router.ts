@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { Readable } from 'node:stream';
-
 import { MiddlewareFactory } from '@backstage/backend-defaults/rootHttpRouter';
 import { NotAllowedError } from '@backstage/errors';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
@@ -29,6 +27,8 @@ import {
   lightspeedChatReadPermission,
   lightspeedPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
+
+import { Readable } from 'node:stream';
 
 import { userPermissionAuthorization } from './permission';
 import {
@@ -249,7 +249,7 @@ export async function createRouter(
           const nodeStream = Readable.fromWeb(fetchResponse.body as any);
           nodeStream.pipe(response);
         } else {
-          throw new Error("fetch response empty");
+          throw new Error('fetch response empty');
         }
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
