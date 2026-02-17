@@ -47,6 +47,19 @@ jest.mock('../../../hooks/useTemplates', () => ({
   }),
 }));
 
+jest.mock('../../../hooks/useEntityMetadataMap', () => ({
+  useEntityMetadataMap: () => ({
+    entityMetadataMap: {
+      'template:default/example-go-template-1': {
+        title: 'Example Go Template 1',
+      },
+      'template:default/example-go-template-2': {
+        title: 'Example Go Template 2',
+      },
+    },
+  }),
+}));
+
 jest.mock('@backstage/catalog-model', () => ({
   parseEntityRef: (ref: string) => {
     const [kind, name] = ref.split(':')[0].split('/');
@@ -136,8 +149,8 @@ describe('Templates', () => {
   it('should display correct data in table rows', () => {
     renderComponent();
     verifyTableData([
-      ['example-go-template-1', '10'],
-      ['example-go-template-2', '20'],
+      ['Example Go Template 1', '10'],
+      ['Example Go Template 2', '20'],
     ]);
   });
 

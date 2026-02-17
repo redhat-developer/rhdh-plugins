@@ -27,12 +27,14 @@ import TableRow from '@mui/material/TableRow';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
+import Tooltip from '@mui/material/Tooltip';
 
 import CardWrapper from '../CardWrapper';
 import { TEMPLATE_TABLE_HEADERS } from '../../utils/constants';
 
 import TableFooterPagination from '../CardFooter';
 import { useTemplates } from '../../hooks/useTemplates';
+import { useEntityMetadataMap } from '../../hooks/useEntityMetadataMap';
 import EmptyChartState from '../Common/EmptyChartState';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -43,6 +45,12 @@ const Templates = () => {
   const { t } = useTranslation();
 
   const { templates, loading, error } = useTemplates({ limit });
+
+  const entityRefs = useMemo(
+    () => templates.data?.map(template => template.entityref) ?? [],
+    [templates],
+  );
+  const { entityMetadataMap } = useEntityMetadataMap(entityRefs);
 
   const handleChangePage = useCallback((_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -95,7 +103,10 @@ const Templates = () => {
       }
     >
       <Box sx={{ width: '100%' }}>
-        <Table aria-labelledby="Templates" sx={{ width: '100%' }}>
+        <Table
+          aria-labelledby="Templates"
+          sx={{ width: '100%', tableLayout: 'fixed' }}
+        >
           <TableHead>
             <TableRow>
               {TEMPLATE_TABLE_HEADERS.map(header => (
@@ -134,6 +145,16 @@ const Templates = () => {
                   template?.entityref,
                 );
                 const entityHrefLink = `/create/templates/${namespace}/${name}`;
+                const displayName =
+                  entityMetadataMap[template.entityref]?.title ?? name ?? '--';
+
+                const tooltipTitle = [
+                  template.entityref,
+                  entityMetadataMap[template.entityref]?.kind ?? 'Template',
+                  entityMetadataMap[template.entityref]?.description,
+                ]
+                  .filter(Boolean)
+                  .join(' | ');
 
                 return (
                   <TableRow
@@ -147,22 +168,30 @@ const Templates = () => {
                     <TableCell
                       sx={{
                         width: '50%',
+                        minWidth: 0,
                       }}
                     >
-                      <Link
-                        component="a"
-                        href={entityHrefLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        sx={{
-                          textDecoration: 'none',
-                          '&:hover': {
+                      <Tooltip title={tooltipTitle}>
+                        <Link
+                          component="a"
+                          href={entityHrefLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                             textDecoration: 'none',
-                          },
-                        }}
-                      >
-                        {name ?? '--'}
-                      </Link>
+                            whiteSpace: 'nowrap',
+                            '&:hover': {
+                              textDecoration: 'none',
+                            },
+                          }}
+                          title={name ?? ''}
+                        >
+                          {displayName}
+                        </Link>
+                      </Tooltip>
                     </TableCell>
                     <TableCell sx={{ width: '50%' }}>
                       {Number(template.count).toLocaleString('en-US') ?? '--'}

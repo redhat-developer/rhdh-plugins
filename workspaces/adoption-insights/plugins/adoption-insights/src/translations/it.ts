@@ -76,7 +76,7 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'users.loggedInUsers': 'Utenti registrati',
     'users.licensed': 'Con licenza',
     'users.licensedNotLoggedIn': 'Con licenza (non registrato)',
-    'users.ofTotal': 'di {{totale}}',
+    'users.ofTotal': 'di {{total}}',
     'users.tooltip':
       'Imposta il numero di utenti con licenza in app-config.yaml',
     'table.headers.name': 'Nome',
