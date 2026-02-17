@@ -20,12 +20,17 @@ import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
   async getScorecard(entity: Entity): Promise<OpenSSFResponse> {
-    const baseUrl = entity.metadata.annotations?.['openssf/baseUrl'] ?? '';
-    if (!baseUrl || baseUrl.trim() === '' || !baseUrl.startsWith('https://')) {
-      throw new Error(`Invalid annotation 'openssf/baseUrl' value`);
+    const scorecardUrl =
+      entity.metadata.annotations?.['openssf/scorecardUrl'] ?? '';
+    if (
+      !scorecardUrl ||
+      scorecardUrl.trim() === '' ||
+      !scorecardUrl.startsWith('https://')
+    ) {
+      throw new Error(`Invalid annotation 'openssf/scorecardUrl' value`);
     }
 
-    const response = await fetch(baseUrl, {
+    const response = await fetch(scorecardUrl, {
       method: 'GET',
       headers: {
         Accept: 'application/json',

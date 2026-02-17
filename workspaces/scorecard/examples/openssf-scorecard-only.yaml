@@ -4,7 +4,7 @@ kind: Component
 metadata:
   name: openssf-scorecard
   annotations:
-    openssf/baseUrl: https://api.securityscorecards.dev/projects/github.com/alizard0/rhdh-plugins
+    openssf/scorecardUrl: https://api.securityscorecards.dev/projects/github.com/alizard0/rhdh-plugins
 spec:
   type: service
   owner: group:development/guests

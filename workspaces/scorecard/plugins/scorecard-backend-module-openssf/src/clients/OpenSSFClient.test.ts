@@ -22,14 +22,14 @@ import type { OpenSSFResponse } from './types';
 const mockScorecardUrl =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
-function createEntity(baseUrl: string): Entity {
+function createEntity(scorecardUrl: string): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
     metadata: {
       name: 'my-service',
       annotations: {
-        'openssf/baseUrl': baseUrl,
+        'openssf/scorecardUrl': scorecardUrl,
       },
     },
     spec: {},
@@ -61,7 +61,7 @@ describe('OpenSSFClient', () => {
   });
 
   describe('getScorecard', () => {
-    it('fetches the scorecard from the entity baseUrl', async () => {
+    it('fetches the scorecard from the entity scorecard URL', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue(mockOpenSSFResponse),

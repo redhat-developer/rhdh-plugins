@@ -86,7 +86,7 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
-      'metadata.annotations.openssf/baseUrl': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.openssf/scorecardUrl': CATALOG_FILTER_EXISTS,
     };
   }
 
@@ -109,7 +109,6 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
 
 /**
  * Creates all default OpenSSF metric providers.
- * @param clientOptions Optional base URL and git service host (from app-config)
  * @returns Array of OpenSSF metric providers
  */
 export function createOpenSSFMetricProvider(): MetricProvider<'number'>[] {
