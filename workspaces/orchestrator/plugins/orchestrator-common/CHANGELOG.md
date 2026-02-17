@@ -1,5 +1,13 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.5.1
+
+### Patch Changes
+
+- b7f8a3c: Updated dependency `@janus-idp/cli` to `3.7.0`.
+  Updated dependency `@openapitools/openapi-generator-cli` to `2.28.3`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+
 ## 3.5.0
 
 ### Minor Changes

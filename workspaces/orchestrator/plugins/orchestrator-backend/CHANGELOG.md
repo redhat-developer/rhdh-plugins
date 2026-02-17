@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.7.1
+
+### Patch Changes
+
+- b7f8a3c: Updated dependency `@janus-idp/cli` to `3.7.0`.
+  Updated dependency `@openapitools/openapi-generator-cli` to `2.28.3`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+- Updated dependencies [b7f8a3c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.1
+
 ## 8.7.0
 
 ### Minor Changes
