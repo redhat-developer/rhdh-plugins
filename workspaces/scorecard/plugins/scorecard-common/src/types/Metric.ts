@@ -35,7 +35,7 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
  */
 export type AggregatedMetricValue = {
   count: number;
-  name: 'success' | 'warning' | 'error';
+  name: string;
 };
 
 /**

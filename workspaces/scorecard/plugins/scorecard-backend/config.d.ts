@@ -32,7 +32,7 @@ export interface Config {
           /** Threshold configuration for the metric */
           thresholds?: {
             rules?: Array<{
-              key: 'error' | 'warning' | 'success';
+              key: string;
               /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
               expression: string;
             }>;

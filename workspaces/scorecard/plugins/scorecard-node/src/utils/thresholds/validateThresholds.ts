@@ -49,17 +49,14 @@ export function validateThresholds(
       !('key' in rule) ||
       !('expression' in rule) ||
       typeof rule.key !== 'string' ||
-      typeof rule.expression !== 'string'
+      typeof rule.expression !== 'string' ||
+      rule.key.trim() === '' ||
+      rule.expression.trim() === ''
     ) {
       throw new ThresholdConfigFormatError(
         `Invalid threshold rule format "${JSON.stringify(
           rule,
-        )}": must be an object with "key" and "expression" string properties`,
-      );
-    }
-    if (!['error', 'warning', 'success'].includes(rule.key)) {
-      throw new ThresholdConfigFormatError(
-        `Invalid threshold rule key "${rule.key}": only supported values are "success", "warning", "error"`,
+        )}": must be an object with "key" and "expression" non-empty string properties`,
       );
     }
     if (seenKeys.has(rule.key)) {

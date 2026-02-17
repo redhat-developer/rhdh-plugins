@@ -59,6 +59,20 @@ describe('validateThresholds', () => {
 
       expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
     });
+
+    it('should validate config with custom threshold keys', () => {
+      const validConfig = {
+        rules: [
+          { key: 'critical', expression: '>80' },
+          { key: 'high', expression: '60-79' },
+          { key: 'medium', expression: '40-59' },
+          { key: 'low', expression: '20-39' },
+          { key: 'success', expression: '<20' },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
   });
 
   describe('validateThresholds - invalid configs', () => {
@@ -91,52 +105,42 @@ describe('validateThresholds', () => {
       {
         config: { rules: [null] },
         expectedError:
-          'Invalid threshold rule format "null": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "null": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [5] },
         expectedError:
-          'Invalid threshold rule format "5": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "5": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 'success' }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"key":"success"}": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "{"key":"success"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ expression: '>20' }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"expression":">20"}": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "{"expression":">20"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 123, expression: '>20' }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"key":123,"expression":">20"}": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "{"key":123,"expression":">20"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 'success', expression: 123 }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"key":"success","expression":123}": must be an object with "key" and "expression" string properties',
-      },
-      {
-        config: { rules: [{ key: 'invalid', expression: '>20' }] },
-        expectedError:
-          'Invalid threshold rule key "invalid": only supported values are "success", "warning", "error"',
-      },
-      {
-        config: { rules: [{ key: 'ERROR', expression: '>20' }] },
-        expectedError:
-          'Invalid threshold rule key "ERROR": only supported values are "success", "warning", "error"',
+          'Invalid threshold rule format "{"key":"success","expression":123}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: '', expression: '>20' }] },
         expectedError:
-          'Invalid threshold rule key "": only supported values are "success", "warning", "error"',
+          'Invalid threshold rule format "{"key":"","expression":">20"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
-        config: { rules: [{ key: 'critical', expression: '>20' }] },
+        config: { rules: [{ key: 'success', expression: '' }] },
         expectedError:
-          'Invalid threshold rule key "critical": only supported values are "success", "warning", "error"',
+          'Invalid threshold rule format "{"key":"success","expression":""}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 'success', expression: 'invalid' }] },
@@ -164,21 +168,6 @@ describe('validateThresholds', () => {
       expect(() => validateThresholds(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
           'Duplicate key detected for "error" with expression ">50"',
-        ),
-      );
-    });
-
-    it('should fail for mixed valid and invalid rules', () => {
-      const config = {
-        rules: [
-          { key: 'success', expression: '>20' },
-          { key: 'invalid', expression: '>10' },
-        ],
-      };
-
-      expect(() => validateThresholds(config, 'number')).toThrow(
-        new ThresholdConfigFormatError(
-          'Invalid threshold rule key "invalid": only supported values are "success", "warning", "error"',
         ),
       );
     });

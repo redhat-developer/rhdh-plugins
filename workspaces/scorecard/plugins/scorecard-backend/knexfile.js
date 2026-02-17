@@ -1,0 +1,31 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// To create new migration file use: "yarn knex migrate:make migrations",
+// open generated new migration file and edit it to complete code.
+// To run new migration use: "yarn knex migrate:up some_file_name"
+// To run latest migration use: "yarn knex migrate:latest"
+// To rollback concrete migration use: "yarn knex migrate:down some_file_name"
+// To rollback latest migration batch use: "yarn knex migrate:rollback"
+
+module.exports = {
+  client: 'better-sqlite3',
+  connection: ':memory:',
+  useNullAsDefault: true,
+  migrations: {
+    directory: './migrations',
+  },
+};
