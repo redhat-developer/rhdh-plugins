@@ -2,7 +2,7 @@
   "packageRules": [
     {
       "description": "all Redhat Resource Optimization minor updates",
-      "matchFileNames": ["workspaces/redhat-resource-optimization/**"],
+      "matchFileNames": ["workspaces/cost-management/**"],
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(RH Resource Optimization)"
       ],
@@ -10,7 +10,7 @@
     },
     {
       "description": "all Redhat Resource Optimization patch updates",
-      "matchFileNames": ["workspaces/redhat-resource-optimization/**"],
+      "matchFileNames": ["workspaces/cost-management/**"],
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(RH Resource Optimization)"
       ],
@@ -18,7 +18,7 @@
     },
     {
       "description": "all Redhat Resource Optimization dev dependency updates",
-      "matchFileNames": ["workspaces/redhat-resource-optimization/**"],
+      "matchFileNames": ["workspaces/cost-management/**"],
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(RH Resource Optimization)"
       ],
