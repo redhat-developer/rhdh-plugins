@@ -242,14 +242,14 @@ export async function createRouter(
           response.status(500).json({
             error: errormsg,
           });
+
+          return;
         }
 
         // Pipe the response back to the original response
         if (fetchResponse.body) {
           const nodeStream = Readable.fromWeb(fetchResponse.body as any);
           nodeStream.pipe(response);
-        } else {
-          throw new Error('fetch response empty');
         }
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
