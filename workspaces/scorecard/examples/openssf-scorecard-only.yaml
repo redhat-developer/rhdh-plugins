@@ -5,6 +5,7 @@ metadata:
   name: openssf-scorecard
   annotations:
     openssf/baseUrl: https://api.securityscorecards.dev/projects/github.com/alizard0/rhdh-plugins
+    openssf/excludeChecks: Maintained,Code-Review
 spec:
   type: service
   owner: group:development/guests

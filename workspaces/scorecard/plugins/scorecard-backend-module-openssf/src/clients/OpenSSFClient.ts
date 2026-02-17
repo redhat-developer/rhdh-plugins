@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 
 import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
+  constructor(private readonly logger: LoggerService) {}
+
   async getScorecard(entity: Entity): Promise<OpenSSFResponse> {
     const baseUrl = entity.metadata.annotations?.['openssf/baseUrl'] ?? '';
     if (!baseUrl || baseUrl.trim() === '' || !baseUrl.startsWith('https://')) {
@@ -39,6 +42,18 @@ export class OpenSSFClient {
     }
 
     const data: OpenSSFResponse = await response.json();
+
+    const excludeChecks =
+      entity.metadata.annotations?.['openssf/excludeChecks'];
+
+    if (excludeChecks && excludeChecks.length > 0) {
+      this.logger.debug(
+        `Excluding checks: ${excludeChecks} for entity ${entity.metadata.name}`,
+      );
+      data.checks = data.checks.filter(
+        check => !excludeChecks.includes(check.name),
+      );
+    }
 
     return data;
   }

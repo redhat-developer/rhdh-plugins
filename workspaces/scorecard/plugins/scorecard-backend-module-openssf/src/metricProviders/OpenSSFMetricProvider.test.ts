@@ -41,6 +41,14 @@ const maintainedConfig = {
   description: 'Determines if the project is actively maintained.',
 };
 
+const mockLogger = {
+  child: jest.fn().mockReturnThis(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('OpenSSFMetricProvider', () => {
   const entity = createEntity();
 
@@ -54,6 +62,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       expect(provider.getMetricName()).toBe('Maintained');
     });
@@ -62,6 +71,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       expect(provider.getMetricDisplayTitle()).toBe('OpenSSF Maintained');
       expect(provider.getMetricDescription()).toContain('actively maintained');
@@ -71,6 +81,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       expect(provider.getProviderId()).toBe('openssf.maintained');
     });
@@ -79,6 +90,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       expect(provider.getProviderDatasourceId()).toBe('openssf');
     });
@@ -87,6 +99,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       expect(provider.getMetricType()).toBe('number');
     });
@@ -95,6 +108,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       const metric = provider.getMetric();
       expect(metric.id).toBe('openssf.maintained');
@@ -107,6 +121,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
     });
@@ -115,6 +130,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       expect(provider.getCatalogFilter()).toEqual({
         'metadata.annotations.openssf/baseUrl': CATALOG_FILTER_EXISTS,
@@ -146,6 +162,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
       const result = await provider.calculateMetric(entity);
 
@@ -176,6 +193,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
 
       await expect(provider.calculateMetric(entity)).rejects.toThrow(
@@ -206,6 +224,7 @@ describe('OpenSSFMetricProvider', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
+        mockLogger as any,
       );
 
       await expect(provider.calculateMetric(entity)).rejects.toThrow(

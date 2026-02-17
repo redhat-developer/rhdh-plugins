@@ -22,7 +22,7 @@ import type { OpenSSFResponse } from './types';
 const mockScorecardUrl =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
-function createEntity(baseUrl: string): Entity {
+function createEntity(baseUrl: string, excludeChecks?: list<string>): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
@@ -30,6 +30,7 @@ function createEntity(baseUrl: string): Entity {
       name: 'my-service',
       annotations: {
         'openssf/baseUrl': baseUrl,
+        'openssf/excludeChecks': excludeChecks,
       },
     },
     spec: {},
@@ -49,7 +50,22 @@ const mockOpenSSFResponse: OpenSSFResponse = {
       details: null,
       documentation: { short: '', url: '' },
     },
+    {
+      name: 'Code-Review',
+      score: 9,
+      reason: null,
+      details: null,
+      documentation: { short: '', url: '' },
+    },
   ],
+};
+
+const mockLogger = {
+  child: jest.fn().mockReturnThis(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
 };
 
 describe('OpenSSFClient', () => {
@@ -67,7 +83,7 @@ describe('OpenSSFClient', () => {
         json: jest.fn().mockResolvedValue(mockOpenSSFResponse),
       });
 
-      const client = new OpenSSFClient();
+      const client = new OpenSSFClient(mockLogger as any);
       const result = await client.getScorecard(entity);
 
       expect(fetch).toHaveBeenCalledWith(mockScorecardUrl, {
@@ -84,7 +100,7 @@ describe('OpenSSFClient', () => {
         statusText: 'Not Found',
       });
 
-      const client = new OpenSSFClient();
+      const client = new OpenSSFClient(mockLogger as any);
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'OpenSSF API request failed with status 404: Not Found',
@@ -96,11 +112,27 @@ describe('OpenSSFClient', () => {
         new Error('Network error'),
       );
 
-      const client = new OpenSSFClient();
+      const client = new OpenSSFClient(mockLogger as any);
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'Network error',
       );
+    });
+
+    it('excludes Maintained when excludeChecks annotation is present', async () => {
+      const entityWithExcludeChecks = createEntity(mockScorecardUrl, [
+        'Maintained',
+      ]);
+      (globalThis.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockOpenSSFResponse),
+      });
+
+      const client = new OpenSSFClient(mockLogger as any);
+      const result = await client.getScorecard(entityWithExcludeChecks);
+
+      expect(result.checks).toHaveLength(1);
+      expect(result.checks[0].name).toBe('Code-Review');
     });
   });
 });
