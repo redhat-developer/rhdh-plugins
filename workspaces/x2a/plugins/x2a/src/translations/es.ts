@@ -82,6 +82,40 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.statuses.error': 'Error',
     'artifact.types.migrated_sources': 'Fuentes migradas',
     'artifact.types.project_metadata': 'Metadatos del proyecto',
+    'modulePage.title': 'Detalles del módulo',
+    'modulePage.artifacts.title': 'Artefactos',
+    'modulePage.artifacts.migration_plan':
+      'Plan de migración general del proyecto',
+    'modulePage.artifacts.module_migration_plan':
+      'Plan del módulo por análisis',
+    'modulePage.artifacts.migrated_sources': 'Fuentes migradas',
+    'modulePage.artifacts.description':
+      'Estos artefactos son generados por el proceso de conversión y están disponibles para revisión.',
+    'modulePage.phases.id': 'ID',
+    'modulePage.phases.duration': 'Duración',
+    'modulePage.phases.k8sJobName': 'Nombre del trabajo de Kubernetes',
+    'modulePage.phases.startedAt': 'Iniciado el',
+    'modulePage.phases.status': 'Estado',
+    'modulePage.phases.errorDetails': 'Detalles del error',
+    'modulePage.phases.reanalyzeInstructions':
+      'El plan de migración del módulo ya existe. Si el plan de migración general del proyecto se ha actualizado, vuelva a ejecutar el análisis para reflejar los cambios.',
+    'modulePage.phases.rerunAnalyze': 'Recrear el plan de migración del módulo',
+    'modulePage.phases.analyzeInstructions':
+      'Antes de ejecutar el análisis, revise primero el plan de migración general del proyecto; su contenido guiará el análisis del módulo.',
+    'modulePage.phases.runAnalyze': 'Crear plan de migración del módulo',
+    'modulePage.phases.migrateInstructions':
+      'Antes de ejecutar la migración, revise el plan de migración del módulo. El proceso de migración convertirá el código Chef a Ansible basado en el plan.',
+    'modulePage.phases.runMigrate': 'Migrar fuentes del módulo',
+    'modulePage.phases.remigrateInstructions':
+      'Las fuentes migradas ya existen. Vuelva a ejecutar la migración para recrear el código Ansible convertido.',
+    'modulePage.phases.rerunMigrate': 'Recrear fuentes migradas',
+    'modulePage.phases.publishInstructions':
+      'Antes de publicar, revise las fuentes migradas. El proceso de publicación confirmará el código convertido en el repositorio de destino.',
+    'modulePage.phases.runPublish': 'Publicar en el repositorio de destino',
+    'modulePage.phases.republishInstructions':
+      'El módulo ya ha sido publicado. Vuelva a ejecutar la publicación para actualizar el repositorio de destino.',
+    'modulePage.phases.rerunPublish':
+      'Volver a publicar en el repositorio de destino',
   },
 });
 

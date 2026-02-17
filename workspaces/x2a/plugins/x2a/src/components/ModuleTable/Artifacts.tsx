@@ -33,6 +33,7 @@ export const ArtifactLink = ({
   targetRepoBranch,
 }: {
   artifact: Artifact;
+  // TODO: the targetRepoUrl is probably not needed, the artifact.value should contain full URL
   targetRepoUrl: string;
   targetRepoBranch: string;
 }) => {
@@ -64,14 +65,14 @@ export const Artifacts = ({
   return (
     <div>
       {artifacts.map(artifact => (
-        <>
+        <span key={artifact.id}>
           <ArtifactLink
             artifact={artifact}
             targetRepoUrl={targetRepoUrl}
             targetRepoBranch={targetRepoBranch}
           />
           <br />
-        </>
+        </span>
       ))}
     </div>
   );

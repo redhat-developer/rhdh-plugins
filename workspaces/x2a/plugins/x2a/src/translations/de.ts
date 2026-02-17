@@ -82,6 +82,38 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.statuses.error': 'Fehler',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
     'artifact.types.project_metadata': 'Projektmetadaten',
+    'modulePage.title': 'Moduldetails',
+    'modulePage.artifacts.title': 'Artefakte',
+    'modulePage.artifacts.migration_plan': 'Gesamter Projektmigrationsplan',
+    'modulePage.artifacts.module_migration_plan': 'Modulplan nach Analyse',
+    'modulePage.artifacts.migrated_sources': 'Migrierte Quellen',
+    'modulePage.artifacts.description':
+      'Diese Artefakte werden durch den Konvertierungsprozess generiert und stehen zur Überprüfung bereit.',
+    'modulePage.phases.id': 'ID',
+    'modulePage.phases.duration': 'Dauer',
+    'modulePage.phases.k8sJobName': 'Kubernetes-Jobname',
+    'modulePage.phases.startedAt': 'Gestartet am',
+    'modulePage.phases.status': 'Status',
+    'modulePage.phases.errorDetails': 'Fehlerdetails',
+    'modulePage.phases.reanalyzeInstructions':
+      'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
+    'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',
+    'modulePage.phases.analyzeInstructions':
+      'Überprüfen Sie vor der Analyse zunächst den gesamten Projektmigrationsplan. Sein Inhalt bestimmt die Analyse des Moduls.',
+    'modulePage.phases.runAnalyze': 'Modulmigrationsplan erstellen',
+    'modulePage.phases.migrateInstructions':
+      'Überprüfen Sie vor der Migration den Modulmigrationsplan. Der Migrationsprozess konvertiert den Chef-Code basierend auf dem Plan in Ansible.',
+    'modulePage.phases.runMigrate': 'Modulquellen migrieren',
+    'modulePage.phases.remigrateInstructions':
+      'Die migrierten Quellen sind bereits vorhanden. Lösen Sie die Migration erneut aus, um den konvertierten Ansible-Code neu zu erstellen.',
+    'modulePage.phases.rerunMigrate': 'Migrierte Quellen neu erstellen',
+    'modulePage.phases.publishInstructions':
+      'Überprüfen Sie vor der Veröffentlichung die migrierten Quellen. Der Veröffentlichungsprozess committet den konvertierten Code in das Ziel-Repository.',
+    'modulePage.phases.runPublish': 'Im Ziel-Repository veröffentlichen',
+    'modulePage.phases.republishInstructions':
+      'Das Modul wurde bereits veröffentlicht. Lösen Sie die Veröffentlichung erneut aus, um das Ziel-Repository zu aktualisieren.',
+    'modulePage.phases.rerunPublish':
+      'Im Ziel-Repository erneut veröffentlichen',
   },
 });
 
