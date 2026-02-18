@@ -170,12 +170,12 @@ export class DatabaseMetricValues {
 
     // Filter by entity_kind
     if (entityKind) {
-      query.where('entity_kind', entityKind);
+      query.whereRaw('LOWER(entity_kind) = LOWER(?)', [entityKind]);
     }
 
     // Filter by entity_owner
     if (entityOwner) {
-      query.where('entity_owner', entityOwner);
+      query.whereRaw('LOWER(entity_owner) = LOWER(?)', [entityOwner]);
     }
 
     if (pagination) {
