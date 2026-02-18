@@ -6,6 +6,9 @@
     "node": "22 || 24"
   },
   "scripts": {
+    "start": "backstage-cli repo start",
+    "start-backend": "yarn workspace backend start",
+    "build:backend": "yarn workspace backend build",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck false --incremental false",
     "build:all": "backstage-cli repo build --all",
@@ -19,6 +22,7 @@
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
