@@ -903,11 +903,23 @@ describe('createRouter', () => {
       );
     });
 
-    it('should enforce max pageSize of 100', async () => {
-      await request(drillDownApp).get(
+    it('should return 400 when pageSize exceeds max of 100', async () => {
+      const response = await request(drillDownApp).get(
         '/metrics/github.open_prs/catalog/aggregations/entities?pageSize=200',
       );
 
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+      expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+    });
+
+    it('should accept pageSize at max boundary of 100', async () => {
+      const response = await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?pageSize=100',
+      );
+
+      expect(response.status).toBe(200);
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
@@ -1201,6 +1213,151 @@ describe('createRouter', () => {
 
       expect(getAuthorizedEntityRefsSpy).not.toHaveBeenCalled();
       expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledTimes(1);
+    });
+
+    describe('input validation', () => {
+      it('should return 400 when page is 0', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?page=0',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when page is negative', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?page=-1',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when page exceeds max of 10000', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?page=10001',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when pageSize is 0', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?pageSize=0',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when status is an invalid value', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?status=unknown',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when sortBy is an invalid value', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?sortBy=invalid',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when sortOrder is an invalid value', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?sortOrder=random',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when ownedByMe is an invalid value', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=yes',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when owner is an empty string', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?owner=',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when kind is an empty string', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?kind=',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return 400 when entityName is an empty string', async () => {
+        const response = await request(drillDownApp).get(
+          '/metrics/github.open_prs/catalog/aggregations/entities?entityName=',
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.error.name).toBe('InputError');
+        expect(response.body.error.message).toContain(
+          'Invalid query parameters',
+        );
+        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
+      });
     });
   });
 });

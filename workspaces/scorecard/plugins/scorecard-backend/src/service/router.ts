@@ -40,7 +40,10 @@ import {
   getAuthorizedEntityRefs,
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
-import { validateCatalogMetricsSchema } from '../validation/validateCatalogMetricsSchema';
+import {
+  validateCatalogMetricsSchema,
+  validateDrillDownMetricsSchema,
+} from '../validation/validateCatalogMetricsSchema';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { validateMetricsSchema } from '../validation/validateMetricsSchema';
@@ -204,25 +207,17 @@ export async function createRouter({
     async (req, res) => {
       const { metricId } = req.params;
 
-      const page = Number(req.query.page) || 1;
-      const pageSize = Math.min(Number(req.query.pageSize) || 5, 100);
-      const status = req.query.status as
-        | 'success'
-        | 'warning'
-        | 'error'
-        | undefined;
-      const ownedByMe = req.query.ownedByMe === 'true';
-      const owner = req.query.owner as string | undefined;
-      const kind = req.query.kind as string | undefined;
-      const entityName = req.query.entityName as string | undefined;
-      const sortBy = req.query.sortBy as
-        | 'entityName'
-        | 'owner'
-        | 'entityKind'
-        | 'timestamp'
-        | 'metricValue'
-        | undefined;
-      const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'desc';
+      const {
+        page,
+        pageSize,
+        status,
+        ownedByMe,
+        owner,
+        kind,
+        entityName,
+        sortBy,
+        sortOrder,
+      } = validateDrillDownMetricsSchema(req.query);
 
       const { conditions } = await authorizeConditional(
         req,

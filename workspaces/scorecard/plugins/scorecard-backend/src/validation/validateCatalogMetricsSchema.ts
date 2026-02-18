@@ -32,3 +32,30 @@ export function validateCatalogMetricsSchema(query: unknown): {
 
   return parsed.data;
 }
+
+export function validateDrillDownMetricsSchema(query: unknown) {
+  const drillDownSchema = z.object({
+    page: z.coerce.number().int().min(1).max(10000).optional().default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).optional().default(5),
+    status: z.enum(['success', 'warning', 'error']).optional(),
+    sortBy: z
+      .enum(['entityName', 'owner', 'entityKind', 'timestamp', 'metricValue'])
+      .optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
+    ownedByMe: z
+      .enum(['true', 'false'])
+      .transform(v => v === 'true')
+      .optional(),
+    owner: z.string().min(1).max(255).optional(),
+    kind: z.string().min(1).max(100).optional(),
+    entityName: z.string().min(1).max(255).optional(),
+  });
+
+  const parsed = drillDownSchema.safeParse(query);
+
+  if (!parsed.success) {
+    throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
+  }
+
+  return parsed.data;
+}
