@@ -38,6 +38,16 @@ export interface Config {
             }>;
           };
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /**
+           * Custom title and description for the aggregated KPI card on the homepage.
+           * When set, both title and description are required.
+           */
+          homepage?: {
+            aggregatedMetric: {
+              title: string;
+              description: string;
+            };
+          };
         };
       };
     };

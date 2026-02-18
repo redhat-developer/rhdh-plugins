@@ -34,7 +34,7 @@ import {
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
-import { NotFoundError } from '@backstage/errors';
+import { InputError, NotFoundError } from '@backstage/errors';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import {
   AuthorizeResult,
@@ -55,8 +55,13 @@ jest.mock('../permissions/permissionUtils', () => {
   };
 });
 
+jest.mock('../utils/getAggregatedMetricCustomization', () => ({
+  getAggregatedMetricCustomization: jest.fn(),
+}));
+
 import * as getEntitiesOwnedByUserModule from '../utils/getEntitiesOwnedByUser';
 import * as permissionUtilsModule from '../permissions/permissionUtils';
+import { getAggregatedMetricCustomization } from '../utils/getAggregatedMetricCustomization';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { AggregatedMetricMapper } from './mappers';
 
@@ -116,10 +121,12 @@ describe('createRouter', () => {
       }),
     });
 
+    const config = mockServices.rootConfig({ data: {} });
     const router = await createRouter({
       metricProvidersRegistry,
       catalogMetricService,
       catalog,
+      config,
       httpAuth: httpAuthMock,
       permissions: permissionsMock,
     });
@@ -540,10 +547,18 @@ describe('createRouter', () => {
         'checkEntityAccess',
       );
 
+      jest.mocked(getAggregatedMetricCustomization).mockReturnValue({
+        title: '',
+        description: '',
+        isCustomized: false,
+      });
+
+      const config = mockServices.rootConfig({ data: {} });
       const router = await createRouter({
         metricProvidersRegistry,
         catalogMetricService,
         catalog: mockCatalog,
+        config,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
       });
@@ -722,6 +737,59 @@ describe('createRouter', () => {
       expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
         metricProvidersRegistry.getMetric('github.open_prs'),
         mockAggregatedMetricResult.result,
+      );
+    });
+
+    it('should return aggregated metrics with custom title and description when aggregated metric is customized', async () => {
+      jest.mocked(getAggregatedMetricCustomization).mockReturnValueOnce({
+        title: 'Custom Aggregated Metric Title',
+        description: 'Custom Aggregated Metric description.',
+        isCustomized: true,
+      });
+      const customizedResult = {
+        ...mockAggregatedMetricResult,
+        metadata: {
+          ...mockAggregatedMetricResult.metadata,
+          title: 'Custom Aggregated Metric Title',
+          description: 'Custom Aggregated Metric description.',
+          customized: true,
+        },
+      };
+      toAggregatedMetricResultSpy.mockReturnValueOnce(customizedResult);
+
+      const response = await request(aggregationApp).get(
+        '/metrics/github.open_prs/catalog/aggregations',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.metadata.title).toBe(
+        'Custom Aggregated Metric Title',
+      );
+      expect(response.body.metadata.description).toBe(
+        'Custom Aggregated Metric description.',
+      );
+      expect(response.body.metadata.customized).toBe(true);
+      expect(response.body.id).toBe('github.open_prs');
+      expect(response.body.result).toEqual(mockAggregatedMetricResult.result);
+    });
+
+    it('should return 400 when getAggregatedMetricCustomization throws InputError', async () => {
+      jest
+        .mocked(getAggregatedMetricCustomization)
+        .mockImplementationOnce(() => {
+          throw new InputError(
+            'scorecard.plugins.github.open_prs.homepage.aggregatedMetric requires both title and description when customizing aggregated KPI',
+          );
+        });
+
+      const response = await request(aggregationApp).get(
+        '/metrics/github.open_prs/catalog/aggregations',
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain(
+        'requires both title and description',
       );
     });
   });

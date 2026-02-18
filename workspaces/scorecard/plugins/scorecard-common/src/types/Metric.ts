@@ -89,6 +89,7 @@ export type AggregatedMetricResult = {
     description: string;
     type: MetricType;
     history?: boolean;
+    customized?: boolean;
   };
   result: AggregatedMetric;
 };

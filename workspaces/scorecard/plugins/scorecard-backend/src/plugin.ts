@@ -116,6 +116,7 @@ export const scorecardPlugin = createBackendPlugin({
             metricProvidersRegistry,
             catalogMetricService,
             catalog,
+            config,
             httpAuth,
             permissions,
           }),

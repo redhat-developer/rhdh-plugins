@@ -47,6 +47,7 @@ export class AggregatedMetricMapper {
   static toAggregatedMetricResult(
     metric: Metric,
     aggregatedMetric: AggregatedMetric,
+    customized: boolean = false,
   ): AggregatedMetricResult {
     return {
       id: metric.id,
@@ -56,6 +57,7 @@ export class AggregatedMetricMapper {
         description: metric.description,
         type: metric.type,
         history: metric.history,
+        customized,
       },
       result: aggregatedMetric,
     };

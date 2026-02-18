@@ -18,6 +18,7 @@ import {
   InputError,
   NotAllowedError,
 } from '@backstage/errors';
+import type { Config } from '@backstage/config';
 import express, { Request } from 'express';
 import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
@@ -42,6 +43,7 @@ import { stringifyEntityRef } from '@backstage/catalog-model';
 import { validateCatalogMetricsSchema } from '../validation/validateCatalogMetricsSchema';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
+import { getAggregatedMetricCustomization } from '../utils/getAggregatedMetricCustomization';
 import { validateMetricsSchema } from '../validation/validateMetricsSchema';
 import { AggregatedMetricMapper } from './mappers';
 
@@ -49,6 +51,7 @@ export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
   catalogMetricService: CatalogMetricService;
   catalog: CatalogService;
+  config: Config;
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
 };
@@ -57,6 +60,7 @@ export async function createRouter({
   metricProvidersRegistry,
   catalogMetricService,
   catalog,
+  config,
   httpAuth,
   permissions,
 }: ScorecardRouterOptions): Promise<express.Router> {
@@ -187,7 +191,21 @@ export async function createRouter({
         metricId,
       );
 
-    res.json(
+    const aggregatedMetricCustomization = getAggregatedMetricCustomization(
+      metricId,
+      { config },
+    );
+
+    if (aggregatedMetricCustomization.isCustomized) {
+      const result = AggregatedMetricMapper.toAggregatedMetricResult(
+        { ...metric, ...aggregatedMetricCustomization },
+        aggregatedMetric,
+        aggregatedMetricCustomization.isCustomized,
+      );
+      return res.json(result);
+    }
+
+    return res.json(
       AggregatedMetricMapper.toAggregatedMetricResult(metric, aggregatedMetric),
     );
   });

@@ -61,6 +61,17 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
     );
   }
 
+  if (aggregatedScorecard.metadata.customized) {
+    return (
+      <ScorecardHomepageCardComponent
+        key={aggregatedScorecard.id}
+        cardTitle={aggregatedScorecard.metadata.title}
+        description={aggregatedScorecard.metadata.description}
+        scorecard={aggregatedScorecard}
+      />
+    );
+  }
+
   const titleKey = `metric.${aggregatedScorecard.id}.title`;
   const descriptionKey = `metric.${aggregatedScorecard.id}.description`;
 

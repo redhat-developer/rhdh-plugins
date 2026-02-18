@@ -233,4 +233,28 @@ describe('ScorecardHomepageCard', () => {
     expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
   });
+
+  it('should render custom title and description when metadata was customized', () => {
+    const customizedScorecard: AggregatedMetricResult = {
+      ...mockScorecard,
+      metadata: {
+        ...mockScorecard.metadata,
+        title: 'Admin custom title',
+        description: 'Admin custom description.',
+        customized: true,
+      },
+    };
+    useAggregatedScorecard.mockReturnValue({
+      aggregatedScorecard: customizedScorecard,
+      loadingData: false,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard metricId="github.open_prs" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
+    expect(screen.getByText('Admin custom title')).toBeInTheDocument();
+  });
 });
