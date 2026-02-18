@@ -22,7 +22,7 @@ import { CardWrapper } from '../Common/CardWrapper';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getStatusConfig, getRingColor } from '../../utils/utils';
 import CustomLegend from '../Scorecard/CustomLegend';
-import { CustomTooltip } from './CustomTooltip';
+import { ErrorTooltip } from '../Common/ErrorTooltip';
 import { ResponsivePieChart } from './ResponsivePieChart';
 
 const CenterLabel = ({
@@ -30,11 +30,15 @@ const CenterLabel = ({
   cy,
   label,
   color,
+  onLabelMouseEnter,
+  onLabelMouseLeave,
 }: {
   cx: number;
   cy: number;
   label: string;
   color?: string;
+  onLabelMouseEnter?: (e: React.MouseEvent) => void;
+  onLabelMouseLeave?: (e: React.MouseEvent) => void;
 }) => {
   const fontSize = 14;
   const lineHeight = 1.2;
@@ -99,7 +103,10 @@ const CenterLabel = ({
             textAlign: 'center',
             lineHeight,
             wordBreak: 'break-word',
+            cursor: 'pointer',
           }}
+          onMouseEnter={onLabelMouseEnter}
+          onMouseLeave={onLabelMouseLeave}
         >
           {label}
         </div>
@@ -119,6 +126,9 @@ export const EmptyStatePanel = ({
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
+
+  const [isLabelHovered, setIsLabelHovered] = useState(false);
+  const [isInsidePieCircle, setIsInsidePieCircle] = useState(false);
 
   const titleKey = `metric.${metricId}.title`;
   const descriptionKey = `metric.${metricId}.description`;
@@ -194,20 +204,33 @@ export const EmptyStatePanel = ({
                 cy={centerY}
                 label={label}
                 color={color}
+                onLabelMouseEnter={e => {
+                  setIsLabelHovered(true);
+                  e.stopPropagation();
+                }}
+                onLabelMouseLeave={e => {
+                  setIsLabelHovered(false);
+                  e.stopPropagation();
+                }}
               />
             );
           }}
           legendContent={props => (
             <CustomLegend {...props} thresholds={undefined} />
           )}
-          tooltipContent={props => (
-            <CustomTooltip
-              {...props}
-              payload={undefined}
-              pieData={pieData}
-              customContent={tooltipContent}
-            />
-          )}
+          tooltipContent={({ coordinate }) => {
+            const showTooltip = isLabelHovered || isInsidePieCircle;
+
+            if (!showTooltip || coordinate === undefined) return null;
+            return (
+              <ErrorTooltip
+                title={tooltipContent}
+                tooltipPosition={{ x: coordinate.x - 25, y: coordinate.y - 16 }}
+              />
+            );
+          }}
+          isErrorState
+          setIsInsidePieCircle={setIsInsidePieCircle}
         />
       </Box>
     </CardWrapper>
