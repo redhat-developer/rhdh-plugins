@@ -161,6 +161,8 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 value,
                 timestamp: new Date(),
                 status,
+                entity_kind: entity.kind,
+                entity_owner: JSON.stringify(entity?.spec?.owner) ?? undefined,
               } as DbMetricValueCreate;
             } catch (error) {
               return {
@@ -170,6 +172,8 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),
+                entity_kind: entity.kind,
+                entity_owner: JSON.stringify(entity?.spec?.owner) ?? undefined,
               } as DbMetricValueCreate;
             }
           }),

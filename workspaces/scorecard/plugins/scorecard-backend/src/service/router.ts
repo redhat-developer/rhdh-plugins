@@ -198,5 +198,90 @@ export async function createRouter({
     );
   });
 
+  router.get(
+    '/metrics/:metricId/catalog/aggregations/entities',
+    async (req, res) => {
+      const { metricId } = req.params;
+
+      const page = Number(req.query.page) || 1;
+      const pageSize = Math.min(Number(req.query.pageSize) || 5, 100);
+      const status = req.query.status as
+        | 'success'
+        | 'warning'
+        | 'error'
+        | undefined;
+      const ownedByMe = req.query.ownedByMe === 'true';
+      const owner = req.query.owner as string | undefined;
+      const kind = req.query.kind as string | undefined;
+      const entityName = req.query.entityName as string | undefined;
+      const sortBy = req.query.sortBy as
+        | 'entityName'
+        | 'owner'
+        | 'entityKind'
+        | 'timestamp'
+        | 'metricValue'
+        | undefined;
+      const sortOrder = (req.query.sortOrder as 'asc' | 'desc') || 'desc';
+
+      const { conditions } = await authorizeConditional(
+        req,
+        scorecardMetricReadPermission,
+      );
+
+      const metric = metricProvidersRegistry.getMetric(metricId);
+      const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+
+      if (authorizedMetrics.length === 0) {
+        throw new NotAllowedError(
+          `To view the scorecard metrics, your administrator must grant you the required permission.`,
+        );
+      }
+
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userEntityRef = credentials?.principal?.userEntityRef;
+
+      if (!userEntityRef) {
+        throw new AuthenticationError('User entity reference not found');
+      }
+
+      // Determine entity scope based on filters
+      let entityRefsToQuery: string[];
+
+      if (ownedByMe) {
+        // Use getEntitiesOwnedByUser scoping
+        entityRefsToQuery = await getEntitiesOwnedByUser(userEntityRef, {
+          catalog,
+          credentials,
+        });
+
+        // Check entity access for owned entities
+        for (const entityRef of entityRefsToQuery) {
+          await checkEntityAccess(entityRef, req, permissions, httpAuth);
+        }
+      } else {
+        // Default: Get ALL entity refs from metric_values table for this metric
+        // (Service layer will fetch from database without entity scoping)
+        entityRefsToQuery = []; // Empty array signals "fetch all"
+      }
+
+      const entityMetrics = await catalogMetricService.getEntityMetricDetails(
+        entityRefsToQuery, // Empty = all, populated = scoped
+        metricId,
+        {
+          status,
+          owner,
+          kind,
+          entityName,
+          sortBy,
+          sortOrder,
+          page,
+          limit: pageSize,
+        },
+      );
+
+      res.json(entityMetrics);
+    },
+  );
+
   return router;
 }

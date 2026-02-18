@@ -98,6 +98,7 @@ export const scorecardPlugin = createBackendPlugin({
           auth,
           registry: metricProvidersRegistry,
           database: dbMetricValues,
+          logger: logger,
         });
 
         Scheduler.create({

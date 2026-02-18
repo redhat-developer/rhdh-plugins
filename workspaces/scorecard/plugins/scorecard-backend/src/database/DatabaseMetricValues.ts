@@ -126,4 +126,65 @@ export class DatabaseMetricValues {
       statusCounts,
     };
   }
+
+  /**
+   * Fetch entity metric values filtered by status with pagination
+   * Returns both the paginated rows and total count for pagination
+   */
+  async readEntityMetricsByStatus(
+    catalog_entity_refs: string[],
+    metric_id: string,
+    status?: 'success' | 'warning' | 'error',
+    entityKind?: string,
+    entityOwner?: string,
+    pagination?: { limit: number; offset: number },
+  ): Promise<{ rows: DbMetricValue[]; total: number }> {
+    // Build subquery for latest metric IDs
+    const latestIdsSubquery = this.dbClient(this.tableName)
+      .max('id')
+      .where('metric_id', metric_id);
+
+    // Only add entity ref filter if provided (non-empty array)
+    if (catalog_entity_refs.length > 0) {
+      latestIdsSubquery.whereIn('catalog_entity_ref', catalog_entity_refs);
+    }
+
+    latestIdsSubquery.groupBy('metric_id', 'catalog_entity_ref');
+
+    const query = this.dbClient(this.tableName)
+      .select('*')
+      .select(this.dbClient.raw('COUNT(*) OVER() as total_count'))
+      .whereIn('id', latestIdsSubquery)
+      .where('metric_id', metric_id);
+
+    // Only add entity ref filter if provided
+    if (catalog_entity_refs.length > 0) {
+      query.whereIn('catalog_entity_ref', catalog_entity_refs);
+    }
+
+    query.orderBy('timestamp', 'desc');
+
+    if (status) {
+      query.where('status', status);
+    }
+
+    // Filter by entity_kind
+    if (entityKind) {
+      query.where('entity_kind', entityKind);
+    }
+
+    // Filter by entity_owner
+    if (entityOwner) {
+      query.where('entity_owner', entityOwner);
+    }
+
+    if (pagination) {
+      query.limit(pagination.limit).offset(pagination.offset);
+    }
+
+    const rows = await query;
+    const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
+
+    return { rows, total };
+  }
 }
