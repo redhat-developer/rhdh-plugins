@@ -67,7 +67,7 @@ export const EntitySection = () => {
 
   const isMd = useMediaQuery(theme.breakpoints.only('md'));
 
-  const responsiveGridItem = {
+  const responsiveGridItem1 = {
     width: '100%',
 
     '@container (min-width: 600px)': {
@@ -80,6 +80,33 @@ export const EntitySection = () => {
 
     '@container (min-width: 1200px)': {
       width: '25%',
+    },
+  };
+
+  const responsiveGridItem2 = {
+    width: '100%',
+
+    '@container (min-width: 600px)': {
+      width: '50%',
+    },
+
+    '@container (min-width: 900px)': {
+      width: '25%',
+    },
+
+    '@container (min-width: 1200px)': {
+      width: '20%',
+    },
+  };
+
+  const responsiveGridItem3 = {
+    width: '100%',
+
+    '@container (min-width: 600px)': {
+      width: '50%',
+    },
+    '@container (min-width: 1200px)': {
+      width: '40%',
     },
   };
 
@@ -147,7 +174,7 @@ export const EntitySection = () => {
               <Grid
                 item
                 sx={{
-                  ...responsiveGridItem,
+                  ...responsiveGridItem1,
                   key: 'entities illustration',
                 }}
               >
@@ -227,7 +254,9 @@ export const EntitySection = () => {
                 <Grid
                   item
                   sx={{
-                    ...responsiveGridItem,
+                    ...(isRemoveFirstCard
+                      ? responsiveGridItem2
+                      : responsiveGridItem1),
                   }}
                   key={item.metadata.name}
                 >
@@ -246,8 +275,8 @@ export const EntitySection = () => {
                 item
                 sx={{
                   ...(isRemoveFirstCard
-                    ? { width: '100%' }
-                    : responsiveGridItem),
+                    ? responsiveGridItem3
+                    : responsiveGridItem1),
                 }}
               >
                 <Box

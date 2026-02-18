@@ -68,13 +68,8 @@ const responsiveGridItem2 = {
   '@container (min-width: 600px)': {
     width: '50%',
   },
-
-  '@container (min-width: 900px)': {
-    width: '33.3%',
-  },
-
   '@container (min-width: 1200px)': {
-    width: '25%',
+    width: '40%',
   },
 };
 
@@ -140,6 +135,7 @@ export const TemplateSection = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    minHeight: 300,
                     border: muiTheme =>
                       `1px solid ${muiTheme.palette.grey[400]}`,
                     borderRadius: 3,
