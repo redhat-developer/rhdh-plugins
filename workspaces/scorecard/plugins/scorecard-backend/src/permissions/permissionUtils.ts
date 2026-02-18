@@ -24,6 +24,7 @@ import { Request } from 'express';
 import { NotAllowedError } from '@backstage/errors';
 import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
 import type {
+  BackstageCredentials,
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
@@ -31,6 +32,10 @@ import type {
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { rules as scorecardRules } from './rules';
+import { CatalogService } from '@backstage/plugin-catalog-node';
+import { stringifyEntityRef } from '@backstage/catalog-model';
+
+const QUERY_ENTITIES_BATCH_SIZE = 50;
 
 export const checkEntityAccess = async (
   entityRef: string,
@@ -47,6 +52,30 @@ export const checkEntityAccess = async (
     throw new NotAllowedError(`Access to "${entityRef}" entity metrics denied`);
   }
 };
+
+export async function getAuthorizedEntityRefs(options: {
+  catalog: CatalogService;
+  credentials: BackstageCredentials;
+}): Promise<string[]> {
+  const entityRefs: string[] = [];
+  let cursor: string | undefined = undefined;
+
+  do {
+    const result = await options.catalog.queryEntities(
+      {
+        fields: ['kind', 'metadata.name', 'metadata.namespace'],
+        limit: QUERY_ENTITIES_BATCH_SIZE,
+        ...(cursor ? { cursor } : {}),
+      },
+      { credentials: options.credentials }, // user credentials — enforces conditional policies
+    );
+
+    cursor = result.pageInfo.nextCursor;
+    entityRefs.push(...result.items.map(e => stringifyEntityRef(e)));
+  } while (cursor !== undefined);
+
+  return entityRefs;
+}
 
 export const matches = (
   metric: Metric,

@@ -139,28 +139,22 @@ export class DatabaseMetricValues {
     entityOwner?: string,
     pagination?: { limit: number; offset: number },
   ): Promise<{ rows: DbMetricValue[]; total: number }> {
-    // Build subquery for latest metric IDs
-    const latestIdsSubquery = this.dbClient(this.tableName)
-      .max('id')
-      .where('metric_id', metric_id);
-
-    // Only add entity ref filter if provided (non-empty array)
-    if (catalog_entity_refs.length > 0) {
-      latestIdsSubquery.whereIn('catalog_entity_ref', catalog_entity_refs);
+    if (catalog_entity_refs.length === 0) {
+      return { rows: [], total: 0 };
     }
 
-    latestIdsSubquery.groupBy('metric_id', 'catalog_entity_ref');
+    const latestIdsSubquery = this.dbClient(this.tableName)
+      .max('id')
+      .where('metric_id', metric_id)
+      .whereIn('catalog_entity_ref', catalog_entity_refs)
+      .groupBy('metric_id', 'catalog_entity_ref');
 
     const query = this.dbClient(this.tableName)
       .select('*')
       .select(this.dbClient.raw('COUNT(*) OVER() as total_count'))
       .whereIn('id', latestIdsSubquery)
-      .where('metric_id', metric_id);
-
-    // Only add entity ref filter if provided
-    if (catalog_entity_refs.length > 0) {
-      query.whereIn('catalog_entity_ref', catalog_entity_refs);
-    }
+      .where('metric_id', metric_id)
+      .whereIn('catalog_entity_ref', catalog_entity_refs);
 
     query.orderBy('timestamp', 'desc');
 

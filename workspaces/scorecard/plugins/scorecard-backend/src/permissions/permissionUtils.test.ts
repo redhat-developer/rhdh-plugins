@@ -24,6 +24,7 @@ import { Request } from 'express';
 import { NotAllowedError } from '@backstage/errors';
 import { catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
 import type {
+  BackstageCredentials,
   HttpAuthService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
@@ -32,8 +33,10 @@ import {
   filterAuthorizedMetrics,
   matches,
   checkEntityAccess,
+  getAuthorizedEntityRefs,
 } from './permissionUtils';
 import { mockServices } from '@backstage/backend-test-utils';
+import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 
 const createMockMetric = (
   id: string,
@@ -226,6 +229,157 @@ describe('permissionUtils', () => {
         ],
         { credentials: undefined },
       );
+    });
+  });
+
+  describe('getAuthorizedEntityRefs', () => {
+    let mockedCatalog: ReturnType<typeof catalogServiceMock.mock>;
+    let mockCredentials: BackstageCredentials;
+
+    beforeEach(() => {
+      mockedCatalog = catalogServiceMock.mock();
+      mockCredentials = {} as BackstageCredentials;
+
+      mockedCatalog.queryEntities.mockResolvedValue({
+        items: [
+          {
+            apiVersion: 'backstage.io/v1alpha1',
+            kind: 'Component',
+            metadata: { name: 'my-service', namespace: 'default' },
+          },
+        ],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 1,
+      });
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return entity refs for entities the user is authorized to see', async () => {
+      const result = await getAuthorizedEntityRefs({
+        catalog: mockedCatalog,
+        credentials: mockCredentials,
+      });
+
+      expect(result).toEqual(['component:default/my-service']);
+    });
+
+    it('should call queryEntities with user credentials', async () => {
+      await getAuthorizedEntityRefs({
+        catalog: mockedCatalog,
+        credentials: mockCredentials,
+      });
+
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledWith(
+        expect.any(Object),
+        { credentials: mockCredentials },
+      );
+    });
+
+    it('should call queryEntities with correct fields and batch size limit', async () => {
+      await getAuthorizedEntityRefs({
+        catalog: mockedCatalog,
+        credentials: mockCredentials,
+      });
+
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledWith(
+        {
+          fields: ['kind', 'metadata.name', 'metadata.namespace'],
+          limit: 50,
+        },
+        { credentials: mockCredentials },
+      );
+    });
+
+    it('should return empty array when catalog has no entities', async () => {
+      mockedCatalog.queryEntities.mockResolvedValue({
+        items: [],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 0,
+      });
+
+      const result = await getAuthorizedEntityRefs({
+        catalog: mockedCatalog,
+        credentials: mockCredentials,
+      });
+
+      expect(result).toEqual([]);
+    });
+
+    it('should handle cursor-based pagination across multiple pages', async () => {
+      const entity1 = {
+        apiVersion: 'backstage.io/v1alpha1',
+        kind: 'Component',
+        metadata: { name: 'service-1', namespace: 'default' },
+      };
+      const entity2 = {
+        apiVersion: 'backstage.io/v1alpha1',
+        kind: 'Component',
+        metadata: { name: 'service-2', namespace: 'default' },
+      };
+
+      mockedCatalog.queryEntities
+        .mockResolvedValueOnce({
+          items: [entity1],
+          pageInfo: { nextCursor: 'cursor1' },
+          totalItems: 2,
+        })
+        .mockResolvedValueOnce({
+          items: [entity2],
+          pageInfo: { nextCursor: undefined },
+          totalItems: 2,
+        });
+
+      const result = await getAuthorizedEntityRefs({
+        catalog: mockedCatalog,
+        credentials: mockCredentials,
+      });
+
+      expect(result).toEqual([
+        'component:default/service-1',
+        'component:default/service-2',
+      ]);
+      expect(mockedCatalog.queryEntities).toHaveBeenCalledTimes(2);
+      expect(mockedCatalog.queryEntities).toHaveBeenNthCalledWith(
+        2,
+        {
+          fields: ['kind', 'metadata.name', 'metadata.namespace'],
+          limit: 50,
+          cursor: 'cursor1',
+        },
+        { credentials: mockCredentials },
+      );
+    });
+
+    it('should return entity refs for multiple entity kinds', async () => {
+      mockedCatalog.queryEntities.mockResolvedValue({
+        items: [
+          {
+            apiVersion: 'backstage.io/v1alpha1',
+            kind: 'Component',
+            metadata: { name: 'my-service', namespace: 'default' },
+          },
+          {
+            apiVersion: 'backstage.io/v1alpha1',
+            kind: 'API',
+            metadata: { name: 'my-api', namespace: 'default' },
+          },
+        ],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 2,
+      });
+
+      const result = await getAuthorizedEntityRefs({
+        catalog: mockedCatalog,
+        credentials: mockCredentials,
+      });
+
+      expect(result).toEqual([
+        'component:default/my-service',
+        'api:default/my-api',
+      ]);
     });
   });
 });

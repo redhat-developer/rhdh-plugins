@@ -1073,13 +1073,13 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should handle empty entity refs list (fetch all entities) - %p',
+      'should return empty result when entity refs is empty, not bypass to fetch all - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        // Insert entities
+        // Insert entities that would previously be returned when passing an empty array
         await client('metric_values').insert([
           {
             catalog_entity_ref: 'component:default/service1',
@@ -1101,9 +1101,10 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        // Empty array = fetch all entities for this metric
+        // Empty array must return no results — an empty scope means no authorized entities,
+        // not an unscoped "fetch all" that would bypass catalog read permissions.
         const result = await db.readEntityMetricsByStatus(
-          [], // Empty array
+          [],
           'github.metric1',
           'error',
           undefined,
@@ -1111,8 +1112,8 @@ describe('DatabaseMetricValues', () => {
           { limit: 10, offset: 0 },
         );
 
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
+        expect(result.rows).toHaveLength(0);
+        expect(result.total).toBe(0);
       },
     );
   });

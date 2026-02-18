@@ -53,6 +53,7 @@ jest.mock('../permissions/permissionUtils', () => {
   return {
     ...originalModule,
     checkEntityAccess: jest.fn(),
+    getAuthorizedEntityRefs: jest.fn(),
   };
 });
 
@@ -754,6 +755,11 @@ describe('createRouter', () => {
   });
 
   describe('GET /metrics/:metricId/catalog/aggregations/entities', () => {
+    const AUTHORIZED_ENTITY_REFS = [
+      'component:default/my-service',
+      'component:default/another-service',
+    ];
+
     const mockEntityMetricDetailResponse = {
       metricId: 'github.open_prs',
       metricMetadata: {
@@ -793,6 +799,7 @@ describe('createRouter', () => {
     let getEntityMetricDetailsSpy: jest.SpyInstance;
     let getEntitiesOwnedByUserSpy: jest.SpyInstance;
     let checkEntityAccessSpy: jest.SpyInstance;
+    let getAuthorizedEntityRefsSpy: jest.SpyInstance;
 
     beforeEach(async () => {
       const githubProvider = new MockNumberProvider(
@@ -825,6 +832,10 @@ describe('createRouter', () => {
         'checkEntityAccess',
       );
 
+      getAuthorizedEntityRefsSpy = jest
+        .spyOn(permissionUtilsModule, 'getAuthorizedEntityRefs')
+        .mockResolvedValue(AUTHORIZED_ENTITY_REFS);
+
       const mockCatalog = catalogServiceMock.mock();
       const router = await createRouter({
         metricProvidersRegistry,
@@ -851,7 +862,7 @@ describe('createRouter', () => {
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockEntityMetricDetailResponse);
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         {
           status: undefined,
@@ -872,7 +883,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           page: 2,
@@ -887,7 +898,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           limit: 100,
@@ -901,7 +912,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           status: 'error',
@@ -915,7 +926,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           owner: 'team:default/platform',
@@ -929,7 +940,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           kind: 'Component',
@@ -943,7 +954,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           entityName: 'service',
@@ -997,7 +1008,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           sortBy: 'entityName',
@@ -1012,7 +1023,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           sortBy: 'metricValue',
@@ -1027,7 +1038,7 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        [],
+        AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
         expect.objectContaining({
           status: 'error',
@@ -1105,6 +1116,69 @@ describe('createRouter', () => {
       expect(response.status).toBe(200);
       expect(response.body.entities).toEqual([]);
       expect(response.body.pagination.total).toBe(0);
+    });
+
+    it('should call getAuthorizedEntityRefs when ownedByMe is not set', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(getAuthorizedEntityRefsSpy).toHaveBeenCalledTimes(1);
+      expect(getAuthorizedEntityRefsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          catalog: expect.any(Object),
+          credentials: expect.any(Object),
+        }),
+      );
+    });
+
+    it('should call getAuthorizedEntityRefs when ownedByMe=false', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=false',
+      );
+
+      expect(getAuthorizedEntityRefsSpy).toHaveBeenCalledTimes(1);
+      expect(getEntitiesOwnedByUserSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not call getEntitiesOwnedByUser when ownedByMe is not set', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(getEntitiesOwnedByUserSpy).not.toHaveBeenCalled();
+    });
+
+    it('should not call checkEntityAccess when ownedByMe is not set', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(checkEntityAccessSpy).not.toHaveBeenCalled();
+    });
+
+    it('should pass authorized entity refs from getAuthorizedEntityRefs to getEntityMetricDetails', async () => {
+      const restrictedRefs = ['component:default/allowed-service'];
+      getAuthorizedEntityRefsSpy.mockResolvedValueOnce(restrictedRefs);
+
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        restrictedRefs,
+        'github.open_prs',
+        expect.any(Object),
+      );
+    });
+
+    it('should not call getAuthorizedEntityRefs when ownedByMe=true', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true',
+      );
+
+      expect(getAuthorizedEntityRefsSpy).not.toHaveBeenCalled();
+      expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledTimes(1);
     });
   });
 });
