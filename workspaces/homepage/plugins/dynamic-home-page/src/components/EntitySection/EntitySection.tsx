@@ -67,6 +67,22 @@ export const EntitySection = () => {
 
   const isMd = useMediaQuery(theme.breakpoints.only('md'));
 
+  const responsiveGridItem = {
+    width: '100%',
+
+    '@container (min-width: 600px)': {
+      width: '50%',
+    },
+
+    '@container (min-width: 900px)': {
+      width: '33.3%',
+    },
+
+    '@container (min-width: 1200px)': {
+      width: '25%',
+    },
+  };
+
   useEffect(() => {
     if (isMd) {
       setIsMediumBreakpoint(true);
@@ -128,10 +144,17 @@ export const EntitySection = () => {
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {!isRemoveFirstCard && !profileLoading && (
-              <Grid item xs={12} md={6} lg={5} key="entities illustration">
+              <Grid
+                item
+                sx={{
+                  ...responsiveGridItem,
+                  key: 'entities illustration',
+                }}
+              >
                 <Card
                   elevation={0}
                   sx={{
+                    height: '100%',
                     border: `1px solid ${theme.palette.grey[400]}`,
                     display: 'flex',
                     flexDirection: 'row',
@@ -145,45 +168,55 @@ export const EntitySection = () => {
                       : 'translateX(-50px)',
                   }}
                 >
-                  {!imgLoaded && (
-                    <Skeleton
-                      variant="rectangular"
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {!imgLoaded && (
+                      <Skeleton
+                        variant="rectangular"
+                        height={300}
+                        sx={{
+                          borderRadius: 3,
+                          width: 'clamp(140px, 14vw, 266px)',
+                        }}
+                      />
+                    )}
+                    <Box
+                      component="img"
+                      src={HomePageEntityIllustration}
+                      onLoad={() => setImgLoaded(true)}
+                      alt=""
                       height={300}
                       sx={{
-                        borderRadius: 3,
                         width: 'clamp(140px, 14vw, 266px)',
                       }}
                     />
-                  )}
-                  <Box
-                    component="img"
-                    src={HomePageEntityIllustration}
-                    onLoad={() => setImgLoaded(true)}
-                    alt=""
-                    height={300}
-                    sx={{
-                      width: 'clamp(140px, 14vw, 266px)',
-                    }}
-                  />
-                  <Box sx={{ p: 2 }}>
-                    <Box>
-                      <Typography variant="body2" paragraph>
-                        {t('entities.description')}
-                      </Typography>
+                    <Box sx={{ p: 2 }}>
+                      <Box sx={{ p: 2 }}>
+                        <Typography variant="body2" paragraph>
+                          {t('entities.description')}
+                        </Typography>
+                      </Box>
+                      {entities?.length > 0 && (
+                        <IconButton
+                          onClick={handleClose}
+                          aria-label={t('entities.close')}
+                          style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                          }}
+                        >
+                          <CloseIcon
+                            style={{ width: '16px', height: '16px' }}
+                          />
+                        </IconButton>
+                      )}
                     </Box>
-                    {entities?.length > 0 && (
-                      <IconButton
-                        onClick={handleClose}
-                        aria-label={t('entities.close')}
-                        style={{
-                          position: 'absolute',
-                          top: '8px',
-                          right: '8px',
-                        }}
-                      >
-                        <CloseIcon style={{ width: '16px', height: '16px' }} />
-                      </IconButton>
-                    )}
                   </Box>
                 </Card>
               </Grid>
@@ -193,9 +226,9 @@ export const EntitySection = () => {
               .map((item: any) => (
                 <Grid
                   item
-                  xs={12}
-                  md={6}
-                  lg={isRemoveFirstCard ? 3 : 3.5}
+                  sx={{
+                    ...responsiveGridItem,
+                  }}
                   key={item.metadata.name}
                 >
                   <EntityCard
@@ -209,13 +242,21 @@ export const EntitySection = () => {
                 </Grid>
               ))}
             {entities?.length === 0 && (
-              <Grid item md={isRemoveFirstCard ? 12 : 7}>
+              <Grid
+                item
+                sx={{
+                  ...(isRemoveFirstCard
+                    ? { width: '100%' }
+                    : responsiveGridItem),
+                }}
+              >
                 <Box
                   sx={{
+                    height: '100%',
+                    minHeight: 300,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    minHeight: 300,
                     border: muiTheme =>
                       `1px solid ${muiTheme.palette.grey[400]}`,
                     borderRadius: 3,
@@ -255,7 +296,9 @@ export const EntitySection = () => {
       sx={{
         padding: '24px',
         border: muitheme => `1px solid ${muitheme.palette.grey[300]}`,
-        overflow: 'auto',
+        containerType: 'inline-size',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Typography
@@ -265,21 +308,31 @@ export const EntitySection = () => {
           alignItems: 'center',
           fontWeight: '500',
           fontSize: '1.5rem',
+          flexShrink: 0,
         }}
       >
         {t('entities.title')}
       </Typography>
-      {content}
-      {entities?.length > 0 && (
-        <Box sx={{ pt: 2 }}>
-          <ViewMoreLink to="/catalog">
-            <Trans
-              message="entities.viewAll"
-              params={{ count: data?.totalItems?.toString() || '' }}
-            />
-          </ViewMoreLink>
-        </Box>
-      )}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          mt: 1,
+        }}
+      >
+        {content}
+        {entities?.length > 0 && (
+          <Box sx={{ pt: 2 }}>
+            <ViewMoreLink to="/catalog">
+              <Trans
+                message="entities.viewAll"
+                params={{ count: data?.totalItems?.toString() || '' }}
+              />
+            </ViewMoreLink>
+          </Box>
+        )}
+      </Box>
     </Card>
   );
 };

@@ -46,6 +46,38 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
   borderRadius: 4,
 }));
 
+const responsiveGridItem1 = {
+  width: '100%',
+
+  '@container (min-width: 600px)': {
+    width: '50%',
+  },
+
+  '@container (min-width: 900px)': {
+    width: '25%',
+  },
+
+  '@container (min-width: 1200px)': {
+    width: '20%',
+  },
+};
+
+const responsiveGridItem2 = {
+  width: '100%',
+
+  '@container (min-width: 600px)': {
+    width: '50%',
+  },
+
+  '@container (min-width: 900px)': {
+    width: '33.3%',
+  },
+
+  '@container (min-width: 1200px)': {
+    width: '25%',
+  },
+};
+
 export const TemplateSection = () => {
   const { t } = useTranslation();
   const {
@@ -90,7 +122,7 @@ export const TemplateSection = () => {
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {templates?.items.map((item: any) => (
-              <Grid item xs={12} md={6} lg={3} key={item.title}>
+              <Grid item sx={{ ...responsiveGridItem1 }} key={item.title}>
                 <TemplateCard
                   link={`/create/templates/${item.metadata.namespace}/${item.metadata.name}`}
                   title={item.metadata.title}
@@ -101,9 +133,10 @@ export const TemplateSection = () => {
               </Grid>
             ))}
             {templates?.items.length === 0 && (
-              <Grid item xs={12} md={12}>
+              <Grid item sx={{ ...responsiveGridItem2 }}>
                 <Box
                   sx={{
+                    height: '100%',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -150,7 +183,9 @@ export const TemplateSection = () => {
       sx={{
         padding: '24px',
         border: muiTheme => `1px solid ${muiTheme.palette.grey[300]}`,
-        overflow: 'auto',
+        containerType: 'inline-size',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <Typography
@@ -160,21 +195,31 @@ export const TemplateSection = () => {
           alignItems: 'center',
           fontWeight: '500',
           fontSize: '1.5rem',
+          flexShrink: 0,
         }}
       >
         {t('templates.title')}
       </Typography>
-      {content}
-      {templates?.items && templates?.items.length > 0 && (
-        <Box sx={{ pt: 2 }}>
-          <ViewMoreLink to={catalogTemplatesLink} underline="always">
-            <Trans
-              message="templates.viewAll"
-              params={{ count: templates?.totalItems?.toString() || '' }}
-            />
-          </ViewMoreLink>
-        </Box>
-      )}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          mt: 1,
+        }}
+      >
+        {content}
+        {templates?.items && templates?.items.length > 0 && (
+          <Box sx={{ pt: 2 }}>
+            <ViewMoreLink to={catalogTemplatesLink} underline="always">
+              <Trans
+                message="templates.viewAll"
+                params={{ count: templates?.totalItems?.toString() || '' }}
+              />
+            </ViewMoreLink>
+          </Box>
+        )}
+      </Box>
     </Card>
   );
 };
