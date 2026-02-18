@@ -1,0 +1,13 @@
+---
+# Component with OpenSSF Scorecard
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: dependabot-scorecard-only
+  annotations:
+    github.com/project-slug: backstage/backstage
+    #dependabot/title: "Vulnerabilities"
+spec:
+  type: service
+  owner: guests
+  lifecycle: experimental
