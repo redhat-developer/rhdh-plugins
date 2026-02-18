@@ -1,9 +1,13 @@
 #!/bin/bash
 set -eo pipefail
 
+# Prevent git from prompting for passwords interactively (no TTY in containers)
+export GIT_TERMINAL_PROMPT=0
+
 # Track error context for the cleanup trap
 ERROR_MESSAGE=""
 ARTIFACTS=()
+PUSH_FAILED=""
 
 # Report job result back to the backend.
 # TODO: Incorporate CALLBACK_TOKEN for request signing (HMAC-SHA256).
@@ -33,6 +37,31 @@ report_result() {
   cd /app && "${cmd[@]}" || echo "WARNING: Failed to report result to backend"
 }
 
+# Strip git tokens from files before committing to prevent secret leaks.
+# The x2a tool may embed SOURCE_REPO_TOKEN in generated files (e.g., Policyfile.lock.json)
+# when Chef resolves cookbook sources using authenticated URLs.
+sanitize_secrets() {
+  local dir="$1"
+  echo "=== Sanitizing secrets from output files ==="
+
+  # Match GitHub PATs (ghp_, gho_, github_pat_) and generic token@host patterns in URLs
+  local count=0
+  while IFS= read -r -d '' file; do
+    if grep -qE 'https?://[^@/:[:space:]]+@' "$file" 2>/dev/null; then
+      # Strip token from URLs: https://ghp_xxx@github.com/... → https://github.com/...
+      sed -i 's|https\?://[^@/:[:space:]]*@|https://|g' "$file"
+      echo "  Sanitized: ${file#/workspace/target/}"
+      count=$((count + 1))
+    fi
+  done < <(find "$dir" -type f \( -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.lock' \) -print0 2>/dev/null)
+
+  if [ "$count" -eq 0 ]; then
+    echo "  No secrets found in output files"
+  else
+    echo "  Sanitized ${count} file(s)"
+  fi
+}
+
 # Cleanup trap: fires on every exit (success or failure).
 # Guarantees exactly one report_result call regardless of how the script ends.
 cleanup() {
@@ -42,6 +71,10 @@ cleanup() {
   # Always try to commit and push whatever is in the working directory
   if [ -d /workspace/target/.git ]; then
     cd /workspace/target
+
+    # Sanitize secrets from output files before committing
+    sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
+
     git add "${PROJECT_DIR:-${PROJECT_ID}.${PROJECT_ABBREV}}" 2>/dev/null || git add -A || true
     git commit -m "x2a: ${PHASE} phase for ${MODULE_NAME:-project}
 
@@ -53,11 +86,16 @@ Job: ${JOB_ID}
 Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 " || true
     git pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
-    git push origin "${TARGET_REPO_BRANCH}" || true
+    if ! git push origin "${TARGET_REPO_BRANCH}"; then
+      PUSH_FAILED="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
+      echo "ERROR: ${PUSH_FAILED}"
+    fi
   fi
 
   if [ ${exit_code} -ne 0 ]; then
     report_result "error" "${ERROR_MESSAGE:-Script failed with exit code ${exit_code}}"
+  elif [ -n "${PUSH_FAILED}" ]; then
+    report_result "error" "${PUSH_FAILED}"
   else
     report_result "success" ""
   fi
@@ -73,21 +111,18 @@ git_clone_repos() {
   echo "=== Cloning target repository ==="
   local target_auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
 
-  if git ls-remote "${target_auth_url}" &>/dev/null; then
-    if git ls-remote --exit-code --heads "${target_auth_url}" "${TARGET_REPO_BRANCH}" &>/dev/null; then
-      # Repo exists, branch exists — clone normally
-      ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
-      git clone --depth=1 --single-branch --branch="${TARGET_REPO_BRANCH}" \
-        "${target_auth_url}" /workspace/target
-    else
-      # Repo exists, branch doesn't — clone default branch, create target branch locally
-      echo "Branch '${TARGET_REPO_BRANCH}' not found on remote, creating it"
-      ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
-      git clone --depth=1 "${target_auth_url}" /workspace/target
-      cd /workspace/target
-      git checkout -b "${TARGET_REPO_BRANCH}"
-    fi
+  ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
+  if git clone --depth=1 --single-branch --branch="${TARGET_REPO_BRANCH}" \
+      "${target_auth_url}" /workspace/target 2>/dev/null; then
+    # Repo and branch exist — cloned successfully
+    :
+  elif git clone --depth=1 "${target_auth_url}" /workspace/target 2>/dev/null; then
+    # Repo exists but branch doesn't — create target branch locally
+    echo "Branch '${TARGET_REPO_BRANCH}' not found on remote, creating it"
+    cd /workspace/target
+    git checkout -b "${TARGET_REPO_BRANCH}"
   else
+    # Repo doesn't exist or can't be accessed — init empty
     echo "Target repo doesn't exist, initializing empty repo"
     mkdir -p /workspace/target
     cd /workspace/target
@@ -216,13 +251,13 @@ case "${PHASE}" in
 
     # Copy migration-plan.md from target repo to source dir
     # The x2a tool does os.chdir(source_dir) and reads migration-plan.md from there
-    if [ ! -f "${SOURCE_BASE}/${PROJECT_DIR}/migration-plan.md" ]; then
-      ERROR_MESSAGE="migration-plan.md not found in ${SOURCE_BASE}/${PROJECT_DIR}/ - init phase must be run first"
+    if [ ! -f "${PROJECT_PATH}/migration-plan.md" ]; then
+      ERROR_MESSAGE="migration-plan.md not found in ${PROJECT_PATH}/ - init phase must be run first"
       exit 1
     fi
 
-    echo "Copying migration-plan.md from source project directory to source root..."
-    cp -v "${SOURCE_BASE}/${PROJECT_DIR}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
+    echo "Copying migration-plan.md from target project directory to source root..."
+    cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
