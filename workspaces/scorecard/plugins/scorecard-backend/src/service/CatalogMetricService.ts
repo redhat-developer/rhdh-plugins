@@ -23,7 +23,11 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { NotFoundError, stringifyError } from '@backstage/errors';
-import { AuthService, LoggerService } from '@backstage/backend-plugin-api';
+import {
+  AuthService,
+  BackstageCredentials,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { filterAuthorizedMetrics } from '../permissions/permissionUtils';
 import {
   PermissionCondition,
@@ -193,6 +197,7 @@ export class CatalogMetricService {
   async getEntityMetricDetails(
     entityRefs: string[],
     metricId: string,
+    credentials: BackstageCredentials,
     options: {
       status?: 'success' | 'warning' | 'error';
       owner?: string;
@@ -246,7 +251,7 @@ export class CatalogMetricService {
             entityRefs: entityRefsToFetch,
             fields: ['kind', 'metadata', 'spec'], // Only fetch needed fields
           },
-          { credentials: await this.auth.getOwnServiceCredentials() },
+          { credentials },
         );
 
         // Build map of ref -> entity

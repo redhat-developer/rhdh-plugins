@@ -41,7 +41,10 @@ import {
   AuthorizeResult,
   PolicyDecision,
 } from '@backstage/plugin-permission-common';
-import { PermissionsService } from '@backstage/backend-plugin-api';
+import {
+  BackstageCredentials,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
 
 jest.mock('../utils/getEntitiesOwnedByUser', () => ({
@@ -800,6 +803,7 @@ describe('createRouter', () => {
     let getEntitiesOwnedByUserSpy: jest.SpyInstance;
     let checkEntityAccessSpy: jest.SpyInstance;
     let getAuthorizedEntityRefsSpy: jest.SpyInstance;
+    let mockCredentials: BackstageCredentials;
 
     beforeEach(async () => {
       const githubProvider = new MockNumberProvider(
@@ -848,6 +852,11 @@ describe('createRouter', () => {
       drillDownApp = express();
       drillDownApp.use(router);
       drillDownApp.use(mockErrorHandler());
+      mockCredentials = {
+        principal: {
+          userEntityRef: 'user:default/test-user',
+        },
+      } as BackstageCredentials;
     });
 
     afterEach(() => {
@@ -864,6 +873,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         {
           status: undefined,
           owner: undefined,
@@ -885,6 +895,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           page: 2,
           limit: 20,
@@ -900,6 +911,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           limit: 100,
         }),
@@ -914,6 +926,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           status: 'error',
         }),
@@ -928,6 +941,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           owner: 'team:default/platform',
         }),
@@ -942,6 +956,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           kind: 'Component',
         }),
@@ -956,6 +971,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           entityName: 'service',
         }),
@@ -978,6 +994,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         ['component:default/my-service', 'component:default/another-service'],
         'github.open_prs',
+        mockCredentials,
         expect.any(Object),
       );
     });
@@ -1010,6 +1027,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           sortBy: 'entityName',
           sortOrder: 'asc',
@@ -1025,6 +1043,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           sortBy: 'metricValue',
           sortOrder: 'desc',
@@ -1040,6 +1059,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         AUTHORIZED_ENTITY_REFS,
         'github.open_prs',
+        mockCredentials,
         expect.objectContaining({
           status: 'error',
           kind: 'Component',
@@ -1104,6 +1124,7 @@ describe('createRouter', () => {
     it('should return empty entities array when no results', async () => {
       getEntityMetricDetailsSpy.mockResolvedValue({
         metricId: 'github.open_prs',
+        mockCredentials,
         metricMetadata: mockEntityMetricDetailResponse.metricMetadata,
         entities: [],
         pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
@@ -1168,6 +1189,7 @@ describe('createRouter', () => {
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
         restrictedRefs,
         'github.open_prs',
+        mockCredentials,
         expect.any(Object),
       );
     });
