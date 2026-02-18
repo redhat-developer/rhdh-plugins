@@ -17,11 +17,13 @@
 
 /workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
 /workspaces/ai-integrations                         @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
+/workspaces/apis                                    @redhat-developer/rhdh-ui @rohitkrai03 @christoph-jerolimov
 /workspaces/bulk-import                             @redhat-developer/rhdh-plugins @rm3l   @redhat-developer/rhdh-ui @debsmita1 @its-mitesh-kumar
 /workspaces/extensions                              @redhat-developer/rhdh-ui @christoph-jerolimov @karthikjeeyar
 /workspaces/global-floating-action-button           @redhat-developer/rhdh-ui @debsmita1 @divyanshiGupta
 /workspaces/global-header                           @redhat-developer/rhdh-ui @ciiay @divyanshiGupta
 /workspaces/homepage                                @redhat-developer/rhdh-ui @christoph-jerolimov @eswaraiahsapram
+/workspaces/konflux                                 @rrosatti @sahil143 @testcara
 /workspaces/lightspeed                              @redhat-developer/rhdh-ui @karthikjeeyar @rohitkrai03   @yangcao77
 /workspaces/mcp-integrations                        @johnmcollier @gabemontero @thepetk
 /workspaces/openshift-image-registry                @redhat-developer/rhdh-ui @divyanshiGupta @its-mitesh-kumar
@@ -32,5 +34,4 @@
 /workspaces/scorecard                               @redhat-developer/rhdh-plugins   @redhat-developer/rhdh-ui @christoph-jerolimov @its-mitesh-kumar @eswaraiahsapram
 /workspaces/theme                                   @redhat-developer/rhdh-ui @ciiay   @logonoff
 /workspaces/translations                            @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
-/workspaces/konflux                                 @rrosatti @sahil143 @testcara
 /workspaces/x2a                                     @mareklibra @elai-shalev @eloycoto
