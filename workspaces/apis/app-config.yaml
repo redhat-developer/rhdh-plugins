@@ -1,11 +1,16 @@
 app:
-  title: Scaffolded Backstage App
+  title: RHDH APIs test app
   baseUrl: http://localhost:3000
 
   # Enable all packages by default, this will discover packages from packages/app/package.json
   packages: all
 
   extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+          defaultLanguage: 'en'
+
     # Disable the nav items that we're manually rendering in packages/app/src/modules/nav/Sidebar.tsx
     - nav-item:search: false
     - nav-item:user-settings: false
@@ -19,7 +24,7 @@ app:
 
 
 organization:
-  name: My Company
+  name: Red Hat
 
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
