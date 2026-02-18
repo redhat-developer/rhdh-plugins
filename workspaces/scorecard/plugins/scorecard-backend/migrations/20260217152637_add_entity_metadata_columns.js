@@ -21,19 +21,11 @@ exports.up = async function up(knex) {
 
     // Add entity_owner column (stores the owner entity ref)
     table.string('entity_owner', 255).nullable();
-
-    // Optional: Add index for better filtering performance
-    table.index(['entity_kind'], 'idx_metric_values_entity_kind');
-    table.index(['entity_owner'], 'idx_metric_values_entity_owner');
   });
 };
 
 exports.down = async function down(knex) {
   await knex.schema.alterTable('metric_values', table => {
-    // Drop indexes first
-    table.dropIndex([], 'idx_metric_values_entity_kind');
-    table.dropIndex([], 'idx_metric_values_entity_owner');
-
     // Drop columns
     table.dropColumn('entity_kind');
     table.dropColumn('entity_owner');
