@@ -22,7 +22,6 @@ app:
         config:
           path: /
 
-
 organization:
   name: Red Hat
 
