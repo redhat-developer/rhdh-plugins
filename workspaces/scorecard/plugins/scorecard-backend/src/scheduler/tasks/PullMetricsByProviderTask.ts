@@ -162,7 +162,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 status,
                 entity_kind: entity.kind,
-                entity_owner: JSON.stringify(entity?.spec?.owner) ?? undefined,
+                entity_owner: normalizeOwner(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
               return {
@@ -173,7 +173,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 error_message:
                   error instanceof Error ? error.message : String(error),
                 entity_kind: entity.kind,
-                entity_owner: JSON.stringify(entity?.spec?.owner) ?? undefined,
+                entity_owner: normalizeOwner(entity?.spec?.owner),
               } as DbMetricValueCreate;
             }
           }),
@@ -199,4 +199,10 @@ export class PullMetricsByProviderTask implements SchedulerTask {
       throw error;
     }
   }
+}
+
+function normalizeOwner(owner: unknown): string | undefined {
+  if (!owner) return undefined;
+  if (typeof owner === 'string') return owner;
+  return JSON.stringify(owner);
 }
