@@ -15,8 +15,52 @@
  */
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+
+import {
+  DarkIcon,
+  darkThemeProvider,
+  LightIcon,
+  lightThemeProvider,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
+
 import { navModule } from './modules/nav';
+import { ThemeBlueprint } from '@backstage/plugin-app-react';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+
+// TODO: workaround until our theme package supports the new frontend system.
+const rhdhDarkTheme = ThemeBlueprint.make({
+  name: 'rhdh-dark',
+  params: {
+    theme: {
+      id: 'rhdh-dark',
+      title: 'RHDH Dark Theme',
+      variant: 'dark',
+      icon: <DarkIcon />,
+      Provider: darkThemeProvider,
+    },
+  },
+});
+
+const rhdhLightTheme = ThemeBlueprint.make({
+  name: 'rhdh-light',
+  params: {
+    theme: {
+      id: 'rhdh-light',
+      title: 'RHDH Light Theme',
+      variant: 'light',
+      icon: <LightIcon />,
+      Provider: lightThemeProvider,
+    },
+  },
+});
 
 export default createApp({
-  features: [catalogPlugin, navModule],
+  features: [
+    createFrontendModule({
+      pluginId: 'app',
+      extensions: [rhdhDarkTheme, rhdhLightTheme],
+    }),
+    catalogPlugin,
+    navModule,
+  ],
 });
