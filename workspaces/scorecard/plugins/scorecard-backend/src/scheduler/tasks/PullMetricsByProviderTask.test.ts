@@ -267,6 +267,8 @@ describe('PullMetricsByProviderTask', () => {
       const metricValues = [
         {
           catalog_entity_ref: 'component:default/test1',
+          entity_kind: 'Component',
+          entity_owner: undefined,
           metric_id: 'github.test_metric',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,
@@ -275,6 +277,8 @@ describe('PullMetricsByProviderTask', () => {
         {
           catalog_entity_ref: 'component:default/test2',
           metric_id: 'github.test_metric',
+          entity_kind: 'Component',
+          entity_owner: undefined,
           status: 'success',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,

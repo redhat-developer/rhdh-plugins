@@ -82,6 +82,7 @@ describe('createRouter', () => {
   let app: express.Express;
   let metricProvidersRegistry: MetricProvidersRegistry;
   let catalogMetricService: CatalogMetricService;
+  let mockLogger: ReturnType<typeof mockServices.logger.mock>;
   let httpAuthMock: ServiceMock<
     import('@backstage/backend-plugin-api').HttpAuthService
   >;
@@ -94,11 +95,13 @@ describe('createRouter', () => {
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
     const catalog = catalogServiceMock.mock();
+    mockLogger = mockServices.logger.mock();
     catalogMetricService = new CatalogMetricService({
       catalog,
       registry: metricProvidersRegistry,
       auth: mockServices.auth(),
       database: mockDatabaseMetricValues,
+      logger: mockLogger,
     });
 
     permissionsMock.authorizeConditional.mockResolvedValue([
@@ -747,6 +750,361 @@ describe('createRouter', () => {
           .getMetricThresholds(),
         mockAggregatedMetric,
       );
+    });
+  });
+
+  describe('GET /metrics/:metricId/catalog/aggregations/entities', () => {
+    const mockEntityMetricDetailResponse = {
+      metricId: 'github.open_prs',
+      metricMetadata: {
+        title: 'GitHub Open PRs',
+        description: 'Mock number description.',
+        type: 'number',
+      },
+      entities: [
+        {
+          entityRef: 'component:default/my-service',
+          entityName: 'my-service',
+          entityKind: 'Component',
+          owner: 'team:default/platform',
+          metricValue: 15,
+          timestamp: '2025-01-01T10:30:00.000Z',
+          status: 'error',
+        },
+        {
+          entityRef: 'component:default/another-service',
+          entityName: 'another-service',
+          entityKind: 'Component',
+          owner: 'team:default/backend',
+          metricValue: 8,
+          timestamp: '2025-01-01T10:25:00.000Z',
+          status: 'warning',
+        },
+      ],
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        total: 2,
+        totalPages: 1,
+      },
+    };
+
+    let drillDownApp: express.Express;
+    let getEntityMetricDetailsSpy: jest.SpyInstance;
+    let getEntitiesOwnedByUserSpy: jest.SpyInstance;
+    let checkEntityAccessSpy: jest.SpyInstance;
+
+    beforeEach(async () => {
+      const githubProvider = new MockNumberProvider(
+        'github.open_prs',
+        'github',
+        'GitHub Open PRs',
+      );
+      metricProvidersRegistry.register(githubProvider);
+
+      const jiraProvider = new MockNumberProvider(
+        'jira.open_issues',
+        'jira',
+        'Jira Open Issues',
+      );
+      metricProvidersRegistry.register(jiraProvider);
+
+      getEntityMetricDetailsSpy = jest
+        .spyOn(catalogMetricService, 'getEntityMetricDetails')
+        .mockResolvedValue(mockEntityMetricDetailResponse as any);
+
+      getEntitiesOwnedByUserSpy = jest
+        .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
+        .mockResolvedValue([
+          'component:default/my-service',
+          'component:default/another-service',
+        ]);
+
+      checkEntityAccessSpy = jest.spyOn(
+        permissionUtilsModule,
+        'checkEntityAccess',
+      );
+
+      const mockCatalog = catalogServiceMock.mock();
+      const router = await createRouter({
+        metricProvidersRegistry,
+        catalogMetricService,
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+      });
+
+      drillDownApp = express();
+      drillDownApp.use(router);
+      drillDownApp.use(mockErrorHandler());
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return entity metric details with default pagination', async () => {
+      const response = await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockEntityMetricDetailResponse);
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        {
+          status: undefined,
+          owner: undefined,
+          kind: undefined,
+          entityName: undefined,
+          sortBy: undefined,
+          sortOrder: 'desc',
+          page: 1,
+          limit: 5,
+        },
+      );
+    });
+
+    it('should handle custom page and pageSize', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?page=2&pageSize=20',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          page: 2,
+          limit: 20,
+        }),
+      );
+    });
+
+    it('should enforce max pageSize of 100', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?pageSize=200',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          limit: 100,
+        }),
+      );
+    });
+
+    it('should filter by status', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?status=error',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          status: 'error',
+        }),
+      );
+    });
+
+    it('should filter by owner', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          owner: 'team:default/platform',
+        }),
+      );
+    });
+
+    it('should filter by kind', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?kind=Component',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          kind: 'Component',
+        }),
+      );
+    });
+
+    it('should filter by entityName', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?entityName=service',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          entityName: 'service',
+        }),
+      );
+    });
+
+    it('should handle ownedByMe=true and call getEntitiesOwnedByUser', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true',
+      );
+
+      expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledWith(
+        'user:default/test-user',
+        expect.objectContaining({
+          catalog: expect.any(Object),
+          credentials: expect.any(Object),
+        }),
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/another-service'],
+        'github.open_prs',
+        expect.any(Object),
+      );
+    });
+
+    it('should check entity access when ownedByMe=true', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true',
+      );
+
+      expect(checkEntityAccessSpy).toHaveBeenCalledTimes(2);
+      expect(checkEntityAccessSpy).toHaveBeenCalledWith(
+        'component:default/my-service',
+        expect.any(Object),
+        permissionsMock,
+        httpAuthMock,
+      );
+      expect(checkEntityAccessSpy).toHaveBeenCalledWith(
+        'component:default/another-service',
+        expect.any(Object),
+        permissionsMock,
+        httpAuthMock,
+      );
+    });
+
+    it('should sort by entityName ascending', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?sortBy=entityName&sortOrder=asc',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          sortBy: 'entityName',
+          sortOrder: 'asc',
+        }),
+      );
+    });
+
+    it('should sort by metricValue descending', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?sortBy=metricValue&sortOrder=desc',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+        }),
+      );
+    });
+
+    it('should combine multiple filters', async () => {
+      await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities?status=error&kind=Component&owner=team:default/platform&sortBy=metricValue&sortOrder=desc',
+      );
+
+      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
+        [],
+        'github.open_prs',
+        expect.objectContaining({
+          status: 'error',
+          kind: 'Component',
+          owner: 'team:default/platform',
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+        }),
+      );
+    });
+
+    it('should return 403 when user does not have permission', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.name).toEqual('NotAllowedError');
+    });
+
+    it('should return 401 when user entity reference is not found', async () => {
+      httpAuthMock.credentials.mockResolvedValue({
+        principal: {},
+      } as any);
+
+      const response = await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(response.status).toBe(401);
+      expect(response.body.error.name).toEqual('AuthenticationError');
+      expect(response.body.error.message).toContain(
+        'User entity reference not found',
+      );
+    });
+
+    it('should return 403 when user does not have access to metric (conditional)', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+
+      const response = await request(drillDownApp).get(
+        '/metrics/jira.open_issues/catalog/aggregations/entities',
+      );
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.name).toEqual('NotAllowedError');
+    });
+
+    it('should return 404 when metric does not exist', async () => {
+      const response = await request(drillDownApp).get(
+        '/metrics/non.existent.metric/catalog/aggregations/entities',
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+    });
+
+    it('should return empty entities array when no results', async () => {
+      getEntityMetricDetailsSpy.mockResolvedValue({
+        metricId: 'github.open_prs',
+        metricMetadata: mockEntityMetricDetailResponse.metricMetadata,
+        entities: [],
+        pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
+      });
+
+      const response = await request(drillDownApp).get(
+        '/metrics/github.open_prs/catalog/aggregations/entities',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.entities).toEqual([]);
+      expect(response.body.pagination.total).toBe(0);
     });
   });
 });

@@ -513,4 +513,607 @@ describe('DatabaseMetricValues', () => {
       },
     );
   });
+
+  describe('readEntityMetricsByStatus', () => {
+    it.each(databases.eachSupportedId())(
+      'should return paginated entity metrics filtered by status - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const baseTime = new Date('2023-01-01T00:00:00Z');
+        const laterTime = new Date('2023-01-01T01:00:00Z');
+
+        // Insert test data with different statuses
+        await client('metric_values').insert([
+          // Older value for service1 - should be ignored
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 999,
+            timestamp: baseTime,
+            status: 'success',
+          },
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp: laterTime,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp: laterTime,
+            status: 'success',
+          },
+          {
+            catalog_entity_ref: 'component:default/service3',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp: laterTime,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service4',
+            metric_id: 'github.metric1',
+            value: 3,
+            timestamp: laterTime,
+            status: 'warning',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+            'component:default/service4',
+          ],
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        // Should return 2 entities with error status
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+
+        // Check that both are error status
+        expect(result.rows[0].status).toBe('error');
+        expect(result.rows[1].status).toBe('error');
+
+        // Verify it's the latest values (not the old one for service1)
+        const service1Result = result.rows.find(
+          r => r.catalog_entity_ref === 'component:default/service1',
+        );
+        expect(service1Result?.value).toBe(10); // Not 999 from older entry
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return all statuses when no filter provided - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'success',
+          },
+          {
+            catalog_entity_ref: 'component:default/service3',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp,
+            status: 'warning',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          undefined,
+          undefined,
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(3);
+        expect(result.total).toBe(3);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should handle pagination correctly - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        // Insert 5 entities with same status
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 1,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 2,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service3',
+            metric_id: 'github.metric1',
+            value: 3,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service4',
+            metric_id: 'github.metric1',
+            value: 4,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service5',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+          },
+        ]);
+
+        // Page 1: limit 2
+        const page1 = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+            'component:default/service4',
+            'component:default/service5',
+          ],
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          { limit: 2, offset: 0 },
+        );
+
+        expect(page1.rows).toHaveLength(2);
+        expect(page1.total).toBe(5);
+
+        // Page 2: limit 2, offset 2
+        const page2 = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+            'component:default/service4',
+            'component:default/service5',
+          ],
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          { limit: 2, offset: 2 },
+        );
+
+        expect(page2.rows).toHaveLength(2);
+        expect(page2.total).toBe(5); // Total should stay the same
+
+        // Page 3: limit 2, offset 4
+        const page3 = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+            'component:default/service4',
+            'component:default/service5',
+          ],
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          { limit: 2, offset: 4 },
+        );
+
+        expect(page3.rows).toHaveLength(1); // Only 1 left on page 3
+        expect(page3.total).toBe(5);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return empty result for no matching entity refs - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readEntityMetricsByStatus(
+          [],
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(0);
+        expect(result.total).toBe(0);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by entity kind - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        // Insert entities with different kinds
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'api:default/api1',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+            entity_kind: 'API',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/backend',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'api:default/api1',
+            'component:default/service2',
+          ],
+          'github.metric1',
+          'error',
+          'Component', // Filter by kind
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        // Should only return Component entities
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+        expect(result.rows[0].entity_kind).toBe('Component');
+        expect(result.rows[1].entity_kind).toBe('Component');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by entity owner - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        // Insert entities with different owners
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/backend',
+          },
+          {
+            catalog_entity_ref: 'component:default/service3',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'error',
+          undefined,
+          'team:default/platform', // Filter by owner
+          { limit: 10, offset: 0 },
+        );
+
+        // Should only return entities owned by team:default/platform
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+        expect(result.rows[0].entity_owner).toBe('team:default/platform');
+        expect(result.rows[1].entity_owner).toBe('team:default/platform');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by status, kind, and owner together - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        // Insert diverse test data
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'api:default/api1',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+            entity_kind: 'API',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp,
+            status: 'warning',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service3',
+            metric_id: 'github.metric1',
+            value: 20,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/backend',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'api:default/api1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'error', // Only error status
+          'Component', // Only Component kind
+          'team:default/platform', // Only platform team
+          { limit: 10, offset: 0 },
+        );
+
+        // Should only return service1 (Component, error, platform)
+        expect(result.rows).toHaveLength(1);
+        expect(result.total).toBe(1);
+        expect(result.rows[0].catalog_entity_ref).toBe(
+          'component:default/service1',
+        );
+        expect(result.rows[0].status).toBe('error');
+        expect(result.rows[0].entity_kind).toBe('Component');
+        expect(result.rows[0].entity_owner).toBe('team:default/platform');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should work without pagination (fetch all) - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service3',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+        ]);
+
+        // No pagination parameter - should return all
+        const result = await db.readEntityMetricsByStatus(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          undefined, // No pagination
+        );
+
+        expect(result.rows).toHaveLength(3);
+        expect(result.total).toBe(3);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should handle null entity_kind and entity_owner - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        // Insert entity with null kind/owner (legacy data)
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+            entity_kind: null,
+            entity_owner: null,
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+        ]);
+
+        // Should return both when no filters
+        const result = await db.readEntityMetricsByStatus(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+
+        // Should only return service2 when filtering by kind
+        const filteredResult = await db.readEntityMetricsByStatus(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+          'error',
+          'Component',
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        expect(filteredResult.rows).toHaveLength(1);
+        expect(filteredResult.rows[0].catalog_entity_ref).toBe(
+          'component:default/service2',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should handle empty entity refs list (fetch all entities) - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        // Insert entities
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/backend',
+          },
+        ]);
+
+        // Empty array = fetch all entities for this metric
+        const result = await db.readEntityMetricsByStatus(
+          [], // Empty array
+          'github.metric1',
+          'error',
+          undefined,
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+      },
+    );
+  });
 });
