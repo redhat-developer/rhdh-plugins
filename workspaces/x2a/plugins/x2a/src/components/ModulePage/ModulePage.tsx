@@ -163,7 +163,12 @@ export const ModulePage = () => {
               <ModuleDetailsCard module={module} />
             </Grid>
             <Grid item>
-              <PhasesCard module={module} onRunPhase={handleRunPhase} />
+              <PhasesCard
+                module={module}
+                projectId={projectId}
+                moduleId={moduleId}
+                onRunPhase={handleRunPhase}
+              />
             </Grid>
           </Grid>
         )}

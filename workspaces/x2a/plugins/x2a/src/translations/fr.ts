@@ -65,6 +65,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.summary.pending': 'En attente',
     'module.summary.running': 'En cours',
     'module.summary.error': 'Erreur',
+    'module.summary.toReview': 'à réviser',
     'module.actions.runNextPhase': 'Exécuter la phase suivante',
     'module.lastPhase': 'Dernière phase',
     'module.name': 'Nom',
@@ -113,6 +114,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.republishInstructions':
       'Le module a déjà été publié. Relancez la publication pour mettre à jour le dépôt cible.',
     'modulePage.phases.rerunPublish': 'Republier dans le dépôt cible',
+    'modulePage.phases.viewLog': 'Voir le journal',
+    'modulePage.phases.hideLog': 'Masquer le journal',
   },
 });
 

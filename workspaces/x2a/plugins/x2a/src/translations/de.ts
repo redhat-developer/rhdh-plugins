@@ -65,6 +65,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.summary.pending': 'Ausstehend',
     'module.summary.running': 'Läuft',
     'module.summary.error': 'Fehler',
+    'module.summary.toReview': 'zu überprüfen',
     'module.actions.runNextPhase': 'Nächste Phase ausführen',
     'module.lastPhase': 'Letzte Phase',
     'module.name': 'Name',
@@ -114,6 +115,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Das Modul wurde bereits veröffentlicht. Lösen Sie die Veröffentlichung erneut aus, um das Ziel-Repository zu aktualisieren.',
     'modulePage.phases.rerunPublish':
       'Im Ziel-Repository erneut veröffentlichen',
+    'modulePage.phases.viewLog': 'Log anzeigen',
+    'modulePage.phases.hideLog': 'Log ausblenden',
   },
 });
 
