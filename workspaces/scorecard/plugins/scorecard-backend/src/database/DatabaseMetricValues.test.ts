@@ -564,12 +564,6 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         const result = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'component:default/service2',
-            'component:default/service3',
-            'component:default/service4',
-          ],
           'github.metric1',
           'error',
           undefined,
@@ -625,11 +619,6 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         const result = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'component:default/service2',
-            'component:default/service3',
-          ],
           'github.metric1',
           undefined,
           undefined,
@@ -690,13 +679,6 @@ describe('DatabaseMetricValues', () => {
 
         // Page 1: limit 2
         const page1 = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'component:default/service2',
-            'component:default/service3',
-            'component:default/service4',
-            'component:default/service5',
-          ],
           'github.metric1',
           'error',
           undefined,
@@ -709,13 +691,6 @@ describe('DatabaseMetricValues', () => {
 
         // Page 2: limit 2, offset 2
         const page2 = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'component:default/service2',
-            'component:default/service3',
-            'component:default/service4',
-            'component:default/service5',
-          ],
           'github.metric1',
           'error',
           undefined,
@@ -728,13 +703,6 @@ describe('DatabaseMetricValues', () => {
 
         // Page 3: limit 2, offset 4
         const page3 = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'component:default/service2',
-            'component:default/service3',
-            'component:default/service4',
-            'component:default/service5',
-          ],
           'github.metric1',
           'error',
           undefined,
@@ -748,12 +716,11 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should return empty result for no matching entity refs - %p',
+      'should return empty result when database has no rows for the metric - %p',
       async databaseId => {
         const { db } = await createDatabase(databaseId);
 
         const result = await db.readEntityMetricsByStatus(
-          [],
           'github.metric1',
           'error',
           undefined,
@@ -805,11 +772,6 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         const result = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'api:default/api1',
-            'component:default/service2',
-          ],
           'github.metric1',
           'error',
           'Component', // Filter by kind
@@ -864,15 +826,10 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         const result = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'component:default/service2',
-            'component:default/service3',
-          ],
           'github.metric1',
           'error',
           undefined,
-          'team:default/platform', // Filter by owner
+          ['team:default/platform'], // Filter by owner
           { limit: 10, offset: 0 },
         );
 
@@ -932,16 +889,10 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         const result = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'api:default/api1',
-            'component:default/service2',
-            'component:default/service3',
-          ],
           'github.metric1',
           'error', // Only error status
           'Component', // Only Component kind
-          'team:default/platform', // Only platform team
+          ['team:default/platform'], // Only platform team
           { limit: 10, offset: 0 },
         );
 
@@ -996,11 +947,6 @@ describe('DatabaseMetricValues', () => {
 
         // No pagination parameter - should return all
         const result = await db.readEntityMetricsByStatus(
-          [
-            'component:default/service1',
-            'component:default/service2',
-            'component:default/service3',
-          ],
           'github.metric1',
           'error',
           undefined,
@@ -1044,7 +990,6 @@ describe('DatabaseMetricValues', () => {
 
         // Should return both when no filters
         const result = await db.readEntityMetricsByStatus(
-          ['component:default/service1', 'component:default/service2'],
           'github.metric1',
           'error',
           undefined,
@@ -1057,7 +1002,6 @@ describe('DatabaseMetricValues', () => {
 
         // Should only return service2 when filtering by kind
         const filteredResult = await db.readEntityMetricsByStatus(
-          ['component:default/service1', 'component:default/service2'],
           'github.metric1',
           'error',
           'Component',
@@ -1073,7 +1017,7 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should return all matching rows when entity refs is null (unscoped path) - %p',
+      'should return all rows when no owner filter is applied - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
@@ -1100,10 +1044,9 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        // null means unscoped — all rows for the metric are returned.
+        // No owner filter — all rows for the metric are returned.
         // Per-row authorization is enforced downstream by catalog.getEntitiesByRefs.
         const result = await db.readEntityMetricsByStatus(
-          null,
           'github.metric1',
           undefined,
           undefined,
@@ -1117,13 +1060,12 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should return empty result when entity refs is empty, not bypass to fetch all - %p',
+      'should filter by multiple owner refs - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
         const timestamp = new Date('2023-01-01T00:00:00Z');
 
-        // Insert entities that would previously be returned when passing an empty array
         await client('metric_values').insert([
           {
             catalog_entity_ref: 'component:default/service1',
@@ -1143,21 +1085,32 @@ describe('DatabaseMetricValues', () => {
             entity_kind: 'Component',
             entity_owner: 'team:default/backend',
           },
+          {
+            catalog_entity_ref: 'component:default/service3',
+            metric_id: 'github.metric1',
+            value: 8,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/other',
+          },
         ]);
 
-        // Empty array must return no results — an empty scope means no authorized entities,
-        // not an unscoped "fetch all" that would bypass catalog read permissions.
+        // Passing two owners returns only those two teams' entities.
         const result = await db.readEntityMetricsByStatus(
-          [],
           'github.metric1',
           'error',
           undefined,
-          undefined,
+          ['team:default/platform', 'team:default/backend'],
           { limit: 10, offset: 0 },
         );
 
-        expect(result.rows).toHaveLength(0);
-        expect(result.total).toBe(0);
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+        expect(result.rows.map(r => r.entity_owner).sort()).toEqual([
+          'team:default/backend',
+          'team:default/platform',
+        ]);
       },
     );
   });

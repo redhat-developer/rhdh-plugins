@@ -794,8 +794,6 @@ describe('createRouter', () => {
 
     let drillDownApp: express.Express;
     let getEntityMetricDetailsSpy: jest.SpyInstance;
-    let getEntitiesOwnedByUserSpy: jest.SpyInstance;
-    let checkEntityAccessSpy: jest.SpyInstance;
     let mockCredentials: BackstageCredentials;
 
     beforeEach(async () => {
@@ -816,18 +814,6 @@ describe('createRouter', () => {
       getEntityMetricDetailsSpy = jest
         .spyOn(catalogMetricService, 'getEntityMetricDetails')
         .mockResolvedValue(mockEntityMetricDetailResponse as any);
-
-      getEntitiesOwnedByUserSpy = jest
-        .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
-        .mockResolvedValue([
-          'component:default/my-service',
-          'component:default/another-service',
-        ]);
-
-      checkEntityAccessSpy = jest.spyOn(
-        permissionUtilsModule,
-        'checkEntityAccess',
-      );
 
       const mockCatalog = catalogServiceMock.mock();
       const router = await createRouter({
@@ -860,7 +846,6 @@ describe('createRouter', () => {
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockEntityMetricDetailResponse);
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         {
@@ -882,7 +867,6 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
@@ -910,7 +894,6 @@ describe('createRouter', () => {
 
       expect(response.status).toBe(200);
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
@@ -925,7 +908,6 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
@@ -940,11 +922,10 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
-          owner: 'team:default/platform',
+          owner: ['team:default/platform'],
         }),
       );
     });
@@ -955,7 +936,6 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
@@ -970,53 +950,11 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
           entityName: 'service',
         }),
-      );
-    });
-
-    it('should handle ownedByMe=true and call getEntitiesOwnedByUser', async () => {
-      await request(drillDownApp).get(
-        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true',
-      );
-
-      expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledWith(
-        'user:default/test-user',
-        expect.objectContaining({
-          catalog: expect.any(Object),
-          credentials: expect.any(Object),
-        }),
-      );
-
-      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        ['component:default/my-service', 'component:default/another-service'],
-        'github.open_prs',
-        mockCredentials,
-        expect.any(Object),
-      );
-    });
-
-    it('should check entity access when ownedByMe=true', async () => {
-      await request(drillDownApp).get(
-        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true',
-      );
-
-      expect(checkEntityAccessSpy).toHaveBeenCalledTimes(2);
-      expect(checkEntityAccessSpy).toHaveBeenCalledWith(
-        'component:default/my-service',
-        expect.any(Object),
-        permissionsMock,
-        httpAuthMock,
-      );
-      expect(checkEntityAccessSpy).toHaveBeenCalledWith(
-        'component:default/another-service',
-        expect.any(Object),
-        permissionsMock,
-        httpAuthMock,
       );
     });
 
@@ -1026,7 +964,6 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
@@ -1042,7 +979,6 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
@@ -1058,13 +994,12 @@ describe('createRouter', () => {
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
         expect.objectContaining({
           status: 'error',
           kind: 'Component',
-          owner: 'team:default/platform',
+          owner: ['team:default/platform'],
           sortBy: 'metricValue',
           sortOrder: 'desc',
         }),
@@ -1140,54 +1075,17 @@ describe('createRouter', () => {
       expect(response.body.pagination.total).toBe(0);
     });
 
-    it('should not call getEntitiesOwnedByUser when ownedByMe=false', async () => {
+    it('should normalize multi-value owner params to an array', async () => {
       await request(drillDownApp).get(
-        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=false',
-      );
-
-      expect(getEntitiesOwnedByUserSpy).not.toHaveBeenCalled();
-    });
-
-    it('should not call getEntitiesOwnedByUser when ownedByMe is not set', async () => {
-      await request(drillDownApp).get(
-        '/metrics/github.open_prs/catalog/aggregations/entities',
-      );
-
-      expect(getEntitiesOwnedByUserSpy).not.toHaveBeenCalled();
-    });
-
-    it('should not call checkEntityAccess when ownedByMe is not set', async () => {
-      await request(drillDownApp).get(
-        '/metrics/github.open_prs/catalog/aggregations/entities',
-      );
-
-      expect(checkEntityAccessSpy).not.toHaveBeenCalled();
-    });
-
-    it('should pass null as entity scope for unscoped path (avoids catalog enumeration)', async () => {
-      await request(drillDownApp).get(
-        '/metrics/github.open_prs/catalog/aggregations/entities',
+        '/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&owner=user:default/alice',
       );
 
       expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        null,
         'github.open_prs',
         mockCredentials,
-        expect.any(Object),
-      );
-    });
-
-    it('should call getEntitiesOwnedByUser and pass its result to getEntityMetricDetails when ownedByMe=true', async () => {
-      await request(drillDownApp).get(
-        '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true',
-      );
-
-      expect(getEntitiesOwnedByUserSpy).toHaveBeenCalledTimes(1);
-      expect(getEntityMetricDetailsSpy).toHaveBeenCalledWith(
-        ['component:default/my-service', 'component:default/another-service'],
-        'github.open_prs',
-        mockCredentials,
-        expect.any(Object),
+        expect.objectContaining({
+          owner: ['team:default/platform', 'user:default/alice'],
+        }),
       );
     });
 
@@ -1273,19 +1171,6 @@ describe('createRouter', () => {
       it('should return 400 when sortOrder is an invalid value', async () => {
         const response = await request(drillDownApp).get(
           '/metrics/github.open_prs/catalog/aggregations/entities?sortOrder=random',
-        );
-
-        expect(response.status).toBe(400);
-        expect(response.body.error.name).toBe('InputError');
-        expect(response.body.error.message).toContain(
-          'Invalid query parameters',
-        );
-        expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
-      });
-
-      it('should return 400 when ownedByMe is an invalid value', async () => {
-        const response = await request(drillDownApp).get(
-          '/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=yes',
         );
 
         expect(response.status).toBe(400);

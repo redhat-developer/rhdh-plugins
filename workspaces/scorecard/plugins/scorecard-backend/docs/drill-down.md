@@ -28,21 +28,20 @@ Returns a paginated list of entities with their metric values, enriched with cat
 
 #### Query Parameters
 
-| Parameter    | Type    | Required | Default     | Description                                                                                  |
-| ------------ | ------- | -------- | ----------- | -------------------------------------------------------------------------------------------- |
-| `status`     | string  | No       | -           | Filter by threshold status: `success`, `warning`, or `error`                                 |
-| `ownedByMe`  | boolean | No       | `false`     | If `true`, only show entities owned by the authenticated user and their direct parent groups |
-| `owner`      | string  | No       | -           | Filter by specific owner entity ref (e.g., `team:default/platform`)                          |
-| `kind`       | string  | No       | -           | Filter by entity kind (e.g., `Component`, `API`, `System`)                                   |
-| `entityName` | string  | No       | -           | Search for entities with names containing this string (case-insensitive)                     |
-| `sortBy`     | string  | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, or `metricValue`                  |
-| `sortOrder`  | string  | No       | `desc`      | Sort direction: `asc` or `desc`                                                              |
-| `page`       | number  | No       | `1`         | Page number (1-indexed)                                                                      |
-| `pageSize`   | number  | No       | `5`         | Number of entities per page (max: 100)                                                       |
+| Parameter    | Type             | Required | Default     | Description                                                                             |
+| ------------ | ---------------- | -------- | ----------- | --------------------------------------------------------------------------------------- |
+| `status`     | string           | No       | -           | Filter by threshold status: `success`, `warning`, or `error`                            |
+| `owner`      | string/string\[] | No       | -           | Filter by owner entity ref. Repeat to supply multiple values (e.g., `?owner=a&owner=b`) |
+| `kind`       | string           | No       | -           | Filter by entity kind (e.g., `Component`, `API`, `System`)                              |
+| `entityName` | string           | No       | -           | Search for entities with names containing this string (case-insensitive)                |
+| `sortBy`     | string           | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, or `metricValue`             |
+| `sortOrder`  | string           | No       | `desc`      | Sort direction: `asc` or `desc`                                                         |
+| `page`       | number           | No       | `1`         | Page number (1-indexed)                                                                 |
+| `pageSize`   | number           | No       | `5`         | Number of entities per page (max: 100)                                                  |
 
 #### Authentication
 
-Requires user authentication. The endpoint uses the authenticated user's entity reference when `ownedByMe=true` is specified.
+Requires user authentication.
 
 #### Permissions
 
@@ -103,17 +102,17 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 
 ### Filter by Ownership
 
-Get only entities owned by the authenticated user:
-
-```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true&status=error" \
-  -H "Authorization: Bearer <token>"
-```
-
 Get entities owned by a specific team:
 
 ```bash
 curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&page=1&pageSize=10" \
+  -H "Authorization: Bearer <token>"
+```
+
+Get entities owned by multiple teams (repeat the `owner` parameter):
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&owner=team:default/backend&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -153,10 +152,10 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 
 ### Combining Filters
 
-Get my Component entities with errors, sorted by metric value:
+Get Component entities with errors for a specific team, sorted by metric value:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true&status=error&kind=Component&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&status=error&kind=Component&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -201,14 +200,6 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 
 ## Filtering Behavior
 
-### Entity Ownership Scoping
-
-The `ownedByMe` parameter controls which entities are included in the results:
-
-**Default (`ownedByMe` not specified or `false`)**: Returns all entities in the system that have metric values for the specified metric, subject to the user's catalog read permissions.
-
-**`ownedByMe=true`**: Returns only entities owned by the authenticated user and their direct parent groups. This uses the same ownership logic as the aggregation endpoint (see [Entity Aggregation](./aggregation.md) for details on direct parent groups vs transitive ownership).
-
 ### Status Filtering
 
 When `status` is specified, only entities with that threshold evaluation are returned:
@@ -221,7 +212,7 @@ Status filtering is performed at the database level for optimal performance.
 
 ### Owner Filtering
 
-The `owner` parameter filters entities by their catalog owner (`spec.owner`):
+The `owner` parameter filters entities by their catalog owner (`spec.owner`). Repeat the parameter to match any of several owners (up to 50):
 
 ```bash
 # Get entities owned by a specific team
@@ -229,9 +220,12 @@ The `owner` parameter filters entities by their catalog owner (`spec.owner`):
 
 # Get entities owned by a specific user
 ?owner=user:default/alice
+
+# Get entities owned by either of two teams
+?owner=team:default/platform&owner=team:default/backend
 ```
 
-This filter is applied at the database level and works independently of `ownedByMe`.
+This filter is applied at the database level for optimal performance. Frontends can implement "owned by me" scoping by passing the user's `identityApi.ownershipEntityRefs` (user ref + direct group refs) as repeated `owner` values.
 
 ### Kind Filtering
 
@@ -412,20 +406,16 @@ This returns API entities with security warnings, helping prioritize security im
 
 ### Use Case 4: Personal Dashboard
 
-An engineer wants to see only their owned entities with issues:
+An engineer wants to see only their owned entities with issues. The frontend passes the user's `ownershipEntityRefs` (user ref + group memberships) as repeated `owner` params:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?ownedByMe=true&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=user:default/alice&owner=team:default/platform&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
-This returns a personalized view of entities they're responsible for.
+This returns a personalized view scoped to the entities the engineer and their teams are responsible for.
 
 ## Limitations
-
-### Direct Parent Groups Only (when using `ownedByMe=true`)
-
-Similar to the aggregation endpoint, `ownedByMe=true` only includes entities owned by direct parent groups, not nested hierarchies. See [Entity Aggregation](./aggregation.md) for details on enabling transitive parent groups.
 
 ### Entity Metadata Freshness
 
@@ -474,7 +464,7 @@ Entity metadata (name, kind, owner) is fetched from the catalog at request time 
 - Use more specific filters (status, kind, owner)
 - Reduce page size
 - Avoid `entityName` search on large datasets
-- Consider using `ownedByMe=true` to scope results
+- Use the `owner` filter to scope results to specific teams
 
 ## Related Documentation
 

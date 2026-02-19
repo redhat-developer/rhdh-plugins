@@ -39,14 +39,12 @@ import {
   checkEntityAccess,
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
-import {
-  validateCatalogMetricsSchema,
-  validateDrillDownMetricsSchema,
-} from '../validation/validateCatalogMetricsSchema';
+import { validateCatalogMetricsSchema } from '../validation/validateCatalogMetricsSchema';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { validateMetricsSchema } from '../validation/validateMetricsSchema';
 import { AggregatedMetricMapper } from './mappers';
+import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
@@ -210,7 +208,6 @@ export async function createRouter({
         page,
         pageSize,
         status,
-        ownedByMe,
         owner,
         kind,
         entityName,
@@ -239,28 +236,10 @@ export async function createRouter({
         throw new AuthenticationError('User entity reference not found');
       }
 
-      // Determine entity scope based on filters
-      let entityRefsToQuery: string[] | null;
-
-      if (ownedByMe) {
-        // Use getEntitiesOwnedByUser scoping
-        entityRefsToQuery = await getEntitiesOwnedByUser(userEntityRef, {
-          catalog,
-          credentials,
-        });
-
-        // Check entity access for owned entities
-        for (const entityRef of entityRefsToQuery) {
-          await checkEntityAccess(entityRef, req, permissions, httpAuth);
-        }
-      } else {
-        // Unscoped: DB returns the page, getEntitiesByRefs with user credentials
-        // in getEntityMetricDetails enforces catalog read permissions per-row.
-        entityRefsToQuery = null;
-      }
-
+      // Per-row authorization is enforced by catalog.getEntitiesByRefs in the service.
+      // For "owned by me" scoping, the frontend passes identityApi.ownershipEntityRefs
+      // as repeated ?owner= params.
       const entityMetrics = await catalogMetricService.getEntityMetricDetails(
-        entityRefsToQuery,
         metricId,
         credentials,
         {

@@ -181,8 +181,6 @@ export class CatalogMetricService {
    * Supports database-level filtering (status, owner, kind) and application-level
    * filtering (entityName). Falls back to database values if catalog is unavailable.
    *
-   * @param entityRefs - Entity refs to scope the DB query, or null for unscoped.
-   *                     Empty array signals no authorized entities (returns empty).
    * @param metricId - Metric ID to fetch (e.g., "github.open_prs")
    * @param options - Query options for filtering, sorting, and pagination
    * @param options.status - Filter by threshold status (database-level)
@@ -196,12 +194,11 @@ export class CatalogMetricService {
    * @returns Paginated entity metric details with metadata
    */
   async getEntityMetricDetails(
-    entityRefs: string[] | null,
     metricId: string,
     credentials: BackstageCredentials,
     options: {
       status?: 'success' | 'warning' | 'error';
-      owner?: string;
+      owner?: string[];
       kind?: string;
       entityName?: string;
       sortBy?:
@@ -230,7 +227,6 @@ export class CatalogMetricService {
     // Fetch raw metric data from database
     const { rows, total: dbTotal } =
       await this.database.readEntityMetricsByStatus(
-        entityRefs,
         metricId,
         options.status,
         options.kind,
