@@ -317,7 +317,10 @@ export function registerModuleRoutes(
 
       // Create Kubernetes job (will create both project and job secrets)
       // Use discoveryApi for consistent URL resolution
-      const moduleBaseUrl = await discoveryApi.getBaseUrl('x2a');
+      // Allow override via config for local development (e.g., using LAN IP)
+      const moduleBaseUrl =
+        config.getOptionalString('x2a.callbackBaseUrl') ??
+        (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${moduleBaseUrl}/projects/${projectId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,

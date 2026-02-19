@@ -62,6 +62,15 @@ export interface X2AConfig {
 export interface Config {
   x2a?: {
     /**
+     * Callback base URL for job-to-backend communication
+     * Overrides the URL used for Kubernetes jobs to call back to the backend.
+     * If not set, uses discoveryApi.getBaseUrl('x2a') (default: backend.baseUrl).
+     * Useful for local development when jobs need to reach the backend via LAN IP.
+     * @example "http://192.168.2.193:7007"
+     * @visibility backend
+     */
+    callbackBaseUrl?: string;
+    /**
      * Kubernetes configuration for X2A jobs
      */
     kubernetes?: {
