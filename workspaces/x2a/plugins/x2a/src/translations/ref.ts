@@ -69,7 +69,7 @@ export const x2aPluginMessages = {
       republishInstructions:
         'The module has already been published. Retrigger the publish to update the target repository.',
       rerunPublish: 'Republish to target repository',
-      commitId: 'Commit ID',
+      commitId: 'Last Commit ID',
       viewLog: 'View Log',
       hideLog: 'Hide Log',
     },
