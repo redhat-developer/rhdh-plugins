@@ -8,6 +8,7 @@ export GIT_TERMINAL_PROMPT=0
 ERROR_MESSAGE=""
 ARTIFACTS=()
 PUSH_FAILED=""
+TERMINATED=false
 
 # Report job result back to the backend.
 # TODO: Incorporate CALLBACK_TOKEN for request signing (HMAC-SHA256).
@@ -92,7 +93,9 @@ Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
     fi
   fi
 
-  if [ ${exit_code} -ne 0 ]; then
+  if [ "$TERMINATED" = true ]; then
+    report_result "error" "Job was terminated"
+  elif [ ${exit_code} -ne 0 ]; then
     report_result "error" "${ERROR_MESSAGE:-Script failed with exit code ${exit_code}}"
   elif [ -n "${PUSH_FAILED}" ]; then
     report_result "error" "${PUSH_FAILED}"
@@ -136,6 +139,7 @@ git_clone_repos() {
 }
 
 trap cleanup EXIT
+trap 'TERMINATED=true' SIGTERM SIGINT
 
 #
 # X2A Job Script

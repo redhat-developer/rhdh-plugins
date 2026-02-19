@@ -124,10 +124,20 @@ async function reconcileJobStatus(
     return job;
   }
 
+  deps.logger.info(
+    `Reconciling job ${job.id} (k8s: ${job.k8sJobName}), DB status: '${job.status}'`,
+  );
   const k8sStatus = await deps.kubeService.getJobStatus(job.k8sJobName);
 
   if (k8sStatus.status === 'success' || k8sStatus.status === 'error') {
-    const log = (await deps.kubeService.getJobLogs(job.k8sJobName)) as string;
+    let log: string | null = null;
+    try {
+      log = (await deps.kubeService.getJobLogs(job.k8sJobName)) as string;
+    } catch {
+      deps.logger.warn(
+        `Could not fetch logs for job ${job.id} (k8s job: ${job.k8sJobName})`,
+      );
+    }
     const updated = await deps.x2aDatabase.updateJob({
       id: job.id,
       status: k8sStatus.status,

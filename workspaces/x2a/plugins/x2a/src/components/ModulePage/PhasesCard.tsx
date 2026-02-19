@@ -65,19 +65,21 @@ const PhaseRunAction = ({
 }) => {
   const { t } = useTranslation();
 
+  const previousRunSucceeded = phase?.status === 'success';
+
   const getInstructions = () => {
     if (phaseName === 'analyze') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.reanalyzeInstructions')
         : t('modulePage.phases.analyzeInstructions');
     }
     if (phaseName === 'migrate') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.remigrateInstructions')
         : t('modulePage.phases.migrateInstructions');
     }
     if (phaseName === 'publish') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.republishInstructions')
         : t('modulePage.phases.publishInstructions');
     }
@@ -86,17 +88,17 @@ const PhaseRunAction = ({
 
   const getActionText = () => {
     if (phaseName === 'analyze') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.rerunAnalyze')
         : t('modulePage.phases.runAnalyze');
     }
     if (phaseName === 'migrate') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.rerunMigrate')
         : t('modulePage.phases.runMigrate');
     }
     if (phaseName === 'publish') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.rerunPublish')
         : t('modulePage.phases.runPublish');
     }

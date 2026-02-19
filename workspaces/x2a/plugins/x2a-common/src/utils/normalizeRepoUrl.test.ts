@@ -75,6 +75,14 @@ describe('normalizeRepoUrl', () => {
     expect(normalizeRepoUrl(invalid)).toBe(invalid);
   });
 
+  it('extracts repo name when repo param contains a full URL', () => {
+    expect(
+      normalizeRepoUrl(
+        'github.com?owner=test-user&repo=https%3A%2F%2Fgithub.com%2Ftest-user%2Fchef-examples',
+      ),
+    ).toBe('https://github.com/test-user/chef-examples.git');
+  });
+
   it('handles URL-encoded owner and repo', () => {
     // URLSearchParams decodes automatically
     expect(normalizeRepoUrl('github.com?owner=some%20user&repo=my-repo')).toBe(

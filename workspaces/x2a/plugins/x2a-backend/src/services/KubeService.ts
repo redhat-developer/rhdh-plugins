@@ -305,6 +305,12 @@ export class KubeService {
         namespace: this.#namespace,
       });
 
+      // If the job is being deleted, treat it as an error regardless of status
+      if (job.metadata?.deletionTimestamp) {
+        this.#logger.warn(`Job ${k8sJobName} is being deleted`);
+        return { status: 'error', message: 'Job was deleted' };
+      }
+
       const jobStatus = job.status;
 
       // Check if job succeeded
@@ -325,7 +331,9 @@ export class KubeService {
       // Job exists but hasn't started yet
       return { status: 'pending', message: 'Job is pending' };
     } catch (error: any) {
-      if (error.statusCode === 404 || error.code === 404) {
+      const statusCode =
+        error.statusCode ?? error.response?.statusCode ?? error.code;
+      if (statusCode === 404) {
         this.#logger.warn(`Job ${k8sJobName} not found`);
         return { status: 'error', message: 'Job not found' };
       }
