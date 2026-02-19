@@ -310,7 +310,10 @@ export function registerProjectRoutes(
       // Create Kubernetes job (will create both project and job secrets)
       // Use HTTP for in-cluster service-to-service communication
       // Jobs call back to Backstage within the same cluster
-      const baseUrl = await discoveryApi.getBaseUrl('x2a');
+      // Allow override via config for local development (e.g., using LAN IP)
+      const baseUrl =
+        config.getOptionalString('x2a.callbackBaseUrl') ??
+        (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
