@@ -132,6 +132,9 @@ export const x2aPluginMessages = {
     actions: {
       runNextPhase: 'Run Next Phase',
     },
+    currentPhase: 'Current Phase',
+    lastUpdate: 'Last Update',
+    notStarted: 'Not Started',
     lastPhase: 'Last Phase',
     name: 'Name',
     status: 'Status',

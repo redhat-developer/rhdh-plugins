@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 export * from './buildArtifactUrl';
+export * from './formatRelativeTime';
 export * from './humanizeArtifactType';
 export * from './humanizeDate';
