@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export const humanizeDate = (date: Date): string => {
-  return date.toLocaleString(undefined, {
+export const humanizeDate = (date: Date | string): string => {
+  return new Date(date).toLocaleString(undefined, {
     month: 'numeric',
     day: 'numeric',
     year: 'numeric',

@@ -20,7 +20,7 @@ import { adoptionInsightsTranslationRef } from './ref';
 
 /**
  * The translation resource for the Adoption Insights plugin.
- * @public
+ * @alpha
  */
 export const adoptionInsightsTranslations = createTranslationResource({
   ref: adoptionInsightsTranslationRef,

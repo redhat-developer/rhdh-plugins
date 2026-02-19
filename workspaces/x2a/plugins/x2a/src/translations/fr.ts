@@ -65,7 +65,11 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.summary.pending': 'En attente',
     'module.summary.running': 'En cours',
     'module.summary.error': 'Erreur',
+    'module.summary.toReview': 'à réviser',
     'module.actions.runNextPhase': 'Exécuter la phase suivante',
+    'module.currentPhase': 'Phase actuelle',
+    'module.lastUpdate': 'Dernière mise à jour',
+    'module.notStarted': 'Non commencé',
     'module.lastPhase': 'Dernière phase',
     'module.name': 'Nom',
     'module.status': 'Statut',
@@ -82,6 +86,39 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.statuses.error': 'Erreur',
     'artifact.types.migrated_sources': 'Sources migrées',
     'artifact.types.project_metadata': 'Métadonnées du projet',
+    'modulePage.title': 'Détails du module',
+    'modulePage.artifacts.title': 'Artefacts',
+    'modulePage.artifacts.migration_plan': 'Plan de migration global du projet',
+    'modulePage.artifacts.module_migration_plan': 'Plan du module par analyse',
+    'modulePage.artifacts.migrated_sources': 'Sources migrées',
+    'modulePage.artifacts.description':
+      'Ces artefacts sont générés par le processus de conversion et sont disponibles pour examen.',
+    'modulePage.phases.id': 'ID',
+    'modulePage.phases.duration': 'Durée',
+    'modulePage.phases.k8sJobName': 'Nom du job Kubernetes',
+    'modulePage.phases.startedAt': 'Démarré le',
+    'modulePage.phases.status': 'Statut',
+    'modulePage.phases.errorDetails': "Détails de l'erreur",
+    'modulePage.phases.reanalyzeInstructions':
+      "Le plan de migration du module est déjà présent. Si le plan de migration global du projet a été mis à jour, relancez l'analyse pour refléter les changements.",
+    'modulePage.phases.rerunAnalyze': 'Recréer le plan de migration du module',
+    'modulePage.phases.analyzeInstructions':
+      "Avant de lancer l'analyse, consultez d'abord le plan de migration global du projet ; son contenu guidera l'analyse du module.",
+    'modulePage.phases.runAnalyze': 'Créer le plan de migration du module',
+    'modulePage.phases.migrateInstructions':
+      'Avant de lancer la migration, consultez le plan de migration du module. Le processus de migration convertira le code Chef en Ansible en fonction du plan.',
+    'modulePage.phases.runMigrate': 'Migrer les sources du module',
+    'modulePage.phases.remigrateInstructions':
+      'Les sources migrées sont déjà présentes. Relancez la migration pour recréer le code Ansible converti.',
+    'modulePage.phases.rerunMigrate': 'Recréer les sources migrées',
+    'modulePage.phases.publishInstructions':
+      'Avant de publier, consultez les sources migrées. Le processus de publication validera le code converti dans le dépôt cible.',
+    'modulePage.phases.runPublish': 'Publier dans le dépôt cible',
+    'modulePage.phases.republishInstructions':
+      'Le module a déjà été publié. Relancez la publication pour mettre à jour le dépôt cible.',
+    'modulePage.phases.rerunPublish': 'Republier dans le dépôt cible',
+    'modulePage.phases.viewLog': 'Voir le journal',
+    'modulePage.phases.hideLog': 'Masquer le journal',
   },
 });
 

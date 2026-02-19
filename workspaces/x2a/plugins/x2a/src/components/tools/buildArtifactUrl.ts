@@ -16,7 +16,12 @@
 export const buildArtifactUrl = (
   value: string,
   targetRepoUrl: string,
+  targetRepoBranch: string,
 ): string => {
-  // TODO: this needs review after /collectArtifacts endpoint is implemented
-  return `${targetRepoUrl}/blob/main/${value}`;
+  // Remove .git suffix if present (repos normalized for cloning have .git)
+  const baseUrl = targetRepoUrl.endsWith('.git')
+    ? targetRepoUrl.slice(0, -4)
+    : targetRepoUrl;
+
+  return `${baseUrl}/blob/${targetRepoBranch}/${value}`;
 };

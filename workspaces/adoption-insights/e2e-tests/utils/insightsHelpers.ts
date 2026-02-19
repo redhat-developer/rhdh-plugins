@@ -106,7 +106,6 @@ export async function switchToLocale(
     await settingsLink.click();
     await page.getByRole('button', { name: 'English' }).click();
     await page.getByRole('option', { name: displayName }).click();
-    await page.locator('a').filter({ hasText: 'Home' }).click();
   }
 }
 

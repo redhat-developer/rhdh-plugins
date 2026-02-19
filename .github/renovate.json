@@ -65,6 +65,7 @@
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-lightspeed-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-global-floating-action-button-presets",
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-extensions-presets",
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-x2a-presets",        
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/workspace/rhdh-konflux-presets"
       ]
     },

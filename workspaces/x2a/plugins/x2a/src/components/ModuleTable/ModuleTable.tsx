@@ -21,7 +21,8 @@ import {
   ModulePhase,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Table, TableColumn } from '@backstage/core-components';
+import { Link, Table, TableColumn } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import { MaterialTableProps } from '@material-table/core/types';
 import Alert from '@material-ui/lab/Alert';
@@ -30,9 +31,11 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Artifacts } from './Artifacts';
-import { humanizeDate } from '../tools';
 import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
+import { CurrentPhaseCell } from './CurrentPhaseCell';
 import { ModuleStatusCell } from './ModuleStatusCell';
+import { TimingCell } from './TimingCell';
+import { moduleRouteRef } from '../../routes';
 
 const getLastJob = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
@@ -63,73 +66,77 @@ export const getNextPhase = (module: Module): ModulePhase | undefined => {
 
 const useColumns = ({
   targetRepoUrl,
+  targetRepoBranch,
 }: {
   targetRepoUrl: string;
+  targetRepoBranch: string;
 }): TableColumn<Module>[] => {
   const { t } = useTranslation();
+  const modulePath = useRouteRef(moduleRouteRef);
 
-  const lastPhaseCell = useCallback(
-    (rowData: Module) => {
-      const lastPhase = getLastJob(rowData)?.phase || 'none';
-      return <div>{t(`module.phases.${lastPhase}`)}</div>;
-    },
-    [t],
+  const currentPhaseCell = useCallback((rowData: Module) => {
+    const lastJob = getLastJob(rowData);
+    return <CurrentPhaseCell phase={lastJob?.phase} />;
+  }, []);
+
+  const statusCell = useCallback(
+    (rowData: Module) => (
+      <ModuleStatusCell
+        status={rowData.status}
+        errorDetails={rowData.errorDetails}
+      />
+    ),
+    [],
   );
 
-  // List the artifacts for the last phase
   const artifactsCell = useCallback(
     (module: Module) => {
       const artifacts: Artifact[] = [];
       artifacts.push(...(module.analyze?.artifacts || []));
       artifacts.push(...(module.migrate?.artifacts || []));
       artifacts.push(...(module.publish?.artifacts || []));
-      return <Artifacts artifacts={artifacts} targetRepoUrl={targetRepoUrl} />;
+      return (
+        <Artifacts
+          artifacts={artifacts}
+          targetRepoUrl={targetRepoUrl}
+          targetRepoBranch={targetRepoBranch}
+        />
+      );
     },
-    [targetRepoUrl],
+    [targetRepoUrl, targetRepoBranch],
   );
 
-  const startedAtCell = useCallback(
+  const timingCell = useCallback((rowData: Module) => {
+    const lastJob = getLastJob(rowData);
+    return <TimingCell lastJob={lastJob} />;
+  }, []);
+
+  const nameCell = useCallback(
     (rowData: Module) => {
-      const lastJob = getLastJob(rowData);
-      if (!lastJob) {
-        return <div>{t('module.phases.none')}</div>;
-      }
-      const formatted = humanizeDate(new Date(lastJob.startedAt));
-      return <div>{formatted}</div>;
+      return (
+        <Link
+          to={modulePath({
+            projectId: rowData.projectId,
+            moduleId: rowData.id,
+          })}
+        >
+          {rowData.name}
+        </Link>
+      );
     },
-    [t],
+    [modulePath],
   );
-  const finishedAtCell = useCallback(
-    (rowData: Module) => {
-      const lastJob = getLastJob(rowData);
-      if (!lastJob?.finishedAt) {
-        return <div>{t('module.phases.none')}</div>;
-      }
-      const formatted = humanizeDate(new Date(lastJob.finishedAt));
-      return <div>{formatted}</div>;
-    },
-    [t],
-  );
+
   return useMemo((): TableColumn<Module>[] => {
     return [
-      { field: 'name', title: t('module.name') },
-      {
-        field: 'status',
-        render: (rowData: Module) => (
-          <ModuleStatusCell
-            status={rowData.status}
-            errorDetails={rowData.errorDetails}
-          />
-        ),
-        title: t('module.status'),
-      },
+      { render: nameCell, title: t('module.name') },
+      { render: currentPhaseCell, title: t('module.currentPhase') },
+      { render: statusCell, title: t('module.status') },
       { field: 'sourcePath', title: t('module.sourcePath') },
-      { render: lastPhaseCell, title: t('module.lastPhase') },
       { render: artifactsCell, title: t('module.artifacts') },
-      { render: startedAtCell, title: t('module.startedAt') },
-      { render: finishedAtCell, title: t('module.finishedAt') },
+      { render: timingCell, title: t('module.lastUpdate') },
     ];
-  }, [t, lastPhaseCell, artifactsCell, startedAtCell, finishedAtCell]);
+  }, [t, nameCell, currentPhaseCell, statusCell, artifactsCell, timingCell]);
 };
 
 const canRunNextPhase = ({ module }: { module: Module }) => {
@@ -159,7 +166,10 @@ export const ModuleTable = ({
   const { t } = useTranslation();
   const repoAuthentication = useRepoAuthentication();
 
-  const columns = useColumns({ targetRepoUrl: project.targetRepoUrl });
+  const columns = useColumns({
+    targetRepoUrl: project.targetRepoUrl,
+    targetRepoBranch: project.targetRepoBranch,
+  });
   const data: Module[] = modules;
   const clientService = useClientService();
 
