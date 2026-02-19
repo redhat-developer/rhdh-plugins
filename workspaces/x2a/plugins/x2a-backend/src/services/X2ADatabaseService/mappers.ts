@@ -67,6 +67,7 @@ export function mapRowToJob(
     errorDetails: (row.error_details as string | undefined) ?? undefined,
     k8sJobName: (row.k8s_job_name as string) ?? undefined,
     callbackToken: (row.callback_token as string | undefined) ?? undefined,
+    commitId: (row.commit_id as string | undefined) ?? undefined,
     telemetry: parseTelemetry(
       (row.telemetry as string | undefined) ?? undefined,
     ),
