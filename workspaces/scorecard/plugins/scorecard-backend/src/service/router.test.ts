@@ -129,6 +129,7 @@ describe('createRouter', () => {
       catalog,
       httpAuth: httpAuthMock,
       permissions: permissionsMock,
+      logger: mockServices.logger.mock(),
     });
     app = express();
     app.use(router);
@@ -570,6 +571,7 @@ describe('createRouter', () => {
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
       });
       aggregationApp = express();
       aggregationApp.use(router);
@@ -822,6 +824,7 @@ describe('createRouter', () => {
         catalog: mockCatalog,
         httpAuth: httpAuthMock,
         permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
       });
 
       drillDownApp = express();

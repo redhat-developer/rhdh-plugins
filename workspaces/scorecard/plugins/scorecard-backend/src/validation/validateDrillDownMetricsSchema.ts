@@ -15,8 +15,12 @@
  */
 import { z } from 'zod';
 import { InputError } from '@backstage/errors';
+import { LoggerService } from '@backstage/backend-plugin-api';
 
-export function validateDrillDownMetricsSchema(query: unknown) {
+export function validateDrillDownMetricsSchema(
+  query: unknown,
+  logger: LoggerService,
+) {
   const drillDownSchema = z.object({
     page: z.coerce.number().int().min(1).max(10000).optional().default(1),
     pageSize: z.coerce.number().int().min(1).max(100).optional().default(5),
@@ -37,7 +41,16 @@ export function validateDrillDownMetricsSchema(query: unknown) {
   const parsed = drillDownSchema.safeParse(query);
 
   if (!parsed.success) {
-    throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
+    logger.warn('Invalid drill-down query parameters', {
+      errors: JSON.stringify(
+        parsed.error.errors.map(e => ({
+          path: e.path.join('.'),
+          message: e.message,
+          code: e.code,
+        })),
+      ),
+    });
+    throw new InputError('Invalid query parameters');
   }
 
   return parsed.data;

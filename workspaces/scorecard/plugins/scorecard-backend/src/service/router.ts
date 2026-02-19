@@ -23,6 +23,7 @@ import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
 import type { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
+  LoggerService,
   type HttpAuthService,
   type PermissionsService,
 } from '@backstage/backend-plugin-api';
@@ -52,6 +53,7 @@ export type ScorecardRouterOptions = {
   catalog: CatalogService;
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
+  logger: LoggerService;
 };
 
 export async function createRouter({
@@ -60,6 +62,7 @@ export async function createRouter({
   catalog,
   httpAuth,
   permissions,
+  logger,
 }: ScorecardRouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -213,7 +216,7 @@ export async function createRouter({
         entityName,
         sortBy,
         sortOrder,
-      } = validateDrillDownMetricsSchema(req.query);
+      } = validateDrillDownMetricsSchema(req.query, logger);
 
       const { conditions } = await authorizeConditional(
         req,

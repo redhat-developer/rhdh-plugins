@@ -119,6 +119,7 @@ export const scorecardPlugin = createBackendPlugin({
             catalog,
             httpAuth,
             permissions,
+            logger,
           }),
         );
       },
