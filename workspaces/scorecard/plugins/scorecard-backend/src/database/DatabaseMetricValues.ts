@@ -137,6 +137,13 @@ export class DatabaseMetricValues {
     entityName?: string,
     entityKind?: string,
     entityOwner?: string[],
+    sortBy?:
+      | 'entityName'
+      | 'owner'
+      | 'entityKind'
+      | 'timestamp'
+      | 'metricValue',
+    sortOrder?: 'asc' | 'desc',
     pagination?: { limit: number; offset: number },
   ): Promise<{ rows: DbMetricValue[]; total: number }> {
     const latestIdsSubquery = this.dbClient(this.tableName)
@@ -150,7 +157,23 @@ export class DatabaseMetricValues {
       .whereIn('id', latestIdsSubquery)
       .where('metric_id', metric_id);
 
-    query.orderBy('timestamp', 'desc');
+    const sortColumnMap: Record<string, string> = {
+      entityName: 'catalog_entity_ref',
+      owner: 'entity_owner',
+      entityKind: 'entity_kind',
+      timestamp: 'timestamp',
+      metricValue: 'value',
+    };
+
+    const column = (sortBy && sortColumnMap[sortBy]) ?? 'timestamp';
+    const direction = sortOrder ?? 'desc';
+
+    // Nulls last for metricValue (value can be null)
+    if (sortBy === 'metricValue') {
+      query.orderByRaw(`${column} IS NULL, ${column} ${direction}`);
+    } else {
+      query.orderBy(column, direction);
+    }
 
     if (status) {
       query.where('status', status);

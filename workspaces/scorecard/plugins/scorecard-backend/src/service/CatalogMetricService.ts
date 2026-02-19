@@ -178,15 +178,15 @@ export class CatalogMetricService {
    * Get detailed entity metrics for drill-down with filtering, sorting, and pagination.
    *
    * Fetches individual entity metric values and enriches them with catalog metadata.
-   * Supports database-level filtering (status, owner, kind) and application-level
-   * filtering (entityName). Falls back to database values if catalog is unavailable.
+   * Supports database-level filtering (status, owner, kind, entityName) and
+   * database-level sorting and pagination. Falls back to database values if catalog is unavailable.
    *
    * @param metricId - Metric ID to fetch (e.g., "github.open_prs")
    * @param options - Query options for filtering, sorting, and pagination
    * @param options.status - Filter by threshold status (database-level)
    * @param options.owner - Filter by owner entity reference (database-level)
    * @param options.kind - Filter by entity kind (database-level)
-   * @param options.entityName - Search entity names by substring (application-level)
+   * @param options.entityName - Substring search against the entity ref `kind:namespace/name` (database-level)
    * @param options.sortBy - Field to sort by (default: "timestamp")
    * @param options.sortOrder - Sort direction: "asc" or "desc" (default: "desc")
    * @param options.page - Page number (1-indexed)
@@ -225,6 +225,8 @@ export class CatalogMetricService {
         options.entityName,
         options.kind,
         options.owner,
+        options.sortBy,
+        options.sortOrder,
         dbPagination,
       );
 
@@ -281,60 +283,6 @@ export class CatalogMetricService {
         };
       });
 
-    if (options.sortBy) {
-      enrichedEntities.sort((a, b) => {
-        let aValue: any;
-        let bValue: any;
-
-        switch (options.sortBy) {
-          case 'entityName':
-            aValue = a.entityName.toLowerCase();
-            bValue = b.entityName.toLowerCase();
-            break;
-          case 'owner':
-            aValue = a.owner.toLowerCase();
-            bValue = b.owner.toLowerCase();
-            break;
-          case 'entityKind':
-            aValue = a.entityKind.toLowerCase();
-            bValue = b.entityKind.toLowerCase();
-            break;
-          case 'timestamp':
-            aValue = new Date(a.timestamp).getTime();
-            bValue = new Date(b.timestamp).getTime();
-            break;
-          case 'metricValue':
-            // Handle null values - sort them to the end
-            aValue = a.metricValue ?? -Infinity;
-            bValue = b.metricValue ?? -Infinity;
-            break;
-          default:
-            // Default to timestamp if invalid sortBy
-            aValue = new Date(a.timestamp).getTime();
-            bValue = new Date(b.timestamp).getTime();
-        }
-
-        // Compare values
-        if (aValue < bValue) {
-          return options.sortOrder === 'asc' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return options.sortOrder === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    } else {
-      // Default: sort by timestamp DESC
-      enrichedEntities.sort((a, b) => {
-        const aTime = new Date(a.timestamp).getTime();
-        const bTime = new Date(b.timestamp).getTime();
-        return bTime - aTime; // DESC
-      });
-    }
-
-    const finalEntities: EntityMetricDetail[] = enrichedEntities;
-    const finalTotal = dbTotal;
-
     // Format and return response
     return {
       metricId: metric.id,
@@ -343,12 +291,12 @@ export class CatalogMetricService {
         description: metric.description,
         type: metric.type,
       },
-      entities: finalEntities,
+      entities: enrichedEntities,
       pagination: {
         page: options.page,
         pageSize: options.limit,
-        total: finalTotal,
-        totalPages: Math.ceil(finalTotal / options.limit),
+        total: dbTotal,
+        totalPages: Math.ceil(dbTotal / options.limit),
       },
     };
   }

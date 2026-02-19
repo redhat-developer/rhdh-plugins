@@ -265,17 +265,17 @@ Entity name filtering is performed at the database level for consistent paginati
 
 ## Sorting
 
-Results can be sorted by any column in ascending or descending order:
+Results can be sorted by any column in ascending or descending order. Sorting is applied at the database level, so the correct order is guaranteed across all pages regardless of which filters are active.
 
 ### Sort Options
 
-| Sort By       | Description                                     | Example Values           |
-| ------------- | ----------------------------------------------- | ------------------------ |
-| `entityName`  | Entity name alphabetically                      | "api-service", "web-app" |
-| `owner`       | Owner entity reference alphabetically           | "team:default/platform"  |
-| `entityKind`  | Entity kind alphabetically                      | "API", "Component"       |
-| `timestamp`   | Metric sync timestamp (most/least recent)       | ISO 8601 timestamps      |
-| `metricValue` | Metric value numerically (highest/lowest first) | 5, 15, 25, 100           |
+| Sort By       | Description                                                                                    | Example Values                                         |
+| ------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `entityName`  | Full entity ref (`kind:namespace/name`) alphabetically — equivalent to sorting by the full ref | "api:default/api-service", "component:default/web-app" |
+| `owner`       | Owner entity reference alphabetically                                                          | "team:default/platform"                                |
+| `entityKind`  | Entity kind alphabetically                                                                     | "API", "Component"                                     |
+| `timestamp`   | Metric sync timestamp (most/least recent)                                                      | ISO 8601 timestamps                                    |
+| `metricValue` | Metric value numerically (highest/lowest first)                                                | 5, 15, 25, 100                                         |
 
 ### Default Sorting
 
@@ -308,7 +308,7 @@ The response includes pagination metadata:
 
 ### Pagination Performance
 
-All filters (`status`, `owner`, `kind`, and `entityName`) are applied at the database level before pagination. The `LIMIT`/`OFFSET` is always pushed to the database, so only the requested page of rows is fetched regardless of which filters are active.
+All filters (`status`, `owner`, `kind`, and `entityName`) and sorting (`sortBy`, `sortOrder`) are applied at the database level before pagination. The `ORDER BY` and `LIMIT`/`OFFSET` are always pushed to the database, so only the requested page of rows is fetched in the correct order regardless of which filters are active.
 
 For best performance with large datasets, combine specific filters to reduce the result set size before paginating.
 

@@ -569,6 +569,8 @@ describe('DatabaseMetricValues', () => {
           undefined,
           undefined,
           undefined,
+          undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -621,6 +623,8 @@ describe('DatabaseMetricValues', () => {
 
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
+          undefined,
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -686,6 +690,8 @@ describe('DatabaseMetricValues', () => {
           undefined,
           undefined,
           undefined,
+          undefined,
+          undefined,
           { limit: 2, offset: 0 },
         );
 
@@ -699,6 +705,8 @@ describe('DatabaseMetricValues', () => {
           undefined,
           undefined,
           undefined,
+          undefined,
+          undefined,
           { limit: 2, offset: 2 },
         );
 
@@ -709,6 +717,8 @@ describe('DatabaseMetricValues', () => {
         const page3 = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error',
+          undefined,
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -728,6 +738,8 @@ describe('DatabaseMetricValues', () => {
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error',
+          undefined,
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -782,6 +794,8 @@ describe('DatabaseMetricValues', () => {
           'error',
           undefined,
           'Component', // Filter by kind
+          undefined,
+          undefined,
           undefined,
           { limit: 10, offset: 0 },
         );
@@ -838,6 +852,8 @@ describe('DatabaseMetricValues', () => {
           undefined,
           undefined,
           ['team:default/platform'], // Filter by owner
+          undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -902,6 +918,8 @@ describe('DatabaseMetricValues', () => {
           undefined,
           'Component', // Only Component kind
           ['team:default/platform'], // Only platform team
+          undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -961,6 +979,7 @@ describe('DatabaseMetricValues', () => {
           undefined,
           undefined,
           undefined,
+          undefined,
           undefined, // No pagination
         );
 
@@ -1005,6 +1024,8 @@ describe('DatabaseMetricValues', () => {
           undefined,
           undefined,
           undefined,
+          undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -1017,6 +1038,8 @@ describe('DatabaseMetricValues', () => {
           'error',
           undefined,
           'Component',
+          undefined,
+          undefined,
           undefined,
           { limit: 10, offset: 0 },
         );
@@ -1060,6 +1083,8 @@ describe('DatabaseMetricValues', () => {
         // Per-row authorization is enforced downstream by catalog.getEntitiesByRefs.
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
+          undefined,
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -1116,6 +1141,8 @@ describe('DatabaseMetricValues', () => {
           undefined,
           undefined,
           ['team:default/platform', 'team:default/backend'],
+          undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -1172,6 +1199,8 @@ describe('DatabaseMetricValues', () => {
           'service',
           undefined,
           undefined,
+          undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -1181,6 +1210,110 @@ describe('DatabaseMetricValues', () => {
           'component:default/my-service',
           'component:default/service-api',
         ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should sort by catalog_entity_ref ascending when sortBy=entityName - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service-c',
+            metric_id: 'github.metric1',
+            value: 1,
+            timestamp,
+            status: 'success',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-a',
+            metric_id: 'github.metric1',
+            value: 2,
+            timestamp,
+            status: 'success',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-b',
+            metric_id: 'github.metric1',
+            value: 3,
+            timestamp,
+            status: 'success',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsByStatus(
+          'github.metric1',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'entityName',
+          'asc',
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(3);
+        expect(result.rows[0].catalog_entity_ref).toBe(
+          'component:default/service-a',
+        );
+        expect(result.rows[1].catalog_entity_ref).toBe(
+          'component:default/service-b',
+        );
+        expect(result.rows[2].catalog_entity_ref).toBe(
+          'component:default/service-c',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should sort by value descending with nulls last when sortBy=metricValue - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service-a',
+            metric_id: 'github.metric1',
+            value: null,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-b',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-c',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp,
+            status: 'error',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsByStatus(
+          'github.metric1',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          'metricValue',
+          'desc',
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(3);
+        expect(result.rows[0].value).toBe(15);
+        expect(result.rows[1].value).toBe(5);
+        expect(result.rows[2].value).toBeNull(); // null sorted last
       },
     );
   });
