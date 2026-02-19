@@ -19,17 +19,17 @@ import type { Entity } from '@backstage/catalog-model';
 import { OpenSSFClient } from './OpenSSFClient';
 import type { OpenSSFResponse } from './types';
 
-const mockScorecardUrl =
+const mockScorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
-function createEntity(scorecardUrl: string): Entity {
+function createEntity(scorecardLocation: string): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
     metadata: {
       name: 'my-service',
       annotations: {
-        'openssf/scorecard-location': scorecardUrl,
+        'openssf/scorecard-location': scorecardLocation,
       },
     },
     spec: {},
@@ -53,7 +53,7 @@ const mockOpenSSFResponse: OpenSSFResponse = {
 };
 
 describe('OpenSSFClient', () => {
-  const entity = createEntity(mockScorecardUrl);
+  const entity = createEntity(mockScorecardLocation);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -70,7 +70,7 @@ describe('OpenSSFClient', () => {
       const client = new OpenSSFClient();
       const result = await client.getScorecard(entity);
 
-      expect(fetch).toHaveBeenCalledWith(mockScorecardUrl, {
+      expect(fetch).toHaveBeenCalledWith(mockScorecardLocation, {
         method: 'GET',
         headers: { Accept: 'application/json' },
       });
