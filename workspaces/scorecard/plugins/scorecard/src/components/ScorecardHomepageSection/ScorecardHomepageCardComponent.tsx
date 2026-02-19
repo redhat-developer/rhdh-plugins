@@ -25,6 +25,7 @@ import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
 import CustomLegend from './CustomLegend';
 import type { PieData } from '../../utils/utils';
+import { getThresholdRuleColor, resolveStatusColor } from '../../utils/utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ResponsivePieChart } from './ResponsivePieChart';
 
@@ -50,12 +51,12 @@ export const ScorecardHomepageCardComponent = ({
     scorecard.result.values?.map(value => ({
       name: value.name,
       value: value.count,
-      color:
-        {
-          success: theme.palette.success.main,
-          warning: theme.palette.warning.main,
-          error: theme.palette.error.main,
-        }[value.name] || theme.palette.success.main,
+      color: resolveStatusColor(
+        theme,
+        getThresholdRuleColor(scorecard.result.thresholds.rules, value.name) ??
+          'success.main',
+        false,
+      ),
     })) ?? [];
 
   return (

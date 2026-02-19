@@ -75,6 +75,7 @@ export const EntityScorecardContent = () => {
           evaluation: metric.result?.thresholdResult?.evaluation,
           thresholdStatus: metric.result?.thresholdResult?.status,
           metricStatus: metric.status,
+          thresholdRules: metric.result.thresholdResult.definition?.rules,
         });
 
         // Use metric ID to construct translation keys, fallback to original title/description

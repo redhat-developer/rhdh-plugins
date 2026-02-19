@@ -18,146 +18,303 @@ import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
-import { getStatusConfig } from '../utils';
+import {
+  getStatusConfig,
+  getThresholdRuleColor,
+  resolveStatusColor,
+} from '../utils';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { Theme } from '@mui/material/styles';
 
-describe('getStatusConfig', () => {
-  describe('error handling', () => {
-    it('should return rhdh.general.disabled color when thresholdStatus is error', () => {
-      const result = getStatusConfig({
-        evaluation: 'success',
-        thresholdStatus: 'error',
-        metricStatus: 'success',
+describe('utils', () => {
+  describe('getThresholdRuleColor', () => {
+    const mockRules: ThresholdRule[] = [
+      { key: 'custom', expression: '<5', color: '#FF5733' },
+      { key: 'success', expression: '<10', color: '#4caf50' },
+      { key: 'warning', expression: '10-50' },
+      { key: 'critical', expression: '>50', color: 'error.main' },
+    ];
+
+    it('should return color for matching threshold key', () => {
+      expect(getThresholdRuleColor(mockRules, 'custom')).toEqual('#FF5733');
+      expect(getThresholdRuleColor(mockRules, 'success')).toEqual('#4caf50');
+      expect(getThresholdRuleColor(mockRules, 'critical')).toEqual(
+        'error.main',
+      );
+    });
+
+    it('should return undefined for non-matching key', () => {
+      expect(getThresholdRuleColor(mockRules, 'low')).toBeUndefined();
+    });
+
+    it('should return default color for default rule keys', () => {
+      expect(
+        getThresholdRuleColor(DEFAULT_NUMBER_THRESHOLDS.rules, 'success'),
+      ).toEqual('success.main');
+      expect(
+        getThresholdRuleColor(DEFAULT_NUMBER_THRESHOLDS.rules, 'warning'),
+      ).toEqual('warning.main');
+      expect(
+        getThresholdRuleColor(DEFAULT_NUMBER_THRESHOLDS.rules, 'error'),
+      ).toEqual('error.main');
+    });
+
+    it('should handle empty rules array', () => {
+      expect(getThresholdRuleColor([], 'medium')).toBeUndefined();
+    });
+  });
+
+  describe('getStatusConfig', () => {
+    describe('error handling', () => {
+      it('should return rhdh.general.disabled color when thresholdStatus is error', () => {
+        const result = getStatusConfig({
+          evaluation: 'success',
+          thresholdStatus: 'error',
+          metricStatus: 'success',
+        });
+
+        expect(result).toEqual({
+          color: 'rhdh.general.disabled',
+        });
       });
 
-      expect(result).toEqual({
-        color: 'rhdh.general.disabled',
+      it('should return rhdh.general.disabled color when metricStatus is error', () => {
+        const result = getStatusConfig({
+          evaluation: 'success',
+          thresholdStatus: 'success',
+          metricStatus: 'error',
+        });
+
+        expect(result).toEqual({
+          color: 'rhdh.general.disabled',
+        });
+      });
+
+      it('should return rhdh.general.disabled color when both thresholdStatus and metricStatus are error', () => {
+        const result = getStatusConfig({
+          evaluation: 'success',
+          thresholdStatus: 'error',
+          metricStatus: 'error',
+        });
+
+        expect(result).toEqual({
+          color: 'rhdh.general.disabled',
+        });
+      });
+
+      it('should return rhdh.general.disabled color when thresholdStatus is error regardless of evaluation', () => {
+        const result = getStatusConfig({
+          evaluation: 'error',
+          thresholdStatus: 'error',
+          metricStatus: 'success',
+        });
+
+        expect(result).toEqual({
+          color: 'rhdh.general.disabled',
+        });
+      });
+
+      it('should return rhdh.general.disabled color when metricStatus is error regardless of evaluation', () => {
+        const result = getStatusConfig({
+          evaluation: 'warning',
+          thresholdStatus: 'success',
+          metricStatus: 'error',
+        });
+
+        expect(result).toEqual({
+          color: 'rhdh.general.disabled',
+        });
       });
     });
 
-    it('should return rhdh.general.disabled color when metricStatus is error', () => {
-      const result = getStatusConfig({
-        evaluation: 'success',
-        thresholdStatus: 'success',
-        metricStatus: 'error',
+    describe('evaluation status handling', () => {
+      it('should return error status config when evaluation is error and no error status', () => {
+        const result = getStatusConfig({
+          evaluation: 'error',
+          thresholdStatus: 'success',
+          metricStatus: 'success',
+          thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
+
+        expect(result).toEqual({
+          color: 'error.main',
+          icon: DangerousOutlinedIcon,
+        });
       });
 
-      expect(result).toEqual({
-        color: 'rhdh.general.disabled',
+      it('should return warning status config when evaluation is warning and no error status', () => {
+        const result = getStatusConfig({
+          evaluation: 'warning',
+          thresholdStatus: 'success',
+          metricStatus: 'success',
+          thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
+
+        expect(result).toEqual({
+          color: 'warning.main',
+          icon: WarningAmberIcon,
+        });
+      });
+
+      it('should return success status config when evaluation is success and no error status', () => {
+        const result = getStatusConfig({
+          evaluation: 'success',
+          thresholdStatus: 'success',
+          metricStatus: 'success',
+          thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
+
+        expect(result).toEqual({
+          color: 'success.main',
+          icon: CheckCircleOutlineIcon,
+        });
+      });
+
+      it('should return custom color from threshold configuration', () => {
+        const mockThresholds = {
+          rules: [
+            { key: 'critical', expression: '>80', color: '#ff0000' },
+            { key: 'warning', expression: '40-79', color: '#ffa500' },
+            { key: 'success', expression: '<40', color: '#00ff00' },
+          ],
+        };
+
+        const result = getStatusConfig({
+          evaluation: 'success',
+          thresholdRules: mockThresholds.rules,
+        });
+
+        expect(result).toEqual({
+          color: '#00ff00',
+          icon: CheckCircleOutlineIcon,
+        });
+      });
+
+      it('should return default color for default rule keys', () => {
+        const result = getStatusConfig({
+          evaluation: 'success',
+          thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
+
+        expect(result).toEqual({
+          color: 'success.main',
+          icon: CheckCircleOutlineIcon,
+        });
       });
     });
 
-    it('should return rhdh.general.disabled color when both thresholdStatus and metricStatus are error', () => {
-      const result = getStatusConfig({
-        evaluation: 'success',
-        thresholdStatus: 'error',
-        metricStatus: 'error',
+    describe('optional parameters', () => {
+      it('should work when thresholdStatus is undefined', () => {
+        const result = getStatusConfig({
+          evaluation: 'error',
+          metricStatus: 'success',
+          thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
+
+        expect(result).toEqual({
+          color: 'error.main',
+          icon: DangerousOutlinedIcon,
+        });
       });
 
-      expect(result).toEqual({
-        color: 'rhdh.general.disabled',
-      });
-    });
+      it('should work when metricStatus is undefined', () => {
+        const result = getStatusConfig({
+          evaluation: 'warning',
+          thresholdStatus: 'success',
+          thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
 
-    it('should return rhdh.general.disabled color when thresholdStatus is error regardless of evaluation', () => {
-      const result = getStatusConfig({
-        evaluation: 'error',
-        thresholdStatus: 'error',
-        metricStatus: 'success',
-      });
-
-      expect(result).toEqual({
-        color: 'rhdh.general.disabled',
-      });
-    });
-
-    it('should return rhdh.general.disabled color when metricStatus is error regardless of evaluation', () => {
-      const result = getStatusConfig({
-        evaluation: 'warning',
-        thresholdStatus: 'success',
-        metricStatus: 'error',
+        expect(result).toEqual({
+          color: 'warning.main',
+          icon: WarningAmberIcon,
+        });
       });
 
-      expect(result).toEqual({
-        color: 'rhdh.general.disabled',
+      it('should work when both thresholdStatus and metricStatus are undefined', () => {
+        const result = getStatusConfig({
+          evaluation: 'success',
+          thresholdRules: DEFAULT_NUMBER_THRESHOLDS.rules,
+        });
+
+        expect(result).toEqual({
+          color: 'success.main',
+          icon: CheckCircleOutlineIcon,
+        });
       });
     });
   });
 
-  describe('evaluation status handling', () => {
-    it('should return error status config when evaluation is error and no error status', () => {
-      const result = getStatusConfig({
-        evaluation: 'error',
-        thresholdStatus: 'success',
-        metricStatus: 'success',
-      });
+  describe('resolveStatusColor', () => {
+    const mockTheme = {
+      palette: {
+        primary: { main: '#0066cc' },
+        success: { main: '#2e7d32' },
+        warning: { main: '#ed6c02' },
+        error: { main: '#d32f2f' },
+        rhdh: {
+          general: {
+            disabled: '#6a6e73',
+            cardBorderColor: '#c7c7c7',
+          },
+        },
+      },
+    } as any as Theme;
 
-      expect(result).toEqual({
-        color: 'error.main',
-        icon: DangerousOutlinedIcon,
-      });
+    it('should resolve theme palette reference', () => {
+      const color = resolveStatusColor(mockTheme, 'success.main', false);
+      expect(color).toBe('#2e7d32');
     });
 
-    it('should return warning status config when evaluation is warning and no error status', () => {
-      const result = getStatusConfig({
-        evaluation: 'warning',
-        thresholdStatus: 'success',
-        metricStatus: 'success',
-      });
-
-      expect(result).toEqual({
-        color: 'warning.main',
-        icon: WarningAmberIcon,
-      });
+    it('should resolve theme reference with nested levels', () => {
+      const color = resolveStatusColor(
+        mockTheme,
+        'rhdh.general.cardBorderColor',
+        false,
+      );
+      expect(color).toBe('#c7c7c7');
     });
 
-    it('should return success status config when evaluation is success and no error status', () => {
-      const result = getStatusConfig({
-        evaluation: 'success',
-        thresholdStatus: 'success',
-        metricStatus: 'success',
-      });
-
-      expect(result).toEqual({
-        color: 'success.main',
-        icon: CheckCircleOutlineIcon,
-      });
-    });
-  });
-
-  describe('optional parameters', () => {
-    it('should work when thresholdStatus is undefined', () => {
-      const result = getStatusConfig({
-        evaluation: 'error',
-        metricStatus: 'success',
-      });
-
-      expect(result).toEqual({
-        color: 'error.main',
-        icon: DangerousOutlinedIcon,
-      });
+    it('should return fallback for invalid theme reference', () => {
+      const color = resolveStatusColor(mockTheme, 'invalid.path.here', false);
+      expect(color).toBe('#2e7d32');
     });
 
-    it('should work when metricStatus is undefined', () => {
-      const result = getStatusConfig({
-        evaluation: 'warning',
-        thresholdStatus: 'success',
-      });
-
-      expect(result).toEqual({
-        color: 'warning.main',
-        icon: WarningAmberIcon,
-      });
+    it('should return custom hex color directly', () => {
+      const color = resolveStatusColor(mockTheme, '#9933ff', false);
+      expect(color).toBe('#9933ff');
     });
 
-    it('should work when both thresholdStatus and metricStatus are undefined', () => {
-      const result = getStatusConfig({
-        evaluation: 'success',
-      });
+    it('should return custom color name directly', () => {
+      const color = resolveStatusColor(mockTheme, 'blue', false);
+      expect(color).toBe('blue');
+    });
 
-      expect(result).toEqual({
-        color: 'success.main',
-        icon: CheckCircleOutlineIcon,
-      });
+    it('should return custom rgb color directly', () => {
+      const color = resolveStatusColor(mockTheme, 'rgb(255, 0, 0)', false);
+      expect(color).toBe('rgb(255, 0, 0)');
+    });
+
+    it('should return card border color when isError is true', () => {
+      const color = resolveStatusColor(mockTheme, 'anything', true);
+      expect(color).toBe('#c7c7c7');
+    });
+
+    it('should return fallback when cardBorderColor is not defined when isError is true', () => {
+      const themeWithoutCardBorder = {
+        palette: {
+          success: { main: '#0066cc' },
+        },
+      } as any as Theme;
+
+      const color = resolveStatusColor(
+        themeWithoutCardBorder,
+        'anything',
+        true,
+      );
+      expect(color).toBe('#0066cc');
     });
   });
 });

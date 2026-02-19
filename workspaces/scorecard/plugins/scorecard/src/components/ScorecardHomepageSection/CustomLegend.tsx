@@ -108,7 +108,10 @@ const CustomLegend = (props: CustomLegendProps) => {
               }
             }}
           >
-            <StyledLegendColorBox color={category?.color} />
+            <StyledLegendColorBox
+              data-testid={`legend-colorbox-${category.name}`}
+              color={category?.color}
+            />
             <Typography
               variant="body2"
               sx={{ fontSize: '0.875rem', fontWeight: 400 }}

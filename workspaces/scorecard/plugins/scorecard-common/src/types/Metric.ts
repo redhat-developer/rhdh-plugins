@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ThresholdResult } from './threshold';
+import { ThresholdConfig, ThresholdResult } from './threshold';
 
 /**
  * @public
@@ -90,5 +90,7 @@ export type AggregatedMetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result: AggregatedMetric;
+  result: AggregatedMetric & {
+    thresholds: ThresholdConfig;
+  };
 };

@@ -24,6 +24,7 @@ import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { getThresholdRuleColor, resolveStatusColor } from '../../utils/utils';
 
 const StyledLegend = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -75,15 +76,14 @@ const CustomLegend = (props: CustomLegendProps) => {
           return (
             <StyledLegendItem key={`legend-${ruleKey}`}>
               <StyledLegendColorBox
-                color={
-                  (
-                    {
-                      error: theme.palette.error.main,
-                      warning: theme.palette.warning.main,
-                      success: theme.palette.success.main,
-                    } as Record<string, string>
-                  )[ruleKey] ?? theme.palette.success.main
-                }
+                data-testid={`legend-colorbox-${ruleKey}`}
+                color={resolveStatusColor(
+                  theme,
+                  getThresholdRuleColor(
+                    thresholds.definition?.rules ?? [],
+                    ruleKey,
+                  ) ?? 'success.main',
+                )}
               />
               <Typography
                 variant="body2"

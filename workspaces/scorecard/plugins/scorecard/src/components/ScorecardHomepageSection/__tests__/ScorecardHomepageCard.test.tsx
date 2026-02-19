@@ -18,7 +18,10 @@ import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { ScorecardHomepageCardComponent } from '../ScorecardHomepageCardComponent';
-import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  type AggregatedMetricResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 // --------------------
 // Mocks
@@ -60,6 +63,15 @@ jest.mock('../ResponsivePieChart', () => ({
   }) => (
     <div data-testid="responsive-pie-chart">
       <div data-testid="pie-data-length">{pieData.length}</div>
+      {pieData.map((data, index) => (
+        <div
+          key={index}
+          data-testid={`pie-segment-${data.name}`}
+          data-color={data.color}
+        >
+          {data.name}: {data.value}
+        </div>
+      ))}
       <div data-testid="legend">{legendContent({})}</div>
       <div data-testid="tooltip">
         {tooltipContent({ active: true, payload: [] })}
@@ -117,6 +129,7 @@ const mockScorecard: AggregatedMetricResult = {
       { name: 'error', count: 12 },
     ],
     timestamp: '2024-01-01T00:00:00Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };
 
@@ -171,6 +184,29 @@ describe('ScorecardHomepageCardComponent', () => {
     );
 
     expect(screen.getByTestId('responsive-pie-chart')).toBeInTheDocument();
+  });
+
+  it('should pass correct colors for rings to ResponsivePieChart', () => {
+    render(
+      <ScorecardHomepageCardComponent
+        scorecard={mockScorecard}
+        cardTitle="Test"
+        description="desc"
+      />,
+    );
+
+    expect(screen.getByTestId('pie-segment-success')).toHaveAttribute(
+      'data-color',
+      '#2e7d32',
+    );
+    expect(screen.getByTestId('pie-segment-warning')).toHaveAttribute(
+      'data-color',
+      '#ed6c02',
+    );
+    expect(screen.getByTestId('pie-segment-error')).toHaveAttribute(
+      'data-color',
+      '#d32f2f',
+    );
   });
 
   it('should pass correct pie data length', () => {

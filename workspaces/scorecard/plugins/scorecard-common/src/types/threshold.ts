@@ -21,6 +21,7 @@
 export type ThresholdRule = {
   key: string;
   expression: string;
+  color?: string;
 };
 
 /**

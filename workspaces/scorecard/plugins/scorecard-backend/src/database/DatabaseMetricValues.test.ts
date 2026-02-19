@@ -25,28 +25,46 @@ import { migrate } from './migration';
 
 jest.setTimeout(60000);
 
+const baseTimestamp = new Date('2023-01-01T00:00:00Z');
+
 const metricValues: DbMetricValueCreate[] = [
   {
     catalog_entity_ref: 'component:default/test-service',
     metric_id: 'github.metric1',
     value: 41,
-    timestamp: new Date('2023-01-01T00:00:00Z'),
+    timestamp: baseTimestamp,
     status: 'success',
   },
   {
     catalog_entity_ref: 'component:default/another-service',
     metric_id: 'github.metric1',
     value: 25,
-    timestamp: new Date('2023-01-01T00:00:00Z'),
+    timestamp: baseTimestamp,
     status: 'success',
   },
   {
     catalog_entity_ref: 'component:default/another-service',
     metric_id: 'github.metric2',
-    timestamp: new Date('2023-01-01T00:00:00Z'),
+    timestamp: baseTimestamp,
     error_message: 'Failed to fetch metric',
   },
 ];
+
+const createMetricValue = (overrides: {
+  entityRef: string;
+  metricId?: string;
+  timestamp?: Date;
+  value?: number | null;
+  status?: string | null;
+  errorMessage?: string | null;
+}) => ({
+  catalog_entity_ref: overrides.entityRef,
+  metric_id: overrides.metricId ?? 'github.metric1',
+  timestamp: overrides.timestamp ?? baseTimestamp,
+  value: overrides.value === undefined ? 10 : overrides.value,
+  error_message: overrides.errorMessage ?? null,
+  status: overrides.status === undefined ? 'success' : overrides.status,
+});
 
 describe('DatabaseMetricValues', () => {
   const databases = TestDatabases.create({
@@ -206,55 +224,295 @@ describe('DatabaseMetricValues', () => {
 
   describe('readAggregatedMetricByEntityRefs', () => {
     it.each(databases.eachSupportedId())(
-      'should return aggregated metrics by status for multiple entities - %p',
+      'should aggregate metrics by status for multiple entities - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
-        const baseTime = new Date('2023-01-01T00:00:00Z');
-        const laterTime = new Date('2023-01-01T01:00:00Z');
-
         await client('metric_values').insert([
-          {
-            ...metricValues[0],
-            timestamp: baseTime,
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            value: 5,
             status: 'success',
-          },
-          {
-            ...metricValues[1],
-            timestamp: baseTime,
-            status: 'success',
-          },
-          {
-            ...metricValues[2],
-            timestamp: laterTime,
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            value: 25,
             status: 'warning',
-            value: 10,
-          },
-          {
-            catalog_entity_ref: 'component:default/test-service',
-            metric_id: 'github.metric2',
-            timestamp: laterTime,
-            value: 20,
-            error_message: null,
-            status: 'error',
-          },
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service3',
+            value: 60,
+            status: 'critical',
+          }),
         ]);
 
         const result = await db.readAggregatedMetricByEntityRefs(
           [
-            'component:default/test-service',
-            'component:default/another-service',
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
           ],
-          'github.metric2',
+          'github.metric1',
         );
 
-        expect(result).toBeDefined();
-        expect(result?.metric_id).toBe('github.metric2');
-        expect(result?.total).toBe(2);
-        expect(result?.success).toBe(0);
-        expect(result?.warning).toBe(1);
-        expect(result?.error).toBe(1);
-        expect(result?.max_timestamp).toEqual(laterTime);
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          total: 3,
+          statusCounts: expect.arrayContaining([
+            { count: 1, name: 'success' },
+            { count: 1, name: 'warning' },
+            { count: 1, name: 'critical' },
+          ]),
+          max_timestamp: baseTimestamp,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by catalog entity refs and metric_id - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            metricId: 'github.metric1',
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            metricId: 'github.metric1',
+            status: 'warning',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            metricId: 'github.metric2',
+            status: 'error',
+          }),
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          ['component:default/service1'],
+          'github.metric1',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          total: 1,
+          statusCounts: [{ count: 1, name: 'success' }],
+          max_timestamp: baseTimestamp,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should only include latest metric value per metric and entity - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const olderTime = new Date('2023-01-01T00:00:00Z');
+        const newerTime = new Date('2023-01-01T01:00:00Z');
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            timestamp: olderTime,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            timestamp: newerTime,
+            status: 'error',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            timestamp: olderTime,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            timestamp: newerTime,
+            status: 'error',
+          }),
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          ['component:default/service1', 'component:default/service2'],
+          'github.metric1',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          total: 2,
+          statusCounts: [{ count: 2, name: 'error' }],
+          max_timestamp: newerTime,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should exclude entries with null value or status - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            value: 5,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            value: null,
+            status: 'error',
+            errorMessage: 'Fetch failed',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service3',
+            value: 5,
+            status: null,
+            errorMessage: 'Invalid thresholds',
+          }),
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          total: 1,
+          statusCounts: [{ count: 1, name: 'success' }],
+          max_timestamp: baseTimestamp,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return max timestamp across all status groups - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const time1 = new Date('2023-01-01T00:00:00Z');
+        const time2 = new Date('2023-01-01T01:00:00Z');
+        const time3 = new Date('2023-01-01T02:00:00Z');
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            timestamp: time1,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            timestamp: time2,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            timestamp: time3,
+            status: 'error',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service3',
+            timestamp: time2,
+            status: 'warning',
+          }),
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          total: 3,
+          statusCounts: expect.arrayContaining([
+            { count: 1, name: 'success' },
+            { count: 1, name: 'error' },
+            { count: 1, name: 'warning' },
+          ]),
+          max_timestamp: time3,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should count multiple entities with same status - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            value: 25,
+            status: 'warning',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service2',
+            value: 30,
+            status: 'warning',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service3',
+            value: 1,
+            status: 'success',
+          }),
+          createMetricValue({
+            entityRef: 'component:default/service4',
+            value: 35,
+            status: 'warning',
+          }),
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          [
+            'component:default/service1',
+            'component:default/service2',
+            'component:default/service3',
+          ],
+          'github.metric1',
+        );
+
+        expect(result).toEqual({
+          metric_id: 'github.metric1',
+          statusCounts: [
+            { count: 1, name: 'success' },
+            { count: 2, name: 'warning' },
+          ],
+          total: 3,
+          max_timestamp: baseTimestamp,
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return undefined when no matching entities - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert([
+          createMetricValue({
+            entityRef: 'component:default/service1',
+            status: 'success',
+          }),
+        ]);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          ['component:default/non-existent'],
+          'github.metric1',
+        );
+        expect(result).toBeUndefined();
       },
     );
   });

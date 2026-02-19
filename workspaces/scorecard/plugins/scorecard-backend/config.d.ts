@@ -35,6 +35,11 @@ export interface Config {
               key: string;
               /** Threshold expression - supports: >=, <=, >, <, ==, !=, - (range) */
               expression: string;
+              /**
+               * Color for this threshold rule. Can be a theme palette path (e.g., 'error.main')
+               * or a direct color value (e.g., '#ADD8E6', 'blue', 'rgb(255,255,0)')
+               */
+              color?: string;
             }>;
           };
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;

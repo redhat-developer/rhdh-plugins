@@ -181,12 +181,16 @@ describe('EntityScorecardContent Component', () => {
       thresholdStatus:
         mockScorecardSuccessData[0].result.thresholdResult.status,
       metricStatus: mockScorecardSuccessData[0].status,
+      thresholdRules:
+        mockScorecardSuccessData[0].result.thresholdResult.definition?.rules,
     });
     expect(getStatusConfig).toHaveBeenCalledWith({
       evaluation: mockScorecardSuccessData[1].result.thresholdResult.evaluation,
       thresholdStatus:
         mockScorecardSuccessData[1].result.thresholdResult.status,
       metricStatus: mockScorecardSuccessData[1].status,
+      thresholdRules:
+        mockScorecardSuccessData[1].result.thresholdResult.definition?.rules,
     });
   });
 
