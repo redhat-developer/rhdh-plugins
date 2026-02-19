@@ -21,6 +21,16 @@ import {
   DbAggregatedMetric,
 } from './types';
 
+type ReadEntityMetricsByStatusOptions = {
+  status?: 'success' | 'warning' | 'error';
+  entityName?: string;
+  entityKind?: string;
+  entityOwner?: string[];
+  sortBy?: 'entityName' | 'owner' | 'entityKind' | 'timestamp' | 'metricValue';
+  sortOrder?: 'asc' | 'desc';
+  pagination?: { limit: number; offset: number };
+};
+
 export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
 
@@ -133,18 +143,7 @@ export class DatabaseMetricValues {
    */
   async readEntityMetricsByStatus(
     metric_id: string,
-    status?: 'success' | 'warning' | 'error',
-    entityName?: string,
-    entityKind?: string,
-    entityOwner?: string[],
-    sortBy?:
-      | 'entityName'
-      | 'owner'
-      | 'entityKind'
-      | 'timestamp'
-      | 'metricValue',
-    sortOrder?: 'asc' | 'desc',
-    pagination?: { limit: number; offset: number },
+    options: ReadEntityMetricsByStatusOptions,
   ): Promise<{ rows: DbMetricValue[]; total: number }> {
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
@@ -165,36 +164,39 @@ export class DatabaseMetricValues {
       metricValue: 'value',
     };
 
-    const column = (sortBy && sortColumnMap[sortBy]) ?? 'timestamp';
-    const direction = sortOrder ?? 'desc';
+    const column =
+      (options.sortBy && sortColumnMap[options.sortBy]) ?? 'timestamp';
+    const direction = options.sortOrder === 'asc' ? 'asc' : 'desc';
 
     // Nulls last for metricValue (value can be null)
-    if (sortBy === 'metricValue') {
-      query.orderByRaw(`${column} IS NULL, ${column} ${direction}`);
+    if (options.sortBy === 'metricValue') {
+      query.orderByRaw(
+        `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}`,
+      );
     } else {
       query.orderBy(column, direction);
     }
 
-    if (status) {
-      query.where('status', status);
+    if (options.status) {
+      query.where('status', options.status);
     }
 
-    if (entityName) {
+    if (options.entityName) {
       query.whereRaw('LOWER(catalog_entity_ref) LIKE LOWER(?)', [
-        `%${entityName}%`,
+        `%${options.entityName}%`,
       ]);
     }
 
-    if (entityKind) {
-      query.whereRaw('LOWER(entity_kind) = LOWER(?)', [entityKind]);
+    if (options.entityKind) {
+      query.whereRaw('LOWER(entity_kind) = LOWER(?)', [options.entityKind]);
     }
 
-    if (entityOwner && entityOwner.length > 0) {
-      query.whereIn('entity_owner', entityOwner);
+    if (options.entityOwner && options.entityOwner.length > 0) {
+      query.whereIn('entity_owner', options.entityOwner);
     }
 
-    if (pagination) {
-      query.limit(pagination.limit).offset(pagination.offset);
+    if (options.pagination) {
+      query.limit(options.pagination.limit).offset(options.pagination.offset);
     }
 
     const rows = await query;

@@ -563,16 +563,10 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          pagination: { limit: 10, offset: 0 },
+        });
 
         // Should return 2 entities with error status
         expect(result.rows).toHaveLength(2);
@@ -621,16 +615,9 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(3);
         expect(result.total).toBe(3);
@@ -684,46 +671,28 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // Page 1: limit 2
-        const page1 = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 2, offset: 0 },
-        );
+        const page1 = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          pagination: { limit: 2, offset: 0 },
+        });
 
         expect(page1.rows).toHaveLength(2);
         expect(page1.total).toBe(5);
 
         // Page 2: limit 2, offset 2
-        const page2 = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 2, offset: 2 },
-        );
+        const page2 = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          pagination: { limit: 2, offset: 2 },
+        });
 
         expect(page2.rows).toHaveLength(2);
         expect(page2.total).toBe(5); // Total should stay the same
 
         // Page 3: limit 2, offset 4
-        const page3 = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 2, offset: 4 },
-        );
+        const page3 = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          pagination: { limit: 2, offset: 4 },
+        });
 
         expect(page3.rows).toHaveLength(1); // Only 1 left on page 3
         expect(page3.total).toBe(5);
@@ -735,16 +704,10 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { db } = await createDatabase(databaseId);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(0);
         expect(result.total).toBe(0);
@@ -789,16 +752,11 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          'Component', // Filter by kind
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          entityKind: 'Component', // Filter by kind
+          pagination: { limit: 10, offset: 0 },
+        });
 
         // Should only return Component entities
         expect(result.rows).toHaveLength(2);
@@ -846,16 +804,11 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          ['team:default/platform'], // Filter by owner
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          entityOwner: ['team:default/platform'], // Filter by owner
+          pagination: { limit: 10, offset: 0 },
+        });
 
         // Should only return entities owned by team:default/platform
         expect(result.rows).toHaveLength(2);
@@ -912,16 +865,12 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error', // Only error status
-          undefined,
-          'Component', // Only Component kind
-          ['team:default/platform'], // Only platform team
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error', // Only error status
+          entityKind: 'Component', // Only Component kind
+          entityOwner: ['team:default/platform'], // Only platform team
+          pagination: { limit: 10, offset: 0 },
+        });
 
         // Should only return service1 (Component, error, platform)
         expect(result.rows).toHaveLength(1);
@@ -973,15 +922,9 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // No pagination parameter - should return all
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined, // No pagination
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+        });
 
         expect(result.rows).toHaveLength(3);
         expect(result.total).toBe(3);
@@ -1018,16 +961,10 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // Should return both when no filters
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(2);
         expect(result.total).toBe(2);
@@ -1035,13 +972,11 @@ describe('DatabaseMetricValues', () => {
         // Should only return service2 when filtering by kind
         const filteredResult = await db.readEntityMetricsByStatus(
           'github.metric1',
-          'error',
-          undefined,
-          'Component',
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
+          {
+            status: 'error',
+            entityKind: 'Component',
+            pagination: { limit: 10, offset: 0 },
+          },
         );
 
         expect(filteredResult.rows).toHaveLength(1);
@@ -1081,16 +1016,9 @@ describe('DatabaseMetricValues', () => {
 
         // No owner filter — all rows for the metric are returned.
         // Per-row authorization is enforced downstream by catalog.getEntitiesByRefs.
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(2);
         expect(result.total).toBe(2);
@@ -1135,23 +1063,20 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // Passing two owners returns only those two teams' entities.
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          'error',
-          undefined,
-          undefined,
-          ['team:default/platform', 'team:default/backend'],
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          status: 'error',
+          entityOwner: ['team:default/platform', 'team:default/backend'],
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(2);
         expect(result.total).toBe(2);
-        expect(result.rows.map(r => r.entity_owner).sort()).toEqual([
-          'team:default/backend',
-          'team:default/platform',
-        ]);
+        expect(
+          result.rows
+            .map(r => r.entity_owner)
+            .filter((o): o is string => o !== null)
+            .sort((a, b) => a.localeCompare(b)),
+        ).toEqual(['team:default/backend', 'team:default/platform']);
       },
     );
 
@@ -1193,20 +1118,18 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // 'service' should match 'my-service' and 'service-api' but not 'unrelated'
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          undefined,
-          'service',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          entityName: 'service',
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(2);
         expect(result.total).toBe(2);
-        expect(result.rows.map(r => r.catalog_entity_ref).sort()).toEqual([
+        expect(
+          result.rows
+            .map(r => r.catalog_entity_ref)
+            .sort((a, b) => a.localeCompare(b)),
+        ).toEqual([
           'component:default/my-service',
           'component:default/service-api',
         ]);
@@ -1244,16 +1167,11 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          'entityName',
-          'asc',
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          sortBy: 'entityName',
+          sortOrder: 'asc',
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(3);
         expect(result.rows[0].catalog_entity_ref).toBe(
@@ -1299,16 +1217,11 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus(
-          'github.metric1',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          'metricValue',
-          'desc',
-          { limit: 10, offset: 0 },
-        );
+        const result = await db.readEntityMetricsByStatus('github.metric1', {
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+          pagination: { limit: 10, offset: 0 },
+        });
 
         expect(result.rows).toHaveLength(3);
         expect(result.rows[0].value).toBe(15);

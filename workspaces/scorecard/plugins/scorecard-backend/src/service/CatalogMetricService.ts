@@ -219,16 +219,15 @@ export class CatalogMetricService {
 
     // Fetch raw metric data from database
     const { rows, total: dbTotal } =
-      await this.database.readEntityMetricsByStatus(
-        metricId,
-        options.status,
-        options.entityName,
-        options.kind,
-        options.owner,
-        options.sortBy,
-        options.sortOrder,
-        dbPagination,
-      );
+      await this.database.readEntityMetricsByStatus(metricId, {
+        status: options.status,
+        entityName: options.entityName,
+        entityKind: options.kind,
+        entityOwner: options.owner,
+        sortBy: options.sortBy,
+        sortOrder: options.sortOrder,
+        pagination: dbPagination,
+      });
 
     // Get metric metadata
     const metric = this.registry.getMetric(metricId);
@@ -238,7 +237,6 @@ export class CatalogMetricService {
     // cannot access are returned as null in response.items.
     const entityRefsToFetch = rows.map(row => row.catalog_entity_ref);
     const entityMap = new Map<string, Entity>();
-    let catalogAvailable = true;
 
     if (entityRefsToFetch.length > 0) {
       try {
@@ -258,17 +256,18 @@ export class CatalogMetricService {
           }
         });
       } catch (error) {
-        // Catalog is unavailable — fall back to DB-only metadata rather than
-        // returning empty results, so a transient outage doesn't silently hide data.
-        catalogAvailable = false;
-        this.logger.warn('Failed to fetch entities from catalog', { error });
+        // Catalog unavailable — entityMap stays empty, so the filter below removes all rows.
+        // Fail secure: authorization cannot be confirmed without the catalog, so no results
+        // are returned rather than risking exposure of unauthorized entity metric data.
+        this.logger.error('Failed to fetch entities from catalog', { error });
       }
     }
 
-    // When catalog is available: filter to only authorized entities (null response = no access).
-    // When catalog is unavailable: include all rows with fallback DB metadata for resilience.
+    // Only include entities the catalog confirmed the user can access.
+    // Unauthorized entities are returned as null by getEntitiesByRefs and are never added
+    // to entityMap, so they are silently excluded here.
     const enrichedEntities: EntityMetricDetail[] = rows
-      .filter(row => !catalogAvailable || entityMap.has(row.catalog_entity_ref))
+      .filter(row => entityMap.has(row.catalog_entity_ref))
       .map(row => {
         const entity = entityMap.get(row.catalog_entity_ref);
         return {
@@ -279,7 +278,7 @@ export class CatalogMetricService {
             (entity?.spec?.owner as string) ?? row.entity_owner ?? 'Unknown',
           metricValue: row.value,
           timestamp: new Date(row.timestamp).toISOString(),
-          status: row.status!,
+          status: row.status ?? 'error', // default to error if status is null
         };
       });
 

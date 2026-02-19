@@ -447,11 +447,20 @@ Entity metadata (name, kind, owner) is fetched from the catalog at request time 
 
 **Possible causes**:
 
-1. **Entity deleted from catalog**: Entity ref exists in metrics but entity removed
+1. **Entity deleted from catalog**: Entity ref exists in metrics but entity was removed from the catalog
 2. **Permission denied**: User lacks `catalog.entity.read` for that entity
-3. **Catalog API error**: Temporary failure fetching catalog metadata
 
-**Resolution**: Check console logs for warnings about failed entity fetches.
+**Resolution**: Check whether the entity still exists in the catalog and that the user has the appropriate read permissions.
+
+### Catalog Unavailable
+
+**Symptom**: Empty entity list despite knowing entities with metric data exist
+
+**Possible causes**:
+
+1. **Catalog API unreachable**: The endpoint could not contact the catalog to verify entity access. To protect against unauthorized data exposure, results are not returned when authorization cannot be confirmed.
+
+**Resolution**: Check backend logs for `Failed to fetch entities from catalog` error entries and confirm the catalog service is healthy.
 
 ### Slow Responses
 
