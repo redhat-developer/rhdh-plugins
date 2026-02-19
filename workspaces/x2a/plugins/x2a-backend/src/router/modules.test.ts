@@ -515,7 +515,7 @@ describe('createRouter – modules', () => {
 
         expect(response.status).toBe(200);
         expect(response.body).toMatchObject({
-          status: 'pending',
+          status: 'running',
           jobId: expect.any(String),
         });
       },
