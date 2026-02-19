@@ -21,13 +21,13 @@ import { OpenSSFResponse } from './types';
 export class OpenSSFClient {
   async getScorecard(entity: Entity): Promise<OpenSSFResponse> {
     const scorecardUrl =
-      entity.metadata.annotations?.['openssf/scorecardUrl'] ?? '';
+      entity.metadata.annotations?.['openssf/scorecard-location'] ?? '';
     if (
       !scorecardUrl ||
       scorecardUrl.trim() === '' ||
       !scorecardUrl.startsWith('https://')
     ) {
-      throw new Error(`Invalid annotation 'openssf/scorecardUrl' value`);
+      throw new Error(`Invalid annotation 'openssf/scorecard-location' value`);
     }
 
     const response = await fetch(scorecardUrl, {

@@ -29,7 +29,7 @@ function createEntity(scorecardUrl: string): Entity {
     metadata: {
       name: 'my-service',
       annotations: {
-        'openssf/scorecardUrl': scorecardUrl,
+        'openssf/scorecard-location': scorecardUrl,
       },
     },
     spec: {},

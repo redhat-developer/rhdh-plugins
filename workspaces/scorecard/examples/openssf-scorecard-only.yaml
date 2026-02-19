@@ -2,9 +2,9 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: openssf-scorecard
+  name: openssf-scorecard-only
   annotations:
-    openssf/scorecardUrl: https://api.securityscorecards.dev/projects/github.com/alizard0/rhdh-plugins
+    openssf/scorecard-location: https://api.securityscorecards.dev/projects/github.com/alizard0/rhdh-plugins
 spec:
   type: service
   owner: group:development/guests

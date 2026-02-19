@@ -29,7 +29,7 @@ function createEntity(): Entity {
     kind: 'Component',
     metadata: {
       name: 'my-service',
-      annotations: { 'openssf/scorecardUrl': scorecardUrl },
+      annotations: { 'openssf/scorecard-location': scorecardUrl },
     },
     spec: {},
   } as Entity;
@@ -111,13 +111,14 @@ describe('OpenSSFMetricProvider', () => {
       expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
     });
 
-    it('requires openssf/scorecardUrl annotation in catalog filter', () => {
+    it('requires openssf/scorecard-location annotation in catalog filter', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
       );
       expect(provider.getCatalogFilter()).toEqual({
-        'metadata.annotations.openssf/scorecardUrl': CATALOG_FILTER_EXISTS,
+        'metadata.annotations.openssf/scorecard-location':
+          CATALOG_FILTER_EXISTS,
       });
     });
   });
