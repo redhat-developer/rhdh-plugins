@@ -346,17 +346,18 @@ export function registerModuleRoutes(
         aapCredentials,
       });
 
-      // Update job with k8s job name
+      // Update job with k8s job name and mark as running
       await x2aDatabase.updateJob({
         id: job.id,
         k8sJobName,
+        status: 'running',
       });
 
       logger.info(
         `${phase} job created: jobId=${job.id}, moduleId=${moduleId}, k8sJobName=${k8sJobName}`,
       );
 
-      return res.json({ status: 'pending', jobId: job.id } as any);
+      return res.json({ status: 'running', jobId: job.id } as any);
     },
   );
 }

@@ -133,14 +133,9 @@ export const ModulePage = () => {
 
   return (
     <Page themeId="tool">
-      <Header
-        title={
-          <>
-            <ModulePageBreadcrumb />
-            <p>{t('modulePage.title')}</p>
-          </>
-        }
-      />
+      <Header title={module?.name || t('modulePage.title')}>
+        <ModulePageBreadcrumb />
+      </Header>
 
       <Content>
         {error && (
