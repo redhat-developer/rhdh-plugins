@@ -181,7 +181,8 @@ export class CatalogMetricService {
    * Supports database-level filtering (status, owner, kind) and application-level
    * filtering (entityName). Falls back to database values if catalog is unavailable.
    *
-   * @param entityRefs - Array of entity references to scope the query. Empty array fetches all entities.
+   * @param entityRefs - Entity refs to scope the DB query, or null for unscoped.
+   *                     Empty array signals no authorized entities (returns empty).
    * @param metricId - Metric ID to fetch (e.g., "github.open_prs")
    * @param options - Query options for filtering, sorting, and pagination
    * @param options.status - Filter by threshold status (database-level)
@@ -195,7 +196,7 @@ export class CatalogMetricService {
    * @returns Paginated entity metric details with metadata
    */
   async getEntityMetricDetails(
-    entityRefs: string[],
+    entityRefs: string[] | null,
     metricId: string,
     credentials: BackstageCredentials,
     options: {
@@ -240,22 +241,24 @@ export class CatalogMetricService {
     // Get metric metadata
     const metric = this.registry.getMetric(metricId);
 
-    // Batch-fetch entities from catalog
+    // Batch-fetch entities from catalog using user credentials.
+    // The catalog enforces catalog.entity.read permissions — entities the user
+    // cannot access are returned as null in response.items.
     const entityRefsToFetch = rows.map(row => row.catalog_entity_ref);
     const entityMap = new Map<string, Entity>();
+    let catalogAvailable = true;
 
     if (entityRefsToFetch.length > 0) {
       try {
         const response = await this.catalog.getEntitiesByRefs(
           {
             entityRefs: entityRefsToFetch,
-            fields: ['kind', 'metadata', 'spec'], // Only fetch needed fields
+            fields: ['kind', 'metadata', 'spec'],
           },
           { credentials },
         );
 
-        // Build map of ref -> entity
-        // response.items is in same order as entityRefsToFetch
+        // Build map of ref -> entity (null entries = unauthorized, not added to map)
         entityRefsToFetch.forEach((ref, index) => {
           const entity = response.items[index];
           if (entity) {
@@ -263,25 +266,30 @@ export class CatalogMetricService {
           }
         });
       } catch (error) {
-        // Log error but continue with empty map (entities will show as "Unknown")
+        // Catalog is unavailable — fall back to DB-only metadata rather than
+        // returning empty results, so a transient outage doesn't silently hide data.
+        catalogAvailable = false;
         this.logger.warn('Failed to fetch entities from catalog', { error });
       }
     }
 
-    // Enrich rows with catalog data
-    const enrichedEntities: EntityMetricDetail[] = rows.map(row => {
-      const entity = entityMap.get(row.catalog_entity_ref);
-
-      return {
-        entityRef: row.catalog_entity_ref,
-        entityName: entity?.metadata?.name ?? 'Unknown',
-        entityKind: entity?.kind ?? row.entity_kind ?? 'Unknown',
-        owner: (entity?.spec?.owner as string) ?? row.entity_owner ?? 'Unknown',
-        metricValue: row.value,
-        timestamp: new Date(row.timestamp).toISOString(),
-        status: row.status!,
-      };
-    });
+    // When catalog is available: filter to only authorized entities (null response = no access).
+    // When catalog is unavailable: include all rows with fallback DB metadata for resilience.
+    const enrichedEntities: EntityMetricDetail[] = rows
+      .filter(row => !catalogAvailable || entityMap.has(row.catalog_entity_ref))
+      .map(row => {
+        const entity = entityMap.get(row.catalog_entity_ref);
+        return {
+          entityRef: row.catalog_entity_ref,
+          entityName: entity?.metadata?.name ?? 'Unknown',
+          entityKind: entity?.kind ?? row.entity_kind ?? 'Unknown',
+          owner:
+            (entity?.spec?.owner as string) ?? row.entity_owner ?? 'Unknown',
+          metricValue: row.value,
+          timestamp: new Date(row.timestamp).toISOString(),
+          status: row.status!,
+        };
+      });
 
     // Apply application-level filters
     let filteredEntities = enrichedEntities;

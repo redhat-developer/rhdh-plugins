@@ -37,7 +37,6 @@ import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-
 import {
   filterAuthorizedMetrics,
   checkEntityAccess,
-  getAuthorizedEntityRefs,
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import {
@@ -241,7 +240,7 @@ export async function createRouter({
       }
 
       // Determine entity scope based on filters
-      let entityRefsToQuery: string[];
+      let entityRefsToQuery: string[] | null;
 
       if (ownedByMe) {
         // Use getEntitiesOwnedByUser scoping
@@ -255,12 +254,9 @@ export async function createRouter({
           await checkEntityAccess(entityRef, req, permissions, httpAuth);
         }
       } else {
-        // Scope to entities the user is authorized to read from the catalog.
-        // Passing user credentials means catalog enforces conditional policies natively.
-        entityRefsToQuery = await getAuthorizedEntityRefs({
-          catalog,
-          credentials,
-        });
+        // Unscoped: DB returns the page, getEntitiesByRefs with user credentials
+        // in getEntityMetricDetails enforces catalog read permissions per-row.
+        entityRefsToQuery = null;
       }
 
       const entityMetrics = await catalogMetricService.getEntityMetricDetails(

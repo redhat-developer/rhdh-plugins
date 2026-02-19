@@ -132,29 +132,40 @@ export class DatabaseMetricValues {
    * Returns both the paginated rows and total count for pagination
    */
   async readEntityMetricsByStatus(
-    catalog_entity_refs: string[],
+    catalog_entity_refs: string[] | null,
     metric_id: string,
     status?: 'success' | 'warning' | 'error',
     entityKind?: string,
     entityOwner?: string,
     pagination?: { limit: number; offset: number },
   ): Promise<{ rows: DbMetricValue[]; total: number }> {
-    if (catalog_entity_refs.length === 0) {
+    if (
+      Array.isArray(catalog_entity_refs) &&
+      catalog_entity_refs.length === 0
+    ) {
       return { rows: [], total: 0 };
     }
 
+    // Build subquery — only scope to refs when provided
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
-      .where('metric_id', metric_id)
-      .whereIn('catalog_entity_ref', catalog_entity_refs)
-      .groupBy('metric_id', 'catalog_entity_ref');
+      .where('metric_id', metric_id);
+
+    if (catalog_entity_refs !== null) {
+      latestIdsSubquery.whereIn('catalog_entity_ref', catalog_entity_refs);
+    }
+
+    latestIdsSubquery.groupBy('metric_id', 'catalog_entity_ref');
 
     const query = this.dbClient(this.tableName)
       .select('*')
       .select(this.dbClient.raw('COUNT(*) OVER() as total_count'))
       .whereIn('id', latestIdsSubquery)
-      .where('metric_id', metric_id)
-      .whereIn('catalog_entity_ref', catalog_entity_refs);
+      .where('metric_id', metric_id);
+
+    if (catalog_entity_refs !== null) {
+      query.whereIn('catalog_entity_ref', catalog_entity_refs);
+    }
 
     query.orderBy('timestamp', 'desc');
 

@@ -1073,6 +1073,50 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
+      'should return all matching rows when entity refs is null (unscoped path) - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service1',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'success',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service2',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'warning',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/backend',
+          },
+        ]);
+
+        // null means unscoped — all rows for the metric are returned.
+        // Per-row authorization is enforced downstream by catalog.getEntitiesByRefs.
+        const result = await db.readEntityMetricsByStatus(
+          null,
+          'github.metric1',
+          undefined,
+          undefined,
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
       'should return empty result when entity refs is empty, not bypass to fetch all - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
