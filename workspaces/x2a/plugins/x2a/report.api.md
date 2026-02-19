@@ -87,6 +87,7 @@ readonly "module.summary.error": string;
 readonly "module.summary.finished": string;
 readonly "module.summary.waiting": string;
 readonly "module.summary.pending": string;
+readonly "module.summary.toReview": string;
 readonly "module.name": string;
 readonly "module.artifacts": string;
 readonly "module.phases.none": string;

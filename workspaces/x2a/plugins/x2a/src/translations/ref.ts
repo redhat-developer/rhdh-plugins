@@ -127,6 +127,7 @@ export const x2aPluginMessages = {
       pending: 'Pending',
       running: 'Running',
       error: 'Error',
+      toReview: 'to review',
     },
     actions: {
       runNextPhase: 'Run Next Phase',

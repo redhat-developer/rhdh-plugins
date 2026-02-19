@@ -17,7 +17,8 @@ import { useState } from 'react';
 import { ProjectStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { PieChart, PieValueType } from '@mui/x-charts';
-import { Grid, makeStyles, Tooltip } from '@material-ui/core';
+import { Grid, makeStyles, Tooltip, Chip } from '@material-ui/core';
+import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
 
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -75,7 +76,7 @@ export const ProjectStatusCell = ({
       {
         label: t('module.summary.waiting'),
         value: modulesSummary.waiting,
-        color: '#FFBB28',
+        color: '#4CAF50',
       },
       {
         label: t('module.summary.pending'),
@@ -85,7 +86,7 @@ export const ProjectStatusCell = ({
       {
         label: t('module.summary.running'),
         value: modulesSummary.running,
-        color: '#FF8042',
+        color: '#0088FE',
       },
       {
         label: t('module.summary.error'),
@@ -154,6 +155,22 @@ export const ProjectStatusCell = ({
       <Grid item alignContent="center">
         {t(`project.statuses.${projectStatus.state || 'none'}`)}
       </Grid>
+
+      {modulesSummary && modulesSummary.waiting > 0 && (
+        <Grid item alignContent="center">
+          <Chip
+            size="small"
+            variant="outlined"
+            color="primary"
+            icon={<AssignmentTurnedInIcon />}
+            label={`${modulesSummary.waiting} ${t('module.summary.toReview')}`}
+            onClick={event => {
+              event.stopPropagation();
+              setOpen(!open);
+            }}
+          />
+        </Grid>
+      )}
     </Grid>
   );
 };

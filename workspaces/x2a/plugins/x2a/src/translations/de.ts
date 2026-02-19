@@ -65,6 +65,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.summary.pending': 'Ausstehend',
     'module.summary.running': 'Läuft',
     'module.summary.error': 'Fehler',
+    'module.summary.toReview': 'zu überprüfen',
     'module.actions.runNextPhase': 'Nächste Phase ausführen',
     'module.lastPhase': 'Letzte Phase',
     'module.name': 'Name',
