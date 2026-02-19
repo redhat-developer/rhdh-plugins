@@ -93,7 +93,7 @@ export class HomePage {
   ) {
     const card = this.getCard(metricId);
     await expect(card).toContainText(
-      this.translations.errors.missingPermissionMessage,
+      this.translations.errors.missingPermission,
     );
   }
 
@@ -102,8 +102,6 @@ export class HomePage {
   ) {
     const card = this.getCard(metricId);
     await expect(card).toContainText(this.translations.errors.noDataFound);
-    await expect(card).toContainText(
-      this.translations.errors.noDataFoundMessage,
-    );
+    await expect(card).toContainText(this.translations.errors.noDataFound);
   }
 }

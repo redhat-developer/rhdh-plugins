@@ -20,7 +20,12 @@ import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../Common/CardWrapper';
 import { useTranslation } from '../../hooks/useTranslation';
-import { getStatusConfig, getRingColor } from '../../utils/utils';
+import {
+  getStatusConfig,
+  getRingColor,
+  getYOffsetForCenterLabel,
+  getHeightForCenterLabel,
+} from '../../utils/utils';
 import CustomLegend from '../Scorecard/CustomLegend';
 import { ErrorTooltip } from '../Common/ErrorTooltip';
 import { ResponsivePieChart } from './ResponsivePieChart';
@@ -46,28 +51,6 @@ const CenterLabel = ({
   const textRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState({ yOffset: -10, height: 40 });
 
-  const getYOffset = (lineCount: number) => {
-    switch (lineCount) {
-      case 2:
-        return -17;
-      case 3:
-        return -24;
-      default:
-        return -8;
-    }
-  };
-
-  const getHeight = (lineCount: number) => {
-    switch (lineCount) {
-      case 2:
-        return 48;
-      case 3:
-        return 56;
-      default:
-        return 40;
-    }
-  };
-
   useLayoutEffect(() => {
     const el = textRef.current;
     if (!el) return;
@@ -75,8 +58,8 @@ const CenterLabel = ({
     const lineHeightPx = fontSize * lineHeight;
     const lineCount = Math.round(el.scrollHeight / lineHeightPx);
 
-    const nextOffset = getYOffset(lineCount);
-    const nextHeight = getHeight(lineCount);
+    const nextOffset = getYOffsetForCenterLabel(lineCount);
+    const nextHeight = getHeightForCenterLabel(lineCount);
 
     setLayout(prev =>
       prev.yOffset === nextOffset && prev.height === nextHeight

@@ -35,7 +35,11 @@ import { useTheme } from '@mui/material/styles';
 import { useTranslation } from '../../hooks/useTranslation';
 import { CardWrapper } from '../Common/CardWrapper';
 import CustomLegend from './CustomLegend';
-import { getRingColor } from '../../utils/utils';
+import {
+  getHeightForCenterLabel,
+  getRingColor,
+  getYOffsetForCenterLabel,
+} from '../../utils/utils';
 import { ErrorTooltip } from '../Common/ErrorTooltip';
 
 interface ScorecardProps {
@@ -80,28 +84,6 @@ const ScorecardCenterLabel = ({
   const textRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState({ yOffset: -10, height: 40 });
 
-  const getYOffset = (lineCount: number) => {
-    switch (lineCount) {
-      case 2:
-        return -17;
-      case 3:
-        return -24;
-      default:
-        return -8;
-    }
-  };
-
-  const getHeight = (lineCount: number) => {
-    switch (lineCount) {
-      case 2:
-        return 48;
-      case 3:
-        return 56;
-      default:
-        return 40;
-    }
-  };
-
   useLayoutEffect(() => {
     if (!isErrorState) return;
     const el = textRef.current;
@@ -110,8 +92,8 @@ const ScorecardCenterLabel = ({
     const lineHeightPx = fontSize * lineHeight;
     const lineCount = Math.round(el.scrollHeight / lineHeightPx);
 
-    const nextOffset = getYOffset(lineCount);
-    const nextHeight = getHeight(lineCount);
+    const nextOffset = getYOffsetForCenterLabel(lineCount);
+    const nextHeight = getHeightForCenterLabel(lineCount);
 
     setLayout(prev =>
       prev.yOffset === nextOffset && prev.height === nextHeight
