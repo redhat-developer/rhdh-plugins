@@ -1049,7 +1049,7 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
   });
 
   describe('MCP Action functions', () => {
-    describe('fetch-catalog-entities action logic', () => {
+    describe('query-catalog-entities action logic', () => {
       it('should use fetchCatalogEntities function correctly', async () => {
         const mockCatalogService = {
           getEntities: jest.fn().mockResolvedValue({

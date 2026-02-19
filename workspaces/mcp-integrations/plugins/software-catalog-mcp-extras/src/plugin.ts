@@ -45,7 +45,7 @@ export const softwareCatalogMcpExtrasPlugin = createBackendPlugin({
       async init({ actionsRegistry, catalog, auth, logger }) {
         // This action is used to fetch the list of catalog entities from Backstage. It returns an array of entity names
         actionsRegistry.register({
-          name: 'fetch-catalog-entities',
+          name: 'query-catalog-entities',
           title: 'Fetch Catalog Entities',
           description: `Search and retrieve catalog entities from the Backstage server.
 
@@ -56,7 +56,7 @@ Note: 'type' can only be filtered on if a specified entity 'kind' is also specif
 
 Example invocations and the output from those invocations:
   # Find all Resources of type storage
-  fetch-catalog-entities kind:Resource type:storage
+  query-catalog-entities kind:Resource type:storage
   Output: {
   "entities": [
     {
@@ -209,7 +209,7 @@ Example invocations and the output from those invocations:
               };
             } catch (error) {
               logger.error(
-                'fetch-catalog-entities: Error fetching catalog entities:',
+                'query-catalog-entities: Error fetching catalog entities:',
                 error,
               );
               return {
@@ -297,7 +297,7 @@ export async function fetchCatalogEntities(
   }
   // Log the options being used to fetch the entities, with PII redacted
   logger.info(
-    'fetch-catalog-entities: Fetching catalog entities with options:',
+    'query-catalog-entities: Fetching catalog entities with options:',
     loggedFilters,
   );
 
