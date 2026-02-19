@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 import { createApp } from '@backstage/frontend-defaults';
+import { ThemeBlueprint } from '@backstage/plugin-app-react';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 
 import {
@@ -24,8 +27,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import { navModule } from './modules/nav';
-import { ThemeBlueprint } from '@backstage/plugin-app-react';
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
 
 // TODO: workaround until our theme package supports the new frontend system.
 const rhdhDarkTheme = ThemeBlueprint.make({
