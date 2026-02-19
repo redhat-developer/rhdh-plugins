@@ -10368,7 +10368,6 @@ __metadata:
     express: "npm:^4.21.1"
     http-proxy-middleware: "npm:^3.0.2"
     msw: "npm:2.12.10"
-    node-fetch: "npm:2.7.0"
     prettier: "npm:3.8.1"
     supertest: "npm:6.3.4"
   languageName: unknown
