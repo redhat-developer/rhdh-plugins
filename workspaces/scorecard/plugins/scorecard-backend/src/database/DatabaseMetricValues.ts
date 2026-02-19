@@ -134,6 +134,7 @@ export class DatabaseMetricValues {
   async readEntityMetricsByStatus(
     metric_id: string,
     status?: 'success' | 'warning' | 'error',
+    entityName?: string,
     entityKind?: string,
     entityOwner?: string[],
     pagination?: { limit: number; offset: number },
@@ -153,6 +154,12 @@ export class DatabaseMetricValues {
 
     if (status) {
       query.where('status', status);
+    }
+
+    if (entityName) {
+      query.whereRaw('LOWER(catalog_entity_ref) LIKE LOWER(?)', [
+        `%${entityName}%`,
+      ]);
     }
 
     if (entityKind) {

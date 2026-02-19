@@ -7,7 +7,7 @@ The Scorecard plugin provides a drill-down endpoint that returns detailed entity
 The drill-down endpoint (`/metrics/:metricId/catalog/aggregations/entities`) provides a detailed view of entities and their metric values. It allows managers and platform engineers to:
 
 - See individual entities contributing to aggregated scores
-- Filter entities by status (success/warning/error), owner, kind, or name
+- Filter entities by status (success/warning/error), owner, kind, or entity ref substring
 - Sort by any column (entity name, owner, kind, timestamp, metric value)
 - Paginate through large result sets
 - Understand data freshness through per-entity timestamps
@@ -28,16 +28,16 @@ Returns a paginated list of entities with their metric values, enriched with cat
 
 #### Query Parameters
 
-| Parameter    | Type             | Required | Default     | Description                                                                             |
-| ------------ | ---------------- | -------- | ----------- | --------------------------------------------------------------------------------------- |
-| `status`     | string           | No       | -           | Filter by threshold status: `success`, `warning`, or `error`                            |
-| `owner`      | string/string\[] | No       | -           | Filter by owner entity ref. Repeat to supply multiple values (e.g., `?owner=a&owner=b`) |
-| `kind`       | string           | No       | -           | Filter by entity kind (e.g., `Component`, `API`, `System`)                              |
-| `entityName` | string           | No       | -           | Search for entities with names containing this string (case-insensitive)                |
-| `sortBy`     | string           | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, or `metricValue`             |
-| `sortOrder`  | string           | No       | `desc`      | Sort direction: `asc` or `desc`                                                         |
-| `page`       | number           | No       | `1`         | Page number (1-indexed)                                                                 |
-| `pageSize`   | number           | No       | `5`         | Number of entities per page (max: 100)                                                  |
+| Parameter    | Type             | Required | Default     | Description                                                                                                                                                                                                       |
+| ------------ | ---------------- | -------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`     | string           | No       | -           | Filter by threshold status: `success`, `warning`, or `error`                                                                                                                                                      |
+| `owner`      | string/string\[] | No       | -           | Filter by owner entity ref. Repeat to supply multiple values (e.g., `?owner=a&owner=b`)                                                                                                                           |
+| `kind`       | string           | No       | -           | Filter by entity kind (e.g., `Component`, `API`, `System`)                                                                                                                                                        |
+| `entityName` | string           | No       | -           | Substring search against the entity ref (`kind:namespace/name`). Matches any part of the ref (case-insensitive). Use the name portion for simple searches (e.g., `auth` matches `component:default/auth-service`) |
+| `sortBy`     | string           | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, or `metricValue`                                                                                                                                       |
+| `sortOrder`  | string           | No       | `desc`      | Sort direction: `asc` or `desc`                                                                                                                                                                                   |
+| `page`       | number           | No       | `1`         | Page number (1-indexed)                                                                                                                                                                                           |
+| `pageSize`   | number           | No       | `5`         | Number of entities per page (max: 100)                                                                                                                                                                            |
 
 #### Authentication
 
@@ -246,17 +246,22 @@ Kind filtering is performed at the database level for optimal performance.
 
 ### Entity Name Search
 
-The `entityName` parameter performs a case-insensitive substring search on entity names:
+The `entityName` parameter performs a case-insensitive substring search against the full entity reference, which has the format `kind:namespace/name` (e.g., `component:default/auth-service`).
 
 ```bash
-# Find entities with "auth" in the name
+# Match by name fragment — matches component:default/auth-service, api:default/auth-api, etc.
 ?entityName=auth
 
-# Find entities with "service" in the name
+# Match by name fragment — matches component:default/my-service, component:default/service-api, etc.
 ?entityName=service
+
+# Match more precisely using the full ref format
+?entityName=component:default/auth-service
 ```
 
-Entity name filtering requires catalog metadata and is performed at the application level after enrichment.
+Because the search runs against the entire ref string, searching by just the name portion (the part after `/`) is the most common and natural usage. Be aware that the search term could also match the kind or namespace prefix if those happen to contain the search string (e.g., `?entityName=default` would match all entities in the `default` namespace).
+
+Entity name filtering is performed at the database level for consistent pagination and accurate total counts.
 
 ## Sorting
 
@@ -303,10 +308,9 @@ The response includes pagination metadata:
 
 ### Pagination Performance
 
-- **Database-level pagination**: Used when only `status`, `owner`, or `kind` filters are applied (optimal performance)
-- **Application-level pagination**: Used when `entityName` search is applied (fetches all results, then filters and paginates in memory)
+All filters (`status`, `owner`, `kind`, and `entityName`) are applied at the database level before pagination. The `LIMIT`/`OFFSET` is always pushed to the database, so only the requested page of rows is fetched regardless of which filters are active.
 
-For best performance with large datasets, use database-level filters when possible.
+For best performance with large datasets, combine specific filters to reduce the result set size before paginating.
 
 ## Error Handling
 
@@ -456,14 +460,12 @@ Entity metadata (name, kind, owner) is fetched from the catalog at request time 
 **Possible causes**:
 
 1. **Large result set**: Too many entities match the filters
-2. **Entity name search**: Using `entityName` filter fetches all entities before filtering
-3. **No filters applied**: Returning all entities in the system
+2. **No filters applied**: Returning all entities in the system
 
 **Resolution**:
 
-- Use more specific filters (status, kind, owner)
+- Use more specific filters (status, kind, owner, entityName)
 - Reduce page size
-- Avoid `entityName` search on large datasets
 - Use the `owner` filter to scope results to specific teams
 
 ## Related Documentation

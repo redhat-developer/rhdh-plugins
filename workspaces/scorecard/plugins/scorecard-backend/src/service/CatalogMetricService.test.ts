@@ -641,6 +641,7 @@ describe('CatalogMetricService', () => {
         undefined,
         undefined,
         undefined,
+        undefined,
         { limit: 5, offset: 5 },
       );
     });
@@ -661,6 +662,7 @@ describe('CatalogMetricService', () => {
         'error',
         undefined,
         undefined,
+        undefined,
         { limit: 10, offset: 0 },
       );
     });
@@ -678,6 +680,7 @@ describe('CatalogMetricService', () => {
 
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
+        undefined,
         undefined,
         'Component',
         undefined,
@@ -700,12 +703,18 @@ describe('CatalogMetricService', () => {
         'github.important_metric',
         undefined,
         undefined,
+        undefined,
         ['team:default/platform'],
         { limit: 10, offset: 0 },
       );
     });
 
-    it('should filter by entityName at application level', async () => {
+    it('should filter by entityName at database level', async () => {
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValueOnce({
+        rows: [mockMetricRows[0]],
+        total: 1,
+      });
+
       const result = await service.getEntityMetricDetails(
         'github.important_metric',
         mockCredentials,
@@ -716,23 +725,22 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      // Should fetch all from DB (no pagination)
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
         undefined,
+        'service-a',
         undefined,
         undefined,
-        undefined,
+        { limit: 10, offset: 0 },
       );
 
-      // Should filter in application
       expect(result.entities).toHaveLength(1);
       expect(result.entities[0].entityName).toBe('service-a');
       expect(result.pagination.total).toBe(1);
     });
 
-    it('should perform case-insensitive entityName search', async () => {
-      const result = await service.getEntityMetricDetails(
+    it('should pass entityName to database for filtering', async () => {
+      await service.getEntityMetricDetails(
         'github.important_metric',
         mockCredentials,
         {
@@ -742,7 +750,14 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(result.entities).toHaveLength(3);
+      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+        'github.important_metric',
+        undefined,
+        'SERVICE',
+        undefined,
+        undefined,
+        { limit: 10, offset: 0 },
+      );
     });
 
     it('should sort by entityName ascending', async () => {
@@ -903,6 +918,7 @@ describe('CatalogMetricService', () => {
         undefined,
         undefined,
         undefined,
+        undefined,
         { limit: 10, offset: 0 },
       );
     });
@@ -949,6 +965,7 @@ describe('CatalogMetricService', () => {
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
         'error',
+        undefined,
         'Component',
         ['team:default/platform'],
         { limit: 5, offset: 0 },

@@ -212,23 +212,17 @@ export class CatalogMetricService {
       limit: number;
     },
   ): Promise<EntityMetricDetailResponse> {
-    // Determine if we need application-level filtering
-    const needsAppFiltering = !!options.entityName;
-
-    // If we need app-level filtering (entityName), fetch ALL results
-    // Otherwise, paginate at DB (status, kind, owner are DB-filtered)
-    const dbPagination = needsAppFiltering
-      ? undefined // Fetch all for entityName filtering
-      : {
-          limit: options.limit,
-          offset: (options.page - 1) * options.limit,
-        };
+    const dbPagination = {
+      limit: options.limit,
+      offset: (options.page - 1) * options.limit,
+    };
 
     // Fetch raw metric data from database
     const { rows, total: dbTotal } =
       await this.database.readEntityMetricsByStatus(
         metricId,
         options.status,
+        options.entityName,
         options.kind,
         options.owner,
         dbPagination,
@@ -287,18 +281,8 @@ export class CatalogMetricService {
         };
       });
 
-    // Apply application-level filters
-    let filteredEntities = enrichedEntities;
-
-    if (options.entityName) {
-      const searchTerm = options.entityName.toLowerCase();
-      filteredEntities = filteredEntities.filter(e =>
-        e.entityName.toLowerCase().includes(searchTerm),
-      );
-    }
-
     if (options.sortBy) {
-      filteredEntities.sort((a, b) => {
+      enrichedEntities.sort((a, b) => {
         let aValue: any;
         let bValue: any;
 
@@ -341,30 +325,15 @@ export class CatalogMetricService {
       });
     } else {
       // Default: sort by timestamp DESC
-      filteredEntities.sort((a, b) => {
+      enrichedEntities.sort((a, b) => {
         const aTime = new Date(a.timestamp).getTime();
         const bTime = new Date(b.timestamp).getTime();
         return bTime - aTime; // DESC
       });
     }
 
-    // Paginate at application level if we filtered, otherwise use DB results
-    let finalEntities: EntityMetricDetail[];
-    let finalTotal: number;
-
-    if (needsAppFiltering) {
-      // Paginate the filtered results
-      const startIndex = (options.page - 1) * options.limit;
-      finalEntities = filteredEntities.slice(
-        startIndex,
-        startIndex + options.limit,
-      );
-      finalTotal = filteredEntities.length;
-    } else {
-      // Use database-paginated results as-is
-      finalEntities = filteredEntities;
-      finalTotal = dbTotal;
-    }
+    const finalEntities: EntityMetricDetail[] = enrichedEntities;
+    const finalTotal = dbTotal;
 
     // Format and return response
     return {

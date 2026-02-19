@@ -568,6 +568,7 @@ describe('DatabaseMetricValues', () => {
           'error',
           undefined,
           undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -620,6 +621,7 @@ describe('DatabaseMetricValues', () => {
 
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -683,6 +685,7 @@ describe('DatabaseMetricValues', () => {
           'error',
           undefined,
           undefined,
+          undefined,
           { limit: 2, offset: 0 },
         );
 
@@ -695,6 +698,7 @@ describe('DatabaseMetricValues', () => {
           'error',
           undefined,
           undefined,
+          undefined,
           { limit: 2, offset: 2 },
         );
 
@@ -705,6 +709,7 @@ describe('DatabaseMetricValues', () => {
         const page3 = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error',
+          undefined,
           undefined,
           undefined,
           { limit: 2, offset: 4 },
@@ -723,6 +728,7 @@ describe('DatabaseMetricValues', () => {
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error',
+          undefined,
           undefined,
           undefined,
           { limit: 10, offset: 0 },
@@ -774,6 +780,7 @@ describe('DatabaseMetricValues', () => {
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error',
+          undefined,
           'Component', // Filter by kind
           undefined,
           { limit: 10, offset: 0 },
@@ -828,6 +835,7 @@ describe('DatabaseMetricValues', () => {
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error',
+          undefined,
           undefined,
           ['team:default/platform'], // Filter by owner
           { limit: 10, offset: 0 },
@@ -891,6 +899,7 @@ describe('DatabaseMetricValues', () => {
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error', // Only error status
+          undefined,
           'Component', // Only Component kind
           ['team:default/platform'], // Only platform team
           { limit: 10, offset: 0 },
@@ -951,6 +960,7 @@ describe('DatabaseMetricValues', () => {
           'error',
           undefined,
           undefined,
+          undefined,
           undefined, // No pagination
         );
 
@@ -994,6 +1004,7 @@ describe('DatabaseMetricValues', () => {
           'error',
           undefined,
           undefined,
+          undefined,
           { limit: 10, offset: 0 },
         );
 
@@ -1004,6 +1015,7 @@ describe('DatabaseMetricValues', () => {
         const filteredResult = await db.readEntityMetricsByStatus(
           'github.metric1',
           'error',
+          undefined,
           'Component',
           undefined,
           { limit: 10, offset: 0 },
@@ -1048,6 +1060,7 @@ describe('DatabaseMetricValues', () => {
         // Per-row authorization is enforced downstream by catalog.getEntitiesByRefs.
         const result = await db.readEntityMetricsByStatus(
           'github.metric1',
+          undefined,
           undefined,
           undefined,
           undefined,
@@ -1101,6 +1114,7 @@ describe('DatabaseMetricValues', () => {
           'github.metric1',
           'error',
           undefined,
+          undefined,
           ['team:default/platform', 'team:default/backend'],
           { limit: 10, offset: 0 },
         );
@@ -1110,6 +1124,62 @@ describe('DatabaseMetricValues', () => {
         expect(result.rows.map(r => r.entity_owner).sort()).toEqual([
           'team:default/backend',
           'team:default/platform',
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by entityName substring via catalog_entity_ref LIKE - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/my-service',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-api',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+          {
+            catalog_entity_ref: 'component:default/unrelated',
+            metric_id: 'github.metric1',
+            value: 15,
+            timestamp,
+            status: 'error',
+            entity_kind: 'Component',
+            entity_owner: 'team:default/platform',
+          },
+        ]);
+
+        // 'service' should match 'my-service' and 'service-api' but not 'unrelated'
+        const result = await db.readEntityMetricsByStatus(
+          'github.metric1',
+          undefined,
+          'service',
+          undefined,
+          undefined,
+          { limit: 10, offset: 0 },
+        );
+
+        expect(result.rows).toHaveLength(2);
+        expect(result.total).toBe(2);
+        expect(result.rows.map(r => r.catalog_entity_ref).sort()).toEqual([
+          'component:default/my-service',
+          'component:default/service-api',
         ]);
       },
     );
