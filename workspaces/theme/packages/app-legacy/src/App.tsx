@@ -14,69 +14,78 @@
  * limitations under the License.
  */
 
-import { Route } from 'react-router-dom';
-import { ApiExplorerPage } from '@backstage/plugin-api-docs';
-import { CatalogEntityPage, CatalogIndexPage } from '@backstage/plugin-catalog';
-import { CatalogImportPage } from '@backstage/plugin-catalog-import';
-import { ScaffolderPage } from '@backstage/plugin-scaffolder';
+import { Navigate, Route } from 'react-router-dom';
+import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
+import {
+  CatalogEntityPage,
+  CatalogIndexPage,
+  catalogPlugin,
+} from '@backstage/plugin-catalog';
+import {
+  CatalogImportPage,
+  catalogImportPlugin,
+} from '@backstage/plugin-catalog-import';
+import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
+import { orgPlugin } from '@backstage/plugin-org';
 import { SearchPage } from '@backstage/plugin-search';
 import {
   TechDocsIndexPage,
+  techdocsPlugin,
   TechDocsReaderPage,
 } from '@backstage/plugin-techdocs';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
+import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
 import { Root } from './components/Root';
 
-import { AlertDisplay, OAuthRequestDialog } from '@backstage/core-components';
-import { createApp } from '@backstage/frontend-defaults';
-import { convertLegacyApp } from '@backstage/core-compat-api';
 import {
-  createFrontendModule,
-  type FrontendFeature,
-  type FrontendFeatureLoader,
-} from '@backstage/frontend-plugin-api';
-import { ThemeBlueprint } from '@backstage/plugin-app-react';
+  AlertDisplay,
+  OAuthRequestDialog,
+  SignInPage,
+} from '@backstage/core-components';
+import { createApp } from '@backstage/app-defaults';
 import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
+import { RequirePermission } from '@backstage/plugin-permission-react';
+import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+
 import { BCCTestPage } from '@red-hat-developer-hub/backstage-plugin-bcc-test';
 import { BUITestPage } from '@red-hat-developer-hub/backstage-plugin-bui-test';
 import { MUI4TestPage } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
 import { MUI5TestPage } from '@red-hat-developer-hub/backstage-plugin-mui5-test';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-/**
- * RHDH themes as NFS extensions (ThemeBlueprint).
- * Only the app can register ThemeBlueprint; we use the same theme definitions
- * from the theme plugin (getAllThemes()) so behavior matches the legacy app.
- */
-const rhdhThemeExtensions = getAllThemes().map(appTheme =>
-  ThemeBlueprint.make({
-    name: appTheme.id,
-    params: {
-      theme: {
-        id: appTheme.id,
-        title: appTheme.title,
-        variant: appTheme.variant,
-        icon: appTheme.icon,
-        Provider: appTheme.Provider,
-      },
-    },
-  }),
-);
-
-const rhdhThemeModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: rhdhThemeExtensions,
+const app = createApp({
+  apis,
+  bindRoutes({ bind }) {
+    bind(catalogPlugin.externalRoutes, {
+      createComponent: scaffolderPlugin.routes.root,
+      viewTechDoc: techdocsPlugin.routes.docRoot,
+      createFromTemplate: scaffolderPlugin.routes.selectedTemplate,
+    });
+    bind(apiDocsPlugin.externalRoutes, {
+      registerApi: catalogImportPlugin.routes.importPage,
+    });
+    bind(scaffolderPlugin.externalRoutes, {
+      registerComponent: catalogImportPlugin.routes.importPage,
+      viewTechDoc: techdocsPlugin.routes.docRoot,
+    });
+    bind(orgPlugin.externalRoutes, {
+      catalogIndex: catalogPlugin.routes.catalogIndex,
+    });
+  },
+  components: {
+    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
+  },
+  themes: getAllThemes(),
 });
 
-// Root "/" shows catalog (convertLegacyApp cannot convert <Navigate />; must use a plugin component)
 const routes = (
   <FlatRoutes>
-    <Route path="/" element={<CatalogIndexPage />} />
+    <Route path="/" element={<Navigate to="catalog" />} />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"
@@ -95,8 +104,14 @@ const routes = (
     </Route>
     <Route path="/create" element={<ScaffolderPage />} />
     <Route path="/api-docs" element={<ApiExplorerPage />} />
-    {/* Top-level element must be a plugin component for convertLegacyApp; permission can be enforced inside the page or in NFS later */}
-    <Route path="/catalog-import" element={<CatalogImportPage />} />
+    <Route
+      path="/catalog-import"
+      element={
+        <RequirePermission permission={catalogEntityCreatePermission}>
+          <CatalogImportPage />
+        </RequirePermission>
+      }
+    />
     <Route path="/search" element={<SearchPage />}>
       {searchPage}
     </Route>
@@ -109,24 +124,12 @@ const routes = (
   </FlatRoutes>
 );
 
-const legacyRootElement = (
+export default app.createRoot(
   <>
     <AlertDisplay />
     <OAuthRequestDialog />
     <AppRouter>
       <Root>{routes}</Root>
     </AppRouter>
-  </>
+  </>,
 );
-
-const app = createApp({
-  features: [
-    rhdhThemeModule,
-    ...(convertLegacyApp(legacyRootElement) as unknown as (
-      | FrontendFeature
-      | FrontendFeatureLoader
-    )[]),
-  ],
-});
-
-export default app.createRoot();

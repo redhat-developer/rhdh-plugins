@@ -2,6 +2,15 @@ app:
   title: Scaffolded Backstage App
   baseUrl: http://localhost:3000
 
+  # Enable NFS feature discovery and ensure root path is handled (hybrid convertLegacyApp)
+  packages: all
+
+  extensions:
+    # Mount catalog index at root so "/" shows the catalog (legacy routes are converted to plugin pages)
+    - page:catalog:
+        config:
+          path: /
+
 organization:
   name: My Company
 
