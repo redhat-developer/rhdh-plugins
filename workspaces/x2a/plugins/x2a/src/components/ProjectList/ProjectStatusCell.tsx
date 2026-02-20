@@ -69,26 +69,31 @@ export const ProjectStatusCell = ({
   if (modulesSummary) {
     data = [
       {
+        id: 'finished',
         label: t('module.summary.finished'),
         value: modulesSummary.finished,
         color: '#00C49F',
       },
       {
+        id: 'waiting',
         label: t('module.summary.waiting'),
         value: modulesSummary.waiting,
         color: '#4CAF50',
       },
       {
+        id: 'pending',
         label: t('module.summary.pending'),
         value: modulesSummary.pending,
         color: '#FF8042',
       },
       {
+        id: 'running',
         label: t('module.summary.running'),
         value: modulesSummary.running,
         color: '#0088FE',
       },
       {
+        id: 'error',
         label: t('module.summary.error'),
         value: modulesSummary.error,
         color: '#FF0000',
@@ -137,17 +142,30 @@ export const ProjectStatusCell = ({
             arrow
             title={tooltipContent}
           >
-            <PieChart
-              series={[{ innerRadius: 0, outerRadius: size / 2, data }]}
-              margin={{ right: 5 }}
-              width={size}
-              height={size}
-              hideLegend
-              onClick={event => {
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(event: React.MouseEvent) => {
                 event.stopPropagation();
                 setOpen(!open);
               }}
-            />
+              onKeyDown={(event: React.KeyboardEvent) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setOpen(!open);
+                }
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <PieChart
+                series={[{ innerRadius: 0, outerRadius: size / 2, data }]}
+                margin={{ right: 5 }}
+                width={size}
+                height={size}
+                slotProps={{ legend: { hidden: true } }}
+              />
+            </div>
           </Tooltip>
         </Grid>
       )}
