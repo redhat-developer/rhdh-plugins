@@ -203,6 +203,12 @@ const PhaseDetails = ({
           value={phase?.id || empty}
         />
       </Grid>
+      <Grid item xs={3}>
+        <ItemField
+          label={t('modulePage.phases.commitId')}
+          value={phase?.commitId || empty}
+        />
+      </Grid>
 
       {phase && (
         <Grid item xs={12}>

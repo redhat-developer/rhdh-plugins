@@ -61,6 +61,7 @@ const collectArtifactsRequestSchema = z.object({
   jobId: z.string().uuid('Job ID must be a valid UUID'),
   artifacts: z.array(artifactSchema).optional(),
   telemetry: telemetrySchema.optional(),
+  commitId: z.string().optional(),
 });
 
 export interface CollectArtifactsRequestBody {
@@ -69,6 +70,7 @@ export interface CollectArtifactsRequestBody {
   jobId: string;
   artifacts?: Artifact[];
   telemetry?: Telemetry;
+  commitId?: string;
 }
 
 export function registerCollectArtifactsRoutes(
@@ -164,6 +166,7 @@ export function registerCollectArtifactsRoutes(
           log: logs,
           artifacts: validatedRequest.artifacts || [],
           telemetry: validatedRequest.telemetry || null,
+          commitId: validatedRequest.commitId,
         });
 
         logger.info(
