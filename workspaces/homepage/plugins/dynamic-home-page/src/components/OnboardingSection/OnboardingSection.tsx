@@ -33,6 +33,7 @@ import { getLearningItems } from '../../utils/constants';
 import useGreeting from '../../hooks/useGreeting';
 import { LearningSectionItem } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
+import { containerGridItemSx } from '../../utils/GridItem';
 
 export const OnboardingSection = () => {
   const [user, setUser] = useState<string | null>();
@@ -79,30 +80,13 @@ export const OnboardingSection = () => {
     return name;
   };
 
-  // Logic to handle column widths based on the PARENT CARD size
-  const responsiveGridItem = {
-    width: '100%',
-
-    '@container (min-width: 550px)': {
-      width: '50%',
-    },
-
-    '@container (min-width: 950px)': {
-      width: '25%',
-    },
-
-    '@container (min-width: 1300px)': {
-      width: '20%',
-    },
-  };
-
   const content = (
     <Box sx={{ mt: 2 }}>
       <Grid container spacing={2}>
         <Grid
           item
           sx={{
-            ...responsiveGridItem,
+            ...containerGridItemSx({ xs: 12, sm: 6, md: 3 }),
             display: 'flex',
             justifyContent: 'left',
             alignItems: 'center',
@@ -125,7 +109,7 @@ export const OnboardingSection = () => {
             item
             key={item.title}
             sx={{
-              ...responsiveGridItem,
+              ...containerGridItemSx({ xs: 12, sm: 6, md: 3 }),
               display: 'flex',
               justifyContent: 'left',
               alignItems: 'center',

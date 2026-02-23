@@ -36,6 +36,7 @@ import { useEntities } from '../../hooks/useEntities';
 import { ViewMoreLink } from './ViewMoreLink';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Trans } from '../Trans';
+import { containerGridItemSx } from '../../utils/GridItem';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -45,33 +46,6 @@ const StyledLink = styled(BackstageLink)(({ theme }) => ({
   border: `1px solid ${theme.palette.primary.main}`,
   borderRadius: 4,
 }));
-
-const responsiveGridItem1 = {
-  width: '100%',
-
-  '@container (min-width: 600px)': {
-    width: '50%',
-  },
-
-  '@container (min-width: 900px)': {
-    width: '25%',
-  },
-
-  '@container (min-width: 1200px)': {
-    width: '20%',
-  },
-};
-
-const responsiveGridItem2 = {
-  width: '100%',
-
-  '@container (min-width: 600px)': {
-    width: '50%',
-  },
-  '@container (min-width: 1200px)': {
-    width: '40%',
-  },
-};
 
 export const TemplateSection = () => {
   const { t } = useTranslation();
@@ -117,7 +91,15 @@ export const TemplateSection = () => {
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
             {templates?.items.map((item: any) => (
-              <Grid item sx={{ ...responsiveGridItem1 }} key={item.title}>
+              <Grid
+                item
+                sx={containerGridItemSx({
+                  xs: 12,
+                  sm: 6,
+                  md: 3,
+                })}
+                key={item.title}
+              >
                 <TemplateCard
                   link={`/create/templates/${item.metadata.namespace}/${item.metadata.name}`}
                   title={item.metadata.title}
@@ -128,7 +110,15 @@ export const TemplateSection = () => {
               </Grid>
             ))}
             {templates?.items.length === 0 && (
-              <Grid item sx={{ ...responsiveGridItem2 }}>
+              <Grid
+                item
+                sx={containerGridItemSx({
+                  xs: 12,
+                  sm: 12,
+                  md: 12,
+                  lg: 6,
+                })}
+              >
                 <Box
                   sx={{
                     height: '100%',

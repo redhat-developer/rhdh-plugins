@@ -15,7 +15,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useRef } from 'react';
 
 import {
   CodeSnippet,
@@ -34,7 +34,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import CircularProgress from '@mui/material/CircularProgress';
 import CardContent from '@mui/material/CardContent';
 import { useTheme, styled } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
 
 import EntityCard from './EntityCard';
 import { ViewMoreLink } from './ViewMoreLink';
@@ -46,6 +45,8 @@ import {
 } from '../../utils/utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Trans } from '../Trans';
+import { containerGridItemSx } from '../../utils/GridItem';
+import { useContainerQuery } from '../../hooks/useContainerQuery';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -63,60 +64,19 @@ export const EntitySection = () => {
   const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
   const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const [isMediumBreakpoint, setIsMediumBreakpoint] = useState(false);
 
-  const isMd = useMediaQuery(theme.breakpoints.only('md'));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const containerSize = useContainerQuery(containerRef);
 
-  const responsiveGridItem1 = {
-    width: '100%',
+  const entityCardCount =
+    containerSize === 'xs' || containerSize === 'sm' ? 2 : 4;
 
-    '@container (min-width: 600px)': {
-      width: '50%',
-    },
-
-    '@container (min-width: 900px)': {
-      width: '33.3%',
-    },
-
-    '@container (min-width: 1200px)': {
-      width: '25%',
-    },
+  const getIllustrationWidth = () => {
+    if (containerSize === 'md') return 180;
+    if (containerSize === 'lg') return 220;
+    return 266;
   };
-
-  const responsiveGridItem2 = {
-    width: '100%',
-
-    '@container (min-width: 600px)': {
-      width: '50%',
-    },
-
-    '@container (min-width: 900px)': {
-      width: '25%',
-    },
-
-    '@container (min-width: 1200px)': {
-      width: '20%',
-    },
-  };
-
-  const responsiveGridItem3 = {
-    width: '100%',
-
-    '@container (min-width: 600px)': {
-      width: '50%',
-    },
-    '@container (min-width: 1200px)': {
-      width: '40%',
-    },
-  };
-
-  useEffect(() => {
-    if (isMd) {
-      setIsMediumBreakpoint(true);
-    } else {
-      setIsMediumBreakpoint(false);
-    }
-  }, [isMd]);
+  const illustrationWidth = getIllustrationWidth();
 
   useEffect(() => {
     const isUserDismissedEntityIllustration =
@@ -163,101 +123,109 @@ export const EntitySection = () => {
       </WarningPanel>
     );
   } else {
-    let entityCardCount = 2;
-    if (isMediumBreakpoint) entityCardCount = 3;
-
     content = (
       <Box sx={{ padding: '8px 8px 8px 0' }}>
         <Fragment>
           <Grid container spacing={1} alignItems="stretch">
-            {!isRemoveFirstCard && !profileLoading && (
-              <Grid
-                item
-                sx={{
-                  ...responsiveGridItem1,
-                  key: 'entities illustration',
-                }}
-              >
-                <Card
-                  elevation={0}
-                  sx={{
-                    height: '100%',
-                    border: `1px solid ${theme.palette.grey[400]}`,
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    position: 'relative',
-                    transition:
-                      'opacity 0.5s ease-out, transform 0.5s ease-in-out',
-                    opacity: showDiscoveryCard ? 1 : 0,
-                    transform: showDiscoveryCard
-                      ? 'translateX(0)'
-                      : 'translateX(-50px)',
-                  }}
-                >
-                  <Box
+            {/* hiding discovery card on small containers */}
+            {!isRemoveFirstCard &&
+              !profileLoading &&
+              containerSize !== 'xs' &&
+              containerSize !== 'sm' && (
+                <Grid item sx={containerGridItemSx({ md: 4 })}>
+                  <Card
+                    elevation={0}
                     sx={{
+                      height: '100%',
+                      border: `1px solid ${theme.palette.grey[400]}`,
                       display: 'flex',
                       flexDirection: 'row',
                       alignItems: 'center',
+                      position: 'relative',
+                      transition:
+                        'opacity 0.5s ease-out, transform 0.5s ease-in-out',
+                      opacity: showDiscoveryCard ? 1 : 0,
+                      transform: showDiscoveryCard
+                        ? 'translateX(0)'
+                        : 'translateX(-50px)',
                     }}
                   >
-                    {!imgLoaded && (
-                      <Skeleton
-                        variant="rectangular"
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {!imgLoaded && (
+                        <Skeleton
+                          variant="rectangular"
+                          height={300}
+                          sx={{
+                            borderRadius: 3,
+                            width: illustrationWidth,
+                          }}
+                        />
+                      )}
+                      <Box
+                        component="img"
+                        src={HomePageEntityIllustration}
+                        onLoad={() => setImgLoaded(true)}
+                        alt=""
                         height={300}
                         sx={{
-                          borderRadius: 3,
-                          width: 'clamp(140px, 14vw, 266px)',
+                          width: illustrationWidth,
                         }}
                       />
-                    )}
-                    <Box
-                      component="img"
-                      src={HomePageEntityIllustration}
-                      onLoad={() => setImgLoaded(true)}
-                      alt=""
-                      height={300}
-                      sx={{
-                        width: 'clamp(140px, 14vw, 266px)',
-                      }}
-                    />
-                    <Box sx={{ p: 2 }}>
                       <Box sx={{ p: 2 }}>
-                        <Typography variant="body2" paragraph>
-                          {t('entities.description')}
-                        </Typography>
+                        <Box sx={{ p: 2 }}>
+                          <Typography variant="body2" paragraph>
+                            {t('entities.description')}
+                          </Typography>
+                        </Box>
+                        {entities?.length > 0 && (
+                          <IconButton
+                            onClick={handleClose}
+                            aria-label={t('entities.close')}
+                            style={{
+                              position: 'absolute',
+                              top: '8px',
+                              right: '8px',
+                            }}
+                          >
+                            <CloseIcon
+                              style={{ width: '16px', height: '16px' }}
+                            />
+                          </IconButton>
+                        )}
                       </Box>
-                      {entities?.length > 0 && (
-                        <IconButton
-                          onClick={handleClose}
-                          aria-label={t('entities.close')}
-                          style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                          }}
-                        >
-                          <CloseIcon
-                            style={{ width: '16px', height: '16px' }}
-                          />
-                        </IconButton>
-                      )}
                     </Box>
-                  </Box>
-                </Card>
-              </Grid>
-            )}
+                  </Card>
+                </Grid>
+              )}
             {entities
-              ?.slice(0, isRemoveFirstCard ? 4 : entityCardCount)
+              ?.slice(
+                0,
+                (() => {
+                  const isWide =
+                    containerSize === 'xl' ||
+                    containerSize === 'lg' ||
+                    containerSize === 'md';
+                  if (!isWide) return entityCardCount;
+                  return isRemoveFirstCard
+                    ? entityCardCount
+                    : entityCardCount - 2;
+                })(),
+              )
+
               .map((item: any) => (
                 <Grid
                   item
-                  sx={{
-                    ...(isRemoveFirstCard
-                      ? responsiveGridItem2
-                      : responsiveGridItem1),
-                  }}
+                  sx={containerGridItemSx({
+                    xs: 12,
+                    sm: 6,
+                    md: isRemoveFirstCard ? 3 : 4,
+                  })}
                   key={item.metadata.name}
                 >
                   <EntityCard
@@ -273,11 +241,11 @@ export const EntitySection = () => {
             {entities?.length === 0 && (
               <Grid
                 item
-                sx={{
-                  ...(isRemoveFirstCard
-                    ? responsiveGridItem3
-                    : responsiveGridItem1),
-                }}
+                sx={containerGridItemSx({
+                  sm: isRemoveFirstCard ? 12 : 6,
+                  md: isRemoveFirstCard ? 12 : 8,
+                  lg: 6,
+                })}
               >
                 <Box
                   sx={{
@@ -343,6 +311,7 @@ export const EntitySection = () => {
         {t('entities.title')}
       </Typography>
       <Box
+        ref={containerRef}
         sx={{
           flex: 1,
           minHeight: 0,
