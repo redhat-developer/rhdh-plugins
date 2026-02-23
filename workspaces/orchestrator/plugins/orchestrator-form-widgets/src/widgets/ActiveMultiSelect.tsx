@@ -16,9 +16,9 @@
 import {
   KeyboardEvent,
   SyntheticEvent,
+  useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react';
 import clsx from 'clsx';
@@ -35,7 +35,6 @@ import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { Widget } from '@rjsf/utils';
-import isEqual from 'lodash/isEqual';
 
 import {
   useTemplateUnitEvaluator,
@@ -43,6 +42,7 @@ import {
   useFetch,
   useRetriggerEvaluate,
   useProcessingState,
+  useClearOnRetrigger,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -138,9 +138,6 @@ export const ActiveMultiSelect: Widget<
     /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
     uiProps['fetch:retrigger'] as string[],
   );
-  const prevRetriggerRef = useRef<(string | undefined)[] | undefined>(
-    retrigger,
-  );
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
@@ -151,25 +148,16 @@ export const ActiveMultiSelect: Widget<
     handleFetchEnded,
   );
 
-  useEffect(() => {
-    if (!clearOnRetrigger) {
-      prevRetriggerRef.current = retrigger;
-      return;
-    }
+  const handleClear = useCallback(() => {
+    setInProgressItem('');
+    onChange([]);
+  }, [onChange]);
 
-    if (!retrigger) {
-      prevRetriggerRef.current = retrigger;
-      return;
-    }
-
-    const prev = prevRetriggerRef.current;
-    if (prev && !isEqual(prev, retrigger)) {
-      setInProgressItem('');
-      onChange([]);
-    }
-
-    prevRetriggerRef.current = retrigger;
-  }, [clearOnRetrigger, retrigger, onChange]);
+  useClearOnRetrigger({
+    enabled: clearOnRetrigger,
+    retrigger,
+    onClear: handleClear,
+  });
 
   // Process fetch results
   // Note: Static defaults are applied at form initialization level (in OrchestratorForm)

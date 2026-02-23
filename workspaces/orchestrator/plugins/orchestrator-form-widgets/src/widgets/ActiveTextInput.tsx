@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { JsonObject } from '@backstage/types';
 import { Widget } from '@rjsf/utils';
@@ -37,10 +37,10 @@ import {
   applySelectorArray,
   applySelectorString,
   useProcessingState,
+  useClearOnRetrigger,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
-import isEqual from 'lodash/isEqual';
 
 const useStyles = makeStyles()((theme: Theme) => ({
   autocompleteOptionSelected: {
@@ -94,9 +94,6 @@ export const ActiveTextInput: Widget<
     /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
     uiProps['fetch:retrigger'] as string[],
   );
-  const prevRetriggerRef = useRef<(string | undefined)[] | undefined>(
-    retrigger,
-  );
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
@@ -118,24 +115,15 @@ export const ActiveTextInput: Widget<
     [onChange, id, setIsChangedByUser],
   );
 
-  useEffect(() => {
-    if (!clearOnRetrigger) {
-      prevRetriggerRef.current = retrigger;
-      return;
-    }
+  const handleClear = useCallback(() => {
+    handleChange('', false);
+  }, [handleChange]);
 
-    if (!retrigger) {
-      prevRetriggerRef.current = retrigger;
-      return;
-    }
-
-    const prev = prevRetriggerRef.current;
-    if (prev && !isEqual(prev, retrigger)) {
-      handleChange('', false);
-    }
-
-    prevRetriggerRef.current = retrigger;
-  }, [clearOnRetrigger, retrigger, handleChange]);
+  useClearOnRetrigger({
+    enabled: clearOnRetrigger,
+    retrigger,
+    onClear: handleClear,
+  });
 
   // Process fetch results - only override if fetch returns a non-empty value
   // Static defaults are applied at form initialization level (in OrchestratorForm)
