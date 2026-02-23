@@ -511,11 +511,9 @@ export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
           DEFAULT_KUBERNETES_NAMESPACE,
         );
 
-        if (source === 'in-cluster') {
-          deps.logger.info(
-            `No namespace configured, using in-cluster namespace: ${namespace}`,
-          );
-        }
+        deps.logger.info(
+          `Using namespace '${namespace}' from ${source} configuration`,
+        );
 
         // Apply defaults for all optional values
         const x2aConfig: X2AConfig = {
