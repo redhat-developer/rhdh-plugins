@@ -92,11 +92,10 @@ Job: ${JOB_ID}
 Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 " || true
     git pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
     if ! git push origin "${TARGET_REPO_BRANCH}"; then
       PUSH_FAILED="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
       echo "ERROR: ${PUSH_FAILED}"
-    else
-      COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
     fi
   fi
 
