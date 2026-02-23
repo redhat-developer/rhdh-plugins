@@ -25,4 +25,4 @@ jobs:
       - name: Validate CODEOWNERS entries against team membership
         run: node scripts/ci/validate-codeowners.js
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}

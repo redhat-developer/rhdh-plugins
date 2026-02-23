@@ -43,8 +43,9 @@
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.61",
-    "@mui/material": "^7.3.7",
-    "@mui/x-charts": "^8.27.0",
+    "@mui/material": "^5.15.14",
+    "@mui/system": "^5.15.14",
+    "@mui/x-charts": "^7.0.0",
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*",
     "react-use": "^17.2.4"
   },

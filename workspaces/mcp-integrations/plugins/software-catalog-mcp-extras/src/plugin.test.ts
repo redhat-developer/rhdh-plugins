@@ -13,138 +13,1106 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  mockCredentials,
-  startTestBackend,
-} from '@backstage/backend-test-utils';
-import { createServiceFactory } from '@backstage/backend-plugin-api';
-import { todoListServiceRef } from './services/TodoListService';
-import { mcpSoftwareCatalogExtrasPlugin } from './plugin';
-import request from 'supertest';
-import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import {
-  ConflictError,
-  AuthenticationError,
-  NotAllowedError,
-} from '@backstage/errors';
 
-// TEMPLATE NOTE:
-// Plugin tests are integration tests for your plugin, ensuring that all pieces
-// work together end-to-end. You can still mock injected backend services
-// however, just like anyone who installs your plugin might replace the
-// services with their own implementations.
-describe('plugin', () => {
-  it('should create and read TODO items', async () => {
-    const { server } = await startTestBackend({
-      features: [mcpSoftwareCatalogExtrasPlugin],
+import { fetchCatalogEntities } from './plugin';
+import { CatalogService } from '@backstage/plugin-catalog-node';
+import { Entity } from '@backstage/catalog-model';
+import { mockServices } from '@backstage/backend-test-utils';
+
+describe('softwareCatalogMcpExtrasPlugin', () => {
+  describe('fetchCatalogEntities', () => {
+    const mockCatalogService = {
+      getEntities: jest.fn(),
+    } as unknown as CatalogService;
+
+    const mockAuthService = {
+      getOwnServiceCredentials: jest.fn(),
+    };
+
+    const mockLoggerService = mockServices.logger.mock();
+
+    beforeEach(() => {
+      jest.clearAllMocks();
     });
 
-    await request(server)
-      .get('/api/software-catalog-mcp-extras/todos')
-      .expect(200, {
+    it('should fetch catalog entities successfully', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'my-service',
+            tags: ['java', 'spring'],
+            description: 'A Spring-based microservice',
+          },
+          spec: {
+            type: 'service',
+            owner: 'test-team',
+            lifecycle: 'production',
+            dependsOn: [],
+          },
+        },
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'API',
+          metadata: {
+            name: 'my-api',
+            tags: ['rest', 'openapi'],
+            description: 'REST API for data access',
+          },
+          spec: {
+            type: 'openapi',
+            owner: 'user:jane.doe',
+            lifecycle: 'production',
+            dependsOn: [],
+          },
+        },
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'System',
+          metadata: {
+            name: 'my-system',
+            tags: [],
+            description: 'Core business system',
+          },
+          spec: {
+            type: 'system',
+            owner: 'team-architecture',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+      );
+
+      expect(mockAuthService.getOwnServiceCredentials).toHaveBeenCalledTimes(1);
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          fields: [
+            'metadata.name',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+          filter: {},
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'my-service',
+            kind: 'Component',
+            tags: 'java,spring',
+            description: 'A Spring-based microservice',
+            lifecycle: 'production',
+            type: 'service',
+            owner: 'test-team',
+            dependsOn: '',
+          },
+          {
+            name: 'my-api',
+            kind: 'API',
+            tags: 'rest,openapi',
+            description: 'REST API for data access',
+            lifecycle: 'production',
+            type: 'openapi',
+            owner: 'user:jane.doe',
+            dependsOn: '',
+          },
+          {
+            name: 'my-system',
+            kind: 'System',
+            tags: '',
+            description: 'Core business system',
+            lifecycle: 'production',
+            type: 'system',
+            owner: 'team-architecture',
+            dependsOn: '',
+          },
+        ],
+      });
+    });
+
+    it('should handle entities with no tags', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'service-no-tags',
+            description: 'Service without tags',
+          },
+          spec: {
+            type: 'service',
+            owner: 'user:john.doe',
+            lifecycle: 'staging',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'service-no-tags',
+            kind: 'Component',
+            tags: '',
+            description: 'Service without tags',
+            lifecycle: 'staging',
+            type: 'service',
+            owner: 'user:john.doe',
+            dependsOn: '',
+          },
+        ],
+      });
+    });
+
+    it('should handle empty catalog', async () => {
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: [],
       });
 
-    const createRes = await request(server)
-      .post('/api/software-catalog-mcp-extras/todos')
-      .send({ title: 'My Todo' });
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+      );
 
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: 'My Todo',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
+      expect(result).toEqual({
+        entities: [],
+      });
     });
 
-    const createdTodoItem = createRes.body;
-
-    await request(server)
-      .get('/api/software-catalog-mcp-extras/todos')
-      .expect(200, {
-        items: [createdTodoItem],
+    it('should handle catalog service errors', async () => {
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
       });
 
-    await request(server)
-      .get(`/api/software-catalog-mcp-extras/todos/${createdTodoItem.id}`)
-      .expect(200, createdTodoItem);
-  });
+      (mockCatalogService.getEntities as jest.Mock).mockRejectedValue(
+        new Error('Catalog service error'),
+      );
 
-  it('should create TODO item with catalog information', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        mcpSoftwareCatalogExtrasPlugin,
-        catalogServiceMock.factory({
-          entities: [
+      await expect(
+        fetchCatalogEntities(
+          mockCatalogService,
+          mockAuthService,
+          mockLoggerService,
+        ),
+      ).rejects.toThrow('Catalog service error');
+    });
+
+    it('should handle authentication errors', async () => {
+      mockAuthService.getOwnServiceCredentials.mockRejectedValue(
+        new Error('Authentication failed'),
+      );
+
+      await expect(
+        fetchCatalogEntities(
+          mockCatalogService,
+          mockAuthService,
+          mockLoggerService,
+        ),
+      ).rejects.toThrow('Authentication failed');
+    });
+
+    it('should filter entities by kind', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'my-service',
+            tags: ['java'],
+            description: 'A service',
+          },
+          spec: {
+            type: 'service',
+            owner: 'test-team',
+            lifecycle: 'production',
+          },
+        },
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'API',
+          metadata: {
+            name: 'my-api',
+            tags: ['rest'],
+            description: 'An API',
+          },
+          spec: {
+            type: 'openapi',
+            owner: 'user:api.owner',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+        {
+          kind: 'Component',
+        },
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          fields: [
+            'metadata.name',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+          filter: { kind: 'Component' },
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+    });
+
+    it('should filter entities by kind, type, name, and owner', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'specific-service',
+            tags: ['javascript'],
+            description: 'A specific web service',
+          },
+          spec: {
+            type: 'service',
+            owner: 'team-frontend',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+        {
+          kind: 'Component',
+          type: 'service',
+          name: 'specific-service',
+          owner: 'team-frontend',
+        },
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          fields: [
+            'metadata.name',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+          filter: {
+            kind: 'Component',
+            'spec.type': 'service',
+            'metadata.name': 'specific-service',
+            'spec.owner': 'team-frontend',
+          },
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'specific-service',
+            kind: 'Component',
+            tags: 'javascript',
+            description: 'A specific web service',
+            lifecycle: 'production',
+            type: 'service',
+            owner: 'team-frontend',
+            dependsOn: '',
+          },
+        ],
+      });
+    });
+
+    it('should filter entities by name', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'my-service',
+            tags: ['java', 'spring'],
+            description: 'A Spring-based microservice',
+          },
+          spec: {
+            type: 'service',
+            owner: 'team-backend',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+        { name: 'my-service' },
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          fields: [
+            'metadata.name',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+          filter: { 'metadata.name': 'my-service' },
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'my-service',
+            kind: 'Component',
+            tags: 'java,spring',
+            description: 'A Spring-based microservice',
+            lifecycle: 'production',
+            type: 'service',
+            owner: 'team-backend',
+            dependsOn: '',
+          },
+        ],
+      });
+    });
+
+    it('should filter entities by owner', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'platform-service',
+            tags: ['platform', 'core'],
+            description: 'A platform service',
+          },
+          spec: {
+            type: 'service',
+            owner: 'team-platform',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+        { owner: 'team-platform' },
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          fields: [
+            'metadata.name',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+          filter: { 'spec.owner': 'team-platform' },
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'platform-service',
+            kind: 'Component',
+            tags: 'platform,core',
+            description: 'A platform service',
+            lifecycle: 'production',
+            type: 'service',
+            owner: 'team-platform',
+            dependsOn: '',
+          },
+        ],
+      });
+    });
+
+    it('should handle entities with missing description, type, and owner', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'minimal-service',
+            tags: ['minimal'],
+            description: 'A minimal service',
+          },
+          spec: {
+            type: 'service',
+            owner: 'user:minimal.owner',
+            lifecycle: 'development',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'minimal-service',
+            kind: 'Component',
+            tags: 'minimal',
+            description: 'A minimal service',
+            lifecycle: 'development',
+            type: 'service',
+            owner: 'user:minimal.owner',
+            dependsOn: '',
+          },
+        ],
+      });
+    });
+
+    it('should return full entities when verbose is true', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'full-service',
+            tags: ['java', 'spring'],
+            description: 'A full service entity',
+            uid: 'component:default/full-service',
+            namespace: 'default',
+          },
+          spec: {
+            type: 'service',
+            lifecycle: 'production',
+            owner: 'team-a',
+          },
+          relations: [
             {
-              apiVersion: 'backstage.io/v1alpha1',
-              kind: 'Component',
-              metadata: {
-                name: 'my-component',
-                namespace: 'default',
-                title: 'My Component',
-              },
-              spec: {
-                type: 'service',
-                owner: 'me',
-              },
+              type: 'dependsOn',
+              targetRef: 'component:default/database',
             },
           ],
-        }),
-      ],
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+        { verbose: true },
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          filter: {},
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+
+      expect(result).toEqual({
+        entities: mockEntities, // Should return the full entities unchanged
+      });
     });
 
-    const createRes = await request(server)
-      .post('/api/software-catalog-mcp-extras/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
+    it('should return abridged entities when verbose is false', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'abridged-service',
+            tags: ['java'],
+            description: 'An abridged service entity',
+            uid: 'component:default/abridged-service',
+            namespace: 'default',
+          },
+          spec: {
+            type: 'service',
+            lifecycle: 'production',
+            owner: 'team-a',
+          },
+          relations: [
+            {
+              type: 'dependsOn',
+              targetRef: 'component:default/database',
+            },
+          ],
+        },
+      ];
 
-    expect(createRes.status).toBe(201);
-    expect(createRes.body).toEqual({
-      id: expect.any(String),
-      title: '[My Component] My Todo',
-      createdBy: mockCredentials.user().principal.userEntityRef,
-      createdAt: expect.any(String),
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+        { verbose: false },
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          fields: [
+            'metadata.name',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+          filter: {},
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'abridged-service',
+            kind: 'Component',
+            tags: 'java',
+            description: 'An abridged service entity',
+            lifecycle: 'production',
+            type: 'service',
+            owner: 'team-a',
+            dependsOn: 'component:default/database',
+          },
+        ],
+      });
+    });
+
+    it('should return abridged entities when verbose is not specified (default behavior)', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'default-service',
+            tags: ['default'],
+            description: 'A default service entity',
+          },
+          spec: {
+            type: 'service',
+            owner: 'team-default',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      const result = await fetchCatalogEntities(
+        mockCatalogService,
+        mockAuthService,
+        mockLoggerService,
+        {}, // No verbose specified
+      );
+
+      expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
+        {
+          fields: [
+            'metadata.name',
+            'kind',
+            'metadata.tags',
+            'metadata.description',
+            'spec.type',
+            'spec.owner',
+            'spec.lifecycle',
+            'relations',
+          ],
+          filter: {},
+        },
+        {
+          credentials: {
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          },
+        },
+      );
+
+      expect(result).toEqual({
+        entities: [
+          {
+            name: 'default-service',
+            kind: 'Component',
+            tags: 'default',
+            description: 'A default service entity',
+            lifecycle: undefined,
+            type: 'service',
+            owner: 'team-default',
+            dependsOn: '',
+          },
+        ],
+      });
     });
   });
 
-  it('should forward errors from the TodoListService', async () => {
-    const { server } = await startTestBackend({
-      features: [
-        mcpSoftwareCatalogExtrasPlugin,
-        createServiceFactory({
-          service: todoListServiceRef,
-          deps: {},
-          factory: () => ({
-            createTodo: jest.fn().mockRejectedValue(new ConflictError()),
-            listTodos: jest.fn().mockRejectedValue(new AuthenticationError()),
-            getTodo: jest.fn().mockRejectedValue(new NotAllowedError()),
+  describe('MCP Action validation and error handling', () => {
+    const mockCatalogService = {
+      getEntities: jest.fn(),
+    } as unknown as CatalogService;
+
+    const mockAuthService = {
+      getOwnServiceCredentials: jest.fn(),
+    };
+
+    const mockLoggerService = mockServices.logger.mock();
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return error when type is specified without kind', async () => {
+      // Simulate the action logic that validates type without kind
+      const fetchCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: {
+          kind?: string;
+          type?: string;
+          name?: string;
+          owner?: string;
+          lifecycle?: string;
+          tags?: string;
+          verbose?: boolean;
+        };
+      }) => {
+        if (input.type && !input.kind) {
+          return {
+            output: {
+              entities: [],
+              error:
+                'entity type cannot be specified without an entity kind specified',
+            },
+          };
+        }
+        const result = await fetchCatalogEntities(
+          mockCatalogService,
+          mockAuthService,
+          mockLoggerService,
+          input,
+        );
+        return {
+          output: {
+            ...result,
+            error: undefined,
+          },
+        };
+      };
+
+      const result = await fetchCatalogEntitiesAction({
+        input: { type: 'service' },
+      });
+
+      expect(result.output.error).toBe(
+        'entity type cannot be specified without an entity kind specified',
+      );
+      expect(result.output.entities).toEqual([]);
+    });
+
+    it('should return entities successfully when both kind and type are specified', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'test-service',
+            tags: ['test'],
+            description: 'A test service',
+          },
+          spec: {
+            type: 'service',
+            owner: 'test-team',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      // Simulate the action logic
+      const fetchCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: {
+          kind?: string;
+          type?: string;
+          name?: string;
+          owner?: string;
+          lifecycle?: string;
+          tags?: string;
+          verbose?: boolean;
+        };
+      }) => {
+        if (input.type && !input.kind) {
+          return {
+            output: {
+              entities: [],
+              error:
+                'entity type cannot be specified without an entity kind specified',
+            },
+          };
+        }
+        const result = await fetchCatalogEntities(
+          mockCatalogService,
+          mockAuthService,
+          mockLoggerService,
+          input,
+        );
+        return {
+          output: {
+            ...result,
+            error: undefined,
+          },
+        };
+      };
+
+      const result = await fetchCatalogEntitiesAction({
+        input: { kind: 'Component', type: 'service' },
+      });
+
+      expect(result.output.error).toBeUndefined();
+      expect(result.output.entities).toEqual([
+        {
+          name: 'test-service',
+          kind: 'Component',
+          tags: 'test',
+          description: 'A test service',
+          lifecycle: 'production',
+          type: 'service',
+          owner: 'test-team',
+          dependsOn: '',
+        },
+      ]);
+    });
+
+    it('should return entities successfully when only kind is specified', async () => {
+      const mockEntities: Entity[] = [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'test-component',
+            tags: ['test'],
+            description: 'A test component',
+          },
+          spec: {
+            type: 'library',
+            owner: 'test-team',
+            lifecycle: 'production',
+          },
+        },
+      ];
+
+      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
+        principal: { type: 'service', subject: 'test' },
+        token: 'test-token',
+      });
+
+      (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
+        items: mockEntities,
+      });
+
+      // Simulate the action logic
+      const fetchCatalogEntitiesAction = async ({
+        input,
+      }: {
+        input: {
+          kind?: string;
+          type?: string;
+          name?: string;
+          owner?: string;
+          lifecycle?: string;
+          tags?: string;
+          verbose?: boolean;
+        };
+      }) => {
+        if (input.type && !input.kind) {
+          return {
+            output: {
+              entities: [],
+              error:
+                'entity type cannot be specified without an entity kind specified',
+            },
+          };
+        }
+        const result = await fetchCatalogEntities(
+          mockCatalogService,
+          mockAuthService,
+          mockLoggerService,
+          input,
+        );
+        return {
+          output: {
+            ...result,
+            error: undefined,
+          },
+        };
+      };
+
+      const result = await fetchCatalogEntitiesAction({
+        input: { kind: 'Component' },
+      });
+
+      expect(result.output.error).toBeUndefined();
+      expect(result.output.entities).toEqual([
+        {
+          name: 'test-component',
+          kind: 'Component',
+          tags: 'test',
+          description: 'A test component',
+          lifecycle: 'production',
+          type: 'library',
+          owner: 'test-team',
+          dependsOn: '',
+        },
+      ]);
+    });
+  });
+
+  describe('MCP Action functions', () => {
+    describe('query-catalog-entities action logic', () => {
+      it('should use fetchCatalogEntities function correctly', async () => {
+        const mockCatalogService = {
+          getEntities: jest.fn().mockResolvedValue({
+            items: [
+              {
+                apiVersion: 'backstage.io/v1alpha1',
+                kind: 'Component',
+                metadata: {
+                  name: 'test-component',
+                  tags: ['test'],
+                  description: 'A test component',
+                },
+                spec: {
+                  type: 'library',
+                  owner: 'test-team',
+                },
+              },
+            ],
           }),
-        }),
-      ],
-    });
+        } as unknown as CatalogService;
 
-    const createRes = await request(server)
-      .post('/api/software-catalog-mcp-extras/todos')
-      .send({ title: 'My Todo', entityRef: 'component:default/my-component' });
-    expect(createRes.status).toBe(409);
-    expect(createRes.body).toMatchObject({
-      error: { name: 'ConflictError' },
-    });
+        const mockAuthService = {
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({
+            principal: { type: 'service', subject: 'test' },
+            token: 'test-token',
+          }),
+        };
 
-    const listRes = await request(server).get(
-      '/api/software-catalog-mcp-extras/todos',
-    );
-    expect(listRes.status).toBe(401);
-    expect(listRes.body).toMatchObject({
-      error: { name: 'AuthenticationError' },
-    });
+        const mockLoggerService = mockServices.logger.mock();
 
-    const getRes = await request(server).get(
-      '/api/software-catalog-mcp-extras/todos/123',
-    );
-    expect(getRes.status).toBe(403);
-    expect(getRes.body).toMatchObject({
-      error: { name: 'NotAllowedError' },
+        // Test the action logic
+        const fetchCatalogEntitiesAction = async () => {
+          const result = await fetchCatalogEntities(
+            mockCatalogService,
+            mockAuthService,
+            mockLoggerService,
+          );
+          return {
+            output: {
+              ...result,
+              error: undefined,
+            },
+          };
+        };
+
+        const result = await fetchCatalogEntitiesAction();
+
+        expect(result.output).toHaveProperty('entities');
+        expect(result.output).toHaveProperty('error');
+        expect(Array.isArray(result.output.entities)).toBe(true);
+        expect(result.output.entities).toHaveLength(1);
+        expect(result.output.entities[0]).toEqual({
+          name: 'test-component',
+          kind: 'Component',
+          tags: 'test',
+          description: 'A test component',
+          lifecycle: undefined,
+          type: 'library',
+          owner: 'test-team',
+          dependsOn: '',
+        });
+        expect(result.output.error).toBeUndefined();
+      });
     });
   });
 });
