@@ -9,6 +9,7 @@ ERROR_MESSAGE=""
 ARTIFACTS=()
 PUSH_FAILED=""
 TERMINATED=false
+COMMIT_ID=""
 
 # Report job result back to the backend.
 # TODO: Incorporate CALLBACK_TOKEN for request signing (HMAC-SHA256).
@@ -32,6 +33,10 @@ report_result() {
 
   if [ "${status}" = "error" ] && [ -n "${message}" ]; then
     cmd+=(--error-message "${message}")
+  fi
+
+  if [ -n "${COMMIT_ID:-}" ]; then
+    cmd+=(--commit-id "${COMMIT_ID}")
   fi
 
   echo "Reporting result: status=${status}, phase=${PHASE}"
@@ -87,6 +92,7 @@ Job: ${JOB_ID}
 Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 " || true
     git pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
     if ! git push origin "${TARGET_REPO_BRANCH}"; then
       PUSH_FAILED="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
       echo "ERROR: ${PUSH_FAILED}"

@@ -117,6 +117,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.republishInstructions':
       'Le module a déjà été publié. Relancez la publication pour mettre à jour le dépôt cible.',
     'modulePage.phases.rerunPublish': 'Republier dans le dépôt cible',
+    'modulePage.phases.commitId': 'Dernier ID de commit',
     'modulePage.phases.viewLog': 'Voir le journal',
     'modulePage.phases.hideLog': 'Masquer le journal',
   },

@@ -118,6 +118,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Das Modul wurde bereits veröffentlicht. Lösen Sie die Veröffentlichung erneut aus, um das Ziel-Repository zu aktualisieren.',
     'modulePage.phases.rerunPublish':
       'Im Ziel-Repository erneut veröffentlichen',
+    'modulePage.phases.commitId': 'Letzte Commit-ID',
     'modulePage.phases.viewLog': 'Log anzeigen',
     'modulePage.phases.hideLog': 'Log ausblenden',
   },

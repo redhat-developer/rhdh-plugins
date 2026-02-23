@@ -432,6 +432,9 @@ paths:
                     $ref: '#/components/schemas/Artifact'
                 telemetry:
                   $ref: '#/components/schemas/Telemetry'
+                commitId:
+                  type: string
+                  description: Git commit SHA from the job's push to target repo
               required:
                 - status
                 - jobId
@@ -665,6 +668,9 @@ components:
             $ref: '#/components/schemas/Artifact'
         telemetry:
           $ref: '#/components/schemas/Telemetry'
+        commitId:
+          type: string
+          description: Git commit SHA produced by this job
 
     ArtifactType:
       type: string

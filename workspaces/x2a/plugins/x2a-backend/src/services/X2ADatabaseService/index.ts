@@ -337,6 +337,7 @@ export class X2ADatabaseService {
     k8sJobName?: string | null;
     artifacts?: Artifact[];
     telemetry?: Telemetry | null;
+    commitId?: string;
   }): Promise<Job | undefined> {
     return this.#jobOps.updateJob(update);
   }

@@ -120,6 +120,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'El módulo ya ha sido publicado. Vuelva a ejecutar la publicación para actualizar el repositorio de destino.',
     'modulePage.phases.rerunPublish':
       'Volver a publicar en el repositorio de destino',
+    'modulePage.phases.commitId': 'Ultimo ID de commit',
     'modulePage.phases.viewLog': 'Ver registro',
     'modulePage.phases.hideLog': 'Ocultar registro',
   },
