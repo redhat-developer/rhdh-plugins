@@ -33,6 +33,7 @@ export interface K8sClients {
  */
 export const makeK8sClient = async (
   logger: LoggerService,
+  namespace: string,
 ): Promise<K8sClients> => {
   const { KubeConfig } = await import('@kubernetes/client-node');
   const kc = new KubeConfig();
@@ -80,14 +81,14 @@ export const makeK8sClient = async (
 
   // Test connection to the cluster. Fail fast...
   logger.info(
-    'Kubernetes clients created, testing connection to the cluster...',
+    `Kubernetes clients created, testing connection to namespace: ${namespace}...`,
   );
   try {
-    await clients.coreV1Api.listNamespacedPod({ namespace: 'default' });
+    await clients.coreV1Api.listNamespacedPod({ namespace });
   } catch (error) {
-    logger.error(`Failed to connect to the cluster: ${error}`);
+    logger.error(`Failed to connect to namespace ${namespace}: ${error}`);
     throw new Error(
-      'Failed to connect to the cluster. Please ensure KUBECONFIG is set or running in a cluster.',
+      `Failed to connect to namespace ${namespace}. Please ensure KUBECONFIG is set or running in a cluster.`,
     );
   }
 

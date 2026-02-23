@@ -77,7 +77,10 @@ export class KubeService {
   }
 
   private async initialize() {
-    const { coreV1Api, batchV1Api } = await makeK8sClient(this.#logger);
+    const { coreV1Api, batchV1Api } = await makeK8sClient(
+      this.#logger,
+      this.#namespace,
+    );
     (this.#coreV1Api as any) = coreV1Api;
     (this.#batchV1Api as any) = batchV1Api;
   }
