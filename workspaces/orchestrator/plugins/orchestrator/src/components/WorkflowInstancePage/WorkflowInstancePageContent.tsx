@@ -36,6 +36,7 @@ import {
 import { orchestratorApiRef } from '../../api/api';
 import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useWorkflowInstanceCardHeightMode } from '../../hooks/useWorkflowInstanceCardHeightMode';
 import { formatDuration } from '../../utils/DurationUtils';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
@@ -102,6 +103,11 @@ export const WorkflowInstancePageContent: React.FC<{
   const { t } = useTranslation();
   const { classes } = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
+  const cardHeightMode = useWorkflowInstanceCardHeightMode();
+  const useFixedHeights = cardHeightMode !== 'content';
+  const topRowClassName = useFixedHeights ? classes.topRowCard : '';
+  const bottomRowClassName = useFixedHeights ? classes.bottomRowCard : '';
+  const cardOverflowClassName = useFixedHeights ? classes.cardClassName : '';
 
   const details = useMemo(
     () => mapProcessInstanceToDetails(instance, t),
@@ -168,62 +174,120 @@ export const WorkflowInstancePageContent: React.FC<{
         onClose={toggleVariablesDialog}
         instanceVariables={instanceVariables}
       />
-      <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <InfoCard
-            title={
-              <div className={classes.titleContainer}>
-                <Typography
-                  component="span"
-                  variant="h5"
-                  className={classes.detailsTitle}
-                >
-                  {t('common.details')}
-                </Typography>
-                {viewVariables}
-              </div>
-            }
-            divider={false}
-            className={classes.topRowCard}
-            cardClassName={classes.cardClassName}
-          >
-            <WorkflowRunDetails details={details} />
-          </InfoCard>
-        </Grid>
+      {useFixedHeights ? (
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <InfoCard
+              title={
+                <div className={classes.titleContainer}>
+                  <Typography
+                    component="span"
+                    variant="h5"
+                    className={classes.detailsTitle}
+                  >
+                    {t('common.details')}
+                  </Typography>
+                  {viewVariables}
+                </div>
+              }
+              divider={false}
+              className={topRowClassName}
+              cardClassName={cardOverflowClassName}
+            >
+              <WorkflowRunDetails details={details} />
+            </InfoCard>
+          </Grid>
 
-        <Grid item xs={6}>
-          <WorkflowResult
-            className={classes.topRowCard}
-            cardClassName={classes.cardClassName}
-            instance={instance}
-          />
-        </Grid>
-
-        <Grid item xs={6}>
-          <WorkflowInputs
-            className={classes.bottomRowCard}
-            cardClassName={classes.cardClassName}
-            value={value}
-            loading={loading}
-            responseError={responseError}
-          />
-        </Grid>
-
-        <Grid item xs={6}>
-          <InfoCard
-            title={t('workflow.progress')}
-            divider={false}
-            className={classes.bottomRowCard}
-            cardClassName={classes.cardClassName}
-          >
-            <WorkflowProgress
-              workflowError={instance.error}
-              workflowNodes={instance.nodes}
-              workflowStatus={instance.state}
+          <Grid item xs={6}>
+            <WorkflowResult
+              className={topRowClassName}
+              cardClassName={cardOverflowClassName}
+              instance={instance}
             />
-          </InfoCard>
+          </Grid>
+
+          <Grid item xs={6}>
+            <WorkflowInputs
+              className={bottomRowClassName}
+              cardClassName={cardOverflowClassName}
+              value={value}
+              loading={loading}
+              responseError={responseError}
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+            <InfoCard
+              title={t('workflow.progress')}
+              divider={false}
+              className={bottomRowClassName}
+              cardClassName={cardOverflowClassName}
+            >
+              <WorkflowProgress
+                workflowError={instance.error}
+                workflowNodes={instance.nodes}
+                workflowStatus={instance.state}
+              />
+            </InfoCard>
+          </Grid>
         </Grid>
-      </Grid>
+      ) : (
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Grid container spacing={2} direction="column">
+              <Grid item>
+                <InfoCard
+                  title={
+                    <div className={classes.titleContainer}>
+                      <Typography
+                        component="span"
+                        variant="h5"
+                        className={classes.detailsTitle}
+                      >
+                        {t('common.details')}
+                      </Typography>
+                      {viewVariables}
+                    </div>
+                  }
+                  divider={false}
+                >
+                  <WorkflowRunDetails details={details} />
+                </InfoCard>
+              </Grid>
+              <Grid item>
+                <WorkflowInputs
+                  className={bottomRowClassName}
+                  cardClassName={cardOverflowClassName}
+                  value={value}
+                  loading={loading}
+                  responseError={responseError}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={6}>
+            <Grid container spacing={2} direction="column">
+              <Grid item>
+                <WorkflowResult
+                  className={topRowClassName}
+                  cardClassName={cardOverflowClassName}
+                  instance={instance}
+                />
+              </Grid>
+              <Grid item>
+                <InfoCard title={t('workflow.progress')} divider={false}>
+                  <WorkflowProgress
+                    workflowError={instance.error}
+                    workflowNodes={instance.nodes}
+                    workflowStatus={instance.state}
+                  />
+                </InfoCard>
+              </Grid>
+            </Grid>
+          </Grid>
+        </Grid>
+      )}
     </Content>
   );
 };
