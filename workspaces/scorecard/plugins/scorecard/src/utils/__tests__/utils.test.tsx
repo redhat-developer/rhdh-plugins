@@ -22,6 +22,7 @@ import {
   getStatusConfig,
   getThresholdRuleColor,
   resolveStatusColor,
+  SCORECARD_ERROR_STATE_COLOR,
 } from '../utils';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
@@ -69,7 +70,7 @@ describe('utils', () => {
 
   describe('getStatusConfig', () => {
     describe('error handling', () => {
-      it('should return rhdh.general.cardBorderColor color when thresholdStatus is error', () => {
+      it('should return error state color when thresholdStatus is error', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdStatus: 'error',
@@ -77,11 +78,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.cardBorderColor',
+          color: SCORECARD_ERROR_STATE_COLOR,
         });
       });
 
-      it('should return rhdh.general.cardBorderColor color when metricStatus is error', () => {
+      it('should return error state color when metricStatus is error', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdStatus: 'success',
@@ -89,11 +90,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.cardBorderColor',
+          color: SCORECARD_ERROR_STATE_COLOR,
         });
       });
 
-      it('should return rhdh.general.cardBorderColor color when both thresholdStatus and metricStatus are error', () => {
+      it('should return error state color when both thresholdStatus and metricStatus are error', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdStatus: 'error',
@@ -101,11 +102,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.cardBorderColor',
+          color: SCORECARD_ERROR_STATE_COLOR,
         });
       });
 
-      it('should return rhdh.general.cardBorderColor color when thresholdStatus is error regardless of evaluation', () => {
+      it('should return error state color when thresholdStatus is error regardless of evaluation', () => {
         const result = getStatusConfig({
           evaluation: 'error',
           thresholdStatus: 'error',
@@ -113,11 +114,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.cardBorderColor',
+          color: SCORECARD_ERROR_STATE_COLOR,
         });
       });
 
-      it('should return rhdh.general.cardBorderColor color when metricStatus is error regardless of evaluation', () => {
+      it('should return error state color when metricStatus is error regardless of evaluation', () => {
         const result = getStatusConfig({
           evaluation: 'warning',
           thresholdStatus: 'success',
@@ -125,7 +126,7 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.cardBorderColor',
+          color: SCORECARD_ERROR_STATE_COLOR,
         });
       });
     });
@@ -268,10 +269,7 @@ describe('utils', () => {
     });
 
     it('should resolve theme reference with nested levels', () => {
-      const color = resolveStatusColor(
-        mockTheme,
-        'rhdh.general.cardBorderColor',
-      );
+      const color = resolveStatusColor(mockTheme, SCORECARD_ERROR_STATE_COLOR);
       expect(color).toBe('#c7c7c7');
     });
 

@@ -34,6 +34,11 @@ export type PieData = {
   color?: string;
 };
 
+/**
+ * Color used when there's an error with scorecard data (e.g., threshold evaluation error, metric fetch error)
+ */
+export const SCORECARD_ERROR_STATE_COLOR = 'rhdh.general.cardBorderColor';
+
 export const getThresholdRuleColor = (
   rules: ThresholdRule[],
   ruleKey: string,
@@ -71,9 +76,9 @@ export const getStatusConfig = ({
   metricStatus?: 'success' | 'error';
   thresholdRules?: ThresholdRule[];
 }): StatusConfig => {
-  // If threshold or metric has an error, return grey.400 color
+  // If threshold or metric has an error, return error state color
   if (thresholdStatus === 'error' || metricStatus === 'error') {
-    return { color: 'rhdh.general.cardBorderColor' };
+    return { color: SCORECARD_ERROR_STATE_COLOR };
   }
 
   let evaluationColor: string | undefined;
