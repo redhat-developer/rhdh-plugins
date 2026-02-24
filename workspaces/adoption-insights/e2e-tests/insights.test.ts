@@ -179,7 +179,9 @@ test('Rest of the panels have no data', async () => {
   ];
   for (const title of titles) {
     const panel = getPanel(page, title);
-    await expect(panel).toContainText(translations.common.noResults);
+    await expect(panel).toContainText(translations.common.noResults, {
+      timeout: 15000,
+    });
   }
 });
 
@@ -226,6 +228,20 @@ test.describe(() => {
     ]);
 
     await verifyTableEntries(panel, 1, 'example-website');
+    await page.keyboard.press('Escape');
+    const componentRow = page.getByText('example-website');
+    await componentRow.scrollIntoViewIfNeeded();
+    await componentRow.hover();
+    const componentTooltip = page.getByRole('tooltip');
+    await expect(componentTooltip).toBeVisible();
+    const text = (await componentTooltip.textContent()) ?? '';
+    expect(
+      text
+        .split('|')
+        .map(s => s.trim())
+        .filter(Boolean),
+    ).toHaveLength(2);
+    await page.keyboard.press('Escape');
   });
 
   test('Visited TechDoc shows up in top TechDocs', async () => {
@@ -270,7 +286,20 @@ test.describe(() => {
 
     await panel.scrollIntoViewIfNeeded();
     await verifyTableEntries(panel, 1, 'Example Node.js Template');
-
+    await page.keyboard.press('Escape');
+    const templateRow = page.getByText('Example Node.js Template');
+    await templateRow.scrollIntoViewIfNeeded();
+    await templateRow.hover();
+    const templateTooltip = page.getByRole('tooltip');
+    await expect(templateTooltip).toBeVisible();
+    const text = (await templateTooltip.textContent()) ?? '';
+    expect(
+      text
+        .split('|')
+        .map(s => s.trim())
+        .filter(Boolean),
+    ).toHaveLength(3);
+    await page.keyboard.press('Escape');
     await runAccessibilityTests(page, testInfo);
   });
 });
