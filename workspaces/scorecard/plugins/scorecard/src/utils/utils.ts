@@ -22,6 +22,7 @@ import {
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Theme } from '@mui/material/styles';
+import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 export type StatusConfig = {
   color: string;
@@ -85,7 +86,7 @@ export const getStatusConfig = ({
   if (thresholdRules && evaluation) {
     evaluationColor = getThresholdRuleColor(thresholdRules, evaluation);
   }
-  const color = evaluationColor ?? 'success.main';
+  const color = evaluationColor ?? SCORECARD_ERROR_STATE_COLOR;
 
   switch (evaluation) {
     case 'error':
@@ -125,7 +126,15 @@ export const resolveStatusColor = (
     }
   }
 
-  return typeof value === 'string' ? value : theme.palette.success.main;
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  // Fallback to error state color, then error.main
+  return (
+    (theme as ThemeConfig).palette?.rhdh?.general?.cardBorderColor ??
+    theme.palette.error.main
+  );
 };
 
 export const getYOffsetForCenterLabel = (lineCount: number) => {

@@ -287,5 +287,23 @@ describe('utils', () => {
       const color = resolveStatusColor(mockTheme, 'rgb(255, 0, 0)');
       expect(color).toBe('rgb(255, 0, 0)');
     });
+
+    it('should fallback to cardBorderColor when theme path not found', () => {
+      const color = resolveStatusColor(mockTheme, 'nonexistent.path');
+      expect(color).toBe('#c7c7c7');
+    });
+
+    it('should fallback to error.main when theme path not found and cardBorderColor is undefined', () => {
+      const themeWithoutCardBorder = {
+        palette: {
+          error: { main: '#d32f2f' },
+        },
+      } as any as Theme;
+      const color = resolveStatusColor(
+        themeWithoutCardBorder,
+        'nonexistent.path',
+      );
+      expect(color).toBe('#d32f2f');
+    });
   });
 });
