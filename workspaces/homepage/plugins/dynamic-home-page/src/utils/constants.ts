@@ -19,7 +19,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import { LearningSectionItem } from '../types';
-import { homepageTranslationRef } from '../translations';
+import { homepageTranslationRef } from '../alpha/translations';
 
 export const getLearningItems = (
   t: TranslationFunction<typeof homepageTranslationRef.T>,
