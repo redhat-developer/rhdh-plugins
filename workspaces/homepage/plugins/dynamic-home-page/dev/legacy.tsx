@@ -64,7 +64,7 @@ import {
   TemplateSection,
   DynamicCustomizableHomePage,
 } from '../src/plugin';
-import { homepageTranslations } from '../src/translations';
+import { homepageTranslations } from '../src/alpha/translations';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';
 

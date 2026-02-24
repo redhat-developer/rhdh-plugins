@@ -21,4 +21,4 @@
  */
 
 export * from './plugin';
-export * from './translations';
+export * from './alpha/translations';

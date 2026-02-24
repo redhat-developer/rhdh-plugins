@@ -17,8 +17,8 @@
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import { HomePageCardMountPoint } from '../types';
-import { homepageTranslationRef } from '../translations';
-import { getTranslatedTextWithFallback } from '../translations/utils';
+import { homepageTranslationRef } from '../alpha/translations';
+import { getTranslatedTextWithFallback } from '../alpha/translations/utils';
 
 /**
  * Util function that decides if a `home.page/card` mount point will be rendered
