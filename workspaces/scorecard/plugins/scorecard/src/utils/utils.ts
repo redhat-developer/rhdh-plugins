@@ -74,7 +74,7 @@ export const getStatusConfig = ({
 }): StatusConfig => {
   // If threshold or metric has an error, return grey.400 color
   if (thresholdStatus === 'error' || metricStatus === 'error') {
-    return { color: 'rhdh.general.disabled' };
+    return { color: 'rhdh.general.cardBorderColor' };
   }
 
   let evaluationColor: string | undefined;

@@ -69,7 +69,7 @@ describe('utils', () => {
 
   describe('getStatusConfig', () => {
     describe('error handling', () => {
-      it('should return rhdh.general.disabled color when thresholdStatus is error', () => {
+      it('should return rhdh.general.cardBorderColor color when thresholdStatus is error', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdStatus: 'error',
@@ -77,11 +77,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.disabled',
+          color: 'rhdh.general.cardBorderColor',
         });
       });
 
-      it('should return rhdh.general.disabled color when metricStatus is error', () => {
+      it('should return rhdh.general.cardBorderColor color when metricStatus is error', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdStatus: 'success',
@@ -89,11 +89,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.disabled',
+          color: 'rhdh.general.cardBorderColor',
         });
       });
 
-      it('should return rhdh.general.disabled color when both thresholdStatus and metricStatus are error', () => {
+      it('should return rhdh.general.cardBorderColor color when both thresholdStatus and metricStatus are error', () => {
         const result = getStatusConfig({
           evaluation: 'success',
           thresholdStatus: 'error',
@@ -101,11 +101,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.disabled',
+          color: 'rhdh.general.cardBorderColor',
         });
       });
 
-      it('should return rhdh.general.disabled color when thresholdStatus is error regardless of evaluation', () => {
+      it('should return rhdh.general.cardBorderColor color when thresholdStatus is error regardless of evaluation', () => {
         const result = getStatusConfig({
           evaluation: 'error',
           thresholdStatus: 'error',
@@ -113,11 +113,11 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.disabled',
+          color: 'rhdh.general.cardBorderColor',
         });
       });
 
-      it('should return rhdh.general.disabled color when metricStatus is error regardless of evaluation', () => {
+      it('should return rhdh.general.cardBorderColor color when metricStatus is error regardless of evaluation', () => {
         const result = getStatusConfig({
           evaluation: 'warning',
           thresholdStatus: 'success',
@@ -125,7 +125,7 @@ describe('utils', () => {
         });
 
         expect(result).toEqual({
-          color: 'rhdh.general.disabled',
+          color: 'rhdh.general.cardBorderColor',
         });
       });
     });
@@ -256,7 +256,6 @@ describe('utils', () => {
         error: { main: '#d32f2f' },
         rhdh: {
           general: {
-            disabled: '#6a6e73',
             cardBorderColor: '#c7c7c7',
           },
         },
