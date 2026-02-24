@@ -14693,15 +14693,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
+"app-legacy@workspace:packages/app-legacy":
   version: 0.0.0-use.local
-  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
-  languageName: node
-  linkType: soft
-
-"app@workspace:packages/app":
-  version: 0.0.0-use.local
-  resolution: "app@workspace:packages/app"
+  resolution: "app-legacy@workspace:packages/app-legacy"
   dependencies:
     "@axe-core/playwright": "npm:^4.10.0"
     "@backstage/app-defaults": "npm:^1.7.2"
@@ -14748,6 +14742,12 @@ __metadata:
     react-router: "npm:^6.3.0"
     react-router-dom: "npm:^6.3.0"
   languageName: unknown
+  linkType: soft
+
+"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
+  version: 0.0.0-use.local
+  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
+  languageName: node
   linkType: soft
 
 "append-field@npm:^1.0.0":

@@ -1,12 +1,12 @@
 {
-  "name": "app",
+  "name": "app-legacy",
   "version": "0.0.0",
   "private": true,
   "bundled": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/homepage/packages/app"
+    "directory": "workspaces/homepage/packages/app-legacy"
   },
   "backstage": {
     "role": "frontend"
@@ -57,8 +57,8 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
-    "@backstage/test-utils": "^1.7.13",
-    "@playwright/test": "1.58.2",
+    "@backstage/frontend-test-utils": "^0.5.0",
+    "@playwright/test": "^1.32.3",
     "@testing-library/dom": "^9.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",

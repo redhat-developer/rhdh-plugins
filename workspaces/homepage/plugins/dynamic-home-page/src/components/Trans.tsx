@@ -15,7 +15,7 @@
  */
 
 import { useTranslation } from '../hooks/useTranslation';
-import { homepageTranslationRef } from '../translations';
+import { homepageTranslationRef } from '../alpha/translations';
 
 type Messages = typeof homepageTranslationRef.T;
 
