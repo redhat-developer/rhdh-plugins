@@ -19,7 +19,10 @@ import { PullMetricsByProviderTask } from './PullMetricsByProviderTask';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import { MockNumberProvider } from '../../../__fixtures__/mockProviders';
+import {
+  MockNumberProvider,
+  MockBatchBooleanProvider,
+} from '../../../__fixtures__/mockProviders';
 import type { Config } from '@backstage/config';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { mockDatabaseMetricValues } from '../../../__fixtures__/mockDatabaseMetricValues';
@@ -386,8 +389,7 @@ describe('PullMetricsByProviderTask', () => {
     it('should log completion', async () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
-      expect(mockLogger.info).toHaveBeenNthCalledWith(
-        2,
+      expect(mockLogger.info).toHaveBeenCalledWith(
         `Completed metric pull for github.test_metric: processed 2 entities`,
       );
     });
@@ -433,6 +435,185 @@ describe('PullMetricsByProviderTask', () => {
       await expect(
         (task as any).pullProviderMetrics(mockProvider, mockLogger),
       ).rejects.toThrow('test error');
+    });
+
+    describe('batch providers', () => {
+      let mockBatchProvider: MockBatchBooleanProvider;
+
+      beforeEach(() => {
+        mockBatchProvider = new MockBatchBooleanProvider(
+          'github',
+          'github.files_check',
+          [
+            { id: 'readme', path: 'README.md' },
+            { id: 'license', path: 'LICENSE' },
+          ],
+        );
+
+        task = new PullMetricsByProviderTask(
+          {
+            scheduler: mockScheduler,
+            logger: mockLogger,
+            database: mockDatabaseMetricValues,
+            config: mockConfig,
+            catalog: mockCatalog,
+            auth: mockAuth,
+            thresholdEvaluator: mockThresholdEvaluator,
+          },
+          mockBatchProvider,
+        );
+      });
+
+      it('should call calculateMetrics for batch providers', async () => {
+        const calculateMetricsSpy = jest.spyOn(
+          mockBatchProvider,
+          'calculateMetrics',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        expect(calculateMetricsSpy).toHaveBeenCalledTimes(2); // Once per entity
+        expect(calculateMetricsSpy).toHaveBeenNthCalledWith(1, mockEntities[0]);
+        expect(calculateMetricsSpy).toHaveBeenNthCalledWith(2, mockEntities[1]);
+      });
+
+      it('should not call calculateMetric for batch providers', async () => {
+        const calculateMetricSpy = jest.spyOn(
+          mockBatchProvider,
+          'calculateMetric',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        expect(calculateMetricSpy).not.toHaveBeenCalled();
+      });
+
+      it('should create metric values for all metric IDs from batch provider', async () => {
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        // 2 entities × 2 metrics = 4 metric values
+        expect(createMetricValuesSpy).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test1',
+              metric_id: 'github.files_check.readme',
+              value: true,
+              status: 'success',
+            }),
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test1',
+              metric_id: 'github.files_check.license',
+              value: true,
+              status: 'success',
+            }),
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test2',
+              metric_id: 'github.files_check.readme',
+              value: true,
+              status: 'success',
+            }),
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test2',
+              metric_id: 'github.files_check.license',
+              value: true,
+              status: 'success',
+            }),
+          ]),
+        );
+      });
+
+      it('should evaluate thresholds for each metric in batch', async () => {
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        // 2 entities × 2 metrics = 4 threshold evaluations
+        expect(
+          mockThresholdEvaluator.getFirstMatchingThreshold,
+        ).toHaveBeenCalledTimes(4);
+        expect(
+          mockThresholdEvaluator.getFirstMatchingThreshold,
+        ).toHaveBeenCalledWith(true, 'boolean', { rules: mockThresholdRules });
+      });
+
+      it('should create error records for all metrics when batch calculation fails', async () => {
+        jest
+          .spyOn(mockBatchProvider, 'calculateMetrics')
+          .mockRejectedValue(new Error('GitHub API error'));
+
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        // Should create error records for both metrics for both entities
+        expect(createMetricValuesSpy).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test1',
+              metric_id: 'github.files_check.readme',
+              error_message: 'GitHub API error',
+            }),
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test1',
+              metric_id: 'github.files_check.license',
+              error_message: 'GitHub API error',
+            }),
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test2',
+              metric_id: 'github.files_check.readme',
+              error_message: 'GitHub API error',
+            }),
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test2',
+              metric_id: 'github.files_check.license',
+              error_message: 'GitHub API error',
+            }),
+          ]),
+        );
+      });
+
+      it('should handle threshold evaluation errors for individual batch metrics', async () => {
+        mockThresholdEvaluator.getFirstMatchingThreshold.mockImplementation(
+          () => {
+            throw new Error('Threshold evaluation failed');
+          },
+        );
+
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        // Should still create records but with error messages
+        expect(createMetricValuesSpy).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({
+              catalog_entity_ref: 'component:default/test1',
+              metric_id: 'github.files_check.readme',
+              value: true,
+              error_message: 'Threshold evaluation failed',
+            }),
+          ]),
+        );
+      });
+
+      it('should get schedule from correct config path for batch provider', async () => {
+        (task as any).getScheduleFromConfig = jest
+          .fn()
+          .mockReturnValue({ frequency: { hours: 1 } });
+        (task as any).pullProviderMetrics = jest
+          .fn()
+          .mockResolvedValue(undefined);
+
+        await (task as any).start();
+
+        expect((task as any).getScheduleFromConfig).toHaveBeenCalledWith(
+          'scorecard.plugins.github.files_check.schedule',
+        );
+      });
     });
   });
 });

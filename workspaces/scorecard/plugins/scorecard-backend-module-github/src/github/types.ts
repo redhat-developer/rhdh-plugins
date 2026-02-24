@@ -17,3 +17,18 @@ export type GithubRepository = {
   owner: string;
   repo: string;
 };
+
+/**
+ * Single file to check
+ */
+export type GithubFile = {
+  id: string;
+  path: string;
+};
+
+/**
+ * Configuration for a file existence check
+ */
+export type GithubFilesConfig = {
+  files: GithubFile[];
+};

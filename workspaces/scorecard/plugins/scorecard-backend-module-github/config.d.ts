@@ -32,6 +32,14 @@ export interface Config {
           };
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
+        files_check?: {
+          /** File existence checks configuration */
+          files?: Array<{
+            /** Key is the metric identifier, value is the file path */
+            [metricId: string]: string;
+          }>;
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+        };
       };
     };
   };

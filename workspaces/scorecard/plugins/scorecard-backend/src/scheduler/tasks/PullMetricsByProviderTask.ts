@@ -125,6 +125,8 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     let cursor: string | undefined = undefined;
 
     const metricType = provider.getMetricType();
+    const isBatchProvider = typeof provider.calculateMetrics === 'function';
+    const metricIds = provider.getMetricIds?.() ?? [provider.getProviderId()];
 
     try {
       do {
@@ -141,6 +143,62 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 
         const batchResults = await Promise.allSettled(
           entitiesResponse.items.map(async entity => {
+            // Handle batch providers
+            if (isBatchProvider && provider.calculateMetrics) {
+              try {
+                const resultsMap = await provider.calculateMetrics(entity);
+
+                // Create a result for each metric ID
+                return metricIds.map(metricId => {
+                  const value = resultsMap.get(metricId)!;
+
+                  try {
+                    const thresholds = mergeEntityAndProviderThresholds(
+                      entity,
+                      provider,
+                    );
+
+                    const status =
+                      this.thresholdEvaluator.getFirstMatchingThreshold(
+                        value,
+                        metricType,
+                        thresholds,
+                      );
+
+                    return {
+                      catalog_entity_ref: stringifyEntityRef(entity),
+                      metric_id: metricId,
+                      value,
+                      timestamp: new Date(),
+                      status,
+                    } as DbMetricValueCreate;
+                  } catch (error) {
+                    return {
+                      catalog_entity_ref: stringifyEntityRef(entity),
+                      metric_id: metricId,
+                      value,
+                      timestamp: new Date(),
+                      error_message:
+                        error instanceof Error ? error.message : String(error),
+                    } as DbMetricValueCreate;
+                  }
+                });
+              } catch (error) {
+                // If batch calculation fails, create error records for all metrics
+                return metricIds.map(
+                  metricId =>
+                    ({
+                      catalog_entity_ref: stringifyEntityRef(entity),
+                      metric_id: metricId,
+                      value: undefined,
+                      timestamp: new Date(),
+                      error_message:
+                        error instanceof Error ? error.message : String(error),
+                    } as DbMetricValueCreate),
+                );
+              }
+            }
+
             let value: MetricValue | undefined;
 
             try {
@@ -197,11 +255,32 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         ).then(promises =>
           promises.reduce((acc, curr) => {
             if (curr.status === 'fulfilled' && curr.value !== undefined) {
-              return [...acc, curr.value];
+              // Batch providers return an array of results, single providers return one result
+              const result = curr.value;
+              if (Array.isArray(result)) {
+                return [...acc, ...result];
+              }
+              return [...acc, result];
             }
             return acc;
           }, [] as DbMetricValueCreate[]),
         );
+
+        // Log summary of batch results for debugging, will remove before final PR
+        if (batchResults.length > 0) {
+          const summary = batchResults.map(r => ({
+            entity: r.catalog_entity_ref,
+            metric: r.metric_id,
+            value: r.value,
+            status: r.status,
+            ...(r.error_message && { error: r.error_message }),
+          }));
+          logger.info(
+            `Storing ${batchResults.length} metric values: ${JSON.stringify(
+              summary,
+            )}`,
+          );
+        }
 
         await this.database.createMetricValues(batchResults);
         totalProcessed += entitiesResponse.items.length;

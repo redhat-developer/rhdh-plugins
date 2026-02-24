@@ -139,3 +139,106 @@ export const jiraBooleanMetricMetadata = {
   description: 'Mock boolean description.',
   type: 'boolean' as const,
 };
+
+/**
+ * Mock batch provider that exposes multiple metrics
+ */
+export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
+  private readonly metricConfigs: Array<{ id: string; path: string }>;
+
+  constructor(
+    private readonly datasourceId: string,
+    private readonly providerIdPrefix: string,
+    metricConfigs: Array<{ id: string; path: string }>,
+  ) {
+    this.metricConfigs = metricConfigs;
+  }
+
+  getProviderDatasourceId(): string {
+    return this.datasourceId;
+  }
+
+  getProviderId(): string {
+    return this.providerIdPrefix;
+  }
+
+  getMetricType(): 'boolean' {
+    return 'boolean';
+  }
+
+  getMetricIds(): string[] {
+    return this.metricConfigs.map(c => `${this.providerIdPrefix}.${c.id}`);
+  }
+
+  getMetrics(): Metric<'boolean'>[] {
+    return this.metricConfigs.map(c => ({
+      id: `${this.providerIdPrefix}.${c.id}`,
+      title: `File: ${c.path}`,
+      description: `Checks if ${c.path} exists.`,
+      type: 'boolean' as const,
+    }));
+  }
+
+  getMetric(): Metric<'boolean'> {
+    return this.getMetrics()[0];
+  }
+
+  getMetricThresholds(): ThresholdConfig {
+    return {
+      rules: [
+        { key: 'success', expression: '==true' },
+        { key: 'error', expression: '==false' },
+      ],
+    };
+  }
+
+  getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
+    return {
+      'metadata.annotations.mock/key': CATALOG_FILTER_EXISTS,
+    };
+  }
+
+  async calculateMetric(_entity: Entity): Promise<boolean> {
+    const results = await this.calculateMetrics(_entity);
+    return results.get(this.getMetricIds()[0]) ?? false;
+  }
+
+  async calculateMetrics(_entity: Entity): Promise<Map<string, boolean>> {
+    const results = new Map<string, boolean>();
+    for (const config of this.metricConfigs) {
+      results.set(`${this.providerIdPrefix}.${config.id}`, true);
+    }
+    return results;
+  }
+}
+
+export const githubBatchProvider = new MockBatchBooleanProvider(
+  'github',
+  'github.files_check',
+  [
+    { id: 'readme', path: 'README.md' },
+    { id: 'license', path: 'LICENSE' },
+    { id: 'codeowners', path: 'CODEOWNERS' },
+  ],
+);
+
+export const githubBatchMetrics = [
+  {
+    id: 'github.files_check.readme',
+    title: 'File: README.md',
+    description: 'Checks if README.md exists.',
+    type: 'boolean' as const,
+  },
+  {
+    id: 'github.files_check.license',
+    title: 'File: LICENSE',
+    description: 'Checks if LICENSE exists.',
+    type: 'boolean' as const,
+  },
+  {
+    id: 'github.files_check.codeowners',
+    title: 'File: CODEOWNERS',
+    description: 'Checks if CODEOWNERS exists.',
+    type: 'boolean' as const,
+  },
+];

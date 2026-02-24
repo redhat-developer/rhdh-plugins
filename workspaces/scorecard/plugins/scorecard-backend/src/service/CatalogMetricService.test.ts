@@ -19,7 +19,11 @@ import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
-import { MockNumberProvider } from '../../__fixtures__/mockProviders';
+import {
+  MockNumberProvider,
+  githubBatchProvider,
+  githubBatchMetrics,
+} from '../../__fixtures__/mockProviders';
 import {
   buildMockDatabaseMetricValues,
   mockDatabaseMetricValues,
@@ -177,6 +181,11 @@ describe('CatalogMetricService', () => {
       mockedRegistry.getProvider.mockImplementation(id =>
         id === 'github.important_metric' ? provider : secondProvider,
       );
+      mockedRegistry.getMetric.mockImplementation(id =>
+        id === 'github.important_metric'
+          ? provider.getMetric()
+          : secondProvider.getMetric(),
+      );
 
       const multipleMetrics = [
         { ...latestEntityMetric[0], metric_id: 'github.important_metric' },
@@ -291,14 +300,14 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should get provider metric', async () => {
-      const getMetricSpy = jest.spyOn(provider, 'getMetric');
-
+    it('should get metric from registry', async () => {
       await service.getLatestEntityMetrics('component:default/test-component', [
         'github.important_metric',
       ]);
 
-      expect(getMetricSpy).toHaveBeenCalled();
+      expect(mockedRegistry.getMetric).toHaveBeenCalledWith(
+        'github.important_metric',
+      );
     });
 
     it('should merge entity and provider thresholds', async () => {
@@ -438,6 +447,80 @@ describe('CatalogMetricService', () => {
       expect(thresholdResult.error).toBe(
         'Unable to evaluate thresholds, metric value is missing',
       );
+    });
+  });
+
+  describe('getLatestEntityMetrics with batch providers', () => {
+    it('should return correct per-metric metadata for batch provider metrics', async () => {
+      const batchMetricsList = githubBatchMetrics.map(m => ({
+        id: m.id,
+      })) as Metric[];
+
+      mockedRegistry = buildMockMetricProvidersRegistry({
+        provider: githubBatchProvider,
+        metricsList: batchMetricsList,
+      });
+
+      mockedRegistry.getProvider.mockReturnValue(githubBatchProvider);
+      mockedRegistry.getMetric.mockImplementation((metricId: string) => {
+        const found = githubBatchMetrics.find(m => m.id === metricId);
+        if (!found) throw new Error(`Metric ${metricId} not found`);
+        return found;
+      });
+
+      const batchDbResults = [
+        {
+          id: 1,
+          catalog_entity_ref: 'component:default/test-component',
+          metric_id: 'github.files_check.readme',
+          value: true,
+          timestamp: new Date('2024-01-15T12:00:00.000Z'),
+          error_message: null,
+          status: 'success',
+        },
+        {
+          id: 2,
+          catalog_entity_ref: 'component:default/test-component',
+          metric_id: 'github.files_check.license',
+          value: false,
+          timestamp: new Date('2024-01-15T12:00:00.000Z'),
+          error_message: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[];
+
+      mockedDatabase = buildMockDatabaseMetricValues({
+        latestEntityMetric: batchDbResults,
+      });
+
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue(
+        batchMetricsList,
+      );
+
+      service = new CatalogMetricService({
+        catalog: mockedCatalog,
+        auth: mockedAuth,
+        registry: mockedRegistry,
+        database: mockedDatabase,
+      });
+
+      const results = await service.getLatestEntityMetrics(
+        'component:default/test-component',
+      );
+
+      expect(results).toHaveLength(2);
+
+      expect(results[0].id).toBe('github.files_check.readme');
+      expect(results[0].metadata.title).toBe('File: README.md');
+      expect(results[0].metadata.description).toBe(
+        'Checks if README.md exists.',
+      );
+      expect(results[0].metadata.type).toBe('boolean');
+
+      expect(results[1].id).toBe('github.files_check.license');
+      expect(results[1].metadata.title).toBe('File: LICENSE');
+      expect(results[1].metadata.description).toBe('Checks if LICENSE exists.');
+      expect(results[1].metadata.type).toBe('boolean');
     });
   });
 

@@ -631,7 +631,9 @@ describe('createRouter', () => {
 
       expect(result.statusCode).toBe(404);
       expect(result.body.error.name).toBe('NotFoundError');
-      expect(result.body.error.message).toContain('Metric provider with ID');
+      expect(result.body.error.message).toContain(
+        'No metric provider registered',
+      );
     });
 
     it('should return aggregated metrics for a specific metric', async () => {

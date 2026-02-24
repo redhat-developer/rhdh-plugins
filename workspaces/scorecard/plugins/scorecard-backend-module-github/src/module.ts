@@ -19,6 +19,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
+import { GithubFilesProvider } from './metricProviders/GithubFilesProvider';
 
 export const scorecardModuleGithub = createBackendModule({
   pluginId: 'scorecard',
@@ -31,6 +32,10 @@ export const scorecardModuleGithub = createBackendModule({
       },
       async init({ config, metrics }) {
         metrics.addMetricProvider(GithubOpenPRsProvider.fromConfig(config));
+        const filesProvider = GithubFilesProvider.fromConfig(config);
+        if (filesProvider) {
+          metrics.addMetricProvider(filesProvider);
+        }
       },
     });
   },

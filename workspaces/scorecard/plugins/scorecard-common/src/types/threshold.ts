@@ -55,6 +55,17 @@ export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig = {
 };
 
 /**
+ * Default threshold configuration for boolean metrics
+ * @public
+ */
+export const DEFAULT_BOOLEAN_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    { key: 'success', expression: '==true' },
+    { key: 'error', expression: '==false' },
+  ],
+};
+
+/**
  * Predefined scorecard threshold rule color constants.
  * Use in threshold rule color configurations instead of hex/RGB values.
  * Map to theme.palette colors.

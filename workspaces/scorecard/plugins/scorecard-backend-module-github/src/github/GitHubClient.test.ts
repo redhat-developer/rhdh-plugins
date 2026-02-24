@@ -93,4 +93,83 @@ describe('GithubClient', () => {
       ).rejects.toThrow(`Missing GitHub integration for '${unknownUrl}'`);
     });
   });
+
+  describe('checkFilesExist', () => {
+    it('should return true for files that exist and false for those that do not', async () => {
+      const url = 'https://github.com/owner/repo';
+      const files = new Map<string, string>([
+        ['github.files_check.readme', 'README.md'],
+        ['github.files_check.license', 'LICENSE'],
+        ['github.files_check.codeowners', 'CODEOWNERS'],
+      ]);
+
+      const response = {
+        repository: {
+          github_files_check_readme: { id: 'abc123' },
+          github_files_check_license: null,
+          github_files_check_codeowners: { id: 'def456' },
+        },
+      };
+      mockedGraphqlClient.mockResolvedValue(response);
+
+      const result = await githubClient.checkFilesExist(url, repository, files);
+
+      expect(result.get('github.files_check.readme')).toBe(true);
+      expect(result.get('github.files_check.license')).toBe(false);
+      expect(result.get('github.files_check.codeowners')).toBe(true);
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(1);
+      expect(mockedGraphqlClient).toHaveBeenCalledWith(
+        expect.stringContaining('query checkFilesExist'),
+        { owner: 'owner', repo: 'repo' },
+      );
+      expect(getCredentialsSpy).toHaveBeenCalledWith({ url });
+    });
+
+    it('should sanitize metric IDs with special characters to valid GraphQL aliases', async () => {
+      const url = 'https://github.com/owner/repo';
+      const files = new Map<string, string>([
+        ['github.files_check.my-file', 'my-file.txt'],
+      ]);
+
+      const response = {
+        repository: {
+          github_files_check_my_file: { id: 'xyz789' },
+        },
+      };
+      mockedGraphqlClient.mockResolvedValue(response);
+
+      const result = await githubClient.checkFilesExist(url, repository, files);
+
+      expect(result.get('github.files_check.my-file')).toBe(true);
+      expect(mockedGraphqlClient).toHaveBeenCalledWith(
+        expect.stringContaining('github_files_check_my_file'),
+        expect.any(Object),
+      );
+    });
+
+    it('should return an empty map when no files are provided', async () => {
+      const url = 'https://github.com/owner/repo';
+      const files = new Map<string, string>();
+
+      const response = {
+        repository: {},
+      };
+      mockedGraphqlClient.mockResolvedValue(response);
+
+      const result = await githubClient.checkFilesExist(url, repository, files);
+
+      expect(result.size).toBe(0);
+    });
+
+    it('should throw error when GitHub integration for URL is missing', async () => {
+      const unknownUrl = 'https://unknown-host/owner/repo';
+      const files = new Map<string, string>([
+        ['github.files_check.readme', 'README.md'],
+      ]);
+
+      await expect(
+        githubClient.checkFilesExist(unknownUrl, repository, files),
+      ).rejects.toThrow(`Missing GitHub integration for '${unknownUrl}'`);
+    });
+  });
 });
