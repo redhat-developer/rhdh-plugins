@@ -18,6 +18,7 @@ import type { JsonValue } from '@backstage/types';
 import type {
   MetricType,
   ThresholdConfig,
+  ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   SCORECARD_THRESHOLD_RULE_COLOR_VALUES,
@@ -34,9 +35,7 @@ import { parseThresholdExpression } from './parseThresholdExpression';
  */
 function isValidColor(color: string): boolean {
   if (
-    SCORECARD_THRESHOLD_RULE_COLOR_VALUES.some(
-      validColor => validColor === color,
-    )
+    (SCORECARD_THRESHOLD_RULE_COLOR_VALUES as readonly string[]).includes(color)
   ) {
     return true;
   }
@@ -60,6 +59,52 @@ function isValidColor(color: string): boolean {
 }
 
 /**
+ * Validates the color format if present in a rule
+ */
+function validateRuleColor(rule: ThresholdRule): void {
+  if (!('color' in rule)) {
+    return;
+  }
+
+  if (typeof rule.color !== 'string' || rule.color.trim() === '') {
+    throw new ThresholdConfigFormatError(
+      `Invalid color format for rule "${rule.key}": color must be a non-empty string`,
+    );
+  }
+
+  if (!isValidColor(rule.color)) {
+    throw new ThresholdConfigFormatError(
+      `Invalid color format for rule "${rule.key}": "${
+        rule.color
+      }" must be either a predefined constant (${SCORECARD_THRESHOLD_RULE_COLOR_VALUES.map(
+        v => `'${v}'`,
+      ).join(
+        ', ',
+      )}), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")`,
+    );
+  }
+}
+
+function isThresholdRule(rule: unknown): asserts rule is ThresholdRule {
+  if (
+    typeof rule !== 'object' ||
+    rule === null ||
+    !('key' in rule) ||
+    !('expression' in rule) ||
+    typeof rule.key !== 'string' ||
+    typeof rule.expression !== 'string' ||
+    rule.key.trim() === '' ||
+    rule.expression.trim() === ''
+  ) {
+    throw new ThresholdConfigFormatError(
+      `Invalid threshold rule format "${JSON.stringify(
+        rule,
+      )}": must be an object with "key" and "expression" non-empty string properties`,
+    );
+  }
+}
+
+/**
  * Validate thresholds configuration
  * @public
  */
@@ -80,51 +125,21 @@ export function validateThresholds(
 
   const seenKeys = new Set<string>();
   for (const rule of thresholds.rules) {
-    if (
-      typeof rule !== 'object' ||
-      rule === null ||
-      !('key' in rule) ||
-      !('expression' in rule) ||
-      typeof rule.key !== 'string' ||
-      typeof rule.expression !== 'string' ||
-      rule.key.trim() === '' ||
-      rule.expression.trim() === ''
-    ) {
-      throw new ThresholdConfigFormatError(
-        `Invalid threshold rule format "${JSON.stringify(
-          rule,
-        )}": must be an object with "key" and "expression" non-empty string properties`,
-      );
-    }
+    isThresholdRule(rule);
+    validateRuleColor(rule);
 
-    const standardKeys = ['success', 'warning', 'error'];
-    if (!standardKeys.includes(rule.key) && !('color' in rule)) {
+    const standard_threshold_rule_keys = ['success', 'warning', 'error'];
+    if (
+      !standard_threshold_rule_keys.includes(rule.key) &&
+      !('color' in rule)
+    ) {
       throw new ThresholdConfigFormatError(
         `Custom threshold key "${
           rule.key
-        }" must specify a color property. Only standard keys (${standardKeys
+        }" must specify a color property. Only standard keys (${standard_threshold_rule_keys
           .map(k => `'${k}'`)
           .join(', ')}) have default colors.`,
       );
-    }
-
-    if ('color' in rule) {
-      if (typeof rule.color !== 'string' || rule.color.trim() === '') {
-        throw new ThresholdConfigFormatError(
-          `Invalid color format for rule "${rule.key}": color must be a non-empty string`,
-        );
-      }
-      if (!isValidColor(rule.color)) {
-        throw new ThresholdConfigFormatError(
-          `Invalid color format for rule "${rule.key}": "${
-            rule.color
-          }" must be either a predefined constant (${SCORECARD_THRESHOLD_RULE_COLOR_VALUES.map(
-            v => `'${v}'`,
-          ).join(
-            ', ',
-          )}), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")`,
-        );
-      }
     }
 
     if (seenKeys.has(rule.key)) {
@@ -133,6 +148,7 @@ export function validateThresholds(
       );
     }
     seenKeys.add(rule.key);
+
     parseThresholdExpression(rule.expression, expectedMetricType);
   }
 }

@@ -78,7 +78,7 @@ export class DatabaseMetricValues {
       .groupBy('catalog_entity_ref');
 
     const statusRows = await this.dbClient(this.tableName)
-      .select('status', 'metric_id')
+      .select('status')
       .count('* as count')
       .max('timestamp as max_timestamp')
       .whereIn('id', latestIdsSubquery)

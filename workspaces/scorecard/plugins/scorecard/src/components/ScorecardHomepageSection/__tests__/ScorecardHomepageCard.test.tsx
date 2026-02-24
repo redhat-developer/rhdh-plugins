@@ -63,9 +63,9 @@ jest.mock('../ResponsivePieChart', () => ({
   }) => (
     <div data-testid="responsive-pie-chart">
       <div data-testid="pie-data-length">{pieData.length}</div>
-      {pieData.map((data, index) => (
+      {pieData.map(data => (
         <div
-          key={index}
+          key={data.name}
           data-testid={`pie-segment-${data.name}`}
           data-color={data.color}
         >
