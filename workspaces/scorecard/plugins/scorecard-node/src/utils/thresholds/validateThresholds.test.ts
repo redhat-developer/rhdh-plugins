@@ -61,18 +61,30 @@ describe('validateThresholds', () => {
       expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
     });
 
-    it('should validate config with custom threshold keys', () => {
+    it('should validate config with custom threshold keys and colors', () => {
       const validConfig = {
         rules: [
-          { key: 'critical', expression: '>80' },
-          { key: 'high', expression: '60-79' },
-          { key: 'medium', expression: '40-59' },
-          { key: 'low', expression: '20-39' },
+          { key: 'critical', expression: '>80', color: '#d32f2f' },
+          { key: 'high', expression: '60-79', color: '#ff9800' },
+          { key: 'medium', expression: '40-59', color: '#ffc107' },
+          { key: 'low', expression: '20-39', color: '#4caf50' },
           { key: 'success', expression: '<20' },
         ],
       };
 
       expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
+
+    it('should validate standard keys without colors', () => {
+      const config = {
+        rules: [
+          { key: 'success', expression: '<20' },
+          { key: 'warning', expression: '20-50' },
+          { key: 'error', expression: '>50' },
+        ],
+      };
+
+      expect(() => validateThresholds(config, 'number')).not.toThrow();
     });
 
     it('should validate config with predefined color constants', () => {
@@ -216,6 +228,21 @@ describe('validateThresholds', () => {
       expect(() => validateThresholds(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
           'Duplicate key detected for "error" with expression ">50"',
+        ),
+      );
+    });
+
+    it('should throw error for custom threshold key without color', () => {
+      const config = {
+        rules: [
+          { key: 'success', expression: '<20' },
+          { key: 'critical', expression: '>=20' },
+        ],
+      };
+
+      expect(() => validateThresholds(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(
+          "Custom threshold key \"critical\" must specify a color property. Only standard keys ('success', 'warning', 'error') have default colors.",
         ),
       );
     });

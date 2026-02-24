@@ -97,6 +97,17 @@ export function validateThresholds(
       );
     }
 
+    const standardKeys = ['success', 'warning', 'error'];
+    if (!standardKeys.includes(rule.key) && !('color' in rule)) {
+      throw new ThresholdConfigFormatError(
+        `Custom threshold key "${
+          rule.key
+        }" must specify a color property. Only standard keys (${standardKeys
+          .map(k => `'${k}'`)
+          .join(', ')}) have default colors.`,
+      );
+    }
+
     if ('color' in rule) {
       if (typeof rule.color !== 'string' || rule.color.trim() === '') {
         throw new ThresholdConfigFormatError(
