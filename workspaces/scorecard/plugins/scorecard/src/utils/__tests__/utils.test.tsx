@@ -263,7 +263,7 @@ describe('utils', () => {
     } as any as Theme;
 
     it('should resolve theme palette reference', () => {
-      const color = resolveStatusColor(mockTheme, 'success.main', false);
+      const color = resolveStatusColor(mockTheme, 'success.main');
       expect(color).toBe('#2e7d32');
     });
 
@@ -271,49 +271,23 @@ describe('utils', () => {
       const color = resolveStatusColor(
         mockTheme,
         'rhdh.general.cardBorderColor',
-        false,
       );
       expect(color).toBe('#c7c7c7');
     });
 
-    it('should return fallback for invalid theme reference', () => {
-      const color = resolveStatusColor(mockTheme, 'invalid.path.here', false);
-      expect(color).toBe('#2e7d32');
-    });
-
     it('should return custom hex color directly', () => {
-      const color = resolveStatusColor(mockTheme, '#9933ff', false);
+      const color = resolveStatusColor(mockTheme, '#9933ff');
       expect(color).toBe('#9933ff');
     });
 
     it('should return custom color name directly', () => {
-      const color = resolveStatusColor(mockTheme, 'blue', false);
+      const color = resolveStatusColor(mockTheme, 'blue');
       expect(color).toBe('blue');
     });
 
     it('should return custom rgb color directly', () => {
-      const color = resolveStatusColor(mockTheme, 'rgb(255, 0, 0)', false);
+      const color = resolveStatusColor(mockTheme, 'rgb(255, 0, 0)');
       expect(color).toBe('rgb(255, 0, 0)');
-    });
-
-    it('should return card border color when isError is true', () => {
-      const color = resolveStatusColor(mockTheme, 'anything', true);
-      expect(color).toBe('#c7c7c7');
-    });
-
-    it('should return fallback when cardBorderColor is not defined when isError is true', () => {
-      const themeWithoutCardBorder = {
-        palette: {
-          success: { main: '#0066cc' },
-        },
-      } as any as Theme;
-
-      const color = resolveStatusColor(
-        themeWithoutCardBorder,
-        'anything',
-        true,
-      );
-      expect(color).toBe('#0066cc');
     });
   });
 });

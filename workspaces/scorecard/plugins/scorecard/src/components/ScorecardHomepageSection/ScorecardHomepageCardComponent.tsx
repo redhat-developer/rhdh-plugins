@@ -55,7 +55,6 @@ export const ScorecardHomepageCardComponent = ({
         theme,
         getThresholdRuleColor(scorecard.result.thresholds.rules, value.name) ??
           'success.main',
-        false,
       ),
     })) ?? [];
 

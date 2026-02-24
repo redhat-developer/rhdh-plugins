@@ -21,7 +21,6 @@ import {
   ScorecardThresholdRuleColors,
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import type { Theme } from '@mui/material/styles';
 
 export type StatusConfig = {
@@ -95,26 +94,17 @@ export const getStatusConfig = ({
 
 /**
  * Resolves a color value from the theme palette or returns a custom color.
- * Supports both theme palette paths (e.g., 'error.main', 'rhdh.general.disabled')
+ * Supports theme palette paths (e.g., 'error.main', 'rhdh.general.cardBorderColor')
  * and direct color values (e.g., '#FF5733', 'blue', 'rgb(255,0,0)').
  *
  * @param theme - The theme configuration object
  * @param statusColor - Either a theme palette path or a direct color value
- * @param isError - If true, returns the theme's card border color for error states, defaults to false
  * @returns The resolved color string
  */
 export const resolveStatusColor = (
   theme: Theme,
   statusColor: string,
-  isError: boolean = false,
 ): string => {
-  if (isError) {
-    return (
-      (theme as ThemeConfig).palette?.rhdh?.general?.cardBorderColor ??
-      theme.palette.success.main
-    );
-  }
-
   if (!statusColor.includes('.')) {
     return statusColor;
   }

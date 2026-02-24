@@ -124,11 +124,7 @@ export const EmptyStatePanel = ({
     thresholdStatus: 'error',
   });
 
-  const resolvedStatusColor = resolveStatusColor(
-    theme,
-    statusConfig.color,
-    true,
-  );
+  const resolvedStatusColor = resolveStatusColor(theme, statusConfig.color);
 
   const pieData = [{ name: 'full', value: 100, color: resolvedStatusColor }];
 

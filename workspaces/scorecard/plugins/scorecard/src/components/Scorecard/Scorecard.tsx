@@ -171,11 +171,7 @@ const Scorecard = ({
 
   const isErrorState = isMetricDataError || isThresholdError;
 
-  const resolvedStatusColor = resolveStatusColor(
-    theme,
-    statusColor,
-    isErrorState,
-  );
+  const resolvedStatusColor = resolveStatusColor(theme, statusColor);
 
   const pieData = [{ name: 'full', value: 100, color: resolvedStatusColor }];
 
