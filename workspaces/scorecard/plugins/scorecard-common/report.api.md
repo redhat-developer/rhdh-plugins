@@ -22,13 +22,15 @@ export type AggregatedMetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result: AggregatedMetric;
+  result: AggregatedMetric & {
+    thresholds: ThresholdConfig;
+  };
 };
 
 // @public (undocumented)
 export type AggregatedMetricValue = {
   count: number;
-  name: 'success' | 'warning' | 'error';
+  name: string;
 };
 
 // @public
@@ -102,6 +104,7 @@ export type ThresholdResult = {
 export type ThresholdRule = {
   key: string;
   expression: string;
+  color?: string;
 };
 
 // (No @packageDocumentation comment for this package)
