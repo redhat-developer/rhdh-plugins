@@ -26,8 +26,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          ref: ${{ github.event.pull_request.number && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.ref }}
+
+      - name: Get CODEOWNERS from PR
+        if: github.event_name == 'pull_request_target'
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-head
+          git checkout pr-head -- .github/CODEOWNERS
 
       - name: Generate GitHub App Token
         id: generate-token
