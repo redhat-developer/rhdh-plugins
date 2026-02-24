@@ -17,7 +17,10 @@
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
-import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  ScorecardThresholdRuleColors,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import type { Theme } from '@mui/material/styles';
 
@@ -43,11 +46,11 @@ export const getThresholdRuleColor = (
 
   switch (ruleKey) {
     case 'error':
-      return 'error.main';
+      return ScorecardThresholdRuleColors.ERROR;
     case 'warning':
-      return 'warning.main';
+      return ScorecardThresholdRuleColors.WARNING;
     case 'success':
-      return 'success.main';
+      return ScorecardThresholdRuleColors.SUCCESS;
     default:
       return undefined;
   }
@@ -112,22 +115,22 @@ export const resolveStatusColor = (
     );
   }
 
-  // If statusColor contains a dot, treat it as a theme palette reference
-  if (statusColor.includes('.')) {
-    const parts = statusColor.split('.');
-    let value: any = theme.palette;
-
-    for (const part of parts) {
-      value = value?.[part];
-      if (value === undefined) {
-        break;
-      }
-    }
-
-    return typeof value === 'string' ? value : theme.palette.success.main;
+  if (!statusColor.includes('.')) {
+    return statusColor;
   }
 
-  return statusColor;
+  // Resolve theme palette reference
+  const parts = statusColor.split('.');
+  let value: any = theme.palette;
+
+  for (const part of parts) {
+    value = value?.[part];
+    if (value === undefined) {
+      break;
+    }
+  }
+
+  return typeof value === 'string' ? value : theme.palette.success.main;
 };
 
 export const getYOffsetForCenterLabel = (lineCount: number) => {

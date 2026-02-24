@@ -16,6 +16,7 @@
 
 import { validateThresholds } from './validateThresholds';
 import { ThresholdConfigFormatError } from '../../errors';
+import { ScorecardThresholdRuleColors } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 describe('validateThresholds', () => {
   describe('validateThresholds - valid configs', () => {
@@ -68,6 +69,53 @@ describe('validateThresholds', () => {
           { key: 'medium', expression: '40-59' },
           { key: 'low', expression: '20-39' },
           { key: 'success', expression: '<20' },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
+
+    it('should validate config with predefined color constants', () => {
+      const validConfig = {
+        rules: [
+          {
+            key: 'success',
+            expression: '<=20',
+            color: ScorecardThresholdRuleColors.SUCCESS,
+          },
+          {
+            key: 'warning',
+            expression: '>20',
+            color: ScorecardThresholdRuleColors.WARNING,
+          },
+          {
+            key: 'error',
+            expression: '>40',
+            color: ScorecardThresholdRuleColors.ERROR,
+          },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
+
+    it('should validate config with hex color', () => {
+      const validConfig = {
+        rules: [
+          { key: 'success', expression: '<5', color: '#dc5a33' },
+          { key: 'warning', expression: '<=10', color: '#AB3' },
+          { key: 'error', expression: '>10', color: '#FF5733AA' },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
+
+    it('should validate config with RGB color', () => {
+      const validConfig = {
+        rules: [
+          { key: 'warning', expression: '<5', color: 'rgb(255, 87, 51)' },
+          { key: 'error', expression: '<5', color: 'rgba(255, 87, 51, 0.5)' },
         ],
       };
 
@@ -171,5 +219,63 @@ describe('validateThresholds', () => {
         ),
       );
     });
+
+    it.each([
+      {
+        description: 'missing # in hex color',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 'FF5733' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "FF5733" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+      {
+        description: 'invalid hex characters',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: '#GGGGGG' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "#GGGGGG" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+      {
+        description: 'invalid predefined constant',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 'invalid.color' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "invalid.color" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+      {
+        description: 'empty color string',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: '' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": color must be a non-empty string',
+      },
+      {
+        description: 'non-string color',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 123 } as any],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": color must be a non-empty string',
+      },
+      {
+        description: 'RGB with missing comma',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 'rgb(50, 87 37)' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "rgb(50, 87 37)" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+    ])(
+      'should throw error for invalid color: $description',
+      ({ config, expectedError }) => {
+        expect(() => validateThresholds(config, 'number')).toThrow(
+          new ThresholdConfigFormatError(expectedError),
+        );
+      },
+    );
   });
 });
