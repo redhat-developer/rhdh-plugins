@@ -24,7 +24,7 @@
     "test:e2e:legacy": "APP_MODE=legacy playwright test",
     "test:e2e:nfs": "APP_MODE=nfs playwright test",
     "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
-    "playwright": "bash -c 'if [[ $1 == install ]]; then npx playwright \"$@\"; else yarn test:e2e:all; fi' _",
+    "playwright": "bash -c 'if [[ $@ == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",

@@ -269,6 +269,19 @@ export class JobResourceBuilder {
                 ],
                 // Additional env vars specific to this job (metadata, not credentials)
                 env: [
+                  // OpenShift compatibility: redirect HOME and caches to writable workspace
+                  {
+                    name: 'HOME',
+                    value: '/workspace',
+                  },
+                  {
+                    name: 'XDG_CACHE_HOME',
+                    value: '/workspace/.cache',
+                  },
+                  {
+                    name: 'GIT_CONFIG_GLOBAL',
+                    value: '/workspace/.gitconfig',
+                  },
                   {
                     name: 'PHASE',
                     value: params.phase,
