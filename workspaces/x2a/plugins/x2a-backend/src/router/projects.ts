@@ -30,6 +30,7 @@ import {
   getUserRef,
   isUserOfAdminViewPermission,
   isUserOfAdminWritePermission,
+  reconcileJobStatus,
 } from './common';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
 
@@ -166,6 +167,25 @@ export function registerProjectRoutes(
     const endpoint = 'DELETE /projects/:projectId';
     const projectId = req.params.projectId;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+    // Cancel any active k8s jobs before deleting DB records
+    const jobs = await x2aDatabase.listJobsForProject({ projectId });
+    const activeJobs = jobs.filter(
+      job => ['pending', 'running'].includes(job.status) && job.k8sJobName,
+    );
+    await Promise.all(
+      activeJobs.map(job => {
+        logger.info(
+          `Cancelling k8s job ${job.k8sJobName} for project ${projectId}`,
+        );
+        return kubeService.deleteJob(job.k8sJobName!).catch(err => {
+          logger.warn(
+            `Failed to cancel k8s job ${job.k8sJobName}: ${err.message}`,
+          );
+        });
+      }),
+    );
+
     const deletedCount = await x2aDatabase.deleteProject(
       { projectId },
       {
@@ -255,9 +275,17 @@ export function registerProjectRoutes(
 
       // Check for existing running init job
       const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
-      const hasActiveInitJob = existingJobs.some(
+      const activeInitJobs = existingJobs.filter(
         job =>
           job.phase === 'init' && ['pending', 'running'].includes(job.status),
+      );
+      const reconciledInitJobs = await Promise.all(
+        activeInitJobs.map(job =>
+          reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
+        ),
+      );
+      const hasActiveInitJob = reconciledInitJobs.some(job =>
+        ['pending', 'running'].includes(job.status),
       );
 
       if (hasActiveInitJob) {
@@ -282,7 +310,10 @@ export function registerProjectRoutes(
       // Create Kubernetes job (will create both project and job secrets)
       // Use HTTP for in-cluster service-to-service communication
       // Jobs call back to Backstage within the same cluster
-      const baseUrl = await discoveryApi.getBaseUrl('x2a');
+      // Allow override via config for local development (e.g., using LAN IP)
+      const baseUrl =
+        config.getOptionalString('x2a.callbackBaseUrl') ??
+        (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
@@ -308,7 +339,10 @@ export function registerProjectRoutes(
       });
 
       // Update job with k8s job name
-      await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+      await x2aDatabase.updateJob({
+        id: job.id,
+        k8sJobName,
+      });
 
       logger.info(
         `Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`,

@@ -40,7 +40,7 @@ A tech-preview feature **for non-production** environments to install and config
 
     Permissions and RBAC rules are implemented to read and update configurations. This is a tech preview feature for **non-production environments**.
 
-    We highly recommend to follow the GitOps approaech to configure and enable plugins in product.
+    We highly recommend to follow the GitOps approach to configure and enable plugins in product.
 
 ### RBAC Policies
 

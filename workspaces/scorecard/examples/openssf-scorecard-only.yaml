@@ -9,4 +9,4 @@ metadata:
 spec:
   type: service
   owner: group:development/guests
-  lifecycle: development
+  lifecycle: experimental

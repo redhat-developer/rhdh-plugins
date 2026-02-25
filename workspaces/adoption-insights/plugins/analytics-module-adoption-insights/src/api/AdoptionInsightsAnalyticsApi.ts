@@ -14,20 +14,26 @@
  * limitations under the License.
  */
 import {
-  AnalyticsApi,
+  AnalyticsApi as LegacyAnalyticsApi,
+  AnalyticsEvent as LegacyAnalyticsEvent,
   IdentityApi,
   ConfigApi,
-  AnalyticsEvent,
 } from '@backstage/core-plugin-api';
+import {
+  AnalyticsEvent,
+  AnalyticsImplementation,
+} from '@backstage/frontend-plugin-api';
 
 /**
  * Analytics API for Adoption Insights
  *
  * @public
  */
-export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
-  private eventBuffer: AnalyticsEvent[] = [];
-  private pendingEvents: AnalyticsEvent[] = [];
+export class AdoptionInsightsAnalyticsApi
+  implements LegacyAnalyticsApi, AnalyticsImplementation
+{
+  private eventBuffer: (AnalyticsEvent | LegacyAnalyticsEvent)[] = [];
+  private pendingEvents: (AnalyticsEvent | LegacyAnalyticsEvent)[] = [];
   private readonly backendUrl: string;
   private readonly flushInterval: number;
   private readonly maxBufferSize: number;
@@ -67,7 +73,7 @@ export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
     setInterval(() => this.flushEvents(), this.flushInterval);
   }
 
-  private async setUserIdToEvent(event: AnalyticsEvent) {
+  private async setUserIdToEvent(event: AnalyticsEvent | LegacyAnalyticsEvent) {
     if (this.userId) {
       event.context.userName = this.userId;
       event.context.userId = await this.hash(this.userId);
@@ -104,7 +110,7 @@ export class AdoptionInsightsAnalyticsApi implements AnalyticsApi {
   /**
    *  Capture events being emmited from Analytics API and send to the Adoption Insights Backend
    */
-  async captureEvent(event: AnalyticsEvent) {
+  async captureEvent(event: AnalyticsEvent | LegacyAnalyticsEvent) {
     if (this.userId) {
       event.context.userName = this.userId;
       event.context.userId = await this.hash(this.userId);

@@ -15,7 +15,7 @@
  */
 
 import { resolvePackagePath } from '@backstage/backend-plugin-api';
-import { V1Job, V1Secret, V1Container } from '@kubernetes/client-node';
+import { V1Job, V1Secret } from '@kubernetes/client-node';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { X2AConfig } from '../../config';
@@ -132,9 +132,8 @@ export class JobResourceBuilder {
    * Builds a Kubernetes Secret for a specific job containing ephemeral Git credentials
    *
    * Note: ownerReferences are NOT set here because the job doesn't exist yet at secret
-   * creation time. The job secret will be cleaned up by Kubernetes TTL after the job
-   * completes (via ttlSecondsAfterFinished setting on the job). For explicit cleanup,
-   * the deleteJobSecret method can be called.
+   * creation time. After job creation, KubeService.createJob() sets the ownerReference
+   * on this secret so it is automatically garbage-collected when the Job is deleted.
    *
    * @param jobId - The job UUID
    * @param projectId - The project UUID
@@ -144,12 +143,13 @@ export class JobResourceBuilder {
   static buildJobSecret(
     jobId: string,
     projectId: string,
+    phase: string,
     gitCredentials: {
       sourceRepo: GitRepo;
       targetRepo: GitRepo;
     },
   ): V1Secret {
-    const secretName = `x2a-job-secret-${jobId}`;
+    const secretName = `x2a-job-secret-${phase}-${jobId}`;
 
     return {
       apiVersion: 'v1',
@@ -196,7 +196,7 @@ export class JobResourceBuilder {
     const shortId = crypto.randomBytes(4).toString('hex');
     const jobName = `job-x2a-${params.phase}-${shortId}`;
     const projectSecretName = `x2a-project-secret-${params.projectId}`;
-    const jobSecretName = `x2a-job-secret-${params.jobId}`;
+    const jobSecretName = `x2a-job-secret-${params.phase}-${params.jobId}`;
 
     return {
       apiVersion: 'batch/v1',
@@ -246,8 +246,6 @@ export class JobResourceBuilder {
           },
           spec: {
             restartPolicy: 'Never',
-            // Init container: Clone source and target repositories
-            initContainers: [this.buildGitFetchInitContainer(params.jobId)],
             containers: [
               {
                 name: 'x2a',
@@ -271,6 +269,19 @@ export class JobResourceBuilder {
                 ],
                 // Additional env vars specific to this job (metadata, not credentials)
                 env: [
+                  // OpenShift compatibility: redirect HOME and caches to writable workspace
+                  {
+                    name: 'HOME',
+                    value: '/workspace',
+                  },
+                  {
+                    name: 'XDG_CACHE_HOME',
+                    value: '/workspace/.cache',
+                  },
+                  {
+                    name: 'GIT_CONFIG_GLOBAL',
+                    value: '/workspace/.gitconfig',
+                  },
                   {
                     name: 'PHASE',
                     value: params.phase,
@@ -413,60 +424,6 @@ export class JobResourceBuilder {
 
     // Final truncate to ensure 63 char limit
     return sanitized.substring(0, 63);
-  }
-
-  /**
-   * Builds an init container that clones source and target git repositories
-   *
-   * @param jobId - The job UUID (for secret reference)
-   * @returns V1Container for the init container
-   */
-  private static buildGitFetchInitContainer(jobId: string): V1Container {
-    const jobSecretName = `x2a-job-secret-${jobId}`;
-
-    return {
-      name: 'git-fetch',
-      image: 'alpine/git:2.43.0',
-      command: ['/bin/sh', '-c'],
-      args: [
-        `
-set -e
-echo "=== Cloning source repository ==="
-git clone --depth=1 --single-branch --branch=\${SOURCE_REPO_BRANCH} \\
-  https://\${SOURCE_REPO_TOKEN}@\${SOURCE_REPO_URL#https://} \\
-  /workspace/source
-
-echo "=== Cloning target repository ==="
-# Handle case where target repo might be empty or not exist
-if git ls-remote https://\${TARGET_REPO_TOKEN}@\${TARGET_REPO_URL#https://} &>/dev/null; then
-  git clone --depth=1 --single-branch --branch=\${TARGET_REPO_BRANCH} \\
-    https://\${TARGET_REPO_TOKEN}@\${TARGET_REPO_URL#https://} \\
-    /workspace/target
-else
-  echo "Target repo doesn't exist, initializing empty repo"
-  mkdir -p /workspace/target
-  cd /workspace/target
-  git init
-  git checkout -b \${TARGET_REPO_BRANCH}
-fi
-
-echo "=== Git fetch completed ==="
-        `.trim(),
-      ],
-      envFrom: [
-        {
-          secretRef: {
-            name: jobSecretName,
-          },
-        },
-      ],
-      volumeMounts: [
-        {
-          name: 'workspace',
-          mountPath: '/workspace',
-        },
-      ],
-    };
   }
 
   /**

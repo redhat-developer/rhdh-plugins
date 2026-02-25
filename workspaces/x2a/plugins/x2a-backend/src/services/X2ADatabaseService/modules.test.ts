@@ -221,6 +221,369 @@ describe('X2ADatabaseService – modules', () => {
         expect(r2?.name).toBe('Module 2');
       },
     );
+
+    describe('status and errorDetails (enrichment)', () => {
+      it.each(supportedDatabaseIds)(
+        'returns status pending and no errorDetails when module has no jobs - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'No Jobs Module',
+            sourcePath: '/no-jobs',
+            projectId: project.id,
+          });
+
+          const retrieved = await service.getModule({ id: mod.id });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.status).toBe('pending');
+          expect(retrieved?.errorDetails).toBeUndefined();
+          expect(retrieved?.analyze).toBeUndefined();
+          expect(retrieved?.migrate).toBeUndefined();
+          expect(retrieved?.publish).toBeUndefined();
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'returns status success and no errorDetails when all phases finished successfully - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'Success Module',
+            sourcePath: '/success',
+            projectId: project.id,
+          });
+          const analyzeJob = await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'success',
+          });
+          const migrateJob = await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'migrate',
+            status: 'success',
+          });
+          const publishJob = await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'publish',
+            status: 'success',
+          });
+
+          const retrieved = await service.getModule({ id: mod.id });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.status).toBe('success');
+          expect(retrieved?.errorDetails).toBeUndefined();
+          expect(retrieved?.analyze?.id).toBe(analyzeJob.id);
+          expect(retrieved?.migrate?.id).toBe(migrateJob.id);
+          expect(retrieved?.publish?.id).toBe(publishJob.id);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'returns status running when last job (e.g. migrate) is running - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'Running Module',
+            sourcePath: '/running',
+            projectId: project.id,
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'success',
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'migrate',
+            status: 'running',
+          });
+
+          const retrieved = await service.getModule({ id: mod.id });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.status).toBe('running');
+          expect(retrieved?.errorDetails).toBeUndefined();
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'returns status error and errorDetails from analyze job when analyze failed - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'Analyze Error Module',
+            sourcePath: '/analyze-error',
+            projectId: project.id,
+          });
+          const analyzeJob = await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'pending',
+          });
+          await service.updateJob({
+            id: analyzeJob.id,
+            status: 'error',
+            errorDetails: 'Analyze failed: timeout',
+          });
+
+          const retrieved = await service.getModule({ id: mod.id });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.status).toBe('error');
+          expect(retrieved?.errorDetails).toBe('Analyze failed: timeout');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'returns status error and errorDetails from migrate job when migrate is last phase and failed - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'Migrate Error Module',
+            sourcePath: '/migrate-error',
+            projectId: project.id,
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'success',
+          });
+          const migrateJob = await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'migrate',
+            status: 'pending',
+          });
+          await service.updateJob({
+            id: migrateJob.id,
+            status: 'error',
+            errorDetails: 'Migration failed: conflict',
+          });
+
+          const retrieved = await service.getModule({ id: mod.id });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.status).toBe('error');
+          expect(retrieved?.errorDetails).toBe('Migration failed: conflict');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'returns status error and errorDetails from publish job when publish failed - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'Publish Error Module',
+            sourcePath: '/publish-error',
+            projectId: project.id,
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'success',
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'migrate',
+            status: 'success',
+          });
+          const publishJob = await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'publish',
+            status: 'pending',
+          });
+          await service.updateJob({
+            id: publishJob.id,
+            status: 'error',
+            errorDetails: 'Publish failed: push rejected',
+          });
+
+          const retrieved = await service.getModule({ id: mod.id });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.status).toBe('error');
+          expect(retrieved?.errorDetails).toBe('Publish failed: push rejected');
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'uses last phase for status so publish success overrides earlier analyze error - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'Publish Success Module',
+            sourcePath: '/publish-ok',
+            projectId: project.id,
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'error',
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'migrate',
+            status: 'success',
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'publish',
+            status: 'success',
+          });
+
+          const retrieved = await service.getModule({ id: mod.id });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.status).toBe('success');
+          expect(retrieved?.errorDetails).toBeUndefined();
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'with skipEnrichment true returns module without status or errorDetails - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const service = createService(client);
+          const credentials = mockCredentials.user();
+          const project = await service.createProject(
+            {
+              name: 'Test Project',
+              abbreviation: 'TP',
+              description: 'D',
+              ...defaultProjectRepoFields,
+            },
+            { credentials },
+          );
+          const mod = await service.createModule({
+            name: 'Skip Enrich Module',
+            sourcePath: '/skip-enrich',
+            projectId: project.id,
+          });
+          await service.createJob({
+            projectId: project.id,
+            moduleId: mod.id,
+            phase: 'analyze',
+            status: 'error',
+          });
+
+          const retrieved = await service.getModule({
+            id: mod.id,
+            skipEnrichment: true,
+          });
+
+          expect(retrieved).toBeDefined();
+          expect(retrieved?.id).toBe(mod.id);
+          expect(retrieved?.name).toBe(mod.name);
+          expect(retrieved?.sourcePath).toBe(mod.sourcePath);
+          expect(retrieved?.projectId).toBe(mod.projectId);
+          expect(retrieved?.status).toBeUndefined();
+          expect(retrieved?.errorDetails).toBeUndefined();
+          expect(retrieved?.analyze).toBeUndefined();
+          expect(retrieved?.migrate).toBeUndefined();
+          expect(retrieved?.publish).toBeUndefined();
+        },
+        LONG_TEST_TIMEOUT,
+      );
+    });
   });
 
   describe('listModules', () => {
@@ -335,6 +698,110 @@ describe('X2ADatabaseService – modules', () => {
         expect(project2Modules[0].id).toBe(module1Project2.id);
         expect(project1Modules.map(m => m.id)).toContain(module1Project1.id);
       },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns each module with status and optional analyze, migrate, publish - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        await service.createModule({
+          name: 'Module A',
+          sourcePath: '/a',
+          projectId: project.id,
+        });
+
+        const modules = await service.listModules({ projectId: project.id });
+
+        expect(modules).toHaveLength(1);
+        expect(modules[0]).toHaveProperty('status');
+        expect(modules[0].status).toBe('pending');
+        expect(modules[0].id).toBeDefined();
+        expect(modules[0].name).toBe('Module A');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'enriches each module with last analyze, migrate, publish when jobs exist - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            abbreviation: 'TP',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const mod = await service.createModule({
+          name: 'Module With Jobs',
+          sourcePath: '/with-jobs',
+          projectId: project.id,
+        });
+        const analyzeJob = await service.createJob({
+          projectId: project.id,
+          moduleId: mod.id,
+          phase: 'analyze',
+          status: 'pending',
+          callbackToken: 'tk',
+        });
+        await service.updateJob({
+          id: analyzeJob.id,
+          status: 'success',
+        });
+
+        const modError = await service.createModule({
+          name: 'Module With Error',
+          sourcePath: '/with-error',
+          projectId: project.id,
+        });
+        const errorJob = await service.createJob({
+          projectId: project.id,
+          moduleId: modError.id,
+          phase: 'analyze',
+          status: 'pending',
+          callbackToken: 'tk2',
+        });
+        await service.updateJob({
+          id: errorJob.id,
+          status: 'error',
+          errorDetails: 'Analyze failed: timeout',
+        });
+
+        const modules = await service.listModules({ projectId: project.id });
+
+        expect(modules).toHaveLength(2);
+        const successModule = modules.find(m => m.name === 'Module With Jobs');
+        expect(successModule).toBeDefined();
+        expect(successModule?.analyze).toBeDefined();
+        expect(successModule?.analyze?.id).toBe(analyzeJob.id);
+        expect(successModule?.analyze?.phase).toBe('analyze');
+        expect(successModule?.analyze).not.toHaveProperty('callbackToken');
+        expect(successModule?.migrate).toBeUndefined();
+        expect(successModule?.publish).toBeUndefined();
+        expect(successModule?.status).toBe('success');
+        expect(successModule?.errorDetails ?? undefined).toBeUndefined();
+
+        const errorModule = modules.find(m => m.name === 'Module With Error');
+        expect(errorModule).toBeDefined();
+        expect(errorModule?.status).toBe('error');
+        expect(errorModule?.errorDetails).toBe('Analyze failed: timeout');
+      },
+      LONG_TEST_TIMEOUT,
     );
   });
 

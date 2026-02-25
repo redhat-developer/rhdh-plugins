@@ -7,9 +7,16 @@ organization:
 
 backend:
   actions:
+    filter:
+      include:
+        - attributes:
+            readOnly: true
     pluginSources:
-      - 'software-catalog-mcp-tool'
-      - 'techdocs-mcp-tool'
+      - 'software-catalog-mcp-extras'
+      - 'techdocs-mcp-extras'
+      - 'scaffolder-mcp-extras'
+      - 'catalog'
+      - 'scaffolder'
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for
   # information on the format
@@ -86,7 +93,7 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Location, Component, System, API, Group, User, Resource]
+    - allow: [Location, Component, System, API, Group, User, Resource, Template]
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
@@ -97,12 +104,6 @@ catalog:
       target: ../../examples/template/template.yaml
       rules:
         - allow: [Template]
-
-    # AI Lab Template Data
-    - type: url
-      target: https://github.com/redhat-ai-dev/ai-lab-template/blob/main/all.yaml
-      rules:
-        - allow: [Template, Location]
 
     # Local example organizational data
     - type: file

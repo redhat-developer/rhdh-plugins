@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC, ReactNode } from 'react';
 import { Link, LinkProps } from '@backstage/core-components';
 import Typography from '@mui/material/Typography';
 
 interface ViewMoreLinkProps extends LinkProps {
   to: string;
-  children: string | React.ReactNode;
+  children: string | ReactNode;
 }
 
-export const ViewMoreLink: React.FC<ViewMoreLinkProps> = ({ to, children }) => {
+export const ViewMoreLink: FC<ViewMoreLinkProps> = ({ to, children }) => {
   return (
     <Link to={to} underline="always">
       <Typography variant="body2" sx={{ fontWeight: 500 }}>

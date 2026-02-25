@@ -19,7 +19,7 @@ import { adoptionInsightsTranslationRef } from './ref';
 
 /**
  * German translation for Adoption Insights.
- * @public
+ * @alpha
  */
 const adoptionInsightsTranslationDe = createTranslationMessages({
   ref: adoptionInsightsTranslationRef,

@@ -21,14 +21,19 @@ import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
   constructor(private readonly logger: LoggerService) {}
-
+  
   async getScorecard(entity: Entity): Promise<OpenSSFResponse> {
-    const baseUrl = entity.metadata.annotations?.['openssf/baseUrl'] ?? '';
-    if (!baseUrl || baseUrl.trim() === '' || !baseUrl.startsWith('https://')) {
-      throw new Error(`Invalid annotation 'openssf/baseUrl' value`);
+    const scorecardLocation =
+      entity.metadata.annotations?.['openssf/scorecard-location'] ?? '';
+    if (
+      !scorecardLocation ||
+      scorecardLocation.trim() === '' ||
+      !scorecardLocation.startsWith('https://')
+    ) {
+      throw new Error(`Invalid annotation 'openssf/scorecard-location' value`);
     }
 
-    const response = await fetch(baseUrl, {
+    const response = await fetch(scorecardLocation, {
       method: 'GET',
       headers: {
         Accept: 'application/json',

@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.1.0
+
+### Minor Changes
+
+- 30b48e0: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- Updated dependencies [30b48e0]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.1.0
+
 ## 7.0.1
 
 ### Patch Changes

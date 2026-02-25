@@ -19,17 +19,17 @@ import type { Entity } from '@backstage/catalog-model';
 import { OpenSSFClient } from './OpenSSFClient';
 import type { OpenSSFResponse } from './types';
 
-const mockScorecardUrl =
+const mockScorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
-function createEntity(baseUrl: string, excludeChecks?: list<string>): Entity {
+function createEntity(scorecardLocation: string, excludeChecks?: list<string>): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
     metadata: {
       name: 'my-service',
       annotations: {
-        'openssf/baseUrl': baseUrl,
+        'openssf/scorecard-location': scorecardLocation,
         'openssf/excludeChecks': excludeChecks,
       },
     },
@@ -69,7 +69,7 @@ const mockLogger = {
 };
 
 describe('OpenSSFClient', () => {
-  const entity = createEntity(mockScorecardUrl);
+  const entity = createEntity(mockScorecardLocation);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -77,7 +77,7 @@ describe('OpenSSFClient', () => {
   });
 
   describe('getScorecard', () => {
-    it('fetches the scorecard from the entity baseUrl', async () => {
+    it('fetches the scorecard from the entity scorecard URL', async () => {
       (globalThis.fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue(mockOpenSSFResponse),
@@ -86,7 +86,7 @@ describe('OpenSSFClient', () => {
       const client = new OpenSSFClient(mockLogger as any);
       const result = await client.getScorecard(entity);
 
-      expect(fetch).toHaveBeenCalledWith(mockScorecardUrl, {
+      expect(fetch).toHaveBeenCalledWith(mockScorecardLocation, {
         method: 'GET',
         headers: { Accept: 'application/json' },
       });
@@ -100,7 +100,7 @@ describe('OpenSSFClient', () => {
         statusText: 'Not Found',
       });
 
-      const client = new OpenSSFClient(mockLogger as any);
+      const client = new OpenSSFClient();
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'OpenSSF API request failed with status 404: Not Found',
@@ -112,7 +112,7 @@ describe('OpenSSFClient', () => {
         new Error('Network error'),
       );
 
-      const client = new OpenSSFClient(mockLogger as any);
+      const client = new OpenSSFClient();
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'Network error',
@@ -120,7 +120,7 @@ describe('OpenSSFClient', () => {
     });
 
     it('excludes Maintained when excludeChecks annotation is present', async () => {
-      const entityWithExcludeChecks = createEntity(mockScorecardUrl, [
+      const entityWithExcludeChecks = createEntity(mockScorecardLocation, [
         'Maintained',
       ]);
       (globalThis.fetch as jest.Mock).mockResolvedValue({

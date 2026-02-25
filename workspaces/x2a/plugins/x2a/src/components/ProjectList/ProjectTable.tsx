@@ -35,6 +35,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { Repository } from './Repository';
 import { OrderDirection } from './types';
 import { DetailPanel } from './DetailPanel';
+import { ProjectStatusCell } from './ProjectStatusCell';
 
 type ProjectTableProps = {
   forceRefresh: () => void;
@@ -83,6 +84,7 @@ const useColumns = (
   orderDirection: OrderDirection,
 ): TableColumn<Project>[] => {
   const { t } = useTranslation();
+
   return useMemo(() => {
     const getDefaultSort = (index: number): OrderDirection => {
       if (index === orderBy) {
@@ -101,6 +103,9 @@ const useColumns = (
       {
         title: t('table.columns.status'),
         field: 'status',
+        render: (rowData: Project) => (
+          <ProjectStatusCell projectStatus={rowData.status} />
+        ),
         defaultSort: getDefaultSort(1),
       },
       {
@@ -129,10 +134,8 @@ const useColumns = (
       },
       {
         title: t('table.columns.createdAt'),
-        render: (rowData: Project) => {
-          // TODO: Show human-readable duration instead, make sure sorting still works
-          return <div>{rowData.createdAt.toLocaleString()}</div>;
-        },
+        field: 'createdAt',
+        type: 'datetime',
         defaultSort: getDefaultSort(4),
       },
     ];

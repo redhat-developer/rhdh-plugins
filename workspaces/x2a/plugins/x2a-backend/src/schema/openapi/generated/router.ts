@@ -404,6 +404,44 @@ export const spec = {
         }
       }
     },
+    "/projects/{projectId}/modules/{moduleId}": {
+      "get": {
+        "summary": "Returns a module by ID",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single module by ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Module"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or module not found"
+          }
+        }
+      }
+    },
     "/projects/{projectId}/modules/{moduleId}/run": {
       "post": {
         "summary": "Triggers a migration phase for a specific module",
@@ -447,9 +485,7 @@ export const spec = {
                   }
                 },
                 "required": [
-                  "phase",
-                  "sourceRepoAuth",
-                  "targetRepoAuth"
+                  "phase"
                 ]
               }
             }
@@ -546,6 +582,115 @@ export const spec = {
           }
         }
       }
+    },
+    "/projects/{projectId}/collectArtifacts": {
+      "post": {
+        "security": [],
+        "summary": "Collects artifacts from a completed X2Ansible job",
+        "description": "Callback endpoint for X2Ansible jobs to submit execution artifacts and results.\nThis endpoint is called by the X2Ansible job runner when a migration phase completes.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "UUID of the project"
+          },
+          {
+            "in": "query",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "UUID of the module.\n- Required for analyze, migrate, and publish phases\n- Should be omitted for init phase\n"
+          },
+          {
+            "in": "query",
+            "name": "phase",
+            "schema": {
+              "$ref": "#/components/schemas/MigrationPhase"
+            },
+            "required": true,
+            "description": "Migration phase that completed"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "success",
+                      "error"
+                    ],
+                    "description": "Execution status of the job"
+                  },
+                  "errorDetails": {
+                    "type": "string",
+                    "description": "Error details if status is Error"
+                  },
+                  "jobId": {
+                    "type": "string",
+                    "description": "UUID of the completed job"
+                  },
+                  "artifacts": {
+                    "type": "array",
+                    "description": "List of artifacts produced by the job",
+                    "items": {
+                      "$ref": "#/components/schemas/Artifact"
+                    }
+                  },
+                  "telemetry": {
+                    "$ref": "#/components/schemas/Telemetry"
+                  },
+                  "commitId": {
+                    "type": "string",
+                    "description": "Git commit SHA from the job's push to target repo"
+                  }
+                },
+                "required": [
+                  "status",
+                  "jobId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Artifacts collected successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Success confirmation message"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "404": {
+            "description": "Project or job not found"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -597,6 +742,10 @@ export const spec = {
           "migrationPlan": {
             "$ref": "#/components/schemas/Artifact",
             "description": "Project migration plan artifact (by init phase)"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProjectStatus",
+            "description": "Project status calculated from the status of its modules"
           }
         },
         "required": [
@@ -638,6 +787,13 @@ export const spec = {
           },
           "publish": {
             "$ref": "#/components/schemas/Job"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModuleStatus"
+          },
+          "errorDetails": {
+            "type": "string",
+            "description": "Detailed error information if the module failed to execute"
           }
         },
         "required": [
@@ -654,6 +810,80 @@ export const spec = {
           "running",
           "success",
           "error"
+        ]
+      },
+      "ModuleStatus": {
+        "type": "string",
+        "description": "Module status is the status of the last job of its last phase.\nIf a later retrigger for an earlier phase fails (e.g. when retrigger on analyze\nfails but a former migrate already passed), the modules status should not change (is still based on the last phase).\nThe pending state is used for modules that are scheduled for execution but not yet actually running. If a module\nis in pending state for long time, it can refer to an issue with the OCP setup.\n",
+        "enum": [
+          "pending",
+          "running",
+          "success",
+          "error"
+        ]
+      },
+      "ProjectStatusState": {
+        "type": "string",
+        "description": "Project status state.\nIt is calculated from the status of its modules.\n- created: Project is created but not yet initialized\n- initializing: Project's init job is running or scheduling\n- initialized: Project's init job finished successfully. Either module list is empty or all modules are in pending state.\n- inProgress: At least one module is beyond the pending state.\n- completed: All modules are in success state\n- failed: At least one module is in error state\n",
+        "enum": [
+          "created",
+          "initializing",
+          "initialized",
+          "inProgress",
+          "completed",
+          "failed"
+        ]
+      },
+      "ModulesStatusSummary": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total number of modules in the project"
+          },
+          "finished": {
+            "type": "integer",
+            "description": "Number of modules in success state of the publish phase (no more work is needed)"
+          },
+          "waiting": {
+            "type": "integer",
+            "description": "Number of modules in success state of a non-publish phase (means waiting for human interaction)"
+          },
+          "pending": {
+            "type": "integer",
+            "description": "Number of modules in pending state (scheduled for execution but not actually running)"
+          },
+          "running": {
+            "type": "integer",
+            "description": "Number of modules in running state (actually running)"
+          },
+          "error": {
+            "type": "integer",
+            "description": "Number of modules in error state (execution is over but failed)"
+          }
+        },
+        "required": [
+          "total",
+          "finished",
+          "waiting",
+          "pending",
+          "running",
+          "error"
+        ]
+      },
+      "ProjectStatus": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/ProjectStatusState"
+          },
+          "modulesSummary": {
+            "$ref": "#/components/schemas/ModulesStatusSummary"
+          }
+        },
+        "required": [
+          "state",
+          "modulesSummary"
         ]
       },
       "Job": {
@@ -710,6 +940,13 @@ export const spec = {
             "items": {
               "$ref": "#/components/schemas/Artifact"
             }
+          },
+          "telemetry": {
+            "$ref": "#/components/schemas/Telemetry"
+          },
+          "commitId": {
+            "type": "string",
+            "description": "Git commit SHA produced by this job"
           }
         }
       },
@@ -718,7 +955,8 @@ export const spec = {
         "enum": [
           "migration_plan",
           "module_migration_plan",
-          "migrated_sources"
+          "migrated_sources",
+          "project_metadata"
         ]
       },
       "Artifact": {
@@ -802,6 +1040,83 @@ export const spec = {
           "publish"
         ],
         "description": "Phases to execute on a module"
+      },
+      "Telemetry": {
+        "type": "object",
+        "description": "Execution telemetry and metrics for a migration phase",
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Execution summary from x2a convertor"
+          },
+          "phase": {
+            "type": "string",
+            "description": "Phase name (init, analyze, migrate, publish)"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the phase started (ISO 8601 format)"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the phase completed (ISO 8601 format)"
+          },
+          "agents": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/AgentMetrics"
+            },
+            "description": "Per-agent execution metrics (agent name to metrics mapping)"
+          }
+        },
+        "required": [
+          "summary",
+          "phase",
+          "startedAt"
+        ]
+      },
+      "AgentMetrics": {
+        "type": "object",
+        "description": "Telemetry data for a single agent execution within a phase",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Agent identifier (e.g., \"PlanningAgent\", \"WriteAgent\")"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When agent execution started (ISO 8601 format)"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When agent execution completed (ISO 8601 format)"
+          },
+          "durationSeconds": {
+            "type": "number",
+            "format": "double",
+            "description": "Execution duration in seconds"
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Custom key-value metrics recorded by the agent"
+          },
+          "toolCalls": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Tool call counts (tool name to count mapping)"
+          }
+        },
+        "required": [
+          "name",
+          "durationSeconds"
+        ]
       }
     }
   }

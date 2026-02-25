@@ -20,7 +20,7 @@ import type { Entity } from '@backstage/catalog-model';
 import { OpenSSFMetricProvider } from './OpenSSFMetricProvider';
 import { OPENSSF_THRESHOLDS } from './OpenSSFConfig';
 
-const scorecardUrl =
+const scorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
 function createEntity(): Entity {
@@ -29,7 +29,7 @@ function createEntity(): Entity {
     kind: 'Component',
     metadata: {
       name: 'my-service',
-      annotations: { 'openssf/baseUrl': scorecardUrl },
+      annotations: { 'openssf/scorecard-location': scorecardLocation },
     },
     spec: {},
   } as Entity;
@@ -126,14 +126,15 @@ describe('OpenSSFMetricProvider', () => {
       expect(provider.getMetricThresholds()).toEqual(OPENSSF_THRESHOLDS);
     });
 
-    it('requires openssf/baseUrl annotation in catalog filter', () => {
+    it('requires openssf/scorecard-location annotation in catalog filter', () => {
       const provider = new OpenSSFMetricProvider(
         maintainedConfig,
         OPENSSF_THRESHOLDS,
         mockLogger as any,
       );
       expect(provider.getCatalogFilter()).toEqual({
-        'metadata.annotations.openssf/baseUrl': CATALOG_FILTER_EXISTS,
+        'metadata.annotations.openssf/scorecard-location':
+          CATALOG_FILTER_EXISTS,
       });
     });
   });
@@ -167,7 +168,7 @@ describe('OpenSSFMetricProvider', () => {
       const result = await provider.calculateMetric(entity);
 
       expect(result).toBe(8);
-      expect(fetch).toHaveBeenCalledWith(scorecardUrl, expect.any(Object));
+      expect(fetch).toHaveBeenCalledWith(scorecardLocation, expect.any(Object));
     });
 
     it('throws when the check is not in the scorecard', async () => {

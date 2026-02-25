@@ -88,7 +88,7 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
-      'metadata.annotations.openssf/baseUrl': CATALOG_FILTER_EXISTS,
+      'metadata.annotations.openssf/scorecard-location': CATALOG_FILTER_EXISTS,
     };
   }
 

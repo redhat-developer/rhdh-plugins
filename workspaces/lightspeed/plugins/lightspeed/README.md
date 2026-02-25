@@ -122,9 +122,9 @@ global:
                   importName: LightspeedFAB
                 - mountPoint: application/provider
                   importName: LightspeedDrawerProvider
-                - mountPoint: application/drawer-state
+                - mountPoint: application/internal/drawer-state
                   importName: LightspeedDrawerStateExposer
-                - mountPoint: application/drawer-content
+                - mountPoint: application/internal/drawer-content
                   importName: LightspeedChatContainer
                   config:
                     id: lightspeed
@@ -173,9 +173,9 @@ dynamicPlugins:
           importName: LightspeedFAB
         - mountPoint: application/provider
           importName: LightspeedDrawerProvider
-        - mountPoint: application/drawer-state
+        - mountPoint: application/internal/drawer-state
           importName: LightspeedDrawerStateExposer
-        - mountPoint: application/drawer-content
+        - mountPoint: application/internal/drawer-content
           importName: LightspeedChatContainer
           config:
             id: lightspeed

@@ -15,6 +15,20 @@ export interface AAPCredentials {
     username?: string;
 }
 
+// @public
+export interface AgentMetrics {
+    durationSeconds: number;
+    endedAt?: Date;
+    metrics?: {
+        [key: string]: any;
+    };
+    name: string;
+    startedAt?: Date;
+    toolCalls?: {
+        [key: string]: number;
+    };
+}
+
 // @public (undocumented)
 export interface Artifact {
     id: string;
@@ -24,7 +38,7 @@ export interface Artifact {
 }
 
 // @public (undocumented)
-export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources';
+export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata';
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
@@ -50,9 +64,11 @@ export class DefaultApiClient {
     });
     projectsGet(request: ProjectsGet, options?: RequestOptions): Promise<TypedResponse<ProjectsGet200Response>>;
     projectsPost(request: ProjectsPost, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdCollectArtifactsPost(request: ProjectsProjectIdCollectArtifactsPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
+    projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesModuleIdRunPost(request: ProjectsProjectIdModulesModuleIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
@@ -67,6 +83,7 @@ export interface GitRepoAuth {
 // @public (undocumented)
 export interface Job {
     artifacts?: Array<Artifact>;
+    commitId?: string;
     errorDetails?: string;
     finishedAt?: Date;
     id: string;
@@ -78,6 +95,8 @@ export interface Job {
     startedAt: Date;
     // (undocumented)
     status: JobStatusEnum;
+    // (undocumented)
+    telemetry?: Telemetry;
 }
 
 // @public (undocumented)
@@ -90,6 +109,7 @@ export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
 export interface Module {
     // (undocumented)
     analyze?: Job;
+    errorDetails?: string;
     id: string;
     // (undocumented)
     migrate?: Job;
@@ -98,10 +118,25 @@ export interface Module {
     // (undocumented)
     publish?: Job;
     sourcePath: string;
+    // (undocumented)
+    status?: ModuleStatus;
 }
 
 // @public (undocumented)
 export type ModulePhase = 'analyze' | 'migrate' | 'publish';
+
+// @public (undocumented)
+export interface ModulesStatusSummary {
+    error: number;
+    finished: number;
+    pending: number;
+    running: number;
+    total: number;
+    waiting: number;
+}
+
+// @public (undocumented)
+export type ModuleStatus = 'pending' | 'running' | 'success' | 'error';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -118,6 +153,8 @@ export interface Project {
     name: string;
     sourceRepoBranch: string;
     sourceRepoUrl: string;
+    // (undocumented)
+    status?: ProjectStatus;
     targetRepoBranch: string;
     targetRepoUrl: string;
 }
@@ -155,6 +192,37 @@ export interface ProjectsPostRequest {
 }
 
 // @public (undocumented)
+export type ProjectsProjectIdCollectArtifactsPost = {
+    path: {
+        projectId: string;
+    };
+    body: ProjectsProjectIdCollectArtifactsPostRequest;
+    query: {
+        moduleId?: string;
+        phase: MigrationPhase;
+    };
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdCollectArtifactsPost200Response {
+    message: string;
+}
+
+// @public (undocumented)
+export interface ProjectsProjectIdCollectArtifactsPostRequest {
+    artifacts?: Array<Artifact>;
+    commitId?: string;
+    errorDetails?: string;
+    jobId: string;
+    status: ProjectsProjectIdCollectArtifactsPostRequestStatusEnum;
+    // (undocumented)
+    telemetry?: Telemetry;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdCollectArtifactsPostRequestStatusEnum = 'success' | 'error';
+
+// @public (undocumented)
 export type ProjectsProjectIdDelete = {
     path: {
         projectId: string;
@@ -177,6 +245,14 @@ export type ProjectsProjectIdGet = {
 export type ProjectsProjectIdModulesGet = {
     path: {
         projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdModulesModuleIdGet = {
+    path: {
+        projectId: string;
+        moduleId: string;
     };
 };
 
@@ -208,9 +284,9 @@ export interface ProjectsProjectIdModulesModuleIdRunPostRequest {
     // (undocumented)
     phase: ModulePhase;
     // (undocumented)
-    sourceRepoAuth: GitRepoAuth;
+    sourceRepoAuth?: GitRepoAuth;
     // (undocumented)
-    targetRepoAuth: GitRepoAuth;
+    targetRepoAuth?: GitRepoAuth;
 }
 
 // @public (undocumented)
@@ -255,10 +331,32 @@ export interface ProjectsProjectIdRunPostRequest {
     userPrompt?: string;
 }
 
+// @public (undocumented)
+export interface ProjectStatus {
+    // (undocumented)
+    modulesSummary: ModulesStatusSummary;
+    // (undocumented)
+    state: ProjectStatusState;
+}
+
+// @public (undocumented)
+export type ProjectStatusState = 'created' | 'initializing' | 'initialized' | 'inProgress' | 'completed' | 'failed';
+
 // @public
 export interface RequestOptions {
     // (undocumented)
     token?: string;
+}
+
+// @public
+export interface Telemetry {
+    agents?: {
+        [key: string]: AgentMetrics;
+    };
+    endedAt?: Date;
+    phase: string;
+    startedAt: Date;
+    summary: string;
 }
 
 // @public
