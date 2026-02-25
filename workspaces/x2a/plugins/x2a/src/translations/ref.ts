@@ -104,6 +104,7 @@ export const x2aPluginMessages = {
       completed: 'Completed',
       failed: 'Failed',
     },
+    noModules: 'No modules found yet...',
   },
   common: {
     newProject: 'New Project',

@@ -78,6 +78,7 @@ readonly "project.statuses.initialized": string;
 readonly "project.statuses.inProgress": string;
 readonly "project.statuses.completed": string;
 readonly "project.statuses.failed": string;
+readonly "project.noModules": string;
 readonly "common.newProject": string;
 readonly "wizard.cancel": string;
 readonly "wizard.back": string;
