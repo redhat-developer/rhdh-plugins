@@ -63,11 +63,12 @@ describe('ErrorTooltip Component', () => {
     expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
   });
 
-  it('should render even if tooltipPosition is undefined', () => {
+  it('should not render when tooltipPosition is undefined', () => {
     const { container } = render(
       <ErrorTooltip title="No position" tooltipPosition={undefined} />,
     );
 
-    expect(container.firstChild).toBeInTheDocument();
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByTestId('tooltip')).not.toBeInTheDocument();
   });
 });
