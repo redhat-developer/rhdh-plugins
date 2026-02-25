@@ -128,6 +128,10 @@ export const ActiveTextInput: Widget<
   // Process fetch results - only override if fetch returns a non-empty value
   // Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
+    if (clearOnRetrigger && loading) {
+      return;
+    }
+
     if (!data) {
       return;
     }
@@ -171,6 +175,8 @@ export const ActiveTextInput: Widget<
     isChangedByUser,
     skipInitialValue,
     wrapProcessing,
+    clearOnRetrigger,
+    loading,
   ]);
 
   const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
