@@ -26,11 +26,17 @@ import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
   AggregatedMetricResult,
+  MetricsDetails,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
-import { scorecardApiRef, ScorecardApi } from '../src/api';
+import {
+  scorecardApiRef,
+  ScorecardApi,
+  MetricsOptions,
+  MetricsResponse,
+} from '../src/api';
 import {
   mockScorecardErrorData,
   mockScorecardSuccessData,
@@ -59,6 +65,15 @@ class MockScorecardApi implements ScorecardApi {
     _metricId: string,
   ): Promise<AggregatedMetricResult> {
     return mockAggregatedScorecardSuccessData;
+  }
+  async getMetrics(_options?: MetricsOptions): Promise<MetricsResponse> {
+    return {
+      metrics: [
+        ...mockScorecardSuccessData.filter(
+          metric => metric.id === 'github.open_issues',
+        ),
+      ] as unknown as MetricsDetails[],
+    };
   }
 }
 

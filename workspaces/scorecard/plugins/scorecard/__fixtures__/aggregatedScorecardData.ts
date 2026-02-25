@@ -25,6 +25,7 @@ export const mockAggregatedScorecardSuccessData: AggregatedMetricResult = {
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     values: [

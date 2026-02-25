@@ -110,21 +110,17 @@ const CenterLabel = ({
 
 export const EmptyStatePanel = ({
   label,
-  metricId,
+  cardTitle,
+  cardDescription,
   tooltipContent,
 }: {
   label: string;
-  metricId: string;
+  cardTitle: string;
+  cardDescription: string;
   tooltipContent: string;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
-
-  const titleKey = `metric.${metricId}.title`;
-  const descriptionKey = `metric.${metricId}.description`;
-
-  const cardTitle = t(titleKey as any, {});
-  const cardDescription = t(descriptionKey as any, {});
 
   const statusConfig = getStatusConfig({
     evaluation: 'error',

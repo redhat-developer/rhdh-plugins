@@ -108,21 +108,30 @@ export async function createRouter({
       throw new InputError('Cannot filter by both metricIds and datasource');
     }
 
-    if (metricIds) {
-      return res.json({
-        metrics: metricProvidersRegistry.listMetrics(
+    const getMetrics = () => {
+      if (metricIds) {
+        return metricProvidersRegistry.listMetrics(
           parseCommaSeparatedString(metricIds),
-        ),
-      });
-    }
+        );
+      }
 
-    if (datasource) {
-      return res.json({
-        metrics: metricProvidersRegistry.listMetricsByDatasource(datasource),
-      });
-    }
+      if (datasource) {
+        return metricProvidersRegistry.listMetricsByDatasource(datasource);
+      }
 
-    return res.json({ metrics: metricProvidersRegistry.listMetrics() });
+      return metricProvidersRegistry.listMetrics();
+    };
+
+    return res.json({
+      metrics: getMetrics().map(metric => {
+        const { isCustomized, title, description } =
+          getAggregatedMetricCustomization(metric.id, { config });
+
+        return isCustomized
+          ? { ...metric, isCustomized, title, description }
+          : metric;
+      }),
+    });
   });
 
   router.get('/metrics/catalog/:kind/:namespace/:name', async (req, res) => {
@@ -191,22 +200,19 @@ export async function createRouter({
         metricId,
       );
 
-    const aggregatedMetricCustomization = getAggregatedMetricCustomization(
-      metricId,
-      { config },
-    );
+    const { isCustomized, title, description } =
+      getAggregatedMetricCustomization(metricId, { config });
 
-    if (aggregatedMetricCustomization.isCustomized) {
-      const result = AggregatedMetricMapper.toAggregatedMetricResult(
-        { ...metric, ...aggregatedMetricCustomization },
-        aggregatedMetric,
-        aggregatedMetricCustomization.isCustomized,
-      );
-      return res.json(result);
-    }
+    const metricsDetails = isCustomized
+      ? { ...metric, title, description }
+      : metric;
 
     return res.json(
-      AggregatedMetricMapper.toAggregatedMetricResult(metric, aggregatedMetric),
+      AggregatedMetricMapper.toAggregatedMetricResult(
+        metricsDetails,
+        aggregatedMetric,
+        isCustomized,
+      ),
     );
   });
 

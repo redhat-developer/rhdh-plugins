@@ -17,6 +17,9 @@
 import { ResponseErrorPanel } from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyStatePanel } from './EmptyStatePanel';
+import { CardLoading } from '../CardLoading';
+import { useMetrics } from '../../hooks/useMetrics';
+import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
 
 export const ErrorStatePanel = ({
   error,
@@ -27,40 +30,67 @@ export const ErrorStatePanel = ({
 }) => {
   const { t } = useTranslation();
 
-  const isMissingPermission = error.message?.includes('NotAllowedError');
+  const { metrics, loading, error: metricsError } = useMetrics({ metricId });
 
-  if (isMissingPermission) {
+  const { title: cardTitle, description: cardDescription } =
+    useMetricDisplayLabels(metrics[0]);
+
+  if (loading) {
+    return <CardLoading />;
+  }
+
+  if (metricsError || metrics.length !== 1) {
     return (
-      <EmptyStatePanel
-        metricId={metricId}
-        label={t('errors.missingPermission')}
-        tooltipContent={t('errors.missingPermissionMessage')}
+      <ResponseErrorPanel
+        error={metricsError || new Error('Multiple metrics found')}
       />
     );
   }
 
-  const isUserNotFoundInCatalog =
-    error.message?.includes('NotFoundError') &&
-    error.message?.includes('User entity not found in catalog');
+  const getPanelContent = () => {
+    const isMissingPermission = error.message?.includes('NotAllowedError');
 
-  if (isUserNotFoundInCatalog) {
-    return (
-      <EmptyStatePanel
-        metricId={metricId}
-        label={t('errors.metricDataUnavailable')}
-        tooltipContent={t('errors.userNotFoundInCatalogMessage')}
-      />
+    if (isMissingPermission) {
+      return {
+        label: t('errors.missingPermission'),
+        tooltipContent: t('errors.missingPermissionMessage'),
+      };
+    }
+
+    const isUserNotFoundInCatalog =
+      error.message?.includes('NotFoundError') &&
+      error.message?.includes('User entity not found in catalog');
+
+    if (isUserNotFoundInCatalog) {
+      return {
+        label: t('errors.metricDataUnavailable'),
+        tooltipContent: t('errors.userNotFoundInCatalogMessage'),
+      };
+    }
+
+    const isAuthenticationError = error.message?.includes(
+      'AuthenticationError',
     );
-  }
 
-  const isAuthenticationError = error.message?.includes('AuthenticationError');
+    if (isAuthenticationError) {
+      return {
+        label: t('errors.authenticationError'),
+        tooltipContent: t('errors.authenticationErrorMessage'),
+      };
+    }
 
-  if (isAuthenticationError) {
+    return { label: '', tooltipContent: '' };
+  };
+
+  const { label, tooltipContent } = getPanelContent();
+
+  if (label && tooltipContent) {
     return (
       <EmptyStatePanel
-        metricId={metricId}
-        label={t('errors.authenticationError')}
-        tooltipContent={t('errors.authenticationErrorMessage')}
+        label={label}
+        cardTitle={cardTitle}
+        cardDescription={cardDescription}
+        tooltipContent={tooltipContent}
       />
     );
   }

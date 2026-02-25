@@ -38,6 +38,10 @@ jest.mock('../../../hooks/useTranslation', () => ({
   }),
 }));
 
+jest.mock('../../../hooks/useMetrics', () => ({
+  useMetrics: jest.fn(),
+}));
+
 jest.mock('../ScorecardHomepageCardComponent', () => ({
   ScorecardHomepageCardComponent: ({
     scorecard,
@@ -51,16 +55,19 @@ jest.mock('../ScorecardHomepageCardComponent', () => ({
 jest.mock('../EmptyStatePanel', () => ({
   EmptyStatePanel: ({
     label,
-    metricId,
+    cardTitle,
+    cardDescription,
     tooltipContent,
   }: {
     label: string;
-    metricId: string;
+    cardTitle: string;
+    cardDescription: string;
     tooltipContent: string;
   }) => (
     <div data-testid="empty-state-panel">
       <div data-testid="empty-state-label">{label}</div>
-      <div data-testid="metric-id">{metricId}</div>
+      <div data-testid="card-title">{cardTitle}</div>
+      <div data-testid="card-description">{cardDescription}</div>
       <div data-testid="tooltip-content">{tooltipContent}</div>
     </div>
   ),
@@ -69,6 +76,7 @@ jest.mock('../EmptyStatePanel', () => ({
 const {
   useAggregatedScorecard,
 } = require('../../../hooks/useAggregatedScorecard');
+const { useMetrics } = require('../../../hooks/useMetrics');
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider theme={createTheme()}>{children}</ThemeProvider>
@@ -82,6 +90,7 @@ const mockScorecard: AggregatedMetricResult = {
     description: 'Open PR count',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     total: 8,
@@ -90,9 +99,22 @@ const mockScorecard: AggregatedMetricResult = {
   },
 };
 
+const mockMetricWithCustomization = {
+  id: 'jira.open_issues',
+  title: 'Jira open issues',
+  description: 'Jira open issues description',
+  type: 'number' as const,
+  isCustomized: false,
+};
+
 describe('ScorecardHomepageCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    useMetrics.mockReturnValue({
+      metrics: [mockMetricWithCustomization],
+      loading: false,
+      error: undefined,
+    });
   });
 
   it('should render loading spinner when data is loading', () => {
@@ -121,8 +143,11 @@ describe('ScorecardHomepageCard', () => {
     });
 
     expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('metric-id')).toHaveTextContent(
-      'jira.open_issues',
+    expect(screen.getByTestId('card-title')).toHaveTextContent(
+      'Jira open issues',
+    );
+    expect(screen.getByTestId('card-description')).toHaveTextContent(
+      'Jira open issues description',
     );
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
       'errors.missingPermission',
@@ -208,8 +233,11 @@ describe('ScorecardHomepageCard', () => {
     });
 
     expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
-    expect(screen.getByTestId('metric-id')).toHaveTextContent(
-      'github.open_prs',
+    expect(screen.getByTestId('card-title')).toHaveTextContent(
+      'GitHub open PRs',
+    );
+    expect(screen.getByTestId('card-description')).toHaveTextContent(
+      'Open PR count',
     );
     expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
       'errors.noDataFound',
@@ -241,7 +269,7 @@ describe('ScorecardHomepageCard', () => {
         ...mockScorecard.metadata,
         title: 'Admin custom title',
         description: 'Admin custom description.',
-        customized: true,
+        isCustomized: true,
       },
     };
     useAggregatedScorecard.mockReturnValue({

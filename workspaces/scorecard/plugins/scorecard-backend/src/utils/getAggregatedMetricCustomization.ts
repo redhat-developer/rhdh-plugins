@@ -23,16 +23,24 @@ export type MetricCustomization = {
   isCustomized: boolean;
 };
 
-const toTrimmedString = (v: unknown): string =>
-  typeof v === 'string' ? v.trim() : '';
-
 export function getAggregatedMetricCustomization(
   metricId: string,
   options: {
     config: Config;
   },
 ): MetricCustomization {
-  const configPath = `scorecard.plugins.${metricId}.homepage.aggregatedMetric`;
+  const toTrimmedString = (v: unknown): string =>
+    typeof v === 'string' ? v.trim() : '';
+
+  const [provider, metricName, ...rest] = metricId.split('.');
+
+  if (!provider || !metricName || rest.length > 0) {
+    throw new InputError(
+      `Invalid metric ID: ${metricId}, must be in the format "provider.metricName"`,
+    );
+  }
+
+  const configPath = `scorecard.plugins.${provider}.${metricName}.homepage.aggregatedMetric`;
 
   const title = options.config.getOptional(`${configPath}.title`);
   const description = options.config.getOptional(`${configPath}.description`);
@@ -43,7 +51,7 @@ export function getAggregatedMetricCustomization(
 
   if (title === undefined || description === undefined) {
     throw new InputError(
-      `scorecard.plugins.${metricId}.homepage.aggregatedMetric requires both title and description when customizing aggregated KPI`,
+      `${configPath} requires both title and description when customizing aggregated KPI`,
     );
   }
 
@@ -52,7 +60,7 @@ export function getAggregatedMetricCustomization(
 
   if (!trimmedTitle || !trimmedDescription) {
     throw new InputError(
-      `scorecard.plugins.${metricId}.homepage.aggregatedMetric requires both title and description to be non-empty strings`,
+      `${configPath} requires both title and description to be non-empty strings`,
     );
   }
 

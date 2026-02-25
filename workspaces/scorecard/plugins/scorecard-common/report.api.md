@@ -21,7 +21,7 @@ export type AggregatedMetricResult = {
     description: string;
     type: MetricType;
     history?: boolean;
-    customized?: boolean;
+    isCustomized: boolean;
   };
   result: AggregatedMetric;
 };
@@ -60,6 +60,11 @@ export type MetricResult = {
     thresholdResult: ThresholdResult;
   };
   error?: string;
+};
+
+// @public (undocumented)
+export type MetricsDetails = Metric & {
+  isCustomized: boolean;
 };
 
 // @public (undocumented)

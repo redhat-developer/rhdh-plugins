@@ -121,6 +121,12 @@ describe('createRouter', () => {
       }),
     });
 
+    jest.mocked(getAggregatedMetricCustomization).mockReturnValue({
+      title: '',
+      description: '',
+      isCustomized: false,
+    });
+
     const config = mockServices.rootConfig({ data: {} });
     const router = await createRouter({
       metricProvidersRegistry,
@@ -480,6 +486,7 @@ describe('createRouter', () => {
         description: 'Mock number description.',
         type: 'number',
         history: undefined,
+        isCustomized: false,
       },
       result: {
         values: [
@@ -737,6 +744,7 @@ describe('createRouter', () => {
       expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
         metricProvidersRegistry.getMetric('github.open_prs'),
         mockAggregatedMetricResult.result,
+        false,
       );
     });
 
@@ -752,7 +760,7 @@ describe('createRouter', () => {
           ...mockAggregatedMetricResult.metadata,
           title: 'Custom Aggregated Metric Title',
           description: 'Custom Aggregated Metric description.',
-          customized: true,
+          isCustomized: true,
         },
       };
       toAggregatedMetricResultSpy.mockReturnValueOnce(customizedResult);
@@ -768,7 +776,7 @@ describe('createRouter', () => {
       expect(response.body.metadata.description).toBe(
         'Custom Aggregated Metric description.',
       );
-      expect(response.body.metadata.customized).toBe(true);
+      expect(response.body.metadata.isCustomized).toBe(true);
       expect(response.body.id).toBe('github.open_prs');
       expect(response.body.result).toEqual(mockAggregatedMetricResult.result);
     });

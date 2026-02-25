@@ -89,7 +89,12 @@ export type AggregatedMetricResult = {
     description: string;
     type: MetricType;
     history?: boolean;
-    customized?: boolean;
+    isCustomized: boolean;
   };
   result: AggregatedMetric;
 };
+
+/**
+ * @public
+ */
+export type MetricsDetails = Metric & { isCustomized: boolean };

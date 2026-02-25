@@ -23,7 +23,17 @@ import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
   AggregatedMetricResult,
+  MetricsDetails,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export type MetricsResponse = {
+  metrics: MetricsDetails[];
+};
+
+export interface MetricsOptions {
+  metricIds?: string[];
+  datasource?: string;
+}
 
 export interface ScorecardApi {
   /**
@@ -31,9 +41,25 @@ export interface ScorecardApi {
    * @param entity - The Backstage entity to get metrics for
    * @param metricIds - Optional array of specific metric IDs to retrieve
    * @returns Promise resolving to an array of metric results
+   * @throws Error if the request fails or returns invalid data
    */
   getScorecards(entity: Entity, metricIds?: string[]): Promise<MetricResult[]>;
+  /**
+   * Retrieves aggregated metrics for a specific metric ID.
+   * @param metricId - The ID of the metric to get aggregated metrics for
+   * @returns Promise resolving to an aggregated metric result
+   * @throws Error if the request fails or returns invalid data
+   */
   getAggregatedScorecard(metricId: string): Promise<AggregatedMetricResult>;
+  /**
+   * Retrieves metrics details.
+   * @param options - Options to retrieve metrics details by metricIds or datasource
+   * @param options.metricIds - Optional array of specific metric IDs to retrieve
+   * @param options.datasource - Optional datasource to retrieve metrics from
+   * @returns Promise resolving to a metrics details result
+   * @throws Error if the request fails or returns invalid data
+   */
+  getMetrics(options?: MetricsOptions): Promise<MetricsResponse>;
 }
 
 export const scorecardApiRef = createApiRef<ScorecardApi>({
@@ -66,13 +92,6 @@ export class ScorecardApiClient implements ScorecardApi {
     return await this.discoveryApi.getBaseUrl('scorecard');
   }
 
-  /**
-   * Retrieves scorecard metrics for a specific entity.
-   * @param entity - The Backstage entity to get metrics for
-   * @param metricIds - Optional array of specific metric IDs to retrieve
-   * @returns Promise resolving to an array of metric results
-   * @throws Error if the request fails or returns invalid data
-   */
   async getScorecards(
     entity: Entity,
     metricIds?: string[],
@@ -141,15 +160,7 @@ export class ScorecardApiClient implements ScorecardApi {
         );
       }
 
-      const data = await response.json();
-
-      if (!data || Array.isArray(data) || typeof data !== 'object') {
-        throw new TypeError(
-          'Invalid response format from aggregated scorecard API',
-        );
-      }
-
-      return data;
+      return await response.json();
     } catch (error) {
       if (error instanceof Error) {
         throw error;
@@ -157,6 +168,45 @@ export class ScorecardApiClient implements ScorecardApi {
       throw new Error(
         `Unexpected error fetching aggregated scorecards: ${String(error)}`,
       );
+    }
+  }
+
+  async getMetrics(options?: MetricsOptions): Promise<MetricsResponse> {
+    const { metricIds, datasource } = options || {};
+
+    const isMetricIds =
+      metricIds && Array.isArray(metricIds) && metricIds.length > 0;
+    const isDatasource = datasource && datasource.trim() !== '';
+
+    if (isMetricIds && isDatasource) {
+      throw new Error('Cannot get metrics by both metricIds and datasource');
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const url = new URL(`${baseUrl}/metrics`);
+
+    if (isMetricIds) {
+      url.searchParams.set('metricIds', metricIds.join(','));
+    } else if (isDatasource) {
+      url.searchParams.set('datasource', datasource);
+    }
+
+    try {
+      const response = await this.fetchApi.fetch(url.toString());
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch metric: ${response.status} ${response.statusText}. ${errorText}`,
+        );
+      }
+
+      return (await response.json()) as MetricsResponse;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`Unexpected error fetching metric: ${String(error)}`);
     }
   }
 }

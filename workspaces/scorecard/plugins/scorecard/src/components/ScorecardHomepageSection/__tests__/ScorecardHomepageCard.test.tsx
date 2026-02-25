@@ -108,6 +108,7 @@ const mockScorecard: AggregatedMetricResult = {
     description: 'Open PRs',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     total: 37,

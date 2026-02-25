@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-
 import { ScorecardHomepageCardComponent } from './ScorecardHomepageCardComponent';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ErrorStatePanel } from './ErrorStatePanel';
 import { EmptyStatePanel } from './EmptyStatePanel';
+import { CardLoading } from '../CardLoading';
+import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
+import { MetricsDetails } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   const { t } = useTranslation();
@@ -30,17 +30,12 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
     metricId,
   });
 
+  const { title, description } = useMetricDisplayLabels(
+    aggregatedScorecard?.metadata as MetricsDetails,
+  );
+
   if (loadingData) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <CardLoading />;
   }
 
   if (error) {
@@ -54,42 +49,19 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   if (aggregatedScorecard.result?.total === 0) {
     return (
       <EmptyStatePanel
-        metricId={metricId}
+        cardTitle={title}
+        cardDescription={description}
         label={t('errors.noDataFound')}
         tooltipContent={t('errors.noDataFoundMessage')}
       />
     );
   }
 
-  if (aggregatedScorecard.metadata.customized) {
-    return (
-      <ScorecardHomepageCardComponent
-        key={aggregatedScorecard.id}
-        cardTitle={aggregatedScorecard.metadata.title}
-        description={aggregatedScorecard.metadata.description}
-        scorecard={aggregatedScorecard}
-      />
-    );
-  }
-
-  const titleKey = `metric.${aggregatedScorecard.id}.title`;
-  const descriptionKey = `metric.${aggregatedScorecard.id}.description`;
-
-  const title = t(titleKey as any, {});
-  const description = t(descriptionKey as any, {});
-
-  const finalTitle =
-    title === titleKey ? aggregatedScorecard.metadata.title : title;
-  const finalDescription =
-    description === descriptionKey
-      ? aggregatedScorecard.metadata.description
-      : description;
-
   return (
     <ScorecardHomepageCardComponent
       key={aggregatedScorecard.id}
-      cardTitle={finalTitle}
-      description={finalDescription}
+      cardTitle={title}
+      description={description}
       scorecard={aggregatedScorecard}
     />
   );

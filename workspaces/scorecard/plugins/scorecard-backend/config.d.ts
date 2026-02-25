@@ -43,7 +43,7 @@ export interface Config {
            * When set, both title and description are required.
            */
           homepage?: {
-            aggregatedMetric: {
+            aggregatedMetric?: {
               title: string;
               description: string;
             };
