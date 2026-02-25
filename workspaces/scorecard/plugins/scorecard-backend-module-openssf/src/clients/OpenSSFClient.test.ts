@@ -22,7 +22,10 @@ import type { OpenSSFResponse } from './types';
 const mockScorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
-function createEntity(scorecardLocation: string, excludeChecks?: list<string>): Entity {
+function createEntity(
+  scorecardLocation: string,
+  excludeChecks?: list<string>,
+): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
@@ -30,7 +33,7 @@ function createEntity(scorecardLocation: string, excludeChecks?: list<string>): 
       name: 'my-service',
       annotations: {
         'openssf/scorecard-location': scorecardLocation,
-        'openssf/excludeChecks': excludeChecks,
+        'openssf/exclude-checks': excludeChecks,
       },
     },
     spec: {},

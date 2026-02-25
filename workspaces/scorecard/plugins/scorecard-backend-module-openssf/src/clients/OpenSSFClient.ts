@@ -21,7 +21,7 @@ import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
   constructor(private readonly logger: LoggerService) {}
-  
+
   async getScorecard(entity: Entity): Promise<OpenSSFResponse> {
     const scorecardLocation =
       entity.metadata.annotations?.['openssf/scorecard-location'] ?? '';
@@ -49,7 +49,7 @@ export class OpenSSFClient {
     const data: OpenSSFResponse = await response.json();
 
     const excludeChecks =
-      entity.metadata.annotations?.['openssf/excludeChecks'];
+      entity.metadata.annotations?.['openssf/exclude-checks'];
 
     if (excludeChecks && excludeChecks.length > 0) {
       this.logger.debug(
