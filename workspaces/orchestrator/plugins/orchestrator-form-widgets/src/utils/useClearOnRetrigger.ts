@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import isEqual from 'lodash/isEqual';
 
 type UseClearOnRetriggerArgs = {
@@ -31,7 +31,7 @@ export const useClearOnRetrigger = ({
     retrigger,
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!enabled) {
       prevRetriggerRef.current = retrigger;
       return;
