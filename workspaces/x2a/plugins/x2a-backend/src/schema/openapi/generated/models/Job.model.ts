@@ -61,4 +61,8 @@ export interface Job {
    */
   artifacts?: Array<Artifact>;
   telemetry?: Telemetry;
+  /**
+   * Git commit SHA produced by this job
+   */
+  commitId?: string;
 }

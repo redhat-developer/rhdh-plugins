@@ -12,8 +12,11 @@ backend:
         - attributes:
             readOnly: true
     pluginSources:
-      - 'software-catalog-mcp-tool'
-      - 'techdocs-mcp-tool'
+      - 'software-catalog-mcp-extras'
+      - 'techdocs-mcp-extras'
+      - 'scaffolder-mcp-extras'
+      - 'catalog'
+      - 'scaffolder'
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for
   # information on the format

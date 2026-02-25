@@ -50,6 +50,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'project.statuses.inProgress': 'In Bearbeitung',
     'project.statuses.completed': 'Abgeschlossen',
     'project.statuses.failed': 'Fehlgeschlagen',
+    'project.noModules': 'Noch keine Module gefunden...',
     'common.newProject': 'Neues Projekt',
     'wizard.cancel': 'Abbrechen',
     'wizard.back': 'Zurück',
@@ -65,7 +66,11 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.summary.pending': 'Ausstehend',
     'module.summary.running': 'Läuft',
     'module.summary.error': 'Fehler',
+    'module.summary.toReview': 'zu überprüfen',
     'module.actions.runNextPhase': 'Nächste Phase ausführen',
+    'module.currentPhase': 'Aktuelle Phase',
+    'module.lastUpdate': 'Letzte Aktualisierung',
+    'module.notStarted': 'Nicht gestartet',
     'module.lastPhase': 'Letzte Phase',
     'module.name': 'Name',
     'module.status': 'Status',
@@ -89,12 +94,18 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.artifacts.migrated_sources': 'Migrierte Quellen',
     'modulePage.artifacts.description':
       'Diese Artefakte werden durch den Konvertierungsprozess generiert und stehen zur Überprüfung bereit.',
+    'modulePage.phases.title': 'Migrationsphasen',
     'modulePage.phases.id': 'ID',
     'modulePage.phases.duration': 'Dauer',
     'modulePage.phases.k8sJobName': 'Kubernetes-Jobname',
     'modulePage.phases.startedAt': 'Gestartet am',
     'modulePage.phases.status': 'Status',
     'modulePage.phases.errorDetails': 'Fehlerdetails',
+    'modulePage.phases.statuses.notStarted': 'Nicht gestartet',
+    'modulePage.phases.statuses.pending': 'Ausstehend',
+    'modulePage.phases.statuses.running': 'Läuft',
+    'modulePage.phases.statuses.success': 'Erfolg',
+    'modulePage.phases.statuses.error': 'Fehler',
     'modulePage.phases.reanalyzeInstructions':
       'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
     'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',
@@ -114,6 +125,9 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Das Modul wurde bereits veröffentlicht. Lösen Sie die Veröffentlichung erneut aus, um das Ziel-Repository zu aktualisieren.',
     'modulePage.phases.rerunPublish':
       'Im Ziel-Repository erneut veröffentlichen',
+    'modulePage.phases.commitId': 'Letzte Commit-ID',
+    'modulePage.phases.viewLog': 'Log anzeigen',
+    'modulePage.phases.hideLog': 'Log ausblenden',
   },
 });
 

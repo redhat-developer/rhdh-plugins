@@ -20,6 +20,7 @@ IMAGE_REGISTRY="quay.io/x2ansible"
 declare -A PLUGIN_IMAGES=(
   ["x2a"]="red-hat-developer-hub-backstage-plugin-x2a"
   ["x2a-backend"]="red-hat-developer-hub-backstage-plugin-x2a-backend"
+  ["scaffolder-backend-module-x2a"]="red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a"
 )
 
 # ---------------------------------------------------------------------------
@@ -52,7 +53,7 @@ get_plugin_version() {
 
 install_dependencies() {
   log "Installing workspace dependencies"
-  yarn install --cwd "$WORKSPACE_DIR"
+  yarn --cwd "$WORKSPACE_DIR" install
 }
 
 build_workspace() {

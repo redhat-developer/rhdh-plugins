@@ -133,14 +133,9 @@ export const ModulePage = () => {
 
   return (
     <Page themeId="tool">
-      <Header
-        title={
-          <>
-            <ModulePageBreadcrumb />
-            <p>{t('modulePage.title')}</p>
-          </>
-        }
-      />
+      <Header title={module?.name || t('modulePage.title')}>
+        <ModulePageBreadcrumb />
+      </Header>
 
       <Content>
         {error && (
@@ -163,7 +158,12 @@ export const ModulePage = () => {
               <ModuleDetailsCard module={module} />
             </Grid>
             <Grid item>
-              <PhasesCard module={module} onRunPhase={handleRunPhase} />
+              <PhasesCard
+                module={module}
+                projectId={projectId}
+                moduleId={moduleId}
+                onRunPhase={handleRunPhase}
+              />
             </Grid>
           </Grid>
         )}

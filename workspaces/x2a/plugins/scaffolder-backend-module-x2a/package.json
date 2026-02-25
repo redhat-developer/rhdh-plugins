@@ -18,7 +18,8 @@
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "scaffolder",
-    "pluginPackage": "@backstage/plugin-scaffolder-backend"
+    "pluginPackage": "@backstage/plugin-scaffolder-backend",
+    "supported-versions": "1.42.0"
   },
   "scripts": {
     "start": "backstage-cli package start",
@@ -30,8 +31,8 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "1.5.0",
-    "@backstage/plugin-scaffolder-node": "^0.12.1",
+    "@backstage/backend-plugin-api": "1.4.2",
+    "@backstage/plugin-scaffolder-node": "^0.11.0",
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
   },
   "devDependencies": {

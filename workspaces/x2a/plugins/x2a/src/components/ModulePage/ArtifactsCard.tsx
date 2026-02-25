@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Card, CardBody, CardHeader } from '@backstage/ui';
 import {
   Artifact,
   Module,
@@ -23,7 +22,7 @@ import { Grid } from '@material-ui/core';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
-import { Link } from '@backstage/core-components';
+import { Link, InfoCard } from '@backstage/core-components';
 import { buildArtifactUrl, humanizeArtifactType } from '../tools';
 
 const ArtifactLink = ({
@@ -70,51 +69,48 @@ export const ArtifactsCard = ({
   );
 
   return (
-    <Card>
-      <CardHeader>{t('modulePage.artifacts.title')}</CardHeader>
-      <CardBody>
-        <Grid container direction="row" spacing={3}>
-          <Grid item xs={4}>
-            <ItemField
-              label={t('modulePage.artifacts.migration_plan')}
-              value={
-                <ArtifactLink
-                  artifact={migrationPlanArtifact}
-                  targetRepoUrl={targetRepoUrl}
-                  targetRepoBranch={targetRepoBranch}
-                />
-              }
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <ItemField
-              label={t('modulePage.artifacts.module_migration_plan')}
-              value={
-                <ArtifactLink
-                  artifact={moduleMigrationPlanArtifact}
-                  targetRepoUrl={targetRepoUrl}
-                  targetRepoBranch={targetRepoBranch}
-                />
-              }
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <ItemField
-              label={t('modulePage.artifacts.migrated_sources')}
-              value={
-                <ArtifactLink
-                  artifact={migratedSourcesArtifact}
-                  targetRepoUrl={targetRepoUrl}
-                  targetRepoBranch={targetRepoBranch}
-                />
-              }
-            />
-          </Grid>
-          <Grid item xs={12}>
-            {t('modulePage.artifacts.description')}
-          </Grid>
+    <InfoCard title={t('modulePage.artifacts.title')} variant="gridItem">
+      <Grid container direction="row" spacing={3}>
+        <Grid item xs={4}>
+          <ItemField
+            label={t('modulePage.artifacts.migration_plan')}
+            value={
+              <ArtifactLink
+                artifact={migrationPlanArtifact}
+                targetRepoUrl={targetRepoUrl}
+                targetRepoBranch={targetRepoBranch}
+              />
+            }
+          />
         </Grid>
-      </CardBody>
-    </Card>
+        <Grid item xs={4}>
+          <ItemField
+            label={t('modulePage.artifacts.module_migration_plan')}
+            value={
+              <ArtifactLink
+                artifact={moduleMigrationPlanArtifact}
+                targetRepoUrl={targetRepoUrl}
+                targetRepoBranch={targetRepoBranch}
+              />
+            }
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <ItemField
+            label={t('modulePage.artifacts.migrated_sources')}
+            value={
+              <ArtifactLink
+                artifact={migratedSourcesArtifact}
+                targetRepoUrl={targetRepoUrl}
+                targetRepoBranch={targetRepoBranch}
+              />
+            }
+          />
+        </Grid>
+        <Grid item xs={12}>
+          {t('modulePage.artifacts.description')}
+        </Grid>
+      </Grid>
+    </InfoCard>
   );
 };

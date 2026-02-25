@@ -50,6 +50,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'project.statuses.inProgress': 'En cours',
     'project.statuses.completed': 'Terminé',
     'project.statuses.failed': 'Échoué',
+    'project.noModules': 'Aucun module trouvé pour le moment...',
     'common.newProject': 'Nouveau projet',
     'wizard.cancel': 'Annuler',
     'wizard.back': 'Retour',
@@ -65,7 +66,11 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.summary.pending': 'En attente',
     'module.summary.running': 'En cours',
     'module.summary.error': 'Erreur',
+    'module.summary.toReview': 'à réviser',
     'module.actions.runNextPhase': 'Exécuter la phase suivante',
+    'module.currentPhase': 'Phase actuelle',
+    'module.lastUpdate': 'Dernière mise à jour',
+    'module.notStarted': 'Non commencé',
     'module.lastPhase': 'Dernière phase',
     'module.name': 'Nom',
     'module.status': 'Statut',
@@ -89,12 +94,18 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.artifacts.migrated_sources': 'Sources migrées',
     'modulePage.artifacts.description':
       'Ces artefacts sont générés par le processus de conversion et sont disponibles pour examen.',
+    'modulePage.phases.title': 'Phases de migration',
     'modulePage.phases.id': 'ID',
     'modulePage.phases.duration': 'Durée',
     'modulePage.phases.k8sJobName': 'Nom du job Kubernetes',
     'modulePage.phases.startedAt': 'Démarré le',
     'modulePage.phases.status': 'Statut',
     'modulePage.phases.errorDetails': "Détails de l'erreur",
+    'modulePage.phases.statuses.notStarted': 'Non commencé',
+    'modulePage.phases.statuses.pending': 'En attente',
+    'modulePage.phases.statuses.running': 'En cours',
+    'modulePage.phases.statuses.success': 'Succès',
+    'modulePage.phases.statuses.error': 'Erreur',
     'modulePage.phases.reanalyzeInstructions':
       "Le plan de migration du module est déjà présent. Si le plan de migration global du projet a été mis à jour, relancez l'analyse pour refléter les changements.",
     'modulePage.phases.rerunAnalyze': 'Recréer le plan de migration du module',
@@ -113,6 +124,9 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.republishInstructions':
       'Le module a déjà été publié. Relancez la publication pour mettre à jour le dépôt cible.',
     'modulePage.phases.rerunPublish': 'Republier dans le dépôt cible',
+    'modulePage.phases.commitId': 'Dernier ID de commit',
+    'modulePage.phases.viewLog': 'Voir le journal',
+    'modulePage.phases.hideLog': 'Masquer le journal',
   },
 });
 
