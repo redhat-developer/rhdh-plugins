@@ -103,7 +103,7 @@ describe('OpenSSFClient', () => {
         statusText: 'Not Found',
       });
 
-      const client = new OpenSSFClient();
+      const client = new OpenSSFClient(mockLogger as any);
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'OpenSSF API request failed with status 404: Not Found',
@@ -115,14 +115,14 @@ describe('OpenSSFClient', () => {
         new Error('Network error'),
       );
 
-      const client = new OpenSSFClient();
+      const client = new OpenSSFClient(mockLogger as any);
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'Network error',
       );
     });
 
-    it('excludes Maintained when excludeChecks annotation is present', async () => {
+    it('excludes Maintained when exclude-checks annotation is present', async () => {
       const entityWithExcludeChecks = createEntity(mockScorecardLocation, [
         'Maintained',
       ]);
