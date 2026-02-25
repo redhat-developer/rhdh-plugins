@@ -51,7 +51,7 @@ const useStyles = makeStyles(theme => ({
     maxWidth: '33.33%',
     minHeight: 64,
     fontSize: theme.typography.pxToRem(16),
-    fontWeight: 500,
+    fontWeight: theme.typography.fontWeightMedium,
     textTransform: 'none' as const,
     padding: theme.spacing(2, 3),
     '&:hover': {
