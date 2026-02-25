@@ -40,7 +40,7 @@ function _export_plugin {
   echo "Exporting plugin: $plugin_dir"
   cd "$workspace_dir/$plugin_dir"
   npx @red-hat-developer-hub/cli@latest plugin export \
-    --embed-package @red-hat-developer-hub/plugin-redhat-resource-optimization-common
+    --embed-package @red-hat-developer-hub/plugin-cost-management-common
   cd "$workspace_dir"
 }
 
@@ -87,7 +87,7 @@ function _is_prerelease_version {
 
 
 function tgz {
-  local artifact_name="red-hat-developer-hub-plugin-redhat-resource-optimization"
+  local artifact_name="red-hat-developer-hub-plugin-cost-management"
 
   oci
   skopeo --override-os linux --override-arch amd64 copy "docker://$REGISTRY_URL/$ORG_ID/$REPO:$VERSION" "dir:$dynamic_plugins_root_dir"
@@ -129,8 +129,8 @@ function oci {
   yarn build:all
   
   # Export each plugin as a dynamic plugin
-  _export_plugin "plugins/redhat-resource-optimization"
-  _export_plugin "plugins/redhat-resource-optimization-backend"
+  _export_plugin "plugins/cost-management"
+  _export_plugin "plugins/cost-management-backend"
   
   # Package all exported plugins into OCI image
   _package_dynamic_plugins --tag $REGISTRY_URL/$ORG_ID/$REPO:$VERSION

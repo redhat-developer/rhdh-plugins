@@ -25,9 +25,7 @@ backend.add(import('@backstage/plugin-scaffolder-backend'));
 backend.add(import('@backstage/plugin-techdocs-backend'));
 
 // this plugin
-backend.add(
-  import('@red-hat-developer-hub/plugin-redhat-resource-optimization-backend'),
-);
+backend.add(import('@red-hat-developer-hub/plugin-cost-management-backend'));
 
 // orchestrator plugin
 backend.add(

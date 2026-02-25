@@ -8201,9 +8201,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@internal/redhat-resource-optimization@workspace:.":
+"@internal/cost-management@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@internal/redhat-resource-optimization@workspace:."
+  resolution: "@internal/cost-management@workspace:."
   dependencies:
     "@backstage/cli": "npm:^0.29.4"
     "@backstage/e2e-test-utils": "npm:^0.1.1"
@@ -12231,9 +12231,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:^, @red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:plugins/redhat-resource-optimization-backend":
+"@red-hat-developer-hub/plugin-cost-management-backend@workspace:^, @red-hat-developer-hub/plugin-cost-management-backend@workspace:plugins/cost-management-backend":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend@workspace:plugins/redhat-resource-optimization-backend"
+  resolution: "@red-hat-developer-hub/plugin-cost-management-backend@workspace:plugins/cost-management-backend"
   dependencies:
     "@backstage/backend-defaults": "npm:^0.7.0"
     "@backstage/backend-dynamic-feature-service": "npm:^0.5.3"
@@ -12246,7 +12246,7 @@ __metadata:
     "@backstage/plugin-permission-common": "npm:^0.8.4"
     "@backstage/plugin-permission-node": "npm:^0.8.7"
     "@backstage/plugin-proxy-backend": "npm:^0.5.10"
-    "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^"
+    "@red-hat-developer-hub/plugin-cost-management-common": "workspace:^"
     "@types/express": "npm:4.17.25"
     "@types/lodash": "npm:4.17.23"
     "@types/supertest": "npm:^6.0.0"
@@ -12261,9 +12261,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/plugin-redhat-resource-optimization-common@workspace:^, @red-hat-developer-hub/plugin-redhat-resource-optimization-common@workspace:plugins/redhat-resource-optimization-common":
+"@red-hat-developer-hub/plugin-cost-management-common@workspace:^, @red-hat-developer-hub/plugin-cost-management-common@workspace:plugins/cost-management-common":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/plugin-redhat-resource-optimization-common@workspace:plugins/redhat-resource-optimization-common"
+  resolution: "@red-hat-developer-hub/plugin-cost-management-common@workspace:plugins/cost-management-common"
   dependencies:
     "@backstage-community/plugin-rbac-common": "npm:^1.12.2"
     "@backstage/cli": "npm:^0.29.4"
@@ -12281,9 +12281,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/plugin-redhat-resource-optimization@workspace:^, @red-hat-developer-hub/plugin-redhat-resource-optimization@workspace:plugins/redhat-resource-optimization":
+"@red-hat-developer-hub/plugin-cost-management@workspace:^, @red-hat-developer-hub/plugin-cost-management@workspace:plugins/cost-management":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/plugin-redhat-resource-optimization@workspace:plugins/redhat-resource-optimization"
+  resolution: "@red-hat-developer-hub/plugin-cost-management@workspace:plugins/cost-management"
   dependencies:
     "@backstage/cli": "npm:^0.29.4"
     "@backstage/core-app-api": "npm:^1.15.4"
@@ -12299,7 +12299,7 @@ __metadata:
     "@material-ui/lab": "npm:4.0.0-alpha.61"
     "@patternfly/react-charts": "npm:^8.3.0"
     "@patternfly/react-tokens": "npm:^6.1.0"
-    "@red-hat-developer-hub/plugin-redhat-resource-optimization-common": "workspace:^"
+    "@red-hat-developer-hub/plugin-cost-management-common": "workspace:^"
     "@testing-library/dom": "npm:7.31.2"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^15.0.0"
@@ -17371,7 +17371,7 @@ __metadata:
     "@playwright/test": "npm:^1.56.1"
     "@red-hat-developer-hub/backstage-plugin-orchestrator": "npm:^2.5.1"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
-    "@red-hat-developer-hub/plugin-redhat-resource-optimization": "workspace:^"
+    "@red-hat-developer-hub/plugin-cost-management": "workspace:^"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^15.0.0"
@@ -18178,7 +18178,7 @@ __metadata:
     "@backstage/plugin-techdocs-backend": "npm:^1.11.5"
     "@janus-idp/backstage-plugin-audit-log-node": "npm:^1.8.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-backend": "npm:^5.1.1"
-    "@red-hat-developer-hub/plugin-redhat-resource-optimization-backend": "workspace:^"
+    "@red-hat-developer-hub/plugin-cost-management-backend": "workspace:^"
     "@types/dockerode": "npm:^3.3.0"
     "@types/express": "npm:^4.17.21"
     "@types/express-serve-static-core": "npm:^4.17.5"

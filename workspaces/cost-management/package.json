@@ -1,5 +1,5 @@
 {
-  "name": "@internal/redhat-resource-optimization",
+  "name": "@internal/cost-management",
   "version": "1.0.0",
   "private": true,
   "engines": {
@@ -9,8 +9,8 @@
     "start": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start-app\" \"yarn start-backend\"",
     "start-app": "yarn workspace app start",
     "start-backend": "yarn workspace backend start",
-    "start:fe-plugin": "yarn workspace @red-hat-developer-hub/plugin-redhat-resource-optimization start",
-    "start:be-plugin": "yarn workspace @red-hat-developer-hub/plugin-redhat-resource-optimization-backend start",
+    "start:fe-plugin": "yarn workspace @red-hat-developer-hub/plugin-cost-management start",
+    "start:be-plugin": "yarn workspace @red-hat-developer-hub/plugin-cost-management-backend start",
     "start:dev": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start:fe-plugin\" \"yarn start:be-plugin\"",
     "tsc": "tsc",
     "tsc:full": "tsc --incremental false",

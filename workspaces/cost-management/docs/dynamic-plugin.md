@@ -33,22 +33,22 @@ The procedure involves the following steps:
    ```yaml
    # Add to dynamic-plugins-rhdh ConfigMap
 
-   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:1.2.0!red-hat-developer-hub-plugin-redhat-resource-optimization
+   - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:1.2.0!red-hat-developer-hub-plugin-cost-management
       disabled: false
       pluginConfig:
         dynamicPlugins:
           frontend:
-            backstage-community.plugin-redhat-resource-optimization:
+            backstage-community.plugin-cost-management:
               appIcons:
-                - name: resourceOptimizationIconOutlined
-                  importName: ResourceOptimizationIconOutlined
+                - name: costManagementIconOutlined
+                  importName: CostManagementIconOutlined
               dynamicRoutes:
-                - path: /redhat-resource-optimization
+                - path: /cost-management/optimizations
                   importName: ResourceOptimizationPage
                   menuItem:
-                    icon: resourceOptimizationIconOutlined
+                    icon: costManagementIconOutlined
                     text: Optimizations
-    - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:1.2.0!red-hat-developer-hub-plugin-redhat-resource-optimization-backend
+    - package: oci://quay.io/redhat-resource-optimization/dynamic-plugins:1.2.0!red-hat-developer-hub-plugin-cost-management-backend
       disabled: false
       pluginConfig:
         proxy:

@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/plugin-redhat-resource-optimization-backend': patch
+'@red-hat-developer-hub/plugin-cost-management-backend': patch
 ---
 
 Updated dependency `@types/express` to `4.17.25`.

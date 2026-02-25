@@ -51,7 +51,7 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { ResourceOptimizationPage } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
+import { ResourceOptimizationPage } from '@red-hat-developer-hub/plugin-cost-management';
 import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { useRhdhTheme } from './hooks/useRhdhTheme';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
@@ -139,10 +139,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route
-      path="/redhat-resource-optimization"
-      element={<ResourceOptimizationPage />}
-    />
+    <Route path="/cost-management" element={<ResourceOptimizationPage />} />
     <Route path="/orchestrator" element={<OrchestratorPage />} />
     <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>

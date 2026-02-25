@@ -43,7 +43,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import { AnalyticsIconOutlined } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
+import { CostManagementIconOutlined } from '@red-hat-developer-hub/plugin-cost-management';
 import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { useRhdhTheme } from '../../hooks/useRhdhTheme';
 import { Administration } from '@backstage-community/plugin-rbac';
@@ -160,12 +160,12 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
 
   const isOpenShiftActive = useMemo(() => {
     const pathname = location.pathname;
-    return pathname === '/redhat-resource-optimization/ocp';
+    return pathname === '/cost-management/openshift';
   }, [location.pathname]);
 
   const isOptimizationsActive = useMemo(() => {
     const pathname = location.pathname;
-    const basePath = '/redhat-resource-optimization';
+    const basePath = '/cost-management';
     if (pathname === basePath) {
       return true;
     }
@@ -200,12 +200,12 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           <SidebarDivider />
 
           <CollapsibleSubmenu
-            icon={<AnalyticsIconOutlined />}
+            icon={<CostManagementIconOutlined />}
             text="Cost management"
           >
             <SidebarItem
               icon={EmptyIcon}
-              to="/redhat-resource-optimization/ocp"
+              to="/cost-management/openshift"
               text="OpenShift"
               className={`${classes.costManagementItem} ${
                 isOpenShiftActive ? '' : classes.inactiveItem
@@ -213,7 +213,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             />
             <SidebarItem
               icon={EmptyIcon}
-              to="/redhat-resource-optimization"
+              to="/cost-management/optimizations"
               text="Optimizations"
               className={`${classes.costManagementItem} ${
                 isOptimizationsActive ? '' : classes.inactiveItem

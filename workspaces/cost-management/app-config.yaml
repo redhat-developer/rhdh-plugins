@@ -116,7 +116,7 @@ catalog:
     #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
     #   rules:
     #     - allow: [User, Group]
-# Cost Management plugin (optional). See plugins/redhat-resource-optimization README.
+# Cost Management plugin (optional). See plugins/cost-management README.
 # costManagement:
 #   clientId: ${RHHCC_SA_CLIENT_ID}
 #   clientSecret: ${RHHCC_SA_CLIENT_SECRET}

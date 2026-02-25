@@ -29,7 +29,7 @@
         "name": "Launch Chrome",
         "request": "launch",
         "type": "chrome",
-        "url": "http://localhost:3000/redhat-resource-optimization",
+        "url": "http://localhost:3000/cost-management/optimizations",
         "webRoot": "${workspaceFolder}"
       }
     ]

@@ -1,29 +1,29 @@
 plugins:
-  - package: ./plugins/redhat-resource-optimization/dist/red-hat-developer-hub-backstage-plugin-redhat-resource-optimization
+  - package: ./plugins/cost-management/dist/red-hat-developer-hub-backstage-plugin-cost-management
     disabled: false
     pluginConfig:
       dynamicPlugins:
         frontend:
-          red-hat-developer-hub.backstage-plugin-redhat-resource-optimization:
+          red-hat-developer-hub.backstage-plugin-cost-management:
             appIcons:
               - name: costManagementIcon
-                importName: ResourceOptimizationIcon
+                importName: CostManagementIcon
             dynamicRoutes:
-              - path: /redhat-resource-optimization
+              - path: /cost-management/optimizations
                 importName: ResourceOptimizationPage
                 menuItem:
                   icon: costManagementIcon
                   text: Optimizations
-              - path: /redhat-resource-optimization/ocp
+              - path: /cost-management/openshift
                 importName: OpenShiftPage
                 menuItem:
                   icon: costManagementIcon
                   text: OpenShift
             menuItems:
-              redhat-resource-optimization:
+              cost-management.optimizations:
                 parent: cost-management
                 priority: 10
-              redhat-resource-optimization.ocp:
+              cost-management.openshift:
                 parent: cost-management
                 priority: 20
               cost-management:

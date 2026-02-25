@@ -63,8 +63,8 @@ This method requires vanilla backstage to be used:
 
    ```sh
    # From your Backstage root directory
-   yarn --cwd packages/app add @red-hat-developer-hub/plugin-redhat-resource-optimization
-   yarn --cwd packages/backend add @red-hat-developer-hub/plugin-redhat-resource-optimization-backend
+   yarn --cwd packages/app add @red-hat-developer-hub/plugin-cost-management
+   yarn --cwd packages/backend add @red-hat-developer-hub/plugin-cost-management-backend
    ```
 
 1. Update your `app-config.yaml` file
@@ -90,31 +90,27 @@ This method requires vanilla backstage to be used:
 1. Add the back-end plugin to `packages/backend/src/index.ts`
 
    ```ts
-   backend.add(
-     import(
-       '@red-hat-developer-hub/plugin-redhat-resource-optimization-backend'
-     ),
-   );
+   backend.add(import('@red-hat-developer-hub/plugin-cost-management-backend'));
    ```
 
 1. Add the `ResourceOptimizationPage` extension to your `App.tsx` routes
 
    Add the import and a single route. The plugin handles its own sub-routes:
 
-   - `/redhat-resource-optimization` — Optimizations list
-   - `/redhat-resource-optimization/ocp` — OpenShift cost management
-   - `/redhat-resource-optimization/:id` — Optimization breakdown
+   - `/cost-management/optimizations` — Optimizations list
+   - `/cost-management/openshift` — OpenShift cost management
+   - `/cost-management/optimizations/:id` — Optimization breakdown
 
    ```tsx
    // packages/app/src/App.tsx
 
-   import { ResourceOptimizationPage } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
+   import { ResourceOptimizationPage } from '@red-hat-developer-hub/plugin-cost-management';
 
    const routes = (
      <FlatRoutes>
        {/* ... other routes ... */}
        <Route
-         path="/redhat-resource-optimization"
+         path="/cost-management/optimizations"
          element={<ResourceOptimizationPage />}
        />
        {/* ... */}
@@ -133,7 +129,7 @@ This method requires vanilla backstage to be used:
    ```diff
    // packages/app/src/components/Root/Root.tsx
 
-   + import { ResourceOptimizationIconOutlined } from '@red-hat-developer-hub/plugin-redhat-resource-optimization';
+   + import { CostManagementIconOutlined } from '@red-hat-developer-hub/plugin-cost-management';
 
    export const Root = ({ children }: PropsWithChildren<{}>) => (
      <SidebarPage>
@@ -155,8 +151,8 @@ This method requires vanilla backstage to be used:
              <SidebarItem icon={MapIcon} to="tech-radar" text="Tech Radar" />
            </SidebarScrollWrapper>
    +       <SidebarItem
-   +         icon={ResourceOptimizationIconOutlined}
-   +         to="/redhat-resource-optimization"
+   +         icon={CostManagementIconOutlined}
+   +         to="/cost-management/optimizations"
    +         text="Cost Management"
    +       />
          </SidebarGroup>
@@ -179,7 +175,7 @@ This method requires vanilla backstage to be used:
 
 ## RBAC Permissions
 
-The HTTP endpoints exposed by the redhat-resource-optimization-backend can enforce authorization if the [RBAC plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins) is deployed. Please refer the RBAC plugin documentation for the setup steps (mind they rely on the [Backstage authentication and identity](https://backstage.io/docs/auth/)).
+The HTTP endpoints exposed by the cost-management-backend can enforce authorization if the [RBAC plugin](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins) is deployed. Please refer the RBAC plugin documentation for the setup steps (mind they rely on the [Backstage authentication and identity](https://backstage.io/docs/auth/)).
 
 - More detailed info about Cost Management plugin RBAC permissions can be found in [docs/rbac.md](./docs/rbac.md)
 - More detailed info about Orcestrator plugin RBAC for setting up permission for workflow can be [found here](https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/orchestrator/docs/Permissions.md).
