@@ -48,12 +48,20 @@ export class OpenSSFClient {
 
     const data: OpenSSFResponse = await response.json();
 
-    const excludeChecks =
+    const excludeChecksRaw =
       entity.metadata.annotations?.['openssf/exclude-checks'];
+    const excludeChecks = excludeChecksRaw
+      ? excludeChecksRaw
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+      : [];
 
-    if (excludeChecks && excludeChecks.length > 0) {
+    if (excludeChecks.length > 0) {
       this.logger.debug(
-        `Excluding checks: ${excludeChecks} for entity ${entity.metadata.name}`,
+        `Excluding checks: ${excludeChecks.join(', ')} for entity ${
+          entity.metadata.name
+        }`,
       );
       data.checks = data.checks.filter(
         check => !excludeChecks.includes(check.name),
