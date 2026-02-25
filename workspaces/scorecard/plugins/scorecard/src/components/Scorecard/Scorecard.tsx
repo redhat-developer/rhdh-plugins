@@ -108,10 +108,10 @@ const ScorecardCenterLabel = ({
         <StatusIcon
           sx={{
             fontSize: 24,
-            color: (muiTheme: any) =>
-              muiTheme.palette[statusColor.split('.')[0]][
-                statusColor.split('.')[1]
-              ],
+            color: (muiTheme: any) => {
+              const [paletteKey, shade] = statusColor.split('.');
+              return muiTheme.palette[paletteKey][shade];
+            },
           }}
         />
       </foreignObject>

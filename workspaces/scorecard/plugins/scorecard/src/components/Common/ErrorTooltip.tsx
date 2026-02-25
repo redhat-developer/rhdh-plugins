@@ -23,6 +23,10 @@ export const ErrorTooltip = ({
   title: string | undefined;
   tooltipPosition: { x: number; y: number } | undefined;
 }) => {
+  if (!title || !tooltipPosition) {
+    return null;
+  }
+
   return (
     <div
       style={{
