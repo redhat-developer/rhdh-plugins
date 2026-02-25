@@ -128,15 +128,12 @@ export function validateThresholds(
     isThresholdRule(rule);
     validateRuleColor(rule);
 
-    const standard_threshold_rule_keys = ['success', 'warning', 'error'];
-    if (
-      !standard_threshold_rule_keys.includes(rule.key) &&
-      !('color' in rule)
-    ) {
+    const standardThresholdRuleKeys = ['success', 'warning', 'error'];
+    if (!standardThresholdRuleKeys.includes(rule.key) && !('color' in rule)) {
       throw new ThresholdConfigFormatError(
         `Custom threshold key "${
           rule.key
-        }" must specify a color property. Only standard keys (${standard_threshold_rule_keys
+        }" must specify a color property. Only standard keys (${standardThresholdRuleKeys
           .map(k => `'${k}'`)
           .join(', ')}) have default colors.`,
       );
