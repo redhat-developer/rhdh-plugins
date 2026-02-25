@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import {
   DefaultGithubCredentialsProvider,
@@ -29,9 +30,11 @@ export interface DependabotAlert {
 
 export class DependabotClient {
   private readonly integrations: ScmIntegrations;
+  private readonly logger: LoggerService;
 
-  constructor(config: Config) {
+  constructor(config: Config, logger: LoggerService) {
     this.integrations = ScmIntegrations.fromConfig(config);
+    this.logger = logger.child({ component: 'DependabotClient' });
   }
 
   private async getOctokitClient(url: string): Promise<typeof graphql> {
@@ -58,12 +61,16 @@ export class DependabotClient {
     url: string,
     repository: { owner: string; repo: string },
   ): Promise<DependabotAlert[]> {
-    const octokit = await this.getOctokitClient(url);
+    this.logger.info(
+      `Fetching Dependabot alerts for ${repository.owner}/${repository.repo}`,
+    );
+    try {
+      const octokit = await this.getOctokitClient(url);
 
-    const query = `
+      const query = `
       query getDependabotAlerts($owner: String!, $repo: String!) {
         repository(owner: $owner, name: $repo) {
-          vulnerabilityAlerts(first: 300, states: [OPEN]) {
+          vulnerabilityAlerts(first: 100, states: [OPEN]) {
             nodes {
               number
               state
@@ -77,28 +84,41 @@ export class DependabotClient {
       }
     `;
 
-    const response = await octokit<{
-      repository: {
-        vulnerabilityAlerts: {
-          nodes: Array<{
-            number: number;
-            state: string;
-            createdAt: string;
-            securityAdvisory: { severity: string } | null;
-          }>;
+      const response = await octokit<{
+        repository: {
+          vulnerabilityAlerts: {
+            nodes: Array<{
+              number: number;
+              state: string;
+              createdAt: string;
+              securityAdvisory: { severity: string } | null;
+            }>;
+          };
         };
-      };
-    }>(query, {
-      owner: repository.owner,
-      repo: repository.repo,
-    });
+      }>(query, {
+        owner: repository.owner,
+        repo: repository.repo,
+      });
 
-    const nodes = response.repository.vulnerabilityAlerts.nodes ?? [];
-    return nodes.map(node => ({
-      number: node.number,
-      state: node.state,
-      createdAt: node.createdAt,
-      severity: node.securityAdvisory?.severity ?? null,
-    }));
+      this.logger.info('Dependabot alerts response', { response });
+
+      const nodes = response.repository.vulnerabilityAlerts.nodes ?? [];
+      this.logger.info(
+        `Fetched ${nodes.length} Dependabot alert(s) for ${repository.owner}/${repository.repo}`,
+      );
+      return nodes.map(node => ({
+        number: node.number,
+        state: node.state,
+        createdAt: node.createdAt,
+        severity: node.securityAdvisory?.severity ?? null,
+      }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to fetch Dependabot alerts for ${repository.owner}/${repository.repo}: ${message}`,
+        error,
+      );
+      throw error;
+    }
   }
 }

@@ -20,6 +20,10 @@ backend.add(
 );
 ```
 
+## GitHub token permission
+
+The GitHub integration token must have the **`security_events`** scope (classic personal access token; in the GitHub UI this may appear as **Security events** or **repo.security_events**) or **Dependabot alerts** read permission (GitHub App) so the backend can fetch data from the Dependabot API. Without it, the API returns no alerts.
+
 ## Entity annotation
 
 Entities must have the GitHub repo annotation; you can optionally set a display title:
@@ -36,4 +40,4 @@ metadata:
 | ------------------- | ------------------------------------------------------------------------------ |
 | `dependabot.alerts` | Score (0–9) derived from Dependabot alert severity (critical/high/medium/low). |
 
-Thresholds are fixed in the module (low &lt;1, medium 1–4, high 4–7, critical &gt;7).
+Thresholds are fixed in the module (success &lt;1, warning 1–7, error &gt;7), using the standard status keys required by the scorecard backend.

@@ -20,6 +20,7 @@ import { DependabotClient } from './DependabotClient';
 
 describe('DependabotClient', () => {
   let dependabotClient: DependabotClient;
+  let mockLogger: { info: jest.Mock };
   const mockedGraphqlClient = jest.fn();
   const repository = { owner: 'owner', repo: 'repo' };
 
@@ -51,7 +52,14 @@ describe('DependabotClient', () => {
         ],
       },
     });
-    dependabotClient = new DependabotClient(mockConfig);
+    mockLogger = {
+      child: jest.fn().mockReturnThis(),
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+    dependabotClient = new DependabotClient(mockConfig, mockLogger as any);
   });
 
   describe('getDependabotAlerts', () => {
@@ -84,13 +92,22 @@ describe('DependabotClient', () => {
       expect(result[0].createdAt).toBe('2021-01-01');
       expect(result[0].severity).toBe('HIGH');
       expect(mockedGraphqlClient).toHaveBeenCalledTimes(1);
-      expect(mockedGraphqlClient).toHaveBeenCalledWith(
-        expect.stringContaining('query getDependabotAlerts'),
-        repository,
-      );
+      const [query] = mockedGraphqlClient.mock.calls[0];
+      expect(query).toContain('query getDependabotAlerts');
+      expect(query).toContain('vulnerabilityAlerts(first: 100');
+      expect(mockedGraphqlClient).toHaveBeenCalledWith(query, repository);
       expect(getCredentialsSpy).toHaveBeenCalledWith({
         url,
       });
+      expect(mockLogger.info).toHaveBeenCalledTimes(3);
+      expect(mockLogger.info).toHaveBeenNthCalledWith(
+        1,
+        'Fetching Dependabot alerts for owner/repo',
+      );
+      expect(mockLogger.info).toHaveBeenNthCalledWith(
+        3,
+        'Fetched 1 Dependabot alert(s) for owner/repo',
+      );
     });
 
     it('should throw error when GitHub integration for URL is missing', async () => {

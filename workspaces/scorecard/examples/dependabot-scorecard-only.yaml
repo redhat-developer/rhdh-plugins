@@ -5,9 +5,9 @@ kind: Component
 metadata:
   name: dependabot-scorecard-only
   annotations:
-    github.com/project-slug: backstage/backstage
+    github.com/project-slug: alizard0/rhdh-plugins
     #dependabot/title: "Vulnerabilities"
 spec:
   type: service
-  owner: guests
+  owner: group:development/guests
   lifecycle: experimental

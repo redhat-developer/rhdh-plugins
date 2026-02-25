@@ -24,9 +24,8 @@ export interface DependabotMetricConfig {
 
 export const DEPENDABOT_THRESHOLDS: ThresholdConfig = {
   rules: [
-    { key: 'low', expression: '<1' },
-    { key: 'medium', expression: '1-4' },
-    { key: 'high', expression: '4-7' },
-    { key: 'critical', expression: '>7' },
+    { key: 'success', expression: '<1' },
+    { key: 'warning', expression: '1-7' },
+    { key: 'error', expression: '>7' },
   ],
 };

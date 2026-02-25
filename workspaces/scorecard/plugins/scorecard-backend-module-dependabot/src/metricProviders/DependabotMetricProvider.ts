@@ -20,11 +20,9 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
-import {
-  type Entity,
-  getEntitySourceLocation,
-  stringifyEntityRef,
-} from '@backstage/catalog-model';
+import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { Config } from '@backstage/config';
+import { type Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { DependabotClient } from '../clients/DependabotClient';
@@ -35,9 +33,15 @@ const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
 export class DependabotMetricProvider implements MetricProvider<'number'> {
   private readonly dependabotClient: DependabotClient;
   private readonly thresholds: ThresholdConfig;
+  private readonly logger: LoggerService;
 
-  constructor(config: Config, thresholds?: ThresholdConfig) {
-    this.dependabotClient = new DependabotClient(config);
+  constructor(
+    config: Config,
+    logger: LoggerService,
+    thresholds?: ThresholdConfig,
+  ) {
+    this.logger = logger.child({ component: 'DependabotMetricProvider' });
+    this.dependabotClient = new DependabotClient(config, logger);
     this.thresholds = thresholds ?? DEPENDABOT_THRESHOLDS;
   }
 
@@ -97,20 +101,24 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
-    const alerts = await this.dependabotClient.getDependabotAlerts(
-      getEntitySourceLocation(entity).target,
-      this.getRepository(entity),
-    );
+    const { owner, repo } = this.getRepository(entity);
+    const githubUrl = `https://github.com/${owner}/${repo}`;
+    const alerts = await this.dependabotClient.getDependabotAlerts(githubUrl, {
+      owner,
+      repo,
+    });
 
+    this.logger.info(
+      `Fetched ${alerts.length} Dependabot alerts for ${entity.metadata.name}`,
+    );
     if (alerts.filter(alert => alert.severity === 'CRITICAL').length > 0) {
       return 9;
     } else if (alerts.filter(alert => alert.severity === 'HIGH').length > 0) {
       return 6;
     } else if (alerts.filter(alert => alert.severity === 'MEDIUM').length > 0) {
       return 3;
-    } else if (alerts.filter(alert => alert.severity === 'LOW').length > 0) {
-      return 0;
     }
+
     return 0;
   }
 }
@@ -118,6 +126,10 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
 /**
  * @returns a Dependabot metric provider.
  */
-export function createDependabotMetricProvider(): MetricProvider<'number'> {
-  return new DependabotMetricProvider(DEPENDABOT_THRESHOLDS);
+export function createDependabotMetricProvider(
+  config: Config,
+  logger: LoggerService,
+  thresholds?: ThresholdConfig,
+): MetricProvider<'number'> {
+  return new DependabotMetricProvider(config, logger, thresholds);
 }

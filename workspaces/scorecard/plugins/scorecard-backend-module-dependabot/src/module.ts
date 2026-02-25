@@ -28,10 +28,11 @@ export const scorecardModuleDependabot = createBackendModule({
       deps: {
         metrics: scorecardMetricsExtensionPoint,
         config: coreServices.rootConfig,
+        logger: coreServices.logger,
       },
 
-      async init({ metrics, config }) {
-        metrics.addMetricProvider(new DependabotMetricProvider(config));
+      async init({ metrics, config, logger }) {
+        metrics.addMetricProvider(new DependabotMetricProvider(config, logger));
       },
     });
   },
