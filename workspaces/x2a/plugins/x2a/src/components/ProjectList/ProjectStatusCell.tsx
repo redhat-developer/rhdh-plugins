@@ -17,7 +17,8 @@ import { useState } from 'react';
 import { ProjectStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { PieChart, PieValueType } from '@mui/x-charts';
-import { Grid, makeStyles, Tooltip } from '@material-ui/core';
+import { Grid, makeStyles, Tooltip, Chip } from '@material-ui/core';
+import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
 
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -68,26 +69,31 @@ export const ProjectStatusCell = ({
   if (modulesSummary) {
     data = [
       {
+        id: 'finished',
         label: t('module.summary.finished'),
         value: modulesSummary.finished,
         color: '#00C49F',
       },
       {
+        id: 'waiting',
         label: t('module.summary.waiting'),
         value: modulesSummary.waiting,
-        color: '#FFBB28',
+        color: '#4CAF50',
       },
       {
+        id: 'pending',
         label: t('module.summary.pending'),
         value: modulesSummary.pending,
         color: '#FF8042',
       },
       {
+        id: 'running',
         label: t('module.summary.running'),
         value: modulesSummary.running,
-        color: '#FF8042',
+        color: '#0088FE',
       },
       {
+        id: 'error',
         label: t('module.summary.error'),
         value: modulesSummary.error,
         color: '#FF0000',
@@ -136,17 +142,30 @@ export const ProjectStatusCell = ({
             arrow
             title={tooltipContent}
           >
-            <PieChart
-              series={[{ innerRadius: 0, outerRadius: size / 2, data }]}
-              margin={{ right: 5 }}
-              width={size}
-              height={size}
-              hideLegend
-              onClick={event => {
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(event: React.MouseEvent) => {
                 event.stopPropagation();
                 setOpen(!open);
               }}
-            />
+              onKeyDown={(event: React.KeyboardEvent) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setOpen(!open);
+                }
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <PieChart
+                series={[{ innerRadius: 0, outerRadius: size / 2, data }]}
+                margin={{ right: 5 }}
+                width={size}
+                height={size}
+                slotProps={{ legend: { hidden: true } }}
+              />
+            </div>
           </Tooltip>
         </Grid>
       )}
@@ -154,6 +173,22 @@ export const ProjectStatusCell = ({
       <Grid item alignContent="center">
         {t(`project.statuses.${projectStatus.state || 'none'}`)}
       </Grid>
+
+      {modulesSummary && modulesSummary.waiting > 0 && (
+        <Grid item alignContent="center">
+          <Chip
+            size="small"
+            variant="outlined"
+            color="primary"
+            icon={<AssignmentTurnedInIcon />}
+            label={`${modulesSummary.waiting} ${t('module.summary.toReview')}`}
+            onClick={event => {
+              event.stopPropagation();
+              setOpen(!open);
+            }}
+          />
+        </Grid>
+      )}
     </Grid>
   );
 };

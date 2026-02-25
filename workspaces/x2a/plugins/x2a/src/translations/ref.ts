@@ -69,6 +69,9 @@ export const x2aPluginMessages = {
       republishInstructions:
         'The module has already been published. Retrigger the publish to update the target repository.',
       rerunPublish: 'Republish to target repository',
+      commitId: 'Last Commit ID',
+      viewLog: 'View Log',
+      hideLog: 'Hide Log',
     },
   },
   table: {
@@ -125,10 +128,14 @@ export const x2aPluginMessages = {
       pending: 'Pending',
       running: 'Running',
       error: 'Error',
+      toReview: 'to review',
     },
     actions: {
       runNextPhase: 'Run Next Phase',
     },
+    currentPhase: 'Current Phase',
+    lastUpdate: 'Last Update',
+    notStarted: 'Not Started',
     lastPhase: 'Last Phase',
     name: 'Name',
     status: 'Status',

@@ -65,7 +65,11 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.summary.pending': 'En attente',
     'module.summary.running': 'En cours',
     'module.summary.error': 'Erreur',
+    'module.summary.toReview': 'à réviser',
     'module.actions.runNextPhase': 'Exécuter la phase suivante',
+    'module.currentPhase': 'Phase actuelle',
+    'module.lastUpdate': 'Dernière mise à jour',
+    'module.notStarted': 'Non commencé',
     'module.lastPhase': 'Dernière phase',
     'module.name': 'Nom',
     'module.status': 'Statut',
@@ -113,6 +117,9 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.republishInstructions':
       'Le module a déjà été publié. Relancez la publication pour mettre à jour le dépôt cible.',
     'modulePage.phases.rerunPublish': 'Republier dans le dépôt cible',
+    'modulePage.phases.commitId': 'Dernier ID de commit',
+    'modulePage.phases.viewLog': 'Voir le journal',
+    'modulePage.phases.hideLog': 'Masquer le journal',
   },
 });
 

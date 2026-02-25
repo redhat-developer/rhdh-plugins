@@ -41,6 +41,7 @@ export async function up(knex: Knex): Promise<void> {
     table.text('telemetry'); // JSON-serialized Telemetry object
     table.string('k8s_job_name');
     table.string('callback_token');
+    table.string('commit_id').nullable();
     table
       .uuid('project_id')
       .notNullable()

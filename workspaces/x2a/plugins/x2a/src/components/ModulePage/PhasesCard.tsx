@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
+import useAsync from 'react-use/lib/useAsync';
 import {
   Button,
   Card,
@@ -23,12 +25,14 @@ import {
   TabPanel,
   Tabs,
 } from '@backstage/ui';
+import { LogViewer, Progress } from '@backstage/core-components';
 import { Grid, makeStyles, Typography } from '@material-ui/core';
 import {
   Job,
   Module,
   ModulePhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
 import { humanizeDate } from '../tools';
@@ -65,19 +69,21 @@ const PhaseRunAction = ({
 }) => {
   const { t } = useTranslation();
 
+  const previousRunSucceeded = phase?.status === 'success';
+
   const getInstructions = () => {
     if (phaseName === 'analyze') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.reanalyzeInstructions')
         : t('modulePage.phases.analyzeInstructions');
     }
     if (phaseName === 'migrate') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.remigrateInstructions')
         : t('modulePage.phases.migrateInstructions');
     }
     if (phaseName === 'publish') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.republishInstructions')
         : t('modulePage.phases.publishInstructions');
     }
@@ -86,17 +92,17 @@ const PhaseRunAction = ({
 
   const getActionText = () => {
     if (phaseName === 'analyze') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.rerunAnalyze')
         : t('modulePage.phases.runAnalyze');
     }
     if (phaseName === 'migrate') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.rerunMigrate')
         : t('modulePage.phases.runMigrate');
     }
     if (phaseName === 'publish') {
-      return phase
+      return previousRunSucceeded
         ? t('modulePage.phases.rerunPublish')
         : t('modulePage.phases.runPublish');
     }
@@ -120,16 +126,39 @@ const PhaseRunAction = ({
 const PhaseDetails = ({
   phase,
   phaseName,
+  projectId,
+  moduleId,
   onRunPhase,
 }: {
   phase?: Job;
   phaseName: ModulePhase;
+  projectId: string;
+  moduleId: string;
   onRunPhase?: (phase: ModulePhase) => void;
 }) => {
   const { t } = useTranslation();
+  const clientService = useClientService();
   const empty = t('module.phases.none');
+  const [showLog, setShowLog] = useState(false);
 
   const duration = computeDuration(phase);
+
+  const {
+    value: logText,
+    loading: logLoading,
+    error: logError,
+  } = useAsync(async () => {
+    if (!showLog || !phase) {
+      return undefined;
+    }
+    const response = await clientService.projectsProjectIdModulesModuleIdLogGet(
+      {
+        path: { projectId, moduleId },
+        query: { phase: phaseName },
+      },
+    );
+    return await response.text();
+  }, [showLog, phase?.id]);
 
   return (
     <Grid container direction="row" spacing={3}>
@@ -174,6 +203,36 @@ const PhaseDetails = ({
           value={phase?.id || empty}
         />
       </Grid>
+      <Grid item xs={3}>
+        <ItemField
+          label={t('modulePage.phases.commitId')}
+          value={phase?.commitId || empty}
+        />
+      </Grid>
+
+      {phase && (
+        <Grid item xs={12}>
+          <Button variant="secondary" onPress={() => setShowLog(prev => !prev)}>
+            {showLog
+              ? t('modulePage.phases.hideLog')
+              : t('modulePage.phases.viewLog')}
+          </Button>
+        </Grid>
+      )}
+
+      {showLog && (
+        <Grid item xs={12}>
+          {logLoading && <Progress />}
+          {logError && (
+            <Typography color="error">{logError.message}</Typography>
+          )}
+          {logText !== undefined && (
+            <div style={{ height: 400 }}>
+              <LogViewer text={logText} />
+            </div>
+          )}
+        </Grid>
+      )}
 
       {/* Telemetry */}
     </Grid>
@@ -182,9 +241,13 @@ const PhaseDetails = ({
 
 export const PhasesCard = ({
   module,
+  projectId,
+  moduleId,
   onRunPhase,
 }: {
   module?: Module;
+  projectId: string;
+  moduleId: string;
   onRunPhase?: (phase: ModulePhase) => void;
 }) => {
   const { t } = useTranslation();
@@ -228,6 +291,8 @@ export const PhasesCard = ({
             <PhaseDetails
               phase={analyzePhase}
               phaseName="analyze"
+              projectId={projectId}
+              moduleId={moduleId}
               onRunPhase={onRunPhase}
             />
           </TabPanel>
@@ -235,6 +300,8 @@ export const PhasesCard = ({
             <PhaseDetails
               phase={migratePhase}
               phaseName="migrate"
+              projectId={projectId}
+              moduleId={moduleId}
               onRunPhase={onRunPhase}
             />
           </TabPanel>
@@ -242,6 +309,8 @@ export const PhasesCard = ({
             <PhaseDetails
               phase={publishPhase}
               phaseName="publish"
+              projectId={projectId}
+              moduleId={moduleId}
               onRunPhase={onRunPhase}
             />
           </TabPanel>

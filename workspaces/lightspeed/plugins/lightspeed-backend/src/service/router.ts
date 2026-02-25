@@ -20,7 +20,6 @@ import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-
 
 import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import fetch from 'node-fetch';
 
 import {
   lightspeedChatCreatePermission,
@@ -28,6 +27,8 @@ import {
   lightspeedChatReadPermission,
   lightspeedPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
+
+import { Readable } from 'node:stream';
 
 import { userPermissionAuthorization } from './permission';
 import {
@@ -241,10 +242,15 @@ export async function createRouter(
           response.status(500).json({
             error: errormsg,
           });
+
+          return;
         }
 
         // Pipe the response back to the original response
-        fetchResponse.body.pipe(response);
+        if (fetchResponse.body) {
+          const nodeStream = Readable.fromWeb(fetchResponse.body as any);
+          nodeStream.pipe(response);
+        }
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
         logger.error(errormsg);

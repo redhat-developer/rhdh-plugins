@@ -83,6 +83,7 @@ export interface GitRepoAuth {
 // @public (undocumented)
 export interface Job {
     artifacts?: Array<Artifact>;
+    commitId?: string;
     errorDetails?: string;
     finishedAt?: Date;
     id: string;
@@ -210,6 +211,7 @@ export interface ProjectsProjectIdCollectArtifactsPost200Response {
 // @public (undocumented)
 export interface ProjectsProjectIdCollectArtifactsPostRequest {
     artifacts?: Array<Artifact>;
+    commitId?: string;
     errorDetails?: string;
     jobId: string;
     status: ProjectsProjectIdCollectArtifactsPostRequestStatusEnum;

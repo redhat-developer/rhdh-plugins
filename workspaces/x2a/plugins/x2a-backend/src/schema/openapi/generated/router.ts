@@ -649,6 +649,10 @@ export const spec = {
                   },
                   "telemetry": {
                     "$ref": "#/components/schemas/Telemetry"
+                  },
+                  "commitId": {
+                    "type": "string",
+                    "description": "Git commit SHA from the job's push to target repo"
                   }
                 },
                 "required": [
@@ -939,6 +943,10 @@ export const spec = {
           },
           "telemetry": {
             "$ref": "#/components/schemas/Telemetry"
+          },
+          "commitId": {
+            "type": "string",
+            "description": "Git commit SHA produced by this job"
           }
         }
       },

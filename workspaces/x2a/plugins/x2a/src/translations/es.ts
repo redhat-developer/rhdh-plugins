@@ -65,7 +65,11 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.summary.pending': 'Pendiente',
     'module.summary.running': 'En ejecución',
     'module.summary.error': 'Error',
+    'module.summary.toReview': 'para revisar',
     'module.actions.runNextPhase': 'Ejecutar siguiente fase',
+    'module.currentPhase': 'Fase actual',
+    'module.lastUpdate': 'Última actualización',
+    'module.notStarted': 'No iniciado',
     'module.lastPhase': 'Última fase',
     'module.name': 'Nombre',
     'module.status': 'Estado',
@@ -116,6 +120,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'El módulo ya ha sido publicado. Vuelva a ejecutar la publicación para actualizar el repositorio de destino.',
     'modulePage.phases.rerunPublish':
       'Volver a publicar en el repositorio de destino',
+    'modulePage.phases.commitId': 'Ultimo ID de commit',
+    'modulePage.phases.viewLog': 'Ver registro',
+    'modulePage.phases.hideLog': 'Ocultar registro',
   },
 });
 
