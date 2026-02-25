@@ -18,10 +18,7 @@ import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { createQueryCatalogEntitiesAction } from './createQueryCatalogEntitiesAction.ts';
 
-export {
-  createQueryCatalogEntitiesAction,
-  fetchCatalogEntities,
-} from './createQueryCatalogEntitiesAction.ts';
+export { createQueryCatalogEntitiesAction } from './createQueryCatalogEntitiesAction.ts';
 
 export const createSoftwareCatalogActions = (options: {
   actionsRegistry: ActionsRegistryService;

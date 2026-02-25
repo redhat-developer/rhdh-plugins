@@ -18,10 +18,7 @@ import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
 
-export {
-  createFetchTemplateMetadataAction,
-  fetchSoftwareTemplateMetadata,
-} from './createFetchTemplateMetadataAction.ts';
+export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
 
 export const createScaffolderActions = (options: {
   actionsRegistry: ActionsRegistryService;
