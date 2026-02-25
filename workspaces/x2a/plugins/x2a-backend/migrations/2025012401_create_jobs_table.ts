@@ -68,7 +68,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('artifacts', table => {
     table.uuid('id').primary();
     table.string('type').notNullable(); // The artifact type
-    table.string('value').notNullable(); // The artifact string value
+    table.text('value').notNullable(); // The artifact value - can be large content
     table
       .uuid('job_id')
       .notNullable()

@@ -63,10 +63,11 @@ export const ProjectStatusCell = ({
   }
 
   const modulesSummary = projectStatus.modulesSummary;
+  const isModulesSummary = modulesSummary?.total > 0;
 
   let data: PieValueType[] = [];
   let tooltipContent = <></>;
-  if (modulesSummary) {
+  if (isModulesSummary) {
     data = [
       {
         id: 'finished',
@@ -132,7 +133,7 @@ export const ProjectStatusCell = ({
 
   return (
     <Grid container direction="row" spacing={1}>
-      {modulesSummary && (
+      {isModulesSummary && (
         <Grid item>
           <Tooltip
             open={open}
@@ -174,7 +175,7 @@ export const ProjectStatusCell = ({
         {t(`project.statuses.${projectStatus.state || 'none'}`)}
       </Grid>
 
-      {modulesSummary && modulesSummary.waiting > 0 && (
+      {modulesSummary?.waiting > 0 && (
         <Grid item alignContent="center">
           <Chip
             size="small"
