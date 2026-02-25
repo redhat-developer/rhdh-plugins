@@ -18,6 +18,7 @@ import {
   SyntheticEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import clsx from 'clsx';
@@ -34,6 +35,7 @@ import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { Widget } from '@rjsf/utils';
+import isEqual from 'lodash/isEqual';
 
 import {
   useTemplateUnitEvaluator,
@@ -85,6 +87,7 @@ export const ActiveMultiSelect: Widget<
   const allowNewItems = uiProps['ui:allowNewItems'] === true;
   const staticDefault = uiProps['fetch:response:default'];
   const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
+  const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
   const staticDefaultValues = Array.isArray(staticDefault)
     ? (staticDefault as string[])
     : undefined;
@@ -135,6 +138,9 @@ export const ActiveMultiSelect: Widget<
     /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
     uiProps['fetch:retrigger'] as string[],
   );
+  const prevRetriggerRef = useRef<(string | undefined)[] | undefined>(
+    retrigger,
+  );
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
 
@@ -144,6 +150,26 @@ export const ActiveMultiSelect: Widget<
     handleFetchStarted,
     handleFetchEnded,
   );
+
+  useEffect(() => {
+    if (!clearOnRetrigger) {
+      prevRetriggerRef.current = retrigger;
+      return;
+    }
+
+    if (!retrigger) {
+      prevRetriggerRef.current = retrigger;
+      return;
+    }
+
+    const prev = prevRetriggerRef.current;
+    if (prev && !isEqual(prev, retrigger)) {
+      setInProgressItem('');
+      onChange([]);
+    }
+
+    prevRetriggerRef.current = retrigger;
+  }, [clearOnRetrigger, retrigger, onChange]);
 
   // Process fetch results
   // Note: Static defaults are applied at form initialization level (in OrchestratorForm)

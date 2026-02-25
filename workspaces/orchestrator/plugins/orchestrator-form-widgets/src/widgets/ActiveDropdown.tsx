@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { makeStyles } from 'tss-react/mui';
 import { Widget } from '@rjsf/utils';
 import { JsonObject } from '@backstage/types';
 import { JSONSchema7 } from 'json-schema';
 import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
+import isEqual from 'lodash/isEqual';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControl from '@mui/material/FormControl';
@@ -79,6 +80,7 @@ export const ActiveDropdown: Widget<
   const hasStaticDefault = typeof staticDefault === 'string';
   const staticDefaultValue = hasStaticDefault ? staticDefault : undefined;
   const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
+  const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
 
   const [localError, setLocalError] = useState<string | undefined>(
     !labelSelector || !valueSelector
@@ -96,6 +98,9 @@ export const ActiveDropdown: Widget<
     formData,
     /* This is safe retype, since proper checking of input value is done in the useRetriggerEvaluate() hook */
     uiProps['fetch:retrigger'] as string[],
+  );
+  const prevRetriggerRef = useRef<(string | undefined)[] | undefined>(
+    retrigger,
   );
 
   const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
@@ -158,6 +163,25 @@ export const ActiveDropdown: Widget<
     },
     [onChange, id, setIsChangedByUser],
   );
+
+  useEffect(() => {
+    if (!clearOnRetrigger) {
+      prevRetriggerRef.current = retrigger;
+      return;
+    }
+
+    if (!retrigger) {
+      prevRetriggerRef.current = retrigger;
+      return;
+    }
+
+    const prev = prevRetriggerRef.current;
+    if (prev && !isEqual(prev, retrigger)) {
+      handleChange('', false);
+    }
+
+    prevRetriggerRef.current = retrigger;
+  }, [clearOnRetrigger, retrigger, handleChange]);
 
   // Set default value from fetched options
   // Priority: selector default (if valid option) > static default (if valid) > first fetched option
