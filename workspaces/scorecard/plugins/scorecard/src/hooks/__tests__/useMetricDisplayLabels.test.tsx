@@ -20,7 +20,7 @@ import { MetricsDetails } from '@red-hat-developer-hub/backstage-plugin-scorecar
 
 describe('useMetricDisplayLabels', () => {
   it('should return empty title and description when metric is undefined', () => {
-    const { result } = renderHook(() => useMetricDisplayLabels(undefined));
+    const { result } = renderHook(() => useMetricDisplayLabels());
 
     expect(result.current).toEqual({ title: '', description: '' });
   });
