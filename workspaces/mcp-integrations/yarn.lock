@@ -10842,6 +10842,7 @@ __metadata:
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     supertest: "npm:^6.2.4"
+    yaml: "npm:^2.8.2"
     zod: "npm:^3.25 || ^4.0"
   languageName: unknown
   linkType: soft
@@ -33813,7 +33814,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2":
+"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.8.2":
   version: 2.8.2
   resolution: "yaml@npm:2.8.2"
   bin:
