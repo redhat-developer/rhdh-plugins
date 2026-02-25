@@ -50,6 +50,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'project.statuses.inProgress': 'En curso',
     'project.statuses.completed': 'Completado',
     'project.statuses.failed': 'Fallido',
+    'project.noModules': 'Aún no se encontraron módulos...',
     'common.newProject': 'Nuevo proyecto',
     'wizard.cancel': 'Cancelar',
     'wizard.back': 'Atrás',
