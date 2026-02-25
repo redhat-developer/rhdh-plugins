@@ -20,7 +20,13 @@ import { DependabotClient } from './DependabotClient';
 
 describe('DependabotClient', () => {
   let dependabotClient: DependabotClient;
-  let mockLogger: { info: jest.Mock };
+  let mockLogger: {
+    child: jest.Mock;
+    debug: jest.Mock;
+    info: jest.Mock;
+    warn: jest.Mock;
+    error: jest.Mock;
+  };
   const mockedGraphqlClient = jest.fn();
   const repository = { owner: 'owner', repo: 'repo' };
 
