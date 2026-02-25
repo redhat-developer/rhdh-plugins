@@ -1,6 +1,6 @@
 # Thresholds Configuration
 
-Thresholds define conditions that determine which category a metric value belongs to (`success`, `warning`, or `error`). When a metric value matches a threshold condition, it gets assigned to that threshold's category. The Scorecard plugin provides multiple ways to configure thresholds with a flexible priority system.
+Thresholds define conditions to assign metric values to specific visual categories (`success`, `warning`, `error` or any custom category). When a metric value matches a threshold condition, it gets assigned to that threshold's category. The Scorecard plugin provides multiple ways to configure thresholds with a flexible priority system.
 
 ## Overview
 
