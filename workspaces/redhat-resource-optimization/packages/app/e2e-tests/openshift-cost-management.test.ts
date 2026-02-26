@@ -79,16 +79,12 @@ test.describe('Resource Optimization - OpenShift Cost Management @live @ro', () 
     });
 
     test('should have a CSV export button', async ({ page }) => {
-      const csvButton = page
-        .getByRole('button', { name: /csv/i })
-        .or(page.locator('button', { hasText: /csv/i }));
+      const csvButton = page.getByRole('button', { name: /csv/i }).first();
       await expect(csvButton).toBeVisible({ timeout: 5000 });
     });
 
     test('should have a JSON export button', async ({ page }) => {
-      const jsonButton = page
-        .getByRole('button', { name: /json/i })
-        .or(page.locator('button', { hasText: /json/i }));
+      const jsonButton = page.getByRole('button', { name: /json/i }).first();
       await expect(jsonButton).toBeVisible({ timeout: 5000 });
     });
 

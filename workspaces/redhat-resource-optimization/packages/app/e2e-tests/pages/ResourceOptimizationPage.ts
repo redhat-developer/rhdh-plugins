@@ -164,10 +164,11 @@ export class ResourceOptimizationPage {
   async waitForPageLoad() {
     // Wait for any top-level progress bar to disappear
     const progressBar = this.page.locator('[role="progressbar"]');
-    // eslint-disable-next-line testing-library/await-async-utils
+    /* eslint-disable testing-library/await-async-utils */
     await progressBar
       .waitFor({ state: 'hidden', timeout: 30000 })
       .catch(() => {});
+    /* eslint-enable testing-library/await-async-utils */
 
     // Wait for the main heading to appear
     await expect(
@@ -514,9 +515,7 @@ export class ResourceOptimizationPage {
    * Click the CSV export button on the OpenShift page.
    */
   async clickExportCSV() {
-    const csvButton = this.page
-      .getByRole('button', { name: /csv/i })
-      .or(this.page.locator('button', { hasText: /csv/i }));
+    const csvButton = this.page.getByRole('button', { name: /csv/i }).first();
     await expect(csvButton).toBeVisible({ timeout: 5000 });
     await csvButton.click();
   }
@@ -525,9 +524,7 @@ export class ResourceOptimizationPage {
    * Click the JSON export button on the OpenShift page.
    */
   async clickExportJSON() {
-    const jsonButton = this.page
-      .getByRole('button', { name: /json/i })
-      .or(this.page.locator('button', { hasText: /json/i }));
+    const jsonButton = this.page.getByRole('button', { name: /json/i }).first();
     await expect(jsonButton).toBeVisible({ timeout: 5000 });
     await jsonButton.click();
   }
