@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import { Page, expect } from '@playwright/test';
-import { ScorecardRoutes } from '../constants/routes';
 
 export async function waitUntilApiCallSucceeds(
   page: Page,

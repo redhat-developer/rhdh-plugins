@@ -53,6 +53,10 @@ const scorecardTranslationEs = createTranslationMessages({
     'errors.noDataFoundMessage':
       'Para ver tus datos aquí, comprueba que tus entidades estén reportando valores relacionados con esta métrica.',
     'errors.authenticationErrorMessage': 'Inicie sesión para ver sus datos.',
+    'errors.noMetricsFound':
+      'No se han encontrado métricas para el ID de métrica especificado.',
+    'errors.multipleMetricsFound':
+      'Se han encontrado varias métricas para el ID de métrica especificado. Se esperaba exactamente una.',
     // Metric translations
     'metric.github.open_prs.title': 'GitHub PRs abiertas',
     'metric.github.open_prs.description':

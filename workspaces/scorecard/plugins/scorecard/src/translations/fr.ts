@@ -51,6 +51,10 @@ const scorecardTranslationFr = createTranslationMessages({
       'Entité utilisateur non trouvée dans le catalogue',
     'errors.noDataFoundMessage':
       'Pour voir vos données ici, vérifiez que vos entités communiquent les valeurs liées à cet indicateur.',
+    'errors.noMetricsFound':
+      "Aucune métrique trouvée pour l'ID de métrique spécifié.",
+    'errors.multipleMetricsFound':
+      "Plusieurs métriques trouvées pour l'ID de métrique spécifié. Une seule métrique attendue.",
     'errors.authenticationErrorMessage':
       'Veuillez vous connecter pour afficher vos données.',
     // Metric translations

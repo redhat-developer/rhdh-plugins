@@ -54,6 +54,10 @@ const scorecardTranslationDe = createTranslationMessages({
       'Um Ihre Daten hier anzuzeigen, überprüfen Sie, ob Ihre Entitäten Werte melden, die sich auf diese Metrik beziehen.',
     'errors.authenticationErrorMessage':
       'Bitte melden Sie sich an, um Ihre Daten anzuzeigen.',
+    'errors.noMetricsFound':
+      'Für die angegebene Metrik-ID wurden keine Metriken gefunden.',
+    'errors.multipleMetricsFound':
+      'Für die angegebene Metrik-ID wurden mehrere Metriken gefunden. Es wurde genau eine erwartet.',
     // Metric translations
     'metric.github.open_prs.title': 'GitHub offene PRs',
     'metric.github.open_prs.description':

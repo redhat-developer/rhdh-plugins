@@ -57,6 +57,9 @@ export const scorecardMessages = {
     noDataFoundMessage:
       'To see your data here, check that your entities are reporting values related to this metric.',
     authenticationErrorMessage: 'Please sign in to view your data.',
+    noMetricsFound: 'No metrics found for the specified metric ID.',
+    multipleMetricsFound:
+      'Multiple metrics found for the specified metric ID. Expected exactly one.',
   },
 
   // Metric translations

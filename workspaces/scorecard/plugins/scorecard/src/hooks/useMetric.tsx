@@ -19,12 +19,13 @@ import { scorecardApiRef } from '../api';
 import useAsync from 'react-use/lib/useAsync';
 import { useTranslation } from './useTranslation';
 import { useMemo } from 'react';
+import { MetricsDetails } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface UseMetricOptions {
   metricId: string;
 }
 
-export const useMetrics = (options: UseMetricOptions) => {
+export const useMetric = (options: UseMetricOptions) => {
   const { metricId } = options;
   const { t } = useTranslation();
 
@@ -32,7 +33,19 @@ export const useMetrics = (options: UseMetricOptions) => {
 
   const { error, loading, value } = useAsync(async () => {
     try {
-      return await scorecardApi.getMetrics({ metricIds: [metricId] });
+      const { metrics } = await scorecardApi.getMetrics({
+        metricIds: [metricId],
+      });
+
+      if (metrics.length === 0) {
+        throw new Error(t('errors.noMetricsFound'));
+      }
+
+      if (metrics.length > 1) {
+        throw new Error(t('errors.multipleMetricsFound'));
+      }
+
+      return metrics[0];
     } catch (err) {
       if (err instanceof Error) {
         throw err;
@@ -47,7 +60,7 @@ export const useMetrics = (options: UseMetricOptions) => {
 
   return useMemo(
     () => ({
-      metrics: value?.metrics || [],
+      metric: value as MetricsDetails,
       loading,
       error,
     }),

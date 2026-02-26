@@ -18,7 +18,7 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyStatePanel } from './EmptyStatePanel';
 import { CardLoading } from '../CardLoading';
-import { useMetrics } from '../../hooks/useMetrics';
+import { useMetric } from '../../hooks/useMetric';
 import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
 
 export const ErrorStatePanel = ({
@@ -30,21 +30,17 @@ export const ErrorStatePanel = ({
 }) => {
   const { t } = useTranslation();
 
-  const { metrics, loading, error: metricsError } = useMetrics({ metricId });
+  const { metric, loading, error: metricError } = useMetric({ metricId });
 
   const { title: cardTitle, description: cardDescription } =
-    useMetricDisplayLabels(metrics[0]);
+    useMetricDisplayLabels(metric);
 
   if (loading) {
     return <CardLoading />;
   }
 
-  if (metricsError || metrics.length !== 1) {
-    return (
-      <ResponseErrorPanel
-        error={metricsError || new Error('Multiple metrics found')}
-      />
-    );
+  if (metricError) {
+    return <ResponseErrorPanel error={metricError} />;
   }
 
   const getPanelContent = () => {

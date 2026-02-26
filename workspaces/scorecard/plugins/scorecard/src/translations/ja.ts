@@ -50,6 +50,10 @@ const scorecardTranslationJa = createTranslationMessages({
       'ユーザーエンティティーがカタログに見つかりません',
     'errors.noDataFoundMessage':
       'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
+    'errors.noMetricsFound':
+      '指定されたメトリックIDに対応するメトリックが見つかりませんでした。',
+    'errors.multipleMetricsFound':
+      '指定されたメトリックIDに対応するメトリックが複数見つかりました。1つだけ見つかることを期待していました。',
     'errors.authenticationErrorMessage':
       'データを確認するにはサインインしてください。',
     'metric.github.open_prs.title': 'GitHub のオープン状態の PR',

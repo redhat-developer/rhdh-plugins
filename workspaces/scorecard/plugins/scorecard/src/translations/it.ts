@@ -51,8 +51,13 @@ const scorecardTranslationIt = createTranslationMessages({
       'Entità utente non trovata nel catalogo.',
     'errors.noDataFoundMessage':
       'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano riportando valori relativi a questa metrica.',
+    'errors.noMetricsFound':
+      "Nessuna metrica trovata per l'ID metrica specificato.",
+    'errors.multipleMetricsFound':
+      "Trovate più metriche per l'ID metrica specificato. Ne era prevista solo una.",
     'errors.authenticationErrorMessage':
       'Effettua il login per visualizzare i tuoi dati.',
+    // Metric translations
     'metric.github.open_prs.title': 'Richieste pull aperte su GitHub',
     'metric.github.open_prs.description':
       'Conteggio attuale delle richieste pull aperte per uno specifico repository GitHub.',
