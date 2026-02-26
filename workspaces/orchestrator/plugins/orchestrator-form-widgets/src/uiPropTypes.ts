@@ -28,6 +28,7 @@ export type UiProps = {
   'fetch:error:ignoreUnready'?: boolean;
   'fetch:error:silent'?: boolean;
   'fetch:skipInitialValue'?: boolean;
+  'fetch:clearOnRetrigger'?: boolean;
   [key: `fetch:response:${string}`]: JsonValue;
 };
 
