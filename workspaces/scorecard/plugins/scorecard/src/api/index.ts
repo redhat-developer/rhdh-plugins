@@ -160,7 +160,23 @@ export class ScorecardApiClient implements ScorecardApi {
         );
       }
 
-      return await response.json();
+      const data = await response.json();
+
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        !('result' in data) ||
+        !('metadata' in data) ||
+        !('id' in data) ||
+        !('status' in data)
+      ) {
+        throw new TypeError(
+          'Invalid response format from aggregated scorecard API',
+        );
+      }
+
+      return data as AggregatedMetricResult;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
@@ -201,7 +217,19 @@ export class ScorecardApiClient implements ScorecardApi {
         );
       }
 
-      return (await response.json()) as MetricsResponse;
+      const data = await response.json();
+
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        !('metrics' in data) ||
+        !Array.isArray((data as any).metrics)
+      ) {
+        throw new TypeError('Invalid response format from metrics API');
+      }
+
+      return data as MetricsResponse;
     } catch (error) {
       if (error instanceof Error) {
         throw error;

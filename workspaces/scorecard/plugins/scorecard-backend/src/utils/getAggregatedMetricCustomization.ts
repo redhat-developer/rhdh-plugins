@@ -51,7 +51,7 @@ export function getAggregatedMetricCustomization(
 
   if (title === undefined || description === undefined) {
     throw new InputError(
-      `${configPath} requires both title and description when customizing aggregated KPI`,
+      `Metric "${metricId}" requires both title and description when customizing aggregated KPI`,
     );
   }
 
@@ -60,7 +60,7 @@ export function getAggregatedMetricCustomization(
 
   if (!trimmedTitle || !trimmedDescription) {
     throw new InputError(
-      `${configPath} requires both title and description to be non-empty strings`,
+      `Metric "${metricId}" requires both title and description to be non-empty strings`,
     );
   }
 

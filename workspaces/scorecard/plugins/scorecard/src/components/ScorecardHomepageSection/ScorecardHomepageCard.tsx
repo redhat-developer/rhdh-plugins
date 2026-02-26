@@ -30,8 +30,17 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
     metricId,
   });
 
+  const AggregatedMetricDetails = aggregatedScorecard
+    ? ({
+        id: aggregatedScorecard.id,
+        title: aggregatedScorecard.metadata.title,
+        description: aggregatedScorecard.metadata.description,
+        isCustomized: aggregatedScorecard.metadata.isCustomized,
+      } as MetricsDetails)
+    : undefined;
+
   const { title, description } = useMetricDisplayLabels(
-    aggregatedScorecard?.metadata as MetricsDetails,
+    AggregatedMetricDetails,
   );
 
   if (loadingData) {

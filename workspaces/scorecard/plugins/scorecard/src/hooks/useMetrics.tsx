@@ -32,13 +32,7 @@ export const useMetrics = (options: UseMetricOptions) => {
 
   const { error, loading, value } = useAsync(async () => {
     try {
-      const metrics = await scorecardApi.getMetrics({ metricIds: [metricId] });
-
-      if (!metrics || Array.isArray(metrics) || typeof metrics !== 'object') {
-        throw new Error(t('errors.invalidApiResponse'));
-      }
-
-      return metrics;
+      return await scorecardApi.getMetrics({ metricIds: [metricId] });
     } catch (err) {
       if (err instanceof Error) {
         throw err;
@@ -49,7 +43,7 @@ export const useMetrics = (options: UseMetricOptions) => {
         }),
       );
     }
-  }, [scorecardApi]);
+  }, [scorecardApi, metricId, t]);
 
   return useMemo(
     () => ({

@@ -36,19 +36,7 @@ export const useAggregatedScorecard = (
 
   const { error, loading, value } = useAsync(async () => {
     try {
-      const aggregatedScorecard = await scorecardApi.getAggregatedScorecard(
-        metricId,
-      );
-
-      if (
-        !aggregatedScorecard ||
-        Array.isArray(aggregatedScorecard) ||
-        typeof aggregatedScorecard !== 'object'
-      ) {
-        throw new Error(t('errors.invalidApiResponse'));
-      }
-
-      return aggregatedScorecard;
+      return await scorecardApi.getAggregatedScorecard(metricId);
     } catch (err) {
       if (err instanceof Error) {
         throw err;
@@ -59,7 +47,7 @@ export const useAggregatedScorecard = (
         }),
       );
     }
-  }, [scorecardApi]);
+  }, [scorecardApi, metricId, t]);
 
   return useMemo(
     () => ({
