@@ -16,6 +16,7 @@
 import {
   KeyboardEvent,
   SyntheticEvent,
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -41,6 +42,7 @@ import {
   useFetch,
   useRetriggerEvaluate,
   useProcessingState,
+  useClearOnRetrigger,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -84,6 +86,7 @@ export const ActiveMultiSelect: Widget<
   const staticDefaultValues = Array.isArray(staticDefault)
     ? (staticDefault as string[])
     : undefined;
+  const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
 
   const [localError] = useState<string | undefined>(
     autocompleteSelector
@@ -141,6 +144,16 @@ export const ActiveMultiSelect: Widget<
     handleFetchEnded,
   );
 
+  const handleClear = useCallback(() => {
+    setInProgressItem('');
+    onChange([]);
+  }, [onChange]);
+
+  useClearOnRetrigger({
+    enabled: clearOnRetrigger,
+    retrigger,
+    onClear: handleClear,
+  });
   // Process fetch results
   // Note: Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
