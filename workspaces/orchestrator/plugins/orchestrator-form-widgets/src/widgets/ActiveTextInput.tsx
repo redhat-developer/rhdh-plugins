@@ -37,6 +37,7 @@ import {
   applySelectorArray,
   applySelectorString,
   useProcessingState,
+  useClearOnRetrigger,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -73,6 +74,7 @@ export const ActiveTextInput: Widget<
   const hasStaticDefault = typeof staticDefault === 'string';
   const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
   const hasFetchUrl = !!uiProps['fetch:url'];
+  const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
 
   // If fetch:url is configured, either fetch:response:value OR fetch:response:default should be set
   // to provide meaningful behavior. Without fetch:url, the widget works as a plain text input.
@@ -113,9 +115,23 @@ export const ActiveTextInput: Widget<
     [onChange, id, setIsChangedByUser],
   );
 
+  const handleClear = useCallback(() => {
+    handleChange('', false);
+  }, [handleChange]);
+
+  useClearOnRetrigger({
+    enabled: clearOnRetrigger,
+    retrigger,
+    onClear: handleClear,
+  });
+
   // Process fetch results - only override if fetch returns a non-empty value
   // Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
+    if (clearOnRetrigger && loading) {
+      return;
+    }
+
     if (!data) {
       return;
     }
@@ -159,6 +175,8 @@ export const ActiveTextInput: Widget<
     isChangedByUser,
     skipInitialValue,
     wrapProcessing,
+    clearOnRetrigger,
+    loading,
   ]);
 
   const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
