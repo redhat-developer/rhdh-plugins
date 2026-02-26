@@ -16,7 +16,12 @@
 
 import express from 'express';
 import { z } from 'zod';
-import { InputError, NotFoundError } from '@backstage/errors';
+import crypto from 'node:crypto';
+import {
+  InputError,
+  NotFoundError,
+  AuthenticationError,
+} from '@backstage/errors';
 import {
   MigrationPhase,
   Artifact,
@@ -26,6 +31,7 @@ import {
 
 import type { RouterDeps } from './types';
 import { executePhaseActions } from './phaseActions';
+import { SignatureValidator } from './utils/SignatureValidator';
 
 const agentMetricsSchema = z.object({
   name: z.string(),
@@ -74,14 +80,176 @@ export interface CollectArtifactsRequestBody {
   commitId?: string;
 }
 
+interface JobWithToken {
+  id: string;
+  projectId: string;
+  moduleId?: string;
+  phase: MigrationPhase;
+  callbackToken?: string;
+  k8sJobName?: string | null;
+  startedAt?: Date;
+}
+
+class AuthenticationHandler {
+  constructor(
+    private readonly validator: SignatureValidator,
+    private readonly logger: RouterDeps['logger'],
+  ) {}
+
+  validateSignature(
+    rawBody: Buffer,
+    providedSignature: string | undefined,
+    callbackToken: string,
+    jobId: string,
+  ): void {
+    if (!providedSignature) {
+      this.logAuthFailure(jobId, 'missing_signature', rawBody);
+      throw new AuthenticationError('Authentication failed');
+    }
+
+    const isValid = this.validator.validateSignature(
+      callbackToken,
+      rawBody,
+      providedSignature,
+    );
+
+    if (!isValid) {
+      this.logAuthFailure(
+        jobId,
+        'invalid_signature',
+        rawBody,
+        providedSignature,
+      );
+      throw new AuthenticationError('Authentication failed');
+    }
+
+    const bodyHash = this.computeBodyHash(rawBody);
+    this.logger.info(
+      `Signature validated for job ${jobId} (bodyHash: ${bodyHash})`,
+    );
+  }
+
+  validateJobAge(job: JobWithToken, maxAgeSeconds: number): void {
+    if (!job.startedAt) {
+      throw new AuthenticationError('Authentication failed');
+    }
+
+    const jobStartTime = new Date(job.startedAt).getTime();
+    const now = Date.now();
+    const ageSeconds = (now - jobStartTime) / 1000;
+
+    if (ageSeconds < 0 || ageSeconds > maxAgeSeconds) {
+      this.logger.warn(
+        `Job ${job.id} age validation failed: ${ageSeconds}s (max: ${maxAgeSeconds}s)`,
+      );
+      throw new AuthenticationError('Authentication failed');
+    }
+  }
+
+  private computeBodyHash(rawBody: Buffer): string {
+    return crypto
+      .createHash('sha256')
+      .update(rawBody)
+      .digest('hex')
+      .substring(0, 8);
+  }
+
+  private logAuthFailure(
+    jobId: string,
+    reason: string,
+    rawBody: Buffer,
+    signature?: string,
+  ): void {
+    const bodyHash = this.computeBodyHash(rawBody);
+    this.logger.warn(
+      `Auth failed for job ${jobId}: ${reason} (sig: ${signature?.substring(0, 8) || 'none'}, bodyHash: ${bodyHash}, bodyLen: ${rawBody.length})`,
+    );
+  }
+}
+
+class RequestValidator {
+  constructor(private readonly logger: RouterDeps['logger']) {}
+
+  validatePhaseParams(
+    phase: MigrationPhase,
+    moduleId: string | undefined,
+  ): void {
+    if (phase === 'init' && moduleId) {
+      throw new InputError('moduleId must not be provided for init phase');
+    }
+
+    if (phase !== 'init' && !moduleId) {
+      throw new InputError(`moduleId is required for ${phase} phase`);
+    }
+  }
+
+  validateRequestBody(requestBody: unknown): CollectArtifactsRequestBody {
+    try {
+      const validated = collectArtifactsRequestSchema.parse(requestBody);
+      return validated as CollectArtifactsRequestBody;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const messages = error.errors
+          .map(e => `${e.path.join('.')}: ${e.message}`)
+          .join(', ');
+        const errorMsg = `Invalid request body: ${messages}`;
+        this.logger.error(`collectArtifacts validation error: ${errorMsg}`);
+        this.logger.debug(`Request body: ${JSON.stringify(requestBody)}`);
+        throw new InputError(errorMsg);
+      }
+      throw error;
+    }
+  }
+
+  validateJobContext(
+    job: JobWithToken,
+    projectId: string,
+    phase: MigrationPhase,
+    moduleId: string | undefined,
+    jobId: string,
+  ): void {
+    if (job.projectId !== projectId) {
+      throw new NotFoundError(
+        `Job ${jobId} does not belong to project ${projectId}`,
+      );
+    }
+
+    if (job.phase !== phase) {
+      throw new InputError(
+        `Job phase mismatch: expected ${phase}, got ${job.phase}`,
+      );
+    }
+
+    if (phase !== 'init' && job.moduleId !== moduleId) {
+      throw new InputError(
+        `Job moduleId mismatch: expected ${moduleId}, got ${job.moduleId}`,
+      );
+    }
+  }
+
+  validateStatusRequirements(
+    validatedRequest: CollectArtifactsRequestBody,
+  ): void {
+    if (validatedRequest.status === 'error' && !validatedRequest.errorDetails) {
+      throw new InputError(
+        'errorDetails field is required when status is Error',
+      );
+    }
+  }
+}
+
 export function registerCollectArtifactsRoutes(
   router: express.Router,
   deps: RouterDeps,
 ): void {
   const { x2aDatabase, kubeService, logger } = deps;
+  const signatureValidator = new SignatureValidator();
+  const authHandler = new AuthenticationHandler(signatureValidator, logger);
+  const requestValidator = new RequestValidator(logger);
 
   router.post(
     '/projects/:projectId/collectArtifacts',
+    express.raw({ type: 'application/json', limit: '10mb' }),
     async (
       req: express.Request,
       res: express.Response,
@@ -91,25 +259,22 @@ export function registerCollectArtifactsRoutes(
         const { projectId } = req.params;
         const moduleId = req.query.moduleId as string | undefined;
         const phase = req.query.phase as MigrationPhase;
-        // TODO: Implement request signature validation for security
-        // The x2aconvertor should sign the request body with the callbackToken:
-        //   signature = HMAC-SHA256(callbackToken, JSON.stringify(requestBody))
-        // Include signature in X-Callback-Signature header
-        // Validate: crypto.timingSafeEqual(expectedSig, providedSig)
-        // This prevents unauthorized job updates and request tampering
+        const rawBody = req.body as Buffer;
+
         logger.info(
-          `Processing collectArtifacts for projectId=${projectId}, moduleId=${moduleId}, phase=${phase}`,
+          `collectArtifacts: projectId=${projectId}, moduleId=${moduleId}, phase=${phase}`,
         );
 
-        if (phase === 'init' && moduleId) {
-          throw new InputError('moduleId must not be provided for init phase');
-        }
+        requestValidator.validatePhaseParams(phase, moduleId);
 
-        if (phase !== 'init' && !moduleId) {
-          throw new InputError(`moduleId is required for ${phase} phase`);
-        }
+        const parsedBody = JSON.parse(rawBody.toString('utf-8'));
+        logger.debug(
+          `collectArtifacts parsed body: ${JSON.stringify(parsedBody)}`,
+        );
 
-        const validatedRequest = validateRequest(req.body);
+        const validatedRequest =
+          requestValidator.validateRequestBody(parsedBody);
+        requestValidator.validateStatusRequirements(validatedRequest);
 
         const job = await x2aDatabase.getJob({ id: validatedRequest.jobId });
         if (!job) {
@@ -118,62 +283,46 @@ export function registerCollectArtifactsRoutes(
           );
         }
 
-        if (job.projectId !== projectId) {
-          throw new NotFoundError(
-            `Job ${validatedRequest.jobId} does not belong to project ${projectId}`,
-          );
+        const jobWithToken = job as unknown as JobWithToken;
+        if (!jobWithToken.callbackToken) {
+          logger.error(`Job ${validatedRequest.jobId} missing callbackToken`);
+          throw new AuthenticationError('Authentication failed');
         }
 
-        if (job.phase !== phase) {
-          throw new InputError(
-            `Job phase mismatch: expected ${phase}, got ${job.phase}`,
-          );
-        }
+        const providedSignature = req.headers['x-callback-signature'] as
+          | string
+          | undefined;
 
-        if (phase !== 'init' && job.moduleId !== moduleId) {
-          throw new InputError(
-            `Job moduleId mismatch: expected ${moduleId}, got ${job.moduleId}`,
-          );
-        }
-
-        let status: JobStatusEnum =
-          validatedRequest.status === 'success' ? 'success' : 'error';
-        let errorDetails = validatedRequest.errorDetails || null;
-
-        if (status === 'success') {
-          try {
-            await executePhaseActions(phase, {
-              projectId,
-              artifacts: validatedRequest.artifacts ?? [],
-              x2aDatabase,
-              logger,
-            });
-          } catch (error) {
-            logger.error(
-              `Phase actions failed for job ${validatedRequest.jobId}: ${error instanceof Error ? error.message : String(error)}`,
-            );
-            status = 'error';
-            errorDetails = `Phase actions failed: ${error instanceof Error ? error.message : String(error)}`;
-          }
-        }
-
-        const logs = await fetchJobLogs(kubeService, logger, job.k8sJobName);
-
-        await x2aDatabase.updateJob({
-          id: validatedRequest.jobId,
-          status,
-          finishedAt: new Date(),
-          errorDetails,
-          log: logs,
-          artifacts: validatedRequest.artifacts || [],
-          telemetry: validatedRequest.telemetry || null,
-          commitId: validatedRequest.commitId,
-        });
-
-        logger.info(
-          `Successfully processed collectArtifacts for job ${validatedRequest.jobId}`,
+        authHandler.validateSignature(
+          rawBody,
+          providedSignature,
+          jobWithToken.callbackToken,
+          validatedRequest.jobId,
         );
-        res.json({ message: 'Artifacts collected successfully' });
+
+        // Validate job age (3 hours = 10800 seconds) to prevent replay attacks
+        authHandler.validateJobAge(jobWithToken, 10800);
+
+        requestValidator.validateJobContext(
+          jobWithToken,
+          projectId,
+          phase,
+          moduleId,
+          validatedRequest.jobId,
+        );
+
+        const result = await processJobCompletion(
+          validatedRequest,
+          phase,
+          projectId,
+          x2aDatabase,
+          kubeService,
+          logger,
+          jobWithToken,
+        );
+
+        logger.info(`Job ${validatedRequest.jobId} processed successfully`);
+        res.json(result);
       } catch (err) {
         next(err);
       }
@@ -181,27 +330,74 @@ export function registerCollectArtifactsRoutes(
   );
 }
 
-function validateRequest(requestBody: unknown): CollectArtifactsRequestBody {
-  let validatedBody: CollectArtifactsRequestBody;
-  try {
-    validatedBody = collectArtifactsRequestSchema.parse(
-      requestBody,
-    ) as CollectArtifactsRequestBody;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const messages = error.errors
-        .map(e => `${e.path.join('.')}: ${e.message}`)
-        .join(', ');
-      throw new InputError(`Invalid request body: ${messages}`);
+async function processJobCompletion(
+  validatedRequest: CollectArtifactsRequestBody,
+  phase: MigrationPhase,
+  projectId: string,
+  x2aDatabase: RouterDeps['x2aDatabase'],
+  kubeService: RouterDeps['kubeService'],
+  logger: RouterDeps['logger'],
+  job: JobWithToken,
+): Promise<{ message: string }> {
+  let status: JobStatusEnum =
+    validatedRequest.status === 'success' ? 'success' : 'error';
+  let errorDetails = validatedRequest.errorDetails || null;
+
+  if (status === 'success') {
+    status = await executePhaseActionsWithErrorHandling(
+      phase,
+      projectId,
+      validatedRequest,
+      x2aDatabase,
+      logger,
+    );
+
+    if (status === 'error') {
+      errorDetails = 'Phase actions failed';
     }
-    throw error;
   }
 
-  if (validatedBody.status === 'error' && !validatedBody.errorDetails) {
-    throw new InputError('errorDetails field is required when status is Error');
-  }
+  const logs = await fetchJobLogs(
+    kubeService,
+    logger,
+    job.k8sJobName as string,
+  );
 
-  return validatedBody;
+  await x2aDatabase.updateJob({
+    id: validatedRequest.jobId,
+    status,
+    finishedAt: new Date(),
+    errorDetails,
+    log: logs,
+    artifacts: validatedRequest.artifacts || [],
+    telemetry: validatedRequest.telemetry || null,
+    commitId: validatedRequest.commitId,
+  });
+
+  return { message: 'Artifacts collected successfully' };
+}
+
+async function executePhaseActionsWithErrorHandling(
+  phase: MigrationPhase,
+  projectId: string,
+  validatedRequest: CollectArtifactsRequestBody,
+  x2aDatabase: RouterDeps['x2aDatabase'],
+  logger: RouterDeps['logger'],
+): Promise<JobStatusEnum> {
+  try {
+    await executePhaseActions(phase, {
+      projectId,
+      artifacts: validatedRequest.artifacts ?? [],
+      x2aDatabase,
+      logger,
+    });
+    return 'success';
+  } catch (error) {
+    logger.error(
+      `Phase actions failed for job ${validatedRequest.jobId}: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return 'error';
+  }
 }
 
 async function fetchJobLogs(

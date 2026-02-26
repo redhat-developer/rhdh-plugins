@@ -88,6 +88,9 @@ export type ProjectsProjectIdCollectArtifactsPost = {
     moduleId?: string;
     phase: MigrationPhase;
   };
+  header: {
+    xCallbackSignature: string;
+  };
 };
 /**
  * @public
@@ -234,10 +237,11 @@ export class DefaultApiClient {
   }
 
   /**
-   * Callback endpoint for X2Ansible jobs to submit execution artifacts and results. This endpoint is called by the X2Ansible job runner when a migration phase completes.
+   * Callback endpoint for X2Ansible jobs to submit execution artifacts and results. This endpoint is called by the X2Ansible job runner when a migration phase completes.  Authentication: Requires HMAC-SHA256 signature in X-Callback-Signature header. The signature is computed as: HMAC-SHA256(callbackToken, raw_request_body)  Replay attack prevention: Jobs are only accepted within 3 hours of job creation time (based on job.startedAt)
    * Collects artifacts from a completed X2Ansible job
    * @param projectId - UUID of the project
    * @param phase - Migration phase that completed
+   * @param xCallbackSignature - HMAC-SHA256(callbackToken, raw_request_body) as hex string
    * @param projectsProjectIdCollectArtifactsPostRequest -
    * @param moduleId - UUID of the module. - Required for analyze, migrate, and publish phases - Should be omitted for init phase
    */
@@ -257,6 +261,7 @@ export class DefaultApiClient {
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
       headers: {
+        ...request.header,
         'Content-Type': 'application/json',
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
