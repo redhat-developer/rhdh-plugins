@@ -38,8 +38,8 @@ jest.mock('../../../hooks/useTranslation', () => ({
   }),
 }));
 
-jest.mock('../../../hooks/useMetrics', () => ({
-  useMetrics: jest.fn(),
+jest.mock('../../../hooks/useMetric', () => ({
+  useMetric: jest.fn(),
 }));
 
 jest.mock('../ScorecardHomepageCardComponent', () => ({
@@ -76,7 +76,7 @@ jest.mock('../EmptyStatePanel', () => ({
 const {
   useAggregatedScorecard,
 } = require('../../../hooks/useAggregatedScorecard');
-const { useMetrics } = require('../../../hooks/useMetrics');
+const { useMetric } = require('../../../hooks/useMetric');
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider theme={createTheme()}>{children}</ThemeProvider>
@@ -110,8 +110,8 @@ const mockMetricWithCustomization = {
 describe('ScorecardHomepageCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    useMetrics.mockReturnValue({
-      metrics: [mockMetricWithCustomization],
+    useMetric.mockReturnValue({
+      metric: mockMetricWithCustomization,
       loading: false,
       error: undefined,
     });
