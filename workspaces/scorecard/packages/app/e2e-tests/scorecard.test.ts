@@ -15,11 +15,7 @@
  */
 
 import { test, expect, Page } from '@playwright/test';
-import {
-  mockScorecardResponse,
-  mockAggregatedScorecardResponse,
-  mockMetricsResponse,
-} from './utils/apiUtils';
+import { mockApiResponse } from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
 import { HomePage } from './pages/HomePage';
@@ -44,6 +40,7 @@ import {
   getThresholdsSnapshot,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
+import { ScorecardRoutes } from './constants/routes';
 
 test.describe('Scorecard Plugin Tests', () => {
   let page: Page;
@@ -90,7 +87,11 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify metrics display correctly', async ({ browser }, testInfo) => {
-      await mockScorecardResponse(page, customScorecardResponse);
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.SCORECARD_API_ROUTE,
+        customScorecardResponse,
+      );
 
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
@@ -110,7 +111,11 @@ test.describe('Scorecard Plugin Tests', () => {
     test('Verify empty state when no metrics available', async ({
       browser,
     }, testInfo) => {
-      await mockScorecardResponse(page, emptyScorecardResponse);
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.SCORECARD_API_ROUTE,
+        emptyScorecardResponse,
+      );
 
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
@@ -124,7 +129,11 @@ test.describe('Scorecard Plugin Tests', () => {
     test('Verify error state for unavailable metric data', async ({
       browser,
     }, testInfo) => {
-      await mockScorecardResponse(page, unavailableMetricResponse);
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.SCORECARD_API_ROUTE,
+        unavailableMetricResponse,
+      );
 
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
@@ -155,7 +164,11 @@ test.describe('Scorecard Plugin Tests', () => {
     test('Verify error state for invalid threshold configuration', async ({
       browser,
     }, testInfo) => {
-      await mockScorecardResponse(page, invalidThresholdResponse);
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.SCORECARD_API_ROUTE,
+        invalidThresholdResponse,
+      );
 
       await catalogPage.openCatalog();
       await catalogPage.openComponent('Red Hat Developer Hub');
@@ -188,9 +201,14 @@ test.describe('Scorecard Plugin Tests', () => {
     test('Verify missing permission state', async () => {
       await homePage.navigateToHome();
 
-      await mockMetricsResponse(
+      await mockApiResponse(
         page,
+        ScorecardRoutes.GITHUB_METRICS_API_ROUTE,
         customizedGitHubMetricsDetailsResponse,
+      );
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.JIRA_METRICS_API_ROUTE,
         customizedJiraMetricsDetailsResponse,
       );
 
@@ -246,9 +264,14 @@ test.describe('Scorecard Plugin Tests', () => {
     test('Verify entity counts with mocked API response', async ({
       browser,
     }, testInfo) => {
-      await mockAggregatedScorecardResponse(
+      await mockApiResponse(
         page,
+        ScorecardRoutes.GITHUB_AGGREGATION_ROUTE,
         githubAggregatedResponse,
+      );
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.JIRA_AGGREGATION_ROUTE,
         jiraAggregatedResponse,
       );
 
@@ -282,9 +305,14 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify cards aggregation data is not found when API returns empty aggregated response', async () => {
-      await mockAggregatedScorecardResponse(
+      await mockApiResponse(
         page,
+        ScorecardRoutes.GITHUB_AGGREGATION_ROUTE,
         emptyGithubAggregatedResponse,
+      );
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.JIRA_AGGREGATION_ROUTE,
         emptyJiraAggregatedResponse,
       );
 
@@ -296,9 +324,14 @@ test.describe('Scorecard Plugin Tests', () => {
     });
 
     test('Verify threshold tooltips', async () => {
-      await mockAggregatedScorecardResponse(
+      await mockApiResponse(
         page,
+        ScorecardRoutes.GITHUB_AGGREGATION_ROUTE,
         githubAggregatedResponse,
+      );
+      await mockApiResponse(
+        page,
+        ScorecardRoutes.JIRA_AGGREGATION_ROUTE,
         jiraAggregatedResponse,
       );
 

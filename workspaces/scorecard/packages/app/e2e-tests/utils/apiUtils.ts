@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import { Page, expect } from '@playwright/test';
+import { ScorecardRoutes } from '../constants/routes';
 
 export async function waitUntilApiCallSucceeds(
   page: Page,
@@ -31,75 +32,17 @@ export async function waitUntilApiCallSucceeds(
   expect(response.status()).toBe(200);
 }
 
-const SCORECARD_API_ROUTE =
-  '**/api/scorecard/metrics/catalog/Component/default/red-hat-developer-hub';
-
-export async function mockScorecardResponse(
+export async function mockApiResponse(
   page: Page,
+  route: string,
   responseData: object,
   status = 200,
 ) {
-  await page.route(SCORECARD_API_ROUTE, async route => {
-    await route.fulfill({
+  await page.route(route, async r => {
+    await r.fulfill({
       status,
       contentType: 'application/json',
       body: JSON.stringify(responseData),
-    });
-  });
-}
-
-const GITHUB_AGGREGATION_ROUTE =
-  '**/api/scorecard/metrics/github.open_prs/catalog/aggregations';
-const JIRA_AGGREGATION_ROUTE =
-  '**/api/scorecard/metrics/jira.open_issues/catalog/aggregations';
-
-export async function mockAggregatedScorecardResponse(
-  page: Page,
-  githubResponse: object,
-  jiraResponse: object,
-  status = 200,
-) {
-  await page.route(GITHUB_AGGREGATION_ROUTE, async route => {
-    await route.fulfill({
-      status,
-      contentType: 'application/json',
-      body: JSON.stringify(githubResponse),
-    });
-  });
-
-  await page.route(JIRA_AGGREGATION_ROUTE, async route => {
-    await route.fulfill({
-      status,
-      contentType: 'application/json',
-      body: JSON.stringify(jiraResponse),
-    });
-  });
-}
-
-const GITHUB_METRICS_API_ROUTE =
-  '**/api/scorecard/metrics?metricIds=github.open_prs';
-const JIRA_METRICS_API_ROUTE =
-  '**/api/scorecard/metrics?metricIds=jira.open_issues';
-
-export async function mockMetricsResponse(
-  page: Page,
-  githubResponse: object,
-  jiraResponse: object,
-  status = 200,
-) {
-  await page.route(GITHUB_METRICS_API_ROUTE, async route => {
-    await route.fulfill({
-      status,
-      contentType: 'application/json',
-      body: JSON.stringify(githubResponse),
-    });
-  });
-
-  await page.route(JIRA_METRICS_API_ROUTE, async route => {
-    await route.fulfill({
-      status,
-      contentType: 'application/json',
-      body: JSON.stringify(jiraResponse),
     });
   });
 }

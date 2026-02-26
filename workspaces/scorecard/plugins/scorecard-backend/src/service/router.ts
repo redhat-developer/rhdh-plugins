@@ -123,19 +123,14 @@ export async function createRouter({
     };
 
     const metrics = getMetrics().map(metric => {
-      try {
-        const { isCustomized, title, description } =
-          getAggregatedMetricCustomization(metric.id, { config });
+      const { isCustomized, title, description } =
+        getAggregatedMetricCustomization(metric.id, { config });
 
-        return {
-          ...metric,
-          isCustomized,
-          ...(isCustomized ? { title, description } : {}),
-        };
-      } catch (error) {
-        // If metric ID format or config invalid, keep original metric without customization
-        return metric;
-      }
+      return {
+        ...metric,
+        isCustomized,
+        ...(isCustomized ? { title, description } : {}),
+      };
     });
 
     return res.json({
