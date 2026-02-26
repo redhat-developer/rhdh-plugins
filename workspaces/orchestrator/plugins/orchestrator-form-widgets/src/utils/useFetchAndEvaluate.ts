@@ -59,6 +59,17 @@ export const useFetchAndEvaluate = (
   const [error, setError] = useState<string>();
   const [loading, setLoading] = React.useState(true);
   const [resultText, setResultText] = React.useState<string>();
+
+  useEffect(() => {
+    if (!hasRetrigger || !retrigger || waitingForRetrigger) {
+      return;
+    }
+
+    // Show spinner immediately on retrigger changes, even before debounce/fetch.
+    if (retriggerSatisfied) {
+      setLoading(true);
+    }
+  }, [hasRetrigger, retrigger, retriggerSatisfied, waitingForRetrigger]);
   useDebounce(
     () => {
       const evaluate = async () => {
