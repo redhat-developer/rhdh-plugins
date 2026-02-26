@@ -2193,7 +2193,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/integration@npm:^1.20.0":
+"@backstage/integration@npm:^1.15.0, @backstage/integration@npm:^1.20.0":
   version: 1.20.0
   resolution: "@backstage/integration@npm:1.20.0"
   dependencies:
@@ -3294,7 +3294,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-common@npm:^1.7.6":
+"@backstage/plugin-scaffolder-common@npm:^1.7.0, @backstage/plugin-scaffolder-common@npm:^1.7.6":
   version: 1.7.6
   resolution: "@backstage/plugin-scaffolder-common@npm:1.7.6"
   dependencies:
@@ -10764,11 +10764,14 @@ __metadata:
     "@backstage/catalog-model": "npm:^1.7.6"
     "@backstage/cli": "npm:^0.35.3"
     "@backstage/errors": "npm:^1.2.7"
+    "@backstage/integration": "npm:^1.15.0"
     "@backstage/plugin-catalog-node": "npm:^1.20.1"
+    "@backstage/plugin-scaffolder-common": "npm:^1.7.0"
     "@backstage/types": "npm:^1.2.2"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     supertest: "npm:^6.2.4"
+    yaml: "npm:^2.7.0"
     zod: "npm:^3.25 || ^4.0"
   languageName: unknown
   linkType: soft
@@ -33810,7 +33813,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.8.2":
+"yaml@npm:^2.0.0, yaml@npm:^2.0.0-10, yaml@npm:^2.2.1, yaml@npm:^2.2.2, yaml@npm:^2.7.0, yaml@npm:^2.8.2":
   version: 2.8.2
   resolution: "yaml@npm:2.8.2"
   bin:
