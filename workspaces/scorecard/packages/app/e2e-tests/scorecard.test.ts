@@ -18,6 +18,7 @@ import { test, expect, Page } from '@playwright/test';
 import {
   mockScorecardResponse,
   mockAggregatedScorecardResponse,
+  mockMetricsResponse,
 } from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
@@ -31,6 +32,8 @@ import {
   jiraAggregatedResponse,
   emptyGithubAggregatedResponse,
   emptyJiraAggregatedResponse,
+  customizedJiraMetricsDetailsResponse,
+  customizedGitHubMetricsDetailsResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -184,6 +187,14 @@ test.describe('Scorecard Plugin Tests', () => {
   test.describe('Aggregated Scorecards', () => {
     test('Verify missing permission state', async () => {
       await homePage.navigateToHome();
+
+      await mockMetricsResponse(
+        page,
+        customizedGitHubMetricsDetailsResponse,
+        customizedJiraMetricsDetailsResponse,
+      );
+
+      await page.reload();
 
       const entityCount = getEntityCount(translations, currentLocale, '0');
 

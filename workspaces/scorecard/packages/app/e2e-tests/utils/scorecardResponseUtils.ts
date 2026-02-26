@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 export const customScorecardResponse = [
   {
     id: 'github.open_prs',
@@ -23,6 +24,7 @@ export const customScorecardResponse = [
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
       history: true,
+      isCustomized: false,
     },
     result: {
       value: 9,
@@ -49,6 +51,7 @@ export const customScorecardResponse = [
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
       type: 'number',
       history: true,
+      isCustomized: false,
     },
     result: {
       value: 8,
@@ -79,6 +82,7 @@ const jiraOpenIssues = {
       'Highlights the number of critical, blocking issues that are currently open in Jira.',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     value: 54,
@@ -117,6 +121,7 @@ export const unavailableMetricResponse = [
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
       history: true,
+      isCustomized: false,
     },
     error:
       "HttpError: API rate limit exceeded for 157.50.94.55. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.) - https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting",
@@ -157,6 +162,7 @@ export const invalidThresholdResponse = [
         'Current count of open Pull Requests for a given GitHub repository.',
       type: 'number',
       history: true,
+      isCustomized: false,
     },
     result: {
       value: 40,
@@ -180,6 +186,7 @@ export const githubAggregatedResponse = {
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     values: [
@@ -201,6 +208,7 @@ export const jiraAggregatedResponse = {
       'Highlights the number of issues that are currently open in Jira.',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     values: [
@@ -222,6 +230,7 @@ export const emptyJiraAggregatedResponse = {
       'Highlights the number of critical, blocking issues that are currently open in Jira.',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     total: 0,
@@ -243,6 +252,7 @@ export const emptyGithubAggregatedResponse = {
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
     history: true,
+    isCustomized: false,
   },
   result: {
     total: 0,
@@ -253,4 +263,24 @@ export const emptyGithubAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
   },
+};
+
+export const customizedGitHubMetricsDetailsResponse = {
+  metrics: [
+    {
+      id: 'github.open_prs',
+      title: 'Customized GitHub card',
+      description: 'Customized description for GitHub open PRs.',
+    },
+  ],
+};
+
+export const customizedJiraMetricsDetailsResponse = {
+  metrics: [
+    {
+      id: 'jira.open_issues',
+      title: 'Customized Jira card',
+      description: 'Customized description for Jira open blocking tickets.',
+    },
+  ],
 };

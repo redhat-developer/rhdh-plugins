@@ -75,3 +75,31 @@ export async function mockAggregatedScorecardResponse(
     });
   });
 }
+
+const GITHUB_METRICS_API_ROUTE =
+  '**/api/scorecard/metrics?metricIds=github.open_prs';
+const JIRA_METRICS_API_ROUTE =
+  '**/api/scorecard/metrics?metricIds=jira.open_issues';
+
+export async function mockMetricsResponse(
+  page: Page,
+  githubResponse: object,
+  jiraResponse: object,
+  status = 200,
+) {
+  await page.route(GITHUB_METRICS_API_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(githubResponse),
+    });
+  });
+
+  await page.route(JIRA_METRICS_API_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(jiraResponse),
+    });
+  });
+}
