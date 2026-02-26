@@ -365,6 +365,58 @@ case "${PHASE}" in
     ARTIFACTS+=("migrated_sources:${PROJECT_DIR}/modules/${MODULE_NAME}/ansible")
     ;;
 
+  publish)
+    echo "=== Running x2a publish phase ==="
+    MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
+    OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
+
+    # Verify migrate phase output exists
+    if [ ! -d "${OUTPUT_DIR}/ansible/roles/${MODULE_NAME_SANITIZED}" ]; then
+      ERROR_MESSAGE="Migrated role not found at ${OUTPUT_DIR}/ansible/roles/${MODULE_NAME_SANITIZED} - migrate phase must complete first"
+      exit 1
+    fi
+
+    # Check if x2a tool is available (required)
+    if [ ! -d /app ] || [ ! -f /app/app.py ]; then
+      ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
+      exit 1
+    fi
+
+    # Step 1: publish-project — assemble Ansible project from migrated role
+    echo "=== Step 1: Assembling Ansible project ==="
+    echo "Command: uv run app.py publish-project ${PROJECT_DIR} ${MODULE_NAME}"
+
+    # publish-project reads from {project_id}/modules/{module_name}/ansible/roles/{module_name}/
+    # and writes to {project_id}/ansible-project/
+    # It operates relative to CWD, so we run from TARGET_BASE
+    pushd "${TARGET_BASE}"
+    uv run --project /app app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
+    popd
+
+    # Verify ansible-project was created
+    ANSIBLE_PROJECT_DIR="${PROJECT_PATH}/ansible-project"
+    if [ ! -d "${ANSIBLE_PROJECT_DIR}" ]; then
+      ERROR_MESSAGE="ansible-project directory not created by publish-project"
+      exit 1
+    fi
+
+    echo ""
+    echo "=== Ansible project contents ==="
+    find "${ANSIBLE_PROJECT_DIR}" -type f | head -50
+
+    # Step 2: publish-aap — register with AAP and sync
+    echo ""
+    echo "=== Step 2: Publishing to AAP ==="
+    echo "Command: uv run app.py publish-aap --target-repo ${TARGET_REPO_URL} --target-branch ${TARGET_REPO_BRANCH} --project-id ${PROJECT_DIR}"
+    cd /app
+    uv run app.py publish-aap \
+      --target-repo "${TARGET_REPO_URL}" \
+      --target-branch "${TARGET_REPO_BRANCH}" \
+      --project-id "${PROJECT_DIR}"
+
+    ARTIFACTS+=("ansible_project:${PROJECT_DIR}/ansible-project")
+    ;;
+
   *)
     ERROR_MESSAGE="Unknown phase: ${PHASE}"
     exit 1
