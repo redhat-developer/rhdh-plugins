@@ -32,6 +32,6 @@
 /workspaces/scorecard                               @redhat-developer/rhdh-plugins   @redhat-developer/rhdh-ui @christoph-jerolimov @its-mitesh-kumar @eswaraiahsapram
 /workspaces/theme                                   @redhat-developer/rhdh-ui @ciiay   @logonoff
 /workspaces/translations                            @redhat-developer/rhdh-ui @ciiay @debsmita1 @karthikjeeyar
-/workspaces/konflux                                 @rrosatti @sahil143 @testcara
+/workspaces/konflux                                 @rrosatti @sahil143 @testcara @rakshett
 /workspaces/x2a                                     @mareklibra @elai-shalev @eloycoto
 /workspaces/dcm                                     @asmasarw

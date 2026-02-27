@@ -94,12 +94,18 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.artifacts.migrated_sources': 'Migrierte Quellen',
     'modulePage.artifacts.description':
       'Diese Artefakte werden durch den Konvertierungsprozess generiert und stehen zur Überprüfung bereit.',
+    'modulePage.phases.title': 'Migrationsphasen',
     'modulePage.phases.id': 'ID',
     'modulePage.phases.duration': 'Dauer',
     'modulePage.phases.k8sJobName': 'Kubernetes-Jobname',
     'modulePage.phases.startedAt': 'Gestartet am',
     'modulePage.phases.status': 'Status',
     'modulePage.phases.errorDetails': 'Fehlerdetails',
+    'modulePage.phases.statuses.notStarted': 'Nicht gestartet',
+    'modulePage.phases.statuses.pending': 'Ausstehend',
+    'modulePage.phases.statuses.running': 'Läuft',
+    'modulePage.phases.statuses.success': 'Erfolg',
+    'modulePage.phases.statuses.error': 'Fehler',
     'modulePage.phases.reanalyzeInstructions':
       'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
     'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',

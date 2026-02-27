@@ -70,3 +70,25 @@ export const getRingColor = (
   const [paletteKey, shade] = statusColor.split('.');
   return theme.palette?.[paletteKey]?.[shade] ?? statusColor;
 };
+
+export const getYOffsetForCenterLabel = (lineCount: number) => {
+  switch (lineCount) {
+    case 2:
+      return -17;
+    case 3:
+      return -24;
+    default:
+      return -8;
+  }
+};
+
+export const getHeightForCenterLabel = (lineCount: number) => {
+  switch (lineCount) {
+    case 2:
+      return 48;
+    case 3:
+      return 56;
+    default:
+      return 40;
+  }
+};

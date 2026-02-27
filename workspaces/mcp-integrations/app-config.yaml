@@ -7,10 +7,6 @@ organization:
 
 backend:
   actions:
-    filter:
-      include:
-        - attributes:
-            readOnly: true
     pluginSources:
       - 'software-catalog-mcp-extras'
       - 'techdocs-mcp-extras'

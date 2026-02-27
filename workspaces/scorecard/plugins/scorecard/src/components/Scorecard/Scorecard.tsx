@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useLayoutEffect, useRef, useState } from 'react';
+
 import {
   MetricValue,
   ThresholdResult,
@@ -27,14 +29,18 @@ import {
   Legend,
   Tooltip,
 } from 'recharts';
-
 import Box from '@mui/material/Box';
 import { useTheme } from '@mui/material/styles';
-import MuiTooltip from '@mui/material/Tooltip';
+
 import { useTranslation } from '../../hooks/useTranslation';
 import { CardWrapper } from '../Common/CardWrapper';
 import CustomLegend from './CustomLegend';
-import { getRingColor } from '../../utils/utils';
+import {
+  getHeightForCenterLabel,
+  getRingColor,
+  getYOffsetForCenterLabel,
+} from '../../utils/utils';
+import { ErrorTooltip } from '../Common/ErrorTooltip';
 
 interface ScorecardProps {
   cardTitle: string;
@@ -48,6 +54,108 @@ interface ScorecardProps {
   isThresholdError?: boolean;
   thresholdError?: string;
 }
+
+const ScorecardCenterLabel = ({
+  cx,
+  cy,
+  statusColor,
+  StatusIcon,
+  value,
+  isErrorState,
+  errorLabel,
+  color,
+  onLabelMouseEnter,
+  onLabelMouseLeave,
+}: {
+  cx: number;
+  cy: number;
+  statusColor: string;
+  StatusIcon: React.ElementType;
+  value: MetricValue | null;
+  isErrorState: boolean;
+  errorLabel: string;
+  color: string | undefined;
+  onLabelMouseEnter: (e: React.MouseEvent) => void;
+  onLabelMouseLeave: (e: React.MouseEvent) => void;
+}) => {
+  const fontSize = 14;
+  const lineHeight = 1.2;
+
+  const textRef = useRef<HTMLDivElement>(null);
+  const [layout, setLayout] = useState({ yOffset: -10, height: 40 });
+
+  useLayoutEffect(() => {
+    if (!isErrorState) return;
+    const el = textRef.current;
+    if (!el) return;
+
+    const lineHeightPx = fontSize * lineHeight;
+    const lineCount = Math.round(el.scrollHeight / lineHeightPx);
+
+    const nextOffset = getYOffsetForCenterLabel(lineCount);
+    const nextHeight = getHeightForCenterLabel(lineCount);
+
+    setLayout(prev =>
+      prev.yOffset === nextOffset && prev.height === nextHeight
+        ? prev
+        : { yOffset: nextOffset, height: nextHeight },
+    );
+  }, [isErrorState, errorLabel]);
+
+  return (
+    <g transform={`translate(${cx}, ${cy})`}>
+      <foreignObject x={-12} y={-28} width={24} height={24}>
+        <StatusIcon
+          sx={{
+            fontSize: 24,
+            color: (muiTheme: any) => {
+              const [paletteKey, shade] = statusColor.split('.');
+              return muiTheme.palette[paletteKey][shade];
+            },
+          }}
+        />
+      </foreignObject>
+      {!isErrorState && (
+        <text
+          y={12}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize={24}
+          fontWeight={500}
+          fill={color}
+        >
+          {value}
+        </text>
+      )}
+      {isErrorState && (
+        <foreignObject
+          x={-50}
+          y={layout.yOffset}
+          width={100}
+          height={layout.height}
+        >
+          <div
+            ref={textRef}
+            style={{
+              maxWidth: 100,
+              fontSize,
+              fontWeight: 400,
+              color,
+              textAlign: 'center',
+              lineHeight,
+              wordBreak: 'break-word',
+              cursor: 'pointer',
+            }}
+            onMouseEnter={onLabelMouseEnter}
+            onMouseLeave={onLabelMouseLeave}
+          >
+            {errorLabel}
+          </div>
+        </foreignObject>
+      )}
+    </g>
+  );
+};
 
 const Scorecard = ({
   cardTitle,
@@ -63,6 +171,8 @@ const Scorecard = ({
 }: ScorecardProps) => {
   const theme = useTheme();
   const { t } = useTranslation();
+
+  const [isPieAreaActive, setIsPieAreaActive] = useState(false);
 
   const isErrorState = isMetricDataError || isThresholdError;
 
@@ -100,6 +210,27 @@ const Scorecard = ({
           }}
         >
           <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+            {/* This is the circle that is used to trigger the tooltip */}
+            {isErrorState && (
+              <g>
+                <circle
+                  cx="22%"
+                  cy="50%"
+                  r={74}
+                  fill="transparent"
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={e => {
+                    setIsPieAreaActive(true);
+                    e.stopPropagation();
+                  }}
+                  onMouseLeave={e => {
+                    setIsPieAreaActive(false);
+                    e.stopPropagation();
+                  }}
+                />
+              </g>
+            )}
+
             <Pie
               data={pieData}
               dataKey="value"
@@ -136,55 +267,39 @@ const Scorecard = ({
                   ]?.[palettePath[2]] as string | undefined;
                 }
 
-                return (
-                  <g transform={`translate(${cx}, ${cy})`}>
-                    <foreignObject x={-12} y={-28} width={24} height={24}>
-                      <StatusIcon
-                        sx={{
-                          fontSize: 24,
-                          color: (muiTheme: any) =>
-                            muiTheme.palette[statusColor.split('.')[0]][
-                              statusColor.split('.')[1]
-                            ],
-                        }}
-                      />
-                    </foreignObject>
-                    {!isErrorState && (
-                      <text
-                        y={12}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontSize={24}
-                        fontWeight={500}
-                        fill={color}
-                      >
-                        {value}
-                      </text>
-                    )}
+                let errorLabel = '';
+                if (isMetricDataError) {
+                  errorLabel = t('errors.metricDataUnavailable');
+                } else if (isThresholdError) {
+                  errorLabel = t('errors.invalidThresholds');
+                }
 
-                    {isErrorState && (
-                      <foreignObject x={-50} y={-17} width={100} height={40}>
-                        <div
-                          style={{
-                            maxWidth: 100,
-                            fontSize: 14,
-                            fontWeight: 400,
-                            color,
-                            textAlign: 'center',
-                            lineHeight: 1.2,
-                            wordBreak: 'break-word',
-                          }}
-                        >
-                          {isMetricDataError &&
-                            t('errors.metricDataUnavailable')}
-                          {!isMetricDataError &&
-                            isThresholdError &&
-                            t('errors.invalidThresholds')}
-                        </div>
-                      </foreignObject>
-                    )}
-                  </g>
+                return (
+                  <ScorecardCenterLabel
+                    cx={Number(cx)}
+                    cy={Number(cy)}
+                    statusColor={statusColor}
+                    StatusIcon={StatusIcon}
+                    value={value}
+                    isErrorState={isErrorState}
+                    errorLabel={errorLabel}
+                    color={color}
+                    onLabelMouseEnter={e => {
+                      setIsPieAreaActive(true);
+                      e.stopPropagation();
+                    }}
+                    onLabelMouseLeave={e => {
+                      setIsPieAreaActive(false);
+                      e.stopPropagation();
+                    }}
+                  />
                 );
+              }}
+              onMouseEnter={() => {
+                setIsPieAreaActive(true);
+              }}
+              onMouseLeave={() => {
+                setIsPieAreaActive(false);
               }}
             >
               {pieData.map(entry => (
@@ -210,35 +325,26 @@ const Scorecard = ({
             />
 
             <Tooltip
-              position={{ x: 27, y: 136 }}
               isAnimationActive={false}
-              content={({ active }) => {
-                if (!active) return null;
+              content={({ coordinate }) => {
+                let errorTooltipTitle: string | undefined;
+                if (isMetricDataError) {
+                  errorTooltipTitle = metricDataError;
+                } else if (isThresholdError) {
+                  errorTooltipTitle = thresholdError;
+                } else {
+                  errorTooltipTitle = undefined;
+                }
 
+                if (!isPieAreaActive || coordinate === undefined) return null;
                 return (
-                  <MuiTooltip
-                    open
-                    title={
-                      // eslint-disable-next-line no-nested-ternary
-                      isMetricDataError
-                        ? metricDataError
-                        : isThresholdError
-                        ? thresholdError
-                        : undefined
-                    }
-                    placement="bottom"
-                    arrow
-                    slotProps={{
-                      tooltip: {
-                        sx: {
-                          cursor: isErrorState ? 'pointer' : 'default',
-                        },
-                      },
+                  <ErrorTooltip
+                    title={errorTooltipTitle}
+                    tooltipPosition={{
+                      x: coordinate.x - 25,
+                      y: coordinate?.y - 16,
                     }}
-                  >
-                    {/* Need to hide the tooltip content because we are using the position prop to position the tooltip */}
-                    <div style={{ visibility: 'hidden' }}>Tooltip content</div>
-                  </MuiTooltip>
+                  />
                 );
               }}
             />

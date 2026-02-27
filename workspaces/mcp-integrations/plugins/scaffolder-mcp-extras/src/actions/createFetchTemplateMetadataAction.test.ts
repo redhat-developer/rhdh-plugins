@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-import { fetchSoftwareTemplateMetadata } from './plugin';
+import { fetchSoftwareTemplateMetadata } from './createFetchTemplateMetadataAction';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import { mockServices } from '@backstage/backend-test-utils';
 
-describe('mcpScaffolderExtrasPlugin', () => {
+const mockCredentials = {
+  principal: { type: 'service', subject: 'test' },
+  token: 'test-token',
+};
+
+describe('createFetchTemplateMetadataAction', () => {
   describe('fetchSoftwareTemplateMetadata', () => {
     const mockCatalogService = {
       getEntities: jest.fn(),
     } as unknown as CatalogService;
-
-    const mockAuthService = {
-      getOwnServiceCredentials: jest.fn(),
-    };
 
     const mockLoggerService = mockServices.logger.mock();
 
@@ -99,22 +100,16 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
-      expect(mockAuthService.getOwnServiceCredentials).toHaveBeenCalledTimes(1);
       expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
         {
           fields: [
@@ -204,18 +199,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         { name: 'nodejs-template' },
       );
@@ -265,18 +255,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         { title: 'Python Microservice Template' },
       );
@@ -326,18 +311,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         { uid: 'template:default/go-template' },
       );
@@ -388,18 +368,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         {
           name: 'rust-template',
@@ -453,18 +428,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
@@ -499,18 +469,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
@@ -530,18 +495,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
     });
 
     it('should handle empty catalog', async () => {
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: [],
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
@@ -551,11 +511,6 @@ describe('mcpScaffolderExtrasPlugin', () => {
     });
 
     it('should handle catalog service errors', async () => {
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockRejectedValue(
         new Error('Catalog service error'),
       );
@@ -563,24 +518,10 @@ describe('mcpScaffolderExtrasPlugin', () => {
       await expect(
         fetchSoftwareTemplateMetadata(
           mockCatalogService,
-          mockAuthService,
+          mockCredentials,
           mockLoggerService,
         ),
       ).rejects.toThrow('Catalog service error');
-    });
-
-    it('should handle authentication errors', async () => {
-      mockAuthService.getOwnServiceCredentials.mockRejectedValue(
-        new Error('Authentication failed'),
-      );
-
-      await expect(
-        fetchSoftwareTemplateMetadata(
-          mockCatalogService,
-          mockAuthService,
-          mockLoggerService,
-        ),
-      ).rejects.toThrow('Authentication failed');
     });
 
     it('should handle templates with complex parameters and steps', async () => {
@@ -658,18 +599,13 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
 
       const result = await fetchSoftwareTemplateMetadata(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
@@ -686,10 +622,6 @@ describe('mcpScaffolderExtrasPlugin', () => {
     const mockCatalogService = {
       getEntities: jest.fn(),
     } as unknown as CatalogService;
-
-    const mockAuthService = {
-      getOwnServiceCredentials: jest.fn(),
-    };
 
     const mockLoggerService = mockServices.logger.mock();
 
@@ -715,11 +647,6 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
@@ -737,7 +664,7 @@ describe('mcpScaffolderExtrasPlugin', () => {
         try {
           const result = await fetchSoftwareTemplateMetadata(
             mockCatalogService,
-            mockAuthService,
+            mockCredentials,
             mockLoggerService,
             input,
           );
@@ -778,11 +705,6 @@ describe('mcpScaffolderExtrasPlugin', () => {
     });
 
     it('should handle errors in action', async () => {
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockRejectedValue(
         new Error('Failed to fetch templates'),
       );
@@ -800,7 +722,7 @@ describe('mcpScaffolderExtrasPlugin', () => {
         try {
           const result = await fetchSoftwareTemplateMetadata(
             mockCatalogService,
-            mockAuthService,
+            mockCredentials,
             mockLoggerService,
             input,
           );
@@ -844,11 +766,6 @@ describe('mcpScaffolderExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockTemplates,
       });
@@ -866,7 +783,7 @@ describe('mcpScaffolderExtrasPlugin', () => {
         try {
           const result = await fetchSoftwareTemplateMetadata(
             mockCatalogService,
-            mockAuthService,
+            mockCredentials,
             mockLoggerService,
             input,
           );
