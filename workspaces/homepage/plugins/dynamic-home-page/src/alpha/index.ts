@@ -14,4 +14,72 @@
  * limitations under the License.
  */
 
-export * from './translations';
+/**
+ * Alpha exports for the Dynamic Home Page plugin (New Frontend System).
+ * @alpha
+ */
+
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import {
+  catalogStarredWidget,
+  disableToolkit,
+  entitySectionWidget,
+  featuredDocsCardWidget,
+  onboardingSectionWidget,
+  quickAccessCardWidget,
+  RecentlyVisitedWidget,
+  searchBarWidget,
+  templateSectionWidget,
+  TopVisitedWidget,
+} from './extensions/homePageCards';
+import { homepageTranslations } from './translations';
+
+import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
+import { quickAccessApi } from './extensions/apis';
+
+/**
+ * Frontend module for the Dynamic Home Page plugin (New Frontend System).
+ *
+ * Extends the `home` plugin with a custom layout and RHDH widgets: Onboarding,
+ * Entity Catalog, Templates, Quick Access, Search, Recently Visited, Top Visited, etc.
+ * Add to your app's `createApp({ features: [..., homePageDevModule] })`.
+ *
+ * @alpha
+ */
+export const homePageDevModule = createFrontendModule({
+  pluginId: 'home',
+  extensions: [
+    homePageLayoutExtension,
+    onboardingSectionWidget,
+    entitySectionWidget,
+    templateSectionWidget,
+    quickAccessApi,
+    quickAccessCardWidget,
+    featuredDocsCardWidget,
+    searchBarWidget,
+    TopVisitedWidget,
+    RecentlyVisitedWidget,
+    catalogStarredWidget,
+    disableToolkit,
+  ],
+});
+
+/**
+ * Translation module for the Dynamic Home Page plugin.
+ *
+ * @alpha
+ */
+export const homepageTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    TranslationBlueprint.make({
+      name: 'homepage-translations',
+      params: {
+        resource: homepageTranslations,
+      },
+    }),
+  ],
+});
+
+export { homepageTranslationRef, homepageTranslations } from './translations';

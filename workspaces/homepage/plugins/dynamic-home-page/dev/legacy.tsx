@@ -24,19 +24,12 @@ import {
   EntityLayout,
 } from '@backstage/plugin-catalog';
 import {
-  CatalogApi,
   catalogApiRef,
   EntityProvider,
   starredEntitiesApiRef,
-  MockStarredEntitiesApi,
 } from '@backstage/plugin-catalog-react';
 import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
-import {
-  Visit,
-  VisitsApi,
-  VisitsApiQueryParams,
-  visitsApiRef,
-} from '@backstage/plugin-home';
+import { visitsApiRef } from '@backstage/plugin-home';
 
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
@@ -67,6 +60,7 @@ import {
 import { homepageTranslations } from '../src/alpha/translations';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';
+import { mockCatalogApi, mockStarredEntitiesApi, MockVisitsApi } from './mocks';
 
 const defaultMountPoints: HomePageCardMountPoint[] = [
   {
@@ -74,7 +68,6 @@ const defaultMountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'OnboardingSection',
       title: 'Onboarding section',
-      // prettier-ignore
       layouts: {
         xl: { w: 12, h: 6 },
         lg: { w: 12, h: 6 },
@@ -90,7 +83,6 @@ const defaultMountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'EntitySection',
       title: 'Entity section',
-      // prettier-ignore
       layouts: {
         xl: { w: 12, h: 7 },
         lg: { w: 12, h: 7 },
@@ -106,7 +98,6 @@ const defaultMountPoints: HomePageCardMountPoint[] = [
     config: {
       id: 'TemplateSection',
       title: 'Template section',
-      // prettier-ignore
       layouts: {
         xl: { w: 12, h: 5 },
         lg: { w: 12, h: 5 },
@@ -281,103 +272,6 @@ const entity = {
     name: 'random-component',
   },
 };
-
-const entities /* : Entity[]*/ = [
-  {
-    apiVersion: '1',
-    kind: 'Component',
-    metadata: {
-      name: 'service-a',
-      description: 'Hello, I am service A with a title',
-      title: 'Service A',
-    },
-  },
-  {
-    apiVersion: '1',
-    kind: 'Component',
-    metadata: {
-      name: 'service-b',
-      description: 'Hello, I am service B',
-    },
-  },
-  {
-    apiVersion: '1',
-    kind: 'Component',
-    metadata: {
-      name: 'service-c',
-      description: 'Hello, I am service C',
-    },
-  },
-  {
-    apiVersion: '1',
-    kind: 'Component',
-    metadata: {
-      name: 'service-d',
-      description: 'Hello, I am service D',
-    },
-  },
-];
-
-const mockCatalogApi: Partial<CatalogApi> = {
-  // getEntities: (request?: GetEntitiesRequest, options?: CatalogRequestOptions): Promise<GetEntitiesResponse>
-  getEntities: async () => ({
-    items: entities,
-  }),
-  // getEntitiesByRefs(request: GetEntitiesByRefsRequest, options?: CatalogRequestOptions): Promise<GetEntitiesByRefsResponse>
-  getEntitiesByRefs: async () => ({
-    items: entities,
-  }),
-  queryEntities: async () => ({
-    items: entities,
-    totalItems: entities.length,
-    pageInfo: {
-      nextCursor: undefined,
-      prevCursor: undefined,
-    },
-  }),
-};
-
-const mockStarredEntitiesApi = new MockStarredEntitiesApi();
-mockStarredEntitiesApi.toggleStarred('service-a');
-mockStarredEntitiesApi.toggleStarred('service-b');
-
-class MockVisitsApi implements VisitsApi {
-  async list(queryParams?: VisitsApiQueryParams): Promise<Visit[]> {
-    const links = [
-      'example-app',
-      'another-app',
-      'service-a',
-      'service-b',
-      'service-c',
-      'short',
-      'long-application-name',
-    ];
-    const visits = links.map(link => ({
-      id: link,
-      name: link,
-      pathname: link,
-      hits: link.length,
-      timestamp: Date.now() - link.length * 1000 * 60,
-    }));
-    if (
-      queryParams?.orderBy?.[0]?.field === 'timestamp' &&
-      queryParams.orderBy[0].direction === 'desc'
-    ) {
-      visits.sort((a, b) => b.timestamp - a.timestamp);
-    }
-    if (
-      queryParams?.orderBy?.[0]?.field === 'hits' &&
-      queryParams.orderBy[0].direction === 'desc'
-    ) {
-      visits.sort((a, b) => b.hits - a.hits);
-    }
-    return visits;
-  }
-
-  async save(): Promise<Visit> {
-    throw new Error('MockVisitsApi save not implemented.');
-  }
-}
 
 const createPage = ({
   navTitle,
@@ -594,13 +488,12 @@ createDevApp()
         {
           Component: SearchBar as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 2, h: 1 },
-              lg:  { w: 2, h: 1 },
-              md:  { w: 2, h: 1 },
-              sm:  { w: 2, h: 1 },
-              xs:  { w: 2, h: 1 },
+              xl: { w: 2, h: 1 },
+              lg: { w: 2, h: 1 },
+              md: { w: 2, h: 1 },
+              sm: { w: 2, h: 1 },
+              xs: { w: 2, h: 1 },
               xxs: { w: 2, h: 1 },
             },
             props: {
@@ -611,13 +504,12 @@ createDevApp()
         {
           Component: SearchBar as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 6, h: 1 },
-              lg:  { w: 6, h: 1 },
-              md:  { w: 6, h: 1 },
-              sm:  { w: 6, h: 1 },
-              xs:  { w: 6, h: 1 },
+              xl: { w: 6, h: 1 },
+              lg: { w: 6, h: 1 },
+              md: { w: 6, h: 1 },
+              sm: { w: 6, h: 1 },
+              xs: { w: 6, h: 1 },
               xxs: { w: 6, h: 1 },
             },
             props: {
@@ -628,13 +520,12 @@ createDevApp()
         {
           Component: SearchBar as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 12, h: 1 },
-              lg:  { w: 12, h: 1 },
-              md:  { w: 12, h: 1 },
-              sm:  { w: 12, h: 1 },
-              xs:  { w: 12, h: 1 },
+              xl: { w: 12, h: 1 },
+              lg: { w: 12, h: 1 },
+              md: { w: 12, h: 1 },
+              sm: { w: 12, h: 1 },
+              xs: { w: 12, h: 1 },
               xxs: { w: 12, h: 1 },
             },
             props: {
@@ -653,13 +544,12 @@ createDevApp()
         {
           Component: QuickAccessCard as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w:  6, h: 8 },
-              lg:  { w:  6, h: 8 },
-              md:  { w:  6, h: 8 },
-              sm:  { w: 12, h: 8 },
-              xs:  { w: 12, h: 8 },
+              xl: { w: 6, h: 8 },
+              lg: { w: 6, h: 8 },
+              md: { w: 6, h: 8 },
+              sm: { w: 12, h: 8 },
+              xs: { w: 12, h: 8 },
               xxs: { w: 12, h: 8 },
             },
           },
@@ -667,13 +557,12 @@ createDevApp()
         {
           Component: QuickAccessCard as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w:  6, h: 8, x: 6 },
-              lg:  { w:  6, h: 8, x: 6 },
-              md:  { w:  6, h: 8, x: 6 },
-              sm:  { w: 12, h: 8, x: 6 },
-              xs:  { w: 12, h: 8, x: 6 },
+              xl: { w: 6, h: 8, x: 6 },
+              lg: { w: 6, h: 8, x: 6 },
+              md: { w: 6, h: 8, x: 6 },
+              sm: { w: 12, h: 8, x: 6 },
+              xs: { w: 12, h: 8, x: 6 },
               xxs: { w: 12, h: 8, x: 6 },
             },
           },
@@ -689,13 +578,12 @@ createDevApp()
         {
           Component: Headline as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 12, h: 1 },
-              lg:  { w: 12, h: 1 },
-              md:  { w: 12, h: 1 },
-              sm:  { w: 12, h: 1 },
-              xs:  { w: 12, h: 1 },
+              xl: { w: 12, h: 1 },
+              lg: { w: 12, h: 1 },
+              md: { w: 12, h: 1 },
+              sm: { w: 12, h: 1 },
+              xs: { w: 12, h: 1 },
               xxs: { w: 12, h: 1 },
             },
             props: {
@@ -706,13 +594,12 @@ createDevApp()
         {
           Component: Headline as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 12, h: 1 },
-              lg:  { w: 12, h: 1 },
-              md:  { w: 12, h: 1 },
-              sm:  { w: 12, h: 1 },
-              xs:  { w: 12, h: 1 },
+              xl: { w: 12, h: 1 },
+              lg: { w: 12, h: 1 },
+              md: { w: 12, h: 1 },
+              sm: { w: 12, h: 1 },
+              xs: { w: 12, h: 1 },
               xxs: { w: 12, h: 1 },
             },
             props: {
@@ -724,13 +611,12 @@ createDevApp()
         {
           Component: Headline as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 12, h: 1 },
-              lg:  { w: 12, h: 1 },
-              md:  { w: 12, h: 1 },
-              sm:  { w: 12, h: 1 },
-              xs:  { w: 12, h: 1 },
+              xl: { w: 12, h: 1 },
+              lg: { w: 12, h: 1 },
+              md: { w: 12, h: 1 },
+              sm: { w: 12, h: 1 },
+              xs: { w: 12, h: 1 },
               xxs: { w: 12, h: 1 },
             },
             props: {
@@ -896,13 +782,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1 },
-              lg:  { w: 1, h: 1 },
-              md:  { w: 1, h: 1 },
-              sm:  { w: 1, h: 1 },
-              xs:  { w: 1, h: 1 },
+              xl: { w: 1, h: 1 },
+              lg: { w: 1, h: 1 },
+              md: { w: 1, h: 1 },
+              sm: { w: 1, h: 1 },
+              xs: { w: 1, h: 1 },
               xxs: { w: 1, h: 1 },
             },
             props: {
@@ -914,13 +799,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1 },
-              lg:  { w: 1, h: 1 },
-              md:  { w: 1, h: 1 },
-              sm:  { w: 1, h: 1 },
-              xs:  { w: 1, h: 1 },
+              xl: { w: 1, h: 1 },
+              lg: { w: 1, h: 1 },
+              md: { w: 1, h: 1 },
+              sm: { w: 1, h: 1 },
+              xs: { w: 1, h: 1 },
               xxs: { w: 1, h: 1 },
             },
             props: {
@@ -932,13 +816,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1 },
-              lg:  { w: 1, h: 1 },
-              md:  { w: 1, h: 1 },
-              sm:  { w: 1, h: 1 },
-              xs:  { w: 1, h: 1 },
+              xl: { w: 1, h: 1 },
+              lg: { w: 1, h: 1 },
+              md: { w: 1, h: 1 },
+              sm: { w: 1, h: 1 },
+              xs: { w: 1, h: 1 },
               xxs: { w: 1, h: 1 },
             },
             props: {
@@ -958,13 +841,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1 },
-              lg:  { w: 1, h: 1 },
-              md:  { w: 1, h: 1 },
-              sm:  { w: 1, h: 1 },
-              xs:  { w: 1, h: 1 },
+              xl: { w: 1, h: 1 },
+              lg: { w: 1, h: 1 },
+              md: { w: 1, h: 1 },
+              sm: { w: 1, h: 1 },
+              xs: { w: 1, h: 1 },
               xxs: { w: 1, h: 1 },
             },
             props: {
@@ -976,13 +858,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1, x: 1 },
-              lg:  { w: 1, h: 1, x: 1 },
-              md:  { w: 1, h: 1, x: 1 },
-              sm:  { w: 1, h: 1, x: 1 },
-              xs:  { w: 1, h: 1, x: 1 },
+              xl: { w: 1, h: 1, x: 1 },
+              lg: { w: 1, h: 1, x: 1 },
+              md: { w: 1, h: 1, x: 1 },
+              sm: { w: 1, h: 1, x: 1 },
+              xs: { w: 1, h: 1, x: 1 },
               xxs: { w: 1, h: 1, x: 1 },
             },
             props: {
@@ -994,13 +875,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1, x: 2 },
-              lg:  { w: 1, h: 1, x: 2 },
-              md:  { w: 1, h: 1, x: 2 },
-              sm:  { w: 1, h: 1, x: 2 },
-              xs:  { w: 1, h: 1, x: 2 },
+              xl: { w: 1, h: 1, x: 2 },
+              lg: { w: 1, h: 1, x: 2 },
+              md: { w: 1, h: 1, x: 2 },
+              sm: { w: 1, h: 1, x: 2 },
+              xs: { w: 1, h: 1, x: 2 },
               xxs: { w: 1, h: 1, x: 2 },
             },
             props: {
@@ -1020,13 +900,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1, x: 1, y: 1 },
-              lg:  { w: 1, h: 1, x: 1, y: 1 },
-              md:  { w: 1, h: 1, x: 1, y: 1 },
-              sm:  { w: 1, h: 1, x: 1, y: 1 },
-              xs:  { w: 1, h: 1, x: 1, y: 1 },
+              xl: { w: 1, h: 1, x: 1, y: 1 },
+              lg: { w: 1, h: 1, x: 1, y: 1 },
+              md: { w: 1, h: 1, x: 1, y: 1 },
+              sm: { w: 1, h: 1, x: 1, y: 1 },
+              xs: { w: 1, h: 1, x: 1, y: 1 },
               xxs: { w: 1, h: 1, x: 1, y: 1 },
             },
             props: {
@@ -1038,13 +917,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 1, h: 1, x: 2, y: 2 },
-              lg:  { w: 1, h: 1, x: 2, y: 2 },
-              md:  { w: 1, h: 1, x: 2, y: 2 },
-              sm:  { w: 1, h: 1, x: 2, y: 2 },
-              xs:  { w: 1, h: 1, x: 2, y: 2 },
+              xl: { w: 1, h: 1, x: 2, y: 2 },
+              lg: { w: 1, h: 1, x: 2, y: 2 },
+              md: { w: 1, h: 1, x: 2, y: 2 },
+              sm: { w: 1, h: 1, x: 2, y: 2 },
+              xs: { w: 1, h: 1, x: 2, y: 2 },
               xxs: { w: 1, h: 1, x: 2, y: 2 },
             },
             props: {
@@ -1056,13 +934,12 @@ createDevApp()
         {
           Component: Placeholder as ComponentType,
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 2, h: 2 },
-              lg:  { w: 2, h: 2 },
-              md:  { w: 2, h: 2 },
-              sm:  { w: 2, h: 2 },
-              xs:  { w: 2, h: 2 },
+              xl: { w: 2, h: 2 },
+              lg: { w: 2, h: 2 },
+              md: { w: 2, h: 2 },
+              sm: { w: 2, h: 2 },
+              xs: { w: 2, h: 2 },
               xxs: { w: 2, h: 2 },
             },
             props: {
@@ -1083,13 +960,12 @@ createDevApp()
             throw new Error();
           },
           config: {
-            // prettier-ignore
             layouts: {
-              xl:  { w: 2, h: 1 },
-              lg:  { w: 2, h: 1 },
-              md:  { w: 2, h: 1 },
-              sm:  { w: 2, h: 1 },
-              xs:  { w: 2, h: 1 },
+              xl: { w: 2, h: 1 },
+              lg: { w: 2, h: 1 },
+              md: { w: 2, h: 1 },
+              sm: { w: 2, h: 1 },
+              xs: { w: 2, h: 1 },
               xxs: { w: 2, h: 1 },
             },
             props: {

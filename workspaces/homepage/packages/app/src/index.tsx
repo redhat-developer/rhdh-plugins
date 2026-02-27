@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import '@backstage/cli/asset-types';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import '@backstage/ui/css/styles.css';
 
-export * from './plugin';
-/**
- * @alpha
- */
-export * from './alpha';
+ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());

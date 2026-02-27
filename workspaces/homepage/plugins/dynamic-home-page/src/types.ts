@@ -18,6 +18,7 @@ import type { ComponentType } from 'react';
 
 import type { Tool } from '@backstage/plugin-home';
 import type { CardLayout, CardSettings } from '@backstage/plugin-home-react';
+import { HomePageWidgetData } from '@backstage/plugin-home-react/alpha';
 
 /**
  * @public
@@ -68,6 +69,10 @@ export interface HomePageCardMountPointConfig {
    * Setting a layout configuration enables this card by default.
    */
   layouts?: Record<Breakpoint, Layout>;
+}
+
+export interface HomePageCardConfig extends HomePageWidgetData {
+  breakpointLayouts?: Record<Breakpoint, Layout>;
 }
 
 /**

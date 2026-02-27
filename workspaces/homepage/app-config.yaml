@@ -1,6 +1,93 @@
 app:
-  title: Scaffolded Backstage App
+  title: Homepage Backstage App
   baseUrl: http://localhost:3000
+  packages: all
+  extensions:
+    - api:app/app-language:
+        config:
+          availableLanguages: ['en', 'de', 'fr', 'it', 'es', 'ja']
+          defaultLanguage: 'en'
+    # Disable the nav items that we're manually rendering in packages/app/src/modules/nav/Sidebar.tsx
+    - nav-item:search: false
+    - nav-item:user-settings: false
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    # Comment out the following lines to remove the default homepage and catalog pages, and set the homepage to a custom plugin page
+    - page:catalog:
+        config:
+          path: /
+
+    # Uncomment the following lines to set the homepage to a custom plugin page, and configure the path for the homepage
+    # - page:home:
+    #     config:
+    #       path: /
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: true # false for read-only homepage layout
+          widgetLayout:
+            RhdhTemplateSection:
+              priority: 300
+              breakpoints:
+                xl:
+                  w: 12
+                  h: 5
+                lg:
+                  w: 12
+                  h: 5
+                md:
+                  w: 12
+                  h: 5
+                sm:
+                  w: 12
+                  h: 5
+                xs:
+                  w: 12
+                  h: 7.5
+                xxs:
+                  w: 12
+                  h: 13.5
+            RhdhEntitySection:
+              priority: 200
+              breakpoints:
+                xl:
+                  w: 12
+                  h: 7
+                lg:
+                  w: 12
+                  h: 7
+                md:
+                  w: 12
+                  h: 8
+                sm:
+                  w: 12
+                  h: 9
+                xs:
+                  w: 12
+                  h: 11
+                xxs:
+                  w: 12
+                  h: 15
+            RhdhOnboardingSection:
+              priority: 100
+              breakpoints:
+                xl:
+                  w: 12
+                  h: 6
+                lg:
+                  w: 12
+                  h: 6
+                md:
+                  w: 12
+                  h: 7
+                sm:
+                  w: 12
+                  h: 8
+                xs:
+                  w: 12
+                  h: 9
+                xxs:
+                  w: 12
+                  h: 14
 
 organization:
   name: My Company

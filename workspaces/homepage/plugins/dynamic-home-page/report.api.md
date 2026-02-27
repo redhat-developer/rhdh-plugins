@@ -134,19 +134,19 @@ export interface HomePageCardMountPointConfig {
 
 // @public
 export const homepageTranslationRef: TranslationRef<"plugin.homepage", {
-readonly "header.local": string;
 readonly "header.welcome": string;
 readonly "header.welcomePersonalized": string;
-readonly "search.placeholder": string;
+readonly "header.local": string;
 readonly "homePage.empty": string;
+readonly "search.placeholder": string;
 readonly "quickAccess.title": string;
-readonly "quickAccess.error": string;
 readonly "quickAccess.fetchError": string;
+readonly "quickAccess.error": string;
 readonly "featuredDocs.learnMore": string;
-readonly "templates.title": string;
-readonly "templates.error": string;
 readonly "templates.empty": string;
+readonly "templates.title": string;
 readonly "templates.fetchError": string;
+readonly "templates.error": string;
 readonly "templates.emptyDescription": string;
 readonly "templates.register": string;
 readonly "templates.viewAll": string;
@@ -166,15 +166,15 @@ readonly "onboarding.learn.title": string;
 readonly "onboarding.learn.description": string;
 readonly "onboarding.learn.buttonText": string;
 readonly "onboarding.learn.ariaLabel": string;
-readonly "entities.title": string;
-readonly "entities.description": string;
-readonly "entities.error": string;
 readonly "entities.close": string;
 readonly "entities.empty": string;
+readonly "entities.title": string;
 readonly "entities.fetchError": string;
+readonly "entities.error": string;
 readonly "entities.emptyDescription": string;
 readonly "entities.register": string;
 readonly "entities.viewAll": string;
+readonly "entities.description": string;
 }>;
 
 // @public

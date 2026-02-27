@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright 2020 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { test, expect } from '@playwright/test';
 
-export * from './plugin';
-/**
- * @alpha
- */
-export * from './alpha';
+test('App should render the welcome page', async ({ page }) => {
+  await page.goto('/');
+
+  const enterButton = page.getByRole('button', { name: 'Enter' });
+  await expect(enterButton).toBeVisible();
+  await enterButton.click();
+
+  await expect(page.getByText('My Company Catalog')).toBeVisible();
+});

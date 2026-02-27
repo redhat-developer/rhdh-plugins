@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { HomePageCardConfig } from '../types';
 
-export * from './plugin';
-/**
- * @alpha
- */
-export * from './alpha';
+export function isCardADefaultConfiguration(
+  cardData: HomePageCardConfig,
+): boolean {
+  return (
+    !!cardData.breakpointLayouts ||
+    Object.entries(cardData.breakpointLayouts ?? {})?.length === 0
+  );
+}

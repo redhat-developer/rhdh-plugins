@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-/**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
- *
- * @packageDocumentation
- */
+import { createApp } from '@backstage/frontend-defaults';
+import { navModule } from './modules/nav';
+import { signInModule } from './modules/signIn';
+import {
+  homePageDevModule,
+  homepageTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
 
-export * from './plugin';
-/**
- * @alpha
- */
-export * from './alpha';
+export default createApp({
+  features: [
+    navModule,
+    signInModule,
+    homePageDevModule,
+    homepageTranslationsModule,
+  ],
+});
