@@ -14,24 +14,4 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-
-import { homepageTranslationRef } from './ref';
-
-/**
- * Translation resource for the Dynamic Home Page plugin (en, de, es, fr, it, ja).
- *
- * @alpha
- */
-export const homepageTranslations = createTranslationResource({
-  ref: homepageTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
-});
-
-export { homepageTranslationRef };
+import '@testing-library/jest-dom';
