@@ -34,6 +34,7 @@ import {
   applySelectorArray,
   resolveDropdownDefault,
   useProcessingState,
+  useClearOnRetrigger,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -79,6 +80,7 @@ export const ActiveDropdown: Widget<
   const hasStaticDefault = typeof staticDefault === 'string';
   const staticDefaultValue = hasStaticDefault ? staticDefault : undefined;
   const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
+  const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
 
   const [localError, setLocalError] = useState<string | undefined>(
     !labelSelector || !valueSelector
@@ -158,6 +160,16 @@ export const ActiveDropdown: Widget<
     },
     [onChange, id, setIsChangedByUser],
   );
+
+  const handleClear = useCallback(() => {
+    handleChange('', false);
+  }, [handleChange]);
+
+  useClearOnRetrigger({
+    enabled: clearOnRetrigger,
+    retrigger,
+    onClear: handleClear,
+  });
 
   // Set default value from fetched options
   // Priority: selector default (if valid option) > static default (if valid) > first fetched option

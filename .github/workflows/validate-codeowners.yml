@@ -2,9 +2,12 @@ name: Validate CODEOWNERS
 
 on:
   workflow_dispatch:
-  pull_request:
+  pull_request_target:
     paths:
       - '.github/CODEOWNERS'
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -13,10 +16,22 @@ concurrency:
 jobs:
   validate-codeowners:
     name: Validate CODEOWNERS members
+    if: github.repository == 'redhat-developer/rhdh-plugins'
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Get CODEOWNERS from PR
+        if: github.event_name == 'pull_request_target'
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-head
+          git checkout pr-head -- .github/CODEOWNERS
 
       - name: Generate GitHub App Token
         id: generate-token

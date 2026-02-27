@@ -1,0 +1,126 @@
+---
+description: Legacy vs NFS app migration and e2e testing (all workspaces)
+globs: workspaces/**/*
+alwaysApply: false
+---
+
+# Legacy App & NFS App Migration and E2E Testing
+
+Use this when working on migration between a legacy frontend and an NFS (new frontend system) app in **any workspace**, or when adding or changing e2e tests.
+
+## App layout (when a workspace has both)
+
+- **Legacy app**: typically `packages/app-legacy` — original Backstage frontend. Started with e.g. `backstage-cli repo start packages/app-legacy packages/backend`.
+- **NFS app**: typically `packages/app` — app using the new frontend system. Default `yarn start` (repo start).
+
+Root `package.json` scripts to support:
+
+- `start:legacy` — run legacy app + backend.
+- `start` — run NFS app (repo start).
+- `test:e2e:legacy` — e2e against legacy (`APP_MODE=legacy playwright test`).
+- `test:e2e:nfs` — e2e against NFS (`APP_MODE=nfs playwright test`).
+- `test:e2e:all` — run both (`yarn test:e2e:legacy && yarn test:e2e:nfs`).
+
+When changing app behavior or navigation, consider impact on **both** apps and run both e2e suites where both exist.
+
+## APP_MODE and Playwright
+
+- `APP_MODE=legacy` → use legacy start command (e.g. `yarn start:legacy`).
+- `APP_MODE=nfs` → use NFS start command (e.g. `yarn start`).
+- In `playwright.config.ts`: `const appMode = process.env.APP_MODE || 'legacy'` and `const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start'`.
+
+Keep artifacts per mode so results don’t collide:
+
+- Reporter output: `e2e-test-report-${appMode}`.
+- Test output dir: `node_modules/.cache/e2e-test-results-${appMode}`.
+
+## E2E layout (workspace-agnostic)
+
+Two valid patterns in this repo:
+
+1. **Workspace-root e2e** — `e2e-tests/` at the workspace root. Shared utils in `e2e-tests/utils/`. Best when the same tests run against both legacy and NFS via `APP_MODE`.
+2. **App-scoped e2e** — `packages/app/e2e-tests/` (and optionally `packages/app/e2e-tests/utils/`). Used by many workspaces that only have one app.
+
+When migrating a workspace to support both legacy and NFS, consider moving e2e from `packages/app/e2e-tests/` to workspace-root `e2e-tests/` so one suite is driven by `APP_MODE`. Set `testDir: 'e2e-tests'` in Playwright config for root layout, or `testDir: 'packages/app/e2e-tests'` for app-scoped.
+
+**Locale/config overrides**: Use a `test_yamls/` dir (under the chosen e2e dir or a known path) with `app-config-e2e-{locale}.yaml` (or similar) to override `app.baseUrl` and `backend` (port, CORS) per locale. Playwright `projects` and `webServer` entries should match those configs and ports.
+
+## Translations and locales in E2E
+
+- Prefer **translation keys** from the plugin (e.g. `translations.some.key`) over hardcoded UI strings so tests work in all supported locales.
+- Load messages from the plugin’s translation modules (e.g. ref + locale files). Use a small util (e.g. `getTranslations(locale)`) in `e2e-tests/utils/` or `packages/app/e2e-tests/utils/`. Use eslint-disable for relative monorepo imports only where necessary.
+- For template strings with placeholders, use a `replaceTemplate(template, { key: value })` helper (e.g. replacing `{{key}}`).
+- For non‑default locale, switch via UI (e.g. Settings → language) in a `switchToLocale(page, locale)` helper and keep selectors/key usage locale-agnostic.
+
+## Port mapping (multi-locale e2e)
+
+When running multiple frontends/backends (e.g. one per locale), keep a consistent mapping so test code and configs stay in sync. Example pattern: frontend 3000, 3001, … and backend 7007, 7008, … (e.g. `backendPort = frontendPort + 4007`). Document the mapping in the workspace or in a comment in Playwright config / events helper.
+
+## E2E helpers and quality
+
+- **Shared logic**: Put reusable flows (navigation, panels, tables, date pickers, etc.) in `utils/` under the chosen e2e dir. Use the same helpers for legacy and NFS runs.
+- **Accessibility**: Run axe (e.g. `@axe-core/playwright`) with wcag tags; attach results to `TestInfo`; filter known false positives so only real violations fail the run.
+- **Timing**: After actions that trigger async or analytics, wait appropriately (e.g. a short delay or wait for network/UI) before assertions.
+
+## Migration runbook (adding legacy + NFS to a workspace)
+
+When a workspace currently has only one app and you need to support both legacy and NFS with shared e2e:
+
+1. **Create or rename app packages**
+   - If the current app is the new frontend: rename/copy it to `packages/app-legacy` (or create a legacy app) and keep the NFS app as `packages/app`.
+   - Ensure root `package.json` has `start:legacy` (e.g. `backstage-cli repo start packages/app-legacy packages/backend`) and `start` (repo start for NFS).
+
+2. **Add e2e scripts and APP_MODE**
+   - In workspace root `package.json`: `test:e2e:legacy` = `APP_MODE=legacy playwright test`, `test:e2e:nfs` = `APP_MODE=nfs playwright test`, `test:e2e:all` = run both in sequence.
+
+3. **Update `playwright.config.ts`**
+   - `const appMode = process.env.APP_MODE || 'legacy'`.
+   - `const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start'`.
+   - Use `startCommand` in `webServer` (replace hardcoded `yarn start`). If multiple servers (e.g. locales), use an **array** of webServer entries, each with `command`, `url` (e.g. readiness), `timeout`, `cwd: __dirname`, and pass the right config per entry (e.g. `--config baseConfig --config testConfigDir/app-config-e2e-{locale}.yaml`).
+   - `reporter` outputFolder and `outputDir`: suffix with `-${appMode}` so legacy and NFS results don’t overwrite each other.
+
+4. **Optional: move e2e to workspace root**
+   - Move `packages/app/e2e-tests/` → `e2e-tests/` (and `e2e-tests/utils/`). Update `testDir` in Playwright to `'e2e-tests'`. Fix imports in tests (paths to utils and to plugin code may need updating; use `__dirname`-based or relative paths as in the reference workspace).
+
+5. **Locale configs (if you run multiple locales)**
+   - Add `e2e-tests/test_yamls/app-config-e2e-{locale}.yaml` (or under your chosen e2e dir). Each file overrides `app.baseUrl` and `backend.baseUrl`, `backend.listen.port`, `backend.cors.origin` for that locale. Add one Playwright project per locale with matching `baseURL` and `locale`, and one webServer entry per locale with the matching config and readiness URL (e.g. backend port 7007, 7008, …).
+
+6. **Update existing e2e tests**
+   - Replace hardcoded UI strings with translation keys and a `getTranslations(locale)` (or equivalent) loaded in `beforeAll` from the plugin’s translation modules. Use `replaceTemplate` for `{{key}}` placeholders.
+   - Ensure navigation and selectors work for **both** legacy and NFS (e.g. nav link text or structure may differ; prefer shared helpers that accept translated strings so one test runs in both modes).
+   - Add explicit waits after actions that trigger analytics or async work (e.g. `waitForDataFlush()` or wait for network/UI) so assertions are stable.
+
+**Reference implementation**: `workspaces/adoption-insights` — see `playwright.config.ts`, root `package.json` scripts, `e2e-tests/` layout, `e2e-tests/utils/` (translations, helpers, accessibility), and `e2e-tests/test_yamls/` for locale-specific configs.
+
+## Running both modes in CI (recommended)
+
+**Best approach — no CI workflow change:** Make the workspace’s `playwright` script run both modes when CI runs `yarn playwright test`. Then the existing `.github/workflows/ci.yml` step (“run playwright tests” with `yarn playwright test` in the workspace) automatically runs legacy and NFS e2e.
+
+**How to do it (adoption-insights pattern):** In the workspace root `package.json`:
+
+- `test:e2e:legacy` = `APP_MODE=legacy playwright test`
+- `test:e2e:nfs` = `APP_MODE=nfs playwright test`
+- `test:e2e:all` = `yarn test:e2e:legacy && yarn test:e2e:nfs`
+- **`playwright`** = script that runs both modes when CI runs `yarn playwright test`, and forwards other args (e.g. `install`) to npx:
+  ```json
+  "playwright": "bash -c 'if [[ $@ == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _"
+  ```
+
+With this, CI keeps running `yarn playwright test`; the workspace runs both legacy and NFS in one job. Reports stay split (`e2e-test-report-legacy`, `e2e-test-report-nfs`). See `workspaces/adoption-insights/package.json` for the full script.
+
+**Alternative (two CI steps):** If you prefer not to override the `playwright` script, run two steps in the same job: `APP_MODE=legacy yarn playwright test` then `APP_MODE=nfs yarn playwright test`, and archive both report dirs as separate artifacts.
+
+## Gotchas
+
+- **webServer**: For multiple servers (e.g. one per locale), `webServer` must be an **array** of objects; a single object starts only one process. Each entry needs `cwd: __dirname` so the start command runs in the workspace root.
+- **baseURL vs backend port**: Projects’ `baseURL` is the frontend URL (e.g. 3000, 3001). Backend readiness URL in webServer is the backend port (e.g. 7007). Keep config yamls and projects in sync.
+- **Selectors**: Legacy and NFS UIs can differ (e.g. nav structure, class names). Prefer role-based or translated text selectors and shared helpers so the same test works for both.
+
+## Checklist for migration / e2e work
+
+- [ ] If the workspace has both legacy and NFS, changes work for both; run both e2e suites (`test:e2e:legacy`, `test:e2e:nfs`).
+- [ ] Playwright config uses `APP_MODE` to choose start command and to suffix report/output dirs when both modes exist.
+- [ ] E2E location is consistent: either workspace-root `e2e-tests/` or `packages/app/e2e-tests/`; shared utils live under that e2e dir.
+- [ ] When the plugin has i18n, e2e uses translation keys (and a `getTranslations`-style util) instead of hardcoded strings.
+- [ ] New locale or port: add the corresponding app-config override and a Playwright project + webServer entry with matching ports.
+- [ ] CI runs both modes: use the `playwright` script that runs `test:e2e:all` (see “Running both modes in CI”) so no workflow change is needed.
