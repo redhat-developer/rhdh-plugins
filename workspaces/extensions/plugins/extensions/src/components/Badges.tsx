@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
+/* eslint-disable react/react-in-jsx-scope */
+
 import Chip from '@mui/material/Chip';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Tooltip from '@mui/material/Tooltip';
-import React from 'react';
 import {
   ExtensionsAnnotation,
   ExtensionsPlugin,
