@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  AuthService,
+  DiscoveryService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
+import { ScmIntegrations } from '@backstage/integration';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+import { createListScaffolderTasksAction } from './listScaffolderTasksAction.ts';
 
 export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+export { createListScaffolderTasksAction } from './listScaffolderTasksAction.ts';
 
 export const createScaffolderActions = (options: {
   actionsRegistry: ActionsRegistryService;
+  auth: AuthService;
   catalog: CatalogService;
+  discovery: DiscoveryService;
   logger: LoggerService;
+  scmIntegrations: ScmIntegrations;
 }) => {
   createFetchTemplateMetadataAction(options);
+  createListScaffolderTasksAction(options);
 };

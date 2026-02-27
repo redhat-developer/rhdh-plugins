@@ -17,6 +17,7 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { ScmIntegrations } from '@backstage/integration';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { createScaffolderActions } from './actions';
@@ -32,13 +33,31 @@ export const mcpScaffolderExtrasPlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         actionsRegistry: actionsRegistryServiceRef,
+        auth: coreServices.auth,
+        catalog: catalogServiceRef,
+        config: coreServices.rootConfig,
+        discovery: coreServices.discovery,
         logger: coreServices.logger,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        catalog: catalogServiceRef,
       },
-      async init({ actionsRegistry, catalog, logger }) {
-        createScaffolderActions({ actionsRegistry, catalog, logger });
+      async init({
+        actionsRegistry,
+        auth,
+        catalog,
+        config,
+        discovery,
+        logger,
+      }) {
+        const scmIntegrations = ScmIntegrations.fromConfig(config);
+        createScaffolderActions({
+          actionsRegistry,
+          auth,
+          catalog,
+          discovery,
+          logger,
+          scmIntegrations,
+        });
       },
     });
   },
