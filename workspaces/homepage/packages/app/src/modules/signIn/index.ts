@@ -14,24 +14,17 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SignInPageBlueprint } from '@backstage/plugin-app-react';
 
-import { homepageTranslationRef } from './ref';
-
-/**
- * Translation resource for the Dynamic Home Page plugin (en, de, es, fr, it, ja).
- *
- * @alpha
- */
-export const homepageTranslations = createTranslationResource({
-  ref: homepageTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
+export const signInModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    SignInPageBlueprint.make({
+      params: {
+        loader: () =>
+          import('./SignInPageComponent').then(m => m.SignInPageComponent),
+      },
+    }),
+  ],
 });
-
-export { homepageTranslationRef };

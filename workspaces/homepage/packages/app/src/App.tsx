@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { createApp } from '@backstage/frontend-defaults';
+import { navModule } from './modules/nav';
+import { signInModule } from './modules/signIn';
+import {
+  homePageDevModule,
+  homepageTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
 
-import { homepageTranslationRef } from './ref';
-
-/**
- * Translation resource for the Dynamic Home Page plugin (en, de, es, fr, it, ja).
- *
- * @alpha
- */
-export const homepageTranslations = createTranslationResource({
-  ref: homepageTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
+export default createApp({
+  features: [
+    navModule,
+    signInModule,
+    homePageDevModule,
+    homepageTranslationsModule,
+  ],
 });
-
-export { homepageTranslationRef };
