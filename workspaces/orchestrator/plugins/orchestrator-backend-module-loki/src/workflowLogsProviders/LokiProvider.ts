@@ -22,11 +22,26 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
+import { Agent } from 'undici';
+
+// Augment the global RequestInit interface to include the dispatcher property
+declare global {
+  interface RequestInit {
+    dispatcher?: Agent | undefined;
+  }
+}
+
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
+  private readonly token: string;
   private readonly selectors: any;
+  private readonly rejectUnauthorized: boolean;
   private constructor(config: Config) {
     this.baseURL = config.getString('baseUrl');
+    this.token = config.getString('token');
+    // Only should be false if specified, undefined here should be true
+    this.rejectUnauthorized =
+      config.getOptionalBoolean('rejectUnauthorized') === false ? false : true;
     this.selectors = config.getOptional('logStreamSelectors') || [];
   }
   getBaseURL(): string {
@@ -39,6 +54,14 @@ export class LokiProvider implements WorkflowLogProvider {
 
   getSelectors() {
     return this.selectors;
+  }
+
+  getToken(): string {
+    return this.token;
+  }
+
+  getRejectUnauthorized(): boolean {
+    return this.rejectUnauthorized;
   }
 
   async fetchWorkflowLogsByInstance(
@@ -69,7 +92,7 @@ export class LokiProvider implements WorkflowLogProvider {
     // Create the streamSelector
     let streamSelector: string = '';
     if (this.selectors.length < 1) {
-      streamSelector = 'service_name=~".+"';
+      streamSelector = 'openshift_log_type="application"';
     } else {
       this.selectors.forEach(
         (
@@ -78,11 +101,13 @@ export class LokiProvider implements WorkflowLogProvider {
           arr: string | any[],
         ) => {
           // something about that last comma
-          streamSelector += `${entry.label || 'service_name'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
+          streamSelector += `${entry.label || 'openshift_log_type'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
         },
       );
     }
     const logPipelineFilter = `|="${instance.id}"`;
+    // Maybe add something else here like the | json thing
+    // More query shite
     const params = new URLSearchParams({
       query: `{${streamSelector}} ${logPipelineFilter}`,
       start: startTime as string,
@@ -91,9 +116,22 @@ export class LokiProvider implements WorkflowLogProvider {
 
     const urlToFetch = `${this.baseURL}${lokiApiEndpoint}?${params.toString()}`;
 
+    const customAgent = new Agent({
+      connect: {
+        // Agent configuration options, e.g., for self-signed certificates
+        rejectUnauthorized: this.rejectUnauthorized,
+      },
+    });
+
     let allResults;
     try {
-      const response = await fetch(urlToFetch);
+      const response = await fetch(urlToFetch, {
+        dispatcher: customAgent,
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (!response.ok) {
         throw new Error(await response.text());
       }
@@ -131,6 +169,7 @@ export class LokiProvider implements WorkflowLogProvider {
           };
         });
     } catch (error) {
+      console.log(error);
       throw new Error(`Problem fetching loki logs: ${error.message}`);
     }
 

@@ -27,6 +27,7 @@ describe('LokiProvider', () => {
           workflowLogProvider: {
             loki: {
               baseUrl: 'http://localhost:3100',
+              token: 'notsecret',
             },
           },
         },
