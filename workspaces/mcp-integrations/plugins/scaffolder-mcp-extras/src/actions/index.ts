@@ -17,13 +17,31 @@ import { LoggerService } from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+import { createListScaffolderActionsAction } from './createListScaffolderActionsAction.ts';
+import type { ScaffolderActionsListProvider } from './createListScaffolderActionsAction.ts';
 
 export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+export {
+  createListScaffolderActionsAction,
+  scaffolderActionsListProviderFromActionsService,
+  type ScaffolderActionsListProvider,
+} from './createListScaffolderActionsAction.ts';
 
 export const createScaffolderActions = (options: {
   actionsRegistry: ActionsRegistryService;
   catalog: CatalogService;
   logger: LoggerService;
+  /**
+   * Optional. When provided, list-scaffolder-actions returns the real list.
+   * When omitted, the tool is still registered but returns an empty list.
+   * Not exported from @backstage/plugin-scaffolder-backend; pass an implementation
+   * (e.g. TemplateActionRegistry from the scaffolder backend when wired by the host app).
+   */
+  templateActionRegistry?: ScaffolderActionsListProvider;
 }) => {
   createFetchTemplateMetadataAction(options);
+  createListScaffolderActionsAction({
+    actionsRegistry: options.actionsRegistry,
+    templateActionRegistry: options.templateActionRegistry,
+  });
 };

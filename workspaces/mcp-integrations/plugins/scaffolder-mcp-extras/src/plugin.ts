@@ -18,8 +18,14 @@ import {
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
-import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
-import { createScaffolderActions } from './actions';
+import {
+  actionsRegistryServiceRef,
+  actionsServiceRef,
+} from '@backstage/backend-plugin-api/alpha';
+import {
+  createScaffolderActions,
+  scaffolderActionsListProviderFromActionsService,
+} from './actions';
 
 /**
  * mcpScaffolderExtrasPlugin backend plugin
@@ -32,13 +38,20 @@ export const mcpScaffolderExtrasPlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         actionsRegistry: actionsRegistryServiceRef,
+        actionsService: actionsServiceRef,
         logger: coreServices.logger,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         catalog: catalogServiceRef,
       },
-      async init({ actionsRegistry, catalog, logger }) {
-        createScaffolderActions({ actionsRegistry, catalog, logger });
+      async init({ actionsRegistry, actionsService, catalog, logger }) {
+        createScaffolderActions({
+          actionsRegistry,
+          catalog,
+          logger,
+          templateActionRegistry:
+            scaffolderActionsListProviderFromActionsService(actionsService),
+        });
       },
     });
   },
