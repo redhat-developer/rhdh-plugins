@@ -155,7 +155,7 @@ test.describe('Admin > Extensions', () => {
       await extensions.resetSupportTypeFilter(translations.badges.certified);
     });
 
-    test('Verify Generally available badge in extensions', async ({
+    test('Verify production badge in extensions', async ({
       browser: _browser,
     }) => {
       await extensions.selectSupportTypeFilter(
@@ -171,7 +171,7 @@ test.describe('Admin > Extensions', () => {
         ),
         sharedPage,
       );
-      await extensionHelper.clickLink({ href: '/support-generally-available' });
+      await extensionHelper.clickLink({ href: '/support-production' });
 
       await extensionHelper.labelTextContentVisible(
         translations.badges.productionReadyBy.replace(

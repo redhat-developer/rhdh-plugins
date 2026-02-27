@@ -18,7 +18,7 @@
  * @public
  */
 export enum ExtensionsSupportLevel {
-  GENERALLY_AVAILABLE = 'generally-available',
+  PRODUCTION = 'production',
   TECH_PREVIEW = 'tech-preview',
   DEV_PREVIEW = 'dev-preview',
   COMMUNITY = 'community',

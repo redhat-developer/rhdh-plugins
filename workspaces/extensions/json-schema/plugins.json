@@ -129,7 +129,6 @@
                   "type": "string",
                   "enum": [
                     "production",
-                    "generally-available",
                     "tech-preview",
                     "dev-preview",
                     "community",

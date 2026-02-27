@@ -3,8 +3,8 @@ apiVersion: extensions.backstage.io/v1alpha1
 kind: Plugin
 metadata:
   namespace: extensions-plugin-demo
-  name: support-generally-available
-  title: Support Generally Available
+  name: support-production
+  title: Support Production
   annotations:
     extensions.backstage.io/pre-installed: 'true'
 spec:
@@ -12,4 +12,4 @@ spec:
     - Test plugin entity
   support:
     provider: A provider
-    level: generally-available
+    level: production
