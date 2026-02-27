@@ -173,7 +173,7 @@ export const useFilteredSupportTypes = () => {
     });
 
     Object.entries(supportLevelCounts).forEach(([level, count]) => {
-      if (level === ExtensionsSupportLevel.GENERALLY_AVAILABLE) {
+      if (level === ExtensionsSupportLevel.PRODUCTION) {
         allSupportTypeItems.push({
           label: t('badges.generallyAvailable'),
           value: `support-level=${level}`,

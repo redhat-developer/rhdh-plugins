@@ -17,6 +17,7 @@
 import Chip from '@mui/material/Chip';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import Tooltip from '@mui/material/Tooltip';
+import React from 'react';
 import {
   ExtensionsAnnotation,
   ExtensionsPlugin,
@@ -59,7 +60,7 @@ const getBadgeOptions = (
       }),
     };
   }
-  if (supportLevel === ExtensionsSupportLevel.GENERALLY_AVAILABLE) {
+  if (supportLevel === ExtensionsSupportLevel.PRODUCTION) {
     return {
       isBadge: true,
       color: colors.generallyAvailable,
