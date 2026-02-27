@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import { fetchCatalogEntities } from './plugin';
+import { fetchCatalogEntities } from './createQueryCatalogEntitiesAction';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import { mockServices } from '@backstage/backend-test-utils';
 
-describe('softwareCatalogMcpExtrasPlugin', () => {
+describe('createQueryCatalogEntitiesAction', () => {
   describe('fetchCatalogEntities', () => {
     const mockCatalogService = {
       getEntities: jest.fn(),
     } as unknown as CatalogService;
 
-    const mockAuthService = {
-      getOwnServiceCredentials: jest.fn(),
+    const mockCredentials = {
+      principal: { type: 'service', subject: 'test' },
+      token: 'test-token',
     };
 
     const mockLoggerService = mockServices.logger.mock();
@@ -83,22 +84,16 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
-      expect(mockAuthService.getOwnServiceCredentials).toHaveBeenCalledTimes(1);
       expect(mockCatalogService.getEntities).toHaveBeenCalledWith(
         {
           fields: [
@@ -174,18 +169,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
@@ -206,18 +196,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
     });
 
     it('should handle empty catalog', async () => {
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: [],
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
@@ -227,11 +212,6 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
     });
 
     it('should handle catalog service errors', async () => {
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockRejectedValue(
         new Error('Catalog service error'),
       );
@@ -239,24 +219,10 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
       await expect(
         fetchCatalogEntities(
           mockCatalogService,
-          mockAuthService,
+          mockCredentials,
           mockLoggerService,
         ),
       ).rejects.toThrow('Catalog service error');
-    });
-
-    it('should handle authentication errors', async () => {
-      mockAuthService.getOwnServiceCredentials.mockRejectedValue(
-        new Error('Authentication failed'),
-      );
-
-      await expect(
-        fetchCatalogEntities(
-          mockCatalogService,
-          mockAuthService,
-          mockLoggerService,
-        ),
-      ).rejects.toThrow('Authentication failed');
     });
 
     it('should filter entities by kind', async () => {
@@ -291,18 +257,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         {
           kind: 'Component',
@@ -350,18 +311,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         {
           kind: 'Component',
@@ -432,18 +388,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         { name: 'my-service' },
       );
@@ -504,18 +455,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         { owner: 'team-platform' },
       );
@@ -576,18 +522,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
       );
 
@@ -633,18 +574,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         { verbose: true },
       );
@@ -692,18 +628,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         { verbose: false },
       );
@@ -763,18 +694,13 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
       const result = await fetchCatalogEntities(
         mockCatalogService,
-        mockAuthService,
+        mockCredentials,
         mockLoggerService,
         {}, // No verbose specified
       );
@@ -823,8 +749,9 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
       getEntities: jest.fn(),
     } as unknown as CatalogService;
 
-    const mockAuthService = {
-      getOwnServiceCredentials: jest.fn(),
+    const mockCredentials = {
+      principal: { type: 'service', subject: 'test' },
+      token: 'test-token',
     };
 
     const mockLoggerService = mockServices.logger.mock();
@@ -834,7 +761,6 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
     });
 
     it('should return error when type is specified without kind', async () => {
-      // Simulate the action logic that validates type without kind
       const fetchCatalogEntitiesAction = async ({
         input,
       }: {
@@ -859,7 +785,7 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         }
         const result = await fetchCatalogEntities(
           mockCatalogService,
-          mockAuthService,
+          mockCredentials,
           mockLoggerService,
           input,
         );
@@ -899,16 +825,10 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
-      // Simulate the action logic
       const fetchCatalogEntitiesAction = async ({
         input,
       }: {
@@ -933,7 +853,7 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         }
         const result = await fetchCatalogEntities(
           mockCatalogService,
-          mockAuthService,
+          mockCredentials,
           mockLoggerService,
           input,
         );
@@ -982,16 +902,10 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         },
       ];
 
-      mockAuthService.getOwnServiceCredentials.mockResolvedValue({
-        principal: { type: 'service', subject: 'test' },
-        token: 'test-token',
-      });
-
       (mockCatalogService.getEntities as jest.Mock).mockResolvedValue({
         items: mockEntities,
       });
 
-      // Simulate the action logic
       const fetchCatalogEntitiesAction = async ({
         input,
       }: {
@@ -1016,7 +930,7 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
         }
         const result = await fetchCatalogEntities(
           mockCatalogService,
-          mockAuthService,
+          mockCredentials,
           mockLoggerService,
           input,
         );
@@ -1071,20 +985,17 @@ describe('softwareCatalogMcpExtrasPlugin', () => {
           }),
         } as unknown as CatalogService;
 
-        const mockAuthService = {
-          getOwnServiceCredentials: jest.fn().mockResolvedValue({
-            principal: { type: 'service', subject: 'test' },
-            token: 'test-token',
-          }),
+        const mockCredentials = {
+          principal: { type: 'service', subject: 'test' },
+          token: 'test-token',
         };
 
         const mockLoggerService = mockServices.logger.mock();
 
-        // Test the action logic
         const fetchCatalogEntitiesAction = async () => {
           const result = await fetchCatalogEntities(
             mockCatalogService,
-            mockAuthService,
+            mockCredentials,
             mockLoggerService,
           );
           return {

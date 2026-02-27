@@ -1,0 +1,128 @@
+---
+description: Port an MCP tool from a local backstage/backstage checkout into an overlay plugin in this workspace
+alwaysApply: false
+---
+
+# Porting MCP Tools from backstage/backstage
+
+When asked to port/copy an MCP tool from backstage/backstage into this workspace, follow these steps exactly.
+
+## Required inputs
+
+1. **Source file path** — local path (relative or absolute) to the `.ts` file in a backstage/backstage checkout (e.g. `~/git/backstage/plugins/catalog-backend/src/actions/createValidateEntityAction.ts`).
+2. **Target overlay plugin** — one of the directories under `plugins/` in this workspace (e.g. `software-catalog-mcp-extras`, `scaffolder-mcp-extras`, `techdocs-mcp-extras`). The overlay **must already exist**; do not create a new one.
+
+If the user hasn't specified both, ask before proceeding. List the available overlays by checking which directories under `plugins/` contain a `package.json`.
+
+## Structural alignment between repos
+
+Both repos use the same `src/actions/` layout so that porting is mostly copy-paste:
+
+| Aspect | backstage/backstage | This workspace |
+|---|---|---|
+| Action files | `plugins/<plugin>/src/actions/createXxxAction.ts` | `plugins/<overlay>/src/actions/createXxxAction.ts` |
+| Test files | `plugins/<plugin>/src/actions/createXxxAction.test.ts` | `plugins/<overlay>/src/actions/createXxxAction.test.ts` |
+| Aggregator | `src/actions/index.ts` exports `create<X>Actions` | `src/actions/index.ts` exports `create<X>Actions` |
+| Import extensions | `.ts` extensions on local imports in `actions/index.ts` | `.ts` extensions on local imports in `actions/index.ts` |
+| Credentials | `credentials` from action callback `({ input, credentials })` | Same — `credentials` from action callback |
+| Copyright | `Copyright 2025 The Backstage Authors` | `Copyright Red Hat, Inc.` |
+
+## Steps
+
+### 1. Read the source file and its test
+
+Read the file at the provided path. Verify it exists and is a `.ts` file. Also look for a matching test file at the same path with `.test.ts` suffix. If the test file exists, read it too — both the action and its test should be ported together.
+
+### 2. Check for relative imports in the source
+
+Scan the source (and test) file for relative imports (e.g. `import { foo } from './someHelper'`). If any exist, warn the user — those sibling files would also need to be ported or the imports rewritten. Ask how to proceed before continuing.
+
+### 3. Copy files into `src/actions/`
+
+Copy the source file (and test file if found) into `plugins/<overlay>/src/actions/`, preserving the original filename. Do **not** modify the upstream files — all changes happen on the copies in this workspace.
+
+Example for `createValidateEntityAction.ts` → `software-catalog-mcp-extras`:
+
+```
+plugins/software-catalog-mcp-extras/src/actions/createValidateEntityAction.ts
+plugins/software-catalog-mcp-extras/src/actions/createValidateEntityAction.test.ts
+```
+
+If a file already exists at the destination, ask the user before overwriting.
+
+### 4. Update the copyright header
+
+In the **copied** files, replace the upstream copyright header with the Red Hat header:
+
+**Replace:**
+```
+ * Copyright 2025 The Backstage Authors
+```
+
+**With:**
+```
+ * Copyright Red Hat, Inc.
+```
+
+Leave the rest of the Apache 2.0 license block unchanged.
+
+### 5. Resolve dependencies
+
+Parse all `import ... from '...'` statements in the source file (and test file) to collect external package names.
+
+**Mapping rules:**
+- Subpath imports like `@backstage/backend-plugin-api/alpha` map to the root package `@backstage/backend-plugin-api`.
+- Relative imports (`./`, `../`) are not external packages — skip them.
+- Bare specifiers like `yaml`, `node-fetch`, etc. are the package name as-is.
+
+**Check each package against the overlay's `package.json`:**
+- Read `plugins/<overlay>/package.json`.
+- For each package from the **source file**: if not listed in `dependencies`, add it.
+- For each package from the **test file only** (not also in the source): if not listed in `devDependencies`, add it.
+
+**Version selection:**
+- For `@backstage/*` packages, match the version already used by other overlay plugins in this workspace (check their `package.json` files). All overlays should use consistent `@backstage` versions.
+- For third-party packages (e.g. `yaml`), use `yarn workspace <overlay-package-name> add <pkg>` which will resolve the latest compatible version.
+
+### 6. Update the aggregator (`src/actions/index.ts`)
+
+Each overlay has an aggregator file at `src/actions/index.ts` that collects all tools.
+
+**a) Add an import** for the create function (with `.ts` extension, matching the existing style):
+
+```typescript
+import { createValidateEntityAction } from './createValidateEntityAction.ts';
+```
+
+**b) Add a re-export** so consumers can import the action directly:
+
+```typescript
+export { createValidateEntityAction } from './createValidateEntityAction.ts';
+```
+
+**c) Add a call** inside the existing aggregator function body:
+
+```typescript
+createValidateEntityAction(options);
+```
+
+The aggregator function names per overlay are:
+- `software-catalog-mcp-extras` → `createSoftwareCatalogActions`
+- `scaffolder-mcp-extras` → `createScaffolderActions`
+- `techdocs-mcp-extras` → `createTechDocsActions`
+
+**d) Check whether the ported action needs services not yet in the aggregator's `options` type.** Parse the action creator's parameter type for property names (e.g. `actionsRegistry`, `catalog`). Compare against the aggregator's existing `options` type. If the ported action requires a new service:
+
+1. Add it to the aggregator function's `options` type.
+2. Add it to `plugin.ts`: add the service ref to `deps`, destructure it in `init`, and pass it in the aggregator call.
+
+Most upstream catalog actions only need `actionsRegistry` and `catalog`, which are already available in all aggregators.
+
+### 7. Post-port checklist
+
+After completing all steps, remind the user:
+
+1. Review the ported files in `plugins/<overlay>/src/actions/`.
+2. Verify the aggregator call passes the correct services.
+3. Run `yarn tsc` from the workspace root to check for type errors.
+4. Run `npx backstage-cli package test` from the plugin directory to verify tests pass.

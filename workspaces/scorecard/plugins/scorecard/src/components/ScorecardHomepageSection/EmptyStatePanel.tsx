@@ -20,9 +20,14 @@ import { useTheme } from '@mui/material/styles';
 
 import { CardWrapper } from '../Common/CardWrapper';
 import { useTranslation } from '../../hooks/useTranslation';
-import { getStatusConfig, getRingColor } from '../../utils/utils';
+import {
+  getStatusConfig,
+  getRingColor,
+  getYOffsetForCenterLabel,
+  getHeightForCenterLabel,
+} from '../../utils/utils';
 import CustomLegend from '../Scorecard/CustomLegend';
-import { CustomTooltip } from './CustomTooltip';
+import { ErrorTooltip } from '../Common/ErrorTooltip';
 import { ResponsivePieChart } from './ResponsivePieChart';
 
 const CenterLabel = ({
@@ -30,39 +35,21 @@ const CenterLabel = ({
   cy,
   label,
   color,
+  onLabelMouseEnter,
+  onLabelMouseLeave,
 }: {
   cx: number;
   cy: number;
   label: string;
   color?: string;
+  onLabelMouseEnter?: (e: React.MouseEvent) => void;
+  onLabelMouseLeave?: (e: React.MouseEvent) => void;
 }) => {
   const fontSize = 14;
   const lineHeight = 1.2;
 
   const textRef = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState({ yOffset: -10, height: 40 });
-
-  const getYOffset = (lineCount: number) => {
-    switch (lineCount) {
-      case 2:
-        return -17;
-      case 3:
-        return -24;
-      default:
-        return -8;
-    }
-  };
-
-  const getHeight = (lineCount: number) => {
-    switch (lineCount) {
-      case 2:
-        return 48;
-      case 3:
-        return 56;
-      default:
-        return 40;
-    }
-  };
 
   useLayoutEffect(() => {
     const el = textRef.current;
@@ -71,8 +58,8 @@ const CenterLabel = ({
     const lineHeightPx = fontSize * lineHeight;
     const lineCount = Math.round(el.scrollHeight / lineHeightPx);
 
-    const nextOffset = getYOffset(lineCount);
-    const nextHeight = getHeight(lineCount);
+    const nextOffset = getYOffsetForCenterLabel(lineCount);
+    const nextHeight = getHeightForCenterLabel(lineCount);
 
     setLayout(prev =>
       prev.yOffset === nextOffset && prev.height === nextHeight
@@ -99,7 +86,10 @@ const CenterLabel = ({
             textAlign: 'center',
             lineHeight,
             wordBreak: 'break-word',
+            cursor: 'pointer',
           }}
+          onMouseEnter={onLabelMouseEnter}
+          onMouseLeave={onLabelMouseLeave}
         >
           {label}
         </div>
@@ -119,6 +109,9 @@ export const EmptyStatePanel = ({
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
+
+  const [isLabelHovered, setIsLabelHovered] = useState(false);
+  const [isInsidePieCircle, setIsInsidePieCircle] = useState(false);
 
   const titleKey = `metric.${metricId}.title`;
   const descriptionKey = `metric.${metricId}.description`;
@@ -194,20 +187,33 @@ export const EmptyStatePanel = ({
                 cy={centerY}
                 label={label}
                 color={color}
+                onLabelMouseEnter={e => {
+                  setIsLabelHovered(true);
+                  e.stopPropagation();
+                }}
+                onLabelMouseLeave={e => {
+                  setIsLabelHovered(false);
+                  e.stopPropagation();
+                }}
               />
             );
           }}
           legendContent={props => (
             <CustomLegend {...props} thresholds={undefined} />
           )}
-          tooltipContent={props => (
-            <CustomTooltip
-              {...props}
-              payload={undefined}
-              pieData={pieData}
-              customContent={tooltipContent}
-            />
-          )}
+          tooltipContent={({ coordinate }) => {
+            const showTooltip = isLabelHovered || isInsidePieCircle;
+
+            if (!showTooltip || coordinate === undefined) return null;
+            return (
+              <ErrorTooltip
+                title={tooltipContent}
+                tooltipPosition={{ x: coordinate.x - 25, y: coordinate.y - 16 }}
+              />
+            );
+          }}
+          isErrorState
+          setIsInsidePieCircle={setIsInsidePieCircle}
         />
       </Box>
     </CardWrapper>
