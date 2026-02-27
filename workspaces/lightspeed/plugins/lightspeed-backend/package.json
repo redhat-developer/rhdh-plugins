@@ -51,8 +51,7 @@
     "@langchain/openai": "^0.6.0",
     "@red-hat-developer-hub/backstage-plugin-lightspeed-common": "workspace:^",
     "express": "^4.21.1",
-    "http-proxy-middleware": "^3.0.2",
-    "node-fetch": "2.7.0"
+    "http-proxy-middleware": "^3.0.2"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.10.4",

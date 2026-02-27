@@ -15,7 +15,7 @@
  */
 import { useCallback, useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
-import { Grid, GridProps, makeStyles } from '@material-ui/core';
+import { Grid, GridProps, makeStyles, Typography } from '@material-ui/core';
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
@@ -97,13 +97,21 @@ export const DetailPanel = ({ project }: { project: Project }) => {
       {/* We do not need to repeat the same fields as in the ProjectTable component */}
 
       {loading && <Progress />}
-      {value && (
+
+      {value && value.length > 0 && (
         <Grid {...gridItemProps} xs={12}>
           <ModuleTable
             modules={value}
             forceRefresh={forceRefresh}
             project={project}
           />
+        </Grid>
+      )}
+      {!(value && value.length > 0) && (
+        <Grid {...gridItemProps} xs={12}>
+          <Typography variant="body1" align="center">
+            {t('project.noModules')}
+          </Typography>
         </Grid>
       )}
     </Grid>

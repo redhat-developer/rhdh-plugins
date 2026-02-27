@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Card, CardBody, CardHeader } from '@backstage/ui';
 import { Grid } from '@material-ui/core';
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { InfoCard } from '@backstage/core-components';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
@@ -26,27 +26,24 @@ export const ModuleDetailsCard = ({ module }: { module?: Module }) => {
   const empty = t('module.phases.none');
 
   return (
-    <Card>
-      <CardHeader>{t('modulePage.title')}</CardHeader>
-      <CardBody>
-        <Grid container direction="row" spacing={3}>
-          <Grid item xs={4}>
-            <ItemField label={t('module.name')} value={module?.name || empty} />
-          </Grid>
-          <Grid item xs={4}>
-            <ItemField
-              label={t('module.status')}
-              value={module?.status || empty}
-            />
-          </Grid>
-          <Grid item xs={4}>
-            <ItemField
-              label={t('module.sourcePath')}
-              value={module?.sourcePath || empty}
-            />
-          </Grid>
+    <InfoCard title={t('modulePage.title')} variant="gridItem">
+      <Grid container direction="row" spacing={3}>
+        <Grid item xs={4}>
+          <ItemField label={t('module.name')} value={module?.name || empty} />
         </Grid>
-      </CardBody>
-    </Card>
+        <Grid item xs={4}>
+          <ItemField
+            label={t('module.status')}
+            value={module?.status || empty}
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <ItemField
+            label={t('module.sourcePath')}
+            value={module?.sourcePath || empty}
+          />
+        </Grid>
+      </Grid>
+    </InfoCard>
   );
 };
