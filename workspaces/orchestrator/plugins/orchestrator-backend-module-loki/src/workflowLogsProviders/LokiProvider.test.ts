@@ -296,5 +296,48 @@ describe('LokiProvider', () => {
         `{service_name=~".+",custom-selector1=~".+"} |="${workflowInstance.id}"`,
       );
     });
+
+    it('should have a custom pipeline filter, no label and no value, use defaults', async () => {
+      const mockResponse: Partial<Response> = {
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue(mockWorkflowLog),
+      };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse as any);
+
+      const lokiAppConfig = {
+        orchestrator: {
+          workflowLogProvider: {
+            loki: {
+              baseUrl: 'http://localhost:3100',
+              token: 'notsecret',
+              logPipelineFilters: ['| filter1', '| json'],
+            },
+          },
+        },
+      };
+
+      const lokiConfig = new ConfigReader(lokiAppConfig);
+      const provider = LokiProvider.fromConfig(lokiConfig);
+      const workflowInstance: ProcessInstanceDTO = {
+        id: '12345',
+        processId: '54321',
+        start: '2025-12-05T16:35:13.621Z',
+        end: '',
+        nodes: [],
+      };
+
+      const urlToFetch =
+        'http://localhost:3100/loki/api/v1/query_range?query=%7Bopenshift_log_type%3D%22application%22%7D+%7C%3D%2212345%22+%7C+filter1+%7C+json&start=2025-12-05T16%3A30%3A13.621Z&end=2026-01-03T16%3A35%3A13.621Z';
+
+      await provider.fetchWorkflowLogsByInstance(workflowInstance);
+      const parsedURLToFetch = new URL(urlToFetch);
+      // expect(fetch).toHaveBeenCalledWith(urlToFetch);
+      expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
+      expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
+      expect(parsedURLToFetch.searchParams.get('query')).toEqual(
+        `{openshift_log_type="application"} |="${workflowInstance.id}" | filter1 | json`,
+      );
+    });
   });
 });

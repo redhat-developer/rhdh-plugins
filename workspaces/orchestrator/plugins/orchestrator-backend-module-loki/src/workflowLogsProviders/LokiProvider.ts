@@ -36,6 +36,7 @@ export class LokiProvider implements WorkflowLogProvider {
   private readonly token: string;
   private readonly selectors: any;
   private readonly rejectUnauthorized: boolean;
+  private readonly logPipelineFilters: any;
   private constructor(config: Config) {
     this.baseURL = config.getString('baseUrl');
     this.token = config.getString('token');
@@ -43,6 +44,7 @@ export class LokiProvider implements WorkflowLogProvider {
     this.rejectUnauthorized =
       config.getOptionalBoolean('rejectUnauthorized') === false ? false : true;
     this.selectors = config.getOptional('logStreamSelectors') || [];
+    this.logPipelineFilters = config.getOptional('logPipelineFilters') || [];
   }
   getBaseURL(): string {
     return this.baseURL;
@@ -54,6 +56,10 @@ export class LokiProvider implements WorkflowLogProvider {
 
   getSelectors() {
     return this.selectors;
+  }
+
+  getLogPipelineFilters() {
+    return this.getLogPipelineFilters;
   }
 
   getToken(): string {
@@ -86,7 +92,8 @@ export class LokiProvider implements WorkflowLogProvider {
     const lokiApiEndpoint = '/loki/api/v1/query_range';
     // Query is created with a log stream selector and then a log pipeline for more filtering
     // format looks like this: {stream-selector=expression} | log pipeline/log filter expression
-    // The log stream selector part of the query here is getting all service names
+    // The log stream selector part of the query here is defaulting to openshift_log_type=application
+    // This is the value used for Openshift Logging
     // This might need to be configurable, based on https://grafana.com/docs/loki/latest/query/log_queries/#log-stream-selector
     // Log pipeline part looks for the workflow instance id in those logs
     // Create the streamSelector
@@ -105,9 +112,14 @@ export class LokiProvider implements WorkflowLogProvider {
         },
       );
     }
-    const logPipelineFilter = `|="${instance.id}"`;
-    // Maybe add something else here like the | json thing
-    // More query shite
+    let logPipelineFilter: string = `|="${instance.id}"`;
+
+    if (this.logPipelineFilters.length > 0) {
+      this.logPipelineFilters.forEach((element: any) => {
+        logPipelineFilter += ` ${element}`;
+      });
+    }
+
     const params = new URLSearchParams({
       query: `{${streamSelector}} ${logPipelineFilter}`,
       start: startTime as string,
@@ -169,7 +181,6 @@ export class LokiProvider implements WorkflowLogProvider {
           };
         });
     } catch (error) {
-      console.log(error);
       throw new Error(`Problem fetching loki logs: ${error.message}`);
     }
 

@@ -35,6 +35,10 @@ export interface Config {
          * defaults to true
          */
         rejectUnauthorized?: boolean;
+        // Add custom log pipeline filters
+        // default is the workflow instanceId
+        // new values will be appened
+        logPipelineFilters?: Array<string>;
         logStreamSelectors?: Array<{
           // label is the selector, something like 'app' or 'service_name', etc...
           label: string;
