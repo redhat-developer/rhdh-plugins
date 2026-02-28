@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Route } from 'react-router-dom';
+import { Navigate, Route } from 'react-router-dom';
 import { ApiExplorerPage } from '@backstage/plugin-api-docs';
 import { CatalogEntityPage, CatalogIndexPage } from '@backstage/plugin-catalog';
 import { CatalogImportPage } from '@backstage/plugin-catalog-import';
@@ -29,24 +29,25 @@ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
-import { Root } from './components/Root';
 
 import { AlertDisplay, OAuthRequestDialog } from '@backstage/core-components';
 import { createApp } from '@backstage/frontend-defaults';
 import { convertLegacyApp } from '@backstage/core-compat-api';
 import {
   createFrontendModule,
+  PageBlueprint,
   type FrontendFeature,
   type FrontendFeatureLoader,
 } from '@backstage/frontend-plugin-api';
 import { ThemeBlueprint } from '@backstage/plugin-app-react';
 import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
-import { BCCTestPage } from '@red-hat-developer-hub/backstage-plugin-bcc-test';
-import { BUITestPage } from '@red-hat-developer-hub/backstage-plugin-bui-test';
-import { MUI4TestPage } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
-import { MUI5TestPage } from '@red-hat-developer-hub/backstage-plugin-mui5-test';
+import { BCCTestPageComponent } from '@red-hat-developer-hub/backstage-plugin-bcc-test';
+import { BUITestPageComponent } from '@red-hat-developer-hub/backstage-plugin-bui-test';
+import { MUI4TestPageComponent } from '@red-hat-developer-hub/backstage-plugin-mui4-test';
+import { MUI5TestPageComponent } from '@red-hat-developer-hub/backstage-plugin-mui5-test';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { navModule } from './modules';
 
 /**
  * RHDH themes as NFS extensions (ThemeBlueprint).
@@ -73,48 +74,89 @@ const rhdhThemeModule = createFrontendModule({
   extensions: rhdhThemeExtensions,
 });
 
-// Root "/" shows catalog (convertLegacyApp cannot convert <Navigate />; must use a plugin component)
-const routes = (
-  <FlatRoutes>
-    <Route path="/" element={<CatalogIndexPage />} />
-    <Route path="/catalog" element={<CatalogIndexPage />} />
-    <Route
-      path="/catalog/:namespace/:kind/:name"
-      element={<CatalogEntityPage />}
-    >
-      {entityPage}
-    </Route>
-    <Route path="/docs" element={<TechDocsIndexPage />} />
-    <Route
-      path="/docs/:namespace/:kind/:name/*"
-      element={<TechDocsReaderPage />}
-    >
-      <TechDocsAddons>
-        <ReportIssue />
-      </TechDocsAddons>
-    </Route>
-    <Route path="/create" element={<ScaffolderPage />} />
-    <Route path="/api-docs" element={<ApiExplorerPage />} />
-    {/* Top-level element must be a plugin component for convertLegacyApp; permission can be enforced inside the page or in NFS later */}
-    <Route path="/catalog-import" element={<CatalogImportPage />} />
-    <Route path="/search" element={<SearchPage />}>
-      {searchPage}
-    </Route>
-    <Route path="/settings" element={<UserSettingsPage />} />
-    <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/bcc-tests" element={<BCCTestPage />} />
-    <Route path="/bui-tests" element={<BUITestPage />} />
-    <Route path="/mui4-tests" element={<MUI4TestPage />} />
-    <Route path="/mui5-tests" element={<MUI5TestPage />} />
-  </FlatRoutes>
-);
+const homeRouteModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    PageBlueprint.make({
+      name: 'catalog-alias',
+      params: {
+        path: '/catalog',
+        loader: async () => <Navigate to="/" replace />,
+      },
+    }),
+  ],
+});
 
+const testPagesModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    PageBlueprint.make({
+      name: 'bcc-tests-direct',
+      params: {
+        path: '/bcc-tests',
+        loader: async () => <BCCTestPageComponent />,
+      },
+    }),
+    PageBlueprint.make({
+      name: 'bui-tests-direct',
+      params: {
+        path: '/bui-tests',
+        loader: async () => <BUITestPageComponent />,
+      },
+    }),
+    PageBlueprint.make({
+      name: 'mui4-tests-direct',
+      params: {
+        path: '/mui4-tests',
+        loader: async () => <MUI4TestPageComponent />,
+      },
+    }),
+    PageBlueprint.make({
+      name: 'mui5-tests-direct',
+      params: {
+        path: '/mui5-tests',
+        loader: async () => <MUI5TestPageComponent />,
+      },
+    }),
+  ],
+});
+
+// Routes are parsed by convertLegacyApp to register NFS page extensions. convertLegacyApp
+// requires a "root" element that wraps FlatRoutes (it looks for AppRouter -> root -> FlatRoutes).
 const legacyRootElement = (
   <>
     <AlertDisplay />
     <OAuthRequestDialog />
     <AppRouter>
-      <Root>{routes}</Root>
+      <div>
+        <FlatRoutes>
+          <Route path="/catalog" element={<CatalogIndexPage />} />
+          <Route
+            path="/catalog/:namespace/:kind/:name"
+            element={<CatalogEntityPage />}
+          >
+            {entityPage}
+          </Route>
+          <Route path="/docs" element={<TechDocsIndexPage />} />
+          <Route
+            path="/docs/:namespace/:kind/:name/*"
+            element={<TechDocsReaderPage />}
+          >
+            <TechDocsAddons>
+              <ReportIssue />
+            </TechDocsAddons>
+          </Route>
+          <Route path="/create" element={<ScaffolderPage />} />
+          <Route path="/api-docs" element={<ApiExplorerPage />} />
+          {/* Top-level element must be a plugin component for convertLegacyApp */}
+          <Route path="/catalog-import" element={<CatalogImportPage />} />
+          <Route path="/search" element={<SearchPage />}>
+            {searchPage}
+          </Route>
+          <Route path="/settings" element={<UserSettingsPage />} />
+          <Route path="/catalog-graph" element={<CatalogGraphPage />} />
+        </FlatRoutes>
+      </div>
     </AppRouter>
   </>
 );
@@ -126,6 +168,9 @@ const app = createApp({
       | FrontendFeature
       | FrontendFeatureLoader
     )[]),
+    homeRouteModule,
+    navModule,
+    testPagesModule,
   ],
 });
 
