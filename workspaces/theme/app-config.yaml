@@ -1,5 +1,5 @@
 app:
-  title: Scaffolded Backstage App
+  title: My Company Catalog
   baseUrl: http://localhost:3000
 
   packages: all
