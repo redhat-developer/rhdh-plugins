@@ -13,14 +13,23 @@ orchestrator:
   workflowLogProvider:
     loki:
       baseUrl: http://localhost:3100
+      token: secrettoken
+      # rejectUnauthorized: false
+      # logPipelineFilters:
+      # - | filter1
+      #   |= filter2
       # logStreamSelectors:
       #   - label: 'app'
       #     value: '=~".+"'
 ```
 
-The `baseUrl` is required.
+The `baseUrl` and `token` are required.
+
+If you're baseURL is using a self-signed certificate, add the `rejectUnauthorized: false` parameter. Note: this should only be used in development.
 
 Multiple Log Stream Selectors can be specified in the `logStreamSelectors` section. See the loki docs to learn more about log stream selectors and their values: https://grafana.com/docs/loki/latest/query/log_queries/#log-stream-selector
+
+Multiple Log Pipeline Filters can be specified in the `logPipelineFilters` section. See the loki docs to learn more about the log pipeline filters and their values and usage: https://grafana.com/docs/loki/latest/query/log_queries/#log-pipeline
 
 ## Installation
 
