@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { RELATION_MEMBER_OF } from '@backstage/catalog-model';
 import { mockCredentials } from '@backstage/backend-test-utils';
 import request from 'supertest';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
@@ -63,6 +64,36 @@ describe('createRouter – projects', () => {
           ...mockInputProject,
           createdBy: 'user:default/mock',
         });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should create a project with ownedByGroup and set createdBy to the group - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const app = await createApp(client);
+
+        const response = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            name: 'Group-owned Project',
+            abbreviation: 'GOP',
+            ownedByGroup: 'group:default/team-a',
+          });
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+          name: 'Group-owned Project',
+          abbreviation: 'GOP',
+          createdBy: 'group:default/team-a',
+        });
+
+        const row = await client('projects')
+          .where('id', response.body.id)
+          .first();
+        expect(row.created_by).toBe('group:default/team-a');
       },
       LONG_TEST_TIMEOUT,
     );
@@ -183,10 +214,345 @@ describe('createRouter – projects', () => {
 
         expect(response.status).toBe(404);
         expect(response.body).toMatchObject({
-          error: { name: 'NotFoundError', message: 'Project not found' },
+          error: {
+            name: 'NotFoundError',
+            message: 'Project not found for the "user:default/mock" user.',
+          },
         });
       },
     );
+
+    it.each(supportedDatabaseIds)(
+      'should return projects owned by user or their groups when catalog returns user with memberOf - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+
+        const catalogGetEntityByRef = jest.fn().mockResolvedValue({
+          kind: 'User',
+          metadata: { name: 'mock' },
+          relations: [
+            {
+              type: RELATION_MEMBER_OF,
+              targetRef: 'group:default/team-a',
+            },
+          ],
+        });
+        const app = await createApp(
+          client,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { getEntityByRef: catalogGetEntityByRef },
+        );
+
+        // Project created by user (via API)
+        const createRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(createRes.status).toBe(200);
+
+        // Project "owned" by group (insert directly)
+        const groupProjectId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+        await client('projects').insert({
+          id: groupProjectId,
+          name: 'Group Project',
+          abbreviation: 'GP',
+          description: 'From group',
+          source_repo_url: mockInputProject.sourceRepoUrl,
+          target_repo_url: mockInputProject.targetRepoUrl,
+          source_repo_branch: mockInputProject.sourceRepoBranch,
+          target_repo_branch: mockInputProject.targetRepoBranch,
+          created_by: 'group:default/team-a',
+          created_at: new Date(),
+        });
+        const response = await request(app).get('/projects').send();
+
+        expect(response.status).toBe(200);
+        expect(response.body.totalCount).toBe(2);
+        expect(response.body.items).toHaveLength(2);
+
+        const names = response.body.items.map((p: { name: string }) => p.name);
+        expect(names).toContain(mockInputProject.name);
+        expect(names).toContain('Group Project');
+
+        const groupProject = response.body.items.find(
+          (p: { createdBy: string }) => p.createdBy === 'group:default/team-a',
+        );
+        expect(groupProject).toBeDefined();
+        expect(groupProject.name).toBe('Group Project');
+
+        expect(catalogGetEntityByRef).toHaveBeenCalledWith(
+          'user:default/mock',
+          expect.objectContaining({ credentials: expect.anything() }),
+        );
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return group-owned project by id when catalog returns user with memberOf - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+
+        const catalogGetEntityByRef = jest.fn().mockResolvedValue({
+          kind: 'User',
+          metadata: { name: 'mock' },
+          relations: [
+            {
+              type: RELATION_MEMBER_OF,
+              targetRef: 'group:default/team-a',
+            },
+          ],
+        });
+        const app = await createApp(
+          client,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { getEntityByRef: catalogGetEntityByRef },
+        );
+
+        const groupProjectId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+        await client('projects').insert({
+          id: groupProjectId,
+          name: 'Group Owned Project',
+          abbreviation: 'GOP',
+          description: 'Group owned',
+          source_repo_url: mockInputProject.sourceRepoUrl,
+          target_repo_url: mockInputProject.targetRepoUrl,
+          source_repo_branch: mockInputProject.sourceRepoBranch,
+          target_repo_branch: mockInputProject.targetRepoBranch,
+          created_by: 'group:default/team-a',
+          created_at: new Date(),
+        });
+
+        const response = await request(app)
+          .get(`/projects/${groupProjectId}`)
+          .send();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toMatchObject({
+          id: groupProjectId,
+          name: 'Group Owned Project',
+          abbreviation: 'GOP',
+          createdBy: 'group:default/team-a',
+        });
+        expect(catalogGetEntityByRef).toHaveBeenCalledWith(
+          'user:default/mock',
+          expect.objectContaining({ credentials: expect.anything() }),
+        );
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should allow user to delete group-owned project when catalog returns user with memberOf - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+
+        const catalogGetEntityByRef = jest.fn().mockResolvedValue({
+          kind: 'User',
+          metadata: { name: 'mock' },
+          relations: [
+            {
+              type: RELATION_MEMBER_OF,
+              targetRef: 'group:default/team-a',
+            },
+          ],
+        });
+        const app = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.DENY,
+          undefined,
+          undefined,
+          { getEntityByRef: catalogGetEntityByRef },
+        );
+
+        const groupProjectId = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+        await client('projects').insert({
+          id: groupProjectId,
+          name: 'Group Project To Delete',
+          abbreviation: 'GPTD',
+          description: 'Will be deleted by group member',
+          source_repo_url: mockInputProject.sourceRepoUrl,
+          target_repo_url: mockInputProject.targetRepoUrl,
+          source_repo_branch: mockInputProject.sourceRepoBranch,
+          target_repo_branch: mockInputProject.targetRepoBranch,
+          created_by: 'group:default/team-a',
+          created_at: new Date(),
+        });
+
+        const deleteResponse = await request(app)
+          .delete(`/projects/${groupProjectId}`)
+          .send();
+
+        expect(deleteResponse.status).toBe(200);
+        expect(deleteResponse.body.deletedCount).toBe(1);
+
+        const getAfterDelete = await request(app)
+          .get(`/projects/${groupProjectId}`)
+          .send();
+        expect(getAfterDelete.status).toBe(404);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    describe('GET /projects and GET /projects/:projectId – x2a.user or x2a admin required', () => {
+      it.each(supportedDatabaseIds)(
+        'should deny GET /projects when user has neither x2a.user nor x2a admin view - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const app = await createApp(
+            client,
+            AuthorizeResult.DENY,
+            undefined,
+            undefined,
+            AuthorizeResult.DENY,
+          );
+
+          const response = await request(app).get('/projects').send();
+
+          expect(response.status).toBe(403);
+          expect(response.body).toMatchObject({
+            error: {
+              name: 'NotAllowedError',
+              message: 'The user is not allowed to read projects.',
+            },
+          });
+        },
+      );
+
+      it.each(supportedDatabaseIds)(
+        'should deny GET /projects/:projectId when user has neither x2a.user nor x2a admin view - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const app = await createApp(
+            client,
+            AuthorizeResult.DENY,
+            undefined,
+            undefined,
+            AuthorizeResult.DENY,
+          );
+
+          const response = await request(app)
+            .get(`/projects/${nonExistentId}`)
+            .send();
+
+          expect(response.status).toBe(403);
+          expect(response.body).toMatchObject({
+            error: {
+              name: 'NotAllowedError',
+              message: 'The user is not allowed to read projects.',
+            },
+          });
+        },
+      );
+
+      it.each(supportedDatabaseIds)(
+        'should allow GET /projects when user has x2a.user (no admin view) - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const app = await createApp(
+            client,
+            AuthorizeResult.ALLOW,
+            undefined,
+            undefined,
+            AuthorizeResult.DENY,
+          );
+
+          const response = await request(app).get('/projects').send();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toHaveProperty('items');
+          expect(response.body).toHaveProperty('totalCount');
+        },
+      );
+
+      it.each(supportedDatabaseIds)(
+        'should allow GET /projects/:projectId when user has x2a.user - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const app = await createApp(
+            client,
+            AuthorizeResult.ALLOW,
+            undefined,
+            undefined,
+            AuthorizeResult.DENY,
+          );
+
+          const createResponse = await request(app)
+            .post('/projects')
+            .send(mockInputProject);
+          expect(createResponse.status).toBe(200);
+          const projectId = createResponse.body.id;
+
+          const response = await request(app)
+            .get(`/projects/${projectId}`)
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toMatchObject({
+            id: projectId,
+            ...mockInputProject,
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it.each(supportedDatabaseIds)(
+        'should allow GET /projects when user has x2a admin view (no x2a.user) - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const app = await createApp(
+            client,
+            AuthorizeResult.DENY,
+            undefined,
+            undefined,
+            AuthorizeResult.ALLOW,
+          );
+
+          const response = await request(app).get('/projects').send();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toHaveProperty('items');
+          expect(response.body).toHaveProperty('totalCount');
+        },
+      );
+
+      it.each(supportedDatabaseIds)(
+        'should allow GET /projects/:projectId when user has x2a admin view - %p',
+        async databaseId => {
+          const { client } = await createDatabase(databaseId);
+          const appWithUser = await createApp(client);
+          const createResponse = await request(appWithUser)
+            .post('/projects')
+            .send(mockInputProject);
+          expect(createResponse.status).toBe(200);
+          const projectId = createResponse.body.id;
+
+          const appAdminOnly = await createApp(
+            client,
+            AuthorizeResult.DENY,
+            undefined,
+            undefined,
+            AuthorizeResult.ALLOW,
+          );
+          const response = await request(appAdminOnly)
+            .get(`/projects/${projectId}`)
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.body).toMatchObject({
+            id: projectId,
+            ...mockInputProject,
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+    });
   });
 
   it.each(supportedDatabaseIds)(
@@ -236,9 +602,8 @@ describe('createRouter – projects', () => {
         .send();
 
       expect(response.status).toBe(404);
-      expect(response.body).toMatchObject({
-        error: { name: 'NotFoundError', message: 'Project not found' },
-      });
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).toMatch(/Project not found/);
     },
   );
 
@@ -281,11 +646,12 @@ describe('createRouter – projects', () => {
         .send();
 
       // Non-admin user2 cannot delete project created by user1
-      // The deleteProject filters by created_by, so deletedCount will be 0
+      // useEnforceProjectPermissions throws when getProject returns null (no access)
       expect(deleteResponseNonAdmin.status).toBe(404);
-      expect(deleteResponseNonAdmin.body).toMatchObject({
-        error: { name: 'NotFoundError', message: 'Project not found' },
-      });
+      expect(deleteResponseNonAdmin.body.error.name).toBe('NotFoundError');
+      expect(deleteResponseNonAdmin.body.error.message).toMatch(
+        /Project not found/,
+      );
 
       // Verify project still exists
       const getAfterFailedDelete = await request(appWithCreate)
@@ -407,9 +773,8 @@ describe('createRouter – projects', () => {
         .send();
 
       expect(response.status).toBe(404);
-      expect(response.body).toMatchObject({
-        error: { name: 'NotFoundError', message: 'Project not found' },
-      });
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).toMatch(/Project not found/);
     },
   );
 

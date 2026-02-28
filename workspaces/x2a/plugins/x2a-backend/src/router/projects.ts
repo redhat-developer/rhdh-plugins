@@ -27,10 +27,11 @@ import {
 import type { RouterDeps } from './types';
 import {
   authorize,
+  getGroupsOfUser,
   getUserRef,
-  isUserOfAdminViewPermission,
-  isUserOfAdminWritePermission,
   reconcileJobStatus,
+  useEnforceProjectPermissions,
+  useEnforceX2APermissions,
 } from './common';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
 
@@ -41,6 +42,7 @@ export function registerProjectRoutes(
   const {
     httpAuth,
     discoveryApi,
+    catalog,
     x2aDatabase,
     kubeService,
     logger,
@@ -51,6 +53,13 @@ export function registerProjectRoutes(
   router.get('/projects', async (req, res) => {
     const endpoint = 'GET /projects';
     logger.info(`${endpoint} request received`);
+
+    const { canViewAll } = await useEnforceX2APermissions({
+      req,
+      readOnly: true,
+      permissionsSvc,
+      httpAuth,
+    });
 
     // parse request query
     const projectsGetRequestSchema = z.object({
@@ -82,13 +91,17 @@ export function registerProjectRoutes(
     logger.info(`${endpoint} request received: query=${JSON.stringify(query)}`);
 
     // list projects
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const userRef = getUserRef(credentials);
+    const groupsOfUser = await getGroupsOfUser(userRef, {
+      catalog,
+      credentials,
+    });
+
     const { projects, totalCount } = await x2aDatabase.listProjects(query, {
-      credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-      canViewAll: await isUserOfAdminViewPermission(
-        req as unknown as express.Request,
-        permissionsSvc,
-        httpAuth,
-      ),
+      credentials,
+      canViewAll,
+      groupsOfUser,
     });
 
     const response: ProjectsGet['response'] = {
@@ -118,6 +131,7 @@ export function registerProjectRoutes(
       name: z.string(),
       description: z.string(),
       abbreviation: z.string(),
+      ownedByGroup: z.string().optional(),
       sourceRepoUrl: z.string(),
       targetRepoUrl: z.string(),
       sourceRepoBranch: z.string(),
@@ -146,20 +160,17 @@ export function registerProjectRoutes(
     const projectId = req.params.projectId;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
 
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      {
-        credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-        canViewAll: await isUserOfAdminViewPermission(
-          req as unknown as express.Request,
-          permissionsSvc,
-          httpAuth,
-        ),
-      },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project not found`);
-    }
+    const { project } = await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      doEnrichment: true,
+      projectId,
+      x2aDatabase,
+      permissionsSvc,
+      httpAuth,
+      catalog,
+    });
+
     res.json(project);
   });
 
@@ -167,6 +178,17 @@ export function registerProjectRoutes(
     const endpoint = 'DELETE /projects/:projectId';
     const projectId = req.params.projectId;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+    const { canWriteAll, credentials, groupsOfUser } =
+      await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        permissionsSvc,
+        httpAuth,
+        catalog,
+      });
 
     // Cancel any active k8s jobs before deleting DB records
     const jobs = await x2aDatabase.listJobsForProject({ projectId });
@@ -189,12 +211,9 @@ export function registerProjectRoutes(
     const deletedCount = await x2aDatabase.deleteProject(
       { projectId },
       {
-        credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-        canWriteAll: await isUserOfAdminWritePermission(
-          req as unknown as express.Request,
-          permissionsSvc,
-          httpAuth,
-        ),
+        credentials,
+        canWriteAll,
+        groupsOfUser,
       },
     );
     if (deletedCount === 0) {
@@ -209,6 +228,16 @@ export function registerProjectRoutes(
       const endpoint = 'POST /projects/:projectId/run';
       const { projectId } = req.params;
       logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      const { project, userRef } = await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        permissionsSvc,
+        httpAuth,
+        catalog,
+      });
 
       // Validate request body
       const runRequestSchema = z.object({
@@ -258,19 +287,6 @@ export function registerProjectRoutes(
         throw new InputError(
           'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
         );
-      }
-
-      // Get user reference safely
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userRef = getUserRef(credentials);
-
-      // Verify project exists
-      const project = await x2aDatabase.getProject(
-        { projectId },
-        { credentials },
-      );
-      if (!project) {
-        throw new NotFoundError(`Project "${projectId}" not found.`);
       }
 
       // Check for existing running init job

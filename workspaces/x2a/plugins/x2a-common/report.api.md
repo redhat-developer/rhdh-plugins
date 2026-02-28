@@ -185,6 +185,7 @@ export interface ProjectsPostRequest {
     abbreviation: string;
     description: string;
     name: string;
+    ownedByGroup?: string;
     sourceRepoBranch: string;
     sourceRepoUrl: string;
     targetRepoBranch: string;

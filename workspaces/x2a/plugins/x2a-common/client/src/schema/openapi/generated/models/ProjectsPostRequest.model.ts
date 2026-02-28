@@ -27,6 +27,10 @@ export interface ProjectsPostRequest {
    */
   name: string;
   /**
+   * Optional - group that owns the project instead of the creator (logged in user)
+   */
+  ownedByGroup?: string;
+  /**
    * Description of the project
    */
   description: string;
