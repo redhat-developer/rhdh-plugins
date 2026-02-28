@@ -187,7 +187,7 @@ describe('LokiProvider', () => {
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
-      // expect(fetch).toHaveBeenCalledWith(urlToFetch);
+
       expect(parsedURLToFetch.searchParams.get('end')).toEqual(
         '2025-12-05T17:40:13.621Z',
       ); // Should be 5 minutes after
@@ -238,7 +238,7 @@ describe('LokiProvider', () => {
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
 
       const parsedURLToFetch = new URL(urlToFetch);
-      // expect(fetch).toHaveBeenCalledWith(urlToFetch);
+
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(
@@ -288,7 +288,7 @@ describe('LokiProvider', () => {
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
-      // expect(fetch).toHaveBeenCalledWith(urlToFetch);
+
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(
@@ -331,7 +331,7 @@ describe('LokiProvider', () => {
 
       await provider.fetchWorkflowLogsByInstance(workflowInstance);
       const parsedURLToFetch = new URL(urlToFetch);
-      // expect(fetch).toHaveBeenCalledWith(urlToFetch);
+
       expect(parsedURLToFetch.origin).toEqual(provider.getBaseURL());
       expect(parsedURLToFetch.pathname).toEqual('/loki/api/v1/query_range');
       expect(parsedURLToFetch.searchParams.get('query')).toEqual(

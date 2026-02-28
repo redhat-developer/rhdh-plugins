@@ -58,10 +58,6 @@ export class LokiProvider implements WorkflowLogProvider {
     return this.selectors;
   }
 
-  getLogPipelineFilters() {
-    return this.getLogPipelineFilters;
-  }
-
   getToken(): string {
     return this.token;
   }
