@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@a90bcbc6539c36a85cdfeb73f7e2f433735f215b # v2.15.0
         with:
           egress-policy: audit
 
@@ -36,7 +36,7 @@ jobs:
       - name: fetch base
         run: git fetch --depth 1 origin ${{ github.base_ref }}
 
-      - uses: backstage/actions/changeset-feedback@c3038aa5576b9cd845ccc518ef854d3660e8cb40 # v0.7.6
+      - uses: backstage/actions/changeset-feedback@2cd6978b476cbdc39fec48346f8b6ca13199dd6a # v0.7.8
         name: Generate feedback
         with:
           diff-ref: 'origin/main'
