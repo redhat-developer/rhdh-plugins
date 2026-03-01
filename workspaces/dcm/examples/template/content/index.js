@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * Common types and utilities for the dcm plugin.
- * Add shared code between frontend and backend plugins here.
- *
- * @public
- */
-export const DCM_COMMON_PLUGIN_ID = 'dcm' as const;
-
-export { dcmPluginReadPermission, dcmPluginPermissions } from './permissions';
+console.log('Hello from ${{ values.name }}!');
