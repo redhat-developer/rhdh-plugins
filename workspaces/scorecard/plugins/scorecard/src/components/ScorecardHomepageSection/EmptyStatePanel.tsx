@@ -25,10 +25,11 @@ import {
   getYOffsetForCenterLabel,
   getHeightForCenterLabel,
   resolveStatusColor,
-} from '../../utils/utils';
+} from '../../utils';
 import CustomLegend from '../Scorecard/CustomLegend';
 import { ErrorTooltip } from '../Common/ErrorTooltip';
 import { ResponsivePieChart } from './ResponsivePieChart';
+import type { PieData } from '../types';
 
 const CenterLabel = ({
   cx,
@@ -126,7 +127,9 @@ export const EmptyStatePanel = ({
 
   const resolvedStatusColor = resolveStatusColor(theme, statusConfig.color);
 
-  const pieData = [{ name: 'full', value: 100, color: resolvedStatusColor }];
+  const pieData: PieData[] = [
+    { name: 'full', value: 100, color: resolvedStatusColor },
+  ];
 
   return (
     <CardWrapper

@@ -18,7 +18,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 
-import type { PieData as PieDataProps } from '../../utils/utils';
+import type { PieData as PieDataProps } from '../types';
 import { useTranslation } from '../../hooks/useTranslation';
 
 const StyledLegend = styled(Box)(({ theme }) => ({

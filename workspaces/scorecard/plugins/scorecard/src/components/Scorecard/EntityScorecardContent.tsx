@@ -23,7 +23,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import NoScorecardsState from '../Common/NoScorecardsState';
 import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
-import { getStatusConfig } from '../../utils/utils';
+import { getStatusConfig } from '../../utils';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { useTranslation } from '../../hooks/useTranslation';
 

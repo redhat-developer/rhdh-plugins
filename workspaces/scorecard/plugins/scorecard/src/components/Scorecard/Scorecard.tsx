@@ -39,8 +39,9 @@ import {
   getHeightForCenterLabel,
   getYOffsetForCenterLabel,
   resolveStatusColor,
-} from '../../utils/utils';
+} from '../../utils';
 import { ErrorTooltip } from '../Common/ErrorTooltip';
+import type { PieData } from '../types';
 
 interface ScorecardProps {
   cardTitle: string;
@@ -173,7 +174,9 @@ const Scorecard = ({
 
   const resolvedStatusColor = resolveStatusColor(theme, statusColor);
 
-  const pieData = [{ name: 'full', value: 100, color: resolvedStatusColor }];
+  const pieData: PieData[] = [
+    { name: 'full', value: 100, color: resolvedStatusColor },
+  ];
 
   return (
     <CardWrapper

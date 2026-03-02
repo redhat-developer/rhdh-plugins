@@ -14,31 +14,12 @@
  * limitations under the License.
  */
 
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
 import {
   ScorecardThresholdRuleColors,
   ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Theme } from '@mui/material/styles';
 import type { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
-
-export type StatusConfig = {
-  color: string;
-  icon?: React.ElementType;
-};
-
-export type PieData = {
-  name: string;
-  value: number;
-  color?: string;
-};
-
-/**
- * Color used when there's an error with scorecard data (e.g., threshold evaluation error, metric fetch error)
- */
-export const SCORECARD_ERROR_STATE_COLOR = 'rhdh.general.cardBorderColor';
 
 export const getThresholdRuleColor = (
   rules: ThresholdRule[],
@@ -58,43 +39,6 @@ export const getThresholdRuleColor = (
       return ScorecardThresholdRuleColors.SUCCESS;
     default:
       return undefined;
-  }
-};
-
-/**
- * @param evaluation - The evaluation status of the metric.
- * colors are mapped to MUI palette strings (e.g., 'error.main', 'warning.main', 'success.main').
- * @returns StatusConfig
- */
-export const getStatusConfig = ({
-  evaluation,
-  thresholdStatus,
-  metricStatus,
-  thresholdRules,
-}: {
-  evaluation: string | null;
-  thresholdStatus?: 'success' | 'error';
-  metricStatus?: 'success' | 'error';
-  thresholdRules?: ThresholdRule[];
-}): StatusConfig => {
-  // If threshold or metric has an error, return error state color
-  if (thresholdStatus === 'error' || metricStatus === 'error') {
-    return { color: SCORECARD_ERROR_STATE_COLOR };
-  }
-
-  let evaluationColor: string | undefined;
-  if (thresholdRules && evaluation) {
-    evaluationColor = getThresholdRuleColor(thresholdRules, evaluation);
-  }
-  const color = evaluationColor ?? SCORECARD_ERROR_STATE_COLOR;
-
-  switch (evaluation) {
-    case 'error':
-      return { color, icon: DangerousOutlinedIcon };
-    case 'warning':
-      return { color, icon: WarningAmberIcon };
-    default:
-      return { color, icon: CheckCircleOutlineIcon };
   }
 };
 
@@ -135,26 +79,4 @@ export const resolveStatusColor = (
     (theme as ThemeConfig).palette?.rhdh?.general?.cardBorderColor ??
     theme.palette.error.main
   );
-};
-
-export const getYOffsetForCenterLabel = (lineCount: number) => {
-  switch (lineCount) {
-    case 2:
-      return -17;
-    case 3:
-      return -24;
-    default:
-      return -8;
-  }
-};
-
-export const getHeightForCenterLabel = (lineCount: number) => {
-  switch (lineCount) {
-    case 2:
-      return 48;
-    case 3:
-      return 56;
-    default:
-      return 40;
-  }
 };

@@ -24,7 +24,7 @@ import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { getThresholdRuleColor, resolveStatusColor } from '../../utils/utils';
+import { getThresholdRuleColor, resolveStatusColor } from '../../utils';
 
 const StyledLegend = styled(Box)(({ theme }) => ({
   display: 'flex',

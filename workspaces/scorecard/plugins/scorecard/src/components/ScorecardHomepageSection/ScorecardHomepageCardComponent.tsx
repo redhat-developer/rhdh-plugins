@@ -24,8 +24,8 @@ import { useTheme } from '@mui/material/styles';
 import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
 import CustomLegend from './CustomLegend';
-import type { PieData } from '../../utils/utils';
-import { getThresholdRuleColor, resolveStatusColor } from '../../utils/utils';
+import type { PieData } from '../types';
+import { getThresholdRuleColor, resolveStatusColor } from '../../utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ResponsivePieChart } from './ResponsivePieChart';
 

@@ -84,13 +84,13 @@ jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
 }));
 
-jest.mock('../../../utils/utils', () => ({
+jest.mock('../../../utils', () => ({
   getStatusConfig: jest.fn(),
 }));
 
 // Get the mocked functions
 const { useScorecards } = require('../../../hooks/useScorecards');
-const { getStatusConfig } = require('../../../utils/utils');
+const { getStatusConfig } = require('../../../utils');
 
 describe('EntityScorecardContent Component', () => {
   beforeEach(() => {
