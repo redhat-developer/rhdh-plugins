@@ -24,7 +24,11 @@ import Typography from '@mui/material/Typography';
 import { styled, useTheme } from '@mui/material/styles';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { getThresholdRuleColor, resolveStatusColor } from '../../utils';
+import {
+  getThresholdRuleColor,
+  resolveStatusColor,
+  SCORECARD_ERROR_STATE_COLOR,
+} from '../../utils';
 
 const StyledLegend = styled(Box)(({ theme }) => ({
   display: 'flex',
@@ -82,7 +86,7 @@ const CustomLegend = (props: CustomLegendProps) => {
                   getThresholdRuleColor(
                     thresholds.definition?.rules ?? [],
                     ruleKey,
-                  ) ?? 'success.main',
+                  ) ?? SCORECARD_ERROR_STATE_COLOR,
                 )}
               />
               <Typography

@@ -25,7 +25,11 @@ import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
 import CustomLegend from './CustomLegend';
 import type { PieData } from '../types';
-import { getThresholdRuleColor, resolveStatusColor } from '../../utils';
+import {
+  getThresholdRuleColor,
+  resolveStatusColor,
+  SCORECARD_ERROR_STATE_COLOR,
+} from '../../utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ResponsivePieChart } from './ResponsivePieChart';
 
@@ -54,7 +58,7 @@ export const ScorecardHomepageCardComponent = ({
       color: resolveStatusColor(
         theme,
         getThresholdRuleColor(scorecard.result.thresholds.rules, value.name) ??
-          'success.main',
+          SCORECARD_ERROR_STATE_COLOR,
       ),
     })) ?? [];
 
