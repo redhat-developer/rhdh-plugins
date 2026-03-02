@@ -3,5 +3,6 @@ dist-types
 coverage
 .vscode
 .eslintrc.js
+knip-report.md
 report.api.md
 report-alpha.api.md

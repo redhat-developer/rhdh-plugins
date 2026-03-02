@@ -18,7 +18,7 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsTestTranslationRef } from './ref';
 
 /**
- * Japanese translation for plugin.translations-test.
+ * Japanese translation for translations-test.
  * @public
  */
 const quickstartTranslationJa = createTranslationMessages({
