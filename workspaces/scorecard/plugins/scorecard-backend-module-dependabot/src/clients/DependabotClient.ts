@@ -35,14 +35,23 @@ export type DependabotAlert = GitHubDependabotAlert;
 
 const PER_PAGE = 100;
 
-/** Parse Link header and return the URL for rel="next", or null. */
+/** Parse Link header (RFC 5988) and return the URL for rel="next", or null. Avoids regex to prevent ReDoS. */
 function getNextPageUrl(linkHeader: string | null): string | null {
-  if (!linkHeader || !linkHeader.includes('rel="next"')) {
+  if (!linkHeader) {
     return null;
   }
-  const nextPattern = /<([^>]+)>;\s*rel="next"/i;
-  const match = linkHeader.match(nextPattern);
-  return match ? match[1] : null;
+  for (const segment of linkHeader.split(',')) {
+    const trimmed = segment.trim();
+    if (!trimmed.toLowerCase().includes('rel="next"')) {
+      continue;
+    }
+    const open = trimmed.indexOf('<');
+    const close = trimmed.indexOf('>', open);
+    if (open !== -1 && close !== -1 && close > open) {
+      return trimmed.slice(open + 1, close).trim();
+    }
+  }
+  return null;
 }
 
 export class DependabotClient {
