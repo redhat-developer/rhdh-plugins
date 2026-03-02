@@ -575,10 +575,9 @@ describe('CatalogMetricService', () => {
     let mockCredentials: BackstageCredentials;
 
     beforeEach(() => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue({
-        rows: mockMetricRows,
-        total: 3,
-      });
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue(
+        mockMetricRows,
+      );
 
       mockedCatalog.getEntitiesByRefs.mockReset();
       mockedCatalog.getEntitiesByRefs.mockResolvedValue(mockEntities);
@@ -602,6 +601,7 @@ describe('CatalogMetricService', () => {
         pageSize: 10,
         total: 3,
         totalPages: 1,
+        isCapped: false,
       });
     });
 
@@ -626,7 +626,7 @@ describe('CatalogMetricService', () => {
       });
     });
 
-    it('should call database with correct pagination parameters', async () => {
+    it('should always query the full fetchable window from the database and paginate in-memory', async () => {
       await service.getEntityMetricDetails(
         'github.important_metric',
         mockCredentials,
@@ -638,7 +638,7 @@ describe('CatalogMetricService', () => {
 
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
-        { pagination: { limit: 5, offset: 5 } },
+        { pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
@@ -655,7 +655,7 @@ describe('CatalogMetricService', () => {
 
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
-        { status: 'error', pagination: { limit: 10, offset: 0 } },
+        { status: 'error', pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
@@ -672,7 +672,7 @@ describe('CatalogMetricService', () => {
 
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
-        { entityKind: 'Component', pagination: { limit: 10, offset: 0 } },
+        { entityKind: 'Component', pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
@@ -691,16 +691,15 @@ describe('CatalogMetricService', () => {
         'github.important_metric',
         {
           entityOwner: ['team:default/platform'],
-          pagination: { limit: 10, offset: 0 },
+          pagination: { limit: 10_000, offset: 0 },
         },
       );
     });
 
     it('should filter by entityName at database level', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValueOnce({
-        rows: [mockMetricRows[0]],
-        total: 1,
-      });
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValueOnce([
+        mockMetricRows[0],
+      ]);
 
       const result = await service.getEntityMetricDetails(
         'github.important_metric',
@@ -714,7 +713,7 @@ describe('CatalogMetricService', () => {
 
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
-        { entityName: 'service-a', pagination: { limit: 10, offset: 0 } },
+        { entityName: 'service-a', pagination: { limit: 10_000, offset: 0 } },
       );
 
       expect(result.entities).toHaveLength(1);
@@ -735,7 +734,7 @@ describe('CatalogMetricService', () => {
 
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
-        { entityName: 'SERVICE', pagination: { limit: 10, offset: 0 } },
+        { entityName: 'SERVICE', pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
@@ -756,7 +755,7 @@ describe('CatalogMetricService', () => {
         {
           sortBy: 'entityName',
           sortOrder: 'asc',
-          pagination: { limit: 10, offset: 0 },
+          pagination: { limit: 10_000, offset: 0 },
         },
       );
     });
@@ -778,7 +777,7 @@ describe('CatalogMetricService', () => {
         {
           sortBy: 'metricValue',
           sortOrder: 'desc',
-          pagination: { limit: 10, offset: 0 },
+          pagination: { limit: 10_000, offset: 0 },
         },
       );
     });
@@ -796,15 +795,15 @@ describe('CatalogMetricService', () => {
       // When no sortBy/sortOrder are supplied the DB defaults to timestamp desc
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
-        { pagination: { limit: 10, offset: 0 } },
+        { pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
     it('should handle null metric values in sorting', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue({
-        rows: [{ ...mockMetricRows[0], value: null }, mockMetricRows[1]],
-        total: 2,
-      });
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([
+        { ...mockMetricRows[0], value: null },
+        mockMetricRows[1],
+      ]);
 
       await service.getEntityMetricDetails(
         'github.important_metric',
@@ -823,7 +822,7 @@ describe('CatalogMetricService', () => {
         {
           sortBy: 'metricValue',
           sortOrder: 'desc',
-          pagination: { limit: 10, offset: 0 },
+          pagination: { limit: 10_000, offset: 0 },
         },
       );
     });
@@ -845,7 +844,7 @@ describe('CatalogMetricService', () => {
             'component:default/service-b',
             'component:default/service-c',
           ],
-          fields: ['kind', 'metadata', 'spec'],
+          fields: ['kind', 'metadata.name', 'spec.owner'],
         },
         { credentials: expect.any(Object) },
       );
@@ -907,7 +906,7 @@ describe('CatalogMetricService', () => {
 
       expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
         'github.important_metric',
-        { pagination: { limit: 10, offset: 0 } },
+        { pagination: { limit: 10_000, offset: 0 } },
       );
     });
 
@@ -931,10 +930,9 @@ describe('CatalogMetricService', () => {
     });
 
     it('should combine filters, sorting, and pagination', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue({
-        rows: [mockMetricRows[0]],
-        total: 1,
-      });
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([
+        mockMetricRows[0],
+      ]);
 
       const result = await service.getEntityMetricDetails(
         'github.important_metric',
@@ -958,7 +956,7 @@ describe('CatalogMetricService', () => {
           entityOwner: ['team:default/platform'],
           sortBy: 'metricValue',
           sortOrder: 'desc',
-          pagination: { limit: 5, offset: 0 },
+          pagination: { limit: 10_000, offset: 0 },
         },
       );
 
@@ -967,10 +965,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should return empty results when no entities match', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue({
-        rows: [],
-        total: 0,
-      });
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([]);
 
       const result = await service.getEntityMetricDetails(
         'github.important_metric',
@@ -987,6 +982,7 @@ describe('CatalogMetricService', () => {
         pageSize: 10,
         total: 0,
         totalPages: 0,
+        isCapped: false,
       });
     });
 

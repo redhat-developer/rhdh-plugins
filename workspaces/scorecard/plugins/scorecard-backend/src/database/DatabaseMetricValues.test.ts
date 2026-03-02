@@ -569,15 +569,14 @@ describe('DatabaseMetricValues', () => {
         });
 
         // Should return 2 entities with error status
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
+        expect(result).toHaveLength(2);
 
         // Check that both are error status
-        expect(result.rows[0].status).toBe('error');
-        expect(result.rows[1].status).toBe('error');
+        expect(result[0].status).toBe('error');
+        expect(result[1].status).toBe('error');
 
         // Verify it's the latest values (not the old one for service1)
-        const service1Result = result.rows.find(
+        const service1Result = result.find(
           r => r.catalog_entity_ref === 'component:default/service1',
         );
         expect(service1Result?.value).toBe(10); // Not 999 from older entry
@@ -619,8 +618,7 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(3);
-        expect(result.total).toBe(3);
+        expect(result).toHaveLength(3);
       },
     );
 
@@ -676,8 +674,7 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 2, offset: 0 },
         });
 
-        expect(page1.rows).toHaveLength(2);
-        expect(page1.total).toBe(5);
+        expect(page1).toHaveLength(2);
 
         // Page 2: limit 2, offset 2
         const page2 = await db.readEntityMetricsByStatus('github.metric1', {
@@ -685,8 +682,7 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 2, offset: 2 },
         });
 
-        expect(page2.rows).toHaveLength(2);
-        expect(page2.total).toBe(5); // Total should stay the same
+        expect(page2).toHaveLength(2);
 
         // Page 3: limit 2, offset 4
         const page3 = await db.readEntityMetricsByStatus('github.metric1', {
@@ -694,8 +690,7 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 2, offset: 4 },
         });
 
-        expect(page3.rows).toHaveLength(1); // Only 1 left on page 3
-        expect(page3.total).toBe(5);
+        expect(page3).toHaveLength(1); // Only 1 left on page 3
       },
     );
 
@@ -709,8 +704,7 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(0);
-        expect(result.total).toBe(0);
+        expect(result).toHaveLength(0);
       },
     );
 
@@ -759,10 +753,9 @@ describe('DatabaseMetricValues', () => {
         });
 
         // Should only return Component entities
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
-        expect(result.rows[0].entity_kind).toBe('Component');
-        expect(result.rows[1].entity_kind).toBe('Component');
+        expect(result).toHaveLength(2);
+        expect(result[0].entity_kind).toBe('Component');
+        expect(result[1].entity_kind).toBe('Component');
       },
     );
 
@@ -811,10 +804,9 @@ describe('DatabaseMetricValues', () => {
         });
 
         // Should only return entities owned by team:default/platform
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
-        expect(result.rows[0].entity_owner).toBe('team:default/platform');
-        expect(result.rows[1].entity_owner).toBe('team:default/platform');
+        expect(result).toHaveLength(2);
+        expect(result[0].entity_owner).toBe('team:default/platform');
+        expect(result[1].entity_owner).toBe('team:default/platform');
       },
     );
 
@@ -873,14 +865,11 @@ describe('DatabaseMetricValues', () => {
         });
 
         // Should only return service1 (Component, error, platform)
-        expect(result.rows).toHaveLength(1);
-        expect(result.total).toBe(1);
-        expect(result.rows[0].catalog_entity_ref).toBe(
-          'component:default/service1',
-        );
-        expect(result.rows[0].status).toBe('error');
-        expect(result.rows[0].entity_kind).toBe('Component');
-        expect(result.rows[0].entity_owner).toBe('team:default/platform');
+        expect(result).toHaveLength(1);
+        expect(result[0].catalog_entity_ref).toBe('component:default/service1');
+        expect(result[0].status).toBe('error');
+        expect(result[0].entity_kind).toBe('Component');
+        expect(result[0].entity_owner).toBe('team:default/platform');
       },
     );
 
@@ -926,8 +915,7 @@ describe('DatabaseMetricValues', () => {
           status: 'error',
         });
 
-        expect(result.rows).toHaveLength(3);
-        expect(result.total).toBe(3);
+        expect(result).toHaveLength(3);
       },
     );
 
@@ -966,8 +954,7 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
+        expect(result).toHaveLength(2);
 
         // Should only return service2 when filtering by kind
         const filteredResult = await db.readEntityMetricsByStatus(
@@ -979,8 +966,8 @@ describe('DatabaseMetricValues', () => {
           },
         );
 
-        expect(filteredResult.rows).toHaveLength(1);
-        expect(filteredResult.rows[0].catalog_entity_ref).toBe(
+        expect(filteredResult).toHaveLength(1);
+        expect(filteredResult[0].catalog_entity_ref).toBe(
           'component:default/service2',
         );
       },
@@ -1020,8 +1007,7 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
+        expect(result).toHaveLength(2);
       },
     );
 
@@ -1069,10 +1055,9 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
+        expect(result).toHaveLength(2);
         expect(
-          result.rows
+          result
             .map(r => r.entity_owner)
             .filter((o): o is string => o !== null)
             .sort((a, b) => a.localeCompare(b)),
@@ -1123,10 +1108,9 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(2);
-        expect(result.total).toBe(2);
+        expect(result).toHaveLength(2);
         expect(
-          result.rows
+          result
             .map(r => r.catalog_entity_ref)
             .sort((a, b) => a.localeCompare(b)),
         ).toEqual([
@@ -1173,14 +1157,14 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(3);
-        expect(result.rows[0].catalog_entity_ref).toBe(
+        expect(result).toHaveLength(3);
+        expect(result[0].catalog_entity_ref).toBe(
           'component:default/service-a',
         );
-        expect(result.rows[1].catalog_entity_ref).toBe(
+        expect(result[1].catalog_entity_ref).toBe(
           'component:default/service-b',
         );
-        expect(result.rows[2].catalog_entity_ref).toBe(
+        expect(result[2].catalog_entity_ref).toBe(
           'component:default/service-c',
         );
       },
@@ -1223,10 +1207,10 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result.rows).toHaveLength(3);
-        expect(result.rows[0].value).toBe(15);
-        expect(result.rows[1].value).toBe(5);
-        expect(result.rows[2].value).toBeNull(); // null sorted last
+        expect(result).toHaveLength(3);
+        expect(result[0].value).toBe(15);
+        expect(result[1].value).toBe(5);
+        expect(result[2].value).toBeNull(); // null sorted last
       },
     );
   });

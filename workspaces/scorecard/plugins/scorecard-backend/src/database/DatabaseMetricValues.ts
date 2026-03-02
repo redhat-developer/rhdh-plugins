@@ -139,22 +139,24 @@ export class DatabaseMetricValues {
 
   /**
    * Fetch entity metric values filtered by status with pagination
-   * Returns both the paginated rows and total count for pagination
+   * Returns paginated rows
    */
   async readEntityMetricsByStatus(
     metric_id: string,
     options: ReadEntityMetricsByStatusOptions,
-  ): Promise<{ rows: DbMetricValue[]; total: number }> {
+  ): Promise<DbMetricValue[]> {
+    const clientName: string =
+      (this.dbClient as any).client?.config?.client ?? '';
+    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
+
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
       .where('metric_id', metric_id)
-      .groupBy('metric_id', 'catalog_entity_ref');
+      .groupBy('catalog_entity_ref');
 
     const query = this.dbClient(this.tableName)
       .select('*')
-      .select(this.dbClient.raw('COUNT(*) OVER() as total_count'))
-      .whereIn('id', latestIdsSubquery)
-      .where('metric_id', metric_id);
+      .whereIn('id', latestIdsSubquery);
 
     const sortColumnMap: Record<string, string> = {
       entityName: 'catalog_entity_ref',
@@ -170,11 +172,20 @@ export class DatabaseMetricValues {
 
     // Nulls last for metricValue (value can be null)
     if (options.sortBy === 'metricValue') {
-      query.orderByRaw(
-        `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}`,
-      );
+      if (isPostgres) {
+        // value is JSON; cast to text then to float for numeric sort; NULLS LAST is native syntax
+        query.orderByRaw(
+          `CAST(value::text AS DOUBLE PRECISION) ${direction} NULLS LAST, id ASC`,
+        );
+      } else {
+        // SQLite: "value IS NULL" puts nulls last; double-cast handles JSON-stored values
+        query.orderByRaw(
+          `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}, id ASC`,
+        );
+      }
     } else {
       query.orderBy(column, direction);
+      query.orderBy('id', 'asc'); // Ensure a stable sort in the event that two metrics share a similar primary sort value
     }
 
     if (options.status) {
@@ -182,8 +193,9 @@ export class DatabaseMetricValues {
     }
 
     if (options.entityName) {
-      query.whereRaw('LOWER(catalog_entity_ref) LIKE LOWER(?)', [
-        `%${options.entityName}%`,
+      const escaped = options.entityName.replace(/[%_\\]/g, '\\$&');
+      query.whereRaw("LOWER(catalog_entity_ref) LIKE LOWER(?) ESCAPE '\\'", [
+        `%${escaped}%`,
       ]);
     }
 
@@ -200,8 +212,7 @@ export class DatabaseMetricValues {
     }
 
     const rows = await query;
-    const total = rows.length > 0 ? Number(rows[0].total_count) : 0;
 
-    return { rows, total };
+    return rows;
   }
 }
