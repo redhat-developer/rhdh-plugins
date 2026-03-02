@@ -34,24 +34,35 @@ export const mcpScaffolderExtrasPlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         actionsRegistry: actionsRegistryServiceRef,
+        auth: coreServices.auth,
+        catalog: catalogServiceRef,
+        config: coreServices.rootConfig,
+        discovery: coreServices.discovery,
         logger: coreServices.logger,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        catalog: catalogServiceRef,
-        discovery: coreServices.discovery,
-        config: coreServices.rootConfig,
       },
-      async init({ actionsRegistry, catalog, logger, discovery, config }) {
-        const integrations = ScmIntegrations.fromConfig(config);
+      async init({
+        actionsRegistry,
+        auth,
+        catalog,
+        config,
+        discovery,
+        logger,
+      }) {
+        const scmIntegrations = ScmIntegrations.fromConfig(config);
         const scaffolderClient = new ScaffolderClient({
           discoveryApi: discovery,
           fetchApi: { fetch },
-          scmIntegrationsApi: integrations,
+          scmIntegrationsApi: scmIntegrations,
         });
         createScaffolderActions({
           actionsRegistry,
+          auth,
           catalog,
+          discovery,
           logger,
+          scmIntegrations,
           scaffolderClient,
         });
       },
