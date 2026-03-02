@@ -102,7 +102,7 @@ export const x2aPluginMessages = {
     description: 'Description',
     id: 'ID',
     abbreviation: 'Abbreviation',
-    createdBy: 'Created By',
+    createdBy: 'Owned By',
     statuses: {
       none: '-',
       created: 'Created',
@@ -116,6 +116,14 @@ export const x2aPluginMessages = {
   },
   common: {
     newProject: 'New Project',
+  },
+  emptyPage: {
+    noConversionInitiatedYet: 'No conversion initiated yet',
+    noConversionInitiatedYetDescription:
+      'Initiate and track conversion of Chef files into production-ready Ansible',
+    startFirstConversion: 'Start first conversion',
+    notAllowedTitle: 'Access denied',
+    notAllowedDescription: 'You are not allowed to access conversion projects.',
   },
   wizard: {
     cancel: 'Cancel',

@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import request from 'supertest';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { X2ADatabaseService } from '../services/X2ADatabaseService';
 import {
@@ -204,6 +205,81 @@ describe('createRouter – modules', () => {
 
         expect(mod.publish).toBeDefined();
         expect(mod.publish).not.toHaveProperty('callbackToken');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 403 when user has neither x2a.user nor x2a admin permissions - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const project = await createTestProject(x2aDatabase);
+        await createTestModule(x2aDatabase, project.id);
+
+        const app = await createApp(
+          client,
+          AuthorizeResult.DENY,
+          undefined,
+          undefined,
+          AuthorizeResult.DENY,
+        );
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules`)
+          .send();
+
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotAllowedError',
+            message: 'The user is not allowed to read projects.',
+          },
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when user without admin view accesses another user project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const user1Project = await createTestProject(
+          x2aDatabase,
+          mockInputProject,
+          'user:default/user1',
+        );
+        await createTestModule(x2aDatabase, user1Project.id);
+
+        const user2CredentialsHeader =
+          mockCredentials.user.header('user:default/user2');
+        const app = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.DENY,
+          undefined,
+          AuthorizeResult.DENY,
+        );
+
+        const response = await request(app)
+          .get(`/projects/${user1Project.id}/modules`)
+          .set('Authorization', user2CredentialsHeader)
+          .send();
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: 'Project not found for the "user:default/user2" user.',
+          },
+        });
       },
       LONG_TEST_TIMEOUT,
     );
@@ -423,6 +499,84 @@ describe('createRouter – modules', () => {
       },
       LONG_TEST_TIMEOUT,
     );
+
+    it.each(supportedDatabaseIds)(
+      'should return 403 when user has neither x2a.user nor x2a admin permissions - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const app = await createApp(
+          client,
+          AuthorizeResult.DENY,
+          undefined,
+          undefined,
+          AuthorizeResult.DENY,
+        );
+
+        const response = await request(app)
+          .get(`/projects/${project.id}/modules/${module.id}`)
+          .send();
+
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotAllowedError',
+            message: 'The user is not allowed to read projects.',
+          },
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when user without admin view accesses another user project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const user1Project = await createTestProject(
+          x2aDatabase,
+          mockInputProject,
+          'user:default/user1',
+        );
+        const user1Module = await createTestModule(
+          x2aDatabase,
+          user1Project.id,
+        );
+
+        const user2CredentialsHeader =
+          mockCredentials.user.header('user:default/user2');
+        const app = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.DENY,
+          undefined,
+          AuthorizeResult.DENY,
+        );
+
+        const response = await request(app)
+          .get(`/projects/${user1Project.id}/modules/${user1Module.id}`)
+          .set('Authorization', user2CredentialsHeader)
+          .send();
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: 'Project not found for the "user:default/user2" user.',
+          },
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
   });
 
   describe('POST /projects/:projectId/modules', () => {
@@ -544,6 +698,84 @@ describe('createRouter – modules', () => {
           .send(runBody);
         expect(resNoModule.status).toBe(404);
       },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 403 when user has neither x2a.user nor x2a admin permissions - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const app = await createApp(
+          client,
+          AuthorizeResult.DENY,
+          undefined,
+          undefined,
+          AuthorizeResult.DENY,
+        );
+
+        const response = await request(app)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send(runBody);
+
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotAllowedError',
+            message: 'The user is not allowed to write projects.',
+          },
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should return 404 when user without admin write accesses another user project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const x2aDatabase = X2ADatabaseService.create({
+          logger: mockServices.logger.mock(),
+          dbClient: client,
+        });
+        const user1Project = await createTestProject(
+          x2aDatabase,
+          mockInputProject,
+          'user:default/user1',
+        );
+        const user1Module = await createTestModule(
+          x2aDatabase,
+          user1Project.id,
+        );
+
+        const user2CredentialsHeader =
+          mockCredentials.user.header('user:default/user2');
+        const app = await createApp(
+          client,
+          AuthorizeResult.ALLOW,
+          AuthorizeResult.DENY,
+          undefined,
+          AuthorizeResult.DENY,
+        );
+
+        const response = await request(app)
+          .post(`/projects/${user1Project.id}/modules/${user1Module.id}/run`)
+          .set('Authorization', user2CredentialsHeader)
+          .send(runBody);
+
+        expect(response.status).toBe(404);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotFoundError',
+            message: 'Project not found for the "user:default/user2" user.',
+          },
+        });
+      },
+      LONG_TEST_TIMEOUT,
     );
 
     it.each(supportedDatabaseIds)(
