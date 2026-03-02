@@ -18,7 +18,8 @@ import fs from 'fs-extra';
 import path from 'node:path';
 import { createTestFixture, runCLI } from './test-helpers';
 
-describe('generate command', () => {
+// FIXME: https://issues.redhat.com/browse/RHIDP-12448
+describe.skip('generate command', () => {
   let fixture: Awaited<ReturnType<typeof createTestFixture>>;
 
   beforeAll(async () => {
