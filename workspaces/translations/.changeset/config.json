@@ -2,7 +2,12 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [["@red-hat-developer-hub/*"]],
+  "fixed": [
+    [
+      "@red-hat-developer-hub/backstage-plugin-translations",
+      "@red-hat-developer-hub/backstage-plugin-translations-backend"
+    ]
+  ],
   "linked": [],
   "access": "public",
   "baseBranch": "main",
