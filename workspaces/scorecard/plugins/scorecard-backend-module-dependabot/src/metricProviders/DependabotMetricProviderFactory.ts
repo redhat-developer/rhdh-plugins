@@ -46,7 +46,7 @@ export function createDependabotMetricProviders(
   config: Config,
   logger: LoggerService,
   thresholds?: ThresholdConfig,
-): DependabotMetricProvider[] {
+): MetricProvider<'number'>[] {
   return DEPENDABOT_SEVERITIES.map(severity =>
     createDependabotMetricProvider(config, logger, severity, thresholds),
   );

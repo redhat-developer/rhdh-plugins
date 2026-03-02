@@ -41,7 +41,6 @@ const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
 export class DependabotMetricProvider implements MetricProvider<'number'> {
   private readonly dependabotClient: DependabotClient;
   private readonly thresholds: ThresholdConfig;
-  private readonly logger: LoggerService;
   private readonly severity: DependabotSeverity;
 
   constructor(
@@ -51,10 +50,6 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
     thresholds?: ThresholdConfig,
   ) {
     this.severity = severity;
-    this.logger = logger.child({
-      component: 'DependabotMetricProvider',
-      severity,
-    });
     this.dependabotClient = new DependabotClient(config, logger);
     this.thresholds = thresholds ?? DEPENDABOT_THRESHOLDS;
   }
