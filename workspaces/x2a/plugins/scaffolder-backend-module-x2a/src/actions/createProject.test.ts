@@ -155,6 +155,172 @@ describe('x2a:project:create', () => {
     );
   });
 
+  it('should send ownedByGroup in the request body when provided', async () => {
+    const createdProject = {
+      id: 'project-uuid-owned',
+      abbreviation: 'GOP',
+      name: 'Group-owned Project',
+      description: '',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      createdBy: 'group:default/team-a',
+    };
+
+    let createProjectBody: Record<string, unknown> = {};
+    mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+      const body = options?.body ? JSON.parse(options.body as string) : {};
+      if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+        createProjectBody = body;
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            status: 'pending',
+            jobId: 'init-job-owned',
+          }),
+      });
+    });
+
+    const action = createProjectAction(mockDiscoveryApi, {
+      fetchApi: { fetch: mockFetch },
+    });
+    const mockContext = createMockActionContext({
+      input: {
+        name: 'Group-owned Project',
+        abbreviation: 'GOP',
+        ownedByGroup: 'group:default/team-a',
+        sourceRepoUrl: 'https://github.com/org/repo',
+        sourceRepoBranch: 'main',
+        areTargeAndSourceRepoShared: true,
+        targetRepoBranch: 'main',
+      },
+      secrets: {
+        SRC_USER_OAUTH_TOKEN: 'mock-source-token',
+      },
+    });
+
+    await action.handler(mockContext);
+
+    expect(createProjectBody).toMatchObject({
+      name: 'Group-owned Project',
+      abbreviation: 'GOP',
+      ownedByGroup: 'group:default/team-a',
+    });
+  });
+
+  it('should trim ownedByGroup when provided with whitespace', async () => {
+    const createdProject = {
+      id: 'project-uuid-trimmed',
+      abbreviation: 'TRM',
+      name: 'Trimmed Project',
+      description: '',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      createdBy: 'group:default/team-b',
+    };
+
+    let createProjectBody: Record<string, unknown> = {};
+    mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+      const body = options?.body ? JSON.parse(options.body as string) : {};
+      if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+        createProjectBody = body;
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            status: 'pending',
+            jobId: 'init-job-trimmed',
+          }),
+      });
+    });
+
+    const action = createProjectAction(mockDiscoveryApi, {
+      fetchApi: { fetch: mockFetch },
+    });
+    const mockContext = createMockActionContext({
+      input: {
+        name: 'Trimmed Project',
+        abbreviation: 'TRM',
+        ownedByGroup: '  group:default/team-b  ',
+        sourceRepoUrl: 'https://github.com/org/repo',
+        sourceRepoBranch: 'main',
+        areTargeAndSourceRepoShared: true,
+        targetRepoBranch: 'main',
+      },
+      secrets: {
+        SRC_USER_OAUTH_TOKEN: 'mock-source-token',
+      },
+    });
+
+    await action.handler(mockContext);
+
+    expect(createProjectBody.ownedByGroup).toBe('group:default/team-b');
+  });
+
+  it('should omit ownedByGroup from the request body when not provided', async () => {
+    const createdProject = {
+      id: 'project-uuid-no-group',
+      abbreviation: 'NOG',
+      name: 'No Group Project',
+      description: '',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      createdBy: 'user:default/jane',
+    };
+
+    let createProjectBody: Record<string, unknown> = {};
+    mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+      const body = options?.body ? JSON.parse(options.body as string) : {};
+      if (body.name && body.abbreviation && !body.sourceRepoAuth) {
+        createProjectBody = body;
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            status: 'pending',
+            jobId: 'init-job-no-group',
+          }),
+      });
+    });
+
+    const action = createProjectAction(mockDiscoveryApi, {
+      fetchApi: { fetch: mockFetch },
+    });
+    const mockContext = createMockActionContext({
+      input: {
+        name: 'No Group Project',
+        abbreviation: 'NOG',
+        sourceRepoUrl: 'https://github.com/org/repo',
+        sourceRepoBranch: 'main',
+        areTargeAndSourceRepoShared: true,
+        targetRepoBranch: 'main',
+      },
+      secrets: {
+        SRC_USER_OAUTH_TOKEN: 'mock-source-token',
+      },
+    });
+
+    await action.handler(mockContext);
+
+    expect(createProjectBody).toMatchObject({
+      name: 'No Group Project',
+      abbreviation: 'NOG',
+    });
+    expect(createProjectBody).not.toHaveProperty('ownedByGroup');
+  });
+
   it('should include Authorization header when backstageToken is provided', async () => {
     const createdProject = {
       id: 'project-uuid-789',

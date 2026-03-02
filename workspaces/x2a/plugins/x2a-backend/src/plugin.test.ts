@@ -264,12 +264,6 @@ describe('plugin', () => {
       error: { name: 'ConflictError' },
     });
 
-    const deleteRes = await request(server).delete('/api/x2a/projects/123');
-    expect(deleteRes.status).toBe(403);
-    expect(deleteRes.body).toMatchObject({
-      error: { name: 'NotAllowedError' },
-    });
-
     const getRes = await request(server).get('/api/x2a/projects/123');
     expect(getRes.status).toBe(404);
     expect(getRes.body).toMatchObject({

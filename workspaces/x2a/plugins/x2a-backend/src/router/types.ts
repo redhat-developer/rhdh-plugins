@@ -21,6 +21,7 @@ import type {
   PermissionsService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 
 import { x2aDatabaseServiceRef } from '../services/X2ADatabaseService';
 import { kubeServiceRef } from '../services/KubeService';
@@ -28,6 +29,7 @@ import { kubeServiceRef } from '../services/KubeService';
 export interface RouterDeps {
   httpAuth: HttpAuthService;
   discoveryApi: DiscoveryService;
+  catalog: CatalogService;
   x2aDatabase: typeof x2aDatabaseServiceRef.T;
   kubeService: typeof kubeServiceRef.T;
   logger: LoggerService;
