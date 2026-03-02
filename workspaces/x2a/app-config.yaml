@@ -163,7 +163,8 @@ x2a:
       url: ${AAP_URL:-https://aap.example.com}
       orgName: ${AAP_ORG_NAME:-MyOrganization}
       # Option 1: OAuth token
-      oauthToken: ${AAP_OAUTH_TOKEN:-your-oauth-token}
+      # oauthToken: ${AAP_OAUTH_TOKEN:-your-oauth-token}
       # Option 2: Username and password
-      # username: ${AAP_USERNAME}
-      # password: ${AAP_PASSWORD}
+      username: ${AAP_USERNAME}
+      password: ${AAP_PASSWORD}
+      verifySSL: ${AAP_VERIFY_SSL:-false} # TODO: set to true and mount proper CA bundle for production

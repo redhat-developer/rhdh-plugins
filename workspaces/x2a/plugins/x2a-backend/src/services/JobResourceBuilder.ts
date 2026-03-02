@@ -93,6 +93,9 @@ export class JobResourceBuilder {
       aapEnvVars.AAP_PASSWORD = password!;
     }
 
+    // Resolve verifySSL: config-level setting, defaults to true
+    const verifySSL = config.credentials.aap?.verifySSL ?? true;
+
     return {
       apiVersion: 'v1',
       kind: 'Secret',
@@ -124,6 +127,9 @@ export class JobResourceBuilder {
 
         // AAP credentials (from config or user override)
         ...aapEnvVars,
+
+        // AAP SSL verification setting (from config, defaults to true)
+        AAP_VERIFY_SSL: String(verifySSL),
       },
     };
   }
