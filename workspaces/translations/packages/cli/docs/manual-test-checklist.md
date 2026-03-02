@@ -17,22 +17,22 @@ yarn link
 
 ### Help Commands
 
-- [ ] `translations-cli i18n --help` shows all available commands
-- [ ] `translations-cli i18n generate --help` shows generate command options
-- [ ] `translations-cli i18n upload --help` shows upload command options
-- [ ] `translations-cli i18n download --help` shows download command options
+- [ ] `translations-cli --help` shows all available commands
+- [ ] `translations-cli generate --help` shows generate command options
+- [ ] `translations-cli memsource upload --help` shows upload command options
+- [ ] `translations-cli memsource download --help` shows download command options
 
 ### Init Command
 
-- [ ] `translations-cli i18n init` creates `.i18n.config.json`
-- [ ] `translations-cli i18n init` creates `.i18n.auth.json` (if not exists)
+- [ ] `translations-cli init` creates `.i18n.config.json`
+- [ ] `translations-cli init` creates `.i18n.auth.json` (if not exists)
 - [ ] Config files have correct structure
 
 ## 2. Generate Command Tests
 
 ### Basic Generation
 
-- [ ] `translations-cli i18n generate` creates `i18n/reference.json`
+- [ ] `translations-cli generate` creates `i18n/reference.json`
 - [ ] Generated file has correct structure: `{ "plugin": { "en": { "key": "value" } } }`
 - [ ] Only English reference keys are included
 - [ ] Language files (de.ts, es.ts, fr.ts, etc.) are excluded
@@ -56,7 +56,7 @@ yarn link
 
 ```bash
 cd /path/to/community-plugins
-translations-cli i18n generate --source-dir . --output-dir i18n
+translations-cli generate --source-dir . --output-dir i18n
 # Check that reference.json only contains English
 ```
 
@@ -64,7 +64,7 @@ translations-cli i18n generate --source-dir . --output-dir i18n
 
 ### Basic Upload
 
-- [ ] `translations-cli i18n upload --source-file i18n/reference.json --dry-run` works
+- [ ] `translations-cli memsource upload --source-file i18n/reference.json --dry-run` works
 - [ ] Dry-run shows what would be uploaded without actually uploading
 - [ ] Actual upload works (if TMS configured)
 
@@ -87,7 +87,7 @@ translations-cli i18n generate --source-dir . --output-dir i18n
 
 ### Basic Download
 
-- [ ] `translations-cli i18n download --dry-run` works
+- [ ] `translations-cli memsource download --dry-run` works
 - [ ] Dry-run shows what would be downloaded
 - [ ] Actual download works (if TMS configured)
 
@@ -99,25 +99,25 @@ translations-cli i18n generate --source-dir . --output-dir i18n
 
 ## 5. Sync Command Tests
 
-- [ ] `translations-cli i18n sync --dry-run` shows all steps
+- [ ] `translations-cli memsource sync --dry-run` shows all steps
 - [ ] Sync performs: generate → upload → download → deploy
 - [ ] Each step can be skipped with flags
 
 ## 6. Deploy Command Tests
 
-- [ ] `translations-cli i18n deploy --dry-run` works
+- [ ] `translations-cli deploy --dry-run` works
 - [ ] Deploy copies files to correct locations
 - [ ] `--format` option works
 
 ## 7. Status Command Tests
 
-- [ ] `translations-cli i18n status` shows translation status
+- [ ] `translations-cli status` shows translation status
 - [ ] Shows missing translations
 - [ ] Shows completion percentages
 
 ## 8. Clean Command Tests
 
-- [ ] `translations-cli i18n clean` removes cache files
+- [ ] `translations-cli clean` removes cache files
 - [ ] `--force` flag works
 - [ ] Cache directory is cleaned
 
@@ -138,19 +138,19 @@ translations-cli i18n generate --source-dir . --output-dir i18n
 cd /path/to/test-repo
 
 # 1. Initialize
-translations-cli i18n init
+translations-cli init
 
 # 2. Generate
-translations-cli i18n generate
+translations-cli generate
 
 # 3. Upload (dry-run)
-translations-cli i18n upload --source-file i18n/reference.json --dry-run
+translations-cli memsource upload --source-file i18n/reference.json --dry-run
 
 # 4. Download (dry-run)
-translations-cli i18n download --dry-run
+translations-cli memsource download --dry-run
 
 # 5. Deploy (dry-run)
-translations-cli i18n deploy --dry-run
+translations-cli deploy --dry-run
 ```
 
 ### Real Repository Test
@@ -158,7 +158,7 @@ translations-cli i18n deploy --dry-run
 ```bash
 # Test in community-plugins
 cd /Users/yicai/redhat/community-plugins
-translations-cli i18n generate --source-dir . --output-dir i18n
+translations-cli generate --source-dir . --output-dir i18n
 
 # Verify:
 # - reference.json only contains English

@@ -18,26 +18,31 @@ import { Command, OptionValues } from 'commander';
 
 import { exitWithError } from '../lib/errors';
 
+import { initCommand } from './init';
 import { generateCommand } from './generate';
-import { uploadCommand } from './upload';
-import { downloadCommand } from './download';
 import { deployCommand } from './deploy';
 import { statusCommand } from './status';
 import { cleanCommand } from './clean';
-import { syncCommand } from './sync';
-import { initCommand } from './init';
-import { setupMemsourceCommand } from './setupMemsource';
-import { listCommand } from './list';
+import { registerMemsourceCommands } from './memsource/index';
 
 export function registerCommands(program: Command) {
-  const command = program
-    .command('i18n [command]')
-    .description(
-      'Internationalization (i18n) management commands for translation workflows',
-    );
+  // Init command - initialize config file
+  program
+    .command('init')
+    .description('Initialize i18n configuration files')
+    .option(
+      '--setup-memsource',
+      'Also set up .memsourcerc file for Memsource CLI',
+      false,
+    )
+    .option(
+      '--memsource-venv <path>',
+      'Path to Memsource CLI virtual environment (will auto-detect or prompt if not provided)',
+    )
+    .action(wrapCommand(initCommand));
 
   // Generate command - collect translation reference files
-  command
+  program
     .command('generate')
     .description('Generate translation reference files from source code')
     .requiredOption(
@@ -81,77 +86,8 @@ export function registerCommands(program: Command) {
     )
     .action(wrapCommand(generateCommand));
 
-  // Upload command - upload translation reference files to TMS
-  command
-    .command('upload')
-    .description(
-      'Upload translation reference files to TMS (Translation Management System)',
-    )
-    .option('--tms-url <url>', 'TMS API URL')
-    .option('--tms-token <token>', 'TMS API token')
-    .option('--project-id <id>', 'TMS project ID')
-    .option('--source-file <path>', 'Source translation file to upload')
-    .option(
-      '--upload-filename <name>',
-      'Custom filename for TMS upload (default: {repo-name}-{sprint}.json, extracts sprint from source filename)',
-    )
-    .option(
-      '--target-languages <languages>',
-      'Comma-separated list of target languages',
-    )
-    .option(
-      '--dry-run',
-      'Show what would be uploaded without actually uploading',
-      false,
-    )
-    .option('--force', 'Force upload even if file has not changed', false)
-    .action(wrapCommand(uploadCommand));
-
-  // List command - list available translation jobs
-  command
-    .command('list')
-    .description('List available translation jobs from TMS')
-    .option('--project-id <id>', 'TMS project ID')
-    .option('--languages <languages>', 'Filter by languages (e.g., "it,ja,fr")')
-    .option(
-      '--status <status>',
-      'Filter by status (e.g., "COMPLETED", "ASSIGNED", "NEW")',
-    )
-    .option('--format <format>', 'Output format (table, json)', 'table')
-    .action(wrapCommand(listCommand));
-
-  // Download command - download translated strings from TMS
-  command
-    .command('download')
-    .description('Download translated strings from TMS using Memsource CLI')
-    .option('--project-id <id>', 'TMS project ID')
-    .option(
-      '--output-dir <path>',
-      'Output directory for downloaded translations',
-      'i18n/downloads',
-    )
-    .option(
-      '--languages <languages>',
-      'Comma-separated list of languages to download (e.g., "it,ja,fr")',
-    )
-    .option(
-      '--job-ids <ids>',
-      'Comma-separated list of specific job UIDs to download (use "i18n list" to see UIDs)',
-    )
-    .option(
-      '--status <status>',
-      'Filter by status (default: "COMPLETED"). Use "ALL" to download all statuses, or specific status like "ASSIGNED"',
-      'COMPLETED',
-    )
-    .option(
-      '--include-incomplete',
-      'Include incomplete jobs (same as --status ALL)',
-      false,
-    )
-    .action(wrapCommand(downloadCommand));
-
   // Deploy command - deploy translated strings back to language files
-  command
+  program
     .command('deploy')
     .description(
       'Deploy downloaded translations to TypeScript translation files (it.ts, ja.ts, etc.)',
@@ -164,7 +100,7 @@ export function registerCommands(program: Command) {
     .action(wrapCommand(deployCommand));
 
   // Status command - show translation status
-  command
+  program
     .command('status')
     .description('Show translation status and statistics')
     .option('--source-dir <path>', 'Source directory to analyze', 'src')
@@ -179,7 +115,7 @@ export function registerCommands(program: Command) {
     .action(wrapCommand(statusCommand));
 
   // Clean command - clean up temporary files
-  command
+  program
     .command('clean')
     .description('Clean up temporary i18n files and caches')
     .option('--i18n-dir <path>', 'i18n directory to clean', 'i18n')
@@ -188,75 +124,7 @@ export function registerCommands(program: Command) {
     .option('--force', 'Force cleanup without confirmation', false)
     .action(wrapCommand(cleanCommand));
 
-  // Sync command - all-in-one workflow
-  command
-    .command('sync')
-    .description(
-      'Complete i18n workflow: generate → upload → download → deploy',
-    )
-    .requiredOption(
-      '--sprint <sprint>',
-      'Sprint value for filename (e.g., s3285). Required for generate step.',
-    )
-    .option('--source-dir <path>', 'Source directory to scan', 'src')
-    .option('--output-dir <path>', 'Output directory for i18n files', 'i18n')
-    .option('--locales-dir <path>', 'Target locales directory', 'src/locales')
-    .option('--tms-url <url>', 'TMS API URL')
-    .option('--tms-token <token>', 'TMS API token')
-    .option('--project-id <id>', 'TMS project ID')
-    .option(
-      '--languages <languages>',
-      'Comma-separated list of target languages',
-    )
-    .option('--skip-upload', 'Skip upload step', false)
-    .option('--skip-download', 'Skip download step', false)
-    .option('--skip-deploy', 'Skip deploy step', false)
-    .option('--dry-run', 'Show what would be done without executing', false)
-    .action(wrapCommand(syncCommand));
-
-  // Init command - initialize config file
-  command
-    .command('init')
-    .description('Initialize i18n configuration files')
-    .option(
-      '--setup-memsource',
-      'Also set up .memsourcerc file for Memsource CLI',
-      false,
-    )
-    .option(
-      '--memsource-venv <path>',
-      'Path to Memsource CLI virtual environment (will auto-detect or prompt if not provided)',
-    )
-    .action(wrapCommand(initCommand));
-
-  // Setup command - set up Memsource configuration
-  command
-    .command('setup-memsource')
-    .description(
-      'Set up .memsourcerc file for Memsource CLI (follows localization team instructions)',
-    )
-    .option(
-      '--memsource-venv <path>',
-      'Path to Memsource CLI virtual environment (will auto-detect or prompt if not provided)',
-    )
-    .option(
-      '--memsource-url <url>',
-      'Memsource URL',
-      'https://cloud.memsource.com/web',
-    )
-    .option(
-      '--username <username>',
-      'Memsource username (will prompt if not provided and in interactive terminal)',
-    )
-    .option(
-      '--password <password>',
-      'Memsource password (will prompt if not provided and in interactive terminal)',
-    )
-    .option(
-      '--no-input',
-      'Disable interactive prompts (for automation/scripts)',
-    )
-    .action(wrapCommand(setupMemsourceCommand));
+  registerMemsourceCommands(program);
 }
 
 // Wraps an action function so that it always exits and handles errors

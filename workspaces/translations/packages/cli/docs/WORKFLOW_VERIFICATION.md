@@ -27,7 +27,7 @@ This will test:
 ```bash
 # Basic generate
 yarn build
-./bin/translations-cli i18n generate --sprint s9999 --source-dir src --output-dir i18n
+./bin/translations-cli generate --sprint s9999 --source-dir src --output-dir i18n
 
 # Verify output
 ls -lh i18n/rhdh-s9999.json
@@ -44,10 +44,10 @@ cat i18n/rhdh-s9999.json | jq 'keys'  # Should show plugin names
 
 ```bash
 # First generate
-./bin/translations-cli i18n generate --sprint s9999 --source-dir src --output-dir i18n
+./bin/translations-cli generate --sprint s9999 --source-dir src --output-dir i18n
 
 # Modify source code to add a new key, then:
-./bin/translations-cli i18n generate --sprint s9999 --source-dir src --output-dir i18n --merge-existing
+./bin/translations-cli generate --sprint s9999 --source-dir src --output-dir i18n --merge-existing
 
 # Verify old keys are preserved and new keys are added
 cat i18n/rhdh-s9999.json | jq '.test-plugin.en | keys'
@@ -62,7 +62,7 @@ cat i18n/rhdh-s9999.json | jq '.test-plugin.en | keys'
 ### 3. Test Generate with PO Format
 
 ```bash
-./bin/translations-cli i18n generate --sprint s9999 --source-dir src --output-dir i18n --format po
+./bin/translations-cli generate --sprint s9999 --source-dir src --output-dir i18n --format po
 
 # Verify PO file
 cat i18n/rhdh-s9999.po | head -20
@@ -90,7 +90,7 @@ cat > i18n/downloads/rhdh-s9999-it-C.json << 'EOF'
 EOF
 
 # Run deploy
-./bin/translations-cli i18n deploy --source-dir i18n/downloads
+./bin/translations-cli deploy --source-dir i18n/downloads
 ```
 
 **What this tests:**
@@ -103,10 +103,10 @@ EOF
 
 ```bash
 # Generate a file first
-./bin/translations-cli i18n generate --sprint s9999 --source-dir src --output-dir i18n
+./bin/translations-cli generate --sprint s9999 --source-dir src --output-dir i18n
 
 # Test upload (dry-run)
-./bin/translations-cli i18n upload --source-file i18n/rhdh-s9999.json --dry-run
+./bin/translations-cli memsource upload --source-file i18n/rhdh-s9999.json --dry-run
 ```
 
 **What this tests:**
@@ -118,7 +118,7 @@ EOF
 ### 6. Test Sync Command (Dry-Run)
 
 ```bash
-./bin/translations-cli i18n sync --sprint s9999 --source-dir src --output-dir i18n --dry-run
+./bin/translations-cli memsource sync --sprint s9999 --source-dir src --output-dir i18n --dry-run
 ```
 
 **What this tests:**
