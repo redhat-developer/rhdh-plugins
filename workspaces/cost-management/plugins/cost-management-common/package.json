@@ -5,6 +5,8 @@
   "backstage": {
     "pluginId": "cost-management",
     "pluginPackages": [
+      "@red-hat-developer-hub/plugin-cost-management",
+      "@red-hat-developer-hub/plugin-cost-management-backend",
       "@red-hat-developer-hub/plugin-cost-management-common"
     ],
     "role": "common-library"
