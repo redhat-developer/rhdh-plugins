@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "@backstage/cli": "^0.34.4",
-    "axios": "^1.9.0",
     "chalk": "^4.0.0",
     "commander": "^9.1.0",
     "fs-extra": "^10.1.0",
