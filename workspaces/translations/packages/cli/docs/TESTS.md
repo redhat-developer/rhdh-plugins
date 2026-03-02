@@ -59,7 +59,7 @@ yarn test:quick
 yarn test:integration
 
 # Manual testing (follow checklist)
-# See test/manual-test-checklist.md
+# See docs/manual-test-checklist.md
 ```
 
 ### Before Release
@@ -136,12 +136,12 @@ yarn build
 chmod +x bin/translations-cli
 
 # Check if script is executable
-chmod +x test/integration-test.sh
+chmod +x scripts/integration-test.sh
 ```
 
 ### Permission Errors
 
 ```bash
 # Make scripts executable
-chmod +x test/*.sh
+chmod +x scripts/*.sh
 ```

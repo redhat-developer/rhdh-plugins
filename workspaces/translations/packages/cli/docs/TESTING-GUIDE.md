@@ -24,7 +24,7 @@ yarn test
 
 ## Manual testing checklist
 
-See: test/manual-test-checklist.md
+See: docs/manual-test-checklist.md
 
 ## Testing Strategy
 
@@ -70,7 +70,7 @@ Follow the comprehensive checklist:
 
 ```bash
 # View checklist
-cat test/manual-test-checklist.md
+cat docs/manual-test-checklist.md
 ```
 
 Key areas to test:
@@ -161,7 +161,7 @@ yarn build
 
 ```bash
 # Ensure scripts are executable
-chmod +x test/*.sh
+chmod +x scripts/*.sh
 
 # Rebuild
 yarn build
@@ -200,18 +200,19 @@ yarn link
 ## Test Files Structure
 
 ```
-test/
-├── README.md                    # This guide
+docs
+└── manual-test-checklist.md     # Manual testing guide
+
+scripts/
 ├── test-helpers.ts              # Test utilities
 ├── generate.test.ts             # Unit tests
 ├── integration-test.sh          # Full integration test
-├── quick-test.sh                # Quick smoke test
-└── manual-test-checklist.md     # Manual testing guide
+└── quick-test.sh                # Quick smoke test
 ```
 
 ## Next Steps
 
 1. Run `yarn test:quick` to verify basic functionality
-2. Review `test/manual-test-checklist.md` for comprehensive testing
+2. Review `docs/manual-test-checklist.md` for comprehensive testing
 3. Test in a real repository before release
 4. Fix any issues found during testing

@@ -57,18 +57,9 @@ Run commands directly using the built binary:
 ```bash
 # From the translations-cli directory
 npm run build
-node bin/translations-cli.js i18n --help
-node bin/translations-cli.js i18n init
+./bin/translations-cli i18n --help
+./bin/translations-cli i18n init
 ```
-
-Or use the test script (builds first, then runs):
-
-```bash
-npm run test:local i18n --help
-npm run test:local i18n init
-```
-
-**Note:** You can also pass arguments:
 
 ```bash
 npm run test:local i18n generate --source-dir . --output-dir i18n

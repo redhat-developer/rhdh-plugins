@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test the CLI in a real repository
-# Usage: ./test/real-repo-test.sh <repo-path>
+# Usage: ./scripts/real-repo-test.sh <repo-path>
 
 set -e
 
