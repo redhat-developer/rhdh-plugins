@@ -38,9 +38,9 @@ This will:
 cd /path/to/your/test-repo
 
 # Now you can use translations-cli as if it were installed
-translations-cli i18n --help
-translations-cli i18n init
-translations-cli i18n generate
+translations-cli --help
+translations-cli init
+translations-cli generate
 ```
 
 ### Step 3: Unlink when done
@@ -92,14 +92,14 @@ npm run dev i18n init
 
 ```bash
 # Test help
-translations-cli i18n --help
+translations-cli --help
 
 # Test init
-translations-cli i18n init
+translations-cli init
 
 # Test generate (in a test repo)
 cd /path/to/test-repo
-translations-cli i18n generate --source-dir . --output-dir i18n
+translations-cli generate --source-dir . --output-dir i18n
 ```
 
 ### 2. Test Full Workflow
@@ -109,48 +109,48 @@ translations-cli i18n generate --source-dir . --output-dir i18n
 cd /path/to/test-repo
 
 # 1. Initialize
-translations-cli i18n init
+translations-cli init
 
 # 2. Generate reference file
-translations-cli i18n generate
+translations-cli generate
 
 # 3. Upload (if TMS configured)
-translations-cli i18n upload --source-file i18n/reference.json
+translations-cli memsource upload --source-file i18n/reference.json
 
 # 4. Download
-translations-cli i18n download
+translations-cli memsource download
 
 # 5. Deploy
-translations-cli i18n deploy
+translations-cli deploy
 ```
 
 ### 3. Test with Different Options
 
 ```bash
 # Test with custom patterns
-translations-cli i18n generate \
+translations-cli generate \
   --source-dir . \
   --include-pattern "**/*.ts" \
   --exclude-pattern "**/node_modules/**,**/dist/**"
 
 # Test dry-run
-translations-cli i18n upload --source-file i18n/reference.json --dry-run
+translations-cli memsource upload --source-file i18n/reference.json --dry-run
 
 # Test force upload
-translations-cli i18n upload --source-file i18n/reference.json --force
+translations-cli memsource upload --source-file i18n/reference.json --force
 ```
 
 ## Testing Cache Functionality
 
 ```bash
 # First upload
-translations-cli i18n upload --source-file i18n/reference.json
+translations-cli memsource upload --source-file i18n/reference.json
 
 # Second upload (should skip - file unchanged)
-translations-cli i18n upload --source-file i18n/reference.json
+translations-cli memsource upload --source-file i18n/reference.json
 
 # Force upload (should upload anyway)
-translations-cli i18n upload --source-file i18n/reference.json --force
+translations-cli memsource upload --source-file i18n/reference.json --force
 ```
 
 ## Testing in Multiple Repos
@@ -164,10 +164,10 @@ npm run link
 
 # Then test in each repo
 cd /Users/yicai/redhat/rhdh-plugins/workspaces/global-header/plugins/global-header
-translations-cli i18n generate
+translations-cli generate
 
 cd /Users/yicai/redhat/rhdh/packages/app
-translations-cli i18n generate
+translations-cli generate
 
 # etc.
 ```
@@ -198,19 +198,19 @@ npm run build
 To clear cache during testing:
 
 ```bash
-translations-cli i18n clean --force
+translations-cli clean --force
 ```
 
 ## Pre-PR Checklist
 
 Before making a PR, test:
 
-- [ ] `translations-cli i18n --help` shows all commands
-- [ ] `translations-cli i18n init` creates config files
-- [ ] `translations-cli i18n generate` extracts keys correctly
-- [ ] `translations-cli i18n upload` works (with --dry-run)
-- [ ] `translations-cli i18n download` works (with --dry-run)
-- [ ] `translations-cli i18n deploy` works (with --dry-run)
+- [ ] `translations-cli --help` shows all commands
+- [ ] `translations-cli init` creates config files
+- [ ] `translations-cli generate` extracts keys correctly
+- [ ] `translations-cli memsource upload` works (with --dry-run)
+- [ ] `translations-cli memsource download` works (with --dry-run)
+- [ ] `translations-cli deploy` works (with --dry-run)
 - [ ] Cache works (skips unchanged files)
 - [ ] All commands show proper error messages
 - [ ] Config file patterns are respected

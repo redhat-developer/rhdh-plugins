@@ -77,7 +77,7 @@ yarn test:integration
 
 ```bash
 cd /Users/yicai/redhat/community-plugins
-translations-cli i18n generate --source-dir . --output-dir i18n
+translations-cli generate --source-dir . --output-dir i18n
 
 # Verify:
 # - reference.json only contains English
@@ -89,7 +89,7 @@ translations-cli i18n generate --source-dir . --output-dir i18n
 
 ```bash
 cd /Users/yicai/redhat/rhdh-plugins/workspaces/translations
-translations-cli i18n generate --source-dir . --output-dir i18n
+translations-cli generate --source-dir . --output-dir i18n
 
 # Verify output
 ```

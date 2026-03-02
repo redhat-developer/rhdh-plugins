@@ -1,6 +1,6 @@
 # i18n Translation Commands Guide
 
-This guide provides comprehensive documentation for using the translations-cli i18n commands to manage translations in your projects.
+This guide provides comprehensive documentation for using the translations-cli commands to manage translations in your projects.
 
 ## Table of Contents
 
@@ -45,10 +45,10 @@ Use the CLI's built-in setup command to automatically create the configuration f
 
 ```bash
 # Interactive setup (will prompt for credentials)
-npx translations-cli i18n setup-memsource
+npx translations-cli memsource setup
 
 # Or provide credentials directly
-npx translations-cli i18n setup-memsource \
+npx translations-cli memsource setup \
   --username your-username \
   --password your-password \
   --memsource-venv "${HOME}/git/memsource-cli-client/.memsource/bin/activate"
@@ -160,7 +160,7 @@ The CLI uses a **project configuration file** for project-specific settings, and
 Initialize the project configuration file with:
 
 ```bash
-npx translations-cli i18n init
+npx translations-cli init
 ```
 
 This creates:
@@ -216,7 +216,7 @@ This is the **recommended authentication method** following the localization tea
 
 ```bash
 source ~/.memsourcerc
-translations-cli i18n upload --source-file i18n/reference.json
+translations-cli memsource upload --source-file i18n/reference.json
 ```
 
 #### 3. Fallback Authentication (`~/.i18n.auth.json`) - **Optional**
@@ -370,15 +370,15 @@ Example output:
 
 ```bash
 # 1. One-time setup (first time only)
-npx translations-cli i18n setup-memsource
+npx translations-cli memsource setup
 source ~/.memsourcerc
 
 # 2. Daily usage (in each new shell session)
 source ~/.memsourcerc  # Sets MEMSOURCE_TOKEN in environment
-npx translations-cli i18n generate
-npx translations-cli i18n upload --source-file i18n/reference.json
-npx translations-cli i18n download
-npx translations-cli i18n deploy
+npx translations-cli generate
+npx translations-cli memsource upload --source-file i18n/reference.json
+npx translations-cli memsource download
+npx translations-cli deploy
 ```
 
 **Why this workflow?**
@@ -399,14 +399,14 @@ echo "source ~/.memsourcerc" >> ~/.zshrc  # or ~/.bashrc
 
 ```bash
 # 1. One-time setup
-npx translations-cli i18n init
+npx translations-cli init
 # Edit ~/.i18n.auth.json with your credentials
 
 # 2. Daily usage
-npx translations-cli i18n generate
-npx translations-cli i18n upload --source-file i18n/reference.json
-npx translations-cli i18n download
-npx translations-cli i18n deploy
+npx translations-cli generate
+npx translations-cli memsource upload --source-file i18n/reference.json
+npx translations-cli memsource download
+npx translations-cli deploy
 ```
 
 ---
@@ -446,10 +446,10 @@ The typical translation workflow consists of four main steps:
 
 ```bash
 # Basic initialization
-npx translations-cli i18n init
+npx translations-cli init
 
 # Or initialize with Memsource setup (recommended for Memsource users)
-npx translations-cli i18n init --setup-memsource
+npx translations-cli init --setup-memsource
 ```
 
 **For Memsource Users:**
@@ -463,7 +463,7 @@ If you haven't completed the Memsource setup yet, see the [Prerequisites](#prere
 source ~/.memsourcerc
 
 # Now you can use CLI commands - they'll automatically use MEMSOURCE_TOKEN
-npx translations-cli i18n generate
+npx translations-cli generate
 ```
 
 **For convenience**, add it to your shell profile so it's automatically sourced:
@@ -479,7 +479,7 @@ Edit `.i18n.config.json` with your project settings (TMS URL, project ID, langua
 #### Step 2: Generate Translation Reference File
 
 ```bash
-npx translations-cli i18n generate \
+npx translations-cli generate \
   --source-dir src \
   --output-dir i18n \
   --format json
@@ -547,13 +547,13 @@ The command outputs a summary showing:
 Then run without passing patterns:
 
 ```bash
-npx translations-cli i18n generate
+npx translations-cli generate
 ```
 
 #### Step 3: Upload to TMS
 
 ```bash
-npx translations-cli i18n upload \
+npx translations-cli memsource upload \
   --tms-url https://your-tms-api.com \
   --tms-token YOUR_API_TOKEN \
   --project-id YOUR_PROJECT_ID \
@@ -591,7 +591,7 @@ The CLI caches uploads to avoid re-uploading unchanged files:
 #### Step 4: Download Translations (After Translation is Complete)
 
 ```bash
-npx translations-cli i18n download \
+npx translations-cli memsource download \
   --tms-url https://your-tms-api.com \
   --tms-token YOUR_API_TOKEN \
   --project-id YOUR_PROJECT_ID \
@@ -614,7 +614,7 @@ npx translations-cli i18n download \
 #### Step 5: Deploy Translations to Application
 
 ```bash
-npx translations-cli i18n deploy \
+npx translations-cli deploy \
   --source-dir i18n \
   --target-dir src/locales \
   --languages "es,fr,de,ja,zh" \
@@ -637,7 +637,7 @@ npx translations-cli i18n deploy \
 For a complete workflow in one command:
 
 ```bash
-npx translations-cli i18n sync \
+npx translations-cli memsource sync \
   --source-dir src \
   --output-dir i18n \
   --locales-dir src/locales \
@@ -669,7 +669,7 @@ If you haven't completed the Memsource setup yet, follow the [Prerequisites](#pr
 
 ```bash
 # Complete the one-time setup (see Prerequisites section for details)
-npx translations-cli i18n setup-memsource
+npx translations-cli memsource setup
 source ~/.memsourcerc
 ```
 
@@ -677,7 +677,7 @@ source ~/.memsourcerc
 
 ```bash
 # Initialize project configuration file
-npx translations-cli i18n init
+npx translations-cli init
 ```
 
 **For Memsource Users (Daily Workflow):**
@@ -685,7 +685,7 @@ npx translations-cli i18n init
 1. **One-time setup** (already completed in Prerequisites):
 
    ```bash
-   npx translations-cli i18n setup-memsource
+   npx translations-cli memsource setup
    source ~/.memsourcerc
    ```
 
@@ -696,8 +696,8 @@ npx translations-cli i18n init
    source ~/.memsourcerc
 
    # Then use CLI commands - they'll automatically use MEMSOURCE_TOKEN from environment
-   npx translations-cli i18n generate
-   npx translations-cli i18n upload --source-file i18n/reference.json
+   npx translations-cli generate
+   npx translations-cli memsource upload --source-file i18n/reference.json
    ```
 
    **Why source first?** The `.memsourcerc` file sets `MEMSOURCE_TOKEN` in your environment. The CLI reads this automatically, avoiding redundant token generation.
@@ -720,25 +720,25 @@ export I18N_LANGUAGES="es,fr,de,ja,zh"
 #### 2. Generate Reference File
 
 ```bash
-npx translations-cli i18n generate
+npx translations-cli generate
 ```
 
 #### 3. Upload to TMS
 
 ```bash
-npx translations-cli i18n upload --source-file i18n/reference.json
+npx translations-cli memsource upload --source-file i18n/reference.json
 ```
 
 #### 4. Download Translations (After Translation is Complete)
 
 ```bash
-npx translations-cli i18n download
+npx translations-cli memsource download
 ```
 
 #### 5. Deploy to Application
 
 ```bash
-npx translations-cli i18n deploy
+npx translations-cli deploy
 ```
 
 ---
@@ -748,7 +748,7 @@ npx translations-cli i18n deploy
 ### Check Translation Status
 
 ```bash
-npx translations-cli i18n status \
+npx translations-cli status \
   --source-dir src \
   --i18n-dir i18n \
   --locales-dir src/locales \
@@ -775,7 +775,7 @@ npx translations-cli i18n status \
 ### Clean Up Temporary Files
 
 ```bash
-npx translations-cli i18n clean \
+npx translations-cli clean \
   --i18n-dir i18n \
   --force
 ```
@@ -808,7 +808,7 @@ When using commands, values are resolved in this order:
 # Command uses: --tms-url "https://override-tms.com"
 
 # Result: Uses "https://override-tms.com" (command-line wins)
-npx translations-cli i18n upload --tms-url "https://override-tms.com"
+npx translations-cli memsource upload --tms-url "https://override-tms.com"
 ```
 
 ### Environment Variables Reference
@@ -874,13 +874,13 @@ If you get errors about missing TMS configuration:
    ```
 2. If `.memsourcerc` doesn't exist, create it:
    ```bash
-   npx translations-cli i18n setup-memsource
+   npx translations-cli memsource setup
    source ~/.memsourcerc
    ```
 
 **For Other TMS Users:**
 
-1. Run `npx translations-cli i18n init` to create both config files
+1. Run `npx translations-cli init` to create both config files
 2. Edit `.i18n.config.json` with project settings (TMS URL, project ID)
 3. Edit `~/.i18n.auth.json` with your personal credentials (username, password, token)
 4. Or set environment variables: `I18N_TMS_URL`, `I18N_TMS_PROJECT_ID`, `I18N_TMS_TOKEN`
@@ -915,39 +915,39 @@ If you encounter format errors:
 
 ```bash
 # 1. One-time setup
-npx translations-cli i18n setup-memsource
+npx translations-cli memsource setup
 source ~/.memsourcerc
 
 # 2. Daily usage (in each new shell, source first)
 source ~/.memsourcerc  # Sets MEMSOURCE_TOKEN automatically
 
 # 3. Use CLI commands - they automatically use MEMSOURCE_TOKEN from environment
-npx translations-cli i18n generate
-npx translations-cli i18n upload --source-file i18n/reference.json
-npx translations-cli i18n download
-npx translations-cli i18n deploy
+npx translations-cli generate
+npx translations-cli memsource upload --source-file i18n/reference.json
+npx translations-cli memsource download
+npx translations-cli deploy
 ```
 
 ### Example 2: Basic Workflow with Config Files (Other TMS)
 
 ```bash
 # 1. Initialize config files
-npx translations-cli i18n init
+npx translations-cli init
 
 # 2. Edit .i18n.config.json with project settings (TMS URL, project ID, languages)
 # 3. Edit ~/.i18n.auth.json with your credentials (username, password, token)
 
 # 4. Generate (uses config defaults)
-npx translations-cli i18n generate
+npx translations-cli generate
 
 # 5. Upload (uses config defaults)
-npx translations-cli i18n upload --source-file i18n/reference.json
+npx translations-cli memsource upload --source-file i18n/reference.json
 
 # 6. Download (uses config defaults)
-npx translations-cli i18n download
+npx translations-cli memsource download
 
 # 7. Deploy (uses config defaults)
-npx translations-cli i18n deploy
+npx translations-cli deploy
 ```
 
 ### Example 3: Monorepo Setup with Config Patterns
@@ -957,7 +957,7 @@ For monorepos or projects where you want to scan from the repo root:
 ```bash
 # 1. Initialize config in repo root
 cd /path/to/your/repo
-npx translations-cli i18n init
+npx translations-cli init
 
 # 2. Edit .i18n.config.json for monorepo scanning
 ```
@@ -984,7 +984,7 @@ npx translations-cli i18n init
 
 ```bash
 # 3. Run generate - patterns are automatically used from config
-npx translations-cli i18n generate
+npx translations-cli generate
 
 # No need to pass --include-pattern or --exclude-pattern every time!
 # The command will scan from repo root (.) and find all reference files
@@ -1011,10 +1011,10 @@ export I18N_TMS_TOKEN="token123"
 # export I18N_TMS_PASSWORD="your-password"
 
 # Commands will use these values
-npx translations-cli i18n generate
-npx translations-cli i18n upload --source-file i18n/reference.json
-npx translations-cli i18n download
-npx translations-cli i18n deploy
+npx translations-cli generate
+npx translations-cli memsource upload --source-file i18n/reference.json
+npx translations-cli memsource download
+npx translations-cli deploy
 ```
 
 ### Example 4: Override Config with Command Options
@@ -1022,14 +1022,14 @@ npx translations-cli i18n deploy
 ```bash
 # Config has default languages: ["es", "fr"]
 # Override for this command only
-npx translations-cli i18n download --languages "es,fr,de,ja,zh"
+npx translations-cli memsource download --languages "es,fr,de,ja,zh"
 ```
 
 ### Example 5: Complete Sync Workflow
 
 ```bash
 # Run entire workflow in one command
-npx translations-cli i18n sync \
+npx translations-cli memsource sync \
   --languages "es,fr,de,ja,zh" \
   --tms-url "https://tms.example.com" \
   --tms-token "token123" \
@@ -1040,15 +1040,15 @@ npx translations-cli i18n sync \
 
 ## Additional Resources
 
-- For help with any command: `npx translations-cli i18n [command] --help`
-- Check translation status: `npx translations-cli i18n status`
-- Clean up files: `npx translations-cli i18n clean --force`
+- For help with any command: `npx translations-cli [command] --help`
+- Check translation status: `npx translations-cli status`
+- Clean up files: `npx translations-cli clean --force`
 
 ---
 
 ## Summary
 
-The translations-cli i18n commands provide a complete solution for managing translations:
+The translations-cli commands provide a complete solution for managing translations:
 
 - ✅ Extract translation keys from source code
 - ✅ Upload to Translation Management Systems
@@ -1058,4 +1058,4 @@ The translations-cli i18n commands provide a complete solution for managing tran
 - ✅ Configure defaults via config file or environment variables
 - ✅ Override settings per command as needed
 
-Start with `npx translations-cli i18n init` to set up your configuration, then use the commands as needed for your translation workflow.
+Start with `npx translations-cli init` to set up your configuration, then use the commands as needed for your translation workflow.

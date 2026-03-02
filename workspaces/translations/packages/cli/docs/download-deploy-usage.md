@@ -35,25 +35,25 @@ Download completed translation jobs from Memsource:
 ### Download all completed jobs:
 
 ```bash
-translations-cli i18n download
+translations-cli memsource download
 ```
 
 ### Download specific languages:
 
 ```bash
-translations-cli i18n download --languages "it,ja,fr"
+translations-cli memsource download --languages "it,ja,fr"
 ```
 
 ### Download specific job IDs:
 
 ```bash
-translations-cli i18n download --job-ids "13,14,16,17,19,20"
+translations-cli imemsource download --job-ids "13,14,16,17,19,20"
 ```
 
 ### Custom output directory:
 
 ```bash
-translations-cli i18n download --output-dir "custom/downloads"
+translations-cli memsource download --output-dir "custom/downloads"
 ```
 
 **Options:**
@@ -75,13 +75,13 @@ Deploy downloaded translations to TypeScript translation files:
 ### Deploy from default location:
 
 ```bash
-translations-cli i18n deploy
+translations-cli deploy
 ```
 
 ### Deploy from custom location:
 
 ```bash
-translations-cli i18n deploy --source-dir "custom/downloads"
+translations-cli deploy --source-dir "custom/downloads"
 ```
 
 **Options:**
@@ -138,7 +138,7 @@ Generate the reference translation files for each repository. These files contai
 
 ```bash
 cd /path/to/rhdh-plugins
-translations-cli i18n generate
+translations-cli generate
 ```
 
 **Output**: `workspaces/i18n/reference.json`
@@ -147,7 +147,7 @@ translations-cli i18n generate
 
 ```bash
 cd /path/to/community-plugins
-translations-cli i18n generate
+translations-cli generate
 ```
 
 **Output**: `i18n/reference.json`
@@ -158,7 +158,7 @@ translations-cli i18n generate
 
 ```bash
 cd /path/to/rhdh
-translations-cli i18n generate
+translations-cli generate
 ```
 
 **Output**: `i18n/reference.json`
@@ -178,7 +178,7 @@ Example:
 
 ```bash
 cd /path/to/community-plugins
-translations-cli i18n generate --core-plugins --backstage-repo-path /path/to/community-plugins
+translations-cli generate --core-plugins --backstage-repo-path /path/to/community-plugins
 # Only Red Hat owned plugins will be included in the output
 ```
 
@@ -190,21 +190,21 @@ Upload the generated reference files to your TMS project for translation.
 
 ```bash
 cd /path/to/rhdh-plugins
-translations-cli i18n upload
+translations-cli memsource upload
 ```
 
 #### For community-plugins:
 
 ```bash
 cd /path/to/community-plugins
-translations-cli i18n upload
+translations-cli memsource upload
 ```
 
 #### For rhdh:
 
 ```bash
 cd /path/to/rhdh
-translations-cli i18n upload
+translations-cli memsource upload
 ```
 
 **What it does:**
@@ -241,7 +241,7 @@ Download the translated files from Memsource. You can download from any reposito
 ```bash
 cd /path/to/rhdh-plugins  # Can be any repo
 source ~/.memsourcerc
-translations-cli i18n download
+translations-cli memsource download
 ```
 
 #### Option B: Download specific job IDs
@@ -249,7 +249,7 @@ translations-cli i18n download
 ```bash
 cd /path/to/rhdh-plugins
 source ~/.memsourcerc
-translations-cli i18n download --job-ids "13,14,16,17,19,20"
+translations-cli memsource download --job-ids "13,14,16,17,19,20"
 ```
 
 #### Option C: Download specific languages
@@ -257,7 +257,7 @@ translations-cli i18n download --job-ids "13,14,16,17,19,20"
 ```bash
 cd /path/to/rhdh-plugins
 source ~/.memsourcerc
-translations-cli i18n download --languages "it,ja,fr"
+translations-cli memsource download --languages "it,ja,fr"
 ```
 
 #### Option D: Download to shared location (recommended for multi-repo)
@@ -266,7 +266,7 @@ translations-cli i18n download --languages "it,ja,fr"
 mkdir -p ~/translations/downloads
 cd /path/to/rhdh-plugins
 source ~/.memsourcerc
-translations-cli i18n download --output-dir ~/translations/downloads
+translations-cli memsource download --output-dir ~/translations/downloads
 ```
 
 **What it does:**
@@ -294,27 +294,27 @@ Deploy the downloaded translations back to your application's TypeScript transla
 
 ```bash
 cd /path/to/rhdh-plugins
-translations-cli i18n deploy
+translations-cli deploy
 # Or from shared location:
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 ```
 
 #### For community-plugins:
 
 ```bash
 cd /path/to/community-plugins
-translations-cli i18n deploy
+translations-cli deploy
 # Or from shared location:
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 ```
 
 #### For rhdh:
 
 ```bash
 cd /path/to/rhdh
-translations-cli i18n deploy
+translations-cli deploy
 # Or from shared location:
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 ```
 
 **What it does:**
@@ -396,31 +396,31 @@ Here's a complete example workflow for all three repositories:
 source ~/.memsourcerc
 
 # 2. Generate reference files for all repos
-cd /path/to/rhdh-plugins && translations-cli i18n generate
-cd /path/to/community-plugins && translations-cli i18n generate
-cd /path/to/rhdh && translations-cli i18n generate
+cd /path/to/rhdh-plugins && translations-cli generate
+cd /path/to/community-plugins && translations-cli generate
+cd /path/to/rhdh && translations-cli generate
 
 # 3. Upload all reference files
-cd /path/to/rhdh-plugins && translations-cli i18n upload
-cd /path/to/community-plugins && translations-cli i18n upload
-cd /path/to/rhdh && translations-cli i18n upload
+cd /path/to/rhdh-plugins && translations-cli memsource upload
+cd /path/to/community-plugins && translations-cli memsource upload
+cd /path/to/rhdh && translations-cli memsource upload
 
 # 4. Wait for translations in Memsource UI...
 
 # 5. Download all translations to shared location
 mkdir -p ~/translations/downloads
 cd /path/to/rhdh-plugins
-translations-cli i18n download --output-dir ~/translations/downloads
+translations-cli memsource download --output-dir ~/translations/downloads
 
 # 6. Deploy to each repo
 cd /path/to/rhdh-plugins
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 
 cd /path/to/community-plugins
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 
 cd /path/to/rhdh
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 
 # 7. Verify
 cd /path/to/rhdh-plugins && yarn tsc --noEmit
