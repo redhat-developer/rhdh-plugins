@@ -293,9 +293,49 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       expect(mockLogger.info).toHaveBeenNthCalledWith(
-        2,
+        4,
         `Completed metric pull for github.test_metric: processed 2 entities`,
       );
+    });
+
+    it('should skip entities when exclude/metrics annotation contains the provider id', async () => {
+      const entityExcluded = {
+        apiVersion: '1.0.0',
+        kind: 'Component',
+        metadata: {
+          name: 'excluded-entity',
+          annotations: { 'exclude/metrics': 'github.test_metric' },
+        },
+      };
+      const entityIncluded = {
+        apiVersion: '1.0.0',
+        kind: 'Component',
+        metadata: { name: 'included-entity' },
+      };
+      mockCatalog.queryEntities.mockReset().mockResolvedValueOnce({
+        items: [entityExcluded, entityIncluded],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 2,
+      });
+
+      const calculateMetricSpy = jest.spyOn(mockProvider, 'calculateMetric');
+      const createMetricValuesSpy = jest.spyOn(
+        mockDatabaseMetricValues,
+        'createMetricValues',
+      );
+      await (task as any).pullProviderMetrics(mockProvider, mockLogger);
+
+      expect(calculateMetricSpy).toHaveBeenCalledTimes(1);
+      expect(calculateMetricSpy).toHaveBeenCalledWith(entityIncluded);
+      expect(createMetricValuesSpy).toHaveBeenCalledTimes(1);
+      expect(createMetricValuesSpy).toHaveBeenCalledWith([
+        expect.objectContaining({
+          catalog_entity_ref: 'component:default/included-entity',
+          metric_id: 'github.test_metric',
+          value: 42,
+          status: 'success',
+        }),
+      ]);
     });
 
     it('should throw error if pullProviderMetrics fails', async () => {

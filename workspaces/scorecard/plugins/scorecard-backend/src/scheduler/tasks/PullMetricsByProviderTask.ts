@@ -142,6 +142,20 @@ export class PullMetricsByProviderTask implements SchedulerTask {
             let value: MetricValue | undefined;
 
             try {
+              const excludedMetrics =
+                entity.metadata.annotations?.['exclude/metrics'];
+              logger.info(
+                `Loaded excluded/metrics annotation: ${excludedMetrics}`,
+              );
+              if (excludedMetrics) {
+                const excludedMetricsList = excludedMetrics
+                  .split(',')
+                  .map(s => s.trim());
+                if (excludedMetricsList.includes(provider.getProviderId())) {
+                  logger.info(`Excluded metric: ${provider.getProviderId()}`);
+                  return undefined;
+                }
+              }
               value = await provider.calculateMetric(entity);
 
               const thresholds = mergeEntityAndProviderThresholds(
@@ -175,7 +189,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
           }),
         ).then(promises =>
           promises.reduce((acc, curr) => {
-            if (curr.status === 'fulfilled') {
+            if (curr.status === 'fulfilled' && curr.value !== undefined) {
               return [...acc, curr.value];
             }
             return acc;

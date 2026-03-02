@@ -22,10 +22,7 @@ import type { OpenSSFResponse } from './types';
 const mockScorecardLocation =
   'https://api.securityscorecards.dev/projects/github.com/owner/repo';
 
-function createEntity(
-  scorecardLocation: string,
-  excludeChecks?: string,
-): Entity {
+function createEntity(scorecardLocation: string): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
     kind: 'Component',
@@ -33,9 +30,6 @@ function createEntity(
       name: 'my-service',
       annotations: {
         'openssf/scorecard-location': scorecardLocation,
-        ...(excludeChecks !== undefined && {
-          'openssf/exclude-checks': excludeChecks,
-        }),
       },
     },
     spec: {},
@@ -122,39 +116,6 @@ describe('OpenSSFClient', () => {
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'Network error',
       );
-    });
-
-    it('excludes Maintained when exclude-checks annotation is present', async () => {
-      const entityWithExcludeChecks = createEntity(
-        mockScorecardLocation,
-        'Maintained',
-      );
-      (globalThis.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockOpenSSFResponse),
-      });
-
-      const client = new OpenSSFClient(mockLogger as any);
-      const result = await client.getScorecard(entityWithExcludeChecks);
-
-      expect(result.checks).toHaveLength(1);
-      expect(result.checks[0].name).toBe('Code-Review');
-    });
-
-    it('excludes multiple checks when exclude-checks is comma-separated', async () => {
-      const entityWithExcludeChecks = createEntity(
-        mockScorecardLocation,
-        'Maintained, Code-Review', // added space to test out the trim()
-      );
-      (globalThis.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockOpenSSFResponse),
-      });
-
-      const client = new OpenSSFClient(mockLogger as any);
-      const result = await client.getScorecard(entityWithExcludeChecks);
-
-      expect(result.checks).toHaveLength(0);
     });
   });
 });
