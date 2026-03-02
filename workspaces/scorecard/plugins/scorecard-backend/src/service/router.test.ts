@@ -467,11 +467,11 @@ describe('createRouter', () => {
 
   describe('GET /metrics/:metricId/catalog/aggregations', () => {
     const mockAggregatedMetric: AggregatedMetric = {
-      values: [
-        { count: 3, name: 'error' },
-        { count: 4, name: 'warning' },
-        { count: 5, name: 'success' },
-      ],
+      values: {
+        error: 3,
+        warning: 4,
+        success: 5,
+      },
       total: 12,
       timestamp: '2025-01-01T10:30:00.000Z',
     };
@@ -486,7 +486,13 @@ describe('createRouter', () => {
         history: undefined,
       },
       result: {
-        ...mockAggregatedMetric,
+        total: mockAggregatedMetric.total,
+        timestamp: mockAggregatedMetric.timestamp,
+        values: [
+          { count: 3, name: 'error' },
+          { count: 4, name: 'warning' },
+          { count: 5, name: 'success' },
+        ],
         thresholds: {
           rules: [
             { key: 'error', expression: '>40' },

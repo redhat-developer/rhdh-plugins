@@ -39,8 +39,5 @@ export type DbAggregatedMetric = {
   metric_id: string;
   total: number;
   max_timestamp: Date;
-  statusCounts: Array<{
-    name: string;
-    count: number;
-  }>;
+  statusCounts: Record<string, number>;
 };

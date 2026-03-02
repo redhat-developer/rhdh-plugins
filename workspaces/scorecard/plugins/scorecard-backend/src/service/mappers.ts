@@ -32,7 +32,7 @@ export class AggregatedMetricMapper {
       : new Date().toISOString();
 
     return {
-      values: aggregatedMetric?.statusCounts ?? [],
+      values: aggregatedMetric?.statusCounts ?? {},
       total,
       timestamp,
     };
@@ -43,13 +43,10 @@ export class AggregatedMetricMapper {
     thresholds: ThresholdConfig,
     aggregatedMetric: AggregatedMetric,
   ): AggregatedMetricResult {
-    const existingValuesMap = new Map(
-      aggregatedMetric.values.map(v => [v.name, v.count]),
-    );
     // Build values in threshold rules order, filling missing ones with 0
     const allStatusCountValues = thresholds.rules.map(rule => ({
       name: rule.key,
-      count: existingValuesMap.get(rule.key) ?? 0,
+      count: aggregatedMetric.values[rule.key] ?? 0,
     }));
 
     return {

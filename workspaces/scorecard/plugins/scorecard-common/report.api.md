@@ -7,7 +7,7 @@ import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public (undocumented)
 export type AggregatedMetric = {
-  values: AggregatedMetricValue[];
+  values: Record<string, number>;
   total: number;
   timestamp: string;
 };
@@ -22,7 +22,8 @@ export type AggregatedMetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result: AggregatedMetric & {
+  result: Omit<AggregatedMetric, 'values'> & {
+    values: AggregatedMetricValue[];
     thresholds: ThresholdConfig;
   };
 };

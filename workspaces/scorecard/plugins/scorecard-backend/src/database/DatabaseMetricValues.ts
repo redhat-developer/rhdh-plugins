@@ -110,12 +110,18 @@ export class DatabaseMetricValues {
       return rowTimestamp > max ? rowTimestamp : max;
     }, new Date(0));
 
-    const statusCounts = statusRows.map(row => ({
-      name: row.status as string,
-      count: Number(row.count),
-    }));
+    const statusCounts = statusRows.reduce<Record<string, number>>(
+      (acc, row) => {
+        const name = row.status as string;
+        acc[name] = Number(row.count);
+        return acc;
+      },
+      {},
+    );
 
-    const total = statusCounts.reduce((sum, { count }) => sum + count, 0);
+    const total = Object.values(statusCounts).reduce((sum, count) => {
+      return sum + count;
+    }, 0);
     return {
       metric_id,
       total,

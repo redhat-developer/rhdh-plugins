@@ -36,21 +36,21 @@ describe('AggregatedMetricMapper', () => {
         metric_id: 'test.metric',
         total: 10,
         max_timestamp: new Date('2024-01-15T10:00:00Z'),
-        statusCounts: [
-          { name: 'success', count: 5 },
-          { name: 'warning', count: 3 },
-          { name: 'error', count: 2 },
-        ],
+        statusCounts: {
+          success: 5,
+          warning: 3,
+          error: 2,
+        },
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
 
       expect(result).toEqual({
-        values: [
-          { name: 'success', count: 5 },
-          { name: 'warning', count: 3 },
-          { name: 'error', count: 2 },
-        ],
+        values: {
+          success: 5,
+          warning: 3,
+          error: 2,
+        },
         total: 10,
         timestamp: '2024-01-15T10:00:00.000Z',
       });
@@ -60,7 +60,7 @@ describe('AggregatedMetricMapper', () => {
       const result = AggregatedMetricMapper.toAggregatedMetric();
 
       expect(result).toEqual({
-        values: [],
+        values: {},
         total: 0,
         timestamp: expect.any(String),
       });
@@ -71,12 +71,12 @@ describe('AggregatedMetricMapper', () => {
         metric_id: 'test.metric',
         total: 0,
         max_timestamp: new Date('2024-01-15T10:00:00Z'),
-        statusCounts: [],
+        statusCounts: {},
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
 
-      expect(result.values).toEqual([]);
+      expect(result.values).toEqual({});
       expect(result.total).toBe(0);
     });
   });
@@ -86,11 +86,11 @@ describe('AggregatedMetricMapper', () => {
 
     it('should map to AggregatedMetricResult with all threshold keys present', () => {
       const aggregatedMetric = {
-        values: [
-          { name: 'success', count: 5 },
-          { name: 'warning', count: 3 },
-          { name: 'error', count: 2 },
-        ],
+        values: {
+          success: 5,
+          warning: 3,
+          error: 2,
+        },
         total: 10,
         timestamp: '2024-01-15T10:00:00.000Z',
       };
@@ -112,6 +112,11 @@ describe('AggregatedMetricMapper', () => {
         },
         result: {
           ...aggregatedMetric,
+          values: [
+            { name: 'success', count: 5 },
+            { name: 'warning', count: 3 },
+            { name: 'error', count: 2 },
+          ],
           thresholds,
         },
       });
@@ -119,7 +124,7 @@ describe('AggregatedMetricMapper', () => {
 
     it('should fill missing threshold keys with count 0', () => {
       const aggregatedMetric = {
-        values: [{ name: 'success', count: 5 }],
+        values: { success: 5 },
         total: 5,
         timestamp: '2024-01-15T10:00:00.000Z',
       };
@@ -140,10 +145,10 @@ describe('AggregatedMetricMapper', () => {
 
     it('should maintain threshold rules order', () => {
       const aggregatedMetric = {
-        values: [
-          { name: 'error', count: 2 },
-          { name: 'success', count: 5 },
-        ],
+        values: {
+          error: 2,
+          success: 5,
+        },
         total: 7,
         timestamp: '2024-01-15T10:00:00.000Z',
       };
@@ -172,10 +177,10 @@ describe('AggregatedMetricMapper', () => {
       };
 
       const aggregatedMetric = {
-        values: [
-          { name: 'critical', count: 1 },
-          { name: 'low', count: 8 },
-        ],
+        values: {
+          critical: 1,
+          low: 8,
+        },
         total: 9,
         timestamp: '2024-01-15T10:00:00.000Z',
       };
@@ -204,7 +209,7 @@ describe('AggregatedMetricMapper', () => {
       };
 
       const aggregatedMetric = {
-        values: [{ name: 'success', count: 5 }],
+        values: { success: 5 },
         total: 5,
         timestamp: '2024-01-15T10:00:00.000Z',
       };
@@ -224,7 +229,7 @@ describe('AggregatedMetricMapper', () => {
 
     it('should handle empty values with all threshold keys filled as 0', () => {
       const aggregatedMetric = {
-        values: [],
+        values: {},
         total: 0,
         timestamp: '2024-01-15T10:00:00.000Z',
       };

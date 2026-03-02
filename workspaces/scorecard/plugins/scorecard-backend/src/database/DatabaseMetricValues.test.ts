@@ -258,11 +258,11 @@ describe('DatabaseMetricValues', () => {
         expect(result).toEqual({
           metric_id: 'github.metric1',
           total: 3,
-          statusCounts: expect.arrayContaining([
-            { count: 1, name: 'success' },
-            { count: 1, name: 'warning' },
-            { count: 1, name: 'critical' },
-          ]),
+          statusCounts: expect.objectContaining({
+            success: 1,
+            warning: 1,
+            critical: 1,
+          }),
           max_timestamp: baseTimestamp,
         });
       },
@@ -299,7 +299,7 @@ describe('DatabaseMetricValues', () => {
         expect(result).toEqual({
           metric_id: 'github.metric1',
           total: 1,
-          statusCounts: [{ count: 1, name: 'success' }],
+          statusCounts: { success: 1 },
           max_timestamp: baseTimestamp,
         });
       },
@@ -344,7 +344,7 @@ describe('DatabaseMetricValues', () => {
         expect(result).toEqual({
           metric_id: 'github.metric1',
           total: 2,
-          statusCounts: [{ count: 2, name: 'error' }],
+          statusCounts: { error: 2 },
           max_timestamp: newerTime,
         });
       },
@@ -387,7 +387,7 @@ describe('DatabaseMetricValues', () => {
         expect(result).toEqual({
           metric_id: 'github.metric1',
           total: 1,
-          statusCounts: [{ count: 1, name: 'success' }],
+          statusCounts: { success: 1 },
           max_timestamp: baseTimestamp,
         });
       },
@@ -437,11 +437,11 @@ describe('DatabaseMetricValues', () => {
         expect(result).toEqual({
           metric_id: 'github.metric1',
           total: 3,
-          statusCounts: expect.arrayContaining([
-            { count: 1, name: 'success' },
-            { count: 1, name: 'error' },
-            { count: 1, name: 'warning' },
-          ]),
+          statusCounts: expect.objectContaining({
+            success: 1,
+            error: 1,
+            warning: 1,
+          }),
           max_timestamp: time3,
         });
       },
@@ -486,10 +486,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual({
           metric_id: 'github.metric1',
-          statusCounts: [
-            { count: 1, name: 'success' },
-            { count: 2, name: 'warning' },
-          ],
+          statusCounts: { success: 1, warning: 2 },
           total: 3,
           max_timestamp: baseTimestamp,
         });

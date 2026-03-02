@@ -63,10 +63,10 @@ const aggregatedMetric: DbAggregatedMetric = {
   metric_id: 'github.important_metric',
   total: 2,
   max_timestamp: new Date('2024-01-15T12:00:00.000Z'),
-  statusCounts: [
-    { name: 'success', count: 1 },
-    { name: 'warning', count: 1 },
-  ],
+  statusCounts: {
+    success: 1,
+    warning: 1,
+  },
 };
 
 const metricsList = [
@@ -445,10 +445,10 @@ describe('CatalogMetricService', () => {
 
       it('should return aggregated metrics for multiple entities', async () => {
         expect(result).toEqual({
-          values: [
-            { count: 1, name: 'success' },
-            { count: 1, name: 'warning' },
-          ],
+          values: {
+            success: 1,
+            warning: 1,
+          },
           total: 2,
           timestamp: '2024-01-15T12:00:00.000Z',
         });
@@ -484,7 +484,7 @@ describe('CatalogMetricService', () => {
 
       it('should return empty aggregation when no entities provided', async () => {
         expect(result).toEqual({
-          values: [],
+          values: {},
           total: 0,
           timestamp: '2024-01-15T12:00:00.000Z',
         });
