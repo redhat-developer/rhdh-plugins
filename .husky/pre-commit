@@ -1,1 +1,5 @@
 yarn lint-staged
+
+if [ -x .git/hooks/pre-commit ]; then
+  exec .git/hooks/pre-commit
+fi

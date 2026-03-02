@@ -126,6 +126,10 @@ export const spec = {
                     "type": "string",
                     "description": "Full name of the project"
                   },
+                  "ownedByGroup": {
+                    "type": "string",
+                    "description": "Optional - group that owns the project instead of the creator (logged in user)"
+                  },
                   "description": {
                     "type": "string",
                     "description": "Description of the project"

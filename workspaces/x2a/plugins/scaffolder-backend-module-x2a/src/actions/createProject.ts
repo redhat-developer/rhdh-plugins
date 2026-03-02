@@ -18,6 +18,7 @@ import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import {
   DefaultApiClient,
   Project,
+  ProjectsPost,
   ProjectsProjectIdRunPost200Response,
   normalizeRepoUrl,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -58,6 +59,10 @@ export function createProjectAction(
             .optional(),
         abbreviation: z =>
           z.string({ description: 'The abbreviation of the project' }),
+        ownedByGroup: z =>
+          z
+            .string({ description: 'The group that will own the project' })
+            .optional(),
         sourceRepoUrl: z =>
           z.string({ description: 'The URL of the source repository' }),
         sourceRepoBranch: z =>
@@ -122,10 +127,11 @@ export function createProjectAction(
         throw new Error('Target repository token is required');
       }
 
-      const body = {
+      const body: ProjectsPost['body'] = {
         name: ctx.input.name,
         description: ctx.input.description ?? '',
         abbreviation: ctx.input.abbreviation,
+        ownedByGroup: ctx.input.ownedByGroup?.trim() ?? undefined,
         sourceRepoUrl: normalizeRepoUrl(ctx.input.sourceRepoUrl),
         targetRepoUrl: normalizeRepoUrl(targetRepoUrl),
         sourceRepoBranch: ctx.input.sourceRepoBranch,

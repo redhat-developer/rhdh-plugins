@@ -19,13 +19,20 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import { ModulePhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
-import { isUserOfAdminViewPermission } from './common';
+import { useEnforceProjectPermissions } from './common';
 
 export function registerJobRoutes(
   router: express.Router,
   deps: RouterDeps,
 ): void {
-  const { httpAuth, x2aDatabase, kubeService, logger, permissionsSvc } = deps;
+  const {
+    httpAuth,
+    x2aDatabase,
+    kubeService,
+    logger,
+    permissionsSvc,
+    catalog,
+  } = deps;
 
   // TODO: Add /projects/:projectId/log
 
@@ -46,22 +53,16 @@ export function registerJobRoutes(
       `${endpoint} request: projectId=${projectId}, moduleId=${moduleId}, streaming=${streaming}, phase=${phase}`,
     );
 
-    // Get credentials and permissions
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    const canViewAll = await isUserOfAdminViewPermission(
-      req as unknown as express.Request,
-      permissionsSvc,
+    // Enforce project permissions
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
       httpAuth,
-    );
-
-    // Verify project exists and user has access
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      { credentials, canViewAll },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project not found`);
-    }
+      permissionsSvc,
+      catalog,
+    });
 
     // Verify module exists
     const module = await x2aDatabase.getModule({
