@@ -230,7 +230,10 @@ describe('createRouter – jobs (log)', () => {
 
           expect(response.status).toBe(404);
           expect(response.body).toMatchObject({
-            error: { name: 'NotFoundError', message: 'Project not found' },
+            error: {
+              name: 'NotFoundError',
+              message: 'Project not found for the "user:default/mock" user.',
+            },
           });
         },
         LONG_TEST_TIMEOUT,
@@ -348,6 +351,42 @@ describe('createRouter – jobs (log)', () => {
       );
 
       it(
+        'should return 403 when user has neither x2a.user nor x2a admin permissions',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: module.id,
+            phase: 'analyze',
+            status: 'success',
+            log: 'Test logs',
+          });
+
+          const app = await createApp(
+            client,
+            AuthorizeResult.DENY,
+            undefined,
+            undefined,
+            AuthorizeResult.DENY,
+          );
+
+          const response = await request(app)
+            .get(
+              `/projects/${project.id}/modules/${module.id}/log?phase=analyze`,
+            )
+            .send();
+
+          expect(response.status).toBe(403);
+          expect(response.body).toMatchObject({
+            error: {
+              name: 'NotAllowedError',
+              message: 'The user is not allowed to read projects.',
+            },
+          });
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
         'should deny access for users without permission to view project',
         async () => {
           // Create project as user1
@@ -388,7 +427,10 @@ describe('createRouter – jobs (log)', () => {
 
           expect(response.status).toBe(404);
           expect(response.body).toMatchObject({
-            error: { name: 'NotFoundError', message: 'Project not found' },
+            error: {
+              name: 'NotFoundError',
+              message: 'Project not found for the "user:default/user2" user.',
+            },
           });
         },
         LONG_TEST_TIMEOUT,

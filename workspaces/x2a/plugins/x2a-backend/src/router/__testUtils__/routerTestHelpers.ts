@@ -112,12 +112,35 @@ export async function createTestJob(
   return job;
 }
 
+export function getCatalogMock() {
+  return {
+    getEntityByRef: jest.fn().mockResolvedValue(null),
+    getEntities: jest.fn().mockResolvedValue([]),
+    getEntitiesByRefs: jest.fn().mockResolvedValue([]),
+    queryEntities: jest.fn().mockResolvedValue([]),
+    getEntityAncestors: jest.fn().mockResolvedValue([]),
+    removeEntityByUid: jest.fn().mockResolvedValue(undefined),
+    refreshEntity: jest.fn().mockResolvedValue(undefined),
+    getEntityFacets: jest.fn().mockResolvedValue([]),
+    getLocations: jest.fn().mockResolvedValue([]),
+    getLocationById: jest.fn().mockResolvedValue(null),
+    getLocationByRef: jest.fn().mockResolvedValue(null),
+    addLocation: jest.fn().mockResolvedValue(undefined),
+    removeLocationById: jest.fn().mockResolvedValue(undefined),
+    getLocationByEntity: jest.fn().mockResolvedValue(null),
+    validateEntity: jest.fn().mockResolvedValue(undefined),
+    analyzeLocation: jest.fn().mockResolvedValue(undefined),
+    streamEntities: jest.fn().mockResolvedValue(undefined),
+  };
+}
+
 export async function createApp(
   client: Knex,
   authorizeResult?: AuthorizeResult,
   adminWriteResult?: AuthorizeResult,
   kubeServiceOverrides?: Record<string, unknown>,
   adminViewResult?: AuthorizeResult,
+  catalogOverride?: { getEntityByRef?: jest.Mock },
 ): Promise<express.Express> {
   const x2aDatabase = X2ADatabaseService.create({
     logger: mockServices.logger.mock(),
@@ -166,6 +189,9 @@ export async function createApp(
       getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007/api/x2a'),
       getExternalBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007'),
     },
+    catalog: catalogOverride
+      ? { ...getCatalogMock(), ...catalogOverride }
+      : getCatalogMock(),
     config: mockServices.rootConfig({
       data: {
         x2a: {
@@ -230,6 +256,7 @@ export function tearDownRouters(): Promise<void> {
 export interface MockRouterDeps {
   httpAuth: ReturnType<typeof mockServices.httpAuth>;
   discoveryApi: { getBaseUrl: jest.Mock; getExternalBaseUrl: jest.Mock };
+  catalog: { getEntityByRef: jest.Mock };
   x2aDatabase: {
     getJob: jest.Mock;
     updateJob: jest.Mock;
@@ -270,6 +297,9 @@ export function createMockRouterDeps(): MockRouterDeps {
     discoveryApi: {
       getBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007/api/x2a'),
       getExternalBaseUrl: jest.fn().mockResolvedValue('http://localhost:7007'),
+    },
+    catalog: {
+      getEntityByRef: jest.fn().mockResolvedValue(null),
     },
     x2aDatabase: {
       getJob: jest.fn(),
