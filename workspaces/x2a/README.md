@@ -40,6 +40,11 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
    export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
    export AUTH_GITHUB_CLIENT_SECRET=... # Optional if "guest" user is not enough
 
+   # For GitLab auth:
+   # Create on https://gitlab.com/-/user_settings/applications
+   export AUTH_GITLAB_CLIENT_ID=...
+   export AUTH_GITLAB_CLIENT_SECRET=...
+
    yarn dev
    ```
 

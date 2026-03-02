@@ -1,5 +1,3 @@
-import { AuthTokenDescriptor } from './tokenDescriptorTypes';
-
 /**
  * Copyright Red Hat, Inc.
  *
@@ -13,6 +11,14 @@ import { AuthTokenDescriptor } from './tokenDescriptorTypes';
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific governing permissions and limitations under the License.
+ */
+import { AuthTokenDescriptor } from './tokenDescriptorTypes';
+
+/**
+ * Returns the AuthTokenDescriptor for the given repository URL.
+ * Determines the provider.
+ *
+ * @public
  */
 export const getAuthTokenDescriptor = ({
   repoUrl,

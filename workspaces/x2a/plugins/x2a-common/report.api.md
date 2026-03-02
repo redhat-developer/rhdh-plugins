@@ -5,6 +5,7 @@
 ```ts
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
+import { OAuthScope } from '@backstage/core-plugin-api';
 
 // @public (undocumented)
 export interface AAPCredentials {
@@ -41,6 +42,23 @@ export interface Artifact {
 export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata';
 
 // @public
+export const augmentRepoToken: (token: string, authDescriptor: AuthTokenDescriptor) => string;
+
+// @public
+export interface AuthToken {
+    provider: string;
+    token: string;
+}
+
+// @public
+export type AuthTokenDescriptor = {
+    provider: string;
+    customProviderApiId?: string;
+    scope?: OAuthScope;
+    tokenType?: 'openId' | 'oauth';
+};
+
+// @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
 
 // @public
@@ -74,6 +92,12 @@ export class DefaultApiClient {
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public
+export const getAuthTokenDescriptor: ({ repoUrl, readOnly, }: {
+    repoUrl: string;
+    readOnly: boolean;
+}) => AuthTokenDescriptor;
 
 // @public (undocumented)
 export interface GitRepoAuth {

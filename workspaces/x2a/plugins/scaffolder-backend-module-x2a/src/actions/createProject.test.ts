@@ -63,7 +63,7 @@ describe('x2a:project:create', () => {
         abbreviation: 'PRJ',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
-        areTargeAndSourceRepoShared: false,
+        areTargetAndSourceRepoShared: false,
         targetRepoUrl: 'https://github.com/org/target-repo',
         targetRepoBranch: 'main',
       },
@@ -126,7 +126,7 @@ describe('x2a:project:create', () => {
         abbreviation: 'ABBR',
         sourceRepoUrl: 'https://github.com/org/repo2',
         sourceRepoBranch: 'main',
-        areTargeAndSourceRepoShared: true,
+        areTargetAndSourceRepoShared: true,
         targetRepoBranch: 'main',
       },
       secrets: {
@@ -195,7 +195,7 @@ describe('x2a:project:create', () => {
         ownedByGroup: 'group:default/team-a',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
-        areTargeAndSourceRepoShared: true,
+        areTargetAndSourceRepoShared: true,
         targetRepoBranch: 'main',
       },
       secrets: {
@@ -252,7 +252,7 @@ describe('x2a:project:create', () => {
         ownedByGroup: '  group:default/team-b  ',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
-        areTargeAndSourceRepoShared: true,
+        areTargetAndSourceRepoShared: true,
         targetRepoBranch: 'main',
       },
       secrets: {
@@ -263,6 +263,69 @@ describe('x2a:project:create', () => {
     await action.handler(mockContext);
 
     expect(createProjectBody.ownedByGroup).toBe('group:default/team-b');
+  });
+
+  it('should pass userPrompt to the init-phase API when provided', async () => {
+    const createdProject = {
+      id: 'project-uuid-prompt',
+      abbreviation: 'PRM',
+      name: 'Prompt Project',
+      description: '',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      createdBy: 'user:default/jane',
+    };
+
+    let runRequestBody: Record<string, unknown> = {};
+    mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+      const body = options?.body ? JSON.parse(options.body as string) : {};
+      if (body.sourceRepoAuth && body.targetRepoAuth) {
+        runRequestBody = body;
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              status: 'pending',
+              jobId: 'init-job-prompt',
+            }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(createdProject),
+      });
+    });
+
+    const action = createProjectAction(mockDiscoveryApi, {
+      fetchApi: { fetch: mockFetch },
+    });
+    const mockContext = createMockActionContext({
+      input: {
+        name: 'Prompt Project',
+        abbreviation: 'PRM',
+        sourceRepoUrl: 'https://github.com/org/repo',
+        sourceRepoBranch: 'main',
+        areTargetAndSourceRepoShared: true,
+        targetRepoBranch: 'main',
+        userPrompt: 'Convert this to Ansible playbook with best practices',
+      },
+      secrets: {
+        SRC_USER_OAUTH_TOKEN: 'mock-source-token',
+      },
+    });
+
+    await action.handler(mockContext);
+
+    expect(runRequestBody).toMatchObject({
+      userPrompt: 'Convert this to Ansible playbook with best practices',
+    });
+    expect(mockContext.output).toHaveBeenCalledWith(
+      'projectId',
+      'project-uuid-prompt',
+    );
+    expect(mockContext.output).toHaveBeenCalledWith(
+      'initJobId',
+      'init-job-prompt',
+    );
   });
 
   it('should omit ownedByGroup from the request body when not provided', async () => {
@@ -304,7 +367,7 @@ describe('x2a:project:create', () => {
         abbreviation: 'NOG',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
-        areTargeAndSourceRepoShared: true,
+        areTargetAndSourceRepoShared: true,
         targetRepoBranch: 'main',
       },
       secrets: {
@@ -361,7 +424,7 @@ describe('x2a:project:create', () => {
         abbreviation: 'TKN',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
-        areTargeAndSourceRepoShared: false,
+        areTargetAndSourceRepoShared: false,
         targetRepoUrl: 'https://github.com/org/target-repo',
         targetRepoBranch: 'main',
       },
@@ -418,7 +481,7 @@ describe('x2a:project:create', () => {
         abbreviation: 'LOG',
         sourceRepoUrl: 'https://github.com/org/repo',
         sourceRepoBranch: 'main',
-        areTargeAndSourceRepoShared: false,
+        areTargetAndSourceRepoShared: false,
         targetRepoUrl: 'https://github.com/org/target-repo',
         targetRepoBranch: 'main',
       },
@@ -448,7 +511,7 @@ describe('x2a:project:create', () => {
           abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
-          areTargeAndSourceRepoShared: false,
+          areTargetAndSourceRepoShared: false,
           targetRepoBranch: 'main',
           // targetRepoUrl omitted
         },
@@ -471,7 +534,7 @@ describe('x2a:project:create', () => {
           abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
-          areTargeAndSourceRepoShared: false,
+          areTargetAndSourceRepoShared: false,
           targetRepoUrl: 'https://github.com/org/target',
           targetRepoBranch: 'main',
         },
@@ -494,7 +557,7 @@ describe('x2a:project:create', () => {
           abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
-          areTargeAndSourceRepoShared: false,
+          areTargetAndSourceRepoShared: false,
           targetRepoUrl: 'https://github.com/org/target',
           targetRepoBranch: 'main',
         },
@@ -525,7 +588,7 @@ describe('x2a:project:create', () => {
           abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
-          areTargeAndSourceRepoShared: true,
+          areTargetAndSourceRepoShared: true,
           targetRepoBranch: 'main',
         },
         secrets: {
@@ -565,7 +628,7 @@ describe('x2a:project:create', () => {
           abbreviation: 'P',
           sourceRepoUrl: 'https://github.com/org/repo',
           sourceRepoBranch: 'main',
-          areTargeAndSourceRepoShared: true,
+          areTargetAndSourceRepoShared: true,
           targetRepoBranch: 'main',
         },
         secrets: {

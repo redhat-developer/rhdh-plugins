@@ -15,6 +15,10 @@
  */
 import { OAuthScope } from '@backstage/core-plugin-api';
 
+/**
+ * Auth token object
+ * @public
+ */
 export interface AuthToken {
   /**
    * The auth token provider name
@@ -28,6 +32,8 @@ export interface AuthToken {
 
 /**
  * Descriptor for authentication token configuration
+ *
+ * @public
  */
 export type AuthTokenDescriptor = {
   /**
