@@ -16,14 +16,24 @@
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { CatalogService } from '@backstage/plugin-catalog-node';
-import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+import type { ScaffolderClient } from '@backstage/plugin-scaffolder-common';
+import { createDryRunTemplateAction } from './createDryRunTemplateAction';
+import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
 
-export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+export { createDryRunTemplateAction } from './createDryRunTemplateAction';
+export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
 
 export const createScaffolderActions = (options: {
   actionsRegistry: ActionsRegistryService;
   catalog: CatalogService;
   logger: LoggerService;
+  scaffolderClient?: ScaffolderClient;
 }) => {
   createFetchTemplateMetadataAction(options);
+  if (options.scaffolderClient) {
+    createDryRunTemplateAction({
+      actionsRegistry: options.actionsRegistry,
+      scaffolderClient: options.scaffolderClient,
+    });
+  }
 };
