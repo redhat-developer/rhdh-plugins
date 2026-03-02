@@ -21,11 +21,28 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 
-export interface DependabotAlert {
+interface GitHubDependabotAlert {
   number: number;
+  description: string;
+  created_at: string;
   state: string;
-  createdAt: string;
-  severity: string | null;
+  security_advisory: {
+    severity: string;
+  };
+}
+
+export type DependabotAlert = GitHubDependabotAlert;
+
+const PER_PAGE = 100;
+
+/** Parse Link header and return the URL for rel="next", or null. */
+function getNextPageUrl(linkHeader: string | null): string | null {
+  if (!linkHeader || !linkHeader.includes('rel="next"')) {
+    return null;
+  }
+  const nextPattern = /<([^>]+)>;\s*rel="next"/i;
+  const match = linkHeader.match(nextPattern);
+  return match ? match[1] : null;
 }
 
 export class DependabotClient {
@@ -37,7 +54,10 @@ export class DependabotClient {
     this.logger = logger.child({ component: 'DependabotClient' });
   }
 
-  private async getOctokitClient(url: string): Promise<typeof graphql> {
+  private async getRequestConfig(url: string): Promise<{
+    baseUrl: string;
+    headers: Record<string, string>;
+  }> {
     const githubIntegration = this.integrations.github.byUrl(url);
     if (!githubIntegration) {
       throw new Error(`Missing GitHub integration for '${url}'`);
@@ -50,72 +70,89 @@ export class DependabotClient {
       url,
     });
 
-    const { graphql } = await import('@octokit/graphql');
-    return graphql.defaults({
-      headers,
-      baseUrl: githubIntegration.config.apiBaseUrl,
-    });
+    const baseUrl =
+      githubIntegration.config.apiBaseUrl ?? 'https://api.github.com';
+    return {
+      baseUrl: baseUrl.replace(/\/$/, ''),
+      headers: headers as Record<string, string>,
+    };
   }
 
-  async getDependabotAlerts(
+  async getCriticalAlerts(
     url: string,
     repository: { owner: string; repo: string },
   ): Promise<DependabotAlert[]> {
+    return this.getAlerts(url, repository, 'critical');
+  }
+
+  async getHighAlerts(
+    url: string,
+    repository: { owner: string; repo: string },
+  ): Promise<DependabotAlert[]> {
+    return this.getAlerts(url, repository, 'high');
+  }
+
+  async getMediumAlerts(
+    url: string,
+    repository: { owner: string; repo: string },
+  ): Promise<DependabotAlert[]> {
+    return this.getAlerts(url, repository, 'medium');
+  }
+
+  async getLowAlerts(
+    url: string,
+    repository: { owner: string; repo: string },
+  ): Promise<DependabotAlert[]> {
+    return this.getAlerts(url, repository, 'low');
+  }
+
+  /**
+   * @param url - The URL of the repository.
+   * @param repository - The repository owner and name.
+   * @param severity - The severity of the alerts to fetch.
+   * @returns All alerts for the given repository and severity.
+   */
+  private async getAlerts(
+    url: string,
+    repository: { owner: string; repo: string },
+    severity: 'critical' | 'high' | 'medium' | 'low',
+  ): Promise<DependabotAlert[]> {
     this.logger.info(
-      `Fetching Dependabot alerts for ${repository.owner}/${repository.repo}`,
+      `Fetching Dependabot ${severity} alerts for ${repository.owner}/${repository.repo}`,
     );
     try {
-      const octokit = await this.getOctokitClient(url);
+      const { baseUrl, headers } = await this.getRequestConfig(url);
 
-      const query = `
-      query getDependabotAlerts($owner: String!, $repo: String!) {
-        repository(owner: $owner, name: $repo) {
-          vulnerabilityAlerts(first: 100, states: [OPEN]) {
-            nodes {
-              number
-              state
-              createdAt
-              securityAdvisory {
-                severity
-              }
-            }
-          }
+      const basePath = `${baseUrl}/repos/${repository.owner}/${repository.repo}/dependabot/alerts`;
+      let queryUrl:
+        | string
+        | null = `${basePath}?state=open&severity=${severity}&per_page=${PER_PAGE}`;
+      const allAlerts: GitHubDependabotAlert[] = [];
+
+      do {
+        const response = await fetch(queryUrl, { headers });
+
+        if (!response.ok) {
+          const body = await response.text();
+          throw new Error(
+            `GitHub API error ${queryUrl}: ${response.status} - ${response.statusText} - ${body}`,
+          );
         }
-      }
-    `;
 
-      const response = await octokit<{
-        repository: {
-          vulnerabilityAlerts: {
-            nodes: Array<{
-              number: number;
-              state: string;
-              createdAt: string;
-              securityAdvisory: { severity: string } | null;
-            }>;
-          };
-        };
-      }>(query, {
-        owner: repository.owner,
-        repo: repository.repo,
-      });
+        const alerts = (await response.json()) as GitHubDependabotAlert[];
+        allAlerts.push(...alerts);
 
-      this.logger.info('Dependabot alerts response', { response });
+        queryUrl = getNextPageUrl(response.headers.get('link'));
+      } while (queryUrl);
 
-      const nodes = response.repository.vulnerabilityAlerts.nodes ?? [];
       this.logger.info(
-        `Fetched ${nodes.length} Dependabot alert(s) for ${repository.owner}/${repository.repo}`,
+        `Fetched ${allAlerts.length} Dependabot ${severity} alert(s) for ${repository.owner}/${repository.repo}`,
       );
-      return nodes.map(node => ({
-        number: node.number,
-        state: node.state,
-        createdAt: node.createdAt,
-        severity: node.securityAdvisory?.severity ?? null,
-      }));
+      return allAlerts;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(
-        `Failed to fetch Dependabot alerts for ${repository.owner}/${repository.repo}: ${message}`,
+        `Failed to fetch Dependabot ${severity} alerts for ${repository.owner}/${repository.repo}: ${message}`,
         error,
       );
       throw error;

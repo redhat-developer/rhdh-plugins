@@ -16,6 +16,8 @@
 
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+export type DependabotSeverity = 'critical' | 'high' | 'medium' | 'low';
+
 export interface DependabotMetricConfig {
   name: string;
   displayTitle: string;
@@ -28,4 +30,34 @@ export const DEPENDABOT_THRESHOLDS: ThresholdConfig = {
     { key: 'warning', expression: '1-7' },
     { key: 'error', expression: '>7' },
   ],
+};
+
+export const DEPENDABOT_SEVERITY_METRIC: Record<
+  DependabotSeverity,
+  { id: string; title: string; description: string }
+> = {
+  critical: {
+    id: 'dependabot.alerts.critical',
+    title: 'Dependabot Critical Alerts',
+    description:
+      'Current count of open critical Dependabot alerts for a given repository.',
+  },
+  high: {
+    id: 'dependabot.alerts.high',
+    title: 'Dependabot High Alerts',
+    description:
+      'Current count of open high-severity Dependabot alerts for a given repository.',
+  },
+  medium: {
+    id: 'dependabot.alerts.medium',
+    title: 'Dependabot Medium Alerts',
+    description:
+      'Current count of open medium-severity Dependabot alerts for a given repository.',
+  },
+  low: {
+    id: 'dependabot.alerts.low',
+    title: 'Dependabot Low Alerts',
+    description:
+      'Current count of open low-severity Dependabot alerts for a given repository.',
+  },
 };

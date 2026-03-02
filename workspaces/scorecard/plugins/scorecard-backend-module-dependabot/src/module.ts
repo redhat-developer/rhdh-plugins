@@ -18,7 +18,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { DependabotMetricProvider } from './metricProviders/DependabotMetricProvider';
+import { createDependabotMetricProviders } from './metricProviders/DependabotMetricProviderFactory';
 
 export const scorecardModuleDependabot = createBackendModule({
   pluginId: 'scorecard',
@@ -32,7 +32,10 @@ export const scorecardModuleDependabot = createBackendModule({
       },
 
       async init({ metrics, config, logger }) {
-        metrics.addMetricProvider(new DependabotMetricProvider(config, logger));
+        const providers = createDependabotMetricProviders(config, logger);
+        for (const provider of providers) {
+          metrics.addMetricProvider(provider);
+        }
       },
     });
   },

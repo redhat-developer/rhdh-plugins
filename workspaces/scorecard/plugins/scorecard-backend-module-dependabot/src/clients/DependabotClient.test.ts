@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,109 +18,182 @@ import { ConfigReader } from '@backstage/config';
 import { DefaultGithubCredentialsProvider } from '@backstage/integration';
 import { DependabotClient } from './DependabotClient';
 
-describe('DependabotClient', () => {
-  let dependabotClient: DependabotClient;
-  let mockLogger: {
-    child: jest.Mock;
-    debug: jest.Mock;
-    info: jest.Mock;
-    warn: jest.Mock;
-    error: jest.Mock;
-  };
-  const mockedGraphqlClient = jest.fn();
-  const repository = { owner: 'owner', repo: 'repo' };
+jest
+  .spyOn(DefaultGithubCredentialsProvider.prototype, 'getCredentials')
+  .mockResolvedValue({
+    type: 'token',
+    headers: { Authorization: 'Bearer dummy-token' },
+    token: 'dummy-token',
+  });
 
-  const getCredentialsSpy = jest
-    .spyOn(DefaultGithubCredentialsProvider.prototype, 'getCredentials')
-    .mockResolvedValue({
-      type: 'token',
-      headers: { Authorization: 'Bearer dummy-token' },
-      token: 'dummy-token',
-    });
+describe('DependabotClient', () => {
+  const mockConfig = new ConfigReader({
+    integrations: {
+      github: [{ host: 'github.com', token: 'dummy-token' }],
+    },
+  });
+  const mockLogger = {
+    child: jest.fn().mockReturnThis(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    error: jest.fn(),
+  } as any;
+  const repository = { owner: 'owner', repo: 'repo' };
+  const url = 'https://github.com/owner/repo';
+
+  let client: DependabotClient;
+  let fetchMock: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // @ts-ignore
-    jest.unstable_mockModule('@octokit/graphql', async () => ({
-      graphql: {
-        defaults: () => mockedGraphqlClient,
-      },
-    }));
-
-    const mockConfig = new ConfigReader({
-      integrations: {
-        github: [
-          {
-            host: 'github.com',
-            token: 'dummy-token',
-          },
-        ],
-      },
-    });
-    mockLogger = {
-      child: jest.fn().mockReturnThis(),
-      debug: jest.fn(),
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-    };
-    dependabotClient = new DependabotClient(mockConfig, mockLogger as any);
+    client = new DependabotClient(mockConfig, mockLogger);
+    fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      headers: new Headers(),
+      json: () => Promise.resolve([]),
+      text: () => Promise.resolve(''),
+    } as Response);
   });
 
-  describe('getDependabotAlerts', () => {
-    it('should return the list of alerts', async () => {
-      const url = 'https://github.com/owner/repo';
-      const response = {
-        repository: {
-          vulnerabilityAlerts: {
-            nodes: [
-              {
-                number: 1,
-                state: 'OPEN',
-                createdAt: '2021-01-01',
-                securityAdvisory: { severity: 'HIGH' },
-              },
-            ],
-          },
+  it('constructs with config and logger', () => {
+    expect(client).toBeDefined();
+    expect(mockLogger.child).toHaveBeenCalledWith({
+      component: 'DependabotClient',
+    });
+  });
+
+  describe('getCriticalAlerts', () => {
+    it('fetches alerts with severity=critical and returns them', async () => {
+      const alerts = [
+        {
+          number: 1,
+          state: 'open',
+          created_at: '2024-01-01',
+          security_advisory: { severity: 'critical' },
         },
-      };
-      mockedGraphqlClient.mockResolvedValue(response);
+      ];
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers(),
+        json: () => Promise.resolve(alerts),
+        text: () => Promise.resolve(''),
+      } as Response);
 
-      const result = await dependabotClient.getDependabotAlerts(
-        url,
-        repository,
-      );
+      const result = await client.getCriticalAlerts(url, repository);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].number).toBe(1);
-      expect(result[0].state).toBe('OPEN');
-      expect(result[0].createdAt).toBe('2021-01-01');
-      expect(result[0].severity).toBe('HIGH');
-      expect(mockedGraphqlClient).toHaveBeenCalledTimes(1);
-      const [query] = mockedGraphqlClient.mock.calls[0];
-      expect(query).toContain('query getDependabotAlerts');
-      expect(query).toContain('vulnerabilityAlerts(first: 100');
-      expect(mockedGraphqlClient).toHaveBeenCalledWith(query, repository);
-      expect(getCredentialsSpy).toHaveBeenCalledWith({
-        url,
-      });
-      expect(mockLogger.info).toHaveBeenCalledTimes(3);
-      expect(mockLogger.info).toHaveBeenNthCalledWith(
-        1,
-        'Fetching Dependabot alerts for owner/repo',
+      expect(result).toEqual(alerts);
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/repos/owner/repo/dependabot/alerts'),
+        expect.any(Object),
       );
-      expect(mockLogger.info).toHaveBeenNthCalledWith(
-        3,
-        'Fetched 1 Dependabot alert(s) for owner/repo',
-      );
+      expect(fetchMock.mock.calls[0][0]).toContain('severity=critical');
+      expect(fetchMock.mock.calls[0][0]).toContain('state=open');
+      expect(fetchMock.mock.calls[0][0]).toContain('per_page=100');
     });
 
-    it('should throw error when GitHub integration for URL is missing', async () => {
-      const unknownUrl = 'https://unknown-host/owner/repo';
-      await expect(
-        dependabotClient.getDependabotAlerts(unknownUrl, repository),
-      ).rejects.toThrow(`Missing GitHub integration for '${unknownUrl}'`);
+    it('paginates using Link header until all alerts are fetched', async () => {
+      const page1 = Array.from({ length: 100 }, (_, i) => ({
+        number: i + 1,
+        state: 'open',
+        created_at: '2024-01-01',
+        security_advisory: { severity: 'critical' },
+      }));
+      const page2 = [
+        {
+          number: 101,
+          state: 'open',
+          created_at: '2024-01-01',
+          security_advisory: { severity: 'critical' },
+        },
+      ];
+      const nextPageUrl =
+        'https://api.github.com/repos/owner/repo/dependabot/alerts?state=open&severity=critical&per_page=100&after=cursor123';
+      const linkHeader = `<${nextPageUrl}>; rel="next"`;
+
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({ link: linkHeader }),
+          json: () => Promise.resolve(page1),
+          text: () => Promise.resolve(''),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers(),
+          json: () => Promise.resolve(page2),
+          text: () => Promise.resolve(''),
+        } as Response);
+
+      const result = await client.getCriticalAlerts(url, repository);
+
+      expect(result).toHaveLength(101);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[0][0]).toContain('per_page=100');
+      expect(fetchMock.mock.calls[1][0]).toBe(nextPageUrl);
     });
+  });
+
+  describe('getHighAlerts', () => {
+    it('fetches alerts with severity=high', async () => {
+      await client.getHighAlerts(url, repository);
+      expect(fetchMock.mock.calls[0][0]).toContain('severity=high');
+    });
+  });
+
+  describe('getMediumAlerts', () => {
+    it('fetches alerts with severity=medium', async () => {
+      await client.getMediumAlerts(url, repository);
+      expect(fetchMock.mock.calls[0][0]).toContain('severity=medium');
+    });
+  });
+
+  describe('getLowAlerts', () => {
+    it('fetches alerts with severity=low and returns them', async () => {
+      const alerts = [
+        {
+          number: 2,
+          state: 'open',
+          created_at: '2024-02-01',
+          security_advisory: { severity: 'low' },
+        },
+      ];
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers(),
+        json: () => Promise.resolve(alerts),
+        text: () => Promise.resolve(''),
+      } as Response);
+
+      const result = await client.getLowAlerts(url, repository);
+
+      expect(result).toEqual(alerts);
+      expect(fetchMock.mock.calls[0][0]).toContain('severity=low');
+    });
+  });
+
+  it('throws when GitHub integration is missing for URL', async () => {
+    const unknownUrl = 'https://unknown-host/owner/repo';
+    await expect(
+      client.getCriticalAlerts(unknownUrl, repository),
+    ).rejects.toThrow(
+      "Missing GitHub integration for 'https://unknown-host/owner/repo'",
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('throws when API response is not ok', async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 403,
+      statusText: 'Forbidden',
+      text: () => Promise.resolve('Forbidden'),
+      headers: new Headers(),
+      json: () => Promise.resolve({}),
+    } as Response);
+
+    await expect(client.getCriticalAlerts(url, repository)).rejects.toThrow(
+      /GitHub API error/,
+    );
   });
 });

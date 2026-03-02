@@ -26,21 +26,35 @@ import { type Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { DependabotClient } from '../clients/DependabotClient';
-import { DEPENDABOT_THRESHOLDS } from './DependabotConfig';
+import {
+  type DependabotSeverity,
+  DEPENDABOT_SEVERITY_METRIC,
+  DEPENDABOT_THRESHOLDS,
+} from './DependabotConfig';
 
 const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
 
+/**
+ * Metric provider for Dependabot alerts of a single severity (critical, high, medium, low).
+ * Use one instance per severity; the module registers four providers.
+ */
 export class DependabotMetricProvider implements MetricProvider<'number'> {
   private readonly dependabotClient: DependabotClient;
   private readonly thresholds: ThresholdConfig;
   private readonly logger: LoggerService;
+  private readonly severity: DependabotSeverity;
 
   constructor(
     config: Config,
     logger: LoggerService,
+    severity: DependabotSeverity,
     thresholds?: ThresholdConfig,
   ) {
-    this.logger = logger.child({ component: 'DependabotMetricProvider' });
+    this.severity = severity;
+    this.logger = logger.child({
+      component: 'DependabotMetricProvider',
+      severity,
+    });
     this.dependabotClient = new DependabotClient(config, logger);
     this.thresholds = thresholds ?? DEPENDABOT_THRESHOLDS;
   }
@@ -50,7 +64,7 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   }
 
   getProviderId(): string {
-    return 'dependabot.alerts';
+    return DEPENDABOT_SEVERITY_METRIC[this.severity].id;
   }
 
   getMetricType(): 'number' {
@@ -58,10 +72,11 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   }
 
   getMetric(): Metric<'number'> {
+    const meta = DEPENDABOT_SEVERITY_METRIC[this.severity];
     return {
-      id: this.getProviderId(),
-      title: 'Dependabot Alerts',
-      description: 'Current count of Dependabot alerts for a given repository.',
+      id: meta.id,
+      title: meta.title,
+      description: meta.description,
       type: this.getMetricType(),
       history: true,
     };
@@ -103,33 +118,24 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   async calculateMetric(entity: Entity): Promise<number> {
     const { owner, repo } = this.getRepository(entity);
     const githubUrl = `https://github.com/${owner}/${repo}`;
-    const alerts = await this.dependabotClient.getDependabotAlerts(githubUrl, {
-      owner,
-      repo,
-    });
-
-    this.logger.info(
-      `Fetched ${alerts.length} Dependabot alerts for ${entity.metadata.name}`,
-    );
-    if (alerts.filter(alert => alert.severity === 'CRITICAL').length > 0) {
-      return 9;
-    } else if (alerts.filter(alert => alert.severity === 'HIGH').length > 0) {
-      return 6;
-    } else if (alerts.filter(alert => alert.severity === 'MEDIUM').length > 0) {
-      return 3;
-    }
-
-    return 0;
+    const alerts = await this.getAlertsBySeverity(githubUrl, { owner, repo });
+    return alerts.length;
   }
-}
 
-/**
- * @returns a Dependabot metric provider.
- */
-export function createDependabotMetricProvider(
-  config: Config,
-  logger: LoggerService,
-  thresholds?: ThresholdConfig,
-): MetricProvider<'number'> {
-  return new DependabotMetricProvider(config, logger, thresholds);
+  private getAlertsBySeverity(
+    url: string,
+    repository: { owner: string; repo: string },
+  ) {
+    switch (this.severity) {
+      case 'critical':
+        return this.dependabotClient.getCriticalAlerts(url, repository);
+      case 'high':
+        return this.dependabotClient.getHighAlerts(url, repository);
+      case 'medium':
+        return this.dependabotClient.getMediumAlerts(url, repository);
+      case 'low':
+      default:
+        return this.dependabotClient.getLowAlerts(url, repository);
+    }
+  }
 }
