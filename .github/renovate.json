@@ -11,7 +11,8 @@
     ":pinDevDependencies",
     ":pinDigest",
     "docker:pinDigests",
-    "group:monorepos"
+    "group:monorepos",
+    ":maintainLockFilesWeekly"
   ],
   "labels": ["dependencies"],
   "postUpdateOptions": ["yarnDedupeHighest"],
