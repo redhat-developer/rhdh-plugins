@@ -87,6 +87,7 @@ export class X2ADatabaseService {
   async createProject(
     input: {
       name: string;
+      ownedByGroup?: string;
       abbreviation: string;
       description: string;
       sourceRepoUrl: string;
@@ -106,6 +107,7 @@ export class X2ADatabaseService {
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canViewAll?: boolean;
+      groupsOfUser: string[];
     },
   ): Promise<{ projects: Project[]; totalCount: number }> {
     const result = await this.#projectOps.listProjects(query, options);
@@ -128,6 +130,7 @@ export class X2ADatabaseService {
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canViewAll?: boolean;
+      groupsOfUser: string[];
     },
   ): Promise<Project | undefined> {
     const project = await this.#projectOps.getProject({ projectId }, options);
@@ -147,6 +150,7 @@ export class X2ADatabaseService {
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canWriteAll?: boolean;
+      groupsOfUser: string[];
     },
   ): Promise<number> {
     return this.#projectOps.deleteProject({ projectId }, options);

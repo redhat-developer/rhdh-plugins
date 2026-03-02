@@ -42,7 +42,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'project.description': 'Beschreibung',
     'project.id': 'ID',
     'project.abbreviation': 'Abkürzung',
-    'project.createdBy': 'Erstellt von',
+    'project.createdBy': 'Eigentümer',
     'project.statuses.none': '-',
     'project.statuses.created': 'Erstellt',
     'project.statuses.initializing': 'Wird initialisiert',
@@ -52,6 +52,13 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'project.statuses.failed': 'Fehlgeschlagen',
     'project.noModules': 'Noch keine Module gefunden...',
     'common.newProject': 'Neues Projekt',
+    'emptyPage.noConversionInitiatedYet': 'Noch keine Konversion gestartet',
+    'emptyPage.noConversionInitiatedYetDescription':
+      'Starten und verfolgen Sie die Konvertierung von Chef-Dateien in produktionsreife Ansible',
+    'emptyPage.startFirstConversion': 'Erste Konversion starten',
+    'emptyPage.notAllowedTitle': 'Zugriff verweigert',
+    'emptyPage.notAllowedDescription':
+      'Sie haben keine Berechtigung, auf Konversionsprojekte zuzugreifen.',
     'wizard.cancel': 'Abbrechen',
     'wizard.back': 'Zurück',
     'wizard.next': 'Weiter',

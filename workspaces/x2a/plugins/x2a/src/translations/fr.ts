@@ -42,7 +42,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'project.description': 'Description',
     'project.id': 'ID',
     'project.abbreviation': 'Abréviation',
-    'project.createdBy': 'Créé par',
+    'project.createdBy': 'Propriétaire',
     'project.statuses.none': '-',
     'project.statuses.created': 'Créé',
     'project.statuses.initializing': 'Initialisation en cours',
@@ -52,6 +52,14 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'project.statuses.failed': 'Échoué',
     'project.noModules': 'Aucun module trouvé pour le moment...',
     'common.newProject': 'Nouveau projet',
+    'emptyPage.noConversionInitiatedYet':
+      'Aucune conversion initiée pour le moment',
+    'emptyPage.noConversionInitiatedYetDescription':
+      'Lancez et suivez la conversion de fichiers Chef en playbooks Ansible prêts pour la production',
+    'emptyPage.startFirstConversion': 'Démarrer la première conversion',
+    'emptyPage.notAllowedTitle': 'Accès refusé',
+    'emptyPage.notAllowedDescription':
+      "Vous n'êtes pas autorisé à accéder aux projets de conversion.",
     'wizard.cancel': 'Annuler',
     'wizard.back': 'Retour',
     'wizard.next': 'Suivant',

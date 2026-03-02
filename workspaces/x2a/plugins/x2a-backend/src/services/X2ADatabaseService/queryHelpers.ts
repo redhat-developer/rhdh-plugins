@@ -18,15 +18,18 @@ import { Knex } from 'knex';
 
 /**
  * Filter query by user permissions.
- * When canDoAll is false/undefined, restricts to rows where created_by matches userEntityRef.
+ * When canDoAll is false/undefined, restricts to rows where created_by matches
+ * the user or any of the Backstage groups the user is a member of.
  */
 export function filterPermissions(
   queryBuilder: Knex.QueryBuilder,
   canDoAll: boolean | undefined,
   userEntityRef: string,
+  groupsOfUser: string[] = [],
 ): void {
   if (!canDoAll) {
-    queryBuilder.where('created_by', userEntityRef);
+    const allowedCreators = [userEntityRef, ...groupsOfUser];
+    queryBuilder.whereIn('created_by', allowedCreators);
   }
 }
 
