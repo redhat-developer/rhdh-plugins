@@ -42,7 +42,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'project.description': 'Descrizione',
     'project.id': 'ID',
     'project.abbreviation': 'Abbreviazione',
-    'project.createdBy': 'Creato da',
+    'project.createdBy': 'Proprietario',
     'project.statuses.none': '-',
     'project.statuses.created': 'Creato',
     'project.statuses.initializing': 'In inizializzazione',
@@ -52,6 +52,13 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'project.statuses.failed': 'Fallito',
     'project.noModules': 'Nessun modulo trovato finora...',
     'common.newProject': 'Nuovo progetto',
+    'emptyPage.noConversionInitiatedYet': 'Nessuna conversione avviata ancora',
+    'emptyPage.noConversionInitiatedYetDescription':
+      'Avvia e monitora la conversione di file Chef in playbook Ansible pronti per la produzione',
+    'emptyPage.startFirstConversion': 'Avvia prima conversione',
+    'emptyPage.notAllowedTitle': 'Accesso negato',
+    'emptyPage.notAllowedDescription':
+      'Non sei autorizzato ad accedere ai progetti di conversione.',
     'wizard.cancel': 'Annulla',
     'wizard.back': 'Indietro',
     'wizard.next': 'Avanti',

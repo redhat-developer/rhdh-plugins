@@ -33,6 +33,11 @@ spec:
           pattern: '^([a-zA-Z][a-zA-Z0-9]*)(-[a-zA-Z0-9]+)*$'
           maxLength: 5
           minLength: 1
+        ownedByGroup:
+          title: Owned by group
+          type: string
+          description: Optional - The user group that will own the project. Make sure the group has either x2a.user or x2a.user admin (update) permission. Leave empty to use the creator (you) as owner.
+          ui:field: MyGroupsPicker
     - title: Source and target repositories
       ui:order:
         - sourceRepoUrl
@@ -70,7 +75,7 @@ spec:
           description: If checked, the target repository will be the same as the source repository.
           default: true
 
-        # TODO: Replace by https://backstage.io/docs/features/software-templates/writing-templates#the-repository-branch-picker
+        # TODO: Can be replaced by RepoBranchPicker but it does not work nicely. https://backstage.io/docs/features/software-templates/writing-templates#the-repository-branch-picker
         targetRepoBranch:
           title: Conversion target repository branch
           type: string
@@ -115,6 +120,7 @@ spec:
         name: ${{ parameters.name }}
         description: ${{ parameters.description }}
         abbreviation: ${{ parameters.abbreviation }}
+        ownedByGroup: ${{ parameters.ownedByGroup }}
         sourceRepoUrl: ${{ parameters.sourceRepoUrl }}
         sourceRepoBranch: ${{ parameters.sourceRepoBranch }}
         areTargeAndSourceRepoShared: ${{ parameters.areTargeAndSourceRepoShared }}

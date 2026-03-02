@@ -17,6 +17,7 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
 import { migrate } from './services/dbMigrate';
@@ -37,6 +38,7 @@ export const x2APlugin = createBackendPlugin({
         database: coreServices.database,
         logger: coreServices.logger,
         discoveryApi: coreServices.discovery,
+        catalog: catalogServiceRef,
         permissionsSvc: coreServices.permissions,
         config: coreServices.rootConfig,
         x2aDatabase: x2aDatabaseServiceRef,
@@ -49,6 +51,7 @@ export const x2APlugin = createBackendPlugin({
         logger,
         discoveryApi,
         httpAuth,
+        catalog,
         database,
         kubeService,
         config,
@@ -65,6 +68,7 @@ export const x2APlugin = createBackendPlugin({
             httpAuth,
             logger,
             discoveryApi,
+            catalog,
             permissionsSvc,
             x2aDatabase,
             kubeService,

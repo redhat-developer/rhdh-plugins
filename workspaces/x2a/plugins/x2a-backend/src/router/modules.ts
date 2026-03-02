@@ -22,7 +22,7 @@ import { InputError, NotFoundError } from '@backstage/errors';
 import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
-import { getUserRef, reconcileJobStatus } from './common';
+import { reconcileJobStatus, useEnforceProjectPermissions } from './common';
 import { calculateModuleStatus } from '../services/X2ADatabaseService/status';
 
 /**
@@ -47,25 +47,31 @@ export function registerModuleRoutes(
   router: express.Router,
   deps: RouterDeps,
 ): void {
-  const { httpAuth, discoveryApi, x2aDatabase, kubeService, logger, config } =
-    deps;
+  const {
+    httpAuth,
+    discoveryApi,
+    x2aDatabase,
+    kubeService,
+    logger,
+    config,
+    permissionsSvc,
+    catalog,
+  } = deps;
 
   router.get('/projects/:projectId/modules', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules';
     const { projectId } = req.params;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
 
-    // Get user credentials
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-
-    // Verify project exists and the user is permitted to access it
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      { credentials },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project "${projectId}" not found.`);
-    }
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
+      httpAuth,
+      permissionsSvc,
+      catalog,
+    });
 
     // List modules
     const modules = await x2aDatabase.listModules({ projectId });
@@ -98,17 +104,15 @@ export function registerModuleRoutes(
       `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
     );
 
-    // Get user credentials
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-
-    // Verify project exists and the user is permitted to access it
-    const project = await x2aDatabase.getProject(
-      { projectId, skipEnrichment: true },
-      { credentials },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project "${projectId}" not found.`);
-    }
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
+      httpAuth,
+      permissionsSvc,
+      catalog,
+    });
 
     // Get module
     const module = await x2aDatabase.getModule({
@@ -149,9 +153,20 @@ export function registerModuleRoutes(
   router.post(
     '/projects/:projectId/modules',
     async (req: express.Request, res: express.Response) => {
-      const endpoint = 'POST /projects/:projectId/modules';
+      const endpoint =
+        'Temporary endpoint - for testing only. POST /projects/:projectId/modules';
       const { projectId } = req.params;
       logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        httpAuth,
+        permissionsSvc,
+        catalog,
+      });
 
       // Validate request body
       const createModuleRequestSchema = z.object({
@@ -166,18 +181,6 @@ export function registerModuleRoutes(
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
       const { name, sourcePath } = parsedBody.data;
-
-      // Get user credentials
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-
-      // Verify project exists
-      const project = await x2aDatabase.getProject(
-        { projectId },
-        { credentials },
-      );
-      if (!project) {
-        throw new NotFoundError(`Project "${projectId}" not found.`);
-      }
 
       // Create module
       const module = await x2aDatabase.createModule({
@@ -234,6 +237,16 @@ export function registerModuleRoutes(
       const { phase, sourceRepoAuth, targetRepoAuth, aapCredentials } =
         parsedBody.data;
 
+      const { project, userRef } = await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        httpAuth,
+        permissionsSvc,
+        catalog,
+      });
+
       // Get tokens with config-based fallback
       const sourceToken =
         sourceRepoAuth?.token ??
@@ -251,19 +264,6 @@ export function registerModuleRoutes(
         throw new InputError(
           'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
         );
-      }
-
-      // Get user reference safely
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userRef = getUserRef(credentials);
-
-      // Verify project exists
-      const project = await x2aDatabase.getProject(
-        { projectId },
-        { credentials },
-      );
-      if (!project) {
-        throw new NotFoundError(`Project "${projectId}" not found.`);
       }
 
       // Verify module exists

@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 import { makeStyles } from '@material-ui/core';
-import { EmptyState, LinkButton } from '@backstage/core-components';
+import { EmptyState, LinkButton, Progress } from '@backstage/core-components';
+import { usePermission } from '@backstage/plugin-permission-react';
+import {
+  CREATE_CHEF_PROJECT_TEMPLATE_PATH,
+  x2aAdminViewPermission,
+  x2aAdminWritePermission,
+  x2aUserPermission,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import emptyProjectListImage from './EmptyProjectListImage.png';
-import { CREATE_CHEF_PROJECT_TEMPLATE_PATH } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const useStyles = makeStyles({
   top: {
@@ -37,20 +45,21 @@ export const EmptyProjectListImage = () => (
   />
 );
 
-const NextSteps = () => {
+const NextSteps = ({ canCreate }: { canCreate: boolean }) => {
+  const { t } = useTranslation();
   const styles = useStyles();
 
   return (
     <div>
-      Initiate and track conversion of Chef files into production-ready Ansible
-      Playbooks.
+      {t('emptyPage.noConversionInitiatedYetDescription')}
       <div className={styles.nextSteps}>
         <LinkButton
           variant="contained"
           color="primary"
           to={CREATE_CHEF_PROJECT_TEMPLATE_PATH}
+          disabled={!canCreate}
         >
-          Start first conversion
+          {t('emptyPage.startFirstConversion')}
         </LinkButton>
       </div>
     </div>
@@ -58,13 +67,50 @@ const NextSteps = () => {
 };
 
 export const EmptyProjectList = () => {
+  const { t } = useTranslation();
   const styles = useStyles();
+
+  const isUserPermission = usePermission({
+    permission: x2aUserPermission,
+  });
+  const isAdminReadPermission = usePermission({
+    permission: x2aAdminViewPermission,
+  });
+  const isAdminWritePermission = usePermission({
+    permission: x2aAdminWritePermission,
+  });
+
+  if (
+    isUserPermission.loading ||
+    isAdminReadPermission.loading ||
+    isAdminWritePermission.loading
+  ) {
+    return <Progress />;
+  }
+
+  const isViewAllowed =
+    isUserPermission.allowed ||
+    isAdminReadPermission.allowed ||
+    isAdminWritePermission.allowed;
+  const canCreate = isAdminWritePermission.allowed || isUserPermission.allowed;
+
+  if (!isViewAllowed) {
+    return (
+      <div className={styles.top}>
+        <EmptyState
+          title={t('emptyPage.notAllowedTitle')}
+          description={t('emptyPage.notAllowedDescription')}
+          missing={{ customImage: <EmptyProjectListImage /> }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.top}>
       <EmptyState
-        title="No conversion initiated yet"
-        description={<NextSteps />}
+        title={t('emptyPage.noConversionInitiatedYet')}
+        description={<NextSteps canCreate={canCreate} />}
         missing={{ customImage: <EmptyProjectListImage /> }}
       />
     </div>
