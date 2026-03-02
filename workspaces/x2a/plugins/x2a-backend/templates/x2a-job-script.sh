@@ -368,11 +368,12 @@ case "${PHASE}" in
   publish)
     echo "=== Running x2a publish phase ==="
     MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
+    ROLE_NAME=$(echo "${MODULE_NAME}" | tr ' -' '__')
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
 
     # Verify migrate phase output exists
-    if [ ! -d "${OUTPUT_DIR}/ansible/roles/${MODULE_NAME_SANITIZED}" ]; then
-      ERROR_MESSAGE="Migrated role not found at ${OUTPUT_DIR}/ansible/roles/${MODULE_NAME_SANITIZED} - migrate phase must complete first"
+    if [ ! -d "${OUTPUT_DIR}/ansible/roles/${ROLE_NAME}" ]; then
+      ERROR_MESSAGE="Migrated role not found at ${OUTPUT_DIR}/ansible/roles/${ROLE_NAME} - migrate phase must complete first"
       exit 1
     fi
 
@@ -390,7 +391,7 @@ case "${PHASE}" in
     # and writes to {project_id}/ansible-project/
     # It operates relative to CWD, so we run from TARGET_BASE
     pushd "${TARGET_BASE}"
-    uv run --project /app app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
+    uv run --project /app /app/app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
     popd
 
     # Verify ansible-project was created
