@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { type Entity } from '@backstage/catalog-model';
 
@@ -38,11 +37,10 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   constructor(
     readonly config: OpenSSFMetricConfig,
     thresholds: ThresholdConfig,
-    logger: LoggerService,
   ) {
     this.thresholds = thresholds;
     this.config = config;
-    this.openSSFClient = new OpenSSFClient(logger);
+    this.openSSFClient = new OpenSSFClient();
   }
 
   getMetricName(): string {
@@ -111,13 +109,10 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
 
 /**
  * Creates all default OpenSSF metric providers.
- * @param logger Logger instance for the OpenSSF client and providers
  * @returns Array of OpenSSF metric providers
  */
-export function createOpenSSFMetricProvider(
-  logger: LoggerService,
-): MetricProvider<'number'>[] {
+export function createOpenSSFMetricProvider(): MetricProvider<'number'>[] {
   return OPENSSF_METRICS.map(
-    config => new OpenSSFMetricProvider(config, OPENSSF_THRESHOLDS, logger),
+    config => new OpenSSFMetricProvider(config, OPENSSF_THRESHOLDS),
   );
 }

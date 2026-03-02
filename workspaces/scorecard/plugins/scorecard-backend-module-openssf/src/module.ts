@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  coreServices,
-  createBackendModule,
-} from '@backstage/backend-plugin-api';
+import { createBackendModule } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { createOpenSSFMetricProvider } from './metricProviders/OpenSSFMetricProvider';
 
@@ -26,11 +23,10 @@ export const scorecardOpenSFFModule = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
-        logger: coreServices.logger,
         metrics: scorecardMetricsExtensionPoint,
       },
-      async init({ logger, metrics }) {
-        metrics.addMetricProvider(...createOpenSSFMetricProvider(logger));
+      async init({ metrics }) {
+        metrics.addMetricProvider(...createOpenSSFMetricProvider());
       },
     });
   },

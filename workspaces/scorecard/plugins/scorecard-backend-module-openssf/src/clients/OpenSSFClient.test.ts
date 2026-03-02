@@ -59,14 +59,6 @@ const mockOpenSSFResponse: OpenSSFResponse = {
   ],
 };
 
-const mockLogger = {
-  child: jest.fn().mockReturnThis(),
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
-};
-
 describe('OpenSSFClient', () => {
   const entity = createEntity(mockScorecardLocation);
 
@@ -82,7 +74,7 @@ describe('OpenSSFClient', () => {
         json: jest.fn().mockResolvedValue(mockOpenSSFResponse),
       });
 
-      const client = new OpenSSFClient(mockLogger as any);
+      const client = new OpenSSFClient();
       const result = await client.getScorecard(entity);
 
       expect(fetch).toHaveBeenCalledWith(mockScorecardLocation, {
@@ -99,7 +91,7 @@ describe('OpenSSFClient', () => {
         statusText: 'Not Found',
       });
 
-      const client = new OpenSSFClient(mockLogger as any);
+      const client = new OpenSSFClient();
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'OpenSSF API request failed with status 404: Not Found',
@@ -111,7 +103,7 @@ describe('OpenSSFClient', () => {
         new Error('Network error'),
       );
 
-      const client = new OpenSSFClient(mockLogger as any);
+      const client = new OpenSSFClient();
 
       await expect(client.getScorecard(entity)).rejects.toThrow(
         'Network error',

@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 
 import { OpenSSFResponse } from './types';
 
 export class OpenSSFClient {
-  constructor(private readonly logger: LoggerService) {}
-
   async getScorecard(entity: Entity): Promise<OpenSSFResponse> {
     const scorecardLocation =
       entity.metadata.annotations?.['openssf/scorecard-location'] ?? '';
