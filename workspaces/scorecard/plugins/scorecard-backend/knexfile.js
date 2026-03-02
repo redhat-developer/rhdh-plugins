@@ -16,16 +16,39 @@
 
 // To create new migration file use: "yarn knex migrate:make migrations",
 // open generated new migration file and edit it to complete code.
-// To run new migration use: "yarn knex migrate:up some_file_name"
-// To run latest migration use: "yarn knex migrate:latest"
-// To rollback concrete migration use: "yarn knex migrate:down some_file_name"
-// To rollback latest migration batch use: "yarn knex migrate:rollback"
+//
+// This `knexfile.js` exports multiple named environments, so you must specify
+// which one to use with `--env` when running migrations.
+//
+// Examples:
+// - sqlite3: "yarn knex --env sqlite3 migrate:latest"
+// - pg: "yarn knex --env pg migrate:latest"
+//
+// To run new migration use: "yarn knex --env sqlite3 migrate:up some_file_name"
+// To run latest migration use: "yarn knex --env sqlite3 migrate:latest"
+// To rollback concrete migration use: "yarn knex --env sqlite3 migrate:down some_file_name"
+// To rollback latest migration batch use: "yarn knex --env sqlite3 migrate:rollback"
 
 module.exports = {
-  client: 'better-sqlite3',
-  connection: ':memory:',
-  useNullAsDefault: true,
-  migrations: {
-    directory: './migrations',
+  sqlite3: {
+    client: 'better-sqlite3',
+    connection: ':memory:',
+    useNullAsDefault: true,
+    migrations: {
+      directory: './migrations',
+    },
+  },
+  pg: {
+    client: 'pg',
+    connection: {
+      host: process.env.POSTGRES_HOST,
+      port: parseInt(process.env.POSTGRES_PORT, 10),
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.POSTGRES_DB,
+    },
+    migrations: {
+      directory: './migrations',
+    },
   },
 };
