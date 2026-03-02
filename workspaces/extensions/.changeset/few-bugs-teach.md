@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-extensions-common': major
+'@red-hat-developer-hub/backstage-plugin-extensions-common': minor
 ---
 
 Normalize support-level terminology from `generally-available` to `production` in extensions schemas, shared support-level types, and related examples/docs.
