@@ -19,9 +19,11 @@ import { CatalogService } from '@backstage/plugin-catalog-node';
 import type { ScaffolderClient } from '@backstage/plugin-scaffolder-common';
 import { createDryRunTemplateAction } from './createDryRunTemplateAction';
 import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
+import { createListScaffolderActionsAction } from './createListScaffolderActionsAction';
 
 export { createDryRunTemplateAction } from './createDryRunTemplateAction';
 export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
+export { createListScaffolderActionsAction } from './createListScaffolderActionsAction';
 
 export const createScaffolderActions = (options: {
   actionsRegistry: ActionsRegistryService;
@@ -31,6 +33,10 @@ export const createScaffolderActions = (options: {
 }) => {
   createFetchTemplateMetadataAction(options);
   if (options.scaffolderClient) {
+    createListScaffolderActionsAction({
+      actionsRegistry: options.actionsRegistry,
+      scaffolderClient: options.scaffolderClient,
+    });
     createDryRunTemplateAction({
       actionsRegistry: options.actionsRegistry,
       scaffolderClient: options.scaffolderClient,
