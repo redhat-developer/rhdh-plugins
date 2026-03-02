@@ -16,7 +16,7 @@
 
 import { resourceOptimizationPlugin } from './plugin';
 
-describe('redhat-resource-optimization', () => {
+describe('cost-management', () => {
   it('should export plugin', () => {
     expect(resourceOptimizationPlugin).toBeDefined();
   });

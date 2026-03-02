@@ -149,7 +149,7 @@ The procedure involves the following steps:
        clientSecret: '${RHHCC_SA_CLIENT_SECRET}'
      dynamicPlugins:
        frontend:
-         red-hat-developer-hub.plugin-redhat-resource-optimization:
+         red-hat-developer-hub.plugin-cost-management:
            appIcons:
    ```
 
