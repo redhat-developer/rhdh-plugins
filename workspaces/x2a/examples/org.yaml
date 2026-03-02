@@ -16,6 +16,15 @@ spec:
   type: team
   children: []
 ---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
+apiVersion: backstage.io/v1alpha1
+kind: Group
+metadata:
+  name: x2a-admin-group
+spec:
+  type: team
+  children: []
+---
 apiVersion: backstage.io/v1alpha1
 kind: User
 metadata:
@@ -24,7 +33,7 @@ spec:
   profile:
     displayName: Marek Libra
     email: foo@bar.com
-  memberOf: []
+  memberOf: [x2a-admin-group]
 ---
 apiVersion: backstage.io/v1alpha1
 kind: User

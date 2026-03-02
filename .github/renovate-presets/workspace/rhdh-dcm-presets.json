@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Dcm minor updates",
+      "matchFileNames": ["workspaces/dcm/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Dcm)"
+      ],
+      "addLabels": ["team/rhdh", "dcm"]
+    },
+    {
+      "description": "all Dcm patch updates",
+      "matchFileNames": ["workspaces/dcm/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Dcm)"
+      ],
+      "addLabels": ["team/rhdh", "dcm"]
+    },
+    {
+      "description": "all Dcm dev dependency updates",
+      "matchFileNames": ["workspaces/dcm/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Dcm)"
+      ],
+      "addLabels": ["team/rhdh", "dcm"]
+    }
+  ]
+}
