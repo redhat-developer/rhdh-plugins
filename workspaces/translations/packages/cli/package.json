@@ -19,18 +19,16 @@
   "scripts": {
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:quick": "./test/quick-test.sh",
-    "test:integration": "./test/integration-test.sh",
-    "test:real-repo": "./test/real-repo-test.sh",
-    "test:workflow": "tsx test/workflow-verification.ts",
-    "test:manual": "echo 'See test/manual-test-checklist.md for manual testing steps'",
+    "test": "backstage-cli package test",
+    "test:quick": "./scripts/quick-test.sh",
+    "test:integration": "./scripts/integration-test.sh",
+    "test:real-repo": "./scripts/real-repo-test.sh",
+    "test:workflow": "tsx scripts/workflow-verification.ts",
+    "test:manual": "echo 'See docs/manual-test-checklist.md for manual testing steps'",
     "clean": "backstage-cli package clean",
     "start": "nodemon --",
     "dev": "ts-node src/index.ts",
-    "dev:help": "ts-node src/index.ts --help",
-    "test:local": "npm run build && node bin/translations-cli"
+    "dev:help": "ts-node src/index.ts --help"
   },
   "bin": "bin/translations-cli",
   "files": [
@@ -59,7 +57,6 @@
     "chalk": "^4.1.2",
     "commander": "^12.0.0",
     "ts-node": "^10.9.2",
-    "tsx": "^4.21.0",
-    "vitest": "^1.0.0"
+    "tsx": "^4.21.0"
   }
 }

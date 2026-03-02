@@ -4,19 +4,27 @@ Complete guide for testing the translations CLI before release.
 
 ## Quick Test Commands
 
+### Quick smoke test (fastest)
+
 ```bash
-# Quick smoke test (fastest)
 yarn test:quick
-
-# Full integration test
-yarn test:integration
-
-# Unit tests (vitest)
-yarn test
-
-# Manual testing checklist
-# See: test/manual-test-checklist.md
 ```
+
+### Full integration test
+
+```bash
+yarn test:integration
+```
+
+### Unit tests
+
+```bash
+yarn test
+```
+
+## Manual testing checklist
+
+See: test/manual-test-checklist.md
 
 ## Testing Strategy
 
@@ -52,7 +60,7 @@ yarn test:integration
 yarn test
 ```
 
-- Runs vitest test suite
+- Runs unit test suite
 - Tests individual functions
 - Fast feedback during development
 

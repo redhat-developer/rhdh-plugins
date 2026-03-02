@@ -20,13 +20,11 @@ yarn test:integration
 
 Tests full workflow with real file structures.
 
-### Run Unit Tests (If Available)
+### Run Unit Tests
 
 ```bash
 yarn test
 ```
-
-Runs vitest unit tests.
 
 ### Manual Testing
 
