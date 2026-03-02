@@ -121,6 +121,49 @@ describe('X2ADatabaseService – projects', () => {
         expect(row.created_by).toBe('user:default/custom-user');
       },
     );
+
+    it.each(supportedDatabaseIds)(
+      'sets createdBy from ownedByGroup when provided - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Group-owned Project',
+            abbreviation: 'GOP',
+            description: 'Owned by group',
+            ownedByGroup: 'group:default/team-a',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        expect(project.createdBy).toBe('group:default/team-a');
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.created_by).toBe('group:default/team-a');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'falls back to user ref when ownedByGroup is not provided - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user('user:default/jane');
+        const project = await service.createProject(
+          {
+            name: 'User-owned Project',
+            abbreviation: 'UOP',
+            description: 'Owned by user',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        expect(project.createdBy).toBe('user:default/jane');
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.created_by).toBe('user:default/jane');
+      },
+    );
   });
 
   describe('listProjects', () => {
@@ -130,7 +173,10 @@ describe('X2ADatabaseService – projects', () => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
         const credentials = mockCredentials.user();
-        const result = await service.listProjects({}, { credentials });
+        const result = await service.listProjects(
+          {},
+          { credentials, groupsOfUser: [] },
+        );
         expect(result.projects).toEqual([]);
         expect(result.totalCount).toBe(0);
       },
@@ -174,7 +220,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const result = await service.listProjects(
           { order: 'desc', sort: 'createdAt' },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(result.totalCount).toBe(3);
         expect(result.projects).toHaveLength(3);
@@ -205,7 +251,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const page1 = await service.listProjects(
           { page: 0, pageSize: 2, sort: 'createdAt', order: 'desc' },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(page1.totalCount).toBe(5);
         expect(page1.projects).toHaveLength(2);
@@ -214,7 +260,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const page2 = await service.listProjects(
           { page: 1, pageSize: 2, sort: 'createdAt', order: 'desc' },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(page2.totalCount).toBe(5);
         expect(page2.projects).toHaveLength(2);
@@ -223,7 +269,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const page3 = await service.listProjects(
           { page: 2, pageSize: 2, sort: 'createdAt', order: 'desc' },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(page3.totalCount).toBe(5);
         expect(page3.projects).toHaveLength(1);
@@ -251,7 +297,7 @@ describe('X2ADatabaseService – projects', () => {
         }
         const result = await service.listProjects(
           { sort: 'createdAt', order: 'desc' },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(result.totalCount).toBe(15);
         expect(result.projects).toHaveLength(10);
@@ -296,7 +342,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const asc = await service.listProjects(
           { sort: 'name', order: 'asc' },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(asc.projects).toHaveLength(3);
         expect(asc.projects[0].name).toBe('Alpha Project');
@@ -305,7 +351,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const desc = await service.listProjects(
           { sort: 'name', order: 'desc' },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(desc.projects[0].name).toBe('Zebra Project');
         expect(desc.projects[1].name).toBe('Beta Project');
@@ -353,7 +399,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const result = await service.listProjects(
           { sort: 'createdBy', order: 'asc' },
-          { credentials: cred1, canViewAll: true },
+          { credentials: cred1, canViewAll: true, groupsOfUser: [] },
         );
         expect(result.projects).toHaveLength(3);
         expect(result.projects[0].createdBy).toBe('user:default/user1');
@@ -411,7 +457,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const user1Result = await service.listProjects(
           { sort: 'createdAt', order: 'desc' },
-          { credentials: cred1, canViewAll: false },
+          { credentials: cred1, canViewAll: false, groupsOfUser: [] },
         );
         expect(user1Result.totalCount).toBe(2);
         expect(
@@ -420,12 +466,62 @@ describe('X2ADatabaseService – projects', () => {
 
         const user2Result = await service.listProjects(
           { sort: 'createdAt', order: 'desc' },
-          { credentials: cred2, canViewAll: false },
+          { credentials: cred2, canViewAll: false, groupsOfUser: [] },
         );
         expect(user2Result.totalCount).toBe(2);
         expect(
           user2Result.projects.every(p => p.createdBy === 'user:default/user2'),
         ).toBe(true);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns projects owned by user or their groups when groupsOfUser is provided - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const cred = mockCredentials.user('user:default/user1');
+
+        // Project created by user
+        await service.createProject(
+          {
+            name: 'User Project',
+            abbreviation: 'UP',
+            description: 'D1',
+            ...defaultProjectRepoFields,
+          },
+          { credentials: cred },
+        );
+
+        // Project "owned" by group (inserted directly - e.g. created by group workflow)
+        const groupProjectId = '11111111-1111-1111-1111-111111111111';
+        await client('projects').insert({
+          id: groupProjectId,
+          name: 'Group Project',
+          abbreviation: 'GP',
+          description: 'Project created by group',
+          source_repo_url: defaultProjectRepoFields.sourceRepoUrl,
+          target_repo_url: defaultProjectRepoFields.targetRepoUrl,
+          source_repo_branch: defaultProjectRepoFields.sourceRepoBranch,
+          target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
+          created_by: 'group:default/team-a',
+          created_at: new Date(),
+        });
+
+        const result = await service.listProjects(
+          { sort: 'createdAt', order: 'desc' },
+          {
+            credentials: cred,
+            canViewAll: false,
+            groupsOfUser: ['group:default/team-a'],
+          },
+        );
+
+        expect(result.totalCount).toBe(2);
+        expect(result.projects).toHaveLength(2);
+        const createdBys = result.projects.map(p => p.createdBy);
+        expect(createdBys).toContain('user:default/user1');
+        expect(createdBys).toContain('group:default/team-a');
       },
     );
 
@@ -469,7 +565,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const result = await service.listProjects(
           { sort: 'createdAt', order: 'desc' },
-          { credentials: cred1, canViewAll: true },
+          { credentials: cred1, canViewAll: true, groupsOfUser: [] },
         );
         expect(result.totalCount).toBe(3);
         expect(result.projects).toHaveLength(3);
@@ -514,7 +610,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const result = await service.listProjects(
           { sort: 'createdAt', order: 'desc' },
-          { credentials: cred1 },
+          { credentials: cred1, groupsOfUser: [] },
         );
         expect(result.totalCount).toBe(1);
         expect(result.projects[0].createdBy).toBe('user:default/user1');
@@ -555,7 +651,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const page1 = await service.listProjects(
           { page: 1, pageSize: 2, sort: 'createdAt', order: 'desc' },
-          { credentials: cred1, canViewAll: false },
+          { credentials: cred1, canViewAll: false, groupsOfUser: [] },
         );
         expect(page1.totalCount).toBe(5);
         expect(page1.projects).toHaveLength(2);
@@ -601,7 +697,10 @@ describe('X2ADatabaseService – projects', () => {
           { credentials },
         );
 
-        const result = await service.listProjects({}, { credentials });
+        const result = await service.listProjects(
+          {},
+          { credentials, groupsOfUser: [] },
+        );
         expect(result.projects).toHaveLength(3);
         expect(result.projects[0].name).toBe('Project 3');
         expect(result.projects[1].name).toBe('Project 2');
@@ -627,7 +726,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const result = await service.listProjects(
           { page: 2, pageSize: 10 },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(result.totalCount).toBe(1);
         expect(result.projects).toHaveLength(0);
@@ -656,7 +755,10 @@ describe('X2ADatabaseService – projects', () => {
           artifacts: artifactsFromValues([planUrl], 'migration_plan'),
         });
 
-        const result = await service.listProjects({}, { credentials });
+        const result = await service.listProjects(
+          {},
+          { credentials, groupsOfUser: [] },
+        );
         expect(result.projects).toHaveLength(1);
         expect(result.projects[0].migrationPlan).toBeDefined();
         expect(result.projects[0].migrationPlan?.type).toBe('migration_plan');
@@ -674,7 +776,7 @@ describe('X2ADatabaseService – projects', () => {
         const credentials = mockCredentials.user();
         const project = await service.getProject(
           { projectId: nonExistentId },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(project).toBeUndefined();
       },
@@ -698,7 +800,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const retrieved = await service.getProject(
           { projectId: created.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(created.id);
@@ -709,6 +811,42 @@ describe('X2ADatabaseService – projects', () => {
         expect(retrieved?.targetRepoUrl).toBe(created.targetRepoUrl);
         expect(retrieved?.createdBy).toBe(created.createdBy);
         expect(retrieved?.createdAt).toEqual(created.createdAt);
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns project owned by group when user passes groupsOfUser containing that group - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const cred = mockCredentials.user('user:default/member');
+
+        const groupProjectId = '22222222-2222-2222-2222-222222222222';
+        await client('projects').insert({
+          id: groupProjectId,
+          name: 'Group-owned Project',
+          abbreviation: 'GOP',
+          description: 'Created by group',
+          source_repo_url: defaultProjectRepoFields.sourceRepoUrl,
+          target_repo_url: defaultProjectRepoFields.targetRepoUrl,
+          source_repo_branch: defaultProjectRepoFields.sourceRepoBranch,
+          target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
+          created_by: 'group:default/team-x',
+          created_at: new Date(),
+        });
+
+        const retrieved = await service.getProject(
+          { projectId: groupProjectId },
+          {
+            credentials: cred,
+            canViewAll: false,
+            groupsOfUser: ['group:default/team-x'],
+          },
+        );
+        expect(retrieved).toBeDefined();
+        expect(retrieved?.id).toBe(groupProjectId);
+        expect(retrieved?.name).toBe('Group-owned Project');
+        expect(retrieved?.createdBy).toBe('group:default/team-x');
       },
     );
 
@@ -736,7 +874,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const retrieved = await service.getProject(
           { projectId: project.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.migrationPlan).toBeDefined();
@@ -772,11 +910,11 @@ describe('X2ADatabaseService – projects', () => {
 
         const r1 = await service.getProject(
           { projectId: project1.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         const r2 = await service.getProject(
           { projectId: project2.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(r1?.id).toBe(project1.id);
         expect(r1?.name).toBe('Project 1');
@@ -804,7 +942,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const retrieved = await service.getProject(
           { projectId: project.id },
-          { credentials: cred2, canViewAll: false },
+          { credentials: cred2, canViewAll: false, groupsOfUser: [] },
         );
         expect(retrieved).toBeUndefined();
       },
@@ -828,7 +966,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const retrieved = await service.getProject(
           { projectId: project.id },
-          { credentials, canViewAll: false },
+          { credentials, canViewAll: false, groupsOfUser: [] },
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(project.id);
@@ -855,7 +993,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const retrieved = await service.getProject(
           { projectId: project.id },
-          { credentials: cred2, canViewAll: true },
+          { credentials: cred2, canViewAll: true, groupsOfUser: [] },
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.id).toBe(project.id);
@@ -882,7 +1020,7 @@ describe('X2ADatabaseService – projects', () => {
 
         const retrieved = await service.getProject(
           { projectId: project.id },
-          { credentials: cred2 },
+          { credentials: cred2, groupsOfUser: [] },
         );
         expect(retrieved).toBeUndefined();
       },
@@ -898,7 +1036,7 @@ describe('X2ADatabaseService – projects', () => {
         const credentials = mockCredentials.user();
         const deletedCount = await service.deleteProject(
           { projectId: nonExistentId },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(0);
       },
@@ -920,16 +1058,22 @@ describe('X2ADatabaseService – projects', () => {
           { credentials },
         );
         expect(
-          await service.getProject({ projectId: project.id }, { credentials }),
+          await service.getProject(
+            { projectId: project.id },
+            { credentials, groupsOfUser: [] },
+          ),
         ).toBeDefined();
 
         const deletedCount = await service.deleteProject(
           { projectId: project.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(1);
         expect(
-          await service.getProject({ projectId: project.id }, { credentials }),
+          await service.getProject(
+            { projectId: project.id },
+            { credentials, groupsOfUser: [] },
+          ),
         ).toBeUndefined();
       },
     );
@@ -961,16 +1105,25 @@ describe('X2ADatabaseService – projects', () => {
 
         const deletedCount = await service.deleteProject(
           { projectId: project1.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(1);
         expect(
-          await service.getProject({ projectId: project1.id }, { credentials }),
+          await service.getProject(
+            { projectId: project1.id },
+            { credentials, groupsOfUser: [] },
+          ),
         ).toBeUndefined();
         expect(
-          await service.getProject({ projectId: project2.id }, { credentials }),
+          await service.getProject(
+            { projectId: project2.id },
+            { credentials, groupsOfUser: [] },
+          ),
         ).toBeDefined();
-        const listResult = await service.listProjects({}, { credentials });
+        const listResult = await service.listProjects(
+          {},
+          { credentials, groupsOfUser: [] },
+        );
         expect(listResult.totalCount).toBe(1);
         expect(listResult.projects[0].id).toBe(project2.id);
       },
@@ -995,13 +1148,13 @@ describe('X2ADatabaseService – projects', () => {
 
         const deletedCount = await service.deleteProject(
           { projectId: project.id },
-          { credentials: cred2, canWriteAll: false },
+          { credentials: cred2, canWriteAll: false, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(0);
         expect(
           await service.getProject(
             { projectId: project.id },
-            { credentials: cred1 },
+            { credentials: cred1, groupsOfUser: [] },
           ),
         ).toBeDefined();
       },
@@ -1025,11 +1178,14 @@ describe('X2ADatabaseService – projects', () => {
 
         const deletedCount = await service.deleteProject(
           { projectId: project.id },
-          { credentials, canWriteAll: false },
+          { credentials, canWriteAll: false, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(1);
         expect(
-          await service.getProject({ projectId: project.id }, { credentials }),
+          await service.getProject(
+            { projectId: project.id },
+            { credentials, groupsOfUser: [] },
+          ),
         ).toBeUndefined();
       },
     );
@@ -1053,13 +1209,13 @@ describe('X2ADatabaseService – projects', () => {
 
         const deletedCount = await service.deleteProject(
           { projectId: project.id },
-          { credentials: cred2, canWriteAll: true },
+          { credentials: cred2, canWriteAll: true, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(1);
         expect(
           await service.getProject(
             { projectId: project.id },
-            { credentials: cred1 },
+            { credentials: cred1, groupsOfUser: [] },
           ),
         ).toBeUndefined();
       },
@@ -1084,13 +1240,13 @@ describe('X2ADatabaseService – projects', () => {
 
         const deletedCount = await service.deleteProject(
           { projectId: project.id },
-          { credentials: cred2 },
+          { credentials: cred2, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(0);
         expect(
           await service.getProject(
             { projectId: project.id },
-            { credentials: cred1 },
+            { credentials: cred1, groupsOfUser: [] },
           ),
         ).toBeDefined();
       },
@@ -1117,24 +1273,33 @@ describe('X2ADatabaseService – projects', () => {
 
         const retrieved = await service.getProject(
           { projectId: project.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(retrieved).toBeDefined();
         expect(retrieved?.name).toBe('Lifecycle Test');
 
-        const listResult = await service.listProjects({}, { credentials });
+        const listResult = await service.listProjects(
+          {},
+          { credentials, groupsOfUser: [] },
+        );
         expect(listResult.totalCount).toBe(1);
         expect(listResult.projects[0].id).toBe(project.id);
 
         const deletedCount = await service.deleteProject(
           { projectId: project.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(1);
         expect(
-          await service.getProject({ projectId: project.id }, { credentials }),
+          await service.getProject(
+            { projectId: project.id },
+            { credentials, groupsOfUser: [] },
+          ),
         ).toBeUndefined();
-        const finalList = await service.listProjects({}, { credentials });
+        const finalList = await service.listProjects(
+          {},
+          { credentials, groupsOfUser: [] },
+        );
         expect(finalList.totalCount).toBe(0);
       },
     );
