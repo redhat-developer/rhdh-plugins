@@ -69,10 +69,28 @@ describe('createRouter – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'should create a project with ownedByGroup and set createdBy to the group - %p',
+      'should create a project with ownedByGroup and set createdBy to the group when user is member - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
-        const app = await createApp(client);
+
+        const catalogGetEntityByRef = jest.fn().mockResolvedValue({
+          kind: 'User',
+          metadata: { name: 'mock' },
+          relations: [
+            {
+              type: RELATION_MEMBER_OF,
+              targetRef: 'group:default/team-a',
+            },
+          ],
+        });
+        const app = await createApp(
+          client,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { getEntityByRef: catalogGetEntityByRef },
+        );
 
         const response = await request(app)
           .post('/projects')
@@ -96,6 +114,87 @@ describe('createRouter – projects', () => {
         expect(row.created_by).toBe('group:default/team-a');
       },
       LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should deny creating project for ownedByGroup when user is not a member - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+
+        // Catalog returns user with no groups (or different groups)
+        const catalogGetEntityByRef = jest.fn().mockResolvedValue({
+          kind: 'User',
+          metadata: { name: 'mock' },
+          relations: [
+            {
+              type: RELATION_MEMBER_OF,
+              targetRef: 'group:default/other-team',
+            },
+          ],
+        });
+        const app = await createApp(
+          client,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { getEntityByRef: catalogGetEntityByRef },
+        );
+
+        const response = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            name: 'Group-owned Project',
+            abbreviation: 'GOP',
+            ownedByGroup: 'group:default/team-a',
+          });
+
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotAllowedError',
+            message:
+              'You are not allowed to create a project for the given group',
+          },
+        });
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'should deny creating project for ownedByGroup when user has no catalog relations - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+
+        // Catalog returns user with no groups (null or empty relations)
+        const catalogGetEntityByRef = jest.fn().mockResolvedValue(null);
+        const app = await createApp(
+          client,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { getEntityByRef: catalogGetEntityByRef },
+        );
+
+        const response = await request(app)
+          .post('/projects')
+          .send({
+            ...mockInputProject,
+            name: 'Group-owned Project',
+            abbreviation: 'GOP',
+            ownedByGroup: 'group:default/team-a',
+          });
+
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({
+          error: {
+            name: 'NotAllowedError',
+            message:
+              'You are not allowed to create a project for the given group',
+          },
+        });
+      },
     );
 
     it.each(supportedDatabaseIds)(

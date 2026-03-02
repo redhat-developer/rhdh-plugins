@@ -42,16 +42,6 @@ export function registerJobRoutes(
     const streaming = req.query.streaming === 'true';
     const phase = req.query.phase as ModulePhase;
 
-    await useEnforceProjectPermissions({
-      req,
-      readOnly: true,
-      projectId,
-      x2aDatabase,
-      httpAuth,
-      permissionsSvc,
-      catalog,
-    });
-
     // Validate phase parameter (required)
     if (!phase || !['analyze', 'migrate', 'publish'].includes(phase)) {
       throw new InputError(

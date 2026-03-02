@@ -133,8 +133,9 @@ export const useEnforceX2APermissions = async ({
 } & Pick<RouterDeps, 'permissionsSvc' | 'httpAuth'>): Promise<{
   canViewAll: boolean;
   canWriteAll: boolean;
+  credentials: BackstageCredentials<BackstageUserPrincipal>;
 }> => {
-  const credentials = await httpAuth.credentials(req);
+  const credentials = await httpAuth.credentials(req, { allow: ['user'] });
   const permissionsRequests: AuthorizePermissionRequest[] = [
     { permission: x2aUserPermission },
     { permission: x2aAdminViewPermission },
@@ -168,6 +169,7 @@ export const useEnforceX2APermissions = async ({
   return {
     canViewAll,
     canWriteAll,
+    credentials,
   };
 };
 
@@ -192,19 +194,17 @@ export const useEnforceProjectPermissions = async (
   canViewAll: boolean;
   canWriteAll: boolean;
 }> => {
-  const { canViewAll, canWriteAll } = await useEnforceX2APermissions(props);
+  const { canViewAll, canWriteAll, credentials } =
+    await useEnforceX2APermissions(props);
 
   const {
-    req,
     projectId,
     x2aDatabase,
-    httpAuth,
     readOnly,
     catalog,
     doEnrichment = false,
   } = props;
 
-  const credentials = await httpAuth.credentials(req, { allow: ['user'] });
   const userRef = getUserRef(credentials);
   const groupsOfUser = await getGroupsOfUser(userRef, {
     catalog,

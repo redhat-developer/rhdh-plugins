@@ -146,6 +146,21 @@ export function registerProjectRoutes(
     }
     const requestBody: ProjectsPost['body'] = parsedBody.data;
 
+    // validate the user is a member of the ownedByGroup
+    if (requestBody.ownedByGroup) {
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userRef = getUserRef(credentials);
+      const groupsOfUser = await getGroupsOfUser(userRef, {
+        catalog,
+        credentials,
+      });
+      if (!groupsOfUser.includes(requestBody.ownedByGroup)) {
+        throw new NotAllowedError(
+          'You are not allowed to create a project for the given group',
+        );
+      }
+    }
+
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),

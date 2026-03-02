@@ -411,7 +411,16 @@ describe('common', () => {
         permissionsSvc: permissionsSvc as any,
         httpAuth: httpAuth as any,
       });
-      expect(result).toEqual({ canViewAll: false, canWriteAll: false });
+      expect(result).toMatchObject({
+        canViewAll: false,
+        canWriteAll: false,
+        credentials: {
+          principal: {
+            type: 'user',
+            userEntityRef: 'user:default/mock',
+          },
+        },
+      });
     });
 
     it('returns canViewAll when user has admin view permission', async () => {
@@ -429,7 +438,16 @@ describe('common', () => {
         permissionsSvc: permissionsSvc as any,
         httpAuth: httpAuth as any,
       });
-      expect(result).toEqual({ canViewAll: true, canWriteAll: false });
+      expect(result).toMatchObject({
+        canViewAll: true,
+        canWriteAll: false,
+        credentials: {
+          principal: {
+            type: 'user',
+            userEntityRef: 'user:default/mock',
+          },
+        },
+      });
     });
 
     it('returns canWriteAll when readOnly false and user has admin write', async () => {
@@ -447,7 +465,16 @@ describe('common', () => {
         permissionsSvc: permissionsSvc as any,
         httpAuth: httpAuth as any,
       });
-      expect(result).toEqual({ canViewAll: false, canWriteAll: true });
+      expect(result).toMatchObject({
+        canViewAll: false,
+        canWriteAll: true,
+        credentials: {
+          principal: {
+            type: 'user',
+            userEntityRef: 'user:default/mock',
+          },
+        },
+      });
     });
 
     it('throws NotAllowedError when user has no permissions (readOnly)', async () => {
