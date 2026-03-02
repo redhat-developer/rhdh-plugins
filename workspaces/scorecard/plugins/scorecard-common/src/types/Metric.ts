@@ -103,13 +103,12 @@ export type AggregatedMetricResult = {
  */
 export type EntityMetricDetail = {
   entityRef: string;
-  entityName: string;
-  entityKind: string;
-  owner: string;
-  metricValue: number | boolean | null;
-  timestamp: string;
-  status: 'success' | 'warning' | 'error';
-  score?: string;
+  entityName?: string;
+  entityKind?: string;
+  owner?: string;
+  metricValue?: number | boolean | null;
+  timestamp?: string;
+  status?: 'success' | 'warning' | 'error';
 };
 
 /**
@@ -129,5 +128,6 @@ export type EntityMetricDetailResponse = {
     pageSize: number;
     total: number;
     totalPages: number;
+    isCapped: boolean;
   };
 };

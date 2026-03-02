@@ -40,13 +40,12 @@ export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
 // @public
 export type EntityMetricDetail = {
   entityRef: string;
-  entityName: string;
-  entityKind: string;
-  owner: string;
-  metricValue: number | boolean | null;
-  timestamp: string;
-  status: 'success' | 'warning' | 'error';
-  score?: string;
+  entityName?: string;
+  entityKind?: string;
+  owner?: string;
+  metricValue?: number | boolean | null;
+  timestamp?: string;
+  status?: 'success' | 'warning' | 'error';
 };
 
 // @public
@@ -63,6 +62,7 @@ export type EntityMetricDetailResponse = {
     pageSize: number;
     total: number;
     totalPages: number;
+    isCapped: boolean;
   };
 };
 

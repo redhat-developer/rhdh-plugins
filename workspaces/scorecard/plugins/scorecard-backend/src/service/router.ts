@@ -18,11 +18,12 @@ import {
   InputError,
   NotAllowedError,
 } from '@backstage/errors';
-import express, { Request } from 'express';
+import express from 'express';
 import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
 import type { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
+  BackstageCredentials,
   LoggerService,
   type HttpAuthService,
   type PermissionsService,
@@ -68,10 +69,9 @@ export async function createRouter({
   router.use(express.json());
 
   const authorizeConditional = async (
-    request: Request,
+    credentials: BackstageCredentials,
     permission: ResourcePermission<'scorecard-metric'> | BasicPermission,
   ) => {
-    const credentials = await httpAuth.credentials(request);
     let decision: PolicyDecision;
 
     if (permission.type === 'resource') {
@@ -127,7 +127,7 @@ export async function createRouter({
 
   router.get('/metrics/catalog/:kind/:namespace/:name', async (req, res) => {
     const { conditions } = await authorizeConditional(
-      req,
+      await httpAuth.credentials(req),
       scorecardMetricReadPermission,
     );
 
@@ -156,7 +156,7 @@ export async function createRouter({
     const { metricId } = req.params;
 
     const { conditions } = await authorizeConditional(
-      req,
+      await httpAuth.credentials(req),
       scorecardMetricReadPermission,
     );
 
@@ -218,8 +218,10 @@ export async function createRouter({
         sortOrder,
       } = validateDrillDownMetricsSchema(req.query, logger);
 
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
       const { conditions } = await authorizeConditional(
-        req,
+        credentials,
         scorecardMetricReadPermission,
       );
 
@@ -232,16 +234,12 @@ export async function createRouter({
         );
       }
 
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
       const userEntityRef = credentials?.principal?.userEntityRef;
 
       if (!userEntityRef) {
         throw new AuthenticationError('User entity reference not found');
       }
 
-      // Per-row authorization is enforced by catalog.getEntitiesByRefs in the service.
-      // For "owned by me" scoping, the frontend passes identityApi.ownershipEntityRefs
-      // as repeated ?owner= params.
       const entityMetrics = await catalogMetricService.getEntityMetricDetails(
         metricId,
         credentials,

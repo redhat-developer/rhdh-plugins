@@ -202,7 +202,10 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 }
 
 function normalizeOwner(owner: unknown): string | undefined {
-  if (!owner) return undefined;
-  if (typeof owner === 'string') return owner;
-  return JSON.stringify(owner);
+  if (typeof owner !== 'string') return undefined;
+  const normalized = owner.trim().toLowerCase();
+  if (!normalized) return undefined;
+
+  // Prevent DB insertion failures (metric_values.entity_owner is VARCHAR(255))
+  return normalized.length <= 255 ? normalized : normalized.slice(0, 255);
 }

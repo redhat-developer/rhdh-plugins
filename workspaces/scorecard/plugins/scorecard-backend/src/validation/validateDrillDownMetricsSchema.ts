@@ -29,11 +29,18 @@ export function validateDrillDownMetricsSchema(
       .enum(['entityName', 'owner', 'entityKind', 'timestamp', 'metricValue'])
       .optional(),
     sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
-    owner: z.preprocess(val => {
-      if (val === undefined) return val;
-      if (Array.isArray(val)) return val;
-      return [val];
-    }, z.array(z.string().min(1).max(255)).max(50).optional()),
+    owner: z.preprocess(
+      val => {
+        if (val === undefined) return val;
+        if (Array.isArray(val)) return val;
+        return [val];
+      },
+      z
+        .array(z.string().min(1).max(255))
+        .max(50)
+        .transform(arr => arr.map(v => v.toLowerCase()))
+        .optional(),
+    ),
     kind: z.string().min(1).max(100).optional(),
     entityName: z.string().min(1).max(255).optional(),
   });
