@@ -942,6 +942,59 @@ describe('collectArtifacts routes', () => {
       expect(res.text).toContain('Authentication failed');
     });
 
+    it('should return 401 when job is older than max age window (replay attack)', async () => {
+      const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: fourHoursAgo,
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should return 401 when job has no startedAt (replay attack)', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: undefined as any,
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
     it('should not leak callback token in error messages', async () => {
       const job: Job & { callbackToken?: string } = {
         id: jobId,

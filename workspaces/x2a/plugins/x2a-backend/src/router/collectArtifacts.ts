@@ -16,7 +16,6 @@
 
 import express from 'express';
 import { z } from 'zod';
-import crypto from 'node:crypto';
 import {
   InputError,
   NotFoundError,
@@ -123,9 +122,8 @@ class AuthenticationHandler {
       throw new AuthenticationError('Authentication failed');
     }
 
-    const bodyHash = this.computeBodyHash(rawBody);
     this.logger.info(
-      `Signature validated for job ${jobId} (bodyHash: ${bodyHash})`,
+      `Signature validated for job ${jobId} (bodyLen: ${rawBody.length})`,
     );
   }
 
@@ -146,23 +144,14 @@ class AuthenticationHandler {
     }
   }
 
-  private computeBodyHash(rawBody: Buffer): string {
-    return crypto
-      .createHash('sha256')
-      .update(rawBody)
-      .digest('hex')
-      .substring(0, 8);
-  }
-
   private logAuthFailure(
     jobId: string,
     reason: string,
     rawBody: Buffer,
     signature?: string,
   ): void {
-    const bodyHash = this.computeBodyHash(rawBody);
     this.logger.warn(
-      `Auth failed for job ${jobId}: ${reason} (sig: ${signature?.substring(0, 8) || 'none'}, bodyHash: ${bodyHash}, bodyLen: ${rawBody.length})`,
+      `Auth failed for job ${jobId}: ${reason} (sig: ${signature?.substring(0, 8) || 'none'}, bodyLen: ${rawBody.length})`,
     );
   }
 }
@@ -238,14 +227,19 @@ class RequestValidator {
   }
 }
 
+const DEFAULT_MAX_JOB_AGE_SECONDS = 10800;
+
 export function registerCollectArtifactsRoutes(
   router: express.Router,
   deps: RouterDeps,
 ): void {
-  const { x2aDatabase, kubeService, logger } = deps;
+  const { x2aDatabase, kubeService, logger, config } = deps;
   const signatureValidator = new SignatureValidator();
   const authHandler = new AuthenticationHandler(signatureValidator, logger);
   const requestValidator = new RequestValidator(logger);
+  const maxJobAgeSeconds =
+    config.getOptionalNumber('x2a.collectArtifacts.maxJobAgeSeconds') ??
+    DEFAULT_MAX_JOB_AGE_SECONDS;
 
   router.post(
     '/projects/:projectId/collectArtifacts',
@@ -300,8 +294,7 @@ export function registerCollectArtifactsRoutes(
           validatedRequest.jobId,
         );
 
-        // Validate job age (3 hours = 10800 seconds) to prevent replay attacks
-        authHandler.validateJobAge(jobWithToken, 10800);
+        authHandler.validateJobAge(jobWithToken, maxJobAgeSeconds);
 
         requestValidator.validateJobContext(
           jobWithToken,
@@ -357,11 +350,7 @@ async function processJobCompletion(
     }
   }
 
-  const logs = await fetchJobLogs(
-    kubeService,
-    logger,
-    job.k8sJobName as string,
-  );
+  const logs = await fetchJobLogs(kubeService, logger, job.k8sJobName);
 
   await x2aDatabase.updateJob({
     id: validatedRequest.jobId,

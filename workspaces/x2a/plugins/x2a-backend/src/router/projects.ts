@@ -16,7 +16,6 @@
 
 import { z } from 'zod';
 import express from 'express';
-import crypto from 'node:crypto';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
@@ -27,6 +26,7 @@ import {
 import type { RouterDeps } from './types';
 import {
   authorize,
+  generateCallbackToken,
   getGroupsOfUser,
   getUserRef,
   reconcileJobStatus,
@@ -328,9 +328,7 @@ export function registerProjectRoutes(
         });
       }
 
-      // Generate callback token and create job record
-      // Use 256-bit token to match HMAC-SHA256 strength
-      const callbackToken = crypto.randomBytes(32).toString('hex');
+      const callbackToken = generateCallbackToken();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId: undefined, // Init jobs have no module
