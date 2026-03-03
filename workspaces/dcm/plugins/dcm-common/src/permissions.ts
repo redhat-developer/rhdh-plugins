@@ -16,11 +16,19 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
-/** @public */
+/**
+ * Permission for reading the DCM plugin.
+ *
+ * @public
+ */
 export const dcmPluginReadPermission = createPermission({
   name: 'dcm.plugin',
   attributes: { action: 'read' },
 });
 
-/** @public */
+/**
+ * List of all DCM plugin permissions.
+ *
+ * @public
+ */
 export const dcmPluginPermissions = [dcmPluginReadPermission];
