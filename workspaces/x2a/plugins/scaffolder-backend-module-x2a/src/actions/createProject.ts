@@ -123,13 +123,6 @@ export function createProjectAction(
       if (!sourceRepoToken) {
         throw new Error('Source repository token is required');
       }
-      sourceRepoToken = augmentRepoToken(
-        sourceRepoToken,
-        getAuthTokenDescriptor({
-          repoUrl: sourceRepoUrl,
-          readOnly: true,
-        }),
-      );
 
       let targetRepoToken = ctx.input.areTargetAndSourceRepoShared
         ? sourceRepoToken
@@ -137,6 +130,14 @@ export function createProjectAction(
       if (!targetRepoToken) {
         throw new Error('Target repository token is required');
       }
+
+      sourceRepoToken = augmentRepoToken(
+        sourceRepoToken,
+        getAuthTokenDescriptor({
+          repoUrl: sourceRepoUrl,
+          readOnly: true,
+        }),
+      );
       targetRepoToken = augmentRepoToken(
         targetRepoToken,
         getAuthTokenDescriptor({

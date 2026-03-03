@@ -502,6 +502,257 @@ describe('x2a:project:create', () => {
     );
   });
 
+  describe('augmentRepoToken', () => {
+    const createdProject = {
+      id: 'project-augment',
+      abbreviation: 'AUG',
+      name: 'Augment Project',
+      description: '',
+      createdAt: '2025-01-01T00:00:00.000Z',
+      createdBy: 'user:default/test',
+    };
+
+    it('should pass tokens as-is for GitHub URLs (no oauth2: prefix)', async () => {
+      let runRequestBody: {
+        sourceRepoAuth?: { token: string };
+        targetRepoAuth?: { token: string };
+      } = {};
+      mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+        const body = options?.body ? JSON.parse(options.body as string) : {};
+        if (body.sourceRepoAuth && body.targetRepoAuth) {
+          runRequestBody = body;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ status: 'pending', jobId: 'init-job-augment' }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      });
+
+      const action = createProjectAction(mockDiscoveryApi, {
+        fetchApi: { fetch: mockFetch },
+      });
+      const mockContext = createMockActionContext({
+        input: {
+          name: 'Augment Project',
+          abbreviation: 'AUG',
+          sourceRepoUrl: 'https://github.com/org/source-repo',
+          sourceRepoBranch: 'main',
+          areTargetAndSourceRepoShared: false,
+          targetRepoUrl: 'https://github.com/org/target-repo',
+          targetRepoBranch: 'main',
+        },
+        secrets: {
+          SRC_USER_OAUTH_TOKEN: 'gh-source-token',
+          TGT_USER_OAUTH_TOKEN: 'gh-target-token',
+        },
+      });
+
+      await action.handler(mockContext);
+
+      expect(runRequestBody.sourceRepoAuth?.token).toBe('gh-source-token');
+      expect(runRequestBody.targetRepoAuth?.token).toBe('gh-target-token');
+    });
+
+    it('should prefix tokens with oauth2: for GitLab URLs', async () => {
+      let runRequestBody: {
+        sourceRepoAuth?: { token: string };
+        targetRepoAuth?: { token: string };
+      } = {};
+      mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+        const body = options?.body ? JSON.parse(options.body as string) : {};
+        if (body.sourceRepoAuth && body.targetRepoAuth) {
+          runRequestBody = body;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ status: 'pending', jobId: 'init-job-augment' }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      });
+
+      const action = createProjectAction(mockDiscoveryApi, {
+        fetchApi: { fetch: mockFetch },
+      });
+      const mockContext = createMockActionContext({
+        input: {
+          name: 'Augment Project',
+          abbreviation: 'AUG',
+          sourceRepoUrl: 'https://gitlab.com/org/source-repo',
+          sourceRepoBranch: 'main',
+          areTargetAndSourceRepoShared: false,
+          targetRepoUrl: 'https://gitlab.com/org/target-repo',
+          targetRepoBranch: 'main',
+        },
+        secrets: {
+          SRC_USER_OAUTH_TOKEN: 'gl-source-token',
+          TGT_USER_OAUTH_TOKEN: 'gl-target-token',
+        },
+      });
+
+      await action.handler(mockContext);
+
+      expect(runRequestBody.sourceRepoAuth?.token).toBe(
+        'oauth2:gl-source-token',
+      );
+      expect(runRequestBody.targetRepoAuth?.token).toBe(
+        'oauth2:gl-target-token',
+      );
+    });
+
+    it('should prefix source token with oauth2: when source is GitLab (shared repos)', async () => {
+      let runRequestBody: {
+        sourceRepoAuth?: { token: string };
+        targetRepoAuth?: { token: string };
+      } = {};
+      mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+        const body = options?.body ? JSON.parse(options.body as string) : {};
+        if (body.sourceRepoAuth && body.targetRepoAuth) {
+          runRequestBody = body;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ status: 'pending', jobId: 'init-job-augment' }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      });
+
+      const action = createProjectAction(mockDiscoveryApi, {
+        fetchApi: { fetch: mockFetch },
+      });
+      const mockContext = createMockActionContext({
+        input: {
+          name: 'Augment Project',
+          abbreviation: 'AUG',
+          sourceRepoUrl: 'https://gitlab.com/org/shared-repo',
+          sourceRepoBranch: 'main',
+          areTargetAndSourceRepoShared: true,
+          targetRepoBranch: 'main',
+        },
+        secrets: {
+          SRC_USER_OAUTH_TOKEN: 'gl-shared-token',
+        },
+      });
+
+      await action.handler(mockContext);
+
+      expect(runRequestBody.sourceRepoAuth?.token).toBe(
+        'oauth2:gl-shared-token',
+      );
+      expect(runRequestBody.targetRepoAuth?.token).toBe(
+        'oauth2:gl-shared-token',
+      );
+    });
+
+    it('should use plain token for source (GitHub) and oauth2: for target (GitLab)', async () => {
+      let runRequestBody: {
+        sourceRepoAuth?: { token: string };
+        targetRepoAuth?: { token: string };
+      } = {};
+      mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+        const body = options?.body ? JSON.parse(options.body as string) : {};
+        if (body.sourceRepoAuth && body.targetRepoAuth) {
+          runRequestBody = body;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ status: 'pending', jobId: 'init-job-augment' }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      });
+
+      const action = createProjectAction(mockDiscoveryApi, {
+        fetchApi: { fetch: mockFetch },
+      });
+      const mockContext = createMockActionContext({
+        input: {
+          name: 'Augment Project',
+          abbreviation: 'AUG',
+          sourceRepoUrl: 'https://github.com/org/source-repo',
+          sourceRepoBranch: 'main',
+          areTargetAndSourceRepoShared: false,
+          targetRepoUrl: 'https://gitlab.com/org/target-repo',
+          targetRepoBranch: 'main',
+        },
+        secrets: {
+          SRC_USER_OAUTH_TOKEN: 'gh-source-token',
+          TGT_USER_OAUTH_TOKEN: 'gl-target-token',
+        },
+      });
+
+      await action.handler(mockContext);
+
+      expect(runRequestBody.sourceRepoAuth?.token).toBe('gh-source-token');
+      expect(runRequestBody.targetRepoAuth?.token).toBe(
+        'oauth2:gl-target-token',
+      );
+    });
+
+    it('should use oauth2: for source (GitLab) and plain token for target (GitHub)', async () => {
+      let runRequestBody: {
+        sourceRepoAuth?: { token: string };
+        targetRepoAuth?: { token: string };
+      } = {};
+      mockFetch.mockImplementation((_url: string, options?: RequestInit) => {
+        const body = options?.body ? JSON.parse(options.body as string) : {};
+        if (body.sourceRepoAuth && body.targetRepoAuth) {
+          runRequestBody = body;
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({ status: 'pending', jobId: 'init-job-augment' }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(createdProject),
+        });
+      });
+
+      const action = createProjectAction(mockDiscoveryApi, {
+        fetchApi: { fetch: mockFetch },
+      });
+      const mockContext = createMockActionContext({
+        input: {
+          name: 'Augment Project',
+          abbreviation: 'AUG',
+          sourceRepoUrl: 'https://gitlab.com/org/source-repo',
+          sourceRepoBranch: 'main',
+          areTargetAndSourceRepoShared: false,
+          targetRepoUrl: 'https://github.com/org/target-repo',
+          targetRepoBranch: 'main',
+        },
+        secrets: {
+          SRC_USER_OAUTH_TOKEN: 'gl-source-token',
+          TGT_USER_OAUTH_TOKEN: 'gh-target-token',
+        },
+      });
+
+      await action.handler(mockContext);
+
+      expect(runRequestBody.sourceRepoAuth?.token).toBe(
+        'oauth2:gl-source-token',
+      );
+      expect(runRequestBody.targetRepoAuth?.token).toBe('gh-target-token');
+    });
+  });
+
   describe('failing scenarios', () => {
     it('should throw when target repository URL is missing (not shared)', async () => {
       const action = createProjectAction(mockDiscoveryApi);

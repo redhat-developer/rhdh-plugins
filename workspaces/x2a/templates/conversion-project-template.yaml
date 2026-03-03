@@ -59,9 +59,6 @@ spec:
           ui:options:
             requestUserCredentials:
               secretsKey: SRC_USER_OAUTH_TOKEN
-              #additionalScopes:
-              #  github:
-              #    - workflow
             allowedHosts:
               # This is to be updated per production deployment along the auth in the app-config.yaml file
               - github.com

@@ -5,7 +5,6 @@
 ```ts
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
-import { OAuthScope } from '@backstage/core-plugin-api';
 
 // @public (undocumented)
 export interface AAPCredentials {
@@ -54,7 +53,7 @@ export interface AuthToken {
 export type AuthTokenDescriptor = {
     provider: string;
     customProviderApiId?: string;
-    scope?: OAuthScope;
+    scope?: string | string[];
     tokenType?: 'openId' | 'oauth';
 };
 
