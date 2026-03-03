@@ -16,8 +16,8 @@ orchestrator:
       token: secrettoken
       # rejectUnauthorized: false
       # logPipelineFilters:
-      # - | filter1
-      #   |= filter2
+      # - '| filter1'
+      # - '|= filter2'
       # logStreamSelectors:
       #   - label: 'app'
       #     value: '=~".+"'
