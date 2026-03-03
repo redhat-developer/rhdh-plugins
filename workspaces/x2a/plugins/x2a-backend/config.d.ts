@@ -50,6 +50,7 @@ export interface X2AConfig {
       oauthToken?: string;
       username?: string;
       password?: string;
+      skipSSLVerification?: boolean;
     };
   };
 }
@@ -217,6 +218,13 @@ export interface Config {
          * Password for AAP authentication (alternative to oauthToken)
          */
         password?: string;
+        /**
+         * Whether to skip SSL certificate verification when connecting to AAP.
+         * Set to true for dev/test environments with self-signed certs.
+         * Defaults to false (SSL is verified).
+         * @visibility backend
+         */
+        skipSSLVerification?: boolean;
       };
     };
   };

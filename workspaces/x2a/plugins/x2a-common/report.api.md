@@ -38,7 +38,24 @@ export interface Artifact {
 }
 
 // @public (undocumented)
-export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata';
+export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
+
+// @public
+export const augmentRepoToken: (token: string, authDescriptor: AuthTokenDescriptor) => string;
+
+// @public
+export interface AuthToken {
+    provider: string;
+    token: string;
+}
+
+// @public
+export type AuthTokenDescriptor = {
+    provider: string;
+    customProviderApiId?: string;
+    scope?: string | string[];
+    tokenType?: 'openId' | 'oauth';
+};
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
@@ -74,6 +91,12 @@ export class DefaultApiClient {
     projectsProjectIdModulesPost(request: ProjectsProjectIdModulesPost, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdRunPost(request: ProjectsProjectIdRunPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdRunPost200Response>>;
 }
+
+// @public
+export const getAuthTokenDescriptor: ({ repoUrl, readOnly, }: {
+    repoUrl: string;
+    readOnly: boolean;
+}) => AuthTokenDescriptor;
 
 // @public (undocumented)
 export interface GitRepoAuth {
