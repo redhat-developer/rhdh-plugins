@@ -57,11 +57,6 @@ spec:
           type: string
           ui:field: RepoUrlPicker
           ui:options:
-            requestUserCredentials:
-              secretsKey: SRC_USER_OAUTH_TOKEN
-              #additionalScopes:
-              #  github:
-              #    - workflow
             allowedHosts:
               - github.com
         sourceRepoBranch:
@@ -97,8 +92,6 @@ spec:
                     type: string
                     ui:field: RepoUrlPicker
                     ui:options:
-                      requestUserCredentials:
-                        secretsKey: TGT_USER_OAUTH_TOKEN
                       allowedHosts:
                         - github.com
 
