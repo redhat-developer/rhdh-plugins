@@ -93,8 +93,8 @@ export class JobResourceBuilder {
       aapEnvVars.AAP_PASSWORD = password!;
     }
 
-    // Resolve verifySSL: config-level setting, defaults to true
-    const verifySSL = config.credentials.aap?.verifySSL ?? true;
+    // Resolve SSL verification: skip=false by default (SSL is verified)
+    const skipSSL = config.credentials.aap?.skipSSLVerification ?? false;
 
     return {
       apiVersion: 'v1',
@@ -128,8 +128,8 @@ export class JobResourceBuilder {
         // AAP credentials (from config or user override)
         ...aapEnvVars,
 
-        // AAP SSL verification setting (from config, defaults to true)
-        AAP_VERIFY_SSL: String(verifySSL),
+        // AAP SSL verification setting (derived from skipSSLVerification config)
+        AAP_VERIFY_SSL: String(!skipSSL),
       },
     };
   }

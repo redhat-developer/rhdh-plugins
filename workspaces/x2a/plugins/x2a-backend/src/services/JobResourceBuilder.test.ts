@@ -189,8 +189,8 @@ describe('JobResourceBuilder', () => {
         });
       });
 
-      it('should set AAP_VERIFY_SSL to false when config specifies verifySSL: false', () => {
-        mockConfig.credentials.aap!.verifySSL = false;
+      it('should set AAP_VERIFY_SSL to false when skipSSLVerification is true', () => {
+        mockConfig.credentials.aap!.skipSSLVerification = true;
 
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
@@ -201,8 +201,8 @@ describe('JobResourceBuilder', () => {
         expect(secret.stringData!.AAP_VERIFY_SSL).toBe('false');
       });
 
-      it('should default AAP_VERIFY_SSL to true when verifySSL is not set', () => {
-        // verifySSL is not set in default mockConfig
+      it('should default AAP_VERIFY_SSL to true when skipSSLVerification is not set', () => {
+        // skipSSLVerification is not set in default mockConfig
         const secret = JobResourceBuilder.buildProjectSecret(
           projectId,
           undefined,
