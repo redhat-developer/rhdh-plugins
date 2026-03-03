@@ -114,26 +114,24 @@ For comprehensive threshold configuration guide, examples, and best practices, s
 
 ## Customizing aggregated KPI cards (homepage)
 
-Administrators can customize the title and description of aggregated KPI cards shown on the homepage. Add a `homepage.aggregatedMetric` block under the metric in `app-config.yaml` (or `app-config.local.yaml`):
+Administrators can customize the title and description of aggregated KPI cards shown on the homepage. Add an `aggregations` block under the metric in `app-config.yaml` (or `app-config.local.yaml`):
 
 ```yaml
 scorecard:
   plugins:
     jira:
       open_issues:
-        homepage:
-          aggregatedMetric:
-            title: 'My Jira issues'
-            description: 'Custom description for Jira open issues.'
+        aggregations:
+          title: 'My Jira issues'
+          description: 'Custom description for Jira open issues.'
     github:
       open_prs:
-        homepage:
-          aggregatedMetric:
-            title: 'Open PRs'
-            description: 'Open pull requests across my repositories.'
+        aggregations:
+          title: 'Open PRs'
+          description: 'Open pull requests across my repositories.'
 ```
 
-- **Path**: `scorecard.plugins.<provider>.<metricName>.homepage.aggregatedMetric` (e.g. `scorecard.plugins.jira.open_issues.homepage.aggregatedMetric`).
+- **Path**: `scorecard.plugins.<provider>.<metricName>.aggregations` (e.g. `scorecard.plugins.jira.open_issues.aggregations`).
 - **When set**, both `title` and `description` are required and must be non-empty strings, otherwise the backend returns a validation error.
 - **When omitted**, the aggregated KPI card uses the default title and description from the metric provider (and translations when available).
 - **Translation behavior**: Customizing the title and description disables the default translation for that card. The homepage will always show the configured values as written in the config, regardless of the user's locale. When customization is not set, the card uses the plugin's translations (e.g. localized strings for supported languages) with a fallback to the provider default.

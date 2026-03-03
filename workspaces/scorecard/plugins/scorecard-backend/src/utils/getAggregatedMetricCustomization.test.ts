@@ -38,7 +38,7 @@ function buildConfig(pluginConfig: any, metricId: string) {
 }
 
 describe('getAggregatedMetricCustomization', () => {
-  it('should return isCustomized false when aggregatedMetric is not configured', () => {
+  it('should return isCustomized false when aggregations is not configured', () => {
     const config = buildConfig({ thresholds: {} }, 'jira.open_issues');
     const result = getAggregatedMetricCustomization('jira.open_issues', {
       config,
@@ -54,11 +54,9 @@ describe('getAggregatedMetricCustomization', () => {
   it('should return customized object when title and description are set', () => {
     const config = buildConfig(
       {
-        homepage: {
-          aggregatedMetric: {
-            title: 'My Jira issues',
-            description: 'Custom description for Jira issues.',
-          },
+        aggregations: {
+          title: 'My Jira issues',
+          description: 'Custom description for Jira issues.',
         },
       },
       'jira.open_issues',
@@ -77,11 +75,9 @@ describe('getAggregatedMetricCustomization', () => {
   it('should return customized object with trimmed whitespace from title and description', () => {
     const config = buildConfig(
       {
-        homepage: {
-          aggregatedMetric: {
-            title: '  Open PRs  ',
-            description: '  Open pull requests.  ',
-          },
+        aggregations: {
+          title: '  Open PRs  ',
+          description: '  Open pull requests.  ',
         },
       },
       'github.open_prs',
@@ -112,7 +108,7 @@ describe('getAggregatedMetricCustomization', () => {
 
   it('should throw InputError when title is present but description is missing', () => {
     const config = buildConfig(
-      { homepage: { aggregatedMetric: { title: 'Custom title' } } },
+      { aggregations: { title: 'Custom title' } },
       'jira.open_issues',
     );
 
@@ -126,7 +122,7 @@ describe('getAggregatedMetricCustomization', () => {
 
   it('should throw InputError when description is present but title is missing', () => {
     const config = buildConfig(
-      { homepage: { aggregatedMetric: { description: 'Custom description' } } },
+      { aggregations: { description: 'Custom description' } },
       'jira.open_issues',
     );
 
@@ -141,9 +137,7 @@ describe('getAggregatedMetricCustomization', () => {
   it('should throw InputError when title is empty string after trim', () => {
     const config = buildConfig(
       {
-        homepage: {
-          aggregatedMetric: { title: '  ', description: 'Valid description' },
-        },
+        aggregations: { title: '  ', description: 'Valid description' },
       },
       'jira.open_issues',
     );
@@ -159,9 +153,7 @@ describe('getAggregatedMetricCustomization', () => {
   it('should throw InputError when description is empty string after trim', () => {
     const config = buildConfig(
       {
-        homepage: {
-          aggregatedMetric: { title: 'Valid title', description: '' },
-        },
+        aggregations: { title: 'Valid title', description: '' },
       },
       'jira.open_issues',
     );

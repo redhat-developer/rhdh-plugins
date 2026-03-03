@@ -63,7 +63,6 @@ scorecard:
           mandatoryFilter: Resolution = Unresolved
         # Optional: customize title and description for the aggregated KPI card on the homepage.
         # When set, both title and description are required.
-        # homepage:
-        #   aggregatedMetric:
-        #     title: "Custom Jira issues title"
-        #     description: "Custom description for Jira open issues."
+        # aggregations:
+        #   title: "Custom Jira issues title"
+        #   description: "Custom description for Jira open issues."

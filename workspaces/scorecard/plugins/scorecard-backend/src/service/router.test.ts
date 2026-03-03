@@ -786,7 +786,7 @@ describe('createRouter', () => {
         .mocked(getAggregatedMetricCustomization)
         .mockImplementationOnce(() => {
           throw new InputError(
-            'scorecard.plugins.github.open_prs.homepage.aggregatedMetric requires both title and description when customizing aggregated KPI',
+            'scorecard.plugins.github.open_prs.aggregations requires both title and description when customizing aggregated KPI',
           );
         });
 

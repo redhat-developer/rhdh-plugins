@@ -42,11 +42,9 @@ export interface Config {
            * Custom title and description for the aggregated KPI card on the homepage.
            * When set, both title and description are required.
            */
-          homepage?: {
-            aggregatedMetric?: {
-              title: string;
-              description: string;
-            };
+          aggregations?: {
+            title: string;
+            description: string;
           };
         };
       };

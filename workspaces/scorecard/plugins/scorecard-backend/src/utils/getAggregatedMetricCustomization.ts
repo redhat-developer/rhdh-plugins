@@ -40,7 +40,7 @@ export function getAggregatedMetricCustomization(
     );
   }
 
-  const configPath = `scorecard.plugins.${provider}.${metricName}.homepage.aggregatedMetric`;
+  const configPath = `scorecard.plugins.${provider}.${metricName}.aggregations`;
 
   const title = options.config.getOptional(`${configPath}.title`);
   const description = options.config.getOptional(`${configPath}.description`);
