@@ -16,6 +16,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   Artifact,
+  getAuthTokenDescriptor,
   MigrationPhase,
   Module,
   ModulePhase,
@@ -31,7 +32,7 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Artifacts } from './Artifacts';
-import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
+import { useRepoAuthentication } from '../../repoAuth';
 import { CurrentPhaseCell } from './CurrentPhaseCell';
 import { ModuleStatusCell } from './ModuleStatusCell';
 import { TimingCell } from './TimingCell';
