@@ -21,6 +21,9 @@ exports.up = async function up(knex) {
 
     // Add entity_owner column (stores the owner entity ref)
     table.string('entity_owner', 255).nullable();
+
+    // Add entity_namespace column
+    table.string('entity_namespace', 255).nullable();
   });
 };
 
@@ -29,5 +32,6 @@ exports.down = async function down(knex) {
     // Drop columns
     table.dropColumn('entity_kind');
     table.dropColumn('entity_owner');
+    table.dropColumn('entity_namespace');
   });
 };

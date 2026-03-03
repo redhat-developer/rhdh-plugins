@@ -74,6 +74,7 @@ describe('validateDrillDownMetricsSchema', () => {
       'entityKind',
       'timestamp',
       'metricValue',
+      'namespace',
     ] as const)('should accept sortBy=%s', sortBy => {
       const result = validateDrillDownMetricsSchema(
         { sortBy },
@@ -132,6 +133,14 @@ describe('validateDrillDownMetricsSchema', () => {
       expect(result.kind).toBe('Component');
     });
 
+    it('should accept a valid namespace string', () => {
+      const result = validateDrillDownMetricsSchema(
+        { namespace: 'staging' },
+        mockServices.logger.mock(),
+      );
+      expect(result.namespace).toBe('staging');
+    });
+
     it('should accept a valid entityName string', () => {
       const result = validateDrillDownMetricsSchema(
         {
@@ -152,6 +161,7 @@ describe('validateDrillDownMetricsSchema', () => {
           sortOrder: 'asc',
           owner: 'team:default/backend',
           kind: 'Component',
+          namespace: 'staging',
           entityName: 'my-service',
         },
         mockServices.logger.mock(),
@@ -165,6 +175,7 @@ describe('validateDrillDownMetricsSchema', () => {
         sortOrder: 'asc',
         owner: ['team:default/backend'],
         kind: 'Component',
+        namespace: 'staging',
         entityName: 'my-service',
       });
     });
@@ -265,7 +276,7 @@ describe('validateDrillDownMetricsSchema', () => {
       },
     );
 
-    it.each(['kind', 'entityName'])(
+    it.each(['kind', 'namespace', 'entityName'])(
       'should throw InputError when %s is an empty string',
       field => {
         expect(() =>

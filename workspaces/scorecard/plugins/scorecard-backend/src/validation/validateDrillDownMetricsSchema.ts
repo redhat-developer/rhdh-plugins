@@ -26,7 +26,14 @@ export function validateDrillDownMetricsSchema(
     pageSize: z.coerce.number().int().min(1).max(100).optional().default(5),
     status: z.enum(['success', 'warning', 'error']).optional(),
     sortBy: z
-      .enum(['entityName', 'owner', 'entityKind', 'timestamp', 'metricValue'])
+      .enum([
+        'entityName',
+        'owner',
+        'entityKind',
+        'timestamp',
+        'metricValue',
+        'namespace',
+      ])
       .optional(),
     sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),
     owner: z.preprocess(
@@ -42,6 +49,7 @@ export function validateDrillDownMetricsSchema(
         .optional(),
     ),
     kind: z.string().min(1).max(100).optional(),
+    namespace: z.string().min(1).max(100).optional(),
     entityName: z.string().min(1).max(255).optional(),
   });
 

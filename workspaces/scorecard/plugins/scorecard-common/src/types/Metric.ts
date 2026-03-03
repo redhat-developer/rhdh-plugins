@@ -104,6 +104,7 @@ export type AggregatedMetricResult = {
 export type EntityMetricDetail = {
   entityRef: string;
   entityName?: string;
+  entityNamespace?: string;
   entityKind?: string;
   owner?: string;
   metricValue?: number | boolean | null;

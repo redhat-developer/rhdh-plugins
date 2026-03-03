@@ -192,6 +192,7 @@ export class CatalogMetricService {
    * @param options.owner - Filter by owner entity reference (database-level)
    * @param options.kind - Filter by entity kind (database-level)
    * @param options.entityName - Substring search against the entity ref `kind:namespace/name` (database-level)
+   * @param options.namespace - Substring search against the entity namespace (database-level)
    * @param options.sortBy - Field to sort by (default: "timestamp")
    * @param options.sortOrder - Sort direction: "asc" or "desc" (default: "desc")
    * @param options.page - Page number (1-indexed)
@@ -206,12 +207,14 @@ export class CatalogMetricService {
       owner?: string[];
       kind?: string;
       entityName?: string;
+      namespace?: string;
       sortBy?:
         | 'entityName'
         | 'owner'
         | 'entityKind'
         | 'timestamp'
-        | 'metricValue';
+        | 'metricValue'
+        | 'namespace';
       sortOrder?: 'asc' | 'desc';
       page: number;
       limit: number;
@@ -251,6 +254,7 @@ export class CatalogMetricService {
       status: options.status,
       entityName: options.entityName,
       entityKind: options.kind,
+      entityNamespace: options.namespace,
       entityOwner: options.owner,
       sortBy: options.sortBy,
       sortOrder: options.sortOrder,
@@ -272,7 +276,12 @@ export class CatalogMetricService {
         const response = await this.catalog.getEntitiesByRefs(
           {
             entityRefs: batch.map(row => row.catalog_entity_ref),
-            fields: ['kind', 'metadata.name', 'spec.owner'],
+            fields: [
+              'kind',
+              'metadata.name',
+              'metadata.namespace',
+              'spec.owner',
+            ],
           },
           { credentials },
         );
@@ -345,7 +354,8 @@ export class CatalogMetricService {
       if (!entity) continue;
       enrichedEntities.push({
         entityRef: row.catalog_entity_ref,
-        entityName: entity.metadata?.name,
+        entityNamespace: entity.metadata.namespace,
+        entityName: entity.metadata.name,
         entityKind: entity.kind,
         owner: entity.spec?.owner as string,
         metricValue: row.value,

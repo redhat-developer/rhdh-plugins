@@ -7,8 +7,8 @@ The Scorecard plugin provides a drill-down endpoint that returns detailed entity
 The drill-down endpoint (`/metrics/:metricId/catalog/aggregations/entities`) provides a detailed view of entities and their metric values. It allows managers and platform engineers to:
 
 - See individual entities contributing to aggregated scores
-- Filter entities by status (success/warning/error), owner, kind, or entity ref substring
-- Sort by any column (entity name, owner, kind, timestamp, metric value)
+- Filter entities by status (success/warning/error), owner, kind, namespace, or entity ref substring
+- Sort by any column (entity name, owner, kind, namespace, timestamp, metric value)
 - Paginate through large result sets
 - Understand data freshness through per-entity timestamps
 
@@ -33,8 +33,9 @@ Returns a paginated list of entities with their metric values, enriched with cat
 | `status`     | string           | No       | -           | Filter by threshold status: `success`, `warning`, or `error`                                                                                                                                                      |
 | `owner`      | string/string\[] | No       | -           | Filter by owner entity ref. Repeat to supply multiple values (e.g., `?owner=a&owner=b`)                                                                                                                           |
 | `kind`       | string           | No       | -           | Filter by entity kind (e.g., `Component`, `API`, `System`)                                                                                                                                                        |
+| `namespace`  | string           | No       | -           | Filter by entity namespace (e.g., `default`, `staging`). Case-insensitive exact match                                                                                                                             |
 | `entityName` | string           | No       | -           | Substring search against the entity ref (`kind:namespace/name`). Matches any part of the ref (case-insensitive). Use the name portion for simple searches (e.g., `auth` matches `component:default/auth-service`) |
-| `sortBy`     | string           | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, or `metricValue`                                                                                                                                       |
+| `sortBy`     | string           | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, `metricValue`, or `namespace`                                                                                                                          |
 | `sortOrder`  | string           | No       | `desc`      | Sort direction: `asc` or `desc`                                                                                                                                                                                   |
 | `page`       | number           | No       | `1`         | Page number (1-indexed)                                                                                                                                                                                           |
 | `pageSize`   | number           | No       | `5`         | Number of entities per page (max: 100)                                                                                                                                                                            |
@@ -72,6 +73,7 @@ Requires `scorecard.metric.read` permission. Additionally:
 type EntityMetricDetail = {
   entityRef: string;              // Full entity reference (e.g., "component:default/my-service")
   entityName: string;             // Entity name from catalog
+  entityNamespace: string;        // Entity namespace from catalog (e.g., "default", "staging")
   entityKind: string;             // Entity kind (e.g., "Component", "API")
   owner: string;                  // Owner entity reference or name
   metricValue: number | boolean | null;  // The actual metric value
@@ -134,6 +136,15 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
   -H "Authorization: Bearer <token>"
 ```
 
+### Filter by Namespace
+
+Get entities in a specific namespace:
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?namespace=staging&page=1&pageSize=10" \
+  -H "Authorization: Bearer <token>"
+```
+
 ### Sorting
 
 Sort by metric value (highest first):
@@ -150,12 +161,19 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
   -H "Authorization: Bearer <token>"
 ```
 
+Sort by namespace alphabetically:
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?sortBy=namespace&sortOrder=asc&page=1&pageSize=10" \
+  -H "Authorization: Bearer <token>"
+```
+
 ### Combining Filters
 
 Get Component entities with errors for a specific team, sorted by metric value:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&status=error&kind=Component&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&status=error&kind=Component&namespace=staging&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -173,6 +191,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
     {
       "entityRef": "component:default/my-service",
       "entityName": "my-service",
+      "entityNamespace": "default",
       "entityKind": "Component",
       "owner": "team:default/platform",
       "metricValue": 15,
@@ -182,6 +201,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
     {
       "entityRef": "component:default/another-service",
       "entityName": "another-service",
+      "entityNamespace": "default",
       "entityKind": "Component",
       "owner": "team:default/backend",
       "metricValue": 8,
@@ -244,6 +264,20 @@ Filter by entity kind to narrow results to specific entity types:
 
 Kind filtering is performed at the database level for optimal performance.
 
+### Namespace Filtering
+
+The `namespace` parameter filters entities by their catalog namespace. This is an exact, case-insensitive match:
+
+```bash
+# Only entities in the default namespace
+?namespace=default
+
+# Only entities in the staging namespace
+?namespace=staging
+```
+
+Namespace filtering is performed at the database level for optimal performance.
+
 ### Entity Name Search
 
 The `entityName` parameter performs a case-insensitive substring search against the full entity reference, which has the format `kind:namespace/name` (e.g., `component:default/auth-service`).
@@ -274,6 +308,7 @@ Results can be sorted by any column in ascending or descending order. Sorting is
 | `entityName`  | Full entity ref (`kind:namespace/name`) alphabetically — equivalent to sorting by the full ref | "api:default/api-service", "component:default/web-app" |
 | `owner`       | Owner entity reference alphabetically                                                          | "team:default/platform"                                |
 | `entityKind`  | Entity kind alphabetically                                                                     | "API", "Component"                                     |
+| `namespace`   | Entity namespace alphabetically                                                                | "default", "staging"                                   |
 | `timestamp`   | Metric sync timestamp (most/least recent)                                                      | ISO 8601 timestamps                                    |
 | `metricValue` | Metric value numerically (highest/lowest first)                                                | 5, 15, 25, 100                                         |
 
@@ -308,7 +343,7 @@ The response includes pagination metadata:
 
 ### Pagination Performance
 
-All filters (`status`, `owner`, `kind`, and `entityName`) and sorting (`sortBy`, `sortOrder`) are applied at the database level before pagination. The `ORDER BY` and `LIMIT`/`OFFSET` are always pushed to the database, so only the requested page of rows is fetched in the correct order regardless of which filters are active.
+All filters (`status`, `owner`, `kind`, `namespace`, and `entityName`) and sorting (`sortBy`, `sortOrder`) are applied at the database level before pagination. The `ORDER BY` and `LIMIT`/`OFFSET` are always pushed to the database, so only the requested page of rows is fetched in the correct order regardless of which filters are active.
 
 For best performance with large datasets, combine specific filters to reduce the result set size before paginating.
 
@@ -473,7 +508,7 @@ Entity metadata (name, kind, owner) is fetched from the catalog at request time 
 
 **Resolution**:
 
-- Use more specific filters (status, kind, owner, entityName)
+- Use more specific filters (status, kind, owner, namespace, entityName)
 - Reduce page size
 - Use the `owner` filter to scope results to specific teams
 

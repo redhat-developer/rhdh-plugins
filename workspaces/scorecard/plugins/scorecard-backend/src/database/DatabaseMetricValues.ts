@@ -25,8 +25,15 @@ type ReadEntityMetricsByStatusOptions = {
   status?: 'success' | 'warning' | 'error';
   entityName?: string;
   entityKind?: string;
+  entityNamespace?: string;
   entityOwner?: string[];
-  sortBy?: 'entityName' | 'owner' | 'entityKind' | 'timestamp' | 'metricValue';
+  sortBy?:
+    | 'entityName'
+    | 'owner'
+    | 'entityKind'
+    | 'timestamp'
+    | 'metricValue'
+    | 'namespace';
   sortOrder?: 'asc' | 'desc';
   pagination?: { limit: number; offset: number };
 };
@@ -164,6 +171,7 @@ export class DatabaseMetricValues {
       entityKind: 'entity_kind',
       timestamp: 'timestamp',
       metricValue: 'value',
+      namespace: 'entity_namespace',
     };
 
     const column =
@@ -201,6 +209,12 @@ export class DatabaseMetricValues {
 
     if (options.entityKind) {
       query.whereRaw('LOWER(entity_kind) = LOWER(?)', [options.entityKind]);
+    }
+
+    if (options.entityNamespace) {
+      query.whereRaw('LOWER(entity_namespace) = LOWER(?)', [
+        options.entityNamespace,
+      ]);
     }
 
     if (options.entityOwner && options.entityOwner.length > 0) {

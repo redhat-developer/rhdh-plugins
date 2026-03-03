@@ -41,6 +41,7 @@ export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
 export type EntityMetricDetail = {
   entityRef: string;
   entityName?: string;
+  entityNamespace?: string;
   entityKind?: string;
   owner?: string;
   metricValue?: number | boolean | null;

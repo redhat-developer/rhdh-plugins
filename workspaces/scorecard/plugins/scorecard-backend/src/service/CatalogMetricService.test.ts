@@ -527,6 +527,7 @@ describe('CatalogMetricService', () => {
         status: 'error',
         entity_kind: 'Component',
         entity_owner: 'team:default/platform',
+        entity_namespace: 'default',
       },
       {
         id: 2,
@@ -538,10 +539,11 @@ describe('CatalogMetricService', () => {
         status: 'warning',
         entity_kind: 'Component',
         entity_owner: 'team:default/backend',
+        entity_namespace: 'default',
       },
       {
         id: 3,
-        catalog_entity_ref: 'component:default/service-c',
+        catalog_entity_ref: 'component:staging/service-c',
         metric_id: 'github.important_metric',
         value: 3,
         timestamp: new Date('2024-01-15T10:00:00.000Z'),
@@ -549,6 +551,7 @@ describe('CatalogMetricService', () => {
         status: 'success',
         entity_kind: 'API',
         entity_owner: 'team:default/platform',
+        entity_namespace: 'staging',
       },
     ];
 
@@ -566,7 +569,7 @@ describe('CatalogMetricService', () => {
           .build(),
         new MockEntityBuilder()
           .withKind('API')
-          .withMetadata({ name: 'service-c', namespace: 'default' })
+          .withMetadata({ name: 'service-c', namespace: 'staging' })
           .withSpec({ owner: 'team:default/platform' })
           .build(),
       ],
@@ -618,6 +621,7 @@ describe('CatalogMetricService', () => {
       expect(result.entities[0]).toEqual({
         entityRef: 'component:default/service-a',
         entityName: 'service-a',
+        entityNamespace: 'default',
         entityKind: 'Component',
         owner: 'team:default/platform',
         metricValue: 15,
@@ -799,6 +803,138 @@ describe('CatalogMetricService', () => {
       );
     });
 
+    it('should sort by namespace ascending', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should sort by namespace descending', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          sortBy: 'namespace',
+          sortOrder: 'desc',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          sortBy: 'namespace',
+          sortOrder: 'desc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should filter by namespace at database level', async () => {
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValueOnce([
+        mockMetricRows[2],
+      ]);
+      mockedCatalog.getEntitiesByRefs.mockResolvedValueOnce({
+        items: [mockEntities.items[2]],
+      });
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          namespace: 'staging',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          entityNamespace: 'staging',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+
+      expect(result.entities).toHaveLength(1);
+      expect(result.entities[0].entityNamespace).toBe('staging');
+      expect(result.pagination.total).toBe(1);
+    });
+
+    it('should include entityNamespace in enriched entity response', async () => {
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.entities[2]).toEqual(
+        expect.objectContaining({
+          entityRef: 'component:staging/service-c',
+          entityNamespace: 'staging',
+        }),
+      );
+    });
+
+    it('should combine namespace filter with other filters, sorting, and pagination', async () => {
+      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([
+        mockMetricRows[2],
+      ]);
+      mockedCatalog.getEntitiesByRefs.mockResolvedValueOnce({
+        items: [mockEntities.items[2]],
+      });
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          status: 'success',
+          kind: 'API',
+          namespace: 'staging',
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          page: 1,
+          limit: 5,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          status: 'success',
+          entityKind: 'API',
+          entityNamespace: 'staging',
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+
+      expect(result.entities).toHaveLength(1);
+      expect(result.entities[0].entityNamespace).toBe('staging');
+      expect(result.pagination.total).toBe(1);
+    });
+
     it('should handle null metric values in sorting', async () => {
       mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([
         { ...mockMetricRows[0], value: null },
@@ -842,9 +978,9 @@ describe('CatalogMetricService', () => {
           entityRefs: [
             'component:default/service-a',
             'component:default/service-b',
-            'component:default/service-c',
+            'component:staging/service-c',
           ],
-          fields: ['kind', 'metadata.name', 'spec.owner'],
+          fields: ['kind', 'metadata.name', 'metadata.namespace', 'spec.owner'],
         },
         { credentials: expect.any(Object) },
       );
@@ -871,7 +1007,7 @@ describe('CatalogMetricService', () => {
         'component:default/service-b',
       );
       expect(result.entities[0].entityRef).toBe('component:default/service-a');
-      expect(result.entities[1].entityRef).toBe('component:default/service-c');
+      expect(result.entities[1].entityRef).toBe('component:staging/service-c');
     });
 
     it('should handle catalog API failures by logging an error and not returning information from the database', async () => {

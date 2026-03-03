@@ -162,6 +162,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 status,
                 entity_kind: entity.kind,
+                entity_namespace: entity.metadata.namespace,
                 entity_owner: normalizeOwner(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
@@ -173,6 +174,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 error_message:
                   error instanceof Error ? error.message : String(error),
                 entity_kind: entity.kind,
+                entity_namespace: entity.metadata.namespace,
                 entity_owner: normalizeOwner(entity?.spec?.owner),
               } as DbMetricValueCreate;
             }
