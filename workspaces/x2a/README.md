@@ -22,7 +22,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 
 ### Prerequisites
 
-- Node.js >20
+- Node.js >22
 - Yarn package manager
 - Kubernetes cluster access (optional, for Kubernetes features)
 
@@ -34,11 +34,27 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
    yarn install
    ```
 
-2. Start the development environment with just the plugin loaded:
+2. **Optional:** Update `app-config.yaml` based on your environment.
+   - **`auth:`**
+     - Configure authentication providers for sign-in and SCM access (GitHub, GitLab). See [Backstage auth docs](https://backstage.io/docs/auth/).
+     - Based on your options of auth-providers, mind updating the `conversion-project-template.yaml` for source and target repository URLs.
+   - **`x2a:`** - Provide LLM credentials, Ansible Automation Platform connection details, and Kubernetes resource limits. See [x2a-convertor technical details](https://github.com/x2ansible/x2a-convertor?tab=readme-ov-file#technical-details).
+
+3. Start the development environment with just the plugin loaded:
+
+   **GitHub OAuth**: [Create a GitHub OAuth application](https://github.com/settings/developers).
+
+   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request these scopes:
+   - `read_api`, `read_user`, `read_repository`, `write_repository`
+   - `openid`, `profile`, `email`
 
    ```sh
    export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
    export AUTH_GITHUB_CLIENT_SECRET=... # Optional if "guest" user is not enough
+
+   # For GitLab auth (create app at https://gitlab.com/-/user_settings/applications):
+   export AUTH_GITLAB_CLIENT_ID=...
+   export AUTH_GITLAB_CLIENT_SECRET=...
 
    yarn dev
    ```
@@ -50,6 +66,8 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
    ```sh
    export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough
    export AUTH_GITHUB_CLIENT_SECRET=... # Optional if "guest" user is not enough
+   export AUTH_GITLAB_CLIENT_ID=...
+   export AUTH_GITLAB_CLIENT_SECRET=...
 
    yarn start
    ```
@@ -192,7 +210,7 @@ The plugin uses the Kubernetes client library to interact with Kubernetes cluste
 
 By default, it loads configuration from your local `~/.kube/config` file.
 
-Additional methods are planed to be implemented later.
+Additional methods are planned to be implemented later.
 
 ### Local Development Setup
 
@@ -224,7 +242,7 @@ Loaded Kubernetes configuration from ~/.kube/config
 
 - `yarn test` - Run tests
 - `yarn lint` - Run linter
-- `prettier:fix` - Fix by prettier
+- `yarn prettier:fix` - Fix code formatting
 - `yarn build:all` - Build all packages
 - `yarn clean` - Clean build artifacts
 
