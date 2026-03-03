@@ -40,7 +40,7 @@ export const getAccess =
 
     const decision = await authorize(req, options);
 
-    logger.info('DCM access decision:', decision);
+    logger.info(`DCM access decision: ${decision}`);
 
     response.json({
       decision,
