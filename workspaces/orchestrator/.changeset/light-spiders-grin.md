@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki': minor
+'@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki': patch
 ---
 
 Fixes https://issues.redhat.com/browse/RHDHBUGS-2735. Adds the ability to pass an auth token to the lokistack query route
