@@ -9,7 +9,6 @@ metadata:
   #   backstage.io/techdocs-ref: dir:.
 spec:
   type: backstage-plugin
-  owner: john@example.com
+  owner: rhdh-ai
   lifecycle: active
-  system: rhdh
   subcomponentOf: rhdh-plugins
