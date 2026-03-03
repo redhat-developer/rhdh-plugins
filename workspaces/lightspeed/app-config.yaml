@@ -76,6 +76,8 @@ auth:
     #     signIn:
     #       resolvers:
     #         - resolver: usernameMatchingUserEntityName
+    # # Since we do not have a User entity, for local development, uncomment the following line to allow sign-in without a user in the catalog
+    #           dangerouslyAllowSignInWithoutUserInCatalog: true
 
 scaffolder: {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
