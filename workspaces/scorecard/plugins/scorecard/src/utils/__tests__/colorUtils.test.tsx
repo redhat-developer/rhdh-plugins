@@ -93,14 +93,14 @@ describe('colorUtils', () => {
       expect(color).toBe('#9933ff');
     });
 
-    it('should return custom color name directly', () => {
-      const color = resolveStatusColor(mockTheme, 'blue');
-      expect(color).toBe('blue');
-    });
-
     it('should return custom rgb color directly', () => {
       const color = resolveStatusColor(mockTheme, 'rgb(255, 0, 0)');
       expect(color).toBe('rgb(255, 0, 0)');
+    });
+
+    it('should return custom rgba color directly', () => {
+      const color = resolveStatusColor(mockTheme, 'rgba(255, 0, 0, 0.7)');
+      expect(color).toBe('rgba(255, 0, 0, 0.7)');
     });
 
     it('should fallback to cardBorderColor when theme path not found', () => {

@@ -55,7 +55,8 @@ export const resolveStatusColor = (
   theme: Theme,
   statusColor: string,
 ): string => {
-  if (!statusColor.includes('.')) {
+  // Theme palette paths are dot-separated; rgba(...) may include '.' in its alpha value.
+  if (!statusColor.includes('.') || statusColor.includes('rgba')) {
     return statusColor;
   }
 
