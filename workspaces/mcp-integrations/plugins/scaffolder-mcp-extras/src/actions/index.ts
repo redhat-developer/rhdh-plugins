@@ -13,17 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { LoggerService } from '@backstage/backend-plugin-api';
+import {
+  AuthService,
+  DiscoveryService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
+import { ScmIntegrations } from '@backstage/integration';
 import { CatalogService } from '@backstage/plugin-catalog-node';
-import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+import type { ScaffolderClient } from '@backstage/plugin-scaffolder-common';
+import { createDryRunTemplateAction } from './createDryRunTemplateAction';
+import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
+import { createListScaffolderActionsAction } from './createListScaffolderActionsAction';
+import { createListScaffolderTasksAction } from './listScaffolderTasksAction';
 
-export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction.ts';
+export { createDryRunTemplateAction } from './createDryRunTemplateAction';
+export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
+export { createListScaffolderActionsAction } from './createListScaffolderActionsAction';
+export { createListScaffolderTasksAction } from './listScaffolderTasksAction';
 
 export const createScaffolderActions = (options: {
   actionsRegistry: ActionsRegistryService;
+  auth: AuthService;
   catalog: CatalogService;
+  discovery: DiscoveryService;
   logger: LoggerService;
+  scmIntegrations: ScmIntegrations;
+  scaffolderClient?: ScaffolderClient;
 }) => {
   createFetchTemplateMetadataAction(options);
+  createListScaffolderTasksAction({
+    actionsRegistry: options.actionsRegistry,
+    auth: options.auth,
+    discovery: options.discovery,
+    scmIntegrations: options.scmIntegrations,
+  });
+  if (options.scaffolderClient) {
+    createListScaffolderActionsAction({
+      actionsRegistry: options.actionsRegistry,
+      scaffolderClient: options.scaffolderClient,
+    });
+    createDryRunTemplateAction({
+      actionsRegistry: options.actionsRegistry,
+      scaffolderClient: options.scaffolderClient,
+    });
+  }
 };

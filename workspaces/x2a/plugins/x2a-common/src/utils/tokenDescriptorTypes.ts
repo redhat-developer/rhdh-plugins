@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { OAuthScope } from '@backstage/core-plugin-api';
 
+/**
+ * Auth token object
+ * @public
+ */
 export interface AuthToken {
   /**
    * The auth token provider name
@@ -28,6 +31,8 @@ export interface AuthToken {
 
 /**
  * Descriptor for authentication token configuration
+ *
+ * @public
  */
 export type AuthTokenDescriptor = {
   /**
@@ -46,7 +51,7 @@ export type AuthTokenDescriptor = {
   /**
    * OAuth scope for token permissions (e.g., 'repo' for GitHub repository write permissions)
    */
-  scope?: OAuthScope;
+  scope?: string | string[];
 
   /**
    * Type of authentication token to request. If not provided, the default is 'oauth'.
