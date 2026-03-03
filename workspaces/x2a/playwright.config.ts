@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,6 @@
 
 import { defineConfig } from '@playwright/test';
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
 export default defineConfig({
   timeout: 60_000,
 
@@ -26,8 +23,7 @@ export default defineConfig({
     timeout: 5_000,
   },
 
-  // Run your local dev server before starting the tests
-  webServer: process.env.CI
+  webServer: process.env.PLAYWRIGHT_URL
     ? []
     : [
         {
@@ -46,9 +42,15 @@ export default defineConfig({
 
   forbidOnly: !!process.env.CI,
 
+  workers: process.env.CI ? 2 : 1,
+
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['list'],
+    ['html', { open: 'never', outputFolder: 'e2e-test-report' }],
+    ['junit', { outputFile: 'playwright-results.xml' }],
+  ],
 
   use: {
     actionTimeout: 0,
@@ -57,9 +59,10 @@ export default defineConfig({
       (process.env.CI ? 'http://localhost:7007' : 'http://localhost:3000'),
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    ignoreHTTPSErrors: true,
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: 'test-results',
 
   projects: [
     {
