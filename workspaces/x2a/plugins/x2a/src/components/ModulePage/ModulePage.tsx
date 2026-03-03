@@ -24,14 +24,17 @@ import {
   ResponseErrorPanel,
 } from '@backstage/core-components';
 import { Grid } from '@material-ui/core';
-import { ModulePhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  getAuthTokenDescriptor,
+  ModulePhase,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import { moduleRouteRef } from '../../routes';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
-import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
+import { useRepoAuthentication } from '../../repoAuth';
 import { ArtifactsCard } from './ArtifactsCard';
 import { ModuleDetailsCard } from './ModuleDetailsCard';
 import { PhasesCard } from './PhasesCard';
