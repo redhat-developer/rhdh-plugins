@@ -242,9 +242,8 @@ export const EntitySection = () => {
               <Grid
                 item
                 sx={containerGridItemSx({
-                  sm: isRemoveFirstCard ? 12 : 6,
+                  sm: 12,
                   md: isRemoveFirstCard ? 12 : 8,
-                  lg: 6,
                 })}
               >
                 <Box
