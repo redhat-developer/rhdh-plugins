@@ -412,12 +412,19 @@ case "${PHASE}" in
     echo "=== Step 2: Publishing to AAP ==="
     echo "Command: uv run app.py publish-aap --target-repo ${TARGET_REPO_URL} --target-branch ${TARGET_REPO_BRANCH} --project-id ${PROJECT_DIR}"
     cd /app
-    uv run app.py publish-aap \
+    PUBLISH_OUTPUT=$(uv run app.py publish-aap \
       --target-repo "${TARGET_REPO_URL}" \
       --target-branch "${TARGET_REPO_BRANCH}" \
-      --project-id "${PROJECT_DIR}"
+      --project-id "${PROJECT_DIR}" 2>&1 | tee /dev/stderr)
 
-    ARTIFACTS+=("ansible_project:${PROJECT_DIR}/ansible-project")
+    # Parse AAP project ID from output and construct URL
+    AAP_PROJECT_ID=$(echo "${PUBLISH_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
+    if [ -n "${AAP_PROJECT_ID}" ]; then
+      ARTIFACTS+=("aap_project_url:${AAP_CONTROLLER_URL}/#/projects/${AAP_PROJECT_ID}/details")
+    else
+      echo "WARNING: Could not parse AAP project ID from publish-aap output"
+      ARTIFACTS+=("aap_project_url:${AAP_CONTROLLER_URL}/#/projects")
+    fi
     ;;
 
   *)

@@ -77,9 +77,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.summary.toReview': 'para revisar',
     'module.actions.runNextPhase': 'Ejecutar siguiente fase',
     'module.currentPhase': 'Fase actual',
-    'module.lastUpdate': 'Ãÿltima actualizaciÃ³n',
+    'module.lastUpdate': 'ï¿½ï¿½ltima actualizaciÃ³n',
     'module.notStarted': 'No iniciado',
-    'module.lastPhase': 'Ãÿltima fase',
+    'module.lastPhase': 'ï¿½ï¿½ltima fase',
     'module.name': 'Nombre',
     'module.status': 'Estado',
     'module.sourcePath': 'Ruta de origen',
@@ -91,11 +91,11 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.statuses.none': '-',
     'module.statuses.pending': 'Pendiente',
     'module.statuses.running': 'En ejecuciÃ³n',
-    'module.statuses.success': 'Ãÿxito',
+    'module.statuses.success': 'ï¿½ï¿½xito',
     'module.statuses.error': 'Error',
     'artifact.types.migrated_sources': 'Fuentes migradas',
     'artifact.types.project_metadata': 'Metadatos del proyecto',
-    'artifact.types.ansible_project': 'Proyecto Ansible',
+    'artifact.types.aap_project_url': 'Proyecto AAP',
     'modulePage.title': 'Detalles del mÃ³dulo',
     'modulePage.artifacts.title': 'Artefactos',
     'modulePage.artifacts.migration_plan':
@@ -103,7 +103,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan':
       'Plan del mÃ³dulo por anÃ¡lisis',
     'modulePage.artifacts.migrated_sources': 'Fuentes migradas',
-    'modulePage.artifacts.ansible_project': 'Proyecto Ansible',
+    'modulePage.artifacts.aap_project_url': 'Proyecto AAP',
     'modulePage.artifacts.description':
       'Estos artefactos son generados por el proceso de conversiÃ³n y estÃ¡n disponibles para revisiÃ³n.',
     'modulePage.phases.title': 'Fases de migraciÃ³n',
@@ -116,7 +116,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.statuses.notStarted': 'No iniciado',
     'modulePage.phases.statuses.pending': 'Pendiente',
     'modulePage.phases.statuses.running': 'En ejecuciÃ³n',
-    'modulePage.phases.statuses.success': 'Ãÿxito',
+    'modulePage.phases.statuses.success': 'ï¿½ï¿½xito',
     'modulePage.phases.statuses.error': 'Error',
     'modulePage.phases.reanalyzeInstructions':
       'El plan de migraciÃ³n del mÃ³dulo ya existe. Si el plan de migraciÃ³n general del proyecto se ha actualizado, vuelva a ejecutar el anÃ¡lisis para reflejar los cambios.',

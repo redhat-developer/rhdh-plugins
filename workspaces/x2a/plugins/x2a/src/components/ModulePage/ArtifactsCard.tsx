@@ -67,8 +67,8 @@ export const ArtifactsCard = ({
   const migratedSourcesArtifact = module?.migrate?.artifacts?.find(
     artifact => artifact.type === 'migrated_sources',
   );
-  const ansibleProjectArtifact = module?.publish?.artifacts?.find(
-    artifact => artifact.type === 'ansible_project',
+  const aapProjectUrlArtifact = module?.publish?.artifacts?.find(
+    artifact => artifact.type === 'aap_project_url',
   );
 
   return (
@@ -112,13 +112,19 @@ export const ArtifactsCard = ({
         </Grid>
         <Grid item xs={4}>
           <ItemField
-            label={t('modulePage.artifacts.ansible_project')}
+            label={t('modulePage.artifacts.aap_project_url')}
             value={
-              <ArtifactLink
-                artifact={ansibleProjectArtifact}
-                targetRepoUrl={targetRepoUrl}
-                targetRepoBranch={targetRepoBranch}
-              />
+              aapProjectUrlArtifact ? (
+                <Link
+                  to={aapProjectUrlArtifact.value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {humanizeArtifactType(t, aapProjectUrlArtifact.type)}
+                </Link>
+              ) : (
+                t('module.phases.none')
+              )
             }
           />
         </Grid>

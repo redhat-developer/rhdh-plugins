@@ -39,9 +39,13 @@ export const ArtifactLink = ({
 }) => {
   const classes = styles();
   const { t } = useTranslation();
+  const url =
+    artifact.type === 'aap_project_url'
+      ? artifact.value
+      : buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch);
   return (
     <Link
-      to={buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch)}
+      to={url}
       target="_blank"
       rel="noopener noreferrer"
       key={artifact.id}

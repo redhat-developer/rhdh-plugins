@@ -26,4 +26,4 @@ export type ArtifactType =
   | 'module_migration_plan'
   | 'migrated_sources'
   | 'project_metadata'
-  | 'ansible_project';
+  | 'aap_project_url';

@@ -35,8 +35,8 @@ export const humanizeArtifactType = (
       return t('artifact.types.migrated_sources');
     case 'project_metadata':
       return t('artifact.types.project_metadata');
-    case 'ansible_project':
-      return t('artifact.types.ansible_project');
+    case 'aap_project_url':
+      return t('artifact.types.aap_project_url');
     default:
       // Do not fail but let developers know...
       // eslint-disable-next-line no-console
