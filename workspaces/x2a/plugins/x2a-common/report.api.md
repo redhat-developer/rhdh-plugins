@@ -225,6 +225,9 @@ export type ProjectsProjectIdCollectArtifactsPost = {
         moduleId?: string;
         phase: MigrationPhase;
     };
+    header: {
+        xCallbackSignature: string;
+    };
 };
 
 // @public (undocumented)
