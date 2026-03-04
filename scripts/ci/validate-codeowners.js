@@ -164,7 +164,7 @@ async function main() {
 
     // Write missing users to GitHub Actions output if running in CI
     if (process.env.GITHUB_OUTPUT) {
-      const missingList = sortedMissing.map(u => `@${u}`).join(', ');
+      const missingList = sortedMissing.join(', ');
       await appendFile(
         process.env.GITHUB_OUTPUT,
         `missing_users=${missingList}\n`,
