@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-floating-action-button
 
+## 1.8.1
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+
 ## 1.8.0
 
 ### Minor Changes
