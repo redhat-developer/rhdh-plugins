@@ -136,6 +136,8 @@ async function main() {
   );
 
   if (missingUsers.length > 0) {
+    const sortedMissing = missingUsers.sort();
+
     console.log();
     console.log('***********************************************************');
     console.log('*         CODEOWNERS validation failed!                   *');
@@ -145,7 +147,7 @@ async function main() {
       `The following users are in CODEOWNERS but not in the ${ORG}/${TEAM_SLUG} team:`,
     );
     console.log();
-    for (const user of missingUsers.sort()) {
+    for (const user of sortedMissing) {
       console.log(`  - @${user}`);
     }
     console.log();
@@ -155,6 +157,17 @@ async function main() {
     console.log();
     console.log('***********************************************************');
     console.log();
+
+    // Write missing users to GitHub Actions output if running in CI
+    if (process.env.GITHUB_OUTPUT) {
+      const { appendFile } = await import('fs/promises');
+      const missingList = sortedMissing.map(u => `@${u}`).join(', ');
+      await appendFile(
+        process.env.GITHUB_OUTPUT,
+        `missing_users=${missingList}\n`,
+      );
+    }
+
     process.exit(1);
   }
 
