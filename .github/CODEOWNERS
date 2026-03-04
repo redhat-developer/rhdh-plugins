@@ -15,7 +15,7 @@
 
 *                                                   @redhat-developer/rhdh-cope   @redhat-developer/rhdh-security
 
-/workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram
+/workspaces/adoption-insights                       @redhat-developer/rhdh-ui @rohitkrai03 @karthikjeeyar @eswaraiahsapram @test123
 /workspaces/ai-integrations                         @redhat-developer/rhdh-ui @redhat-developer/rhdh-ai @rohitkrai03 @karthikjeeyar @lucifergene   @johnmcollier @gabemontero
 /workspaces/bulk-import                             @redhat-developer/rhdh-plugins @rm3l   @redhat-developer/rhdh-ui @debsmita1 @its-mitesh-kumar
 /workspaces/extensions                              @redhat-developer/rhdh-ui @christoph-jerolimov @karthikjeeyar
