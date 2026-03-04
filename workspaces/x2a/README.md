@@ -44,9 +44,7 @@ See the [backend plugin README](./plugins/x2a-backend/README.md) for detailed co
 
    **GitHub OAuth**: [Create a GitHub OAuth application](https://github.com/settings/developers).
 
-   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request these scopes:
-   - `read_api`, `read_user`, `read_repository`, `write_repository`
-   - `openid`, `profile`, `email`
+   **GitLab OAuth:** When [creating a GitLab OAuth application](https://gitlab.com/-/user_settings/applications), request scopes per [official documentation](https://backstage.io/docs/auth/gitlab/provider/).
 
    ```sh
    export AUTH_GITHUB_CLIENT_ID=.... # Optional if "guest" user is not enough

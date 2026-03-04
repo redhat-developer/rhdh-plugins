@@ -38,7 +38,7 @@ export interface Artifact {
 }
 
 // @public (undocumented)
-export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata';
+export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
 
 // @public
 export const augmentRepoToken: (token: string, authDescriptor: AuthTokenDescriptor) => string;
@@ -224,6 +224,9 @@ export type ProjectsProjectIdCollectArtifactsPost = {
     query: {
         moduleId?: string;
         phase: MigrationPhase;
+    };
+    header: {
+        xCallbackSignature: string;
     };
 };
 
