@@ -94,11 +94,13 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.statuses.error': 'Fehler',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
     'artifact.types.project_metadata': 'Projektmetadaten',
+    'artifact.types.ansible_project': 'Ansible-Projekt',
     'modulePage.title': 'Moduldetails',
     'modulePage.artifacts.title': 'Artefakte',
     'modulePage.artifacts.migration_plan': 'Gesamter Projektmigrationsplan',
     'modulePage.artifacts.module_migration_plan': 'Modulplan nach Analyse',
     'modulePage.artifacts.migrated_sources': 'Migrierte Quellen',
+    'modulePage.artifacts.ansible_project': 'Ansible-Projekt',
     'modulePage.artifacts.description':
       'Diese Artefakte werden durch den Konvertierungsprozess generiert und stehen zur Überprüfung bereit.',
     'modulePage.phases.title': 'Migrationsphasen',
