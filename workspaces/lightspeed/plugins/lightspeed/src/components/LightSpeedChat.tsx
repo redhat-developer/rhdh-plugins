@@ -225,8 +225,11 @@ export const LightspeedChat = ({
   const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
-    if (user && lastOpenedId === null && isReady) {
+    if (!user || !isReady) return;
+    if (lastOpenedId === null) {
       setConversationId(TEMP_CONVERSATION_ID);
+    }
+    if (lastOpenedId === TEMP_CONVERSATION_ID || lastOpenedId === null) {
       setNewChatCreated(true);
     }
   }, [user, isReady, lastOpenedId, setConversationId]);
