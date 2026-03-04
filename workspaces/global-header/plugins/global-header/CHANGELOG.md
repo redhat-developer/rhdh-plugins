@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 1.20.2
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+
 ## 1.20.1
 
 ### Patch Changes
