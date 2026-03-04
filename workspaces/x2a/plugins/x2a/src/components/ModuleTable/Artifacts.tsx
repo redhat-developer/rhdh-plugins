@@ -40,7 +40,7 @@ export const ArtifactLink = ({
   const classes = styles();
   const { t } = useTranslation();
   const url =
-    artifact.type === 'aap_project_url'
+    artifact.type === 'ansible_project'
       ? artifact.value
       : buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch);
   return (

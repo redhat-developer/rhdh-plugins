@@ -46,7 +46,7 @@ readonly "modulePage.artifacts.description": string;
 readonly "modulePage.artifacts.migration_plan": string;
 readonly "modulePage.artifacts.module_migration_plan": string;
 readonly "modulePage.artifacts.migrated_sources": string;
-readonly "modulePage.artifacts.aap_project_url": string;
+readonly "modulePage.artifacts.ansible_project": string;
 readonly "modulePage.phases.title": string;
 readonly "modulePage.phases.id": string;
 readonly "modulePage.phases.duration": string;
@@ -126,7 +126,7 @@ readonly "module.finishedAt": string;
 readonly "artifact.types.migration_plan": string;
 readonly "artifact.types.module_migration_plan": string;
 readonly "artifact.types.migrated_sources": string;
-readonly "artifact.types.aap_project_url": string;
+readonly "artifact.types.ansible_project": string;
 readonly "artifact.types.project_metadata": string;
 }>;
 

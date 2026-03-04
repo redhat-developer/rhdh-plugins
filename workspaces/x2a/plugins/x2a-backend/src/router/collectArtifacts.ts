@@ -56,7 +56,7 @@ const artifactSchema = z.object({
     'module_migration_plan',
     'migrated_sources',
     'project_metadata',
-    'aap_project_url',
+    'ansible_project',
   ]),
   value: z.string(),
 });

@@ -420,10 +420,10 @@ case "${PHASE}" in
     # Parse AAP project ID from output and construct URL
     AAP_PROJECT_ID=$(echo "${PUBLISH_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
     if [ -n "${AAP_PROJECT_ID}" ]; then
-      ARTIFACTS+=("aap_project_url:${AAP_CONTROLLER_URL}/#/projects/${AAP_PROJECT_ID}/details")
+      ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects/${AAP_PROJECT_ID}/details")
     else
       echo "WARNING: Could not parse AAP project ID from publish-aap output"
-      ARTIFACTS+=("aap_project_url:${AAP_CONTROLLER_URL}/#/projects")
+      ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects")
     fi
     ;;
 
