@@ -70,7 +70,10 @@ export type ProjectsProjectIdCollectArtifactsPost = {
     moduleId?: string;
     phase: MigrationPhase;
   };
-  response: ProjectsProjectIdCollectArtifactsPost200Response | void | void;
+  header: {
+    xCallbackSignature: string;
+  };
+  response: ProjectsProjectIdCollectArtifactsPost200Response | void | void | void;
 };
 /**
  * @public

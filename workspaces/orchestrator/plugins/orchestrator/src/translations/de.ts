@@ -18,31 +18,24 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 import { orchestratorTranslationRef } from './ref';
 
+/**
+ * de translation for plugin.orchestrator.
+ * @public
+ */
 const orchestratorTranslationDe = createTranslationMessages({
   ref: orchestratorTranslationRef,
   messages: {
     'page.title': 'Workflow-Orchestrator',
     'page.tabs.workflows': 'Workflows',
     'page.tabs.allRuns': 'Alle Ausführungen',
-    'page.tabs.workflowDetails': 'Detaillen',
-    'page.tabs.workflowRuns': 'Ausführungen',
+    'page.tabs.workflowDetails': 'Workflow-Details',
+    'page.tabs.workflowRuns': 'Der Workflow wird ausgeführt',
     'table.title.workflows': 'Workflows',
     'table.title.allRuns': 'Alle Ausführungen ({{count}})',
-    'table.title.allWorkflowRuns': 'Ausführungen ({{count}})',
-    'table.headers.name': 'Name',
-    'table.headers.runStatus': 'Ausführungsstatus',
-    'table.headers.lastRun': 'Letzte Ausführung',
-    'table.headers.lastRunStatus': 'Status der letzten Ausführung',
-    'table.headers.started': 'Gestartet',
-    'table.headers.status': 'Status',
-    'table.headers.workflowStatus': 'Status',
-    'table.headers.duration': 'Dauer',
-    'table.headers.description': 'Beschreibung',
-    'table.headers.workflowName': 'Workflowname',
-    'table.actions.run': 'Ausführen',
+    'table.actions.run': 'Ausführung',
     'table.actions.viewRuns': 'Ausführungen anzeigen',
     'table.actions.viewInputSchema': 'Eingabeschema anzeigen',
-    'table.status.running': 'Läuft',
+    'table.status.running': 'Wird ausgeführt',
     'table.status.failed': 'Fehlgeschlagen',
     'table.status.completed': 'Abgeschlossen',
     'table.status.aborted': 'Abgebrochen',
@@ -55,123 +48,94 @@ const orchestratorTranslationDe = createTranslationMessages({
     'table.filters.startedOptions.last7days': 'Letzte 7 Tage',
     'table.filters.startedOptions.thisMonth': 'Dieser Monat',
     'workflow.details': 'Details',
-    'workflow.definition': 'Definition',
-    'workflow.progress': 'Fortschritt',
+    'workflow.definition': 'Workflow-Definition',
+    'workflow.progress': 'Workflow-Fortschritt',
     'workflow.status.available': 'Verfügbar',
     'workflow.status.unavailable': 'Nicht verfügbar',
     'workflow.fields.workflow': 'Workflow',
-    'workflow.fields.workflowStatus': 'Status',
+    'workflow.fields.workflowStatus': 'Workflow-Status',
     'workflow.fields.runStatus': 'Ausführungsstatus',
     'workflow.fields.duration': 'Dauer',
     'workflow.fields.description': 'Beschreibung',
     'workflow.fields.started': 'Gestartet',
     'workflow.fields.workflowId': 'Ausführungs-ID',
     'workflow.fields.workflowIdCopied':
-      'Ausführungs-ID in Zwischenablage kopiert',
+      'Ausführungs-ID wurde in die Zwischenablage kopiert',
     'workflow.errors.retriggerFailed':
-      'Erneut auslösen fehlgeschlagen: {{reason}}',
-    'workflow.errors.abortFailed':
-      'Abbrechen fehlgeschlagen: Ausführung wurde bereits abgeschlossen.',
+      'Erneuter Auslöser fehlgeschlagen: {{reason}}',
     'workflow.errors.abortFailedWithReason':
-      'Abbrechen fehlgeschlagen: {{reason}}',
-    'workflow.errors.failedToLoadDetails':
-      'Details für die Workflow-ID {{id}} konnten nicht geladen werden.',
-    'workflow.messages.areYouSureYouWantToRunThisWorkflow':
-      'Sind Sie sicher, dass Sie diesen Workflow ausführen möchten?',
-    'workflow.messages.userNotAuthorizedExecute':
-      'Benutzer nicht berechtigt, den Workflow auszuführen.',
-    'workflow.messages.workflowDown':
-      'Der Workflow ist derzeit nicht verfügbar oder befindet sich in einem Fehlerzustand. Eine Ausführung kann fehlschlagen oder zu unerwarteten Ergebnissen führen.',
-    'workflow.buttons.run': 'Ausführen',
-    'workflow.buttons.runWorkflow': 'Workflow ausführen',
-    'workflow.buttons.runAgain': 'Erneut ausführen',
-    'workflow.buttons.running': 'Läuft...',
-    'workflow.buttons.fromFailurePoint': 'Von Fehlerpunkt',
-    'workflow.buttons.runFailedAgain': 'Erneut ausführen fehlgeschlagen',
+      'Abbruch fehlgeschlagen: {{reason}}',
     'run.title': 'Workflow ausführen',
-    'run.pageTitle': '{{processName}} Ausführung',
+    'run.pageTitle': 'Ausführung von {{processName}}',
     'run.variables': 'Ausführungsvariablen',
     'run.inputs': 'Eingaben',
     'run.results': 'Ergebnisse',
-    'run.logs.viewLogs': 'Protokolle anzeigen',
-    'run.logs.title': 'Ausführungsprotokolle',
+    'run.logs.viewLogs': 'Logs anzeigen',
+    'run.logs.title': 'Ausführungs-Logs',
     'run.logs.noLogsAvailable':
-      'Keine Protokolle für diese Workflow-Ausführung verfügbar.',
-    'run.abort.title': 'Ausführung abbrechen?',
+      'Für diese Workflow-Ausführung sind keine Logs verfügbar.',
+    'run.abort.title': 'Workflow-Ausführung abbrechen?',
     'run.abort.button': 'Abbrechen',
     'run.abort.warning':
-      'Das Abbrechen stoppt alle laufenden und ausstehenden Schritte sofort. Alle laufenden Arbeiten gehen verloren.',
+      'Durch einen Abbruch werden alle laufenden und ausstehenden Schritte sofort beendet. Sämtliche laufenden Arbeiten gehen verloren.',
     'run.abort.completed.title': 'Ausführung abgeschlossen',
     'run.abort.completed.message':
-      'Es ist nicht möglich, die Ausführung abzubrechen, da sie bereits abgeschlossen wurde.',
+      'Abbruch der Ausführung ist nicht möglich, da sie bereits abgeschlossen wurde.',
     'run.status.completed': 'Ausführung abgeschlossen',
-    'run.status.failed': 'Ausführung fehlgeschlagen {{time}}',
-    'run.status.failedAt': 'Ausführung fehlgeschlagen {{time}}',
-    'run.status.aborted': 'Ausführung abgebrochen',
+    'run.status.failed': 'Ausführung ist fehlgeschlagen {{time}}',
     'run.status.completedWithMessage':
-      'Ausführung abgeschlossen {{time}} mit Nachricht',
-    'run.status.completedAt': 'Ausführung abgeschlossen {{time}}',
-    'run.status.running': 'Workflow läuft. Gestartet {{time}}',
-    'run.status.runningWaitingAtNode':
-      'Workflow läuft - wartet am Knoten {{node}} seit {{formattedTime}}',
-    'run.status.workflowIsRunning': 'Workflow läuft. Gestartet {{time}}',
-    'run.status.noAdditionalInfo':
-      'Der Workflow hat keine zusätzlichen Informationen zum Status bereitgestellt.',
-    'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
-      'Die Ergebnisse werden hier angezeigt, sobald die Ausführung abgeschlossen ist.',
-    'run.retrigger': 'Erneut auslösen',
+      'Ausführung {{time}} mit folgender Nachricht abgeschlossen',
+    'run.status.failedAt': 'Ausführung ist fehlgeschlagen {{time}}',
     'run.viewVariables': 'Variablen anzeigen',
     'run.suggestedNextWorkflow': 'Vorgeschlagener nächster Workflow',
-    'run.suggestedNextWorkflows': 'Vorgeschlagene nächste Workflows',
+    'run.suggestedNextWorkflows': 'Empfohlene nächste Workflows',
     'tooltips.completed': 'Abgeschlossen',
     'tooltips.active': 'Aktiv',
     'tooltips.aborted': 'Abgebrochen',
-    'tooltips.suspended': 'Pausiert',
+    'tooltips.suspended': 'Ausgesetzt',
     'tooltips.pending': 'Ausstehend',
     'tooltips.workflowDown':
-      'Workflow ist derzeit nicht verfügbar oder in einem Fehlerzustand',
+      'Der Workflow ist momentan nicht verfügbar oder befindet sich in einem Fehlerzustand.',
     'tooltips.userNotAuthorizedAbort':
-      'Benutzer nicht berechtigt, Workflow abzubrechen',
+      'Der Benutzer ist nicht berechtigt, den Workflow abzubrechen',
     'tooltips.userNotAuthorizedExecute':
-      'Benutzer nicht berechtigt, Workflow auszuführen',
+      'Der Benutzer ist nicht berechtigt, den Workflow auszuführen',
     'messages.noDataAvailable': 'Keine Daten verfügbar',
     'messages.noVariablesFound':
-      'Keine Variablen für diese Ausführung gefunden.',
+      'Für diese Ausführung wurden keine Variablen gefunden.',
     'messages.noInputSchemaWorkflow':
       'Für diesen Workflow ist kein Eingabeschema definiert.',
     'messages.workflowInstanceNoInputs':
-      'Die Workflow-Instanz hat keine Eingaben',
+      'Die Workflow-Instanz hat keine Eingaben.',
     'messages.missingJsonSchema.title':
-      'Fehlendes JSON-Schema für Eingabeformular',
+      'Fehlendes JSON-Schema für das Eingabeformular',
     'messages.missingJsonSchema.message':
-      'Dieser Workflow hat kein JSON-Schema für die Eingabevalidierung definiert. Sie können den Workflow trotzdem ausführen, aber die Eingabevalidierung wird eingeschränkt sein.',
-    'messages.additionalDetailsAboutThisErrorAreNotAvailable':
-      'Zusätzliche Informationen zu diesem Fehler sind nicht verfügbar',
+      'Für diesen Workflow ist kein JSON-Schema zur Eingabevalidierung definiert. Der Workflow kann weiterhin ausgeführt werden, die Eingabevalidierung ist jedoch eingeschränkt.',
     'reviewStep.hiddenFieldsNote':
       'Einige Parameter sind auf dieser Seite ausgeblendet.',
-    'reviewStep.showHiddenParameters': 'Verborgene Parameter anzeigen',
+    'reviewStep.showHiddenParameters': 'Ausgeblendete Parameter anzeigen',
     'common.close': 'Schließen',
     'common.cancel': 'Abbrechen',
     'common.execute': 'Ausführen',
     'common.details': 'Details',
-    'common.links': 'Links',
+    'common.links': 'Verknüpfungen',
     'common.values': 'Werte',
-    'common.unavailable': '---',
     'common.back': 'Zurück',
-    'common.run': 'Ausführen',
+    'common.run': 'Ausführung',
     'common.next': 'Weiter',
     'common.review': 'Überprüfen',
+    'common.unavailable': '---',
     'common.goBack': 'Zurück',
     'permissions.accessDenied': 'Zugriff verweigert',
     'permissions.accessDeniedDescription':
-      'Sie haben keine Berechtigung, diesen Workflow-Lauf anzuzeigen.',
+      'Sie haben keine Berechtigung, diese Workflow-Ausführung anzuzeigen.',
     'permissions.requiredPermission': 'Erforderliche Berechtigung',
     'permissions.contactAdmin':
-      'Bitte kontaktieren Sie Ihren Administrator, um die erforderlichen Berechtigungen anzufordern.',
+      'Wenden Sie sich an den Administrator, um die erforderlichen Berechtigungen anzufordern.',
     'permissions.missingOwnership':
-      'Für diesen Workflow-Lauf sind keine Eigentümerinformationen aufgezeichnet.',
+      'Bei dieser Workflow-Ausführung wurden keine Eigentümerinformationen protokolliert.',
     'permissions.notYourRun':
-      'Dieser Workflow-Lauf wurde von einem anderen Benutzer initiiert.',
+      'Diese Workflow-Ausführung wurde von einem anderen Benutzer initiiert.',
     'duration.aFewSeconds': 'ein paar Sekunden',
     'duration.aSecond': 'eine Sekunde',
     'duration.seconds': '{{count}} Sekunden',
@@ -183,11 +147,12 @@ const orchestratorTranslationDe = createTranslationMessages({
     'duration.days': '{{count}} Tage',
     'duration.aMonth': 'ein Monat',
     'duration.months': '{{count}} Monate',
-    'duration.aYear': 'ein Jahr',
+    'duration.aYear': 'Ein Jahr',
     'duration.years': '{{count}} Jahre',
     'stepperObjectField.error':
-      'Stepper-Objektfeld wird für Schemata ohne Eigenschaften nicht unterstützt',
-    'formDecorator.error': 'Form-Decorator muss Kontextdaten bereitstellen.',
+      'Das Stepper-Objektfeld wird für Schemata, die keine Eigenschaften enthalten, nicht unterstützt.',
+    'formDecorator.error':
+      'Der Formulardekorator muss Kontextdaten bereitstellen.',
     'aria.close': 'schließen',
   },
 });
