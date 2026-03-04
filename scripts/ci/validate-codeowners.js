@@ -28,8 +28,8 @@
  * The token must have 'read:org' scope to access team membership.
  */
 
-import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { readFile, appendFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 const ORG = 'redhat-developer';
 const TEAM_SLUG = 'rhdh-plugins-codeowners';
@@ -117,7 +117,8 @@ async function main() {
   const teamMembers = await fetchTeamMembers();
 
   console.log('Team members found:');
-  for (const member of [...teamMembers].sort()) {
+  const sortedMembers = [...teamMembers].toSorted((a, b) => a.localeCompare(b));
+  for (const member of sortedMembers) {
     console.log(`  - ${member}`);
   }
   console.log();
@@ -125,7 +126,10 @@ async function main() {
   const codeownersUsers = await extractCodeownersUsers();
 
   console.log('Individual users found in CODEOWNERS:');
-  for (const user of [...codeownersUsers].sort()) {
+  const sortedUsers = [...codeownersUsers].toSorted((a, b) =>
+    a.localeCompare(b),
+  );
+  for (const user of sortedUsers) {
     console.log(`  - ${user}`);
   }
   console.log();
@@ -136,7 +140,7 @@ async function main() {
   );
 
   if (missingUsers.length > 0) {
-    const sortedMissing = missingUsers.sort();
+    const sortedMissing = missingUsers.toSorted((a, b) => a.localeCompare(b));
 
     console.log();
     console.log('***********************************************************');
@@ -160,7 +164,6 @@ async function main() {
 
     // Write missing users to GitHub Actions output if running in CI
     if (process.env.GITHUB_OUTPUT) {
-      const { appendFile } = await import('fs/promises');
       const missingList = sortedMissing.map(u => `@${u}`).join(', ');
       await appendFile(
         process.env.GITHUB_OUTPUT,
