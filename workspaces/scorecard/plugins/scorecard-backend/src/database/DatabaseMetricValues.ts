@@ -105,23 +105,20 @@ export class DatabaseMetricValues {
       return new Date();
     };
 
-    const maxTimestamp = statusRows.reduce((max, row) => {
+    let maxTimestamp = new Date(0);
+    let total = 0;
+    const statusCounts: Record<string, number> = {};
+    for (const row of statusRows) {
       const rowTimestamp = normalizeTimestamp(row.max_timestamp);
-      return rowTimestamp > max ? rowTimestamp : max;
-    }, new Date(0));
+      if (rowTimestamp > maxTimestamp) {
+        maxTimestamp = rowTimestamp;
+      }
+      const name = row.status as string;
+      const count = Number(row.count);
+      statusCounts[name] = count;
+      total += count;
+    }
 
-    const statusCounts = statusRows.reduce<Record<string, number>>(
-      (acc, row) => {
-        const name = row.status as string;
-        acc[name] = Number(row.count);
-        return acc;
-      },
-      {},
-    );
-
-    const total = Object.values(statusCounts).reduce((sum, count) => {
-      return sum + count;
-    }, 0);
     return {
       metric_id,
       total,
