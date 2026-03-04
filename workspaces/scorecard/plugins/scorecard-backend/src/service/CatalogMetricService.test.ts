@@ -578,7 +578,7 @@ describe('CatalogMetricService', () => {
     let mockCredentials: BackstageCredentials;
 
     beforeEach(() => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue(
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue(
         mockMetricRows,
       );
 
@@ -640,7 +640,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         { pagination: { limit: 10_000, offset: 0 } },
       );
@@ -657,7 +657,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         { status: 'error', pagination: { limit: 10_000, offset: 0 } },
       );
@@ -674,7 +674,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         { entityKind: 'Component', pagination: { limit: 10_000, offset: 0 } },
       );
@@ -691,7 +691,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           entityOwner: ['team:default/platform'],
@@ -701,7 +701,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should filter by entityName at database level', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValueOnce([
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValueOnce([
         mockMetricRows[0],
       ]);
 
@@ -715,7 +715,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         { entityName: 'service-a', pagination: { limit: 10_000, offset: 0 } },
       );
@@ -736,7 +736,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         { entityName: 'SERVICE', pagination: { limit: 10_000, offset: 0 } },
       );
@@ -754,7 +754,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           sortBy: 'entityName',
@@ -776,7 +776,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           sortBy: 'metricValue',
@@ -797,7 +797,7 @@ describe('CatalogMetricService', () => {
       );
 
       // When no sortBy/sortOrder are supplied the DB defaults to timestamp desc
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         { pagination: { limit: 10_000, offset: 0 } },
       );
@@ -815,7 +815,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           sortBy: 'namespace',
@@ -837,7 +837,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           sortBy: 'namespace',
@@ -848,7 +848,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should filter by namespace at database level', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValueOnce([
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValueOnce([
         mockMetricRows[2],
       ]);
       mockedCatalog.getEntitiesByRefs.mockResolvedValueOnce({
@@ -865,7 +865,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           entityNamespace: 'staging',
@@ -897,7 +897,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should combine namespace filter with other filters, sorting, and pagination', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
         mockMetricRows[2],
       ]);
       mockedCatalog.getEntitiesByRefs.mockResolvedValueOnce({
@@ -918,7 +918,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           status: 'success',
@@ -936,7 +936,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should handle null metric values in sorting', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
         { ...mockMetricRows[0], value: null },
         mockMetricRows[1],
       ]);
@@ -953,7 +953,7 @@ describe('CatalogMetricService', () => {
       );
 
       // Null handling (nulls-last) is delegated to the DB via orderByRaw
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           sortBy: 'metricValue',
@@ -1040,7 +1040,7 @@ describe('CatalogMetricService', () => {
         { page: 1, limit: 10 },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         { pagination: { limit: 10_000, offset: 0 } },
       );
@@ -1066,7 +1066,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should combine filters, sorting, and pagination', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
         mockMetricRows[0],
       ]);
 
@@ -1084,7 +1084,7 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      expect(mockedDatabase.readEntityMetricsByStatus).toHaveBeenCalledWith(
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
           status: 'error',
@@ -1101,7 +1101,7 @@ describe('CatalogMetricService', () => {
     });
 
     it('should return empty results when no entities match', async () => {
-      mockedDatabase.readEntityMetricsByStatus.mockResolvedValue([]);
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([]);
 
       const result = await service.getEntityMetricDetails(
         'github.important_metric',

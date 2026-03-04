@@ -109,7 +109,7 @@ export type EntityMetricDetail = {
   owner?: string;
   metricValue?: number | boolean | null;
   timestamp?: string;
-  status?: 'success' | 'warning' | 'error';
+  status?: string | null;
 };
 
 /**

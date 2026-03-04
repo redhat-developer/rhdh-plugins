@@ -203,7 +203,7 @@ export class CatalogMetricService {
     metricId: string,
     credentials: BackstageCredentials,
     options: {
-      status?: 'success' | 'warning' | 'error';
+      status?: string;
       owner?: string[];
       kind?: string;
       entityName?: string;
@@ -250,7 +250,7 @@ export class CatalogMetricService {
     // At the moment, this is going to be an O(MAX_FETCHABLE_ROWS) cost and is intentional to avoid leaking
     // pre-auth counts. MAX_FETCHABLE_ROWS and BATCH_SIZE are to be used as a method to of adjustment to
     // find the right amount of performance
-    const rows = await this.database.readEntityMetricsByStatus(metricId, {
+    const rows = await this.database.readEntityMetricsWithFilters(metricId, {
       status: options.status,
       entityName: options.entityName,
       entityKind: options.kind,
@@ -360,7 +360,7 @@ export class CatalogMetricService {
         owner: entity.spec?.owner as string,
         metricValue: row.value,
         timestamp: new Date(row.timestamp).toISOString(),
-        status: row.status ?? 'error',
+        status: row.status,
       });
     }
 

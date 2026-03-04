@@ -21,8 +21,8 @@ import {
   DbAggregatedMetric,
 } from './types';
 
-type ReadEntityMetricsByStatusOptions = {
-  status?: 'success' | 'warning' | 'error';
+type ReadEntityMetricsWithFiltersOptions = {
+  status?: string;
   entityName?: string;
   entityKind?: string;
   entityNamespace?: string;
@@ -145,12 +145,12 @@ export class DatabaseMetricValues {
   }
 
   /**
-   * Fetch entity metric values filtered by status with pagination
-   * Returns paginated rows
+   * Fetch the latest entity metric values for a given metric, with optional filtering
+   * by status, name, kind, namespace, or owner, plus sorting and pagination.
    */
-  async readEntityMetricsByStatus(
+  async readEntityMetricsWithFilters(
     metric_id: string,
-    options: ReadEntityMetricsByStatusOptions,
+    options: ReadEntityMetricsWithFiltersOptions,
   ): Promise<DbMetricValue[]> {
     const clientName: string =
       (this.dbClient as any).client?.config?.client ?? '';
@@ -202,19 +202,15 @@ export class DatabaseMetricValues {
 
     if (options.entityName) {
       const escaped = options.entityName.replace(/[%_\\]/g, '\\$&');
-      query.whereRaw("LOWER(catalog_entity_ref) LIKE LOWER(?) ESCAPE '\\'", [
-        `%${escaped}%`,
-      ]);
+      query.whereRaw("catalog_entity_ref LIKE ? ESCAPE '\\'", [`%${escaped}%`]);
     }
 
     if (options.entityKind) {
-      query.whereRaw('LOWER(entity_kind) = LOWER(?)', [options.entityKind]);
+      query.where('entity_kind', options.entityKind);
     }
 
     if (options.entityNamespace) {
-      query.whereRaw('LOWER(entity_namespace) = LOWER(?)', [
-        options.entityNamespace,
-      ]);
+      query.where('entity_namespace', options.entityNamespace);
     }
 
     if (options.entityOwner && options.entityOwner.length > 0) {
@@ -225,8 +221,6 @@ export class DatabaseMetricValues {
       query.limit(options.pagination.limit).offset(options.pagination.offset);
     }
 
-    const rows = await query;
-
-    return rows;
+    return await query;
   }
 }

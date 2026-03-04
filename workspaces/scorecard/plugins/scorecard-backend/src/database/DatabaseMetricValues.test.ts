@@ -514,7 +514,7 @@ describe('DatabaseMetricValues', () => {
     );
   });
 
-  describe('readEntityMetricsByStatus', () => {
+  describe('readEntityMetricsWithFilters', () => {
     it.each(databases.eachSupportedId())(
       'should return paginated entity metrics filtered by status - %p',
       async databaseId => {
@@ -563,7 +563,7 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           pagination: { limit: 10, offset: 0 },
         });
@@ -614,7 +614,7 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           pagination: { limit: 10, offset: 0 },
         });
 
@@ -669,7 +669,7 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // Page 1: limit 2
-        const page1 = await db.readEntityMetricsByStatus('github.metric1', {
+        const page1 = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           pagination: { limit: 2, offset: 0 },
         });
@@ -677,7 +677,7 @@ describe('DatabaseMetricValues', () => {
         expect(page1).toHaveLength(2);
 
         // Page 2: limit 2, offset 2
-        const page2 = await db.readEntityMetricsByStatus('github.metric1', {
+        const page2 = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           pagination: { limit: 2, offset: 2 },
         });
@@ -685,7 +685,7 @@ describe('DatabaseMetricValues', () => {
         expect(page2).toHaveLength(2);
 
         // Page 3: limit 2, offset 4
-        const page3 = await db.readEntityMetricsByStatus('github.metric1', {
+        const page3 = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           pagination: { limit: 2, offset: 4 },
         });
@@ -699,7 +699,7 @@ describe('DatabaseMetricValues', () => {
       async databaseId => {
         const { db } = await createDatabase(databaseId);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           pagination: { limit: 10, offset: 0 },
         });
@@ -746,7 +746,7 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           entityKind: 'Component', // Filter by kind
           pagination: { limit: 10, offset: 0 },
@@ -797,7 +797,7 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           entityOwner: ['team:default/platform'], // Filter by owner
           pagination: { limit: 10, offset: 0 },
@@ -857,7 +857,7 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error', // Only error status
           entityKind: 'Component', // Only Component kind
           entityOwner: ['team:default/platform'], // Only platform team
@@ -911,7 +911,7 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // No pagination parameter - should return all
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
         });
 
@@ -949,7 +949,7 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // Should return both when no filters
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           pagination: { limit: 10, offset: 0 },
         });
@@ -957,7 +957,7 @@ describe('DatabaseMetricValues', () => {
         expect(result).toHaveLength(2);
 
         // Should only return service2 when filtering by kind
-        const filteredResult = await db.readEntityMetricsByStatus(
+        const filteredResult = await db.readEntityMetricsWithFilters(
           'github.metric1',
           {
             status: 'error',
@@ -1003,7 +1003,7 @@ describe('DatabaseMetricValues', () => {
 
         // No owner filter — all rows for the metric are returned.
         // Per-row authorization is enforced downstream by catalog.getEntitiesByRefs.
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           pagination: { limit: 10, offset: 0 },
         });
 
@@ -1049,7 +1049,7 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // Passing two owners returns only those two teams' entities.
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           status: 'error',
           entityOwner: ['team:default/platform', 'team:default/backend'],
           pagination: { limit: 10, offset: 0 },
@@ -1103,7 +1103,7 @@ describe('DatabaseMetricValues', () => {
         ]);
 
         // 'service' should match 'my-service' and 'service-api' but not 'unrelated'
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           entityName: 'service',
           pagination: { limit: 10, offset: 0 },
         });
@@ -1151,7 +1151,7 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           sortBy: 'entityName',
           sortOrder: 'asc',
           pagination: { limit: 10, offset: 0 },
@@ -1201,7 +1201,7 @@ describe('DatabaseMetricValues', () => {
           },
         ]);
 
-        const result = await db.readEntityMetricsByStatus('github.metric1', {
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
           sortBy: 'metricValue',
           sortOrder: 'desc',
           pagination: { limit: 10, offset: 0 },

@@ -156,26 +156,26 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               );
 
               return {
-                catalog_entity_ref: stringifyEntityRef(entity),
+                catalog_entity_ref: stringifyEntityRef(entity).toLowerCase(),
                 metric_id: this.providerId,
                 value,
                 timestamp: new Date(),
                 status,
-                entity_kind: entity.kind,
-                entity_namespace: entity.metadata.namespace,
-                entity_owner: normalizeOwner(entity?.spec?.owner),
+                entity_kind: normalizeField(entity.kind),
+                entity_namespace: normalizeField(entity.metadata.namespace),
+                entity_owner: normalizeField(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
               return {
-                catalog_entity_ref: stringifyEntityRef(entity),
+                catalog_entity_ref: stringifyEntityRef(entity).toLowerCase(),
                 metric_id: this.providerId,
                 value,
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),
-                entity_kind: entity.kind,
-                entity_namespace: entity.metadata.namespace,
-                entity_owner: normalizeOwner(entity?.spec?.owner),
+                entity_kind: normalizeField(entity.kind),
+                entity_namespace: normalizeField(entity.metadata.namespace),
+                entity_owner: normalizeField(entity?.spec?.owner),
               } as DbMetricValueCreate;
             }
           }),
@@ -203,11 +203,11 @@ export class PullMetricsByProviderTask implements SchedulerTask {
   }
 }
 
-function normalizeOwner(owner: unknown): string | undefined {
-  if (typeof owner !== 'string') return undefined;
-  const normalized = owner.trim().toLowerCase();
+function normalizeField(field: unknown): string | undefined {
+  if (typeof field !== 'string') return undefined;
+  const normalized = field.trim().toLowerCase();
   if (!normalized) return undefined;
 
-  // Prevent DB insertion failures (metric_values.entity_owner is VARCHAR(255))
+  // Prevent DB insertion failures (limits column length to 255 characters)
   return normalized.length <= 255 ? normalized : normalized.slice(0, 255);
 }
