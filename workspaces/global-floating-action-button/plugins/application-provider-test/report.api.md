@@ -19,11 +19,7 @@ export const CountCard: () => JSX_2.Element;
 export const CountPage: () => JSX_2.Element;
 
 // @public @deprecated (undocumented)
-export const CountProvider: ({
-  children,
-}: {
-  children?: ReactNode;
-}) => JSX_2.Element;
+export const CountProvider: (input: { children?: ReactNode }) => JSX_2.Element;
 
 // @public (undocumented)
 export const CrashProvider: () => never;
@@ -44,16 +40,12 @@ export const TestCardTwo: () => JSX_2.Element;
 export const TestPage: () => JSX_2.Element;
 
 // @public (undocumented)
-export const TestProviderOne: ({
-  children,
-}: {
+export const TestProviderOne: (input: {
   children?: ReactNode;
 }) => JSX_2.Element;
 
 // @public (undocumented)
-export const TestProviderTwo: ({
-  children,
-}: {
+export const TestProviderTwo: (input: {
   children?: ReactNode;
 }) => JSX_2.Element;
 
