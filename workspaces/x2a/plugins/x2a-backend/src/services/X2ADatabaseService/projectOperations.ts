@@ -32,6 +32,7 @@ import { ProjectsGet } from '../../schema/openapi';
 
 import { mapRowToProject } from './mappers';
 import { filterPermissions, mapSortToDatabaseColumn } from './queryHelpers';
+import { getUserRef } from '../../router/common';
 
 export class ProjectOperations {
   readonly #logger: LoggerService;
@@ -45,6 +46,7 @@ export class ProjectOperations {
   async createProject(
     input: {
       name: string;
+      ownedByGroup?: string;
       abbreviation: string;
       description: string;
       sourceRepoUrl: string;
@@ -57,7 +59,7 @@ export class ProjectOperations {
     },
   ): Promise<Project> {
     const id = crypto.randomUUID();
-    const createdBy = options.credentials.principal.userEntityRef;
+    const createdBy = input.ownedByGroup || getUserRef(options.credentials);
     const createdAt = new Date();
 
     const newProject: Project = {
@@ -96,9 +98,10 @@ export class ProjectOperations {
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canViewAll?: boolean;
+      groupsOfUser: string[];
     },
   ): Promise<{ projects: Project[]; totalCount: number }> {
-    const calledByUserRef = options.credentials.principal.userEntityRef;
+    const calledByUserRef = getUserRef(options.credentials);
     this.#logger.info(`listProjects called by ${calledByUserRef}`);
 
     const pageSize = query.pageSize || DEFAULT_PAGE_SIZE;
@@ -108,7 +111,12 @@ export class ProjectOperations {
       .offset((query.page || 0) * pageSize)
       .select('*')
       .modify(queryBuilder =>
-        filterPermissions(queryBuilder, options.canViewAll, calledByUserRef),
+        filterPermissions(
+          queryBuilder,
+          options.canViewAll,
+          calledByUserRef,
+          options.groupsOfUser,
+        ),
       )
       .orderBy(
         mapSortToDatabaseColumn(query.sort) || DEFAULT_PAGE_SORT,
@@ -118,7 +126,12 @@ export class ProjectOperations {
     const totalCount = (await this.#dbClient('projects')
       .count('*', { as: 'count' })
       .modify(queryBuilder =>
-        filterPermissions(queryBuilder, options.canViewAll, calledByUserRef),
+        filterPermissions(
+          queryBuilder,
+          options.canViewAll,
+          calledByUserRef,
+          options.groupsOfUser,
+        ),
       )
       .first()) as { count: string | number };
 
@@ -141,9 +154,11 @@ export class ProjectOperations {
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canViewAll?: boolean;
+      groupsOfUser: string[];
     },
   ): Promise<Project | undefined> {
-    const calledByUserRef = options.credentials.principal.userEntityRef;
+    const calledByUserRef = getUserRef(options.credentials);
+    const groupsOfUser = options.groupsOfUser ?? [];
     this.#logger.info(
       `getProject called for projectId: ${projectId} by ${calledByUserRef}`,
     );
@@ -151,7 +166,12 @@ export class ProjectOperations {
     const row = await this.#dbClient('projects')
       .where('id', projectId)
       .modify(queryBuilder =>
-        filterPermissions(queryBuilder, options.canViewAll, calledByUserRef),
+        filterPermissions(
+          queryBuilder,
+          options.canViewAll,
+          calledByUserRef,
+          groupsOfUser,
+        ),
       )
       .first();
     if (!row) {
@@ -165,9 +185,11 @@ export class ProjectOperations {
     options: {
       credentials: BackstageCredentials<BackstageUserPrincipal>;
       canWriteAll?: boolean;
+      groupsOfUser: string[];
     },
   ): Promise<number> {
-    const calledByUserRef = options.credentials.principal.userEntityRef;
+    const calledByUserRef = getUserRef(options.credentials);
+    const groupsOfUser = options.groupsOfUser ?? [];
     this.#logger.info(
       `deleteProject called for projectId: ${projectId} by ${calledByUserRef}`,
     );
@@ -175,7 +197,12 @@ export class ProjectOperations {
     const deletedCount = await this.#dbClient('projects')
       .where('id', projectId)
       .modify(queryBuilder =>
-        filterPermissions(queryBuilder, options.canWriteAll, calledByUserRef),
+        filterPermissions(
+          queryBuilder,
+          options.canWriteAll,
+          calledByUserRef,
+          groupsOfUser,
+        ),
       )
       .delete();
 

@@ -126,6 +126,10 @@ export const spec = {
                     "type": "string",
                     "description": "Full name of the project"
                   },
+                  "ownedByGroup": {
+                    "type": "string",
+                    "description": "Optional - group that owns the project instead of the creator (logged in user)"
+                  },
                   "description": {
                     "type": "string",
                     "description": "Description of the project"
@@ -585,9 +589,13 @@ export const spec = {
     },
     "/projects/{projectId}/collectArtifacts": {
       "post": {
-        "security": [],
+        "security": [
+          {
+            "callbackSignature": []
+          }
+        ],
         "summary": "Collects artifacts from a completed X2Ansible job",
-        "description": "Callback endpoint for X2Ansible jobs to submit execution artifacts and results.\nThis endpoint is called by the X2Ansible job runner when a migration phase completes.\n",
+        "description": "Callback endpoint for X2Ansible jobs to submit execution artifacts and results.\nThis endpoint is called by the X2Ansible job runner when a migration phase completes.\n\nAuthentication: Requires HMAC-SHA256 signature in X-Callback-Signature header.\nThe signature is computed as: HMAC-SHA256(callbackToken, raw_request_body)\n\nReplay attack prevention: Jobs are only accepted within 3 hours of job creation time (based on job.startedAt)\n",
         "parameters": [
           {
             "in": "path",
@@ -615,6 +623,15 @@ export const spec = {
             },
             "required": true,
             "description": "Migration phase that completed"
+          },
+          {
+            "in": "header",
+            "name": "X-Callback-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "HMAC-SHA256(callbackToken, raw_request_body) as hex string"
           }
         ],
         "requestBody": {
@@ -686,6 +703,9 @@ export const spec = {
           "400": {
             "description": "Invalid request data"
           },
+          "401": {
+            "description": "Invalid or missing signature"
+          },
           "404": {
             "description": "Project or job not found"
           }
@@ -694,6 +714,14 @@ export const spec = {
     }
   },
   "components": {
+    "securitySchemes": {
+      "callbackSignature": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Callback-Signature",
+        "description": "HMAC-SHA256 signature of raw request body using job-specific callback token.\nSignature is computed as: HMAC-SHA256(callbackToken, raw_request_body)\nand sent as a hex-encoded string.\n\nReplay attack prevention: Requests are only accepted within 3 hours of job creation time.\n"
+      }
+    },
     "schemas": {
       "Project": {
         "type": "object",
@@ -956,7 +984,8 @@ export const spec = {
           "migration_plan",
           "module_migration_plan",
           "migrated_sources",
-          "project_metadata"
+          "project_metadata",
+          "ansible_project"
         ]
       },
       "Artifact": {

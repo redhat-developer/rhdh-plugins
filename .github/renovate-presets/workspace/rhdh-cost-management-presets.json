@@ -1,0 +1,28 @@
+{
+  "packageRules": [
+    {
+      "description": "all Cost Management minor updates",
+      "matchFileNames": ["workspaces/cost-management/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Cost Management)"
+      ],
+      "addLabels": ["team/cost-management", "cost-management"]
+    },
+    {
+      "description": "all Cost Management patch updates",
+      "matchFileNames": ["workspaces/cost-management/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Cost Management)"
+      ],
+      "addLabels": ["team/cost-management", "cost-management"]
+    },
+    {
+      "description": "all Cost Management dev dependency updates",
+      "matchFileNames": ["workspaces/cost-management/**"],
+      "extends": [
+        "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Cost Management)"
+      ],
+      "addLabels": ["team/cost-management", "cost-management"]
+    }
+  ]
+}

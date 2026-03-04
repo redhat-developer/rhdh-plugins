@@ -25,20 +25,31 @@ import {
   createMockRouterDeps,
   MockRouterDeps,
 } from './__testUtils__/routerTestHelpers';
+import { SignatureValidator } from './utils/SignatureValidator';
 
 describe('collectArtifacts routes', () => {
   let app: express.Express;
   let mockDeps: MockRouterDeps;
+  let signatureValidator: SignatureValidator;
 
   const projectId = randomUUID();
   const jobId = randomUUID();
   const moduleId = randomUUID();
   const k8sJobName = 'test-k8s-job-123';
+  const callbackToken = randomUUID();
+
+  // Helper to sign request body
+  function signRequestBody(body: object, secret: string): string {
+    const bodyJson = JSON.stringify(body);
+    const bodyBuffer = Buffer.from(bodyJson, 'utf-8');
+    return signatureValidator.generateSignature(secret, bodyBuffer);
+  }
 
   beforeEach(() => {
     mockDeps = createMockRouterDeps();
+    signatureValidator = new SignatureValidator();
     app = express();
-    app.use(express.json());
+    // Don't use express.json() - the route uses express.raw() instead
     const router = express.Router();
     registerCollectArtifactsRoutes(router, mockDeps as any);
     app.use(router);
@@ -94,9 +105,13 @@ describe('collectArtifacts routes', () => {
     });
 
     it('should return error when status is Error but errorDetails is missing', async () => {
+      const requestBody = { status: 'error', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'error', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('errorDetails field is required');
@@ -105,16 +120,20 @@ describe('collectArtifacts routes', () => {
     it('should return error when job does not exist', async () => {
       mockDeps.x2aDatabase.getJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(404);
       expect(res.text).toContain('not found');
     });
 
     it('should return error when job belongs to different project', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId: randomUUID(),
         moduleId: undefined,
@@ -122,19 +141,24 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
 
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(404);
       expect(res.text).toContain('does not belong to project');
     });
 
     it('should return error when job phase does not match request phase', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -142,21 +166,26 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
 
       const res = await request(app)
         .post(
           `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
         )
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('phase mismatch');
     });
 
     it('should return error when job moduleId does not match request moduleId', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: randomUUID(),
@@ -164,14 +193,19 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
 
       const res = await request(app)
         .post(
           `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
         )
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(400);
       expect(res.text).toContain('moduleId mismatch');
@@ -188,7 +222,7 @@ describe('collectArtifacts routes', () => {
         },
       ];
 
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -196,6 +230,7 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       const logs = 'Init job logs from kubernetes';
@@ -204,9 +239,13 @@ describe('collectArtifacts routes', () => {
       mockDeps.kubeService.getJobLogs.mockResolvedValue(logs);
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -228,7 +267,7 @@ describe('collectArtifacts routes', () => {
     });
 
     it('should collect artifacts for init job with Error status', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -236,6 +275,7 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       const logs = 'Error logs from kubernetes';
@@ -244,14 +284,18 @@ describe('collectArtifacts routes', () => {
       mockDeps.kubeService.getJobLogs.mockResolvedValue(logs);
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = {
+        status: 'error',
+        errorDetails: 'Failed to initialize project',
+        jobId,
+        artifacts: [],
+      };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({
-          status: 'error',
-          errorDetails: 'Failed to initialize project',
-          jobId,
-          artifacts: [],
-        });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -276,7 +320,7 @@ describe('collectArtifacts routes', () => {
         },
       ];
 
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId,
@@ -284,17 +328,22 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
       mockDeps.kubeService.getJobLogs.mockResolvedValue('Analyze logs');
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(
           `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
         )
-        .send({ status: 'success', jobId, artifacts });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -304,7 +353,7 @@ describe('collectArtifacts routes', () => {
     });
 
     it('should handle omitted artifacts field', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -312,15 +361,20 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
       mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.updateJob).toHaveBeenCalledWith(
@@ -331,7 +385,7 @@ describe('collectArtifacts routes', () => {
     });
 
     it('should handle empty artifacts correctly', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -339,15 +393,20 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
       mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.updateJob).toHaveBeenCalledWith(
@@ -382,7 +441,7 @@ describe('collectArtifacts routes', () => {
         },
       ];
 
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -390,6 +449,7 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
@@ -398,9 +458,13 @@ describe('collectArtifacts routes', () => {
       mockDeps.x2aDatabase.listModules.mockResolvedValue([]);
       mockDeps.x2aDatabase.createModule.mockResolvedValue({ id: randomUUID() });
 
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledTimes(2);
@@ -444,7 +508,7 @@ describe('collectArtifacts routes', () => {
         },
       ];
 
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -452,6 +516,7 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
@@ -461,9 +526,13 @@ describe('collectArtifacts routes', () => {
       mockDeps.x2aDatabase.createModule.mockResolvedValue({ id: randomUUID() });
       mockDeps.x2aDatabase.deleteModule.mockResolvedValue(1);
 
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.createModule).toHaveBeenCalledTimes(1);
@@ -487,7 +556,7 @@ describe('collectArtifacts routes', () => {
         },
       ];
 
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -495,15 +564,20 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
       mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
@@ -519,7 +593,7 @@ describe('collectArtifacts routes', () => {
         },
       ];
 
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -527,20 +601,25 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
       mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = {
+        status: 'error',
+        errorDetails: 'Init failed',
+        jobId,
+        artifacts,
+      };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({
-          status: 'error',
-          errorDetails: 'Init failed',
-          jobId,
-          artifacts,
-        });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
@@ -556,7 +635,7 @@ describe('collectArtifacts routes', () => {
         },
       ];
 
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId,
@@ -564,17 +643,22 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
       mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(
           `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
         )
-        .send({ status: 'success', jobId, artifacts });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(mockDeps.x2aDatabase.listModules).not.toHaveBeenCalled();
@@ -584,7 +668,7 @@ describe('collectArtifacts routes', () => {
 
   describe('graceful failure', () => {
     it('should continue when k8s log retrieval fails', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -592,6 +676,7 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
@@ -600,9 +685,13 @@ describe('collectArtifacts routes', () => {
       );
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -617,7 +706,7 @@ describe('collectArtifacts routes', () => {
     });
 
     it('should skip log fetch when k8sJobName is null', async () => {
-      const job: Job = {
+      const job: Job & { callbackToken?: string } = {
         id: jobId,
         projectId,
         moduleId: undefined,
@@ -625,14 +714,19 @@ describe('collectArtifacts routes', () => {
         status: 'running',
         startedAt: new Date(),
         k8sJobName: null as any,
+        callbackToken,
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
       mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
 
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -647,6 +741,183 @@ describe('collectArtifacts routes', () => {
     });
 
     it('should throw if database update fails', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockRejectedValue(
+        new Error('Database error'),
+      );
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(500);
+    });
+  });
+
+  describe('signature validation', () => {
+    it('should return 401 when X-Callback-Signature header is missing', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should return 401 when signature is invalid', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const invalidSignature = 'invalid-signature-12345';
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', invalidSignature)
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should return 200 when signature is valid', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const validSignature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', validSignature)
+        .send(requestBody);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        message: 'Artifacts collected successfully',
+      });
+    });
+
+    it('should return 401 when signature is empty string', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', '')
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should return 401 when request body is tampered after signing', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const timestamp = new Date().toISOString();
+      const originalBody = {
+        status: 'success',
+        jobId,
+        artifacts: [],
+        timestamp,
+      };
+      const tamperedBody = {
+        status: 'success',
+        jobId,
+        artifacts: [
+          { id: randomUUID(), type: 'migration_plan', value: 'malicious' },
+        ],
+        timestamp,
+      };
+
+      const signature = signRequestBody(originalBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(tamperedBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should return 401 when job does not have callback token', async () => {
       const job: Job = {
         id: jobId,
         projectId,
@@ -658,16 +929,97 @@ describe('collectArtifacts routes', () => {
       };
 
       mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
-      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
-      mockDeps.x2aDatabase.updateJob.mockRejectedValue(
-        new Error('Database error'),
-      );
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, 'some-token');
 
       const res = await request(app)
         .post(`/projects/${projectId}/collectArtifacts?phase=init`)
-        .send({ status: 'success', jobId, artifacts: [] });
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should return 401 when job is older than max age window (replay attack)', async () => {
+      const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: fourHoursAgo,
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should return 401 when job has no startedAt (replay attack)', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: undefined as any,
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).toContain('Authentication failed');
+    });
+
+    it('should not leak callback token in error messages', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const invalidSignature = 'wrong-signature';
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', invalidSignature)
+        .send(requestBody);
+
+      expect(res.status).toBe(401);
+      expect(res.text).not.toContain(callbackToken);
+      expect(res.text).toContain('Authentication failed');
     });
   });
 });

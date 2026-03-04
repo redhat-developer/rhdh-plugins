@@ -42,7 +42,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'project.description': 'Descrizione',
     'project.id': 'ID',
     'project.abbreviation': 'Abbreviazione',
-    'project.createdBy': 'Creato da',
+    'project.createdBy': 'Proprietario',
     'project.statuses.none': '-',
     'project.statuses.created': 'Creato',
     'project.statuses.initializing': 'In inizializzazione',
@@ -50,7 +50,15 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'project.statuses.inProgress': 'In corso',
     'project.statuses.completed': 'Completato',
     'project.statuses.failed': 'Fallito',
+    'project.noModules': 'Nessun modulo trovato finora...',
     'common.newProject': 'Nuovo progetto',
+    'emptyPage.noConversionInitiatedYet': 'Nessuna conversione avviata ancora',
+    'emptyPage.noConversionInitiatedYetDescription':
+      'Avvia e monitora la conversione di file Chef in playbook Ansible pronti per la produzione',
+    'emptyPage.startFirstConversion': 'Avvia prima conversione',
+    'emptyPage.notAllowedTitle': 'Accesso negato',
+    'emptyPage.notAllowedDescription':
+      'Non sei autorizzato ad accedere ai progetti di conversione.',
     'wizard.cancel': 'Annulla',
     'wizard.back': 'Indietro',
     'wizard.next': 'Avanti',
@@ -86,6 +94,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.statuses.error': 'Errore',
     'artifact.types.migrated_sources': 'Sorgenti migrate',
     'artifact.types.project_metadata': 'Metadati del progetto',
+    'artifact.types.ansible_project': 'Progetto Ansible',
     'modulePage.title': 'Dettagli del modulo',
     'modulePage.artifacts.title': 'Artefatti',
     'modulePage.artifacts.migration_plan':
@@ -93,14 +102,21 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan':
       'Piano del modulo per analisi',
     'modulePage.artifacts.migrated_sources': 'Sorgenti migrate',
+    'modulePage.artifacts.ansible_project': 'Progetto Ansible',
     'modulePage.artifacts.description':
       'Questi artefatti sono generati dal processo di conversione e sono disponibili per la revisione.',
+    'modulePage.phases.title': 'Fasi di migrazione',
     'modulePage.phases.id': 'ID',
     'modulePage.phases.duration': 'Durata',
     'modulePage.phases.k8sJobName': 'Nome del job Kubernetes',
     'modulePage.phases.startedAt': 'Avviato il',
     'modulePage.phases.status': 'Stato',
     'modulePage.phases.errorDetails': "Dettagli dell'errore",
+    'modulePage.phases.statuses.notStarted': 'Non avviato',
+    'modulePage.phases.statuses.pending': 'In attesa',
+    'modulePage.phases.statuses.running': 'In esecuzione',
+    'modulePage.phases.statuses.success': 'Successo',
+    'modulePage.phases.statuses.error': 'Errore',
     'modulePage.phases.reanalyzeInstructions':
       "Il piano di migrazione del modulo è già presente. Se il piano di migrazione complessivo del progetto è stato aggiornato, riavvia l'analisi per riflettere le modifiche.",
     'modulePage.phases.rerunAnalyze':

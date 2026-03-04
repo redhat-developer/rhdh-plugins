@@ -26,6 +26,7 @@ import {
 } from '@backstage/test-utils';
 import { ProjectList } from './ProjectList';
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
+import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
@@ -64,6 +65,10 @@ const createMockResponse = (
   items,
   totalCount,
 });
+
+const mockPermissionApi = {
+  authorize: jest.fn().mockResolvedValue({ result: 'ALLOW' }),
+};
 
 describe('ProjectList', () => {
   let fetchApiMock: jest.Mock;
@@ -110,6 +115,7 @@ describe('ProjectList', () => {
           apis={[
             [fetchApiRef, { fetch: fetchApiMock }],
             [discoveryApiRef, discoveryApiMock],
+            [permissionApiRef, mockPermissionApi],
           ]}
         >
           <ProjectList />
