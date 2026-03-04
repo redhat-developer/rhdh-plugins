@@ -18,24 +18,24 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsTestTranslationRef } from './ref';
 
 /**
- * de translation for plugin.translations-test.
+ * es translation for plugin.translations-test.
  * @public
  */
-const quickstartTranslationDe = createTranslationMessages({
+const quickstartTranslationEs = createTranslationMessages({
   ref: translationsTestTranslationRef,
   messages: {
-    'page.title': 'Übersetzungstest-Plugin',
+    'page.title': 'Complemento de prueba de traducciones',
     'page.subtitle':
-      'Ein Plugin zum Testen der Übersetzungsfunktionalität und der i18next-Funktionen',
-    'essentials.key': 'Wert des Schlüssels',
-    'essentials.look.deep': 'Wert der detaillierten Analyse',
-    'interpolation.key': '{{what}} ist {{how}}',
-    'formatting.intlNumber': 'Einige {{val, number}}',
-    'context.friend': 'Ein Freund',
-    'context.friend_male': 'Ein fester Freund',
-    'context.friend_female': 'Eine feste Freundin',
-    'objects.tree.res': 'hat {{something}} hinzugefügt',
+      'Un complemento para probar las funcionalidades de traducción y de i18next',
+    'essentials.key': 'valor de la clave',
+    'essentials.look.deep': 'valor de explorar en profundidad',
+    'interpolation.key': '{{what}} es {{how}}',
+    'formatting.intlNumber': 'Algunos {{val, number}}',
+    'context.friend': 'Un amigo',
+    'context.friend_male': 'Un novio',
+    'context.friend_female': 'Una novia',
+    'objects.tree.res': 'agregó {{something}}',
   },
 });
 
-export default quickstartTranslationDe;
+export default quickstartTranslationEs;
