@@ -9,7 +9,9 @@
       "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-github",
       "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira",
       "@red-hat-developer-hub/backstage-plugin-scorecard-common",
-      "@red-hat-developer-hub/backstage-plugin-scorecard-node"
+      "@red-hat-developer-hub/backstage-plugin-scorecard-node",
+      "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot",
+      "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf"
     ]
   ],
   "linked": [],
