@@ -156,6 +156,184 @@ describe('PullMetricsByProviderTask', () => {
     });
   });
 
+  describe('isMetricIdExcluded', () => {
+    const providerId = 'openssf.maintained';
+
+    function createTaskWithScorecardConfig(
+      scorecardOverrides: {
+        include_metrics?: string[];
+        exclude_metrics?: string[];
+      } = {},
+    ) {
+      const config = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            schedule: scheduleConfig,
+            ...scorecardOverrides,
+          },
+        },
+      });
+      return new PullMetricsByProviderTask(
+        {
+          scheduler: mockScheduler,
+          logger: mockLogger,
+          database: mockDatabaseMetricValues,
+          config,
+          catalog: mockCatalog,
+          auth: mockAuth,
+          thresholdEvaluator: mockThresholdEvaluator,
+        },
+        mockProvider,
+      );
+    }
+
+    function createEntity(annotationValue?: string) {
+      return {
+        apiVersion: '1.0.0' as const,
+        kind: 'Component' as const,
+        metadata: {
+          name: 'test-entity',
+          ...(annotationValue !== undefined && {
+            annotations: {
+              'scorecard.io/exclude_metrics': annotationValue,
+            },
+          }),
+        },
+      };
+    }
+
+    it('returns true when metric is in app-config exclude_metrics', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        exclude_metrics: [providerId],
+      });
+      const entity = createEntity();
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Excluded metric by app-config: ${providerId}`,
+      );
+    });
+
+    it('returns true when metric is in app-config exclude_metrics even if also in include_metrics (exclude wins)', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        include_metrics: [providerId],
+        exclude_metrics: [providerId],
+      });
+      const entity = createEntity();
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Excluded metric by app-config: ${providerId}`,
+      );
+    });
+
+    it('returns false when excluded by annotation but included by app-config (include overrides annotation)', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        include_metrics: [providerId],
+      });
+      const entity = createEntity(providerId);
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Exclusion override: metric excluded by annotation but INCLUDED by app-config: ${providerId}`,
+      );
+    });
+
+    it('returns true when excluded by annotation and not in app-config include_metrics', () => {
+      const taskWithConfig = createTaskWithScorecardConfig();
+      const entity = createEntity(providerId);
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Excluded metric by annotation: ${providerId}`,
+      );
+    });
+
+    it('returns true when excluded by annotation and app-config include_metrics exists but does not contain this metric', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        include_metrics: ['other_metric'],
+      });
+      const entity = createEntity(providerId);
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Excluded metric by annotation: ${providerId}`,
+      );
+    });
+
+    it('parses comma-separated annotation and excludes when providerId is in the list', () => {
+      const taskWithConfig = createTaskWithScorecardConfig();
+      const entity = createEntity('github.test_metric,openssf.maintained');
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Excluded metric by annotation: ${providerId}`,
+      );
+    });
+
+    it('returns false when not excluded by app-config or annotation', () => {
+      const taskWithConfig = createTaskWithScorecardConfig();
+      const entity = createEntity();
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('returns false when no config and no annotation', () => {
+      const taskWithConfig = createTaskWithScorecardConfig();
+      const entity = createEntity();
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(false);
+    });
+  });
+
   describe('getScheduleFromConfig', () => {
     it('should return the default schedule if not configured', () => {
       const config = (task as any).getScheduleFromConfig(
@@ -293,18 +471,18 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       expect(mockLogger.info).toHaveBeenNthCalledWith(
-        4,
+        2,
         `Completed metric pull for github.test_metric: processed 2 entities`,
       );
     });
 
-    it('should skip entities when exclude/metrics annotation contains the provider id', async () => {
+    it('should skip entities when scorecard.io/exclude_metrics annotation contains the provider id', async () => {
       const entityExcluded = {
         apiVersion: '1.0.0',
         kind: 'Component',
         metadata: {
           name: 'excluded-entity',
-          annotations: { 'exclude/metrics': 'github.test_metric' },
+          annotations: { 'scorecard.io/exclude_metrics': 'github.test_metric' },
         },
       };
       const entityIncluded = {

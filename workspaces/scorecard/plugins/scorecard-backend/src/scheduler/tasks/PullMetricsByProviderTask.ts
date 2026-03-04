@@ -113,6 +113,81 @@ export class PullMetricsByProviderTask implements SchedulerTask {
       : PullMetricsByProviderTask.DEFAULT_SCHEDULE;
   }
 
+  /**
+   * Check if the metric is excluded by the app-config or the entity annotation
+   * 1. It loads include/exclude metrics from app-config.yaml and exclude metric from the entity annotation.
+   * 2. Include metric from app-config overrides the exclude metric from the entity annotation.
+   * 3. Exclude metric from app-config wins over include metric from app-config.
+   * @param providerId - The ID of the provider
+   * @param entity - The entity to check
+   * @param logger - The logger to use
+   * @returns true if the metric is excluded, false otherwise
+   */
+  private isMetricIdExcluded(
+    providerId: string,
+    entity: Entity,
+    logger: LoggerService,
+  ): boolean {
+    const excludedMetricsFromAppConfig = this.config.getOptionalStringArray(
+      'scorecard.exclude_metrics',
+    );
+    logger.debug(
+      `Loaded scorecard.exclude_metrics from app-config: ${JSON.stringify(
+        excludedMetricsFromAppConfig,
+      )}`,
+    );
+
+    const isExcludedByAppConfig =
+      excludedMetricsFromAppConfig?.includes(providerId) ?? false;
+
+    // if the metric is excluded by app-config, automatically returns true
+    if (isExcludedByAppConfig) {
+      logger.info(`Excluded metric by app-config: ${providerId}`);
+      return true;
+    }
+
+    const includedMetricsFromAppConfig = this.config.getOptionalStringArray(
+      'scorecard.include_metrics',
+    );
+    logger.debug(
+      `Loaded scorecard.include_metrics from app-config: ${JSON.stringify(
+        includedMetricsFromAppConfig,
+      )}`,
+    );
+
+    const excludedMetricsFromComponentAnnotation =
+      entity.metadata.annotations?.['scorecard.io/exclude_metrics']
+        ?.split(',')
+        .map((s: string) => s.trim());
+    logger.debug(
+      `Loaded scorecard.io/exclude_metrics annotation: ${JSON.stringify(
+        excludedMetricsFromComponentAnnotation,
+      )}`,
+    );
+
+    const isIncludedByAppConfig =
+      includedMetricsFromAppConfig?.includes(providerId) ?? false;
+    const isExcludedByAnnotation =
+      excludedMetricsFromComponentAnnotation?.includes(providerId) ?? false;
+
+    // if the metric is excluded by annotation but is included by app-config, returns false
+    if (isExcludedByAnnotation && isIncludedByAppConfig) {
+      logger.info(
+        `Exclusion override: metric excluded by annotation but INCLUDED by app-config: ${providerId}`,
+      );
+      return false;
+    }
+
+    // if the metric is excluded by annotation, returns true
+    if (isExcludedByAnnotation && !isIncludedByAppConfig) {
+      logger.info(`Excluded metric by annotation: ${providerId}`);
+      return true;
+    }
+
+    // if the metric is not excluded by app-config or annotation, returns false
+    return false;
+  }
+
   private async pullProviderMetrics(
     provider: MetricProvider,
     logger: LoggerService,
@@ -142,20 +217,16 @@ export class PullMetricsByProviderTask implements SchedulerTask {
             let value: MetricValue | undefined;
 
             try {
-              const excludedMetrics =
-                entity.metadata.annotations?.['exclude/metrics'];
-              logger.info(
-                `Loaded excluded/metrics annotation: ${excludedMetrics}`,
-              );
-              if (excludedMetrics) {
-                const excludedMetricsList = excludedMetrics
-                  .split(',')
-                  .map(s => s.trim());
-                if (excludedMetricsList.includes(provider.getProviderId())) {
-                  logger.info(`Excluded metric: ${provider.getProviderId()}`);
-                  return undefined;
-                }
+              if (
+                this.isMetricIdExcluded(
+                  provider.getProviderId(),
+                  entity,
+                  logger,
+                )
+              ) {
+                return undefined;
               }
+
               value = await provider.calculateMetric(entity);
 
               const thresholds = mergeEntityAndProviderThresholds(
