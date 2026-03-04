@@ -388,7 +388,7 @@ export class KubeService {
   }
 
   /**
-   * Gets logs from a job's pod
+   * Gets logs from a job's pod.
    */
   async getJobLogs(
     k8sJobName: string,
@@ -427,8 +427,9 @@ export class KubeService {
 
       return logs;
     } catch (error: any) {
-      this.#logger.error(`Failed to get job logs: ${error.message}`);
-      throw error;
+      // Might happen, i.e. the pod is in ContainerCreating state
+      this.#logger.warn(`Failed to get job logs: ${error.message}`);
+      return '';
     }
   }
 

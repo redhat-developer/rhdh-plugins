@@ -252,6 +252,9 @@ export class JobOperations {
         if (moduleId) {
           queryBuilder.where('module_id', moduleId);
         }
+        if (phase === 'init') {
+          queryBuilder.whereNull('module_id');
+        }
       })
       .modify(queryBuilder => {
         if (phase) {

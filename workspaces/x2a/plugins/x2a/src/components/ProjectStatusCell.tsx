@@ -20,7 +20,7 @@ import { PieChart, PieValueType } from '@mui/x-charts';
 import { Grid, makeStyles, Tooltip, Chip } from '@material-ui/core';
 import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
 
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation } from '../hooks/useTranslation';
 
 const size = 25;
 

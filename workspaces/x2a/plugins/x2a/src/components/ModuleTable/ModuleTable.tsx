@@ -31,26 +31,13 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
-import { Artifacts } from './Artifacts';
+import { Artifacts } from '../Artifacts';
 import { useRepoAuthentication } from '../../repoAuth';
-import { CurrentPhaseCell } from './CurrentPhaseCell';
-import { ModuleStatusCell } from './ModuleStatusCell';
+import { CurrentPhaseCell } from '../CurrentPhaseCell';
+import { ModuleStatusCell } from '../ModuleStatusCell';
 import { TimingCell } from './TimingCell';
 import { moduleRouteRef } from '../../routes';
-
-const getLastJob = (rowData: Module) => {
-  const phases: ('publish' | 'migrate' | 'analyze')[] = [
-    'publish',
-    'migrate',
-    'analyze',
-  ];
-  for (const phase of phases) {
-    if (rowData[phase]?.phase) {
-      return rowData[phase];
-    }
-  }
-  return undefined;
-};
+import { getLastJob } from '../tools';
 
 export const getNextPhase = (module: Module): ModulePhase | undefined => {
   const lastJob = getLastJob(module);

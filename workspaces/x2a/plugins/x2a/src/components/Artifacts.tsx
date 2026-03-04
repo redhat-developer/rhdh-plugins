@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { Fragment } from 'react';
 import { Link } from '@backstage/core-components';
 import { makeStyles } from '@material-ui/core';
 import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { useTranslation } from '../../hooks/useTranslation';
-import { buildArtifactUrl, humanizeArtifactType } from '../tools';
+import { useTranslation } from '../hooks/useTranslation';
+import { buildArtifactUrl, humanizeArtifactType } from './tools';
 
 const styles = makeStyles({
   artifact: {
@@ -33,7 +34,6 @@ export const ArtifactLink = ({
   targetRepoBranch,
 }: {
   artifact: Artifact;
-  // TODO: the targetRepoUrl is probably not needed, the artifact.value should contain full URL
   targetRepoUrl: string;
   targetRepoBranch: string;
 }) => {
@@ -65,14 +65,14 @@ export const Artifacts = ({
   return (
     <div>
       {artifacts.map(artifact => (
-        <span key={artifact.id}>
+        <Fragment key={artifact.id}>
           <ArtifactLink
             artifact={artifact}
             targetRepoUrl={targetRepoUrl}
             targetRepoBranch={targetRepoBranch}
           />
           <br />
-        </span>
+        </Fragment>
       ))}
     </div>
   );

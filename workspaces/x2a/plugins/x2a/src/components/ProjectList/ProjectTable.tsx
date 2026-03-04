@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import {
   Table,
   TableColumn,
   ResponseErrorPanel,
   LinkButton,
+  Link,
 } from '@backstage/core-components';
 
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -32,10 +33,12 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Repository } from './Repository';
+import { Repository } from '../Repository';
 import { OrderDirection } from './types';
 import { DetailPanel } from './DetailPanel';
-import { ProjectStatusCell } from './ProjectStatusCell';
+import { ProjectStatusCell } from '../ProjectStatusCell';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import { projectRouteRef } from '../../routes';
 
 type ProjectTableProps = {
   forceRefresh: () => void;
@@ -84,20 +87,39 @@ const useColumns = (
   orderDirection: OrderDirection,
 ): TableColumn<Project>[] => {
   const { t } = useTranslation();
+  const projectPath = useRouteRef(projectRouteRef);
 
-  return useMemo(() => {
-    const getDefaultSort = (index: number): OrderDirection => {
+  const nameCell = useCallback(
+    (rowData: Project) => {
+      return (
+        <Link
+          to={projectPath({
+            projectId: rowData.id,
+          })}
+        >
+          {rowData.name}
+        </Link>
+      );
+    },
+    [projectPath],
+  );
+
+  const getDefaultSort = useCallback(
+    (index: number): OrderDirection => {
       if (index === orderBy) {
         return orderDirection;
       }
       return undefined;
-    };
+    },
+    [orderBy, orderDirection],
+  );
 
+  return useMemo(() => {
     // Important: Keep the order in sync with the mapOrderByToSort() function.
     const columns: TableColumn<Project>[] = [
       {
         title: t('table.columns.name'),
-        field: 'name',
+        render: nameCell,
         defaultSort: getDefaultSort(0),
       },
       {
@@ -139,8 +161,9 @@ const useColumns = (
         defaultSort: getDefaultSort(4),
       },
     ];
+
     return columns;
-  }, [orderBy, orderDirection, t]);
+  }, [t, getDefaultSort, nameCell]);
 };
 
 export const ProjectTable = ({
@@ -218,7 +241,7 @@ export const ProjectTable = ({
       <Grid item>
         <Table<Project>
           title={t('table.projectsCount' as any, {
-            count: projects.length.toString(),
+            count: totalCount.toString(),
           })}
           options={{
             search: false,

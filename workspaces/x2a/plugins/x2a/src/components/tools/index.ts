@@ -17,3 +17,4 @@ export * from './buildArtifactUrl';
 export * from './formatRelativeTime';
 export * from './humanizeArtifactType';
 export * from './humanizeDate';
+export * from './getLastJob';

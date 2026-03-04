@@ -22,8 +22,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
-import { ArtifactLink } from '../ModuleTable/Artifacts';
 import { ItemField } from '../ItemField';
+import { ArtifactLink } from '../Artifacts';
 
 const useStyles = makeStyles(() => ({
   detailPanel: {

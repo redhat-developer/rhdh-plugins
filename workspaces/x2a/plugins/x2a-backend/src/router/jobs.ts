@@ -34,12 +34,87 @@ export function registerJobRoutes(
     catalog,
   } = deps;
 
-  // TODO: Add /projects/:projectId/log
+  // Log for the init-phase
+  router.get('/projects/:projectId/log', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId/log';
+    const { projectId } = req.params;
+    const rawStreaming = req.query.streaming as string | boolean | undefined;
+    const streaming = rawStreaming === 'true' || rawStreaming === true;
 
+    logger.info(
+      `${endpoint} request: projectId=${projectId}, streaming=${streaming}`,
+    );
+
+    // Enforce project permissions
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
+      httpAuth,
+      permissionsSvc,
+      catalog,
+    });
+
+    // Get latest init job
+    const jobs = await x2aDatabase.listJobs({
+      projectId,
+      phase: 'init',
+      lastJobOnly: true,
+    });
+
+    if (jobs.length === 0) {
+      throw new NotFoundError(
+        `No init job found for the project projectId=${projectId}`,
+      );
+    }
+
+    const latestJob = jobs[0]; // Already sorted by started_at DESC in listJobs
+
+    // If job is finished, return logs from database
+    if (latestJob.status === 'success' || latestJob.status === 'error') {
+      logger.info(
+        `Job ${latestJob.id} is finished (status: ${latestJob.status}), returning logs from database`,
+      );
+      res.setHeader('Content-Type', 'text/plain');
+      const log = await x2aDatabase.getJobLogs({ jobId: latestJob.id });
+      if (!log) {
+        logger.error(`Log not found for a finished job ${latestJob.id}`);
+      }
+      res.send(log || '');
+      return;
+    }
+
+    // Check if job has k8sJobName
+    if (!latestJob.k8sJobName) {
+      logger.warn(
+        `Job ${latestJob.id} has no k8sJobName, returning empty logs`,
+      );
+      res.setHeader('Content-Type', 'text/plain');
+      res.send('');
+      return;
+    }
+
+    // Get logs from Kubernetes
+    const logs = await kubeService.getJobLogs(latestJob.k8sJobName, streaming);
+
+    // Set content type
+    res.setHeader('Content-Type', 'text/plain');
+
+    // Handle streaming vs non-streaming
+    if (streaming && typeof logs !== 'string') {
+      logs.pipe(res);
+    } else {
+      res.send(logs as string);
+    }
+  });
+
+  // Logs for the module-specific phases
   router.get('/projects/:projectId/modules/:moduleId/log', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules/:moduleId/log';
     const { projectId, moduleId } = req.params;
-    const streaming = req.query.streaming === 'true';
+    const rawStreaming = req.query.streaming as string | boolean | undefined;
+    const streaming = rawStreaming === 'true' || rawStreaming === true;
     const phase = req.query.phase as ModulePhase;
 
     // Validate phase parameter (required)
