@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.1.1
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.1.1
+
 ## 7.1.0
 
 ### Minor Changes
