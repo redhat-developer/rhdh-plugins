@@ -18,181 +18,104 @@ import { ConfigReader } from '@backstage/config';
 import { DefaultGithubCredentialsProvider } from '@backstage/integration';
 import { DependabotClient } from './DependabotClient';
 
+const mockPaginate = jest.fn();
+
 jest
   .spyOn(DefaultGithubCredentialsProvider.prototype, 'getCredentials')
   .mockResolvedValue({
     type: 'token',
-    headers: { Authorization: 'Bearer dummy-token' },
     token: 'dummy-token',
   });
 
+jest.mock('@octokit/rest', () => ({
+  Octokit: jest.fn().mockImplementation(() => ({ paginate: mockPaginate })),
+}));
+
 describe('DependabotClient', () => {
-  const mockConfig = new ConfigReader({
+  const config = new ConfigReader({
     integrations: {
-      github: [{ host: 'github.com', token: 'dummy-token' }],
+      github: [
+        {
+          host: 'github.com',
+          token: 'dummy-token',
+          apiBaseUrl: 'https://api.github.com',
+        },
+      ],
     },
   });
-  const mockLogger = {
+  const logger = {
     child: jest.fn().mockReturnThis(),
     info: jest.fn(),
     warn: jest.fn(),
     debug: jest.fn(),
     error: jest.fn(),
   } as any;
-  const repository = { owner: 'owner', repo: 'repo' };
+  const repo = { owner: 'owner', repo: 'repo' };
   const url = 'https://github.com/owner/repo';
 
   let client: DependabotClient;
-  let fetchMock: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    client = new DependabotClient(mockConfig, mockLogger);
-    fetchMock = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      headers: new Headers(),
-      json: () => Promise.resolve([]),
-      text: () => Promise.resolve(''),
-    } as Response);
+    client = new DependabotClient(config, logger);
+    mockPaginate.mockResolvedValue([]);
   });
 
-  it('constructs with config and logger', () => {
-    expect(client).toBeDefined();
-    expect(mockLogger.child).toHaveBeenCalledWith({
-      component: 'DependabotClient',
-    });
-  });
-
-  describe('getCriticalAlerts', () => {
-    it('fetches alerts with severity=critical and returns them', async () => {
-      const alerts = [
-        {
-          number: 1,
-          state: 'open',
-          created_at: '2024-01-01',
-          security_advisory: { severity: 'critical' },
-        },
-      ];
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers(),
-        json: () => Promise.resolve(alerts),
-        text: () => Promise.resolve(''),
-      } as Response);
-
-      const result = await client.getCriticalAlerts(url, repository);
-
-      expect(result).toEqual(alerts);
-      expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('/repos/owner/repo/dependabot/alerts'),
-        expect.any(Object),
-      );
-      expect(fetchMock.mock.calls[0][0]).toContain('severity=critical');
-      expect(fetchMock.mock.calls[0][0]).toContain('state=open');
-      expect(fetchMock.mock.calls[0][0]).toContain('per_page=100');
-    });
-
-    it('paginates using Link header until all alerts are fetched', async () => {
-      const page1 = Array.from({ length: 100 }, (_, i) => ({
-        number: i + 1,
+  it('delegates to Octokit paginate with correct params', async () => {
+    const alerts = [
+      {
+        number: 1,
         state: 'open',
         created_at: '2024-01-01',
         security_advisory: { severity: 'critical' },
-      }));
-      const page2 = [
-        {
-          number: 101,
-          state: 'open',
-          created_at: '2024-01-01',
-          security_advisory: { severity: 'critical' },
-        },
-      ];
-      const nextPageUrl =
-        'https://api.github.com/repos/owner/repo/dependabot/alerts?state=open&severity=critical&per_page=100&after=cursor123';
-      const linkHeader = `<${nextPageUrl}>; rel="next"`;
+      },
+    ];
+    mockPaginate.mockResolvedValueOnce(alerts);
 
-      fetchMock
-        .mockResolvedValueOnce({
-          ok: true,
-          headers: new Headers({ link: linkHeader }),
-          json: () => Promise.resolve(page1),
-          text: () => Promise.resolve(''),
-        } as Response)
-        .mockResolvedValueOnce({
-          ok: true,
-          headers: new Headers(),
-          json: () => Promise.resolve(page2),
-          text: () => Promise.resolve(''),
-        } as Response);
+    const result = await client.getAlerts(url, repo, 'critical');
 
-      const result = await client.getCriticalAlerts(url, repository);
-
-      expect(result).toHaveLength(101);
-      expect(fetchMock).toHaveBeenCalledTimes(2);
-      expect(fetchMock.mock.calls[0][0]).toContain('per_page=100');
-      expect(fetchMock.mock.calls[1][0]).toBe(nextPageUrl);
+    expect(result).toEqual(alerts);
+    const { Octokit } = jest.requireMock('@octokit/rest');
+    expect(Octokit).toHaveBeenCalledWith({
+      auth: 'dummy-token',
+      baseUrl: 'https://api.github.com',
     });
-  });
-
-  describe('getHighAlerts', () => {
-    it('fetches alerts with severity=high', async () => {
-      await client.getHighAlerts(url, repository);
-      expect(fetchMock.mock.calls[0][0]).toContain('severity=high');
-    });
-  });
-
-  describe('getMediumAlerts', () => {
-    it('fetches alerts with severity=medium', async () => {
-      await client.getMediumAlerts(url, repository);
-      expect(fetchMock.mock.calls[0][0]).toContain('severity=medium');
-    });
-  });
-
-  describe('getLowAlerts', () => {
-    it('fetches alerts with severity=low and returns them', async () => {
-      const alerts = [
-        {
-          number: 2,
-          state: 'open',
-          created_at: '2024-02-01',
-          security_advisory: { severity: 'low' },
-        },
-      ];
-      fetchMock.mockResolvedValueOnce({
-        ok: true,
-        headers: new Headers(),
-        json: () => Promise.resolve(alerts),
-        text: () => Promise.resolve(''),
-      } as Response);
-
-      const result = await client.getLowAlerts(url, repository);
-
-      expect(result).toEqual(alerts);
-      expect(fetchMock.mock.calls[0][0]).toContain('severity=low');
-    });
-  });
-
-  it('throws when GitHub integration is missing for URL', async () => {
-    const unknownUrl = 'https://unknown-host/owner/repo';
-    await expect(
-      client.getCriticalAlerts(unknownUrl, repository),
-    ).rejects.toThrow(
-      "Missing GitHub integration for 'https://unknown-host/owner/repo'",
+    expect(mockPaginate).toHaveBeenCalledWith(
+      'GET /repos/{owner}/{repo}/dependabot/alerts',
+      expect.objectContaining({
+        owner: 'owner',
+        repo: 'repo',
+        state: 'open',
+        severity: 'critical',
+        per_page: 100,
+      }),
     );
-    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('throws when API response is not ok', async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: false,
-      status: 403,
-      statusText: 'Forbidden',
-      text: () => Promise.resolve('Forbidden'),
-      headers: new Headers(),
-      json: () => Promise.resolve({}),
-    } as Response);
+  it('throws when GitHub integration is missing', async () => {
+    await expect(
+      client.getAlerts('https://unknown/owner/repo', repo, 'critical'),
+    ).rejects.toThrow(
+      "Missing GitHub integration for 'https://unknown/owner/repo'",
+    );
+    expect(mockPaginate).not.toHaveBeenCalled();
+  });
 
-    await expect(client.getCriticalAlerts(url, repository)).rejects.toThrow(
+  it('throws when token is missing', async () => {
+    (
+      DefaultGithubCredentialsProvider.prototype.getCredentials as jest.Mock
+    ).mockResolvedValueOnce({ type: 'token' });
+
+    await expect(client.getAlerts(url, repo, 'critical')).rejects.toThrow(
+      `Missing GitHub token for '${url}'`,
+    );
+    expect(mockPaginate).not.toHaveBeenCalled();
+  });
+
+  it('throws when Octokit paginate fails', async () => {
+    mockPaginate.mockRejectedValueOnce(new Error('GitHub API error: 403'));
+
+    await expect(client.getAlerts(url, repo, 'critical')).rejects.toThrow(
       /GitHub API error/,
     );
   });

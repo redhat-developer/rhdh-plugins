@@ -6,7 +6,7 @@ metadata:
   name: dependabot-scorecard-only
   annotations:
     github.com/project-slug: alizard0/rhdh-plugins
-    #dependabot/title: "Vulnerabilities"
+    backstage.io/source-location: url:https://github.com/alizard0/rhdh-plugins
 spec:
   type: service
   owner: group:development/guests

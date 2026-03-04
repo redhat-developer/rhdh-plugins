@@ -19,10 +19,13 @@ import {
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { type Entity, stringifyEntityRef } from '@backstage/catalog-model';
+import {
+  stringifyEntityRef,
+  type Entity,
+  getEntitySourceLocation,
+} from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 import { DependabotClient } from '../clients/DependabotClient';
@@ -112,25 +115,12 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
 
   async calculateMetric(entity: Entity): Promise<number> {
     const { owner, repo } = this.getRepository(entity);
-    const githubUrl = `https://github.com/${owner}/${repo}`;
-    const alerts = await this.getAlertsBySeverity(githubUrl, { owner, repo });
+    const { target } = getEntitySourceLocation(entity);
+    const alerts = await this.dependabotClient.getAlerts(
+      target,
+      { owner, repo },
+      this.severity,
+    );
     return alerts.length;
-  }
-
-  private getAlertsBySeverity(
-    url: string,
-    repository: { owner: string; repo: string },
-  ) {
-    switch (this.severity) {
-      case 'critical':
-        return this.dependabotClient.getCriticalAlerts(url, repository);
-      case 'high':
-        return this.dependabotClient.getHighAlerts(url, repository);
-      case 'medium':
-        return this.dependabotClient.getMediumAlerts(url, repository);
-      case 'low':
-      default:
-        return this.dependabotClient.getLowAlerts(url, repository);
-    }
   }
 }

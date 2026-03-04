@@ -19,22 +19,21 @@ import type { Entity } from '@backstage/catalog-model';
 import { DependabotMetricProvider } from './DependabotMetricProvider';
 import { DEPENDABOT_SEVERITY_METRIC } from './DependabotConfig';
 
+jest.mock('@backstage/catalog-model', () => ({
+  ...jest.requireActual('@backstage/catalog-model'),
+  getEntitySourceLocation: jest.fn().mockReturnValue({
+    type: 'url',
+    target: 'https://github.com/owner/repo',
+  }),
+}));
 jest.mock('../clients/DependabotClient');
 
-const mockGetCriticalAlerts = jest.fn();
-const mockGetHighAlerts = jest.fn();
-const mockGetMediumAlerts = jest.fn();
-const mockGetLowAlerts = jest.fn();
+const mockGetAlerts = jest.fn();
 
 beforeEach(() => {
   jest.clearAllMocks();
   const { DependabotClient } = jest.requireMock('../clients/DependabotClient');
-  DependabotClient.mockImplementation(() => ({
-    getCriticalAlerts: mockGetCriticalAlerts,
-    getHighAlerts: mockGetHighAlerts,
-    getMediumAlerts: mockGetMediumAlerts,
-    getLowAlerts: mockGetLowAlerts,
-  }));
+  DependabotClient.mockImplementation(() => ({ getAlerts: mockGetAlerts }));
 });
 
 const mockConfig = new ConfigReader({
@@ -73,10 +72,10 @@ describe('DependabotMetricProvider', () => {
 
   describe('getProviderId / getMetric', () => {
     it.each([
-      ['critical', 'dependabot.alerts.critical', 'Dependabot Critical Alerts'],
-      ['high', 'dependabot.alerts.high', 'Dependabot High Alerts'],
-      ['medium', 'dependabot.alerts.medium', 'Dependabot Medium Alerts'],
-      ['low', 'dependabot.alerts.low', 'Dependabot Low Alerts'],
+      ['critical', 'dependabot.alerts_critical', 'Dependabot Critical Alerts'],
+      ['high', 'dependabot.alerts_high', 'Dependabot High Alerts'],
+      ['medium', 'dependabot.alerts_medium', 'Dependabot Medium Alerts'],
+      ['low', 'dependabot.alerts_low', 'Dependabot Low Alerts'],
     ] as const)(
       'for %s returns id %s and title %s',
       (severity, expectedId, expectedTitle) => {
@@ -183,33 +182,35 @@ describe('DependabotMetricProvider', () => {
   });
 
   describe('calculateMetric', () => {
-    it.each([
-      ['critical', mockGetCriticalAlerts],
-      ['high', mockGetHighAlerts],
-      ['medium', mockGetMediumAlerts],
-      ['low', mockGetLowAlerts],
-    ] as const)(
-      'calls correct client method for %s and returns count',
-      async (severity, mockFn) => {
-        mockFn.mockResolvedValue([{ number: 1 }, { number: 2 }]);
+    it.each(['critical', 'high', 'medium', 'low'] as const)(
+      'calls getAlerts with target from getEntitySourceLocation and returns count',
+      async severity => {
+        mockGetAlerts.mockResolvedValue([{ number: 1 }, { number: 2 }]);
         const provider = new DependabotMetricProvider(
           mockConfig,
           mockLogger,
           severity,
         );
+        const ent = entity();
 
-        const result = await provider.calculateMetric(entity());
+        const result = await provider.calculateMetric(ent);
 
         expect(result).toBe(2);
-        expect(mockFn).toHaveBeenCalledWith('https://github.com/owner/repo', {
-          owner: 'owner',
-          repo: 'repo',
-        });
+        // target comes from getEntitySourceLocation(entity), not hardcoded
+        expect(mockGetAlerts).toHaveBeenCalledWith(
+          'https://github.com/owner/repo',
+          { owner: 'owner', repo: 'repo' },
+          severity,
+        );
+        const { getEntitySourceLocation } = jest.requireMock(
+          '@backstage/catalog-model',
+        );
+        expect(getEntitySourceLocation).toHaveBeenCalledWith(ent);
       },
     );
 
     it('returns 0 when no alerts', async () => {
-      mockGetCriticalAlerts.mockResolvedValue([]);
+      mockGetAlerts.mockResolvedValue([]);
       const provider = new DependabotMetricProvider(
         mockConfig,
         mockLogger,

@@ -38,7 +38,7 @@ describe('createDependabotMetricProvider', () => {
       mockLogger,
       'high',
     );
-    expect(provider.getProviderId()).toBe('dependabot.alerts.high');
+    expect(provider.getProviderId()).toBe('dependabot.alerts_high');
     expect(provider.getProviderDatasourceId()).toBe('dependabot');
     expect(provider.getMetricType()).toBe('number');
   });
@@ -60,10 +60,10 @@ describe('createDependabotMetricProviders', () => {
     const providers = createDependabotMetricProviders(mockConfig, mockLogger);
     expect(providers).toHaveLength(4);
     expect(providers.map(p => p.getProviderId())).toEqual([
-      'dependabot.alerts.critical',
-      'dependabot.alerts.high',
-      'dependabot.alerts.medium',
-      'dependabot.alerts.low',
+      'dependabot.alerts_critical',
+      'dependabot.alerts_high',
+      'dependabot.alerts_medium',
+      'dependabot.alerts_low',
     ]);
   });
 
