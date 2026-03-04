@@ -18,6 +18,7 @@ import {
   AggregatedMetric,
   AggregatedMetricResult,
   Metric,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
 
@@ -25,20 +26,13 @@ export class AggregatedMetricMapper {
   static toAggregatedMetric(
     aggregatedMetric?: DbAggregatedMetric,
   ): AggregatedMetric {
-    const success = aggregatedMetric?.success ?? 0;
-    const warning = aggregatedMetric?.warning ?? 0;
-    const error = aggregatedMetric?.error ?? 0;
     const total = aggregatedMetric?.total ?? 0;
     const timestamp = aggregatedMetric?.max_timestamp
       ? new Date(aggregatedMetric.max_timestamp).toISOString()
       : new Date().toISOString();
 
     return {
-      values: [
-        { count: success, name: 'success' },
-        { count: warning, name: 'warning' },
-        { count: error, name: 'error' },
-      ],
+      values: aggregatedMetric?.statusCounts ?? {},
       total,
       timestamp,
     };
@@ -46,8 +40,15 @@ export class AggregatedMetricMapper {
 
   static toAggregatedMetricResult(
     metric: Metric,
+    thresholds: ThresholdConfig,
     aggregatedMetric: AggregatedMetric,
   ): AggregatedMetricResult {
+    // Build values in threshold rules order, filling missing ones with 0
+    const allStatusCountValues = thresholds.rules.map(rule => ({
+      name: rule.key,
+      count: aggregatedMetric.values[rule.key] ?? 0,
+    }));
+
     return {
       id: metric.id,
       status: 'success',
@@ -57,7 +58,11 @@ export class AggregatedMetricMapper {
         type: metric.type,
         history: metric.history,
       },
-      result: aggregatedMetric,
+      result: {
+        ...aggregatedMetric,
+        values: allStatusCountValues,
+        thresholds,
+      },
     };
   }
 }

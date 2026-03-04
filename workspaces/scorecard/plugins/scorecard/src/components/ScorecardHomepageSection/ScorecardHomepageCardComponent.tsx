@@ -24,7 +24,12 @@ import { useTheme } from '@mui/material/styles';
 import { CardWrapper } from '../Common/CardWrapper';
 import { CustomTooltip } from './CustomTooltip';
 import CustomLegend from './CustomLegend';
-import type { PieData } from '../../utils/utils';
+import type { PieData } from '../types';
+import {
+  getThresholdRuleColor,
+  resolveStatusColor,
+  SCORECARD_ERROR_STATE_COLOR,
+} from '../../utils';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ResponsivePieChart } from './ResponsivePieChart';
 
@@ -50,12 +55,11 @@ export const ScorecardHomepageCardComponent = ({
     scorecard.result.values?.map(value => ({
       name: value.name,
       value: value.count,
-      color:
-        {
-          success: theme.palette.success.main,
-          warning: theme.palette.warning.main,
-          error: theme.palette.error.main,
-        }[value.name] || theme.palette.success.main,
+      color: resolveStatusColor(
+        theme,
+        getThresholdRuleColor(scorecard.result.thresholds.rules, value.name) ??
+          SCORECARD_ERROR_STATE_COLOR,
+      ),
     })) ?? [];
 
   return (

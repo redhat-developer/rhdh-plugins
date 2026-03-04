@@ -23,7 +23,7 @@ import {
   Tooltip,
   PieLabelRenderProps,
 } from 'recharts';
-import { PieData } from '../../utils/utils';
+import type { PieData } from '../types';
 
 interface PieTooltipPayload {
   name?: string;
