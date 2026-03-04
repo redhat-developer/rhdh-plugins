@@ -17,13 +17,24 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsTestTranslationRef } from './ref';
 
+/**
+ * de translation for plugin.translations-test.
+ * @public
+ */
 const quickstartTranslationDe = createTranslationMessages({
   ref: translationsTestTranslationRef,
-  full: false,
   messages: {
-    'page.title': 'Übersetzungen Test Plugin',
+    'page.title': 'Übersetzungstest-Plugin',
     'page.subtitle':
-      'Ein Plugin zum Testen der Übersetzungsfunktionalität und i18next-Funktionen',
+      'Ein Plugin zum Testen der Übersetzungsfunktionalität und der i18next-Funktionen',
+    'essentials.key': 'Wert des Schlüssels',
+    'essentials.look.deep': 'Wert der detaillierten Analyse',
+    'interpolation.key': '{{what}} ist {{how}}',
+    'formatting.intlNumber': 'Einige {{val, number}}',
+    'context.friend': 'Ein Freund',
+    'context.friend_male': 'Ein fester Freund',
+    'context.friend_female': 'Eine feste Freundin',
+    'objects.tree.res': 'hat {{something}} hinzugefügt',
   },
 });
 

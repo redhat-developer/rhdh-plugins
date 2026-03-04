@@ -16,15 +16,13 @@
 
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type DbMetricValueStatus = 'success' | 'warning' | 'error';
-
 export type DbMetricValueCreate = {
   catalog_entity_ref: string;
   metric_id: string;
   value?: MetricValue;
   timestamp: Date;
   error_message?: string;
-  status?: DbMetricValueStatus;
+  status?: string | null;
 };
 
 export type DbMetricValue = {
@@ -34,14 +32,12 @@ export type DbMetricValue = {
   value: MetricValue | null;
   timestamp: Date;
   error_message: string | null;
-  status: DbMetricValueStatus | null;
+  status: string | null;
 };
 
 export type DbAggregatedMetric = {
   metric_id: string;
   total: number;
   max_timestamp: Date;
-  success: number;
-  warning: number;
-  error: number;
+  statusCounts: Record<string, number>;
 };

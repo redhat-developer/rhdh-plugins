@@ -22,13 +22,14 @@ import { CardWrapper } from '../Common/CardWrapper';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   getStatusConfig,
-  getRingColor,
   getYOffsetForCenterLabel,
   getHeightForCenterLabel,
-} from '../../utils/utils';
+  resolveStatusColor,
+} from '../../utils';
 import CustomLegend from '../Scorecard/CustomLegend';
 import { ErrorTooltip } from '../Common/ErrorTooltip';
 import { ResponsivePieChart } from './ResponsivePieChart';
+import type { PieData } from '../types';
 
 const CenterLabel = ({
   cx,
@@ -124,9 +125,11 @@ export const EmptyStatePanel = ({
     thresholdStatus: 'error',
   });
 
-  const ringColor = getRingColor(theme, statusConfig.color, true);
+  const resolvedStatusColor = resolveStatusColor(theme, statusConfig.color);
 
-  const pieData = [{ name: 'full', value: 100, color: ringColor }];
+  const pieData: PieData[] = [
+    { name: 'full', value: 100, color: resolvedStatusColor },
+  ];
 
   return (
     <CardWrapper
@@ -165,28 +168,12 @@ export const EmptyStatePanel = ({
             const centerX = Number(cx);
             const centerY = Number(cy);
 
-            const palettePath = statusConfig.color.split('.');
-            let color: string | undefined;
-            const paletteRoot =
-              theme.palette[palettePath[0] as keyof typeof theme.palette];
-            if (palettePath.length === 1) {
-              color = paletteRoot as string | undefined;
-            } else if (palettePath.length === 2) {
-              color = (paletteRoot as Record<string, string>)?.[
-                palettePath[1]
-              ] as string | undefined;
-            } else if (palettePath.length === 3) {
-              color = (paletteRoot as Record<string, any>)?.[palettePath[1]]?.[
-                palettePath[2]
-              ];
-            }
-
             return (
               <CenterLabel
                 cx={centerX}
                 cy={centerY}
                 label={label}
-                color={color}
+                color={resolvedStatusColor}
                 onLabelMouseEnter={e => {
                   setIsLabelHovered(true);
                   e.stopPropagation();
