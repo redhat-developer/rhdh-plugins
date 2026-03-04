@@ -61,10 +61,11 @@ function clean {
 }
 
 function _update_version {
-  for dir in $(ls -1d plugins/* | tail -n +2); do
-    cd "$(realpath $dir)"
+  for dir in "$workspace_dir"/plugins/*/; do
+    [[ -d "$dir" ]] || continue
+    cd "$dir"
     yarn version $VERSION --immediate
-    cd -
+    cd - > /dev/null
   done
 }
 
