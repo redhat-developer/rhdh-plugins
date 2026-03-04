@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  AggregatedMetricResult,
+  DEFAULT_NUMBER_THRESHOLDS,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const mockAggregatedScorecardSuccessData: AggregatedMetricResult = {
   id: 'github.open_prs',
@@ -34,5 +37,6 @@ export const mockAggregatedScorecardSuccessData: AggregatedMetricResult = {
     ],
     total: 37,
     timestamp: '2024-01-15T10:30:00Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };
