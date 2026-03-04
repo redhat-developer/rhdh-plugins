@@ -72,6 +72,18 @@ export interface Config {
      */
     callbackBaseUrl?: string;
     /**
+     * Configuration for the collectArtifacts callback endpoint
+     */
+    collectArtifacts?: {
+      /**
+       * Maximum age (in seconds) of a job before its callback is rejected.
+       * Prevents replay attacks by rejecting callbacks from jobs older than this window.
+       * Default: 10800 (3 hours)
+       * @visibility backend
+       */
+      maxJobAgeSeconds?: number;
+    };
+    /**
      * Kubernetes configuration for X2A jobs
      */
     kubernetes?: {

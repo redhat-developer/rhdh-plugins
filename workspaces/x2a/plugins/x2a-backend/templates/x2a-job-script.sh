@@ -12,8 +12,6 @@ TERMINATED=false
 COMMIT_ID=""
 
 # Report job result back to the backend.
-# TODO: Incorporate CALLBACK_TOKEN for request signing (HMAC-SHA256).
-# See collectArtifacts.ts:85-90 for the planned signature validation.
 report_result() {
   local status="$1"
   local message="$2"
@@ -37,6 +35,10 @@ report_result() {
 
   if [ -n "${COMMIT_ID:-}" ]; then
     cmd+=(--commit-id "${COMMIT_ID}")
+  fi
+
+  if [ -n "${CALLBACK_TOKEN:-}" ]; then
+    cmd+=(--callback-token "${CALLBACK_TOKEN}")
   fi
 
   echo "Reporting result: status=${status}, phase=${PHASE}"
