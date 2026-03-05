@@ -40,11 +40,6 @@ type CatalogMetricServiceOptions = {
   database: DatabaseMetricValues;
 };
 
-export type AggregatedMetricsByStatus = Record<
-  string,
-  { values: { success: number; warning: number; error: number }; total: number }
->;
-
 export class CatalogMetricService {
   private readonly catalog: CatalogService;
   private readonly auth: AuthService;

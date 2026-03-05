@@ -17,16 +17,15 @@
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DangerousOutlinedIcon from '@mui/icons-material/DangerousOutlined';
+import type { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+import { SCORECARD_ERROR_STATE_COLOR } from './constants';
+import { ElementType } from 'react';
+import { getThresholdRuleColor } from './colorUtils';
 
 export type StatusConfig = {
   color: string;
-  icon?: React.ElementType;
-};
-
-export type PieData = {
-  name: string;
-  value: number;
-  color?: string;
+  icon?: ElementType;
 };
 
 /**
@@ -38,57 +37,30 @@ export const getStatusConfig = ({
   evaluation,
   thresholdStatus,
   metricStatus,
+  thresholdRules,
 }: {
   evaluation: string | null;
   thresholdStatus?: 'success' | 'error';
   metricStatus?: 'success' | 'error';
+  thresholdRules?: ThresholdRule[];
 }): StatusConfig => {
-  // If threshold or metric has an error, return grey.400 color
+  // If threshold or metric has an error, return error state color
   if (thresholdStatus === 'error' || metricStatus === 'error') {
-    return { color: 'rhdh.general.disabled' };
+    return { color: SCORECARD_ERROR_STATE_COLOR };
   }
+
+  let evaluationColor: string | undefined;
+  if (thresholdRules && evaluation) {
+    evaluationColor = getThresholdRuleColor(thresholdRules, evaluation);
+  }
+  const color = evaluationColor ?? SCORECARD_ERROR_STATE_COLOR;
 
   switch (evaluation) {
     case 'error':
-      return { color: 'error.main', icon: DangerousOutlinedIcon };
+      return { color, icon: DangerousOutlinedIcon };
     case 'warning':
-      return { color: 'warning.main', icon: WarningAmberIcon };
+      return { color, icon: WarningAmberIcon };
     default:
-      return { color: 'success.main', icon: CheckCircleOutlineIcon };
-  }
-};
-
-export const getRingColor = (
-  theme: any,
-  statusColor: string,
-  isError: boolean,
-) => {
-  if (isError) {
-    return theme.palette.rhdh.general.cardBorderColor;
-  }
-
-  const [paletteKey, shade] = statusColor.split('.');
-  return theme.palette?.[paletteKey]?.[shade] ?? statusColor;
-};
-
-export const getYOffsetForCenterLabel = (lineCount: number) => {
-  switch (lineCount) {
-    case 2:
-      return -17;
-    case 3:
-      return -24;
-    default:
-      return -8;
-  }
-};
-
-export const getHeightForCenterLabel = (lineCount: number) => {
-  switch (lineCount) {
-    case 2:
-      return 48;
-    case 3:
-      return 56;
-    default:
-      return 40;
+      return { color, icon: CheckCircleOutlineIcon };
   }
 };

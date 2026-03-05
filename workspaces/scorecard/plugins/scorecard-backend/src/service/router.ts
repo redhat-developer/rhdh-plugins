@@ -156,7 +156,8 @@ export async function createRouter({
       scorecardMetricReadPermission,
     );
 
-    const metric = metricProvidersRegistry.getMetric(metricId);
+    const provider = metricProvidersRegistry.getProvider(metricId);
+    const metric = provider.getMetric();
     const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
 
     if (authorizedMetrics.length === 0) {
@@ -181,6 +182,7 @@ export async function createRouter({
       await checkEntityAccess(entityRef, req, permissions, httpAuth);
     }
 
+    const thresholds = provider.getMetricThresholds();
     const aggregatedMetric =
       await catalogMetricService.getAggregatedMetricByEntityRefs(
         entitiesOwnedByAUser,
@@ -188,7 +190,11 @@ export async function createRouter({
       );
 
     res.json(
-      AggregatedMetricMapper.toAggregatedMetricResult(metric, aggregatedMetric),
+      AggregatedMetricMapper.toAggregatedMetricResult(
+        metric,
+        thresholds,
+        aggregatedMetric,
+      ),
     );
   });
 
