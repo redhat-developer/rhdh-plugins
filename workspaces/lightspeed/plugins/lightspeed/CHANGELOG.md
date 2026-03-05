@@ -1,5 +1,14 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.4.1
+
+### Patch Changes
+
+- a8b3dd9: Fixed "new chat" cta behavior
+  Added vertical scroll when too many models are available
+  Removed model grouping/categories in the model selector dropdown
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.4.1
+
 ## 1.4.0
 
 ### Patch Changes
