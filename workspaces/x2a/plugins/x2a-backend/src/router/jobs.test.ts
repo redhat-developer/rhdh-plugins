@@ -18,6 +18,7 @@ import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import request from 'supertest';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { Knex } from 'knex';
+import { Readable } from 'node:stream';
 
 import { X2ADatabaseService } from '../services/X2ADatabaseService';
 import {
@@ -158,6 +159,48 @@ describe('createRouter – jobs (log)', () => {
 
           expect(response.status).toBe(200);
           expect(mockGetJobLogs).toHaveBeenCalledWith('init-k8s-job', true);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should handle stream error mid-transfer and send error indicator to client',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: null,
+            phase: 'init',
+            status: 'running',
+            k8sJobName: 'init-k8s-job',
+          });
+
+          // Error on second pull so first chunk is delivered before destroy (deterministic)
+          let firstChunkSent = false;
+          const failingStream = new Readable({
+            read() {
+              if (firstChunkSent) {
+                this.destroy(new Error('Connection interrupted'));
+              } else {
+                firstChunkSent = true;
+                this.push('Log line 1\n');
+              }
+            },
+          });
+
+          const mockGetJobLogs = jest.fn().mockResolvedValue(failingStream);
+          const app = await createApp(client, undefined, undefined, {
+            getJobLogs: mockGetJobLogs,
+          });
+
+          const response = await request(app)
+            .get(`/projects/${project.id}/log?streaming=true`)
+            .send();
+
+          expect(response.status).toBe(200);
+          expect(response.text).toContain('Log line 1');
+          expect(response.text).toContain(
+            '[Log stream error: connection interrupted]',
+          );
         },
         LONG_TEST_TIMEOUT,
       );

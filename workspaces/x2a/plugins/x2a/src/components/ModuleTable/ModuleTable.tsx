@@ -37,10 +37,10 @@ import { CurrentPhaseCell } from '../CurrentPhaseCell';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { TimingCell } from './TimingCell';
 import { moduleRouteRef } from '../../routes';
-import { getLastJob } from '../tools';
+import { getLastPhaseReached } from '../tools';
 
 export const getNextPhase = (module: Module): ModulePhase | undefined => {
-  const lastJob = getLastJob(module);
+  const lastJob = getLastPhaseReached(module);
   const lastPhase: MigrationPhase = lastJob?.phase || 'init';
 
   const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
@@ -63,7 +63,7 @@ const useColumns = ({
   const modulePath = useRouteRef(moduleRouteRef);
 
   const currentPhaseCell = useCallback((rowData: Module) => {
-    const lastJob = getLastJob(rowData);
+    const lastJob = getLastPhaseReached(rowData);
     return <CurrentPhaseCell phase={lastJob?.phase} />;
   }, []);
 
@@ -95,7 +95,7 @@ const useColumns = ({
   );
 
   const timingCell = useCallback((rowData: Module) => {
-    const lastJob = getLastJob(rowData);
+    const lastJob = getLastPhaseReached(rowData);
     return <TimingCell lastJob={lastJob} />;
   }, []);
 
@@ -134,7 +134,7 @@ const canRunNextPhase = ({ module }: { module: Module }) => {
   }
 
   // TODO: Consider check whether we have all artifacts instead of just checking the last job status
-  const lastJob = getLastJob(module);
+  const lastJob = getLastPhaseReached(module);
   if (!lastJob || lastJob.status === 'success') {
     return true;
   }

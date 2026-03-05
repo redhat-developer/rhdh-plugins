@@ -99,6 +99,9 @@ export const getAuthTokenDescriptor: ({ repoUrl, readOnly, }: {
     readOnly: boolean;
 }) => AuthTokenDescriptor;
 
+// @public
+export const getScmProvider: (repoUrl: string) => "github" | "gitlab";
+
 // @public (undocumented)
 export interface GitRepoAuth {
     token: string;

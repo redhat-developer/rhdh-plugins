@@ -48,6 +48,8 @@ import {
 } from './constants';
 import * as fs from 'node:fs';
 
+import { stringifyError } from '../utils';
+
 /**
  * Job status information from Kubernetes
  */
@@ -410,11 +412,19 @@ export class KubeService {
         return '';
       }
 
-      const podName = pods.items[0].metadata?.name;
+      const pod = pods.items[0];
+      const podName = pod?.metadata?.name;
       if (!podName) {
         // This can happen if a pod is in the process of being created but hasn't been
         // fully initialized yet, or if the pod metadata is corrupted
         this.#logger.warn(`Pod has no name for job: ${k8sJobName}`);
+        return '';
+      }
+
+      if (pod.status?.phase === 'Pending') {
+        this.#logger.warn(
+          `Pod is pending, waiting for it to start for logs: ${k8sJobName}`,
+        );
         return '';
       }
 
@@ -426,10 +436,11 @@ export class KubeService {
       });
 
       return logs;
-    } catch (error: any) {
-      // Might happen, i.e. the pod is in ContainerCreating state
-      this.#logger.warn(`Failed to get job logs: ${error.message}`);
-      return '';
+    } catch (error: unknown) {
+      this.#logger.warn(
+        `Failed to get job logs for ${k8sJobName}: ${stringifyError(error)}`,
+      );
+      throw error;
     }
   }
 

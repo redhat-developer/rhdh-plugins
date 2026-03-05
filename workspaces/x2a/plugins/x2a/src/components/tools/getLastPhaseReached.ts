@@ -16,7 +16,8 @@
 
 import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-export const getLastJob = (rowData: Module) => {
+// Finds the last job of the most advanced phase reached by the module.
+export const getLastPhaseReached = (rowData: Module) => {
   const phases: ('publish' | 'migrate' | 'analyze')[] = [
     'publish',
     'migrate',

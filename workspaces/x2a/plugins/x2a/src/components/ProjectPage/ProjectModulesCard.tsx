@@ -20,7 +20,7 @@ import { Divider, Grid, Typography } from '@material-ui/core';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { CurrentPhaseCell } from '../CurrentPhaseCell';
-import { getLastJob } from '../tools';
+import { getLastPhaseReached } from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { moduleRouteRef } from '../../routes';
 
@@ -45,7 +45,7 @@ export const ProjectModulesCard = ({ modules }: { modules: Module[] }) => {
         )}
 
         {modules.map((module, index) => {
-          const lastJob = getLastJob(module);
+          const lastJob = getLastPhaseReached(module);
           return (
             <Fragment key={module.id}>
               <Grid item xs={4}>
