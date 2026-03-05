@@ -156,7 +156,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               );
 
               return {
-                catalog_entity_ref: stringifyEntityRef(entity).toLowerCase(),
+                catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
                 value,
                 timestamp: new Date(),
@@ -167,7 +167,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               } as DbMetricValueCreate;
             } catch (error) {
               return {
-                catalog_entity_ref: stringifyEntityRef(entity).toLowerCase(),
+                catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
                 value,
                 timestamp: new Date(),

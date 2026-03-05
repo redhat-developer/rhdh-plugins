@@ -1145,9 +1145,9 @@ describe('createRouter', () => {
         expect(getEntityMetricDetailsSpy).not.toHaveBeenCalled();
       });
 
-      it('should return 400 when status is an invalid value', async () => {
+      it('should return 400 when status is an empty string', async () => {
         const response = await request(drillDownApp).get(
-          '/metrics/github.open_prs/catalog/aggregations/entities?status=unknown',
+          '/metrics/github.open_prs/catalog/aggregations/entities?status=',
         );
 
         expect(response.status).toBe(400);

@@ -24,7 +24,7 @@ export function validateDrillDownMetricsSchema(
   const drillDownSchema = z.object({
     page: z.coerce.number().int().min(1).max(10000).optional().default(1),
     pageSize: z.coerce.number().int().min(1).max(100).optional().default(5),
-    status: z.enum(['success', 'warning', 'error']).optional(),
+    status: z.string().min(1).max(100).optional(),
     sortBy: z
       .enum([
         'entityName',

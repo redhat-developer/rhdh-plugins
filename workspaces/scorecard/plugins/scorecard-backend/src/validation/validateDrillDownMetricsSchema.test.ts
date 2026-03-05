@@ -57,7 +57,7 @@ describe('validateDrillDownMetricsSchema', () => {
       expect(result.pageSize).toBe(100);
     });
 
-    it.each(['success', 'warning', 'error'] as const)(
+    it.each(['success', 'warning', 'error', 'critical', 'passing', 'failing'])(
       'should accept status=%s',
       status => {
         const result = validateDrillDownMetricsSchema(
@@ -67,6 +67,24 @@ describe('validateDrillDownMetricsSchema', () => {
         expect(result.status).toBe(status);
       },
     );
+
+    it('should throw InputError when status is an empty string', () => {
+      expect(() =>
+        validateDrillDownMetricsSchema(
+          { status: '' },
+          mockServices.logger.mock(),
+        ),
+      ).toThrow(InputError);
+    });
+
+    it('should throw InputError when status exceeds 100 characters', () => {
+      expect(() =>
+        validateDrillDownMetricsSchema(
+          { status: 'a'.repeat(101) },
+          mockServices.logger.mock(),
+        ),
+      ).toThrow(InputError);
+    });
 
     it.each([
       'entityName',
@@ -255,7 +273,6 @@ describe('validateDrillDownMetricsSchema', () => {
     });
 
     it.each([
-      { field: 'status', value: 'unknown' },
       { field: 'sortBy', value: 'invalid' },
       { field: 'sortOrder', value: 'random' },
     ])(

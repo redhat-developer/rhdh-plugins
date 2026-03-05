@@ -30,7 +30,7 @@ Returns a paginated list of entities with their metric values, enriched with cat
 
 | Parameter    | Type             | Required | Default     | Description                                                                                                                                                                                                       |
 | ------------ | ---------------- | -------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`     | string           | No       | -           | Filter by threshold status: `success`, `warning`, or `error`                                                                                                                                                      |
+| `status`     | string           | No       | -           | Filter by threshold status. Accepts any user-defined status value (e.g. `success`, `warning`, `error`, `critical`). Must be between 1 and 100 characters.                                                         |
 | `owner`      | string/string\[] | No       | -           | Filter by owner entity ref. Repeat to supply multiple values (e.g., `?owner=a&owner=b`)                                                                                                                           |
 | `kind`       | string           | No       | -           | Filter by entity kind (e.g., `Component`, `API`, `System`)                                                                                                                                                        |
 | `namespace`  | string           | No       | -           | Filter by entity namespace (e.g., `default`, `staging`). Case-insensitive exact match                                                                                                                             |
@@ -78,7 +78,7 @@ type EntityMetricDetail = {
   owner: string;                  // Owner entity reference or name
   metricValue: number | boolean | null;  // The actual metric value
   timestamp: string;              // ISO 8601 timestamp of when metric was synced
-  status: 'success' | 'warning' | 'error';  // Threshold evaluation status
+  status: string;  // Threshold evaluation status
 };
 ```
 
