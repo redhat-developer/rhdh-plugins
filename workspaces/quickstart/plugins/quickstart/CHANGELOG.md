@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 1.8.3
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+- b6f1568: updated plugin readme
+- 6bea432: Moved the `CustomDrawer` component from `packages/app` to `plugins/quickstart/dev` to resolve workspace accessibility issues during development.
+
 ## 1.8.2
 
 ### Patch Changes
