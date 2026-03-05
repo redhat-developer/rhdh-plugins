@@ -15,19 +15,24 @@
   "backstage": {
     "role": "frontend-plugin",
     "pluginId": "quickstart",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-quickstart",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-quickstart"
     ]
   },
   "sideEffects": false,
   "scripts": {
-    "start": "backstage-cli package start",
     "build": "backstage-cli package build",
-    "lint": "backstage-cli package lint",
-    "test": "backstage-cli package test",
     "clean": "backstage-cli package clean",
+    "lint:check": "backstage-cli package lint",
+    "lint:fix": "backstage-cli package lint --fix",
+    "postpack": "backstage-cli package postpack",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack"
+    "start": "backstage-cli package start",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "tsc": "tsc",
+    "prettier:check": "prettier --ignore-unknown --check .",
+    "prettier:fix": "prettier --ignore-unknown --write ."
   },
   "dependencies": {
     "@backstage-community/plugin-rbac-common": "^1.19.0",
@@ -58,12 +63,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha.ts",
+    "./dev": "./dev/CustomDrawer.tsx",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha.ts"
+      ],
+      "dev": [
+        "dev/CustomDrawer.tsx"
       ],
       "package.json": [
         "package.json"
@@ -76,5 +85,24 @@
     "config.d.ts",
     "app-config.dynamic.yaml"
   ],
-  "configSchema": "config.d.ts"
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-quickstart",
+    "exposedModules": {
+      "Alpha": "./src/alpha.ts",
+      "PluginRoot": "./src/index.ts",
+      "QuickstartPlugin": "./src/index.ts"
+    }
+  },
+  "configSchema": "config.d.ts",
+  "keywords": [
+    "backstage",
+    "plugin"
+  ],
+  "homepage": "https://red.ht/rhdh",
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
+  "maintainers": [
+    "@ciiay",
+    "@debsmita1"
+  ],
+  "author": "Red Hat"
 }
