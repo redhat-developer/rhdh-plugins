@@ -232,7 +232,6 @@ export async function listAllRepositoriesForAuthenticatedUser(
 
   const firstPageResponse = await fetchListForAuthenticatedUser(1);
 
-  // find out the pages count from the 1st call
   const lastPageNumberString = firstPageResponse?.headers?.link
     ?.split(',')
     ?.find(s => s.includes('rel="last"'))
@@ -248,31 +247,17 @@ export async function listAllRepositoriesForAuthenticatedUser(
     return firstPageResponse.data;
   }
 
-  // create promises fetching data from all pages
   const pagePromises = [];
   for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
     pagePromises.push(fetchListForAuthenticatedUser(i));
   }
-
   const pageResponses = await Promise.all(pagePromises);
 
-  // merge the responses
-  const allRepos /* : GithubRepository[]*/ = firstPageResponse.data
+  const allRepositories = firstPageResponse.data
     .concat(pageResponses.flatMap(pageResponse => pageResponse.data))
     .sort((a, b) => a.full_name.localeCompare(b.full_name));
 
-  console.table(
-    allRepos.map(repo => ({
-      name: repo.name,
-      full_name: repo.full_name,
-      // url: repo.url,
-      // html_url: repo.html_url,
-      default_branch: repo.default_branch,
-      updated_at: repo.updated_at,
-    })),
-  );
-
-  return allRepos;
+  return allRepositories;
 }
 
 export async function executeFunctionOnFirstSuccessfulIntegration<T>(
