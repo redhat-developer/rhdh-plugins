@@ -28,8 +28,8 @@
  * The token must have 'read:org' scope to access team membership.
  */
 
-import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { readFile, appendFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 const ORG = 'redhat-developer';
 const TEAM_SLUG = 'rhdh-plugins-codeowners';
@@ -117,7 +117,8 @@ async function main() {
   const teamMembers = await fetchTeamMembers();
 
   console.log('Team members found:');
-  for (const member of [...teamMembers].sort()) {
+  const sortedMembers = [...teamMembers].toSorted((a, b) => a.localeCompare(b));
+  for (const member of sortedMembers) {
     console.log(`  - ${member}`);
   }
   console.log();
@@ -125,7 +126,10 @@ async function main() {
   const codeownersUsers = await extractCodeownersUsers();
 
   console.log('Individual users found in CODEOWNERS:');
-  for (const user of [...codeownersUsers].sort()) {
+  const sortedUsers = [...codeownersUsers].toSorted((a, b) =>
+    a.localeCompare(b),
+  );
+  for (const user of sortedUsers) {
     console.log(`  - ${user}`);
   }
   console.log();
@@ -136,6 +140,8 @@ async function main() {
   );
 
   if (missingUsers.length > 0) {
+    const sortedMissing = missingUsers.toSorted((a, b) => a.localeCompare(b));
+
     console.log();
     console.log('***********************************************************');
     console.log('*         CODEOWNERS validation failed!                   *');
@@ -145,7 +151,7 @@ async function main() {
       `The following users are in CODEOWNERS but not in the ${ORG}/${TEAM_SLUG} team:`,
     );
     console.log();
-    for (const user of missingUsers.sort()) {
+    for (const user of sortedMissing) {
       console.log(`  - @${user}`);
     }
     console.log();
@@ -155,6 +161,16 @@ async function main() {
     console.log();
     console.log('***********************************************************');
     console.log();
+
+    // Write missing users to GitHub Actions output if running in CI
+    if (process.env.GITHUB_OUTPUT) {
+      const missingList = sortedMissing.join(', ');
+      await appendFile(
+        process.env.GITHUB_OUTPUT,
+        `missing_users=${missingList}\n`,
+      );
+    }
+
     process.exit(1);
   }
 

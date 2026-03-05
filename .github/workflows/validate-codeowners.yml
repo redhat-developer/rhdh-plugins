@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -47,6 +48,25 @@ jobs:
           node-version: 22
 
       - name: Validate CODEOWNERS entries against team membership
+        id: validate
+        continue-on-error: true
         run: node scripts/ci/validate-codeowners.js
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Comment on PR if validation failed
+        if: steps.validate.outcome == 'failure' && github.event_name == 'pull_request_target' && steps.validate.outputs.missing_users != ''
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "## ⚠️ CODEOWNERS Validation Failed
+
+          The following users are listed in CODEOWNERS but are not members of the [\`rhdh-plugins-codeowners\`](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-codeowners) team:
+
+          \`${{ steps.validate.outputs.missing_users }}\`
+
+          An org admin needs to [add the missing members to the team](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-codeowners/members) before this PR can be merged."
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Fail workflow if validation failed
+        if: steps.validate.outcome == 'failure'
+        run: exit 1

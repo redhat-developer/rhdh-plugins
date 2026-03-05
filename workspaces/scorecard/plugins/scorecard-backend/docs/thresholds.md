@@ -1,13 +1,14 @@
 # Thresholds Configuration
 
-Thresholds define conditions that determine which category a metric value belongs to (`success`, `warning`, or `error`). When a metric value matches a threshold condition, it gets assigned to that threshold's category. The Scorecard plugin provides multiple ways to configure thresholds with a flexible priority system.
+Thresholds define conditions to assign metric values to specific visual categories (`success`, `warning`, `error` or any custom category). When a metric value matches a threshold condition, it gets assigned to that threshold's category. The Scorecard plugin provides multiple ways to configure thresholds with a flexible priority system.
 
 ## Overview
 
 Thresholds are evaluated in order and the **first matching** threshold rule is applied. Each threshold rule consists of:
 
-- **`key`**: The threshold category (only allowed keys are `success`, `warning`, `error`)
+- **`key`**: The threshold category (e.g., `success`, `warning`, `error`, or custom keys)
 - **`expression`**: The condition that determines if a metric value matches this threshold
+- **`color`** (optional): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors))
 
 ## Threshold Configuration Options
 
@@ -219,6 +220,72 @@ rules:
   - key: error
     expression: '!=true'
 ```
+
+## Threshold Colors
+
+You can customize the color displayed for each threshold rule in the scorecard UI. Colors can be specified using predefined constants (`success.main`, `warning.main`, `error.main`), hex codes, or RGB/RGBA values.
+
+### Color Configuration
+
+Add a `color` property to any threshold rule:
+
+```yaml
+scorecard:
+  plugins:
+    myDatasource:
+      myMetric:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<10'
+              color: 'success.main'
+            - key: warning
+              expression: '10-50'
+              color: '#FFA500'
+            - key: error
+              expression: '>50'
+              color: 'rgb(255, 0, 0)'
+```
+
+### Predefined Color Constants
+
+You can use the following predefined constants in your color configuration:
+
+- **`success.main`** - Maps to `theme.palette.success.main` (green)
+- **`warning.main`** - Maps to `theme.palette.warning.main` (orange/yellow)
+- **`error.main`** - Maps to `theme.palette.error.main` (red)
+
+Example configuration:
+
+```yaml
+scorecard:
+  plugins:
+    myDatasource:
+      myMetric:
+        thresholds:
+          rules:
+            - key: low
+              expression: '<50'
+              color: success.main
+            - key: medium
+              expression: '50-79'
+              color: warning.main
+            - key: high
+              expression: '80-100'
+              color: error.main
+```
+
+### Default Colors
+
+If no color is specified for a threshold rule, frontend will use these default colors for standard threshold rule keys:
+
+| Rule Key | Color                          |
+| -------- | ------------------------------ |
+| success  | `success.main` (green)         |
+| warning  | `warning.main` (orange/yellow) |
+| error    | `error.main` (red)             |
+
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify a `color` property. The configuration will fail validation if a custom key is used without a color. This requirement ensures that all thresholds can be properly visualized in the UI.
 
 ## ThresholdEvaluator
 

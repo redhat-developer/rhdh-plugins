@@ -7,7 +7,7 @@ import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public (undocumented)
 export type AggregatedMetric = {
-  values: AggregatedMetricValue[];
+  values: Record<string, number>;
   total: number;
   timestamp: string;
 };
@@ -22,13 +22,16 @@ export type AggregatedMetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result: AggregatedMetric;
+  result: Omit<AggregatedMetric, 'values'> & {
+    values: AggregatedMetricValue[];
+    thresholds: ThresholdConfig;
+  };
 };
 
 // @public (undocumented)
 export type AggregatedMetricValue = {
   count: number;
-  name: 'success' | 'warning' | 'error';
+  name: string;
 };
 
 // @public
@@ -75,6 +78,13 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 export const RESOURCE_TYPE_SCORECARD_METRIC = 'scorecard-metric';
 
 // @public
+export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
+  | 'success.main'
+  | 'warning.main'
+  | 'error.main'
+)[];
+
+// @public
 export type ScorecardMetricPermission = ResourcePermission<
   typeof RESOURCE_TYPE_SCORECARD_METRIC
 >;
@@ -84,6 +94,13 @@ export const scorecardMetricReadPermission: ResourcePermission<'scorecard-metric
 
 // @public (undocumented)
 export const scorecardPermissions: ResourcePermission<'scorecard-metric'>[];
+
+// @public
+export const ScorecardThresholdRuleColors: {
+  readonly SUCCESS: 'success.main';
+  readonly WARNING: 'warning.main';
+  readonly ERROR: 'error.main';
+};
 
 // @public
 export type ThresholdConfig = {
@@ -102,6 +119,7 @@ export type ThresholdResult = {
 export type ThresholdRule = {
   key: string;
   expression: string;
+  color?: string;
 };
 
 // (No @packageDocumentation comment for this package)
