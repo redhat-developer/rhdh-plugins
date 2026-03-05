@@ -1,6 +1,21 @@
 name: Prior Version Release Workspace
 
 on:
+  workflow_dispatch:
+    inputs:
+      workspace:
+        description: 'Name of the Workspace'
+        required: true
+        type: string
+      force_release:
+        description: 'Force release even if no changesets are present'
+        required: false
+        type: boolean
+      branch:
+        description: 'Branch to run the workflow on'
+        required: true
+        default: ''
+        type: string
   # ADDED: Only trigger on PR closed event on workspace/** branch.
   #        The assumption is that branch protection rules and CODEOWNERS are configured.
 
@@ -109,6 +124,7 @@ jobs:
 
       - name: Check if release
         id: release_check
+        if: inputs.force_release != true
         run: |
           yarn install
           node scripts/ci/check-if-release.js
@@ -120,7 +136,7 @@ jobs:
 
       - name: Update Version Packages (${{ needs.check-merged-pr.outputs.workspace_name }}) PR
         id: changesets-pr
-        if: steps.release_check.outputs.needs_release != 'true'
+        if: steps.release_check.outputs.needs_release != 'true' || inputs.force_release != true
         uses: backstage/changesets-action@a39baf18913e669734ffb00c2fd9900472cfa240 # v2.3.2
         with:
           title: Version Packages (${{ needs.check-merged-pr.outputs.workspace_name }})
@@ -135,7 +151,7 @@ jobs:
     name: Prior Version Release workspace ${{ needs.check-merged-pr.outputs.workspace_name }} on branch ${{ github.ref }}
     runs-on: ubuntu-latest
     needs: check-merged-pr
-    if: needs.check-merged-pr.outputs.is_version_pr == 'true'
+    if: needs.check-merged-pr.outputs.is_version_pr == 'true' || needs.check-merged-pr.outputs.needs_release == 'true' || inputs.force_release == true
     defaults:
       run:
         working-directory: ./workspaces/${{ needs.check-merged-pr.outputs.workspace_name }}
