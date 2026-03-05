@@ -15,7 +15,7 @@
  */
 import type { ReactNode } from 'react';
 
-import { useState, useEffect, Fragment, useRef } from 'react';
+import { useState, useEffect, Fragment, useRef, useCallback } from 'react';
 
 import {
   CodeSnippet,
@@ -46,7 +46,10 @@ import {
 import { useTranslation } from '../../hooks/useTranslation';
 import { Trans } from '../Trans';
 import { containerGridItemSx } from '../../utils/GridItem';
-import { useContainerQuery } from '../../hooks/useContainerQuery';
+import {
+  useContainerQuery,
+  type ContainerSize,
+} from '../../hooks/useContainerQuery';
 
 const StyledLink = styled(BackstageLink)(({ theme }) => ({
   textDecoration: 'none',
@@ -71,12 +74,23 @@ export const EntitySection = () => {
   const entityCardCount =
     containerSize === 'xs' || containerSize === 'sm' ? 2 : 4;
 
-  const getIllustrationWidth = () => {
-    if (containerSize === 'md') return 180;
-    if (containerSize === 'lg') return 220;
-    return 266;
+  const illustrationWidthMap: Partial<Record<ContainerSize, number>> = {
+    md: 180,
+    lg: 220,
+    xl: 266,
   };
-  const illustrationWidth = getIllustrationWidth();
+  const illustrationWidth = illustrationWidthMap[containerSize] ?? 266;
+
+  const visibleEntitiesCount = (() => {
+    const isWide =
+      containerSize === 'xl' ||
+      containerSize === 'lg' ||
+      containerSize === 'md';
+
+    if (!isWide) return entityCardCount;
+
+    return isRemoveFirstCard ? entityCardCount : entityCardCount - 2;
+  })();
 
   useEffect(() => {
     const isUserDismissedEntityIllustration =
@@ -84,13 +98,13 @@ export const EntitySection = () => {
     setIsRemoveFirstCard(isUserDismissedEntityIllustration);
   }, [displayName]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setShowDiscoveryCard(false);
     setTimeout(() => {
       addDismissedEntityIllustrationUsers(displayName);
       setIsRemoveFirstCard(true);
     }, 500);
-  };
+  }, [displayName]);
 
   const { data, error, isLoading } = useEntities({
     kind: ['Component', 'API', 'Resource', 'System'],
@@ -203,41 +217,26 @@ export const EntitySection = () => {
                   </Card>
                 </Grid>
               )}
-            {entities
-              ?.slice(
-                0,
-                (() => {
-                  const isWide =
-                    containerSize === 'xl' ||
-                    containerSize === 'lg' ||
-                    containerSize === 'md';
-                  if (!isWide) return entityCardCount;
-                  return isRemoveFirstCard
-                    ? entityCardCount
-                    : entityCardCount - 2;
-                })(),
-              )
-
-              .map((item: any) => (
-                <Grid
-                  item
-                  sx={containerGridItemSx({
-                    xs: 12,
-                    sm: 6,
-                    md: isRemoveFirstCard ? 3 : 4,
-                  })}
-                  key={item.metadata.name}
-                >
-                  <EntityCard
-                    entity={item}
-                    title={item.metadata.title ?? item.metadata.name}
-                    version="latest"
-                    description={item.metadata.description ?? ''}
-                    tags={item.metadata?.tags ?? []}
-                    kind={item.kind}
-                  />
-                </Grid>
-              ))}
+            {entities?.slice(0, visibleEntitiesCount).map((item: any) => (
+              <Grid
+                item
+                sx={containerGridItemSx({
+                  xs: 12,
+                  sm: 6,
+                  md: isRemoveFirstCard ? 3 : 4,
+                })}
+                key={item.metadata.name}
+              >
+                <EntityCard
+                  entity={item}
+                  title={item.metadata.title ?? item.metadata.name}
+                  version="latest"
+                  description={item.metadata.description ?? ''}
+                  tags={item.metadata?.tags ?? []}
+                  kind={item.kind}
+                />
+              </Grid>
+            ))}
             {entities?.length === 0 && (
               <Grid
                 item

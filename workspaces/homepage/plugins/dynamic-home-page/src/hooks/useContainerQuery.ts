@@ -32,7 +32,7 @@
 import { useLayoutEffect, useState, RefObject } from 'react';
 
 // Container Breakpoints (MUI-like, but container-based)
-export type containerSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+export type ContainerSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
 export const CONTAINER_BREAKPOINTS = {
   xs: 0, // <600
@@ -43,7 +43,7 @@ export const CONTAINER_BREAKPOINTS = {
 } as const;
 
 // Width → containerSize mapper
-const resolveContainerSize = (width: number): containerSize => {
+const resolveContainerSize = (width: number): ContainerSize => {
   if (width >= CONTAINER_BREAKPOINTS.xl) return 'xl';
   if (width >= CONTAINER_BREAKPOINTS.lg) return 'lg';
   if (width >= CONTAINER_BREAKPOINTS.md) return 'md';
@@ -55,8 +55,8 @@ const resolveContainerSize = (width: number): containerSize => {
 
 export const useContainerQuery = (
   ref: RefObject<HTMLElement>,
-): containerSize => {
-  const [containerSize, setContainerSize] = useState<containerSize>('lg');
+): ContainerSize => {
+  const [containerSize, setContainerSize] = useState<ContainerSize>('lg');
 
   useLayoutEffect(() => {
     const el = ref.current;
