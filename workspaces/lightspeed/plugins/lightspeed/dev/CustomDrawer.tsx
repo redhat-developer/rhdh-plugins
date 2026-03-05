@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-/* eslint-disable no-restricted-imports */
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
-/* eslint-enable no-restricted-imports */
 
 import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 
+/**
+ * @internal
+ */
 export type CustomDrawerProps = {
   children: React.ReactNode;
   minWidth?: number;
@@ -32,6 +33,9 @@ export type CustomDrawerProps = {
   [key: string]: any;
 };
 
+/**
+ * @internal
+ */
 export const CustomDrawer = (props: CustomDrawerProps) => {
   const {
     children,
