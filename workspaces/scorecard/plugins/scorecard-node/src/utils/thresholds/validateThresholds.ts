@@ -18,9 +18,91 @@ import type { JsonValue } from '@backstage/types';
 import type {
   MetricType,
   ThresholdConfig,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  SCORECARD_THRESHOLD_RULE_COLOR_VALUES,
+  ScorecardThresholdRuleColors,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdConfigFormatError } from '../../errors';
 import { parseThresholdExpression } from './parseThresholdExpression';
+
+/**
+ * Validates if a color string is valid
+ * - Predefined constants: {@link ScorecardThresholdRuleColors}
+ * - Hex colors: #RGB, #RRGGBB, #RRGGBBAA
+ * - RGB/RGBA colors: rgb(r, g, b), rgba(r, g, b, a)
+ */
+function isValidColor(color: string): boolean {
+  if (
+    (SCORECARD_THRESHOLD_RULE_COLOR_VALUES as readonly string[]).includes(color)
+  ) {
+    return true;
+  }
+
+  // Check for hex color format: #RGB, #RRGGBB, #RRGGBBAA
+  const hexColorRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
+  if (hexColorRegex.test(color)) {
+    return true;
+  }
+
+  // Check for RGB color format: rgb(r, g, b)
+  const rgbRegex = /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/;
+  if (rgbRegex.test(color)) {
+    return true;
+  }
+
+  // Check for RGBA color format: rgba(r, g, b, a)
+  const rgbaRegex =
+    /^rgba\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d+(?:\.\d+)?\s*\)$/;
+  return rgbaRegex.test(color);
+}
+
+/**
+ * Validates the color format if present in a rule
+ */
+function validateRuleColor(rule: ThresholdRule): void {
+  if (!('color' in rule)) {
+    return;
+  }
+
+  if (typeof rule.color !== 'string' || rule.color.trim() === '') {
+    throw new ThresholdConfigFormatError(
+      `Invalid color format for rule "${rule.key}": color must be a non-empty string`,
+    );
+  }
+
+  if (!isValidColor(rule.color)) {
+    throw new ThresholdConfigFormatError(
+      `Invalid color format for rule "${rule.key}": "${
+        rule.color
+      }" must be either a predefined constant (${SCORECARD_THRESHOLD_RULE_COLOR_VALUES.map(
+        v => `'${v}'`,
+      ).join(
+        ', ',
+      )}), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")`,
+    );
+  }
+}
+
+function isThresholdRule(rule: unknown): asserts rule is ThresholdRule {
+  if (
+    typeof rule !== 'object' ||
+    rule === null ||
+    !('key' in rule) ||
+    !('expression' in rule) ||
+    typeof rule.key !== 'string' ||
+    typeof rule.expression !== 'string' ||
+    rule.key.trim() === '' ||
+    rule.expression.trim() === ''
+  ) {
+    throw new ThresholdConfigFormatError(
+      `Invalid threshold rule format "${JSON.stringify(
+        rule,
+      )}": must be an object with "key" and "expression" non-empty string properties`,
+    );
+  }
+}
 
 /**
  * Validate thresholds configuration
@@ -43,31 +125,27 @@ export function validateThresholds(
 
   const seenKeys = new Set<string>();
   for (const rule of thresholds.rules) {
-    if (
-      typeof rule !== 'object' ||
-      rule === null ||
-      !('key' in rule) ||
-      !('expression' in rule) ||
-      typeof rule.key !== 'string' ||
-      typeof rule.expression !== 'string'
-    ) {
+    isThresholdRule(rule);
+    validateRuleColor(rule);
+
+    const standardThresholdRuleKeys = ['success', 'warning', 'error'];
+    if (!standardThresholdRuleKeys.includes(rule.key) && !('color' in rule)) {
       throw new ThresholdConfigFormatError(
-        `Invalid threshold rule format "${JSON.stringify(
-          rule,
-        )}": must be an object with "key" and "expression" string properties`,
+        `Custom threshold key "${
+          rule.key
+        }" must specify a color property. Only standard keys (${standardThresholdRuleKeys
+          .map(k => `'${k}'`)
+          .join(', ')}) have default colors.`,
       );
     }
-    if (!['error', 'warning', 'success'].includes(rule.key)) {
-      throw new ThresholdConfigFormatError(
-        `Invalid threshold rule key "${rule.key}": only supported values are "success", "warning", "error"`,
-      );
-    }
+
     if (seenKeys.has(rule.key)) {
       throw new ThresholdConfigFormatError(
         `Duplicate key detected for "${rule.key}" with expression "${rule.expression}"`,
       );
     }
     seenKeys.add(rule.key);
+
     parseThresholdExpression(rule.expression, expectedMetricType);
   }
 }

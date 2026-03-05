@@ -37,10 +37,11 @@ import { CardWrapper } from '../Common/CardWrapper';
 import CustomLegend from './CustomLegend';
 import {
   getHeightForCenterLabel,
-  getRingColor,
   getYOffsetForCenterLabel,
-} from '../../utils/utils';
+  resolveStatusColor,
+} from '../../utils';
 import { ErrorTooltip } from '../Common/ErrorTooltip';
+import type { PieData } from '../types';
 
 interface ScorecardProps {
   cardTitle: string;
@@ -58,7 +59,6 @@ interface ScorecardProps {
 const ScorecardCenterLabel = ({
   cx,
   cy,
-  statusColor,
   StatusIcon,
   value,
   isErrorState,
@@ -69,7 +69,6 @@ const ScorecardCenterLabel = ({
 }: {
   cx: number;
   cy: number;
-  statusColor: string;
   StatusIcon: React.ElementType;
   value: MetricValue | null;
   isErrorState: boolean;
@@ -108,10 +107,7 @@ const ScorecardCenterLabel = ({
         <StatusIcon
           sx={{
             fontSize: 24,
-            color: (muiTheme: any) => {
-              const [paletteKey, shade] = statusColor.split('.');
-              return muiTheme.palette[paletteKey][shade];
-            },
+            color,
           }}
         />
       </foreignObject>
@@ -176,9 +172,11 @@ const Scorecard = ({
 
   const isErrorState = isMetricDataError || isThresholdError;
 
-  const ringColor = getRingColor(theme, statusColor, isErrorState);
+  const resolvedStatusColor = resolveStatusColor(theme, statusColor);
 
-  const pieData = [{ name: 'full', value: 100, color: ringColor }];
+  const pieData: PieData[] = [
+    { name: 'full', value: 100, color: resolvedStatusColor },
+  ];
 
   return (
     <CardWrapper
@@ -251,22 +249,6 @@ const Scorecard = ({
               label={({ cx, cy }) => {
                 if (cx === null || cy === null) return null;
 
-                const palettePath = statusColor.split('.');
-                let color: string | undefined;
-                const paletteRoot =
-                  theme.palette[palettePath[0] as keyof typeof theme.palette];
-                if (palettePath.length === 1) {
-                  color = paletteRoot as string | undefined;
-                } else if (palettePath.length === 2) {
-                  color = (paletteRoot as Record<string, any>)?.[
-                    palettePath[1]
-                  ] as string | undefined;
-                } else if (palettePath.length === 3) {
-                  color = (paletteRoot as Record<string, any>)?.[
-                    palettePath[1]
-                  ]?.[palettePath[2]] as string | undefined;
-                }
-
                 let errorLabel = '';
                 if (isMetricDataError) {
                   errorLabel = t('errors.metricDataUnavailable');
@@ -278,12 +260,11 @@ const Scorecard = ({
                   <ScorecardCenterLabel
                     cx={Number(cx)}
                     cy={Number(cy)}
-                    statusColor={statusColor}
                     StatusIcon={StatusIcon}
                     value={value}
                     isErrorState={isErrorState}
                     errorLabel={errorLabel}
-                    color={color}
+                    color={resolvedStatusColor}
                     onLabelMouseEnter={e => {
                       setIsPieAreaActive(true);
                       e.stopPropagation();

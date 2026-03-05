@@ -102,7 +102,7 @@ To use these providers, install the corresponding backend modules:
 
 ## Thresholds
 
-Thresholds define conditions that determine which category a metric value belongs to (`error`, `warning`, or `success`). The Scorecard plugin provides multiple ways to configure thresholds:
+Thresholds define conditions to assign metric values to specific visual categories (`success`, `warning`, `error` or any custom category). The Scorecard plugin provides multiple ways to configure thresholds:
 
 - **Provider Defaults**: Metric providers define default thresholds
 - **App Configuration**: Override defaults through `app-config.yaml`

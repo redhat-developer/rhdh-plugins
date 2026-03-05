@@ -29,6 +29,7 @@ import {
   githubNumberMetricMetadata,
 } from '../../__fixtures__/mockProviders';
 import {
+  AggregatedMetric,
   AggregatedMetricResult,
   Metric,
   MetricResult,
@@ -465,6 +466,16 @@ describe('createRouter', () => {
   });
 
   describe('GET /metrics/:metricId/catalog/aggregations', () => {
+    const mockAggregatedMetric: AggregatedMetric = {
+      values: {
+        error: 3,
+        warning: 4,
+        success: 5,
+      },
+      total: 12,
+      timestamp: '2025-01-01T10:30:00.000Z',
+    };
+
     const mockAggregatedMetricResult: AggregatedMetricResult = {
       id: 'github.open_prs',
       status: 'success',
@@ -475,13 +486,20 @@ describe('createRouter', () => {
         history: undefined,
       },
       result: {
+        total: mockAggregatedMetric.total,
+        timestamp: mockAggregatedMetric.timestamp,
         values: [
-          { count: 5, name: 'success' },
-          { count: 4, name: 'warning' },
           { count: 3, name: 'error' },
+          { count: 4, name: 'warning' },
+          { count: 5, name: 'success' },
         ],
-        total: 12,
-        timestamp: '2025-01-01T10:30:00.000Z',
+        thresholds: {
+          rules: [
+            { key: 'error', expression: '>40' },
+            { key: 'warning', expression: '>20' },
+            { key: 'success', expression: '<=20' },
+          ],
+        },
       },
     };
 
@@ -522,7 +540,7 @@ describe('createRouter', () => {
 
       getAggregatedMetricByEntityRefsSpy = jest
         .spyOn(catalogMetricService, 'getAggregatedMetricByEntityRefs')
-        .mockResolvedValue(mockAggregatedMetricResult.result);
+        .mockResolvedValue(mockAggregatedMetric);
 
       toAggregatedMetricResultSpy = jest
         .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
@@ -645,6 +663,9 @@ describe('createRouter', () => {
       const emptyAggregatedMetricResult =
         AggregatedMetricMapper.toAggregatedMetricResult(
           metricProvidersRegistry.getMetric('github.open_prs'),
+          metricProvidersRegistry
+            .getProvider('github.open_prs')
+            .getMetricThresholds(),
           emptyAggregatedMetric,
         );
 
@@ -721,7 +742,10 @@ describe('createRouter', () => {
       expect(toAggregatedMetricResultSpy).toHaveBeenCalledTimes(1);
       expect(toAggregatedMetricResultSpy).toHaveBeenCalledWith(
         metricProvidersRegistry.getMetric('github.open_prs'),
-        mockAggregatedMetricResult.result,
+        metricProvidersRegistry
+          .getProvider('github.open_prs')
+          .getMetricThresholds(),
+        mockAggregatedMetric,
       );
     });
   });
