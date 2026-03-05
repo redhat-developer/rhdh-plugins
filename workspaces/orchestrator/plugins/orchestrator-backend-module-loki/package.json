@@ -40,7 +40,8 @@
     "@backstage/backend-plugin-api": "^1.5.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-node": "workspace:^",
-    "luxon": "^3.7.2"
+    "luxon": "^3.7.2",
+    "undici": "^7.22.0"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.10.0",
