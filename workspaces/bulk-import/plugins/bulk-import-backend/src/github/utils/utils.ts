@@ -24,7 +24,7 @@ import {
   type GithubIntegrationConfig,
 } from '@backstage/integration';
 
-import { Octokit } from '@octokit/rest';
+import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { logErrorIfNeeded } from '../../helpers';
@@ -203,6 +203,74 @@ export async function computeTotalCountFromGitHubToken(
   return pageSize
     ? (lastPageNumber - 1) * pageSize + lastPageDataLength
     : undefined;
+}
+
+export async function listAllRepositoriesForAuthenticatedUser(
+  deps: {
+    logger: LoggerService;
+  },
+  octokit: Octokit,
+  options?: {
+    ghApiName?: string;
+    pageSize?: number;
+  },
+): Promise<
+  RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data']
+> {
+  const fetchListForAuthenticatedUser = async (pageNumber: number) => {
+    return await octokit.rest.repos.listForAuthenticatedUser({
+      page: pageNumber,
+      per_page: options?.pageSize ?? 100,
+      sort: 'full_name',
+      direction: 'asc',
+    });
+  };
+
+  const firstPageResponse = await fetchListForAuthenticatedUser(1);
+
+  // find out the pages count from the 1st call
+  const lastPageNumberString = firstPageResponse?.headers?.link
+    ?.split(',')
+    ?.find(s => s.includes('rel="last"'))
+    ?.match(/page=(\d+)/)?.[1];
+
+  if (!lastPageNumberString) {
+    return firstPageResponse.data;
+  }
+
+  const lastPageNumber = parseInt(lastPageNumberString, 10);
+
+  const secondPageNumber = 2;
+
+  if (lastPageNumber < secondPageNumber) {
+    return firstPageResponse.data;
+  }
+
+  // create promises fetching data from all pages
+  const pagePromises = [];
+  for (let i = secondPageNumber; i <= lastPageNumber; i++) {
+    pagePromises.push(fetchListForAuthenticatedUser(i));
+  }
+
+  const pageResponses = await Promise.all(pagePromises);
+
+  // merge the responses
+  const allRepos /* : GithubRepository[]*/ = firstPageResponse.data
+    .concat(pageResponses.flatMap(pageResponse => pageResponse.data))
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+  console.table(
+    allRepos.map(repo => ({
+      name: repo.name,
+      full_name: repo.full_name,
+      // url: repo.url,
+      // html_url: repo.html_url,
+      default_branch: repo.default_branch,
+      updated_at: repo.updated_at,
+    })),
+  );
+
+  return allRepos;
 }
 
 export async function executeFunctionOnFirstSuccessfulIntegration<T>(
