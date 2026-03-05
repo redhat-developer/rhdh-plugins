@@ -10387,7 +10387,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-lightspeed@npm:*, @red-hat-developer-hub/backstage-plugin-lightspeed@workspace:plugins/lightspeed":
+"@red-hat-developer-hub/backstage-plugin-lightspeed@workspace:^, @red-hat-developer-hub/backstage-plugin-lightspeed@workspace:plugins/lightspeed":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-lightspeed@workspace:plugins/lightspeed"
   dependencies:
@@ -14900,7 +14900,7 @@ __metadata:
     "@material-ui/icons": "npm:^4.9.1"
     "@mui/material": "npm:^5.12.2"
     "@playwright/test": "npm:1.58.2"
-    "@red-hat-developer-hub/backstage-plugin-lightspeed": "npm:*"
+    "@red-hat-developer-hub/backstage-plugin-lightspeed": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.12.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
