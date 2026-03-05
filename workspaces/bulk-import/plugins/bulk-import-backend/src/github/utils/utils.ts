@@ -217,10 +217,14 @@ export async function listAllRepositoriesForAuthenticatedUser(
 ): Promise<
   RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data']
 > {
+  const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
+  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
+  const SECOND_PAGE_NUMBER = 2;
+
   const fetchListForAuthenticatedUser = async (pageNumber: number) => {
     return await octokit.rest.repos.listForAuthenticatedUser({
       page: pageNumber,
-      per_page: options?.pageSize ?? 100,
+      per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
       sort: 'full_name',
       direction: 'asc',
     });
@@ -232,7 +236,7 @@ export async function listAllRepositoriesForAuthenticatedUser(
   const lastPageNumberString = firstPageResponse?.headers?.link
     ?.split(',')
     ?.find(s => s.includes('rel="last"'))
-    ?.match(/page=(\d+)/)?.[1];
+    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
 
   if (!lastPageNumberString) {
     return firstPageResponse.data;
@@ -240,15 +244,13 @@ export async function listAllRepositoriesForAuthenticatedUser(
 
   const lastPageNumber = parseInt(lastPageNumberString, 10);
 
-  const secondPageNumber = 2;
-
-  if (lastPageNumber < secondPageNumber) {
+  if (lastPageNumber < SECOND_PAGE_NUMBER) {
     return firstPageResponse.data;
   }
 
   // create promises fetching data from all pages
   const pagePromises = [];
-  for (let i = secondPageNumber; i <= lastPageNumber; i++) {
+  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
     pagePromises.push(fetchListForAuthenticatedUser(i));
   }
 
