@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/plugin-cost-management-backend
 
+## 2.0.3
+
+### Patch Changes
+
+- 1df822e: Updated dependency `@types/express` to `4.17.25`.
+  Updated dependency `@types/lodash` to `4.17.21`.
+- 1df822e: Updated dependency `lodash` to `4.17.23`.
+- 1df822e: Updated dependency `@types/lodash` to `4.17.23`.
+- 1df822e: Updated dependency `@types/lodash` to `4.17.22`.
+  - @red-hat-developer-hub/plugin-cost-management-common@2.0.3
+
 ## 2.0.2
 
 ### Patch Changes
