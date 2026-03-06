@@ -146,13 +146,14 @@ export class PullMetricsByProviderTask implements SchedulerTask {
       return true;
     }
 
-    // entityOverrides.disabledMetrics: when false, entity annotation is ignored
-    const entityOverrideEnabled = this.config.getOptionalBoolean(
-      'scorecard.entityOverrides.disabledMetrics.enabled',
+    // entityOverrides.disabledMetrics: when false, entity list still applied (union) but entity cannot override to re-enable
+    const entityOverridesDisabledMetricsConfig = this.config.getOptionalConfig(
+      'scorecard.entityOverrides.disabledMetrics',
     );
-    const entityOverrideExcept = this.config.getOptionalStringArray(
-      'scorecard.entityOverrides.disabledMetrics.except',
-    );
+    const entityOverrideEnabled =
+      entityOverridesDisabledMetricsConfig?.getOptionalBoolean('enabled');
+    const entityOverrideExcept =
+      entityOverridesDisabledMetricsConfig?.getOptionalStringArray('except');
     const includeMetricsFromAppConfig = this.config.getOptionalStringArray(
       'scorecard.includeMetrics',
     );

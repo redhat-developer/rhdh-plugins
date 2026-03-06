@@ -360,6 +360,29 @@ describe('PullMetricsByProviderTask', () => {
       expect(result).toBe(false);
     });
 
+    it('returns true when enabled is false with nested config and entity annotation (getOptionalConfig path)', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        entityOverrides: {
+          disabledMetrics: {
+            enabled: false,
+            except: [providerId],
+          },
+        },
+      });
+      const entity = createEntity(providerId);
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Disabled metric by annotation (entity overrides disabled): ${providerId}`,
+      );
+    });
+
     it('returns false when disabled by annotation but metric is in entityOverrides.disabledMetrics.except', () => {
       const taskWithConfig = createTaskWithScorecardConfig({
         entityOverrides: {
