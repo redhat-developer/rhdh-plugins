@@ -81,7 +81,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
       </SidebarGroup>
       <SidebarDivider />
       <SidebarGroup label="Menu" icon={<MenuIcon />}>
-        <SidebarItem icon={HomeIcon} to="/catalog" text="Home" />
+        {/* Global nav, not org-specific */}
+        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
         <MyGroupsSidebarItem
           singularTitle="My Group"
           pluralTitle="My Groups"
@@ -90,13 +91,16 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
+        {/* End global nav */}
         <SidebarDivider />
         <SidebarItem icon={ExtensionIcon} to="bcc-tests" text="BCC tests" />
         <SidebarItem icon={ExtensionIcon} to="bui-tests" text="BUI tests" />
         <SidebarItem icon={ExtensionIcon} to="mui4-tests" text="MUI v4 tests" />
         <SidebarItem icon={ExtensionIcon} to="mui5-tests" text="MUI v5 tests" />
         <SidebarDivider />
-        <SidebarScrollWrapper />
+        <SidebarScrollWrapper>
+          {/* Items in this group will be scrollable if they run out of space */}
+        </SidebarScrollWrapper>
       </SidebarGroup>
       <SidebarSpace />
       <SidebarDivider />
