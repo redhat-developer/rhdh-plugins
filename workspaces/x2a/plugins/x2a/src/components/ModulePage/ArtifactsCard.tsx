@@ -114,11 +114,17 @@ export const ArtifactsCard = ({
           <ItemField
             label={t('modulePage.artifacts.ansible_project')}
             value={
-              <ArtifactLink
-                artifact={ansibleProjectArtifact}
-                targetRepoUrl={targetRepoUrl}
-                targetRepoBranch={targetRepoBranch}
-              />
+              ansibleProjectArtifact ? (
+                <Link
+                  to={ansibleProjectArtifact.value}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {humanizeArtifactType(t, ansibleProjectArtifact.type)}
+                </Link>
+              ) : (
+                t('module.phases.none')
+              )
             }
           />
         </Grid>
