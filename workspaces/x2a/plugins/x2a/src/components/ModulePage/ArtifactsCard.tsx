@@ -22,32 +22,8 @@ import { Grid } from '@material-ui/core';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
-import { Link, InfoCard } from '@backstage/core-components';
-import { buildArtifactUrl, humanizeArtifactType } from '../tools';
-
-const ArtifactLink = ({
-  artifact,
-  targetRepoUrl,
-  targetRepoBranch,
-}: {
-  artifact?: Artifact;
-  targetRepoUrl: string;
-  targetRepoBranch: string;
-}) => {
-  const { t } = useTranslation();
-  if (!artifact) {
-    return t('module.phases.none');
-  }
-  return (
-    <Link
-      to={buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch)}
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      {humanizeArtifactType(t, artifact.type)}
-    </Link>
-  );
-};
+import { InfoCard } from '@backstage/core-components';
+import { ArtifactLink } from '../ArtifactLink';
 
 export const ArtifactsCard = ({
   module,
