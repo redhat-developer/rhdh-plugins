@@ -33,6 +33,7 @@ import {
   type DependabotSeverity,
   DEPENDABOT_SEVERITY_METRIC,
   DEPENDABOT_THRESHOLDS,
+  DependabotRepository,
 } from './DependabotConfig';
 
 const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
