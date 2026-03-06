@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import { Link } from '@backstage/core-components';
 import { Chip, makeStyles, SvgIcon, Typography } from '@material-ui/core';
+import { buildRepoBranchUrl } from './tools';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -55,7 +57,15 @@ export const Repository = ({
         label={branch}
         variant="outlined"
       />
-      <Typography variant="body2">{url}</Typography>
+      <Typography variant="body2" component="span">
+        <Link
+          to={buildRepoBranchUrl(url, branch)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {url}
+        </Link>
+      </Typography>
     </div>
   );
 };

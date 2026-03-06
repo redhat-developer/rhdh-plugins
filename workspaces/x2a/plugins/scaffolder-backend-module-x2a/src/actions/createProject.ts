@@ -226,7 +226,6 @@ export function createProjectAction(
       // Output the results
       ctx.output('projectId', project.id);
       ctx.output('initJobId', initResponseData.jobId);
-      // TODO: Build proper URL of project detail page once implemented
       ctx.output('nextUrl', `/x2a/projects/${project.id}`);
     },
   });

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,20 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Route, Routes } from 'react-router-dom';
 
-import { Dashboard } from './Dashboard';
-import { ModulePage } from './ModulePage';
-import { moduleRouteRef, projectRouteRef } from '../routes';
-import { ProjectPage } from './ProjectPage';
-
-export const Router = () => {
-  return (
-    // relative to x2a/
-    <Routes>
-      <Route path={moduleRouteRef.path} element={<ModulePage />} />
-      <Route path={projectRouteRef.path} element={<ProjectPage />} />
-      <Route path="/*" element={<Dashboard />} />
-    </Routes>
-  );
-};
+export { ProjectPage } from './ProjectPage';

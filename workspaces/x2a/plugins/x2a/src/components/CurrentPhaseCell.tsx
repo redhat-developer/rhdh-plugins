@@ -16,20 +16,14 @@
 
 import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation } from '../hooks/useTranslation';
 
-class PhaseStepMapper {
-  private readonly phaseToStep: Record<MigrationPhase, number> = {
-    init: 0,
-    analyze: 1,
-    migrate: 2,
-    publish: 3,
-  };
-
-  getStepNumber(phase: MigrationPhase): number {
-    return this.phaseToStep[phase];
-  }
-}
+const phaseToStep: Record<MigrationPhase, number> = {
+  init: 0,
+  analyze: 1,
+  migrate: 2,
+  publish: 3,
+};
 
 export const CurrentPhaseCell = ({ phase }: { phase?: MigrationPhase }) => {
   const { t } = useTranslation();
@@ -38,10 +32,9 @@ export const CurrentPhaseCell = ({ phase }: { phase?: MigrationPhase }) => {
     return <div>{t('module.notStarted')}</div>;
   }
 
-  const mapper = new PhaseStepMapper();
-  const stepNumber = mapper.getStepNumber(phase);
+  const stepNumber = phaseToStep[phase];
   const phaseName = t(`module.phases.${phase}`);
-  const displayText = `${phaseName} (Step ${stepNumber} of 3)`;
+  const displayText = `${phaseName} (${stepNumber}/3)`;
 
   return <div>{displayText}</div>;
 };

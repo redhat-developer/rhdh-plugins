@@ -13,6 +13,7 @@
  * See the License for the specific governing permissions and limitations under the License.
  */
 import { AuthTokenDescriptor } from './tokenDescriptorTypes';
+import { getScmProvider } from './getScmProvider';
 
 /**
  * Returns the AuthTokenDescriptor for the given repository URL.
@@ -27,9 +28,7 @@ export const getAuthTokenDescriptor = ({
   repoUrl: string;
   readOnly: boolean;
 }): AuthTokenDescriptor => {
-  // Based on https://docs.github.com/en/enterprise-cloud[@latest](https://github.com/latest)/admin/managing-your-enterprise-account/changing-the-url-for-your-enterprise
-  // the GH URL should always contain github.com.
-  const provider = repoUrl.includes('github.com') ? 'github' : 'gitlab';
+  const provider = getScmProvider(repoUrl);
 
   if (provider === 'github') {
     return {
