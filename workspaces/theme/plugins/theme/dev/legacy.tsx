@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  ScmIntegrationsApi,
-  scmIntegrationsApiRef,
-  ScmAuth,
-} from '@backstage/integration-react';
-import {
-  AnyApiFactory,
-  configApiRef,
-  createApiFactory,
-} from '@backstage/core-plugin-api';
+import { createDevApp } from '@backstage/dev-utils';
+import { getAllThemes } from '../src';
+import { ThemeTestPage } from './ThemeTestPage';
 
-export const apis: AnyApiFactory[] = [
-  createApiFactory({
-    api: scmIntegrationsApiRef,
-    deps: { configApi: configApiRef },
-    factory: ({ configApi }) => ScmIntegrationsApi.fromConfig(configApi),
-  }),
-  ScmAuth.createDefaultApiFactory(),
-];
+createDevApp()
+  .addThemes(getAllThemes())
+  .addPage({
+    element: <ThemeTestPage />,
+    title: 'Test page',
+    path: '/',
+  })
+  .render();

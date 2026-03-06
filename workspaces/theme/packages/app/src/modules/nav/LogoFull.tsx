@@ -25,7 +25,7 @@ const useStyles = makeStyles({
   },
 });
 
-const LogoFull = () => {
+export const LogoFull = () => {
   const classes = useStyles();
 
   return (
@@ -41,5 +41,3 @@ const LogoFull = () => {
     </svg>
   );
 };
-
-export default LogoFull;

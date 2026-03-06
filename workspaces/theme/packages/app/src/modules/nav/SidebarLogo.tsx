@@ -19,8 +19,8 @@ import {
   useSidebarOpenState,
 } from '@backstage/core-components';
 import { makeStyles } from '@material-ui/core';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
+import { LogoFull } from './LogoFull';
+import { LogoIcon } from './LogoIcon';
 
 const useSidebarLogoStyles = makeStyles({
   root: {
@@ -40,19 +40,10 @@ const useSidebarLogoStyles = makeStyles({
 export const SidebarLogo = () => {
   const classes = useSidebarLogoStyles();
   const { isOpen } = useSidebarOpenState();
-  const sidebarWidth = isOpen
-    ? sidebarConfig.drawerWidthOpen
-    : sidebarConfig.drawerWidthClosed;
 
   return (
-    <div className={classes.root} style={{ width: sidebarWidth }}>
-      <Link
-        to="/"
-        underline="none"
-        className={classes.link}
-        aria-label="Home"
-        style={{ width: sidebarWidth }}
-      >
+    <div className={classes.root}>
+      <Link to="/" underline="none" className={classes.link} aria-label="Home">
         {isOpen ? <LogoFull /> : <LogoIcon />}
       </Link>
     </div>

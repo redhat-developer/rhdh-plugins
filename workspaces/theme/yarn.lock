@@ -10782,10 +10782,14 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.3"
     "@backstage/core-plugin-api": "npm:^1.12.0"
     "@backstage/dev-utils": "npm:^1.1.17"
+    "@backstage/frontend-defaults": "npm:^0.3.0"
+    "@backstage/frontend-plugin-api": "npm:^0.13.0"
+    "@backstage/plugin-app-react": "npm:^0.1.0"
     "@backstage/plugin-user-settings": "npm:^0.8.29"
     "@backstage/test-utils": "npm:^1.7.13"
     "@backstage/theme": "npm:^0.7.0"
     "@backstage/types": "npm:^1.2.2"
+    "@backstage/ui": "npm:^0.9.1"
     "@material-ui/icons": "npm:^4.11.3"
     "@mui/icons-material": "npm:^5.17.1"
     "@testing-library/jest-dom": "npm:^6.0.0"
@@ -10794,6 +10798,7 @@ __metadata:
     "@testing-library/user-event": "npm:^14.0.0"
     msw: "npm:^1.0.0"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
+    react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
   peerDependencies:
     "@backstage/core-plugin-api": ^1.12.0
     "@backstage/theme": ^0.7.0
@@ -14951,6 +14956,7 @@ __metadata:
     "@backstage/frontend-plugin-api": "npm:^0.13.0"
     "@backstage/integration-react": "npm:^1.2.12"
     "@backstage/plugin-api-docs": "npm:^0.13.1"
+    "@backstage/plugin-app": "npm:^0.3.5"
     "@backstage/plugin-app-react": "npm:^0.1.0"
     "@backstage/plugin-catalog": "npm:^1.32.0"
     "@backstage/plugin-catalog-common": "npm:^1.1.7"
@@ -28963,7 +28969,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.0.2":
+"react-dom@npm:^16.13.1 || ^17.0.0 || ^18.0.0, react-dom@npm:^18.0.2":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:

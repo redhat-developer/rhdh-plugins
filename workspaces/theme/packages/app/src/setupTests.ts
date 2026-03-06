@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export { Root } from './Root';
+import '@testing-library/jest-dom';
