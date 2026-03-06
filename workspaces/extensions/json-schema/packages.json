@@ -134,7 +134,7 @@
                 "level": {
                   "type": "string",
                   "enum": [
-                    "generally-available",
+                    "production",
                     "tech-preview",
                     "dev-preview",
                     "community",

@@ -96,7 +96,7 @@ All plugins inherit from Backstage's standard Entity interface and include:
   ```yaml
   support:
     provider: 'Red Hat' # Required: Support provider name, like 'Red Hat', 'IBM', 'Spotify', 'Backstage Community', etc.
-    level: 'generally-available' # Required: Support level
+    level: 'production' # Required: Support level
   ```
 
 ###### Support Level Values
@@ -104,7 +104,7 @@ All plugins inherit from Backstage's standard Entity interface and include:
 The `support.level` field indicates the maturity and support level
 provided bt the `support.provider`. Like:
 
-- **`generally-available`**: Stable, fully supported plugins ready for production use.
+- **`production`**: Stable, fully supported plugins ready for production use.
 - **`tech-preview`**: A technical preview of a plugin that is not fully supported yet.
 - **`dev-preview`**: An early-stage plugin.
 - **`community`**: Open-source plugins, supported by Community.
@@ -158,7 +158,7 @@ spec:
   publisher: 'Red Hat'
   support:
     name: 'Red Hat'
-    level: 'generally-available'
+    level: 'production'
   categories:
     - 'CI/CD'
     - 'Kubernetes'

@@ -440,9 +440,9 @@ export enum ExtensionsSupportLevel {
     // (undocumented)
     DEV_PREVIEW = "dev-preview",
     // (undocumented)
-    GENERALLY_AVAILABLE = "generally-available",
-    // (undocumented)
     NONE = "none",
+    // (undocumented)
+    PRODUCTION = "production",
     // (undocumented)
     TECH_PREVIEW = "tech-preview"
 }

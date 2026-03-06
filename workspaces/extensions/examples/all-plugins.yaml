@@ -22,7 +22,7 @@ spec:
     - ./plugins/search.yaml
     - ./plugins/support-community.yaml
     - ./plugins/support-dev-preview.yaml
-    - ./plugins/support-generally-available.yaml
+    - ./plugins/support-production.yaml
     - ./plugins/support-none.yaml
     - ./plugins/support-string.yaml
     - ./plugins/support-tech-preview.yaml
