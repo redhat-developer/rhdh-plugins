@@ -96,3 +96,39 @@ export type AggregatedMetricResult = {
     thresholds: ThresholdConfig;
   };
 };
+
+/**
+ * Individual entity metric detail for drill-down
+ * @public
+ */
+export type EntityMetricDetail = {
+  entityRef: string;
+  entityName?: string;
+  entityNamespace?: string;
+  entityKind?: string;
+  owner?: string;
+  metricValue?: number | boolean | null;
+  timestamp?: string;
+  status?: string | null;
+};
+
+/**
+ * Paginated response for entity metrics drill-down
+ * @public
+ */
+export type EntityMetricDetailResponse = {
+  metricId: string;
+  metricMetadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+  };
+  entities: EntityMetricDetail[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+    isCapped: boolean;
+  };
+};
