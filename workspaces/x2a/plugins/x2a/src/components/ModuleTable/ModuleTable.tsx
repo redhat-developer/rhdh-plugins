@@ -68,12 +68,7 @@ const useColumns = ({
   }, []);
 
   const statusCell = useCallback(
-    (rowData: Module) => (
-      <ModuleStatusCell
-        status={rowData.status}
-        errorDetails={rowData.errorDetails}
-      />
-    ),
+    (rowData: Module) => <ModuleStatusCell module={rowData} />,
     [],
   );
 
