@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compare reference.json files before and after regeneration
-# Usage: ./test/compare-reference-files.sh <repo-path>
+# Usage: ./scripts/compare-reference-files.sh <repo-path>
 
 set -e
 
