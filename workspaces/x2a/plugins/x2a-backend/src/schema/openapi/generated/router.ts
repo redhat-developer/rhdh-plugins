@@ -529,6 +529,46 @@ export const spec = {
         }
       }
     },
+    "/projects/{projectId}/log": {
+      "get": {
+        "summary": "Returns logs for the init phase",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Project UUID"
+          },
+          {
+            "in": "query",
+            "name": "streaming",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Whether to stream logs (text/plain) or return all at once"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project's init phase logs",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found or no init job exists"
+          }
+        }
+      }
+    },
     "/projects/{projectId}/modules/{moduleId}/log": {
       "get": {
         "summary": "Returns logs for the latest job of a module",
@@ -774,6 +814,10 @@ export const spec = {
           "status": {
             "$ref": "#/components/schemas/ProjectStatus",
             "description": "Project status calculated from the status of its modules"
+          },
+          "initJob": {
+            "$ref": "#/components/schemas/Job",
+            "description": "Project's init job"
           }
         },
         "required": [

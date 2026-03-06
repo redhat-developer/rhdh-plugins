@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
+import { Link } from '@backstage/core-components';
 import { Chip, makeStyles, SvgIcon, Typography } from '@material-ui/core';
+import LaunchIcon from '@material-ui/icons/Launch';
+import { buildRepoBranchUrl } from './tools';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,6 +25,11 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column' as const,
     alignItems: 'flex-start',
     gap: theme.spacing(0.5),
+  },
+  externalIcon: {
+    marginLeft: 4,
+    verticalAlign: 'middle',
+    fontSize: 'inherit',
   },
 }));
 
@@ -55,7 +63,16 @@ export const Repository = ({
         label={branch}
         variant="outlined"
       />
-      <Typography variant="body2">{url}</Typography>
+      <Typography variant="body2" component="span">
+        <Link
+          to={buildRepoBranchUrl(url, branch)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {url}
+          <LaunchIcon className={classes.externalIcon} aria-hidden />
+        </Link>
+      </Typography>
     </div>
   );
 };

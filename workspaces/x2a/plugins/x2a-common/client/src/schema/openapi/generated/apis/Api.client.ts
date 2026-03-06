@@ -111,6 +111,17 @@ export type ProjectsProjectIdGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdLogGet = {
+  path: {
+    projectId: string;
+  };
+  query: {
+    streaming?: boolean;
+  };
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesGet = {
   path: {
     projectId: string;
@@ -311,6 +322,34 @@ export class DefaultApiClient {
 
     const uri = parser.parse(uriTemplate).expand({
       projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns logs for the init phase
+   * @param projectId - Project UUID
+   * @param streaming - Whether to stream logs (text/plain) or return all at once
+   */
+  public async projectsProjectIdLogGet(
+    // @ts-ignore
+    request: ProjectsProjectIdLogGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<string>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/log{?streaming}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      ...request.query,
     });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {

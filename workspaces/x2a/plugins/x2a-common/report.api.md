@@ -84,6 +84,7 @@ export class DefaultApiClient {
     projectsProjectIdCollectArtifactsPost(request: ProjectsProjectIdCollectArtifactsPost, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>>;
     projectsProjectIdDelete(request: ProjectsProjectIdDelete, options?: RequestOptions): Promise<TypedResponse<ProjectsProjectIdDelete200Response>>;
     projectsProjectIdGet(request: ProjectsProjectIdGet, options?: RequestOptions): Promise<TypedResponse<Project>>;
+    projectsProjectIdLogGet(request: ProjectsProjectIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
     projectsProjectIdModulesGet(request: ProjectsProjectIdModulesGet, options?: RequestOptions): Promise<TypedResponse<Array<Module>>>;
     projectsProjectIdModulesModuleIdGet(request: ProjectsProjectIdModulesModuleIdGet, options?: RequestOptions): Promise<TypedResponse<Module>>;
     projectsProjectIdModulesModuleIdLogGet(request: ProjectsProjectIdModulesModuleIdLogGet, options?: RequestOptions): Promise<TypedResponse<string>>;
@@ -97,6 +98,9 @@ export const getAuthTokenDescriptor: ({ repoUrl, readOnly, }: {
     repoUrl: string;
     readOnly: boolean;
 }) => AuthTokenDescriptor;
+
+// @public
+export const getScmProvider: (repoUrl: string) => "github" | "gitlab";
 
 // @public (undocumented)
 export interface GitRepoAuth {
@@ -171,6 +175,8 @@ export interface Project {
     createdBy: string;
     description?: string;
     id: string;
+    // (undocumented)
+    initJob?: Job;
     // (undocumented)
     migrationPlan?: Artifact;
     name: string;
@@ -265,6 +271,16 @@ export interface ProjectsProjectIdDelete200Response {
 export type ProjectsProjectIdGet = {
     path: {
         projectId: string;
+    };
+};
+
+// @public (undocumented)
+export type ProjectsProjectIdLogGet = {
+    path: {
+        projectId: string;
+    };
+    query: {
+        streaming?: boolean;
     };
 };
 

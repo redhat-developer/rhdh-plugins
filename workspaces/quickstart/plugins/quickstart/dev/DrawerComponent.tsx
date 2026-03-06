@@ -15,16 +15,15 @@
  */
 
 import { PropsWithChildren, useMemo } from 'react';
-import Drawer from '@mui/material/Drawer';
-import { ThemeConfig } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { configApiRef, useApiHolder } from '@backstage/core-plugin-api';
 import { useQuickstartDrawerContext } from '../src/hooks/useQuickstartDrawerContext';
 import { QuickstartItemData } from '../src/types';
 import { filterQuickstartItemsByRole } from '../src/utils';
+import { CustomDrawer } from './CustomDrawer';
 // Role is now provided through context to avoid re-fetching on drawer open/close
 
 export const DrawerComponent = ({ children }: PropsWithChildren) => {
-  const { isDrawerOpen, drawerWidth, userRole, roleLoading } =
+  const { isDrawerOpen, drawerWidth, userRole, roleLoading, setDrawerWidth } =
     useQuickstartDrawerContext();
 
   const apiHolder = useApiHolder();
@@ -57,31 +56,12 @@ export const DrawerComponent = ({ children }: PropsWithChildren) => {
   // No role-fetching or filtering here when the drawer is closed
 
   return (
-    <Drawer
-      sx={{
-        '& .v5-MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          backgroundColor: theme =>
-            `${
-              (theme as ThemeConfig).palette?.rhdh?.general
-                .sidebarBackgroundColor
-            }`,
-          justifyContent: 'space-between',
-        },
-        // Only apply header offset when global header exists
-        'body:has(#global-header) &': {
-          '& .v5-MuiDrawer-paper': {
-            top: '64px !important',
-            height: 'calc(100vh - 64px) !important',
-          },
-        },
-      }}
-      variant="persistent"
-      anchor="right"
-      open={isDrawerOpen}
+    <CustomDrawer
+      isDrawerOpen={isDrawerOpen}
+      drawerWidth={drawerWidth}
+      onWidthChange={setDrawerWidth}
     >
       {children}
-    </Drawer>
+    </CustomDrawer>
   );
 };
