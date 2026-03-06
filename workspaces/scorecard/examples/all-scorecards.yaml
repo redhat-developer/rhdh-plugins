@@ -1,29 +1,14 @@
----
-# Component with both GitHub and Jira Scorecards
 apiVersion: backstage.io/v1alpha1
-kind: Component
+kind: Location
 metadata:
-  name: all-scorecards-service
-  annotations:
-    github.com/project-slug: redhat-developer/rhdh-plugins
-    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
-    jira/project-key: RSPT
+  name: all-scorecards
+  description: A collection of all the scorecards
 spec:
-  type: service
-  owner: user:development/guest
-  lifecycle: production
----
-# Component with both GitHub and Jira Scorecards with not specified owner
-apiVersion: backstage.io/v1alpha1
-kind: Component
-metadata:
-  name: all-scorecards-service-different-owner
-  annotations:
-    github.com/project-slug: redhat-developer/rhdh-plugins
-    backstage.io/source-location: url:https://github.com/redhat-developer/rhdh-plugins
-    jira/project-key: RSPT
-    jira/label: JupiterTeam
-spec:
-  type: service
-  owner: rhdh-team
-  lifecycle: production
+  targets:
+    - ./components/dependabot-scorecard-only.yaml
+    - ./components/entities.yaml
+    - ./components/github-scorecard-only.yaml
+    - ./components/jira-scorecard-only.yaml
+    - ./components/no-scorecards.yaml
+    - ./components/openssf-scorecard-only.yaml
+    - ./orgs/guest.yaml
