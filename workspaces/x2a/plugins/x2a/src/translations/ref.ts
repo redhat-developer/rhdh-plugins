@@ -32,7 +32,26 @@ export const x2aPluginMessages = {
     title: 'Conversion Hub',
     subtitle:
       'Initiate and track the asynchronous conversions of Chef files into production-ready Ansible Playbooks.',
-    devTitle: 'Conversion Hub',
+  },
+  projectPage: {
+    title: 'Project',
+  },
+  projectDetailsCard: {
+    title: 'Project Details',
+    name: 'Name',
+    abbreviation: 'Abbreviation',
+    status: 'Status',
+    createdBy: 'Created By',
+    description: 'Description',
+    sourceRepo: 'Source Repository',
+    targetRepo: 'Target Repository',
+  },
+  projectModulesCard: {
+    title: 'Modules ({{count}})',
+    noModules: 'No modules found yet...',
+  },
+  initPhaseCard: {
+    title: 'Discovery Phase',
   },
   modulePage: {
     title: 'Module Details',
@@ -60,6 +79,8 @@ export const x2aPluginMessages = {
         success: 'Success',
         error: 'Error',
       },
+      resyncMigrationPlanInstructions:
+        'Resync module list to match the migration plan.',
       reanalyzeInstructions:
         'The module migration plan is already present. In case the overall project migration plan has been updated, retrigger the analysis to reflect the changes.',
       rerunAnalyze: 'Recreate the module migration plan',
@@ -81,14 +102,13 @@ export const x2aPluginMessages = {
       commitId: 'Last Commit ID',
       viewLog: 'View Log',
       hideLog: 'Hide Log',
+      noLogsAvailable: 'No logs available yet...',
     },
   },
   table: {
     columns: {
       name: 'Name',
-      abbreviation: 'Abbreviation',
       status: 'Status',
-      description: 'Description',
       sourceRepo: 'Source Repository',
       targetRepo: 'Target Repository',
       createdAt: 'Created At',
@@ -96,7 +116,6 @@ export const x2aPluginMessages = {
     actions: {
       deleteProject: 'Delete project',
     },
-    detailPanel: 'TODO: Details of {{name}} project',
     projectsCount: 'Projects ({{count}})',
   },
   project: {
@@ -126,11 +145,6 @@ export const x2aPluginMessages = {
     notAllowedTitle: 'Access denied',
     notAllowedDescription: 'You are not allowed to access conversion projects.',
   },
-  wizard: {
-    cancel: 'Cancel',
-    back: 'Back',
-    next: 'Next',
-  },
   module: {
     phases: {
       init: 'Init',
@@ -154,13 +168,10 @@ export const x2aPluginMessages = {
     currentPhase: 'Current Phase',
     lastUpdate: 'Last Update',
     notStarted: 'Not Started',
-    lastPhase: 'Last Phase',
     name: 'Name',
     status: 'Status',
     sourcePath: 'Source Path',
     artifacts: 'Artifacts',
-    startedAt: 'Started At',
-    finishedAt: 'Finished At',
     statuses: {
       none: '-',
       pending: 'Pending',
@@ -178,6 +189,7 @@ export const x2aPluginMessages = {
       ansible_project: 'Ansible Project',
     },
   },
+  empty: '-',
 };
 
 /**

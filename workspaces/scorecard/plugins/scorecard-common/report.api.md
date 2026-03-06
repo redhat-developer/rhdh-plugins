@@ -37,6 +37,36 @@ export type AggregatedMetricValue = {
 // @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
 
+// @public
+export type EntityMetricDetail = {
+  entityRef: string;
+  entityName?: string;
+  entityNamespace?: string;
+  entityKind?: string;
+  owner?: string;
+  metricValue?: number | boolean | null;
+  timestamp?: string;
+  status?: string | null;
+};
+
+// @public
+export type EntityMetricDetailResponse = {
+  metricId: string;
+  metricMetadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+  };
+  entities: EntityMetricDetail[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+    isCapped: boolean;
+  };
+};
+
 // @public (undocumented)
 export type Metric<T extends MetricType = MetricType> = {
   id: string;

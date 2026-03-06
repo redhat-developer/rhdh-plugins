@@ -23,10 +23,10 @@ import {
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
-import { Grid } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import {
   getAuthTokenDescriptor,
-  ModulePhase,
+  MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
@@ -41,10 +41,11 @@ import { PhasesCard } from './PhasesCard';
 import { ModulePageBreadcrumb } from './ModulePageBreadcrumb';
 
 export const ModulePage = () => {
+  const { t } = useTranslation();
   const { projectId, moduleId } = useRouteRefParams(moduleRouteRef);
+
   const clientService = useClientService();
   const repoAuthentication = useRepoAuthentication();
-  const { t } = useTranslation();
   const [error, setError] = useState<string | undefined>();
   const [refresh, setRefresh] = useState(0);
 
@@ -71,8 +72,9 @@ export const ModulePage = () => {
   }, [moduleId, refresh]);
 
   const handleRunPhase = useCallback(
-    async (phase: ModulePhase) => {
-      if (!project) {
+    async (phase: MigrationPhase) => {
+      if (!project || phase === 'init') {
+        // The init phase belongs to the project's page
         return;
       }
       setError(undefined);
@@ -136,11 +138,15 @@ export const ModulePage = () => {
 
   return (
     <Page themeId="tool">
-      <Header title={module?.name || t('modulePage.title')}>
-        <ModulePageBreadcrumb />
-      </Header>
+      <Header title={t('modulePage.title')} />
 
       <Content>
+        <Box mb={2}>
+          <ModulePageBreadcrumb
+            projectId={projectId}
+            projectName={project?.name || ''}
+          />
+        </Box>
         {error && (
           <Alert severity="error">
             <AlertTitle>{error}</AlertTitle>

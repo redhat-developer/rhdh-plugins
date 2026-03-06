@@ -19,6 +19,11 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: mockUseTranslation,
 }));
 
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useRouteRef: require('../../test-utils/mockRouteRef').mockUseRouteRef,
+}));
+
 import {
   mockApis,
   renderInTestApp,
@@ -27,61 +32,11 @@ import {
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  Project,
-  ProjectsGet,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { ProjectTable } from './ProjectTable';
-
-const createMockProjects = (count: number, offset: number = 0): Project[] => {
-  return Array.from({ length: count }, (_, i) => {
-    const index = offset + i;
-    return {
-      id: `project-${index}`,
-      name: `Project ${index}`,
-      abbreviation: `P${index}`,
-      description: `Description ${index}`,
-      sourceRepoUrl: `https://github.com/org/source-repo${index}`,
-      targetRepoUrl: `https://github.com/org/target-repo${index}`,
-      sourceRepoBranch: `main${index}`,
-      targetRepoBranch: `main${index}`,
-      createdAt: new Date(
-        `2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
-      ),
-      createdBy: `user:default/user${index}`,
-    };
-  });
-};
-
-const defaultTableProps = (
-  projects: Project[],
-  totalCount: number,
-  overrides?: Partial<{
-    page: number;
-    pageSize: number;
-    orderBy: number;
-    orderDirection: ProjectsGet['query']['order'];
-  }>,
-) => {
-  const orderBy = overrides?.orderBy ?? 0;
-  const orderDirection = overrides?.orderDirection ?? 'asc';
-  const page = overrides?.page ?? 0;
-  const pageSize = overrides?.pageSize ?? 10;
-
-  return {
-    projects,
-    totalCount,
-    forceRefresh: jest.fn(),
-    orderBy,
-    orderDirection,
-    setOrderBy: jest.fn(),
-    setOrderDirection: jest.fn(),
-    page,
-    pageSize,
-    onPageChange: jest.fn(),
-    onRowsPerPageChange: jest.fn(),
-  };
-};
+import {
+  createMockProjects,
+  defaultTableProps,
+} from '../../test-utils/projectListTestUtils';
 
 describe('ProjectTable', () => {
   let fetchApiMock: jest.Mock;
@@ -249,7 +204,7 @@ describe('ProjectTable', () => {
         </TestApiProvider>,
       );
 
-      expect(screen.getByText(/Projects \(10\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Projects \(20\)/)).toBeInTheDocument();
     });
   });
 

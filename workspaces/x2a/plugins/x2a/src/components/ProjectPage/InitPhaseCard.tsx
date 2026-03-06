@@ -13,30 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Tooltip } from '@material-ui/core';
+import { InfoCard } from '@backstage/core-components';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { PhaseDetails } from '../PhaseDetails';
 
-export const ModuleStatusCell = ({
-  status,
-  errorDetails,
-}: {
-  status?: ModuleStatus;
-  errorDetails?: string;
-}) => {
+export const InitPhaseCard = ({ project }: { project: Project }) => {
   const { t } = useTranslation();
 
-  const statusText = t(`module.statuses.${status || 'none'}`);
-  if (errorDetails) {
-    return (
-      <div>
-        <Tooltip title={errorDetails}>
-          <div>{statusText}</div>
-        </Tooltip>
-      </div>
-    );
-  }
-  return <div>{statusText}</div>;
+  return (
+    <InfoCard title={t('initPhaseCard.title')} variant="gridItem">
+      <PhaseDetails
+        phase={project.initJob}
+        phaseName="init"
+        projectId={project.id}
+        // TODO:Add onRunPhase to resync the migration plan
+      />
+    </InfoCard>
+  );
 };

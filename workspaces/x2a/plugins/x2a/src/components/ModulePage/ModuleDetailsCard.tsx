@@ -23,7 +23,7 @@ import { ItemField } from '../ItemField';
 
 export const ModuleDetailsCard = ({ module }: { module?: Module }) => {
   const { t } = useTranslation();
-  const empty = t('module.phases.none');
+  const empty = t('empty');
 
   return (
     <InfoCard title={t('modulePage.title')} variant="gridItem">
