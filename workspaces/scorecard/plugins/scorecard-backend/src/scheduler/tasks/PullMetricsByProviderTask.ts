@@ -114,77 +114,95 @@ export class PullMetricsByProviderTask implements SchedulerTask {
   }
 
   /**
-   * Check if the metric is excluded by the app-config or the entity annotation
-   * 1. It loads include/exclude metrics from app-config.yaml and exclude metric from the entity annotation.
-   * 2. Include metric from app-config overrides the exclude metric from the entity annotation.
-   * 3. Exclude metric from app-config wins over include metric from app-config.
+   * Check if the metric is disabled by app-config or entity annotation.
+   * 1. Top-level disabledMetrics: always disabled, entity cannot override.
+   * 2. entityOverrides.disabledMetrics.enabled: if false, entity annotation is ignored.
+   * 3. entityOverrides.disabledMetrics.except (or includeMetrics): when entity override is allowed, these metrics cannot be disabled by entity.
    * @param providerId - The ID of the provider
    * @param entity - The entity to check
    * @param logger - The logger to use
-   * @returns true if the metric is excluded, false otherwise
+   * @returns true if the metric is disabled, false otherwise
    */
   private isMetricIdExcluded(
     providerId: string,
     entity: Entity,
     logger: LoggerService,
   ): boolean {
-    const excludedMetricsFromAppConfig = this.config.getOptionalStringArray(
-      'scorecard.exclude_metrics',
+    const disabledMetricsFromAppConfig = this.config.getOptionalStringArray(
+      'scorecard.disabledMetrics',
     );
     logger.debug(
-      `Loaded scorecard.exclude_metrics from app-config: ${JSON.stringify(
-        excludedMetricsFromAppConfig,
+      `Loaded scorecard.disabledMetrics from app-config: ${JSON.stringify(
+        disabledMetricsFromAppConfig,
       )}`,
     );
 
-    const isExcludedByAppConfig =
-      excludedMetricsFromAppConfig?.includes(providerId) ?? false;
+    const isDisabledByAppConfig =
+      disabledMetricsFromAppConfig?.includes(providerId) ?? false;
 
-    // if the metric is excluded by app-config, automatically returns true
-    if (isExcludedByAppConfig) {
-      logger.info(`Excluded metric by app-config: ${providerId}`);
+    // if the metric is disabled by app-config, always disabled (entity cannot override)
+    if (isDisabledByAppConfig) {
+      logger.info(`Disabled metric by app-config: ${providerId}`);
       return true;
     }
 
-    const includedMetricsFromAppConfig = this.config.getOptionalStringArray(
-      'scorecard.include_metrics',
+    // entityOverrides.disabledMetrics: when false, entity annotation is ignored
+    const entityOverrideEnabled = this.config.getOptionalBoolean(
+      'scorecard.entityOverrides.disabledMetrics.enabled',
     );
+    const entityOverrideExcept = this.config.getOptionalStringArray(
+      'scorecard.entityOverrides.disabledMetrics.except',
+    );
+    const includeMetricsFromAppConfig = this.config.getOptionalStringArray(
+      'scorecard.includeMetrics',
+    );
+    const exceptList = entityOverrideExcept ?? includeMetricsFromAppConfig;
     logger.debug(
-      `Loaded scorecard.include_metrics from app-config: ${JSON.stringify(
-        includedMetricsFromAppConfig,
+      `Loaded entityOverrides.disabledMetrics (enabled=${entityOverrideEnabled}, except=${JSON.stringify(
+        exceptList,
+      )}) and includeMetrics (deprecated): ${JSON.stringify(
+        includeMetricsFromAppConfig,
       )}`,
     );
 
-    const excludedMetricsFromComponentAnnotation =
-      entity.metadata.annotations?.['scorecard.io/exclude_metrics']
+    const disabledMetricsFromComponentAnnotation =
+      entity.metadata.annotations?.['scorecard.io/disabled-metrics']
         ?.split(',')
         .map((s: string) => s.trim());
     logger.debug(
-      `Loaded scorecard.io/exclude_metrics annotation: ${JSON.stringify(
-        excludedMetricsFromComponentAnnotation,
+      `Loaded scorecard.io/disabled-metrics annotation: ${JSON.stringify(
+        disabledMetricsFromComponentAnnotation,
       )}`,
     );
 
-    const isIncludedByAppConfig =
-      includedMetricsFromAppConfig?.includes(providerId) ?? false;
-    const isExcludedByAnnotation =
-      excludedMetricsFromComponentAnnotation?.includes(providerId) ?? false;
+    const isInExceptList = exceptList?.includes(providerId) ?? false;
+    const isDisabledByAnnotation =
+      disabledMetricsFromComponentAnnotation?.includes(providerId) ?? false;
 
-    // if the metric is excluded by annotation but is included by app-config, returns false
-    if (isExcludedByAnnotation && isIncludedByAppConfig) {
+    // when entity overrides are disabled (enabled === false): apply both app-config and entity list (union) — entity cannot override to re-enable
+    if (entityOverrideEnabled === false) {
+      if (isDisabledByAnnotation) {
+        logger.info(
+          `Disabled metric by annotation (entity overrides disabled): ${providerId}`,
+        );
+        return true;
+      }
+      return false;
+    }
+
+    // when entity overrides are allowed (enabled !== false): except list = metrics entity cannot disable
+    if (isDisabledByAnnotation && isInExceptList) {
       logger.info(
-        `Exclusion override: metric excluded by annotation but INCLUDED by app-config: ${providerId}`,
+        `Entity override: metric disabled by annotation but in entityOverrides.disabledMetrics.except (must run): ${providerId}`,
       );
       return false;
     }
 
-    // if the metric is excluded by annotation, returns true
-    if (isExcludedByAnnotation && !isIncludedByAppConfig) {
-      logger.info(`Excluded metric by annotation: ${providerId}`);
+    if (isDisabledByAnnotation && !isInExceptList) {
+      logger.info(`Disabled metric by annotation: ${providerId}`);
       return true;
     }
 
-    // if the metric is not excluded by app-config or annotation, returns false
     return false;
   }
 

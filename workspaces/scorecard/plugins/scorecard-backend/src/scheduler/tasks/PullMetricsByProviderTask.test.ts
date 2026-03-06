@@ -161,8 +161,11 @@ describe('PullMetricsByProviderTask', () => {
 
     function createTaskWithScorecardConfig(
       scorecardOverrides: {
-        include_metrics?: string[];
-        exclude_metrics?: string[];
+        includeMetrics?: string[];
+        disabledMetrics?: string[];
+        entityOverrides?: {
+          disabledMetrics?: { enabled?: boolean; except?: string[] };
+        };
       } = {},
     ) {
       const config = mockServices.rootConfig({
@@ -195,16 +198,16 @@ describe('PullMetricsByProviderTask', () => {
           name: 'test-entity',
           ...(annotationValue !== undefined && {
             annotations: {
-              'scorecard.io/exclude_metrics': annotationValue,
+              'scorecard.io/disabled-metrics': annotationValue,
             },
           }),
         },
       };
     }
 
-    it('returns true when metric is in app-config exclude_metrics', () => {
+    it('returns true when metric is in app-config disabledMetrics', () => {
       const taskWithConfig = createTaskWithScorecardConfig({
-        exclude_metrics: [providerId],
+        disabledMetrics: [providerId],
       });
       const entity = createEntity();
 
@@ -216,14 +219,14 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Excluded metric by app-config: ${providerId}`,
+        `Disabled metric by app-config: ${providerId}`,
       );
     });
 
-    it('returns true when metric is in app-config exclude_metrics even if also in include_metrics (exclude wins)', () => {
+    it('returns true when metric is in app-config disabledMetrics even if also in includeMetrics (disabled wins)', () => {
       const taskWithConfig = createTaskWithScorecardConfig({
-        include_metrics: [providerId],
-        exclude_metrics: [providerId],
+        includeMetrics: [providerId],
+        disabledMetrics: [providerId],
       });
       const entity = createEntity();
 
@@ -235,13 +238,13 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Excluded metric by app-config: ${providerId}`,
+        `Disabled metric by app-config: ${providerId}`,
       );
     });
 
-    it('returns false when excluded by annotation but included by app-config (include overrides annotation)', () => {
+    it('returns false when disabled by annotation but included by app-config (include overrides annotation)', () => {
       const taskWithConfig = createTaskWithScorecardConfig({
-        include_metrics: [providerId],
+        includeMetrics: [providerId],
       });
       const entity = createEntity(providerId);
 
@@ -253,11 +256,11 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(result).toBe(false);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Exclusion override: metric excluded by annotation but INCLUDED by app-config: ${providerId}`,
+        `Entity override: metric disabled by annotation but in entityOverrides.disabledMetrics.except (must run): ${providerId}`,
       );
     });
 
-    it('returns true when excluded by annotation and not in app-config include_metrics', () => {
+    it('returns true when disabled by annotation and not in app-config includeMetrics', () => {
       const taskWithConfig = createTaskWithScorecardConfig();
       const entity = createEntity(providerId);
 
@@ -269,13 +272,13 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Excluded metric by annotation: ${providerId}`,
+        `Disabled metric by annotation: ${providerId}`,
       );
     });
 
-    it('returns true when excluded by annotation and app-config include_metrics exists but does not contain this metric', () => {
+    it('returns true when disabled by annotation and app-config includeMetrics exists but does not contain this metric', () => {
       const taskWithConfig = createTaskWithScorecardConfig({
-        include_metrics: ['other_metric'],
+        includeMetrics: ['other_metric'],
       });
       const entity = createEntity(providerId);
 
@@ -287,7 +290,7 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Excluded metric by annotation: ${providerId}`,
+        `Disabled metric by annotation: ${providerId}`,
       );
     });
 
@@ -303,11 +306,11 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(result).toBe(true);
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Excluded metric by annotation: ${providerId}`,
+        `Disabled metric by annotation: ${providerId}`,
       );
     });
 
-    it('returns false when not excluded by app-config or annotation', () => {
+    it('returns false when not disabled by app-config or annotation', () => {
       const taskWithConfig = createTaskWithScorecardConfig();
       const entity = createEntity();
 
@@ -318,6 +321,63 @@ describe('PullMetricsByProviderTask', () => {
       );
 
       expect(result).toBe(false);
+    });
+
+    it('returns true when entityOverrides.disabledMetrics.enabled is false and metric is in entity annotation (union of app-config and entity list)', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        entityOverrides: {
+          disabledMetrics: { enabled: false },
+        },
+      });
+      const entity = createEntity(providerId);
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(true);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Disabled metric by annotation (entity overrides disabled): ${providerId}`,
+      );
+    });
+
+    it('returns false when entityOverrides.disabledMetrics.enabled is false and metric is not in entity annotation', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        entityOverrides: {
+          disabledMetrics: { enabled: false },
+        },
+      });
+      const entity = createEntity(); // no annotation
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it('returns false when disabled by annotation but metric is in entityOverrides.disabledMetrics.except', () => {
+      const taskWithConfig = createTaskWithScorecardConfig({
+        entityOverrides: {
+          disabledMetrics: { enabled: true, except: [providerId] },
+        },
+      });
+      const entity = createEntity(providerId);
+
+      const result = (taskWithConfig as any).isMetricIdExcluded(
+        providerId,
+        entity,
+        mockLogger,
+      );
+
+      expect(result).toBe(false);
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Entity override: metric disabled by annotation but in entityOverrides.disabledMetrics.except (must run): ${providerId}`,
+      );
     });
 
     it('returns false when no config and no annotation', () => {
@@ -482,13 +542,15 @@ describe('PullMetricsByProviderTask', () => {
       );
     });
 
-    it('should skip entities when scorecard.io/exclude_metrics annotation contains the provider id', async () => {
+    it('should skip entities when scorecard.io/disabled-metrics annotation contains the provider id', async () => {
       const entityExcluded = {
         apiVersion: '1.0.0',
         kind: 'Component',
         metadata: {
           name: 'excluded-entity',
-          annotations: { 'scorecard.io/exclude_metrics': 'github.test_metric' },
+          annotations: {
+            'scorecard.io/disabled-metrics': 'github.test_metric',
+          },
         },
       };
       const entityIncluded = {
