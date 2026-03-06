@@ -90,7 +90,7 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
     };
   }
 
-  getRepository(entity: Entity): { owner: string; repo: string } {
+  getRepository(entity: Entity): DependabotRepository {
     const projectSlug =
       entity.metadata.annotations?.[GITHUB_PROJECT_ANNOTATION];
     if (!projectSlug) {
@@ -114,11 +114,11 @@ export class DependabotMetricProvider implements MetricProvider<'number'> {
   }
 
   async calculateMetric(entity: Entity): Promise<number> {
-    const { owner, repo } = this.getRepository(entity);
+    const repository = this.getRepository(entity);
     const { target } = getEntitySourceLocation(entity);
     const alerts = await this.dependabotClient.getAlerts(
       target,
-      { owner, repo },
+      repository,
       this.severity,
     );
     return alerts.length;

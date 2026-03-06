@@ -21,6 +21,10 @@ import {
   ScmIntegrations,
 } from '@backstage/integration';
 import { Octokit } from '@octokit/rest';
+import {
+  DependabotRepository,
+  DependabotSeverity,
+} from '../metricProviders/DependabotConfig';
 
 interface GitHubDependabotAlert {
   number: number;
@@ -31,8 +35,6 @@ interface GitHubDependabotAlert {
     severity: string;
   };
 }
-
-export type DependabotAlert = GitHubDependabotAlert;
 
 const PER_PAGE = 100;
 export class DependabotClient {
@@ -58,7 +60,7 @@ export class DependabotClient {
     const credentialsProvider =
       DefaultGithubCredentialsProvider.fromIntegrations(this.integrations);
 
-    const { token, headers } = await credentialsProvider.getCredentials({
+    const { token } = await credentialsProvider.getCredentials({
       url,
     });
 
@@ -79,9 +81,9 @@ export class DependabotClient {
    */
   async getAlerts(
     url: string,
-    repository: { owner: string; repo: string },
-    severity: 'critical' | 'high' | 'medium' | 'low',
-  ): Promise<DependabotAlert[]> {
+    repository: DependabotRepository,
+    severity: DependabotSeverity,
+  ): Promise<GitHubDependabotAlert[]> {
     this.logger.debug(
       `Fetching Dependabot ${severity} alerts for ${repository.owner}/${repository.repo}`,
     );
@@ -97,9 +99,9 @@ export class DependabotClient {
           severity,
           per_page: PER_PAGE,
         },
-      )) as unknown as DependabotAlert[];
+      )) as unknown as GitHubDependabotAlert[];
 
-      this.logger.info(
+      this.logger.debug(
         `Fetched ${allAlerts.length} Dependabot ${severity} alert(s) for ${repository.owner}/${repository.repo}`,
       );
       return allAlerts;

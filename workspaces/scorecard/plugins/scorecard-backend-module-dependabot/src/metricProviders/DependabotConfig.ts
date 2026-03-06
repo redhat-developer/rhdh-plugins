@@ -18,6 +18,11 @@ import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scoreca
 
 export type DependabotSeverity = 'critical' | 'high' | 'medium' | 'low';
 
+export type DependabotRepository = {
+  owner: string;
+  repo: string;
+};
+
 export interface DependabotMetricConfig {
   name: string;
   displayTitle: string;
