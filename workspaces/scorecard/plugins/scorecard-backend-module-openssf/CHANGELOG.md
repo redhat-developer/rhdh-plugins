@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf
 
+## 0.1.7
+
+### Patch Changes
+
+- Updated dependencies [c83b206]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.5.0
+
 ## 0.1.6
 
 ### Patch Changes
