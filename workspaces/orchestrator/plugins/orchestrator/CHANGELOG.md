@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.5.2
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+
 ## 5.5.1
 
 ### Patch Changes
