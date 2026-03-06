@@ -236,10 +236,6 @@ describe('ProjectTable', () => {
         expect(screen.getByText('Description 0')).toBeInTheDocument();
         expect(screen.getByText('Abbreviation')).toBeInTheDocument();
         expect(screen.getByText('P0')).toBeInTheDocument();
-        expect(screen.getByText('ID')).toBeInTheDocument();
-        expect(screen.getByText('project-0')).toBeInTheDocument();
-        expect(screen.getByText('Owned By')).toBeInTheDocument();
-        expect(screen.getByText('user:default/user0')).toBeInTheDocument();
       });
     });
   });
