@@ -18,11 +18,13 @@ import {
   InputError,
   NotAllowedError,
 } from '@backstage/errors';
-import express, { Request } from 'express';
+import express from 'express';
 import Router from 'express-promise-router';
 import type { CatalogMetricService } from './CatalogMetricService';
 import type { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
+  BackstageCredentials,
+  LoggerService,
   type HttpAuthService,
   type PermissionsService,
 } from '@backstage/backend-plugin-api';
@@ -44,6 +46,7 @@ import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { validateMetricsSchema } from '../validation/validateMetricsSchema';
 import { AggregatedMetricMapper } from './mappers';
+import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 
 export type ScorecardRouterOptions = {
   metricProvidersRegistry: MetricProvidersRegistry;
@@ -51,6 +54,7 @@ export type ScorecardRouterOptions = {
   catalog: CatalogService;
   httpAuth: HttpAuthService;
   permissions: PermissionsService;
+  logger: LoggerService;
 };
 
 export async function createRouter({
@@ -59,15 +63,15 @@ export async function createRouter({
   catalog,
   httpAuth,
   permissions,
+  logger,
 }: ScorecardRouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
 
   const authorizeConditional = async (
-    request: Request,
+    credentials: BackstageCredentials,
     permission: ResourcePermission<'scorecard-metric'> | BasicPermission,
   ) => {
-    const credentials = await httpAuth.credentials(request);
     let decision: PolicyDecision;
 
     if (permission.type === 'resource') {
@@ -123,7 +127,7 @@ export async function createRouter({
 
   router.get('/metrics/catalog/:kind/:namespace/:name', async (req, res) => {
     const { conditions } = await authorizeConditional(
-      req,
+      await httpAuth.credentials(req),
       scorecardMetricReadPermission,
     );
 
@@ -152,7 +156,7 @@ export async function createRouter({
     const { metricId } = req.params;
 
     const { conditions } = await authorizeConditional(
-      req,
+      await httpAuth.credentials(req),
       scorecardMetricReadPermission,
     );
 
@@ -197,6 +201,65 @@ export async function createRouter({
       ),
     );
   });
+
+  router.get(
+    '/metrics/:metricId/catalog/aggregations/entities',
+    async (req, res) => {
+      const { metricId } = req.params;
+
+      const {
+        page,
+        pageSize,
+        status,
+        owner,
+        kind,
+        namespace,
+        entityName,
+        sortBy,
+        sortOrder,
+      } = validateDrillDownMetricsSchema(req.query, logger);
+
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
+      const { conditions } = await authorizeConditional(
+        credentials,
+        scorecardMetricReadPermission,
+      );
+
+      const metric = metricProvidersRegistry.getMetric(metricId);
+      const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+
+      if (authorizedMetrics.length === 0) {
+        throw new NotAllowedError(
+          `To view the scorecard metrics, your administrator must grant you the required permission.`,
+        );
+      }
+
+      const userEntityRef = credentials?.principal?.userEntityRef;
+
+      if (!userEntityRef) {
+        throw new AuthenticationError('User entity reference not found');
+      }
+
+      const entityMetrics = await catalogMetricService.getEntityMetricDetails(
+        metricId,
+        credentials,
+        {
+          status,
+          owner,
+          kind,
+          entityName,
+          namespace,
+          sortBy,
+          sortOrder,
+          page,
+          limit: pageSize,
+        },
+      );
+
+      res.json(entityMetrics);
+    },
+  );
 
   return router;
 }
