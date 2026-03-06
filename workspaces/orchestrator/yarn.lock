@@ -12589,7 +12589,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-node@workspace:plugins/orchestrator-node"
   dependencies:
-    "@backstage/backend-plugin-api": ^1.4.4
+    "@backstage/backend-plugin-api": ^1.5.0
     "@backstage/cli": ^0.34.4
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
   languageName: unknown
