@@ -21,6 +21,23 @@ export interface Config {
   scorecard?: {
     /** Number of days to retain metric data in the database. Older data will be automatically cleaned up. Default: 365 days */
     dataRetentionDays?: number;
+    /** List of metric IDs (e.g. openssf.packaging) that are disabled globally. Entity annotations cannot override this. */
+    disabledMetrics?: string[];
+    /**
+     * Control whether users can override behavior via entity annotations.
+     * This only affects entity annotations (e.g. scorecard.io/disabled-metrics); it does not affect scorecard.disabledMetrics or other app-config.
+     */
+    entityOverrides?: {
+      /** Whether entity scorecard.io/disabled-metrics annotation can override. Only affects annotations; global disabledMetrics is unchanged. */
+      disabledMetrics?: {
+        /** If true (default), entity can disable metrics via annotation; except list can force some to run. If false, entity list is still applied (union with disabledMetrics) but entity cannot override to re-enable anything. */
+        enabled?: boolean;
+        /** When enabled is true: metric IDs that entity cannot disable (must run). When enabled is false: not used. */
+        except?: string[];
+      };
+    };
+    /** @deprecated Use entityOverrides.disabledMetrics.except (with enabled: true) instead. List of metric IDs that must run even when disabled via entity annotation. */
+    includeMetrics?: string[];
     /** Configuration for scorecard metric providers */
     plugins?: {
       /** Configuration for datasource */

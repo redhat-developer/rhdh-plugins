@@ -49,6 +49,13 @@ const mockOpenSSFResponse: OpenSSFResponse = {
       details: null,
       documentation: { short: '', url: '' },
     },
+    {
+      name: 'Code-Review',
+      score: 9,
+      reason: null,
+      details: null,
+      documentation: { short: '', url: '' },
+    },
   ],
 };
 
