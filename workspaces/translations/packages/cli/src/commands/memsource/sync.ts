@@ -19,13 +19,14 @@ import path from 'node:path';
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
 
-import { loadI18nConfig, mergeConfigWithOptions } from '../lib/i18n/config';
-import { safeExecSyncOrThrow } from '../lib/utils/exec';
+import { loadI18nConfig, mergeConfigWithOptions } from '../../lib/i18n/config';
+import { safeExecSyncOrThrow } from '../../lib/utils/exec';
 
-import { generateCommand } from './generate';
+import { generateCommand } from '../generate';
+import { deployCommand } from '../deploy';
+
 import { uploadCommand } from './upload';
 import { downloadCommand } from './download';
-import { deployCommand } from './deploy';
 
 interface SyncOptions {
   sourceDir: string;

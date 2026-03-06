@@ -4,19 +4,27 @@ Complete guide for testing the translations CLI before release.
 
 ## Quick Test Commands
 
+### Quick smoke test (fastest)
+
 ```bash
-# Quick smoke test (fastest)
 yarn test:quick
-
-# Full integration test
-yarn test:integration
-
-# Unit tests (vitest)
-yarn test
-
-# Manual testing checklist
-# See: test/manual-test-checklist.md
 ```
+
+### Full integration test
+
+```bash
+yarn test:integration
+```
+
+### Unit tests
+
+```bash
+yarn test
+```
+
+## Manual testing checklist
+
+See: test/manual-test-checklist.md
 
 ## Testing Strategy
 
@@ -52,7 +60,7 @@ yarn test:integration
 yarn test
 ```
 
-- Runs vitest test suite
+- Runs unit test suite
 - Tests individual functions
 - Fast feedback during development
 
@@ -87,7 +95,7 @@ yarn link  # or use: node bin/translations-cli
 
 # Test generate
 cd /Users/yicai/redhat/community-plugins
-translations-cli i18n generate --source-dir . --output-dir i18n
+translations-cli generate --source-dir . --output-dir i18n
 
 # Verify:
 # 1. reference.json only contains English
@@ -100,7 +108,7 @@ translations-cli i18n generate --source-dir . --output-dir i18n
 
 ```bash
 cd /Users/yicai/redhat/rhdh-plugins/workspaces/translations
-translations-cli i18n generate --source-dir . --output-dir i18n
+translations-cli generate --source-dir . --output-dir i18n
 ```
 
 ## Pre-Release Checklist
@@ -163,7 +171,7 @@ yarn build
 
 ```bash
 # Use direct path
-node bin/translations-cli i18n --help
+node bin/translations-cli --help
 
 # Or link globally
 yarn link

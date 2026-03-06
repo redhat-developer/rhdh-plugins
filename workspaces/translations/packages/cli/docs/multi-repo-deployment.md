@@ -39,13 +39,13 @@ From any of the three repositories:
 
 ```bash
 # Download all completed jobs
-translations-cli i18n download
+translations-cli memsource download
 
 # Or download specific job IDs
-translations-cli i18n download --job-ids "13,14,16,17,19,20"
+translations-cli memsource download --job-ids "13,14,16,17,19,20"
 
 # Or download specific languages
-translations-cli i18n download --languages "it,ja"
+translations-cli memsource download --languages "it,ja"
 ```
 
 **Note**: Downloaded files are named with repo prefix:
@@ -62,23 +62,23 @@ The deploy command automatically detects which repo you're in and processes only
 
 ```bash
 cd /path/to/rhdh-plugins
-translations-cli i18n deploy
+translations-cli deploy
 ```
 
 #### For community-plugins:
 
 ```bash
 cd /path/to/community-plugins
-translations-cli i18n deploy
+translations-cli deploy
 ```
 
 #### For rhdh:
 
 ```bash
 cd /path/to/rhdh
-translations-cli i18n deploy
+translations-cli deploy
 # Or from shared location:
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 ```
 
 **Special Feature: Deploying backstage/community-plugins files from rhdh root**
@@ -109,7 +109,7 @@ cd /path/to/community-plugins && git pull
 
 # 2. Deploy from rhdh root (processes rhdh, backstage, and community-plugins files)
 cd /path/to/rhdh
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 
 # 3. Create PR in community-plugins repo with deployed TS files
 cd /path/to/community-plugins
@@ -125,18 +125,18 @@ git push
 ```bash
 # 1. Download all translations (from any repo)
 cd /path/to/rhdh-plugins
-translations-cli i18n download
+translations-cli memsource download
 
 # 2. Deploy to rhdh-plugins
-translations-cli i18n deploy
+translations-cli deploy
 
 # 3. Deploy to community-plugins
 cd /path/to/community-plugins
-translations-cli i18n deploy --source-dir /path/to/rhdh-plugins/i18n/downloads
+translations-cli deploy --source-dir /path/to/rhdh-plugins/i18n/downloads
 
 # 4. Deploy to rhdh
 cd /path/to/rhdh
-translations-cli i18n deploy --source-dir /path/to/rhdh-plugins/i18n/downloads
+translations-cli deploy --source-dir /path/to/rhdh-plugins/i18n/downloads
 ```
 
 ### Option B: Use shared download directory
@@ -145,17 +145,17 @@ translations-cli i18n deploy --source-dir /path/to/rhdh-plugins/i18n/downloads
 # 1. Download to a shared location
 mkdir -p ~/translations/downloads
 cd /path/to/rhdh-plugins
-translations-cli i18n download --output-dir ~/translations/downloads
+translations-cli memsource download --output-dir ~/translations/downloads
 
 # 2. Deploy from shared location to each repo
 cd /path/to/rhdh-plugins
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 
 cd /path/to/community-plugins
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 
 cd /path/to/rhdh
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 ```
 
 ### Option C: Unified deployment from rhdh root (Recommended for backstage/community-plugins)
@@ -169,11 +169,11 @@ cd /path/to/community-plugins && git pull
 # 2. Download all translations to shared location
 mkdir -p ~/translations/downloads
 cd /path/to/rhdh-plugins
-translations-cli i18n download --output-dir ~/translations/downloads
+translations-cli memsource download --output-dir ~/translations/downloads
 
 # 3. Deploy everything from rhdh root
 cd /path/to/rhdh
-translations-cli i18n deploy --source-dir ~/translations/downloads
+translations-cli deploy --source-dir ~/translations/downloads
 
 # This will:
 # - Deploy rhdh translations to rhdh repo
