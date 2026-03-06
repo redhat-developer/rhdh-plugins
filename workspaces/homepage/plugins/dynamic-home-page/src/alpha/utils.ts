@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import { homepageTranslationRef } from '../alpha/translations';
+import { HomePageCardConfig } from '../types';
 
-type Messages = typeof homepageTranslationRef.T;
-
-interface TransProps<TMessages extends { [key in string]: string }> {
-  message: keyof TMessages;
-  params?: any;
+export function isCardADefaultConfiguration(
+  cardData: HomePageCardConfig,
+): boolean {
+  return (
+    !!cardData.breakpointLayouts ||
+    Object.entries(cardData.breakpointLayouts ?? {})?.length === 0
+  );
 }
-
-export const Trans = ({ message, params }: TransProps<Messages>) => {
-  const { t } = useTranslation();
-  return t(message, params);
-};

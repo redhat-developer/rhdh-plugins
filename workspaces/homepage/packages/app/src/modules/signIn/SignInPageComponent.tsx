@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import { homepageTranslationRef } from '../alpha/translations';
+import { SignInPage } from '@backstage/core-components';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import type { SignInPageProps } from '@backstage/plugin-app-react';
 
-type Messages = typeof homepageTranslationRef.T;
-
-interface TransProps<TMessages extends { [key in string]: string }> {
-  message: keyof TMessages;
-  params?: any;
-}
-
-export const Trans = ({ message, params }: TransProps<Messages>) => {
-  const { t } = useTranslation();
-  return t(message, params);
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
 };
+
+export function SignInPageComponent(props: SignInPageProps) {
+  return <SignInPage {...props} auto providers={['guest', githubProvider]} />;
+}

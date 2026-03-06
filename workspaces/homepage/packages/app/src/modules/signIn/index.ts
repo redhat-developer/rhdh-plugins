@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import { homepageTranslationRef } from '../alpha/translations';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SignInPageBlueprint } from '@backstage/plugin-app-react';
 
-type Messages = typeof homepageTranslationRef.T;
-
-interface TransProps<TMessages extends { [key in string]: string }> {
-  message: keyof TMessages;
-  params?: any;
-}
-
-export const Trans = ({ message, params }: TransProps<Messages>) => {
-  const { t } = useTranslation();
-  return t(message, params);
-};
+export const signInModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    SignInPageBlueprint.make({
+      params: {
+        loader: () =>
+          import('./SignInPageComponent').then(m => m.SignInPageComponent),
+      },
+    }),
+  ],
+});

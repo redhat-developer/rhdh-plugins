@@ -14,23 +14,10 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SidebarContent } from './Sidebar';
 
-import { homepageTranslationRef } from './ref';
-
-/**
- * The translation resource for the Homepage plugin.
- * @public
- */
-export const homepageTranslations = createTranslationResource({
-  ref: homepageTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
+export const navModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [SidebarContent],
 });
-
-export { homepageTranslationRef };

@@ -1,5 +1,5 @@
 /*
- * Copyright Red Hat, Inc.
+ * Copyright 2020 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import { homepageTranslationRef } from '../alpha/translations';
+import { test, expect } from '@playwright/test';
 
-type Messages = typeof homepageTranslationRef.T;
+test('App should render the welcome page', async ({ page }) => {
+  await page.goto('/');
 
-interface TransProps<TMessages extends { [key in string]: string }> {
-  message: keyof TMessages;
-  params?: any;
-}
+  const enterButton = page.getByRole('button', { name: 'Enter' });
+  await expect(enterButton).toBeVisible();
+  await enterButton.click();
 
-export const Trans = ({ message, params }: TransProps<Messages>) => {
-  const { t } = useTranslation();
-  return t(message, params);
-};
+  await expect(page.getByText('My Company Catalog')).toBeVisible();
+});

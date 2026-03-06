@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import { homepageTranslationRef } from '../alpha/translations';
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
 
-type Messages = typeof homepageTranslationRef.T;
+import { homepageTranslationRef } from './ref';
 
-interface TransProps<TMessages extends { [key in string]: string }> {
-  message: keyof TMessages;
-  params?: any;
-}
+/**
+ * Translation resource for the Dynamic Home Page plugin (en, de, es, fr, it, ja).
+ *
+ * @alpha
+ */
+export const homepageTranslations = createTranslationResource({
+  ref: homepageTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    es: () => import('./es'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    ja: () => import('./ja'),
+  },
+});
 
-export const Trans = ({ message, params }: TransProps<Messages>) => {
-  const { t } = useTranslation();
-  return t(message, params);
-};
+export { homepageTranslationRef };
