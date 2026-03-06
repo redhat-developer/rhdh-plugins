@@ -43,6 +43,23 @@ auth:
   providers:
     guest: {}
 
+permission:
+  enabled: true
+  rbac:
+    policyFileReload: true
+    pluginsWithPermission:
+      - catalog
+      - scaffolder
+      - permission
+      - dcm
+    admin:
+      users:
+        - name: group:default/admins
+        - name: user:default/guest
+      superUsers:
+        - name: group:default/admins
+        - name: user:default/guest
+
 scaffolder: {}
 
 catalog:

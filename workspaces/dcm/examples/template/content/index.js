@@ -13,20 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* eslint-disable @backstage/no-undeclared-imports -- deps in dcm-backend package.json */
-import { startTestBackend } from '@backstage/backend-test-utils';
-import { dcmPlugin } from './plugin';
-import request from 'supertest';
 
-describe('plugin', () => {
-  it('should serve health endpoint', async () => {
-    const { server } = await startTestBackend({
-      features: [dcmPlugin],
-    });
-
-    const res = await request(server).get('/api/dcm/health');
-
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok' });
-  });
-});
+console.log('Hello from ${{ values.name }}!');

@@ -9,19 +9,24 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF THE License, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-/**
- * Common types and utilities for the DCM plugin.
- * Add shared code between frontend and backend plugins here.
- *
- * @packageDocumentation
- */
+import type {
+  LoggerService,
+  RootConfigService,
+  HttpAuthService,
+  PermissionsService,
+  CacheService,
+} from '@backstage/backend-plugin-api';
 
-/** Plugin ID for the DCM plugin. @public */
-export const DCM_COMMON_PLUGIN_ID = 'dcm' as const;
-
-export { dcmPluginReadPermission, dcmPluginPermissions } from './permissions';
+/** @public */
+export interface RouterOptions {
+  logger: LoggerService;
+  config?: RootConfigService;
+  httpAuth: HttpAuthService;
+  permissions: PermissionsService;
+  cache: CacheService;
+}

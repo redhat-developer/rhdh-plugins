@@ -9,19 +9,26 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF THE License, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
+import { createPermission } from '@backstage/plugin-permission-common';
+
 /**
- * Common types and utilities for the DCM plugin.
- * Add shared code between frontend and backend plugins here.
+ * Permission for reading the DCM plugin.
  *
- * @packageDocumentation
+ * @public
  */
+export const dcmPluginReadPermission = createPermission({
+  name: 'dcm.plugin',
+  attributes: { action: 'read' },
+});
 
-/** Plugin ID for the DCM plugin. @public */
-export const DCM_COMMON_PLUGIN_ID = 'dcm' as const;
-
-export { dcmPluginReadPermission, dcmPluginPermissions } from './permissions';
+/**
+ * List of all DCM plugin permissions.
+ *
+ * @public
+ */
+export const dcmPluginPermissions = [dcmPluginReadPermission];
