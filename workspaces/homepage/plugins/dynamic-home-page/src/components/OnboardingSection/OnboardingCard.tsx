@@ -44,6 +44,7 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
     <Box>
       <CardContent sx={{ backgroundColor: 'transparent' }}>
         <Typography
+          variant="h3"
           sx={{
             fontSize: '1.75rem',
             fontWeight: 500,
@@ -77,6 +78,8 @@ const OnboardingCard: FC<OnboardingCardProps> = ({
           target={target}
           aria-label={ariaLabel}
           sx={{
+            width: 220,
+            minWidth: 220,
             padding: theme => theme.spacing(1, 1.5),
             fontSize: '16px',
             '& .v5-MuiButton-endIcon': {
