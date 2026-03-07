@@ -37,6 +37,8 @@ import { Repository } from '../Repository';
 import { OrderDirection } from './types';
 import { DetailPanel } from './DetailPanel';
 import { ProjectStatusCell } from '../ProjectStatusCell';
+import { DeleteProjectDialog } from '../DeleteProjectDialog';
+import { extractResponseError } from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { projectRouteRef } from '../../routes';
 
@@ -182,15 +184,34 @@ export const ProjectTable = ({
   const clientService = useClientService();
 
   const [error, setError] = useState<Error | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
     setError(null);
+    setIsDeleting(true);
 
     try {
-      await clientService.projectsProjectIdDelete({ path: { projectId: id } });
+      const response = await clientService.projectsProjectIdDelete({
+        path: { projectId: deleteTarget.id },
+      });
+
+      if (!response.ok) {
+        const message = await extractResponseError(
+          response,
+          'Failed to delete project',
+        );
+        setError(new Error(message));
+        return;
+      }
+
       forceRefresh();
     } catch (e) {
       setError(e as Error);
+    } finally {
+      setIsDeleting(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -207,7 +228,7 @@ export const ProjectTable = ({
   const actions = [
     (rowData: Project) => ({
       icon: DeleteIcon,
-      onClick: () => handleDelete(rowData.id),
+      onClick: () => setDeleteTarget(rowData),
       tooltip: t('table.actions.deleteProject'),
     }),
   ];
@@ -220,6 +241,14 @@ export const ProjectTable = ({
 
   return (
     <Grid container spacing={3} direction="column">
+      <DeleteProjectDialog
+        open={!!deleteTarget}
+        projectName={deleteTarget?.name ?? ''}
+        isDeleting={isDeleting}
+        onConfirm={handleDeleteConfirm}
+        onClose={() => setDeleteTarget(null)}
+      />
+
       {error && (
         <Grid item>
           <ResponseErrorPanel error={error} />
