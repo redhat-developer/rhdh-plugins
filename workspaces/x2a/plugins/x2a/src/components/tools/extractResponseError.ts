@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,10 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './buildArtifactUrl';
-export * from './extractResponseError';
-export * from './buildRepoBranchUrl';
-export * from './formatRelativeTime';
-export * from './humanizeArtifactType';
-export * from './humanizeDate';
-export * from './getLastPhaseReached';
+
+/**
+ * Extracts an error message from a non-ok fetch Response.
+ *
+ * Tries to parse the Backstage-standard `{ error: { message } }` JSON body;
+ * falls back to the provided `fallback` string.
+ */
+export async function extractResponseError(
+  response: Pick<Response, 'json'>,
+  fallback: string,
+): Promise<string> {
+  try {
+    const body = (await response.json()) as {
+      error?: { message?: string };
+    };
+    return body?.error?.message ?? fallback;
+  } catch {
+    return fallback;
+  }
+}

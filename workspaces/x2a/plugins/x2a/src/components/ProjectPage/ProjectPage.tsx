@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
-import { useRouteRefParams } from '@backstage/core-plugin-api';
+import { useNavigate } from 'react-router-dom';
+import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
 import {
   Content,
   Header,
@@ -23,24 +24,89 @@ import {
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, makeStyles } from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
-import { projectRouteRef } from '../../routes';
+import { projectRouteRef, rootRouteRef } from '../../routes';
 import { ProjectPageBreadcrumb } from './ProjectPageBreadcrumb';
 import { ProjectDetailsCard } from './ProjectDetailsCard';
 import { ProjectModulesCard } from './ProjectModulesCard';
 import { InitPhaseCard } from './InitPhaseCard';
+import { DeleteProjectDialog } from '../DeleteProjectDialog';
+import { ProjectActions, ProjectActionsProps } from './ProjectActions';
+import { extractResponseError } from '../tools';
+
+const useStyles = makeStyles(theme => ({
+  errorAlert: {
+    marginBottom: theme.spacing(2),
+  },
+}));
 
 export const ProjectPage = () => {
   const { t } = useTranslation();
+  const classes = useStyles();
+  const navigate = useNavigate();
   const { projectId } = useRouteRefParams(projectRouteRef);
+  const rootPath = useRouteRef(rootRouteRef);
   const clientService = useClientService();
-  // TODO: call actions - delete, sync
-  const [error, _] = useState<string | undefined>();
+  const [error, setError] = useState<string | undefined>();
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const menuOpen = Boolean(menuAnchorEl);
+
+  const handleMenuOpen: ProjectActionsProps['handleMenuOpen'] = useCallback(
+    event => {
+      setMenuAnchorEl(event.currentTarget);
+    },
+    [],
+  );
+
+  const handleMenuClose = useCallback(() => {
+    setMenuAnchorEl(null);
+  }, []);
+
+  const handleDeleteClick = useCallback(() => {
+    setError(undefined);
+    handleMenuClose();
+    setDeleteModalOpen(true);
+  }, [handleMenuClose]);
+
+  const handleDeleteModalClose = useCallback(() => {
+    if (!isDeleting) {
+      setDeleteModalOpen(false);
+      setError(undefined);
+    }
+  }, [isDeleting]);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    setError(undefined);
+    setIsDeleting(true);
+
+    try {
+      const response = await clientService.projectsProjectIdDelete({
+        path: { projectId },
+      });
+      setDeleteModalOpen(false);
+
+      if (!response.ok) {
+        setError(
+          await extractResponseError(response, t('projectPage.deleteError')),
+        );
+        return;
+      }
+
+      navigate(rootPath());
+    } catch (e) {
+      setDeleteModalOpen(false);
+      setError((e as Error).message);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [clientService, projectId, navigate, rootPath, t]);
 
   const {
     value: project,
@@ -79,17 +145,37 @@ export const ProjectPage = () => {
   const isLoading = projectLoading || modulesLoading;
   return (
     <Page themeId="tool">
-      <Header title={t('projectPage.title')} />
+      <Header title={t('projectPage.title')}>
+        {project && (
+          <ProjectActions
+            menuOpen={menuOpen}
+            handleMenuOpen={handleMenuOpen}
+            handleMenuClose={handleMenuClose}
+            menuAnchorEl={menuAnchorEl}
+            handleDeleteClick={handleDeleteClick}
+          />
+        )}
+      </Header>
+
+      <DeleteProjectDialog
+        open={deleteModalOpen}
+        onClose={handleDeleteModalClose}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+        projectName={project?.name ?? ''}
+      />
 
       <Content>
         <Box mb={2}>
           <ProjectPageBreadcrumb />
         </Box>
+
         {error && (
-          <Alert severity="error">
+          <Alert severity="error" className={classes.errorAlert}>
             <AlertTitle>{error}</AlertTitle>
           </Alert>
         )}
+
         {isLoading && <Progress />}
         {!isLoading && project && (
           <Grid container spacing={2}>
@@ -104,7 +190,6 @@ export const ProjectPage = () => {
             <Grid item xs={12}>
               <InitPhaseCard project={project} />
             </Grid>
-            {/* TODO: actions - delete, sync*/}
           </Grid>
         )}
       </Content>
