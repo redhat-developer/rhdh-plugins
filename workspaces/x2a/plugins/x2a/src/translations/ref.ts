@@ -35,6 +35,16 @@ export const x2aPluginMessages = {
   },
   projectPage: {
     title: 'Project',
+    deleteProject: 'Delete',
+    actionsTooltip: 'Click to open the menu for project actions',
+    deleteError: 'Failed to delete project',
+    deleteConfirm: {
+      title: 'Delete project "{{name}}"?',
+      message:
+        'This project and all its modules, jobs, and artifacts will be permanently deleted. This action cannot be undone.',
+      cancel: 'Cancel',
+      confirm: 'Delete',
+    },
   },
   projectDetailsCard: {
     title: 'Project Details',
