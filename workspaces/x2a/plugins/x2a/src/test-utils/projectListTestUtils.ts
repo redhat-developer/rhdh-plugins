@@ -64,7 +64,7 @@ export const defaultTableProps = (
     orderDirection: ProjectsGet['query']['order'];
   }>,
 ) => {
-  const orderBy = overrides?.orderBy ?? 0;
+  const orderBy = overrides?.orderBy ?? 1;
   const orderDirection = overrides?.orderDirection ?? 'asc';
   const page = overrides?.page ?? 0;
   const pageSize = overrides?.pageSize ?? 10;
