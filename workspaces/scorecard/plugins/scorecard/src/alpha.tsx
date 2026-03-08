@@ -71,14 +71,14 @@ const defaultScorecardEntityContentParams = {
 export function createScorecardEntityContent(
   options?: ScorecardEntityContentOptions,
 ): ExtensionDefinition {
-  const filter =
-    options?.entityKinds?.length &&
-    `kind:${options.entityKinds.map(k => k.toLowerCase()).join(',')}`;
+  const filter = options?.entityKinds?.length
+    ? `kind:${options.entityKinds.map(k => k.toLowerCase()).join(',')}`
+    : undefined;
   return EntityContentBlueprint.make({
     name: 'scorecard',
     params: {
       ...defaultScorecardEntityContentParams,
-      ...(filter && { filter }),
+      ...(filter ? { filter } : {}),
     },
   });
 }

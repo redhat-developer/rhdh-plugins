@@ -66,5 +66,8 @@
     "*.{json,md}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "changeset": "^0.2.6"
   }
 }
