@@ -48,6 +48,11 @@ import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import { useRhdhTheme } from '../../hooks/useRhdhTheme';
 
+/** Returns true when the theme palette is in dark mode (supports both MUI v4 type and v5 mode). */
+function isPaletteDark(palette: { type?: string; mode?: string }): boolean {
+  return palette.type === 'dark' || palette.mode === 'dark';
+}
+
 const useSidebarLogoStyles = makeStyles({
   root: {
     width: sidebarConfig.drawerWidthClosed,
@@ -63,93 +68,100 @@ const useSidebarLogoStyles = makeStyles({
   },
 });
 
-const useSidebarItemStyles = makeStyles(theme => ({
-  '.MuiButtonBase-root': {},
-  securityIcon: {
-    '& .securityIcon': {
-      fontSize: '20px !important',
-      minWidth: 'unset !important',
-      width: '20px !important',
-      height: '20px !important',
+const useSidebarItemStyles = makeStyles(theme => {
+  const dark = isPaletteDark(theme.palette as { type?: string; mode?: string });
+  return {
+    '.MuiButtonBase-root': {},
+    securityIcon: {
+      '& .securityIcon': {
+        fontSize: '20px',
+        minWidth: 'unset',
+        width: '20px',
+        height: '20px',
+      },
     },
-  },
-  submenuItem: {
-    marginBottom: 4,
-    '& .MuiSvgIcon-root': {
-      fontSize: '20px !important',
+    submenuItem: {
+      marginBottom: 4,
+      '& .MuiSvgIcon-root': {
+        fontSize: '20px',
+      },
+      '& .MuiTypography-root': {
+        marginLeft: 8,
+        fontWeight: 400,
+        fontSize: 14,
+      },
     },
-    '& .MuiTypography-root': {
-      marginLeft: 8,
-      fontWeight: 400,
-      fontSize: 14,
+    submenuItemActive: {
+      borderRadius: 6,
+      border: `1px solid ${
+        dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'
+      }`,
+      backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
     },
-  },
-  submenuItemActive: {
-    borderRadius: 6,
-    border: `1px solid ${
-      (theme.palette as { type?: string; mode?: string }).type === 'dark' ||
-      (theme.palette as { mode?: string }).mode === 'dark'
-        ? 'rgba(255,255,255,0.2)'
-        : 'rgba(0,0,0,0.12)'
-    }`,
-    backgroundColor: `${
-      (theme.palette as { type?: string; mode?: string }).type === 'dark' ||
-      (theme.palette as { mode?: string }).mode === 'dark'
-        ? 'rgba(255,255,255,0.12)'
-        : 'rgba(0,0,0,0.06)'
-    } !important`,
-  },
-  inactiveItem: {
-    backgroundColor: 'transparent !important',
-  },
-  iconContainer: {
-    width: 20,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    '& .MuiSvgIcon-root': { fontSize: '20px !important' },
-    marginRight: 5,
-  },
-  text: {
-    marginRight: 20,
-  },
-  collapsibleTrigger: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    minHeight: 48,
-    padding: '0 !important',
-    marginLeft: 0,
-    marginBottom: 10,
-    textTransform: 'none',
-    color: `${
-      theme.palette.navigation?.color ??
-      ((theme.palette as { type?: string; mode?: string }).type === 'dark' ||
-      (theme.palette as { type?: string; mode?: string }).mode === 'dark'
-        ? theme.palette.common.white
-        : theme.palette.text.primary)
-    } !important`,
-    '& .MuiTypography-root': {
-      color: 'inherit !important',
-      marginLeft: theme.spacing(0.5),
-      fontSize: 14,
-      fontWeight: 600,
+    inactiveItem: {
+      backgroundColor: 'transparent',
     },
-    '& .MuiSvgIcon-root': {
-      fontSize: '20px !important',
-      flexShrink: 0,
+    // Scoped so sidebar item styles win over upstream without !important
+    administrationGroup: {
+      '& $submenuItem': {
+        '& .MuiSvgIcon-root': { fontSize: '20px' },
+      },
+      '& $submenuItemActive': {
+        borderRadius: 6,
+        border: `1px solid ${
+          dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'
+        }`,
+        backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
+      },
+      '& $inactiveItem': {
+        backgroundColor: 'transparent',
+      },
     },
-    '&:hover': {
-      backgroundColor:
-        theme.palette.navigation?.navItem?.hoverBackground ??
-        'rgba(255,255,255,0.08)',
+    iconContainer: {
+      width: 20,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      '& .MuiSvgIcon-root': { fontSize: '20px' },
+      marginRight: 5,
     },
-  },
-  collapsibleContent: {
-    marginLeft: theme.spacing(3),
-  },
-}));
+    text: {
+      marginRight: 20,
+    },
+    collapsibleTrigger: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      minHeight: 48,
+      padding: 0,
+      marginLeft: 0,
+      marginBottom: 10,
+      textTransform: 'none',
+      color:
+        theme.palette.navigation?.color ??
+        (dark ? theme.palette.common.white : theme.palette.text.primary),
+      '& .MuiTypography-root': {
+        color: 'inherit',
+        marginLeft: theme.spacing(0.5),
+        fontSize: 14,
+        fontWeight: 600,
+      },
+      '& .MuiSvgIcon-root': {
+        fontSize: '20px',
+        flexShrink: 0,
+      },
+      '&:hover': {
+        backgroundColor:
+          theme.palette.navigation?.navItem?.hoverBackground ??
+          'rgba(255,255,255,0.08)',
+      },
+    },
+    collapsibleContent: {
+      marginLeft: theme.spacing(3),
+    },
+  };
+});
 
 const CollapsibleSubmenu = ({
   icon,
@@ -220,8 +232,8 @@ const SidebarLogo = () => {
 export const Root = ({ children }: PropsWithChildren<{}>) => {
   const classes = useSidebarItemStyles();
   const location = useLocation();
-  const isDcmActive = location.pathname === '/dcm';
-  const isRbacActive = location.pathname === '/rbac';
+  const isDcmActive = location.pathname.startsWith('/dcm');
+  const isRbacActive = location.pathname.startsWith('/rbac');
 
   return (
     <SidebarPage>
@@ -251,22 +263,26 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             text="Administration"
             classes={classes}
           >
-            <SidebarItem
-              icon={StorageIcon}
-              to="/dcm"
-              text="Data Center"
-              className={`${classes.submenuItem} ${
-                isDcmActive ? classes.submenuItemActive : classes.inactiveItem
-              }`}
-            />
-            <SidebarItem
-              icon={VpnKeyIcon}
-              to="/rbac"
-              text="RBAC"
-              className={`${classes.submenuItem} ${
-                isRbacActive ? classes.submenuItemActive : classes.inactiveItem
-              }`}
-            />
+            <Box className={classes.administrationGroup}>
+              <SidebarItem
+                icon={StorageIcon}
+                to="/dcm"
+                text="Data Center"
+                className={`${classes.submenuItem} ${
+                  isDcmActive ? classes.submenuItemActive : classes.inactiveItem
+                }`}
+              />
+              <SidebarItem
+                icon={VpnKeyIcon}
+                to="/rbac"
+                text="RBAC"
+                className={`${classes.submenuItem} ${
+                  isRbacActive
+                    ? classes.submenuItemActive
+                    : classes.inactiveItem
+                }`}
+              />
+            </Box>
           </CollapsibleSubmenu>
         </SidebarGroup>
         <SidebarGroup

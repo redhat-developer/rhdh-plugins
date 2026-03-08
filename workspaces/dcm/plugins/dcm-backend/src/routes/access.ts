@@ -9,7 +9,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF THE License, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF THE LICENSE, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
@@ -19,7 +19,7 @@ import type { RouterOptions } from '../models/RouterOptions';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { dcmPluginPermissions } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
-async function authorize(
+export async function authorize(
   request: Parameters<RequestHandler>[0],
   options: RouterOptions,
 ): Promise<AuthorizeResult> {

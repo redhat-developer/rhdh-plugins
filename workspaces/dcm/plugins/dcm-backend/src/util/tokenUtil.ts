@@ -9,20 +9,24 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF THE License, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF THE LICENSE, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
-import assert from 'assert';
 import type { RouterOptions } from '../models/RouterOptions';
 import { DEFAULT_SSO_BASE_URL } from './constant';
 
 const TOKEN_CACHE_KEY = 'dcm_sso_access_token';
 
+export interface TokenResult {
+  accessToken: string;
+  expiresAt: number;
+}
+
 export const getTokenFromApi = async (
   options: RouterOptions,
-): Promise<string> => {
+): Promise<TokenResult> => {
   const { logger, config, cache } = options;
 
   const now = Date.now();
@@ -44,10 +48,11 @@ export const getTokenFromApi = async (
 
   if (cachedToken && cachedToken.expiresAt > now + 60000) {
     logger.info('Using cached access token');
-    return cachedToken.token;
+    return {
+      accessToken: cachedToken.token,
+      expiresAt: cachedToken.expiresAt,
+    };
   }
-
-  assert(typeof config !== 'undefined', 'Config is undefined');
 
   logger.info('Requesting new access token');
 
@@ -88,5 +93,5 @@ export const getTokenFromApi = async (
   );
 
   logger.info(`Token cached, expires in ${json.expires_in} seconds`);
-  return accessToken;
+  return { accessToken, expiresAt };
 };

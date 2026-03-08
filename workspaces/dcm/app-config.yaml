@@ -55,10 +55,8 @@ permission:
     admin:
       users:
         - name: group:default/admins
-        - name: user:default/guest
       superUsers:
         - name: group:default/admins
-        - name: user:default/guest
 
 scaffolder: {}
 
