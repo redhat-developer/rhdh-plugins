@@ -61,7 +61,9 @@ export const ScorecardHomepageCardComponent = ({
   return (
     <CardWrapper
       title={cardTitle}
-      subheader={t('thresholds.entities', { count: scorecard.result.total })}
+      subheader={t('thresholds.entities', {
+        count: scorecard.result.total,
+      } as Record<string, unknown>)}
       description={description}
     >
       <Box

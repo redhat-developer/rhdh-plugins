@@ -66,6 +66,6 @@ const scorecardTranslationJa = createTranslationMessages({
     'thresholds.entities_one': '{{count}} エンティティー',
     'thresholds.entities_other': '{{count}} エンティティー',
   },
-});
+}) as unknown as Record<string, string>;
 
 export default scorecardTranslationJa;

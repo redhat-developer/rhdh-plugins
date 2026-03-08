@@ -132,7 +132,10 @@ export const EmptyStatePanel = ({
     <CardWrapper
       title={cardTitle}
       description={cardDescription}
-      subheader={t('thresholds.entities', { count: 0 })}
+      subheader={t('thresholds.entities', { count: 0 } as Record<
+        string,
+        unknown
+      >)}
     >
       <Box
         width="100%"

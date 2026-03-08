@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import {
+  type TranslationResource,
+  createTranslationResource,
+} from '@backstage/core-plugin-api/alpha';
 import { scorecardTranslationRef } from './ref';
 
 /**
  * Translation Resource for scorecard
  * @public
  */
-export const scorecardTranslations = createTranslationResource({
-  ref: scorecardTranslationRef,
-  translations: {
-    de: () => import('./de'),
-    es: () => import('./es'),
-    fr: () => import('./fr'),
-    it: () => import('./it'),
-    ja: () => import('./ja'),
-  },
-});
+export const scorecardTranslations: TranslationResource<'plugin.scorecard'> =
+  createTranslationResource({
+    ref: scorecardTranslationRef,
+    translations: {
+      de: () => import('./de'),
+      es: () => import('./es'),
+      fr: () => import('./fr'),
+      it: () => import('./it'),
+      ja: () => import('./ja'),
+    },
+  });
 
 export { scorecardTranslationRef };

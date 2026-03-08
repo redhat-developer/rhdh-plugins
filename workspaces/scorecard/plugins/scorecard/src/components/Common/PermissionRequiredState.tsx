@@ -55,7 +55,7 @@ const PermissionRequiredState = () => {
               lineHeight: 1.5,
             })}
           >
-            {t('permissionRequired.description' as any, {
+            {t('permissionRequired.description', {
               permission: (
                 <Typography
                   component="span"
@@ -67,7 +67,7 @@ const PermissionRequiredState = () => {
                   scorecard.metric.read
                 </Typography>
               ),
-            })}
+            } as Record<string, unknown>)}
           </Typography>
 
           <Button

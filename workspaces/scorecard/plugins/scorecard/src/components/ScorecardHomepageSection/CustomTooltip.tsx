@@ -77,7 +77,10 @@ export const CustomTooltip = ({
     contentElement = (
       <>
         <Typography sx={{ fontSize: '0.875rem', margin: 0, fontWeight: '500' }}>
-          {t('thresholds.entities', { count: payload?.[0]?.value })}
+          {t('thresholds.entities', { count: payload?.[0]?.value } as Record<
+            string,
+            unknown
+          >)}
         </Typography>
         <Typography
           sx={{

@@ -54,9 +54,9 @@ export const useAggregatedScorecard = (
         throw err;
       }
       throw new Error(
-        t('errors.fetchError' as any, {
+        t('errors.fetchError', {
           error: String(err),
-        }),
+        } as Record<string, unknown>),
       );
     }
   }, [scorecardApi]);

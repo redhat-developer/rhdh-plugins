@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
+import {
+  type TranslationRef,
+  createTranslationRef,
+} from '@backstage/core-plugin-api/alpha';
 
 /**
  * Messages object containing all English translations.
@@ -88,7 +91,10 @@ export const scorecardMessages = {
  * Translation reference for scorecard plugin
  * @public
  */
-export const scorecardTranslationRef = createTranslationRef({
+export const scorecardTranslationRef: TranslationRef<
+  'plugin.scorecard',
+  Record<string, string>
+> = createTranslationRef({
   id: 'plugin.scorecard',
   messages: scorecardMessages,
 });

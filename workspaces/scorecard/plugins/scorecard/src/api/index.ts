@@ -15,6 +15,7 @@
  */
 
 import {
+  type ApiRef,
   createApiRef,
   FetchApi,
   DiscoveryApi,
@@ -36,9 +37,11 @@ export interface ScorecardApi {
   getAggregatedScorecard(metricId: string): Promise<AggregatedMetricResult>;
 }
 
-export const scorecardApiRef = createApiRef<ScorecardApi>({
-  id: 'plugin.scorecard.service',
-});
+export const scorecardApiRef: ApiRef<ScorecardApi> = createApiRef<ScorecardApi>(
+  {
+    id: 'plugin.scorecard.service',
+  },
+);
 
 export type ScorecardApiClientOptions = {
   fetchApi: FetchApi;
