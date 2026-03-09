@@ -206,61 +206,6 @@ export async function computeTotalCountFromGitHubToken(
     : undefined;
 }
 
-export async function listAllRepositoriesForAuthenticatedUser(
-  deps: {
-    logger: LoggerService;
-  },
-  octokit: Octokit,
-  options?: {
-    pageSize?: number;
-  },
-): Promise<AuthenticatedUserRepositoryList> {
-  const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
-  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
-  const SECOND_PAGE_NUMBER = 2;
-
-  const fetchListForAuthenticatedUser = async (pageNumber: number) => {
-    return await octokit.rest.repos.listForAuthenticatedUser({
-      page: pageNumber,
-      per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
-      sort: 'full_name',
-      direction: 'asc',
-    });
-  };
-
-  const firstPageResponse = await fetchListForAuthenticatedUser(1);
-
-  const lastPageNumberString = firstPageResponse?.headers?.link
-    ?.split(',')
-    ?.find(s => s.includes('rel="last"'))
-    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
-
-  if (!lastPageNumberString) {
-    deps.logger.debug(
-      `Unable to extract page number from rel='last' link found in response headers from 'repos.listForAuthenticatedUser' GH endpoint => returning current page size`,
-    );
-    return firstPageResponse.data;
-  }
-
-  const lastPageNumber = parseInt(lastPageNumberString, 10);
-
-  if (lastPageNumber < SECOND_PAGE_NUMBER) {
-    return firstPageResponse.data;
-  }
-
-  const pagePromises = [];
-  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
-    pagePromises.push(fetchListForAuthenticatedUser(i));
-  }
-  const pageResponses = await Promise.all(pagePromises);
-
-  const allRepositories = firstPageResponse.data
-    .concat(pageResponses.flatMap(pageResponse => pageResponse.data))
-    .sort((a, b) => a.full_name.localeCompare(b.full_name));
-
-  return allRepositories;
-}
-
 export async function executeFunctionOnFirstSuccessfulIntegration<T>(
   deps: {
     logger: LoggerService;
@@ -414,4 +359,59 @@ export async function fetchFromMatchedIntegration<T>(
   }
 
   return { errors: Array.from(errors.values()) };
+}
+
+export async function listAllRepositoriesForAuthenticatedUser(
+  deps: {
+    logger: LoggerService;
+  },
+  octokit: Octokit,
+  options?: {
+    pageSize?: number;
+  },
+): Promise<AuthenticatedUserRepositoryList> {
+  const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
+  const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
+  const SECOND_PAGE_NUMBER = 2;
+
+  const fetchListForAuthenticatedUser = async (pageNumber: number) => {
+    return await octokit.rest.repos.listForAuthenticatedUser({
+      page: pageNumber,
+      per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,
+      sort: 'full_name',
+      direction: 'asc',
+    });
+  };
+
+  const firstPageResponse = await fetchListForAuthenticatedUser(1);
+
+  const lastPageNumberString = firstPageResponse?.headers?.link
+    ?.split(',')
+    ?.find(s => s.includes('rel="last"'))
+    ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
+
+  if (!lastPageNumberString) {
+    deps.logger.debug(
+      `Unable to extract page number from rel='last' link found in response headers from 'repos.listForAuthenticatedUser' GH endpoint => returning current page size`,
+    );
+    return firstPageResponse.data;
+  }
+
+  const lastPageNumber = parseInt(lastPageNumberString, 10);
+
+  if (lastPageNumber < SECOND_PAGE_NUMBER) {
+    return firstPageResponse.data;
+  }
+
+  const pagePromises = [];
+  for (let i = SECOND_PAGE_NUMBER; i <= lastPageNumber; i++) {
+    pagePromises.push(fetchListForAuthenticatedUser(i));
+  }
+  const pageResponses = await Promise.all(pagePromises);
+
+  const allRepositories = firstPageResponse.data
+    .concat(pageResponses.flatMap(pageResponse => pageResponse.data))
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+  return allRepositories;
 }
