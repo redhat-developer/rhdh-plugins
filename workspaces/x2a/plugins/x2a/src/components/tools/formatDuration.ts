@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './buildArtifactUrl';
-export * from './extractResponseError';
-export * from './buildRepoBranchUrl';
-export * from './formatDuration';
-export * from './formatRelativeTime';
-export * from './humanizeArtifactType';
-export * from './humanizeDate';
-export * from './getLastPhaseReached';
+
+export const formatDuration = (durationSeconds: number): string => {
+  const totalSeconds = Math.floor(durationSeconds);
+  if (totalSeconds < 0) return '-';
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0 || hours > 0) parts.push(`${minutes}m`);
+  parts.push(`${seconds}s`);
+
+  return parts.join(' ');
+};
