@@ -15,8 +15,10 @@
  */
 
 import { Breadcrumbs, Link } from '@backstage/core-components';
-import { makeStyles, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import { useTranslation } from '../../hooks/useTranslation';
+import { projectRouteRef } from '../../routes';
+import { useRouteRef } from '@backstage/core-plugin-api';
 
 const useStyles = makeStyles(() => ({
   breadcrumbs: {
@@ -26,9 +28,17 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const ModulePageBreadcrumb = () => {
+export const ModulePageBreadcrumb = ({
+  projectId,
+  projectName,
+}: {
+  projectId: string;
+  projectName: string;
+}) => {
   const { t } = useTranslation();
   const classes = useStyles();
+  const projectRoute = useRouteRef(projectRouteRef);
+  const projectUrl = projectRoute?.({ projectId }) ?? '/x2a';
 
   return (
     <Breadcrumbs
@@ -36,8 +46,9 @@ export const ModulePageBreadcrumb = () => {
       separator=">"
       className={classes.breadcrumbs}
     >
-      <Link to="/x2a/api">{t('page.title')}</Link>
-      <Typography>{t('modulePage.title')}</Typography>
+      <Link to="/x2a">{t('page.title')}</Link>
+      <Link to={projectUrl}>{projectName}</Link>
+      {t('modulePage.title')}
     </Breadcrumbs>
   );
 };

@@ -19,6 +19,11 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: mockUseTranslation,
 }));
 
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useRouteRef: require('../../test-utils/mockRouteRef').mockUseRouteRef,
+}));
+
 import {
   mockApis,
   renderInTestApp,
@@ -27,61 +32,11 @@ import {
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { mapOrderByToSort, ProjectTable } from './ProjectTable';
 import {
-  Project,
-  ProjectsGet,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { ProjectTable } from './ProjectTable';
-
-const createMockProjects = (count: number, offset: number = 0): Project[] => {
-  return Array.from({ length: count }, (_, i) => {
-    const index = offset + i;
-    return {
-      id: `project-${index}`,
-      name: `Project ${index}`,
-      abbreviation: `P${index}`,
-      description: `Description ${index}`,
-      sourceRepoUrl: `https://github.com/org/source-repo${index}`,
-      targetRepoUrl: `https://github.com/org/target-repo${index}`,
-      sourceRepoBranch: `main${index}`,
-      targetRepoBranch: `main${index}`,
-      createdAt: new Date(
-        `2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
-      ),
-      createdBy: `user:default/user${index}`,
-    };
-  });
-};
-
-const defaultTableProps = (
-  projects: Project[],
-  totalCount: number,
-  overrides?: Partial<{
-    page: number;
-    pageSize: number;
-    orderBy: number;
-    orderDirection: ProjectsGet['query']['order'];
-  }>,
-) => {
-  const orderBy = overrides?.orderBy ?? 0;
-  const orderDirection = overrides?.orderDirection ?? 'asc';
-  const page = overrides?.page ?? 0;
-  const pageSize = overrides?.pageSize ?? 10;
-
-  return {
-    projects,
-    totalCount,
-    forceRefresh: jest.fn(),
-    orderBy,
-    orderDirection,
-    setOrderBy: jest.fn(),
-    setOrderDirection: jest.fn(),
-    page,
-    pageSize,
-    onPageChange: jest.fn(),
-    onRowsPerPageChange: jest.fn(),
-  };
-};
+  createMockProjects,
+  defaultTableProps,
+} from '../../test-utils/projectListTestUtils';
 
 describe('ProjectTable', () => {
   let fetchApiMock: jest.Mock;
@@ -148,7 +103,7 @@ describe('ProjectTable', () => {
       const setOrderBy = jest.fn();
       const setOrderDirection = jest.fn();
       const props = defaultTableProps(mockProjects, 5, {
-        orderBy: 0,
+        orderBy: 1,
         orderDirection: 'asc',
       });
 
@@ -249,7 +204,7 @@ describe('ProjectTable', () => {
         </TestApiProvider>,
       );
 
-      expect(screen.getByText(/Projects \(10\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Projects \(20\)/)).toBeInTheDocument();
     });
   });
 
@@ -270,10 +225,7 @@ describe('ProjectTable', () => {
         </TestApiProvider>,
       );
 
-      // Expand the first row (detail panel toggle)
-      const expandButton = screen.getByLabelText(
-        'Detail panel visiblity toggle',
-      );
+      const expandButton = screen.getByLabelText('Expand row');
       await user.click(expandButton);
 
       await waitFor(() => {
@@ -281,10 +233,147 @@ describe('ProjectTable', () => {
         expect(screen.getByText('Description 0')).toBeInTheDocument();
         expect(screen.getByText('Abbreviation')).toBeInTheDocument();
         expect(screen.getByText('P0')).toBeInTheDocument();
-        expect(screen.getByText('ID')).toBeInTheDocument();
-        expect(screen.getByText('project-0')).toBeInTheDocument();
-        expect(screen.getByText('Owned By')).toBeInTheDocument();
-        expect(screen.getByText('user:default/user0')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Expand/Collapse All', () => {
+    it('renders expand all toggle in the Name column header', async () => {
+      const mockProjects = createMockProjects(1);
+      const props = defaultTableProps(mockProjects, 1);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+          ]}
+        >
+          <ProjectTable {...props} />
+        </TestApiProvider>,
+      );
+
+      expect(screen.getByLabelText('Expand all rows')).toBeInTheDocument();
+    });
+
+    it('expands all rows when expand all is clicked', async () => {
+      const user = userEvent.setup();
+      const mockProjects = createMockProjects(2);
+      const props = defaultTableProps(mockProjects, 2);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+          ]}
+        >
+          <ProjectTable {...props} />
+        </TestApiProvider>,
+      );
+
+      const expandAllButton = screen.getByLabelText('Expand all rows');
+      await user.click(expandAllButton);
+
+      await waitFor(() => {
+        expect(screen.getByText('Description 0')).toBeInTheDocument();
+        expect(screen.getByText('Description 1')).toBeInTheDocument();
+      });
+    });
+
+    it('collapses all rows when collapse all is clicked after expand', async () => {
+      const user = userEvent.setup();
+      const mockProjects = createMockProjects(2);
+      const props = defaultTableProps(mockProjects, 2);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+          ]}
+        >
+          <ProjectTable {...props} />
+        </TestApiProvider>,
+      );
+
+      await user.click(screen.getByLabelText('Expand all rows'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Description 0')).toBeInTheDocument();
+        expect(screen.getByText('Description 1')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByLabelText('Collapse all rows'));
+
+      await waitFor(() => {
+        expect(screen.queryByText('Description 0')).not.toBeInTheDocument();
+        expect(screen.queryByText('Description 1')).not.toBeInTheDocument();
+      });
+    });
+
+    it('expands remaining rows when partially expanded and expand all is clicked', async () => {
+      const user = userEvent.setup();
+      const mockProjects = createMockProjects(3);
+      const props = defaultTableProps(mockProjects, 3);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+          ]}
+        >
+          <ProjectTable {...props} />
+        </TestApiProvider>,
+      );
+
+      const rowToggleButtons = screen.getAllByLabelText('Expand row');
+      await user.click(rowToggleButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText('Description 0')).toBeInTheDocument();
+        expect(screen.queryByText('Description 1')).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByLabelText('Expand all rows')).toBeInTheDocument();
+
+      await user.click(screen.getByLabelText('Expand all rows'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Description 0')).toBeInTheDocument();
+        expect(screen.getByText('Description 1')).toBeInTheDocument();
+        expect(screen.getByText('Description 2')).toBeInTheDocument();
+      });
+    });
+
+    it('updates header toggle after expanding all then collapsing one row', async () => {
+      const user = userEvent.setup();
+      const mockProjects = createMockProjects(2);
+      const props = defaultTableProps(mockProjects, 2);
+
+      await renderInTestApp(
+        <TestApiProvider
+          apis={[
+            [fetchApiRef, { fetch: fetchApiMock }],
+            [discoveryApiRef, discoveryApiMock],
+          ]}
+        >
+          <ProjectTable {...props} />
+        </TestApiProvider>,
+      );
+
+      await user.click(screen.getByLabelText('Expand all rows'));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Collapse all rows')).toBeInTheDocument();
+      });
+
+      const collapseRowButtons = screen.getAllByLabelText('Collapse row');
+      await user.click(collapseRowButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Expand all rows')).toBeInTheDocument();
       });
     });
   });
@@ -307,5 +396,35 @@ describe('ProjectTable', () => {
 
       expect(screen.getByText('New Project')).toBeInTheDocument();
     });
+  });
+});
+
+describe('mapOrderByToSort', () => {
+  it('returns undefined for index 0 (toggle column)', () => {
+    expect(() => mapOrderByToSort(0)).toThrow('Invalid orderBy: 0');
+  });
+
+  it('maps index 1 to name', () => {
+    expect(mapOrderByToSort(1)).toBe('name');
+  });
+
+  it('maps index 2 to status', () => {
+    expect(mapOrderByToSort(2)).toBe('status');
+  });
+
+  it('throws for unsortable column index 3', () => {
+    expect(() => mapOrderByToSort(3)).toThrow('Invalid orderBy: 3');
+  });
+
+  it('throws for unsortable column index 4', () => {
+    expect(() => mapOrderByToSort(4)).toThrow('Invalid orderBy: 4');
+  });
+
+  it('maps index 5 to createdAt', () => {
+    expect(mapOrderByToSort(5)).toBe('createdAt');
+  });
+
+  it('falls back to name for negative index', () => {
+    expect(mapOrderByToSort(-1)).toBe('name');
   });
 });

@@ -20,7 +20,7 @@ import { PieChart, PieValueType } from '@mui/x-charts';
 import { Grid, makeStyles, Tooltip, Chip } from '@material-ui/core';
 import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
 
-import { useTranslation } from '../../hooks/useTranslation';
+import { useTranslation } from '../hooks/useTranslation';
 
 const size = 25;
 
@@ -132,9 +132,9 @@ export const ProjectStatusCell = ({
   }
 
   return (
-    <Grid container direction="row" spacing={1}>
+    <Grid container direction="row" spacing={2}>
       {isModulesSummary && (
-        <Grid item>
+        <Grid item alignContent="flex-start" xs={2}>
           <Tooltip
             open={open}
             onClose={() => setOpen(false)}
@@ -171,7 +171,7 @@ export const ProjectStatusCell = ({
         </Grid>
       )}
 
-      <Grid item alignContent="center">
+      <Grid item alignContent="center" xs={isModulesSummary ? 8 : 12}>
         {t(`project.statuses.${projectStatus.state || 'none'}`)}
       </Grid>
 
@@ -182,11 +182,9 @@ export const ProjectStatusCell = ({
             variant="outlined"
             color="primary"
             icon={<AssignmentTurnedInIcon />}
-            label={`${modulesSummary.waiting} ${t('module.summary.toReview')}`}
-            onClick={event => {
-              event.stopPropagation();
-              setOpen(!open);
-            }}
+            label={t('module.summary.toReview', {
+              count: modulesSummary.waiting,
+            })}
           />
         </Grid>
       )}

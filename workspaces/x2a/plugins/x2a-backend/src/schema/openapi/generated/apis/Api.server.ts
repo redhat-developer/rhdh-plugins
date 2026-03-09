@@ -96,6 +96,18 @@ export type ProjectsProjectIdGet = {
 /**
  * @public
  */
+export type ProjectsProjectIdLogGet = {
+  path: {
+    projectId: string;
+  };
+  query: {
+    streaming?: boolean;
+  };
+  response: string | void;
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdModulesGet = {
   path: {
     projectId: string;
@@ -168,6 +180,8 @@ export type EndpointMap = {
   '#_delete|/projects/{projectId}': ProjectsProjectIdDelete;
 
   '#get|/projects/{projectId}': ProjectsProjectIdGet;
+
+  '#get|/projects/{projectId}/log': ProjectsProjectIdLogGet;
 
   '#get|/projects/{projectId}/modules': ProjectsProjectIdModulesGet;
 

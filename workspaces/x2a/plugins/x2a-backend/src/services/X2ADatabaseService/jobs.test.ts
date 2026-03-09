@@ -647,7 +647,6 @@ describe('X2ADatabaseService – jobs', () => {
         });
         await service.createJob({
           projectId: project.id,
-          moduleId: module.id,
           phase: 'init' as const,
         });
         await delay(5);
@@ -665,7 +664,6 @@ describe('X2ADatabaseService – jobs', () => {
 
         const initJobs = await service.listJobs({
           projectId: project.id,
-          moduleId: module.id,
           phase: 'init',
         });
         const analyzeJobs = await service.listJobs({
