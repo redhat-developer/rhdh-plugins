@@ -112,7 +112,8 @@ test.describe('Bulk Import', () => {
     await context.close();
   });
 
-  test('should render bulk import page with source control options, search, and repositories table', async ({
+  // Will be re-enabled after https://issues.redhat.com/browse/RHDHBUGS-2792 is fixed
+  test.skip('should render bulk import page with source control options, search, and repositories table', async ({
     browser,
   }, testInfo: TestInfo) => {
     const article = sharedPage.getByRole('article');
@@ -174,7 +175,10 @@ test.describe('Bulk Import', () => {
     await expect(selectAllCheckbox).not.toBeChecked();
   });
 
-  test('Verify preview sidebar', async ({ browser }, testInfo: TestInfo) => {
+  // Will be re-enabled after https://issues.redhat.com/browse/RHDHBUGS-2792 is fixed
+  test.skip('Verify preview sidebar', async ({
+    browser,
+  }, testInfo: TestInfo) => {
     const backendServiceCheckbox = sharedPage
       .getByRole('rowheader', { name: 'backend-service' })
       .getByRole('checkbox');
@@ -228,7 +232,8 @@ test.describe('Bulk Import', () => {
       .click();
   });
 
-  test('Verify Import flow', async () => {
+  // Will be re-enabled after https://issues.redhat.com/browse/RHDHBUGS-2792 is fixed
+  test.skip('Verify Import flow', async () => {
     const backendServiceCheckbox = sharedPage
       .getByRole('rowheader', { name: 'backend-service' })
       .getByRole('checkbox');

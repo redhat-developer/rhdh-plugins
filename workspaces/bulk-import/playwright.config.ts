@@ -16,8 +16,8 @@
 
 import { defineConfig } from '@playwright/test';
 
-const baseConfig = '../../app-config.yaml';
-const configPath = '../app/e2e-tests/test_yamls';
+const baseConfig = `${__dirname}/app-config.yaml`;
+const testConfigDir = `${__dirname}/packages/app/e2e-tests/test_yamls`;
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -31,28 +31,46 @@ export default defineConfig({
     ? []
     : [
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-en.yaml`,
+          command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-en.yaml`,
           url: 'http://localhost:7007/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
         },
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-fr.yaml`,
+          command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-de.yaml`,
           url: 'http://localhost:7008/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
         },
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-it.yaml`,
+          command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-es.yaml`,
           url: 'http://localhost:7009/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
         },
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-ja.yaml`,
+          command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-fr.yaml`,
           url: 'http://localhost:7010/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
+        },
+        {
+          command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-it.yaml`,
+          url: 'http://localhost:7011/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+          cwd: __dirname,
+        },
+        {
+          command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-ja.yaml`,
+          url: 'http://localhost:7012/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+          cwd: __dirname,
         },
       ],
 
@@ -81,12 +99,30 @@ export default defineConfig({
       },
     },
     {
+      name: 'de',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'de',
+        baseURL: 'http://localhost:3001',
+      },
+    },
+    {
+      name: 'es',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'es',
+        baseURL: 'http://localhost:3002',
+      },
+    },
+    {
       name: 'fr',
       testDir: 'packages/app/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'fr',
-        baseURL: 'http://localhost:3001',
+        baseURL: 'http://localhost:3003',
       },
     },
     {
@@ -95,7 +131,7 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'it',
-        baseURL: 'http://localhost:3002',
+        baseURL: 'http://localhost:3004',
       },
     },
     {
@@ -104,7 +140,7 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'ja',
-        baseURL: 'http://localhost:3003',
+        baseURL: 'http://localhost:3005',
       },
     },
   ],
