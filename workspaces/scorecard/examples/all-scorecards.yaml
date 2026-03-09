@@ -8,5 +8,5 @@ spec:
     - ./components/dependabot-scorecard-only.yaml
     - ./components/github-scorecard-only.yaml
     - ./components/jira-scorecard-only.yaml
-    - ./components/no-scorecards.yaml
     - ./components/openssf-scorecard-only.yaml
+    - ./components/scorecards-service.yaml

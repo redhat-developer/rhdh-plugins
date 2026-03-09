@@ -16,7 +16,14 @@
 
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export type DependabotSeverity = 'critical' | 'high' | 'medium' | 'low';
+export const DEPENDABOT_SEVERITIES = [
+  'critical',
+  'high',
+  'medium',
+  'low',
+] as const;
+
+export type DependabotSeverity = (typeof DEPENDABOT_SEVERITIES)[number];
 
 export type DependabotRepository = {
   owner: string;

@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 import { DependabotMetricProvider } from './DependabotMetricProvider';
-import { DependabotSeverity } from './DependabotConfig';
+import { DependabotSeverity, DEPENDABOT_SEVERITIES } from './DependabotConfig';
 import { Config } from '@backstage/config';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-
-const DEPENDABOT_SEVERITIES: DependabotSeverity[] = [
-  'critical',
-  'high',
-  'medium',
-  'low',
-];
 
 /**
  * Creates a single Dependabot metric provider for the given severity.
