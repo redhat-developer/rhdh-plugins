@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './buildArtifactUrl';
-export * from './extractResponseError';
-export * from './buildRepoBranchUrl';
-export * from './formatRelativeTime';
-export * from './humanizeArtifactType';
-export * from './humanizeDate';
-export * from './getLastPhaseReached';
-export * from './getNextPhase';
-export * from './canRunNextPhase';
+import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+import { getLastPhaseReached } from './getLastPhaseReached';
+import { getNextPhase } from './getNextPhase';
+
+export const canRunNextPhase = (module: Module): boolean => {
+  const nextPhase = getNextPhase(module);
+  if (!nextPhase) {
+    return false;
+  }
+
+  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
+  const lastJob = getLastPhaseReached(module);
+  if (!lastJob || lastJob.status === 'success') {
+    return true;
+  }
+
+  return false;
+};

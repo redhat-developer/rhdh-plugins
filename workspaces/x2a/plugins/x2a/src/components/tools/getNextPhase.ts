@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './buildArtifactUrl';
-export * from './extractResponseError';
-export * from './buildRepoBranchUrl';
-export * from './formatRelativeTime';
-export * from './humanizeArtifactType';
-export * from './humanizeDate';
-export * from './getLastPhaseReached';
-export * from './getNextPhase';
-export * from './canRunNextPhase';
+import {
+  MigrationPhase,
+  Module,
+  ModulePhase,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+import { getLastPhaseReached } from './getLastPhaseReached';
+
+const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
+  init: 'analyze',
+  analyze: 'migrate',
+  migrate: 'publish',
+  publish: undefined,
+};
+
+export const getNextPhase = (module: Module): ModulePhase | undefined => {
+  const lastJob = getLastPhaseReached(module);
+  const lastPhase: MigrationPhase = lastJob?.phase || 'init';
+  return nextPhases[lastPhase];
+};

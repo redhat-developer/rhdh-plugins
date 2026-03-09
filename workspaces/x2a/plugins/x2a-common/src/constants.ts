@@ -40,3 +40,12 @@ export const DEFAULT_PAGE_ORDER = 'desc';
  */
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
   '/create/templates/default/chef-conversion-project-template';
+
+/**
+ * Maximum number of projects to run in parallel for a bulk run.
+ * This is a trade-off between performance and resource usage.
+ * For every project, we issue one API request per eligible module.
+ *
+ * @public
+ */
+export const MAX_CONCURRENT_BULK_RUN = 5;
