@@ -96,7 +96,7 @@ catalog:
     - type: file
       target: ../../examples/all-scorecards.yaml
       rules:
-        - allow: [Component, System, API, Resource, Location, Template, User, Group]
+        - allow: [Component]
 
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/components/showcase.yaml

@@ -66,8 +66,8 @@ describe('DependabotClient', () => {
       {
         number: 1,
         state: 'open',
-        created_at: '2024-01-01',
-        security_advisory: { severity: 'critical' },
+        createdAt: '2024-01-01',
+        securityAdvisory: { severity: 'critical' },
       },
     ];
     mockPaginate.mockResolvedValueOnce(alerts);

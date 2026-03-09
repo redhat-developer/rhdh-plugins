@@ -6,9 +6,7 @@ metadata:
 spec:
   targets:
     - ./components/dependabot-scorecard-only.yaml
-    - ./components/entities.yaml
     - ./components/github-scorecard-only.yaml
     - ./components/jira-scorecard-only.yaml
     - ./components/no-scorecards.yaml
     - ./components/openssf-scorecard-only.yaml
-    - ./orgs/guest.yaml

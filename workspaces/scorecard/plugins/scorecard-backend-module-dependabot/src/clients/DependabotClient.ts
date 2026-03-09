@@ -29,9 +29,9 @@ import {
 interface GitHubDependabotAlert {
   number: number;
   description: string;
-  created_at: string;
+  createdAt: string;
   state: string;
-  security_advisory: {
+  securityAdvisory: {
     severity: string;
   };
 }
