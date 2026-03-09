@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki
 
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [02a0552]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.0.2
+
 ## 1.0.2
 
 ### Patch Changes
