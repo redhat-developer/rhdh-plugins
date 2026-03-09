@@ -115,6 +115,10 @@ export const x2aPluginMessages = {
     },
     actions: {
       deleteProject: 'Delete project',
+      expandAll: 'Expand all rows',
+      collapseAll: 'Collapse all rows',
+      expandRow: 'Expand row',
+      collapseRow: 'Collapse row',
     },
     projectsCount: 'Projects ({{count}})',
   },
