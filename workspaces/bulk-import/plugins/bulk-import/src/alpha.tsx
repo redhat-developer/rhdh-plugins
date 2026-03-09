@@ -15,15 +15,13 @@
  */
 
 import {
+  ApiBlueprint,
   configApiRef,
   createApiFactory,
-  identityApiRef,
-} from '@backstage/core-plugin-api';
-import {
-  ApiBlueprint,
   createFrontendPlugin,
   createRouteRef,
   createSubRouteRef,
+  identityApiRef,
   NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
@@ -41,9 +39,6 @@ const importHistoryRouteRef = createSubRouteRef({
   parent: rootRouteRef,
   path: '/import-history/:repoUrl',
 });
-
-// Re-export translations for backward compatibility
-export * from './translations';
 
 /**
  * API Extension
@@ -75,7 +70,7 @@ const bulkImportPage = PageBlueprint.make({
   params: {
     path: '/bulk-import',
     routeRef: rootRouteRef,
-    loader: () => import('./components').then(m => <m.Router />),
+    loader: () => import('./components').then(({ Router }) => <Router />),
   },
 });
 

@@ -16,8 +16,11 @@
 
 import { defineConfig } from '@playwright/test';
 
+const appMode = process.env.APP_MODE || 'legacy';
+const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
+
 const baseConfig = '../../app-config.yaml';
-const configPath = '../app/e2e-tests/test_yamls';
+const configPath = 'packages/app-legacy/e2e-tests/test_yamls';
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -31,34 +34,40 @@ export default defineConfig({
     ? []
     : [
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-en.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-en.yaml`,
           url: 'http://localhost:7007/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
         },
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-fr.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-fr.yaml`,
           url: 'http://localhost:7008/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
         },
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-it.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-it.yaml`,
           url: 'http://localhost:7009/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
         },
         {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-ja.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-ja.yaml`,
           url: 'http://localhost:7010/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
+          cwd: __dirname,
         },
       ],
 
   retries: process.env.CI ? 2 : 0,
 
-  reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+  reporter: [
+    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+  ],
 
   use: {
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
@@ -68,12 +77,12 @@ export default defineConfig({
     headless: process.env.HEADED !== 'true',
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
   projects: [
     {
       name: 'en',
-      testDir: 'packages/app/e2e-tests',
+      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'en',
@@ -82,7 +91,7 @@ export default defineConfig({
     },
     {
       name: 'fr',
-      testDir: 'packages/app/e2e-tests',
+      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'fr',
@@ -91,7 +100,7 @@ export default defineConfig({
     },
     {
       name: 'it',
-      testDir: 'packages/app/e2e-tests',
+      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'it',
@@ -100,7 +109,7 @@ export default defineConfig({
     },
     {
       name: 'ja',
-      testDir: 'packages/app/e2e-tests',
+      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'ja',

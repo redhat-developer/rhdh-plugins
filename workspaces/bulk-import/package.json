@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start",
-    "start:next": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start backend app-next",
+    "start:legacy": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start backend app-legacy",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
@@ -23,7 +23,11 @@
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "cd ../../ && yarn install",
+    "test:e2e:legacy": "APP_MODE=legacy playwright test",
+    "test:e2e:nfs": "APP_MODE=nfs playwright test",
+    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
+    "playwright": "bash -c 'if [[ \"$@\" == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _"
   },
   "workspaces": {
     "packages": [
