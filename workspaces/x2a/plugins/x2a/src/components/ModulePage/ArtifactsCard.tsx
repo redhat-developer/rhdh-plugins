@@ -50,7 +50,7 @@ export const ArtifactsCard = ({
   return (
     <InfoCard title={t('modulePage.artifacts.title')} variant="gridItem">
       <Grid container direction="row" spacing={3}>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('modulePage.artifacts.migration_plan')}
             value={
@@ -62,7 +62,7 @@ export const ArtifactsCard = ({
             }
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('modulePage.artifacts.module_migration_plan')}
             value={
@@ -74,7 +74,7 @@ export const ArtifactsCard = ({
             }
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('modulePage.artifacts.migrated_sources')}
             value={
@@ -86,7 +86,7 @@ export const ArtifactsCard = ({
             }
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('modulePage.artifacts.ansible_project')}
             value={
@@ -98,6 +98,7 @@ export const ArtifactsCard = ({
             }
           />
         </Grid>
+
         <Grid item xs={12}>
           {t('modulePage.artifacts.description')}
         </Grid>
