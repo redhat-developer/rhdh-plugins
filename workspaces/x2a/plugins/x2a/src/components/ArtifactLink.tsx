@@ -25,10 +25,11 @@ const useStyles = makeStyles({
   artifact: {
     margin: 0,
     padding: 0,
+    display: 'inline-flex',
+    alignItems: 'center',
   },
   externalIcon: {
     marginLeft: 4,
-    verticalAlign: 'middle',
     fontSize: 'inherit',
   },
 });
