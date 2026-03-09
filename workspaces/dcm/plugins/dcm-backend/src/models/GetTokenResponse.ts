@@ -9,20 +9,16 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF THE LICENSE, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createBackend } from '@backstage/backend-defaults';
-import { mockServices } from '@backstage/backend-test-utils';
 
-// Start the backend with `yarn start` in the package directory.
-
-const backend = createBackend();
-
-backend.add(mockServices.auth.factory());
-backend.add(mockServices.httpAuth.factory());
-
-backend.add(import('../src'));
-
-backend.start();
+/**
+ * @public
+ */
+export interface GetTokenResponse {
+  accessToken: string;
+  /** The Unix Epoch at which the token will expire */
+  expiresAt: number;
+}

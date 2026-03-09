@@ -16,7 +16,7 @@
     "tsc:full": "tsc --skipLibCheck true --incremental false",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn build:api-reports:only --tsc",
-    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type --validate-release-tags",
+    "build:api-reports:only": "backstage-repo-tools api-reports -o ae-wrong-input-file-type,ae-missing-release-tag --validate-release-tags",
     "build:knip-reports": "backstage-repo-tools knip-reports",
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
@@ -55,7 +55,9 @@
   "resolutions": {
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "fsevents": "~2.3.2"
+    "fsevents": "~2.3.2",
+    "@backstage/backend-app-api": "1.4.1",
+    "@backstage/backend-plugin-api": "1.6.2"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

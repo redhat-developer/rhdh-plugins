@@ -48,7 +48,7 @@ export const ProjectModulesCard = ({ modules }: { modules: Module[] }) => {
           const lastJob = getLastPhaseReached(module);
           return (
             <Fragment key={module.id}>
-              <Grid item xs={4}>
+              <Grid item xs={12} sm={4}>
                 <Link
                   to={modulePath({
                     projectId: module.projectId,
@@ -58,10 +58,10 @@ export const ProjectModulesCard = ({ modules }: { modules: Module[] }) => {
                   {module.name}
                 </Link>
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={12} sm={4}>
                 <ModuleStatusCell module={module} />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={12} sm={4}>
                 <CurrentPhaseCell phase={lastJob?.phase} />
               </Grid>
               {index < modules.length - 1 && (
