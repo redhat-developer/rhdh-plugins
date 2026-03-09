@@ -42,22 +42,36 @@ export default defineConfig({
           cwd: __dirname,
         },
         {
-          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-fr.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-de.yaml`,
           url: 'http://localhost:7008/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
           cwd: __dirname,
         },
         {
-          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-it.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-es.yaml`,
           url: 'http://localhost:7009/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
           cwd: __dirname,
         },
         {
-          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-ja.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-fr.yaml`,
           url: 'http://localhost:7010/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+          cwd: __dirname,
+        },
+        {
+          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-it.yaml`,
+          url: 'http://localhost:7011/.backstage/health/v1/readiness',
+          timeout: 120000,
+          reuseExistingServer: false,
+          cwd: __dirname,
+        },
+        {
+          command: `${startCommand} --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-ja.yaml`,
+          url: 'http://localhost:7012/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
           cwd: __dirname,
@@ -90,11 +104,27 @@ export default defineConfig({
       },
     },
     {
+      name: 'de',
+      use: {
+        channel: 'chrome',
+        locale: 'de',
+        baseURL: 'http://localhost:3001',
+      },
+    },
+    {
+      name: 'es',
+      use: {
+        channel: 'chrome',
+        locale: 'es',
+        baseURL: 'http://localhost:3002',
+      },
+    },
+    {
       name: 'fr',
       use: {
         channel: 'chrome',
         locale: 'fr',
-        baseURL: 'http://localhost:3001',
+        baseURL: 'http://localhost:3003',
       },
     },
     {
@@ -102,7 +132,7 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'it',
-        baseURL: 'http://localhost:3002',
+        baseURL: 'http://localhost:3004',
       },
     },
     {
@@ -110,7 +140,7 @@ export default defineConfig({
       use: {
         channel: 'chrome',
         locale: 'ja',
-        baseURL: 'http://localhost:3003',
+        baseURL: 'http://localhost:3005',
       },
     },
   ],

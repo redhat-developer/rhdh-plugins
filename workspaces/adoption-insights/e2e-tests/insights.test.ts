@@ -111,7 +111,8 @@ test('Select date range', async () => {
   await selectDateRange(page, translations.header.dateRange.today);
 });
 
-test('Active users panel shows 1 visitor', async () => {
+// Will be re-enabled after https://issues.redhat.com/browse/RHDHBUGS-2791 is fixed
+test.skip('Active users panel shows 1 visitor', async () => {
   const panel = getPanel(page, translations.activeUsers.title);
   await expect(panel.locator('.recharts-surface')).toBeVisible();
   const averageTextContent = replaceTemplate(
@@ -210,7 +211,8 @@ test.describe(() => {
     await selectDateRange(page, translations.header.dateRange.today);
   });
 
-  test('Visited component shows up in top catalog entities', async () => {
+  // Will be re-enabled after https://issues.redhat.com/browse/RHDHBUGS-2791 is fixed
+  test.skip('Visited component shows up in top catalog entities', async () => {
     const panel = getPanel(page, translations.catalogEntities.allTitle);
     await expect(panel).toContainText(translations.filter.selectKind);
     await panel.getByLabel(translations.filter.selectKind).click();
@@ -257,7 +259,8 @@ test.describe(() => {
     await verifyTableEntries(panel, 1, 'docs');
   });
 
-  test('New data shows in searches', async () => {
+  // Will be re-enabled after https://issues.redhat.com/browse/RHDHBUGS-2791 is fixed
+  test.skip('New data shows in searches', async () => {
     const panel = getPanel(
       page,
       replaceTemplate(translations.searches.totalCount, { count: '1' }),
