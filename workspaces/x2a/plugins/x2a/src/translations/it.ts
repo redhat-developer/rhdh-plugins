@@ -115,7 +115,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.statuses.error': 'Errore',
     'artifact.types.migrated_sources': 'Sorgenti migrate',
     'artifact.types.project_metadata': 'Metadati del progetto',
-    'artifact.types.ansible_project': 'Progetto Ansible',
+    'artifact.types.ansible_project': 'Progetto AAP',
     'modulePage.title': 'Dettagli del modulo',
     'modulePage.artifacts.title': 'Artefatti da rivedere',
     'modulePage.artifacts.migration_plan':
@@ -123,7 +123,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.artifacts.module_migration_plan':
       'Piano del modulo per analisi',
     'modulePage.artifacts.migrated_sources': 'Sorgenti migrate',
-    'modulePage.artifacts.ansible_project': 'Progetto Ansible',
+    'modulePage.artifacts.ansible_project': 'Progetto AAP',
     'modulePage.artifacts.description':
       'Questi artefatti sono generati dal processo di conversione e sono disponibili per la revisione.',
     'modulePage.phases.title': 'Fasi di migrazione',

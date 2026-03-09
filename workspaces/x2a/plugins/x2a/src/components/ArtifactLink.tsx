@@ -49,9 +49,13 @@ export const ArtifactLink = ({
     return t('module.phases.none');
   }
 
+  const url =
+    artifact.type === 'ansible_project'
+      ? artifact.value
+      : buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch);
   return (
     <Link
-      to={buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch)}
+      to={url}
       target="_blank"
       rel="noopener noreferrer"
       className={classes.artifact}
