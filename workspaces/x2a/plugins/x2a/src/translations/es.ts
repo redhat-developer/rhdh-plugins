@@ -54,6 +54,16 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'projectModulesCard.toReview': 'revisar',
     'projectModulesCard.published': 'publicado',
     'projectPage.title': 'Proyecto',
+    'projectPage.actionsTooltip':
+      'Haga clic para abrir el menú para las acciones del proyecto',
+    'projectPage.deleteError': 'Error al eliminar el proyecto',
+    'projectPage.deleteProject': 'Eliminar',
+    'projectPage.deleteConfirm.title': '¿Eliminar proyecto "{{name}}"?',
+    'projectPage.deleteConfirm.message':
+      'Este proyecto, todos sus módulos y trabajos se eliminarán permanentemente. Esta acción no se puede deshacer. Los artefactos persistidos en el repositorio de destino se preservarán.',
+    'projectPage.deleteConfirm.cancel': 'Cancelar',
+    'projectPage.deleteConfirm.confirm': 'Eliminar',
+    'projectTable.deleteError': 'Error al eliminar el proyecto',
     'project.description': 'Descripción',
     'project.id': 'ID',
     'project.abbreviation': 'Abreviatura',
