@@ -211,7 +211,6 @@ export async function listAllRepositoriesForAuthenticatedUser(
   },
   octokit: Octokit,
   options?: {
-    ghApiName?: string;
     pageSize?: number;
   },
 ): Promise<
