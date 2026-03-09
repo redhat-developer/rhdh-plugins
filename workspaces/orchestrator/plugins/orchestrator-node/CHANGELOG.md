@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-node
 
+## 1.0.2
+
+### Patch Changes
+
+- 02a0552: Updating the backend-plugin-api to 1.5.0 to be inline with the other packages. For example, the loki-backend module.
+
 ## 1.0.1
 
 ### Patch Changes
