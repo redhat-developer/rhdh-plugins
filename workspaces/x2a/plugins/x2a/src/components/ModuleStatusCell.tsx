@@ -55,14 +55,20 @@ export const ModuleStatusCell = ({ module }: { module?: Module }) => {
   const { t } = useTranslation();
   const styles = useStyles();
 
-  const status = module?.status;
-  const statusText = t(`module.statuses.${status || 'none'}`);
-  const content = (
-    <Box display="flex" alignItems="center">
-      <StatusIcon status={status} />
-      <div>{statusText}</div>
-
-      {module?.status === 'success' && !module.publish && (
+  let chip;
+  if (module?.status === 'success') {
+    if (module.publish) {
+      chip = (
+        <Chip
+          label={t('projectModulesCard.published')}
+          size="small"
+          variant="outlined"
+          color="primary"
+          className={styles.toReviewChip}
+        />
+      );
+    } else {
+      chip = (
         <Chip
           label={t('projectModulesCard.toReview')}
           size="small"
@@ -70,7 +76,17 @@ export const ModuleStatusCell = ({ module }: { module?: Module }) => {
           color="primary"
           className={styles.toReviewChip}
         />
-      )}
+      );
+    }
+  }
+
+  const status = module?.status;
+  const statusText = t(`module.statuses.${status || 'none'}`);
+  const content = (
+    <Box display="flex" alignItems="center">
+      <StatusIcon status={status} />
+      <div>{statusText}</div>
+      {chip}
     </Box>
   );
 

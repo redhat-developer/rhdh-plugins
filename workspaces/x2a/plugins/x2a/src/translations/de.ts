@@ -48,6 +48,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'projectModulesCard.title': 'Module ({{count}})',
     'projectModulesCard.noModules': 'Noch keine Module gefunden...',
     'projectModulesCard.toReview': 'überprüfen',
+    'projectModulesCard.published': 'veröffentlicht',
     'projectPage.title': 'Projekt',
     'project.description': 'Beschreibung',
     'project.id': 'ID',

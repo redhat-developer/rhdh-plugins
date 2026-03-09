@@ -46,6 +46,7 @@ readonly "projectDetailsCard.createdBy": string;
 readonly "projectDetailsCard.sourceRepo": string;
 readonly "projectDetailsCard.targetRepo": string;
 readonly "projectModulesCard.title": string;
+readonly "projectModulesCard.published": string;
 readonly "projectModulesCard.noModules": string;
 readonly "projectModulesCard.toReview": string;
 readonly "initPhaseCard.title": string;

@@ -50,6 +50,7 @@ export const x2aPluginMessages = {
     title: 'Modules ({{count}})',
     noModules: 'No modules found yet...',
     toReview: 'review',
+    published: 'published',
   },
   initPhaseCard: {
     title: 'Discovery Phase',
