@@ -24,12 +24,13 @@ import {
   type GithubIntegrationConfig,
 } from '@backstage/integration';
 
-import { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
+import { Octokit } from '@octokit/rest';
 import gitUrlParse from 'git-url-parse';
 
 import { logErrorIfNeeded } from '../../helpers';
 import type { CustomGithubCredentialsProvider } from '../GithubAppManager';
 import {
+  AuthenticatedUserRepositoryList,
   isGithubAppCredential,
   type ExtendedGithubCredentials,
   type GithubFetchError,
