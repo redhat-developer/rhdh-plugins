@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { ProjectStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { PieChart, PieValueType } from '@mui/x-charts';
-import { Grid, makeStyles, Tooltip, Chip } from '@material-ui/core';
+import { Box, Grid, makeStyles, Tooltip, Chip } from '@material-ui/core';
 import AssignmentTurnedInIcon from '@material-ui/icons/AssignmentTurnedIn';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -27,6 +27,13 @@ const size = 25;
 const styles = makeStyles({
   tooltip: {
     width: 100,
+  },
+  statusText: {
+    overflowWrap: 'anywhere',
+    minWidth: 0,
+  },
+  clickable: {
+    cursor: 'pointer',
   },
 });
 
@@ -132,33 +139,35 @@ export const ProjectStatusCell = ({
   }
 
   return (
-    <Grid container direction="row" spacing={2}>
-      {isModulesSummary && (
-        <Grid item alignContent="flex-start" xs={2}>
-          <Tooltip
-            open={open}
-            onClose={() => setOpen(false)}
-            leaveDelay={1000}
-            placement="bottom"
-            arrow
-            title={tooltipContent}
-          >
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={(event: React.MouseEvent) => {
+    <Box>
+      {isModulesSummary ? (
+        <Tooltip
+          open={open}
+          onClose={() => setOpen(false)}
+          leaveDelay={1000}
+          placement="left-start"
+          arrow
+          title={tooltipContent}
+        >
+          <Box
+            display="flex"
+            alignItems="flex-start"
+            role="button"
+            tabIndex={0}
+            onClick={(event: React.MouseEvent) => {
+              event.stopPropagation();
+              setOpen(!open);
+            }}
+            onKeyDown={(event: React.KeyboardEvent) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
                 event.stopPropagation();
                 setOpen(!open);
-              }}
-              onKeyDown={(event: React.KeyboardEvent) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  setOpen(!open);
-                }
-              }}
-              style={{ cursor: 'pointer' }}
-            >
+              }
+            }}
+            className={classes.clickable}
+          >
+            <Box flexShrink={0} mr={1}>
               <PieChart
                 series={[{ innerRadius: 0, outerRadius: size / 2, data }]}
                 margin={{ right: 5 }}
@@ -166,17 +175,20 @@ export const ProjectStatusCell = ({
                 height={size}
                 slotProps={{ legend: { hidden: true } }}
               />
-            </div>
-          </Tooltip>
-        </Grid>
+            </Box>
+            <Box className={classes.statusText}>
+              {t(`project.statuses.${projectStatus.state || 'none'}`)}
+            </Box>
+          </Box>
+        </Tooltip>
+      ) : (
+        <Box className={classes.statusText}>
+          {t(`project.statuses.${projectStatus.state || 'none'}`)}
+        </Box>
       )}
 
-      <Grid item alignContent="center" xs={isModulesSummary ? 8 : 12}>
-        {t(`project.statuses.${projectStatus.state || 'none'}`)}
-      </Grid>
-
       {modulesSummary?.waiting > 0 && (
-        <Grid item alignContent="center">
+        <Box mt={0.5}>
           <Chip
             size="small"
             variant="outlined"
@@ -186,8 +198,8 @@ export const ProjectStatusCell = ({
               count: modulesSummary.waiting,
             })}
           />
-        </Grid>
+        </Box>
       )}
-    </Grid>
+    </Box>
   );
 };

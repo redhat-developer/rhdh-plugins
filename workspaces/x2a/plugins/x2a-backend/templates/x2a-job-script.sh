@@ -23,7 +23,7 @@ report_result() {
     url="${url}&moduleId=${MODULE_ID}"
   fi
 
-  local cmd=(uv run app.py report --url "${url}" --job-id "${JOB_ID}")
+  local cmd=(uv run app.py report --url "${url}" --job-id "${JOB_ID}" --source-dir "${SOURCE_BASE}")
 
   for artifact in "${ARTIFACTS[@]}"; do
     cmd+=(--artifacts "${artifact}")
