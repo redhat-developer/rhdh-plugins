@@ -34,20 +34,48 @@ const useStyles = makeStyles(theme => ({
     marginLeft: theme.spacing(1),
     marginBottom: 0,
   },
+  unknownStatus: {
+    fontWeight: theme.typography.fontWeightMedium as any,
+    display: 'flex',
+    alignItems: 'baseline',
+  },
+  unknownStatusIcon: {
+    flexShrink: 0,
+    position: 'relative',
+    top: '0.125em',
+    marginRight: theme.spacing(1),
+    width: '0.8em',
+    height: '0.8em',
+  },
 }));
 
-const StatusIcon = ({ status }: { status?: ModuleStatus }) => {
+const StatusWithText = ({
+  status,
+  children,
+}: {
+  status?: ModuleStatus;
+  children?: React.ReactNode;
+}) => {
+  const classes = useStyles();
   switch (status) {
     case 'success':
-      return <StatusOK />;
+      return <StatusOK>{children}</StatusOK>;
     case 'error':
-      return <StatusError />;
+      return <StatusError>{children}</StatusError>;
     case 'running':
-      return <StatusRunning />;
+      return <StatusRunning>{children}</StatusRunning>;
     case 'pending':
-      return <StatusPending />;
+      return <StatusPending>{children}</StatusPending>;
     default:
-      return <HelpOutlineIcon fontSize="small" color="disabled" />;
+      return (
+        <Box component="span" className={classes.unknownStatus}>
+          <HelpOutlineIcon
+            color="disabled"
+            className={classes.unknownStatusIcon}
+          />
+          {children}
+        </Box>
+      );
   }
 };
 
@@ -83,9 +111,10 @@ export const ModuleStatusCell = ({ module }: { module?: Module }) => {
   const status = module?.status;
   const statusText = t(`module.statuses.${status || 'none'}`);
   const content = (
-    <Box display="flex" alignItems="center">
-      <StatusIcon status={status} />
-      <div>{statusText}</div>
+    <Box display="flex" flexWrap="wrap" alignItems="center">
+      <Box whiteSpace="nowrap">
+        <StatusWithText status={status}>{statusText}</StatusWithText>
+      </Box>
       {chip}
     </Box>
   );

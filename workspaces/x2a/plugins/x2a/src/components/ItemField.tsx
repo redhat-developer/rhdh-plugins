@@ -26,9 +26,13 @@ export const ItemField = ({
 }) => {
   return (
     <AboutField label={label}>
-      <Typography variant="subtitle2" component="div">
-        {typeof value === 'string' ? <b>{value}</b> : value}
-      </Typography>
+      {typeof value === 'string' ? (
+        <Typography variant="subtitle2" component="div">
+          <b>{value}</b>
+        </Typography>
+      ) : (
+        value
+      )}
     </AboutField>
   );
 };
