@@ -42,7 +42,17 @@ Use the after parameter to fetch only events after a specific event ID for incre
     schema: {
       input: z =>
         z.object({
-          taskId: z.string().describe('The ID of the scaffolder task'),
+          taskId: z
+            .string()
+            .min(1)
+            .refine(
+              val =>
+                !val.includes('..') &&
+                !val.includes('/') &&
+                !val.includes('\\'),
+              { message: 'taskId must be a valid task ID' },
+            )
+            .describe('The ID of the scaffolder task'),
           after: z
             .number()
             .int()

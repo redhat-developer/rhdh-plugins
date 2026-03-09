@@ -184,4 +184,42 @@ describe('createGetScaffolderTaskLogsAction', () => {
       }),
     ).rejects.toThrow(/Scaffolder task logs request failed: 500/);
   });
+
+  it('should reject taskId containing path traversal or path segment characters', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockAuth = mockServices.auth.mock();
+    const mockDiscovery = mockServices.discovery.mock();
+
+    mockAuth.getPluginRequestToken.mockResolvedValue({ token: mockToken });
+    mockDiscovery.getBaseUrl.mockResolvedValue(mockBaseUrl);
+
+    createGetScaffolderTaskLogsAction({
+      actionsRegistry: mockActionsRegistry,
+      auth: mockAuth,
+      discovery: mockDiscovery,
+    });
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:get-scaffolder-task-logs',
+        input: { taskId: '../../../other' },
+      }),
+    ).rejects.toThrow(/valid task ID/);
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:get-scaffolder-task-logs',
+        input: { taskId: 'task/extra' },
+      }),
+    ).rejects.toThrow(/valid task ID/);
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:get-scaffolder-task-logs',
+        input: { taskId: 'task\\backslash' },
+      }),
+    ).rejects.toThrow(/valid task ID/);
+
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
 });
