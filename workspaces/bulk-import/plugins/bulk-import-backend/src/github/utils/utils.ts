@@ -238,6 +238,9 @@ export async function listAllRepositoriesForAuthenticatedUser(
     ?.match(/page=(\d+)/)?.[PAGE_NUMBER_REGEX_MATCH_INDEX];
 
   if (!lastPageNumberString) {
+    deps.logger.debug(
+      `Unable to extract page number from rel='last' link found in response headers from 'repos.listForAuthenticatedUser' GH endpoint => returning current page size`,
+    );
     return firstPageResponse.data;
   }
 
