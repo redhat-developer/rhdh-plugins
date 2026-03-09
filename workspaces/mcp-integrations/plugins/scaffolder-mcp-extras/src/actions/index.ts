@@ -26,11 +26,13 @@ import { createDryRunTemplateAction } from './createDryRunTemplateAction';
 import { createExecuteTemplateAction } from './createExecuteTemplateAction';
 import { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
 import { createListScaffolderActionsAction } from './createListScaffolderActionsAction';
+import { createGetScaffolderTaskLogsAction } from './createGetScaffolderTaskLogsAction';
 import { createListScaffolderTasksAction } from './listScaffolderTasksAction';
 
 export { createDryRunTemplateAction } from './createDryRunTemplateAction';
 export { createExecuteTemplateAction } from './createExecuteTemplateAction';
 export { createFetchTemplateMetadataAction } from './createFetchTemplateMetadataAction';
+export { createGetScaffolderTaskLogsAction } from './createGetScaffolderTaskLogsAction';
 export { createListScaffolderActionsAction } from './createListScaffolderActionsAction';
 export { createListScaffolderTasksAction } from './listScaffolderTasksAction';
 
@@ -49,6 +51,11 @@ export const createScaffolderActions = (options: {
     auth: options.auth,
     discovery: options.discovery,
     scmIntegrations: options.scmIntegrations,
+  });
+  createGetScaffolderTaskLogsAction({
+    actionsRegistry: options.actionsRegistry,
+    auth: options.auth,
+    discovery: options.discovery,
   });
   if (options.scaffolderClient) {
     createListScaffolderActionsAction({
