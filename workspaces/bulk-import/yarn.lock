@@ -16058,53 +16058,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app-next@workspace:packages/app-next":
+"app-legacy@workspace:packages/app-legacy":
   version: 0.0.0-use.local
-  resolution: "app-next@workspace:packages/app-next"
-  dependencies:
-    "@backstage/cli": ^0.34.5
-    "@backstage/core-app-api": ^1.19.2
-    "@backstage/core-compat-api": ^0.5.7
-    "@backstage/core-components": ^0.18.3
-    "@backstage/core-plugin-api": ^1.12.0
-    "@backstage/frontend-defaults": ^0.3.6
-    "@backstage/frontend-plugin-api": ^0.13.4
-    "@backstage/plugin-app-react": ^0.1.0
-    "@backstage/plugin-catalog": ^1.32.0
-    "@backstage/plugin-scaffolder": ^1.34.3
-    "@backstage/plugin-user-settings": ^0.8.29
-    "@backstage/test-utils": ^1.7.13
-    "@backstage/theme": ^0.7.0
-    "@backstage/ui": ^0.9.1
-    "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": ^0.12.0
-    "@types/react": ^18.2.58
-    "@types/react-dom": "*"
-    react: ^18.0.2
-    react-dom: ^18.0.2
-    react-router-dom: ^6.3.0
-  peerDependencies:
-    react: 16.13.1 || ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.0.0
-  languageName: unknown
-  linkType: soft
-
-"app-root-path@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "app-root-path@npm:3.1.0"
-  checksum: e3db3957aee197143a0f6c75e39fe89b19e7244f28b4f2944f7276a9c526d2a7ab2d115b4b2d70a51a65a9a3ca17506690e5b36f75a068a7e5a13f8c092389ba
-  languageName: node
-  linkType: hard
-
-"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
-  version: 0.0.0-use.local
-  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
-  languageName: node
-  linkType: soft
-
-"app@workspace:packages/app":
-  version: 0.0.0-use.local
-  resolution: "app@workspace:packages/app"
+  resolution: "app-legacy@workspace:packages/app-legacy"
   dependencies:
     "@axe-core/playwright": ^4.11.0
     "@backstage-community/plugin-rbac": ^1.33.2
@@ -16170,6 +16126,50 @@ __metadata:
     react-use: ^17.4.0
     yaml: ^2.0.0
     yup: ^1.4.0
+  peerDependencies:
+    react: 16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.0.0
+  languageName: unknown
+  linkType: soft
+
+"app-root-path@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "app-root-path@npm:3.1.0"
+  checksum: e3db3957aee197143a0f6c75e39fe89b19e7244f28b4f2944f7276a9c526d2a7ab2d115b4b2d70a51a65a9a3ca17506690e5b36f75a068a7e5a13f8c092389ba
+  languageName: node
+  linkType: hard
+
+"app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend":
+  version: 0.0.0-use.local
+  resolution: "app@link:../app::locator=backend%40workspace%3Apackages%2Fbackend"
+  languageName: node
+  linkType: soft
+
+"app@workspace:packages/app":
+  version: 0.0.0-use.local
+  resolution: "app@workspace:packages/app"
+  dependencies:
+    "@backstage/cli": ^0.34.5
+    "@backstage/core-app-api": ^1.19.2
+    "@backstage/core-compat-api": ^0.5.7
+    "@backstage/core-components": ^0.18.3
+    "@backstage/core-plugin-api": ^1.12.0
+    "@backstage/frontend-defaults": ^0.3.6
+    "@backstage/frontend-plugin-api": ^0.13.4
+    "@backstage/plugin-app-react": ^0.1.0
+    "@backstage/plugin-catalog": ^1.32.0
+    "@backstage/plugin-scaffolder": ^1.34.3
+    "@backstage/plugin-user-settings": ^0.8.29
+    "@backstage/test-utils": ^1.7.13
+    "@backstage/theme": ^0.7.0
+    "@backstage/ui": ^0.9.1
+    "@red-hat-developer-hub/backstage-plugin-bulk-import": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-theme": ^0.12.0
+    "@types/react": ^18.2.58
+    "@types/react-dom": "*"
+    react: ^18.0.2
+    react-dom: ^18.0.2
+    react-router-dom: ^6.3.0
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0

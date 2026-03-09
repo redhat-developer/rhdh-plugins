@@ -2,6 +2,16 @@
 
 This plugin allows bulk import of multiple catalog entities into the catalog.
 
+## New Frontend System (NFS) support
+
+This plugin provides an alpha export for the [New Frontend System](https://backstage.io/docs/frontend-system/) via `@red-hat-developer-hub/backstage-plugin-bulk-import/alpha`.
+
+### Sidebar item visibility
+
+When using the `NavItemBlueprint` from the `./alpha` export, the **Bulk Import** sidebar item is always visible, regardless of user permissions. This is a limitation of the current NFS extension model (extension factories run at app startup, before user authentication). Permission checks are enforced at the **page** level: users without the required permissions see a permission error when they open the Bulk Import page.
+
+For applications that need permission-based sidebar visibility, continue to use the legacy `BulkImportSidebarItem` component from the main package export.
+
 ## For administrators
 
 ### Installation
