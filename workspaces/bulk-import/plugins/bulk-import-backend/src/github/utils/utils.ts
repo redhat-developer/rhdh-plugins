@@ -213,9 +213,7 @@ export async function listAllRepositoriesForAuthenticatedUser(
   options?: {
     pageSize?: number;
   },
-): Promise<
-  RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data']
-> {
+): Promise<AuthenticatedUserRepositoryList> {
   const GITHUB_REST_API_MAX_PAGE_SIZE = 100;
   const PAGE_NUMBER_REGEX_MATCH_INDEX = 1;
   const SECOND_PAGE_NUMBER = 2;
