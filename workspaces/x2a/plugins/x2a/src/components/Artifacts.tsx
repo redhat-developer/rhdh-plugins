@@ -14,43 +14,11 @@
  * limitations under the License.
  */
 import { Fragment } from 'react';
-import { Link } from '@backstage/core-components';
-import { makeStyles } from '@material-ui/core';
 import { Artifact } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { useTranslation } from '../hooks/useTranslation';
-import { buildArtifactUrl, humanizeArtifactType } from './tools';
+import { ArtifactLink } from './ArtifactLink';
 
-const styles = makeStyles({
-  artifact: {
-    margin: 0,
-    padding: 0,
-  },
-});
-
-export const ArtifactLink = ({
-  artifact,
-  targetRepoUrl,
-  targetRepoBranch,
-}: {
-  artifact: Artifact;
-  targetRepoUrl: string;
-  targetRepoBranch: string;
-}) => {
-  const classes = styles();
-  const { t } = useTranslation();
-  return (
-    <Link
-      to={buildArtifactUrl(artifact.value, targetRepoUrl, targetRepoBranch)}
-      target="_blank"
-      rel="noopener noreferrer"
-      key={artifact.id}
-      className={classes.artifact}
-    >
-      {humanizeArtifactType(t, artifact.type)}
-    </Link>
-  );
-};
+export { ArtifactLink } from './ArtifactLink';
 
 export const Artifacts = ({
   artifacts,
@@ -61,7 +29,6 @@ export const Artifacts = ({
   targetRepoUrl: string;
   targetRepoBranch: string;
 }) => {
-  // Keep it dense
   return (
     <div>
       {artifacts.map(artifact => (

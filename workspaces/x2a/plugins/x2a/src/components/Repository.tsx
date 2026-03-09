@@ -16,6 +16,7 @@
 
 import { Link } from '@backstage/core-components';
 import { Chip, makeStyles, SvgIcon, Typography } from '@material-ui/core';
+import LaunchIcon from '@material-ui/icons/Launch';
 import { buildRepoBranchUrl } from './tools';
 
 const useStyles = makeStyles(theme => ({
@@ -24,21 +25,40 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column' as const,
     alignItems: 'flex-start',
     gap: theme.spacing(0.5),
+    overflow: 'hidden',
+  },
+  externalLink: {
+    wordBreak: 'break-all' as const,
+  },
+  externalIcon: {
+    marginLeft: 4,
+    verticalAlign: 'text-bottom',
+    fontSize: 'inherit',
+  },
+  branchIcon: {
+    marginLeft: '5px',
   },
 }));
 
-const GitBranchIcon = () => (
-  <SvgIcon fontSize="small" viewBox="0 0 24 24">
-    <path
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M6 3v12m0 0a3 3 0 1 0 3 3m-3-3a3 3 0 0 1 3 3m0 0h6a3 3 0 0 0 3-3V9m0 0a3 3 0 1 0-3-3m3 3a3 3 0 0 1-3-3"
-    />
-  </SvgIcon>
-);
+const GitBranchIcon = () => {
+  const classes = useStyles();
+  return (
+    <SvgIcon
+      fontSize="inherit"
+      viewBox="0 0 24 24"
+      className={classes.branchIcon}
+    >
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M6 3v12m0 0a3 3 0 1 0 3 3m-3-3a3 3 0 0 1 3 3m0 0h6a3 3 0 0 0 3-3V9m0 0a3 3 0 1 0-3-3m3 3a3 3 0 0 1-3-3"
+      />
+    </SvgIcon>
+  );
+};
 
 export const Repository = ({
   url,
@@ -62,8 +82,10 @@ export const Repository = ({
           to={buildRepoBranchUrl(url, branch)}
           target="_blank"
           rel="noopener noreferrer"
+          className={classes.externalLink}
         >
           {url}
+          <LaunchIcon className={classes.externalIcon} aria-hidden />
         </Link>
       </Typography>
     </div>

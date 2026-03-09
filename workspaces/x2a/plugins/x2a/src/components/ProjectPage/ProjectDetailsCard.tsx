@@ -50,13 +50,6 @@ export const ProjectDetailsCard = ({ project }: { project: Project }) => {
           />
         </Grid>
 
-        <Grid {...gridItemProps} xs={8}>
-          <ItemField
-            label={t('projectDetailsCard.description')}
-            value={project.description || empty}
-          />
-        </Grid>
-
         <Grid {...gridItemProps}>
           <ItemField
             label={t('projectDetailsCard.abbreviation')}
@@ -109,6 +102,13 @@ export const ProjectDetailsCard = ({ project }: { project: Project }) => {
                 t('empty')
               )
             }
+          />
+        </Grid>
+
+        <Grid {...gridItemProps} xs={12}>
+          <ItemField
+            label={t('projectDetailsCard.description')}
+            value={project.description || empty}
           />
         </Grid>
       </Grid>
