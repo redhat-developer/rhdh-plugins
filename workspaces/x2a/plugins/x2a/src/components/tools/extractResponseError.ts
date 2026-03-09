@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-
-type TFunc = ReturnType<typeof useTranslation>['t'];
-
-interface TransProps {
-  message: Parameters<TFunc>[0];
-  params?: Parameters<TFunc>[1];
+/**
+ * Extracts an error message from a non-ok fetch Response.
+ *
+ * Tries to parse the Backstage-standard `{ error: { message } }` JSON body;
+ * falls back to the provided `fallback` string.
+ */
+export async function extractResponseError(
+  response: Pick<Response, 'json'>,
+  fallback: string,
+): Promise<string> {
+  try {
+    const body = (await response.json()) as {
+      error?: { message?: string };
+    };
+    return body?.error?.message ?? fallback;
+  } catch {
+    return fallback;
+  }
 }
-
-export const Trans = ({ message, params }: TransProps) => {
-  const { t } = useTranslation();
-  return t(message, ...(params ? [params] : ([] as any)));
-};

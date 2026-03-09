@@ -37,11 +37,20 @@ function flattenMessages(obj: any, prefix = ''): Record<string, string> {
 
 const flattenedMessages = flattenMessages(x2aPluginMessages);
 
-// Simple mock translation function
+// Simple mock translation function with i18next-style plural support
 export const mockT = (key: string, params?: any) => {
-  let message = flattenedMessages[key] || key;
+  let resolvedKey = key;
 
-  // Simple interpolation: replace {{param}} with values
+  if (params?.count !== undefined) {
+    const pluralSuffix = params.count === 1 ? '_one' : '_other';
+    const pluralKey = `${key}${pluralSuffix}`;
+    if (flattenedMessages[pluralKey]) {
+      resolvedKey = pluralKey;
+    }
+  }
+
+  let message = flattenedMessages[resolvedKey] || key;
+
   if (params) {
     for (const [paramKey, paramValue] of Object.entries(params)) {
       message = message.replace(

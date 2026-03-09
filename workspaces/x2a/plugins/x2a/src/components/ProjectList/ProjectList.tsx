@@ -37,7 +37,7 @@ export const ProjectList = () => {
 
   const [refresh, setRefresh] = useState(0);
 
-  const [orderBy, setOrderBy] = useState<number>(0);
+  const [orderBy, setOrderBy] = useState<number>(1);
   const [orderDirection, setOrderDirection] = useState<OrderDirection>('asc');
   const [page, setPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);

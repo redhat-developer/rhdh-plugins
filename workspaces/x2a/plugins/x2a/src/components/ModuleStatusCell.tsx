@@ -15,8 +15,11 @@
  */
 
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import { ModuleStatus } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { Tooltip, Box } from '@material-ui/core';
+import {
+  Module,
+  ModuleStatus,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Tooltip, Box, makeStyles, Chip } from '@material-ui/core';
 import {
   StatusError,
   StatusOK,
@@ -25,6 +28,13 @@ import {
 } from '@backstage/core-components';
 
 import { useTranslation } from '../hooks/useTranslation';
+
+const useStyles = makeStyles(theme => ({
+  toReviewChip: {
+    marginLeft: theme.spacing(1),
+    marginBottom: 0,
+  },
+}));
 
 const StatusIcon = ({ status }: { status?: ModuleStatus }) => {
   switch (status) {
@@ -41,26 +51,48 @@ const StatusIcon = ({ status }: { status?: ModuleStatus }) => {
   }
 };
 
-export const ModuleStatusCell = ({
-  status,
-  errorDetails,
-}: {
-  status?: ModuleStatus;
-  errorDetails?: string;
-}) => {
+export const ModuleStatusCell = ({ module }: { module?: Module }) => {
   const { t } = useTranslation();
+  const styles = useStyles();
 
+  let chip;
+  if (module?.status === 'success') {
+    if (module.publish) {
+      chip = (
+        <Chip
+          label={t('projectModulesCard.published')}
+          size="small"
+          variant="outlined"
+          color="primary"
+          className={styles.toReviewChip}
+        />
+      );
+    } else {
+      chip = (
+        <Chip
+          label={t('projectModulesCard.toReview')}
+          size="small"
+          variant="outlined"
+          color="primary"
+          className={styles.toReviewChip}
+        />
+      );
+    }
+  }
+
+  const status = module?.status;
   const statusText = t(`module.statuses.${status || 'none'}`);
   const content = (
     <Box display="flex" alignItems="center">
       <StatusIcon status={status} />
       <div>{statusText}</div>
+      {chip}
     </Box>
   );
 
-  if (errorDetails) {
+  if (module?.errorDetails) {
     return (
-      <Tooltip title={errorDetails}>
+      <Tooltip title={module.errorDetails}>
         <div>{content}</div>
       </Tooltip>
     );
