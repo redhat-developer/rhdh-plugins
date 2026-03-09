@@ -36,8 +36,6 @@ export interface Config {
         except?: string[];
       };
     };
-    /** @deprecated Use entityOverrides.disabledMetrics.except (with enabled: true) instead. List of metric IDs that must run even when disabled via entity annotation. */
-    includeMetrics?: string[];
     /** Configuration for scorecard metric providers */
     plugins?: {
       /** Configuration for datasource */
