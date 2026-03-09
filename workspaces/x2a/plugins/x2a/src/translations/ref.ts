@@ -49,6 +49,8 @@ export const x2aPluginMessages = {
   projectModulesCard: {
     title: 'Modules ({{count}})',
     noModules: 'No modules found yet...',
+    toReview: 'review',
+    published: 'published',
   },
   initPhaseCard: {
     title: 'Discovery Phase',
@@ -56,7 +58,7 @@ export const x2aPluginMessages = {
   modulePage: {
     title: 'Module Details',
     artifacts: {
-      title: 'Artifacts',
+      title: 'Artifacts to review',
       migration_plan: 'Overall project migration plan',
       module_migration_plan: 'Module plan by analysis',
       migrated_sources: 'Migrated Sources',
@@ -164,7 +166,8 @@ export const x2aPluginMessages = {
       pending: 'Pending',
       running: 'Running',
       error: 'Error',
-      toReview: 'to review',
+      toReview_one: '{{count}} module with artifacts to review',
+      toReview_other: '{{count}} modules with artifacts to review',
     },
     actions: {
       runNextPhase: 'Run Next Phase',

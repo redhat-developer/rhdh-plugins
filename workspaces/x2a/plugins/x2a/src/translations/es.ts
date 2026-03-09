@@ -51,6 +51,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'projectDetailsCard.targetRepo': 'Repositorio de destino',
     'projectModulesCard.title': 'Módulos ({{count}})',
     'projectModulesCard.noModules': 'Aún no se encontraron módulos...',
+    'projectModulesCard.toReview': 'revisar',
+    'projectModulesCard.published': 'publicado',
     'projectPage.title': 'Proyecto',
     'project.description': 'Descripción',
     'project.id': 'ID',
@@ -84,7 +86,10 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.summary.pending': 'Pendiente',
     'module.summary.running': 'En ejecución',
     'module.summary.error': 'Error',
-    'module.summary.toReview': 'para revisar',
+    'module.summary.toReview_one':
+      '{{count}} módulo con artefactos para revisar',
+    'module.summary.toReview_other':
+      '{{count}} módulos con artefactos para revisar',
     'module.actions.runNextPhase': 'Ejecutar siguiente fase',
     'module.currentPhase': 'Fase actual',
     'module.lastUpdate': 'Última actualización',
@@ -104,7 +109,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'artifact.types.project_metadata': 'Metadatos del proyecto',
     'artifact.types.ansible_project': 'Proyecto Ansible',
     'modulePage.title': 'Detalles del módulo',
-    'modulePage.artifacts.title': 'Artefactos',
+    'modulePage.artifacts.title': 'Artefactos para revisar',
     'modulePage.artifacts.migration_plan':
       'Plan de migración general del proyecto',
     'modulePage.artifacts.module_migration_plan':

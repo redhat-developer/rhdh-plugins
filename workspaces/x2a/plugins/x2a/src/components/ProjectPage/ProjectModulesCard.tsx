@@ -59,7 +59,7 @@ export const ProjectModulesCard = ({ modules }: { modules: Module[] }) => {
                 </Link>
               </Grid>
               <Grid item xs={4}>
-                <ModuleStatusCell status={module.status} />
+                <ModuleStatusCell module={module} />
               </Grid>
               <Grid item xs={4}>
                 <CurrentPhaseCell phase={lastJob?.phase} />
