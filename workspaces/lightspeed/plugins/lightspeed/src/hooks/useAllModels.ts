@@ -16,12 +16,13 @@
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
+import { LCSModel } from '../types';
 
 // Fetch all models
-export const useAllModels = () => {
+export const useAllModels = (): UseQueryResult<LCSModel[], Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['models'],

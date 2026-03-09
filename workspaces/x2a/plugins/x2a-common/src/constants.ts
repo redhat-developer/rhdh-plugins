@@ -30,3 +30,13 @@ export const DEFAULT_PAGE_SORT = 'created_at';
  * @public
  */
 export const DEFAULT_PAGE_ORDER = 'desc';
+
+/**
+ * Path to the default chef conversion project scaffolder template.
+ *
+ * This might be subject to exposing as a plugin configuration option in the future.
+ *
+ * @public
+ */
+export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
+  '/create/templates/default/chef-conversion-project-template';

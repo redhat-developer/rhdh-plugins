@@ -1,9 +1,14 @@
 name: Validate CODEOWNERS
 
 on:
-  pull_request:
+  workflow_dispatch:
+  pull_request_target:
     paths:
       - '.github/CODEOWNERS'
+
+permissions:
+  contents: read
+  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,10 +17,30 @@ concurrency:
 jobs:
   validate-codeowners:
     name: Validate CODEOWNERS members
+    if: github.repository == 'redhat-developer/rhdh-plugins'
     runs-on: ubuntu-latest
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Get CODEOWNERS from PR
+        if: github.event_name == 'pull_request_target'
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-head
+          git checkout pr-head -- .github/CODEOWNERS
+
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2
+        with:
+          app-id: ${{ secrets.RHDH_GH_APP_ID }}
+          private-key: ${{ secrets.RHDH_GH_APP_PRIVATE_KEY }}
+          owner: redhat-developer
 
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
@@ -23,6 +48,25 @@ jobs:
           node-version: 22
 
       - name: Validate CODEOWNERS entries against team membership
+        id: validate
+        continue-on-error: true
         run: node scripts/ci/validate-codeowners.js
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Comment on PR if validation failed
+        if: steps.validate.outcome == 'failure' && github.event_name == 'pull_request_target' && steps.validate.outputs.missing_users != ''
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "## ⚠️ CODEOWNERS Validation Failed
+
+          The following users are listed in CODEOWNERS but are not members of the [\`rhdh-plugins-codeowners\`](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-codeowners) team:
+
+          \`${{ steps.validate.outputs.missing_users }}\`
+
+          An org admin needs to [add the missing members to the team](https://github.com/orgs/redhat-developer/teams/rhdh-plugins-codeowners/members) before this PR can be merged."
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+
+      - name: Fail workflow if validation failed
+        if: steps.validate.outcome == 'failure'
+        run: exit 1

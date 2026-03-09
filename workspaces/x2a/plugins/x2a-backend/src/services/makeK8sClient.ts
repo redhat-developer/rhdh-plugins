@@ -33,6 +33,7 @@ export interface K8sClients {
  */
 export const makeK8sClient = async (
   logger: LoggerService,
+  namespace: string,
 ): Promise<K8sClients> => {
   const { KubeConfig } = await import('@kubernetes/client-node');
   const kc = new KubeConfig();
@@ -73,8 +74,23 @@ export const makeK8sClient = async (
 
   // Dynamic import of API classes to avoid ESM issues
   const { CoreV1Api, BatchV1Api } = await import('@kubernetes/client-node');
-  return {
+  const clients = {
     coreV1Api: kc.makeApiClient(CoreV1Api),
     batchV1Api: kc.makeApiClient(BatchV1Api),
   };
+
+  // Test connection to the cluster. Fail fast...
+  logger.info(
+    `Kubernetes clients created, testing connection to namespace: ${namespace}...`,
+  );
+  try {
+    await clients.coreV1Api.listNamespacedPod({ namespace });
+  } catch (error) {
+    logger.error(`Failed to connect to namespace ${namespace}: ${error}`);
+    throw new Error(
+      `Failed to connect to namespace ${namespace}. Please ensure KUBECONFIG is set or running in a cluster.`,
+    );
+  }
+
+  return clients;
 };

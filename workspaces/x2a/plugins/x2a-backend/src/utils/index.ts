@@ -14,4 +14,5 @@
  * limitations under the License.
  */
 export * from './delay';
+export * from './stringifyError';
 export * from './tests';

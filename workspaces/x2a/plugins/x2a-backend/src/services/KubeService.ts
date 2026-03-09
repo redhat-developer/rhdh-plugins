@@ -32,7 +32,7 @@ import type {
 import { makeK8sClient } from './makeK8sClient';
 import { JobResourceBuilder } from './JobResourceBuilder';
 import { X2AConfig } from '../../config';
-import { JobCreateParams, AAPCredentials, GitRepoCredentials } from './types';
+import { JobCreateParams, AAPCredentials, GitRepo } from './types';
 import {
   DEFAULT_LLM_MODEL,
   DEFAULT_KUBERNETES_NAMESPACE,
@@ -43,7 +43,12 @@ import {
   DEFAULT_MEMORY_REQUEST,
   DEFAULT_CPU_LIMIT,
   DEFAULT_MEMORY_LIMIT,
+  DEFAULT_GIT_AUTHOR_NAME,
+  DEFAULT_GIT_AUTHOR_EMAIL,
 } from './constants';
+import * as fs from 'node:fs';
+
+import { stringifyError } from '../utils';
 
 /**
  * Job status information from Kubernetes
@@ -51,6 +56,47 @@ import {
 export interface JobStatusInfo {
   status: 'pending' | 'running' | 'success' | 'error';
   message?: string;
+}
+
+/**
+ * Reads the namespace from the in-cluster service account
+ * Returns null if not running in a cluster or file doesn't exist
+ */
+export function getInClusterNamespace(): string | null {
+  const namespacePath =
+    '/var/run/secrets/kubernetes.io/serviceaccount/namespace';
+
+  if (!fs.existsSync(namespacePath)) {
+    return null;
+  }
+
+  try {
+    return fs.readFileSync(namespacePath, 'utf-8').trim();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolves the Kubernetes namespace with the following priority:
+ * 1. Configured namespace (from config)
+ * 2. In-cluster namespace (from service account)
+ * 3. Default namespace
+ */
+export function resolveNamespace(
+  configuredNamespace: string | undefined,
+  defaultNamespace: string,
+): { namespace: string; source: 'config' | 'in-cluster' | 'default' } {
+  if (configuredNamespace) {
+    return { namespace: configuredNamespace, source: 'config' };
+  }
+
+  const inClusterNamespace = getInClusterNamespace();
+  if (inClusterNamespace) {
+    return { namespace: inClusterNamespace, source: 'in-cluster' };
+  }
+
+  return { namespace: defaultNamespace, source: 'default' };
 }
 
 export class KubeService {
@@ -75,7 +121,10 @@ export class KubeService {
   }
 
   private async initialize() {
-    const { coreV1Api, batchV1Api } = await makeK8sClient(this.#logger);
+    const { coreV1Api, batchV1Api } = await makeK8sClient(
+      this.#logger,
+      this.#namespace,
+    );
     (this.#coreV1Api as any) = coreV1Api;
     (this.#batchV1Api as any) = batchV1Api;
   }
@@ -167,9 +216,10 @@ export class KubeService {
   async createJobSecret(
     jobId: string,
     projectId: string,
+    phase: string,
     gitCredentials: {
-      sourceRepo: GitRepoCredentials;
-      targetRepo: GitRepoCredentials;
+      sourceRepo: GitRepo;
+      targetRepo: GitRepo;
     },
   ): Promise<void> {
     this.#logger.info(`Creating job secret for job: ${jobId}`);
@@ -177,6 +227,7 @@ export class KubeService {
     const secret = JobResourceBuilder.buildJobSecret(
       jobId,
       projectId,
+      phase,
       gitCredentials,
     );
 
@@ -207,8 +258,8 @@ export class KubeService {
     // Step 1: Create/update project secret (LLM + AAP)
     await this.createProjectSecret(params.projectId, params.aapCredentials);
 
-    // Step 2: Create ephemeral job secret (Git credentials)ok
-    await this.createJobSecret(params.jobId, params.projectId, {
+    // Step 2: Create ephemeral job secret (Git credentials)
+    await this.createJobSecret(params.jobId, params.projectId, params.phase, {
       sourceRepo: params.sourceRepo,
       targetRepo: params.targetRepo,
     });
@@ -218,16 +269,73 @@ export class KubeService {
     const k8sJobName = job.metadata?.name || '';
 
     try {
-      await this.#batchV1Api.createNamespacedJob({
+      const createdJob = await this.#batchV1Api.createNamespacedJob({
         namespace: this.#namespace,
         body: job,
       });
       this.#logger.info(`Created job: ${k8sJobName}`);
 
+      // Set ownerReference on the job secret so it is garbage-collected when the Job is deleted
+      const jobUid = createdJob.metadata?.uid;
+      if (jobUid) {
+        await this.setJobSecretOwnerReference(
+          params.jobId,
+          params.phase,
+          k8sJobName,
+          jobUid,
+        );
+      }
+
       return { k8sJobName };
     } catch (error: any) {
       this.#logger.error(`Failed to create job: ${error.message}`);
       throw error;
+    }
+  }
+
+  /**
+   * Sets ownerReference on the job secret so it is garbage-collected when the Job is deleted.
+   * This is non-fatal — if it fails, the job still works but the secret won't be auto-cleaned.
+   */
+  private async setJobSecretOwnerReference(
+    jobId: string,
+    phase: string,
+    k8sJobName: string,
+    jobUid: string,
+  ): Promise<void> {
+    const jobSecretName = `x2a-job-secret-${phase}-${jobId}`;
+
+    try {
+      const secret = await this.#coreV1Api.readNamespacedSecret({
+        name: jobSecretName,
+        namespace: this.#namespace,
+      });
+
+      secret.metadata = secret.metadata || {};
+      secret.metadata.ownerReferences = [
+        {
+          apiVersion: 'batch/v1',
+          kind: 'Job',
+          name: k8sJobName,
+          uid: jobUid,
+          blockOwnerDeletion: true,
+        },
+      ];
+
+      await this.#coreV1Api.replaceNamespacedSecret({
+        name: jobSecretName,
+        namespace: this.#namespace,
+        body: secret,
+      });
+
+      this.#logger.info(
+        `Set ownerReference on secret ${jobSecretName} -> job ${k8sJobName}`,
+      );
+    } catch (error: any) {
+      this.#logger.warn(
+        `Failed to set ownerReference on job secret ${jobSecretName}: ${error.message}. ` +
+          `The job will still run but the secret may not be auto-cleaned.`,
+      );
     }
   }
 
@@ -243,6 +351,12 @@ export class KubeService {
         name: k8sJobName,
         namespace: this.#namespace,
       });
+
+      // If the job is being deleted, treat it as an error regardless of status
+      if (job.metadata?.deletionTimestamp) {
+        this.#logger.warn(`Job ${k8sJobName} is being deleted`);
+        return { status: 'error', message: 'Job was deleted' };
+      }
 
       const jobStatus = job.status;
 
@@ -264,7 +378,9 @@ export class KubeService {
       // Job exists but hasn't started yet
       return { status: 'pending', message: 'Job is pending' };
     } catch (error: any) {
-      if (error.statusCode === 404 || error.code === 404) {
+      const statusCode =
+        error.statusCode ?? error.response?.statusCode ?? error.code;
+      if (statusCode === 404) {
         this.#logger.warn(`Job ${k8sJobName} not found`);
         return { status: 'error', message: 'Job not found' };
       }
@@ -274,7 +390,7 @@ export class KubeService {
   }
 
   /**
-   * Gets logs from a job's pod
+   * Gets logs from a job's pod.
    */
   async getJobLogs(
     k8sJobName: string,
@@ -296,11 +412,19 @@ export class KubeService {
         return '';
       }
 
-      const podName = pods.items[0].metadata?.name;
+      const pod = pods.items[0];
+      const podName = pod?.metadata?.name;
       if (!podName) {
         // This can happen if a pod is in the process of being created but hasn't been
         // fully initialized yet, or if the pod metadata is corrupted
         this.#logger.warn(`Pod has no name for job: ${k8sJobName}`);
+        return '';
+      }
+
+      if (pod.status?.phase === 'Pending') {
+        this.#logger.warn(
+          `Pod is pending, waiting for it to start for logs: ${k8sJobName}`,
+        );
         return '';
       }
 
@@ -312,8 +436,10 @@ export class KubeService {
       });
 
       return logs;
-    } catch (error: any) {
-      this.#logger.error(`Failed to get job logs: ${error.message}`);
+    } catch (error: unknown) {
+      this.#logger.warn(
+        `Failed to get job logs for ${k8sJobName}: ${stringifyError(error)}`,
+      );
       throw error;
     }
   }
@@ -391,11 +517,20 @@ export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
           );
         }
 
+        // Determine namespace: config > in-cluster > default
+        const { namespace, source } = resolveNamespace(
+          rawConfig?.kubernetes?.namespace,
+          DEFAULT_KUBERNETES_NAMESPACE,
+        );
+
+        deps.logger.info(
+          `Using namespace '${namespace}' from ${source} configuration`,
+        );
+
         // Apply defaults for all optional values
         const x2aConfig: X2AConfig = {
           kubernetes: {
-            namespace:
-              rawConfig?.kubernetes?.namespace ?? DEFAULT_KUBERNETES_NAMESPACE,
+            namespace,
             image: rawConfig?.kubernetes?.image ?? DEFAULT_KUBERNETES_IMAGE,
             imageTag:
               rawConfig?.kubernetes?.imageTag ?? DEFAULT_KUBERNETES_IMAGE_TAG,
@@ -419,6 +554,12 @@ export const kubeServiceRef = createServiceRef<Expand<KubeService>>({
                   rawConfig?.kubernetes?.resources?.limits?.memory ??
                   DEFAULT_MEMORY_LIMIT,
               },
+            },
+          },
+          git: {
+            author: {
+              name: rawConfig?.git?.author?.name ?? DEFAULT_GIT_AUTHOR_NAME,
+              email: rawConfig?.git?.author?.email ?? DEFAULT_GIT_AUTHOR_EMAIL,
             },
           },
           credentials: {

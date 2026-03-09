@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.10.6
+
+### Patch Changes
+
+- b0d352a: Fixed entity cards in "Explore Your Software Catalog" section to display `metadata.title` when available, falling back to `metadata.name` only if title is not set
+
 ## 1.10.5
 
 ### Patch Changes

@@ -124,7 +124,6 @@
     "auto_devops_enabled": false,
     "auto_devops_deploy_strategy": "continuous",
     "ci_push_repository_for_job_token_allowed": false,
-    "runners_token": "GR1348941oP5naQnWsbJRTvXHC7VJ",
     "ci_config_path": "",
     "public_jobs": true,
     "shared_with_groups": [],

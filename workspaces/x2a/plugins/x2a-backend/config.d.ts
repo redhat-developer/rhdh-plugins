@@ -36,6 +36,12 @@ export interface X2AConfig {
       };
     };
   };
+  git?: {
+    author?: {
+      name: string;
+      email: string;
+    };
+  };
   credentials: {
     llm: Record<string, string>;
     aap?: {
@@ -44,6 +50,7 @@ export interface X2AConfig {
       oauthToken?: string;
       username?: string;
       password?: string;
+      skipSSLVerification?: boolean;
     };
   };
 }
@@ -55,6 +62,27 @@ export interface X2AConfig {
  */
 export interface Config {
   x2a?: {
+    /**
+     * Callback base URL for job-to-backend communication
+     * Overrides the URL used for Kubernetes jobs to call back to the backend.
+     * If not set, uses discoveryApi.getBaseUrl('x2a') (default: backend.baseUrl).
+     * Useful for local development when jobs need to reach the backend via LAN IP.
+     * @example "http://192.168.2.193:7007"
+     * @visibility backend
+     */
+    callbackBaseUrl?: string;
+    /**
+     * Configuration for the collectArtifacts callback endpoint
+     */
+    collectArtifacts?: {
+      /**
+       * Maximum age (in seconds) of a job before its callback is rejected.
+       * Prevents replay attacks by rejecting callbacks from jobs older than this window.
+       * Default: 10800 (3 hours)
+       * @visibility backend
+       */
+      maxJobAgeSeconds?: number;
+    };
     /**
      * Kubernetes configuration for X2A jobs
      */
@@ -92,6 +120,53 @@ export interface Config {
           cpu?: string;
           memory?: string;
         };
+      };
+    };
+    /**
+     * Git configuration for X2A migrations
+     */
+    git?: {
+      /**
+       * Git commit author configuration for migration artifacts
+       * @visibility backend
+       */
+      author?: {
+        /**
+         * Git commit author name (e.g., "X2A Migration Bot")
+         * Default: "X2A Migration Bot"
+         * @visibility backend
+         */
+        name?: string;
+        /**
+         * Git commit author email (e.g., "x2a-bot@redhat.com")
+         * Default: "x2a-bot@redhat.com"
+         * @visibility backend
+         */
+        email?: string;
+      };
+      /**
+       * Source repository configuration
+       * @visibility backend
+       */
+      sourceRepo?: {
+        /**
+         * Fallback token for source repository authentication.
+         * Used when the UI doesn't provide a token in the /run request.
+         * @visibility secret
+         */
+        token?: string;
+      };
+      /**
+       * Target repository configuration
+       * @visibility backend
+       */
+      targetRepo?: {
+        /**
+         * Fallback token for target repository authentication.
+         * Used when the UI doesn't provide a token in the /run request.
+         * @visibility secret
+         */
+        token?: string;
       };
     };
     /**
@@ -155,6 +230,13 @@ export interface Config {
          * Password for AAP authentication (alternative to oauthToken)
          */
         password?: string;
+        /**
+         * Whether to skip SSL certificate verification when connecting to AAP.
+         * Set to true for dev/test environments with self-signed certs.
+         * Defaults to false (SSL is verified).
+         * @visibility backend
+         */
+        skipSSLVerification?: boolean;
       };
     };
   };

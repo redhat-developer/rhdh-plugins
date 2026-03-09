@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience
 
+## 0.5.3
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+
+## 0.5.2
+
+### Patch Changes
+
+- b0541f9: Fixed TypeScript type errors in test files by using `lightTheme` directly instead of wrapping with `createTheme()`
+- 34f9da5: Fixed lint errors by removing deprecated React imports and adding missing peer dependencies
+
 ## 0.5.1
 
 ### Patch Changes

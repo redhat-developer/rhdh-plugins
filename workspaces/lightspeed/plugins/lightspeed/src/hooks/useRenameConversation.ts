@@ -16,12 +16,31 @@
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  type UseMutationResult,
+} from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { ConversationList } from '../types';
 
-export const useRenameConversation = () => {
+type RenameVariables = {
+  conversation_id: string;
+  newName: string;
+  invalidateCache?: boolean;
+};
+
+type RenameContext = {
+  previousConversations?: ConversationList;
+};
+
+export const useRenameConversation = (): UseMutationResult<
+  void,
+  Error,
+  RenameVariables,
+  RenameContext
+> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   const queryClient = useQueryClient();
 

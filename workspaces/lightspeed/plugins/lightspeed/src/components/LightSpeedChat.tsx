@@ -23,7 +23,10 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { FileRejection } from 'react-dropzone/.';
+import {
+  FileRejection,
+  type DropEvent as ReactDropzoneDropEvent,
+} from 'react-dropzone';
 
 import { makeStyles } from '@material-ui/core';
 import Divider from '@mui/material/Divider';
@@ -45,7 +48,6 @@ import {
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
   DropdownItem,
-  DropEvent,
   MenuToggle,
   MenuToggleElement,
   Select,
@@ -223,8 +225,11 @@ export const LightspeedChat = ({
   const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
   const samplePrompts = useWelcomePrompts();
   useEffect(() => {
-    if (user && lastOpenedId === null && isReady) {
+    if (!user || !isReady) return;
+    if (lastOpenedId === null) {
       setConversationId(TEMP_CONVERSATION_ID);
+    }
+    if (lastOpenedId === TEMP_CONVERSATION_ID || lastOpenedId === null) {
       setNewChatCreated(true);
     }
   }, [user, isReady, lastOpenedId, setConversationId]);
@@ -655,8 +660,13 @@ export const LightspeedChat = ({
     ],
   );
 
-  const handleAttach = (data: File[], event: DropEvent) => {
-    event.preventDefault();
+  const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
+    if (
+      'preventDefault' in event &&
+      typeof event.preventDefault === 'function'
+    ) {
+      event.preventDefault();
+    }
     handleFileUpload(data);
   };
 
@@ -668,7 +678,7 @@ export const LightspeedChat = ({
   const onAttachRejected = (data: FileRejection[]) => {
     data.forEach(attachment => {
       const hasInvalidTypeError = attachment.errors.some(
-        e => e.code === 'file-invalid-type',
+        (e: { code: string }) => e.code === 'file-invalid-type',
       );
       if (hasInvalidTypeError) {
         setShowAlert(true);

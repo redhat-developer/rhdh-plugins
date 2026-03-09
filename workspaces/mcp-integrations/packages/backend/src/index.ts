@@ -65,9 +65,12 @@ backend.add(import('@backstage/plugin-mcp-actions-backend'));
 
 // MCP tools
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-tool'),
+  import('@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras'),
 );
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-techdocs-mcp-tool'),
+  import('@red-hat-developer-hub/backstage-plugin-techdocs-mcp-extras'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras'),
 );
 backend.start();

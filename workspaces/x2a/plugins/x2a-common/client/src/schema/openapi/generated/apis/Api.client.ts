@@ -22,10 +22,14 @@ import { FetchApi } from '../types/fetch';
 import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
+import { MigrationPhase } from '../models/MigrationPhase.model';
 import { Module } from '../models/Module.model';
+import { ModulePhase } from '../models/ModulePhase.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
+import { ProjectsProjectIdCollectArtifactsPost200Response } from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
+import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
 import { ProjectsProjectIdModulesModuleIdRunPostRequest } from '../models/ProjectsProjectIdModulesModuleIdRunPostRequest.model';
 import { ProjectsProjectIdModulesPostRequest } from '../models/ProjectsProjectIdModulesPostRequest.model';
@@ -75,6 +79,22 @@ export type ProjectsPost = {
 /**
  * @public
  */
+export type ProjectsProjectIdCollectArtifactsPost = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdCollectArtifactsPostRequest;
+  query: {
+    moduleId?: string;
+    phase: MigrationPhase;
+  };
+  header: {
+    xCallbackSignature: string;
+  };
+};
+/**
+ * @public
+ */
 export type ProjectsProjectIdDelete = {
   path: {
     projectId: string;
@@ -86,6 +106,47 @@ export type ProjectsProjectIdDelete = {
 export type ProjectsProjectIdGet = {
   path: {
     projectId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdLogGet = {
+  path: {
+    projectId: string;
+  };
+  query: {
+    streaming?: boolean;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesGet = {
+  path: {
+    projectId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdGet = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdModulesModuleIdLogGet = {
+  path: {
+    projectId: string;
+    moduleId: string;
+  };
+  query: {
+    streaming?: boolean;
+    phase: ModulePhase;
   };
 };
 /**
@@ -187,6 +248,40 @@ export class DefaultApiClient {
   }
 
   /**
+   * Callback endpoint for X2Ansible jobs to submit execution artifacts and results. This endpoint is called by the X2Ansible job runner when a migration phase completes.  Authentication: Requires HMAC-SHA256 signature in X-Callback-Signature header. The signature is computed as: HMAC-SHA256(callbackToken, raw_request_body)  Replay attack prevention: Jobs are only accepted within 3 hours of job creation time (based on job.startedAt)
+   * Collects artifacts from a completed X2Ansible job
+   * @param projectId - UUID of the project
+   * @param phase - Migration phase that completed
+   * @param xCallbackSignature - HMAC-SHA256(callbackToken, raw_request_body) as hex string
+   * @param projectsProjectIdCollectArtifactsPostRequest -
+   * @param moduleId - UUID of the module. - Required for analyze, migrate, and publish phases - Should be omitted for init phase
+   */
+  public async projectsProjectIdCollectArtifactsPost(
+    // @ts-ignore
+    request: ProjectsProjectIdCollectArtifactsPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<ProjectsProjectIdCollectArtifactsPost200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/collectArtifacts{?moduleId,phase}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      ...request.query,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        ...request.header,
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
    * Deletes a project by ID.
    * @param projectId -
    */
@@ -227,6 +322,119 @@ export class DefaultApiClient {
 
     const uri = parser.parse(uriTemplate).expand({
       projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns logs for the init phase
+   * @param projectId - Project UUID
+   * @param streaming - Whether to stream logs (text/plain) or return all at once
+   */
+  public async projectsProjectIdLogGet(
+    // @ts-ignore
+    request: ProjectsProjectIdLogGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<string>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/log{?streaming}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      ...request.query,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns a list of modules for a project
+   * @param projectId -
+   */
+  public async projectsProjectIdModulesGet(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Array<Module>>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns a module by ID
+   * @param projectId -
+   * @param moduleId -
+   */
+  public async projectsProjectIdModulesModuleIdGet(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<Module>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns logs for the latest job of a module
+   * @param projectId - Project UUID
+   * @param moduleId - Module UUID
+   * @param phase - Migration module phase to filter
+   * @param streaming - Whether to stream logs (text/plain) or return all at once
+   */
+  public async projectsProjectIdModulesModuleIdLogGet(
+    // @ts-ignore
+    request: ProjectsProjectIdModulesModuleIdLogGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<string>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/modules/{moduleId}/log{?streaming,phase}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      moduleId: request.path.moduleId,
+      ...request.query,
     });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {

@@ -173,6 +173,15 @@ The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefi
 
 Make sure the configured schedule stays within provider API rate limits.
 
+If no schedule is configured, metric providers use the following default schedule:
+
+```yaml
+schedule:
+  frequency: { hours: 1 }
+  timeout: { minutes: 15 }
+  initialDelay: { minutes: 1 }
+```
+
 ## Example Metric Providers
 
 The following are examples of existing metric providers that you can reference:

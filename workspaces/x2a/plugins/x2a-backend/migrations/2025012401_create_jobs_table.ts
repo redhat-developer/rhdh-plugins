@@ -38,8 +38,10 @@ export async function up(knex: Knex): Promise<void> {
       .defaultTo('init')
       .checkIn(['init', 'analyze', 'migrate', 'publish']);
     table.text('error_details');
+    table.text('telemetry'); // JSON-serialized Telemetry object
     table.string('k8s_job_name');
     table.string('callback_token');
+    table.string('commit_id').nullable();
     table
       .uuid('project_id')
       .notNullable()
@@ -65,7 +67,8 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.schema.createTable('artifacts', table => {
     table.uuid('id').primary();
-    table.string('value').notNullable(); // The artifact string value
+    table.string('type').notNullable(); // The artifact type
+    table.text('value').notNullable(); // The artifact value - can be large content
     table
       .uuid('job_id')
       .notNullable()

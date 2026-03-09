@@ -87,4 +87,20 @@ export class HomePage {
       this.page.getByText(percentage, { exact: true }),
     ).toBeVisible();
   }
+
+  async expectCardHasMissingPermission(
+    metricId: 'github.open_prs' | 'jira.open_issues',
+  ) {
+    const card = this.getCard(metricId);
+    await expect(card).toContainText(
+      this.translations.errors.missingPermission,
+    );
+  }
+
+  async expectCardHasNoDataFound(
+    metricId: 'github.open_prs' | 'jira.open_issues',
+  ) {
+    const card = this.getCard(metricId);
+    await expect(card).toContainText(this.translations.errors.noDataFound);
+  }
 }

@@ -19,7 +19,10 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import { ScorecardHomepageCard } from '../ScorecardHomepageCard';
 
-import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  type AggregatedMetricResult,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 jest.mock('@backstage/core-components', () => ({
   ResponseErrorPanel: ({ error }: { error: Error }) => (
@@ -87,6 +90,7 @@ const mockScorecard: AggregatedMetricResult = {
     total: 8,
     values: [{ name: 'success', count: 8 }],
     timestamp: '2024-01-01T00:00:00Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };
 

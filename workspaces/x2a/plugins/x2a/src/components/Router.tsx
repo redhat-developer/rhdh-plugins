@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 import { Route, Routes } from 'react-router-dom';
-import { newProjectRouteRef } from '../routes';
 
 import { Dashboard } from './Dashboard';
-import { NewProjectPage } from './NewProjectPage';
+import { ModulePage } from './ModulePage';
+import { moduleRouteRef, projectRouteRef } from '../routes';
+import { ProjectPage } from './ProjectPage';
 
 export const Router = () => {
   return (
     // relative to x2a/
     <Routes>
-      <Route
-        path={`${newProjectRouteRef.path}/*`}
-        element={<NewProjectPage />}
-      />
+      <Route path={moduleRouteRef.path} element={<ModulePage />} />
+      <Route path={projectRouteRef.path} element={<ProjectPage />} />
       <Route path="/*" element={<Dashboard />} />
     </Routes>
   );

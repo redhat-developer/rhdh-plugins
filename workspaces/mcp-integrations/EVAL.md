@@ -1,4 +1,4 @@
-# `fetch-catalog-entities` evaluation
+# `query-catalog-entities` evaluation
 
 ## 1) "Retrieve all entries in the Backstage Catalog"
 
@@ -99,8 +99,8 @@ The catalog contains 4 entities:
 **Llama Stack Tool Execution:**
 
 ````
-tool_execution> Tool:fetch-catalog-entities Args:{'kind': '', 'type': ''}
-tool_execution> Tool:fetch-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [\n    {\n      "name": "model-service-api",\n      "kind": "API",\n      "tags": [\n        "api",\n        "openai",\n        "vllm"\n      ],\n      "description": "The OpenAI-compatible REST API exposed by the vLLM-based developer model service.",\n      "type": "openapi"\n    },\n    {\n      "name": "developer-model-service",\n      "kind": "Component",\n      "tags": [\n        "genai",\n        "ibm-granite",\n        "vllm",\n        "llm",\n        "developer-model-service",\n        "authenticated",\n        "gateway"\n      ],\n      "description": "A vLLM and 3scale-based model service providing models for developer tools. A single model (IBM Granite Code 8b) is deployed on it through Red Hat OpenShift AI, and accessed over a secured API.",\n      "type": "model-server"\n    },\n    {\n      "name": "generated-c4d4657b4fbb886fe0a962cdf12b8732d33946ca",\n      "kind": "Location",\n      "tags": [],\n      "type": "url"\n    },\n    {\n      "name": "ibm-granite-8b-code-instruct",\n      "kind": "Resource",\n      "tags": [\n        "genai",\n        "ibm",\n        "llm",\n        "granite",\n        "conversational",\n        "task-text-generation"\n      ],\n      "description": "IBM Granite is a decoder-only code model for code generative tasks (e.g. fixing bugs, explaining code, documenting code. Trained with code written in 116 programming languages.",\n      "type": "ai-model"\n    }\n  ]\n}\n```', type='text')]
+tool_execution> Tool:query-catalog-entities Args:{'kind': '', 'type': ''}
+tool_execution> Tool:query-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [\n    {\n      "name": "model-service-api",\n      "kind": "API",\n      "tags": [\n        "api",\n        "openai",\n        "vllm"\n      ],\n      "description": "The OpenAI-compatible REST API exposed by the vLLM-based developer model service.",\n      "type": "openapi"\n    },\n    {\n      "name": "developer-model-service",\n      "kind": "Component",\n      "tags": [\n        "genai",\n        "ibm-granite",\n        "vllm",\n        "llm",\n        "developer-model-service",\n        "authenticated",\n        "gateway"\n      ],\n      "description": "A vLLM and 3scale-based model service providing models for developer tools. A single model (IBM Granite Code 8b) is deployed on it through Red Hat OpenShift AI, and accessed over a secured API.",\n      "type": "model-server"\n    },\n    {\n      "name": "generated-c4d4657b4fbb886fe0a962cdf12b8732d33946ca",\n      "kind": "Location",\n      "tags": [],\n      "type": "url"\n    },\n    {\n      "name": "ibm-granite-8b-code-instruct",\n      "kind": "Resource",\n      "tags": [\n        "genai",\n        "ibm",\n        "llm",\n        "granite",\n        "conversational",\n        "task-text-generation"\n      ],\n      "description": "IBM Granite is a decoder-only code model for code generative tasks (e.g. fixing bugs, explaining code, documenting code. Trained with code written in 116 programming languages.",\n      "type": "ai-model"\n    }\n  ]\n}\n```', type='text')]
 inference> Based on the Backstage Catalog entries, there are three main entities:
 
 1. **model-service-api**: An OpenAI-compatible REST API exposed by the vLLM-based developer model service.
@@ -163,8 +163,8 @@ There is 1 Component in the catalog:
 **Llama Stack Tool Execution:**
 
 ````
-tool_execution> Tool:fetch-catalog-entities Args:{'kind': 'Component'}
-tool_execution> Tool:fetch-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [\n    {\n      "name": "developer-model-service",\n      "kind": "Component",\n      "tags": [\n        "genai",\n        "ibm-granite",\n        "vllm",\n        "llm",\n        "developer-model-service",\n        "authenticated",\n        "gateway"\n      ],\n      "description": "A vLLM and 3scale-based model service providing models for developer tools. A single model (IBM Granite Code 8b) is deployed on it through Red Hat OpenShift AI, and accessed over a secured API.",\n      "type": "model-server"\n    }\n  ]\n}\n```', type='text')]
+tool_execution> Tool:query-catalog-entities Args:{'kind': 'Component'}
+tool_execution> Tool:query-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [\n    {\n      "name": "developer-model-service",\n      "kind": "Component",\n      "tags": [\n        "genai",\n        "ibm-granite",\n        "vllm",\n        "llm",\n        "developer-model-service",\n        "authenticated",\n        "gateway"\n      ],\n      "description": "A vLLM and 3scale-based model service providing models for developer tools. A single model (IBM Granite Code 8b) is deployed on it through Red Hat OpenShift AI, and accessed over a secured API.",\n      "type": "model-server"\n    }\n  ]\n}\n```', type='text')]
 inference> Based on the tool output, here are the components in the Backstage catalog:
 
 1. Developer Model Service (a vLLM and 3scale-based model service providing models for developer tools)
@@ -223,8 +223,8 @@ There is 1 Resource of type "ai-model":
 **Llama Stack Tool Execution:**
 
 ````
-tool_execution> Tool:fetch-catalog-entities Args:{'kind': 'Resource', 'type': 'ai-model'}
-tool_execution> Tool:fetch-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [\n    {\n      "name": "ibm-granite-8b-code-instruct",\n      "kind": "Resource",\n      "tags": [\n        "genai",\n        "ibm",\n        "llm",\n        "granite",\n        "conversational",\n        "task-text-generation"\n      ],\n      "description": "IBM Granite is a decoder-only code model for code generative tasks (e.g. fixing bugs, explaining code, documenting code. Trained with code written in 116 programming languages.",\n      "type": "ai-model"\n    }\n  ]\n}\n```', type='text')]
+tool_execution> Tool:query-catalog-entities Args:{'kind': 'Resource', 'type': 'ai-model'}
+tool_execution> Tool:query-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [\n    {\n      "name": "ibm-granite-8b-code-instruct",\n      "kind": "Resource",\n      "tags": [\n        "genai",\n        "ibm",\n        "llm",\n        "granite",\n        "conversational",\n        "task-text-generation"\n      ],\n      "description": "IBM Granite is a decoder-only code model for code generative tasks (e.g. fixing bugs, explaining code, documenting code. Trained with code written in 116 programming languages.",\n      "type": "ai-model"\n    }\n  ]\n}\n```', type='text')]
 inference> Based on the tool's output, it appears that there is at least one resource that matches your search criteria: 'ibm-granite-8b-code-instruct'. This resource is an AI model developed by IBM for code generative tasks. It supports 116 programming languages and can be used for tasks such as fixing bugs, explaining code, and documenting code.
 ````
 
@@ -316,11 +316,11 @@ Here are all unique tags across all catalog entities, sorted alphabetically:
 **Llama Stack Tool Execution:**
 
 ```
-inference> To answer this question, I will use the `fetch-catalog-entities` function with no filtering arguments to retrieve all entities. Then, I will extract and sort the unique tags from these entities.
+inference> To answer this question, I will use the `query-catalog-entities` function with no filtering arguments to retrieve all entities. Then, I will extract and sort the unique tags from these entities.
 
-First, let's call the `fetch-catalog-entities` function:
+First, let's call the `query-catalog-entities` function:
 
-{"name": "fetch-catalog-entities", "parameters": {}}
+{"name": "query-catalog-entities", "parameters": {}}
 
 The result is a JSON array of catalog entities. Now, we need to extract and sort the unique tags from these entities.
 
@@ -376,8 +376,8 @@ Error: Cannot specify entity type without also specifying entity kind. The tool 
 **Llama Stack Tool Execution:**
 
 ````
-tool_execution> Tool:fetch-catalog-entities Args:{'kind': '', 'type': 'ai-model'}
-tool_execution> Tool:fetch-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [],\n  "error": "entity type cannot be specified without an entity kind specified"\n}\n```', type='text')]
+tool_execution> Tool:query-catalog-entities Args:{'kind': '', 'type': 'ai-model'}
+tool_execution> Tool:query-catalog-entities Response:[TextContentItem(text='```json\n{\n  "entities": [],\n  "error": "entity type cannot be specified without an entity kind specified"\n}\n```', type='text')]
 inference> Based on the tool's response, it seems like there is no data available for entities of type 'ai-model'. The error message suggests that we need to specify an entity kind along with the entity type. However, since this is a hypothetical scenario and I don't have any actual data or context, I will assume that there are indeed some entities of type 'ai-model' in our system.
 
 If you provide me with more information about your system or database, I can try to help you retrieve the relevant entities.

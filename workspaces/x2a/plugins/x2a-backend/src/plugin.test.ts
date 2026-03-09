@@ -47,6 +47,10 @@ const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',
   abbreviation: 'MP',
+  sourceRepoUrl: 'https://github.com/source/repo',
+  targetRepoUrl: 'https://github.com/target/repo',
+  sourceRepoBranch: 'main',
+  targetRepoBranch: 'main',
 };
 
 const mockUserId = `user: default/user1`;
@@ -87,7 +91,7 @@ jest.mock('@backstage/backend-plugin-api', () => ({
   })),
 }));
 
-const getX2aDatabaseServiceMock = () => ({
+const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   // projects
   createProject: jest
     .fn()
@@ -112,6 +116,14 @@ const getX2aDatabaseServiceMock = () => ({
   listJobs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   getJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   updateJob: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobWithLog: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  getJobLogs: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  listJobsForModule: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
 });
 
 const getKubeServiceMock = () =>
@@ -203,6 +215,21 @@ describe('plugin', () => {
     });
   });
 
+  it('should allow unauthenticated access to collectArtifacts callback', async () => {
+    const server = await startBackendServer();
+    const fakeProjectId = '00000000-0000-0000-0000-000000000000';
+    const fakeJobId = '00000000-0000-0000-0000-000000000001';
+
+    const res = await request(server)
+      .post(`/api/x2a/projects/${fakeProjectId}/collectArtifacts?phase=init`)
+      .send({ status: 'success', jobId: fakeJobId, artifacts: [] });
+
+    // Should NOT be 401/403 — the endpoint allows unauthenticated access.
+    // 404 is expected because the job doesn't exist.
+    expect(res.status).not.toBe(401);
+    expect(res.status).not.toBe(403);
+  });
+
   it('should forward errors from the X2ADatabaseService', async () => {
     const { server } = await startTestBackend({
       features: [
@@ -235,12 +262,6 @@ describe('plugin', () => {
     expect(createRes.status).toBe(409);
     expect(createRes.body).toMatchObject({
       error: { name: 'ConflictError' },
-    });
-
-    const deleteRes = await request(server).delete('/api/x2a/projects/123');
-    expect(deleteRes.status).toBe(403);
-    expect(deleteRes.body).toMatchObject({
-      error: { name: 'NotAllowedError' },
     });
 
     const getRes = await request(server).get('/api/x2a/projects/123');

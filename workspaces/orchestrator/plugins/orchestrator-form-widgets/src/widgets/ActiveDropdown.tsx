@@ -32,7 +32,9 @@ import {
   useRetriggerEvaluate,
   useTemplateUnitEvaluator,
   applySelectorArray,
+  resolveDropdownDefault,
   useProcessingState,
+  useClearOnRetrigger,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -78,6 +80,7 @@ export const ActiveDropdown: Widget<
   const hasStaticDefault = typeof staticDefault === 'string';
   const staticDefaultValue = hasStaticDefault ? staticDefault : undefined;
   const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
+  const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
 
   const [localError, setLocalError] = useState<string | undefined>(
     !labelSelector || !valueSelector
@@ -111,10 +114,26 @@ export const ActiveDropdown: Widget<
       return;
     }
 
+    const getSelectorContext = (selector: string) => {
+      if (/\b(current|response)\b/.test(selector)) {
+        return {
+          response: data,
+          current: formData ?? {},
+        };
+      }
+      return data;
+    };
+
     const doItAsync = async () => {
       await wrapProcessing(async () => {
-        const selectedLabels = await applySelectorArray(data, labelSelector);
-        const selectedValues = await applySelectorArray(data, valueSelector);
+        const selectedLabels = await applySelectorArray(
+          getSelectorContext(labelSelector),
+          labelSelector,
+        );
+        const selectedValues = await applySelectorArray(
+          getSelectorContext(valueSelector),
+          valueSelector,
+        );
 
         if (selectedLabels.length !== selectedValues.length) {
           setLocalError(
@@ -129,7 +148,7 @@ export const ActiveDropdown: Widget<
     };
 
     doItAsync();
-  }, [labelSelector, valueSelector, data, props.id, wrapProcessing]);
+  }, [labelSelector, valueSelector, data, formData, props.id, wrapProcessing]);
 
   const handleChange = useCallback(
     (changed: string, isByUser: boolean) => {
@@ -142,34 +161,62 @@ export const ActiveDropdown: Widget<
     [onChange, id, setIsChangedByUser],
   );
 
+  const handleClear = useCallback(() => {
+    handleChange('', false);
+  }, [handleChange]);
+
+  useClearOnRetrigger({
+    enabled: clearOnRetrigger,
+    retrigger,
+    onClear: handleClear,
+  });
+
   // Set default value from fetched options
-  // Priority: static default (if valid option) > first fetched option
+  // Priority: selector default (if valid option) > static default (if valid) > first fetched option
   // Note: Static defaults are applied at form initialization level (in OrchestratorForm)
   useEffect(() => {
-    if (
-      !skipInitialValue &&
-      !isChangedByUser &&
-      !value &&
-      values &&
-      values.length > 0
-    ) {
-      // If static default is provided and is a valid option, use it
-      if (hasStaticDefault && values.includes(staticDefault)) {
-        handleChange(staticDefault, false);
-      } else {
-        // Otherwise use the first fetched value
-        handleChange(values[0], false);
+    let isActive = true;
+    const applyDefault = async () => {
+      if (
+        skipInitialValue ||
+        isChangedByUser ||
+        !values ||
+        values.length === 0
+      ) {
+        return;
       }
-    }
+
+      const defaultValue = await resolveDropdownDefault({
+        data,
+        values,
+        staticDefault: staticDefaultValue,
+      });
+
+      if (!isActive || defaultValue === undefined) {
+        return;
+      }
+
+      const shouldApplyDefault =
+        !value || (hasStaticDefault && value === staticDefaultValue);
+      if (shouldApplyDefault && defaultValue !== value) {
+        handleChange(defaultValue, false);
+      }
+    };
+
+    applyDefault();
+
+    return () => {
+      isActive = false;
+    };
   }, [
     handleChange,
     value,
     values,
     isChangedByUser,
-    staticDefault,
     staticDefaultValue,
     hasStaticDefault,
     skipInitialValue,
+    data,
   ]);
 
   const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;

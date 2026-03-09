@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 2.4.0
+
+### Minor Changes
+
+- 7062658: Introduces custom threshold rule keys and colors that can be configured in `app-config.yaml`.
+
+### Patch Changes
+
+- 10aabb3: Fix tooltip display and error title clipping for some languages
+- f6d5102: Translation updated for German and Spanish
+- 34fc6c4: Fix Scorecard translations not working in cluster
+- Updated dependencies [7062658]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.4.0
+
+## 2.3.5
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.3.5
+
 ## 2.3.4
 
 ### Patch Changes

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse, type HttpHandler } from 'msw';
 
 export const LOCAL_LCS_ADDR = 'http://0.0.0.0:8080';
 
@@ -66,7 +66,7 @@ export function resetChatHistory() {
   chatHistory[mockConversationId2] = conversation2History;
 }
 
-export const lcsHandlers = [
+export const lcsHandlers: HttpHandler[] = [
   // Models endpoint now served by LCS
   http.get(`${LOCAL_LCS_ADDR}/v1/models`, () => {
     const response = {

@@ -66,3 +66,14 @@ export const DEFAULT_CPU_LIMIT = '2000m';
  * Default memory limit for job pods
  */
 export const DEFAULT_MEMORY_LIMIT = '4Gi';
+
+// Git Configuration
+/**
+ * Default git commit author name
+ */
+export const DEFAULT_GIT_AUTHOR_NAME = 'X2A Migration Bot';
+
+/**
+ * Default git commit author email
+ */
+export const DEFAULT_GIT_AUTHOR_EMAIL = 'x2a-bot@redhat.com';

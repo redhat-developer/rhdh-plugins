@@ -154,6 +154,9 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 id: 'quickstart',
               },
             ]}
+            // In RHDH, these would come from mount points:
+            // - mountPoint: application/drawer-state
+            //   importName: QuickstartDrawerStateExposer
             stateExposers={[{ Component: QuickstartDrawerStateExposer }]}
           />
         </QuickstartDrawerProvider>

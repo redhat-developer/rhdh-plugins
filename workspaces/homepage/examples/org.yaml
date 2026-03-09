@@ -5,16 +5,19 @@ kind: User
 metadata:
   namespace: development
   name: guest
+  title: Guest (Title)
 spec:
   profile:
-    displayName: Guest
+    displayName: Guest (Display Name)
   memberOf: [guests]
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-group
 apiVersion: backstage.io/v1alpha1
 kind: Group
 metadata:
+  namespace: development
   name: guests
+  title: Guests
 spec:
   type: team
   children: []

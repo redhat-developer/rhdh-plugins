@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { useState } from 'react';
 
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -31,9 +31,9 @@ import { ViewMoreLink } from '../Links/ViewMoreLink';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export const ModelSection = () => {
-  const [isRemoveFirstCard, setIsRemoveFirstCard] = React.useState(false);
-  const [showDiscoveryCard, setShowDiscoveryCard] = React.useState(true);
-  const [imgLoaded, setImgLoaded] = React.useState(false);
+  const [isRemoveFirstCard, setIsRemoveFirstCard] = useState(false);
+  const [showDiscoveryCard, setShowDiscoveryCard] = useState(true);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down(1280));
@@ -58,7 +58,7 @@ export const ModelSection = () => {
   const catalogModelLink = `/catalog?${params.toString()}`;
 
   return (
-    <React.Fragment>
+    <>
       <Grid container spacing={1} alignItems="stretch">
         {!isRemoveFirstCard && (
           <Grid
@@ -138,6 +138,6 @@ export const ModelSection = () => {
           })}
         </ViewMoreLink>
       </Box>
-    </React.Fragment>
+    </>
   );
 };

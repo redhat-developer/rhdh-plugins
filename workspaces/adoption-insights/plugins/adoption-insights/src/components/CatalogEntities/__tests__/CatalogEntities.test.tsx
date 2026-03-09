@@ -78,11 +78,38 @@ jest.mock('../../../hooks/useCatalogEntities', () => ({
   }),
 }));
 
+jest.mock('../../../hooks/useEntityMetadataMap', () => ({
+  useEntityMetadataMap: () => ({
+    entityMetadataMap: {
+      'Component:default/devhub': {
+        title: 'Dev Hub',
+        description: 'Dev hub description',
+        kind: 'Component',
+      },
+      'Component:default/hg-dev-hub-starter': {
+        title: 'HG Dev Hub Starter',
+        description: 'HG dev hub starter',
+        kind: 'Component',
+      },
+      'API:default/netbox': {
+        title: 'Netbox API',
+        description: 'Netbox API description',
+        kind: 'API',
+      },
+    },
+  }),
+}));
+
 jest.mock('@backstage/catalog-model', () => ({
   parseEntityRef: (ref: string) => {
     const [kind, name] = ref.split(':')[0].split('/');
     return { kind, name: name || ref.split('/')[1] };
   },
+  stringifyEntityRef: (entity: {
+    kind: string;
+    namespace?: string;
+    name: string;
+  }) => `${entity.kind}:${entity.namespace || 'default'}/${entity.name}`,
 }));
 
 jest.mock('@backstage/plugin-catalog-react', () => ({
@@ -154,9 +181,9 @@ describe('CatalogEntities', () => {
     renderComponent();
     const rows = screen.getAllByRole('row').slice(1);
     const expectedRowData = [
-      ['devhub', 'Component', 'Yesterday', '2,233'],
-      ['hg-dev-hub-starter', 'Component', 'Yesterday', '1,974'],
-      ['netbox', 'API', 'Yesterday', '1,863'],
+      ['Dev Hub', 'Component', 'Yesterday', '2,233'],
+      ['HG Dev Hub Starter', 'Component', 'Yesterday', '1,974'],
+      ['Netbox API', 'API', 'Yesterday', '1,863'],
     ];
 
     expectedRowData.forEach((rowData, rowIndex) => {

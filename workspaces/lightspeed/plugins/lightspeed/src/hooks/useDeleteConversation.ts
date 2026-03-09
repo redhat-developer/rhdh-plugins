@@ -16,12 +16,30 @@
 
 import { useApi } from '@backstage/core-plugin-api';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  type UseMutationResult,
+} from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { ConversationList } from '../types';
 
-export const useDeleteConversation = () => {
+type DeleteVariables = {
+  conversation_id: string;
+  invalidateCache?: boolean;
+};
+
+type DeleteContext = {
+  previousConversations?: ConversationList;
+};
+
+export const useDeleteConversation = (): UseMutationResult<
+  void,
+  Error,
+  DeleteVariables,
+  DeleteContext
+> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   const queryClient = useQueryClient();
 

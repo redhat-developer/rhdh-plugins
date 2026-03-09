@@ -1,0 +1,255 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { useCallback, useMemo, useState } from 'react';
+import {
+  Artifact,
+  getAuthTokenDescriptor,
+  MigrationPhase,
+  Module,
+  ModulePhase,
+  Project,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { Link, Table, TableColumn } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import { MaterialTableProps } from '@material-table/core/types';
+import Alert from '@material-ui/lab/Alert';
+import AlertTitle from '@material-ui/lab/AlertTitle';
+
+import { useTranslation } from '../../hooks/useTranslation';
+import { useClientService } from '../../ClientService';
+import { Artifacts } from '../Artifacts';
+import { useRepoAuthentication } from '../../repoAuth';
+import { CurrentPhaseCell } from '../CurrentPhaseCell';
+import { ModuleStatusCell } from '../ModuleStatusCell';
+import { TimingCell } from './TimingCell';
+import { moduleRouteRef } from '../../routes';
+import { getLastPhaseReached } from '../tools';
+
+export const getNextPhase = (module: Module): ModulePhase | undefined => {
+  const lastJob = getLastPhaseReached(module);
+  const lastPhase: MigrationPhase = lastJob?.phase || 'init';
+
+  const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
+    init: 'analyze',
+    analyze: 'migrate',
+    migrate: 'publish',
+    publish: undefined,
+  };
+  return nextPhases[lastPhase];
+};
+
+const useColumns = ({
+  targetRepoUrl,
+  targetRepoBranch,
+}: {
+  targetRepoUrl: string;
+  targetRepoBranch: string;
+}): TableColumn<Module>[] => {
+  const { t } = useTranslation();
+  const modulePath = useRouteRef(moduleRouteRef);
+
+  const currentPhaseCell = useCallback((rowData: Module) => {
+    const lastJob = getLastPhaseReached(rowData);
+    return <CurrentPhaseCell phase={lastJob?.phase} />;
+  }, []);
+
+  const statusCell = useCallback(
+    (rowData: Module) => (
+      <ModuleStatusCell
+        status={rowData.status}
+        errorDetails={rowData.errorDetails}
+      />
+    ),
+    [],
+  );
+
+  const artifactsCell = useCallback(
+    (module: Module) => {
+      const artifacts: Artifact[] = [];
+      artifacts.push(...(module.analyze?.artifacts || []));
+      artifacts.push(...(module.migrate?.artifacts || []));
+      artifacts.push(...(module.publish?.artifacts || []));
+      return (
+        <Artifacts
+          artifacts={artifacts}
+          targetRepoUrl={targetRepoUrl}
+          targetRepoBranch={targetRepoBranch}
+        />
+      );
+    },
+    [targetRepoUrl, targetRepoBranch],
+  );
+
+  const timingCell = useCallback((rowData: Module) => {
+    const lastJob = getLastPhaseReached(rowData);
+    return <TimingCell lastJob={lastJob} />;
+  }, []);
+
+  const nameCell = useCallback(
+    (rowData: Module) => {
+      return (
+        <Link
+          to={modulePath({
+            projectId: rowData.projectId,
+            moduleId: rowData.id,
+          })}
+        >
+          {rowData.name}
+        </Link>
+      );
+    },
+    [modulePath],
+  );
+
+  return useMemo((): TableColumn<Module>[] => {
+    return [
+      { render: nameCell, title: t('module.name') },
+      { render: currentPhaseCell, title: t('module.currentPhase') },
+      { render: statusCell, title: t('module.status') },
+      { field: 'sourcePath', title: t('module.sourcePath') },
+      { render: artifactsCell, title: t('module.artifacts') },
+      { render: timingCell, title: t('module.lastUpdate') },
+    ];
+  }, [t, nameCell, currentPhaseCell, statusCell, artifactsCell, timingCell]);
+};
+
+const canRunNextPhase = ({ module }: { module: Module }) => {
+  const nextPhase = getNextPhase(module);
+  if (!nextPhase) {
+    return false;
+  }
+
+  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
+  const lastJob = getLastPhaseReached(module);
+  if (!lastJob || lastJob.status === 'success') {
+    return true;
+  }
+
+  return false;
+};
+
+export const ModuleTable = ({
+  modules,
+  forceRefresh,
+  project,
+}: {
+  modules: Module[];
+  forceRefresh: () => void;
+  project: Project;
+}) => {
+  const { t } = useTranslation();
+  const repoAuthentication = useRepoAuthentication();
+
+  const columns = useColumns({
+    targetRepoUrl: project.targetRepoUrl,
+    targetRepoBranch: project.targetRepoBranch,
+  });
+  const data: Module[] = modules;
+  const clientService = useClientService();
+
+  const [error, setError] = useState<string | undefined>();
+
+  const handleRunNext = useCallback(
+    async (module: Module) => {
+      setError(undefined);
+      const nextPhase = getNextPhase(module);
+      if (!nextPhase) {
+        return;
+      }
+
+      // Authenticate the repositories
+      const sourceRepoAuthToken = (
+        await repoAuthentication.authenticate([
+          getAuthTokenDescriptor({
+            repoUrl: project.sourceRepoUrl,
+            readOnly: true,
+          }),
+        ])
+      )[0].token;
+      const targetRepoAuthToken = (
+        await repoAuthentication.authenticate([
+          getAuthTokenDescriptor({
+            repoUrl: project.targetRepoUrl,
+            readOnly: false,
+          }),
+        ])
+      )[0].token;
+
+      // Call the phase-run action
+      const response =
+        await clientService.projectsProjectIdModulesModuleIdRunPost({
+          path: { projectId: module.projectId, moduleId: module.id },
+          body: {
+            phase: nextPhase,
+            sourceRepoAuth: {
+              token: sourceRepoAuthToken,
+            },
+            targetRepoAuth: {
+              token: targetRepoAuthToken,
+            },
+            // skipping AAP credentials in favor of the app-config.yaml
+          },
+        });
+
+      const responseData = await response.json();
+      if (!responseData.jobId) {
+        setError('Failed to run next phase for module');
+      }
+
+      forceRefresh();
+    },
+    [
+      clientService,
+      forceRefresh,
+      repoAuthentication,
+      project.sourceRepoUrl,
+      project.targetRepoUrl,
+    ],
+  );
+
+  const actions: MaterialTableProps<Module>['actions'] = [
+    (rowData: Module) => ({
+      // Idea: this can be a drop-down to select the phase to run
+      icon: PlayArrowIcon,
+      onClick: () => handleRunNext(rowData),
+      tooltip: t('module.actions.runNextPhase'),
+      disabled: !canRunNextPhase({ module: rowData }),
+    }),
+  ];
+
+  return (
+    <>
+      {error && (
+        <Alert severity="error">
+          <AlertTitle>{error}</AlertTitle>
+        </Alert>
+      )}
+      <Table<Module>
+        options={{
+          search: false,
+          paging: false,
+          actionsColumnIndex: -1,
+          padding: 'dense',
+          toolbar: false,
+        }}
+        columns={columns}
+        data={data}
+        actions={actions}
+      />
+    </>
+  );
+};

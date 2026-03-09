@@ -20,7 +20,6 @@ import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-
 
 import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
-import fetch from 'node-fetch';
 
 import {
   lightspeedChatCreatePermission,
@@ -29,6 +28,8 @@ import {
   lightspeedPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-lightspeed-common';
 
+import { Readable } from 'node:stream';
+
 import { userPermissionAuthorization } from './permission';
 import {
   DEFAULT_HISTORY_LENGTH,
@@ -36,6 +37,8 @@ import {
   RouterOptions,
 } from './types';
 import { validateCompletionsRequest } from './validation';
+
+const SKIP_USER_ID_ENDPOINTS = new Set(['/v1/models', '/v1/shields']);
 
 /**
  * @public
@@ -51,13 +54,18 @@ export async function createRouter(
 
   const port = config.getOptionalNumber('lightspeed.servicePort') ?? 8080;
   const system_prompt = config.getOptionalString('lightspeed.systemPrompt');
-  // Only support one MCP server for now
-  const mcpServerName = config
-    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
-    ?.getString('name');
-  const mcpToken = config
-    .getOptionalConfigArray('lightspeed.mcpServers')?.[0]
-    ?.getString('token');
+
+  const mcpServersConfig = config.getOptionalConfigArray(
+    'lightspeed.mcpServers',
+  );
+  const mcpHeaders: Record<string, { Authorization: string }> = {};
+  if (mcpServersConfig) {
+    for (const mcpServer of mcpServersConfig) {
+      const name = mcpServer.getString('name');
+      const token = mcpServer.getString('token');
+      mcpHeaders[name] = { Authorization: `Bearer ${token}` };
+    }
+  }
 
   router.get('/health', (_, response) => {
     response.json({ status: 'ok' });
@@ -105,19 +113,33 @@ export async function createRouter(
       target: `http://0.0.0.0:${port}`,
       changeOrigin: true,
       pathRewrite: (path, _) => {
-        // Add user query parameter from the authenticated user
+        const isSkippable = Array.from(SKIP_USER_ID_ENDPOINTS).some(endpoint =>
+          path.startsWith(endpoint),
+        );
+
+        if (isSkippable) {
+          return path;
+        }
+
+        let newPath = path;
+
+        // Add user_id
         const userQueryParam = `user_id=${encodeURIComponent(userEntity)}`;
-        // Check if there are already query parameters
-        let newPath = path.includes('?')
+        newPath = path.includes('?')
           ? `${path}&${userQueryParam}`
           : `${path}?${userQueryParam}`;
+
+        // Add history_length if needed
         if (
           !path.includes('history_length') &&
           path.includes('conversation_id')
         ) {
           const historyLengthQuery = `history_length=${DEFAULT_HISTORY_LENGTH}`;
-          newPath = `${newPath}&${historyLengthQuery}`;
+          newPath = newPath.includes('?')
+            ? `${newPath}&${historyLengthQuery}`
+            : `${newPath}?${historyLengthQuery}`;
         }
+
         logger.info(`Rewriting path from ${path} to ${newPath}`);
         return newPath;
       },
@@ -200,16 +222,15 @@ export async function createRouter(
         }
 
         const requestBody = JSON.stringify(request.body);
-        const mcpHeaders = mcpToken
-          ? `{"${mcpServerName}": {"Authorization": "Bearer ${mcpToken}"}}`
-          : '';
+        const mcpHeadersValue =
+          Object.keys(mcpHeaders).length > 0 ? JSON.stringify(mcpHeaders) : '';
         const fetchResponse = await fetch(
           `http://0.0.0.0:${port}/v1/streaming_query?${userQueryParam}`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'MCP-HEADERS': mcpHeaders,
+              'MCP-HEADERS': mcpHeadersValue,
             },
             body: requestBody,
           },
@@ -225,10 +246,15 @@ export async function createRouter(
           response.status(500).json({
             error: errormsg,
           });
+
+          return;
         }
 
         // Pipe the response back to the original response
-        fetchResponse.body.pipe(response);
+        if (fetchResponse.body) {
+          const nodeStream = Readable.fromWeb(fetchResponse.body as any);
+          nodeStream.pipe(response);
+        }
       } catch (error) {
         const errormsg = `Error fetching completions from ${provider}: ${error}`;
         logger.error(errormsg);

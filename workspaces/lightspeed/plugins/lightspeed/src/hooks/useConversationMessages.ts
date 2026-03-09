@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
 import { MessageProps } from '@patternfly/chatbot';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 
 import { lightspeedApiRef } from '../api/api';
 import { ScrollContainerHandle } from '../components/LightspeedChatBox';
@@ -28,6 +28,7 @@ import botAvatar from '../images/bot-avatar.svg';
 import userAvatar from '../images/user-avatar.svg';
 import {
   Attachment,
+  BaseMessage,
   LCSConversation,
   ReferencedDocument,
   ToolCall,
@@ -42,7 +43,9 @@ import {
 import { useCreateConversationMessage } from './useCreateCoversationMessage';
 
 // Fetch all conversation messages
-export const useFetchConversationMessages = (currentConversation: string) => {
+export const useFetchConversationMessages = (
+  currentConversation: string,
+): UseQueryResult<BaseMessage[] | undefined, Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['conversationMessages', currentConversation],
@@ -65,6 +68,24 @@ interface ExtendedMessageProps extends MessageProps {
 
 type Conversations = { [_key: string]: ExtendedMessageProps[] };
 
+export type UseConversationMessagesReturn = {
+  conversationMessages: ExtendedMessageProps[];
+  handleInputPrompt: (
+    prompt: string,
+    attachments?: Attachment[],
+  ) => Promise<void>;
+  conversations: Conversations;
+  scrollToBottomRef: RefObject<ScrollContainerHandle | null>;
+  data?: BaseMessage[] | undefined;
+  error: Error | null;
+  isPending: boolean;
+  isFetching: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  status: 'pending' | 'error' | 'success';
+  refetch: () => void;
+};
+
 /**
  * Fetches all the messages for given conversation_id
  * @param conversationId
@@ -82,27 +103,27 @@ export const useConversationMessages = (
   avatar: string = userAvatar,
   onComplete?: (message: string) => void,
   onStart?: (conversation_id: string) => void,
-) => {
+): UseConversationMessagesReturn => {
   const { mutateAsync: createMessage } = useCreateConversationMessage();
-  const scrollToBottomRef = React.useRef<ScrollContainerHandle>(null);
+  const scrollToBottomRef = useRef<ScrollContainerHandle>(null);
 
   const [currentConversation, setCurrentConversation] =
-    React.useState(conversationId);
-  const [conversations, setConversations] = React.useState<Conversations>({
+    useState(conversationId);
+  const [conversations, setConversations] = useState<Conversations>({
     [currentConversation]: [],
   });
-  const streamingConversations = React.useRef<Conversations>({
+  const streamingConversations = useRef<Conversations>({
     [currentConversation]: [],
   });
 
   // Track pending tool calls during streaming
-  const pendingToolCalls = React.useRef<{ [id: number]: ToolCall }>({});
+  const pendingToolCalls = useRef<{ [id: number]: ToolCall }>({});
 
   // Cache tool calls by conversation ID and message index to persist across refetches
   // Key format: `${conversationId}-${messageIndex}`
-  const toolCallsCache = React.useRef<{ [key: string]: ToolCall[] }>({});
+  const toolCallsCache = useRef<{ [key: string]: ToolCall[] }>({});
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentConversation !== conversationId) {
       setCurrentConversation(conversationId);
       setConversations(prev => {
@@ -119,7 +140,7 @@ export const useConversationMessages = (
   const { data: conversationsData = [], ...queryProps } =
     useFetchConversationMessages(currentConversation);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (
       !Array.isArray(conversationsData) ||
       (conversationsData.length === 0 &&
@@ -191,7 +212,7 @@ export const useConversationMessages = (
     streamingConversations,
   ]);
 
-  const handleInputPrompt = React.useCallback(
+  const handleInputPrompt = useCallback(
     async (prompt: string, attachments: Attachment[] = []) => {
       let newConversationId = '';
 

@@ -21,8 +21,14 @@ export const rootRouteRef = createRouteRef({
   id: 'x2a',
 });
 
-export const newProjectRouteRef = createSubRouteRef({
-  id: 'x2a/new-project',
+export const moduleRouteRef = createSubRouteRef({
+  id: 'x2a.module',
   parent: rootRouteRef,
-  path: '/new-project',
+  path: '/projects/:projectId/modules/:moduleId',
+});
+
+export const projectRouteRef = createSubRouteRef({
+  id: 'x2a.project',
+  parent: rootRouteRef,
+  path: '/projects/:projectId',
 });

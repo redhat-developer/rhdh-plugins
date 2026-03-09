@@ -1,5 +1,45 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.7.1
+
+### Patch Changes
+
+- b7f8a3c: Updated dependency `@janus-idp/cli` to `3.7.0`.
+  Updated dependency `@openapitools/openapi-generator-cli` to `2.28.3`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.12.0`.
+- Updated dependencies [b7f8a3c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.1
+
+## 8.7.0
+
+### Minor Changes
+
+- 3648a62: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- Updated dependencies [3648a62]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.0
+
+## 8.6.1
+
+### Patch Changes
+
+- 0f60a00: feat: Improve permission denied error handling for workflow instances
+  - Add PermissionDeniedPanel component for clean access denied UI
+  - Improve backend error messages when user lacks instanceAdminView permission
+  - Provide detailed error messages explaining why access is denied:
+    - When instance has no ownership info (external/legacy runs)
+    - When instance was created by another user
+
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+- Updated dependencies [858963d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.0.1
+
 ## 8.6.0
 
 ### Minor Changes
