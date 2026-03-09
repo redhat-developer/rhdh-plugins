@@ -58,9 +58,10 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'projectPage.deleteProject': 'Löschen',
     'projectPage.deleteConfirm.title': 'Projekt "{{name}}" löschen?',
     'projectPage.deleteConfirm.message':
-      'Dieses Projekt sowie alle zugehörigen Module, Jobs und Artefakte werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.',
+      'Dieses Projekt, alle seine Module und Jobs werden unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden. Die im Ziel-Repository gespeicherten Artefakte bleiben erhalten.',
     'projectPage.deleteConfirm.cancel': 'Abbrechen',
     'projectPage.deleteConfirm.confirm': 'Löschen',
+    'projectTable.deleteError': 'Fehler beim Löschen des Projekts',
     'project.description': 'Beschreibung',
     'project.id': 'ID',
     'project.abbreviation': 'Abkürzung',

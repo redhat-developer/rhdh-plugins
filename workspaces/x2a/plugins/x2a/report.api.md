@@ -48,6 +48,7 @@ readonly "projectPage.deleteConfirm.title": string;
 readonly "projectPage.deleteConfirm.message": string;
 readonly "projectPage.deleteConfirm.cancel": string;
 readonly "projectPage.deleteConfirm.confirm": string;
+readonly "projectTable.deleteError": string;
 readonly "projectDetailsCard.title": string;
 readonly "projectDetailsCard.name": string;
 readonly "projectDetailsCard.description": string;

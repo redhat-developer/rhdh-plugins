@@ -246,6 +246,7 @@ export const ProjectTable = ({
   setOrderDirection,
 }: ProjectTableProps) => {
   const clientService = useClientService();
+  const { t } = useTranslation();
 
   const [error, setError] = useState<Error | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
@@ -270,7 +271,7 @@ export const ProjectTable = ({
       if (!response.ok) {
         const message = await extractResponseError(
           response,
-          'Failed to delete project',
+          t('projectTable.deleteError'),
         );
         setError(new Error(message));
         return;
@@ -345,8 +346,6 @@ export const ProjectTable = ({
     handleToggleRow,
   );
   const data = projects;
-
-  const { t } = useTranslation();
 
   const actions = [
     (rowData: Project) => ({
