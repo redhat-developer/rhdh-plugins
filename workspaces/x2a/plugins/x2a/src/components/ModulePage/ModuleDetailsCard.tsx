@@ -28,16 +28,16 @@ export const ModuleDetailsCard = ({ module }: { module?: Module }) => {
   return (
     <InfoCard title={t('modulePage.title')} variant="gridItem">
       <Grid container direction="row" spacing={3}>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField label={t('module.name')} value={module?.name || empty} />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('module.status')}
             value={module?.status || empty}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('module.sourcePath')}
             value={module?.sourcePath || empty}
