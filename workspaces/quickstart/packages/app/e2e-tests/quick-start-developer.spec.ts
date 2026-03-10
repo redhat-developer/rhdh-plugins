@@ -17,10 +17,20 @@ import { test, TestInfo } from '@playwright/test';
 import { UIhelper, switchToLocale } from './utils/helper';
 import { getTranslations, QuickstartMessages } from './utils/translations';
 import { runAccessibilityTests } from './utils/accessibility';
+import { skipIfLocales } from './utils/localeSkip';
 
 test.describe('Test Quick Start plugin', () => {
   let uiHelper: UIhelper;
   let translations: QuickstartMessages;
+
+  test.beforeEach(({}, testInfo) => {
+    skipIfLocales(
+      testInfo,
+      ['de', 'es', 'dev-config-de', 'dev-config-es'],
+      'Missing step ctaTitle translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2800',
+    );
+  });
+
   test.beforeEach(async ({ page }) => {
     test.info().annotations.push({
       type: 'component',
