@@ -76,7 +76,7 @@ type EntityMetricDetail = {
   entityName: string;             // Entity name from catalog
   entityNamespace: string;        // Entity namespace from catalog (e.g., "default", "staging")
   entityKind: string;             // Entity kind (e.g., "Component", "API")
-  owner: string;                  // Owner entity reference (always a full ref, e.g., "group:default/platform")
+  owner: string;                  // Owner derived from catalog spec.owner, normalized to a full entity ref (e.g., "group:default/platform"). Empty string if spec.owner is absent.
   metricValue: number | boolean;  // The actual metric value (always present; sync-error rows are excluded)
   timestamp: string;              // ISO 8601 timestamp of when metric was synced
   status: string;  // Threshold evaluation status (always present; sync-error rows are excluded)
@@ -252,11 +252,16 @@ This filter is applied at the database level for optimal performance. Frontends 
 
 #### Owner normalization
 
-Catalog authors can write `spec.owner` as either a short name (`my-team`) or a full entity ref (`group:default/my-team`). During metric sync the backend normalises both forms to a canonical lowercase full entity ref before storing them, defaulting the kind to `group` and the namespace to `default`. This means:
+Owner values are normalized to a canonical lowercase full entity ref at two points:
 
-- An entity with `spec.owner: my-team` and one with `spec.owner: group:default/my-team` are stored identically as `group:default/my-team`.
-- Filtering by `?owner=group:default/my-team` matches both consistently.
-- Always pass full entity refs in `owner` query parameters to guarantee correct matches.
+1. **At metric sync time** — `spec.owner` is normalized before being stored in the database. Both short names (`my-team`) and full refs (`group:default/my-team`) are resolved to `group:default/my-team`, defaulting kind to `group` and namespace to `default`.
+2. **At query time** — `owner` query parameters are canonicalized with the same logic before the database filter is applied. This means callers can supply either short names or full refs and the filter will still match correctly.
+
+This means:
+
+- An entity with `spec.owner: my-team` and one with `spec.owner: group:default/my-team` are stored and returned identically as `group:default/my-team`.
+- Filtering by `?owner=my-team`, `?owner=group:default/my-team`, or `?owner=group:Default/My-Team` all match the same entities.
+- The `owner` field in the response is also normalized, so it always reflects the canonical form rather than the raw catalog value.
 
 ### Kind Filtering
 
