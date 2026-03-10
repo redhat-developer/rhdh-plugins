@@ -20,7 +20,7 @@ const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 
 const baseConfig = '../../app-config.yaml';
-const configPath = 'packages/app-legacy/e2e-tests/test_yamls';
+const configPath = '../app-legacy/e2e-tests/test_yamls';
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
