@@ -21,8 +21,15 @@ const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
 
+// Each app has its own e2e tests
+const testDir =
+  appMode === 'legacy'
+    ? 'packages/app-legacy/e2e-tests'
+    : 'packages/app/e2e-tests';
+
 export default defineConfig({
-  timeout: 2 * 60 * 1000,
+  // E2E tests run full app + login + locale; beforeAll can take 30–60s
+  timeout: 120 * 1000,
 
   expect: {
     timeout: 5000,
@@ -48,13 +55,14 @@ export default defineConfig({
     permissions: ['clipboard-read', 'clipboard-write'],
   },
 
-  outputDir: 'node_modules/.cache/e2e-test-results',
+  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+
+  testDir,
 
   projects: [
     // en: run all tests (no grep)
     {
       name: 'en',
-      testDir: 'packages/app/e2e-tests',
       use: {
         channel: 'chrome' as const,
         locale: 'en',
@@ -63,7 +71,7 @@ export default defineConfig({
     // de, es, fr, it, ja: run only Cards tests (locale-specific content)
     ...LOCALES.filter(locale => locale !== 'en').map(locale => ({
       name: locale,
-      testDir: 'packages/app/e2e-tests',
+      testDir,
       grep: /Cards/,
       use: {
         channel: 'chrome' as const,
