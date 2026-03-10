@@ -14,70 +14,132 @@
  * limitations under the License.
  */
 /* eslint-disable @backstage/no-undeclared-imports -- deps in dcm-backend package.json */
-import {
-  mockCredentials,
-  mockErrorHandler,
-  mockServices,
-} from '@backstage/backend-test-utils';
+import { mockServices, type ServiceMock } from '@backstage/backend-test-utils';
+import type { PermissionsService } from '@backstage/backend-plugin-api';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import express from 'express';
 import request from 'supertest';
 
 import { createRouter } from './router';
-import { todoListServiceRef } from './services/TodoListService';
 
-const mockTodoItem = {
-  title: 'Do the thing',
-  id: '123',
-  createdBy: mockCredentials.user().principal.userEntityRef,
-  createdAt: new Date().toISOString(),
-};
+const mockConfig = mockServices.rootConfig({
+  data: {
+    dcm: {
+      clientId: 'test-client-id',
+      clientSecret: 'test-client-secret',
+    },
+  },
+});
 
-// TEMPLATE NOTE:
-// Testing the router directly allows you to write a unit test that mocks the provided options.
 describe('createRouter', () => {
   let app: express.Express;
-  let todoList: jest.Mocked<typeof todoListServiceRef.T>;
+  let permissionsMock: ServiceMock<PermissionsService>;
 
   beforeEach(async () => {
-    todoList = {
-      createTodo: jest.fn(),
-      listTodos: jest.fn(),
-      getTodo: jest.fn(),
-    };
+    permissionsMock = mockServices.permissions.mock({
+      authorize: jest
+        .fn()
+        .mockResolvedValue([{ result: AuthorizeResult.ALLOW }]),
+    });
+
+    const httpAuthMock = mockServices.httpAuth.mock({
+      credentials: jest.fn().mockResolvedValue({
+        principal: { userEntityRef: 'user:default/test' },
+      }),
+    });
+
     const router = await createRouter({
-      httpAuth: mockServices.httpAuth(),
-      todoList,
+      logger: mockServices.rootLogger(),
+      config: mockConfig,
+      httpAuth: httpAuthMock,
+      permissions: permissionsMock,
+      cache: mockServices.cache.mock(),
     });
     app = express();
     app.use(router);
-    app.use(mockErrorHandler());
   });
 
-  it('should create a TODO', async () => {
-    todoList.createTodo.mockResolvedValue(mockTodoItem);
+  it('should return ok for GET /health', async () => {
+    const response = await request(app).get('/health');
 
-    const response = await request(app).post('/todos').send({
-      title: 'Do the thing',
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ status: 'ok' });
+  });
+
+  describe('GET /access', () => {
+    it('should return decision ALLOW when permissions authorize', async () => {
+      permissionsMock.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+
+      const response = await request(app).get('/access');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        decision: 'ALLOW',
+        authorizeClusterIds: [],
+        authorizeProjects: [],
+      });
     });
 
-    expect(response.status).toBe(201);
-    expect(response.body).toEqual(mockTodoItem);
+    it('should return decision DENY when permissions deny', async () => {
+      permissionsMock.authorize.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(app).get('/access');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        decision: 'DENY',
+        authorizeClusterIds: [],
+        authorizeProjects: [],
+      });
+    });
   });
 
-  it('should not allow unauthenticated requests to create a TODO', async () => {
-    todoList.createTodo.mockResolvedValue(mockTodoItem);
+  describe('GET /token', () => {
+    let fetchSpy: jest.SpyInstance;
 
-    // TEMPLATE NOTE:
-    // The HttpAuth mock service considers all requests to be authenticated as a
-    // mock user by default. In order to test other cases we need to explicitly
-    // pass an authorization header with mock credentials.
-    const response = await request(app)
-      .post('/todos')
-      .set('Authorization', mockCredentials.none.header())
-      .send({
-        title: 'Do the thing',
+    afterEach(() => {
+      fetchSpy?.mockRestore();
+    });
+
+    it('should return 403 when permissions deny', async () => {
+      permissionsMock.authorize.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(app).get('/token');
+
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ error: 'Forbidden' });
+    });
+
+    it('should return access token when permissions allow and SSO returns token', async () => {
+      permissionsMock.authorize.mockResolvedValue([
+        { result: AuthorizeResult.ALLOW },
+      ]);
+
+      fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          access_token: 'mock-sso-token',
+          expires_in: 3600,
+        }),
+      } as Response);
+
+      const response = await request(app).get('/token');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        accessToken: 'mock-sso-token',
       });
-
-    expect(response.status).toBe(401);
+      expect(response.body.expiresAt).toBeGreaterThan(Date.now());
+      expect(fetchSpy).toHaveBeenCalledWith(
+        expect.stringContaining('/protocol/openid-connect/token'),
+        expect.any(Object),
+      );
+    });
   });
 });

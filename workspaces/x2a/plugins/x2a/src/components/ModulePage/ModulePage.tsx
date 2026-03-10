@@ -154,8 +154,8 @@ export const ModulePage = () => {
         )}
         {isLoading && <Progress />}
         {!isLoading && (
-          <Grid container spacing={3} direction="column">
-            <Grid item>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
               <ArtifactsCard
                 module={module}
                 targetRepoUrl={project?.targetRepoUrl || ''}
@@ -163,10 +163,10 @@ export const ModulePage = () => {
                 migrationPlanArtifact={project?.migrationPlan}
               />
             </Grid>
-            <Grid item>
+            <Grid item xs={12} md={6}>
               <ModuleDetailsCard module={module} />
             </Grid>
-            <Grid item>
+            <Grid item xs={12}>
               <PhasesCard
                 module={module}
                 projectId={projectId}

@@ -73,12 +73,24 @@ export const createRetrieveTechDocsContentAction = ({
         z.object({
           entityRef: z
             .string()
+            .min(1)
+            .refine(val => !/\.\.|\/\/|%|\\/.test(val), {
+              message:
+                'entityRef must be a valid entity reference (e.g. kind:namespace/name)',
+            })
             .describe(
               'Entity reference in format kind:namespace/name (e.g., component:default/my-service)',
             ),
           pagePath: z
             .string()
             .optional()
+            .refine(
+              val =>
+                val === undefined || val === '' || !/\.\.|\/\/|%|\\/.test(val),
+              {
+                message: 'pagePath must be a valid documentation path',
+              },
+            )
             .describe(
               'Optional path to specific page within the documentation (defaults to index.html)',
             ),

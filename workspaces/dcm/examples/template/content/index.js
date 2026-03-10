@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +14,4 @@
  * limitations under the License.
  */
 
-import { AboutField } from '@backstage/plugin-catalog';
-import { Typography } from '@material-ui/core';
-
-export const ItemField = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | React.ReactNode;
-}) => {
-  return (
-    <AboutField label={label}>
-      {typeof value === 'string' ? (
-        <Typography variant="subtitle2" component="div">
-          <b>{value}</b>
-        </Typography>
-      ) : (
-        value
-      )}
-    </AboutField>
-  );
-};
+console.log('Hello from ${{ values.name }}!');
