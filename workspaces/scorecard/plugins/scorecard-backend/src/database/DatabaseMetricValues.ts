@@ -33,7 +33,8 @@ type ReadEntityMetricsWithFiltersOptions = {
     | 'entityKind'
     | 'timestamp'
     | 'metricValue'
-    | 'namespace';
+    | 'namespace'
+    | 'status';
   sortOrder?: 'asc' | 'desc';
   pagination?: { limit: number; offset: number };
 };
@@ -172,6 +173,7 @@ export class DatabaseMetricValues {
       timestamp: 'timestamp',
       metricValue: 'value',
       namespace: 'entity_namespace',
+      status: 'status',
     };
 
     const column =
