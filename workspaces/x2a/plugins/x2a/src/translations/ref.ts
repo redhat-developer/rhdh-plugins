@@ -123,6 +123,8 @@ export const x2aPluginMessages = {
         noTelemetryAvailable: 'No telemetry available',
         agentName: 'Agent Name',
         duration: 'Duration',
+        inputTokens: 'Input Tokens',
+        outputTokens: 'Output Tokens',
         toolCalls: 'Count of tool calls',
       },
     },

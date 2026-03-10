@@ -102,6 +102,8 @@ readonly "modulePage.phases.telemetry.title": string;
 readonly "modulePage.phases.telemetry.duration": string;
 readonly "modulePage.phases.telemetry.noTelemetryAvailable": string;
 readonly "modulePage.phases.telemetry.agentName": string;
+readonly "modulePage.phases.telemetry.inputTokens": string;
+readonly "modulePage.phases.telemetry.outputTokens": string;
 readonly "modulePage.phases.telemetry.toolCalls": string;
 readonly "project.id": string;
 readonly "project.description": string;

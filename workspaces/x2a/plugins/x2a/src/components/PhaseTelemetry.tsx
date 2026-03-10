@@ -110,6 +110,16 @@ export const PhaseTelemetry = ({ telemetry }: { telemetry?: Telemetry }) => {
         align: 'right',
       },
       {
+        title: t('modulePage.phases.telemetry.inputTokens'),
+        render: (row: AgentRow) => row.inputTokens?.toLocaleString() || '-',
+        align: 'right',
+      },
+      {
+        title: t('modulePage.phases.telemetry.outputTokens'),
+        render: (row: AgentRow) => row.outputTokens?.toLocaleString() || '-',
+        align: 'right',
+      },
+      {
         title: t('modulePage.phases.telemetry.toolCalls'),
         render: (row: AgentRow) => <ToolCallsCell toolCalls={row.toolCalls} />,
       },

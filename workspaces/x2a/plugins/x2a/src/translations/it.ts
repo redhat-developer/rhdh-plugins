@@ -167,6 +167,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Nessuna telemetria disponibile',
     'modulePage.phases.telemetry.agentName': "Nome dell'agente",
     'modulePage.phases.telemetry.duration': 'Durata',
+    'modulePage.phases.telemetry.inputTokens': 'Token di input',
+    'modulePage.phases.telemetry.outputTokens': 'Token di output',
     'modulePage.phases.telemetry.toolCalls':
       'Conteggio delle chiamate agli strumenti',
     'modulePage.phases.resyncMigrationPlanInstructions':
