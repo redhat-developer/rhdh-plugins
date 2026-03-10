@@ -46,10 +46,10 @@ import {
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { mockApis } from '@backstage/test-utils';
 
-import ListItemIcon from '@material-ui/core';
-import ListItemText from '@material-ui/core';
-import Menu from '@material-ui/core';
-import MenuItem from '@material-ui/core';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
 import AutoIcon from '@mui/icons-material/BrightnessAuto';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
