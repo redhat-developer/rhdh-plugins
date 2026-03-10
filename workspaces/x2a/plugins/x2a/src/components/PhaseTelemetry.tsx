@@ -23,7 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../hooks/useTranslation';
-import { RelativeTimeFormatter } from './tools/formatRelativeTime';
+import { RelativeTimeFormatter } from './tools';
 
 const useStyles = makeStyles(theme => ({
   toolCallList: {
