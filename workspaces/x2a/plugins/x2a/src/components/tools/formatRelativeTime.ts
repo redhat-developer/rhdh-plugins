@@ -15,6 +15,11 @@
  */
 
 class RelativeTimeFormatter {
+  static fromSeconds(durationSeconds: number): string {
+    const durationMs = durationSeconds * 1000;
+    return new RelativeTimeFormatter().computeDuration(0, durationMs);
+  }
+
   private computeDuration(startMs: number, endMs: number): string {
     const diffMs = endMs - startMs;
     const totalSeconds = Math.floor(diffMs / 1000);
@@ -83,3 +88,5 @@ export const formatRelativeTime = (
 ): string => {
   return new RelativeTimeFormatter().format(startedAt, finishedAt);
 };
+
+export { RelativeTimeFormatter };

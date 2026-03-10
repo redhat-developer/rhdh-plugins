@@ -16,7 +16,6 @@
 export * from './buildArtifactUrl';
 export * from './extractResponseError';
 export * from './buildRepoBranchUrl';
-export * from './formatDuration';
 export * from './formatRelativeTime';
 export * from './humanizeArtifactType';
 export * from './humanizeDate';
