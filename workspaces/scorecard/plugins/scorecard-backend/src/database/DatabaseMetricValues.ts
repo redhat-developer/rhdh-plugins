@@ -163,7 +163,9 @@ export class DatabaseMetricValues {
 
     const query = this.dbClient(this.tableName)
       .select('*')
-      .whereIn('id', latestIdsSubquery);
+      .whereIn('id', latestIdsSubquery)
+      .whereNotNull('status')
+      .whereNotNull('value');
 
     const sortColumnMap: Record<string, string> = {
       entityName: 'catalog_entity_ref',
@@ -178,22 +180,21 @@ export class DatabaseMetricValues {
       (options.sortBy && sortColumnMap[options.sortBy]) ?? 'timestamp';
     const direction = options.sortOrder === 'asc' ? 'asc' : 'desc';
 
-    // Nulls last for metricValue (value can be null)
     if (options.sortBy === 'metricValue') {
       if (isPostgres) {
-        // value is JSON; cast to text then to float for numeric sort; NULLS LAST is native syntax
+        // value is stored as JSON; cast to text then to float for a correct numeric sort
         query.orderByRaw(
-          `CAST(value::text AS DOUBLE PRECISION) ${direction} NULLS LAST, id ASC`,
+          `CAST(value::text AS DOUBLE PRECISION) ${direction}, id ASC`,
         );
       } else {
-        // SQLite: "value IS NULL" puts nulls last; double-cast handles JSON-stored values
+        // SQLite: double-cast handles JSON-stored numeric values
         query.orderByRaw(
-          `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}, id ASC`,
+          `CAST(CAST(value AS TEXT) AS REAL) ${direction}, id ASC`,
         );
       }
     } else {
       query.orderBy(column, direction);
-      query.orderBy('id', 'asc'); // Ensure a stable sort in the event that two metrics share a similar primary sort value
+      query.orderBy('id', 'asc'); // Stable tie-breaker when primary sort values are equal
     }
 
     if (options.status) {

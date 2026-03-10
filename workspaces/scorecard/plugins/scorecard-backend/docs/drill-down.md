@@ -11,6 +11,7 @@ The drill-down endpoint (`/metrics/:metricId/catalog/aggregations/entities`) pro
 - Sort by any column (entity name, owner, kind, namespace, timestamp, metric value)
 - Paginate through large result sets
 - Understand data freshness through per-entity timestamps
+- Results only include entities with a successfully evaluated metric — entities whose last sync produced an error (no value, no status) are excluded
 
 This endpoint transforms the scorecard from a passive reporting tool into an actionable diagnostic interface.
 
@@ -76,9 +77,9 @@ type EntityMetricDetail = {
   entityNamespace: string;        // Entity namespace from catalog (e.g., "default", "staging")
   entityKind: string;             // Entity kind (e.g., "Component", "API")
   owner: string;                  // Owner entity reference or name
-  metricValue: number | boolean | null;  // The actual metric value
+  metricValue: number | boolean;  // The actual metric value (always present; sync-error rows are excluded)
   timestamp: string;              // ISO 8601 timestamp of when metric was synced
-  status: string;  // Threshold evaluation status
+  status: string;  // Threshold evaluation status (always present; sync-error rows are excluded)
 };
 ```
 
@@ -222,11 +223,13 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 
 ### Status Filtering
 
+Entities whose last metric sync produced an error (null value, null status) are **always excluded** from drill-down results regardless of any filter. Only entities with a valid, evaluated metric value are returned.
+
 When `status` is specified, only entities with that threshold evaluation are returned:
 
 - `status=success`: Entities meeting success thresholds
 - `status=warning`: Entities meeting warning thresholds
-- `status=error`: Entities failing thresholds or in error state
+- `status=error`: Entities failing thresholds
 
 Status filtering is performed at the database level for optimal performance.
 
@@ -315,10 +318,6 @@ Results can be sorted by any column in ascending or descending order. Sorting is
 ### Default Sorting
 
 If no `sortBy` is specified, results are sorted by `timestamp` in descending order (most recent first).
-
-### Null Value Handling
-
-When sorting by `metricValue`, entities with `null` values are sorted to the end regardless of sort order.
 
 ## Pagination
 
@@ -475,6 +474,7 @@ Entity metadata (name, kind, owner) is fetched from the catalog at request time 
 1. **Stale aggregation data**: Aggregation was cached, entities have since changed status
 2. **Permission changes**: User lost access to entities between viewing aggregation and drill-down
 3. **Incorrect filters**: Check filter parameters match the aggregation criteria
+4. **All entities in sync error**: If every entity's latest metric sync failed (no value, no status), none will appear in drill-down results — check backend logs for sync errors and re-run the metric scheduler
 
 ### Missing Entity Metadata
 

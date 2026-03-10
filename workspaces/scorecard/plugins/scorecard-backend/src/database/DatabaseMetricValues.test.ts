@@ -1171,7 +1171,7 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should sort by value descending with nulls last when sortBy=metricValue - %p',
+      'should sort by value descending when sortBy=metricValue - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
 
@@ -1181,23 +1181,23 @@ describe('DatabaseMetricValues', () => {
           {
             catalog_entity_ref: 'component:default/service-a',
             metric_id: 'github.metric1',
-            value: null,
+            value: 5,
             timestamp,
-            status: 'error',
+            status: 'warning',
           },
           {
             catalog_entity_ref: 'component:default/service-b',
             metric_id: 'github.metric1',
-            value: 5,
+            value: 15,
             timestamp,
             status: 'error',
           },
           {
             catalog_entity_ref: 'component:default/service-c',
             metric_id: 'github.metric1',
-            value: 15,
+            value: 1,
             timestamp,
-            status: 'error',
+            status: 'success',
           },
         ]);
 
@@ -1210,7 +1210,60 @@ describe('DatabaseMetricValues', () => {
         expect(result).toHaveLength(3);
         expect(result[0].value).toBe(15);
         expect(result[1].value).toBe(5);
-        expect(result[2].value).toBeNull(); // null sorted last
+        expect(result[2].value).toBe(1);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should exclude rows with null status or null value (sync errors) - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service-ok',
+            metric_id: 'github.metric1',
+            value: 10,
+            timestamp,
+            status: 'success',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-sync-error',
+            metric_id: 'github.metric1',
+            value: null,
+            timestamp,
+            status: null,
+            error_message: 'Provider threw during sync',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-null-value',
+            metric_id: 'github.metric1',
+            value: null,
+            timestamp,
+            status: 'error',
+            error_message: 'Fetch failed',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-null-status',
+            metric_id: 'github.metric1',
+            value: 5,
+            timestamp,
+            status: null,
+            error_message: 'Invalid thresholds',
+          },
+        ]);
+
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
+          pagination: { limit: 10, offset: 0 },
+        });
+
+        // Only the row with both a non-null status and non-null value should appear
+        expect(result).toHaveLength(1);
+        expect(result[0].catalog_entity_ref).toBe(
+          'component:default/service-ok',
+        );
       },
     );
   });

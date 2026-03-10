@@ -182,6 +182,8 @@ export class CatalogMetricService {
    * Get detailed entity metrics for drill-down with filtering, sorting, and pagination.
    *
    * Fetches individual entity metric values and enriches them with catalog metadata.
+   * Only rows with a non-null status and non-null value are included — rows produced by
+   * a metric sync error (null status, null value) are excluded entirely.
    * Supports database-level filtering (status, owner, kind, entityName),
    * database-level sorting, and in-memory pagination over the permission-filtered result set.
    * Returns empty entities if the catalog is unavailable (fail-secure).

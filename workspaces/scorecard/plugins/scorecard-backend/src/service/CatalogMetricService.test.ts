@@ -935,12 +935,7 @@ describe('CatalogMetricService', () => {
       expect(result.pagination.total).toBe(1);
     });
 
-    it('should handle null metric values in sorting', async () => {
-      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
-        { ...mockMetricRows[0], value: null },
-        mockMetricRows[1],
-      ]);
-
+    it('should sort by metricValue and delegate ordering to the database', async () => {
       await service.getEntityMetricDetails(
         'github.important_metric',
         mockCredentials,
@@ -952,7 +947,8 @@ describe('CatalogMetricService', () => {
         },
       );
 
-      // Null handling (nulls-last) is delegated to the DB via orderByRaw
+      // Ordering is fully delegated to the DB via orderByRaw; rows with null values
+      // are excluded at the database layer before they reach this service
       expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
         'github.important_metric',
         {
