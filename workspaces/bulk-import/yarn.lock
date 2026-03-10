@@ -2498,7 +2498,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-defaults@npm:^0.3.6":
+"@backstage/frontend-defaults@npm:^0.3.5, @backstage/frontend-defaults@npm:^0.3.6":
   version: 0.3.6
   resolution: "@backstage/frontend-defaults@npm:0.3.6"
   dependencies:
@@ -12335,12 +12335,15 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.6"
     "@backstage/core-plugin-api": "npm:^1.12.2"
     "@backstage/dev-utils": "npm:^1.1.19"
+    "@backstage/frontend-defaults": "npm:^0.3.5"
     "@backstage/frontend-plugin-api": "npm:^0.13.4"
+    "@backstage/plugin-app-react": "npm:^0.1.0"
     "@backstage/plugin-catalog-import": "npm:^0.13.9"
     "@backstage/plugin-catalog-react": "npm:^1.21.6"
     "@backstage/plugin-permission-react": "npm:^0.4.39"
     "@backstage/test-utils": "npm:^1.7.14"
     "@backstage/theme": "npm:^0.7.1"
+    "@backstage/ui": "npm:^0.11.2"
     "@mui/icons-material": "npm:^5.15.17"
     "@mui/material": "npm:^5.12.2"
     "@mui/styles": "npm:5.18.0"
@@ -12367,6 +12370,7 @@ __metadata:
     yup: "npm:^1.4.0"
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.0.0
+    react-dom: ^18.0.2
     react-router-dom: ^6.0.0
   languageName: unknown
   linkType: soft

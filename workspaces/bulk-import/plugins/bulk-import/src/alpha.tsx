@@ -18,6 +18,7 @@ import {
   ApiBlueprint,
   configApiRef,
   createApiFactory,
+  createFrontendModule,
   createFrontendPlugin,
   createRouteRef,
   createSubRouteRef,
@@ -25,12 +26,14 @@ import {
   NavItemBlueprint,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
 
 import {
   bulkImportApiRef,
   BulkImportBackendClient,
 } from './api/BulkImportBackendClient';
 import BulkImportIcon from './components/BulkImportSidebarItem';
+import { bulkImportTranslations } from './translations';
 
 // NFS Route References - created using @backstage/frontend-plugin-api
 // These are separate from the legacy route refs in routes.ts
@@ -116,4 +119,21 @@ export default createFrontendPlugin({
     root: rootRouteRef,
     tasks: importHistoryRouteRef,
   },
+});
+
+/**
+ * Translation module for the bulk-import plugin.
+ *
+ * @public
+ */
+export const bulkImportTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    TranslationBlueprint.make({
+      name: 'bulk-import-translations',
+      params: {
+        resource: bulkImportTranslations,
+      },
+    }),
+  ],
 });

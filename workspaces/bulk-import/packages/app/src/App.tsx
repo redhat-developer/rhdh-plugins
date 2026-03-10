@@ -26,6 +26,8 @@ import { SignInPage } from '@backstage/core-components';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
+import { navModule } from './modules/nav';
+
 // Import the new frontend system plugin for bulk-import
 import bulkImportPlugin from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
@@ -125,6 +127,8 @@ const app = createApp({
     themesModule,
     // Translations module (language selector configured via app-config.yaml)
     translationsModule,
+    // Custom sidebar with logo
+    navModule,
   ],
 });
 
