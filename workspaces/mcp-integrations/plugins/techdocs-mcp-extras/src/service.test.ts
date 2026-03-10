@@ -953,7 +953,7 @@ describe('TechDocsService', () => {
 
       expect(result.error).toBeDefined();
       expect(result.error).toBe(
-        'Invalid entity reference format: invalid-ref-format. Expected format: kind:namespace/name',
+        'entityRef must be a valid entity reference (e.g. kind:namespace/name)',
       );
     });
 
@@ -1017,6 +1017,46 @@ describe('TechDocsService', () => {
         'http://localhost:7007/api/techdocs/static/docs/default/component/test-service/index.html',
         { headers: {} },
       );
+    });
+
+    it('should reject entityRef that is not a valid entity reference', async () => {
+      const invalidRefs = [
+        'component:../../other',
+        'component:default//other',
+        'component:default/%2e%2e/other',
+        'component:default\\other',
+      ];
+      for (const ref of invalidRefs) {
+        const result = await service.retrieveTechDocsContent(ref, undefined);
+        expect(result.error).toBeDefined();
+        expect(result.error).toContain('valid entity reference');
+        expect(mockFetch).not.toHaveBeenCalled();
+      }
+    });
+
+    it('should reject pagePath that is not a valid documentation path', async () => {
+      const mockEntity = createMockEntity('test-service', 'Component', true);
+      const mockCatalog = {
+        getEntityByRef: jest.fn().mockResolvedValue(mockEntity),
+      };
+
+      const invalidPaths = [
+        '../../../etc/passwd',
+        'api//endpoints.html',
+        'api%2f..%2fother',
+        'docs\\..\\other',
+      ];
+      for (const path of invalidPaths) {
+        const result = await service.retrieveTechDocsContent(
+          'component:default/test-service',
+          path,
+          mockAuth,
+          mockCatalog as any,
+        );
+        expect(result.error).toBeDefined();
+        expect(result.error).toContain('valid documentation path');
+      }
+      expect(mockFetch).not.toHaveBeenCalled();
     });
   });
 });
