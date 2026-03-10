@@ -22,14 +22,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
-import { Agent } from 'undici';
-
-// Augment the global RequestInit interface to include the dispatcher property
-declare global {
-  interface RequestInit {
-    dispatcher?: Agent | undefined;
-  }
-}
+import { Agent, setGlobalDispatcher } from 'undici';
 
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
@@ -45,6 +38,13 @@ export class LokiProvider implements WorkflowLogProvider {
       config.getOptionalBoolean('rejectUnauthorized') === false ? false : true;
     this.selectors = config.getOptional('logStreamSelectors') || [];
     this.logPipelineFilters = config.getOptional('logPipelineFilters') || [];
+
+    const agent = new Agent({
+      connect: {
+        rejectUnauthorized: this.rejectUnauthorized,
+      },
+    });
+    setGlobalDispatcher(agent);
   }
   getBaseURL(): string {
     return this.baseURL;
@@ -124,17 +124,9 @@ export class LokiProvider implements WorkflowLogProvider {
 
     const urlToFetch = `${this.baseURL}${lokiApiEndpoint}?${params.toString()}`;
 
-    const customAgent = new Agent({
-      connect: {
-        // Agent configuration options, e.g., for self-signed certificates
-        rejectUnauthorized: this.rejectUnauthorized,
-      },
-    });
-
     let allResults;
     try {
       const response = await fetch(urlToFetch, {
-        dispatcher: customAgent,
         headers: {
           Authorization: `Bearer ${this.token}`,
           'Content-Type': 'application/json',
