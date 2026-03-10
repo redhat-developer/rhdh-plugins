@@ -63,6 +63,22 @@ export default defineConfig({
       },
     },
     {
+      name: 'de',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'de',
+      },
+    },
+    {
+      name: 'es',
+      testDir: 'packages/app/e2e-tests',
+      use: {
+        channel: 'chrome',
+        locale: 'es',
+      },
+    },
+    {
       name: 'fr',
       testDir: 'packages/app/e2e-tests',
       use: {
