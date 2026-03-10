@@ -118,6 +118,13 @@ export const x2aPluginMessages = {
       viewLog: 'View Log',
       hideLog: 'Hide Log',
       noLogsAvailable: 'No logs available yet...',
+      telemetry: {
+        title: 'Telemetry',
+        noTelemetryAvailable: 'No telemetry available',
+        agentName: 'Agent Name',
+        duration: 'Duration',
+        toolCalls: 'Count of tool calls',
+      },
     },
   },
   table: {
