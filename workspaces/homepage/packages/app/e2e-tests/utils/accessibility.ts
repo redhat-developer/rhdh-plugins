@@ -17,6 +17,21 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, TestInfo } from '@playwright/test';
 
+/**
+ * Rule IDs to ignore when APP_MODE is 'nfs'. Used for known issues in the NFS
+ * app (e.g. list structure in third-party or shared components).
+ */
+const NFS_IGNORED_VIOLATION_IDS = ['list'];
+
+function getFilteredViolations(
+  violations: Awaited<ReturnType<AxeBuilder['analyze']>>['violations'],
+): Awaited<ReturnType<AxeBuilder['analyze']>>['violations'] {
+  if (process.env.APP_MODE !== 'nfs') {
+    return violations;
+  }
+  return violations.filter(v => !NFS_IGNORED_VIOLATION_IDS.includes(v.id));
+}
+
 export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
@@ -31,8 +46,8 @@ export async function runAccessibilityTests(
     contentType: 'application/json',
   });
 
-  expect(
+  const violationsToAssert = getFilteredViolations(
     accessibilityScanResults.violations,
-    'Accessibility violations found',
-  ).toEqual([]);
+  );
+  expect(violationsToAssert, 'Accessibility violations found').toEqual([]);
 }

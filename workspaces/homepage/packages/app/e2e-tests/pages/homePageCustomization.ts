@@ -39,7 +39,7 @@ export class HomePageCustomization {
   private readonly resizeHandles = () =>
     this.page.locator('.react-resizable-handle');
   private readonly deleteButtons = () =>
-    this.page.locator('[class*="MuiGrid-root"][class*="overlayGridItem"]');
+    this.page.getByRole('button', { name: 'Delete widget' });
   private readonly greetingText = () =>
     this.page.getByText(/Good (morning|afternoon|evening)/);
 
@@ -186,7 +186,7 @@ export class HomePageCustomization {
     // Loop as long as there are delete buttons visible
     while (currentCount > 0) {
       await currentButtons.first().click();
-      await this.page.waitForTimeout(1000); // Wait for deletion to complete
+      await this.page.waitForTimeout(50); // Wait for deletion to complete
 
       // Re-evaluate the count for the next iteration
       currentButtons = this.deleteButtons();

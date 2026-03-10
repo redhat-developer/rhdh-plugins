@@ -15803,6 +15803,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
+    "@axe-core/playwright": "npm:^4.10.0"
     "@backstage/cli": "npm:^0.35.4"
     "@backstage/core-compat-api": "npm:^0.5.8"
     "@backstage/core-components": "npm:^0.18.7"
