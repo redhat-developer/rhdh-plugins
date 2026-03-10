@@ -15,7 +15,7 @@
  */
 
 import { useMemo } from 'react';
-import { Box, Chip, Typography, makeStyles } from '@material-ui/core';
+import { Box, Typography, makeStyles } from '@material-ui/core';
 import { Table, TableColumn } from '@backstage/core-components';
 import {
   AgentMetrics,
@@ -26,13 +26,21 @@ import { useTranslation } from '../hooks/useTranslation';
 import { RelativeTimeFormatter } from './tools/formatRelativeTime';
 
 const useStyles = makeStyles(theme => ({
-  chipContainer: {
+  toolCallList: {
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+  },
+  toolCallItem: {
     display: 'flex',
-    flexWrap: 'wrap',
-    margin: theme.spacing(-0.5),
-    '& > *': {
-      margin: theme.spacing(0.5),
-    },
+    gap: theme.spacing(1),
+    lineHeight: 1.8,
+  },
+  toolCallCount: {
+    fontVariantNumeric: 'tabular-nums',
+    minWidth: '2ch',
+    textAlign: 'right',
+    fontWeight: 600,
   },
 }));
 
@@ -55,15 +63,21 @@ const ToolCallsCell = ({
     ([, countA], [, countB]) => countB - countA,
   );
 
+  const maxDigits = String(sortedToolCalls[0][1]).length;
+
   return (
-    <Box className={classes.chipContainer}>
+    <Box component="ul" className={classes.toolCallList}>
       {sortedToolCalls.map(([tool, count]) => (
-        <Chip
-          key={tool}
-          label={`${count}× ${tool}`}
-          size="small"
-          variant="outlined"
-        />
+        <li key={tool} className={classes.toolCallItem}>
+          <Typography
+            variant="body2"
+            className={classes.toolCallCount}
+            style={{ minWidth: `${maxDigits}ch` }}
+          >
+            {String(count).padStart(maxDigits, '0')}
+          </Typography>
+          <Typography variant="body2">{tool}</Typography>
+        </li>
       ))}
     </Box>
   );
