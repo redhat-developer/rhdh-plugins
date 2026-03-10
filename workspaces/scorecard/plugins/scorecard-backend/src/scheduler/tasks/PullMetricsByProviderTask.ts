@@ -27,7 +27,7 @@ import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
 import { v4 as uuid } from 'uuid';
-import { stringifyEntityRef } from '@backstage/catalog-model';
+import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
@@ -163,7 +163,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 status,
                 entity_kind: normalizeField(entity.kind),
                 entity_namespace: normalizeField(entity.metadata.namespace),
-                entity_owner: normalizeField(entity?.spec?.owner),
+                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
               return {
@@ -175,7 +175,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                   error instanceof Error ? error.message : String(error),
                 entity_kind: normalizeField(entity.kind),
                 entity_namespace: normalizeField(entity.metadata.namespace),
-                entity_owner: normalizeField(entity?.spec?.owner),
+                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
               } as DbMetricValueCreate;
             }
           }),
@@ -210,4 +210,36 @@ function normalizeField(field: unknown): string | undefined {
 
   // Prevent DB insertion failures (limits column length to 255 characters)
   return normalized.length <= 255 ? normalized : normalized.slice(0, 255);
+}
+
+/**
+ * Resolves an owner field to a canonical, lowercase full entity ref.
+ *
+ * Catalog entities can store `spec.owner` in two forms:
+ *   - Short name only:  "my-team"           → "group:default/my-team"
+ *   - Full entity ref:  "group:default/my-team" → "group:default/my-team"
+ *
+ * Normalising to a full ref here ensures that owner-based filtering in the
+ * drill-down endpoint matches consistently regardless of how the owning entity
+ * authored the value.  Kind defaults to "group" and namespace defaults to
+ * "default", which matches Backstage's own ownership-resolution behaviour.
+ */
+function normalizeOwnerRef(field: unknown): string | undefined {
+  if (typeof field !== 'string') return undefined;
+  const trimmed = field.trim();
+  if (!trimmed) return undefined;
+
+  try {
+    const ref = stringifyEntityRef(
+      parseEntityRef(trimmed, {
+        defaultKind: 'group',
+        defaultNamespace: 'default',
+      }),
+    ).toLowerCase();
+    return ref.length <= 255 ? ref : ref.slice(0, 255);
+  } catch {
+    // If the value is unparseable fall back to the raw normalised string so
+    // we don't silently drop owner data that was already stored correctly.
+    return normalizeField(trimmed);
+  }
 }

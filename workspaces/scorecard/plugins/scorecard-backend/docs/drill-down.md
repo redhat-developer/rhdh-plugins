@@ -76,7 +76,7 @@ type EntityMetricDetail = {
   entityName: string;             // Entity name from catalog
   entityNamespace: string;        // Entity namespace from catalog (e.g., "default", "staging")
   entityKind: string;             // Entity kind (e.g., "Component", "API")
-  owner: string;                  // Owner entity reference or name
+  owner: string;                  // Owner entity reference (always a full ref, e.g., "group:default/platform")
   metricValue: number | boolean;  // The actual metric value (always present; sync-error rows are excluded)
   timestamp: string;              // ISO 8601 timestamp of when metric was synced
   status: string;  // Threshold evaluation status (always present; sync-error rows are excluded)
@@ -108,14 +108,14 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Get entities owned by a specific team:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=group:default/platform&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
 Get entities owned by multiple teams (repeat the `owner` parameter):
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&owner=team:default/backend&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=group:default/platform&owner=group:default/backend&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -174,7 +174,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Get Component entities with errors for a specific team, sorted by metric value:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=team:default/platform&status=error&kind=Component&namespace=staging&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=group:default/platform&status=error&kind=Component&namespace=staging&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -194,7 +194,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
       "entityName": "my-service",
       "entityNamespace": "default",
       "entityKind": "Component",
-      "owner": "team:default/platform",
+      "owner": "group:default/platform",
       "metricValue": 15,
       "timestamp": "2026-02-17T10:30:00Z",
       "status": "error"
@@ -204,7 +204,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
       "entityName": "another-service",
       "entityNamespace": "default",
       "entityKind": "Component",
-      "owner": "team:default/backend",
+      "owner": "group:default/backend",
       "metricValue": 8,
       "timestamp": "2026-02-17T10:25:00Z",
       "status": "warning"
@@ -239,16 +239,24 @@ The `owner` parameter filters entities by their catalog owner (`spec.owner`). Re
 
 ```bash
 # Get entities owned by a specific team
-?owner=team:default/platform
+?owner=group:default/platform
 
 # Get entities owned by a specific user
 ?owner=user:default/alice
 
 # Get entities owned by either of two teams
-?owner=team:default/platform&owner=team:default/backend
+?owner=group:default/platform&owner=group:default/backend
 ```
 
 This filter is applied at the database level for optimal performance. Frontends can implement "owned by me" scoping by passing the user's `identityApi.ownershipEntityRefs` (user ref + direct group refs) as repeated `owner` values.
+
+#### Owner normalization
+
+Catalog authors can write `spec.owner` as either a short name (`my-team`) or a full entity ref (`group:default/my-team`). During metric sync the backend normalises both forms to a canonical lowercase full entity ref before storing them, defaulting the kind to `group` and the namespace to `default`. This means:
+
+- An entity with `spec.owner: my-team` and one with `spec.owner: group:default/my-team` are stored identically as `group:default/my-team`.
+- Filtering by `?owner=group:default/my-team` matches both consistently.
+- Always pass full entity refs in `owner` query parameters to guarantee correct matches.
 
 ### Kind Filtering
 
@@ -425,7 +433,7 @@ This returns the 20 entities with the most severe issues (highest metric values 
 A team lead wants to see only their team's entities:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities?owner=team:default/backend&sortBy=timestamp&sortOrder=asc" \
+curl -X GET "{{url}}/api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities?owner=group:default/backend&sortBy=timestamp&sortOrder=asc" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -447,7 +455,7 @@ This returns API entities with security warnings, helping prioritize security im
 An engineer wants to see only their owned entities with issues. The frontend passes the user's `ownershipEntityRefs` (user ref + group memberships) as repeated `owner` params:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=user:default/alice&owner=team:default/platform&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=user:default/alice&owner=group:default/platform&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
