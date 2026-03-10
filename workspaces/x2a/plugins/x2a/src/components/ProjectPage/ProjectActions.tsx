@@ -33,6 +33,7 @@ export type ProjectActionsProps = {
   handleDeleteClick: () => void;
   handleRunAllClick: () => void;
   canRunAll: boolean;
+  canDeleteProject: boolean;
 };
 
 export const ProjectActions = ({
@@ -43,6 +44,7 @@ export const ProjectActions = ({
   handleDeleteClick,
   handleRunAllClick,
   canRunAll,
+  canDeleteProject,
 }: ProjectActionsProps) => {
   const { t } = useTranslation();
   return (
@@ -80,7 +82,8 @@ export const ProjectActions = ({
           </ListItemIcon>
           {t('bulkRun.projectPageAction')}
         </MenuItem>
-        <MenuItem onClick={handleDeleteClick}>
+
+        <MenuItem onClick={handleDeleteClick} disabled={!canDeleteProject}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>

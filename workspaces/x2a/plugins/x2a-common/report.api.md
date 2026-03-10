@@ -132,7 +132,7 @@ export interface Job {
 export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
 
 // @public
-export const MAX_CONCURRENT_BULK_RUN = 5;
+export const MAX_CONCURRENT_BULK_RUN = 3;
 
 // @public (undocumented)
 export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';

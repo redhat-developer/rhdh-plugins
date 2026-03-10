@@ -54,15 +54,6 @@ export const useBulkRun = () => {
         return { total: 0, succeeded: 0, failed: 0 };
       }
 
-      const sourceRepoAuthToken = (
-        await repoAuth.authenticate([
-          getAuthTokenDescriptor({
-            repoUrl: project.sourceRepoUrl,
-            readOnly: true,
-          }),
-        ])
-      )[0].token;
-
       const targetRepoAuthToken = (
         await repoAuth.authenticate([
           getAuthTokenDescriptor({
@@ -71,6 +62,19 @@ export const useBulkRun = () => {
           }),
         ])
       )[0].token;
+
+      let sourceRepoAuthToken = targetRepoAuthToken;
+      if (project.sourceRepoUrl !== project.targetRepoUrl) {
+        // optimization when the source and target are the same repos
+        sourceRepoAuthToken = (
+          await repoAuth.authenticate([
+            getAuthTokenDescriptor({
+              repoUrl: project.sourceRepoUrl,
+              readOnly: true,
+            }),
+          ])
+        )[0].token;
+      }
 
       const runModule = async (m: Module) => {
         const nextPhase = getNextPhase(m);

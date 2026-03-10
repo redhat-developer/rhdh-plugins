@@ -179,6 +179,7 @@ export const ProjectPage = () => {
     );
   }
 
+  const projectWritePermitted = !!(project && canWriteProject(project));
   const isLoading = projectLoading || modulesLoading;
   return (
     <Page themeId="tool">
@@ -191,7 +192,8 @@ export const ProjectPage = () => {
             menuAnchorEl={menuAnchorEl}
             handleDeleteClick={handleDeleteClick}
             handleRunAllClick={handleRunAllClick}
-            canRunAll={canWriteProject(project)}
+            canRunAll={projectWritePermitted}
+            canDeleteProject={projectWritePermitted}
           />
         )}
       </Header>

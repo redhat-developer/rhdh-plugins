@@ -43,7 +43,7 @@ import { DetailPanel } from './DetailPanel';
 import { ProjectStatusCell } from '../ProjectStatusCell';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
 import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
-import { extractResponseError } from '../tools';
+import { extractResponseError, areEligibleModulesToRun } from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { projectRouteRef } from '../../routes';
 
@@ -403,7 +403,7 @@ export const ProjectTable = ({
       icon: PlaylistPlayIcon,
       onClick: () => setBulkRunTarget(rowData),
       tooltip: t('bulkRun.projectAction'),
-      disabled: !canWriteProject(rowData),
+      disabled: !canWriteProject(rowData) || !areEligibleModulesToRun(rowData),
     }),
     (rowData: Project) => ({
       icon: DeleteIcon,

@@ -178,8 +178,8 @@ describe('useBulkRun', () => {
       mockGetNextPhase.mockReturnValue('migrate');
 
       mockAuthenticate
-        .mockResolvedValueOnce([{ token: 'source-tok' }])
-        .mockResolvedValueOnce([{ token: 'target-tok' }]);
+        .mockResolvedValueOnce([{ token: 'target-tok' }])
+        .mockResolvedValueOnce([{ token: 'source-tok' }]);
       mockProjectsProjectIdModulesModuleIdRunPost.mockResolvedValue(
         jsonResponse({ jobId: 'job-1' }),
       );

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './buildArtifactUrl';
-export * from './extractResponseError';
-export * from './buildRepoBranchUrl';
-export * from './formatRelativeTime';
-export * from './humanizeArtifactType';
-export * from './humanizeDate';
-export * from './getLastPhaseReached';
-export * from './getNextPhase';
-export * from './canRunNextPhase';
-export * from './areEligibleModulesToRun';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
+/**
+ * Returns true when the project has at least one module whose next
+ * phase can be triggered by a Bulk Run action (i.e. modules that
+ * completed a non-final phase and are waiting for the next one).
+ */
+export const areEligibleModulesToRun = (project: Project): boolean => {
+  const summary = project.status?.modulesSummary;
+  if (!summary) {
+    return false;
+  }
+
+  return summary.waiting > 0;
+};
