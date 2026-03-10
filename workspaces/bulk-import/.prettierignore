@@ -3,6 +3,8 @@ dist-types
 coverage
 .vscode
 .eslintrc.js
+report.api.md
+report-alpha.api.md
 
 # Generated
 plugins/bulk-import-backend/api-docs

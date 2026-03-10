@@ -5,20 +5,17 @@
 ```ts
 /// <reference types="react" />
 
+import { AnyApiFactory } from '@backstage/frontend-plugin-api';
+import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
+import { ApiFactory } from '@backstage/frontend-plugin-api';
+import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
+import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { IconComponent } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
-
-import {
-  AnyApiFactory,
-  AnyRouteRefParams,
-  ApiFactory,
-  ExtensionBlueprintParams,
-  ExtensionDataRef,
-  IconComponent,
-  OverridableExtensionDefinition,
-  OverridableFrontendPlugin,
-  RouteRef,
-  SubRouteRef,
-} from '@backstage/frontend-plugin-api';
+import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
+import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { RouteRef } from '@backstage/frontend-plugin-api';
+import { SubRouteRef } from '@backstage/frontend-plugin-api';
 
 // @public
 const _default: OverridableFrontendPlugin<
