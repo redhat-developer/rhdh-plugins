@@ -13,9 +13,11 @@
  * See the License for the specific governing permissions and limitations under the License.
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import {
+  ApiRef,
+  bitbucketAuthApiRef,
   githubAuthApiRef,
   gitlabAuthApiRef,
   OAuthApi,
@@ -31,6 +33,18 @@ import {
 const isAuthApi = (api: any): api is OAuthApi => {
   return api && typeof api.getAccessToken === 'function';
 };
+
+/**
+ * Like useApi but returns undefined instead of throwing when the provider is not registered.
+ */
+function useOptionalApi<T>(apiRef: ApiRef<T>): T | undefined {
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useApi(apiRef);
+  } catch {
+    return undefined;
+  }
+}
 
 const getProviderToken = async (
   api: unknown,
@@ -50,23 +64,55 @@ const getProviderToken = async (
   }
 };
 
-/**
- * This is highly motivated by the similar well-tested functionality in the orchestrator plugin.
- *
- * We need just a subset of it (github and gitlab) for now.
- */
 export const useRepoAuthentication = () => {
   const app = useApp();
-  const githubAuthApi = useApi(githubAuthApiRef);
-  const gitlabAuthApi = useApi(gitlabAuthApiRef);
+  const bitbucketAuthApi = useOptionalApi(bitbucketAuthApiRef);
+  const githubAuthApi = useOptionalApi(githubAuthApiRef);
+  const gitlabAuthApi = useOptionalApi(gitlabAuthApiRef);
+
+  const warnedRef = useRef(false);
+  useEffect(() => {
+    if (warnedRef.current) return;
+    warnedRef.current = true;
+
+    const unavailable = [
+      !bitbucketAuthApi && 'Bitbucket',
+      !githubAuthApi && 'GitHub',
+      !gitlabAuthApi && 'GitLab',
+    ].filter(Boolean);
+
+    if (unavailable.length > 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `x2a: SCM auth providers not configured (will not be available for repository authentication): ${unavailable.join(', ')}`,
+      );
+    }
+  }, [bitbucketAuthApi, githubAuthApi, gitlabAuthApi]);
 
   const getToken = useCallback(
     async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
       let token;
       if (tokenDescriptor.provider === 'github') {
+        if (!githubAuthApi) {
+          throw new Error(
+            'GitHub auth provider is not configured. Add @backstage/plugin-auth-backend-module-github-provider to your backend.',
+          );
+        }
         token = await getProviderToken(githubAuthApi, tokenDescriptor);
       } else if (tokenDescriptor.provider === 'gitlab') {
+        if (!gitlabAuthApi) {
+          throw new Error(
+            'GitLab auth provider is not configured. Add @backstage/plugin-auth-backend-module-gitlab-provider to your backend.',
+          );
+        }
         token = await getProviderToken(gitlabAuthApi, tokenDescriptor);
+      } else if (tokenDescriptor.provider === 'bitbucket') {
+        if (!bitbucketAuthApi) {
+          throw new Error(
+            'Bitbucket auth provider is not configured. Add @backstage/plugin-auth-backend-module-bitbucket-provider to your backend.',
+          );
+        }
+        token = await getProviderToken(bitbucketAuthApi, tokenDescriptor);
       } else {
         throw new Error(`Unsupported provider: ${tokenDescriptor.provider}`);
       }
@@ -76,7 +122,7 @@ export const useRepoAuthentication = () => {
         provider: tokenDescriptor.provider,
       };
     },
-    [githubAuthApi, gitlabAuthApi],
+    [bitbucketAuthApi, githubAuthApi, gitlabAuthApi],
   );
 
   const authenticate = useCallback(

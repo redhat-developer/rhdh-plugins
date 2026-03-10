@@ -102,7 +102,7 @@ export const getAuthTokenDescriptor: ({ repoUrl, readOnly, }: {
 }) => AuthTokenDescriptor;
 
 // @public
-export const getScmProvider: (repoUrl: string) => "github" | "gitlab";
+export const getScmProvider: (repoUrl: string) => "github" | "gitlab" | "bitbucket";
 
 // @public (undocumented)
 export interface GitRepoAuth {

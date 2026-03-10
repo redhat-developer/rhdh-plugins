@@ -92,6 +92,17 @@ auth:
         signIn:
           resolvers:
             - resolver: usernameMatchingUserEntityName
+    bitbucket:
+      # Follow https://backstage.io/docs/auth/bitbucket/provider/
+      development:
+        clientId: ${AUTH_BITBUCKET_CLIENT_ID}
+        clientSecret: ${AUTH_BITBUCKET_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            # The usernameMatchingUserEntityName resolver is not working for Bitbucket.
+            # Cannot make the bitbucket to provide user's email.
+            # See the org.yaml file for an example of how to use the usernameMatchingUserEntityAnnotation resolver.
+            - resolver: usernameMatchingUserEntityAnnotation
 
 scaffolder: {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options

@@ -18,7 +18,7 @@ import { AuthTokenDescriptor } from './tokenDescriptorTypes';
 /**
  * Augments the repository token for the given provider.
  *
- * For GitLab, it adds a user preceding the token.
+ * Git-over-HTTPS requires provider-specific username:token formats.
  * @public
  */
 export const augmentRepoToken = (
@@ -30,5 +30,11 @@ export const augmentRepoToken = (
     // https://docs.gitlab.com/api/oauth2/#access-git-over-https-with-access-token
     return `oauth2:${token}`;
   }
+
+  if (authDescriptor.provider === 'bitbucket') {
+    // https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/#Cloning-a-repository-with-an-access-token
+    return `x-token-auth:${token}`;
+  }
+
   return token;
 };

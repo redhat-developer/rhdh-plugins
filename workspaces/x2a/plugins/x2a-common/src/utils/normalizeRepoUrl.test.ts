@@ -89,4 +89,32 @@ describe('normalizeRepoUrl', () => {
       'https://github.com/some user/my-repo.git',
     );
   });
+
+  it('converts Bitbucket RepoUrlPicker URL with workspace and project to clone URL', () => {
+    expect(
+      normalizeRepoUrl(
+        'bitbucket.org?workspace=myworkspace&project=myproject&repo=myrepo',
+      ),
+    ).toBe('https://bitbucket.org/myworkspace/myrepo.git');
+  });
+
+  it('converts Bitbucket URL with workspace and repo (no project) to clone URL', () => {
+    expect(
+      normalizeRepoUrl('bitbucket.org?workspace=myworkspace&repo=myrepo'),
+    ).toBe('https://bitbucket.org/myworkspace/myrepo.git');
+  });
+
+  it('returns Bitbucket URL unchanged when workspace is present but repo is missing', () => {
+    expect(normalizeRepoUrl('bitbucket.org?workspace=myworkspace')).toBe(
+      'bitbucket.org?workspace=myworkspace',
+    );
+  });
+
+  it('extracts repo name when Bitbucket repo param contains a full URL', () => {
+    expect(
+      normalizeRepoUrl(
+        'bitbucket.org?workspace=myws&repo=https%3A%2F%2Fbitbucket.org%2Fmyws%2Fmy-repo',
+      ),
+    ).toBe('https://bitbucket.org/myws/my-repo.git');
+  });
 });

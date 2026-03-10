@@ -28,8 +28,19 @@ describe('getScmProvider', () => {
     );
   });
 
-  it('returns gitlab for other SCM URLs (Bitbucket, Gitea, etc.) - fallback to GitLab flow so far, will be updated later', () => {
-    expect(getScmProvider('https://bitbucket.org/owner/repo')).toBe('gitlab');
+  it('returns bitbucket for Bitbucket URLs', () => {
+    expect(getScmProvider('https://bitbucket.org/owner/repo')).toBe(
+      'bitbucket',
+    );
+  });
+
+  it('defaults to gitlab for self-hosted Bitbucket Server URLs (expected, cloud-based bitbucket support only)', () => {
+    expect(getScmProvider('https://bitbucket.mycompany.com/org/repo')).toBe(
+      'gitlab',
+    );
+  });
+
+  it('defaults to gitlab for unknown SCM hosts', () => {
     expect(getScmProvider('https://gitea.example.com/org/repo')).toBe('gitlab');
   });
 });

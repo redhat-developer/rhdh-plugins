@@ -18,7 +18,6 @@ import { getScmProvider } from '@red-hat-developer-hub/backstage-plugin-x2a-comm
 
 /**
  * Builds a URL to a specific file (artifact) in a repository at a given branch.
- * Supports GitHub and GitLab (including self-hosted).
  */
 export const buildArtifactUrl = (
   value: string,
@@ -34,6 +33,10 @@ export const buildArtifactUrl = (
     const provider = getScmProvider(baseUrl);
     const pathWithoutTrailingSlash = parsed.pathname.replace(/\/$/, '');
     const encodedBranch = encodeURIComponent(targetRepoBranch);
+
+    if (provider === 'bitbucket') {
+      return `${parsed.origin}${pathWithoutTrailingSlash}/src/${encodedBranch}/${value}`;
+    }
 
     if (provider === 'gitlab') {
       return `${parsed.origin}${pathWithoutTrailingSlash}/-/blob/${encodedBranch}/${value}`;

@@ -18,8 +18,20 @@
  *
  * @public
  */
-export const getScmProvider = (repoUrl: string): 'github' | 'gitlab' => {
+export const getScmProvider = (
+  repoUrl: string,
+): 'github' | 'gitlab' | 'bitbucket' => {
+  // Cloud-based bitbucket only
+  if (repoUrl.includes('bitbucket.org')) {
+    return 'bitbucket';
+  }
+
   // Based on https://docs.github.com/en/enterprise-cloud@latest/admin/managing-your-enterprise-account/changing-the-url-for-your-enterprise
-  // GitHub URLs should always contain github.com.
-  return repoUrl.includes('github.com') ? 'github' : 'gitlab';
+  // GitHub URLs should always contain github.com, including GitHub Enterprise.
+  if (repoUrl.includes('github.com')) {
+    return 'github';
+  }
+
+  // Default to GitLab for unknown SCM hosts (includes Bitbucket Server deployments)
+  return 'gitlab';
 };

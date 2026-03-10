@@ -38,7 +38,15 @@ export const getAuthTokenDescriptor = ({
     };
   }
 
-  // Must be Gitlab then:
+  if (provider === 'bitbucket') {
+    return {
+      provider,
+      tokenType: 'oauth',
+      scope: readOnly ? 'repository' : 'repository:write',
+    };
+  }
+
+  // GitLab (and unknown hosts that default to gitlab)
   return {
     provider,
     tokenType: 'oauth',
