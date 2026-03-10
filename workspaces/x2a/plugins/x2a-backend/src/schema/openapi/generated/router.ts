@@ -1173,6 +1173,14 @@ export const spec = {
             "format": "double",
             "description": "Execution duration in seconds"
           },
+          "inputTokens": {
+            "type": "integer",
+            "description": "LLM input token count for this agent"
+          },
+          "outputTokens": {
+            "type": "integer",
+            "description": "LLM output token count for this agent"
+          },
           "metrics": {
             "type": "object",
             "additionalProperties": true,

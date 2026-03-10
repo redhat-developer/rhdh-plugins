@@ -37,6 +37,8 @@ const agentMetricsSchema = z.object({
   startedAt: z.string().optional(),
   endedAt: z.string().optional(),
   durationSeconds: z.number(),
+  inputTokens: z.number().optional(),
+  outputTokens: z.number().optional(),
   metrics: z.record(z.any()).optional(),
   toolCalls: z.record(z.number()).optional(),
 });
