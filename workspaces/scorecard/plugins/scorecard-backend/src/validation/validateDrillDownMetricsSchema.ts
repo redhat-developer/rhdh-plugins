@@ -44,13 +44,12 @@ export function validateDrillDownMetricsSchema(
         return [val];
       },
       z
-        .array(z.string().min(1).max(255))
+        .array(z.string().trim().min(1).max(255))
         .max(50)
-        .transform(arr =>
-          arr
-            .map(v => normalizeOwnerRef(v))
-            .filter((v): v is string => v !== undefined),
-        )
+        .transform(arr => arr.map(v => normalizeOwnerRef(v)) as string[])
+        .refine(arr => arr.length > 0, {
+          message: 'owner must contain at least one valid value',
+        })
         .optional(),
     ),
     kind: z.string().min(1).max(100).optional(),

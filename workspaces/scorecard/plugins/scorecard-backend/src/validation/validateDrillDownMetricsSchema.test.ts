@@ -325,5 +325,32 @@ describe('validateDrillDownMetricsSchema', () => {
         ),
       ).toThrow('Invalid query parameters');
     });
+
+    it('should throw InputError when owner is a whitespace-only string', () => {
+      expect(() =>
+        validateDrillDownMetricsSchema(
+          { owner: '   ' },
+          mockServices.logger.mock(),
+        ),
+      ).toThrow(InputError);
+    });
+
+    it('should throw InputError when owner array contains only whitespace-only strings', () => {
+      expect(() =>
+        validateDrillDownMetricsSchema(
+          { owner: ['   ', '\t', '\n'] },
+          mockServices.logger.mock(),
+        ),
+      ).toThrow(InputError);
+    });
+
+    it('should throw InputError when owner array contains a mix of valid and whitespace-only strings', () => {
+      expect(() =>
+        validateDrillDownMetricsSchema(
+          { owner: ['team:default/platform', '   '] },
+          mockServices.logger.mock(),
+        ),
+      ).toThrow(InputError);
+    });
   });
 });
