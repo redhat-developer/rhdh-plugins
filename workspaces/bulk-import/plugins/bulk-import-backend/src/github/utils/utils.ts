@@ -375,6 +375,11 @@ export async function listAllRepositoriesForAuthenticatedUser(
   const SECOND_PAGE_NUMBER = 2;
 
   const fetchListForAuthenticatedUser = async (pageNumber: number) => {
+    /**
+     * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
+     * These would include repositories they own, repositories where they are a collaborator,
+     * and repositories that they can access through an organization membership.
+     */
     return await octokit.rest.repos.listForAuthenticatedUser({
       page: pageNumber,
       per_page: options?.pageSize ?? GITHUB_REST_API_MAX_PAGE_SIZE,

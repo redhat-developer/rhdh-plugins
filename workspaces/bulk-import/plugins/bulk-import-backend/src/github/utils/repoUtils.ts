@@ -240,11 +240,6 @@ export async function addGithubTokenRepositories(
         repositories.set(repo.full_name, repo),
       );
     } else {
-      /**
-       * The listForAuthenticatedUser endpoint will grab all the repositories the github token has explicit access to.
-       * These would include repositories they own, repositories where they are a collaborator,
-       * and repositories that they can access through an organization membership.
-       */
       const resp = await octokit.rest.repos.listForAuthenticatedUser({
         page: pageNumber,
         per_page: pageSize,
