@@ -186,6 +186,25 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'time.jobTiming.noStartTime': '-',
     'time.jobTiming.running': 'En cours depuis {{duration}}',
     'time.jobTiming.finished': 'Terminé {{timeAgo}} (durée {{duration}})',
+    'bulkRun.projectAction': 'Exécuter tous les modules',
+    'bulkRun.globalAction': 'Tout exécuter',
+    'bulkRun.projectPageAction': 'Tout exécuter',
+    'bulkRun.projectConfirm.title':
+      'Exécuter tous les modules du projet « {{name}} » ?',
+    'bulkRun.projectConfirm.message':
+      "Cela déclenchera la prochaine phase de migration pour chaque module de ce projet dont l'état actuel le permet. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action. Les modules non éligibles seront ignorés.",
+    'bulkRun.globalConfirm.title': 'Exécuter tous les modules éligibles ?',
+    'bulkRun.globalConfirm.message':
+      "Cela déclenchera la prochaine phase de migration pour tous les modules éligibles de tous les projets auxquels vous avez accès en écriture, y compris les projets non visibles sur la page actuelle. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action.",
+    'bulkRun.projectPageConfirm.title':
+      'Exécuter tous les modules de « {{name}} » ?',
+    'bulkRun.projectPageConfirm.message':
+      "Cela déclenchera la prochaine phase de migration pour chaque module de ce projet dont l'état actuel le permet. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action. Les modules non éligibles seront ignorés.",
+    'bulkRun.confirm': 'Tout exécuter',
+    'bulkRun.cancel': 'Annuler',
+    'bulkRun.errorProject':
+      "Erreur lors de l'exécution des modules du projet « {{name}} »",
+    'bulkRun.errorGlobal': "Erreur lors de l'opération groupée",
   },
 });
 

@@ -188,6 +188,25 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'time.jobTiming.noStartTime': '-',
     'time.jobTiming.running': 'In esecuzione da {{duration}}',
     'time.jobTiming.finished': 'Terminato {{timeAgo}} (durata {{duration}})',
+    'bulkRun.projectAction': 'Esegui tutti i moduli',
+    'bulkRun.globalAction': 'Esegui tutto',
+    'bulkRun.projectPageAction': 'Esegui tutto',
+    'bulkRun.projectConfirm.title':
+      'Eseguire tutti i moduli nel progetto "{{name}}"?',
+    'bulkRun.projectConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per ogni modulo di questo progetto il cui stato attuale lo consente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
+    'bulkRun.globalConfirm.title': 'Eseguire tutti i moduli idonei?',
+    'bulkRun.globalConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per tutti i moduli idonei in tutti i progetti a cui hai accesso in scrittura, inclusi i progetti non visibili nella pagina corrente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione.',
+    'bulkRun.projectPageConfirm.title':
+      'Eseguire tutti i moduli in "{{name}}"?',
+    'bulkRun.projectPageConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per ogni modulo di questo progetto il cui stato attuale lo consente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
+    'bulkRun.confirm': 'Esegui tutto',
+    'bulkRun.cancel': 'Annulla',
+    'bulkRun.errorProject':
+      'Errore nell\'esecuzione dei moduli nel progetto "{{name}}"',
+    'bulkRun.errorGlobal': "Errore nell'operazione di massa",
   },
 });
 
