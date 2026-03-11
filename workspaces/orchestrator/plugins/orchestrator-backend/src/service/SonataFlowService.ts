@@ -162,10 +162,10 @@ export class SonataFlowService {
       });
     } catch (error) {
       this.logger.error(
-        `Error with Kafka client connection. Options: ${JSON.stringify(this.kafkaServiceOptions)}`,
+        `Error with Kafka client connection. Options: clientId: ${this.kafkaServiceOptions?.clientId} and broker: ${JSON.stringify(this.kafkaServiceOptions?.brokers)}`,
       );
       throw new Error(
-        `Error with Kafka client with connection options: ${JSON.stringify(this.kafkaServiceOptions)}`,
+        `Error with Kafka client with connection Options: clientId: ${this.kafkaServiceOptions?.clientId} and broker: ${JSON.stringify(this.kafkaServiceOptions?.brokers)}`,
       );
     } finally {
       // Disconnect the producer
