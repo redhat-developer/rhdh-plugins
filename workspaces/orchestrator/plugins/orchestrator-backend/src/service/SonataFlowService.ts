@@ -49,7 +49,7 @@ export class SonataFlowService {
     // If there are kafkaServiceOptions, then do the implemntation
     if (this.kafkaServiceOptions) {
       this.logger.debug(
-        `creating orchestrator kafka implementation with options ${JSON.stringify(this.kafkaServiceOptions)}`,
+        `creating orchestrator kafka implementation with options: clientId: ${this.kafkaServiceOptions.clientId} and brokers: ${JSON.stringify(this.kafkaServiceOptions.brokers)}`,
       );
       // It looks like that the community plugin just passes the whole options from the app-config to the kafkajs constructor
       this.orchestratorKafkaImpl = new Kafka(this.kafkaServiceOptions);
