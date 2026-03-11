@@ -27,7 +27,7 @@ import { useCollectionPlugins } from '../hooks/useCollectionPlugins';
 import { PluginCard, PluginCardSkeleton } from './PluginCard';
 import { collectionRouteRef } from '../routes';
 import { useTranslation } from '../hooks/useTranslation';
-import { getTranslatedText } from '../translations/utils';
+import { getTranslatedText } from '../alpha/translations/utils';
 
 export const CollectionHorizontalScrollRowSkeleton = () => {
   return (

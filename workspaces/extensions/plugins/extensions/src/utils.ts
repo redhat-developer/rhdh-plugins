@@ -18,7 +18,7 @@ import { Pair, parse, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
 import { JsonObject } from '@backstage/types';
 import { ExtensionsPluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
-import { extensionsTranslationRef } from './translations';
+import { extensionsTranslationRef } from './alpha/translations';
 import { PluginPermissions, Permission } from './types';
 
 export enum ExtensionsStatus {
