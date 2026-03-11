@@ -128,6 +128,10 @@ export class SonataFlowService {
     authTokens?: Array<AuthToken>;
     backstageToken?: string | undefined;
   }): Promise<WorkflowExecutionResponse | undefined> {
+    if (!this.orchestratorKafkaImpl) {
+      this.logger.error('No Orchestrator kafka implementation added');
+      throw new Error('No Orchestrator kafka implementation added');
+    }
     const contextAttributeId = randomUUID();
 
     const triggeringCloudEvent = new CloudEvent({
@@ -150,13 +154,13 @@ export class SonataFlowService {
     };
 
     const kfk = this.orchestratorKafkaImpl;
-    const producer = kfk?.producer();
+    const producer = kfk.producer();
     try {
       // Connect the producer
-      await producer?.connect();
+      await producer.connect();
 
       // Send the message
-      await producer?.send({
+      await producer.send({
         topic: args.workflowEventType,
         messages: [messageEvent],
       });
@@ -169,7 +173,7 @@ export class SonataFlowService {
       );
     } finally {
       // Disconnect the producer
-      await producer?.disconnect();
+      await producer.disconnect();
     }
 
     // Since sending to kafka doesn't return anything, send back the contextAttributeId here
