@@ -23,5 +23,10 @@ export function useWorkflowInstanceCardHeightMode(): WorkflowInstanceCardHeightM
     'orchestrator.workflowInstancePage.cardHeightMode',
   );
 
+  if (value && value !== 'fixed' && value !== 'content') {
+    // eslint-disable-next-line no-console
+    console.warn(`Unknown cardHeightMode "${value}", falling back to "fixed"`);
+  }
+
   return value === 'content' ? 'content' : 'fixed';
 }
