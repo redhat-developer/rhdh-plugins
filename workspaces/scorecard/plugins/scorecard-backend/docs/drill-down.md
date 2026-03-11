@@ -8,7 +8,7 @@ The drill-down endpoint (`/metrics/:metricId/catalog/aggregations/entities`) pro
 
 - See individual entities contributing to aggregated scores
 - Filter entities by status (success/warning/error), owner, kind, namespace, or entity ref substring
-- Sort by any column (entity name, owner, kind, namespace, timestamp, metric value)
+- Sort by any column (entity name, owner, kind, namespace, timestamp, metric value, status)
 - Paginate through large result sets
 - Understand data freshness through per-entity timestamps
 
@@ -35,7 +35,7 @@ Returns a paginated list of entities with their metric values, enriched with cat
 | `kind`       | string           | No       | -           | Filter by entity kind (e.g., `Component`, `API`, `System`)                                                                                                                                                        |
 | `namespace`  | string           | No       | -           | Filter by entity namespace (e.g., `default`, `staging`). Case-insensitive exact match                                                                                                                             |
 | `entityName` | string           | No       | -           | Substring search against the entity ref (`kind:namespace/name`). Matches any part of the ref (case-insensitive). Use the name portion for simple searches (e.g., `auth` matches `component:default/auth-service`) |
-| `sortBy`     | string           | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, `metricValue`, or `namespace`                                                                                                                          |
+| `sortBy`     | string           | No       | `timestamp` | Sort by: `entityName`, `owner`, `entityKind`, `timestamp`, `metricValue`, `namespace`, or `status`                                                                                                                |
 | `sortOrder`  | string           | No       | `desc`      | Sort direction: `asc` or `desc`                                                                                                                                                                                   |
 | `page`       | number           | No       | `1`         | Page number (1-indexed)                                                                                                                                                                                           |
 | `pageSize`   | number           | No       | `5`         | Number of entities per page (max: 100)                                                                                                                                                                            |
@@ -78,7 +78,7 @@ type EntityMetricDetail = {
   owner: string;                  // Owner derived from catalog spec.owner, normalized to a full entity ref (e.g., "group:default/platform"). Empty string if spec.owner is absent.
   metricValue: number | boolean | null;  // The actual metric value
   timestamp: string;              // ISO 8601 timestamp of when metric was synced
-  status: string;  // Threshold evaluation status
+  status: string | null;  // Threshold evaluation status; null when calc failed or no threshold matched
 };
 ```
 
@@ -165,6 +165,13 @@ Sort by namespace alphabetically:
 
 ```bash
 curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?sortBy=namespace&sortOrder=asc&page=1&pageSize=10" \
+  -H "Authorization: Bearer <token>"
+```
+
+Sort by status alphabetically to group entities by threshold result:
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?sortBy=status&sortOrder=asc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -324,6 +331,7 @@ Results can be sorted by any column in ascending or descending order. Sorting is
 | `namespace`   | Entity namespace alphabetically                                                                | "default", "staging"                                   |
 | `timestamp`   | Metric sync timestamp (most/least recent)                                                      | ISO 8601 timestamps                                    |
 | `metricValue` | Metric value numerically (highest/lowest first)                                                | 5, 15, 25, 100                                         |
+| `status`      | Threshold evaluation status alphabetically; entities with no status (NULL) always sort last    | "error", "success", "warning"                          |
 
 ### Default Sorting
 
@@ -332,6 +340,8 @@ If no `sortBy` is specified, results are sorted by `timestamp` in descending ord
 ### Null Value Handling
 
 When sorting by `metricValue`, entities with `null` values are sorted to the end regardless of sort order.
+
+When sorting by `status`, entities whose status is `null` (metric calculation failed or no threshold matched) are also sorted to the end regardless of sort direction. This keeps actionable, status-bearing rows at the top of the list.
 
 ## Pagination
 

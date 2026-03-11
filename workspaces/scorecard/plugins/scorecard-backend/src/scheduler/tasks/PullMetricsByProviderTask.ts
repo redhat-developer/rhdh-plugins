@@ -167,6 +167,8 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 entity_owner: normalizeOwnerRef(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
+              // status is intentionally omitted — a calculation failure produces a NULL status
+              // in the database, which sorts last when sortBy=status is used
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,

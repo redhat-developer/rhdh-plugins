@@ -34,6 +34,7 @@ export function validateDrillDownMetricsSchema(
         'timestamp',
         'metricValue',
         'namespace',
+        'status',
       ])
       .optional(),
     sortOrder: z.enum(['asc', 'desc']).optional().default('desc'),

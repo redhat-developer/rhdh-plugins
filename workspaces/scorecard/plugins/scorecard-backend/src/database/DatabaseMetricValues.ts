@@ -33,7 +33,8 @@ type ReadEntityMetricsWithFiltersOptions = {
     | 'entityKind'
     | 'timestamp'
     | 'metricValue'
-    | 'namespace';
+    | 'namespace'
+    | 'status';
   sortOrder?: 'asc' | 'desc';
   pagination?: { limit: number; offset: number };
 };
@@ -172,29 +173,14 @@ export class DatabaseMetricValues {
       timestamp: 'timestamp',
       metricValue: 'value',
       namespace: 'entity_namespace',
+      status: 'status',
     };
 
     const column =
       (options.sortBy && sortColumnMap[options.sortBy]) ?? 'timestamp';
     const direction = options.sortOrder === 'asc' ? 'asc' : 'desc';
 
-    // Nulls last for metricValue (value can be null)
-    if (options.sortBy === 'metricValue') {
-      if (isPostgres) {
-        // value is JSON; cast to text then to float for numeric sort; NULLS LAST is native syntax
-        query.orderByRaw(
-          `CAST(value::text AS DOUBLE PRECISION) ${direction} NULLS LAST, id ASC`,
-        );
-      } else {
-        // SQLite: "value IS NULL" puts nulls last; double-cast handles JSON-stored values
-        query.orderByRaw(
-          `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}, id ASC`,
-        );
-      }
-    } else {
-      query.orderBy(column, direction);
-      query.orderBy('id', 'asc'); // Ensure a stable sort in the event that two metrics share a similar primary sort value
-    }
+    this.applySort(query, options.sortBy, column, direction, isPostgres);
 
     if (options.status) {
       query.where('status', options.status);
@@ -222,5 +208,39 @@ export class DatabaseMetricValues {
     }
 
     return await query;
+  }
+
+  private applySort(
+    query: any,
+    sortBy: string | undefined,
+    column: string,
+    direction: string,
+    isPostgres: boolean,
+  ): void {
+    if (sortBy === 'metricValue') {
+      // value is JSON and nullable; cast for numeric sort with NULLs last
+      if (isPostgres) {
+        query.orderByRaw(
+          `CAST(value::text AS DOUBLE PRECISION) ${direction} NULLS LAST, id ASC`,
+        );
+      } else {
+        // SQLite: "value IS NULL" puts nulls last; double-cast handles JSON-stored values
+        query.orderByRaw(
+          `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}, id ASC`,
+        );
+      }
+    } else if (sortBy === 'status') {
+      // status is nullable; NULLs always sort last regardless of direction
+      if (isPostgres) {
+        query.orderByRaw(`status ${direction} NULLS LAST, id ASC`);
+      } else {
+        // SQLite: "status IS NULL" evaluates to 1 for NULLs, pushing them to the end
+        query.orderByRaw(`status IS NULL, status ${direction}, id ASC`);
+      }
+    } else {
+      query.orderBy(column, direction);
+      // Ensure a stable sort when two metrics share the same primary sort value
+      query.orderBy('id', 'asc');
+    }
   }
 }
