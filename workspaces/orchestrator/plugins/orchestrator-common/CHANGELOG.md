@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.4.2
+
+### Patch Changes
+
+- 546ccb2: Add workflow instance card height mode config for fixed or content-based layouts.
+
 ## 3.4.1
 
 ### Patch Changes
