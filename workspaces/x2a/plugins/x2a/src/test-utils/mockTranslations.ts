@@ -53,15 +53,24 @@ export const mockT = (key: string, params?: any) => {
 
   if (params) {
     for (const [paramKey, paramValue] of Object.entries(params)) {
-      message = message.replace(
-        new RegExp(`{{${paramKey}}}`, 'g'),
-        String(paramValue),
-      );
+      message = message.replaceAll(`{{${paramKey}}}`, String(paramValue));
     }
   }
 
   return message;
 };
+
+export function createMockTFromFlatMessages(messages: Record<string, string>) {
+  return (key: string, params?: any) => {
+    let message = messages[key] || key;
+    if (params) {
+      for (const [paramKey, paramValue] of Object.entries(params)) {
+        message = message.replaceAll(`{{${paramKey}}}`, String(paramValue));
+      }
+    }
+    return message;
+  };
+}
 
 // Mock useTranslation hook
 export const mockUseTranslation = () => ({

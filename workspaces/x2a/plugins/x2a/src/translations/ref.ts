@@ -218,6 +218,29 @@ export const x2aPluginMessages = {
       ansible_project: 'AAP Project',
     },
   },
+  time: {
+    duration: {
+      daysAndHours: '{{days}}d {{hours}}h',
+      daysOnly: '{{days}}d',
+      hoursAndMinutes: '{{hours}}h {{minutes}}m',
+      hoursOnly: '{{hours}}h',
+      minutesAndSeconds: '{{minutes}}m {{seconds}}s',
+      secondsOnly: '{{seconds}}s',
+    },
+    ago: {
+      daysAndHours: '{{days}}d {{hours}}h ago',
+      daysOnly: '{{days}}d ago',
+      hoursAndMinutes: '{{hours}}h {{minutes}}m ago',
+      hoursOnly: '{{hours}}h ago',
+      minutes: '{{minutes}}m ago',
+      lessThanMinute: '<1m ago',
+    },
+    jobTiming: {
+      noStartTime: '-',
+      running: 'Running for {{duration}}',
+      finished: 'Finished {{timeAgo}} (took {{duration}})',
+    },
+  },
   empty: '-',
 };
 

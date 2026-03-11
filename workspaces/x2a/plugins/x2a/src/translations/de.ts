@@ -170,6 +170,21 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.telemetry.toolCalls': 'Anzahl der Werkzeugaufrufe',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Modulliste synchronisieren, um sie an den Migrationsplan anzupassen.',
+    'time.duration.daysAndHours': '{{days}}T {{hours}}Std',
+    'time.duration.daysOnly': '{{days}}T',
+    'time.duration.hoursAndMinutes': '{{hours}}Std {{minutes}}Min',
+    'time.duration.hoursOnly': '{{hours}}Std',
+    'time.duration.minutesAndSeconds': '{{minutes}}Min {{seconds}}Sek',
+    'time.duration.secondsOnly': '{{seconds}}Sek',
+    'time.ago.daysAndHours': 'vor {{days}}T {{hours}}Std',
+    'time.ago.daysOnly': 'vor {{days}}T',
+    'time.ago.hoursAndMinutes': 'vor {{hours}}Std {{minutes}}Min',
+    'time.ago.hoursOnly': 'vor {{hours}}Std',
+    'time.ago.minutes': 'vor {{minutes}}Min',
+    'time.ago.lessThanMinute': 'vor <1Min',
+    'time.jobTiming.noStartTime': '-',
+    'time.jobTiming.running': 'Läuft seit {{duration}}',
+    'time.jobTiming.finished': 'Beendet {{timeAgo}} ({{duration}} gedauert)',
   },
 });
 

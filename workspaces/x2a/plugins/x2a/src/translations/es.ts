@@ -174,6 +174,21 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'Cantidad de llamadas de herramientas',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Resincronizar la lista de módulos para que coincida con el plan de migración.',
+    'time.duration.daysAndHours': '{{days}}d {{hours}}h',
+    'time.duration.daysOnly': '{{days}}d',
+    'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',
+    'time.duration.hoursOnly': '{{hours}}h',
+    'time.duration.minutesAndSeconds': '{{minutes}}min {{seconds}}s',
+    'time.duration.secondsOnly': '{{seconds}}s',
+    'time.ago.daysAndHours': 'hace {{days}}d {{hours}}h',
+    'time.ago.daysOnly': 'hace {{days}}d',
+    'time.ago.hoursAndMinutes': 'hace {{hours}}h {{minutes}}min',
+    'time.ago.hoursOnly': 'hace {{hours}}h',
+    'time.ago.minutes': 'hace {{minutes}}min',
+    'time.ago.lessThanMinute': 'hace <1min',
+    'time.jobTiming.noStartTime': '-',
+    'time.jobTiming.running': 'En ejecución desde hace {{duration}}',
+    'time.jobTiming.finished': 'Finalizado {{timeAgo}} (duró {{duration}})',
   },
 });
 

@@ -12,8 +12,11 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
+export type TFuncX2A = TranslationFunction<typeof x2aPluginTranslationRef.T>;
+
+// @public
 export const useX2ATranslation: () => {
-    t: TranslationFunction<typeof x2aPluginTranslationRef.T>;
+    t: TFuncX2A;
 };
 
 // @public (undocumented)
@@ -37,6 +40,21 @@ readonly "table.actions.collapseAll": string;
 readonly "table.actions.expandRow": string;
 readonly "table.actions.collapseRow": string;
 readonly "table.projectsCount": string;
+readonly "time.duration.daysAndHours": string;
+readonly "time.duration.daysOnly": string;
+readonly "time.duration.hoursAndMinutes": string;
+readonly "time.duration.hoursOnly": string;
+readonly "time.duration.minutesAndSeconds": string;
+readonly "time.duration.secondsOnly": string;
+readonly "time.ago.daysAndHours": string;
+readonly "time.ago.daysOnly": string;
+readonly "time.ago.hoursAndMinutes": string;
+readonly "time.ago.hoursOnly": string;
+readonly "time.ago.minutes": string;
+readonly "time.ago.lessThanMinute": string;
+readonly "time.jobTiming.running": string;
+readonly "time.jobTiming.finished": string;
+readonly "time.jobTiming.noStartTime": string;
 readonly "page.title": string;
 readonly "page.subtitle": string;
 readonly "sidebar.x2a.title": string;
