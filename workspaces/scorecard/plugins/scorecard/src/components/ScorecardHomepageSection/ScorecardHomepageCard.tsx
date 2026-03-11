@@ -23,7 +23,15 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ErrorStatePanel } from './ErrorStatePanel';
 import { EmptyStatePanel } from './EmptyStatePanel';
 
-export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
+export const ScorecardHomepageCard = ({
+  metricId,
+  showSubheader = true,
+  showInfo = true,
+}: {
+  metricId: string;
+  showSubheader?: boolean;
+  showInfo?: boolean;
+}) => {
   const { t } = useTranslation();
 
   const { aggregatedScorecard, loadingData, error } = useAggregatedScorecard({
@@ -44,7 +52,13 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   }
 
   if (error) {
-    return <ErrorStatePanel error={error} metricId={metricId} />;
+    return (
+      <ErrorStatePanel
+        error={error}
+        metricId={metricId}
+        showSubheader={showSubheader}
+      />
+    );
   }
 
   if (!aggregatedScorecard) {
@@ -54,6 +68,7 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
   if (aggregatedScorecard.result?.total === 0) {
     return (
       <EmptyStatePanel
+        showSubheader={showSubheader}
         metricId={metricId}
         label={t('errors.noDataFound')}
         tooltipContent={t('errors.noDataFoundMessage')}
@@ -80,6 +95,8 @@ export const ScorecardHomepageCard = ({ metricId }: { metricId: string }) => {
       cardTitle={finalTitle}
       description={finalDescription}
       scorecard={aggregatedScorecard}
+      showSubheader={showSubheader}
+      showInfo={showInfo}
     />
   );
 };

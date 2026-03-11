@@ -26,6 +26,8 @@ import type { Entity } from '@backstage/catalog-model';
 import type {
   MetricResult,
   AggregatedMetricResult,
+  Metric,
+  EntityMetricDetailResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { scorecardPlugin, EntityScorecardContent } from '../src/plugin';
@@ -59,6 +61,42 @@ class MockScorecardApi implements ScorecardApi {
     _metricId: string,
   ): Promise<AggregatedMetricResult> {
     return mockAggregatedScorecardSuccessData;
+  }
+  async getMetrics(_options?: {
+    metricIds: string[];
+  }): Promise<{ metrics: Metric[] }> {
+    return {
+      metrics: [
+        ...mockScorecardSuccessData.filter(
+          metric => metric.id === 'github.open_issues',
+        ),
+      ] as unknown as Metric[],
+    };
+  }
+  async getAggregatedScorecardEntities(_options: {
+    metricId: string;
+    page: number;
+    pageSize: number;
+    ownershipEntityRefs?: string[];
+    orderBy?: string | null;
+    order?: 'asc' | 'desc';
+  }): Promise<EntityMetricDetailResponse> {
+    return {
+      metricId: _options.metricId,
+      metricMetadata: {
+        title: 'Example Metric',
+        description: 'Example Metric Description',
+        type: 'number',
+      },
+      entities: [],
+      pagination: {
+        page: _options.page,
+        pageSize: _options.pageSize,
+        total: 0,
+        totalPages: 0,
+        isCapped: false,
+      },
+    };
   }
 }
 

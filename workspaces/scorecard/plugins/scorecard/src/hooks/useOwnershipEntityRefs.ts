@@ -14,5 +14,18 @@
  * limitations under the License.
  */
 
-export { ScorecardHomepageCard } from './ScorecardHomepageCard';
-export { ScorecardEntitiesPage } from '../ScorecardEntitiesPage';
+import { useEffect, useState } from 'react';
+import { identityApiRef, useApi } from '@backstage/core-plugin-api';
+
+export const useOwnershipEntityRefs = () => {
+  const identityApi = useApi(identityApiRef);
+  const [ownershipEntityRefs, setOwnershipEntityRefs] = useState<string[]>([]);
+
+  useEffect(() => {
+    identityApi.getBackstageIdentity().then(identity => {
+      setOwnershipEntityRefs(identity?.ownershipEntityRefs ?? []);
+    });
+  }, [identityApi]);
+
+  return ownershipEntityRefs;
+};

@@ -54,7 +54,10 @@ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/
 import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+import {
+  ScorecardHomepageCard,
+  ScorecardEntitiesPage,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
@@ -321,6 +324,10 @@ const routes = (
           <DynamicCustomizableHomePage />
         </ScalprumContext.Provider>
       }
+    />
+    <Route
+      path="/scorecard/metrics/:metricId"
+      element={<ScorecardEntitiesPage />}
     />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route

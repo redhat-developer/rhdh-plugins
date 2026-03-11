@@ -80,3 +80,18 @@ export const ScorecardHomepageCard = scorecardPlugin.provide(
     },
   }),
 );
+
+/**
+ * Scorecard entities page.
+ * @public
+ */
+export const ScorecardEntitiesPage = scorecardPlugin.provide(
+  createRoutableExtension({
+    name: 'ScorecardEntitiesPage',
+    component: () =>
+      import('./components/ScorecardHomepageSection').then(
+        m => m.ScorecardEntitiesPage,
+      ),
+    mountPoint: rootRouteRef,
+  }),
+);

@@ -14,5 +14,8 @@
  * limitations under the License.
  */
 
-export { ScorecardHomepageCard } from './ScorecardHomepageCard';
-export { ScorecardEntitiesPage } from '../ScorecardEntitiesPage';
+import { Header as BackstageHeader } from '@backstage/core-components';
+
+export const EntitiesPageHeader = ({ title }: { title: string }) => {
+  return <BackstageHeader title={title} type="Home" typeLink="/" />;
+};

@@ -24,16 +24,21 @@ import { scorecardTranslationRef } from './ref';
 const scorecardTranslationJa = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
+    // Empty state translations
     'emptyState.title': 'スコアカードはまだ追加されていません',
     'emptyState.description':
       'スコアカードを使用すると、コンポーネントの健全性を一目で監視できます。まず、セットアップ手順に関するドキュメントを参照してください。',
     'emptyState.button': 'ドキュメントの表示',
     'emptyState.altText': 'スコアカードなし',
+
+    // Permission required translations
     'permissionRequired.title': '権限がありません',
     'permissionRequired.description':
       'スコアカードプラグインを表示するには、管理者に連絡して {{permission}} 権限を付与してもらうよう依頼してください。',
     'permissionRequired.button': 'さらに表示する',
     'permissionRequired.altText': '権限が必要',
+
+    // Error messages
     'errors.entityMissingProperties':
       'スコアカードの検索に必要なプロパティーがエンティティーにありません',
     'errors.invalidApiResponse': 'スコアカード API からの応答形式が無効です',
@@ -52,6 +57,12 @@ const scorecardTranslationJa = createTranslationMessages({
       'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
     'errors.authenticationErrorMessage':
       'データを確認するにはサインインしてください。',
+    'errors.noMetricsFound':
+      '指定されたメトリクス ID に対するメトリクスが見つかりません。',
+    'errors.multipleMetricsFound':
+      '指定されたメトリクス ID に対するメトリクスが複数見つかりました。1つのみが期待されています。',
+
+    // Metric translations
     'metric.github.open_prs.title': 'GitHub のオープン状態の PR',
     'metric.github.open_prs.description':
       '特定の GitHub リポジトリーにおけるオープン状態のプルリクエストの数。',
@@ -59,12 +70,39 @@ const scorecardTranslationJa = createTranslationMessages({
       'Jira のオープン状態の進行を妨げているチケット',
     'metric.jira.open_issues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
+    'metric.lastUpdated': '最終更新日: {{timestamp}}',
+    'metric.someEntitiesNotReportingValues':
+      'エンティティーがこの指標に関連する値を報告していません。',
+
+    // Threshold translations
     'thresholds.success': '成功',
     'thresholds.warning': '警告',
     'thresholds.error': 'エラー',
     'thresholds.noEntities': '{{category}} 状態のエンティティーがありません',
     'thresholds.entities_one': '{{count}} エンティティー',
     'thresholds.entities_other': '{{count}} エンティティー',
+
+    // Entities page translations
+    'entitiesPage.unknownMetric': '不明なメトリクス',
+    'entitiesPage.noDataFound':
+      'ここでデータを確認するには、エンティティがこの指標に関連する値を報告していることを確認してください。',
+    'entitiesPage.missingPermission':
+      'スコアカードのメトリクスを表示するには、管理者に権限を付与してもらうよう依頼してください。',
+    'entitiesPage.metricProviderNotRegistered':
+      'ID {{metricId}} のメトリクスプロバイダーが登録されていません。',
+    'entitiesPage.entitiesTable.title': 'エンティティー',
+    'entitiesPage.entitiesTable.unavailable': '利用不可',
+    'entitiesPage.entitiesTable.titleWithCount': 'エンティティー ({{count}})',
+    'entitiesPage.entitiesTable.header.metric': 'メトリクス',
+    'entitiesPage.entitiesTable.header.value': '値',
+    'entitiesPage.entitiesTable.header.entity': 'エンティティー',
+    'entitiesPage.entitiesTable.header.owner': '所有者',
+    'entitiesPage.entitiesTable.header.kind': '種類',
+    'entitiesPage.entitiesTable.header.lastUpdated': '最終更新日',
+    'entitiesPage.entitiesTableFooter.allRows': 'すべての行',
+    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} 行',
+    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} 行',
+    'entitiesPage.entitiesTableFooter.of': 'の',
   },
 });
 

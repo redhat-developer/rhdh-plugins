@@ -14,5 +14,4 @@
  * limitations under the License.
  */
 
-export { ScorecardHomepageCard } from './ScorecardHomepageCard';
-export { ScorecardEntitiesPage } from '../ScorecardEntitiesPage';
+export { ScorecardEntitiesPage } from './ScorecardEntitiesPage';

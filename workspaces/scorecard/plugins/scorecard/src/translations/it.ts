@@ -24,16 +24,21 @@ import { scorecardTranslationRef } from './ref';
 const scorecardTranslationIt = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
+    // Empty state translations
     'emptyState.title': 'Non è stata ancora aggiunta alcuna scheda punteggio',
     'emptyState.description':
       "Le schede punteggio aiutano a monitorare a colpo d'occhio l'integrità dei componenti. Per iniziare, consultare la documentazione per le linee guida di configurazione.",
     'emptyState.button': 'Visualizza la documentazione',
     'emptyState.altText': 'Nessuna scheda punteggio',
+
+    // Permission required translations
     'permissionRequired.title': 'Autorizzazione mancante',
     'permissionRequired.description':
       "Per visualizzare il plugin Scorecard, contattare l'amministratore per richiedere l'autorizzazione {{permission}}.",
     'permissionRequired.button': 'Per saperne di più',
     'permissionRequired.altText': 'Autorizzazione richiesta',
+
+    // Error messages
     'errors.entityMissingProperties':
       'Entità priva delle proprietà richieste per la ricerca nella scheda punteggio',
     'errors.invalidApiResponse':
@@ -53,18 +58,51 @@ const scorecardTranslationIt = createTranslationMessages({
       'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano riportando valori relativi a questa metrica.',
     'errors.authenticationErrorMessage':
       'Effettua il login per visualizzare i tuoi dati.',
+    'errors.noMetricsFound':
+      "Nessuna metrica trovata per l'ID di metrica specificato.",
+    'errors.multipleMetricsFound':
+      'Multiple metrics found for the specified metric ID. Expected exactly one.',
+
+    // Metric translations
     'metric.github.open_prs.title': 'Richieste pull aperte su GitHub',
     'metric.github.open_prs.description':
       'Conteggio attuale delle richieste pull aperte per uno specifico repository GitHub.',
     'metric.jira.open_issues.title': 'Ticket di blocco Jira aperti',
     'metric.jira.open_issues.description':
       'Evidenzia il numero di problemi critici e di blocco attualmente aperti in Jira.',
+    'metric.lastUpdated': 'Ultimo aggiornamento: {{timestamp}}',
+    'metric.someEntitiesNotReportingValues':
+      'Alcune entità non stanno riportando valori relativi a questa metrica.',
+
+    // Threshold translations
     'thresholds.success': 'Attività riuscita',
     'thresholds.warning': 'Avviso',
     'thresholds.error': 'Errore',
     'thresholds.noEntities': 'Nessuna entità con stato {{category}}',
     'thresholds.entities_one': '{{count}} entità',
     'thresholds.entities_other': '{{count}} entità',
+
+    // Entities page translations
+    'entitiesPage.unknownMetric': 'Metrica sconosciuta',
+    'entitiesPage.noDataFound':
+      'Per visualizzare i tuoi dati qui, verifica che le tue entità stiano riportando valori relativi a questa metrica.',
+    'entitiesPage.missingPermission':
+      "Per visualizzare le metriche della scheda punteggio, il tuo amministratore deve concedere l'autorizzazione richiesta.",
+    'entitiesPage.metricProviderNotRegistered':
+      'Provider di metrica con ID {{metricId}} non registrato.',
+    'entitiesPage.entitiesTable.title': 'Entità',
+    'entitiesPage.entitiesTable.unavailable': 'Non disponibile',
+    'entitiesPage.entitiesTable.titleWithCount': 'Entità ({{count}})',
+    'entitiesPage.entitiesTable.header.metric': 'Metrica',
+    'entitiesPage.entitiesTable.header.value': 'Valore',
+    'entitiesPage.entitiesTable.header.entity': 'Entità',
+    'entitiesPage.entitiesTable.header.owner': 'Proprietario',
+    'entitiesPage.entitiesTable.header.kind': 'Tipo',
+    'entitiesPage.entitiesTable.header.lastUpdated': 'Ultimo aggiornamento',
+    'entitiesPage.entitiesTableFooter.allRows': 'Tutte le righe',
+    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} riga',
+    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} righe',
+    'entitiesPage.entitiesTableFooter.of': 'di',
   },
 });
 

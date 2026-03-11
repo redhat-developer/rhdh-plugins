@@ -24,22 +24,83 @@ import { scorecardTranslationRef } from './ref';
 const scorecardTranslationDe = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
+    // Empty state translations
     'emptyState.title': 'Noch keine Scorecards hinzugefügt',
     'emptyState.description':
       'Scorecards helfen Ihnen, den Zustand der Komponenten auf einen Blick zu überwachen. Schauen Sie sich zunächst unsere Dokumentation mit den Einrichtungshinweisen an.',
+    'emptyState.button': 'Dokumentation anzeigen',
     'emptyState.altText': 'Keine Scorecards',
+
+    // Permission required translations
     'permissionRequired.title': 'Fehlende Berechtigung',
     'permissionRequired.description':
       'Wenn Sie das Scorecard-Plugin anzeigen möchten, wenden Sie sich an den Administrator, um die Berechtigung {{permission}} zu erhalten.',
+    'permissionRequired.button': 'Mehr erfahren',
     'permissionRequired.altText': 'Berechtigung erforderlich',
+
+    // Error messages
     'errors.entityMissingProperties':
       'Für die Scorecard-Suche fehlen dem Element die erforderlichen Eigenschaften.',
     'errors.invalidApiResponse': 'Ungültiges Antwortformat der Scorecard-API',
     'errors.fetchError': 'Fehler beim Abrufen der Scorecards: {{error}}',
+    'errors.metricDataUnavailable': 'Metrikdaten nicht verfügbar',
     'errors.invalidThresholds': 'Ungültige Schwellenwerte',
     'errors.missingPermission': 'Fehlende Berechtigung',
+    'errors.noDataFound': 'Keine Daten gefunden',
+    'errors.authenticationError': 'Authentifizierungsfehler',
     'errors.missingPermissionMessage':
       'Um die Metriken der Scorecard einzusehen, muss Ihnen der Administrator die erforderliche Berechtigung erteilen.',
+    'errors.userNotFoundInCatalogMessage':
+      'Benutzer-Element nicht im Katalog gefunden.',
+    'errors.noDataFoundMessage':
+      'Um Ihre Daten hier anzuzeigen, überprüfen Sie, ob Ihre Elemente Werte melden, die mit dieser Metrik in Verbindung stehen.',
+    'errors.authenticationErrorMessage':
+      'Bitte melden Sie sich an, um Ihre Daten anzuzeigen.',
+    'errors.noMetricsFound':
+      'Keine Metriken für die angegebene Metrik-ID gefunden.',
+    'errors.multipleMetricsFound':
+      'Mehrere Metriken für die angegebene Metrik-ID gefunden. Genau eine erwartet.',
+
+    // Metric translations
+    'metric.github.open_prs.title': 'GitHub PRs offen',
+    'metric.github.open_prs.description':
+      'Aktuelle Anzahl offener Pull Requests für ein bestimmtes GitHub-Repository.',
+    'metric.jira.open_issues.title': 'Jira offene blockierende Tickets',
+    'metric.jira.open_issues.description':
+      'Hervorhebt die Anzahl der kritischen, blockierenden Probleme, die derzeit in Jira offen sind.',
+    'metric.lastUpdated': 'Zuletzt aktualisiert: {{timestamp}}',
+    'metric.someEntitiesNotReportingValues':
+      'Einige Elemente melden keine Werte, die mit dieser Metrik in Verbindung stehen.',
+
+    // Threshold translations
+    'thresholds.success': 'Erfolg',
+    'thresholds.warning': 'Warnung',
+    'thresholds.error': 'Fehler',
+    'thresholds.noEntities': 'Keine Elemente im {{category}}-Zustand',
+    'thresholds.entities_one': '{{count}} Element',
+    'thresholds.entities_other': '{{count}} Elemente',
+
+    // Entities page translations
+    'entitiesPage.unknownMetric': 'Unbekannte Metrik',
+    'entitiesPage.noDataFound':
+      'Um Ihre Daten hier anzuzeigen, überprüfen Sie, ob Ihre Elemente Werte melden, die mit dieser Metrik in Verbindung stehen.',
+    'entitiesPage.missingPermission':
+      'Um die Metriken der Scorecard einzusehen, muss Ihnen der Administrator die erforderliche Berechtigung erteilen.',
+    'entitiesPage.metricProviderNotRegistered':
+      'Metrik-Anbieter mit ID {{metricId}} ist nicht registriert.',
+    'entitiesPage.entitiesTable.title': 'Elemente',
+    'entitiesPage.entitiesTable.unavailable': 'Nicht verfügbar',
+    'entitiesPage.entitiesTable.titleWithCount': 'Elemente ({{count}})',
+    'entitiesPage.entitiesTable.header.metric': 'Metrik',
+    'entitiesPage.entitiesTable.header.value': 'Wert',
+    'entitiesPage.entitiesTable.header.entity': 'Element',
+    'entitiesPage.entitiesTable.header.owner': 'Eigentümer',
+    'entitiesPage.entitiesTable.header.kind': 'Art',
+    'entitiesPage.entitiesTable.header.lastUpdated': 'Zuletzt aktualisiert',
+    'entitiesPage.entitiesTableFooter.allRows': 'Alle Zeilen',
+    'entitiesPage.entitiesTableFooter.rows_one': '{{count}} Zeile',
+    'entitiesPage.entitiesTableFooter.rows_other': '{{count}} Zeilen',
+    'entitiesPage.entitiesTableFooter.of': 'von',
   },
 });
 

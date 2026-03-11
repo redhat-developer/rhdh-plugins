@@ -32,6 +32,7 @@ interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   childrenWidth?: string | number;
   childrenHeight?: string | number;
   role?: string;
+  info?: ReactNode;
 }
 
 export const CardWrapper = ({
@@ -43,6 +44,7 @@ export const CardWrapper = ({
   childrenWidth = '100%',
   childrenHeight = '100%',
   role = 'article',
+  info,
 }: CardWrapperProps) => {
   return (
     <Card
@@ -54,21 +56,26 @@ export const CardWrapper = ({
       }}
       role={role}
     >
-      <CardHeader
-        title={title}
-        subheader={subheader ?? undefined}
-        sx={{
-          '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {
-            fontSize: '1.25rem',
-            fontWeight: 500,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          },
-        }}
-      />
+      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+        <CardHeader
+          title={title}
+          subheader={subheader ?? undefined}
+          sx={{
+            '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {
+              fontSize: '1.25rem',
+              fontWeight: 500,
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+          }}
+        />
+        {info && (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>{info}</Box>
+        )}
+      </Box>
       <Divider />
       <CardContent
         sx={{

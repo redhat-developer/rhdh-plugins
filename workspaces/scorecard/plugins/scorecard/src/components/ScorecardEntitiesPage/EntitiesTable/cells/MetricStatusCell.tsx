@@ -14,5 +14,25 @@
  * limitations under the License.
  */
 
-export { ScorecardHomepageCard } from './ScorecardHomepageCard';
-export { ScorecardEntitiesPage } from '../ScorecardEntitiesPage';
+import { memo } from 'react';
+
+import Box from '@mui/material/Box';
+
+export const MetricStatusCell = memo(
+  ({ status, theme }: { status: string; theme: any }) => {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{
+            width: 10,
+            height: 10,
+            backgroundColor:
+              theme.palette[status]?.main ?? theme.palette.success.main,
+            flexShrink: 0,
+          }}
+        />
+        {status ? status : '--'}
+      </Box>
+    );
+  },
+);

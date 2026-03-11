@@ -19,5 +19,9 @@ export {
   getYOffsetForCenterLabel,
 } from './chartLabelUtils';
 export { getThresholdRuleColor, resolveStatusColor } from './colorUtils';
-export { SCORECARD_ERROR_STATE_COLOR } from './constants';
+export {
+  SCORECARD_ERROR_STATE_COLOR,
+  SCORECARD_ENTITIES_TABLE_HEADERS,
+} from './constants';
 export { getStatusConfig } from './statusUtils';
+export { getLastUpdatedLabel } from './entityTableUtils';

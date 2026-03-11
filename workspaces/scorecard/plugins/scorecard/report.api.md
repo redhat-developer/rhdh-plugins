@@ -12,10 +12,17 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const EntityScorecardContent: () => JSX_2.Element;
 
 // @public
+export const ScorecardEntitiesPage: () => JSX_2.Element;
+
+// @public
 export const ScorecardHomepageCard: ({
   metricId,
+  showSubheader,
+  showInfo,
 }: {
   metricId: string;
+  showSubheader?: boolean | undefined;
+  showInfo?: boolean | undefined;
 }) => JSX_2.Element | null;
 
 // @public
@@ -45,16 +52,37 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.userNotFoundInCatalogMessage': string;
     readonly 'errors.noDataFoundMessage': string;
     readonly 'errors.authenticationErrorMessage': string;
+    readonly 'errors.noMetricsFound': string;
+    readonly 'errors.multipleMetricsFound': string;
     readonly 'metric.github.open_prs.title': string;
     readonly 'metric.github.open_prs.description': string;
     readonly 'metric.jira.open_issues.title': string;
     readonly 'metric.jira.open_issues.description': string;
+    readonly 'metric.lastUpdated': string;
+    readonly 'metric.someEntitiesNotReportingValues': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.error': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.noEntities': string;
     readonly 'thresholds.entities_one': string;
     readonly 'thresholds.entities_other': string;
+    readonly 'entitiesPage.missingPermission': string;
+    readonly 'entitiesPage.noDataFound': string;
+    readonly 'entitiesPage.unknownMetric': string;
+    readonly 'entitiesPage.metricProviderNotRegistered': string;
+    readonly 'entitiesPage.entitiesTable.header.owner': string;
+    readonly 'entitiesPage.entitiesTable.header.metric': string;
+    readonly 'entitiesPage.entitiesTable.header.lastUpdated': string;
+    readonly 'entitiesPage.entitiesTable.header.value': string;
+    readonly 'entitiesPage.entitiesTable.header.entity': string;
+    readonly 'entitiesPage.entitiesTable.header.kind': string;
+    readonly 'entitiesPage.entitiesTable.title': string;
+    readonly 'entitiesPage.entitiesTable.unavailable': string;
+    readonly 'entitiesPage.entitiesTable.titleWithCount': string;
+    readonly 'entitiesPage.entitiesTableFooter.of': string;
+    readonly 'entitiesPage.entitiesTableFooter.allRows': string;
+    readonly 'entitiesPage.entitiesTableFooter.rows_one': string;
+    readonly 'entitiesPage.entitiesTableFooter.rows_other': string;
   }
 >;
 

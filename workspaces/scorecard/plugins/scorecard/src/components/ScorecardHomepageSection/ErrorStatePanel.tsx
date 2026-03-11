@@ -21,9 +21,11 @@ import { EmptyStatePanel } from './EmptyStatePanel';
 export const ErrorStatePanel = ({
   error,
   metricId,
+  showSubheader = true,
 }: {
   error: Error;
   metricId: string;
+  showSubheader?: boolean;
 }) => {
   const { t } = useTranslation();
 
@@ -35,6 +37,7 @@ export const ErrorStatePanel = ({
         metricId={metricId}
         label={t('errors.missingPermission')}
         tooltipContent={t('errors.missingPermissionMessage')}
+        showSubheader={showSubheader}
       />
     );
   }
@@ -49,6 +52,7 @@ export const ErrorStatePanel = ({
         metricId={metricId}
         label={t('errors.metricDataUnavailable')}
         tooltipContent={t('errors.userNotFoundInCatalogMessage')}
+        showSubheader={showSubheader}
       />
     );
   }
@@ -61,6 +65,7 @@ export const ErrorStatePanel = ({
         metricId={metricId}
         label={t('errors.authenticationError')}
         tooltipContent={t('errors.authenticationErrorMessage')}
+        showSubheader={showSubheader}
       />
     );
   }
