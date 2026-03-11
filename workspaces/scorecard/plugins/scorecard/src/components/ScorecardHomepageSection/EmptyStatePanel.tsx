@@ -103,10 +103,12 @@ export const EmptyStatePanel = ({
   label,
   metricId,
   tooltipContent,
+  showSubheader = true,
 }: {
   label: string;
   metricId: string;
   tooltipContent: string;
+  showSubheader?: boolean;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -135,7 +137,11 @@ export const EmptyStatePanel = ({
     <CardWrapper
       title={cardTitle}
       description={cardDescription}
-      subheader={t('thresholds.entities', { count: 0 })}
+      {...(showSubheader
+        ? {
+            subheader: t('thresholds.entities', { count: 0 }),
+          }
+        : {})}
     >
       <Box
         width="100%"

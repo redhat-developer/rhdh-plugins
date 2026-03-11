@@ -57,6 +57,9 @@ export const scorecardMessages = {
     noDataFoundMessage:
       'To see your data here, check that your entities are reporting values related to this metric.',
     authenticationErrorMessage: 'Please sign in to view your data.',
+    noMetricsFound: 'No metrics found for the specified metric ID.',
+    multipleMetricsFound:
+      'Multiple metrics found for the specified metric ID. Expected exactly one.',
   },
 
   // Metric translations
@@ -71,6 +74,9 @@ export const scorecardMessages = {
       description:
         'Highlights the number of critical, blocking issues that are currently open in Jira.',
     },
+    lastUpdated: 'Last updated: {{timestamp}}',
+    someEntitiesNotReportingValues:
+      'Some entities are not reporting values related to this metric.',
   },
 
   // Threshold translations
@@ -81,6 +87,36 @@ export const scorecardMessages = {
     noEntities: 'No entities in {{category}} state',
     entities_one: '{{count}} entity',
     entities_other: '{{count}} entities',
+  },
+
+  // Entities page translations
+  entitiesPage: {
+    unknownMetric: 'Unknown metric',
+    noDataFound:
+      'To see your data here, check that your entities are reporting values related to this metric.',
+    missingPermission:
+      'To view the scorecard metrics, your administrator must grant you the required permission.',
+    metricProviderNotRegistered:
+      'Metric provider with ID {{metricId}} is not registered.',
+    entitiesTable: {
+      title: 'Entities',
+      unavailable: 'Unavailable',
+      titleWithCount: 'Entities ({{count}})',
+      header: {
+        metric: 'Metric',
+        value: 'Value',
+        entity: 'Entity',
+        owner: 'Owner',
+        kind: 'Kind',
+        lastUpdated: 'Last updated',
+      },
+    },
+    entitiesTableFooter: {
+      allRows: 'All rows',
+      rows_one: '{{count}} row',
+      rows_other: '{{count}} rows',
+      of: 'of',
+    },
   },
 };
 

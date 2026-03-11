@@ -14,5 +14,21 @@
  * limitations under the License.
  */
 
-export { ScorecardHomepageCard } from './ScorecardHomepageCard';
-export { ScorecardEntitiesPage } from '../ScorecardEntitiesPage';
+import { isToday, differenceInCalendarDays, format } from 'date-fns';
+
+export function getLastUpdatedLabel(timestamp: string | number | Date) {
+  const date = new Date(timestamp);
+  const today = new Date();
+
+  if (isToday(date)) {
+    return 'Today';
+  }
+
+  const diff = differenceInCalendarDays(today, date);
+
+  if (diff <= 6) {
+    return `${diff} day${diff > 1 ? 's' : ''} ago`;
+  }
+
+  return format(date, 'dd MMM yyyy');
+}
