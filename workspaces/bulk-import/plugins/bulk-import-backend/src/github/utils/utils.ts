@@ -402,7 +402,7 @@ export async function listAllRepositoriesForAuthenticatedUser(
     return firstPageResponse.data;
   }
 
-  const lastPageNumber = parseInt(lastPageNumberString, 10);
+  const lastPageNumber = Number.parseInt(lastPageNumberString, 10);
 
   if (lastPageNumber < SECOND_PAGE_NUMBER) {
     return firstPageResponse.data;
