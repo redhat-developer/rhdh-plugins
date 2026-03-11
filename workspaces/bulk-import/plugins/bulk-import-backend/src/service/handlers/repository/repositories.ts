@@ -58,11 +58,90 @@ export async function findAllRepositories(
     }',${pageNumber},${pageSize})..`,
   );
 
-  const repos = await deps.gitApiService
-    .getRepositoriesFromIntegrations(search, pageNumber, pageSize)
-    .then(response => formatResponse(deps, response, checkStatus));
+  // get all already imported repos
+  const alreadyImportedRepositories =
+    await deps.catalogHttpClient.listCatalogUrlLocationEntitiesById();
 
-  return repos;
+  // get all available repos
+  const { repositories: allRepos, errors } =
+    await deps.gitApiService.getRepositoriesFromIntegrations(
+      search,
+      pageNumber,
+      pageSize,
+    );
+
+  // filter out the already imported ones
+  const filteredOut: any[] = [];
+  // TODO how to run this in parallel?
+  allRepos.forEach(repo => {
+    const a = repo.html_url.concat('/');
+
+    const alreadyImported = alreadyImportedRepositories.locations.some(
+      location => location.target.startsWith(a),
+    );
+
+    if (!alreadyImported) {
+      filteredOut.push(repo);
+    } else {
+      deps.logger.debug(`Repository is already imported: ${repo.html_url}`);
+    }
+  });
+
+  // slice the results to paginate
+  const sliced = filteredOut.slice(
+    (pageNumber - 1) * pageSize,
+    pageNumber * pageSize,
+  );
+
+  // return formatted result
+  const response = await formatResponse(
+    deps,
+    { repositories: sliced, errors },
+    checkStatus,
+  );
+
+  response.responseBody.totalCount = filteredOut.length;
+
+  return response;
+
+  // const alreadyImportedRepositoriesLocationsTargets =
+  //   alreadyImportedRepositories.locations.map(location => location.target);
+
+  // const notImportedYetRepos = allRepos.filter(async repo => {
+  //   const alreadyImported = alreadyImportedRepositoriesLocationsTargets.some(
+  //     target => target.startsWith(repo.html_url.concat('/')),
+  //   );
+
+  //   if (alreadyImported) {
+  //     return true;
+  //   }
+
+  //   const importStatus = await getImportStatusFromLocations(
+  //     deps,
+  //     repo.html_url,
+  //     catalogLocations,
+  //     repo.default_branch,
+  //   );
+
+  //   if (!importStatus) {
+  //     return true;
+  //   }
+  //   return false;
+  // });
+  // const repos = await formatResponse(
+  //   deps,
+  //   {
+  //     repositories: notImportedYetRepos,
+  //     errors,
+  //     totalCount: notImportedYetRepos.length,
+  //   },
+  //   checkStatus,
+  // );
+  // const repos = await (deps.gitApiService as GithubApiService)
+  //   .getAllRepositories(search)
+  //   .then(response => formatResponse(deps, response, checkStatus));
+
+  // return repos;
 }
 
 export async function findRepositoriesByOrganization(
