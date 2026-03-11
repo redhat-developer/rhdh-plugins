@@ -71,7 +71,8 @@ export class ThresholdEvaluator {
    * Evaluate thresholds for a metric value and return first matching
    * @param metricValue - The value to evaluate
    * @param thresholds - The threshold configuration
-   * @returns threshold key that first matches the threshold expression for metricValue or undefined
+   * @returns threshold key that first matches the threshold expression for metricValue, or
+   *   `undefined` when no rule matches (stored as NULL in the database; sorts last on status sort)
    */
   getFirstMatchingThreshold(
     metricValue: MetricValue,

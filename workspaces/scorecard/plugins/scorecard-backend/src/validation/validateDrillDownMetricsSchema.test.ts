@@ -93,6 +93,7 @@ describe('validateDrillDownMetricsSchema', () => {
       'timestamp',
       'metricValue',
       'namespace',
+      'status',
     ] as const)('should accept sortBy=%s', sortBy => {
       const result = validateDrillDownMetricsSchema(
         { sortBy },
