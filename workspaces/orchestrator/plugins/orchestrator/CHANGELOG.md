@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.5.2
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+- 309547d: Add workflow instance card height mode config for fixed or content-based layouts.
+- Updated dependencies [309547d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.6.2
+
 ## 5.5.1
 
 ### Patch Changes
