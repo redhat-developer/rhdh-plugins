@@ -19,10 +19,12 @@ export interface AAPCredentials {
 export interface AgentMetrics {
     durationSeconds: number;
     endedAt?: Date;
+    inputTokens?: number;
     metrics?: {
         [key: string]: any;
     };
     name: string;
+    outputTokens?: number;
     startedAt?: Date;
     toolCalls?: {
         [key: string]: number;

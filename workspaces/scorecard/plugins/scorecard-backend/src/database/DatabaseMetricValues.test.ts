@@ -1213,5 +1213,58 @@ describe('DatabaseMetricValues', () => {
         expect(result[2].value).toBeNull(); // null sorted last
       },
     );
+
+    it.each(databases.eachSupportedId())(
+      'should sort by status ascending when sortBy=status - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: 'component:default/service-c',
+            metric_id: 'github.metric1',
+            value: 1,
+            timestamp,
+            status: 'warning',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-a',
+            metric_id: 'github.metric1',
+            value: 2,
+            timestamp,
+            status: 'error',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-b',
+            metric_id: 'github.metric1',
+            value: 3,
+            timestamp,
+            status: 'success',
+          },
+          {
+            catalog_entity_ref: 'component:default/service-d',
+            metric_id: 'github.metric1',
+            value: 4,
+            timestamp,
+            status: null,
+          },
+        ]);
+
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
+          sortBy: 'status',
+          sortOrder: 'asc',
+          pagination: { limit: 10, offset: 0 },
+        });
+
+        expect(result).toHaveLength(4);
+        // Alphabetical ascending: error < success < warning, NULL always last
+        expect(result[0].status).toBe('error');
+        expect(result[1].status).toBe('success');
+        expect(result[2].status).toBe('warning');
+        expect(result[3].status).toBeNull();
+      },
+    );
   });
 });

@@ -26,6 +26,7 @@ import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
+import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
 import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
@@ -163,9 +164,11 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 status,
                 entity_kind: normalizeField(entity.kind),
                 entity_namespace: normalizeField(entity.metadata.namespace),
-                entity_owner: normalizeField(entity?.spec?.owner),
+                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
+              // status is intentionally omitted — a calculation failure produces a NULL status
+              // in the database, which sorts last when sortBy=status is used
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
@@ -175,7 +178,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                   error instanceof Error ? error.message : String(error),
                 entity_kind: normalizeField(entity.kind),
                 entity_namespace: normalizeField(entity.metadata.namespace),
-                entity_owner: normalizeField(entity?.spec?.owner),
+                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
               } as DbMetricValueCreate;
             }
           }),

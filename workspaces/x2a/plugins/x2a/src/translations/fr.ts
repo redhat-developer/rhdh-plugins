@@ -161,6 +161,14 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.hideLog': 'Masquer le journal',
     'modulePage.phases.noLogsAvailable':
       'Aucun journal disponible pour le moment...',
+    'modulePage.phases.telemetry.title': 'Télémétrie',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'Aucune télémétrie disponible',
+    'modulePage.phases.telemetry.agentName': "Nom de l'agent",
+    'modulePage.phases.telemetry.duration': 'Durée',
+    'modulePage.phases.telemetry.inputTokens': "Jetons d'entrée",
+    'modulePage.phases.telemetry.outputTokens': 'Jetons de sortie',
+    'modulePage.phases.telemetry.toolCalls': "Nombre d'appels d'outils",
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Resynchroniser la liste des modules pour correspondre au plan de migration.',
   },
