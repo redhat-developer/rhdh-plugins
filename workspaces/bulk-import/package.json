@@ -26,7 +26,7 @@
     "postinstall": "cd ../../ && yarn install",
     "test:e2e:legacy": "APP_MODE=legacy playwright test",
     "test:e2e:nfs": "APP_MODE=nfs playwright test",
-    "test:e2e:all": "yarn test:e2e:legacy",
+    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
     "playwright": "bash -c 'if [[ \"$@\" == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _"
   },
   "workspaces": {

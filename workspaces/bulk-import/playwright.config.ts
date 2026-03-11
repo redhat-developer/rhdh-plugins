@@ -15,16 +15,17 @@
  */
 
 import { defineConfig } from '@playwright/test';
+import path from 'path';
 
 const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
-
-const baseConfig = '../../app-config.yaml';
-const configPath = '../app-legacy/e2e-tests/test_yamls';
+const baseConfig = path.join(__dirname, 'app-config.yaml');
+const testYamlsDir = path.join(__dirname, 'e2e-tests', 'test_yamls');
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
   fullyParallel: false,
+  testDir: path.join(__dirname, 'e2e-tests'),
 
   expect: {
     timeout: 10000,
@@ -34,28 +35,28 @@ export default defineConfig({
     ? []
     : [
         {
-          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-en.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${path.join(testYamlsDir, 'app-config-e2e-en.yaml')}`,
           url: 'http://localhost:7007/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
           cwd: __dirname,
         },
         {
-          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-fr.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${path.join(testYamlsDir, 'app-config-e2e-fr.yaml')}`,
           url: 'http://localhost:7008/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
           cwd: __dirname,
         },
         {
-          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-it.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${path.join(testYamlsDir, 'app-config-e2e-it.yaml')}`,
           url: 'http://localhost:7009/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
           cwd: __dirname,
         },
         {
-          command: `${startCommand} --config ${baseConfig} --config ${configPath}/app-config-e2e-ja.yaml`,
+          command: `${startCommand} --config ${baseConfig} --config ${path.join(testYamlsDir, 'app-config-e2e-ja.yaml')}`,
           url: 'http://localhost:7010/.backstage/health/v1/readiness',
           timeout: 120000,
           reuseExistingServer: false,
@@ -82,7 +83,6 @@ export default defineConfig({
   projects: [
     {
       name: 'en',
-      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'en',
@@ -91,7 +91,6 @@ export default defineConfig({
     },
     {
       name: 'fr',
-      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'fr',
@@ -100,7 +99,6 @@ export default defineConfig({
     },
     {
       name: 'it',
-      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'it',
@@ -109,7 +107,6 @@ export default defineConfig({
     },
     {
       name: 'ja',
-      testDir: 'packages/app-legacy/e2e-tests',
       use: {
         channel: 'chrome',
         locale: 'ja',
