@@ -14,181 +14,89 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
+import { InfoCard } from '@backstage/core-components';
+import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ErrorIcon from '@material-ui/icons/Error';
+import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import {
-  Button,
-  Card,
-  CardBody,
-  Tab,
-  TabList,
-  TabPanel,
-  Tabs,
-} from '@backstage/ui';
-import { Grid, makeStyles, Typography } from '@material-ui/core';
-import {
-  Job,
+  MigrationPhase,
   Module,
-  ModulePhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useTranslation } from '../../hooks/useTranslation';
-import { ItemField } from '../ItemField';
-import { humanizeDate } from '../tools';
+import { PhaseDetails } from '../PhaseDetails';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
+  tabs: {
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    marginBottom: theme.spacing(3),
+  },
   tab: {
-    width: '33%',
+    minWidth: 120,
+    width: '33.33%',
+    maxWidth: '33.33%',
+    minHeight: 64,
+    fontSize: theme.typography.pxToRem(16),
+    fontWeight: theme.typography.fontWeightMedium as number,
+    textTransform: 'none' as const,
+    padding: theme.spacing(2, 3),
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+    },
+  },
+  tabLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing(1),
+  },
+  statusIcon: {
+    display: 'inline-flex',
+    marginLeft: theme.spacing(1),
+  },
+  successIcon: {
+    color: theme.palette.success.main,
+  },
+  tabPanel: {
+    paddingTop: theme.spacing(2),
+  },
+  hiddenPanel: {
+    display: 'none',
   },
 }));
 
-const computeDuration = (phase?: Job): string => {
-  if (!phase?.startedAt) {
-    return '-';
+const getStatusIcon = (status?: string, classes?: any) => {
+  switch (status) {
+    case 'success':
+      return (
+        <CheckCircleIcon fontSize="small" className={classes?.successIcon} />
+      );
+    case 'error':
+      return <ErrorIcon fontSize="small" color="error" />;
+    case 'running':
+      return <HourglassEmptyIcon fontSize="small" color="action" />;
+    case 'pending':
+      return <HourglassEmptyIcon fontSize="small" color="disabled" />;
+    default:
+      return null;
   }
-  const end = phase.finishedAt ? new Date(phase.finishedAt) : new Date();
-  const diffMs = end.getTime() - new Date(phase.startedAt).getTime();
-  const totalSeconds = Math.floor(diffMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
-  return `${seconds}s`;
-};
-
-const PhaseRunAction = ({
-  phase,
-  phaseName,
-  onRunPhase,
-}: {
-  phase?: Job;
-  phaseName: ModulePhase;
-  onRunPhase?: (phase: ModulePhase) => void;
-}) => {
-  const { t } = useTranslation();
-
-  const getInstructions = () => {
-    if (phaseName === 'analyze') {
-      return phase
-        ? t('modulePage.phases.reanalyzeInstructions')
-        : t('modulePage.phases.analyzeInstructions');
-    }
-    if (phaseName === 'migrate') {
-      return phase
-        ? t('modulePage.phases.remigrateInstructions')
-        : t('modulePage.phases.migrateInstructions');
-    }
-    if (phaseName === 'publish') {
-      return phase
-        ? t('modulePage.phases.republishInstructions')
-        : t('modulePage.phases.publishInstructions');
-    }
-    return '';
-  };
-
-  const getActionText = () => {
-    if (phaseName === 'analyze') {
-      return phase
-        ? t('modulePage.phases.rerunAnalyze')
-        : t('modulePage.phases.runAnalyze');
-    }
-    if (phaseName === 'migrate') {
-      return phase
-        ? t('modulePage.phases.rerunMigrate')
-        : t('modulePage.phases.runMigrate');
-    }
-    if (phaseName === 'publish') {
-      return phase
-        ? t('modulePage.phases.rerunPublish')
-        : t('modulePage.phases.runPublish');
-    }
-    return '';
-  };
-
-  return (
-    <>
-      <Grid item xs={12}>
-        <Button variant="primary" onPress={() => onRunPhase?.(phaseName)}>
-          {getActionText()}
-        </Button>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography>{getInstructions()}</Typography>
-      </Grid>
-    </>
-  );
-};
-
-const PhaseDetails = ({
-  phase,
-  phaseName,
-  onRunPhase,
-}: {
-  phase?: Job;
-  phaseName: ModulePhase;
-  onRunPhase?: (phase: ModulePhase) => void;
-}) => {
-  const { t } = useTranslation();
-  const empty = t('module.phases.none');
-
-  const duration = computeDuration(phase);
-
-  return (
-    <Grid container direction="row" spacing={3}>
-      <PhaseRunAction
-        phase={phase}
-        phaseName={phaseName}
-        onRunPhase={onRunPhase}
-      />
-      {/* TODO: Button for canceling the current job execution */}
-
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.status')}
-          value={phase?.status || empty}
-        />
-      </Grid>
-      <Grid item xs={9}>
-        <ItemField
-          label={t('modulePage.phases.errorDetails')}
-          value={phase?.errorDetails || empty}
-        />
-      </Grid>
-
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.startedAt')}
-          value={phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField label={t('modulePage.phases.duration')} value={duration} />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.k8sJobName')}
-          value={phase?.k8sJobName || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.id')}
-          value={phase?.id || empty}
-        />
-      </Grid>
-
-      {/* Telemetry */}
-    </Grid>
-  );
 };
 
 export const PhasesCard = ({
   module,
+  projectId,
+  moduleId,
   onRunPhase,
 }: {
   module?: Module;
-  onRunPhase?: (phase: ModulePhase) => void;
+  projectId: string;
+  moduleId: string;
+  onRunPhase?: (phase: MigrationPhase) => void;
 }) => {
   const { t } = useTranslation();
   const classes = useStyles();
+  const [activeTab, setActiveTab] = useState(0);
 
   const analyzePhase = module?.analyze;
   const migratePhase = module?.migrate;
@@ -201,52 +109,84 @@ export const PhasesCard = ({
     artifact => artifact.type === 'migrated_sources',
   );
 
+  const handleTabChange = (_event: React.ChangeEvent<{}>, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
   return (
-    <Card>
-      <CardBody>
-        <Tabs orientation="vertical">
-          <TabList>
-            <Tab id="tab1" className={classes.tab}>
+    <InfoCard title={t('modulePage.phases.title')} variant="gridItem">
+      <Tabs
+        value={activeTab}
+        onChange={handleTabChange}
+        className={classes.tabs}
+        indicatorColor="primary"
+        textColor="primary"
+        variant="fullWidth"
+      >
+        <Tab
+          className={classes.tab}
+          label={
+            <Box className={classes.tabLabel}>
               {t('module.phases.analyze')}
-            </Tab>
-            <Tab
-              id="tab2"
-              className={classes.tab}
-              isDisabled={!moduleMigrationPlanArtifact}
-            >
+              <Box className={classes.statusIcon}>
+                {getStatusIcon(analyzePhase?.status, classes)}
+              </Box>
+            </Box>
+          }
+        />
+        <Tab
+          className={classes.tab}
+          label={
+            <Box className={classes.tabLabel}>
               {t('module.phases.migrate')}
-            </Tab>
-            <Tab
-              id="tab3"
-              className={classes.tab}
-              isDisabled={!migratedSourcesArtifact}
-            >
+              <Box className={classes.statusIcon}>
+                {getStatusIcon(migratePhase?.status, classes)}
+              </Box>
+            </Box>
+          }
+          disabled={!moduleMigrationPlanArtifact}
+        />
+        <Tab
+          className={classes.tab}
+          label={
+            <Box className={classes.tabLabel}>
               {t('module.phases.publish')}
-            </Tab>
-          </TabList>
-          <TabPanel id="tab1">
-            <PhaseDetails
-              phase={analyzePhase}
-              phaseName="analyze"
-              onRunPhase={onRunPhase}
-            />
-          </TabPanel>
-          <TabPanel id="tab2">
-            <PhaseDetails
-              phase={migratePhase}
-              phaseName="migrate"
-              onRunPhase={onRunPhase}
-            />
-          </TabPanel>
-          <TabPanel id="tab3">
-            <PhaseDetails
-              phase={publishPhase}
-              phaseName="publish"
-              onRunPhase={onRunPhase}
-            />
-          </TabPanel>
-        </Tabs>
-      </CardBody>
-    </Card>
+              <Box className={classes.statusIcon}>
+                {getStatusIcon(publishPhase?.status, classes)}
+              </Box>
+            </Box>
+          }
+          disabled={!migratedSourcesArtifact}
+        />
+      </Tabs>
+
+      <Box className={activeTab === 0 ? classes.tabPanel : classes.hiddenPanel}>
+        <PhaseDetails
+          phase={analyzePhase}
+          phaseName="analyze"
+          projectId={projectId}
+          moduleId={moduleId}
+          onRunPhase={onRunPhase}
+        />
+      </Box>
+      <Box className={activeTab === 1 ? classes.tabPanel : classes.hiddenPanel}>
+        <PhaseDetails
+          phase={migratePhase}
+          phaseName="migrate"
+          projectId={projectId}
+          moduleId={moduleId}
+          onRunPhase={onRunPhase}
+        />
+      </Box>
+      <Box className={activeTab === 2 ? classes.tabPanel : classes.hiddenPanel}>
+        <PhaseDetails
+          phase={publishPhase}
+          phaseName="publish"
+          projectId={projectId}
+          moduleId={moduleId}
+          onRunPhase={onRunPhase}
+        />
+      </Box>
+    </InfoCard>
   );
 };

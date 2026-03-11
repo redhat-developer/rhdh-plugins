@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 export const customScorecardResponse = [
   {
     id: 'github.open_prs',
@@ -189,6 +191,7 @@ export const githubAggregatedResponse = {
     ],
     total: 15,
     timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };
 
@@ -210,6 +213,7 @@ export const jiraAggregatedResponse = {
     ],
     total: 10,
     timestamp: '2026-01-24T14:10:32.776Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };
 
@@ -231,6 +235,7 @@ export const emptyJiraAggregatedResponse = {
       { count: 0, name: 'error' },
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };
 
@@ -252,5 +257,6 @@ export const emptyGithubAggregatedResponse = {
       { count: 0, name: 'error' },
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
   },
 };

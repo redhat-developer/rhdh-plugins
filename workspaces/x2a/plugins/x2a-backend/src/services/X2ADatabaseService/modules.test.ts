@@ -924,11 +924,14 @@ describe('X2ADatabaseService – modules', () => {
 
         const deletedCount = await service.deleteProject(
           { projectId: project.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
         expect(deletedCount).toBe(1);
         expect(
-          await service.getProject({ projectId: project.id }, { credentials }),
+          await service.getProject(
+            { projectId: project.id },
+            { credentials, groupsOfUser: [] },
+          ),
         ).toBeUndefined();
 
         expect(await service.getModule({ id: module1.id })).toBeUndefined();
@@ -987,7 +990,7 @@ describe('X2ADatabaseService – modules', () => {
 
         await service.deleteProject(
           { projectId: project1.id },
-          { credentials },
+          { credentials, groupsOfUser: [] },
         );
 
         expect(await service.getModule({ id: module1P1.id })).toBeUndefined();

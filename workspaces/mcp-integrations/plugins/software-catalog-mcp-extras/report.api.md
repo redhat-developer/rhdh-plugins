@@ -6,8 +6,8 @@
 import { BackendFeature } from '@backstage/backend-plugin-api';
 
 // @public
-const mcpSoftwareCatalogExtrasPlugin: BackendFeature;
-export default mcpSoftwareCatalogExtrasPlugin;
+const softwareCatalogMcpExtrasPlugin: BackendFeature;
+export default softwareCatalogMcpExtrasPlugin;
 
 // (No @packageDocumentation comment for this package)
 ```

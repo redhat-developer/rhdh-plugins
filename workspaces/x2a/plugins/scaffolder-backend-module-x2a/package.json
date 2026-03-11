@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "Apache-2.0",
   "description": "The x2a module for @backstage/plugin-scaffolder-backend",
   "main": "src/index.ts",
@@ -18,7 +18,8 @@
   "backstage": {
     "role": "backend-plugin-module",
     "pluginId": "scaffolder",
-    "pluginPackage": "@backstage/plugin-scaffolder-backend"
+    "pluginPackage": "@backstage/plugin-scaffolder-backend",
+    "supported-versions": "1.42.0"
   },
   "scripts": {
     "start": "backstage-cli package start",
@@ -30,8 +31,8 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/backend-plugin-api": "1.5.0",
-    "@backstage/plugin-scaffolder-node": "^0.12.1",
+    "@backstage/backend-plugin-api": "1.4.2",
+    "@backstage/plugin-scaffolder-node": "^0.11.0",
     "@red-hat-developer-hub/backstage-plugin-x2a-common": "workspace:*"
   },
   "devDependencies": {

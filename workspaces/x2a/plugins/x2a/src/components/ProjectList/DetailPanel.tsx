@@ -15,19 +15,22 @@
  */
 import { useCallback, useState } from 'react';
 import useAsync from 'react-use/lib/useAsync';
-import { Grid, GridProps, makeStyles } from '@material-ui/core';
+import { Grid, GridProps, makeStyles, Typography } from '@material-ui/core';
 import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
 import { Progress, ResponseErrorPanel } from '@backstage/core-components';
 import { ModuleTable } from '../ModuleTable';
-import { ArtifactLink } from '../ModuleTable/Artifacts';
 import { ItemField } from '../ItemField';
+import { ArtifactLink } from '../Artifacts';
 
 const useStyles = makeStyles(() => ({
   detailPanel: {
     padding: '1rem',
+  },
+  alignRight: {
+    textAlign: 'right',
   },
 }));
 
@@ -61,27 +64,21 @@ export const DetailPanel = ({ project }: { project: Project }) => {
         </Grid>
       )}
 
-      <Grid {...gridItemProps}>
+      <Grid {...gridItemProps} xs={2}>
         <ItemField
           label={t('project.abbreviation')}
           value={project.abbreviation}
         />
       </Grid>
-      <Grid {...gridItemProps}>
-        <ItemField label={t('project.id')} value={project.id} />
-      </Grid>
-      <Grid {...gridItemProps}>
-        <ItemField label={t('project.createdBy')} value={project.createdBy} />
-      </Grid>
 
-      <Grid {...gridItemProps} xs={8}>
+      <Grid {...gridItemProps} xs={6}>
         <ItemField
           label={t('project.description')}
           value={project.description}
         />
       </Grid>
       {project.migrationPlan && (
-        <Grid {...gridItemProps} xs={4}>
+        <Grid {...gridItemProps} xs={4} className={styles.alignRight}>
           <ItemField
             label={t('artifact.types.migration_plan')}
             value={
@@ -97,13 +94,21 @@ export const DetailPanel = ({ project }: { project: Project }) => {
       {/* We do not need to repeat the same fields as in the ProjectTable component */}
 
       {loading && <Progress />}
-      {value && (
+
+      {value && value.length > 0 && (
         <Grid {...gridItemProps} xs={12}>
           <ModuleTable
             modules={value}
             forceRefresh={forceRefresh}
             project={project}
           />
+        </Grid>
+      )}
+      {!(value && value.length > 0) && (
+        <Grid {...gridItemProps} xs={12}>
+          <Typography variant="body1" align="center">
+            {t('project.noModules')}
+          </Typography>
         </Grid>
       )}
     </Grid>

@@ -25,7 +25,11 @@ import {
   mockDatabaseMetricValues,
 } from '../../__fixtures__/mockDatabaseMetricValues';
 import { buildMockMetricProvidersRegistry } from '../../__fixtures__/mockMetricProvidersRegistry';
-import { AuthService } from '@backstage/backend-plugin-api';
+import {
+  AuthService,
+  BackstageCredentials,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import * as permissionUtils from '../permissions/permissionUtils';
 import {
   AggregatedMetric,
@@ -63,9 +67,10 @@ const aggregatedMetric: DbAggregatedMetric = {
   metric_id: 'github.important_metric',
   total: 2,
   max_timestamp: new Date('2024-01-15T12:00:00.000Z'),
-  success: 1,
-  warning: 1,
-  error: 0,
+  statusCounts: {
+    success: 1,
+    warning: 1,
+  },
 };
 
 const metricsList = [
@@ -88,6 +93,7 @@ describe('CatalogMetricService', () => {
   let mockedAuth: jest.Mocked<AuthService>;
   let mockedRegistry: jest.Mocked<MetricProvidersRegistry>;
   let mockedDatabase: jest.Mocked<typeof mockDatabaseMetricValues>;
+  let mockedLogger: jest.Mocked<LoggerService>;
   let service: CatalogMetricService;
   let toAggregatedMetricSpy: jest.SpyInstance;
 
@@ -96,6 +102,10 @@ describe('CatalogMetricService', () => {
   beforeEach(() => {
     mockedCatalog = catalogServiceMock.mock();
     mockedCatalog.getEntityByRef.mockResolvedValue(mockEntity);
+
+    mockedCatalog.getEntitiesByRefs = jest
+      .fn()
+      .mockResolvedValue({ items: [] });
 
     mockedAuth = mockServices.auth.mock({
       getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -112,6 +122,8 @@ describe('CatalogMetricService', () => {
       latestEntityMetric,
       aggregatedMetric,
     });
+
+    mockedLogger = mockServices.logger.mock();
 
     (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
       { id: 'github.important_metric' },
@@ -133,6 +145,7 @@ describe('CatalogMetricService', () => {
       auth: mockedAuth,
       registry: mockedRegistry,
       database: mockedDatabase,
+      logger: mockedLogger,
     });
 
     jest.useFakeTimers();
@@ -444,11 +457,10 @@ describe('CatalogMetricService', () => {
 
       it('should return aggregated metrics for multiple entities', async () => {
         expect(result).toEqual({
-          values: [
-            { count: 1, name: 'success' },
-            { count: 1, name: 'warning' },
-            { count: 0, name: 'error' },
-          ],
+          values: {
+            success: 1,
+            warning: 1,
+          },
           total: 2,
           timestamp: '2024-01-15T12:00:00.000Z',
         });
@@ -484,11 +496,7 @@ describe('CatalogMetricService', () => {
 
       it('should return empty aggregation when no entities provided', async () => {
         expect(result).toEqual({
-          values: [
-            { count: 0, name: 'success' },
-            { count: 0, name: 'warning' },
-            { count: 0, name: 'error' },
-          ],
+          values: {},
           total: 0,
           timestamp: '2024-01-15T12:00:00.000Z',
         });
@@ -503,6 +511,631 @@ describe('CatalogMetricService', () => {
       it('should call toAggregatedMetric to map aggregated metric to result', async () => {
         expect(toAggregatedMetricSpy).toHaveBeenCalledTimes(1);
         expect(toAggregatedMetricSpy).toHaveBeenCalledWith();
+      });
+    });
+  });
+
+  describe('getEntityMetricDetails', () => {
+    const mockMetricRows: DbMetricValue[] = [
+      {
+        id: 1,
+        catalog_entity_ref: 'component:default/service-a',
+        metric_id: 'github.important_metric',
+        value: 15,
+        timestamp: new Date('2024-01-15T12:00:00.000Z'),
+        error_message: null,
+        status: 'error',
+        entity_kind: 'Component',
+        entity_owner: 'team:default/platform',
+        entity_namespace: 'default',
+      },
+      {
+        id: 2,
+        catalog_entity_ref: 'component:default/service-b',
+        metric_id: 'github.important_metric',
+        value: 8,
+        timestamp: new Date('2024-01-15T11:00:00.000Z'),
+        error_message: null,
+        status: 'warning',
+        entity_kind: 'Component',
+        entity_owner: 'team:default/backend',
+        entity_namespace: 'default',
+      },
+      {
+        id: 3,
+        catalog_entity_ref: 'component:staging/service-c',
+        metric_id: 'github.important_metric',
+        value: 3,
+        timestamp: new Date('2024-01-15T10:00:00.000Z'),
+        error_message: null,
+        status: 'success',
+        entity_kind: 'API',
+        entity_owner: 'team:default/platform',
+        entity_namespace: 'staging',
+      },
+    ];
+
+    const mockEntities = {
+      items: [
+        new MockEntityBuilder()
+          .withKind('Component')
+          .withMetadata({ name: 'service-a', namespace: 'default' })
+          .withSpec({ owner: 'team:default/platform' })
+          .build(),
+        new MockEntityBuilder()
+          .withKind('Component')
+          .withMetadata({ name: 'service-b', namespace: 'default' })
+          .withSpec({ owner: 'team:default/backend' })
+          .build(),
+        new MockEntityBuilder()
+          .withKind('API')
+          .withMetadata({ name: 'service-c', namespace: 'staging' })
+          .withSpec({ owner: 'team:default/platform' })
+          .build(),
+      ],
+    };
+
+    let mockCredentials: BackstageCredentials;
+
+    beforeEach(() => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue(
+        mockMetricRows,
+      );
+
+      mockedCatalog.getEntitiesByRefs.mockReset();
+      mockedCatalog.getEntitiesByRefs.mockResolvedValue(mockEntities);
+      mockCredentials = {} as BackstageCredentials;
+    });
+
+    it('should fetch entity metrics with default options', async () => {
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.metricId).toBe('github.important_metric');
+      expect(result.entities).toHaveLength(3);
+      expect(result.pagination).toEqual({
+        page: 1,
+        pageSize: 10,
+        total: 3,
+        totalPages: 1,
+        isCapped: false,
+      });
+    });
+
+    it('should enrich entities with catalog metadata', async () => {
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.entities[0]).toEqual({
+        entityRef: 'component:default/service-a',
+        entityName: 'service-a',
+        entityNamespace: 'default',
+        entityKind: 'Component',
+        owner: 'team:default/platform',
+        metricValue: 15,
+        timestamp: '2024-01-15T12:00:00.000Z',
+        status: 'error',
+      });
+    });
+
+    it('should always query the full fetchable window from the database and paginate in-memory', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 2,
+          limit: 5,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        { pagination: { limit: 10_000, offset: 0 } },
+      );
+    });
+
+    it('should filter by status at database level', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          status: 'error',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        { status: 'error', pagination: { limit: 10_000, offset: 0 } },
+      );
+    });
+
+    it('should filter by kind at database level', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          kind: 'Component',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        { entityKind: 'Component', pagination: { limit: 10_000, offset: 0 } },
+      );
+    });
+
+    it('should filter by owner at database level', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          owner: ['team:default/platform'],
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          entityOwner: ['team:default/platform'],
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should filter by entityName at database level', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValueOnce([
+        mockMetricRows[0],
+      ]);
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          entityName: 'service-a',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        { entityName: 'service-a', pagination: { limit: 10_000, offset: 0 } },
+      );
+
+      expect(result.entities).toHaveLength(1);
+      expect(result.entities[0].entityName).toBe('service-a');
+      expect(result.pagination.total).toBe(1);
+    });
+
+    it('should pass entityName to database for filtering', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          entityName: 'SERVICE',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        { entityName: 'SERVICE', pagination: { limit: 10_000, offset: 0 } },
+      );
+    });
+
+    it('should sort by entityName ascending', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          sortBy: 'entityName',
+          sortOrder: 'asc',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          sortBy: 'entityName',
+          sortOrder: 'asc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should sort by metricValue descending', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should sort by timestamp descending by default', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      // When no sortBy/sortOrder are supplied the DB defaults to timestamp desc
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        { pagination: { limit: 10_000, offset: 0 } },
+      );
+    });
+
+    it('should sort by namespace ascending', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should sort by namespace descending', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          sortBy: 'namespace',
+          sortOrder: 'desc',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          sortBy: 'namespace',
+          sortOrder: 'desc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should filter by namespace at database level', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValueOnce([
+        mockMetricRows[2],
+      ]);
+      mockedCatalog.getEntitiesByRefs.mockResolvedValueOnce({
+        items: [mockEntities.items[2]],
+      });
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          namespace: 'staging',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          entityNamespace: 'staging',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+
+      expect(result.entities).toHaveLength(1);
+      expect(result.entities[0].entityNamespace).toBe('staging');
+      expect(result.pagination.total).toBe(1);
+    });
+
+    it('should include entityNamespace in enriched entity response', async () => {
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.entities[2]).toEqual(
+        expect.objectContaining({
+          entityRef: 'component:staging/service-c',
+          entityNamespace: 'staging',
+        }),
+      );
+    });
+
+    it('should combine namespace filter with other filters, sorting, and pagination', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
+        mockMetricRows[2],
+      ]);
+      mockedCatalog.getEntitiesByRefs.mockResolvedValueOnce({
+        items: [mockEntities.items[2]],
+      });
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          status: 'success',
+          kind: 'API',
+          namespace: 'staging',
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          page: 1,
+          limit: 5,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          status: 'success',
+          entityKind: 'API',
+          entityNamespace: 'staging',
+          sortBy: 'namespace',
+          sortOrder: 'asc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+
+      expect(result.entities).toHaveLength(1);
+      expect(result.entities[0].entityNamespace).toBe('staging');
+      expect(result.pagination.total).toBe(1);
+    });
+
+    it('should handle null metric values in sorting', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
+        { ...mockMetricRows[0], value: null },
+        mockMetricRows[1],
+      ]);
+
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      // Null handling (nulls-last) is delegated to the DB via orderByRaw
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+    });
+
+    it('should batch-fetch entities using getEntitiesByRefs', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedCatalog.getEntitiesByRefs).toHaveBeenCalledWith(
+        {
+          entityRefs: [
+            'component:default/service-a',
+            'component:default/service-b',
+            'component:staging/service-c',
+          ],
+          fields: ['kind', 'metadata.name', 'metadata.namespace', 'spec.owner'],
+        },
+        { credentials: expect.any(Object) },
+      );
+    });
+
+    it('should exclude entities that the catalog returns null for (unauthorized)', async () => {
+      // service-b (index 1) returns undefined/null — catalog enforces no access
+      mockedCatalog.getEntitiesByRefs.mockResolvedValue({
+        items: [mockEntities.items[0], undefined, mockEntities.items[2]],
+      });
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      // service-b is filtered out; only the two authorized entities are returned
+      expect(result.entities).toHaveLength(2);
+      expect(result.entities.map(e => e.entityRef)).not.toContain(
+        'component:default/service-b',
+      );
+      expect(result.entities[0].entityRef).toBe('component:default/service-a');
+      expect(result.entities[1].entityRef).toBe('component:staging/service-c');
+    });
+
+    it('should handle catalog API failures by logging an error and not returning information from the database', async () => {
+      mockedCatalog.getEntitiesByRefs.mockRejectedValue(
+        new Error('Catalog API error'),
+      );
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(mockedLogger.error).toHaveBeenCalledWith(
+        'Failed to fetch entities from catalog',
+        expect.objectContaining({ error: expect.any(Error) }),
+      );
+
+      // When catalog is unavailable, do not bypass and instead log error
+      expect(result.entities).toHaveLength(0);
+    });
+
+    it('should pass null to database for unscoped query (avoids catalog enumeration)', async () => {
+      await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        { page: 1, limit: 10 },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        { pagination: { limit: 10_000, offset: 0 } },
+      );
+    });
+
+    it('should use catalog.getEntitiesByRefs as the sole authorization gate for the unscoped path', async () => {
+      // Simulate catalog returning null for service-b (no access) and real entities for others
+      mockedCatalog.getEntitiesByRefs.mockResolvedValue({
+        items: [mockEntities.items[0], undefined, mockEntities.items[2]],
+      });
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        { page: 1, limit: 10 },
+      );
+
+      // service-b should be filtered out because catalog returned null (unauthorized)
+      expect(result.entities).toHaveLength(2);
+      expect(result.entities.map(e => e.entityRef)).not.toContain(
+        'component:default/service-b',
+      );
+    });
+
+    it('should combine filters, sorting, and pagination', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([
+        mockMetricRows[0],
+      ]);
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          status: 'error',
+          kind: 'Component',
+          owner: ['team:default/platform'],
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+          page: 1,
+          limit: 5,
+        },
+      );
+
+      expect(mockedDatabase.readEntityMetricsWithFilters).toHaveBeenCalledWith(
+        'github.important_metric',
+        {
+          status: 'error',
+          entityKind: 'Component',
+          entityOwner: ['team:default/platform'],
+          sortBy: 'metricValue',
+          sortOrder: 'desc',
+          pagination: { limit: 10_000, offset: 0 },
+        },
+      );
+
+      expect(result.entities).toHaveLength(1);
+      expect(result.pagination.total).toBe(1);
+    });
+
+    it('should return empty results when no entities match', async () => {
+      mockedDatabase.readEntityMetricsWithFilters.mockResolvedValue([]);
+
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.entities).toEqual([]);
+      expect(result.pagination).toEqual({
+        page: 1,
+        pageSize: 10,
+        total: 0,
+        totalPages: 0,
+        isCapped: false,
+      });
+    });
+
+    it('should include metric metadata in response', async () => {
+      const result = await service.getEntityMetricDetails(
+        'github.important_metric',
+        mockCredentials,
+        {
+          page: 1,
+          limit: 10,
+        },
+      );
+
+      expect(result.metricMetadata).toEqual({
+        title: provider.getMetric().title,
+        description: provider.getMetric().description,
+        type: provider.getMetric().type,
       });
     });
   });

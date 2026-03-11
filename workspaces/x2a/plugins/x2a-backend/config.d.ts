@@ -50,6 +50,7 @@ export interface X2AConfig {
       oauthToken?: string;
       username?: string;
       password?: string;
+      skipSSLVerification?: boolean;
     };
   };
 }
@@ -61,6 +62,27 @@ export interface X2AConfig {
  */
 export interface Config {
   x2a?: {
+    /**
+     * Callback base URL for job-to-backend communication
+     * Overrides the URL used for Kubernetes jobs to call back to the backend.
+     * If not set, uses discoveryApi.getBaseUrl('x2a') (default: backend.baseUrl).
+     * Useful for local development when jobs need to reach the backend via LAN IP.
+     * @example "http://192.168.2.193:7007"
+     * @visibility backend
+     */
+    callbackBaseUrl?: string;
+    /**
+     * Configuration for the collectArtifacts callback endpoint
+     */
+    collectArtifacts?: {
+      /**
+       * Maximum age (in seconds) of a job before its callback is rejected.
+       * Prevents replay attacks by rejecting callbacks from jobs older than this window.
+       * Default: 10800 (3 hours)
+       * @visibility backend
+       */
+      maxJobAgeSeconds?: number;
+    };
     /**
      * Kubernetes configuration for X2A jobs
      */
@@ -208,6 +230,13 @@ export interface Config {
          * Password for AAP authentication (alternative to oauthToken)
          */
         password?: string;
+        /**
+         * Whether to skip SSL certificate verification when connecting to AAP.
+         * Set to true for dev/test environments with self-signed certs.
+         * Defaults to false (SSL is verified).
+         * @visibility backend
+         */
+        skipSSLVerification?: boolean;
       };
     };
   };

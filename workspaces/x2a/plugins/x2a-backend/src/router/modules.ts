@@ -16,38 +16,86 @@
 
 import { z } from 'zod';
 import express from 'express';
-import { randomUUID } from 'node:crypto';
 import { InputError, NotFoundError } from '@backstage/errors';
 
+import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import type { RouterDeps } from './types';
-import { getUserRef, reconcileJobStatus } from './common';
+import {
+  generateCallbackToken,
+  reconcileJobStatus,
+  useEnforceProjectPermissions,
+} from './common';
+import { calculateModuleStatus } from '../services/X2ADatabaseService/status';
+
+/**
+ * Reconcile any pending/running phase jobs on a module against K8s state.
+ * Mutates the module in-place and returns it.
+ */
+async function reconcileModuleJobs(
+  module: Module,
+  deps: Pick<RouterDeps, 'kubeService' | 'x2aDatabase' | 'logger'>,
+): Promise<Module> {
+  const phases = ['analyze', 'migrate', 'publish'] as const;
+  for (const phase of phases) {
+    const job = module[phase];
+    if (job && ['pending', 'running'].includes(job.status)) {
+      module[phase] = await reconcileJobStatus(job, deps);
+    }
+  }
+  return module;
+}
 
 export function registerModuleRoutes(
   router: express.Router,
   deps: RouterDeps,
 ): void {
-  const { httpAuth, discoveryApi, x2aDatabase, kubeService, logger, config } =
-    deps;
+  const {
+    httpAuth,
+    discoveryApi,
+    x2aDatabase,
+    kubeService,
+    logger,
+    config,
+    permissionsSvc,
+    catalog,
+  } = deps;
 
   router.get('/projects/:projectId/modules', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules';
     const { projectId } = req.params;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
 
-    // Get user credentials
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-
-    // Verify project exists and the user is permitted to access it
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      { credentials },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project "${projectId}" not found.`);
-    }
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
+      httpAuth,
+      permissionsSvc,
+      catalog,
+    });
 
     // List modules
     const modules = await x2aDatabase.listModules({ projectId });
+
+    // Reconcile any pending/running jobs against K8s
+    await Promise.all(
+      modules.map(m =>
+        reconcileModuleJobs(m, { kubeService, x2aDatabase, logger }),
+      ),
+    );
+
+    // Recalculate status for each module after reconciliation
+    for (const m of modules) {
+      const { status, errorDetails } = calculateModuleStatus({
+        analyze: m.analyze,
+        migrate: m.migrate,
+        publish: m.publish,
+      });
+      m.status = status;
+      m.errorDetails = errorDetails;
+    }
 
     res.json(modules);
   });
@@ -59,17 +107,15 @@ export function registerModuleRoutes(
       `${endpoint} request received: projectId=${projectId}, moduleId=${moduleId}`,
     );
 
-    // Get user credentials
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-
-    // Verify project exists and the user is permitted to access it
-    const project = await x2aDatabase.getProject(
-      { projectId, skipEnrichment: true },
-      { credentials },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project "${projectId}" not found.`);
-    }
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
+      httpAuth,
+      permissionsSvc,
+      catalog,
+    });
 
     // Get module
     const module = await x2aDatabase.getModule({
@@ -85,6 +131,18 @@ export function registerModuleRoutes(
       );
     }
 
+    // Reconcile any pending/running jobs against K8s
+    await reconcileModuleJobs(module, { kubeService, x2aDatabase, logger });
+
+    // Recalculate status after reconciliation may have updated phase jobs
+    const { status, errorDetails } = calculateModuleStatus({
+      analyze: module.analyze,
+      migrate: module.migrate,
+      publish: module.publish,
+    });
+    module.status = status;
+    module.errorDetails = errorDetails;
+
     res.json(module);
   });
 
@@ -98,9 +156,20 @@ export function registerModuleRoutes(
   router.post(
     '/projects/:projectId/modules',
     async (req: express.Request, res: express.Response) => {
-      const endpoint = 'POST /projects/:projectId/modules';
+      const endpoint =
+        'Temporary endpoint - for testing only. POST /projects/:projectId/modules';
       const { projectId } = req.params;
       logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        httpAuth,
+        permissionsSvc,
+        catalog,
+      });
 
       // Validate request body
       const createModuleRequestSchema = z.object({
@@ -115,18 +184,6 @@ export function registerModuleRoutes(
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
       const { name, sourcePath } = parsedBody.data;
-
-      // Get user credentials
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-
-      // Verify project exists
-      const project = await x2aDatabase.getProject(
-        { projectId },
-        { credentials },
-      );
-      if (!project) {
-        throw new NotFoundError(`Project "${projectId}" not found.`);
-      }
 
       // Create module
       const module = await x2aDatabase.createModule({
@@ -183,6 +240,16 @@ export function registerModuleRoutes(
       const { phase, sourceRepoAuth, targetRepoAuth, aapCredentials } =
         parsedBody.data;
 
+      const { project, userRef } = await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        httpAuth,
+        permissionsSvc,
+        catalog,
+      });
+
       // Get tokens with config-based fallback
       const sourceToken =
         sourceRepoAuth?.token ??
@@ -200,19 +267,6 @@ export function registerModuleRoutes(
         throw new InputError(
           'Target repository token is required. Provide it in the request or configure x2a.git.targetRepo.token.',
         );
-      }
-
-      // Get user reference safely
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userRef = getUserRef(credentials);
-
-      // Verify project exists
-      const project = await x2aDatabase.getProject(
-        { projectId },
-        { credentials },
-      );
-      if (!project) {
-        throw new NotFoundError(`Project "${projectId}" not found.`);
       }
 
       // Verify module exists
@@ -254,8 +308,7 @@ export function registerModuleRoutes(
         });
       }
 
-      // Generate callback token and create job record
-      const callbackToken = randomUUID();
+      const callbackToken = generateCallbackToken();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId,
@@ -266,7 +319,10 @@ export function registerModuleRoutes(
 
       // Create Kubernetes job (will create both project and job secrets)
       // Use discoveryApi for consistent URL resolution
-      const moduleBaseUrl = await discoveryApi.getBaseUrl('x2a');
+      // Allow override via config for local development (e.g., using LAN IP)
+      const moduleBaseUrl =
+        config.getOptionalString('x2a.callbackBaseUrl') ??
+        (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${moduleBaseUrl}/projects/${projectId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
@@ -292,14 +348,18 @@ export function registerModuleRoutes(
         aapCredentials,
       });
 
-      // Update job with k8s job name
-      await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+      // Update job with k8s job name and mark as running
+      await x2aDatabase.updateJob({
+        id: job.id,
+        k8sJobName,
+        status: 'running',
+      });
 
       logger.info(
         `${phase} job created: jobId=${job.id}, moduleId=${moduleId}, k8sJobName=${k8sJobName}`,
       );
 
-      return res.json({ status: 'pending', jobId: job.id } as any);
+      return res.json({ status: 'running', jobId: job.id } as any);
     },
   );
 }

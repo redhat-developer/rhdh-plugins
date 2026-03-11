@@ -70,7 +70,10 @@ export type ProjectsProjectIdCollectArtifactsPost = {
     moduleId?: string;
     phase: MigrationPhase;
   };
-  response: ProjectsProjectIdCollectArtifactsPost200Response | void | void;
+  header: {
+    xCallbackSignature: string;
+  };
+  response: ProjectsProjectIdCollectArtifactsPost200Response | void | void | void;
 };
 /**
  * @public
@@ -89,6 +92,18 @@ export type ProjectsProjectIdGet = {
     projectId: string;
   };
   response: Project | void;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdLogGet = {
+  path: {
+    projectId: string;
+  };
+  query: {
+    streaming?: boolean;
+  };
+  response: string | void;
 };
 /**
  * @public
@@ -165,6 +180,8 @@ export type EndpointMap = {
   '#_delete|/projects/{projectId}': ProjectsProjectIdDelete;
 
   '#get|/projects/{projectId}': ProjectsProjectIdGet;
+
+  '#get|/projects/{projectId}/log': ProjectsProjectIdLogGet;
 
   '#get|/projects/{projectId}/modules': ProjectsProjectIdModulesGet;
 

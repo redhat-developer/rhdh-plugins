@@ -15,24 +15,134 @@
  */
 
 import express from 'express';
+import type { Readable } from 'node:stream';
 import { InputError, NotFoundError } from '@backstage/errors';
-import { ModulePhase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  ModulePhase,
+  Job,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
-import { isUserOfAdminViewPermission } from './common';
+import { useEnforceProjectPermissions } from './common';
+
+type Response = express.Response;
+
+async function sendJobLogs(
+  res: Response,
+  job: Job,
+  streaming: boolean,
+  deps: Pick<RouterDeps, 'x2aDatabase' | 'kubeService' | 'logger'>,
+): Promise<void> {
+  const { x2aDatabase, kubeService, logger } = deps;
+
+  if (job.status === 'success' || job.status === 'error') {
+    logger.info(
+      `Job ${job.id} is finished (status: ${job.status}), returning logs from database`,
+    );
+    res.setHeader('Content-Type', 'text/plain');
+    const log = await x2aDatabase.getJobLogs({ jobId: job.id });
+    if (!log) {
+      logger.error(`Log not found for a finished job ${job.id}`);
+    }
+    res.send(log || '');
+    return;
+  }
+
+  if (!job.k8sJobName) {
+    logger.warn(`Job ${job.id} has no k8sJobName, returning empty logs`);
+    res.setHeader('Content-Type', 'text/plain');
+    res.send('');
+    return;
+  }
+
+  const logs = await kubeService.getJobLogs(job.k8sJobName, streaming);
+  res.setHeader('Content-Type', 'text/plain');
+  if (streaming && typeof logs !== 'string') {
+    const stream = logs as Readable;
+    stream.on('error', err => {
+      logger.error(
+        `Log stream error for job ${job.id} (k8s: ${job.k8sJobName}): ${err.message}`,
+      );
+      if (!res.writableEnded) {
+        res.write('\n\n[Log stream error: connection interrupted]\n');
+        res.end();
+      }
+      stream.destroy();
+    });
+    res.on('close', () => {
+      if (!stream.destroyed) {
+        stream.destroy();
+      }
+    });
+    stream.pipe(res);
+  } else {
+    res.send(logs as string);
+  }
+}
 
 export function registerJobRoutes(
   router: express.Router,
   deps: RouterDeps,
 ): void {
-  const { httpAuth, x2aDatabase, kubeService, logger, permissionsSvc } = deps;
+  const {
+    httpAuth,
+    x2aDatabase,
+    kubeService,
+    logger,
+    permissionsSvc,
+    catalog,
+  } = deps;
 
-  // TODO: Add /projects/:projectId/log
+  // Log for the init-phase
+  router.get('/projects/:projectId/log', async (req, res) => {
+    const endpoint = 'GET /projects/:projectId/log';
+    const { projectId } = req.params;
+    const rawStreaming = req.query.streaming as string | boolean | undefined;
+    const streaming = rawStreaming === 'true' || rawStreaming === true;
 
+    logger.info(
+      `${endpoint} request: projectId=${projectId}, streaming=${streaming}`,
+    );
+
+    // Enforce project permissions
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
+      httpAuth,
+      permissionsSvc,
+      catalog,
+    });
+
+    // Get latest init job
+    const jobs = await x2aDatabase.listJobs({
+      projectId,
+      phase: 'init',
+      lastJobOnly: true,
+    });
+
+    if (jobs.length === 0) {
+      throw new NotFoundError(
+        `No init job found for the project projectId=${projectId}`,
+      );
+    }
+
+    const latestJob = jobs[0]; // Already sorted by started_at DESC in listJobs
+
+    await sendJobLogs(res, latestJob, streaming, {
+      x2aDatabase,
+      kubeService,
+      logger,
+    });
+  });
+
+  // Logs for the module-specific phases
   router.get('/projects/:projectId/modules/:moduleId/log', async (req, res) => {
     const endpoint = 'GET /projects/:projectId/modules/:moduleId/log';
     const { projectId, moduleId } = req.params;
-    const streaming = req.query.streaming === 'true';
+    const rawStreaming = req.query.streaming as string | boolean | undefined;
+    const streaming = rawStreaming === 'true' || rawStreaming === true;
     const phase = req.query.phase as ModulePhase;
 
     // Validate phase parameter (required)
@@ -46,22 +156,16 @@ export function registerJobRoutes(
       `${endpoint} request: projectId=${projectId}, moduleId=${moduleId}, streaming=${streaming}, phase=${phase}`,
     );
 
-    // Get credentials and permissions
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    const canViewAll = await isUserOfAdminViewPermission(
-      req as unknown as express.Request,
-      permissionsSvc,
+    // Enforce project permissions
+    await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      projectId,
+      x2aDatabase,
       httpAuth,
-    );
-
-    // Verify project exists and user has access
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      { credentials, canViewAll },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project not found`);
-    }
+      permissionsSvc,
+      catalog,
+    });
 
     // Verify module exists
     const module = await x2aDatabase.getModule({
@@ -91,41 +195,10 @@ export function registerJobRoutes(
 
     const latestJob = jobs[0]; // Already sorted by started_at DESC in listJobs
 
-    // If job is finished, return logs from database
-    if (latestJob.status === 'success' || latestJob.status === 'error') {
-      logger.info(
-        `Job ${latestJob.id} is finished (status: ${latestJob.status}), returning logs from database`,
-      );
-      res.setHeader('Content-Type', 'text/plain');
-      const log = await x2aDatabase.getJobLogs({ jobId: latestJob.id });
-      if (!log) {
-        logger.error(`Log not found for a finished job ${latestJob.id}`);
-      }
-      res.send(log || '');
-      return;
-    }
-
-    // Check if job has k8sJobName
-    if (!latestJob.k8sJobName) {
-      logger.warn(
-        `Job ${latestJob.id} has no k8sJobName, returning empty logs`,
-      );
-      res.setHeader('Content-Type', 'text/plain');
-      res.send('');
-      return;
-    }
-
-    // Get logs from Kubernetes
-    const logs = await kubeService.getJobLogs(latestJob.k8sJobName, streaming);
-
-    // Set content type
-    res.setHeader('Content-Type', 'text/plain');
-
-    // Handle streaming vs non-streaming
-    if (streaming && typeof logs !== 'string') {
-      logs.pipe(res);
-    } else {
-      res.send(logs as string);
-    }
+    await sendJobLogs(res, latestJob, streaming, {
+      x2aDatabase,
+      kubeService,
+      logger,
+    });
   });
 }

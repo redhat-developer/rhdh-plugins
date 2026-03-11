@@ -19,6 +19,11 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: mockUseTranslation,
 }));
 
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useRouteRef: require('../../test-utils/mockRouteRef').mockUseRouteRef,
+}));
+
 import {
   mockApis,
   renderInTestApp,
@@ -26,44 +31,19 @@ import {
 } from '@backstage/test-utils';
 import { ProjectList } from './ProjectList';
 import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
+import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {
-  Project,
-  ProjectsGet200Response,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 jest.mock('../../useSeedTestData', () => ({
   useSeedTestData: jest.fn(),
 }));
 
-const createMockProjects = (count: number, offset: number = 0): Project[] => {
-  return Array.from({ length: count }, (_, i) => {
-    const index = offset + i;
-    return {
-      id: `project-${index}`,
-      name: `Project ${index}`,
-      abbreviation: `P${index}`,
-      description: `Description ${index}`,
-      sourceRepoUrl: `https://github.com/org/source-repo${index}`,
-      targetRepoUrl: `https://github.com/org/target-repo${index}`,
-      sourceRepoBranch: `main${index}`,
-      targetRepoBranch: `main${index}`,
-      createdAt: new Date(
-        `2024-01-${String(index + 1).padStart(2, '0')}T00:00:00Z`,
-      ),
-      createdBy: `user:default/user${index}`,
-    };
-  });
-};
-
-const createMockResponse = (
-  items: Project[],
-  totalCount: number,
-): ProjectsGet200Response => ({
-  items,
-  totalCount,
-});
+import {
+  createMockProjects,
+  createMockResponse,
+  mockPermissionApi,
+} from '../../test-utils/projectListTestUtils';
 
 describe('ProjectList', () => {
   let fetchApiMock: jest.Mock;
@@ -110,6 +90,7 @@ describe('ProjectList', () => {
           apis={[
             [fetchApiRef, { fetch: fetchApiMock }],
             [discoveryApiRef, discoveryApiMock],
+            [permissionApiRef, mockPermissionApi],
           ]}
         >
           <ProjectList />

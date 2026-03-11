@@ -16,7 +16,6 @@
 
 import { z } from 'zod';
 import express from 'express';
-import { randomUUID } from 'node:crypto';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { InputError, NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
@@ -27,10 +26,12 @@ import {
 import type { RouterDeps } from './types';
 import {
   authorize,
+  generateCallbackToken,
+  getGroupsOfUser,
   getUserRef,
-  isUserOfAdminViewPermission,
-  isUserOfAdminWritePermission,
   reconcileJobStatus,
+  useEnforceProjectPermissions,
+  useEnforceX2APermissions,
 } from './common';
 import { ProjectsGet, ProjectsPost } from '../schema/openapi';
 
@@ -41,6 +42,7 @@ export function registerProjectRoutes(
   const {
     httpAuth,
     discoveryApi,
+    catalog,
     x2aDatabase,
     kubeService,
     logger,
@@ -51,6 +53,13 @@ export function registerProjectRoutes(
   router.get('/projects', async (req, res) => {
     const endpoint = 'GET /projects';
     logger.info(`${endpoint} request received`);
+
+    const { canViewAll } = await useEnforceX2APermissions({
+      req,
+      readOnly: true,
+      permissionsSvc,
+      httpAuth,
+    });
 
     // parse request query
     const projectsGetRequestSchema = z.object({
@@ -82,13 +91,17 @@ export function registerProjectRoutes(
     logger.info(`${endpoint} request received: query=${JSON.stringify(query)}`);
 
     // list projects
+    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+    const userRef = getUserRef(credentials);
+    const groupsOfUser = await getGroupsOfUser(userRef, {
+      catalog,
+      credentials,
+    });
+
     const { projects, totalCount } = await x2aDatabase.listProjects(query, {
-      credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-      canViewAll: await isUserOfAdminViewPermission(
-        req as unknown as express.Request,
-        permissionsSvc,
-        httpAuth,
-      ),
+      credentials,
+      canViewAll,
+      groupsOfUser,
     });
 
     const response: ProjectsGet['response'] = {
@@ -118,6 +131,7 @@ export function registerProjectRoutes(
       name: z.string(),
       description: z.string(),
       abbreviation: z.string(),
+      ownedByGroup: z.string().optional(),
       sourceRepoUrl: z.string(),
       targetRepoUrl: z.string(),
       sourceRepoBranch: z.string(),
@@ -131,6 +145,21 @@ export function registerProjectRoutes(
       throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
     }
     const requestBody: ProjectsPost['body'] = parsedBody.data;
+
+    // validate the user is a member of the ownedByGroup
+    if (requestBody.ownedByGroup) {
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+      const userRef = getUserRef(credentials);
+      const groupsOfUser = await getGroupsOfUser(userRef, {
+        catalog,
+        credentials,
+      });
+      if (!groupsOfUser.includes(requestBody.ownedByGroup)) {
+        throw new NotAllowedError(
+          'You are not allowed to create a project for the given group',
+        );
+      }
+    }
 
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {
@@ -146,20 +175,17 @@ export function registerProjectRoutes(
     const projectId = req.params.projectId;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
 
-    const project = await x2aDatabase.getProject(
-      { projectId },
-      {
-        credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-        canViewAll: await isUserOfAdminViewPermission(
-          req as unknown as express.Request,
-          permissionsSvc,
-          httpAuth,
-        ),
-      },
-    );
-    if (!project) {
-      throw new NotFoundError(`Project not found`);
-    }
+    const { project } = await useEnforceProjectPermissions({
+      req,
+      readOnly: true,
+      doEnrichment: true,
+      projectId,
+      x2aDatabase,
+      permissionsSvc,
+      httpAuth,
+      catalog,
+    });
+
     res.json(project);
   });
 
@@ -167,15 +193,42 @@ export function registerProjectRoutes(
     const endpoint = 'DELETE /projects/:projectId';
     const projectId = req.params.projectId;
     logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+    const { canWriteAll, credentials, groupsOfUser } =
+      await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        permissionsSvc,
+        httpAuth,
+        catalog,
+      });
+
+    // Cancel any active k8s jobs before deleting DB records
+    const jobs = await x2aDatabase.listJobsForProject({ projectId });
+    const activeJobs = jobs.filter(
+      job => ['pending', 'running'].includes(job.status) && job.k8sJobName,
+    );
+    await Promise.all(
+      activeJobs.map(job => {
+        logger.info(
+          `Cancelling k8s job ${job.k8sJobName} for project ${projectId}`,
+        );
+        return kubeService.deleteJob(job.k8sJobName!).catch(err => {
+          logger.warn(
+            `Failed to cancel k8s job ${job.k8sJobName}: ${err.message}`,
+          );
+        });
+      }),
+    );
+
     const deletedCount = await x2aDatabase.deleteProject(
       { projectId },
       {
-        credentials: await httpAuth.credentials(req, { allow: ['user'] }),
-        canWriteAll: await isUserOfAdminWritePermission(
-          req as unknown as express.Request,
-          permissionsSvc,
-          httpAuth,
-        ),
+        credentials,
+        canWriteAll,
+        groupsOfUser,
       },
     );
     if (deletedCount === 0) {
@@ -190,6 +243,16 @@ export function registerProjectRoutes(
       const endpoint = 'POST /projects/:projectId/run';
       const { projectId } = req.params;
       logger.info(`${endpoint} request received: projectId=${projectId}`);
+
+      const { project, userRef } = await useEnforceProjectPermissions({
+        req,
+        readOnly: false,
+        projectId,
+        x2aDatabase,
+        permissionsSvc,
+        httpAuth,
+        catalog,
+      });
 
       // Validate request body
       const runRequestSchema = z.object({
@@ -241,19 +304,6 @@ export function registerProjectRoutes(
         );
       }
 
-      // Get user reference safely
-      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-      const userRef = getUserRef(credentials);
-
-      // Verify project exists
-      const project = await x2aDatabase.getProject(
-        { projectId },
-        { credentials },
-      );
-      if (!project) {
-        throw new NotFoundError(`Project "${projectId}" not found.`);
-      }
-
       // Check for existing running init job
       const existingJobs = await x2aDatabase.listJobsForProject({ projectId });
       const activeInitJobs = existingJobs.filter(
@@ -278,8 +328,7 @@ export function registerProjectRoutes(
         });
       }
 
-      // Generate callback token and create job record
-      const callbackToken = randomUUID();
+      const callbackToken = generateCallbackToken();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId: undefined, // Init jobs have no module
@@ -291,7 +340,10 @@ export function registerProjectRoutes(
       // Create Kubernetes job (will create both project and job secrets)
       // Use HTTP for in-cluster service-to-service communication
       // Jobs call back to Backstage within the same cluster
-      const baseUrl = await discoveryApi.getBaseUrl('x2a');
+      // Allow override via config for local development (e.g., using LAN IP)
+      const baseUrl =
+        config.getOptionalString('x2a.callbackBaseUrl') ??
+        (await discoveryApi.getBaseUrl('x2a'));
       const callbackUrl = `${baseUrl}/projects/${projectId}/collectArtifacts`;
       const { k8sJobName } = await kubeService.createJob({
         jobId: job.id,
@@ -317,7 +369,10 @@ export function registerProjectRoutes(
       });
 
       // Update job with k8s job name
-      await x2aDatabase.updateJob({ id: job.id, k8sJobName });
+      await x2aDatabase.updateJob({
+        id: job.id,
+        k8sJobName,
+      });
 
       logger.info(
         `Init job created: jobId=${job.id}, k8sJobName=${k8sJobName}`,

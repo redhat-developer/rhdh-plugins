@@ -12,37 +12,33 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Stub code until MCP tools migrated
  */
 import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
-import { createRouter } from './router';
-import { todoListServiceRef } from './services/TodoListService';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
+import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
+import { createSoftwareCatalogActions } from './actions';
 
 /**
- * mcpSoftwareCatalogExtrasPlugin backend plugin
+ * softwareCatalogMcpExtrasPlugin backend plugin
  *
  * @public
  */
-export const mcpSoftwareCatalogExtrasPlugin = createBackendPlugin({
+export const softwareCatalogMcpExtrasPlugin = createBackendPlugin({
   pluginId: 'software-catalog-mcp-extras',
   register(env) {
     env.registerInit({
       deps: {
+        actionsRegistry: actionsRegistryServiceRef,
+        logger: coreServices.logger,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        todoList: todoListServiceRef,
+        catalog: catalogServiceRef,
       },
-      async init({ httpAuth, httpRouter, todoList }) {
-        httpRouter.use(
-          await createRouter({
-            httpAuth,
-            todoList,
-          }),
-        );
+      async init({ actionsRegistry, catalog, logger }) {
+        createSoftwareCatalogActions({ actionsRegistry, catalog, logger });
       },
     });
   },

@@ -15,8 +15,8 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { KubeService } from './KubeService';
 import { X2AConfig } from '../../config';
+import { KubeService } from './KubeService';
 
 // Mock the Kubernetes client
 const mockCoreV1Api = {
@@ -507,6 +507,50 @@ describe('KubeService', () => {
         }),
       );
     });
+
+    it('should return empty string when pod has no name', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [{ metadata: {} }],
+      });
+
+      const result = await kubeService.getJobLogs(jobName);
+
+      expect(result).toBe('');
+      expect(mockCoreV1Api.readNamespacedPodLog).not.toHaveBeenCalled();
+    });
+
+    it('should return empty string when pod phase is Pending', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [
+          {
+            metadata: { name: 'job-x2a-init-abc123-pod' },
+            status: { phase: 'Pending' },
+          },
+        ],
+      });
+
+      const result = await kubeService.getJobLogs(jobName);
+
+      expect(result).toBe('');
+      expect(mockCoreV1Api.readNamespacedPodLog).not.toHaveBeenCalled();
+    });
+
+    it('should throw on K8s API errors (e.g. pod not ready, network failure)', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [{ metadata: { name: 'job-x2a-init-abc123-pod' } }],
+      });
+      const apiError = new Error('AnError');
+      mockCoreV1Api.readNamespacedPodLog.mockRejectedValue(apiError);
+
+      await expect(kubeService.getJobLogs(jobName)).rejects.toThrow(apiError);
+    });
+
+    it('should throw when listNamespacedPod fails', async () => {
+      const listError = new Error('Forbidden');
+      mockCoreV1Api.listNamespacedPod.mockRejectedValue(listError);
+
+      await expect(kubeService.getJobLogs(jobName)).rejects.toThrow(listError);
+    });
   });
 
   describe('deleteJob', () => {
@@ -562,6 +606,68 @@ describe('KubeService', () => {
       const result = await kubeService.listJobsForProject(projectId);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('namespace resolution', () => {
+    it('should use configured namespace when provided', () => {
+      // Import here to ensure fresh module
+      const { resolveNamespace } = require('./KubeService');
+
+      const result = resolveNamespace('configured-namespace', 'default');
+
+      expect(result).toEqual({
+        namespace: 'configured-namespace',
+        source: 'config',
+      });
+    });
+
+    it('should use in-cluster namespace when config not provided and file exists', () => {
+      // Mock fs module
+      const fsMock = {
+        existsSync: jest.fn().mockReturnValue(true),
+        readFileSync: jest.fn().mockReturnValue('in-cluster-namespace\n'),
+      };
+      jest.doMock('node:fs', () => fsMock);
+
+      // Clear module cache and re-import
+      jest.resetModules();
+      const { resolveNamespace } = require('./KubeService');
+
+      const result = resolveNamespace(undefined, 'default');
+
+      expect(result).toEqual({
+        namespace: 'in-cluster-namespace',
+        source: 'in-cluster',
+      });
+
+      // Clean up
+      jest.dontMock('node:fs');
+      jest.resetModules();
+    });
+
+    it('should use default namespace when in-cluster file does not exist', () => {
+      // Mock fs module
+      const fsMock = {
+        existsSync: jest.fn().mockReturnValue(false),
+        readFileSync: jest.fn(),
+      };
+      jest.doMock('node:fs', () => fsMock);
+
+      // Clear module cache and re-import
+      jest.resetModules();
+      const { resolveNamespace } = require('./KubeService');
+
+      const result = resolveNamespace(undefined, 'default');
+
+      expect(result).toEqual({
+        namespace: 'default',
+        source: 'default',
+      });
+
+      // Clean up
+      jest.dontMock('node:fs');
+      jest.resetModules();
     });
   });
 });

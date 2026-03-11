@@ -16,6 +16,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   Artifact,
+  getAuthTokenDescriptor,
   MigrationPhase,
   Module,
   ModulePhase,
@@ -30,28 +31,16 @@ import AlertTitle from '@material-ui/lab/AlertTitle';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { useClientService } from '../../ClientService';
-import { Artifacts } from './Artifacts';
-import { humanizeDate } from '../tools';
-import { getAuthTokenDescriptor, useRepoAuthentication } from '../../repoAuth';
-import { ModuleStatusCell } from './ModuleStatusCell';
+import { Artifacts } from '../Artifacts';
+import { useRepoAuthentication } from '../../repoAuth';
+import { CurrentPhaseCell } from '../CurrentPhaseCell';
+import { ModuleStatusCell } from '../ModuleStatusCell';
+import { TimingCell } from './TimingCell';
 import { moduleRouteRef } from '../../routes';
-
-const getLastJob = (rowData: Module) => {
-  const phases: ('publish' | 'migrate' | 'analyze')[] = [
-    'publish',
-    'migrate',
-    'analyze',
-  ];
-  for (const phase of phases) {
-    if (rowData[phase]?.phase) {
-      return rowData[phase];
-    }
-  }
-  return undefined;
-};
+import { getLastPhaseReached } from '../tools';
 
 export const getNextPhase = (module: Module): ModulePhase | undefined => {
-  const lastJob = getLastJob(module);
+  const lastJob = getLastPhaseReached(module);
   const lastPhase: MigrationPhase = lastJob?.phase || 'init';
 
   const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
@@ -73,15 +62,16 @@ const useColumns = ({
   const { t } = useTranslation();
   const modulePath = useRouteRef(moduleRouteRef);
 
-  const lastPhaseCell = useCallback(
-    (rowData: Module) => {
-      const lastPhase = getLastJob(rowData)?.phase || 'none';
-      return <div>{t(`module.phases.${lastPhase}`)}</div>;
-    },
-    [t],
+  const currentPhaseCell = useCallback((rowData: Module) => {
+    const lastJob = getLastPhaseReached(rowData);
+    return <CurrentPhaseCell phase={lastJob?.phase} />;
+  }, []);
+
+  const statusCell = useCallback(
+    (rowData: Module) => <ModuleStatusCell module={rowData} />,
+    [],
   );
 
-  // List the artifacts for the last phase
   const artifactsCell = useCallback(
     (module: Module) => {
       const artifacts: Artifact[] = [];
@@ -99,28 +89,10 @@ const useColumns = ({
     [targetRepoUrl, targetRepoBranch],
   );
 
-  const startedAtCell = useCallback(
-    (rowData: Module) => {
-      const lastJob = getLastJob(rowData);
-      if (!lastJob) {
-        return <div>{t('module.phases.none')}</div>;
-      }
-      const formatted = humanizeDate(lastJob.startedAt);
-      return <div>{formatted}</div>;
-    },
-    [t],
-  );
-  const finishedAtCell = useCallback(
-    (rowData: Module) => {
-      const lastJob = getLastJob(rowData);
-      if (!lastJob?.finishedAt) {
-        return <div>{t('module.phases.none')}</div>;
-      }
-      const formatted = humanizeDate(lastJob.finishedAt);
-      return <div>{formatted}</div>;
-    },
-    [t],
-  );
+  const timingCell = useCallback((rowData: Module) => {
+    const lastJob = getLastPhaseReached(rowData);
+    return <TimingCell lastJob={lastJob} />;
+  }, []);
 
   const nameCell = useCallback(
     (rowData: Module) => {
@@ -141,30 +113,13 @@ const useColumns = ({
   return useMemo((): TableColumn<Module>[] => {
     return [
       { render: nameCell, title: t('module.name') },
-      {
-        field: 'status',
-        render: (rowData: Module) => (
-          <ModuleStatusCell
-            status={rowData.status}
-            errorDetails={rowData.errorDetails}
-          />
-        ),
-        title: t('module.status'),
-      },
+      { render: currentPhaseCell, title: t('module.currentPhase') },
+      { render: statusCell, title: t('module.status') },
       { field: 'sourcePath', title: t('module.sourcePath') },
-      { render: lastPhaseCell, title: t('module.lastPhase') },
       { render: artifactsCell, title: t('module.artifacts') },
-      { render: startedAtCell, title: t('module.startedAt') },
-      { render: finishedAtCell, title: t('module.finishedAt') },
+      { render: timingCell, title: t('module.lastUpdate') },
     ];
-  }, [
-    t,
-    lastPhaseCell,
-    artifactsCell,
-    startedAtCell,
-    finishedAtCell,
-    nameCell,
-  ]);
+  }, [t, nameCell, currentPhaseCell, statusCell, artifactsCell, timingCell]);
 };
 
 const canRunNextPhase = ({ module }: { module: Module }) => {
@@ -174,7 +129,7 @@ const canRunNextPhase = ({ module }: { module: Module }) => {
   }
 
   // TODO: Consider check whether we have all artifacts instead of just checking the last job status
-  const lastJob = getLastJob(module);
+  const lastJob = getLastPhaseReached(module);
   if (!lastJob || lastJob.status === 'success') {
     return true;
   }

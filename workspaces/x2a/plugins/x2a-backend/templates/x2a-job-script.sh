@@ -8,10 +8,10 @@ export GIT_TERMINAL_PROMPT=0
 ERROR_MESSAGE=""
 ARTIFACTS=()
 PUSH_FAILED=""
+TERMINATED=false
+COMMIT_ID=""
 
 # Report job result back to the backend.
-# TODO: Incorporate CALLBACK_TOKEN for request signing (HMAC-SHA256).
-# See collectArtifacts.ts:85-90 for the planned signature validation.
 report_result() {
   local status="$1"
   local message="$2"
@@ -23,7 +23,7 @@ report_result() {
     url="${url}&moduleId=${MODULE_ID}"
   fi
 
-  local cmd=(uv run app.py report --url "${url}" --job-id "${JOB_ID}")
+  local cmd=(uv run app.py report --url "${url}" --job-id "${JOB_ID}" --source-dir "${SOURCE_BASE}")
 
   for artifact in "${ARTIFACTS[@]}"; do
     cmd+=(--artifacts "${artifact}")
@@ -31,6 +31,14 @@ report_result() {
 
   if [ "${status}" = "error" ] && [ -n "${message}" ]; then
     cmd+=(--error-message "${message}")
+  fi
+
+  if [ -n "${COMMIT_ID:-}" ]; then
+    cmd+=(--commit-id "${COMMIT_ID}")
+  fi
+
+  if [ -n "${CALLBACK_TOKEN:-}" ]; then
+    cmd+=(--callback-token "${CALLBACK_TOKEN}")
   fi
 
   echo "Reporting result: status=${status}, phase=${PHASE}"
@@ -86,13 +94,16 @@ Job: ${JOB_ID}
 Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 " || true
     git pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
     if ! git push origin "${TARGET_REPO_BRANCH}"; then
       PUSH_FAILED="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
       echo "ERROR: ${PUSH_FAILED}"
     fi
   fi
 
-  if [ ${exit_code} -ne 0 ]; then
+  if [ "$TERMINATED" = true ]; then
+    report_result "error" "Job was terminated"
+  elif [ ${exit_code} -ne 0 ]; then
     report_result "error" "${ERROR_MESSAGE:-Script failed with exit code ${exit_code}}"
   elif [ -n "${PUSH_FAILED}" ]; then
     report_result "error" "${PUSH_FAILED}"
@@ -136,6 +147,7 @@ git_clone_repos() {
 }
 
 trap cleanup EXIT
+trap 'TERMINATED=true' SIGTERM SIGINT
 
 #
 # X2A Job Script
@@ -353,6 +365,66 @@ case "${PHASE}" in
     fi
 
     ARTIFACTS+=("migrated_sources:${PROJECT_DIR}/modules/${MODULE_NAME}/ansible")
+    ;;
+
+  publish)
+    echo "=== Running x2a publish phase ==="
+    MODULE_NAME_SANITIZED=$(echo "${MODULE_NAME}" | tr ' ' '_')
+    ROLE_NAME=$(echo "${MODULE_NAME}" | tr ' -' '__')
+    OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
+
+    # Verify migrate phase output exists
+    if [ ! -d "${OUTPUT_DIR}/ansible/roles/${ROLE_NAME}" ]; then
+      ERROR_MESSAGE="Migrated role not found at ${OUTPUT_DIR}/ansible/roles/${ROLE_NAME} - migrate phase must complete first"
+      exit 1
+    fi
+
+    # Check if x2a tool is available (required)
+    if [ ! -d /app ] || [ ! -f /app/app.py ]; then
+      ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
+      exit 1
+    fi
+
+    # Step 1: publish-project — assemble Ansible project from migrated role
+    echo "=== Step 1: Assembling Ansible project ==="
+    echo "Command: uv run app.py publish-project ${PROJECT_DIR} ${MODULE_NAME}"
+
+    # publish-project reads from {project_id}/modules/{module_name}/ansible/roles/{module_name}/
+    # and writes to {project_id}/ansible-project/
+    # It operates relative to CWD, so we run from TARGET_BASE
+    pushd "${TARGET_BASE}"
+    uv run --project /app /app/app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
+    popd
+
+    # Verify ansible-project was created
+    ANSIBLE_PROJECT_DIR="${PROJECT_PATH}/ansible-project"
+    if [ ! -d "${ANSIBLE_PROJECT_DIR}" ]; then
+      ERROR_MESSAGE="ansible-project directory not created by publish-project"
+      exit 1
+    fi
+
+    echo ""
+    echo "=== Ansible project contents ==="
+    find "${ANSIBLE_PROJECT_DIR}" -type f | head -50
+
+    # Step 2: publish-aap — register with AAP and sync
+    echo ""
+    echo "=== Step 2: Publishing to AAP ==="
+    echo "Command: uv run app.py publish-aap --target-repo ${TARGET_REPO_URL} --target-branch ${TARGET_REPO_BRANCH} --project-id ${PROJECT_DIR}"
+    cd /app
+    PUBLISH_OUTPUT=$(uv run app.py publish-aap \
+      --target-repo "${TARGET_REPO_URL}" \
+      --target-branch "${TARGET_REPO_BRANCH}" \
+      --project-id "${PROJECT_DIR}" 2>&1 | tee /dev/stderr)
+
+    # Parse AAP project ID from output and construct URL
+    AAP_PROJECT_ID=$(echo "${PUBLISH_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
+    if [ -n "${AAP_PROJECT_ID}" ]; then
+      ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects/${AAP_PROJECT_ID}/details")
+    else
+      echo "WARNING: Could not parse AAP project ID from publish-aap output"
+      ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects")
+    fi
     ;;
 
   *)

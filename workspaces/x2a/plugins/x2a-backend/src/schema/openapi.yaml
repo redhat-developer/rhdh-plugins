@@ -74,6 +74,9 @@ paths:
                 name:
                   type: string
                   description: Full name of the project
+                ownedByGroup:
+                  type: string
+                  description: Optional - group that owns the project instead of the creator (logged in user)
                 description:
                   type: string
                   description: Description of the project
@@ -339,6 +342,32 @@ paths:
         '404':
           description: Project or module not found
 
+  /projects/{projectId}/log:
+    get:
+      summary: Returns logs for the init phase
+      parameters:
+        - in: path
+          name: projectId
+          schema:
+            type: string
+          required: true
+          description: Project UUID
+        - in: query
+          name: streaming
+          schema:
+            type: boolean
+          required: false
+          description: Whether to stream logs (text/plain) or return all at once
+      responses:
+        '200':
+          description: Project's init phase logs
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Project not found or no init job exists
+
   /projects/{projectId}/modules/{moduleId}/log:
     get:
       summary: Returns logs for the latest job of a module
@@ -379,11 +408,17 @@ paths:
 
   /projects/{projectId}/collectArtifacts:
     post:
-      security: []
+      security:
+        - callbackSignature: []
       summary: Collects artifacts from a completed X2Ansible job
       description: |
         Callback endpoint for X2Ansible jobs to submit execution artifacts and results.
         This endpoint is called by the X2Ansible job runner when a migration phase completes.
+
+        Authentication: Requires HMAC-SHA256 signature in X-Callback-Signature header.
+        The signature is computed as: HMAC-SHA256(callbackToken, raw_request_body)
+
+        Replay attack prevention: Jobs are only accepted within 3 hours of job creation time (based on job.startedAt)
       parameters:
         - in: path
           name: projectId
@@ -406,6 +441,12 @@ paths:
             $ref: '#/components/schemas/MigrationPhase'
           required: true
           description: Migration phase that completed
+        - in: header
+          name: X-Callback-Signature
+          required: true
+          schema:
+            type: string
+          description: HMAC-SHA256(callbackToken, raw_request_body) as hex string
       requestBody:
         required: true
         content:
@@ -432,6 +473,9 @@ paths:
                     $ref: '#/components/schemas/Artifact'
                 telemetry:
                   $ref: '#/components/schemas/Telemetry'
+                commitId:
+                  type: string
+                  description: Git commit SHA from the job's push to target repo
               required:
                 - status
                 - jobId
@@ -448,12 +492,26 @@ paths:
                     description: Success confirmation message
                 required:
                   - message
-        '404':
-          description: Project or job not found
         '400':
           description: Invalid request data
+        '401':
+          description: Invalid or missing signature
+        '404':
+          description: Project or job not found
 
 components:
+  securitySchemes:
+    callbackSignature:
+      type: apiKey
+      in: header
+      name: X-Callback-Signature
+      description: |
+        HMAC-SHA256 signature of raw request body using job-specific callback token.
+        Signature is computed as: HMAC-SHA256(callbackToken, raw_request_body)
+        and sent as a hex-encoded string.
+
+        Replay attack prevention: Requests are only accepted within 3 hours of job creation time.
+
   schemas:
     Project:
       type: object
@@ -495,6 +553,9 @@ components:
         status:
           $ref: '#/components/schemas/ProjectStatus'
           description: Project status calculated from the status of its modules
+        initJob:
+          $ref: '#/components/schemas/Job'
+          description: Project's init job
       required:
         - id
         - name
@@ -665,6 +726,9 @@ components:
             $ref: '#/components/schemas/Artifact'
         telemetry:
           $ref: '#/components/schemas/Telemetry'
+        commitId:
+          type: string
+          description: Git commit SHA produced by this job
 
     ArtifactType:
       type: string
@@ -673,6 +737,7 @@ components:
         - module_migration_plan
         - migrated_sources
         - project_metadata
+        - ansible_project
 
     Artifact:
       type: object
@@ -786,6 +851,12 @@ components:
           type: number
           format: double
           description: Execution duration in seconds
+        inputTokens:
+          type: integer
+          description: LLM input token count for this agent
+        outputTokens:
+          type: integer
+          description: LLM output token count for this agent
         metrics:
           type: object
           additionalProperties: true

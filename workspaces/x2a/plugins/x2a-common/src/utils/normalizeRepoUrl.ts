@@ -38,7 +38,15 @@ export function normalizeRepoUrl(url: string): string {
     const parsed = new URL(`https://${url.trim()}`);
     const host = parsed.host;
     const owner = parsed.searchParams.get('owner') ?? '';
-    const repo = parsed.searchParams.get('repo') ?? '';
+    let repo = parsed.searchParams.get('repo') ?? '';
+
+    // If repo param contains a full URL (user pasted a URL into the repo field),
+    // extract just the repository name from the path.
+    if (repo.startsWith('https://') || repo.startsWith('http://')) {
+      const repoUrl = new URL(repo);
+      const segments = repoUrl.pathname.split('/').filter(Boolean);
+      repo = segments[segments.length - 1] ?? repo;
+    }
 
     // GitHub / GitLab style: host?owner=someone&repo=myrepo
     if (owner && repo) {

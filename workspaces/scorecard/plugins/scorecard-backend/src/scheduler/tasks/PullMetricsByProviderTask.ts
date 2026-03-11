@@ -161,8 +161,13 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 value,
                 timestamp: new Date(),
                 status,
+                entity_kind: normalizeField(entity.kind),
+                entity_namespace: normalizeField(entity.metadata.namespace),
+                entity_owner: normalizeField(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
+              // status is intentionally omitted — a calculation failure produces a NULL status
+              // in the database, which sorts last when sortBy=status is used
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
@@ -170,6 +175,9 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),
+                entity_kind: normalizeField(entity.kind),
+                entity_namespace: normalizeField(entity.metadata.namespace),
+                entity_owner: normalizeField(entity?.spec?.owner),
               } as DbMetricValueCreate;
             }
           }),
@@ -195,4 +203,13 @@ export class PullMetricsByProviderTask implements SchedulerTask {
       throw error;
     }
   }
+}
+
+function normalizeField(field: unknown): string | undefined {
+  if (typeof field !== 'string') return undefined;
+  const normalized = field.trim().toLowerCase();
+  if (!normalized) return undefined;
+
+  // Prevent DB insertion failures (limits column length to 255 characters)
+  return normalized.length <= 255 ? normalized : normalized.slice(0, 255);
 }
