@@ -261,9 +261,8 @@ function initPublicServices(
 ): PublicServices {
   console.log('init public services');
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
-  const orchestratorKafka: OrchestratorKafkaServiceOptions =
-    config.getOptional('orchestrator.kafka') ??
-    ({} as OrchestratorKafkaServiceOptions);
+  const orchestratorKafka: OrchestratorKafkaServiceOptions | undefined =
+    config.getOptional('orchestrator.kafka');
   const dataIndexService = new DataIndexService(dataIndexUrl, logger);
   const sonataFlowService = new SonataFlowService(
     dataIndexService,
