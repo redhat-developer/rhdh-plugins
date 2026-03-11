@@ -58,13 +58,11 @@ export async function findAllRepositories(
     }',${pageNumber},${pageSize})..`,
   );
 
-  // get all already imported repos
   const alreadyImportedRepositories =
     await deps.catalogHttpClient.listCatalogUrlLocationEntitiesById();
   const alreadyImportedRepositoriesLocationTargets =
     alreadyImportedRepositories.locations.map(location => location.target);
 
-  // get all available repos
   const { repositories: allRepositories, errors } =
     await deps.gitApiService.getRepositoriesFromIntegrations(
       search,
@@ -72,7 +70,6 @@ export async function findAllRepositories(
       pageSize,
     );
 
-  // filter out the already imported ones
   const notImportedYetRepositories = allRepositories.filter(repo => {
     const html_urlWithSlash = repo.html_url.concat('/');
 
@@ -83,7 +80,6 @@ export async function findAllRepositories(
     return !alreadyImported;
   });
 
-  // slice the results to paginate
   const slicedRepositories = notImportedYetRepositories.slice(
     (pageNumber - 1) * pageSize,
     pageNumber * pageSize,
@@ -97,7 +93,6 @@ export async function findAllRepositories(
     totalCount: notImportedYetRepositories.length,
   };
 
-  // return formatted result
   const response = await formatResponse(
     deps,
     gitRepositoryResponse,
