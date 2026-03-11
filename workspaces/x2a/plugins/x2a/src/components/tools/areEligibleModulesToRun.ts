@@ -26,5 +26,8 @@ export const areEligibleModulesToRun = (project: Project): boolean => {
     return false;
   }
 
-  return summary.waiting > 0;
+  return (
+    summary.waiting > 0 ||
+    (project.status?.state === 'initialized' && summary.pending > 0)
+  );
 };
