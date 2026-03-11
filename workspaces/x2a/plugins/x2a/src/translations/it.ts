@@ -173,6 +173,21 @@ const x2aPluginTranslationIt = createTranslationMessages({
       'Conteggio delle chiamate agli strumenti',
     'modulePage.phases.resyncMigrationPlanInstructions':
       "Sincronizza l'elenco dei moduli con il piano di migrazione.",
+    'time.duration.daysAndHours': '{{days}}g {{hours}}h',
+    'time.duration.daysOnly': '{{days}}g',
+    'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',
+    'time.duration.hoursOnly': '{{hours}}h',
+    'time.duration.minutesAndSeconds': '{{minutes}}min {{seconds}}s',
+    'time.duration.secondsOnly': '{{seconds}}s',
+    'time.ago.daysAndHours': '{{days}}g {{hours}}h fa',
+    'time.ago.daysOnly': '{{days}}g fa',
+    'time.ago.hoursAndMinutes': '{{hours}}h {{minutes}}min fa',
+    'time.ago.hoursOnly': '{{hours}}h fa',
+    'time.ago.minutes': '{{minutes}}min fa',
+    'time.ago.lessThanMinute': '<1min fa',
+    'time.jobTiming.noStartTime': '-',
+    'time.jobTiming.running': 'In esecuzione da {{duration}}',
+    'time.jobTiming.finished': 'Terminato {{timeAgo}} (durata {{duration}})',
   },
 });
 
