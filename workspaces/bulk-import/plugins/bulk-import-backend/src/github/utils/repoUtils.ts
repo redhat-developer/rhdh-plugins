@@ -43,6 +43,7 @@ import {
   computeTotalCountFromGitHubToken,
   createCredentialError,
   handleError,
+  listAllRepositoriesForAuthenticatedUser,
 } from './utils';
 
 export type ValidatedRepo = {
@@ -240,13 +241,12 @@ export async function addGithubTokenRepositories(
         repositories.set(repo.full_name, repo),
       );
     } else {
-      const resp = await octokit.rest.repos.listForAuthenticatedUser({
-        page: pageNumber,
-        per_page: pageSize,
-        sort: 'full_name',
-        direction: 'asc',
-      });
-      resp?.data?.forEach(repo => {
+      const allRepositories = await listAllRepositoriesForAuthenticatedUser(
+        deps,
+        octokit,
+      );
+
+      allRepositories.forEach(repo => {
         repositories.set(repo.full_name, {
           name: repo.name,
           full_name: repo.full_name,
@@ -257,19 +257,7 @@ export async function addGithubTokenRepositories(
         });
       });
 
-      totalCount = await computeTotalCountFromGitHubToken(
-        deps,
-        async (lastPageNumber: number) =>
-          octokit.repos
-            .listForAuthenticatedUser({
-              page: lastPageNumber,
-              per_page: 100,
-            })
-            .then(lastPageResp => lastPageResp.data.length),
-        'repos.listForAuthenticatedUser',
-        resp?.data?.length,
-        resp?.headers?.link,
-      );
+      totalCount = allRepositories.length;
     }
   } catch (err) {
     handleError(
