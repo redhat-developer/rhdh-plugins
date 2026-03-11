@@ -78,7 +78,7 @@ type EntityMetricDetail = {
   owner: string;                  // Owner entity reference or name
   metricValue: number | boolean | null;  // The actual metric value
   timestamp: string;              // ISO 8601 timestamp of when metric was synced
-  status: string;  // Threshold evaluation status
+  status: string | null;  // Threshold evaluation status; null when calc failed or no threshold matched
 };
 ```
 
@@ -318,7 +318,7 @@ Results can be sorted by any column in ascending or descending order. Sorting is
 | `namespace`   | Entity namespace alphabetically                                                                | "default", "staging"                                   |
 | `timestamp`   | Metric sync timestamp (most/least recent)                                                      | ISO 8601 timestamps                                    |
 | `metricValue` | Metric value numerically (highest/lowest first)                                                | 5, 15, 25, 100                                         |
-| `status`      | Threshold evaluation status alphabetically                                                     | "error", "success", "warning"                          |
+| `status`      | Threshold evaluation status alphabetically; entities with no status (NULL) always sort last    | "error", "success", "warning"                          |
 
 ### Default Sorting
 
@@ -327,6 +327,8 @@ If no `sortBy` is specified, results are sorted by `timestamp` in descending ord
 ### Null Value Handling
 
 When sorting by `metricValue`, entities with `null` values are sorted to the end regardless of sort order.
+
+When sorting by `status`, entities whose status is `null` (metric calculation failed or no threshold matched) are also sorted to the end regardless of sort direction. This keeps actionable, status-bearing rows at the top of the list.
 
 ## Pagination
 

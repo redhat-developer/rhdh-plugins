@@ -193,6 +193,14 @@ export class DatabaseMetricValues {
           `value IS NULL, CAST(CAST(value AS TEXT) AS REAL) ${direction}, id ASC`,
         );
       }
+    } else if (options.sortBy === 'status') {
+      // status is nullable; ensure NULLs always sort last regardless of direction
+      if (isPostgres) {
+        query.orderByRaw(`status ${direction} NULLS LAST, id ASC`);
+      } else {
+        // SQLite: "status IS NULL" evaluates to 1 for NULLs, pushing them to the end
+        query.orderByRaw(`status IS NULL, status ${direction}, id ASC`);
+      }
     } else {
       query.orderBy(column, direction);
       query.orderBy('id', 'asc'); // Ensure a stable sort in the event that two metrics share a similar primary sort value

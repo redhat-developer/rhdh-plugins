@@ -1243,6 +1243,13 @@ describe('DatabaseMetricValues', () => {
             timestamp,
             status: 'success',
           },
+          {
+            catalog_entity_ref: 'component:default/service-d',
+            metric_id: 'github.metric1',
+            value: 4,
+            timestamp,
+            status: null,
+          },
         ]);
 
         const result = await db.readEntityMetricsWithFilters('github.metric1', {
@@ -1251,11 +1258,12 @@ describe('DatabaseMetricValues', () => {
           pagination: { limit: 10, offset: 0 },
         });
 
-        expect(result).toHaveLength(3);
-        // Alphabetical ascending: error < success < warning
+        expect(result).toHaveLength(4);
+        // Alphabetical ascending: error < success < warning, NULL always last
         expect(result[0].status).toBe('error');
         expect(result[1].status).toBe('success');
         expect(result[2].status).toBe('warning');
+        expect(result[3].status).toBeNull();
       },
     );
   });
