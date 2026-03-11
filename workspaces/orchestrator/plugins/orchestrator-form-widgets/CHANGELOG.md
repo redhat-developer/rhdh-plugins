@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.6.3
+
+### Patch Changes
+
+- Updated dependencies [444e066]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.4
+
 ## 1.6.2
 
 ### Patch Changes
