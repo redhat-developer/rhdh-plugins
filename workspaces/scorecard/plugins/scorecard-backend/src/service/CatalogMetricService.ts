@@ -22,6 +22,7 @@ import {
   EntityMetricDetail,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { Entity } from '@backstage/catalog-model';
+import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { NotFoundError, stringifyError } from '@backstage/errors';
 import {
@@ -192,7 +193,7 @@ export class CatalogMetricService {
    * @param options.owner - Filter by owner entity reference (database-level)
    * @param options.kind - Filter by entity kind (database-level)
    * @param options.entityName - Substring search against the entity ref `kind:namespace/name` (database-level)
-   * @param options.namespace - Substring search against the entity namespace (database-level)
+   * @param options.namespace - Exact match against the entity namespace (database-level)
    * @param options.sortBy - Field to sort by (default: "timestamp")
    * @param options.sortOrder - Sort direction: "asc" or "desc" (default: "desc")
    * @param options.page - Page number (1-indexed)
@@ -214,7 +215,8 @@ export class CatalogMetricService {
         | 'entityKind'
         | 'timestamp'
         | 'metricValue'
-        | 'namespace';
+        | 'namespace'
+        | 'status';
       sortOrder?: 'asc' | 'desc';
       page: number;
       limit: number;
@@ -357,7 +359,7 @@ export class CatalogMetricService {
         entityNamespace: entity.metadata.namespace,
         entityName: entity.metadata.name,
         entityKind: entity.kind,
-        owner: entity.spec?.owner as string,
+        owner: normalizeOwnerRef(entity.spec?.owner) ?? '',
         metricValue: row.value,
         timestamp: new Date(row.timestamp).toISOString(),
         status: row.status,

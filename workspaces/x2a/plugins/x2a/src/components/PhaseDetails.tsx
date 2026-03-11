@@ -30,6 +30,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useClientService } from '../ClientService';
 import { ItemField } from './ItemField';
 import { humanizeDate } from './tools';
+import { PhaseTelemetry } from './PhaseTelemetry';
 
 const getStatusChip = (status: string | undefined, t: any) => {
   if (!status) {
@@ -281,7 +282,18 @@ export const PhaseDetails = (
         </Grid>
       )}
 
-      {/* Telemetry */}
+      {phase?.telemetry && (
+        <>
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>
+              {t('modulePage.phases.telemetry.title')}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <PhaseTelemetry telemetry={phase.telemetry} />
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };

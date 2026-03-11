@@ -162,6 +162,15 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.viewLog': 'Visualizza log',
     'modulePage.phases.hideLog': 'Nascondi log',
     'modulePage.phases.noLogsAvailable': 'Nessun log disponibile ancora...',
+    'modulePage.phases.telemetry.title': 'Telemetria',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'Nessuna telemetria disponibile',
+    'modulePage.phases.telemetry.agentName': "Nome dell'agente",
+    'modulePage.phases.telemetry.duration': 'Durata',
+    'modulePage.phases.telemetry.inputTokens': 'Token di input',
+    'modulePage.phases.telemetry.outputTokens': 'Token di output',
+    'modulePage.phases.telemetry.toolCalls':
+      'Conteggio delle chiamate agli strumenti',
     'modulePage.phases.resyncMigrationPlanInstructions':
       "Sincronizza l'elenco dei moduli con il piano di migrazione.",
   },

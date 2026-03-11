@@ -163,6 +163,15 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.viewLog': 'Ver registro',
     'modulePage.phases.hideLog': 'Ocultar registro',
     'modulePage.phases.noLogsAvailable': 'Aún no hay registros disponibles...',
+    'modulePage.phases.telemetry.title': 'Telemetría',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'No hay telemetría disponible',
+    'modulePage.phases.telemetry.agentName': 'Nombre del agente',
+    'modulePage.phases.telemetry.duration': 'Duración',
+    'modulePage.phases.telemetry.inputTokens': 'Tokens de entrada',
+    'modulePage.phases.telemetry.outputTokens': 'Tokens de salida',
+    'modulePage.phases.telemetry.toolCalls':
+      'Cantidad de llamadas de herramientas',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Resincronizar la lista de módulos para que coincida con el plan de migración.',
   },
