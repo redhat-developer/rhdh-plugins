@@ -16,7 +16,7 @@
 
 import { useApi, fetchApiRef } from '@backstage/core-plugin-api';
 import { JsonObject } from '@backstage/types';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { UiProps } from '../uiPropTypes';
 import { getErrorMessage } from './errorUtils';
 import { useEvaluateTemplate } from './evaluateTemplate';
@@ -24,6 +24,7 @@ import { useRequestInit } from './useRequestInit';
 import { useRetriggerEvaluate } from './useRetriggerEvaluate';
 import { useDebounce } from 'react-use';
 import { DEFAULT_DEBOUNCE_LIMIT } from '../widgets/constants';
+import isEqual from 'lodash/isEqual';
 
 /**
  * Checks if all fetch:retrigger dependencies have non-empty values.
@@ -55,6 +56,7 @@ export const useFetch = (
 
   const fetchUrl = uiProps['fetch:url'];
   const skipErrorWhenDepsEmpty = uiProps['fetch:error:ignoreUnready'] === true;
+  const clearOnRetrigger = uiProps['fetch:clearOnRetrigger'] === true;
   const evaluatedRequestInit = useRequestInit({
     uiProps,
     prefix: 'fetch',
@@ -67,6 +69,63 @@ export const useFetch = (
     formData,
     setError,
   });
+  const prevRetriggerRef = useRef<(string | undefined)[] | undefined>(
+    retrigger,
+  );
+  const latestRetriggerRef = useRef<(string | undefined)[] | undefined>(
+    retrigger,
+  );
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    latestRetriggerRef.current = retrigger;
+  }, [retrigger]);
+
+  useEffect(() => {
+    if (!clearOnRetrigger) {
+      prevRetriggerRef.current = retrigger;
+      return;
+    }
+
+    if (!retrigger) {
+      prevRetriggerRef.current = retrigger;
+      return;
+    }
+
+    const prev = prevRetriggerRef.current;
+    if (prev && !isEqual(prev, retrigger)) {
+      setData(undefined);
+      setError(undefined);
+    }
+
+    prevRetriggerRef.current = retrigger;
+  }, [clearOnRetrigger, retrigger]);
+
+  const hasFetchInputs =
+    !!fetchUrl && !!evaluatedFetchUrl && !!evaluatedRequestInit && !!retrigger;
+
+  // Set loading immediately on dependency changes so UI shows a spinner during debounce.
+  useEffect(() => {
+    if (!hasFetchInputs) {
+      setLoading(false);
+      return;
+    }
+
+    if (!areRetriggerDependenciesSatisfied(retrigger)) {
+      setLoading(false);
+      return;
+    }
+
+    // Mark loading immediately when a retrigger change is detected so widgets
+    // can show the spinner during the debounce window before the fetch starts.
+    setLoading(true);
+  }, [
+    hasFetchInputs,
+    fetchUrl,
+    evaluatedFetchUrl,
+    evaluatedRequestInit,
+    retrigger,
+  ]);
 
   useDebounce(
     () => {
@@ -81,6 +140,8 @@ export const useFetch = (
       }
 
       const fetchData = async () => {
+        const requestId = ++requestIdRef.current;
+        const retriggerSnapshot = retrigger;
         try {
           setError(undefined);
           if (typeof evaluatedFetchUrl !== 'string') {
@@ -116,14 +177,23 @@ export const useFetch = (
             throw new Error('JSON object expected');
           }
 
-          setData(responseData);
+          if (
+            requestId === requestIdRef.current &&
+            isEqual(retriggerSnapshot, latestRetriggerRef.current)
+          ) {
+            setData(responseData);
+          }
         } catch (err) {
           const prefix = `Failed to fetch data for url ${fetchUrl}.`;
           // eslint-disable-next-line no-console
           console.error(prefix, err);
-          setError(getErrorMessage(prefix, err));
+          if (requestId === requestIdRef.current) {
+            setError(getErrorMessage(prefix, err));
+          }
         } finally {
-          setLoading(false);
+          if (requestId === requestIdRef.current) {
+            setLoading(false);
+          }
         }
       };
       fetchData();
