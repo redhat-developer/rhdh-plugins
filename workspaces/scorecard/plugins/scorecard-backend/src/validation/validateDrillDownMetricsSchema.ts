@@ -16,6 +16,7 @@
 import { z } from 'zod';
 import { InputError } from '@backstage/errors';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 
 export function validateDrillDownMetricsSchema(
   query: unknown,
@@ -45,7 +46,11 @@ export function validateDrillDownMetricsSchema(
       z
         .array(z.string().min(1).max(255))
         .max(50)
-        .transform(arr => arr.map(v => v.toLowerCase()))
+        .transform(arr =>
+          arr
+            .map(v => normalizeOwnerRef(v))
+            .filter((v): v is string => v !== undefined),
+        )
         .optional(),
     ),
     kind: z.string().min(1).max(100).optional(),
