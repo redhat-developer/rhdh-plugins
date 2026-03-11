@@ -346,6 +346,9 @@ export class GithubApiService {
                 credential,
                 repositories,
                 dataFetchErrors,
+                {
+                  search,
+                },
               );
           this.logger.debug(
             `Got ${resp.totalCount} repo(s) for ${ghConfig.host}`,
