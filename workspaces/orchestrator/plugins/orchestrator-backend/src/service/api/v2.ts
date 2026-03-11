@@ -1,3 +1,4 @@
+/* eslint-disable no-else-return */
 /*
  * Copyright Red Hat, Inc.
  *
@@ -14,6 +15,7 @@
  * limitations under the License.
  */
 
+import { load } from 'js-yaml';
 import { ParsedRequest } from 'openapi-backend';
 
 import {
@@ -26,6 +28,7 @@ import {
   ProcessInstanceState,
   RetriggerInstanceRequestDTO,
   WorkflowDTO,
+  WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowLogsResponse,
   WorkflowOverviewDTO,
@@ -202,20 +205,141 @@ export class V2 {
     if (!definition) {
       throw new Error(`Couldn't fetch workflow definition for ${workflowId}`);
     }
-    if (!definition.serviceUrl) {
-      throw new Error(`ServiceURL is not defined for workflow ${workflowId}`);
+
+    let executionResponse: WorkflowExecutionResponse | undefined;
+
+    // Figure out if we are sending as cloudevent are regular
+    // The frontend will send the isEvent=true parameter in the inputData if it running as an Event
+    const isEventType =
+      (executeWorkflowRequestDTO.inputData as any)?.isEvent || false;
+
+    if (isEventType) {
+      // definition.source will be the yaml
+      const parsedDefinitionSource: any = load(definition.source as string);
+
+      // Parse the definition to find the start param then determine things from there
+      // All workflows should have this start param
+      const start = parsedDefinitionSource.start;
+
+      // Find the start state from the list of states
+      const startState = parsedDefinitionSource.states.filter(
+        (val: { name: any }) => {
+          return val.name === start;
+        },
+      );
+
+      if (startState.length < 1) {
+        throw new Error(
+          `Error executing workflow with id ${workflowId}, No States that match the start state`,
+        );
+      }
+
+      // Look at the onEvents to get what it responds to
+      // The kafka topic name will be: ${eventName}`
+      const eventName = startState?.[0].onEvents?.[0].eventRefs?.[0];
+
+      if (!eventName) {
+        throw new Error(
+          `Error executing workflow with id ${workflowId}, No event ref`,
+        );
+      }
+
+      // Once we have the start state and its eventRef, go back an find it in the events array
+      const workflowEventToUse = parsedDefinitionSource.events.filter(
+        (val: { name: any }) => {
+          return val.name === eventName;
+        },
+      );
+
+      if (workflowEventToUse.length < 1) {
+        throw new Error(
+          `Error executing workflow with id ${workflowId}, No Events that match the start state eventRef`,
+        );
+      }
+
+      // This will be the key value for event correlation: ${correlationContextAttributeName}
+      const correlationContextAttributeName =
+        workflowEventToUse?.[0].correlation?.[0].contextAttributeName;
+
+      if (!correlationContextAttributeName) {
+        throw new Error(
+          `Error executing workflow with id ${workflowId}, No correlation context attribute name found in event with event name ${eventName}`,
+        );
+      }
+
+      executionResponse =
+        await this.orchestratorService.executeWorkflowAsCloudEvent({
+          definitionId: workflowId,
+          workflowSource: workflowEventToUse[0].source,
+          workflowEventType: eventName,
+          contextAttribute: correlationContextAttributeName,
+          inputData: {
+            workflowdata: executeWorkflowRequestDTO.inputData,
+            initiatorEntity: initiatorEntity,
+            targetEntity: executeWorkflowRequestDTO.targetEntity,
+          },
+          authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
+          backstageToken,
+        });
+
+      // We need to return the workflow instance ID
+      // This is what is returned when executing a "normal" workflow
+      // Wait a small amount so the workflow has a chance to get triggered
+      // There is a very good possibility that the workflow will not be ready yet when we query here
+
+      let currentInstanceToReturn: string | any[] = [];
+      for (let i = 0; i < FETCH_INSTANCE_MAX_ATTEMPTS; i++) {
+        const response = await this.orchestratorService.fetchInstances({
+          workflowIds: [workflowId],
+        });
+
+        // Find the correct workflow by using the correlation context attribute(CCA) value
+        // id returned from the execution response will be the CCA value
+        // eslint-disable-next-line no-loop-func
+        currentInstanceToReturn = response.filter((val: any) => {
+          return (
+            val.variables.workflowdata[correlationContextAttributeName] ===
+            executionResponse?.id
+          );
+        });
+
+        if (currentInstanceToReturn.length > 0) {
+          break;
+        }
+      }
+
+      let currentInstanceIDToReturn;
+      if (currentInstanceToReturn.length < 1) {
+        // nothing returned yet,
+        // doesn't mean this is an error since it might take time for the trigger to happen
+        // return something else so the front-end knows to just show the list of workflow runs
+        currentInstanceIDToReturn = 'kafkaEvent';
+      } else {
+        currentInstanceIDToReturn = currentInstanceToReturn[0]?.id;
+      }
+
+      // Return just the id of the response, which will be the instanceID or some identifier
+      // to let the front end know the workflow isn't ready yet
+      return {
+        id: currentInstanceIDToReturn,
+      };
+    } else {
+      if (!definition.serviceUrl) {
+        throw new Error(`ServiceURL is not defined for workflow ${workflowId}`);
+      }
+      // A non event type workflow to be executed
+      executionResponse = await this.orchestratorService.executeWorkflow({
+        definitionId: workflowId,
+        inputData: {
+          workflowdata: executeWorkflowRequestDTO.inputData,
+          initiatorEntity: initiatorEntity,
+          targetEntity: executeWorkflowRequestDTO.targetEntity,
+        },
+        authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
+        serviceUrl: definition.serviceUrl,
+        backstageToken,
+      });
     }
-    const executionResponse = await this.orchestratorService.executeWorkflow({
-      definitionId: workflowId,
-      inputData: {
-        workflowdata: executeWorkflowRequestDTO.inputData,
-        initiatorEntity: initiatorEntity,
-        targetEntity: executeWorkflowRequestDTO.targetEntity,
-      },
-      authTokens: executeWorkflowRequestDTO.authTokens as Array<AuthToken>,
-      serviceUrl: definition.serviceUrl,
-      backstageToken,
-    });
 
     if (!executionResponse) {
       throw new Error(`Couldn't execute workflow ${workflowId}`);

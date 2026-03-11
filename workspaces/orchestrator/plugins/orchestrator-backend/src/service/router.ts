@@ -57,6 +57,7 @@ import {
 
 import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { RouterOptions } from '../routerWrapper';
+import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { buildPagination } from '../types/pagination';
 import { V2 } from './api/v2';
 import { DataIndexService } from './DataIndexService';
@@ -258,9 +259,17 @@ function initPublicServices(
   scheduler: SchedulerService,
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry,
 ): PublicServices {
+  console.log('init public services');
   const dataIndexUrl = config.getString('orchestrator.dataIndexService.url');
+  const orchestratorKafka: OrchestratorKafkaServiceOptions =
+    config.getOptional('orchestrator.kafka') ??
+    ({} as OrchestratorKafkaServiceOptions);
   const dataIndexService = new DataIndexService(dataIndexUrl, logger);
-  const sonataFlowService = new SonataFlowService(dataIndexService, logger);
+  const sonataFlowService = new SonataFlowService(
+    dataIndexService,
+    logger,
+    orchestratorKafka,
+  );
 
   const workflowCacheService = new WorkflowCacheService(
     logger,
