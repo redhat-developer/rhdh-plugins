@@ -20,6 +20,12 @@
 
 - 3648a62: Backstage version bump to v1.47.3
 
+## 3.4.2
+
+### Patch Changes
+
+- 546ccb2: Add workflow instance card height mode config for fixed or content-based layouts.
+
 ## 3.4.1
 
 ### Patch Changes
