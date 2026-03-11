@@ -93,13 +93,7 @@ export async function findAllRepositories(
     totalCount: notImportedYetRepositories.length,
   };
 
-  const response = await formatResponse(
-    deps,
-    gitRepositoryResponse,
-    checkStatus,
-  );
-
-  return response;
+  return await formatResponse(deps, gitRepositoryResponse, checkStatus);
 }
 
 export async function findRepositoriesByOrganization(
