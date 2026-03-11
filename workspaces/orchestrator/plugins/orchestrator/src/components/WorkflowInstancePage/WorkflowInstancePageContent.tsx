@@ -36,6 +36,7 @@ import {
 import { orchestratorApiRef } from '../../api/api';
 import { VALUE_UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useWorkflowInstanceCardHeightMode } from '../../hooks/useWorkflowInstanceCardHeightMode';
 import { formatDuration } from '../../utils/DurationUtils';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { VariablesDialog } from './VariablesDialog';
@@ -102,6 +103,11 @@ export const WorkflowInstancePageContent: React.FC<{
   const { t } = useTranslation();
   const { classes } = useStyles();
   const orchestratorApi = useApi(orchestratorApiRef);
+  const cardHeightMode = useWorkflowInstanceCardHeightMode();
+  const isFixedHeightMode = cardHeightMode !== 'content';
+  const topRowClassName = isFixedHeightMode ? classes.topRowCard : '';
+  const bottomRowClassName = isFixedHeightMode ? classes.bottomRowCard : '';
+  const cardOverflowClassName = isFixedHeightMode ? classes.cardClassName : '';
 
   const details = useMemo(
     () => mapProcessInstanceToDetails(instance, t),
@@ -161,6 +167,61 @@ export const WorkflowInstancePageContent: React.FC<{
     </Link>
   );
 
+  const detailsCard = (
+    <InfoCard
+      title={
+        <div className={classes.titleContainer}>
+          <Typography
+            component="span"
+            variant="h5"
+            className={classes.detailsTitle}
+          >
+            {t('common.details')}
+          </Typography>
+          {viewVariables}
+        </div>
+      }
+      divider={false}
+      className={topRowClassName}
+      cardClassName={cardOverflowClassName}
+    >
+      <WorkflowRunDetails details={details} />
+    </InfoCard>
+  );
+
+  const resultCard = (
+    <WorkflowResult
+      className={topRowClassName}
+      cardClassName={cardOverflowClassName}
+      instance={instance}
+    />
+  );
+
+  const inputsCard = (
+    <WorkflowInputs
+      className={bottomRowClassName}
+      cardClassName={cardOverflowClassName}
+      value={value}
+      loading={loading}
+      responseError={responseError}
+    />
+  );
+
+  const progressCard = (
+    <InfoCard
+      title={t('workflow.progress')}
+      divider={false}
+      className={bottomRowClassName}
+      cardClassName={cardOverflowClassName}
+    >
+      <WorkflowProgress
+        workflowError={instance.error}
+        workflowNodes={instance.nodes}
+        workflowStatus={instance.state}
+      />
+    </InfoCard>
+  );
+
   return (
     <Content noPadding>
       <VariablesDialog
@@ -169,60 +230,37 @@ export const WorkflowInstancePageContent: React.FC<{
         instanceVariables={instanceVariables}
       />
       <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <InfoCard
-            title={
-              <div className={classes.titleContainer}>
-                <Typography
-                  component="span"
-                  variant="h5"
-                  className={classes.detailsTitle}
-                >
-                  {t('common.details')}
-                </Typography>
-                {viewVariables}
-              </div>
-            }
-            divider={false}
-            className={classes.topRowCard}
-            cardClassName={classes.cardClassName}
-          >
-            <WorkflowRunDetails details={details} />
-          </InfoCard>
-        </Grid>
-
-        <Grid item xs={6}>
-          <WorkflowResult
-            className={classes.topRowCard}
-            cardClassName={classes.cardClassName}
-            instance={instance}
-          />
-        </Grid>
-
-        <Grid item xs={6}>
-          <WorkflowInputs
-            className={classes.bottomRowCard}
-            cardClassName={classes.cardClassName}
-            value={value}
-            loading={loading}
-            responseError={responseError}
-          />
-        </Grid>
-
-        <Grid item xs={6}>
-          <InfoCard
-            title={t('workflow.progress')}
-            divider={false}
-            className={classes.bottomRowCard}
-            cardClassName={classes.cardClassName}
-          >
-            <WorkflowProgress
-              workflowError={instance.error}
-              workflowNodes={instance.nodes}
-              workflowStatus={instance.state}
-            />
-          </InfoCard>
-        </Grid>
+        {isFixedHeightMode ? (
+          <>
+            <Grid item xs={6}>
+              {detailsCard}
+            </Grid>
+            <Grid item xs={6}>
+              {resultCard}
+            </Grid>
+            <Grid item xs={6}>
+              {inputsCard}
+            </Grid>
+            <Grid item xs={6}>
+              {progressCard}
+            </Grid>
+          </>
+        ) : (
+          <>
+            <Grid item xs={6}>
+              <Grid container spacing={2} direction="column">
+                <Grid item>{detailsCard}</Grid>
+                <Grid item>{inputsCard}</Grid>
+              </Grid>
+            </Grid>
+            <Grid item xs={6}>
+              <Grid container spacing={2} direction="column">
+                <Grid item>{resultCard}</Grid>
+                <Grid item>{progressCard}</Grid>
+              </Grid>
+            </Grid>
+          </>
+        )}
       </Grid>
     </Content>
   );
