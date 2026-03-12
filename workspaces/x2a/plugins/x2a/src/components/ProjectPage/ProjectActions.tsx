@@ -15,6 +15,7 @@
  */
 import MoreVert from '@material-ui/icons/MoreVert';
 import DeleteIcon from '@material-ui/icons/Delete';
+import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import {
   ListItemIcon,
   Menu,
@@ -30,6 +31,9 @@ export type ProjectActionsProps = {
   handleMenuClose: () => void;
   menuAnchorEl: HTMLElement | null;
   handleDeleteClick: () => void;
+  handleRunAllClick: () => void;
+  canRunAll: boolean;
+  canDeleteProject: boolean;
 };
 
 export const ProjectActions = ({
@@ -38,6 +42,9 @@ export const ProjectActions = ({
   handleMenuClose,
   menuAnchorEl,
   handleDeleteClick,
+  handleRunAllClick,
+  canRunAll,
+  canDeleteProject,
 }: ProjectActionsProps) => {
   const { t } = useTranslation();
   return (
@@ -69,7 +76,14 @@ export const ProjectActions = ({
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={handleDeleteClick}>
+        <MenuItem onClick={handleRunAllClick} disabled={!canRunAll}>
+          <ListItemIcon>
+            <PlaylistPlayIcon fontSize="small" />
+          </ListItemIcon>
+          {t('bulkRun.projectPageAction')}
+        </MenuItem>
+
+        <MenuItem onClick={handleDeleteClick} disabled={!canDeleteProject}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>

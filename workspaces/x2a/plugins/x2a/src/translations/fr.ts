@@ -161,8 +161,50 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.hideLog': 'Masquer le journal',
     'modulePage.phases.noLogsAvailable':
       'Aucun journal disponible pour le moment...',
+    'modulePage.phases.telemetry.title': 'Télémétrie',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'Aucune télémétrie disponible',
+    'modulePage.phases.telemetry.agentName': "Nom de l'agent",
+    'modulePage.phases.telemetry.duration': 'Durée',
+    'modulePage.phases.telemetry.inputTokens': "Jetons d'entrée",
+    'modulePage.phases.telemetry.outputTokens': 'Jetons de sortie',
+    'modulePage.phases.telemetry.toolCalls': "Nombre d'appels d'outils",
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Resynchroniser la liste des modules pour correspondre au plan de migration.',
+    'time.duration.daysAndHours': '{{days}}j {{hours}}h',
+    'time.duration.daysOnly': '{{days}}j',
+    'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',
+    'time.duration.hoursOnly': '{{hours}}h',
+    'time.duration.minutesAndSeconds': '{{minutes}}min {{seconds}}s',
+    'time.duration.secondsOnly': '{{seconds}}s',
+    'time.ago.daysAndHours': 'il y a {{days}}j {{hours}}h',
+    'time.ago.daysOnly': 'il y a {{days}}j',
+    'time.ago.hoursAndMinutes': 'il y a {{hours}}h {{minutes}}min',
+    'time.ago.hoursOnly': 'il y a {{hours}}h',
+    'time.ago.minutes': 'il y a {{minutes}}min',
+    'time.ago.lessThanMinute': 'il y a <1min',
+    'time.jobTiming.noStartTime': '-',
+    'time.jobTiming.running': 'En cours depuis {{duration}}',
+    'time.jobTiming.finished': 'Terminé {{timeAgo}} (durée {{duration}})',
+    'bulkRun.projectAction': 'Exécuter tous les modules',
+    'bulkRun.globalAction': 'Tout exécuter',
+    'bulkRun.projectPageAction': 'Tout exécuter',
+    'bulkRun.projectConfirm.title':
+      'Exécuter tous les modules du projet « {{name}} » ?',
+    'bulkRun.projectConfirm.message':
+      "Cela déclenchera la prochaine phase de migration pour chaque module de ce projet dont l'état actuel le permet. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action. Les modules non éligibles seront ignorés.",
+    'bulkRun.globalConfirm.title': 'Exécuter tous les modules éligibles ?',
+    'bulkRun.globalConfirm.message':
+      "Cela déclenchera la prochaine phase de migration pour tous les modules éligibles de tous les projets auxquels vous avez accès en écriture, y compris les projets non visibles sur la page actuelle. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action.",
+    'bulkRun.projectPageConfirm.title':
+      'Exécuter tous les modules de « {{name}} » ?',
+    'bulkRun.projectPageConfirm.message':
+      "Cela déclenchera la prochaine phase de migration pour chaque module de ce projet dont l'état actuel le permet. Assurez-vous d'avoir examiné tous les artefacts nécessaires dans les dépôts cibles avant d'exécuter cette action. Les modules non éligibles seront ignorés.",
+    'bulkRun.confirm': 'Tout exécuter',
+    'bulkRun.cancel': 'Annuler',
+    'bulkRun.errorProject':
+      "Erreur lors de l'exécution des modules du projet « {{name}} »",
+    'bulkRun.errorGlobal': "Erreur lors de l'opération groupée",
   },
 });
 

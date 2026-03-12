@@ -118,6 +118,15 @@ export const x2aPluginMessages = {
       viewLog: 'View Log',
       hideLog: 'Hide Log',
       noLogsAvailable: 'No logs available yet...',
+      telemetry: {
+        title: 'Telemetry',
+        noTelemetryAvailable: 'No telemetry available',
+        agentName: 'Agent Name',
+        duration: 'Duration',
+        inputTokens: 'Input Tokens',
+        outputTokens: 'Output Tokens',
+        toolCalls: 'Count of tool calls',
+      },
     },
   },
   table: {
@@ -164,6 +173,30 @@ export const x2aPluginMessages = {
     notAllowedTitle: 'Access denied',
     notAllowedDescription: 'You are not allowed to access conversion projects.',
   },
+  bulkRun: {
+    projectAction: 'Run all modules',
+    globalAction: 'Run all',
+    projectPageAction: 'Run all',
+    projectConfirm: {
+      title: 'Run all modules in "{{name}}" project?',
+      message:
+        'This will trigger the next migration phase for every module in this project whose current state allows it. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action. Modules that are not eligible will be skipped.',
+    },
+    globalConfirm: {
+      title: 'Run all eligible modules?',
+      message:
+        'This will trigger the next migration phase for all eligible modules across every project you have write access to, including projects not visible on the current page. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action.',
+    },
+    projectPageConfirm: {
+      title: 'Run all modules in "{{name}}"?',
+      message:
+        'This will trigger the next migration phase for every module in this project whose current state allows it. Make sure you have all the necessary artifacts in the target repositories reviewed before running this action. Modules that are not eligible will be skipped.',
+    },
+    confirm: 'Run all',
+    cancel: 'Cancel',
+    errorProject: 'Failed to run modules in project "{{name}}"',
+    errorGlobal: 'Failed to run bulk operation',
+  },
   module: {
     phases: {
       init: 'Init',
@@ -207,6 +240,29 @@ export const x2aPluginMessages = {
       migrated_sources: 'Migrated Sources',
       project_metadata: 'Project Metadata',
       ansible_project: 'AAP Project',
+    },
+  },
+  time: {
+    duration: {
+      daysAndHours: '{{days}}d {{hours}}h',
+      daysOnly: '{{days}}d',
+      hoursAndMinutes: '{{hours}}h {{minutes}}m',
+      hoursOnly: '{{hours}}h',
+      minutesAndSeconds: '{{minutes}}m {{seconds}}s',
+      secondsOnly: '{{seconds}}s',
+    },
+    ago: {
+      daysAndHours: '{{days}}d {{hours}}h ago',
+      daysOnly: '{{days}}d ago',
+      hoursAndMinutes: '{{hours}}h {{minutes}}m ago',
+      hoursOnly: '{{hours}}h ago',
+      minutes: '{{minutes}}m ago',
+      lessThanMinute: '<1m ago',
+    },
+    jobTiming: {
+      noStartTime: '-',
+      running: 'Running for {{duration}}',
+      finished: 'Finished {{timeAgo}} (took {{duration}})',
     },
   },
   empty: '-',

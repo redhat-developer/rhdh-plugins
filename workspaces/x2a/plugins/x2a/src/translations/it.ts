@@ -162,8 +162,51 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.viewLog': 'Visualizza log',
     'modulePage.phases.hideLog': 'Nascondi log',
     'modulePage.phases.noLogsAvailable': 'Nessun log disponibile ancora...',
+    'modulePage.phases.telemetry.title': 'Telemetria',
+    'modulePage.phases.telemetry.noTelemetryAvailable':
+      'Nessuna telemetria disponibile',
+    'modulePage.phases.telemetry.agentName': "Nome dell'agente",
+    'modulePage.phases.telemetry.duration': 'Durata',
+    'modulePage.phases.telemetry.inputTokens': 'Token di input',
+    'modulePage.phases.telemetry.outputTokens': 'Token di output',
+    'modulePage.phases.telemetry.toolCalls':
+      'Conteggio delle chiamate agli strumenti',
     'modulePage.phases.resyncMigrationPlanInstructions':
       "Sincronizza l'elenco dei moduli con il piano di migrazione.",
+    'time.duration.daysAndHours': '{{days}}g {{hours}}h',
+    'time.duration.daysOnly': '{{days}}g',
+    'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',
+    'time.duration.hoursOnly': '{{hours}}h',
+    'time.duration.minutesAndSeconds': '{{minutes}}min {{seconds}}s',
+    'time.duration.secondsOnly': '{{seconds}}s',
+    'time.ago.daysAndHours': '{{days}}g {{hours}}h fa',
+    'time.ago.daysOnly': '{{days}}g fa',
+    'time.ago.hoursAndMinutes': '{{hours}}h {{minutes}}min fa',
+    'time.ago.hoursOnly': '{{hours}}h fa',
+    'time.ago.minutes': '{{minutes}}min fa',
+    'time.ago.lessThanMinute': '<1min fa',
+    'time.jobTiming.noStartTime': '-',
+    'time.jobTiming.running': 'In esecuzione da {{duration}}',
+    'time.jobTiming.finished': 'Terminato {{timeAgo}} (durata {{duration}})',
+    'bulkRun.projectAction': 'Esegui tutti i moduli',
+    'bulkRun.globalAction': 'Esegui tutto',
+    'bulkRun.projectPageAction': 'Esegui tutto',
+    'bulkRun.projectConfirm.title':
+      'Eseguire tutti i moduli nel progetto "{{name}}"?',
+    'bulkRun.projectConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per ogni modulo di questo progetto il cui stato attuale lo consente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
+    'bulkRun.globalConfirm.title': 'Eseguire tutti i moduli idonei?',
+    'bulkRun.globalConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per tutti i moduli idonei in tutti i progetti a cui hai accesso in scrittura, inclusi i progetti non visibili nella pagina corrente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione.',
+    'bulkRun.projectPageConfirm.title':
+      'Eseguire tutti i moduli in "{{name}}"?',
+    'bulkRun.projectPageConfirm.message':
+      'Questo attiverà la prossima fase di migrazione per ogni modulo di questo progetto il cui stato attuale lo consente. Assicurati di aver esaminato tutti gli artefatti necessari nei repository di destinazione prima di eseguire questa azione. I moduli non idonei verranno saltati.',
+    'bulkRun.confirm': 'Esegui tutto',
+    'bulkRun.cancel': 'Annulla',
+    'bulkRun.errorProject':
+      'Errore nell\'esecuzione dei moduli nel progetto "{{name}}"',
+    'bulkRun.errorGlobal': "Errore nell'operazione di massa",
   },
 });
 

@@ -29,7 +29,8 @@ import {
 import { useTranslation } from '../hooks/useTranslation';
 import { useClientService } from '../ClientService';
 import { ItemField } from './ItemField';
-import { humanizeDate } from './tools';
+import { formatDuration, humanizeDate, secondsBetween } from './tools';
+import { PhaseTelemetry } from './PhaseTelemetry';
 
 const getStatusChip = (status: string | undefined, t: any) => {
   if (!status) {
@@ -63,21 +64,6 @@ const getStatusChip = (status: string | undefined, t: any) => {
 
   const config = statusConfig[status] || { labelKey: status, color: 'default' };
   return <Chip label={t(config.labelKey)} size="small" color={config.color} />;
-};
-
-const computeDuration = (phase?: Job): string => {
-  if (!phase?.startedAt) {
-    return '-';
-  }
-  const end = phase.finishedAt ? new Date(phase.finishedAt) : new Date();
-  const diffMs = end.getTime() - new Date(phase.startedAt).getTime();
-  const totalSeconds = Math.floor(diffMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
-  return `${seconds}s`;
 };
 
 const PhaseRunAction = ({
@@ -172,7 +158,12 @@ export const PhaseDetails = (
   const { phase, projectId, phaseName, onRunPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
-  const duration = computeDuration(phase);
+  const duration = phase?.startedAt
+    ? formatDuration(
+        t,
+        secondsBetween(phase.startedAt, phase.finishedAt ?? new Date()),
+      )
+    : empty;
 
   const {
     value: logText,
@@ -281,7 +272,18 @@ export const PhaseDetails = (
         </Grid>
       )}
 
-      {/* Telemetry */}
+      {phase?.telemetry && (
+        <>
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>
+              {t('modulePage.phases.telemetry.title')}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <PhaseTelemetry telemetry={phase.telemetry} />
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };

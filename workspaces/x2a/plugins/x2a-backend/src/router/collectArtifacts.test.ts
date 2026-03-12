@@ -415,6 +415,70 @@ describe('collectArtifacts routes', () => {
         }),
       );
     });
+
+    it('should persist telemetry with inputTokens and outputTokens', async () => {
+      const job: Job & { callbackToken?: string } = {
+        id: jobId,
+        projectId,
+        moduleId: undefined,
+        phase: 'init',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName,
+        callbackToken,
+      };
+
+      const telemetry = {
+        summary: 'Init phase completed',
+        phase: 'init',
+        startedAt: new Date().toISOString(),
+        endedAt: new Date().toISOString(),
+        agents: {
+          'agent-1': {
+            name: 'agent-1',
+            startedAt: new Date().toISOString(),
+            endedAt: new Date().toISOString(),
+            durationSeconds: 10.5,
+            inputTokens: 1500,
+            outputTokens: 800,
+            metrics: { key: 'value' },
+            toolCalls: { read: 5 },
+          },
+        },
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+
+      const requestBody = {
+        status: 'success',
+        jobId,
+        artifacts: [],
+        telemetry,
+      };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(`/projects/${projectId}/collectArtifacts?phase=init`)
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.updateJob).toHaveBeenCalledWith(
+        expect.objectContaining({
+          telemetry: expect.objectContaining({
+            summary: 'Init phase completed',
+            agents: expect.objectContaining({
+              'agent-1': expect.objectContaining({
+                inputTokens: 1500,
+                outputTokens: 800,
+              }),
+            }),
+          }),
+        }),
+      );
+    });
   });
 
   describe('phase actions', () => {

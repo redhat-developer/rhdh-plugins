@@ -1,10 +1,10 @@
-# Italian (IT) - Ports: Frontend 3002, Backend 7009
+# Italian (IT) - Ports: Frontend 3004, Backend 7011
 app:
-  baseUrl: http://localhost:3002
+  baseUrl: http://localhost:3004
 
 backend:
-  baseUrl: http://localhost:7009
+  baseUrl: http://localhost:7011
   listen:
-    port: 7009
+    port: 7011
   cors:
-    origin: http://localhost:3002
+    origin: http://localhost:3004

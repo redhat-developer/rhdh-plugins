@@ -17,9 +17,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   Artifact,
   getAuthTokenDescriptor,
-  MigrationPhase,
   Module,
-  ModulePhase,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { Link, Table, TableColumn } from '@backstage/core-components';
@@ -37,20 +35,7 @@ import { CurrentPhaseCell } from '../CurrentPhaseCell';
 import { ModuleStatusCell } from '../ModuleStatusCell';
 import { TimingCell } from './TimingCell';
 import { moduleRouteRef } from '../../routes';
-import { getLastPhaseReached } from '../tools';
-
-export const getNextPhase = (module: Module): ModulePhase | undefined => {
-  const lastJob = getLastPhaseReached(module);
-  const lastPhase: MigrationPhase = lastJob?.phase || 'init';
-
-  const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
-    init: 'analyze',
-    analyze: 'migrate',
-    migrate: 'publish',
-    publish: undefined,
-  };
-  return nextPhases[lastPhase];
-};
+import { canRunNextPhase, getLastPhaseReached, getNextPhase } from '../tools';
 
 const useColumns = ({
   targetRepoUrl,
@@ -120,21 +105,6 @@ const useColumns = ({
       { render: timingCell, title: t('module.lastUpdate') },
     ];
   }, [t, nameCell, currentPhaseCell, statusCell, artifactsCell, timingCell]);
-};
-
-const canRunNextPhase = ({ module }: { module: Module }) => {
-  const nextPhase = getNextPhase(module);
-  if (!nextPhase) {
-    return false;
-  }
-
-  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
-  const lastJob = getLastPhaseReached(module);
-  if (!lastJob || lastJob.status === 'success') {
-    return true;
-  }
-
-  return false;
 };
 
 export const ModuleTable = ({
@@ -222,7 +192,7 @@ export const ModuleTable = ({
       icon: PlayArrowIcon,
       onClick: () => handleRunNext(rowData),
       tooltip: t('module.actions.runNextPhase'),
-      disabled: !canRunNextPhase({ module: rowData }),
+      disabled: !canRunNextPhase(rowData),
     }),
   ];
 

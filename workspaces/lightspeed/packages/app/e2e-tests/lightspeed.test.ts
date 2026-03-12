@@ -109,6 +109,7 @@ import {
   mockQuery,
   mockShields,
 } from './utils/devMode';
+import { skipIfLocales } from './utils/localeSkip';
 import {
   LightspeedMessages,
   evaluateMessage,
@@ -121,6 +122,14 @@ test.describe('Lightspeed tests', () => {
   let translations: LightspeedMessages;
   let sharedPage: Page;
   let locale: string;
+
+  test.beforeEach(({}, testInfo) => {
+    skipIfLocales(
+      testInfo,
+      ['de', 'es'],
+      'Missing lightspeed translations in de/es - https://issues.redhat.com/browse/RHDHBUGS-2797',
+    );
+  });
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
