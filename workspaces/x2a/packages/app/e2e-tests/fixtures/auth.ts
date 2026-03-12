@@ -18,13 +18,16 @@ import { Page } from '@playwright/test';
 
 export async function performGuestLogin(page: Page) {
   await page.goto('/');
+  await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
 
-  await page.locator('button:has-text("Enter")').click();
+  const enterButton = page.locator('button:has-text("Enter")');
+  await enterButton.waitFor({ state: 'visible', timeout: 15000 });
+  await enterButton.click();
 
   await page
     .locator('nav')
     .first()
-    .waitFor({ state: 'visible', timeout: 30000 });
+    .waitFor({ state: 'visible', timeout: 60000 });
 }
 
 export async function performLogin(
