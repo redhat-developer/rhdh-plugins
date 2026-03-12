@@ -111,7 +111,7 @@ describe('useMetric', () => {
   it('should call getMetrics with the provided metricId', () => {
     mockScorecardApi.getMetrics.mockResolvedValue({ metrics: [mockMetric] });
     mockUseAsync.mockImplementation(fn => {
-      void fn();
+      fn().catch(() => {});
       return {
         loading: false,
         error: undefined,

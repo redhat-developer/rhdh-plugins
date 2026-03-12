@@ -58,7 +58,7 @@ jest.mock('../EntitiesTable/EntitiesTable', () => ({
   }) => {
     mockEntitiesTable(props);
     return (
-      <div data-testid="entities-table">
+      <div data-testid="entities-table" data-metric-id={props.metricId}>
         <button
           type="button"
           onClick={() => props.setMetricTitle('Metric Title from Table')}
@@ -78,7 +78,15 @@ jest.mock('../../ScorecardHomepageSection/ScorecardHomepageCard', () => ({
     showInfo: boolean;
   }) => {
     mockScorecardHomepageCard(props);
-    return <div data-testid="scorecard-homepage-card">{props.metricId}</div>;
+    return (
+      <div
+        data-testid="scorecard-homepage-card"
+        data-show-subheader={props.showSubheader}
+        data-show-info={props.showInfo}
+      >
+        {props.metricId}
+      </div>
+    );
   },
 }));
 

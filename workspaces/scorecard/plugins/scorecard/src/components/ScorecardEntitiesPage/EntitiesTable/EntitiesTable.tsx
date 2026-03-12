@@ -16,6 +16,8 @@
 
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 
+import type { EntityMetricDetail } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableFooter from '@mui/material/TableFooter';
@@ -151,7 +153,7 @@ export const EntitiesTable = ({
 
           {!loadingDataEntities &&
             entities.length > 0 &&
-            entities.map((entity: any) => (
+            entities.map((entity: EntityMetricDetail) => (
               <EntitiesRow
                 key={entity.entityRef}
                 entity={entity}

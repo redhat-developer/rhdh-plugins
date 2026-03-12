@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+import type { EntityMetricDetail } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import { useTheme } from '@mui/material/styles';
 
 import { getLastUpdatedLabel } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { EntityMetadataMap } from '../../../components/types';
 
 import { MetricStatusCell } from './cells/MetricStatusCell';
 import { OwnerCell } from './cells/OwnerCell';
@@ -29,8 +32,8 @@ export const EntitiesRow = ({
   entity,
   entityMetadataMap,
 }: {
-  entity: any;
-  entityMetadataMap: any;
+  entity: EntityMetricDetail;
+  entityMetadataMap: EntityMetadataMap;
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -45,7 +48,7 @@ export const EntitiesRow = ({
       }}
     >
       <TableCell width="12%">
-        <MetricStatusCell status={entity.status} theme={theme} />
+        <MetricStatusCell status={entity?.status ?? undefined} theme={theme} />
       </TableCell>
 
       <TableCell width="8%">
@@ -67,7 +70,9 @@ export const EntitiesRow = ({
 
       <TableCell width="12%">{entity.entityKind}</TableCell>
 
-      <TableCell width="20%">{getLastUpdatedLabel(entity.timestamp)}</TableCell>
+      <TableCell width="20%">
+        {entity.timestamp ? getLastUpdatedLabel(entity.timestamp) : '--'}
+      </TableCell>
     </TableRow>
   );
 };

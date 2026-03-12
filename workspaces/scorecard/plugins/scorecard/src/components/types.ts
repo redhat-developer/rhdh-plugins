@@ -19,3 +19,11 @@ export type PieData = {
   value: number;
   color?: string;
 };
+
+export type EntityMetadata = {
+  title?: string;
+  description?: string;
+  kind?: string;
+};
+
+export type EntityMetadataMap = Record<string, EntityMetadata>;
