@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,29 +14,20 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
-  resolveScmProvider,
+  buildScmHostMap,
   ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
- * Builds a URL to the repository at a specific branch.
+ * Reads the Backstage `integrations:` config and returns a host-to-provider map.
+ *
+ * This enables SCM provider detection for hosts on custom domains
+ * (e.g. self-hosted GitHub Enterprise, GitLab, Bitbucket Cloud).
  */
-export const buildRepoBranchUrl = (
-  url: string,
-  branch: string,
-  hostProviderMap?: Map<string, ScmProviderName>,
-): string => {
-  const baseUrl = url.endsWith('.git') ? url.slice(0, -4) : url;
-
-  try {
-    const parsed = new URL(baseUrl);
-    const provider = resolveScmProvider(baseUrl, hostProviderMap);
-    const path = parsed.pathname.replace(/\/$/, '');
-    const encodedBranch = encodeURIComponent(branch);
-
-    return provider.buildBranchUrl(parsed.origin, path, encodedBranch);
-  } catch {
-    return baseUrl;
-  }
-};
+export function useScmHostMap(): Map<string, ScmProviderName> {
+  const config = useApi(configApiRef);
+  return useMemo(() => buildScmHostMap(config), [config]);
+}

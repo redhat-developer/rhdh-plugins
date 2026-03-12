@@ -10,41 +10,34 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific governing permissions and limitations under the License.
+ * See the License for the specific language governing permissions and limitations under the License.
  */
 
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import {
-  ApiRef,
   bitbucketAuthApiRef,
   githubAuthApiRef,
   gitlabAuthApiRef,
   OAuthApi,
-  useApi,
-  useApp,
+  useApiHolder,
 } from '@backstage/core-plugin-api';
 import {
-  augmentRepoToken,
+  resolveScmProviderByName,
   AuthToken,
   AuthTokenDescriptor,
+  ScmProviderName,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 const isAuthApi = (api: any): api is OAuthApi => {
   return api && typeof api.getAccessToken === 'function';
 };
 
-/**
- * Like useApi but returns undefined instead of throwing when the provider is not registered.
- */
-function useOptionalApi<T>(apiRef: ApiRef<T>): T | undefined {
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useApi(apiRef);
-  } catch {
-    return undefined;
-  }
-}
+const providerLabels: Record<ScmProviderName, string> = {
+  github: 'GitHub',
+  gitlab: 'GitLab',
+  bitbucket: 'Bitbucket',
+};
 
 const getProviderToken = async (
   api: unknown,
@@ -65,21 +58,27 @@ const getProviderToken = async (
 };
 
 export const useRepoAuthentication = () => {
-  const app = useApp();
-  const bitbucketAuthApi = useOptionalApi(bitbucketAuthApiRef);
-  const githubAuthApi = useOptionalApi(githubAuthApiRef);
-  const gitlabAuthApi = useOptionalApi(gitlabAuthApiRef);
+  const apiHolder = useApiHolder();
+
+  const apiByProvider = useMemo<Record<ScmProviderName, OAuthApi | undefined>>(
+    () => ({
+      github: apiHolder.get(githubAuthApiRef),
+      gitlab: apiHolder.get(gitlabAuthApiRef),
+      bitbucket: apiHolder.get(bitbucketAuthApiRef),
+    }),
+    [apiHolder],
+  );
 
   const warnedRef = useRef(false);
   useEffect(() => {
     if (warnedRef.current) return;
     warnedRef.current = true;
 
-    const unavailable = [
-      !bitbucketAuthApi && 'Bitbucket',
-      !githubAuthApi && 'GitHub',
-      !gitlabAuthApi && 'GitLab',
-    ].filter(Boolean);
+    const unavailable = (
+      Object.entries(apiByProvider) as [ScmProviderName, unknown][]
+    )
+      .filter(([_, api]) => !api)
+      .map(([name]) => providerLabels[name]);
 
     if (unavailable.length > 0) {
       // eslint-disable-next-line no-console
@@ -87,59 +86,43 @@ export const useRepoAuthentication = () => {
         `x2a: SCM auth providers not configured (will not be available for repository authentication): ${unavailable.join(', ')}`,
       );
     }
-  }, [bitbucketAuthApi, githubAuthApi, gitlabAuthApi]);
+  }, [apiByProvider]);
 
   const getToken = useCallback(
     async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
-      let token;
-      if (tokenDescriptor.provider === 'github') {
-        if (!githubAuthApi) {
-          throw new Error(
-            'GitHub auth provider is not configured. Add @backstage/plugin-auth-backend-module-github-provider to your backend.',
-          );
-        }
-        token = await getProviderToken(githubAuthApi, tokenDescriptor);
-      } else if (tokenDescriptor.provider === 'gitlab') {
-        if (!gitlabAuthApi) {
-          throw new Error(
-            'GitLab auth provider is not configured. Add @backstage/plugin-auth-backend-module-gitlab-provider to your backend.',
-          );
-        }
-        token = await getProviderToken(gitlabAuthApi, tokenDescriptor);
-      } else if (tokenDescriptor.provider === 'bitbucket') {
-        if (!bitbucketAuthApi) {
-          throw new Error(
-            'Bitbucket auth provider is not configured. Add @backstage/plugin-auth-backend-module-bitbucket-provider to your backend.',
-          );
-        }
-        token = await getProviderToken(bitbucketAuthApi, tokenDescriptor);
-      } else {
-        throw new Error(`Unsupported provider: ${tokenDescriptor.provider}`);
+      const providerName = tokenDescriptor.provider as ScmProviderName;
+      const api = apiByProvider[providerName];
+
+      if (!api) {
+        const label = providerLabels[providerName] ?? providerName;
+        throw new Error(
+          `${label} auth provider is not configured. Add the corresponding @backstage/plugin-auth-backend-module-*-provider to your backend.`,
+        );
       }
 
+      const rawToken = await getProviderToken(api, tokenDescriptor);
+      const provider = resolveScmProviderByName(
+        tokenDescriptor.provider as ScmProviderName,
+      );
       return {
-        token: augmentRepoToken(token, tokenDescriptor),
+        token: provider.augmentToken(rawToken),
         provider: tokenDescriptor.provider,
       };
     },
-    [bitbucketAuthApi, githubAuthApi, gitlabAuthApi],
+    [apiByProvider],
   );
 
   const authenticate = useCallback(
     async (
       tokenDescriptors: AuthTokenDescriptor[],
     ): Promise<Array<AuthToken>> => {
-      if (!app) {
-        throw new Error('App context is required for authentication');
-      }
-
       const authTokens: Array<AuthToken> = [];
       for (const tokenDescriptor of tokenDescriptors) {
         authTokens.push(await getToken(tokenDescriptor));
       }
       return authTokens;
     },
-    [app, getToken],
+    [getToken],
   );
 
   const response = useMemo(() => {

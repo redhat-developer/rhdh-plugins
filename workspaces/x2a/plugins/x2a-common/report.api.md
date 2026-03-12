@@ -5,6 +5,7 @@
 ```ts
 
 import { BasicPermission } from '@backstage/plugin-permission-common';
+import { Config } from '@backstage/config';
 
 // @public (undocumented)
 export interface AAPCredentials {
@@ -43,9 +44,6 @@ export interface Artifact {
 export type ArtifactType = 'migration_plan' | 'module_migration_plan' | 'migrated_sources' | 'project_metadata' | 'ansible_project';
 
 // @public
-export const augmentRepoToken: (token: string, authDescriptor: AuthTokenDescriptor) => string;
-
-// @public
 export interface AuthToken {
     provider: string;
     token: string;
@@ -58,6 +56,12 @@ export type AuthTokenDescriptor = {
     scope?: string | string[];
     tokenType?: 'openId' | 'oauth';
 };
+
+// @public
+export const bitbucketProvider: ScmProvider;
+
+// @public
+export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 
 // @public
 export const CREATE_CHEF_PROJECT_TEMPLATE_PATH = "/create/templates/default/chef-conversion-project-template";
@@ -96,13 +100,10 @@ export class DefaultApiClient {
 }
 
 // @public
-export const getAuthTokenDescriptor: ({ repoUrl, readOnly, }: {
-    repoUrl: string;
-    readOnly: boolean;
-}) => AuthTokenDescriptor;
+export const githubProvider: ScmProvider;
 
 // @public
-export const getScmProvider: (repoUrl: string) => "github" | "gitlab" | "bitbucket";
+export const gitlabProvider: ScmProvider;
 
 // @public (undocumented)
 export interface GitRepoAuth {
@@ -395,6 +396,26 @@ export interface RequestOptions {
     // (undocumented)
     token?: string;
 }
+
+// @public
+export function resolveScmProvider(repoUrl: string, hostProviderMap?: Map<string, ScmProviderName>): ScmProvider;
+
+// @public
+export function resolveScmProviderByName(name: ScmProviderName): ScmProvider;
+
+// @public
+export interface ScmProvider {
+    augmentToken(token: string): string;
+    buildArtifactUrl(origin: string, path: string, encodedBranch: string, filePath: string): string;
+    buildBranchUrl(origin: string, path: string, encodedBranch: string): string;
+    getAuthTokenDescriptor(readOnly: boolean): AuthTokenDescriptor;
+    matches(repoUrl: string): boolean;
+    // (undocumented)
+    readonly name: ScmProviderName;
+}
+
+// @public
+export type ScmProviderName = 'github' | 'gitlab' | 'bitbucket';
 
 // @public
 export interface Telemetry {

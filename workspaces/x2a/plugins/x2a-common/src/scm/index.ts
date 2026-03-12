@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-export * from './normalizeRepoUrl';
-export * from './toSorted';
-export * from './tokenDescriptorTypes';
+export type { ScmProvider, ScmProviderName } from './ScmProvider';
+export {
+  resolveScmProvider,
+  resolveScmProviderByName,
+} from './providerRegistry';
+export { buildScmHostMap } from './buildScmHostMap';
+export { githubProvider, gitlabProvider, bitbucketProvider } from './providers';

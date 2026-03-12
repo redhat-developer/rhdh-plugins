@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
-export * from './normalizeRepoUrl';
-export * from './toSorted';
-export * from './tokenDescriptorTypes';
+/**
+ * Extracts the hostname from a repository URL.
+ *
+ * Accepts URLs with or without a scheme (`https://github.com/…` or `github.com/…`).
+ * Returns `undefined` when the URL cannot be parsed.
+ *
+ * @internal
+ */
+export function extractHostname(repoUrl: string): string | undefined {
+  try {
+    const trimmed = repoUrl.trim();
+    const urlStr = trimmed.includes('://') ? trimmed : `https://${trimmed}`;
+    return new URL(urlStr).hostname;
+  } catch {
+    return undefined;
+  }
+}
