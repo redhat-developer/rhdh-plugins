@@ -99,7 +99,12 @@ const x2aPluginTranslationDe = createTranslationMessages({
       '{{count}} Modul mit zu überprüfenden Artefakten',
     'module.summary.toReview_other':
       '{{count}} Module mit zu überprüfenden Artefakten',
-    'module.actions.runNextPhase': 'Nächste Phase ausführen',
+    'module.actions.runNextPhase': 'Nächste {{phase}}-Phase ausführen',
+    'module.actions.cancelPhase': 'Die {{phase}}-Phase abbrechen',
+    'module.actions.cancelPhaseError':
+      'Fehler beim Abbrechen der Phase für das Modul',
+    'module.actions.runNextPhaseError':
+      'Fehler beim Ausführen der nächsten Phase für das Modul',
     'module.currentPhase': 'Aktuelle Phase',
     'module.lastUpdate': 'Letzte Aktualisierung',
     'module.notStarted': 'Nicht gestartet',
@@ -137,6 +142,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.statuses.running': 'Läuft',
     'modulePage.phases.statuses.success': 'Erfolg',
     'modulePage.phases.statuses.error': 'Fehler',
+    'modulePage.phases.statuses.cancelled': 'Abgebrochen',
     'modulePage.phases.reanalyzeInstructions':
       'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
     'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',
@@ -156,6 +162,11 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Das Modul wurde bereits veröffentlicht. Lösen Sie die Veröffentlichung erneut aus, um das Ziel-Repository zu aktualisieren.',
     'modulePage.phases.rerunPublish':
       'Im Ziel-Repository erneut veröffentlichen',
+    'modulePage.phases.cancel': 'Abbrechen',
+    'modulePage.phases.runError':
+      'Fehler beim Ausführen der Phase für das Modul',
+    'modulePage.phases.cancelError':
+      'Fehler beim Abbrechen der Phase für das Modul',
     'modulePage.phases.commitId': 'Letzte Commit-ID',
     'modulePage.phases.viewLog': 'Log anzeigen',
     'modulePage.phases.hideLog': 'Log ausblenden',

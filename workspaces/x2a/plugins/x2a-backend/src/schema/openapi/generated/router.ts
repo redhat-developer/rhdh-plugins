@@ -529,6 +529,58 @@ export const spec = {
         }
       }
     },
+    "/projects/{projectId}/modules/{moduleId}/cancel": {
+      "post": {
+        "summary": "Cancels a migration phase for a specific module. It deletes the corresponding job and does a clean-up.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "moduleId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phase": {
+                    "$ref": "#/components/schemas/ModulePhase"
+                  }
+                },
+                "required": [
+                  "phase"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Migration job cancelled successfully"
+          },
+          "404": {
+            "description": "Project or module or job not found"
+          },
+          "409": {
+            "description": "Job can not be cancelled (probably already finished)"
+          }
+        }
+      }
+    },
     "/projects/{projectId}/log": {
       "get": {
         "summary": "Returns logs for the init phase",
@@ -881,7 +933,8 @@ export const spec = {
           "pending",
           "running",
           "success",
-          "error"
+          "error",
+          "cancelled"
         ]
       },
       "ModuleStatus": {

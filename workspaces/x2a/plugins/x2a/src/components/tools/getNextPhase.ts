@@ -29,7 +29,13 @@ const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
 };
 
 export const getNextPhase = (module: Module): ModulePhase | undefined => {
-  const lastJob = getLastPhaseReached(module);
+  const lastJob = getLastPhaseReached(module, true);
   const lastPhase: MigrationPhase = lastJob?.phase || 'init';
+
+  if (lastJob?.status === 'error' && lastPhase !== 'init') {
+    // If the last is in error, let the user to rerun it.
+    return lastPhase;
+  }
+
   return nextPhases[lastPhase];
 };

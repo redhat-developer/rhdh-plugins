@@ -100,7 +100,12 @@ const x2aPluginTranslationFr = createTranslationMessages({
       '{{count}} module avec des artefacts à réviser',
     'module.summary.toReview_other':
       '{{count}} modules avec des artefacts à réviser',
-    'module.actions.runNextPhase': 'Exécuter la phase suivante',
+    'module.actions.runNextPhase': 'Exécuter la prochaine phase {{phase}}',
+    'module.actions.cancelPhase': 'Annuler la phase {{phase}}',
+    'module.actions.cancelPhaseError':
+      "Échec de l'annulation de la phase pour le module",
+    'module.actions.runNextPhaseError':
+      "Échec de l'exécution de la prochaine phase pour le module",
     'module.currentPhase': 'Phase actuelle',
     'module.lastUpdate': 'Dernière mise à jour',
     'module.notStarted': 'Non commencé',
@@ -138,6 +143,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.statuses.running': 'En cours',
     'modulePage.phases.statuses.success': 'Succès',
     'modulePage.phases.statuses.error': 'Erreur',
+    'modulePage.phases.statuses.cancelled': 'Annulé',
     'modulePage.phases.reanalyzeInstructions':
       "Le plan de migration du module est déjà présent. Si le plan de migration global du projet a été mis à jour, relancez l'analyse pour refléter les changements.",
     'modulePage.phases.rerunAnalyze': 'Recréer le plan de migration du module',
@@ -156,6 +162,11 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.republishInstructions':
       'Le module a déjà été publié. Relancez la publication pour mettre à jour le dépôt cible.',
     'modulePage.phases.rerunPublish': 'Republier dans le dépôt cible',
+    'modulePage.phases.cancel': 'Annuler',
+    'modulePage.phases.runError':
+      "Échec de l'exécution de la phase pour le module",
+    'modulePage.phases.cancelError':
+      "Échec de l'annulation de la phase pour le module",
     'modulePage.phases.commitId': 'Dernier ID de commit',
     'modulePage.phases.viewLog': 'Voir le journal',
     'modulePage.phases.hideLog': 'Masquer le journal',

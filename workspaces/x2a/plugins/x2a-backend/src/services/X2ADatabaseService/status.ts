@@ -23,10 +23,12 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
- * Module's status is the status of the last job of its last phase.
+ * Module's status is the status of the last job of its most-advanced phase.
  *
  * If a later retrigger for an earlier phase fails (e.g. when retrigger on analyze
  * fails but a former migrate already passed), the modules status should not change.
+ *
+ * Cancelled jobs are skipped: the status falls back to the previous phase.
  */
 export function calculateModuleStatus({
   analyze,
@@ -37,13 +39,13 @@ export function calculateModuleStatus({
   migrate?: Job;
   publish?: Job;
 }): { status: ModuleStatus; errorDetails?: string } {
-  if (publish) {
+  if (publish && publish.status !== 'cancelled') {
     return { status: publish.status, errorDetails: publish.errorDetails };
   }
-  if (migrate) {
+  if (migrate && migrate.status !== 'cancelled') {
     return { status: migrate.status, errorDetails: migrate.errorDetails };
   }
-  if (analyze) {
+  if (analyze && analyze.status !== 'cancelled') {
     return { status: analyze.status, errorDetails: analyze.errorDetails };
   }
 
@@ -82,7 +84,9 @@ export function calculateProjectStatus(
       module.status === 'success' && module.publish?.status === 'success',
   ).length;
   const waiting = projectModules.filter(
-    module => module.status === 'success' && !module.publish,
+    module =>
+      module.status === 'success' &&
+      (!module.publish || module.publish.status === 'cancelled'),
   ).length;
   const pending = projectModules.filter(
     module => module.status === 'pending',

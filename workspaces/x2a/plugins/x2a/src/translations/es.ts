@@ -100,7 +100,12 @@ const x2aPluginTranslationEs = createTranslationMessages({
       '{{count}} módulo con artefactos para revisar',
     'module.summary.toReview_other':
       '{{count}} módulos con artefactos para revisar',
-    'module.actions.runNextPhase': 'Ejecutar siguiente fase',
+    'module.actions.runNextPhase': 'Ejecutar la siguiente fase {{phase}}',
+    'module.actions.cancelPhase': 'Cancelar la fase {{phase}}',
+    'module.actions.cancelPhaseError':
+      'Error al cancelar la fase para el módulo',
+    'module.actions.runNextPhaseError':
+      'Error al ejecutar la siguiente fase para el módulo',
     'module.currentPhase': 'Fase actual',
     'module.lastUpdate': 'Última actualización',
     'module.notStarted': 'No iniciado',
@@ -140,6 +145,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.statuses.running': 'En ejecución',
     'modulePage.phases.statuses.success': 'Éxito',
     'modulePage.phases.statuses.error': 'Error',
+    'modulePage.phases.statuses.cancelled': 'Cancelado',
     'modulePage.phases.reanalyzeInstructions':
       'El plan de migración del módulo ya existe. Si el plan de migración general del proyecto se ha actualizado, vuelva a ejecutar el análisis para reflejar los cambios.',
     'modulePage.phases.rerunAnalyze': 'Recrear el plan de migración del módulo',
@@ -159,6 +165,9 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'El módulo ya ha sido publicado. Vuelva a ejecutar la publicación para actualizar el repositorio de destino.',
     'modulePage.phases.rerunPublish':
       'Volver a publicar en el repositorio de destino',
+    'modulePage.phases.cancel': 'Cancelar',
+    'modulePage.phases.runError': 'Error al ejecutar la fase para el módulo',
+    'modulePage.phases.cancelError': 'Error al cancelar la fase para el módulo',
     'modulePage.phases.commitId': 'Último ID de commit',
     'modulePage.phases.viewLog': 'Ver registro',
     'modulePage.phases.hideLog': 'Ocultar registro',

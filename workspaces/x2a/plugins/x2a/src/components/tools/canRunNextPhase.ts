@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  Module,
+  Project,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import { getLastPhaseReached } from './getLastPhaseReached';
 import { getNextPhase } from './getNextPhase';
+import { hasPhasePrerequisites } from './hasPhasePrerequisites';
 
-export const canRunNextPhase = (module: Module): boolean => {
+export const canRunNextPhase = (module: Module, project: Project): boolean => {
   const nextPhase = getNextPhase(module);
+
   if (!nextPhase) {
     return false;
   }
 
-  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
-  const lastJob = getLastPhaseReached(module);
-  if (!lastJob || lastJob.status === 'success') {
-    return true;
-  }
-
-  return false;
+  return hasPhasePrerequisites(module, nextPhase, project);
 };

@@ -50,6 +50,14 @@ export const ModulePage = () => {
   const hostMap = useScmHostMap();
   const [error, setError] = useState<string | undefined>();
   const [refresh, setRefresh] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+
+  const handleTabChange = useCallback(
+    (_event: React.ChangeEvent<{}>, newValue: number) => {
+      setActiveTab(newValue);
+    },
+    [],
+  );
 
   const {
     value: project,
@@ -111,17 +119,59 @@ export const ModulePage = () => {
 
         const responseData = await response.json();
         if (!responseData.jobId) {
-          setError('Failed to run phase for module');
+          setError(`${t('modulePage.phases.runError')}`);
         }
 
         setRefresh(prev => prev + 1);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : 'Failed to run phase for module',
+          err instanceof Error
+            ? err.message
+            : `${t('modulePage.phases.runError')}`,
         );
       }
     },
-    [clientService, hostMap, projectId, moduleId, repoAuthentication, project],
+    [
+      t,
+      clientService,
+      hostMap,
+      projectId,
+      moduleId,
+      repoAuthentication,
+      project,
+    ],
+  );
+
+  const handleCancelPhase = useCallback(
+    async (phase: MigrationPhase) => {
+      if (!project || phase === 'init') {
+        // The init phase belongs to the project's page
+        return;
+      }
+      setError(undefined);
+
+      try {
+        const response =
+          await clientService.projectsProjectIdModulesModuleIdCancelPost({
+            path: { projectId, moduleId },
+            body: { phase },
+          });
+        if (response.status !== 200) {
+          const body = await response
+            .json()
+            .catch(() => ({}) as { message?: string });
+          setError(body?.message || t('modulePage.phases.cancelError'));
+        }
+        setRefresh(prev => prev + 1);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : t('modulePage.phases.cancelError'),
+        );
+      }
+    },
+    [clientService, t, projectId, moduleId, project],
   );
 
   const fetchError = projectError || moduleError;
@@ -171,9 +221,13 @@ export const ModulePage = () => {
             <Grid item xs={12}>
               <PhasesCard
                 module={module}
+                project={project}
                 projectId={projectId}
                 moduleId={moduleId}
                 onRunPhase={handleRunPhase}
+                onCancelPhase={handleCancelPhase}
+                activeTab={activeTab}
+                handleTabChange={handleTabChange}
               />
             </Grid>
           </Grid>

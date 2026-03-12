@@ -87,7 +87,7 @@ export async function createTestJob(
     projectId: string;
     moduleId: string | null;
     phase: 'init' | 'analyze' | 'migrate' | 'publish';
-    status?: 'pending' | 'running' | 'success' | 'error';
+    status?: 'pending' | 'running' | 'success' | 'error' | 'cancelled';
     log?: string;
     k8sJobName?: string;
   },
