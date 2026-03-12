@@ -20,6 +20,8 @@ import { Page } from '@playwright/test';
  */
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
   fr: 'Français',
   it: 'Italiano',
   ja: '日本語',

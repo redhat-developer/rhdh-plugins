@@ -1,9 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
-const configFile =
-  process.env.CONFIG_FILE === 'dev'
-    ? '../../app-config-dev.yaml'
-    : '../../app-config.yaml';
+const LOCALES = ['en', 'fr', 'it', 'ja', 'de', 'es'] as const;
+
+const testDir = 'packages/app/e2e-tests';
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -40,85 +39,27 @@ export default defineConfig({
   outputDir: 'node_modules/.cache/e2e-test-results',
 
   projects: [
-    {
-      name: 'en',
-      testDir: 'packages/app/e2e-tests',
+    // Main config: all locales, default port 3000, exclude developer spec
+    ...LOCALES.map(locale => ({
+      name: locale,
+      testDir,
       testIgnore: '**/quick-start-developer.spec.ts',
       use: {
-        channel: 'chrome',
-        locale: 'en',
+        channel: 'chrome' as const,
+        locale,
         baseURL: 'http://localhost:3000',
       },
-    },
-    {
-      name: 'fr',
-      testDir: 'packages/app/e2e-tests',
-      testIgnore: '**/quick-start-developer.spec.ts',
-      use: {
-        channel: 'chrome',
-        locale: 'fr',
-        baseURL: 'http://localhost:3000',
-      },
-    },
-    {
-      name: 'it',
-      testDir: 'packages/app/e2e-tests',
-      testIgnore: '**/quick-start-developer.spec.ts',
-      use: {
-        channel: 'chrome',
-        locale: 'it',
-        baseURL: 'http://localhost:3000',
-      },
-    },
-    {
-      name: 'ja',
-      testDir: 'packages/app/e2e-tests',
-      testIgnore: '**/quick-start-developer.spec.ts',
-      use: {
-        channel: 'chrome',
-        locale: 'ja',
-        baseURL: 'http://localhost:3000',
-      },
-    },
-    {
-      name: 'dev-config',
-      testDir: 'packages/app/e2e-tests',
+    })),
+    // Dev config: all locales, port 3001, developer spec only
+    ...LOCALES.map(locale => ({
+      name: `dev-config-${locale}`,
+      testDir,
       testMatch: '**/quick-start-developer.spec.ts',
       use: {
-        channel: 'chrome',
-        locale: 'en',
+        channel: 'chrome' as const,
+        locale,
         baseURL: 'http://localhost:3001',
       },
-    },
-    {
-      name: 'dev-config-fr',
-      testDir: 'packages/app/e2e-tests',
-      testMatch: '**/quick-start-developer.spec.ts',
-      use: {
-        channel: 'chrome',
-        locale: 'fr',
-        baseURL: 'http://localhost:3001',
-      },
-    },
-    {
-      name: 'dev-config-it',
-      testDir: 'packages/app/e2e-tests',
-      testMatch: '**/quick-start-developer.spec.ts',
-      use: {
-        channel: 'chrome',
-        locale: 'it',
-        baseURL: 'http://localhost:3001',
-      },
-    },
-    {
-      name: 'dev-config-ja',
-      testDir: 'packages/app/e2e-tests',
-      testMatch: '**/quick-start-developer.spec.ts',
-      use: {
-        channel: 'chrome',
-        locale: 'ja',
-        baseURL: 'http://localhost:3001',
-      },
-    },
+    })),
   ],
 });

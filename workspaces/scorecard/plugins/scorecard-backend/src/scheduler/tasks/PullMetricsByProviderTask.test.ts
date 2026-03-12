@@ -295,6 +295,94 @@ describe('PullMetricsByProviderTask', () => {
       expect(createMetricValuesSpy).toHaveBeenCalledWith(metricValues);
     });
 
+    it('should store a full entity ref for owner when spec.owner is a short name', async () => {
+      mockCatalog.queryEntities.mockReset();
+      mockCatalog.queryEntities.mockResolvedValueOnce({
+        items: [
+          {
+            apiVersion: '1.0.0',
+            kind: 'Component',
+            metadata: { name: 'test1', namespace: 'default' },
+            spec: { owner: 'my-team' },
+          },
+        ],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 1,
+      });
+
+      const createMetricValuesSpy = jest.spyOn(
+        mockDatabaseMetricValues,
+        'createMetricValues',
+      );
+      await (task as any).pullProviderMetrics(mockProvider, mockLogger);
+
+      expect(createMetricValuesSpy).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ entity_owner: 'group:default/my-team' }),
+        ]),
+      );
+    });
+
+    it('should store a full entity ref for owner when spec.owner is already a full ref', async () => {
+      mockCatalog.queryEntities.mockReset();
+      mockCatalog.queryEntities.mockResolvedValueOnce({
+        items: [
+          {
+            apiVersion: '1.0.0',
+            kind: 'Component',
+            metadata: { name: 'test1', namespace: 'default' },
+            spec: { owner: 'group:default/my-team' },
+          },
+        ],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 1,
+      });
+
+      const createMetricValuesSpy = jest.spyOn(
+        mockDatabaseMetricValues,
+        'createMetricValues',
+      );
+      await (task as any).pullProviderMetrics(mockProvider, mockLogger);
+
+      expect(createMetricValuesSpy).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ entity_owner: 'group:default/my-team' }),
+        ]),
+      );
+    });
+
+    it('should produce the same entity_owner regardless of whether spec.owner is a short name or full ref', async () => {
+      const shortNameEntity = {
+        apiVersion: '1.0.0',
+        kind: 'Component',
+        metadata: { name: 'svc-a', namespace: 'default' },
+        spec: { owner: 'my-team' },
+      };
+      const fullRefEntity = {
+        apiVersion: '1.0.0',
+        kind: 'Component',
+        metadata: { name: 'svc-b', namespace: 'default' },
+        spec: { owner: 'group:default/my-team' },
+      };
+
+      mockCatalog.queryEntities.mockReset();
+      mockCatalog.queryEntities.mockResolvedValueOnce({
+        items: [shortNameEntity, fullRefEntity],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 2,
+      });
+
+      const createMetricValuesSpy = jest.spyOn(
+        mockDatabaseMetricValues,
+        'createMetricValues',
+      );
+      await (task as any).pullProviderMetrics(mockProvider, mockLogger);
+
+      const saved = createMetricValuesSpy.mock.calls[0][0];
+      expect(saved[0].entity_owner).toBe('group:default/my-team');
+      expect(saved[1].entity_owner).toBe('group:default/my-team');
+    });
+
     it('should log completion', async () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 

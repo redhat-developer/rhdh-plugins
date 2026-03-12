@@ -24,8 +24,9 @@ import {
 } from '@backstage/core-components';
 
 import DeleteIcon from '@material-ui/icons/Delete';
+import PlaylistPlayIcon from '@material-ui/icons/PlaylistPlay';
 import ChevronRight from '@material-ui/icons/ChevronRight';
-import { Box, Grid, IconButton, Tooltip } from '@material-ui/core';
+import { Box, Button, Grid, IconButton, Tooltip } from '@material-ui/core';
 
 import {
   CREATE_CHEF_PROJECT_TEMPLATE_PATH,
@@ -34,12 +35,15 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useBulkRun } from '../../hooks/useBulkRun';
+import { useProjectWriteAccess } from '../../hooks/useProjectWriteAccess';
 import { Repository } from '../Repository';
 import { OrderDirection } from './types';
 import { DetailPanel } from './DetailPanel';
 import { ProjectStatusCell } from '../ProjectStatusCell';
 import { DeleteProjectDialog } from '../DeleteProjectDialog';
-import { extractResponseError } from '../tools';
+import { BulkRunConfirmDialog } from '../BulkRunConfirmDialog';
+import { extractResponseError, areEligibleModulesToRun } from '../tools';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { projectRouteRef } from '../../routes';
 
@@ -247,6 +251,8 @@ export const ProjectTable = ({
 }: ProjectTableProps) => {
   const clientService = useClientService();
   const { t } = useTranslation();
+  const { runAllForProject, runAllGlobal } = useBulkRun();
+  const { hasAnyWriteAccess, canWriteProject } = useProjectWriteAccess();
 
   const [error, setError] = useState<Error | null>(null);
   const [allExpanded, setAllExpanded] = useState(false);
@@ -257,6 +263,10 @@ export const ProjectTable = ({
   }, [projects]);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const [bulkRunTarget, setBulkRunTarget] = useState<Project | null>(null);
+  const [bulkRunGlobalOpen, setBulkRunGlobalOpen] = useState(false);
+  const [isBulkRunning, setIsBulkRunning] = useState(false);
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -285,6 +295,47 @@ export const ProjectTable = ({
       setDeleteTarget(null);
     }
   };
+
+  const handleBulkRunProjectConfirm = useCallback(async () => {
+    if (!bulkRunTarget) return;
+    setError(null);
+    setIsBulkRunning(true);
+
+    try {
+      const result = await runAllForProject(bulkRunTarget);
+      if (result.failed > 0) {
+        setError(
+          new Error(
+            t('bulkRun.errorProject' as any, { name: bulkRunTarget.name }),
+          ),
+        );
+      }
+      forceRefresh();
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsBulkRunning(false);
+      setBulkRunTarget(null);
+    }
+  }, [bulkRunTarget, runAllForProject, forceRefresh, t]);
+
+  const handleBulkRunGlobalConfirm = useCallback(async () => {
+    setError(null);
+    setIsBulkRunning(true);
+
+    try {
+      const result = await runAllGlobal(canWriteProject);
+      if (result.failed > 0) {
+        setError(new Error(t('bulkRun.errorGlobal')));
+      }
+      forceRefresh();
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsBulkRunning(false);
+      setBulkRunGlobalOpen(false);
+    }
+  }, [runAllGlobal, canWriteProject, forceRefresh, t]);
 
   const handleOrderChange = (sortBy: number, od: OrderDirection) => {
     setOrderBy(sortBy);
@@ -349,9 +400,16 @@ export const ProjectTable = ({
 
   const actions = [
     (rowData: Project) => ({
+      icon: PlaylistPlayIcon,
+      onClick: () => setBulkRunTarget(rowData),
+      tooltip: t('bulkRun.projectAction'),
+      disabled: !canWriteProject(rowData) || !areEligibleModulesToRun(rowData),
+    }),
+    (rowData: Project) => ({
       icon: DeleteIcon,
       onClick: () => setDeleteTarget(rowData),
       tooltip: t('table.actions.deleteProject'),
+      disabled: !canWriteProject(rowData),
     }),
   ];
 
@@ -365,6 +423,28 @@ export const ProjectTable = ({
         onClose={() => setDeleteTarget(null)}
       />
 
+      <BulkRunConfirmDialog
+        idPostfix="project-single"
+        open={!!bulkRunTarget}
+        title={t('bulkRun.projectConfirm.title' as any, {
+          name: bulkRunTarget?.name ?? '',
+        })}
+        message={t('bulkRun.projectConfirm.message')}
+        isRunning={isBulkRunning}
+        onConfirm={handleBulkRunProjectConfirm}
+        onClose={() => !isBulkRunning && setBulkRunTarget(null)}
+      />
+
+      <BulkRunConfirmDialog
+        idPostfix="project-global"
+        open={bulkRunGlobalOpen}
+        title={t('bulkRun.globalConfirm.title')}
+        message={t('bulkRun.globalConfirm.message')}
+        isRunning={isBulkRunning}
+        onConfirm={handleBulkRunGlobalConfirm}
+        onClose={() => !isBulkRunning && setBulkRunGlobalOpen(false)}
+      />
+
       {error && (
         <Grid item>
           <ResponseErrorPanel error={error} />
@@ -372,7 +452,16 @@ export const ProjectTable = ({
       )}
 
       <Grid item>
-        <Box display="flex" justifyContent="flex-end">
+        <Box display="flex" justifyContent="flex-end" gridGap={8}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<PlaylistPlayIcon />}
+            onClick={() => setBulkRunGlobalOpen(true)}
+            disabled={!hasAnyWriteAccess}
+          >
+            {t('bulkRun.globalAction')}
+          </Button>
           <LinkButton
             variant="contained"
             color="primary"

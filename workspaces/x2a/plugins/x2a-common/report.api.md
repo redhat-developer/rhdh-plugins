@@ -19,10 +19,12 @@ export interface AAPCredentials {
 export interface AgentMetrics {
     durationSeconds: number;
     endedAt?: Date;
+    inputTokens?: number;
     metrics?: {
         [key: string]: any;
     };
     name: string;
+    outputTokens?: number;
     startedAt?: Date;
     toolCalls?: {
         [key: string]: number;
@@ -128,6 +130,9 @@ export interface Job {
 
 // @public (undocumented)
 export type JobStatusEnum = 'pending' | 'running' | 'success' | 'error';
+
+// @public
+export const MAX_CONCURRENT_BULK_RUN = 3;
 
 // @public (undocumented)
 export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
