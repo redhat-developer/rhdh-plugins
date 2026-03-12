@@ -4,31 +4,119 @@
 
 ```ts
 
-import { BackstagePlugin } from '@backstage/core-plugin-api';
-import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { AnyApiFactory } from '@backstage/frontend-plugin-api';
+import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
+import { ApiFactory } from '@backstage/frontend-plugin-api';
+import { Entity } from '@backstage/catalog-model';
+import { EntityPredicate } from '@backstage/plugin-catalog-react/alpha';
+import { ExtensionBlueprintParams } from '@backstage/frontend-plugin-api';
+import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { IconComponent } from '@backstage/frontend-plugin-api';
+import { JSX as JSX_2 } from 'react';
+import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
+import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
+import { PathParams } from '@backstage/core-plugin-api';
 import { RouteRef } from '@backstage/core-plugin-api';
-import { SvgIconProps } from '@mui/material/SvgIcon';
+import { RouteRef as RouteRef_2 } from '@backstage/frontend-plugin-api';
+import { SubRouteRef } from '@backstage/core-plugin-api';
 import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
-// @public (undocumented)
-export const IsOrchestratorCatalogTabAvailable: () => boolean;
-
-// Warning: (ae-missing-release-tag) "OrchestratorCatalogTab" is part of the package's API, but it is missing a release tag (@alpha, @beta, @public, or @internal)
-//
-// @public (undocumented)
-export const OrchestratorCatalogTab: () => JSX_2.Element;
-
-// @public
-export const OrchestratorIcon: (props: SvgIconProps) => JSX_2.Element;
-
-// @public
-export const OrchestratorPage: () => JSX_2.Element;
-
-// @public
-export const orchestratorPlugin: BackstagePlugin<    {
+// @alpha
+const _default: OverridableFrontendPlugin<    {
 root: RouteRef<undefined>;
-}, {}, {}>;
+workflow: SubRouteRef<PathParams<"/workflows/:workflowId">>;
+workflowRuns: SubRouteRef<PathParams<"/workflows/:workflowId/runs">>;
+workflowInstance: SubRouteRef<PathParams<"/instances/:instanceId">>;
+executeWorkflow: SubRouteRef<PathParams<"/workflows/:workflowId/execute">>;
+entityWorkflow: SubRouteRef<PathParams<"/entity/:namespace/:kind/:name/:workflowId">>;
+entityInstance: SubRouteRef<PathParams<"/entity/:namespace/:kind/:name/:workflowId/:instanceId">>;
+}, {}, {
+"api:orchestrator": OverridableExtensionDefinition<    {
+kind: "api";
+name: undefined;
+config: {};
+configInput: {};
+output: ExtensionDataRef<AnyApiFactory, "core.api.factory", {}>;
+inputs: {};
+params: <TApi, TImpl extends TApi, TDeps extends { [name in string]: unknown; }>(params: ApiFactory<TApi, TImpl, TDeps>) => ExtensionBlueprintParams<AnyApiFactory>;
+}>;
+"entity-content:orchestrator/workflows": OverridableExtensionDefinition<    {
+kind: "entity-content";
+name: "workflows";
+config: {
+path: string | undefined;
+title: string | undefined;
+filter: EntityPredicate | undefined;
+group: string | false | undefined;
+};
+configInput: {
+filter?: EntityPredicate | undefined;
+title?: string | undefined;
+path?: string | undefined;
+group?: string | false | undefined;
+};
+output: ExtensionDataRef<string, "core.routing.path", {}> | ExtensionDataRef<JSX_2.Element, "core.reactElement", {}> | ExtensionDataRef<RouteRef_2<AnyRouteRefParams>, "core.routing.ref", {
+optional: true;
+}> | ExtensionDataRef<(entity: Entity) => boolean, "catalog.entity-filter-function", {
+optional: true;
+}> | ExtensionDataRef<string, "catalog.entity-filter-expression", {
+optional: true;
+}> | ExtensionDataRef<string, "catalog.entity-content-title", {}> | ExtensionDataRef<string, "catalog.entity-content-group", {
+optional: true;
+}>;
+inputs: {};
+params: {
+defaultPath?: [Error: `Use the 'path' param instead`];
+path: string;
+defaultTitle?: [Error: `Use the 'title' param instead`];
+title: string;
+defaultGroup?: [Error: `Use the 'group' param instead`];
+group?: ("operation" | "overview" | "documentation" | "development" | "deployment" | "observability") | (string & {});
+loader: () => Promise<JSX.Element>;
+routeRef?: RouteRef_2;
+filter?: string | EntityPredicate | ((entity: Entity) => boolean);
+};
+}>;
+"nav-item:orchestrator": OverridableExtensionDefinition<    {
+kind: "nav-item";
+name: undefined;
+config: {};
+configInput: {};
+output: ExtensionDataRef<    {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef_2<undefined>;
+}, "core.nav-item.target", {}>;
+inputs: {};
+params: {
+title: string;
+icon: IconComponent;
+routeRef: RouteRef_2<undefined>;
+};
+}>;
+"page:orchestrator": OverridableExtensionDefinition<    {
+kind: "page";
+name: undefined;
+config: {
+path: string | undefined;
+};
+configInput: {
+path?: string | undefined;
+};
+output: ExtensionDataRef<string, "core.routing.path", {}> | ExtensionDataRef<JSX_2.Element, "core.reactElement", {}> | ExtensionDataRef<RouteRef_2<AnyRouteRefParams>, "core.routing.ref", {
+optional: true;
+}>;
+inputs: {};
+params: {
+defaultPath?: [Error: `Use the 'path' param instead`];
+path: string;
+loader: () => Promise<JSX.Element>;
+routeRef?: RouteRef_2;
+};
+}>;
+}>;
+export default _default;
 
 // @public
 export const orchestratorTranslationRef: TranslationRef<"plugin.orchestrator", {
@@ -172,13 +260,8 @@ readonly "formDecorator.error": string;
 readonly "aria.close": string;
 }>;
 
-// @public
-export const orchestratorTranslations: TranslationResource<"plugin.orchestrator">;
-
-// Warnings were encountered during analysis:
-//
-// src/components/catalogComponents/CatalogTab.d.ts:5:22 - (ae-undocumented) Missing documentation for "IsOrchestratorCatalogTabAvailable".
-// src/components/catalogComponents/CatalogTab.d.ts:6:22 - (ae-undocumented) Missing documentation for "OrchestratorCatalogTab".
+// @alpha
+export const orchestratorTranslationsModule: FrontendModule;
 
 // (No @packageDocumentation comment for this package)
 

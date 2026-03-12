@@ -78,6 +78,27 @@ Follow these instructions to install the orchestrator plugin in a Backstage envi
    );
    ```
 
+### New frontend system (NFS)
+
+If your app uses `createApp` from `@backstage/frontend-defaults`, add the orchestrator plugin and its translation module as features:
+
+```tsx title="packages/app/src/App.tsx"
+import { createApp } from '@backstage/frontend-defaults';
+import orchestratorPlugin, {
+  orchestratorTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator/alpha';
+import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
+
+export default createApp({
+  features: [
+    // ... your other features (catalog, nav, etc.)
+    orchestratorPlugin,
+    orchestratorTranslationsModule,
+    orchestratorFormWidgetsPlugin,
+  ],
+});
+```
+
 ## Configuration
 
 Add the following configuration to your `app-config.yaml`:

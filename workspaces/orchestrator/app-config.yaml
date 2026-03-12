@@ -2,7 +2,7 @@ app:
   title: RHDH Plugins
   baseUrl: http://localhost:3000
   extensions:
-    - "api:app/app-language":
+    - 'api:app/app-language':
         config:
           defaultLanguage: en
           availableLanguages:
@@ -12,7 +12,6 @@ app:
             - fr
             - it
             - ja
-
 
 organization:
   name: Red Hat

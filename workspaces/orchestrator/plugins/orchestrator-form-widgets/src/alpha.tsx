@@ -34,9 +34,11 @@ const orchestratorFormApi = ApiBlueprint.make({
 });
 
 /**
+ *
+ * @alpha
  * Orchestrator Form Widgets plugin for the new frontend system.
  * Provides default RJSF widgets (SchemaUpdater, ActiveTextInput, etc.) for the Workflow Execution form.
- * @alpha
+ *
  */
 export default createFrontendPlugin({
   pluginId: 'orchestrator-form-widgets',
