@@ -20,6 +20,8 @@ export interface Config {
    */
   orchestrator?: {
     kafka?: {
+      // A logical identifier of an application.
+      // https://kafka.js.org/docs/configuration#client-id
       clientId: string;
       // logLevel override for the orchestrator kafka services
       // logLevel values based on KafkaJS values https://kafka.js.org/docs/configuration#logging
