@@ -16,10 +16,10 @@
 
 import { mockServices } from '@backstage/backend-test-utils';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
-import { isMetricIdExcluded } from './metricUtils';
+import { isMetricIdDisabled } from './metricUtils';
 
-describe('isMetricIdExcluded', () => {
-  const providerId = 'openssf.maintained';
+describe('isMetricIdDisabled', () => {
+  const metricId = 'openssf.maintained';
   let mockLogger: ReturnType<typeof mockServices.logger.mock>;
 
   function createConfig(
@@ -62,104 +62,78 @@ describe('isMetricIdExcluded', () => {
   });
 
   it('returns true when metric is in app-config disabledMetrics', () => {
-    const config = createConfig({ disabledMetrics: [providerId] });
+    const config = createConfig({ disabledMetrics: [metricId] });
     const entity = createEntity();
 
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
 
     expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Disabled metric by app-config: ${providerId}`,
-    );
   });
 
-  it('returns true when metric is in app-config disabledMetrics (disabled wins)', () => {
-    const config = createConfig({ disabledMetrics: [providerId] });
-    const entity = createEntity();
-
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
-
-    expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Disabled metric by app-config: ${providerId}`,
-    );
-  });
-
-  it('returns false when disabled by annotation but metric is in entityOverrides.disabledMetrics.except (must run)', () => {
+  it('returns true when disabled by annotation but metric is in entityOverrides.disabledMetrics.except but entityOverrides.disabledMetrics.enabled is false', () => {
     const config = createConfig({
       entityOverrides: {
-        disabledMetrics: { except: [providerId] },
+        disabledMetrics: {
+          enabled: false,
+          except: [metricId],
+        },
       },
     });
-    const entity = createEntity(providerId);
 
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(true);
+  });
+
+  it('returns true when disabled by annotation but metric is NOT in entityOverrides.disabledMetrics.except but entityOverrides.disabledMetrics.enabled is true', () => {
+    const config = createConfig({
+      entityOverrides: {
+        disabledMetrics: {
+          enabled: true,
+          except: [],
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(true);
+  });
+
+  it('returns false when disabled by annotation but metric is in entityOverrides.disabledMetrics.except but entityOverrides.disabledMetrics.enabled is true', () => {
+    const config = createConfig({
+      entityOverrides: {
+        disabledMetrics: {
+          enabled: true,
+          except: [metricId],
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
 
     expect(result).toBe(false);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Entity override: metric disabled by annotation but in entityOverrides.disabledMetrics.except (must run): ${providerId}`,
-    );
   });
 
   it('returns true when disabled by annotation (no except list)', () => {
     const config = createConfig();
-    const entity = createEntity(providerId);
+    const entity = createEntity(metricId);
 
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
-
-    expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Disabled metric by annotation: ${providerId}`,
-    );
-  });
-
-  it('returns true when disabled by annotation (entity in list)', () => {
-    const config = createConfig();
-    const entity = createEntity(providerId);
-
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
 
     expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Disabled metric by annotation: ${providerId}`,
-    );
-  });
-
-  it('parses comma-separated annotation and excludes when providerId is in the list', () => {
-    const config = createConfig();
-    const entity = createEntity('github.test_metric,openssf.maintained');
-
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
-
-    expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Disabled metric by annotation: ${providerId}`,
-    );
   });
 
   it('returns false when not disabled by app-config or annotation', () => {
     const config = createConfig();
     const entity = createEntity();
 
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
 
     expect(result).toBe(false);
-  });
-
-  it('returns true when entityOverrides.disabledMetrics.enabled is false and metric is in entity annotation (union of app-config and entity list)', () => {
-    const config = createConfig({
-      entityOverrides: {
-        disabledMetrics: { enabled: false },
-      },
-    });
-    const entity = createEntity(providerId);
-
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
-
-    expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Disabled metric by annotation (entity overrides disabled): ${providerId}`,
-    );
   });
 
   it('returns false when entityOverrides.disabledMetrics.enabled is false and metric is not in entity annotation', () => {
@@ -170,51 +144,16 @@ describe('isMetricIdExcluded', () => {
     });
     const entity = createEntity(); // no annotation
 
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
 
     expect(result).toBe(false);
-  });
-
-  it('returns true when enabled is false with nested config and entity annotation (getOptionalConfig path)', () => {
-    const config = createConfig({
-      entityOverrides: {
-        disabledMetrics: {
-          enabled: false,
-          except: [providerId],
-        },
-      },
-    });
-    const entity = createEntity(providerId);
-
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
-
-    expect(result).toBe(true);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Disabled metric by annotation (entity overrides disabled): ${providerId}`,
-    );
-  });
-
-  it('returns false when disabled by annotation but metric is in entityOverrides.disabledMetrics.except', () => {
-    const config = createConfig({
-      entityOverrides: {
-        disabledMetrics: { enabled: true, except: [providerId] },
-      },
-    });
-    const entity = createEntity(providerId);
-
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
-
-    expect(result).toBe(false);
-    expect(mockLogger.info).toHaveBeenCalledWith(
-      `Entity override: metric disabled by annotation but in entityOverrides.disabledMetrics.except (must run): ${providerId}`,
-    );
   });
 
   it('returns false when no config and no annotation', () => {
     const config = createConfig();
     const entity = createEntity();
 
-    const result = isMetricIdExcluded(config, providerId, entity, mockLogger);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
 
     expect(result).toBe(false);
   });

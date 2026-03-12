@@ -26,7 +26,7 @@ import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
-import { isMetricIdExcluded } from '../../utils/metricUtils';
+import { isMetricIdDisabled } from '../../utils/metricUtils';
 import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
@@ -144,7 +144,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 
             try {
               if (
-                isMetricIdExcluded(
+                isMetricIdDisabled(
                   this.config,
                   provider.getProviderId(),
                   entity,

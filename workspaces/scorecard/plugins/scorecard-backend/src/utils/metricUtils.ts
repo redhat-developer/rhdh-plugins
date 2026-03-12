@@ -17,92 +17,60 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { parseCommaSeparatedString } from './parseCommaSeparatedString';
 
 /**
- * Check if the metric is disabled by app-config or entity annotation.
- * 1. Top-level disabledMetrics: always disabled, entity cannot override.
- * 2. entityOverrides.disabledMetrics.enabled: if false, entity annotation is ignored.
- * 3. entityOverrides.disabledMetrics.except: when entity override is allowed, these metrics cannot be disabled by entity.
+ * Check if the metric is disabled by app-config, if is disabled by the entity annotation and if it has any exception rule.
+ *
  * @param config - Backstage config
- * @param providerId - The ID of the provider
+ * @param metricId - The ID of the metric
  * @param entity - The entity to check
  * @param logger - The logger to use
- * @returns true if the metric is disabled, false otherwise
+ * @returns true if the metric is disabled, false otherwise.
  */
-export function isMetricIdExcluded(
+export function isMetricIdDisabled(
   config: Config,
-  providerId: string,
+  metricId: string,
   entity: Entity,
   logger: LoggerService,
 ): boolean {
-  const disabledMetricsFromAppConfig = config.getOptionalStringArray(
-    'scorecard.disabledMetrics',
-  );
-  logger.debug(
-    `Loaded scorecard.disabledMetrics from app-config: ${JSON.stringify(
-      disabledMetricsFromAppConfig,
-    )}`,
-  );
+  const disabledMetricsFromAppConfig =
+    config.getOptionalStringArray('scorecard.disabledMetrics') ?? [];
+  const isDisabledByAppConfig = disabledMetricsFromAppConfig.includes(metricId);
 
-  const isDisabledByAppConfig =
-    disabledMetricsFromAppConfig?.includes(providerId) ?? false;
-
-  // if the metric is disabled by app-config, always disabled (entity cannot override)
   if (isDisabledByAppConfig) {
-    logger.info(`Disabled metric by app-config: ${providerId}`);
+    logger.debug(`Disabled metric by app-config: ${metricId}`);
     return true;
   }
 
-  // entityOverrides.disabledMetrics: when false, entity list still applied (union) but entity cannot override to re-enable
   const entityOverridesDisabledMetricsConfig = config.getOptionalConfig(
     'scorecard.entityOverrides.disabledMetrics',
   );
+
   const entityOverrideEnabled =
     entityOverridesDisabledMetricsConfig?.getOptionalBoolean('enabled');
-  const exceptList =
-    entityOverridesDisabledMetricsConfig?.getOptionalStringArray('except');
-  logger.debug(
-    `Loaded entityOverrides.disabledMetrics (enabled=${entityOverrideEnabled}, except=${JSON.stringify(
-      exceptList,
-    )})`,
+  const disabledMetricsFromComponentAnnotation = parseCommaSeparatedString(
+    entity.metadata.annotations?.['scorecard.io/disabled-metrics'] ?? '',
   );
-
-  const disabledMetricsFromComponentAnnotation = entity.metadata.annotations?.[
-    'scorecard.io/disabled-metrics'
-  ]
-    ?.split(',')
-    .map((s: string) => s.trim());
-  logger.debug(
-    `Loaded scorecard.io/disabled-metrics annotation: ${JSON.stringify(
-      disabledMetricsFromComponentAnnotation,
-    )}`,
-  );
-
-  const isInExceptList = exceptList?.includes(providerId) ?? false;
   const isDisabledByAnnotation =
-    disabledMetricsFromComponentAnnotation?.includes(providerId) ?? false;
+    disabledMetricsFromComponentAnnotation?.includes(metricId) ?? false;
 
-  // when entity overrides are disabled (enabled === false): apply both app-config and entity list (union) — entity cannot override to re-enable
   if (entityOverrideEnabled === false) {
     if (isDisabledByAnnotation) {
-      logger.info(
-        `Disabled metric by annotation (entity overrides disabled): ${providerId}`,
-      );
       return true;
     }
     return false;
   }
+  const exceptList =
+    entityOverridesDisabledMetricsConfig?.getOptionalStringArray('except') ??
+    [];
+  const isInExceptList = exceptList?.includes(metricId);
 
-  // when entity overrides are allowed (enabled !== false): except list = metrics entity cannot disable
   if (isDisabledByAnnotation && isInExceptList) {
-    logger.info(
-      `Entity override: metric disabled by annotation but in entityOverrides.disabledMetrics.except (must run): ${providerId}`,
-    );
     return false;
   }
 
   if (isDisabledByAnnotation && !isInExceptList) {
-    logger.info(`Disabled metric by annotation: ${providerId}`);
     return true;
   }
 

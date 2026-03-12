@@ -23,16 +23,13 @@ export interface Config {
     dataRetentionDays?: number;
     /** List of metric IDs (e.g. openssf.packaging) that are disabled globally. Entity annotations cannot override this. */
     disabledMetrics?: string[];
-    /**
-     * Control whether users can override behavior via entity annotations.
-     * This only affects entity annotations (e.g. scorecard.io/disabled-metrics); it does not affect scorecard.disabledMetrics or other app-config.
-     */
+    /** Control whether users can override behavior via entity annotations. */
     entityOverrides?: {
       /** Whether entity scorecard.io/disabled-metrics annotation can override. Only affects annotations; global disabledMetrics is unchanged. */
       disabledMetrics?: {
-        /** If true (default), entity can disable metrics via annotation; except list can force some to run. If false, entity list is still applied (union with disabledMetrics) but entity cannot override to re-enable anything. */
+        /** If true (default), except list can force any entity disabled metrics to run. If false, the disabled metrics set are respected accordingly. */
         enabled?: boolean;
-        /** When enabled is true: metric IDs that entity cannot disable (must run). When enabled is false: not used. */
+        /** When enabled is true: this list creates an exception by enabling all metrics listed. */
         except?: string[];
       };
     };
