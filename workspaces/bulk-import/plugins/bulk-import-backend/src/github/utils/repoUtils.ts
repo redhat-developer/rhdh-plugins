@@ -207,39 +207,30 @@ export async function addGithubTokenRepositories(
   },
 ): Promise<{ totalCount?: number }> {
   const search = reqParams?.search;
-  const pageNumber = reqParams?.pageNumber ?? DefaultPageNumber;
-  const pageSize = reqParams?.pageSize ?? DefaultPageSize;
   let totalCount: number | undefined;
   try {
     if (search) {
-      // Get currently authenticated user
-      const username = (await octokit.rest.users.getAuthenticated())?.data
-        ?.login;
-      let query = `${search} in:name user:${username}`;
-
-      const allOrgsResp = await octokit.paginate(
-        octokit.rest.orgs.listForAuthenticatedUser,
-        {
-          sort: 'full_name',
-          direction: 'asc',
-        },
-      );
-      const orgSearch: string[] = [];
-      allOrgsResp?.forEach(org => orgSearch.push(`org:${org.login}`));
-      if (orgSearch.length > 0) {
-        query += ` ${orgSearch.join(' ')}`;
-      }
-
-      const searchResp = await searchRepos(
+      const allRepositories = await listAllRepositoriesForAuthenticatedUser(
+        deps,
         octokit,
-        query,
-        pageNumber,
-        pageSize,
       );
-      totalCount = searchResp.totalCount;
-      searchResp.repositories.forEach(repo =>
-        repositories.set(repo.full_name, repo),
+
+      const filteredRepositories = allRepositories.filter(repo =>
+        repo.name.includes(search),
       );
+
+      filteredRepositories.forEach(repo => {
+        repositories.set(repo.full_name, {
+          name: repo.name,
+          full_name: repo.full_name,
+          url: repo.url,
+          html_url: repo.html_url,
+          default_branch: repo.default_branch,
+          updated_at: repo.updated_at,
+        });
+      });
+
+      totalCount = filteredRepositories.length;
     } else {
       const allRepositories = await listAllRepositoriesForAuthenticatedUser(
         deps,
