@@ -15,7 +15,7 @@
  */
 
 import { Page, expect } from '@playwright/test';
-import { performGuestLogin } from '../fixtures/auth';
+import { performLogin } from '../fixtures/auth';
 
 export class X2AnsiblePage {
   readonly page: Page;
@@ -25,7 +25,7 @@ export class X2AnsiblePage {
   }
 
   async login() {
-    await performGuestLogin(this.page);
+    await performLogin(this.page);
   }
 
   async navigateToX2A() {
@@ -42,7 +42,9 @@ export class X2AnsiblePage {
 
   async navigateFromSidebar() {
     await this.login();
-    await this.page.locator('nav a[href*="x2a"]').click();
+    const x2aLink = this.page.locator('nav a[href*="x2a"], nav [href*="x2a"]');
+    await expect(x2aLink.first()).toBeVisible({ timeout: 10000 });
+    await x2aLink.first().click();
     await this.waitForPageLoad();
   }
 
@@ -56,13 +58,22 @@ export class X2AnsiblePage {
     await expect(heading).toBeVisible({ timeout: 15000 });
   }
 
-  async clickStartFirstConversion() {
-    const button = this.page.getByRole('button', {
+  async clickStartConversion() {
+    const startFirst = this.page.getByRole('button', {
       name: /start first conversion/i,
     });
-    await expect(button).toBeVisible({ timeout: 10000 });
-    await button.click();
+    const newProject = this.page.getByRole('button', {
+      name: /new project/i,
+    });
+    const button = startFirst.or(newProject);
+    await expect(button.first()).toBeVisible({ timeout: 10000 });
+    await button.first().click();
     await this.waitForPageLoad();
+  }
+
+  /** @deprecated use clickStartConversion() */
+  async clickStartFirstConversion() {
+    return this.clickStartConversion();
   }
 
   async verifyTemplateFormLoaded() {
@@ -102,7 +113,7 @@ export class X2AnsiblePage {
     const nextButton = this.page.getByRole('button', { name: 'Next' });
     const reviewButton = this.page.getByRole('button', { name: 'Review' });
     const button = nextButton.or(reviewButton);
-    await expect(button.first()).toBeVisible({ timeout: 5000 });
+    await expect(button.first()).toBeVisible({ timeout: 10000 });
     await button.first().click();
     await this.page.waitForTimeout(2000);
   }
@@ -122,14 +133,47 @@ export class X2AnsiblePage {
     ).toBeVisible({ timeout: 10000 });
   }
 
-  async dismissGitHubLoginDialog() {
-    const rejectButton = this.page.getByRole('button', {
-      name: 'Reject All',
+  async handleGitHubLoginDialog() {
+    const loginButton = this.page.getByRole('button', {
+      name: /Log in/i,
     });
-    if (await rejectButton.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await rejectButton.click();
-      await this.page.waitForTimeout(500);
+    if (!(await loginButton.isVisible({ timeout: 5000 }).catch(() => false))) {
+      return;
     }
+    const popupPromise = this.page.waitForEvent('popup', { timeout: 15000 });
+    await loginButton.click();
+    const popup = await popupPromise.catch(() => null);
+    if (!popup) return;
+
+    try {
+      await popup.waitForEvent('close', { timeout: 3000 });
+    } catch {
+      if (!popup.isClosed()) {
+        const authorizeButton = popup.locator('button:has-text("Authorize")');
+        if (
+          await authorizeButton
+            .first()
+            .isVisible({ timeout: 5000 })
+            .catch(() => false)
+        ) {
+          await popup
+            .evaluate(() => {
+              const buttons = Array.from(document.querySelectorAll('button'));
+              const auth = buttons.find(
+                b =>
+                  b.textContent?.includes('Authorize') &&
+                  !b.textContent?.includes('Cancel'),
+              );
+              auth?.click();
+            })
+            .catch(() => {});
+        }
+        if (!popup.isClosed()) {
+          await popup.waitForEvent('close', { timeout: 30000 }).catch(() => {});
+        }
+      }
+    }
+    await this.page.waitForTimeout(1000);
   }
 
   async fillSourceRepoOwner(owner: string) {
@@ -213,5 +257,74 @@ export class X2AnsiblePage {
   async getStepCount(): Promise<number> {
     const steps = this.page.locator('[class*="MuiStep"]');
     return steps.count();
+  }
+
+  // --- Module Page (phase execution) ---
+
+  async navigateToModulePage(projectId: string, moduleId: string) {
+    await this.login();
+    await this.page.goto(`/x2a/projects/${projectId}/modules/${moduleId}`);
+    await this.waitForPageLoad();
+  }
+
+  async clickPhaseTab(phase: 'Analyze' | 'Migrate' | 'Publish') {
+    const tab = this.page.locator(`[role="tab"]:has-text("${phase}")`);
+    await expect(tab).toBeVisible({ timeout: 10000 });
+    const isDisabled = await tab.getAttribute('aria-disabled');
+    if (isDisabled === 'true') {
+      throw new Error(
+        `${phase} tab is disabled — prerequisite phase not complete`,
+      );
+    }
+    await tab.click();
+    await this.page.waitForTimeout(500);
+  }
+
+  async clickRunPhaseButton(buttonText: string) {
+    const button = this.page.getByRole('button', { name: buttonText });
+    await expect(button).toBeVisible({ timeout: 10000 });
+    await button.click();
+    await this.page.waitForTimeout(2000);
+  }
+
+  async waitForPhaseStatus(
+    phase: 'Analyze' | 'Migrate' | 'Publish',
+    expectedStatus: string,
+    timeoutMs = 420000,
+  ) {
+    await this.clickPhaseTab(phase);
+    const statusChip = this.page
+      .locator('[role="tabpanel"]:not([style*="display: none"])')
+      .locator(`[class*="MuiChip"]:has-text("${expectedStatus}")`);
+    await expect(statusChip).toBeVisible({ timeout: timeoutMs });
+  }
+
+  async getPhaseStatus(
+    phase: 'Analyze' | 'Migrate' | 'Publish',
+  ): Promise<string> {
+    await this.clickPhaseTab(phase);
+    const chip = this.page
+      .locator('[role="tabpanel"]:not([style*="display: none"])')
+      .locator('[class*="MuiChip"]')
+      .first();
+    return (await chip.textContent()) ?? 'unknown';
+  }
+
+  async runAnalyze() {
+    await this.clickPhaseTab('Analyze');
+    await this.clickRunPhaseButton('Create module migration plan');
+    await this.handleGitHubLoginDialog();
+  }
+
+  async runMigrate() {
+    await this.clickPhaseTab('Migrate');
+    await this.clickRunPhaseButton('Migrate module sources');
+    await this.handleGitHubLoginDialog();
+  }
+
+  async runPublish() {
+    await this.clickPhaseTab('Publish');
+    await this.clickRunPhaseButton('Publish to target repository');
+    await this.handleGitHubLoginDialog();
   }
 }
