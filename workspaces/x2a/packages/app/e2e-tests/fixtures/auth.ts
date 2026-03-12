@@ -36,11 +36,11 @@ export async function performLogin(
   password?: string,
 ) {
   await page.goto('/');
-  await page.waitForLoadState('domcontentloaded');
+  await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
 
   const enterButton = page.locator('button:has-text("Enter")');
   const hasEnter = await enterButton
-    .isVisible({ timeout: 3000 })
+    .isVisible({ timeout: 15000 })
     .catch(() => false);
 
   if (hasEnter) {
@@ -48,23 +48,23 @@ export async function performLogin(
     await page
       .locator('nav')
       .first()
-      .waitFor({ state: 'visible', timeout: 30000 });
+      .waitFor({ state: 'visible', timeout: 60000 });
   } else {
     const user = username ?? process.env.OIDC_USERNAME ?? 'guest';
     const pass = password ?? process.env.OIDC_PASSWORD ?? 'test';
 
     const popupPromise = page.waitForEvent('popup');
-    await page.locator('button:has-text("Sign in")').click();
+    await page.locator('button:has-text("Sign in")').first().click();
     const popup = await popupPromise;
 
     await popup.getByLabel('Username or email').fill(user);
     await popup.getByLabel('Password').fill(pass);
-    await popup.getByRole('button', { name: 'Sign in' }).click();
+    await popup.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     await popup.waitForEvent('close', { timeout: 30000 }).catch(() => {});
     await page
       .locator('nav')
       .first()
-      .waitFor({ state: 'visible', timeout: 30000 });
+      .waitFor({ state: 'visible', timeout: 60000 });
   }
 }

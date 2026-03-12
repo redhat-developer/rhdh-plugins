@@ -133,6 +133,42 @@ export class X2AnsiblePage {
     ).toBeVisible({ timeout: 10000 });
   }
 
+  async dismissGitHubLoginDialog() {
+    const dialog = this.page.locator('[role="dialog"]');
+    const isDialogVisible = await dialog
+      .first()
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+    if (isDialogVisible) {
+      const dismissBtn = this.page.locator(
+        '[role="dialog"] button:has-text("Reject All"), ' +
+          '[role="dialog"] button:has-text("Close"), ' +
+          '[role="dialog"] button:has-text("Cancel"), ' +
+          '[role="dialog"] button[aria-label="Close"]',
+      );
+      if (
+        await dismissBtn
+          .first()
+          .isVisible({ timeout: 3000 })
+          .catch(() => false)
+      ) {
+        await dismissBtn.first().click();
+      } else {
+        await this.page.keyboard.press('Escape');
+      }
+      await this.page.waitForTimeout(1000);
+    }
+
+    const popup = this.page
+      .context()
+      .pages()
+      .find(p => p !== this.page);
+    if (popup && !popup.isClosed()) {
+      await popup.close();
+      await this.page.waitForTimeout(500);
+    }
+  }
+
   async handleGitHubLoginDialog() {
     const loginButton = this.page.getByRole('button', {
       name: /Log in/i,

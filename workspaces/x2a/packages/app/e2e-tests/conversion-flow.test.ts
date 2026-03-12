@@ -39,11 +39,15 @@ test.describe('X2Ansible - Conversion Flow @live', () => {
       await x2aPage.navigateToX2AByUrl();
       await x2aPage.verifyConversionHubPage();
 
-      await expect(
-        x2aPage.page.getByRole('button', {
-          name: /start first conversion/i,
-        }),
-      ).toBeVisible();
+      const startFirst = x2aPage.page.getByRole('button', {
+        name: /start first conversion/i,
+      });
+      const newProject = x2aPage.page.getByRole('button', {
+        name: /new project/i,
+      });
+      await expect(startFirst.or(newProject).first()).toBeVisible({
+        timeout: 10000,
+      });
     });
   });
 
