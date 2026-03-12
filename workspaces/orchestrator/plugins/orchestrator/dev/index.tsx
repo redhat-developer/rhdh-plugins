@@ -14,22 +14,32 @@
  * limitations under the License.
  */
 
-import { createDevApp } from '@backstage/dev-utils';
+import '@backstage/cli/asset-types';
 
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import ReactDOM from 'react-dom/client';
 
-import { OrchestratorPage, orchestratorPlugin } from '../src';
-import { orchestratorTranslations } from '../src/translations';
+import { createApp } from '@backstage/frontend-defaults';
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import searchPlugin from '@backstage/plugin-search';
+import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 
-createDevApp()
-  .registerPlugin(orchestratorPlugin)
-  .addTranslationResource(orchestratorTranslations)
-  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
-  .setDefaultLanguage('en')
-  .addThemes(getAllThemes())
-  .addPage({
-    element: <OrchestratorPage />,
-    title: 'Root Page',
-    path: '/orchestrator',
-  })
-  .render();
+import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
+
+import orchestratorPlugin, {
+  orchestratorTranslationsModule,
+} from '../src/alpha';
+import { devNavModule } from './nav';
+
+const App = createApp({
+  features: [
+    orchestratorTranslationsModule,
+    devNavModule,
+    searchPlugin,
+    catalogPlugin,
+    orchestratorPlugin,
+    userSettingsPlugin,
+    orchestratorFormWidgetsPlugin,
+  ],
+});
+
+ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());

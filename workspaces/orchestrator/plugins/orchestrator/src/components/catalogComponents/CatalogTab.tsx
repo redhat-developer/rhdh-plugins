@@ -17,6 +17,10 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 
 import { WorkflowsTabContent } from '../OrchestratorPage/WorkflowsTabContent';
 
+/**
+ * @public
+ * @returns True if the entity has the orchestrator.io/workflows annotation
+ */
 export const IsOrchestratorCatalogTabAvailable = () => {
   const { entity } = useEntity();
   return Boolean(entity.metadata.annotations?.['orchestrator.io/workflows']);

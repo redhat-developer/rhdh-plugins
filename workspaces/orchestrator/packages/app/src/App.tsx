@@ -14,151 +14,22 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/app-defaults';
-import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
-import {
-  AlertDisplay,
-  OAuthRequestDialog,
-  SignInPage,
-} from '@backstage/core-components';
-import { githubAuthApiRef, gitlabAuthApiRef } from '@backstage/core-plugin-api';
-import { apiDocsPlugin, ApiExplorerPage } from '@backstage/plugin-api-docs';
-import {
-  CatalogEntityPage,
-  CatalogIndexPage,
-  catalogPlugin,
-} from '@backstage/plugin-catalog';
-import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
-import {
-  CatalogImportPage,
-  catalogImportPlugin,
-} from '@backstage/plugin-catalog-import';
-import { orgPlugin } from '@backstage/plugin-org';
-import { RequirePermission } from '@backstage/plugin-permission-react';
-import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
-import { SearchPage } from '@backstage/plugin-search';
-import {
-  TechDocsIndexPage,
-  techdocsPlugin,
-  TechDocsReaderPage,
-} from '@backstage/plugin-techdocs';
-import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
-import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
-import { UserSettingsPage } from '@backstage/plugin-user-settings';
-import { OrchestratorPage } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
-import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
-import { customAuthProviderPlugin } from 'custom-authentication-provider-module';
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { NotificationsPage } from '@backstage/plugin-notifications';
-import { SignalsDisplay } from '@backstage/plugin-signals';
-import { RbacPage } from '@backstage-community/plugin-rbac';
-import { Navigate, Route } from 'react-router-dom';
-import { apis } from './apis';
-import { entityPage } from './components/catalog/EntityPage';
-import { Root } from './components/Root';
-import { searchPage } from './components/search/SearchPage';
-import { orchestratorTranslations } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import { createApp } from '@backstage/frontend-defaults';
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
+import orchestratorPlugin, {
+  orchestratorTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator/alpha';
+import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
+import { navModule } from './modules/nav';
 
-const app = createApp({
-  apis,
-  bindRoutes({ bind }) {
-    bind(catalogPlugin.externalRoutes, {
-      createComponent: scaffolderPlugin.routes.root,
-      viewTechDoc: techdocsPlugin.routes.docRoot,
-      createFromTemplate: scaffolderPlugin.routes.selectedTemplate,
-    });
-    bind(apiDocsPlugin.externalRoutes, {
-      registerApi: catalogImportPlugin.routes.importPage,
-    });
-    bind(scaffolderPlugin.externalRoutes, {
-      registerComponent: catalogImportPlugin.routes.importPage,
-      viewTechDoc: techdocsPlugin.routes.docRoot,
-    });
-    bind(orgPlugin.externalRoutes, {
-      catalogIndex: catalogPlugin.routes.catalogIndex,
-    });
-  },
-  components: {
-    SignInPage: props => (
-      <SignInPage
-        {...props}
-        auto
-        providers={[
-          'guest',
-          {
-            id: 'github-auth-provider',
-            title: 'GitHub',
-            message: 'Sign in using GitHub',
-            apiRef: githubAuthApiRef,
-          },
-          {
-            id: 'gitlab-auth-provider',
-            title: 'GitLab',
-            message: 'Sign in using GitLab',
-            apiRef: gitlabAuthApiRef,
-          },
-        ]}
-      />
-    ),
-  },
-  themes: getThemes(),
-  __experimentalTranslations: {
-    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
-    resources: [orchestratorTranslations],
-  },
-  /* Hardcoded deployment of the Orchestrator Form Widget library in our DEV-only instance.
-    In a production deployment, the plugin will be loaded dynamically. */
-  plugins: [orchestratorFormWidgetsPlugin, customAuthProviderPlugin],
+export default createApp({
+  features: [
+    navModule,
+    catalogPlugin,
+    orchestratorPlugin,
+    userSettingsPlugin,
+    orchestratorTranslationsModule,
+    orchestratorFormWidgetsPlugin,
+  ],
 });
-
-const routes = (
-  <FlatRoutes>
-    <Route path="/" element={<Navigate to="catalog" />} />
-    <Route path="/catalog" element={<CatalogIndexPage />} />
-    <Route
-      path="/catalog/:namespace/:kind/:name"
-      element={<CatalogEntityPage />}
-    >
-      {entityPage}
-    </Route>
-    <Route path="/docs" element={<TechDocsIndexPage />} />
-    <Route
-      path="/docs/:namespace/:kind/:name/*"
-      element={<TechDocsReaderPage />}
-    >
-      <TechDocsAddons>
-        <ReportIssue />
-      </TechDocsAddons>
-    </Route>
-    <Route path="/create" element={<ScaffolderPage />} />
-    <Route path="/api-docs" element={<ApiExplorerPage />} />
-    <Route
-      path="/catalog-import"
-      element={
-        <RequirePermission permission={catalogEntityCreatePermission}>
-          <CatalogImportPage />
-        </RequirePermission>
-      }
-    />
-    <Route path="/search" element={<SearchPage />}>
-      {searchPage}
-    </Route>
-    <Route path="/settings" element={<UserSettingsPage />} />
-    <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/notifications" element={<NotificationsPage />} />
-    <Route path="/orchestrator" element={<OrchestratorPage />} />
-    <Route path="/rbac" element={<RbacPage />} />
-  </FlatRoutes>
-);
-
-export default app.createRoot(
-  <>
-    <AlertDisplay />
-    <OAuthRequestDialog />
-    <SignalsDisplay />
-    <AppRouter>
-      <Root>{routes}</Root>
-    </AppRouter>
-  </>,
-);

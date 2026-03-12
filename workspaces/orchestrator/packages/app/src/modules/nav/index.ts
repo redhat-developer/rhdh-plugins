@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { SidebarContent } from './Sidebar';
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import '@backstage/ui/css/styles.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+export const navModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [SidebarContent],
+});
