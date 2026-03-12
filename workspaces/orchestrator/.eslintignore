@@ -4,3 +4,5 @@ dist-scalprum
 !.eslintrc.js
 !.prettierrc.js
 coverage
+report-alpha.api.md
+report.api.md
