@@ -5,8 +5,6 @@
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const EntityScorecardContent: () => JSX_2.Element;
@@ -20,46 +18,6 @@ export const ScorecardHomepageCard: ({
 
 // @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
-
-// @public
-export const scorecardTranslationRef: TranslationRef<
-  'plugin.scorecard',
-  {
-    readonly 'emptyState.button': string;
-    readonly 'emptyState.title': string;
-    readonly 'emptyState.description': string;
-    readonly 'emptyState.altText': string;
-    readonly 'permissionRequired.button': string;
-    readonly 'permissionRequired.title': string;
-    readonly 'permissionRequired.description': string;
-    readonly 'permissionRequired.altText': string;
-    readonly 'errors.entityMissingProperties': string;
-    readonly 'errors.invalidApiResponse': string;
-    readonly 'errors.fetchError': string;
-    readonly 'errors.metricDataUnavailable': string;
-    readonly 'errors.invalidThresholds': string;
-    readonly 'errors.missingPermission': string;
-    readonly 'errors.noDataFound': string;
-    readonly 'errors.authenticationError': string;
-    readonly 'errors.missingPermissionMessage': string;
-    readonly 'errors.userNotFoundInCatalogMessage': string;
-    readonly 'errors.noDataFoundMessage': string;
-    readonly 'errors.authenticationErrorMessage': string;
-    readonly 'metric.github.open_prs.title': string;
-    readonly 'metric.github.open_prs.description': string;
-    readonly 'metric.jira.open_issues.title': string;
-    readonly 'metric.jira.open_issues.description': string;
-    readonly 'thresholds.success': string;
-    readonly 'thresholds.error': string;
-    readonly 'thresholds.warning': string;
-    readonly 'thresholds.noEntities': string;
-    readonly 'thresholds.entities_one': string;
-    readonly 'thresholds.entities_other': string;
-  }
->;
-
-// @public
-export const scorecardTranslations: TranslationResource<'plugin.scorecard'>;
 
 // (No @packageDocumentation comment for this package)
 ```

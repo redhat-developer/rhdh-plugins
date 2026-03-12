@@ -15,55 +15,20 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
-import { convertLegacyAppOptions } from '@backstage/core-compat-api';
-import { SignInPage } from '@backstage/core-components';
-import { githubAuthApiRef, gitlabAuthApiRef } from '@backstage/core-plugin-api';
+
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import scorecardPlugin, {
+import { convertLegacyAppOptions } from '@backstage/core-compat-api';
+import {
   scorecardTranslationsModule,
   createScorecardCatalogModule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
-
-import catalogPlugin from '@backstage/plugin-catalog/alpha';
-import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
-import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
-import rbac from '@backstage-community/plugin-rbac/alpha';
+import { signInModule } from './modules/signIn';
 
 /*
- * Custom sign-in page (legacy component). SignInPageBlueprint and ThemeBlueprint
- * are deprecated; sign-in and themes are provided via convertLegacyAppOptions.
- */
-const customSignInPage = (props: React.ComponentProps<typeof SignInPage>) => (
-  <SignInPage
-    {...props}
-    auto
-    providers={[
-      'guest',
-      {
-        id: 'github-auth-provider',
-        title: 'GitHub',
-        message: 'Sign in using GitHub',
-        apiRef: githubAuthApiRef,
-      },
-      {
-        id: 'gitlab-auth-provider',
-        title: 'GitLab',
-        message: 'Sign in using GitLab',
-        apiRef: gitlabAuthApiRef,
-      },
-    ]}
-  />
-);
-
-/*
- * Legacy options: themes (RHDH light/dark) and SignInPage.
- * Replaces deprecated SignInPageBlueprint and ThemeBlueprint modules.
+ * Legacy options: themes (RHDH light/dark)
  */
 const legacyConvertedOptions = convertLegacyAppOptions({
   themes: getThemes(),
-  components: {
-    SignInPage: customSignInPage as React.ComponentType<any>,
-  },
 });
 
 /*
@@ -75,25 +40,13 @@ const scorecardCatalogModule = createScorecardCatalogModule({
   entityKinds: scorecardEntityKinds,
 });
 
-const scorecard = [
-  scorecardCatalogModule,
-  scorecardTranslationsModule,
-  scorecardPlugin,
-];
+const scorecard = [scorecardCatalogModule, scorecardTranslationsModule];
 
 /*
  * app: Backstage app using the New Frontend System (NFS).
- * Sign-in and themes use legacy options (convertLegacyAppOptions).
  */
 const app = createApp({
-  features: [
-    legacyConvertedOptions,
-    ...scorecard,
-    catalogPlugin,
-    scaffolderPlugin,
-    userSettingsPlugin,
-    rbac,
-  ],
+  features: [legacyConvertedOptions, ...scorecard, signInModule],
 });
 
 export default app.createRoot();

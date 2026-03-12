@@ -1,17 +1,8 @@
-# 📊 Scorecard Plugin for Backstage
+# Scorecard Plugin for Backstage
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps.
-
-## Getting started
-
-This repository provides two frontend packages: **app** (NFS) and **app-legacy** (legacy). The default is the NFS app. From the scorecard workspace root:
-
-- **app (NFS, default):** Run `yarn start`, then open [http://localhost:3000](http://localhost:3000). Navigate to the catalog and open an entity to see the Scorecard tab.
-- **app-legacy:** Run `yarn start:legacy` to run the legacy frontend with the backend, then use the Scorecard tab on entity pages or the scorecard homepage card.
-
-You can also serve the plugin in isolation by running `yarn start` in the plugin directory. This method provides quicker iteration speed and faster hot reloads for local development; the setup is in the [/dev](./dev) directory.
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps. NFS supports only 1 module as of now (the catalog module that adds the Scorecard entity tab).
 
 ## For Administrators
 
@@ -29,48 +20,129 @@ yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
 yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
 ```
 
+### Procedure
+
 #### NFS (New Frontend System) — app
 
-For the **app** package (or any app built with `createApp` from `@backstage/frontend-defaults`), use the **alpha** export to register the Scorecard plugin, catalog entity tab, and translations:
+1. Install the Scorecard frontend plugin (see [Installation and usage](#installation-and-usage)) using `app`:
 
-```tsx
-// In packages/app/src/App.tsx
-import { createApp } from '@backstage/frontend-defaults';
-import scorecardPlugin, {
-  scorecardTranslationsModule,
-  createScorecardCatalogModule,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
+   ```console
+   yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
+   ```
 
-// Optional: limit which entity kinds show the Scorecard tab (default: all kinds)
-const scorecardCatalogModule = createScorecardCatalogModule({
-  entityKinds: ['component', 'service', 'template'],
-});
+2. Register the plugin in `packages/app/src/App.tsx` using the **alpha** export:
 
-const app = createApp({
-  features: [
-    scorecardCatalogModule,
-    scorecardTranslationsModule,
-    scorecardPlugin,
-    // ... other plugins
-  ],
-});
+   ```tsx
+   // In packages/app/src/App.tsx
+   import { createApp } from '@backstage/frontend-defaults';
+   import scorecardPlugin, {
+     scorecardTranslationsModule,
+     createScorecardCatalogModule,
+   } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 
-export default app.createRoot();
-```
+   // Optional: limit which entity kinds show the Scorecard tab (default: all kinds)
+   const scorecardCatalogModule = createScorecardCatalogModule({
+     entityKinds: ['component', 'service', 'template'],
+   });
 
-Ensure the frontend can reach the Scorecard backend by configuring discovery (e.g. in `app-config.yaml`):
+   const app = createApp({
+     features: [
+       scorecardCatalogModule,
+       scorecardTranslationsModule,
+       scorecardPlugin,
+       // ... other plugins
+     ],
+   });
 
-```yaml
-discovery:
-  endpoints:
-    - target: http://localhost:7007/api/{{ pluginId }}
-      plugins:
-        - scorecard
-```
+   export default app.createRoot();
+   ```
 
-#### Legacy app — app-legacy
+3. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml`:
 
-For the **app-legacy** package (legacy frontend), use the main package and add the Scorecard entity tab to your entity pages (see [Configuration (Legacy app)](#configuration-legacy-app) below). You can also use `ScorecardHomepageCard` and `scorecardTranslations` from the main and alpha packages as needed.
+   ```yaml
+   discovery:
+     endpoints:
+       - target: http://localhost:7007/api/{{ pluginId }}
+         plugins:
+           - scorecard
+   ```
+
+4. Start the NFS app (e.g. `yarn start`), go to **Catalog**, open an entity. The **Scorecard** tab appears for the kinds you configured (or all kinds if none were specified).
+
+##### Modules and extensions (NFS)
+
+The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard/alpha` for NFS apps:
+
+**Modules**
+
+| Module                                   | Description                                                                                                                                                                 |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createScorecardCatalogModule(options?)` | Registers the Scorecard entity tab with the catalog plugin. Add the returned module to your app's `features`. Optional `entityKinds` limit which entity kinds show the tab. |
+| `scorecardTranslationsModule`            | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                                |
+
+**Extensions**
+
+- `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
+- `entity-content:catalog/scorecard` — Scorecard tab on catalog entity pages (provided by the catalog module).
+
+#### Legacy app
+
+1. Install the Scorecard frontend plugin (see [Installation and usage](#installation-and-usage)) using `app-legacy`:
+
+   ```console
+   yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
+   ```
+
+2. Add the Scorecard tab to the entity overview in `packages/app-legacy/src/components/catalog/EntityPage.tsx` (or your legacy app's equivalent):
+
+   ```tsx
+   import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+
+   const scorecardRoute = (
+     <EntityLayout.Route path="/scorecard" title="Scorecard">
+       <EntityScorecardContent />
+     </EntityLayout.Route>
+   );
+
+   const serviceEntityPage = (
+     <EntityLayout>
+       ...
+       {scorecardRoute}
+     </EntityLayout>
+   );
+
+   const websiteEntityPage = (
+     <EntityLayout>
+       ...
+       {scorecardRoute}
+     </EntityLayout>
+   );
+
+   const componentPage = (
+     <EntitySwitch>
+       <EntitySwitch.Case if={isComponentType('service')}>
+         {serviceEntityPage}
+       </EntitySwitch.Case>
+       <EntitySwitch.Case if={isComponentType('website')}>
+         {websiteEntityPage}
+       </EntitySwitch.Case>
+     </EntitySwitch>
+   );
+
+   export const entityPage = (
+     <EntitySwitch>
+       ...
+       <EntitySwitch.Case if={isKind('component')} children={componentPage} />
+       ...
+     </EntitySwitch>
+   );
+   ```
+
+3. Optionally use `ScorecardHomepageCard` and `scorecardTranslations` from the main and alpha packages as needed.
+
+4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
+
+5. Start the legacy app (e.g. `yarn start:legacy`) and open the **Scorecard** tab on catalog entity pages.
 
 ### Permission Framework Support
 
@@ -95,54 +167,6 @@ permission:
 ```
 
 **Note:** The backend also checks `catalog.entity.read` for each entity. Make sure your users/roles can read the catalog entities they want to view scorecards for.
-
-### Configuration (Legacy app)
-
-For **app-legacy**, add the Scorecard tab to the entity overview by modifying `packages/app-legacy/src/components/catalog/EntityPage.tsx` (or your legacy app’s equivalent):
-
-```tsx
-import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
-
-const scorecardRoute = (
-  <EntityLayout.Route path="/scorecard" title="Scorecard">
-    <EntityScorecardContent />
-  </EntityLayout.Route>
-);
-
-const serviceEntityPage = (
-  <EntityLayout>
-    ...
-    {scorecardRoute}
-  </EntityLayout>
-);
-
-const websiteEntityPage = (
-  <EntityLayout>
-    ...
-    {scorecardRoute}
-  </EntityLayout>
-);
-
-const componentPage = (
-  <EntitySwitch>
-    <EntitySwitch.Case if={isComponentType('service')}>
-      {serviceEntityPage}
-    </EntitySwitch.Case>
-
-    <EntitySwitch.Case if={isComponentType('website')}>
-      {websiteEntityPage}
-    </EntitySwitch.Case>
-  </EntitySwitch>
-);
-
-export const entityPage = (
-  <EntitySwitch>
-    ...
-    <EntitySwitch.Case if={isKind('component')} children={componentPage} />
-    ...
-  </EntitySwitch>
-);
-```
 
 ### Accessing the Plugin
 

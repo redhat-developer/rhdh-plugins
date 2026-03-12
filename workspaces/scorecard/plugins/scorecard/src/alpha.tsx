@@ -44,8 +44,8 @@ const scorecardApi = ApiBlueprint.make({
 
 /**
  * Options for when to show the Scorecard tab on catalog entity pages.
- * Pass these from the app (e.g. app-next App.tsx) to control visibility.
- * @public
+ * Pass these from the app (e.g. app App.tsx) to control visibility.
+ * @alpha
  */
 export interface ScorecardEntityContentOptions {
   /**
@@ -64,9 +64,8 @@ const defaultScorecardEntityContentParams = {
 };
 
 /**
- * Creates the Scorecard entity tab extension with optional filter.
- * Use this when the app wants to control which entity kinds show the Scorecard tab.
- * @public
+ * Creates the Scorecard entity tab extension with optional filter..
+ * @alpha
  */
 export function createScorecardEntityContent(
   options?: ScorecardEntityContentOptions,
@@ -90,7 +89,9 @@ const scorecardTranslation = TranslationBlueprint.make({
   },
 });
 
-/** Main Scorecard frontend plugin */
+/** Main Scorecard frontend plugin
+ * @alpha
+ */
 export default createFrontendPlugin({
   pluginId: 'scorecard',
   extensions: [scorecardApi],
@@ -99,8 +100,8 @@ export default createFrontendPlugin({
 
 /**
  * Creates a module that registers the Scorecard entity tab with the given options.
- * Pass entity kinds from the app (e.g. in app-next App.tsx) to control which entities show the tab.
- * @public
+ * Pass entity kinds from the app (e.g. in app App.tsx) to control which entities show the tab.
+ * @alpha
  */
 export function createScorecardCatalogModule(
   options?: ScorecardEntityContentOptions,
@@ -111,7 +112,9 @@ export function createScorecardCatalogModule(
   });
 }
 
-/** Module registering Scorecard translations in app */
+/** Module registering Scorecard translations in app
+ * @alpha
+ */
 export const scorecardTranslationsModule = createFrontendModule({
   pluginId: 'app',
   extensions: [scorecardTranslation],
