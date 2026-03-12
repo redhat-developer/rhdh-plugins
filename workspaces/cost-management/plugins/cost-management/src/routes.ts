@@ -20,6 +20,10 @@ export const rootRouteRef = createRouteRef({
   id: 'ros.page.optimizations',
 });
 
+export const openShiftRouteRef = createRouteRef({
+  id: 'ros.page.openshift',
+});
+
 export const optimizationsBreakdownRouteRef = createSubRouteRef({
   id: 'ros.page.breakdown',
   parent: rootRouteRef,
