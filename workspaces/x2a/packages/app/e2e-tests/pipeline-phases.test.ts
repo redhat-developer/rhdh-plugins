@@ -196,25 +196,14 @@ test.describe.serial('X2Ansible - Pipeline Phases @live', () => {
     // eslint-disable-next-line no-console
     console.log(`Init completed with state: ${finalState}`);
 
+    expect(
+      ['success', 'initialized'].includes(finalState),
+      `Init did not succeed, state=${finalState}`,
+    ).toBeTruthy();
+
     const modules = await getModules(baseURL, project.id);
     // eslint-disable-next-line no-console
-    console.log(`Modules found: ${modules.length} (init state: ${finalState})`);
-
-    if (
-      ['success', 'initialized'].includes(finalState) ||
-      (finalState === 'failed' && modules.length > 0)
-    ) {
-      if (finalState === 'failed') {
-        // eslint-disable-next-line no-console
-        console.log(
-          'Init state=failed but modules discovered — proceeding (FLPATH-3386)',
-        );
-      }
-    } else {
-      throw new Error(
-        `Init did not succeed and no modules found, state=${finalState}`,
-      );
-    }
+    console.log(`Discovered ${modules.length} modules`);
     expect(modules.length).toBeGreaterThan(0);
     state.moduleId = modules[0].id;
     state.moduleName = modules[0].name;
