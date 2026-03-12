@@ -50,10 +50,6 @@ import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-jest.mock('../../useSeedTestData', () => ({
-  useSeedTestData: jest.fn(),
-}));
-
 import {
   createMockProjects,
   createMockResponse,
