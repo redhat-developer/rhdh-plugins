@@ -15,7 +15,7 @@
  */
 
 import { ScmProvider } from '../ScmProvider';
-import { extractHostname } from '../extractHostname';
+import { extractHost } from '../extractHost';
 
 /**
  * GitHub SCM provider.
@@ -29,7 +29,7 @@ import { extractHostname } from '../extractHostname';
 export const githubProvider: ScmProvider = {
   name: 'github',
 
-  matches: (url: string) => extractHostname(url) === 'github.com',
+  matches: (url: string) => extractHost(url) === 'github.com',
 
   getAuthTokenDescriptor: (_readOnly: boolean) => ({
     provider: 'github',

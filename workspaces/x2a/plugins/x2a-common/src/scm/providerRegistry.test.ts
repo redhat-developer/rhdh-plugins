@@ -115,6 +115,19 @@ describe('resolveScmProvider', () => {
         resolveScmProvider('https://github.com/org/repo', overrideMap).name,
       ).toBe('gitlab');
     });
+
+    it('distinguishes providers on same hostname with different ports', () => {
+      const portMap = new Map([
+        ['scm.corp.com:8080', 'gitlab' as const],
+        ['scm.corp.com:9090', 'github' as const],
+      ]);
+      expect(
+        resolveScmProvider('https://scm.corp.com:8080/grp/prj', portMap).name,
+      ).toBe('gitlab');
+      expect(
+        resolveScmProvider('https://scm.corp.com:9090/org/repo', portMap).name,
+      ).toBe('github');
+    });
   });
 });
 

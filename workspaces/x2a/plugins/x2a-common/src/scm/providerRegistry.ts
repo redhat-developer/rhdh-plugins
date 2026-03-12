@@ -15,7 +15,7 @@
  */
 
 import { ScmProvider, ScmProviderName } from './ScmProvider';
-import { extractHostname } from './extractHostname';
+import { extractHost } from './extractHost';
 import { githubProvider, gitlabProvider, bitbucketProvider } from './providers';
 
 /**
@@ -47,7 +47,7 @@ export function resolveScmProvider(
   hostProviderMap?: Map<string, ScmProviderName>,
 ): ScmProvider {
   if (hostProviderMap) {
-    const host = extractHostname(repoUrl);
+    const host = extractHost(repoUrl);
     if (host) {
       const name = hostProviderMap.get(host);
       if (name) {

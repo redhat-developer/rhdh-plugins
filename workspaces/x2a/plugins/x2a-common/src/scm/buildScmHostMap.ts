@@ -16,7 +16,7 @@
 
 import { Config } from '@backstage/config';
 import { ScmProviderName } from './ScmProvider';
-import { extractHostname } from './extractHostname';
+import { extractHost } from './extractHost';
 
 /**
  * Mapping from Backstage `integrations:` config keys to x2a SCM provider names.
@@ -58,7 +58,7 @@ export function buildScmHostMap(config: Config): Map<string, ScmProviderName> {
     if (entries) {
       for (const entry of entries) {
         const raw = entry.getOptionalString('host');
-        const host = raw ? extractHostname(raw) : undefined;
+        const host = raw ? extractHost(raw) : undefined;
         if (host && !map.has(host)) {
           map.set(host, providerName);
         }

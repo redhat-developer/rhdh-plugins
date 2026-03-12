@@ -15,7 +15,7 @@
  */
 
 import { ScmProvider } from '../ScmProvider';
-import { extractHostname } from '../extractHostname';
+import { extractHost } from '../extractHost';
 
 /**
  * Bitbucket Cloud SCM provider.
@@ -28,7 +28,7 @@ import { extractHostname } from '../extractHostname';
 export const bitbucketProvider: ScmProvider = {
   name: 'bitbucket',
 
-  matches: (url: string) => extractHostname(url) === 'bitbucket.org',
+  matches: (url: string) => extractHost(url) === 'bitbucket.org',
 
   getAuthTokenDescriptor: (readOnly: boolean) => ({
     provider: 'bitbucket',

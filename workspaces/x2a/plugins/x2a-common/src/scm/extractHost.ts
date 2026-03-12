@@ -15,18 +15,19 @@
  */
 
 /**
- * Extracts the hostname from a repository URL.
+ * Extracts the host (hostname + non-default port) from a repository URL.
  *
  * Accepts URLs with or without a scheme (`https://github.com/…` or `github.com/…`).
  * Returns `undefined` when the URL cannot be parsed.
  *
  * @internal
  */
-export function extractHostname(repoUrl: string): string | undefined {
+export function extractHost(repoUrl: string): string | undefined {
   try {
     const trimmed = repoUrl.trim();
     const urlStr = trimmed.includes('://') ? trimmed : `https://${trimmed}`;
-    return new URL(urlStr).hostname;
+    // mind port as well
+    return new URL(urlStr).host;
   } catch {
     return undefined;
   }

@@ -114,14 +114,27 @@ describe('buildScmHostMap', () => {
     expect(map.get('github.com')).toBe('github');
   });
 
-  it('strips port from host values', () => {
+  it('preserves non-default port in host values', () => {
     const config = new ConfigReader({
       integrations: {
         gitlab: [{ host: 'gitlab.internal.io:8443' }],
       },
     });
     const map = buildScmHostMap(config);
-    expect(map.get('gitlab.internal.io')).toBe('gitlab');
+    expect(map.get('gitlab.internal.io:8443')).toBe('gitlab');
+    expect(map.has('gitlab.internal.io')).toBe(false);
+  });
+
+  it('distinguishes providers on same hostname with different ports', () => {
+    const config = new ConfigReader({
+      integrations: {
+        gitlab: [{ host: 'scm.corp.com:8080' }],
+        github: [{ host: 'scm.corp.com:9090' }],
+      },
+    });
+    const map = buildScmHostMap(config);
+    expect(map.get('scm.corp.com:8080')).toBe('gitlab');
+    expect(map.get('scm.corp.com:9090')).toBe('github');
   });
 
   it('strips accidental scheme from host values', () => {
