@@ -28,11 +28,7 @@ export function Router() {
   return (
     <Routes>
       <Route path="/" element={<OptimizationsPage />} />
-      <Route path="/optimizations" element={<OptimizationsPage />} />
-      <Route
-        path="/optimizations/:id/*"
-        element={<OptimizationsBreakdownPage />}
-      />
+      <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
       <Route
         path="*"
         element={<ErrorPage status="404" statusMessage="Page not found" />}
