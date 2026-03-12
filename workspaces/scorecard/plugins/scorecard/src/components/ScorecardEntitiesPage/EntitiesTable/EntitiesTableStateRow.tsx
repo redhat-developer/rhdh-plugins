@@ -66,7 +66,7 @@ export const EntitiesTableStateRow = ({
       <WarningPanel
         severity="error"
         title={t('entitiesPage.metricProviderNotRegistered' as any, {
-          metricId: metricId as string,
+          metricId: metricId ?? '',
         })}
         message={error?.message}
       />

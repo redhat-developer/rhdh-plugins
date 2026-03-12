@@ -103,6 +103,16 @@ export function getEntityCount(
   return evaluateMessage(key, count);
 }
 
+export function getLastUpdatedLabel(
+  translations: ScorecardMessages,
+  formattedTimestamp: string,
+) {
+  const template =
+    (translations.metric as { lastUpdated?: string }).lastUpdated ??
+    'Last updated: {{timestamp}}';
+  return evaluateMessage(template, formattedTimestamp);
+}
+
 export function getMissingPermissionSnapshot(
   translations: ScorecardMessages,
   metricId: 'jira.open_issues' | 'github.open_prs',
@@ -125,7 +135,10 @@ export function getThresholdsSnapshot(
 ) {
   return `
         - article:
-          - text: ${translations.metric[metricId].title} ${entityCount}
+          - text: ${translations.metric[metricId].title}
+          - link:
+            - /url: /scorecard/metrics/${metricId}
+            - text: ${entityCount}
           - separator
           - paragraph: ${translations.metric[metricId].description}
           - paragraph: ${translations.thresholds.success}

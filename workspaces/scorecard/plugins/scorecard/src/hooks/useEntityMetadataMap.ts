@@ -20,14 +20,13 @@ import type { Entity } from '@backstage/catalog-model';
 import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { EntityMetadata, EntityMetadataMap } from '../components/types';
 
-type EntityMetadata = {
-  title?: string;
-  description?: string;
-  kind?: string;
+type RefFilter = {
+  kind: string;
+  'metadata.name': string;
+  'metadata.namespace': string;
 };
-
-type EntityMetadataMap = Record<string, EntityMetadata>;
 
 const uniqueEntityRefs = (refs: string[]) => {
   const seen = new Set<string>();
@@ -43,6 +42,25 @@ const uniqueEntityRefs = (refs: string[]) => {
   return result;
 };
 
+const refToFilter = (ref: string): RefFilter | null => {
+  try {
+    const { kind, namespace, name } = parseEntityRef(ref);
+    return {
+      kind,
+      'metadata.name': name,
+      'metadata.namespace': namespace ?? 'default',
+    };
+  } catch {
+    return null;
+  }
+};
+
+const toEntityMetadata = (entity: Entity): EntityMetadata => ({
+  title: entity?.metadata?.title?.trim(),
+  description: entity?.metadata?.description?.trim(),
+  kind: entity?.kind,
+});
+
 export const useEntityMetadataMap = (entityRefs: string[]) => {
   const catalogApi = useApi(catalogApiRef);
   const [entityMetadataMap, setEntityMetadataMap] = useState<EntityMetadataMap>(
@@ -55,32 +73,17 @@ export const useEntityMetadataMap = (entityRefs: string[]) => {
     [entityRefs.join('|')],
   );
 
-  const refFilters = useMemo(() => {
-    return refs
-      .map(ref => {
-        try {
-          const { kind, namespace, name } = parseEntityRef(ref);
-          return {
-            kind,
-            'metadata.name': name,
-            'metadata.namespace': namespace ?? 'default',
-          };
-        } catch (error) {
-          return null;
-        }
-      })
-      .filter(Boolean) as Array<{
-      kind: string;
-      'metadata.name': string;
-      'metadata.namespace': string;
-    }>;
-  }, [refs]);
+  const refFilters = useMemo(
+    () => refs.map(refToFilter).filter(Boolean) as RefFilter[],
+    [refs],
+  );
 
   useEffect(() => {
     let cancelled = false;
+    const clearMap = () => setEntityMetadataMap({});
 
     if (refFilters.length === 0) {
-      setEntityMetadataMap({});
+      clearMap();
       return () => {
         cancelled = true;
       };
@@ -94,21 +97,14 @@ export const useEntityMetadataMap = (entityRefs: string[]) => {
         if (cancelled) {
           return;
         }
-
         const nextMap: EntityMetadataMap = {};
-
         response.items?.forEach((entity: Entity) => {
-          const entityRef = stringifyEntityRef(entity);
-          nextMap[entityRef] = {
-            title: entity?.metadata?.title?.trim(),
-            description: entity?.metadata?.description?.trim(),
-            kind: entity?.kind,
-          };
+          nextMap[stringifyEntityRef(entity)] = toEntityMetadata(entity);
         });
         setEntityMetadataMap(nextMap);
-      } catch (error) {
+      } catch {
         if (!cancelled) {
-          setEntityMetadataMap({});
+          clearMap();
         }
       }
     };

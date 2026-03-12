@@ -27,9 +27,8 @@ import { EntitiesTablePagination } from './EntitiesTablePagination';
 const generateRowsPerPageOptions = (
   totalCount: number,
   t: (key: string, params?: any) => string,
+  defaultOptions: number[] = [5, 10, 20],
 ) => {
-  const defaultOptions = [5, 10, 20];
-
   const maxDefaultOption = Math.max(...defaultOptions);
 
   if (defaultOptions.includes(totalCount)) {
@@ -90,7 +89,7 @@ export const EntitiesTableFooter: FC<EntitiesTableFooterProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const rowsPerPageOptions = generateRowsPerPageOptions(count, t);
+  const rowsPerPageOptions = generateRowsPerPageOptions(count, t, [5, 10, 20]);
 
   return (
     <Box

@@ -30,14 +30,14 @@ export interface EntitiesTablePaginationProps {
   count: number;
   page: number;
   rowsPerPage: number;
-  handleChangePage: (
-    event: MouseEvent<HTMLButtonElement>,
-    newPage: number,
-  ) => void;
+  onPageChange: (event: MouseEvent<HTMLButtonElement>, newPage: number) => void;
 }
 
-export const EntitiesTablePagination = (props: any) => {
+export const EntitiesTablePagination = (
+  props: EntitiesTablePaginationProps,
+) => {
   const theme = useTheme();
+  const isRtl = theme.direction === 'rtl';
   const { count, page, rowsPerPage, onPageChange } = props;
 
   const { t } = useTranslation();
@@ -64,18 +64,14 @@ export const EntitiesTablePagination = (props: any) => {
         disabled={page === 1}
         aria-label="first page"
       >
-        {theme.direction === 'rtl' ? <LastPageIcon /> : <FirstPageIcon />}
+        {isRtl ? <LastPageIcon /> : <FirstPageIcon />}
       </IconButton>
       <IconButton
         onClick={handlePreviousPageButtonClick}
         disabled={page === 1}
         aria-label="previous page"
       >
-        {theme.direction === 'rtl' ? (
-          <KeyboardArrowRightIcon />
-        ) : (
-          <KeyboardArrowLeftIcon />
-        )}
+        {isRtl ? <KeyboardArrowRightIcon /> : <KeyboardArrowLeftIcon />}
       </IconButton>
       {count === 0 ? 0 : (page - 1) * rowsPerPage + 1}-
       {Math.min(page * rowsPerPage, count)}{' '}
@@ -85,18 +81,14 @@ export const EntitiesTablePagination = (props: any) => {
         disabled={page >= Math.ceil(count / rowsPerPage)}
         aria-label="next page"
       >
-        {theme.direction === 'rtl' ? (
-          <KeyboardArrowLeftIcon />
-        ) : (
-          <KeyboardArrowRightIcon />
-        )}
+        {isRtl ? <KeyboardArrowLeftIcon /> : <KeyboardArrowRightIcon />}
       </IconButton>
       <IconButton
         onClick={handleLastPageButtonClick}
         disabled={page >= Math.ceil(count / rowsPerPage)}
         aria-label="last page"
       >
-        {theme.direction === 'rtl' ? <FirstPageIcon /> : <LastPageIcon />}
+        {isRtl ? <FirstPageIcon /> : <LastPageIcon />}
       </IconButton>
     </Box>
   );

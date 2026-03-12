@@ -69,6 +69,7 @@
     "@backstage/cli": "^0.34.5",
     "@backstage/core-app-api": "^1.19.2",
     "@backstage/dev-utils": "^1.1.17",
+    "@backstage/plugin-catalog": "^1.32.0",
     "@backstage/test-utils": "^1.7.13",
     "@backstage/ui": "^0.9.1",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.12.0",

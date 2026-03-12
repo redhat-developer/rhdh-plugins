@@ -17,7 +17,7 @@
 import { memo } from 'react';
 
 import { Link } from '@backstage/core-components';
-import { parseEntityRef } from '@backstage/catalog-model';
+import { parseEntityRef, stringifyEntityRef } from '@backstage/catalog-model';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import {
   entityRouteRef,
@@ -26,25 +26,27 @@ import {
 
 import Tooltip from '@mui/material/Tooltip';
 
-function resolveOwnerRef(owner: string) {
-  if (!owner) return '';
-  if (owner.includes(':')) return owner;
-  return `group:default/${owner}`;
-}
-
 export const OwnerCell = memo(({ ownerRef }: { ownerRef?: string }) => {
   const entityLink = useRouteRef(entityRouteRef);
 
-  const resolved = resolveOwnerRef(ownerRef ?? '');
-  const { primaryTitle, secondaryTitle } = useEntityPresentation(resolved);
+  const parsedEntityRef = ownerRef
+    ? parseEntityRef(ownerRef, {
+        defaultKind: 'group',
+        defaultNamespace: 'default',
+      })
+    : null;
+  const stringifiedEntityRef = parsedEntityRef
+    ? stringifyEntityRef(parsedEntityRef)
+    : '';
+  const { primaryTitle, secondaryTitle } =
+    useEntityPresentation(stringifiedEntityRef);
 
   if (!ownerRef) return <>--</>;
 
-  const parsed = parseEntityRef(resolved);
-  const link = entityLink(parsed);
+  const link = entityLink(parsedEntityRef!);
 
   return (
-    <Tooltip enterDelay={1500} title={secondaryTitle ?? resolved}>
+    <Tooltip enterDelay={1500} title={secondaryTitle ?? stringifiedEntityRef}>
       <Link
         to={link}
         style={{

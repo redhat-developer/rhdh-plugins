@@ -42,9 +42,7 @@ export const ScorecardEntitiesPage = () => {
   return (
     <Page themeId="home">
       <EntitiesPageHeader
-        title={
-          finalTitle ? finalTitle : metricId || t('entitiesPage.unknownMetric')
-        }
+        title={finalTitle || metricId || t('entitiesPage.unknownMetric')}
       />
       <Divider />
       <Content>

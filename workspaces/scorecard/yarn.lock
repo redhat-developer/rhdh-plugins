@@ -11180,6 +11180,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.3"
     "@backstage/core-plugin-api": "npm:^1.12.0"
     "@backstage/dev-utils": "npm:^1.1.17"
+    "@backstage/plugin-catalog": "npm:^1.32.0"
     "@backstage/plugin-catalog-react": "npm:^1.21.3"
     "@backstage/plugin-permission-react": "npm:^0.4.38"
     "@backstage/test-utils": "npm:^1.7.13"

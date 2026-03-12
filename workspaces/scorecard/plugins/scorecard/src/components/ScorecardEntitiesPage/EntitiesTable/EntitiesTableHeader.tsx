@@ -18,6 +18,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import TableHead from '@mui/material/TableHead';
 import TableSortLabel from '@mui/material/TableSortLabel';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 import { SCORECARD_ENTITIES_TABLE_HEADERS } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -45,6 +46,7 @@ export const EntitiesTableHeader = ({
                 active={orderBy === header.id}
                 direction={orderBy === header.id ? order : 'asc'}
                 onClick={() => onSortRequest(header.id)}
+                IconComponent={KeyboardArrowUpIcon}
               >
                 {t(header.label as any, { key: header.label })}
               </TableSortLabel>

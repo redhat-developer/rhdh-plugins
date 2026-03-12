@@ -220,7 +220,7 @@ export class ScorecardApiClient implements ScorecardApi {
         Array.isArray(data) ||
         typeof data !== 'object' ||
         !('metrics' in data) ||
-        !Array.isArray((data as any).metrics)
+        !Array.isArray(data.metrics)
       ) {
         throw new TypeError('Invalid response format from metrics API');
       }
@@ -257,8 +257,14 @@ export class ScorecardApiClient implements ScorecardApi {
 
     const baseUrl = await this.getBaseUrl();
     const url = new URL(
-      `${baseUrl}/metrics/${metricId}/catalog/aggregations/entities?page=${page}&pageSize=${pageSize}`,
+      `${baseUrl}/metrics/${metricId}/catalog/aggregations/entities`,
     );
+    if (page) {
+      url.searchParams.append('page', page.toString());
+    }
+    if (pageSize) {
+      url.searchParams.append('pageSize', pageSize.toString());
+    }
     if (ownershipEntityRefs.length > 0) {
       for (const ownershipEntityRef of ownershipEntityRefs) {
         url.searchParams.append('owner', ownershipEntityRef);
