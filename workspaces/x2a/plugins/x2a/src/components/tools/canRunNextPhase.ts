@@ -13,8 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { x2APlugin, X2APage } from './plugin';
-export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
-export { useTranslation as useX2ATranslation } from './hooks/useTranslation';
+import { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-export type { TFuncX2A } from './hooks/useTranslation';
+import { getLastPhaseReached } from './getLastPhaseReached';
+import { getNextPhase } from './getNextPhase';
+
+export const canRunNextPhase = (module: Module): boolean => {
+  const nextPhase = getNextPhase(module);
+  if (!nextPhase) {
+    return false;
+  }
+
+  // TODO: Consider check whether we have all artifacts instead of just checking the last job status
+  const lastJob = getLastPhaseReached(module);
+  if (!lastJob || lastJob.status === 'success') {
+    return true;
+  }
+
+  return false;
+};

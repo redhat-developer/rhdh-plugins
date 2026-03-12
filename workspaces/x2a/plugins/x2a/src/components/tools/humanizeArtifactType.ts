@@ -1,6 +1,3 @@
-import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
-import { x2aPluginTranslationRef } from '../../translations';
-
 /**
  * Copyright Red Hat, Inc.
  *
@@ -17,15 +14,14 @@ import { x2aPluginTranslationRef } from '../../translations';
  * limitations under the License.
  */
 
+import { TFuncX2A } from '../../hooks/useTranslation';
+
 /**
  * Gives user-friendly names to the types set by the backend.
  *
  * Keep in sync with constants produced by the backend.
  */
-export const humanizeArtifactType = (
-  t: TranslationFunction<typeof x2aPluginTranslationRef.T>,
-  type: string,
-): string => {
+export const humanizeArtifactType = (t: TFuncX2A, type: string): string => {
   switch (type) {
     case 'migration_plan':
       return t('artifact.types.migration_plan');

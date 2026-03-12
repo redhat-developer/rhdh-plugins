@@ -13,8 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { x2APlugin, X2APage } from './plugin';
-export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
-export { useTranslation as useX2ATranslation } from './hooks/useTranslation';
+import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-export type { TFuncX2A } from './hooks/useTranslation';
+/**
+ * Returns true when the project has at least one module whose next
+ * phase can be triggered by a Bulk Run action (i.e. modules that
+ * completed a non-final phase and are waiting for the next one).
+ */
+export const areEligibleModulesToRun = (project: Project): boolean => {
+  const summary = project.status?.modulesSummary;
+  if (!summary) {
+    return false;
+  }
+
+  return (
+    summary.waiting > 0 ||
+    (project.status?.state === 'initialized' && summary.pending > 0)
+  );
+};

@@ -13,8 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { x2APlugin, X2APage } from './plugin';
-export { x2aPluginTranslations, x2aPluginTranslationRef } from './translations';
-export { useTranslation as useX2ATranslation } from './hooks/useTranslation';
+import {
+  MigrationPhase,
+  Module,
+  ModulePhase,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-export type { TFuncX2A } from './hooks/useTranslation';
+import { getLastPhaseReached } from './getLastPhaseReached';
+
+const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
+  init: 'analyze',
+  analyze: 'migrate',
+  migrate: 'publish',
+  publish: undefined,
+};
+
+export const getNextPhase = (module: Module): ModulePhase | undefined => {
+  const lastJob = getLastPhaseReached(module);
+  const lastPhase: MigrationPhase = lastJob?.phase || 'init';
+  return nextPhases[lastPhase];
+};
