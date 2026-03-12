@@ -209,47 +209,27 @@ export async function addGithubTokenRepositories(
   const search = reqParams?.search;
   let totalCount: number | undefined;
   try {
-    if (search) {
-      const allRepositories = await listAllRepositoriesForAuthenticatedUser(
-        deps,
-        octokit,
-      );
+    const allRepositories = await listAllRepositoriesForAuthenticatedUser(
+      deps,
+      octokit,
+    );
 
-      const filteredRepositories = allRepositories.filter(repo =>
-        repo.name.includes(search),
-      );
+    const filteredRepositories = search
+      ? allRepositories.filter(repo => repo.name.includes(search))
+      : allRepositories;
 
-      filteredRepositories.forEach(repo => {
-        repositories.set(repo.full_name, {
-          name: repo.name,
-          full_name: repo.full_name,
-          url: repo.url,
-          html_url: repo.html_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        });
+    filteredRepositories.forEach(repo => {
+      repositories.set(repo.full_name, {
+        name: repo.name,
+        full_name: repo.full_name,
+        url: repo.url,
+        html_url: repo.html_url,
+        default_branch: repo.default_branch,
+        updated_at: repo.updated_at,
       });
+    });
 
-      totalCount = filteredRepositories.length;
-    } else {
-      const allRepositories = await listAllRepositoriesForAuthenticatedUser(
-        deps,
-        octokit,
-      );
-
-      allRepositories.forEach(repo => {
-        repositories.set(repo.full_name, {
-          name: repo.name,
-          full_name: repo.full_name,
-          url: repo.url,
-          html_url: repo.html_url,
-          default_branch: repo.default_branch,
-          updated_at: repo.updated_at,
-        });
-      });
-
-      totalCount = allRepositories.length;
-    }
+    totalCount = filteredRepositories.length;
   } catch (err) {
     handleError(
       deps,
