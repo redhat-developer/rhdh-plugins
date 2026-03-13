@@ -48,6 +48,7 @@ import {
   homePageDevModule,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { quickAccessApiRef } from '../src/api';
 import { visitsApiRef } from '@backstage/plugin-home';
 import {
@@ -156,6 +157,7 @@ const app = createApp({
     homepageApiMocksModule,
     catalogDevModule,
     searchDevModule,
+    rhdhThemeModule,
   ],
 });
 
