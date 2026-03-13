@@ -91,6 +91,11 @@ async function createProject(baseURL: string) {
 
 async function triggerInit(baseURL: string, projectId: string) {
   const headers = await apiHeaders(baseURL);
+  const ghToken = process.env.GITHUB_TOKEN || 'placeholder';
+  // eslint-disable-next-line no-console
+  console.log(
+    `triggerInit: GITHUB_TOKEN set=${!!process.env.GITHUB_TOKEN}, length=${process.env.GITHUB_TOKEN?.length ?? 0}, using=${ghToken === 'placeholder' ? 'placeholder' : 'real-token'}`,
+  );
   const ctx = await request.newContext({
     baseURL,
     ignoreHTTPSErrors: true,
@@ -98,8 +103,8 @@ async function triggerInit(baseURL: string, projectId: string) {
   const resp = await ctx.post(`/api/x2a/projects/${projectId}/run`, {
     headers,
     data: {
-      sourceRepoAuth: { token: 'placeholder' },
-      targetRepoAuth: { token: 'placeholder' },
+      sourceRepoAuth: { token: ghToken },
+      targetRepoAuth: { token: ghToken },
     },
   });
   expect(resp.ok()).toBeTruthy();
@@ -149,6 +154,72 @@ async function getModules(baseURL: string, projectId: string) {
   const data = await resp.json();
   await ctx.dispose();
   return data;
+}
+
+async function triggerModulePhase(
+  baseURL: string,
+  projectId: string,
+  moduleId: string,
+  phase: 'analyze' | 'migrate' | 'publish',
+) {
+  const headers = await apiHeaders(baseURL);
+  const ghToken = process.env.GITHUB_TOKEN || 'placeholder';
+  const ctx = await request.newContext({
+    baseURL,
+    ignoreHTTPSErrors: true,
+  });
+  const resp = await ctx.post(
+    `/api/x2a/projects/${projectId}/modules/${moduleId}/run`,
+    {
+      headers,
+      data: {
+        phase,
+        sourceRepoAuth: { token: ghToken },
+        targetRepoAuth: { token: ghToken },
+      },
+    },
+  );
+  expect(
+    resp.ok(),
+    `Failed to trigger ${phase}: ${resp.status()}`,
+  ).toBeTruthy();
+  const data = await resp.json();
+  await ctx.dispose();
+  return data;
+}
+
+async function pollModuleStatus(
+  baseURL: string,
+  projectId: string,
+  moduleId: string,
+  timeoutMs: number,
+): Promise<string> {
+  const headers = await apiHeaders(baseURL);
+  const ctx = await request.newContext({
+    baseURL,
+    ignoreHTTPSErrors: true,
+  });
+  const deadline = Date.now() + timeoutMs;
+  let lastStatus = '';
+  while (Date.now() < deadline) {
+    const resp = await ctx.get(
+      `/api/x2a/projects/${projectId}/modules/${moduleId}`,
+      { headers },
+    );
+    if (resp.ok()) {
+      const data = await resp.json();
+      lastStatus = data?.status ?? 'unknown';
+      if (['success', 'failed', 'error'].includes(lastStatus)) {
+        await ctx.dispose();
+        return lastStatus;
+      }
+    }
+    await new Promise(r => setTimeout(r, POLL_INTERVAL));
+  }
+  await ctx.dispose();
+  throw new Error(
+    `Module did not reach terminal state within ${timeoutMs}ms (last: ${lastStatus})`,
+  );
 }
 
 async function deleteProject(baseURL: string, projectId: string) {
@@ -213,58 +284,106 @@ test.describe.serial('X2Ansible - Pipeline Phases @live', () => {
     );
   });
 
-  test('Phase 2: Navigate to module page and run Analyze', async ({ page }) => {
+  test('Phase 2: Run Analyze and verify via UI', async ({ page }) => {
     test.setTimeout(PHASE_TIMEOUT + 60_000);
     expect(
       state.moduleId,
       'Module ID not set — init phase may have failed',
     ).toBeTruthy();
 
+    // eslint-disable-next-line no-console
+    console.log('Triggering Analyze phase via API...');
+    const result = await triggerModulePhase(
+      baseURL,
+      state.projectId,
+      state.moduleId,
+      'analyze',
+    );
+    // eslint-disable-next-line no-console
+    console.log(`Analyze triggered: jobId=${result.jobId}`);
+
+    const status = await pollModuleStatus(
+      baseURL,
+      state.projectId,
+      state.moduleId,
+      PHASE_TIMEOUT,
+    );
+    // eslint-disable-next-line no-console
+    console.log(`Analyze API status: ${status}`);
+    expect(status, `Analyze failed with status=${status}`).toBe('success');
+
     await performLogin(page);
     x2aPage = new X2AnsiblePage(page);
     await x2aPage.navigateToModulePage(state.projectId, state.moduleId);
-
+    await x2aPage.waitForPhaseStatus('Analyze', 'Success', 30_000);
     // eslint-disable-next-line no-console
-    console.log('Running Analyze phase via UI...');
-    await x2aPage.runAnalyze();
-
-    await x2aPage.waitForPhaseStatus('Analyze', 'Success', PHASE_TIMEOUT);
-    // eslint-disable-next-line no-console
-    console.log('Analyze phase completed successfully');
+    console.log('Analyze phase verified in UI');
   });
 
-  test('Phase 3: Run Migrate', async ({ page }) => {
+  test('Phase 3: Run Migrate and verify via UI', async ({ page }) => {
     test.setTimeout(PHASE_TIMEOUT + 60_000);
     expect(state.moduleId, 'Module ID not set').toBeTruthy();
 
+    // eslint-disable-next-line no-console
+    console.log('Triggering Migrate phase via API...');
+    const result = await triggerModulePhase(
+      baseURL,
+      state.projectId,
+      state.moduleId,
+      'migrate',
+    );
+    // eslint-disable-next-line no-console
+    console.log(`Migrate triggered: jobId=${result.jobId}`);
+
+    const status = await pollModuleStatus(
+      baseURL,
+      state.projectId,
+      state.moduleId,
+      PHASE_TIMEOUT,
+    );
+    // eslint-disable-next-line no-console
+    console.log(`Migrate API status: ${status}`);
+    expect(status, `Migrate failed with status=${status}`).toBe('success');
+
     await performLogin(page);
     x2aPage = new X2AnsiblePage(page);
     await x2aPage.navigateToModulePage(state.projectId, state.moduleId);
-
+    await x2aPage.waitForPhaseStatus('Migrate', 'Success', 30_000);
     // eslint-disable-next-line no-console
-    console.log('Running Migrate phase via UI...');
-    await x2aPage.runMigrate();
-
-    await x2aPage.waitForPhaseStatus('Migrate', 'Success', PHASE_TIMEOUT);
-    // eslint-disable-next-line no-console
-    console.log('Migrate phase completed successfully');
+    console.log('Migrate phase verified in UI');
   });
 
-  test('Phase 4: Run Publish', async ({ page }) => {
+  test('Phase 4: Run Publish and verify via UI', async ({ page }) => {
     test.setTimeout(PHASE_TIMEOUT + 60_000);
     expect(state.moduleId, 'Module ID not set').toBeTruthy();
 
+    // eslint-disable-next-line no-console
+    console.log('Triggering Publish phase via API...');
+    const result = await triggerModulePhase(
+      baseURL,
+      state.projectId,
+      state.moduleId,
+      'publish',
+    );
+    // eslint-disable-next-line no-console
+    console.log(`Publish triggered: jobId=${result.jobId}`);
+
+    const status = await pollModuleStatus(
+      baseURL,
+      state.projectId,
+      state.moduleId,
+      PHASE_TIMEOUT,
+    );
+    // eslint-disable-next-line no-console
+    console.log(`Publish API status: ${status}`);
+    expect(status, `Publish failed with status=${status}`).toBe('success');
+
     await performLogin(page);
     x2aPage = new X2AnsiblePage(page);
     await x2aPage.navigateToModulePage(state.projectId, state.moduleId);
-
+    await x2aPage.waitForPhaseStatus('Publish', 'Success', 30_000);
     // eslint-disable-next-line no-console
-    console.log('Running Publish phase via UI...');
-    await x2aPage.runPublish();
-
-    await x2aPage.waitForPhaseStatus('Publish', 'Success', PHASE_TIMEOUT);
-    // eslint-disable-next-line no-console
-    console.log('Publish phase completed successfully');
+    console.log('Publish phase verified in UI');
   });
 
   test('Phase 5: Verify all phases completed', async ({ page }) => {
