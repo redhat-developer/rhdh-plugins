@@ -43,6 +43,7 @@ import {
   NavContentBlueprint,
   ThemeBlueprint,
 } from '@backstage/plugin-app-react';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { mockApis } from '@backstage/test-utils';
 
@@ -55,7 +56,12 @@ import AutoIcon from '@mui/icons-material/BrightnessAuto';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
 import bulkImportPlugin, { bulkImportTranslationsModule } from '../src/alpha';
-import { bulkImportApiRef, mockBulkImportApi, mockConfigApi } from './mocks';
+import {
+  bulkImportApiRef,
+  mockBulkImportApi,
+  mockCatalogApi,
+  mockConfigApi,
+} from './mocks';
 
 const bulkImportDevModule = createFrontendModule({
   pluginId: 'bulk-import',
@@ -85,6 +91,15 @@ const bulkImportDevModule = createFrontendModule({
           api: permissionApiRef,
           deps: {},
           factory: () => mockApis.permission(),
+        }),
+    }),
+    ApiBlueprint.make({
+      name: 'catalog-mock',
+      params: defineParams =>
+        defineParams({
+          api: catalogApiRef,
+          deps: {},
+          factory: () => mockCatalogApi as any,
         }),
     }),
   ],
