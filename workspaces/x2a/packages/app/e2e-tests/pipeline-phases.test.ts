@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-// eslint-disable-next-line no-restricted-imports
-import { execSync } from 'child_process';
 import { test, expect, request } from '@playwright/test';
 import { X2AnsiblePage } from './pages/X2AnsiblePage';
 import { performLogin } from './fixtures/auth';
@@ -354,22 +352,6 @@ test.describe.serial('X2Ansible - Pipeline Phases @live', () => {
   test('Phase 4: Run Publish and verify via UI', async ({ page }) => {
     test.setTimeout(PHASE_TIMEOUT + 60_000);
     expect(state.moduleId, 'Module ID not set').toBeTruthy();
-
-    // Plugin v1.0.1 hardcodes AAP_VERIFY_SSL=true in the project secret.
-    // Patch it once before triggering publish so the job can reach AAP
-    // controllers using self-signed certs.
-    try {
-      const secretName = `x2a-project-secret-${state.projectId}`;
-      execSync(
-        `oc patch secret ${secretName} -n x2ansible --type merge -p '{"stringData":{"AAP_VERIFY_SSL":"false"}}'`,
-        { timeout: 15_000 },
-      );
-      // eslint-disable-next-line no-console
-      console.log(`Patched ${secretName}: AAP_VERIFY_SSL=false`);
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.log(`Warning: could not patch project secret: ${e}`);
-    }
 
     // eslint-disable-next-line no-console
     console.log('Triggering Publish phase via API...');
