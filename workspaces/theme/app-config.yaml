@@ -1,6 +1,18 @@
 app:
-  title: Scaffolded Backstage App
+  title: My Company Catalog
   baseUrl: http://localhost:3000
+
+  packages: all
+
+  extensions:
+    - nav-item:user-settings: false
+    - nav-item:search: false
+    - nav-item:catalog:
+        config:
+          title: Home
+    - page:catalog:
+        config:
+          path: /
 
 organization:
   name: My Company
