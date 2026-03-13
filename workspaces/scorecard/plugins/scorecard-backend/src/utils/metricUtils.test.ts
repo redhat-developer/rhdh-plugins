@@ -70,54 +70,6 @@ describe('isMetricIdDisabled', () => {
     expect(result).toBe(true);
   });
 
-  it('returns true when disabled by annotation but metric is in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is false', () => {
-    const config = createConfig({
-      entityAnnotations: {
-        disabledMetrics: {
-          enabled: false,
-          except: [metricId],
-        },
-      },
-    });
-
-    const entity = createEntity(metricId);
-    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
-
-    expect(result).toBe(true);
-  });
-
-  it('returns true when disabled by annotation but metric is NOT in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is true', () => {
-    const config = createConfig({
-      entityAnnotations: {
-        disabledMetrics: {
-          enabled: true,
-          except: [],
-        },
-      },
-    });
-
-    const entity = createEntity(metricId);
-    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
-
-    expect(result).toBe(true);
-  });
-
-  it('returns false when disabled by annotation but metric is in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is true', () => {
-    const config = createConfig({
-      entityAnnotations: {
-        disabledMetrics: {
-          enabled: true,
-          except: [metricId],
-        },
-      },
-    });
-
-    const entity = createEntity(metricId);
-    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
-
-    expect(result).toBe(false);
-  });
-
   it('returns true when disabled by annotation (no except list)', () => {
     const config = createConfig();
     const entity = createEntity(metricId);
@@ -136,19 +88,6 @@ describe('isMetricIdDisabled', () => {
     expect(result).toBe(false);
   });
 
-  it('returns false when entityAnnotations.disabledMetrics.enabled is false and metric is not in entity annotation', () => {
-    const config = createConfig({
-      entityAnnotations: {
-        disabledMetrics: { enabled: false },
-      },
-    });
-    const entity = createEntity(); // no annotation
-
-    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
-
-    expect(result).toBe(false);
-  });
-
   it('returns false when no config and no annotation', () => {
     const config = createConfig();
     const entity = createEntity();
@@ -156,5 +95,69 @@ describe('isMetricIdDisabled', () => {
     const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
 
     expect(result).toBe(false);
+  });
+
+  it('When entityOverride.disabledMetrics.enabled=false, users can NO override by annotations.', () => {
+    const config = createConfig({
+      entityAnnotations: {
+        disabledMetrics: {
+          enabled: false,
+          except: [metricId],
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(false);
+  });
+
+  it('returns true, when entityOverride.disabledMetrics.enabled=true, users can override by annotations, and metric is not listed in exception list', () => {
+    const config = createConfig({
+      entityAnnotations: {
+        disabledMetrics: {
+          enabled: false,
+          except: ['other-metric-id'],
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(false);
+  });
+
+  it('returns false when disabled by annotation but metric is in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is true', () => {
+    const config = createConfig({
+      entityAnnotations: {
+        disabledMetrics: {
+          enabled: true,
+          except: [metricId],
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(false);
+  });
+
+  it('returns true when disabled by annotation but metric is NOT in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is true', () => {
+    const config = createConfig({
+      entityAnnotations: {
+        disabledMetrics: {
+          enabled: true,
+          except: [],
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(true);
   });
 });

@@ -56,9 +56,6 @@ export function isMetricIdDisabled(
     disabledMetricsFromComponentAnnotation?.includes(metricId) ?? false;
 
   if (entityAnnotationEnabled === false) {
-    if (isDisabledByAnnotation) {
-      return true;
-    }
     return false;
   }
   const exceptList =
