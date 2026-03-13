@@ -31,7 +31,6 @@ import {
 } from 'react-dropzone';
 
 import { makeStyles } from '@material-ui/core';
-import Divider from '@mui/material/Divider';
 import {
   Chatbot,
   ChatbotAlert,
@@ -55,6 +54,8 @@ import {
   Select,
   SelectList,
   SelectOption,
+  Tab,
+  Tabs,
   Title,
   Tooltip,
 } from '@patternfly/react-core';
@@ -74,6 +75,7 @@ import {
   useIsMobile,
   useLastOpenedConversation,
   useLightspeedDeletePermission,
+  useNotebookSessions,
   usePinnedChatsSettings,
   useSortSettings,
 } from '../hooks';
@@ -91,10 +93,13 @@ import {
 import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { DeleteModal } from './DeleteModal';
+import { DeleteNotebookModal } from './DeleteNotebookModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
+import { NotebooksTab } from './NotebooksTab';
 import { RenameConversationModal } from './RenameConversationModal';
+import { RenameNotebookModal } from './RenameNotebookModal';
 
 const useStyles = makeStyles(theme => ({
   body: {
@@ -105,7 +110,9 @@ const useStyles = makeStyles(theme => ({
     },
   },
   header: {
-    padding: `${theme.spacing(3)}px !important`,
+    padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
+      3,
+    )}px !important`,
   },
   errorContainer: {
     padding: theme.spacing(3),
@@ -119,6 +126,155 @@ const useStyles = makeStyles(theme => ({
   },
   headerTitle: {
     justifyContent: 'left !important',
+  },
+  tabs: {
+    padding: `${theme.spacing(2)}px ${theme.spacing(3)}px 0`,
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+    '& .pf-v6-c-tabs__item, & .pf-v5-c-tabs__item': {
+      backgroundColor: 'transparent',
+    },
+    '& .pf-v6-c-tabs__item:not(:last-child), & .pf-v5-c-tabs__item:not(:last-child)':
+      {
+        marginRight: theme.spacing(5),
+      },
+    '& .pf-v6-c-tabs__link, & .pf-v5-c-tabs__link': {
+      backgroundColor: 'transparent',
+      paddingBottom: theme.spacing(2),
+      fontWeight: 700,
+    },
+    '& .pf-v6-c-tabs__item.pf-m-current .pf-v6-c-tabs__link, & .pf-v5-c-tabs__item.pf-m-current .pf-v5-c-tabs__link':
+      {
+        color: 'var(--pf-t--global--text--color--brand--default)',
+      },
+  },
+  tabsDivider: {
+    borderTop: '1px solid var(--pf-t--global--border--color--default)',
+  },
+  notebooksContainer: {
+    padding: theme.spacing(3),
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  notebooksHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing(4),
+  },
+  notebooksHeading: {
+    marginBottom: 0,
+  },
+  notebooksHeadingEmpty: {
+    '&&': {
+      marginBottom: theme.spacing(1),
+      paddingBottom: theme.spacing(1),
+    },
+  },
+  notebooksEmptyState: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+  },
+  notebooksIcon: {
+    fontSize: 48,
+    color: 'var(--pf-t--global--icon--color--subtle)',
+    marginBottom: theme.spacing(1.5),
+  },
+  notebooksDescription: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(3),
+    maxWidth: 420,
+  },
+  notebooksAction: {
+    textTransform: 'none',
+    borderRadius: 999,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+  },
+  notebooksActionEmpty: {
+    textTransform: 'none',
+    borderRadius: 999,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(3),
+    marginTop: theme.spacing(3),
+  },
+  notebooksGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+    gap: theme.spacing(2),
+    width: '100%',
+    maxWidth: '100%',
+    [theme.breakpoints.down('md')]: {
+      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    },
+    [theme.breakpoints.down('sm')]: {
+      gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
+    },
+  },
+  notebookCard: {
+    borderRadius: theme.spacing(1.5),
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  notebookCardHeader: {
+    padding: theme.spacing(2),
+    paddingBottom: 0,
+    alignItems: 'center',
+  },
+  notebookCardDivider: {
+    borderTop: '1px solid var(--pf-t--global--border--color--default)',
+    marginTop: theme.spacing(1),
+  },
+  notebookCardBody: {
+    padding: theme.spacing(2),
+    paddingTop: theme.spacing(1.5),
+  },
+  notebookDocuments: {
+    paddingTop: theme.spacing(1),
+    paddingLeft: theme.spacing(2),
+  },
+  notebookUpdated: {
+    paddingBottom: theme.spacing(5),
+    paddingLeft: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+  },
+  notebookTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    minWidth: 0,
+    flex: 1,
+  },
+  notebookCardHeaderActions: {
+    marginLeft: theme.spacing(1),
+  },
+  notebookTitleText: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  notebookMenuButton: {
+    color: theme.palette.text.secondary,
+  },
+  notebookDropdownList: {
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingInlineStart: 0,
+  },
+  notebookDropdownMenu: {
+    '--pf-v6-c-menu--PaddingBlockStart': '0',
+    '--pf-v6-c-menu--PaddingBlockEnd': '0',
+  },
+  notebookDropdownItem: {
+    justifyContent: 'flex-start',
+    textAlign: 'left',
+    paddingLeft: theme.spacing(1.5),
+    paddingRight: theme.spacing(1.5),
   },
   footer: {
     '&>.pf-chatbot__footer-container': {
@@ -180,6 +336,15 @@ export const LightspeedChat = ({
   const user = useBackstageUserIdentity();
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<number>(0);
+  const { data: notebooks = [], refetch: refetchNotebooks } =
+    useNotebookSessions(activeTab === 1);
+  const hasNotebooks = notebooks.length > 0;
+  const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(
+    null,
+  );
+  const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
+  const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
@@ -201,8 +366,21 @@ export const LightspeedChat = ({
     setDraftMessage,
   } = useLightspeedDrawerContext();
   const isFullscreenMode = displayMode === ChatbotDisplayMode.embedded;
+  const showChatPanel = !isFullscreenMode || activeTab === 0;
+  const showNotebooksPanel = isFullscreenMode && activeTab !== 0;
   const [isChatHistoryDrawerOpen, setIsChatHistoryDrawerOpen] =
     useState<boolean>(!isMobile && isFullscreenMode);
+
+  const handleNotebookTabSelect = (
+    _event: React.MouseEvent<any>,
+    tabIndex: number | string,
+  ) => {
+    const nextTab = Number(tabIndex);
+    setActiveTab(nextTab);
+    if (nextTab === 1) {
+      refetchNotebooks();
+    }
+  };
 
   // Open the chat history drawer when entering fullscreen mode on desktop
   useEffect(() => {
@@ -723,6 +901,10 @@ export const LightspeedChat = ({
     ],
   );
 
+  const getDocumentsCount = (documentIds?: string[]) => {
+    return Array.isArray(documentIds) ? documentIds.length : 0;
+  };
+
   const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
     if (
       'preventDefault' in event &&
@@ -769,6 +951,26 @@ export const LightspeedChat = ({
           conversationId={targetConversationId}
         />
       )}
+      {renameNotebookId && (
+        <RenameNotebookModal
+          isOpen={Boolean(renameNotebookId)}
+          onClose={() => setRenameNotebookId(null)}
+          sessionId={renameNotebookId}
+          currentName={
+            notebooks.find(n => n.session_id === renameNotebookId)?.name ?? ''
+          }
+        />
+      )}
+      {deleteNotebookId && (
+        <DeleteNotebookModal
+          isOpen={Boolean(deleteNotebookId)}
+          onClose={() => setDeleteNotebookId(null)}
+          sessionId={deleteNotebookId}
+          name={
+            notebooks.find(n => n.session_id === deleteNotebookId)?.name ?? ''
+          }
+        />
+      )}
       <Chatbot
         displayMode={ChatbotDisplayMode.embedded}
         className={classes.body}
@@ -807,136 +1009,166 @@ export const LightspeedChat = ({
             onPinnedChatsToggle={handlePinningChatsToggle}
           />
         </ChatbotHeader>
-        <Divider />
-        <ChatbotConversationHistoryNav
-          drawerPanelContentProps={{
-            isResizable: isFullscreenMode,
-            hasNoBorder: !isFullscreenMode,
-            style: isFullscreenMode ? undefined : { zIndex: 1300 },
-          }}
-          reverseButtonOrder
-          displayMode={displayMode}
-          onDrawerToggle={onChatHistoryDrawerToggle}
-          title=""
-          navTitleIcon={null}
-          isDrawerOpen={isChatHistoryDrawerOpen}
-          drawerCloseButtonProps={{
-            'aria-label': t('aria.closeDrawerPanel'),
-          }}
-          setIsDrawerOpen={setIsChatHistoryDrawerOpen}
-          activeItemId={conversationId}
-          onSelectActiveItem={onSelectActiveItem}
-          conversations={filterConversations(filterValue)}
-          onNewChat={newChatCreated ? undefined : onNewChat}
-          newChatButtonText={t('button.newChat')}
-          newChatButtonProps={{
-            icon: <PlusIcon />,
-          }}
-          handleTextInputChange={handleFilter}
-          searchInputPlaceholder={t('chatbox.search.placeholder')}
-          searchInputAriaLabel={t('aria.search.placeholder')}
-          searchInputProps={{
-            value: filterValue,
-            onClear: () => {
-              setFilterValue('');
-            },
-          }}
-          searchActionEnd={sortDropdown}
-          noResultsState={
-            filterValue &&
-            Object.keys(filterConversations(filterValue)).length === 0
-              ? {
-                  bodyText: t('chatbox.emptyState.noResults.body'),
-                  titleText: t('chatbox.emptyState.noResults.title'),
-                  icon: SearchIcon,
-                }
-              : undefined
-          }
-          drawerContent={
-            <FileDropZone
-              onFileDrop={(e, data) => handleAttach(data, e)}
-              displayMode={ChatbotDisplayMode.embedded}
-              infoText={t('chatbox.fileUpload.infoText')}
-              allowedFileTypes={supportedFileTypes}
-              onAttachRejected={onAttachRejected}
+        {isFullscreenMode && (
+          <>
+            <Tabs
+              activeKey={activeTab}
+              onSelect={handleNotebookTabSelect}
+              aria-label={t('tabs.ariaLabel')}
+              className={classes.tabs}
             >
-              {showAlert && uploadError.message && (
-                <div className={classes.errorContainer}>
-                  <ChatbotAlert
-                    component="h4"
-                    title={t('chatbox.fileUpload.failed')}
-                    variant={uploadError.type ?? 'danger'}
-                    isInline
-                    onClose={() => setUploadError({ message: null })}
+              <Tab eventKey={0} title={t('tabs.chat')} />
+              <Tab eventKey={1} title={t('tabs.notebooks')} />
+            </Tabs>
+            <div className={classes.tabsDivider} />
+          </>
+        )}
+        {showChatPanel && (
+          <ChatbotConversationHistoryNav
+            drawerPanelContentProps={{
+              isResizable: isFullscreenMode,
+              hasNoBorder: !isFullscreenMode,
+              style: isFullscreenMode ? undefined : { zIndex: 1300 },
+            }}
+            reverseButtonOrder
+            displayMode={ChatbotDisplayMode.embedded}
+            onDrawerToggle={onChatHistoryDrawerToggle}
+            title=""
+            navTitleIcon={null}
+            isDrawerOpen={isChatHistoryDrawerOpen}
+            drawerCloseButtonProps={{
+              'aria-label': t('aria.closeDrawerPanel'),
+            }}
+            setIsDrawerOpen={setIsChatHistoryDrawerOpen}
+            activeItemId={conversationId}
+            onSelectActiveItem={onSelectActiveItem}
+            conversations={filterConversations(filterValue)}
+            onNewChat={newChatCreated ? undefined : onNewChat}
+            newChatButtonText={t('button.newChat')}
+            newChatButtonProps={{
+              icon: <PlusIcon />,
+            }}
+            handleTextInputChange={handleFilter}
+            searchInputPlaceholder={t('chatbox.search.placeholder')}
+            searchInputAriaLabel={t('aria.search.placeholder')}
+            searchInputProps={{
+              value: filterValue,
+              onClear: () => {
+                setFilterValue('');
+              },
+            }}
+            searchActionEnd={sortDropdown}
+            noResultsState={
+              filterValue &&
+              Object.keys(filterConversations(filterValue)).length === 0
+                ? {
+                    bodyText: t('chatbox.emptyState.noResults.body'),
+                    titleText: t('chatbox.emptyState.noResults.title'),
+                    icon: SearchIcon,
+                  }
+                : undefined
+            }
+            drawerContent={
+              <FileDropZone
+                onFileDrop={(e, data) => handleAttach(data, e)}
+                displayMode={ChatbotDisplayMode.embedded}
+                infoText={t('chatbox.fileUpload.infoText')}
+                allowedFileTypes={supportedFileTypes}
+                onAttachRejected={onAttachRejected}
+              >
+                {showAlert && uploadError.message && (
+                  <div className={classes.errorContainer}>
+                    <ChatbotAlert
+                      component="h4"
+                      title={t('chatbox.fileUpload.failed')}
+                      variant={uploadError.type ?? 'danger'}
+                      isInline
+                      onClose={() => setUploadError({ message: null })}
+                    >
+                      {uploadError.message}
+                    </ChatbotAlert>
+                  </div>
+                )}
+                <ChatbotContent className={classes.chatbotContent}>
+                  <div
+                    ref={contentScrollRef}
+                    className={classes.chatbotContentScroll}
                   >
-                    {uploadError.message}
-                  </ChatbotAlert>
-                </div>
-              )}
-
-              <ChatbotContent className={classes.chatbotContent}>
-                <div
-                  ref={contentScrollRef}
-                  className={classes.chatbotContentScroll}
-                >
-                  {welcomePrompts.length > 0 && (
-                    <div className={classes.chatbotContentSpacer} aria-hidden />
-                  )}
-                  <LightspeedChatBox
-                    userName={userName}
-                    messages={messages}
-                    profileLoading={profileLoading}
-                    announcement={announcement}
-                    ref={scrollToBottomRef}
-                    welcomePrompts={welcomePrompts}
-                    conversationId={conversationId}
-                    isStreaming={isSendButtonDisabled}
-                    topicRestrictionEnabled={topicRestrictionEnabled}
-                    displayMode={displayMode}
-                  />
-                  {welcomePrompts.length > 0 && (
-                    <div
-                      ref={bottomSentinelRef}
-                      aria-hidden
-                      style={{ height: 0, flexShrink: 0 }}
+                    {welcomePrompts.length > 0 && (
+                      <div
+                        className={classes.chatbotContentSpacer}
+                        aria-hidden
+                      />
+                    )}
+                    <LightspeedChatBox
+                      userName={userName}
+                      messages={messages}
+                      profileLoading={profileLoading}
+                      announcement={announcement}
+                      ref={scrollToBottomRef}
+                      welcomePrompts={welcomePrompts}
+                      conversationId={conversationId}
+                      isStreaming={isSendButtonDisabled}
+                      topicRestrictionEnabled={topicRestrictionEnabled}
+                      displayMode={displayMode}
                     />
-                  )}
-                </div>
-              </ChatbotContent>
-              <ChatbotFooter className={classes.footer}>
-                <FilePreview />
-                <MessageBar
-                  onSendMessage={sendMessage}
-                  isSendButtonDisabled={isSendButtonDisabled}
-                  hasAttachButton
-                  handleAttach={handleAttach}
-                  hasMicrophoneButton
-                  value={draftMessage}
-                  onChange={handleDraftMessage}
-                  buttonProps={{
-                    attach: {
-                      inputTestId: 'attachment-input',
-                      tooltipContent: t('tooltip.attach'),
-                    },
-                    microphone: {
-                      tooltipContent: {
-                        active: t('tooltip.microphone.active'),
-                        inactive: t('tooltip.microphone.inactive'),
+                    {welcomePrompts.length > 0 && (
+                      <div
+                        ref={bottomSentinelRef}
+                        aria-hidden
+                        style={{ height: 0, flexShrink: 0 }}
+                      />
+                    )}
+                  </div>
+                </ChatbotContent>
+                <ChatbotFooter className={classes.footer}>
+                  <FilePreview />
+                  <MessageBar
+                    onSendMessage={sendMessage}
+                    isSendButtonDisabled={isSendButtonDisabled}
+                    hasAttachButton
+                    handleAttach={handleAttach}
+                    hasMicrophoneButton
+                    value={draftMessage}
+                    onChange={handleDraftMessage}
+                    buttonProps={{
+                      attach: {
+                        inputTestId: 'attachment-input',
+                        tooltipContent: t('tooltip.attach'),
                       },
-                    },
-                    send: {
-                      tooltipContent: t('tooltip.send'),
-                    },
-                  }}
-                  allowedFileTypes={supportedFileTypes}
-                  onAttachRejected={onAttachRejected}
-                  placeholder={t('chatbox.message.placeholder')}
-                />
-                <ChatbotFootnote {...getFootnoteProps(t)} />
-              </ChatbotFooter>
-            </FileDropZone>
-          }
-        />
+                      microphone: {
+                        tooltipContent: {
+                          active: t('tooltip.microphone.active'),
+                          inactive: t('tooltip.microphone.inactive'),
+                        },
+                      },
+                      send: {
+                        tooltipContent: t('tooltip.send'),
+                      },
+                    }}
+                    allowedFileTypes={supportedFileTypes}
+                    onAttachRejected={onAttachRejected}
+                    placeholder={t('chatbox.message.placeholder')}
+                  />
+                  <ChatbotFootnote {...getFootnoteProps(t)} />
+                </ChatbotFooter>
+              </FileDropZone>
+            }
+          />
+        )}
+        {showNotebooksPanel && (
+          <NotebooksTab
+            notebooks={notebooks}
+            hasNotebooks={hasNotebooks}
+            classes={classes}
+            openNotebookMenuId={openNotebookMenuId}
+            setOpenNotebookMenuId={setOpenNotebookMenuId}
+            onRename={setRenameNotebookId}
+            onDelete={setDeleteNotebookId}
+            t={t}
+            getDocumentsCount={getDocumentsCount}
+          />
+        )}
       </Chatbot>
       <Attachment />
     </>
