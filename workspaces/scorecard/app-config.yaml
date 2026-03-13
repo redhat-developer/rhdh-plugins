@@ -94,7 +94,7 @@ catalog:
     - allow: [Component, System, Group, Resource, Location, Template, API]
   locations:
     - type: file
-      target: ../../examples/all-scorecards.yaml
+      target: ../../examples/all-scorecards-location.yaml
       rules:
         - allow: [Component]
 
