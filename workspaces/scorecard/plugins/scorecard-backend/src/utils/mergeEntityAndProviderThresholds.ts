@@ -32,7 +32,7 @@ const thresholdRulesAnnotationPrefix = (providerId: string) =>
 /**
  * Extract threshold override rules from entity annotations for a given provider, doesn't validate rules.
  */
-function parseEntityOverrideThresholds(
+function parseEntityAnnotationThresholds(
   entity: Entity,
   providerId: string,
 ): ThresholdRule[] {
@@ -57,13 +57,13 @@ export function mergeEntityAndProviderThresholds(
   const providerId = provider.getProviderId();
   const providerThresholds = provider.getMetricThresholds();
   const providerMetricType = provider.getMetricType();
-  const entityOverrideThresholds = parseEntityOverrideThresholds(
+  const entityAnnotationThresholds = parseEntityAnnotationThresholds(
     entity,
     providerId,
   );
 
   const mergedRules = [...providerThresholds.rules];
-  for (const override of entityOverrideThresholds) {
+  for (const override of entityAnnotationThresholds) {
     const foundKey = mergedRules.findIndex(rule => rule.key === override.key);
     if (foundKey === -1) {
       throw new ThresholdConfigFormatError(

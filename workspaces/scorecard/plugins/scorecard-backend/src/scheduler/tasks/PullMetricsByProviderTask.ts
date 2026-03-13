@@ -26,6 +26,7 @@ import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
+import { isMetricIdDisabled } from '../../utils/metricUtils';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
 import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
@@ -143,6 +144,17 @@ export class PullMetricsByProviderTask implements SchedulerTask {
             let value: MetricValue | undefined;
 
             try {
+              if (
+                isMetricIdDisabled(
+                  this.config,
+                  provider.getProviderId(),
+                  entity,
+                  logger,
+                )
+              ) {
+                return undefined;
+              }
+
               value = await provider.calculateMetric(entity);
 
               const thresholds = mergeEntityAndProviderThresholds(
@@ -184,7 +196,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
           }),
         ).then(promises =>
           promises.reduce((acc, curr) => {
-            if (curr.status === 'fulfilled') {
+            if (curr.status === 'fulfilled' && curr.value !== undefined) {
               return [...acc, curr.value];
             }
             return acc;
