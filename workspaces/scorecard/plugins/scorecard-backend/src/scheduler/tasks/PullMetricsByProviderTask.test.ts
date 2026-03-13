@@ -392,6 +392,36 @@ describe('PullMetricsByProviderTask', () => {
       );
     });
 
+    it('should skip entities when scorecard.io/disabled-metrics annotation contains the provider id', async () => {
+      const entityExcluded = {
+        apiVersion: '1.0.0',
+        kind: 'Component',
+        metadata: {
+          name: 'excluded-entity',
+          annotations: {
+            'scorecard.io/disabled-metrics': 'github.test_metric',
+          },
+        },
+      };
+
+      mockCatalog.queryEntities.mockReset().mockResolvedValueOnce({
+        items: [entityExcluded],
+        pageInfo: { nextCursor: undefined },
+        totalItems: 2,
+      });
+
+      const calculateMetricSpy = jest.spyOn(mockProvider, 'calculateMetric');
+      const createMetricValuesSpy = jest.spyOn(
+        mockDatabaseMetricValues,
+        'createMetricValues',
+      );
+      await (task as any).pullProviderMetrics(mockProvider, mockLogger);
+
+      expect(calculateMetricSpy).not.toHaveBeenCalled();
+      expect(createMetricValuesSpy).toHaveBeenCalledTimes(1);
+      expect(createMetricValuesSpy).toHaveBeenCalledWith([]);
+    });
+
     it('should throw error if pullProviderMetrics fails', async () => {
       (task as any).pullProviderMetrics = jest
         .fn()

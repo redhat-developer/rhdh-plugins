@@ -100,6 +100,10 @@ To use these providers, install the corresponding backend modules:
 - Jira: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-jira`](../scorecard-backend-module-jira/README.md)
 - OpenSSF: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf`](../scorecard-backend-module-openssf/README.md)
 
+### Disabling Metrics
+
+Administrators can disable metric checks globally via app-config, and users can disable them for concrete entity via `scorecard.io/disabled-metrics` annotation. For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
+
 ## Thresholds
 
 Thresholds define conditions to assign metric values to specific visual categories (`success`, `warning`, `error` or any custom category). The Scorecard plugin provides multiple ways to configure thresholds:
