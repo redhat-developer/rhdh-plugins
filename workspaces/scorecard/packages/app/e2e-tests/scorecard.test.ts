@@ -41,6 +41,7 @@ import {
   getThresholdsSnapshot,
 } from './utils/translationUtils';
 import { runAccessibilityTests } from './utils/accessibility';
+import { skipIfLocales } from './utils/localeSkip';
 
 test.describe('Scorecard Plugin Tests', () => {
   let page: Page;
@@ -49,6 +50,14 @@ test.describe('Scorecard Plugin Tests', () => {
   let homePage: HomePage;
   let translations: ScorecardMessages;
   let currentLocale: string;
+
+  test.beforeEach(({}, testInfo) => {
+    skipIfLocales(
+      testInfo,
+      ['de', 'es'],
+      'Missing scorecard translations (metric, thresholds, emptyState.button, errors) in de/es - https://issues.redhat.com/browse/RHDHBUGS-2801',
+    );
+  });
 
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();

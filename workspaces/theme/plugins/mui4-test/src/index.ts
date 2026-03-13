@@ -22,3 +22,4 @@ ClassNameGenerator.configure(componentName => {
 });
 
 export * from './plugin';
+export { MUI4TestPage as MUI4TestPageComponent } from './components/MUI4TestPage';

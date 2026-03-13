@@ -22,7 +22,7 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import { CustomDrawer } from './CustomDrawer';
+import { CustomDrawer } from '@red-hat-developer-hub/backstage-plugin-quickstart/dev';
 
 /**
  * Partial drawer state exposed by drawer plugins

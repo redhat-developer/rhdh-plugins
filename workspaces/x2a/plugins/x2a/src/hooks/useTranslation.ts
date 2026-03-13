@@ -21,10 +21,17 @@ import {
 import { x2aPluginTranslationRef } from '../translations';
 
 /**
+ * Type for the translation function for the x2a plugin.
+ *
+ * @public
+ */
+export type TFuncX2A = TranslationFunction<typeof x2aPluginTranslationRef.T>;
+
+/**
  * Hook for getting the translation function for the x2a plugin.
  *
  * @public
  */
 export const useTranslation = (): {
-  t: TranslationFunction<typeof x2aPluginTranslationRef.T>;
+  t: TFuncX2A;
 } => useTranslationRef(x2aPluginTranslationRef);

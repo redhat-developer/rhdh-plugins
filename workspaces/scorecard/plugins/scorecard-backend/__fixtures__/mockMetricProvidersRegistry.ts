@@ -49,10 +49,25 @@ export const buildMockMetricProvidersRegistry = ({
         return metricsList;
       })
     : jest.fn();
+  const getMetric =
+    provider || metricsList
+      ? jest.fn().mockImplementation((metricId: string) => {
+          const pMetric = provider?.getMetric();
+          if (pMetric && pMetric.id === metricId) return pMetric;
+
+          if (metricsList) {
+            const found = metricsList.find(m => m.id === metricId);
+            if (found) return found;
+          }
+
+          throw new Error(`Metric not found: ${metricId}`);
+        })
+      : jest.fn();
 
   return {
     ...mockMetricProvidersRegistry,
     getProvider,
     listMetrics,
+    getMetric,
   } as unknown as jest.Mocked<MetricProvidersRegistry>;
 };

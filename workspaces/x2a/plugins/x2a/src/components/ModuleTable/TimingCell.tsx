@@ -17,6 +17,7 @@
 import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { makeStyles } from '@material-ui/core';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import { formatRelativeTime } from '../tools';
 
 const useStyles = makeStyles(theme => ({
@@ -26,12 +27,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const TimingCell = ({ lastJob }: { lastJob: Job | undefined }) => {
+  const { t } = useTranslation();
   const classes = useStyles();
 
   if (!lastJob) {
     return <div className={classes.timing}>-</div>;
   }
 
-  const timingText = formatRelativeTime(lastJob.startedAt, lastJob.finishedAt);
+  const timingText = formatRelativeTime(
+    t,
+    lastJob.startedAt,
+    lastJob.finishedAt,
+  );
   return <div className={classes.timing}>{timingText}</div>;
 };

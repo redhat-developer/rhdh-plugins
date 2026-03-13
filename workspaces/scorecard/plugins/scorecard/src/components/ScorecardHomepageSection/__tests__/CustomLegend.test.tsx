@@ -26,9 +26,9 @@ jest.mock('../../../hooks/useTranslation', () => ({
 
 describe('CustomLegend', () => {
   const pieData = [
-    { name: 'success', value: 10, color: 'red' },
-    { name: 'warning', value: 20, color: 'blue' },
-    { name: 'error', value: 30, color: 'green' },
+    { name: 'success', value: 10, color: '#52c41a' },
+    { name: 'warning', value: 20, color: '#F0AB00' },
+    { name: 'error', value: 30, color: '#C9190B' },
   ];
 
   it('should render correct number of legend items', () => {
@@ -116,5 +116,33 @@ describe('CustomLegend', () => {
     );
 
     expect(container.firstChild).toBeNull();
+  });
+
+  it('should display colors from pieData', () => {
+    const { container } = render(
+      <div data-chart-container>
+        <CustomLegend
+          pieData={pieData}
+          activeIndex={null}
+          setActiveIndex={jest.fn()}
+          setTooltipPosition={jest.fn()}
+        />
+      </div>,
+    );
+
+    const colorBoxes = container.querySelectorAll(
+      '[data-testid^="legend-colorbox-"]',
+    );
+    expect(colorBoxes).toHaveLength(3);
+
+    expect(screen.getByTestId('legend-colorbox-success')).toHaveStyle(
+      'background-color: #52c41a',
+    );
+    expect(screen.getByTestId('legend-colorbox-warning')).toHaveStyle(
+      'background-color: #F0AB00',
+    );
+    expect(screen.getByTestId('legend-colorbox-error')).toHaveStyle(
+      'background-color: #C9190B',
+    );
   });
 });

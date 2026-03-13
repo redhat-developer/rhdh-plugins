@@ -345,11 +345,14 @@ export const verifyNoResultsFoundMessage = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await expect(page.getByLabel(translations['button.newChat']))
-    .toMatchAriaSnapshot(`
-    - heading "${translations['chatbox.emptyState.noResults.title']}"
-    - text: ${translations['chatbox.emptyState.noResults.body']}
-    `);
+  await expect(
+    page.getByRole('heading', {
+      name: translations['chatbox.emptyState.noResults.title'],
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(translations['chatbox.emptyState.noResults.body']),
+  ).toBeVisible();
 };
 
 export const verifyChatUnpinned = async (

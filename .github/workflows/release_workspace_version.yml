@@ -34,7 +34,7 @@ jobs:
               if [[ "$PR_TITLE" == Version*Packages* \
               && "$USER_LOGIN" == "rhdh-bot" ]] \
               && [[ "$HEAD_REF" == maintenance-changesets-release/* ]] \
-              && [[ "PR_MERGED" == "true" ]]; then
+              && [[ "$PR_MERGED" == "true" ]]; then
                 echo "is_version_pr=true" >> $GITHUB_OUTPUT
               else
                 echo "is_version_pr=false" >> $GITHUB_OUTPUT

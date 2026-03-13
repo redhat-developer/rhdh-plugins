@@ -88,6 +88,9 @@ export type ProjectsProjectIdCollectArtifactsPost = {
     moduleId?: string;
     phase: MigrationPhase;
   };
+  header: {
+    xCallbackSignature: string;
+  };
 };
 /**
  * @public
@@ -103,6 +106,17 @@ export type ProjectsProjectIdDelete = {
 export type ProjectsProjectIdGet = {
   path: {
     projectId: string;
+  };
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdLogGet = {
+  path: {
+    projectId: string;
+  };
+  query: {
+    streaming?: boolean;
   };
 };
 /**
@@ -234,10 +248,11 @@ export class DefaultApiClient {
   }
 
   /**
-   * Callback endpoint for X2Ansible jobs to submit execution artifacts and results. This endpoint is called by the X2Ansible job runner when a migration phase completes.
+   * Callback endpoint for X2Ansible jobs to submit execution artifacts and results. This endpoint is called by the X2Ansible job runner when a migration phase completes.  Authentication: Requires HMAC-SHA256 signature in X-Callback-Signature header. The signature is computed as: HMAC-SHA256(callbackToken, raw_request_body)  Replay attack prevention: Jobs are only accepted within 3 hours of job creation time (based on job.startedAt)
    * Collects artifacts from a completed X2Ansible job
    * @param projectId - UUID of the project
    * @param phase - Migration phase that completed
+   * @param xCallbackSignature - HMAC-SHA256(callbackToken, raw_request_body) as hex string
    * @param projectsProjectIdCollectArtifactsPostRequest -
    * @param moduleId - UUID of the module. - Required for analyze, migrate, and publish phases - Should be omitted for init phase
    */
@@ -257,6 +272,7 @@ export class DefaultApiClient {
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
       headers: {
+        ...request.header,
         'Content-Type': 'application/json',
         ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
       },
@@ -306,6 +322,34 @@ export class DefaultApiClient {
 
     const uri = parser.parse(uriTemplate).expand({
       projectId: request.path.projectId,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Returns logs for the init phase
+   * @param projectId - Project UUID
+   * @param streaming - Whether to stream logs (text/plain) or return all at once
+   */
+  public async projectsProjectIdLogGet(
+    // @ts-ignore
+    request: ProjectsProjectIdLogGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<string>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/log{?streaming}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+      ...request.query,
     });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {

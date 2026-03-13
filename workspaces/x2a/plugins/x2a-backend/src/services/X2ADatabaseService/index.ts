@@ -80,6 +80,8 @@ export class X2ADatabaseService {
     project.migrationPlan = lastInitJob?.artifacts?.find(
       artifact => artifact.type === 'migration_plan',
     );
+
+    project.initJob = removeSensitiveFromJob(lastInitJob);
   }
 
   // Projects (facade enriches basic objects when needed)

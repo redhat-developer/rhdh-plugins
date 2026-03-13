@@ -13,65 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { aiExperienceTranslationRef } from './ref';
 
+/**
+ * de translation for plugin.ai-experience.
+ * @public
+ */
 const aiExperienceTranslationDe = createTranslationMessages({
   ref: aiExperienceTranslationRef,
   messages: {
-    'page.title': 'KI-Erlebnis',
-    'page.subtitle':
-      'Entdecken Sie KI-Modelle, Server, Nachrichten und Lernressourcen',
-
-    'learn.getStarted.title': 'Erste Schritte',
+    'page.title': 'KI-Erfahrung',
+    'page.subtitle': 'Erkunden Sie KI-Modelle, Server, News und Lernressourcen',
+    'learn.getStarted.title': "Los geht's",
     'learn.getStarted.description':
       'Erfahren Sie mehr über Red Hat Developer Hub.',
-    'learn.getStarted.cta': 'Zu Tech Docs',
-
+    'learn.getStarted.cta': 'Zu TechDocs',
     'learn.explore.title': 'Erkunden',
     'learn.explore.description':
-      'Erkunden Sie KI-Modelle, Server und Vorlagen.',
-    'learn.explore.cta': 'Zum Katalog',
-
+      'Erkunden Sie KI-Modelle, Server und Templates.',
     'learn.learn.title': 'Lernen',
     'learn.learn.description':
-      'Entdecken und entwickeln Sie neue Fähigkeiten in der KI.',
+      'Entdecken und entwickeln Sie neue Fähigkeiten im Bereich KI.',
     'learn.learn.cta': 'Zu den Lernpfaden',
-
-    'news.pageTitle': 'KI-Nachrichten',
+    'news.pageTitle': 'KI-News',
     'news.fetchingRssFeed': 'RSS-Feed wird abgerufen',
-    'news.noContentAvailable': 'Keine Inhalte verfügbar',
+    'news.noContentAvailable': 'Kein Inhalt verfügbar',
     'news.noContentDescription':
-      'Es scheint, als könnten wir keine Inhalte von diesem RSS-Feed abrufen. Sie können die URL überprüfen oder zu einer anderen Quelle wechseln, indem Sie die Plugin-Konfigurationsdatei aktualisieren.',
+      'Anscheinend konnten wir keine Inhalte von diesem RSS-Feed abrufen. Sie können die URL überprüfen oder zu einer anderen Quelle wechseln, indem Sie die Plugin-Konfigurationsdatei aktualisieren.',
     'news.noRssContent': 'Kein RSS-Inhalt',
-
-    'modal.title.preview': 'Anhangsvorschau',
+    'modal.title.preview': 'Anhang in der Vorschau anzeigen',
     'modal.title.edit': 'Anhang bearbeiten',
     'modal.edit': 'Bearbeiten',
     'modal.save': 'Speichern',
     'modal.close': 'Schließen',
     'modal.cancel': 'Abbrechen',
-
     'common.viewMore': 'Mehr anzeigen',
     'common.guest': 'Gast',
-    'common.template': 'Vorlage',
-    'common.latest': 'neueste',
+    'common.template': 'Template',
+    'common.latest': 'letzte',
     'common.more': 'mehr',
-
     'greeting.goodMorning': 'Guten Morgen',
     'greeting.goodAfternoon': 'Guten Tag',
     'greeting.goodEvening': 'Guten Abend',
-
     'sections.exploreAiModels': 'KI-Modelle erkunden',
-    'sections.exploreAiTemplates': 'KI-Vorlagen erkunden',
+    'sections.exploreAiTemplates': 'KI-Templates erkunden',
     'sections.discoverModels':
-      'Entdecken Sie die KI-Modelle und -Dienste, die in Ihrer Organisation verfügbar sind',
+      'Erkunden Sie die in Ihrer Organisation verfügbaren KI-Modelle und -Dienste.',
     'sections.viewAllModels': 'Alle {{count}} Modelle anzeigen',
-    'sections.viewAllTemplates': 'Alle {{count}} Vorlagen anzeigen',
-
+    'sections.viewAllTemplates': 'Alle {{count}} Templates anzeigen',
     'accessibility.close': 'schließen',
     'accessibility.aiIllustration': 'KI-Illustration',
-    'accessibility.aiModelsIllustration': 'KI-Modelle-Illustration',
+    'accessibility.aiModelsIllustration': 'Illustration von KI-Modellen',
   },
 });
 

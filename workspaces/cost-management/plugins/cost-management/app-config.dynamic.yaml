@@ -1,0 +1,28 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.plugin-cost-management:
+      appIcons:
+        - name: costManagementIconOutlined
+          importName: CostManagementIconOutlined
+      dynamicRoutes:
+        - path: /cost-management/optimizations
+          importName: ResourceOptimizationPage
+          menuItem:
+            icon: costManagementIconOutlined
+            text: Optimizations
+        - path: /cost-management/openshift
+          importName: OpenShiftPage
+          menuItem:
+            icon: costManagementIconOutlined
+            text: OpenShift
+      menuItems:
+        cost-management/optimizations:
+          parent: cost-management
+          priority: 10
+        cost-management/openshift:
+          parent: cost-management
+          priority: 20
+        cost-management:
+          icon: costManagementIconOutlined
+          title: Cost management
+          priority: 100

@@ -15,9 +15,13 @@
  */
 
 /**
- * Common types and utilities for the dcm plugin.
+ * Common types and utilities for the DCM plugin.
  * Add shared code between frontend and backend plugins here.
  *
- * @public
+ * @packageDocumentation
  */
+
+/** Plugin ID for the DCM plugin. @public */
 export const DCM_COMMON_PLUGIN_ID = 'dcm' as const;
+
+export { dcmPluginReadPermission, dcmPluginPermissions } from './permissions';

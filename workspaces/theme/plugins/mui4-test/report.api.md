@@ -12,6 +12,9 @@ import { RouteRef } from '@backstage/core-plugin-api';
 export const MUI4TestPage: () => JSX_2.Element;
 
 // @public (undocumented)
+export const MUI4TestPageComponent: () => JSX_2.Element;
+
+// @public (undocumented)
 export const mui4TestPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;

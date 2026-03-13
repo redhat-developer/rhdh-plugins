@@ -17,46 +17,44 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { globalHeaderTranslationRef } from './ref';
 
+/**
+ * es translation for plugin.global-header.
+ * @public
+ */
 const globalHeaderTranslationEs = createTranslationMessages({
   ref: globalHeaderTranslationRef,
   messages: {
     'help.tooltip': 'Ayuda',
-    'help.noSupportLinks': 'Sin enlaces de soporte',
+    'help.noSupportLinks': 'No hay enlaces de soporte',
     'help.noSupportLinksSubtitle':
-      'Tu administrador necesita configurar los enlaces de soporte.',
+      'Su administrador debe configurar enlaces de soporte.',
     'help.quickStart': 'Inicio rápido',
     'help.supportTitle': 'Soporte',
-    'profile.picture': 'Imagen de perfil',
+    'profile.picture': 'Foto de perfil',
     'profile.settings': 'Configuración',
     'profile.myProfile': 'Mi perfil',
     'profile.signOut': 'Cerrar sesión',
     'search.placeholder': 'Buscar...',
     'search.noResults': 'No se encontraron resultados',
-    'search.errorFetching': 'Error al obtener resultados',
-    'applicationLauncher.tooltip': 'Lanzador de aplicaciones',
+    'search.errorFetching': 'Error al extraer los resultados',
+    'applicationLauncher.tooltip': 'Iniciador de aplicaciones',
     'applicationLauncher.noLinksTitle':
       'No hay enlaces de aplicación configurados',
     'applicationLauncher.noLinksSubtitle':
-      'Configura enlaces de aplicaciones en la configuración del plugin dinámico para acceso rápido desde aquí.',
-    'applicationLauncher.developerHub': 'Developer Hub',
+      'Configure los enlaces de aplicación en la configuración del complemento dinámico para obtener acceso rápido desde aquí.',
+    'applicationLauncher.developerHub': 'Developer Hub',
     'applicationLauncher.rhdhLocal': 'RHDH Local',
     'applicationLauncher.sections.documentation': 'Documentación',
-    'applicationLauncher.sections.developerTools': 'Herramientas de desarrollo',
-    'starred.title': 'Tus elementos destacados',
+    'applicationLauncher.sections.developerTools':
+      'Herramientas para desarrolladores',
+    'starred.title': 'Sus artículos destacados',
     'starred.removeTooltip': 'Eliminar de la lista',
     'starred.noItemsTitle': 'Aún no hay elementos destacados',
     'starred.noItemsSubtitle':
-      'Haz clic en el icono de estrella junto al nombre de una entidad para guardarla aquí para acceso rápido.',
+      'Haga clic en el icono de la estrella junto al nombre de una entidad para guardarla aquí y acceder a ella rápidamente.',
     'notifications.title': 'Notificaciones',
     'notifications.unsupportedDismissOption':
-      'Opción de descarte no compatible "{{option}}", actualmente compatible "none", "session" o "localstorage"!',
-    'create.title': 'Autoservicio',
-    'create.registerComponent.title': 'Registrar un componente',
-    'create.registerComponent.subtitle': 'Importarlo a la página de catálogo',
-    'create.templates.sectionTitle': 'Usar una plantilla',
-    'create.templates.allTemplates': 'Todas las plantillas',
-    'create.templates.errorFetching': 'Error al obtener plantillas',
-    'create.templates.noTemplatesAvailable': 'No hay plantillas disponibles',
+      'Opción para desestimar "{{option}}" no admitida. Opciones admitidas actualmente: "none", "session" o "localstorage".',
   },
 });
 

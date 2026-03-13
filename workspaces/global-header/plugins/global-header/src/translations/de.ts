@@ -17,45 +17,43 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { globalHeaderTranslationRef } from './ref';
 
+/**
+ * de translation for plugin.global-header.
+ * @public
+ */
 const globalHeaderTranslationDe = createTranslationMessages({
   ref: globalHeaderTranslationRef,
   messages: {
     'help.tooltip': 'Hilfe',
-    'help.noSupportLinks': 'Keine Support-Links',
+    'help.noSupportLinks': 'Keine Support-Verknüpfungen',
     'help.noSupportLinksSubtitle':
-      'Ihr Administrator muss Support-Links einrichten.',
+      'Ihr Administrator muss Support-Verknüpfungen einrichten.',
     'help.quickStart': 'Schnellstart',
     'help.supportTitle': 'Support',
     'profile.picture': 'Profilbild',
+    'profile.settings': 'Einstellungen',
+    'profile.myProfile': 'Mein Profil',
     'profile.signOut': 'Abmelden',
     'search.placeholder': 'Suchen...',
     'search.noResults': 'Keine Ergebnisse gefunden',
     'search.errorFetching': 'Fehler beim Abrufen der Ergebnisse',
-    'applicationLauncher.tooltip': 'Anwendungs-Starter',
-    'applicationLauncher.noLinksTitle': 'Keine Anwendungslinks konfiguriert',
+    'applicationLauncher.tooltip': 'Anwendungsstartprogramm',
+    'applicationLauncher.noLinksTitle':
+      'Keine Anwendungsverknüpfungen konfiguriert',
     'applicationLauncher.noLinksSubtitle':
-      'Konfigurieren Sie Anwendungslinks in der dynamischen Plugin-Konfiguration für schnellen Zugriff von hier aus.',
+      'Konfigurieren Sie Anwendungsverknüpfungen in der dynamischen Plugin-Konfiguration, um von hier aus schnell darauf zugreifen zu können.',
+    'applicationLauncher.developerHub': 'Developer Hub',
+    'applicationLauncher.rhdhLocal': 'RHDH Local',
+    'applicationLauncher.sections.documentation': 'Dokumentation',
+    'applicationLauncher.sections.developerTools': 'Entwicklertools',
     'starred.title': 'Ihre markierten Elemente',
-    'starred.removeTooltip': 'Aus Liste entfernen',
+    'starred.removeTooltip': 'Aus der Liste entfernen',
     'starred.noItemsTitle': 'Noch keine markierten Elemente',
     'starred.noItemsSubtitle':
-      'Klicken Sie auf das Stern-Symbol neben dem Namen einer Entität, um sie hier für schnellen Zugriff zu speichern.',
+      'Klicken Sie auf das Sternsymbol neben dem Namen eines Elements, um es hier für den Schnellzugriff zu speichern.',
     'notifications.title': 'Benachrichtigungen',
     'notifications.unsupportedDismissOption':
-      'Nicht unterstützte Dismiss-Option "{{option}}", derzeit unterstützt "none", "session" oder "localstorage"!',
-    'create.title': 'Selbstbedienung',
-    'create.registerComponent.title': 'Eine Komponente registrieren',
-    'create.registerComponent.subtitle': 'In die Katalogseite importieren',
-    'create.templates.sectionTitle': 'Eine Vorlage verwenden',
-    'create.templates.allTemplates': 'Alle Vorlagen',
-    'create.templates.errorFetching': 'Fehler beim Abrufen der Vorlagen',
-    'create.templates.noTemplatesAvailable': 'Keine Vorlagen verfügbar',
-    'profile.settings': 'Einstellungen',
-    'profile.myProfile': 'Mein Profil',
-    'applicationLauncher.developerHub': 'Developer Hub',
-    'applicationLauncher.rhdhLocal': 'RHDH Lokal',
-    'applicationLauncher.sections.documentation': 'Dokumentation',
-    'applicationLauncher.sections.developerTools': 'Entwickler-Tools',
+      'Option "{{option}}" zum Verwerfen nicht unterstützt; aktuell werden "none", "session" oder "localstorage" unterstützt.',
   },
 });
 

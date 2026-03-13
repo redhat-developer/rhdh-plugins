@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Ref, useMemo, useState } from 'react';
+import { Ref, useState } from 'react';
 
 import { createStyles, makeStyles } from '@material-ui/core';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
@@ -89,22 +89,12 @@ export const LightspeedChatBoxHeader = ({
 
   const styles = useStyles();
 
-  // Group models by provider
-  const groupedModels = useMemo(() => {
-    const groups: {
-      [key: string]: { label: string; value: string; provider: string }[];
-    } = {};
-
-    models.forEach(model => {
-      const provider = model.provider || t('chatbox.provider.other');
-      if (!groups[provider]) {
-        groups[provider] = [];
-      }
-      groups[provider].push(model);
-    });
-
-    return groups;
-  }, [models, t]);
+  const maxLabelLength = Math.max(
+    ...models.map(m => m.label.length),
+    selectedModel.length,
+    1,
+  );
+  const toggleMinWidth = `${maxLabelLength + 4}ch`;
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <MenuToggle
@@ -115,6 +105,7 @@ export const LightspeedChatBoxHeader = ({
       isExpanded={isOptionsMenuOpen}
       isDisabled={isModelSelectorDisabled}
       onClick={() => setIsOptionsMenuOpen(!isOptionsMenuOpen)}
+      style={{ minWidth: toggleMinWidth }}
     >
       {selectedModel}
     </MenuToggle>
@@ -136,6 +127,10 @@ export const LightspeedChatBoxHeader = ({
     setDisplayMode(ChatbotDisplayMode.default);
   };
 
+  const isOverlayMode = displayMode === ChatbotDisplayMode.default;
+  const scrollThreshold = isOverlayMode ? 8 : 10;
+  const isModelDropdownScrollable = models.length > scrollThreshold;
+
   return (
     <ChatbotHeaderActions>
       <Dropdown
@@ -150,29 +145,21 @@ export const LightspeedChatBoxHeader = ({
         shouldFocusToggleOnSelect
         shouldFocusFirstItemOnOpen={false}
         toggle={toggle}
+        isScrollable={isModelDropdownScrollable}
+        maxMenuHeight={isModelDropdownScrollable ? '240px' : undefined}
       >
         <DropdownList>
-          {Object.entries(groupedModels).map(
-            ([provider, providerModels], index) => (
-              <>
-                <DropdownGroup
-                  className={styles.groupTitle}
-                  key={provider}
-                  label={provider}
-                  labelHeadingLevel="h1"
-                >
-                  {providerModels.map(model => (
-                    <DropdownItem value={model.value} key={model.value}>
-                      {model.label}
-                    </DropdownItem>
-                  ))}
-                </DropdownGroup>
-                {index < Object.entries(groupedModels).length - 1 && (
-                  <Divider component="li" />
-                )}
-              </>
-            ),
-          )}
+          {models.map(model => (
+            <DropdownGroup className={styles.groupTitle} key={model.label}>
+              <DropdownItem
+                value={model.value}
+                key={model.value}
+                isSelected={selectedModel === model.value}
+              >
+                {model.label}
+              </DropdownItem>
+            </DropdownGroup>
+          ))}
         </DropdownList>
       </Dropdown>
       <ChatbotHeaderOptionsDropdown

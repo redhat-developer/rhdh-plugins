@@ -18,45 +18,37 @@ import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 
 import { orchestratorTranslationRef } from './ref';
 
+/**
+ * es translation for plugin.orchestrator.
+ * @public
+ */
 const orchestratorTranslationEs = createTranslationMessages({
   ref: orchestratorTranslationRef,
   messages: {
-    'page.title': 'Orquestador de Flujos de Trabajo',
+    'page.title': 'Orquestador de flujos de trabajo',
     'page.tabs.workflows': 'Flujos de trabajo',
     'page.tabs.allRuns': 'Todas las ejecuciones',
     'page.tabs.workflowDetails': 'Detalles del flujo de trabajo',
     'page.tabs.workflowRuns': 'Ejecuciones del flujo de trabajo',
     'table.title.workflows': 'Flujos de trabajo',
     'table.title.allRuns': 'Todas las ejecuciones ({{count}})',
-    'table.title.allWorkflowRuns':
-      'Ejecuciones del flujo de trabajo ({{count}})',
-    'table.headers.name': 'Nombre',
-    'table.headers.runStatus': 'Estado de ejecución',
-    'table.headers.started': 'Iniciado',
-    'table.headers.status': 'Estado',
-    'table.headers.lastRun': 'Última ejecución',
-    'table.headers.lastRunStatus': 'Estado de la última ejecución',
-    'table.headers.workflowStatus': 'Estado del flujo de trabajo',
-    'table.headers.duration': 'Duración',
-    'table.headers.description': 'Descripción',
-    'table.headers.workflowName': 'Nombre del flujo de trabajo',
     'table.actions.run': 'Ejecutar',
     'table.actions.viewRuns': 'Ver ejecuciones',
     'table.actions.viewInputSchema': 'Ver esquema de entrada',
-    'table.status.running': 'Ejecutándose',
+    'table.status.running': 'En ejecución',
     'table.status.failed': 'Fallido',
     'table.status.completed': 'Completado',
-    'table.status.aborted': 'Abortado',
+    'table.status.aborted': 'Cancelado',
     'table.status.pending': 'Pendiente',
     'table.status.active': 'Activo',
     'table.filters.status': 'Estado',
     'table.filters.started': 'Iniciado',
     'table.filters.startedOptions.today': 'Hoy',
     'table.filters.startedOptions.yesterday': 'Ayer',
-    'table.filters.startedOptions.last7days': 'Últimos 7 días',
+    'table.filters.startedOptions.last7days': 'Últimos 7 días',
     'table.filters.startedOptions.thisMonth': 'Este mes',
     'workflow.details': 'Detalles',
-    'workflow.definition': 'Definición del flujo de trabajo',
+    'workflow.definition': 'Definición de flujo de trabajo',
     'workflow.progress': 'Progreso del flujo de trabajo',
     'workflow.status.available': 'Disponible',
     'workflow.status.unavailable': 'No disponible',
@@ -68,86 +60,55 @@ const orchestratorTranslationEs = createTranslationMessages({
     'workflow.fields.started': 'Iniciado',
     'workflow.fields.workflowId': 'ID de ejecución',
     'workflow.fields.workflowIdCopied':
-      'ID de ejecución copiado a la portapapeles',
-    'workflow.errors.retriggerFailed': 'Reactivar fallido: {{reason}}',
-    'workflow.errors.abortFailed':
-      'Abortar fallido: La ejecución ya ha sido completada.',
-    'workflow.errors.abortFailedWithReason': 'Abortar fallido: {{reason}}',
-    'workflow.errors.failedToLoadDetails':
-      'Error al cargar los detalles para el ID de flujo de trabajo: {{id}}',
-    'workflow.messages.areYouSureYouWantToRunThisWorkflow':
-      '¿Estás seguro de que quieres ejecutar este flujo de trabajo?',
-    'workflow.messages.userNotAuthorizedExecute':
-      'Usuario no autorizado para ejecutar el flujo de trabajo.',
-    'workflow.messages.workflowDown':
-      'El flujo de trabajo está actualmente inactivo o en estado de error. Ejecutarlo ahora puede fallar o producir resultados inesperados.',
-    'workflow.buttons.run': 'Ejecutar',
-    'workflow.buttons.runWorkflow': 'Ejecutar flujo de trabajo',
-    'workflow.buttons.runAgain': 'Ejecutar de nuevo',
-    'workflow.buttons.running': 'Ejecutándose...',
-    'workflow.buttons.fromFailurePoint': 'Desde el punto de fallo',
-    'workflow.buttons.runFailedAgain': 'Reactivar fallido',
+      'ID de ejecución copiado en el portapapeles',
+    'workflow.errors.retriggerFailed': 'Error al reactivar: {{reason}}',
+    'workflow.errors.abortFailedWithReason': 'Error al cancelar: {{reason}}',
     'run.title': 'Ejecutar flujo de trabajo',
+    'run.pageTitle': 'Ejecución de {{processName}}',
     'run.variables': 'Variables de ejecución',
     'run.inputs': 'Entradas',
-    'run.pageTitle': '{{processName}} ejecución',
     'run.results': 'Resultados',
     'run.logs.viewLogs': 'Ver registros',
     'run.logs.title': 'Registros de ejecución',
     'run.logs.noLogsAvailable':
-      'No hay registros disponibles para esta ejecución del flujo de trabajo.',
-    'run.abort.title': '¿Abortar la ejecución del flujo de trabajo?',
-    'run.abort.button': 'Abortar',
+      'No hay registros disponibles para la ejecución de este flujo de trabajo.',
+    'run.abort.title': '¿Cancelar ejecución de flujo de trabajo?',
+    'run.abort.button': 'Cancelar',
     'run.abort.warning':
-      'Abortar detendrá inmediatamente todos los pasos en progreso y pendientes. Cualquier trabajo en progreso se perderá.',
+      'Si cancela la ejecución, detendrá de inmediato todos los pasos en curso y pendientes. Todo trabajo en curso se perderá.',
     'run.abort.completed.title': 'Ejecución completada',
     'run.abort.completed.message':
-      'No es posible abortar la ejecución ya que ha sido completada.',
+      'No es posible cancelar la ejecución porque ya se completó.',
     'run.status.completed': 'Ejecución completada',
-    'run.status.failed': 'La ejecución ha fallado {{time}}',
-    'run.status.failedAt': 'La ejecución ha fallado {{time}}',
-    'run.status.aborted': 'La ejecución ha sido abortada',
+    'run.status.failed': 'La ejecución falló {{time}}',
     'run.status.completedWithMessage':
       'Ejecución completada {{time}} con mensaje',
-    'run.status.completedAt': 'Ejecución completada {{time}}',
-    'run.status.running':
-      'El flujo de trabajo se está ejecutando. Iniciado {{time}}',
-    'run.status.runningWaitingAtNode':
-      'El flujo de trabajo se está ejecutando - esperando en el nodo {{node}} desde {{formattedTime}}',
-    'run.status.workflowIsRunning':
-      'El flujo de trabajo se está ejecutando. Iniciado {{time}}',
-    'run.status.noAdditionalInfo':
-      'El flujo de trabajo no proporcionó información adicional sobre el estado.',
-    'run.status.resultsWillBeDisplayedHereOnceTheRunIsComplete':
-      'Los resultados se mostrarán aquí una vez que la ejecución se complete.',
-    'run.retrigger': 'Reactivar',
+    'run.status.failedAt': 'La ejecución falló {{time}}',
     'run.viewVariables': 'Ver variables',
-    'run.suggestedNextWorkflow': 'Flujo de trabajo sugerido siguiente',
-    'run.suggestedNextWorkflows': 'Flujos de trabajo sugeridos siguientes',
+    'run.suggestedNextWorkflow': 'Próximo flujo de trabajo sugerido',
+    'run.suggestedNextWorkflows': 'Próximos flujos de trabajo sugeridos',
     'tooltips.completed': 'Completado',
     'tooltips.active': 'Activo',
-    'tooltips.aborted': 'Abortado',
+    'tooltips.aborted': 'Cancelado',
     'tooltips.suspended': 'Suspendido',
     'tooltips.pending': 'Pendiente',
     'tooltips.workflowDown':
       'El flujo de trabajo está actualmente inactivo o en estado de error',
     'tooltips.userNotAuthorizedAbort':
-      'usuario no autorizado para abortar el flujo de trabajo',
+      'Usuario no autorizado para cancelar el flujo de trabajo',
     'tooltips.userNotAuthorizedExecute':
-      'usuario no autorizado para ejecutar el flujo de trabajo',
+      'Usuario no autorizado para ejecutar el flujo de trabajo',
     'messages.noDataAvailable': 'No hay datos disponibles',
     'messages.noVariablesFound':
       'No se encontraron variables para esta ejecución.',
     'messages.noInputSchemaWorkflow':
-      'No hay esquema de entrada definido para este flujo de trabajo.',
+      'No se definió ningún esquema de entrada para este flujo de trabajo.',
     'messages.workflowInstanceNoInputs':
-      'La instancia del flujo de trabajo no tiene entradas',
+      'La instancia de flujo de trabajo no tiene entradas',
     'messages.missingJsonSchema.title':
-      'Esquema JSON faltante para el formulario de entrada',
+      'Falta un esquema JSON en el formulario de entrada',
     'messages.missingJsonSchema.message':
-      'Este flujo de trabajo no tiene un esquema JSON definido para la validación de entradas. Aún puedes ejecutar el flujo de trabajo, pero la validación de entradas será limitada.',
-    'messages.additionalDetailsAboutThisErrorAreNotAvailable':
-      'No hay detalles adicionales sobre este error disponibles',
+      'Este flujo de trabajo no tiene un esquema JSON definido para la validación de entrada. Puede ejecutar el flujo de trabajo, pero la validación de entrada será limitada.',
     'reviewStep.hiddenFieldsNote':
       'Algunos parámetros están ocultos en esta página.',
     'reviewStep.showHiddenParameters': 'Mostrar parámetros ocultos',
@@ -157,39 +118,39 @@ const orchestratorTranslationEs = createTranslationMessages({
     'common.details': 'Detalles',
     'common.links': 'Enlaces',
     'common.values': 'Valores',
-    'common.unavailable': '---',
     'common.back': 'Atrás',
     'common.run': 'Ejecutar',
     'common.next': 'Siguiente',
     'common.review': 'Revisar',
+    'common.unavailable': '---',
     'common.goBack': 'Volver',
     'permissions.accessDenied': 'Acceso denegado',
     'permissions.accessDeniedDescription':
-      'No tiene permiso para ver esta ejecución del flujo de trabajo.',
+      'No tiene permiso para ver la ejecución de este flujo de trabajo.',
     'permissions.requiredPermission': 'Permiso requerido',
     'permissions.contactAdmin':
-      'Por favor, contacte a su administrador para solicitar los permisos necesarios.',
+      'Comuníquese con su administrador para solicitar los permisos necesarios.',
     'permissions.missingOwnership':
-      'Esta ejecución del flujo de trabajo no tiene información de propiedad registrada.',
+      'La ejecución de este flujo de trabajo no tiene información de propiedad registrada.',
     'permissions.notYourRun':
-      'Esta ejecución del flujo de trabajo fue iniciada por otro usuario.',
+      'Otro usuario inició la ejecución de este flujo de trabajo.',
     'duration.aFewSeconds': 'unos segundos',
     'duration.aSecond': 'un segundo',
-    'duration.seconds': '{{count}} segundos',
+    'duration.seconds': '{{count}} segundos',
     'duration.aMinute': 'un minuto',
-    'duration.minutes': '{{count}} minutos',
+    'duration.minutes': '{{count}} minutos',
     'duration.anHour': 'una hora',
-    'duration.hours': '{{count}} horas',
+    'duration.hours': '{{count}} horas',
     'duration.aDay': 'un día',
-    'duration.days': '{{count}} días',
+    'duration.days': '{{count}} días',
     'duration.aMonth': 'un mes',
-    'duration.months': '{{count}} meses',
+    'duration.months': '{{count}} meses',
     'duration.aYear': 'un año',
-    'duration.years': '{{count}} años',
+    'duration.years': '{{count}} años',
     'stepperObjectField.error':
-      'El campo de objeto del stepper no es compatible con esquemas que no contienen propiedades',
+      'El campo de objeto paso a paso no es compatible con esquemas que no contienen propiedades',
     'formDecorator.error':
-      'El decorador de formularios debe proporcionar datos de contexto.',
+      'El decorador de formulario debe proporcionar datos de contexto.',
     'aria.close': 'cerrar',
   },
 });

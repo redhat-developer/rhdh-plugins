@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ThresholdResult } from './threshold';
+import { ThresholdConfig, ThresholdResult } from './threshold';
 
 /**
  * @public
@@ -35,7 +35,7 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
  */
 export type AggregatedMetricValue = {
   count: number;
-  name: 'success' | 'warning' | 'error';
+  name: string;
 };
 
 /**
@@ -73,7 +73,8 @@ export type MetricResult = {
  * @public
  */
 export type AggregatedMetric = {
-  values: AggregatedMetricValue[];
+  /** Counts by status name */
+  values: Record<string, number>;
   total: number;
   timestamp: string;
 };
@@ -90,5 +91,44 @@ export type AggregatedMetricResult = {
     type: MetricType;
     history?: boolean;
   };
-  result: AggregatedMetric;
+  result: Omit<AggregatedMetric, 'values'> & {
+    values: AggregatedMetricValue[];
+    thresholds: ThresholdConfig;
+  };
+};
+
+/**
+ * Individual entity metric detail for drill-down
+ * @public
+ */
+export type EntityMetricDetail = {
+  entityRef: string;
+  entityName?: string;
+  entityNamespace?: string;
+  entityKind?: string;
+  owner?: string;
+  metricValue?: number | boolean | null;
+  timestamp?: string;
+  status?: string | null;
+};
+
+/**
+ * Paginated response for entity metrics drill-down
+ * @public
+ */
+export type EntityMetricDetailResponse = {
+  metricId: string;
+  metricMetadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+  };
+  entities: EntityMetricDetail[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+    isCapped: boolean;
+  };
 };

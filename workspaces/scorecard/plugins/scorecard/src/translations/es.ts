@@ -17,57 +17,31 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { scorecardTranslationRef } from './ref';
 
+/**
+ * es translation for plugin.scorecard.
+ * @public
+ */
 const scorecardTranslationEs = createTranslationMessages({
   ref: scorecardTranslationRef,
-  full: true,
   messages: {
-    // Empty state
-    'emptyState.title': 'Aún no se han añadido scorecards',
+    'emptyState.title': 'Aún no se agregaron tarjetas de puntuación',
     'emptyState.description':
-      'Los scorecards te ayudan a monitorear la salud de los componentes de un vistazo. Para comenzar, explora nuestra documentación para obtener pautas de configuración.',
-    'emptyState.button': 'Ver documentación',
-    'emptyState.altText': 'Sin scorecards',
-
-    // Permission required state
+      'Las tarjetas de puntuación ayudan a monitorear el estado del componente de un vistazo. Para comenzar, explore la documentación para obtener pautas de configuración.',
+    'emptyState.altText': 'No hay tarjetas de puntuación',
     'permissionRequired.title': 'Permiso faltante',
     'permissionRequired.description':
-      'Para ver el plugin Scorecard, contacta a tu administrador para otorgar el {{permission}} permiso.',
-    'permissionRequired.button': 'Leer más',
+      'Para ver el complemento de tarjetas de puntuación, comuníquese con su administrador para que le otorgue el permiso {{permission}}.',
     'permissionRequired.altText': 'Permiso requerido',
-
-    // Error messages
     'errors.entityMissingProperties':
-      'Entidad falta propiedades requeridas para búsqueda de scorecard',
+      'Entidad a la que le faltan las propiedades requeridas para la búsqueda en la tarjeta de puntuación',
     'errors.invalidApiResponse':
-      'Formato de respuesta inválido de la API de scorecard',
-    'errors.fetchError': 'Error al obtener scorecards: {{error}}',
-    'errors.metricDataUnavailable': 'Datos de métrica no disponibles',
-    'errors.invalidThresholds': 'Umbrales inválidos',
+      'Formato de respuesta no válido de la API de la tarjeta de puntuación',
+    'errors.fetchError':
+      'Error al extraer las tarjetas de puntuación: {{error}}',
+    'errors.invalidThresholds': 'Umbrales no válidos',
     'errors.missingPermission': 'Permiso faltante',
-    'errors.noDataFound': 'No se han encontrado datos.',
-    'errors.authenticationError': 'Error de autenticación',
     'errors.missingPermissionMessage':
-      'Para ver las métricas de scorecard, tu administrador debe otorgarle el permiso requerido.',
-    'errors.userNotFoundInCatalogMessage':
-      'Entidad de usuario no encontrada en el catálogo',
-    'errors.noDataFoundMessage':
-      'Para ver tus datos aquí, comprueba que tus entidades estén reportando valores relacionados con esta métrica.',
-    'errors.authenticationErrorMessage': 'Inicie sesión para ver sus datos.',
-    // Metric translations
-    'metric.github.open_prs.title': 'GitHub PRs abiertas',
-    'metric.github.open_prs.description':
-      'Recuento actual de Pull Requests abiertas para un repositorio de GitHub dado.',
-    'metric.jira.open_issues.title': 'Jira tickets bloqueantes abiertos',
-    'metric.jira.open_issues.description':
-      'Destaca el número de problemas críticos y bloqueantes que están actualmente abiertos en Jira.',
-
-    // Threshold translations
-    'thresholds.success': 'Éxito',
-    'thresholds.warning': 'Advertencia',
-    'thresholds.error': 'Error',
-    'thresholds.noEntities': 'No hay entidades en el estado {{category}}',
-    'thresholds.entities_one': '{{count}} entidad',
-    'thresholds.entities_other': '{{count}} entidades',
+      'Para ver las métricas de la tarjeta de puntuación, su administrador debe otorgarle el permiso requerido.',
   },
 });
 

@@ -40,6 +40,14 @@ export interface AgentMetrics {
    */
   durationSeconds: number;
   /**
+   * LLM input token count for this agent
+   */
+  inputTokens?: number;
+  /**
+   * LLM output token count for this agent
+   */
+  outputTokens?: number;
+  /**
    * Custom key-value metrics recorded by the agent
    */
   metrics?: { [key: string]: any };

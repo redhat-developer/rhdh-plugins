@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-bui-test
 
+## 0.3.0
+
+### Minor Changes
+
+- 9476d25: Added NFS support.
+
 ## 0.2.0
 
 ### Minor Changes

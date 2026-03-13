@@ -15,9 +15,13 @@
  */
 
 import { startTestBackend } from '@backstage/backend-test-utils';
+import { actionsRegistryServiceMock } from '@backstage/backend-test-utils/alpha';
+import { mockServices } from '@backstage/backend-test-utils';
+import { ConfigReader } from '@backstage/config';
 import { mcpTechdocsExtrasPlugin } from '../plugin';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { Entity } from '@backstage/catalog-model';
+import { createRetrieveTechDocsContentAction } from './createRetrieveTechDocsContentAction';
 
 const createMockEntity = (
   name: string,
@@ -196,6 +200,83 @@ describe('createRetrieveTechDocsContentAction', () => {
       });
 
       expect(server).toBeDefined();
+    });
+  });
+
+  describe('path safety validation', () => {
+    it('should reject entityRef that is not a valid entity reference', async () => {
+      const mockActionsRegistry = actionsRegistryServiceMock();
+      const mockCatalog = { getEntityByRef: jest.fn() };
+      const mockAuth = mockServices.auth.mock();
+      const mockDiscovery = mockServices.discovery.mock();
+      const mockLogger = mockServices.logger.mock();
+      const config = new ConfigReader({
+        app: { baseUrl: 'http://localhost:3000' },
+        backend: { baseUrl: 'http://localhost:7007' },
+      });
+
+      createRetrieveTechDocsContentAction({
+        actionsRegistry: mockActionsRegistry,
+        catalog: mockCatalog as any,
+        auth: mockAuth,
+        logger: mockLogger,
+        config,
+        discovery: mockDiscovery,
+      });
+
+      const invalidRefs = [
+        'component:../../other',
+        'component:default//other',
+        'component:default/%2e%2e/other',
+        'component:default\\other',
+      ];
+      for (const ref of invalidRefs) {
+        await expect(
+          mockActionsRegistry.invoke({
+            id: 'test:retrieve-techdocs-content',
+            input: { entityRef: ref },
+          }),
+        ).rejects.toThrow(/valid entity reference/);
+      }
+    });
+
+    it('should reject pagePath that is not a valid documentation path', async () => {
+      const mockActionsRegistry = actionsRegistryServiceMock();
+      const mockCatalog = { getEntityByRef: jest.fn() };
+      const mockAuth = mockServices.auth.mock();
+      const mockDiscovery = mockServices.discovery.mock();
+      const mockLogger = mockServices.logger.mock();
+      const config = new ConfigReader({
+        app: { baseUrl: 'http://localhost:3000' },
+        backend: { baseUrl: 'http://localhost:7007' },
+      });
+
+      createRetrieveTechDocsContentAction({
+        actionsRegistry: mockActionsRegistry,
+        catalog: mockCatalog as any,
+        auth: mockAuth,
+        logger: mockLogger,
+        config,
+        discovery: mockDiscovery,
+      });
+
+      const invalidPaths = [
+        '../../../etc/passwd',
+        'api//endpoints.html',
+        'docs%2f..%2fother',
+        'docs\\..\\other',
+      ];
+      for (const path of invalidPaths) {
+        await expect(
+          mockActionsRegistry.invoke({
+            id: 'test:retrieve-techdocs-content',
+            input: {
+              entityRef: 'component:default/my-service',
+              pagePath: path,
+            },
+          }),
+        ).rejects.toThrow(/valid documentation path/);
+      }
     });
   });
 });

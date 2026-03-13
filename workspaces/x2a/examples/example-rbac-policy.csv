@@ -1,15 +1,24 @@
 # All the content in this file is just an example
 # Set x2a.admin and x2a.user permissions per individual needs.
 
+# admin with both read and write all projects
 p, role:default/x2aAdmin, x2a.admin, read, allow
 p, role:default/x2aAdmin, x2a.admin, update, allow
 
+# admin but read-only. The user can not even run its own projects unless granted x2a.user permission.
+p, role:default/x2aViewerAdmin, x2a.admin, read, allow
+#p, role:default/x2aViewerAdmin, x2a.user, use, allow
+
+# user with read and write access to projects they or their groups own
 p, role:default/x2aUser, x2a.user, use, allow
 
+# the guest user is a user with just a user role
 g, user:development/guest, role:default/x2aUser
 
-#g, user:default/mareklibra, role:default/x2aAdmin
+# the account to play with the admin roles
+#g, user:default/mareklibra, role:default/x2aViewerAdmin
 g, group:default/x2a-admin-group, role:default/x2aAdmin
+
 g, user:default/elai-shalev, role:default/x2aAdmin
 
 ########################################################

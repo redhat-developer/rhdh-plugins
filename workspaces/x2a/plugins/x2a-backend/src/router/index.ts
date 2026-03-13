@@ -24,12 +24,22 @@ import { registerJobRoutes } from './jobs';
 import { registerCollectArtifactsRoutes } from './collectArtifacts';
 
 export async function createRouter(deps: RouterDeps): Promise<express.Router> {
-  const router = await createOpenApiRouter();
+  // Create main router that will hold everything
+  const mainRouter = express.Router();
 
-  registerProjectRoutes(router, deps);
-  registerModuleRoutes(router, deps);
-  registerJobRoutes(router, deps);
-  registerCollectArtifactsRoutes(router, deps);
+  // Register collectArtifacts on main router (bypasses OpenAPI JSON parser)
+  // This endpoint needs express.raw() middleware to get raw body bytes for HMAC validation
+  registerCollectArtifactsRoutes(mainRouter, deps);
 
-  return router;
+  // Create OpenAPI router for authenticated endpoints
+  const apiRouter = await createOpenApiRouter();
+
+  registerProjectRoutes(apiRouter, deps);
+  registerModuleRoutes(apiRouter, deps);
+  registerJobRoutes(apiRouter, deps);
+
+  // Mount API router under main router
+  mainRouter.use(apiRouter);
+
+  return mainRouter;
 }

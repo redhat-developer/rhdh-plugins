@@ -15,20 +15,15 @@
  */
 
 import { useTranslation } from '../hooks/useTranslation';
-import { x2aPluginTranslationRef } from '../translations';
 
-type Messages = typeof x2aPluginTranslationRef.T;
+type TFunc = ReturnType<typeof useTranslation>['t'];
 
-interface TransProps<
-  TMessages extends {
-    [key in string]: string;
-  },
-> {
-  message: keyof TMessages;
-  params?: any;
+interface TransProps {
+  message: Parameters<TFunc>[0];
+  params?: Parameters<TFunc>[1];
 }
 
-export const Trans = ({ message, params }: TransProps<Messages>) => {
+export const Trans = ({ message, params }: TransProps) => {
   const { t } = useTranslation();
-  return t(message, params);
+  return t(message, ...(params ? [params] : ([] as any)));
 };

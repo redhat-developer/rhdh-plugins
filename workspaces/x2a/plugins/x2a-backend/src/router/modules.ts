@@ -16,13 +16,16 @@
 
 import { z } from 'zod';
 import express from 'express';
-import { randomUUID } from 'node:crypto';
 import { InputError, NotFoundError } from '@backstage/errors';
 
 import type { Module } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import type { RouterDeps } from './types';
-import { reconcileJobStatus, useEnforceProjectPermissions } from './common';
+import {
+  generateCallbackToken,
+  reconcileJobStatus,
+  useEnforceProjectPermissions,
+} from './common';
 import { calculateModuleStatus } from '../services/X2ADatabaseService/status';
 
 /**
@@ -305,8 +308,7 @@ export function registerModuleRoutes(
         });
       }
 
-      // Generate callback token and create job record
-      const callbackToken = randomUUID();
+      const callbackToken = generateCallbackToken();
       const job = await x2aDatabase.createJob({
         projectId,
         moduleId,

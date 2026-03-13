@@ -16,8 +16,10 @@
 
 import { defineConfig } from '@playwright/test';
 
+const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
+
 export default defineConfig({
-  timeout: 10 * 1000,
+  timeout: 2 * 60 * 1000,
 
   expect: {
     timeout: 5000,
@@ -45,40 +47,24 @@ export default defineConfig({
   outputDir: 'node_modules/.cache/e2e-test-results',
 
   projects: [
+    // en: run all tests (no grep)
     {
       name: 'en',
       testDir: 'packages/app/e2e-tests',
       use: {
-        channel: 'chrome',
+        channel: 'chrome' as const,
         locale: 'en',
       },
     },
-    {
-      name: 'fr',
+    // de, es, fr, it, ja: run only Cards tests (locale-specific content)
+    ...LOCALES.filter(locale => locale !== 'en').map(locale => ({
+      name: locale,
       testDir: 'packages/app/e2e-tests',
       grep: /Cards/,
       use: {
-        channel: 'chrome',
-        locale: 'fr',
+        channel: 'chrome' as const,
+        locale,
       },
-    },
-    {
-      name: 'it',
-      testDir: 'packages/app/e2e-tests',
-      grep: /Cards/,
-      use: {
-        channel: 'chrome',
-        locale: 'it',
-      },
-    },
-    {
-      name: 'ja',
-      testDir: 'packages/app/e2e-tests',
-      grep: /Cards/,
-      use: {
-        channel: 'chrome',
-        locale: 'ja',
-      },
-    },
+    })),
   ],
 });

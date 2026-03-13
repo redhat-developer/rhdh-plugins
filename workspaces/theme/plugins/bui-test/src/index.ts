@@ -14,3 +14,4 @@
  * limitations under the License.
  */
 export * from './plugin';
+export { BUITestPage as BUITestPageComponent } from './components/BUITestPage';

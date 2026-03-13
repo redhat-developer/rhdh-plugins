@@ -15,30 +15,17 @@
  */
 
 import { useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
-import { Button } from '@backstage/ui';
-import { LogViewer, Progress, InfoCard } from '@backstage/core-components';
-import {
-  Grid,
-  makeStyles,
-  Typography,
-  Box,
-  Chip,
-  Tabs,
-  Tab,
-} from '@material-ui/core';
+import { InfoCard } from '@backstage/core-components';
+import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorIcon from '@material-ui/icons/Error';
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import {
-  Job,
+  MigrationPhase,
   Module,
-  ModulePhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
-import { ItemField } from '../ItemField';
-import { humanizeDate } from '../tools';
+import { PhaseDetails } from '../PhaseDetails';
 
 const useStyles = makeStyles(theme => ({
   tabs: {
@@ -96,238 +83,6 @@ const getStatusIcon = (status?: string, classes?: any) => {
   }
 };
 
-const getStatusChip = (status: string | undefined, t: any) => {
-  if (!status) {
-    return (
-      <Chip
-        label={t('modulePage.phases.statuses.notStarted')}
-        size="small"
-        variant="outlined"
-      />
-    );
-  }
-
-  const statusConfig: Record<
-    string,
-    { labelKey: string; color: 'primary' | 'secondary' | 'default' }
-  > = {
-    success: {
-      labelKey: 'modulePage.phases.statuses.success',
-      color: 'primary',
-    },
-    error: { labelKey: 'modulePage.phases.statuses.error', color: 'secondary' },
-    running: {
-      labelKey: 'modulePage.phases.statuses.running',
-      color: 'default',
-    },
-    pending: {
-      labelKey: 'modulePage.phases.statuses.pending',
-      color: 'default',
-    },
-  };
-
-  const config = statusConfig[status] || { labelKey: status, color: 'default' };
-  return <Chip label={t(config.labelKey)} size="small" color={config.color} />;
-};
-
-const computeDuration = (phase?: Job): string => {
-  if (!phase?.startedAt) {
-    return '-';
-  }
-  const end = phase.finishedAt ? new Date(phase.finishedAt) : new Date();
-  const diffMs = end.getTime() - new Date(phase.startedAt).getTime();
-  const totalSeconds = Math.floor(diffMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  if (minutes > 0) {
-    return `${minutes}m ${seconds}s`;
-  }
-  return `${seconds}s`;
-};
-
-const PhaseRunAction = ({
-  phase,
-  phaseName,
-  onRunPhase,
-}: {
-  phase?: Job;
-  phaseName: ModulePhase;
-  onRunPhase?: (phase: ModulePhase) => void;
-}) => {
-  const { t } = useTranslation();
-
-  const previousRunSucceeded = phase?.status === 'success';
-
-  const getInstructions = () => {
-    if (phaseName === 'analyze') {
-      return previousRunSucceeded
-        ? t('modulePage.phases.reanalyzeInstructions')
-        : t('modulePage.phases.analyzeInstructions');
-    }
-    if (phaseName === 'migrate') {
-      return previousRunSucceeded
-        ? t('modulePage.phases.remigrateInstructions')
-        : t('modulePage.phases.migrateInstructions');
-    }
-    if (phaseName === 'publish') {
-      return previousRunSucceeded
-        ? t('modulePage.phases.republishInstructions')
-        : t('modulePage.phases.publishInstructions');
-    }
-    return '';
-  };
-
-  const getActionText = () => {
-    if (phaseName === 'analyze') {
-      return previousRunSucceeded
-        ? t('modulePage.phases.rerunAnalyze')
-        : t('modulePage.phases.runAnalyze');
-    }
-    if (phaseName === 'migrate') {
-      return previousRunSucceeded
-        ? t('modulePage.phases.rerunMigrate')
-        : t('modulePage.phases.runMigrate');
-    }
-    if (phaseName === 'publish') {
-      return previousRunSucceeded
-        ? t('modulePage.phases.rerunPublish')
-        : t('modulePage.phases.runPublish');
-    }
-    return '';
-  };
-
-  return (
-    <>
-      <Grid item xs={12}>
-        <Button variant="primary" onPress={() => onRunPhase?.(phaseName)}>
-          {getActionText()}
-        </Button>
-      </Grid>
-      <Grid item xs={12}>
-        <Typography>{getInstructions()}</Typography>
-      </Grid>
-    </>
-  );
-};
-
-const PhaseDetails = ({
-  phase,
-  phaseName,
-  projectId,
-  moduleId,
-  onRunPhase,
-}: {
-  phase?: Job;
-  phaseName: ModulePhase;
-  projectId: string;
-  moduleId: string;
-  onRunPhase?: (phase: ModulePhase) => void;
-}) => {
-  const { t } = useTranslation();
-  const clientService = useClientService();
-  const empty = t('module.phases.none');
-  const [showLog, setShowLog] = useState(false);
-
-  const duration = computeDuration(phase);
-
-  const {
-    value: logText,
-    loading: logLoading,
-    error: logError,
-  } = useAsync(async () => {
-    if (!showLog || !phase) {
-      return undefined;
-    }
-    const response = await clientService.projectsProjectIdModulesModuleIdLogGet(
-      {
-        path: { projectId, moduleId },
-        query: { phase: phaseName },
-      },
-    );
-    return await response.text();
-  }, [showLog, phase?.id]);
-
-  return (
-    <Grid container direction="row" spacing={3}>
-      <PhaseRunAction
-        phase={phase}
-        phaseName={phaseName}
-        onRunPhase={onRunPhase}
-      />
-      {/* TODO: Button for canceling the current job execution */}
-
-      <Grid item xs={3}>
-        <Box>
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            {t('modulePage.phases.status')}
-          </Typography>
-          {getStatusChip(phase?.status, t)}
-        </Box>
-      </Grid>
-      <Grid item xs={9}>
-        <ItemField
-          label={t('modulePage.phases.errorDetails')}
-          value={phase?.errorDetails || empty}
-        />
-      </Grid>
-
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.startedAt')}
-          value={phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField label={t('modulePage.phases.duration')} value={duration} />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.k8sJobName')}
-          value={phase?.k8sJobName || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.id')}
-          value={phase?.id || empty}
-        />
-      </Grid>
-      <Grid item xs={3}>
-        <ItemField
-          label={t('modulePage.phases.commitId')}
-          value={phase?.commitId || empty}
-        />
-      </Grid>
-
-      {phase && (
-        <Grid item xs={12}>
-          <Button variant="secondary" onPress={() => setShowLog(prev => !prev)}>
-            {showLog
-              ? t('modulePage.phases.hideLog')
-              : t('modulePage.phases.viewLog')}
-          </Button>
-        </Grid>
-      )}
-
-      {showLog && (
-        <Grid item xs={12}>
-          {logLoading && <Progress />}
-          {logError && (
-            <Typography color="error">{logError.message}</Typography>
-          )}
-          {logText !== undefined && (
-            <div style={{ height: 400 }}>
-              <LogViewer text={logText} />
-            </div>
-          )}
-        </Grid>
-      )}
-
-      {/* Telemetry */}
-    </Grid>
-  );
-};
-
 export const PhasesCard = ({
   module,
   projectId,
@@ -337,7 +92,7 @@ export const PhasesCard = ({
   module?: Module;
   projectId: string;
   moduleId: string;
-  onRunPhase?: (phase: ModulePhase) => void;
+  onRunPhase?: (phase: MigrationPhase) => void;
 }) => {
   const { t } = useTranslation();
   const classes = useStyles();

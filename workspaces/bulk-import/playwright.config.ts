@@ -16,8 +16,12 @@
 
 import { defineConfig } from '@playwright/test';
 
-const baseConfig = '../../app-config.yaml';
-const configPath = '../app/e2e-tests/test_yamls';
+const baseConfig = `${__dirname}/app-config.yaml`;
+const testConfigDir = `${__dirname}/packages/app/e2e-tests/test_yamls`;
+
+const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
+const FRONTEND_PORT_BASE = 3000;
+const BACKEND_PORT_BASE = 7007;
 
 export default defineConfig({
   timeout: 2 * 60 * 1000,
@@ -29,32 +33,13 @@ export default defineConfig({
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
-    : [
-        {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-en.yaml`,
-          url: 'http://localhost:7007/.backstage/health/v1/readiness',
-          timeout: 120000,
-          reuseExistingServer: false,
-        },
-        {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-fr.yaml`,
-          url: 'http://localhost:7008/.backstage/health/v1/readiness',
-          timeout: 120000,
-          reuseExistingServer: false,
-        },
-        {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-it.yaml`,
-          url: 'http://localhost:7009/.backstage/health/v1/readiness',
-          timeout: 120000,
-          reuseExistingServer: false,
-        },
-        {
-          command: `yarn start --config ${baseConfig} --config ${configPath}/app-config-e2e-ja.yaml`,
-          url: 'http://localhost:7010/.backstage/health/v1/readiness',
-          timeout: 120000,
-          reuseExistingServer: false,
-        },
-      ],
+    : LOCALES.map((locale, i) => ({
+        command: `yarn start --config ${baseConfig} --config ${testConfigDir}/app-config-e2e-${locale}.yaml`,
+        url: `http://localhost:${BACKEND_PORT_BASE + i}/.backstage/health/v1/readiness`,
+        timeout: 120000,
+        reuseExistingServer: false,
+        cwd: __dirname,
+      })),
 
   retries: process.env.CI ? 2 : 0,
 
@@ -70,42 +55,13 @@ export default defineConfig({
 
   outputDir: 'node_modules/.cache/e2e-test-results',
 
-  projects: [
-    {
-      name: 'en',
-      testDir: 'packages/app/e2e-tests',
-      use: {
-        channel: 'chrome',
-        locale: 'en',
-        baseURL: 'http://localhost:3000',
-      },
+  projects: LOCALES.map((locale, i) => ({
+    name: locale,
+    testDir: 'packages/app/e2e-tests',
+    use: {
+      channel: 'chrome' as const,
+      locale,
+      baseURL: `http://localhost:${FRONTEND_PORT_BASE + i}`,
     },
-    {
-      name: 'fr',
-      testDir: 'packages/app/e2e-tests',
-      use: {
-        channel: 'chrome',
-        locale: 'fr',
-        baseURL: 'http://localhost:3001',
-      },
-    },
-    {
-      name: 'it',
-      testDir: 'packages/app/e2e-tests',
-      use: {
-        channel: 'chrome',
-        locale: 'it',
-        baseURL: 'http://localhost:3002',
-      },
-    },
-    {
-      name: 'ja',
-      testDir: 'packages/app/e2e-tests',
-      use: {
-        channel: 'chrome',
-        locale: 'ja',
-        baseURL: 'http://localhost:3003',
-      },
-    },
-  ],
+  })),
 });

@@ -208,6 +208,40 @@ describe('mergeEntityAndProviderThresholds', () => {
         ],
       });
     });
+
+    it('should preserve color from provider rules when overriding', () => {
+      class MockColorNumberProvider extends MockNumberProvider {
+        getMetricThresholds() {
+          return {
+            rules: [
+              { key: 'low', expression: '<10', color: 'success.main' },
+              { key: 'high', expression: '10-20', color: '#FF0000' },
+              { key: 'error', expression: '>20' },
+            ],
+          };
+        }
+      }
+
+      const provider = new MockColorNumberProvider(
+        'github.custom_metric',
+        'github',
+      );
+
+      entity.metadata.annotations = {
+        'scorecard.io/github.custom_metric.thresholds.rules.high': '10-60',
+        'scorecard.io/github.custom_metric.thresholds.rules.error': '>60',
+      };
+
+      const result = mergeEntityAndProviderThresholds(entity, provider);
+
+      expect(result).toEqual({
+        rules: [
+          { key: 'low', expression: '<10', color: 'success.main' },
+          { key: 'high', expression: '10-60', color: '#FF0000' },
+          { key: 'error', expression: '>60' },
+        ],
+      });
+    });
   });
 
   it('should throw error for invalid threshold expression', () => {

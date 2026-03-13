@@ -13,23 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { translationsPluginTranslationRef } from './ref';
 
+/**
+ * es translation for plugin.translations.
+ * @public
+ */
 const translationsTranslationEs = createTranslationMessages({
   ref: translationsPluginTranslationRef,
   messages: {
-    // CRITICAL: Use flat dot notation, not nested objects
     'page.title': 'Traducciones',
-    'page.subtitle': 'Gestionar y ver traducciones cargadas',
+    'page.subtitle': 'Gestionar y visualizar las traducciones cargadas',
     'table.title': 'Traducciones cargadas ({{count}})',
-    'table.headers.refId': 'ID de referencia',
-    'table.headers.key': 'Clave',
     'table.options.pageSize': 'Elementos por página',
-    'table.options.pageSizeOptions': 'Mostrar {{count}} elementos',
+    'table.options.pageSizeOptions': 'Mostrar {{count}} elementos',
     'export.title': 'Traducciones',
-    'export.downloadButton': 'Descargar traducciones por defecto (Inglés)',
-    'export.filename': 'traducciones-{{timestamp}}.json',
+    'export.downloadButton': 'Descargar traducciones predeterminadas (inglés)',
+    'export.filename': 'translations-{{timestamp}}.json',
     'common.loading': 'Cargando...',
     'common.error': 'Ocurrió un error',
     'common.noData': 'No hay datos disponibles',

@@ -459,6 +459,168 @@ describe('lightspeed router tests', () => {
       expect(receivedData).toEqual(expectedData);
     });
 
+    it('should send MCP headers for multiple MCP servers', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      rcs.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        lightspeed: {
+          ...BASE_CONFIG.lightspeed,
+          mcpServers: [
+            { name: 'mcp-server-1', token: 'token-1' },
+            { name: 'mcp-server-2', token: 'token-2' },
+          ],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders).toEqual({
+        'mcp-server-1': { Authorization: 'Bearer token-1' },
+        'mcp-server-2': { Authorization: 'Bearer token-2' },
+      });
+    });
+
+    it('should send empty MCP headers when no MCP servers configured', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      rcs.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer();
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).toBe('');
+    });
+
+    it('should send MCP headers for single MCP server', async () => {
+      let capturedMcpHeaders: string | null = null;
+
+      rcs.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/streaming_query`,
+          ({ request: req }) => {
+            capturedMcpHeaders = req.headers.get('MCP-HEADERS');
+            const textEncoder = new TextEncoder();
+            const mockData = [
+              {
+                choices: [{ delta: { content: 'Test' }, finish_reason: null }],
+              },
+              { choices: [{ delta: {}, finish_reason: 'stop' }] },
+            ];
+            const stream = new ReadableStream({
+              start(controller) {
+                mockData.forEach((chunk: any) => {
+                  controller.enqueue(
+                    textEncoder.encode(`data: ${JSON.stringify(chunk)}\n\n`),
+                  );
+                });
+                controller.close();
+              },
+            });
+            return new HttpResponse(stream, {
+              headers: { 'Content-Type': 'text/plain' },
+            });
+          },
+        ),
+      );
+
+      const backendServer = await startBackendServer({
+        lightspeed: {
+          ...BASE_CONFIG.lightspeed,
+          mcpServers: [{ name: 'single-mcp-server', token: 'single-token' }],
+        },
+      });
+
+      const response = await request(backendServer)
+        .post('/api/lightspeed/v1/query')
+        .send({
+          model: mockModel,
+          query: 'Hello',
+          provider: 'test-server',
+        });
+
+      expect(response.statusCode).toEqual(200);
+      expect(capturedMcpHeaders).not.toBeNull();
+
+      const parsedHeaders = JSON.parse(capturedMcpHeaders!);
+      expect(parsedHeaders).toEqual({
+        'single-mcp-server': { Authorization: 'Bearer single-token' },
+      });
+    });
+
     it('should fail with unauthorized error in chat completion API', async () => {
       const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
       const chatCompletionResponse = await request(backendServer)

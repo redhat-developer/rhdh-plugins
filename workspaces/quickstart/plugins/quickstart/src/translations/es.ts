@@ -17,73 +17,70 @@
 import { createTranslationMessages } from '@backstage/core-plugin-api/alpha';
 import { quickstartTranslationRef } from './ref';
 
+/**
+ * es translation for plugin.quickstart.
+ * @public
+ */
 const quickstartTranslationEs = createTranslationMessages({
   ref: quickstartTranslationRef,
   messages: {
-    'header.title': 'Comencemos con el Hub del Desarrollador',
-    'header.subtitle': 'Te guiaremos a través de algunos pasos rápidos',
-    'steps.setupAuthentication.title': 'Configurar autenticación',
+    'header.title': 'Empecemos con Developer Hub',
+    'header.subtitle': 'Aquí le explicamos algunos pasos rápidos',
+    'steps.setupAuthentication.title': 'Configuración de la autenticación',
     'steps.setupAuthentication.description':
-      'Configure credenciales de inicio de sesión seguras para proteger su cuenta del acceso no autorizado.',
-    'steps.setupAuthentication.ctaTitle': 'Aprender más',
-    'steps.configureRbac.title': 'Configurar RBAC',
+      'Configure credenciales de inicio de sesión seguras para proteger su cuenta de accesos no autorizados.',
+    'steps.setupAuthentication.ctaTitle': 'Aprenda más',
+    'steps.configureRbac.title': 'Configuración de RBAC',
     'steps.configureRbac.description':
-      'Asigne roles y permisos para controlar quién puede ver, crear o editar recursos, asegurando una colaboración segura y eficiente.',
-    'steps.configureRbac.ctaTitle': 'Gestionar acceso',
-    'steps.configureGit.title': 'Configurar Git',
+      'Asigne roles y permisos para controlar quién puede ver, crear o modificar recursos, lo que garantiza una colaboración segura y eficiente.',
+    'steps.configureGit.title': 'Configuración de Git',
     'steps.configureGit.description':
-      'Conecte sus proveedores de Git, como GitHub, para gestionar código, automatizar flujos de trabajo e integrar con características de la plataforma.',
-    'steps.configureGit.ctaTitle': 'Aprender más',
-    'steps.managePlugins.title': 'Gestionar plugins',
+      'Conecte sus proveedores de Git, como GitHub, para gestionar el código, automatizar flujos de trabajo e integrarlos en las funcionalidades de la plataforma.',
+    'steps.managePlugins.title': 'Gestión de complementos',
     'steps.managePlugins.description':
-      'Explore e instale extensiones para agregar características, conectar con herramientas externas y personalizar su experiencia.',
-    'steps.managePlugins.ctaTitle': 'Explorar plugins',
-    'steps.importApplication.title': 'Importar aplicación',
+      'Explore e instale extensiones para agregar funcionalidades, conectarse con herramientas externas y personalizar su experiencia.',
+    'steps.importApplication.title': 'Aplicación de importación',
     'steps.importApplication.description':
-      'Importe su código y servicios existentes al catálogo para organizarlos y acceder a ellos a través de su portal de desarrollador.',
+      'Importe su código y servicios existentes al catálogo para organizarlos y acceder a ellos a través de su portal para desarrolladores.',
     'steps.importApplication.ctaTitle': 'Importar',
-    'steps.learnAboutCatalog.title': 'Aprender sobre el Catálogo',
+    'steps.learnAboutCatalog.title': 'Información sobre el Catálogo',
     'steps.learnAboutCatalog.description':
-      'Descubra todos los componentes de software, servicios y APIs, y vea sus propietarios y documentación.',
-    'steps.learnAboutCatalog.ctaTitle': 'Ver catálogo',
+      'Descubra todos los componentes de software, servicios y API, y vea sus propietarios y documentación.',
     'steps.exploreSelfServiceTemplates.title':
-      'Explorar plantillas de autoservicio',
+      'Información sobre plantillas de autoservicio',
     'steps.exploreSelfServiceTemplates.description':
-      'Use nuestras plantillas de autoservicio para configurar rápidamente nuevos proyectos, servicios o documentación.',
-    'steps.exploreSelfServiceTemplates.ctaTitle': 'Explorar plantillas',
-    'steps.findAllLearningPaths.title':
-      'Encontrar todas las rutas de aprendizaje',
+      'Utilice nuestras plantillas de autoservicio para configurar rápidamente nuevos proyectos, servicios o documentación.',
+    'steps.findAllLearningPaths.title': 'Acceso a las rutas de aprendizaje',
     'steps.findAllLearningPaths.description':
-      'Integre e-learning personalizado en sus flujos de trabajo con rutas de aprendizaje para acelerar la incorporación, cerrar brechas de habilidades y promover mejores prácticas.',
-    'steps.findAllLearningPaths.ctaTitle': 'Ver rutas de aprendizaje',
+      'Integre aprendizaje en línea personalizado en sus flujos de trabajo con rutas de aprendizaje, a fin de agilizar el proceso de incorporación, reducir brechas de habilidades y promover prácticas recomendadas.',
     'button.quickstart': 'Inicio rápido',
+    'button.openQuickstartGuide': 'Abrir la Guía de inicio rápido',
+    'button.closeDrawer': 'Cerrar panel',
     'button.gotIt': '¡Entendido!',
-    'footer.progress': '{{progress}}% de progreso',
+    'footer.progress': 'Progreso del {{progress}} %',
     'footer.notStarted': 'No iniciado',
     'footer.hide': 'Ocultar',
     'content.emptyState.title':
-      'El contenido de inicio rápido no está disponible para tu rol.',
+      'El contenido de inicio rápido no está disponible para su rol.',
     'item.expandAriaLabel': 'Expandir detalles de {{title}}',
     'item.collapseAriaLabel': 'Contraer detalles de {{title}}',
     'item.expandButtonAriaLabel': 'Expandir elemento',
     'item.collapseButtonAriaLabel': 'Contraer elemento',
-    'button.openQuickstartGuide': 'Abrir guía de inicio rápido',
-    'button.closeDrawer': 'Cerrar cajón',
-    'dev.pageTitle': 'Página de prueba del plugin Quickstart',
+    'dev.pageTitle': 'Página de prueba del complemento de inicio rápido',
     'dev.pageDescription':
-      'Esta es una página de prueba para el plugin Quickstart. Use los botones de abajo para interactuar con el cajón de inicio rápido.',
-    'dev.drawerControls': 'Controles del cajón',
-    'dev.currentState': 'Estado actual del cajón: {{state}}',
-    'dev.stateOpen': 'Abierto',
+      'Esta es una página de prueba para el complemento de inicio rápido. Utilice los botones a continuación para interactuar con el panel de inicio rápido.',
+    'dev.drawerControls': 'Controles del panel',
+    'dev.currentState': 'Estado actual del panel: {{state}}',
     'dev.stateClosed': 'Cerrado',
     'dev.instructions': 'Instrucciones',
     'dev.step1':
-      '1. Haga clic en "Abrir guía de inicio rápido" para abrir el cajón',
-    'dev.step2': '2. Navegue a través de los pasos de inicio rápido',
-    'dev.step3': '3. Pruebe el seguimiento del progreso completando pasos',
+      '1. Haga clic en "Abrir guía de inicio rápido" para abrir el panel',
+    'dev.step2': '2. Navegue por los pasos de inicio rápido',
+    'dev.step3': '3. Realice los pasos para probar el seguimiento del progreso',
     'dev.step4':
-      '4. El cajón puede cerrarse usando el botón de cerrar o los controles propios del cajón',
-    'dev.step5': '5. El progreso se guarda automáticamente en localStorage',
+      '4. El panel se puede cerrar con el botón de cierre o los propios controles del panel',
+    'dev.step5':
+      '5. El progreso se guarda automáticamente en el almacenamiento local',
   },
 });
 

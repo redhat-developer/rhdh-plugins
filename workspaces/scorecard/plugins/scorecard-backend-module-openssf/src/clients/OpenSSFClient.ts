@@ -43,8 +43,6 @@ export class OpenSSFClient {
       );
     }
 
-    const data: OpenSSFResponse = await response.json();
-
-    return data;
+    return await response.json();
   }
 }

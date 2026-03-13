@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-openshift-image-registry
 
+## 1.18.0
+
+### Minor Changes
+
+- e422432: Backstage version bump to v1.48.4
+
+### Patch Changes
+
+- 9c17c36: Updated dependency `prettier` to `3.8.0`.
+- aaac497: Updated dependency `prettier` to `3.8.1`.
+
 ## 1.17.1
 
 ### Patch Changes

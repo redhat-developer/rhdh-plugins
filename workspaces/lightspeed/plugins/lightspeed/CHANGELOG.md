@@ -1,5 +1,14 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 1.4.0
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+- 6106526: Moved the `CustomDrawer` component from `packages/app` to `plugins/lightspeed/dev` to resolve workspace accessibility issues during development.
+- b6f1568: updated plugin readme
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@1.4.0
+
 ## 1.3.0
 
 ### Minor Changes

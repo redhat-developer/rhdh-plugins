@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.7.3
+
+### Patch Changes
+
+- Updated dependencies [309547d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.2
+
+## 1.7.2
+
+### Patch Changes
+
+- d6dff3b: Show ActiveText spinner immediately on retrigger changes to avoid stale text during debounce. Add fetch:clearOnRetrigger to clear widget values when dependencies change.
+
 ## 1.7.1
 
 ### Patch Changes
@@ -22,6 +36,15 @@
 - Updated dependencies [3648a62]
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.0
   - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.0
+
+## 1.6.3
+
+### Patch Changes
+
+- 546ccb2: Show ActiveText spinner immediately on retrigger changes to avoid stale text during debounce. Add fetch:clearOnRetrigger to clear widget values when dependencies change.
+- Updated dependencies [546ccb2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.4.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.4.4
 
 ## 1.6.2
 

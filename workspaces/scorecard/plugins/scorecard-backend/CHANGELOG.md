@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 2.4.0
+
+### Minor Changes
+
+- 7062658: Introduces custom threshold rule keys and colors that can be configured in `app-config.yaml`.
+
+### Patch Changes
+
+- Updated dependencies [7062658]
+- Updated dependencies [dc5e31a]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.4.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@2.4.0
+
 ## 2.3.5
 
 ### Patch Changes

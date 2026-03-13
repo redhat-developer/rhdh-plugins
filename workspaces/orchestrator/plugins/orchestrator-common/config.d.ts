@@ -103,5 +103,19 @@ export interface Config {
         value: string;
       }>;
     };
+    /**
+     * UI configuration for the workflow instance page.
+     * @visibility frontend
+     */
+    workflowInstancePage?: {
+      /**
+       * Controls card height behavior on the workflow instance page.
+       * "fixed" keeps the current fixed-height cards with internal scrolling.
+       * "content" lets cards expand to fit their content.
+       * Default: fixed
+       * @visibility frontend
+       */
+      cardHeightMode?: 'fixed' | 'content';
+    };
   };
 }

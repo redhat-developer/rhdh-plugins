@@ -125,6 +125,7 @@ describe('JobResourceBuilder', () => {
           AAP_CONTROLLER_URL: 'https://aap.example.com',
           AAP_ORG_NAME: 'TestOrg',
           AAP_OAUTH_TOKEN: 'test-oauth-token',
+          AAP_VERIFY_SSL: 'true',
         });
         expect(secret.stringData!.AAP_USERNAME).toBeUndefined();
         expect(secret.stringData!.AAP_PASSWORD).toBeUndefined();
@@ -186,6 +187,29 @@ describe('JobResourceBuilder', () => {
           'x2a.redhat.com/aap-auth-method': 'basic',
           'x2a.redhat.com/aap-source': 'user-provided',
         });
+      });
+
+      it('should set AAP_VERIFY_SSL to false when skipSSLVerification is true', () => {
+        mockConfig.credentials.aap!.skipSSLVerification = true;
+
+        const secret = JobResourceBuilder.buildProjectSecret(
+          projectId,
+          undefined,
+          mockConfig,
+        );
+
+        expect(secret.stringData!.AAP_VERIFY_SSL).toBe('false');
+      });
+
+      it('should default AAP_VERIFY_SSL to true when skipSSLVerification is not set', () => {
+        // skipSSLVerification is not set in default mockConfig
+        const secret = JobResourceBuilder.buildProjectSecret(
+          projectId,
+          undefined,
+          mockConfig,
+        );
+
+        expect(secret.stringData!.AAP_VERIFY_SSL).toBe('true');
       });
 
       it('should throw error when no AAP credentials provided', () => {

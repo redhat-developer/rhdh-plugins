@@ -29,7 +29,28 @@ jest.mock('recharts', () => ({
 
   PieChart: ({ children }: any) => <div>{children}</div>,
 
-  Pie: ({ label }: any) => <svg>{label?.({ cx: 0, cy: 0 })}</svg>,
+  Pie: ({
+    data,
+    label,
+    children,
+  }: {
+    data?: { name: string; value: number; color: string }[];
+    label?: (center: { cx: number; cy: number }) => React.ReactNode;
+    children?: React.ReactNode;
+  }) => (
+    <div data-testid="pie-chart">
+      {data?.map((entry: any) => (
+        <div
+          key={entry.name}
+          data-testid={`pie-ring-${entry.name}`}
+          data-color={entry.color}
+          style={{ backgroundColor: entry.color }}
+        />
+      ))}
+      {label && <div>{label({ cx: 0, cy: 0 })}</div>}
+      {children}
+    </div>
+  ),
 
   Cell: () => null,
 
@@ -56,7 +77,7 @@ describe('Scorecard Component', () => {
     cardTitle: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
-    statusColor: 'success',
+    statusColor: 'success.main',
     StatusIcon: CheckCircleOutlineIcon,
     value: 8,
     thresholds: {
@@ -64,7 +85,7 @@ describe('Scorecard Component', () => {
       definition: {
         rules: [
           { key: 'success', expression: '<= 20' },
-          { key: 'warning', expression: '> 20' },
+          { key: 'warning', expression: '<= 40' },
           { key: 'error', expression: '> 40' },
         ],
       },
@@ -105,7 +126,7 @@ describe('Scorecard Component', () => {
     );
 
     expect(screen.getByText('Success <= 20')).toBeInTheDocument();
-    expect(screen.getByText('Warning > 20')).toBeInTheDocument();
+    expect(screen.getByText('Warning <= 40')).toBeInTheDocument();
     expect(screen.getByText('Error > 40')).toBeInTheDocument();
   });
 
@@ -132,10 +153,23 @@ describe('Scorecard Component', () => {
     expect(screen.getByText('0')).toBeInTheDocument();
   });
 
+  it('should render with success status', () => {
+    render(
+      <TestWrapper>
+        <Scorecard {...defaultProps} />
+      </TestWrapper>,
+    );
+
+    expect(screen.getByTestId('pie-ring-full')).toHaveAttribute(
+      'data-color',
+      '#52c41a',
+    );
+  });
+
   it('should render with warning status', () => {
     const warningProps = {
       ...defaultProps,
-      statusColor: 'warning',
+      statusColor: 'warning.main',
       StatusIcon: WarningAmberIcon,
       value: 25,
     };
@@ -147,23 +181,60 @@ describe('Scorecard Component', () => {
     );
 
     expect(screen.getByText('25')).toBeInTheDocument();
+    expect(screen.getByTestId('pie-ring-full')).toHaveAttribute(
+      'data-color',
+      '#F0AB00',
+    );
   });
 
-  it('should render with critical status', () => {
-    const criticalProps = {
+  it('should render with error status', () => {
+    const errorProps = {
       ...defaultProps,
-      statusColor: 'error',
+      statusColor: 'error.main',
       StatusIcon: DangerousOutlinedIcon,
       value: 75,
     };
 
     render(
       <TestWrapper>
-        <Scorecard {...criticalProps} />
+        <Scorecard {...errorProps} />
       </TestWrapper>,
     );
 
     expect(screen.getByText('75')).toBeInTheDocument();
+    expect(screen.getByTestId('pie-ring-full')).toHaveAttribute(
+      'data-color',
+      '#C9190B',
+    );
+  });
+
+  it('should render with custom status', () => {
+    const customProps = {
+      ...defaultProps,
+      statusColor: '#FF5733',
+      StatusIcon: CheckCircleOutlineIcon,
+      value: 4,
+      thresholds: {
+        ...defaultProps.thresholds,
+        definition: {
+          rules: [
+            { key: 'custom', expression: '<=5', color: '#FF5733' },
+            ...defaultProps.thresholds.definition.rules,
+          ],
+        },
+      },
+    };
+
+    render(
+      <TestWrapper>
+        <Scorecard {...customProps} />
+      </TestWrapper>,
+    );
+
+    expect(screen.getByTestId('pie-ring-full')).toHaveAttribute(
+      'data-color',
+      '#FF5733',
+    );
   });
 
   it('should render with large values', () => {
@@ -243,7 +314,7 @@ describe('Scorecard Component', () => {
 
     // Check that threshold rules are rendered with appropriate styling
     const errorRule = screen.getByText('Error > 40');
-    const warningRule = screen.getByText('Warning > 20');
+    const warningRule = screen.getByText('Warning <= 40');
     const successRule = screen.getByText('Success <= 20');
 
     expect(errorRule).toBeInTheDocument();

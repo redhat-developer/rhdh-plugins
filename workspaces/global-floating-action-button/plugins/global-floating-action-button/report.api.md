@@ -7,8 +7,8 @@
 
 import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
-import { TranslationRef } from '@backstage/core-plugin-api/alpha';
-import { TranslationResource } from '@backstage/core-plugin-api/alpha';
+import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const DynamicGlobalFloatingActionButton: React.ComponentType;
@@ -59,9 +59,7 @@ export type FloatingActionButtonWithPositions = Array<{
 }>;
 
 // @public
-export const GlobalFloatingActionButton: ({
-  floatingButtons,
-}: {
+export const GlobalFloatingActionButton: (input: {
   floatingButtons: FloatingActionButton[];
 }) => JSX_2.Element;
 

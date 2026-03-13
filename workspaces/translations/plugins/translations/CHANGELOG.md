@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-translations
 
+## 0.2.2
+
+### Patch Changes
+
+- f6d5102: Translation added for German and Spanish
+
 ## 0.2.1
 
 ### Patch Changes

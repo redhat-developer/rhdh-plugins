@@ -21,6 +21,7 @@
 export type ThresholdRule = {
   key: string;
   expression: string;
+  color?: string;
 };
 
 /**
@@ -52,3 +53,24 @@ export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig = {
     { key: 'error', expression: '>50' },
   ],
 };
+
+/**
+ * Predefined scorecard threshold rule color constants.
+ * Use in threshold rule color configurations instead of hex/RGB values.
+ * Map to theme.palette colors.
+ *
+ * @public
+ */
+export const ScorecardThresholdRuleColors = {
+  SUCCESS: 'success.main',
+  WARNING: 'warning.main',
+  ERROR: 'error.main',
+} as const;
+
+/**
+ * All valid scorecard threshold color values (for validation in threshold configs)
+ * @public
+ */
+export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES = Object.values(
+  ScorecardThresholdRuleColors,
+);

@@ -26,6 +26,8 @@ import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
+import { isMetricIdDisabled } from '../../utils/metricUtils';
+import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
 import { v4 as uuid } from 'uuid';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
@@ -142,6 +144,17 @@ export class PullMetricsByProviderTask implements SchedulerTask {
             let value: MetricValue | undefined;
 
             try {
+              if (
+                isMetricIdDisabled(
+                  this.config,
+                  provider.getProviderId(),
+                  entity,
+                  logger,
+                )
+              ) {
+                return undefined;
+              }
+
               value = await provider.calculateMetric(entity);
 
               const thresholds = mergeEntityAndProviderThresholds(
@@ -161,8 +174,13 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 value,
                 timestamp: new Date(),
                 status,
+                entity_kind: normalizeField(entity.kind),
+                entity_namespace: normalizeField(entity.metadata.namespace),
+                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
               } as DbMetricValueCreate;
             } catch (error) {
+              // status is intentionally omitted — a calculation failure produces a NULL status
+              // in the database, which sorts last when sortBy=status is used
               return {
                 catalog_entity_ref: stringifyEntityRef(entity),
                 metric_id: this.providerId,
@@ -170,12 +188,15 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                 timestamp: new Date(),
                 error_message:
                   error instanceof Error ? error.message : String(error),
+                entity_kind: normalizeField(entity.kind),
+                entity_namespace: normalizeField(entity.metadata.namespace),
+                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
               } as DbMetricValueCreate;
             }
           }),
         ).then(promises =>
           promises.reduce((acc, curr) => {
-            if (curr.status === 'fulfilled') {
+            if (curr.status === 'fulfilled' && curr.value !== undefined) {
               return [...acc, curr.value];
             }
             return acc;
@@ -195,4 +216,13 @@ export class PullMetricsByProviderTask implements SchedulerTask {
       throw error;
     }
   }
+}
+
+function normalizeField(field: unknown): string | undefined {
+  if (typeof field !== 'string') return undefined;
+  const normalized = field.trim().toLowerCase();
+  if (!normalized) return undefined;
+
+  // Prevent DB insertion failures (limits column length to 255 characters)
+  return normalized.length <= 255 ? normalized : normalized.slice(0, 255);
 }

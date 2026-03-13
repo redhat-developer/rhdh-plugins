@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: cost-management
+  title: Cost Management For Red Hat Developer Hub
+  description: |
+    Cost Management brings Red Hat Insights OpenShift recommendations into Backstage with extended actions. You can view recommendations and apply them to your configured clusters.
+  # Example for optional annotations
+  # annotations:
+  #   github.com/project-slug: backstage/backstage
+  #   backstage.io/techdocs-ref: dir:.
+spec:
+  type: backstage-plugin
+  owner: john@example.com
+  lifecycle: active
+  system: rhdh
+  subcomponentOf: rhdh-plugins

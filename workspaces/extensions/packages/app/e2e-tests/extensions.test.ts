@@ -18,6 +18,7 @@ import { test, expect, Page, type BrowserContext } from '@playwright/test';
 import { Extensions } from './pages/extensions';
 import { runAccessibilityTests } from './utils/accessibility';
 import { ExtensionHelper } from './utils/helper';
+import { skipIfLocales } from './utils/localeSkip';
 import { ExtensionsMessages, getTranslations } from './utils/translations';
 
 /**
@@ -25,6 +26,8 @@ import { ExtensionsMessages, getTranslations } from './utils/translations';
  */
 const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   en: 'English',
+  de: 'Deutsch',
+  es: 'Español',
   fr: 'Français',
   it: 'Italiano',
   ja: '日本語',
@@ -120,7 +123,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify support type filters in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      skipIfLocales(
+        testInfo,
+        ['de', 'es'],
+        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      );
       await extensions.selectDropdown(`${translations.search.supportType}`);
       await extensions.supportFilters();
       await extensions.emptyCategoryComboBox();
@@ -128,7 +136,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify certified badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      skipIfLocales(
+        testInfo,
+        ['de', 'es'],
+        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      );
       await extensions.selectDropdown(`${translations.search.supportType}`);
       await extensions.toggleOption(translations.badges.certified);
       await sharedPage.keyboard.press(`Escape`);
@@ -157,7 +170,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify Generally available badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      skipIfLocales(
+        testInfo,
+        ['de', 'es'],
+        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      );
       await extensions.selectSupportTypeFilter(
         translations.badges.generallyAvailable,
       );
@@ -189,7 +207,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify custom plugin badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      skipIfLocales(
+        testInfo,
+        ['de', 'es'],
+        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      );
       await extensions.selectSupportTypeFilter(
         translations.badges.customPlugin,
       );
@@ -214,7 +237,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify tech preview badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      skipIfLocales(
+        testInfo,
+        ['de', 'es'],
+        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      );
       await extensions.verifySupportTypeBadge({
         supportType: translations.badges.techPreview,
         pluginName: 'Bulk Import',
@@ -227,7 +255,12 @@ test.describe('Admin > Extensions', () => {
       });
     });
 
-    test('Verify dev preview badge in extensions', async () => {
+    test('Verify dev preview badge in extensions', async ({}, testInfo) => {
+      skipIfLocales(
+        testInfo,
+        ['de', 'es'],
+        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      );
       await extensions.selectSupportTypeFilter(translations.badges.devPreview);
       await extensionHelper.verifyHeading('Extensions');
 
@@ -244,7 +277,12 @@ test.describe('Admin > Extensions', () => {
 
     test('Verify community plugin badge in extensions', async ({
       browser: _browser,
-    }) => {
+    }, testInfo) => {
+      skipIfLocales(
+        testInfo,
+        ['de', 'es'],
+        'Missing badges in de/es - https://issues.redhat.com/browse/RHDHBUGS-2793',
+      );
       await extensions.selectSupportTypeFilter(
         translations.badges.communityPlugin,
       );

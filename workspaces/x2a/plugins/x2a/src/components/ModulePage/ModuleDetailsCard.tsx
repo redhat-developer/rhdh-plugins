@@ -20,24 +20,25 @@ import { InfoCard } from '@backstage/core-components';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { ItemField } from '../ItemField';
+import { ModuleStatusCell } from '../ModuleStatusCell';
 
 export const ModuleDetailsCard = ({ module }: { module?: Module }) => {
   const { t } = useTranslation();
-  const empty = t('module.phases.none');
+  const empty = t('empty');
 
   return (
     <InfoCard title={t('modulePage.title')} variant="gridItem">
       <Grid container direction="row" spacing={3}>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField label={t('module.name')} value={module?.name || empty} />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('module.status')}
-            value={module?.status || empty}
+            value={<ModuleStatusCell module={module} />}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid item xs={6}>
           <ItemField
             label={t('module.sourcePath')}
             value={module?.sourcePath || empty}

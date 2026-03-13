@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.14.5
+
+### Patch Changes
+
+- f6d5102: Translation updated for German and Spanish
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.14.5
+
 ## 0.14.4
 
 ### Patch Changes

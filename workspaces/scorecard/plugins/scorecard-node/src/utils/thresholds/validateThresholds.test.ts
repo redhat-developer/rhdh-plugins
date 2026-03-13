@@ -16,6 +16,7 @@
 
 import { validateThresholds } from './validateThresholds';
 import { ThresholdConfigFormatError } from '../../errors';
+import { ScorecardThresholdRuleColors } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 describe('validateThresholds', () => {
   describe('validateThresholds - valid configs', () => {
@@ -59,6 +60,79 @@ describe('validateThresholds', () => {
 
       expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
     });
+
+    it('should validate config with custom threshold keys and colors', () => {
+      const validConfig = {
+        rules: [
+          { key: 'critical', expression: '>80', color: '#d32f2f' },
+          { key: 'high', expression: '60-79', color: '#ff9800' },
+          { key: 'medium', expression: '40-59', color: '#ffc107' },
+          { key: 'low', expression: '20-39', color: '#4caf50' },
+          { key: 'success', expression: '<20' },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
+
+    it('should validate standard keys without colors', () => {
+      const config = {
+        rules: [
+          { key: 'success', expression: '<20' },
+          { key: 'warning', expression: '20-50' },
+          { key: 'error', expression: '>50' },
+        ],
+      };
+
+      expect(() => validateThresholds(config, 'number')).not.toThrow();
+    });
+
+    it('should validate config with predefined color constants', () => {
+      const validConfig = {
+        rules: [
+          {
+            key: 'success',
+            expression: '<=20',
+            color: ScorecardThresholdRuleColors.SUCCESS,
+          },
+          {
+            key: 'warning',
+            expression: '>20',
+            color: ScorecardThresholdRuleColors.WARNING,
+          },
+          {
+            key: 'error',
+            expression: '>40',
+            color: ScorecardThresholdRuleColors.ERROR,
+          },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
+
+    it('should validate config with hex color', () => {
+      const validConfig = {
+        rules: [
+          { key: 'success', expression: '<5', color: '#dc5a33' },
+          { key: 'warning', expression: '<=10', color: '#AB3' },
+          { key: 'error', expression: '>10', color: '#FF5733AA' },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
+
+    it('should validate config with RGB color', () => {
+      const validConfig = {
+        rules: [
+          { key: 'warning', expression: '<5', color: 'rgb(255, 87, 51)' },
+          { key: 'error', expression: '<5', color: 'rgba(255, 87, 51, 0.5)' },
+        ],
+      };
+
+      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+    });
   });
 
   describe('validateThresholds - invalid configs', () => {
@@ -91,52 +165,42 @@ describe('validateThresholds', () => {
       {
         config: { rules: [null] },
         expectedError:
-          'Invalid threshold rule format "null": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "null": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [5] },
         expectedError:
-          'Invalid threshold rule format "5": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "5": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 'success' }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"key":"success"}": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "{"key":"success"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ expression: '>20' }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"expression":">20"}": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "{"expression":">20"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 123, expression: '>20' }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"key":123,"expression":">20"}": must be an object with "key" and "expression" string properties',
+          'Invalid threshold rule format "{"key":123,"expression":">20"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 'success', expression: 123 }] } as any,
         expectedError:
-          'Invalid threshold rule format "{"key":"success","expression":123}": must be an object with "key" and "expression" string properties',
-      },
-      {
-        config: { rules: [{ key: 'invalid', expression: '>20' }] },
-        expectedError:
-          'Invalid threshold rule key "invalid": only supported values are "success", "warning", "error"',
-      },
-      {
-        config: { rules: [{ key: 'ERROR', expression: '>20' }] },
-        expectedError:
-          'Invalid threshold rule key "ERROR": only supported values are "success", "warning", "error"',
+          'Invalid threshold rule format "{"key":"success","expression":123}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: '', expression: '>20' }] },
         expectedError:
-          'Invalid threshold rule key "": only supported values are "success", "warning", "error"',
+          'Invalid threshold rule format "{"key":"","expression":">20"}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
-        config: { rules: [{ key: 'critical', expression: '>20' }] },
+        config: { rules: [{ key: 'success', expression: '' }] },
         expectedError:
-          'Invalid threshold rule key "critical": only supported values are "success", "warning", "error"',
+          'Invalid threshold rule format "{"key":"success","expression":""}": must be an object with "key" and "expression" non-empty string properties',
       },
       {
         config: { rules: [{ key: 'success', expression: 'invalid' }] },
@@ -168,19 +232,77 @@ describe('validateThresholds', () => {
       );
     });
 
-    it('should fail for mixed valid and invalid rules', () => {
+    it('should throw error for custom threshold key without color', () => {
       const config = {
         rules: [
-          { key: 'success', expression: '>20' },
-          { key: 'invalid', expression: '>10' },
+          { key: 'success', expression: '<20' },
+          { key: 'critical', expression: '>=20' },
         ],
       };
 
       expect(() => validateThresholds(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
-          'Invalid threshold rule key "invalid": only supported values are "success", "warning", "error"',
+          "Custom threshold key \"critical\" must specify a color property. Only standard keys ('success', 'warning', 'error') have default colors.",
         ),
       );
     });
+
+    it.each([
+      {
+        description: 'missing # in hex color',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 'FF5733' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "FF5733" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+      {
+        description: 'invalid hex characters',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: '#GGGGGG' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "#GGGGGG" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+      {
+        description: 'invalid predefined constant',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 'invalid.color' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "invalid.color" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+      {
+        description: 'empty color string',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: '' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": color must be a non-empty string',
+      },
+      {
+        description: 'non-string color',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 123 } as any],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": color must be a non-empty string',
+      },
+      {
+        description: 'RGB with missing comma',
+        config: {
+          rules: [{ key: 'custom', expression: '<5', color: 'rgb(50, 87 37)' }],
+        },
+        expectedError:
+          'Invalid color format for rule "custom": "rgb(50, 87 37)" must be either a predefined constant (\'success.main\', \'warning.main\', \'error.main\'), a hex color (e.g., "#ADD8E6"), or an RGB/RGBA color (e.g., "rgb(255, 255, 0)")',
+      },
+    ])(
+      'should throw error for invalid color: $description',
+      ({ config, expectedError }) => {
+        expect(() => validateThresholds(config, 'number')).toThrow(
+          new ThresholdConfigFormatError(expectedError),
+        );
+      },
+    );
   });
 });

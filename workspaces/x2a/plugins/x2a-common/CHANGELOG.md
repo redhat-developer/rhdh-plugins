@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 1.0.2
+
+### Patch Changes
+
+- 0c598fb: Add GitLab support.
+
 ## 1.0.1
 
 ### Patch Changes

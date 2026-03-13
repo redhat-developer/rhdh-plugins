@@ -22,7 +22,11 @@ import {
   useApi,
   useApp,
 } from '@backstage/core-plugin-api';
-import { AuthToken, AuthTokenDescriptor } from './tokenDescriptorTypes';
+import {
+  augmentRepoToken,
+  AuthToken,
+  AuthTokenDescriptor,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 const isAuthApi = (api: any): api is OAuthApi => {
   return api && typeof api.getAccessToken === 'function';
@@ -58,14 +62,17 @@ export const useRepoAuthentication = () => {
 
   const getToken = useCallback(
     async (tokenDescriptor: AuthTokenDescriptor): Promise<AuthToken> => {
-      let authApi = githubAuthApi;
-      if (tokenDescriptor.provider.toLocaleLowerCase('en-US') === 'gitlab') {
-        authApi = gitlabAuthApi;
+      let token;
+      if (tokenDescriptor.provider === 'github') {
+        token = await getProviderToken(githubAuthApi, tokenDescriptor);
+      } else if (tokenDescriptor.provider === 'gitlab') {
+        token = await getProviderToken(gitlabAuthApi, tokenDescriptor);
+      } else {
+        throw new Error(`Unsupported provider: ${tokenDescriptor.provider}`);
       }
 
-      const token = await getProviderToken(authApi, tokenDescriptor);
       return {
-        token,
+        token: augmentRepoToken(token, tokenDescriptor),
         provider: tokenDescriptor.provider,
       };
     },

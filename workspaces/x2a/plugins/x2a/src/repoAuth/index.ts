@@ -13,5 +13,3 @@
  * See the License for the specific governing permissions and limitations under the License.
  */
 export * from './useRepoAuth';
-export * from './getAuthTokenDescriptor';
-export * from './tokenDescriptorTypes';
