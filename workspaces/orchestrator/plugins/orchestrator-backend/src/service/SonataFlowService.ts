@@ -56,6 +56,10 @@ export class SonataFlowService {
     }
   }
 
+  getOrchestratorKafkaImpl() {
+    return this.orchestratorKafkaImpl;
+  }
+
   public async fetchWorkflowInfoOnService(args: {
     definitionId: string;
     serviceUrl: string;
