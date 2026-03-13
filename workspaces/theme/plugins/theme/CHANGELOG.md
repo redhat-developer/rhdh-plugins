@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 0.13.0
+
+### Minor Changes
+
+- 9476d25: Added NFS support.
+
 ## 0.12.1
 
 ### Patch Changes
