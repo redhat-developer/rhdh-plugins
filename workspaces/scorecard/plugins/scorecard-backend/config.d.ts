@@ -24,7 +24,7 @@ export interface Config {
     /** List of metric IDs (e.g. openssf.packaging) that are disabled globally. Entity annotations cannot override this. */
     disabledMetrics?: string[];
     /** Control whether users can override behavior via entity annotations. */
-    entityOverrides?: {
+    entityAnnotations?: {
       /** Whether entity scorecard.io/disabled-metrics annotation can override. Only affects annotations; global disabledMetrics is unchanged. */
       disabledMetrics?: {
         /** If true (default), entities can disable metrics that are not mentioned in `except` list via `scorecard.io/disabled-metrics` annotation; if false, the annotation has no effect */

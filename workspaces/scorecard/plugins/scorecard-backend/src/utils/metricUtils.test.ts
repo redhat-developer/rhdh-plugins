@@ -25,7 +25,7 @@ describe('isMetricIdDisabled', () => {
   function createConfig(
     scorecardOverrides: {
       disabledMetrics?: string[];
-      entityOverrides?: {
+      entityAnnotations?: {
         disabledMetrics?: { enabled?: boolean; except?: string[] };
       };
     } = {},
@@ -70,9 +70,9 @@ describe('isMetricIdDisabled', () => {
     expect(result).toBe(true);
   });
 
-  it('returns true when disabled by annotation but metric is in entityOverrides.disabledMetrics.except but entityOverrides.disabledMetrics.enabled is false', () => {
+  it('returns true when disabled by annotation but metric is in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is false', () => {
     const config = createConfig({
-      entityOverrides: {
+      entityAnnotations: {
         disabledMetrics: {
           enabled: false,
           except: [metricId],
@@ -86,9 +86,9 @@ describe('isMetricIdDisabled', () => {
     expect(result).toBe(true);
   });
 
-  it('returns true when disabled by annotation but metric is NOT in entityOverrides.disabledMetrics.except but entityOverrides.disabledMetrics.enabled is true', () => {
+  it('returns true when disabled by annotation but metric is NOT in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is true', () => {
     const config = createConfig({
-      entityOverrides: {
+      entityAnnotations: {
         disabledMetrics: {
           enabled: true,
           except: [],
@@ -102,9 +102,9 @@ describe('isMetricIdDisabled', () => {
     expect(result).toBe(true);
   });
 
-  it('returns false when disabled by annotation but metric is in entityOverrides.disabledMetrics.except but entityOverrides.disabledMetrics.enabled is true', () => {
+  it('returns false when disabled by annotation but metric is in entityAnnotations.disabledMetrics.except but entityAnnotations.disabledMetrics.enabled is true', () => {
     const config = createConfig({
-      entityOverrides: {
+      entityAnnotations: {
         disabledMetrics: {
           enabled: true,
           except: [metricId],
@@ -136,9 +136,9 @@ describe('isMetricIdDisabled', () => {
     expect(result).toBe(false);
   });
 
-  it('returns false when entityOverrides.disabledMetrics.enabled is false and metric is not in entity annotation', () => {
+  it('returns false when entityAnnotations.disabledMetrics.enabled is false and metric is not in entity annotation', () => {
     const config = createConfig({
-      entityOverrides: {
+      entityAnnotations: {
         disabledMetrics: { enabled: false },
       },
     });

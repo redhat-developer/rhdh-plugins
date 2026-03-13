@@ -43,26 +43,26 @@ export function isMetricIdDisabled(
     return true;
   }
 
-  const entityOverridesDisabledMetricsConfig = config.getOptionalConfig(
-    'scorecard.entityOverrides.disabledMetrics',
+  const entityAnnotationsDisabledMetricsConfig = config.getOptionalConfig(
+    'scorecard.entityAnnotations.disabledMetrics',
   );
 
-  const entityOverrideEnabled =
-    entityOverridesDisabledMetricsConfig?.getOptionalBoolean('enabled');
+  const entityAnnotationEnabled =
+    entityAnnotationsDisabledMetricsConfig?.getOptionalBoolean('enabled');
   const disabledMetricsFromComponentAnnotation = parseCommaSeparatedString(
     entity.metadata.annotations?.['scorecard.io/disabled-metrics'] ?? '',
   );
   const isDisabledByAnnotation =
     disabledMetricsFromComponentAnnotation?.includes(metricId) ?? false;
 
-  if (entityOverrideEnabled === false) {
+  if (entityAnnotationEnabled === false) {
     if (isDisabledByAnnotation) {
       return true;
     }
     return false;
   }
   const exceptList =
-    entityOverridesDisabledMetricsConfig?.getOptionalStringArray('except') ??
+    entityAnnotationsDisabledMetricsConfig?.getOptionalStringArray('except') ??
     [];
   const isInExceptList = exceptList?.includes(metricId);
 
