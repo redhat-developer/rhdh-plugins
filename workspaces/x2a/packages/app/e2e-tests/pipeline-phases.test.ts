@@ -92,10 +92,6 @@ async function createProject(baseURL: string) {
 async function triggerInit(baseURL: string, projectId: string) {
   const headers = await apiHeaders(baseURL);
   const ghToken = process.env.GITHUB_TOKEN || 'placeholder';
-  // eslint-disable-next-line no-console
-  console.log(
-    `triggerInit: GITHUB_TOKEN set=${!!process.env.GITHUB_TOKEN}, length=${process.env.GITHUB_TOKEN?.length ?? 0}, using=${ghToken === 'placeholder' ? 'placeholder' : 'real-token'}`,
-  );
   const ctx = await request.newContext({
     baseURL,
     ignoreHTTPSErrors: true,
