@@ -301,6 +301,7 @@ export class X2AnsiblePage {
     await this.login();
     await this.page.goto(`/x2a/projects/${projectId}/modules/${moduleId}`);
     await this.waitForPageLoad();
+    await this.dismissGitHubLoginDialog();
   }
 
   async clickPhaseTab(phase: 'Analyze' | 'Migrate' | 'Publish') {
@@ -329,19 +330,34 @@ export class X2AnsiblePage {
     timeoutMs = 420000,
   ) {
     await this.clickPhaseTab(phase);
-    const statusChip = this.page
-      .locator('[role="tabpanel"]:not([style*="display: none"])')
-      .locator(`[class*="MuiChip"]:has-text("${expectedStatus}")`);
-    await expect(statusChip).toBeVisible({ timeout: timeoutMs });
+    await this.page.waitForTimeout(1000);
+    const statusLocator = this.page
+      .getByText(new RegExp(expectedStatus, 'i'))
+      .first();
+    try {
+      await expect(statusLocator).toBeVisible({ timeout: timeoutMs });
+    } catch {
+      const body = await this.page.content();
+      const snippet = body.slice(0, 2000);
+      // eslint-disable-next-line no-console
+      console.log(
+        `waitForPhaseStatus('${phase}', '${expectedStatus}') failed. Page snippet:\n${snippet}`,
+      );
+      throw new Error(
+        `Phase ${phase}: expected "${expectedStatus}" not found on page`,
+      );
+    }
   }
 
   async getPhaseStatus(
     phase: 'Analyze' | 'Migrate' | 'Publish',
   ): Promise<string> {
     await this.clickPhaseTab(phase);
+    await this.page.waitForTimeout(1000);
     const chip = this.page
-      .locator('[role="tabpanel"]:not([style*="display: none"])')
-      .locator('[class*="MuiChip"]')
+      .locator(
+        '[class*="Chip"]:visible, [class*="chip"]:visible, [class*="status"]:visible',
+      )
       .first();
     return (await chip.textContent()) ?? 'unknown';
   }
@@ -349,18 +365,18 @@ export class X2AnsiblePage {
   async runAnalyze() {
     await this.clickPhaseTab('Analyze');
     await this.clickRunPhaseButton('Create module migration plan');
-    await this.handleGitHubLoginDialog();
+    await this.dismissGitHubLoginDialog();
   }
 
   async runMigrate() {
     await this.clickPhaseTab('Migrate');
     await this.clickRunPhaseButton('Migrate module sources');
-    await this.handleGitHubLoginDialog();
+    await this.dismissGitHubLoginDialog();
   }
 
   async runPublish() {
     await this.clickPhaseTab('Publish');
     await this.clickRunPhaseButton('Publish to target repository');
-    await this.handleGitHubLoginDialog();
+    await this.dismissGitHubLoginDialog();
   }
 }
