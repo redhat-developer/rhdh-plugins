@@ -29,7 +29,7 @@ export interface Config {
       disabledMetrics?: {
         /** If true (default), entities can disable metrics that are not mentioned in `except` list via `scorecard.io/disabled-metrics` annotation; if false, the annotation has no effect */
         enabled?: boolean;
-        /** When enabled is true: this list creates an exception by enabling all metrics listed. */
+        /** When enabled is true: entity annotations cannot disable metric IDs listed here (these checks always run). */
         except?: string[];
       };
     };
