@@ -23,7 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../hooks/useTranslation';
-import { RelativeTimeFormatter } from './tools';
+import { formatDuration } from './tools';
 
 const useStyles = makeStyles(theme => ({
   toolCallList: {
@@ -105,8 +105,7 @@ export const PhaseTelemetry = ({ telemetry }: { telemetry?: Telemetry }) => {
       },
       {
         title: t('modulePage.phases.telemetry.duration'),
-        render: (row: AgentRow) =>
-          RelativeTimeFormatter.fromSeconds(row.durationSeconds),
+        render: (row: AgentRow) => formatDuration(t, row.durationSeconds),
         align: 'right',
       },
       {

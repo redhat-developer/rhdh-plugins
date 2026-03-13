@@ -22,12 +22,29 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 import { WorkflowLogProvider } from '@red-hat-developer-hub/backstage-plugin-orchestrator-node';
 
+import { Agent, setGlobalDispatcher } from 'undici';
+
 export class LokiProvider implements WorkflowLogProvider {
   private readonly baseURL: string;
+  private readonly token: string;
   private readonly selectors: any;
+  private readonly rejectUnauthorized: boolean;
+  private readonly logPipelineFilters: any;
   private constructor(config: Config) {
     this.baseURL = config.getString('baseUrl');
+    this.token = config.getString('token');
+    // Only should be false if specified, undefined here should be true
+    this.rejectUnauthorized =
+      config.getOptionalBoolean('rejectUnauthorized') === false ? false : true;
     this.selectors = config.getOptional('logStreamSelectors') || [];
+    this.logPipelineFilters = config.getOptional('logPipelineFilters') || [];
+
+    const agent = new Agent({
+      connect: {
+        rejectUnauthorized: this.rejectUnauthorized,
+      },
+    });
+    setGlobalDispatcher(agent);
   }
   getBaseURL(): string {
     return this.baseURL;
@@ -39,6 +56,14 @@ export class LokiProvider implements WorkflowLogProvider {
 
   getSelectors() {
     return this.selectors;
+  }
+
+  getToken(): string {
+    return this.token;
+  }
+
+  getRejectUnauthorized(): boolean {
+    return this.rejectUnauthorized;
   }
 
   async fetchWorkflowLogsByInstance(
@@ -63,13 +88,14 @@ export class LokiProvider implements WorkflowLogProvider {
     const lokiApiEndpoint = '/loki/api/v1/query_range';
     // Query is created with a log stream selector and then a log pipeline for more filtering
     // format looks like this: {stream-selector=expression} | log pipeline/log filter expression
-    // The log stream selector part of the query here is getting all service names
+    // The log stream selector part of the query here is defaulting to openshift_log_type=application
+    // This is the value used for Openshift Logging
     // This might need to be configurable, based on https://grafana.com/docs/loki/latest/query/log_queries/#log-stream-selector
     // Log pipeline part looks for the workflow instance id in those logs
     // Create the streamSelector
     let streamSelector: string = '';
     if (this.selectors.length < 1) {
-      streamSelector = 'service_name=~".+"';
+      streamSelector = 'openshift_log_type="application"';
     } else {
       this.selectors.forEach(
         (
@@ -78,11 +104,18 @@ export class LokiProvider implements WorkflowLogProvider {
           arr: string | any[],
         ) => {
           // something about that last comma
-          streamSelector += `${entry.label || 'service_name'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
+          streamSelector += `${entry.label || 'openshift_log_type'}${entry.value || '=~".+"'}${index !== arr.length - 1 ? ',' : ''}`;
         },
       );
     }
-    const logPipelineFilter = `|="${instance.id}"`;
+    let logPipelineFilter: string = `|="${instance.id}"`;
+
+    if (this.logPipelineFilters.length > 0) {
+      this.logPipelineFilters.forEach((element: any) => {
+        logPipelineFilter += ` ${element}`;
+      });
+    }
+
     const params = new URLSearchParams({
       query: `{${streamSelector}} ${logPipelineFilter}`,
       start: startTime as string,
@@ -93,7 +126,12 @@ export class LokiProvider implements WorkflowLogProvider {
 
     let allResults;
     try {
-      const response = await fetch(urlToFetch);
+      const response = await fetch(urlToFetch, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
       if (!response.ok) {
         throw new Error(await response.text());
       }

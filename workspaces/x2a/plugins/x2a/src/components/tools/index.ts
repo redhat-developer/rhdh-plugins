@@ -20,3 +20,6 @@ export * from './formatRelativeTime';
 export * from './humanizeArtifactType';
 export * from './humanizeDate';
 export * from './getLastPhaseReached';
+export * from './getNextPhase';
+export * from './canRunNextPhase';
+export * from './areEligibleModulesToRun';

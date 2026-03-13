@@ -24,6 +24,21 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useRouteRef: require('../../test-utils/mockRouteRef').mockUseRouteRef,
 }));
 
+jest.mock('../../hooks/useBulkRun', () => ({
+  useBulkRun: () => ({
+    runAllForProject: jest.fn(),
+    runAllGlobal: jest.fn(),
+  }),
+}));
+
+jest.mock('../../hooks/useProjectWriteAccess', () => ({
+  useProjectWriteAccess: () => ({
+    loading: false,
+    hasAnyWriteAccess: true,
+    canWriteProject: () => true,
+  }),
+}));
+
 import {
   mockApis,
   renderInTestApp,
@@ -34,10 +49,6 @@ import { discoveryApiRef, fetchApiRef } from '@backstage/core-plugin-api';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-
-jest.mock('../../useSeedTestData', () => ({
-  useSeedTestData: jest.fn(),
-}));
 
 import {
   createMockProjects,

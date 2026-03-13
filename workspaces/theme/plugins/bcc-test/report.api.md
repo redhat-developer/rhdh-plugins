@@ -12,6 +12,9 @@ import { RouteRef } from '@backstage/core-plugin-api';
 export const BCCTestPage: () => JSX_2.Element;
 
 // @public (undocumented)
+export const BCCTestPageComponent: () => JSX_2.Element;
+
+// @public (undocumented)
 export const bccTestPlugin: BackstagePlugin<    {
 root: RouteRef<undefined>;
 }, {}, {}>;

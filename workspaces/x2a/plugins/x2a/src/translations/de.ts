@@ -170,6 +170,39 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.telemetry.toolCalls': 'Anzahl der Werkzeugaufrufe',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Modulliste synchronisieren, um sie an den Migrationsplan anzupassen.',
+    'time.duration.daysAndHours': '{{days}}T {{hours}}Std',
+    'time.duration.daysOnly': '{{days}}T',
+    'time.duration.hoursAndMinutes': '{{hours}}Std {{minutes}}Min',
+    'time.duration.hoursOnly': '{{hours}}Std',
+    'time.duration.minutesAndSeconds': '{{minutes}}Min {{seconds}}Sek',
+    'time.duration.secondsOnly': '{{seconds}}Sek',
+    'time.ago.daysAndHours': 'vor {{days}}T {{hours}}Std',
+    'time.ago.daysOnly': 'vor {{days}}T',
+    'time.ago.hoursAndMinutes': 'vor {{hours}}Std {{minutes}}Min',
+    'time.ago.hoursOnly': 'vor {{hours}}Std',
+    'time.ago.minutes': 'vor {{minutes}}Min',
+    'time.ago.lessThanMinute': 'vor <1Min',
+    'time.jobTiming.noStartTime': '-',
+    'time.jobTiming.running': 'Läuft seit {{duration}}',
+    'time.jobTiming.finished': 'Beendet {{timeAgo}} ({{duration}} gedauert)',
+    'bulkRun.projectAction': 'Alle Module ausführen',
+    'bulkRun.globalAction': 'Alle ausführen',
+    'bulkRun.projectPageAction': 'Alle ausführen',
+    'bulkRun.projectConfirm.title':
+      'Alle Module im Projekt „{{name}}" ausführen?',
+    'bulkRun.projectConfirm.message':
+      'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',
+    'bulkRun.globalConfirm.title': 'Alle berechtigten Module ausführen?',
+    'bulkRun.globalConfirm.message':
+      'Dies löst die nächste Migrationsphase für alle berechtigten Module in allen Projekten aus, auf die Sie Schreibzugriff haben, einschließlich Projekte, die auf der aktuellen Seite nicht sichtbar sind. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen.',
+    'bulkRun.projectPageConfirm.title': 'Alle Module in „{{name}}" ausführen?',
+    'bulkRun.projectPageConfirm.message':
+      'Dies löst die nächste Migrationsphase für jedes Modul in diesem Projekt aus, dessen aktueller Status dies zulässt. Stellen Sie sicher, dass Sie alle erforderlichen Artefakte in den Ziel-Repositories überprüft haben, bevor Sie diese Aktion ausführen. Module, die nicht berechtigt sind, werden übersprungen.',
+    'bulkRun.confirm': 'Alle ausführen',
+    'bulkRun.cancel': 'Abbrechen',
+    'bulkRun.errorProject':
+      'Fehler beim Ausführen der Module im Projekt „{{name}}"',
+    'bulkRun.errorGlobal': 'Fehler bei der Massenausführung',
   },
 });
 
