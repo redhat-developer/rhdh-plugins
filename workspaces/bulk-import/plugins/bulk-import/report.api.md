@@ -8,7 +8,6 @@ import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { PathParams } from '@backstage/core-plugin-api';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const BulkImportIcon: () => JSX_2.Element;
@@ -28,9 +27,6 @@ export const bulkImportPlugin: BackstagePlugin<
 
 // @public
 export const BulkImportSidebarItem: () => JSX_2.Element | null;
-
-// @public
-export const bulkImportTranslations: TranslationResource<'plugin.bulk-import'>;
 
 // (No @packageDocumentation comment for this package)
 ```

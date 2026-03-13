@@ -137,3 +137,5 @@ export const bulkImportTranslationsModule = createFrontendModule({
     }),
   ],
 });
+
+export * from './translations';
