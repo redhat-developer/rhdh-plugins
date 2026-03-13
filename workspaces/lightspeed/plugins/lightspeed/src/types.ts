@@ -188,3 +188,28 @@ export interface ToolResultEvent {
   id: number;
   token: { tool_name: string; response: string };
 }
+
+/**
+ * @public
+ * Notebook session metadata from AI Notebooks API
+ */
+export type NotebookSessionMetadata = {
+  category?: string;
+  tags?: string[];
+  project?: string;
+  document_ids?: string[];
+};
+
+/**
+ * @public
+ * Notebook session from AI Notebooks API
+ */
+export type NotebookSession = {
+  session_id: string;
+  user_id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+  metadata?: NotebookSessionMetadata;
+};

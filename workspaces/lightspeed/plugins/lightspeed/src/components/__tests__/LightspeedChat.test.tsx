@@ -33,7 +33,7 @@ import {
 import userEvent from '@testing-library/user-event';
 
 import { lightspeedApiRef } from '../../api/api';
-import { useConversations } from '../../hooks';
+import { useConversations, useNotebookSessions } from '../../hooks';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
@@ -68,6 +68,13 @@ jest.mock('../../hooks/useConversations', () => ({
     data: [],
     isRefetching: false,
     isLoading: false,
+  }),
+}));
+
+jest.mock('../../hooks/useNotebookSessions', () => ({
+  useNotebookSessions: jest.fn().mockReturnValue({
+    data: [],
+    refetch: jest.fn(),
   }),
 }));
 
@@ -118,7 +125,10 @@ jest.mock('@patternfly/chatbot', () => {
   };
 });
 
-const mockUseConversations = useConversations as jest.Mock;
+const mockUseConversations = useConversations as jest.MockedFunction<
+  typeof useConversations
+>;
+const mockUseNotebookSessions = useNotebookSessions as jest.Mock;
 const mockUsePermission = usePermission as jest.MockedFunction<
   typeof usePermission
 >;
@@ -175,7 +185,9 @@ describe('LightspeedChat', () => {
       data: [],
       isRefetching: false,
       isLoading: false,
-    });
+    } as Partial<ReturnType<typeof useConversations>> as ReturnType<
+      typeof useConversations
+    >);
     mockUseLightspeedDrawerContext.mockReturnValue({
       isChatbotActive: false,
       toggleChatbot: jest.fn(),
@@ -221,7 +233,9 @@ describe('LightspeedChat', () => {
       ],
       isRefetching: false,
       isLoading: false,
-    });
+    } as Partial<ReturnType<typeof useConversations>> as ReturnType<
+      typeof useConversations
+    >);
 
     const storedData = JSON.stringify({ [mockUser]: 'test-conversation-id' });
     localStorage.setItem(localStorageKey, storedData);
@@ -298,6 +312,76 @@ describe('LightspeedChat', () => {
     ).toBeInTheDocument();
   });
 
+  describe('notebook updated labels', () => {
+    const renderNotebooksTab = async () => {
+      const user = userEvent.setup({
+        advanceTimers: jest.advanceTimersByTime,
+      });
+      render(setupLightspeedChat());
+      await waitFor(() => {
+        expect(screen.getByText('Developer Lightspeed')).toBeInTheDocument();
+      });
+      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
+      await user.click(notebooksTab);
+      act(() => {
+        jest.runOnlyPendingTimers();
+      });
+      await waitFor(() => {
+        expect(screen.getByText('My Notebooks')).toBeInTheDocument();
+      });
+    };
+
+    beforeEach(() => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-03-06T12:00:00.000Z'));
+      mockUseNotebookSessions.mockReturnValue({
+        data: [
+          {
+            session_id: 'today',
+            user_id: 'user:test',
+            name: 'Today Notebook',
+            updated_at: '2026-03-06T02:00:00.000Z',
+            created_at: '2026-03-06T02:00:00.000Z',
+          },
+          {
+            session_id: 'yesterday',
+            user_id: 'user:test',
+            name: 'Yesterday Notebook',
+            updated_at: '2026-03-05T02:00:00.000Z',
+            created_at: '2026-03-05T02:00:00.000Z',
+          },
+          {
+            session_id: 'days',
+            user_id: 'user:test',
+            name: 'Days Notebook',
+            updated_at: '2026-03-03T02:00:00.000Z',
+            created_at: '2026-03-03T02:00:00.000Z',
+          },
+          {
+            session_id: 'invalid',
+            user_id: 'user:test',
+            name: 'Invalid Notebook',
+            updated_at: 'not-a-date',
+            created_at: '2026-03-01T02:00:00.000Z',
+          },
+        ],
+        refetch: jest.fn(),
+      });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('renders updated labels based on date difference', async () => {
+      await renderNotebooksTab();
+
+      expect(screen.getByText('Updated today')).toBeInTheDocument();
+      expect(screen.getByText('Updated 1 day ago')).toBeInTheDocument();
+      expect(screen.getByText('Updated 3 days ago')).toBeInTheDocument();
+      expect(screen.getByText('not-a-date')).toBeInTheDocument();
+    });
+  });
+
   describe('filterConversations', () => {
     beforeEach(() => {
       mockUseConversations.mockReturnValue({
@@ -325,7 +409,9 @@ describe('LightspeedChat', () => {
         ],
         isRefetching: false,
         isLoading: false,
-      });
+      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
+        typeof useConversations
+      >);
     });
 
     it('should filter conversations by search term and show matching results', async () => {
@@ -362,7 +448,9 @@ describe('LightspeedChat', () => {
         data: [],
         isRefetching: false,
         isLoading: false,
-      });
+      } as Partial<ReturnType<typeof useConversations>> as ReturnType<
+        typeof useConversations
+      >);
 
       render(setupLightspeedChat());
 
