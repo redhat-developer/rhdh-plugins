@@ -7,20 +7,16 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
-
 // @public
 export const EntityScorecardContent: () => JSX_2.Element;
-
 // @public
 export const ScorecardHomepageCard: ({
   metricId,
 }: {
   metricId: string;
 }) => JSX_2.Element | null;
-
 // @public
 export const scorecardPlugin: BackstagePlugin<{}, {}, {}>;
-
 // @public
 export const scorecardTranslationRef: TranslationRef<
   'plugin.scorecard',
@@ -57,9 +53,7 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'thresholds.entities_other': string;
   }
 >;
-
 // @public
 export const scorecardTranslations: TranslationResource<'plugin.scorecard'>;
-
 // (No @packageDocumentation comment for this package)
 ```
