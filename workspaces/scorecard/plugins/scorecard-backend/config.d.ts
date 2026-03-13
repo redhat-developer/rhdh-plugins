@@ -27,7 +27,7 @@ export interface Config {
     entityOverrides?: {
       /** Whether entity scorecard.io/disabled-metrics annotation can override. Only affects annotations; global disabledMetrics is unchanged. */
       disabledMetrics?: {
-        /** If true (default), except list can force any entity disabled metrics to run. If false, the disabled metrics set are respected accordingly. */
+        /** If true (default), entities can disable metrics that are not mentioned in `except` list via `scorecard.io/disabled-metrics` annotation; if false, the annotation has no effect */
         enabled?: boolean;
         /** When enabled is true: this list creates an exception by enabling all metrics listed. */
         except?: string[];
