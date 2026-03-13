@@ -19,7 +19,7 @@ import { ConnectionOptions } from 'tls';
 export type OrchestratorKafkaServiceOptions = {
   clientId: string;
   brokers: string[];
-  logLevel: number;
+  logLevel?: number;
   ssl?: SslConfig;
   sasl?: SaslConfig;
 };
